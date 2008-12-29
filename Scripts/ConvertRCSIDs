@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# For now, at least, convert $Id$ to $Id$ since git supports the latter (as the hash of the commit).  Still doesn't contain the file name in the Id...
+
+find . -type f -print0 | xargs -0 perl -spi -e 's/\$Id$]*\$/\$Id\$/g'
