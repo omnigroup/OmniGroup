@@ -196,7 +196,7 @@ static OFPreference *includeHardwareDetails = nil;
 		replacement = [[NSBundle mainBundle] localizedStringForKey:replacement value:replacement table:@"OZLicenseType"];
 	    } else if ([key isEqualToString:@"KeyColumnWidthPercentage"]) {
 		// Allow localizers to adjust the % space between the key and value columns (since their keys might be wideer).
-		replacement = NSLocalizedStringWithDefaultValue(@"KeyColumnWidthPercentage", nil, OMNI_BUNDLE, @"20", @"Percentage of table to allocate for values");
+		replacement = NSLocalizedStringWithDefaultValue(@"KeyColumnWidthPercentage", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"20", @"Percentage of table to allocate for values");
 	    } else if ([key isEqualToString:@"lang"]) {
 		NSString *localizedName = OFLocalizedNameForISOLanguageCode(replacement);
 		if (localizedName)
@@ -217,7 +217,7 @@ static OFPreference *includeHardwareDetails = nil;
 		    const NXArchInfo *archInfo = NXGetArchInfoFromCpuType([[elements objectAtIndex:0] intValue],
 									  [[elements objectAtIndex:1] intValue]);
 		    if (archInfo)
-			replacement = [NSString stringWithCString:archInfo->description];
+			replacement = [NSString stringWithCString:archInfo->description encoding:NSASCIIStringEncoding];
 		}
 	    } else if ([key isEqualToString:@"cpuhz"] || [key isEqualToString:@"bushz"]) {
                 NSDecimalNumber *bytes = [NSDecimalNumber decimalNumberWithString:replacement];
@@ -232,13 +232,13 @@ static OFPreference *includeHardwareDetails = nil;
                 }
 	    } else if ([key isEqualToString:@"qt_netspeed"]) {
 		if ([replacement intValue] == INT_MAX)
-		    replacement = NSLocalizedStringFromTableInBundle(@"Internet/LAN", nil, OMNI_BUNDLE, @"network speed");
+		    replacement = NSLocalizedStringFromTableInBundle(@"Internet/LAN", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"network speed");
 		else {
 		    float kbps = [replacement floatValue] / 100.0f; // QT encodes this a 100x not 1000x... dunno why.
 		    if (kbps >= 1000)
-			replacement = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%g Mbps", nil, OMNI_BUNDLE, @"network speed format string for megabits/second"), kbps/1000.0f];
+			replacement = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%g Mbps", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"network speed format string for megabits/second"), kbps/1000.0f];
 		    else 
-			replacement = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%g Kbps", nil, OMNI_BUNDLE, @"network speed format string for kilobits/second"), kbps];
+			replacement = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%g Kbps", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"network speed format string for kilobits/second"), kbps];
 		}
 	    } else if ([key isEqualToString:@"DISPLAYS"]) {
 		NSMutableString *displays = [NSMutableString string];
@@ -259,9 +259,9 @@ static OFPreference *includeHardwareDetails = nil;
                     NSString *quartzExtremeKey = [NSString stringWithFormat:@"qe%d", displayIndex];
                     NSString *quartzExtreme = [report objectForKey:quartzExtremeKey];
                     if ([@"1" isEqualToString:quartzExtreme])
-                        [displays appendString:NSLocalizedStringFromTableInBundle(@"Quartz Extreme Enabled", nil, OMNI_BUNDLE, @"details panel value")];
+                        [displays appendString:NSLocalizedStringFromTableInBundle(@"Quartz Extreme Enabled", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel value")];
                     else if ([@"0" isEqualToString:quartzExtreme])
-                        [displays appendString:NSLocalizedStringFromTableInBundle(@"Quartz Extreme Disabled", nil, OMNI_BUNDLE, @"details panel value")];
+                        [displays appendString:NSLocalizedStringFromTableInBundle(@"Quartz Extreme Disabled", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel value")];
                     else {
                         OBASSERT(NO);
                     }
@@ -310,13 +310,13 @@ static OFPreference *includeHardwareDetails = nil;
 		    if ([adaptors length])
 			[adaptors appendString:@"<br><br>"];
 		    
-		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"PCI ID", nil, OMNI_BUNDLE, @"details panel string")];
+		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"PCI ID", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
 		    [adaptors appendFormat:@": %@<br>", pci ?: @""];
-		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Driver", nil, OMNI_BUNDLE, @"details panel string")];
+		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Driver", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
 		    [adaptors appendFormat:@": %@<br>", gl ?: @""];
-		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"Hardware Driver", nil, OMNI_BUNDLE, @"details panel string")];
+		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"Hardware Driver", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
 		    [adaptors appendFormat:@": %@<br>", ident ?: @""];
-		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"Driver Version", nil, OMNI_BUNDLE, @"details panel string")];
+		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"Driver Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
 		    [adaptors appendFormat:@": %@", ver ?: @""];
 
 		    [report removeObjectForKey:pciKey];
@@ -330,7 +330,7 @@ static OFPreference *includeHardwareDetails = nil;
 		if (memString) {
 		    [adaptors appendString:@"<br>"];
 		    if (adaptorIndex == 1) {
-			[adaptors appendString:NSLocalizedStringFromTableInBundle(@"Memory", nil, OMNI_BUNDLE, @"details panel string")];
+			[adaptors appendString:NSLocalizedStringFromTableInBundle(@"Memory", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
 			[adaptors appendString:@": "];
 		    } else
 			[adaptors appendString:@"<br>"];
@@ -369,13 +369,13 @@ static OFPreference *includeHardwareDetails = nil;
                     if ([glInfo length])
                         [glInfo appendString:@"<br><br>"];
 
-		    [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Vendor", nil, OMNI_BUNDLE, @"details panel string")];
+		    [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Vendor", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
                     [glInfo appendFormat:@": %@<br>", vendor ?: @""];
-		    [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Renderer", nil, OMNI_BUNDLE, @"details panel string")];
+		    [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Renderer", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
                     [glInfo appendFormat:@": %@<br>", renderer ?: @""];
-		    [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Version", nil, OMNI_BUNDLE, @"details panel string")];
+		    [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
                     [glInfo appendFormat:@": %@<br>", version ?: @""];
-		    [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Extensions", nil, OMNI_BUNDLE, @"details panel string")];
+		    [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Extensions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
                     [glInfo appendFormat:@": %@<br>", extensions ?: @""];
 
                     [report removeObjectForKey:vendorKey];
@@ -388,12 +388,12 @@ static OFPreference *includeHardwareDetails = nil;
                 replacement = glInfo;
             } else if ([key isEqualToString:@"RUNTIME"]) {
                 NSMutableString *runtime = [NSMutableString string];
-                NSString *hoursRunLabel = NSLocalizedStringFromTableInBundle(@"Hours Run", nil, OMNI_BUNDLE, @"details panel string");
-                NSString *timesRunLabel = NSLocalizedStringFromTableInBundle(@"# of Launches", nil, OMNI_BUNDLE, @"details panel string");
-                NSString *crashRunLabel = NSLocalizedStringFromTableInBundle(@"# of Crashes", nil, OMNI_BUNDLE, @"details panel string");
+                NSString *hoursRunLabel = NSLocalizedStringFromTableInBundle(@"Hours Run", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string");
+                NSString *timesRunLabel = NSLocalizedStringFromTableInBundle(@"# of Launches", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string");
+                NSString *crashRunLabel = NSLocalizedStringFromTableInBundle(@"# of Crashes", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string");
                 
                 [runtime appendString:@"<b>"];
-                [runtime appendFormat:NSLocalizedStringFromTableInBundle(@"Current Version", nil, OMNI_BUNDLE, @"details panel string")];
+                [runtime appendString:NSLocalizedStringFromTableInBundle(@"Current Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
                 [runtime appendString:@"</b><br><table>"];
                 [runtime appendFormat:@"<tr><td align=\"right\">%@</td><td>%.1f</td></tr>", hoursRunLabel, [[report objectForKey:@"runmin"] unsignedIntValue]/60.0];
                 [report removeObjectForKey:@"runmin"];
@@ -406,7 +406,7 @@ static OFPreference *includeHardwareDetails = nil;
                 [runtime appendString:@"</table><br><table>"];
 
                 [runtime appendString:@"<b>"];
-                [runtime appendFormat:NSLocalizedStringFromTableInBundle(@"All Versions", nil, OMNI_BUNDLE, @"details panel string")];
+                [runtime appendString:NSLocalizedStringFromTableInBundle(@"All Versions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
                 [runtime appendString:@"</b>"];
                 [runtime appendFormat:@"<tr><td align=\"right\">%@</td><td>%.1f</td></tr>", hoursRunLabel, [[report objectForKey:@"trunmin"] unsignedIntValue]/60.0];
                 [report removeObjectForKey:@"trunmin"];

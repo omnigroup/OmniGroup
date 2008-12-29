@@ -7,6 +7,7 @@
 
 #import <OmniFoundation/OFRunLoopQueueProcessor.h>
 
+#import <Availability.h>
 #import <OmniFoundation/OFMessageQueue.h>
 #import <OmniFoundation/OFMessageQueueDelegateProtocol.h>
 #import <OmniFoundation/NSThread-OFExtensions.h>
@@ -15,6 +16,10 @@
 #import <Foundation/NSPortMessage.h>
 
 RCS_ID("$Id$")
+
+@interface OFRunLoopQueueProcessor ()
+- (void)handlePortMessage:(NSPortMessage *)message;
+@end
 
 static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
 
@@ -30,7 +35,7 @@ static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
     mainThreadProcessor = [[mainThreadRunLoopProcessorClass alloc] initForQueue:[OFMessageQueue mainQueue]];
 
     // Call the +mainThreadRunLoopModes method so categories (in OmniAppKit, say) can add more modes
-    if (![NSThread inMainThread])
+    if (![NSThread isMainThread])
         [NSException raise:@"OFRunLoopQueueProcessorWrongThread" format:@"Attempted to start the main thread's OFRunLoopQueueProcessor from a thread other than the main thread"];
 
     [mainThreadProcessor runFromCurrentRunLoopInModes:[self mainThreadRunLoopModes]];
@@ -125,9 +130,9 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (void)handlePortMessage:(NSPortMessage *)message;
 {
-    if (![NSThread inMainThread]) {
+    if (![NSThread isMainThread]) {
         // Well, in the first place, this should never happen...
-        OBASSERT([NSThread inMainThread]);
+        OBASSERT([NSThread isMainThread]);
         // But since it did (presumably due to Java running the main run loop in another thread when it shouldn't), recover gracefully
         [self queueHasInvocations:nil];
         return;

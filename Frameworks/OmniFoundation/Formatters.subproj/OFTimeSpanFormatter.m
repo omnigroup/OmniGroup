@@ -10,6 +10,7 @@
 #import <OmniFoundation/OFTimeSpan.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
 
+#import <Foundation/NSCoder.h>
 #import <Foundation/NSNumberFormatter.h>
 
 RCS_ID("$Id$")
@@ -115,6 +116,7 @@ static OFTimeSpanUnit timeSpanUnits[TIME_SPAN_UNITS];
     [numberFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
     [numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [numberFormatter setGeneratesDecimalNumbers:NO];
+    [numberFormatter setZeroSymbol:@"0"];
 
     [self setStandardWorkTime];
     [self setUseVerboseFormat:NO];
@@ -127,6 +129,71 @@ static OFTimeSpanUnit timeSpanUnits[TIME_SPAN_UNITS];
     [self setDisplayWeeks:YES];
 
     return self;
+}
+
+- (void)dealloc;
+{
+    [numberFormatter release];
+    [super dealloc];
+}
+
+- (void)encodeWithCoder:(NSCoder *)coder;
+{
+    [super encodeWithCoder:coder];
+    
+    [numberFormatter encodeWithCoder:coder];
+    [coder encodeValueOfObjCType:@encode(BOOL) at:&shouldUseVerboseFormat];
+    [coder encodeValueOfObjCType:@encode(float) at:&hoursPerDay];
+    [coder encodeValueOfObjCType:@encode(float) at:&hoursPerWeek];
+    [coder encodeValueOfObjCType:@encode(float) at:&hoursPerMonth];
+    [coder encodeValueOfObjCType:@encode(float) at:&hoursPerYear];
+    [coder encodeValueOfObjCType:@encode(float) at:&roundingInterval];
+    
+    unsigned int returnNumber = _flags.returnNumber;
+    unsigned int floatValuesInSeconds = _flags.floatValuesInSeconds;
+    unsigned int displayUnits = _flags.displayUnits;
+    unsigned int usesArchiveUnitStrings = _flags.usesArchiveUnitStrings;
+    
+    [coder encodeValueOfObjCType:@encode(unsigned int) at:&returnNumber];
+    [coder encodeValueOfObjCType:@encode(unsigned int) at:&floatValuesInSeconds];
+    [coder encodeValueOfObjCType:@encode(unsigned int) at:&displayUnits];
+    [coder encodeValueOfObjCType:@encode(unsigned int) at:&usesArchiveUnitStrings];
+}
+
+- (id)initWithCoder:(NSCoder *)coder;
+{
+    self = [super initWithCoder:coder];
+    
+    numberFormatter = [[NSNumberFormatter alloc] initWithCoder:coder];
+    [coder decodeValueOfObjCType:@encode(BOOL) at:&shouldUseVerboseFormat];
+    [coder decodeValueOfObjCType:@encode(float) at:&hoursPerDay];
+    [coder decodeValueOfObjCType:@encode(float) at:&hoursPerWeek];
+    [coder decodeValueOfObjCType:@encode(float) at:&hoursPerMonth];
+    [coder decodeValueOfObjCType:@encode(float) at:&hoursPerYear];
+    [coder decodeValueOfObjCType:@encode(float) at:&roundingInterval];
+    unsigned int returnNumber;
+    unsigned int floatValuesInSeconds;
+    unsigned int displayUnits;
+    unsigned int usesArchiveUnitStrings;
+
+    [coder decodeValueOfObjCType:@encode(unsigned int) at:&returnNumber];
+    [coder decodeValueOfObjCType:@encode(unsigned int) at:&floatValuesInSeconds];
+    [coder decodeValueOfObjCType:@encode(unsigned int) at:&displayUnits];
+    [coder decodeValueOfObjCType:@encode(unsigned int) at:&usesArchiveUnitStrings];
+    
+    _flags.returnNumber = returnNumber;
+    _flags.floatValuesInSeconds = floatValuesInSeconds;
+    _flags.displayUnits = displayUnits;
+    _flags.usesArchiveUnitStrings = usesArchiveUnitStrings;
+    
+    return self;
+}
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    OFTimeSpanFormatter *copy = NSCopyObject(self, 0, zone);
+    copy->numberFormatter = [numberFormatter copyWithZone:zone];
+    return copy;
 }
 
 - (NSNumberFormatter *)numberFormatter;
@@ -390,9 +457,8 @@ static OFTimeSpanUnit timeSpanUnits[TIME_SPAN_UNITS];
     for (unitIndex = 0; unitIndex < TIME_SPAN_UNITS; unitIndex++) {
         if (_flags.displayUnits & (1 << unitIndex)) {
             BOOL willDisplaySmallerUnits = (_flags.displayUnits & ~((1 << (unitIndex+1))-1));
-            float value = secondsLeft;
             
-            DLOG(@"  unitIndex:%d willDisplaySmallerUnits:%d value:%f", unitIndex, willDisplaySmallerUnits, value);
+            DLOG(@"  unitIndex:%d willDisplaySmallerUnits:%d value:%f", unitIndex, willDisplaySmallerUnits, secondsLeft);
 	    if (!willDisplaySmallerUnits) {
                 if (_flags.usesArchiveUnitStrings)
 		    smallestUnitString = timeSpanUnits[unitIndex].archiveString;
@@ -406,7 +472,7 @@ static OFTimeSpanUnit timeSpanUnits[TIME_SPAN_UNITS];
 	    if (timeSpanUnits[unitIndex].formatterMultiplierImplementation)
 		secondsPerUnit *= timeSpanUnits[unitIndex].formatterMultiplierImplementation(self, NULL);
 	    
-	    value = secondsLeft / secondsPerUnit;
+	    float value = secondsLeft / secondsPerUnit;
 	    secondsLeft -= floor(value) * secondsPerUnit;
 
             NSString *numberString = nil;

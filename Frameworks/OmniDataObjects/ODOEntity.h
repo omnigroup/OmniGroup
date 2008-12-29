@@ -10,7 +10,7 @@
 #import <OmniFoundation/OFObject.h>
 #import <CoreFoundation/CFArray.h>
 
-@class NSString, NSArray, NSDictionary;
+@class NSString, NSArray, NSDictionary, NSSet;
 @class ODOObject, ODOEditingContext, ODOModel, ODOAttribute, ODOProperty, ODOSQLStatement;
 
 @interface ODOEntity : OFObject
@@ -22,14 +22,17 @@
     NSString *_instanceClassName;
     Class _instanceClass;
     
-    // These two arrays must be exactly parallel
+    // These four arrays must be exactly parallel
     NSArray *_properties;
     CFArrayRef _propertyNames;
+    CFArrayRef _propertyGetSelectors;
+    CFArrayRef _propertySetSelectors;
     
     NSDictionary *_propertiesByName;
     NSDictionary *_relationshipsByName;
     NSArray *_relationships;
     NSArray *_toOneRelationships;
+    NSArray *_toManyRelationships;
     
     NSDictionary *_attributesByName;
     ODOAttribute *_primaryKeyAttribute;
@@ -41,6 +44,9 @@
     NSString *_updateStatementKey;
     NSString *_deleteStatementKey;
     NSString *_queryByPrimaryKeyStatementKey;
+    
+    NSSet *_derivedPropertyNameSet;
+    NSSet *_nonDateModifyingPropertyNameSet;
 }
 
 - (ODOModel *)model;
@@ -52,14 +58,20 @@
 - (NSArray *)properties;
 - (NSDictionary *)propertiesByName;
 - (ODOProperty *)propertyNamed:(NSString *)name;
+- (ODOProperty *)propertyWithGetter:(SEL)getter;
+- (ODOProperty *)propertyWithSetter:(SEL)setter;
 
 - (NSDictionary *)relationshipsByName;
 - (NSArray *)relationships;
 - (NSArray *)toOneRelationships;
+- (NSArray *)toManyRelationships;
 
 - (NSDictionary *)attributesByName;
 
 - (ODOAttribute *)primaryKeyAttribute;
+
+- (NSSet *)derivedPropertyNameSet;
+- (NSSet *)nonDateModifyingPropertyNameSet;
 
 + (id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context primaryKey:(id)primaryKey;
 + (id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context;

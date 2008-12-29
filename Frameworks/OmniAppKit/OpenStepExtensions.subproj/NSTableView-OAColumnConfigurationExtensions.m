@@ -263,16 +263,10 @@ static IMP originalTableColumnWithIdentifier;
 
 - (void)_setupColumnsAndMenu;
 {
-    BOOL loadingAutosavedColumns = NO;
-    NSMenu *columnsMenu;
-    NSMenuItem *menuItem;
-    NSEnumerator *tableColumnEnum;
-    NSTableColumn *tableColumn;
-    NSArray *defaultColumnIdentifiers;
-    
     if (_dataSource == nil || ![self _columnConfigurationEnabled])
         return;
     
+    BOOL loadingAutosavedColumns = NO;
     if ([self autosaveTableColumns]) {
         NSString *autosaveName;
         NSString *columnAutosaveName;
@@ -282,10 +276,11 @@ static IMP originalTableColumnWithIdentifier;
         loadingAutosavedColumns = ([[NSUserDefaults standardUserDefaults] objectForKey:columnAutosaveName] != nil);
     }
         
-    columnsMenu = [[NSMenu alloc] initWithTitle:@"Configure Columns"];
+    NSMenu *columnsMenu = [[NSMenu alloc] initWithTitle:@"Configure Columns"];
 
     if ([self _allowsAutoresizing]) {
         NSBundle *bundle = [OAApplication bundle];
+        NSMenuItem *menuItem;
         
         menuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Auto Size Column", @"OmniAppKit", bundle, "autosize column contextual menu item") action:@selector(autosizeColumn:) keyEquivalent:@""];
         [menuItem setTarget:self];
@@ -302,9 +297,9 @@ static IMP originalTableColumnWithIdentifier;
     
     // Add menu items for all the columns.  For columns that aren't currently displayed, this will be where we store the pointer to the column.
     // Also deactivate any columns that aren't supposed to show up in the default configuration.
-    tableColumnEnum = [[self tableColumns] objectEnumerator];
-    defaultColumnIdentifiers = [self _defaultColumnIdentifiers];
-    while ((tableColumn = [tableColumnEnum nextObject])) {
+    NSArray *defaultColumnIdentifiers = [self _defaultColumnIdentifiers];
+    
+    for (NSTableColumn *tableColumn in [NSArray arrayWithArray:self.tableColumns]) { // avoid mutation while enumeration exception
         [self _addItemWithTableColumn:tableColumn toMenu:columnsMenu];
         if (!loadingAutosavedColumns && ![defaultColumnIdentifiers containsObject:[tableColumn identifier]])
             [self deactivateTableColumn:tableColumn];

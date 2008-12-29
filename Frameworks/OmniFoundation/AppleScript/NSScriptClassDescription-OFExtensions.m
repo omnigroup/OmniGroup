@@ -25,9 +25,6 @@ RCS_ID("$Id$");
 	if (![desc isKindOfClass:[NSScriptClassDescription class]])
 	    [NSException raise:NSInvalidArgumentException format:@"Class description for %@ is not a script class description.", OBShortObjectDescription(object)];
 
-	// We expect that objects won't return a synonym class description
-	OBASSERT(desc == [[object class] classDescription]);
-	
 	if (common) {
 	    if ([desc isKindOfScriptClassDescription:common]) {
 		// already common

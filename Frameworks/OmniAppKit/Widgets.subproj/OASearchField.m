@@ -30,7 +30,7 @@ RCS_ID("$Id$");
         return nil;
     
     // Create search field
-    [super setDelegate:self];
+    [super setDelegate:(id)self];
     [[self cell] setScrollable:YES];
     [[self cell] setSendsActionOnEndEditing:NO];
     [self updateSearchModeString];

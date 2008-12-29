@@ -6,7 +6,6 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniDataObjects/OmniDataObjects.h>
-#import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/objc.h>
 
 #import "ODOPerf_CoreData.h"
@@ -65,7 +64,7 @@ static NSString * const PerfPrefix = @"perf_";
         NSString *name = NSStringFromSelector(method_getName(methods[methodIndex]));
         
         if ([name hasPrefix:PerfPrefix]) {
-            name = [name stringByRemovingPrefix:PerfPrefix];
+            name = [name substringFromIndex:[PerfPrefix length]];
             [testNames addObject:name];
         }
     }

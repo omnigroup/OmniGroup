@@ -491,7 +491,7 @@ void OFQueueFunction(void (*aFunction)(void *arg), void *arg)
 
 BOOL OFMainThreadPerformFunction(void (*aFunction)(void *arg), void *arg)
 {
-    if ([NSThread inMainThread]) {
+    if ([NSThread isMainThread]) {
         aFunction(arg);
         return YES;
     } else {

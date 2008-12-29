@@ -20,8 +20,6 @@ typedef enum _OATableViewRowVisibility {
 
 @interface NSTableView (OAExtensions) <OAFindControllerTarget>
 
-- (NSArray *)selectedRows;
-    // An array of NSNumbers containing row indices.
 - (NSRect)rectOfSelectedRows;
     // Returns the rectangle enclosing all of the selected rows or NSZeroRect if there are no selected items
 - (void)scrollSelectedRowsToVisibility:(OATableViewRowVisibility)visibility;
@@ -50,7 +48,7 @@ typedef enum _OATableViewRowVisibility {
 // Content editing actions
 - (BOOL)tableView:(NSTableView *)tableView addItemsFromPasteboard:(NSPasteboard *)pasteboard;
     // Called by paste & duplicate. Return NO to disallow, YES if successful.
-- (void)tableView:(NSTableView *)tableView deleteRows:(NSArray *)rows;
+- (void)tableView:(NSTableView *)tableView deleteRowsAtIndexes:(NSIndexSet *)rowIndexes;
     // Called by -delete:, keyboard delete keys, and drag-to-trash. 'rows' is an array of NSNumbers containing row indices.
 
 // Drag image control
@@ -70,4 +68,10 @@ typedef enum _OATableViewRowVisibility {
 // Context menus
 - (NSMenu *)tableView:(NSTableView *)tableView contextMenuForRow:(int)row column:(int)column;
 
+@end
+
+#import <OmniBase/macros.h>
+OBDEPRECATED_METHODS(NSTableViewOAExtendedDataSource)
+- (void)tableView:(NSTableView *)tableView deleteRows:(NSArray *)rows; // Use -tableView:deleteRowsAtIndexes:
+- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard; // deprecated by the OS, but let's warn if anyone implements it.  Use the indexes version.
 @end

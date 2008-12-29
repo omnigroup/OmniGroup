@@ -9,14 +9,8 @@
 
 #import <OmniDataObjects/ODOEntity.h>
 
-@class OFXMLCursor;
-
-extern NSString * const ODOEntityElementName;
-extern NSString * const ODOEntityNameAttributeName;
-extern NSString * const ODOEntityInstanceClassAttributeName;
-
 @interface ODOEntity (Internal)
-- (id)initWithCursor:(OFXMLCursor *)cursor model:(ODOModel *)model error:(NSError **)outError;
-- (BOOL)finalizeModelLoading:(NSError **)outError;
+- (void)finalizeModelLoading;
 - (NSArray *)snapshotProperties;
+- (ODOProperty *)propertyWithSnapshotIndex:(unsigned int)snapshotIndex;
 @end

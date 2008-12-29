@@ -8,8 +8,6 @@
 // $Id$
 
 
-#import <OmniBase/SystemType.h>
-
 #import <AppKit/NSOutlineView.h>
 
 #import <OmniAppKit/NSTableView-OAExtensions.h>

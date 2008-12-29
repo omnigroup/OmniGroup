@@ -126,7 +126,7 @@ NSString *OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  Do we re
     // If we *had* seen the panel before, replace the title string
     NSString *titleFormat = [privacyNoticeTitleTextField stringValue];
     if (hasSeenPreviousVersion)
-	titleFormat = NSLocalizedStringFromTableInBundle(@"This version of %@ sends additional information using your Internet connection (when active) to check for new and updated versions of itself.", nil, [OSUController bundle], "text of dialog box informing user of change in software update query");
+	titleFormat = NSLocalizedStringFromTableInBundle(@"This version of %@ sends additional information using your Internet connection (when active) to check for new and updated versions of itself.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "text of dialog box informing user of change in software update query");
     
     
     NSString *bundleName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];

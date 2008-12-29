@@ -72,7 +72,9 @@ enum {
     return mainThread;
 }
 
-+ (BOOL)inMainThread;
+// Built-in otherwise in 10.5 and on the iPhone
+#if (!defined(MAC_OS_X_VERSION_10_5) || (MAC_OS_X_VERSION_10_5 > MAC_OS_X_VERSION_MIN_REQUIRED)) && (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
++ (BOOL)isMainThread;
 {
     if (mainThread == nil) {
 #ifdef DEBUG
@@ -82,15 +84,16 @@ enum {
     }
     return [self currentThread] == mainThread;
 }
+#endif
 
 + (BOOL)mainThreadOpsOK;
 {
-    return ([self inMainThread] || ([self currentThread] == substituteMainThread));
+    return ([self isMainThread] || ([self currentThread] == substituteMainThread));
 }
     
 + (void)lockMainThread;
 {
-    if ([self inMainThread])
+    if ([self isMainThread])
         return;
 
     if ([self currentThread] == substituteMainThread) {
@@ -110,7 +113,7 @@ enum {
 
 + (void)unlockMainThread;
 {
-    if ([self inMainThread])
+    if ([self isMainThread])
         return;
 
     OBASSERT(substituteMainThread == [self currentThread]);

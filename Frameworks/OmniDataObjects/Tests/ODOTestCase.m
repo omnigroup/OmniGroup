@@ -9,55 +9,27 @@
 
 #import <OmniBase/OBUtilities.h>
 #import <OmniBase/NSError-OBExtensions.h>
-#import <OmniFoundation/OFXMLIdentifierRegistry.h>
+#import <OmniFoundation/OFXMLIdentifier.h>
+
+#import "ODOTestCaseModel.h"
 
 RCS_ID("$Id$")
 
 @implementation ODOTestCase
 
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    [ODOModel internName:@"pk"];
-    [ODOModel internName:@"name"];
-    [ODOModel internName:@"details"];
-    [ODOModel internName:@"master"];
-}
-
 - (void)setUp;
-{
-    NSError *error = nil;
-    NSBundle *testBundle = [NSBundle bundleWithIdentifier:OMNI_BUNDLE_IDENTIFIER];
+{    
+    _database = [[ODODatabase alloc] initWithModel:ODOTestCaseModel()];
     
-    // Find the first <cls>.xodo file and use that as the model for this test.  ODOTestCase.xodo exists for generic tests that can share a model.
-    Class cls = [self class];
-    while (cls) {
-        NSString *name = NSStringFromClass(cls);
-        NSString *path = [testBundle pathForResource:name ofType:@"xodo"];
-        if (path) {
-            _model = [[ODOModel alloc] initWithContentsOfFile:path error:&error];
-            if (!_model) {
-                NSLog(@"Unable to load model from '%@': %@", path, [error toPropertyList]);
-                exit(1);
-            }
-            break;
+    // Allow tests with 'unconnected' in the name to operate only in memory.
+    if ([[self name] rangeOfString:@"unconnected"].length == 0) {
+        _databasePath = [[NSString alloc] initWithFormat:@"%@/%@-%@-%@.sqlite", NSTemporaryDirectory(), NSStringFromClass([self class]), [self name], [OFXMLCreateID() autorelease]];
+
+        NSError *error = nil;
+        if (![_database connectToURL:[NSURL fileURLWithPath:_databasePath] error:&error]) {
+            NSLog(@"Unable to connect to database at '%@': %@", _databasePath, [error toPropertyList]);
+            exit(1);
         }
-        
-        if (cls == [ODOTestCase class]) {
-            OBASSERT_NOT_REACHED("Should have found the base model.");
-            break;
-        }
-        
-        cls = [cls superclass];
-    }
-    
-    _database = [[ODODatabase alloc] initWithModel:_model];
-    
-    _databasePath = [[NSString alloc] initWithFormat:@"%@/%@-%@-%@.sqlite", NSTemporaryDirectory(), NSStringFromClass([self class]), [self name], [OFXMLCreateID() autorelease]];
-    if (![_database connectToURL:[NSURL fileURLWithPath:_databasePath] error:&error]) {
-        NSLog(@"Unable to connect to database at '%@': %@", _databasePath, [error toPropertyList]);
-        exit(1);
     }
     
     _undoManager = [[NSUndoManager alloc] init];
@@ -70,6 +42,7 @@ RCS_ID("$Id$")
 
 - (void)tearDown;
 {
+    [_editingContext reset];
     [_editingContext release];
     _editingContext = nil;
     
@@ -86,26 +59,20 @@ RCS_ID("$Id$")
     _database = nil;
     
     if (_databasePath) {
-        if (![[NSFileManager defaultManager] removeFileAtPath:_databasePath handler:nil])
-            NSLog(@"Error removing database file at '%@'.", _databasePath);
+	NSError *error = nil;
+        if (![[NSFileManager defaultManager] removeItemAtPath:_databasePath error:&error])
+            NSLog(@"Error removing database file at '%@': %@", _databasePath, [error toPropertyList]);
         [_databasePath release];
         _databasePath = nil;
     }
     
-    [_model release];
-    _model = nil;
-    
     [super tearDown];
-}
-
-- (BOOL)fileManager:(NSFileManager *)fm shouldProceedAfterError:(NSDictionary *)errorInfo;
-{
-    NSLog(@"error: %@", errorInfo);
-    return NO;
 }
 
 - (void)closeUndoGroup;
 {
+    [_editingContext processPendingChanges];
+    
     // This will actually close undo groups in all undo managers.
     [[NSRunLoop currentRunLoop] runUntilDate:[NSDate distantPast]];
     should([_undoManager groupingLevel] == 0);

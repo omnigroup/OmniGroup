@@ -13,9 +13,10 @@
 + (BOOL)shouldRunSlowUnitTests;
 @end
 
-// Assumes a local variable called 'error'
+// Assumes a local variable called 'error'.  Clears the error, runs the expression and reports if an error occurs.
 #define OBShouldNotError(expr) \
 do { \
+    error = nil; \
     BOOL __value = (expr); \
     if (!__value) \
         NSLog(@"Error: %@", [error toPropertyList]); \

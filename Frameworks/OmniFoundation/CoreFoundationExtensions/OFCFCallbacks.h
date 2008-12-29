@@ -31,5 +31,28 @@ extern CFStringRef OFPointerCopyDescription(const void *ptr);
 extern CFStringRef OFIntegerCopyDescription(const void *ptr);
 extern CFStringRef OFUnsignedIntegerCopyDescription(const void *ptr);
 
-extern Boolean     OFCaseInsensitiveStringIsEqual(const void *value1, const void *value2);
-extern CFHashCode  OFCaseInsensitiveStringHash(const void *value);
+// Collection callback structs using the callbacks above
+#import <CoreFoundation/CFArray.h>
+extern const CFArrayCallBacks OFNonOwnedPointerArrayCallbacks;
+extern const CFArrayCallBacks OFNSObjectArrayCallbacks;
+extern const CFArrayCallBacks OFIntegerArrayCallbacks;
+
+#import <CoreFoundation/CFDictionary.h>
+extern const CFDictionaryKeyCallBacks    OFNonOwnedPointerDictionaryKeyCallbacks;
+extern const CFDictionaryValueCallBacks  OFNonOwnedPointerDictionaryValueCallbacks;
+
+extern const CFDictionaryKeyCallBacks    OFPointerEqualObjectDictionaryKeyCallbacks;
+
+extern const CFDictionaryKeyCallBacks    OFIntegerDictionaryKeyCallbacks;
+extern const CFDictionaryValueCallBacks  OFIntegerDictionaryValueCallbacks;
+
+extern const CFDictionaryKeyCallBacks    OFNSObjectDictionaryKeyCallbacks;
+extern const CFDictionaryKeyCallBacks    OFNSObjectCopyDictionaryKeyCallbacks;
+extern const CFDictionaryValueCallBacks  OFNSObjectDictionaryValueCallbacks;
+
+#import <CoreFoundation/CFSet.h>
+extern const CFSetCallBacks OFNonOwnedPointerSetCallbacks;
+extern const CFSetCallBacks OFIntegerSetCallbacks;
+extern const CFSetCallBacks OFPointerEqualObjectSetCallbacks;
+extern const CFSetCallBacks OFNonOwnedObjectCallbacks;
+extern const CFSetCallBacks OFNSObjectSetCallbacks;

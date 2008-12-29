@@ -22,7 +22,7 @@ RCS_ID("$Id$");
     // The dataSource can just return [tableColumn dataCell] if it wants.
     NSTableView *tableView = [self tableView];
 
-    return [[tableView dataSource] tableView:tableView column:self dataCellForRow:row];
+    return [(id)[tableView dataSource] tableView:tableView column:self dataCellForRow:row];
 }
 
 @end

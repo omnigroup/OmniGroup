@@ -7,10 +7,6 @@
 
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 
-#import <OmniFoundation/NSString-OFSimpleMatching.h>
-#import <OmniFoundation/NSArray-OFExtensions.h>
-#import <Foundation/NSAppleEventDescriptor.h>
-
 RCS_ID("$Id$")
 
 NSString * const OmniDictionaryElementNameKey = @"__omniDictionaryElementNameKey";
@@ -18,50 +14,6 @@ NSString * const OmniDictionaryElementNameKey = @"__omniDictionaryElementNameKey
 #define SAFE_ALLOCA_SIZE (8 * 8192)
 
 @implementation NSDictionary (OFExtensions)
-
-+ (NSDictionary *)dictionaryWithUserRecord:(NSAppleEventDescriptor *)descriptor;
-{
-    if (!(descriptor = [descriptor descriptorForKeyword:'usrf']))
-        return nil;
-    
-    NSMutableDictionary *result = [NSMutableDictionary dictionary];
-    int itemIndex, itemCount = [descriptor numberOfItems];
-    
-    for (itemIndex = 1; itemIndex <= itemCount; itemIndex += 2) {
-        NSString *key = [[descriptor descriptorAtIndex:itemIndex] stringValue];
-	id valueObject = [descriptor descriptorAtIndex:itemIndex+1];
-	
-	if ([valueObject typeCodeValue] == FOUR_CHAR_CODE('msng')) {
-	    [result setObject:[NSNull null] forKey:key];
-	    continue;
-	}
-	
-        NSString *value = [valueObject stringValue];
-        [result setObject:value forKey:key];
-    }
-    return result;
-}
-
-- (NSAppleEventDescriptor *)userRecordValue;
-{
-    NSAppleEventDescriptor *listDescriptor = [NSAppleEventDescriptor listDescriptor];
-    NSEnumerator *enumerator = [self keyEnumerator];
-    NSString *key;
-    int listCount = 0;
-    
-    while ((key = [enumerator nextObject])) {
-        [listDescriptor insertDescriptor:[NSAppleEventDescriptor descriptorWithString:key] atIndex:++listCount];
-        id value = [self objectForKey:key];
-	if (value == [NSNull null])
-	    [listDescriptor insertDescriptor:[NSAppleEventDescriptor descriptorWithTypeCode:FOUR_CHAR_CODE('msng')] atIndex:++listCount];
-	else 
-	    [listDescriptor insertDescriptor:[NSAppleEventDescriptor descriptorWithString:[value description]] atIndex:++listCount];
-    }
-    
-    NSAppleEventDescriptor *result = [NSAppleEventDescriptor recordDescriptor];
-    [result setDescriptor:listDescriptor forKeyword:'usrf'];
-    return result;
-}
 
 - (id)anyObject;
 {
@@ -184,35 +136,6 @@ nochange:
     free(context.values);
 nochange_noalloc:
     return [NSDictionary dictionaryWithDictionary:self];
-}
-
-- (NSDictionary *)elementsAsInstancesOfClass:(Class)aClass withContext:(id)context;
-{
-    NSMutableDictionary *dict;
-    NSAutoreleasePool *pool;
-    NSEnumerator *elementEnum;
-    NSString *elementName;
-    
-    // Keep this out of the pool since we're returning it
-    dict = [NSMutableDictionary dictionary];
-    
-    pool = [[NSAutoreleasePool alloc] init];
-    elementEnum = [self keyEnumerator];
-    while ((elementName = [elementEnum nextObject])) {
-        id instance;
-        NSMutableDictionary *element;
-        
-        element = [[NSMutableDictionary alloc] initWithDictionary:[self objectForKey:elementName]];
-        [element setObject:elementName forKey:OmniDictionaryElementNameKey];
-        
-        instance = [[aClass alloc] initWithDictionary:element context:context];
-        [element release];
-        
-        [dict setObject:instance forKey:elementName];
-    }
-    [pool release];
-    
-    return dict;
 }
 
 - (NSString *)keyForObjectEqualTo:(id)anObject;

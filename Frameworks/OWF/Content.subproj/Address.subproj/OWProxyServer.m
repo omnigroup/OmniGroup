@@ -97,7 +97,7 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
 
 + (void)_startMonitoringProxySettings;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
 
     SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, (CFStringRef)[[NSProcessInfo processInfo] processName], OWProxyServerDynamicStoreCallBack, NULL);
     CFStringRef proxiesKey = SCDynamicStoreKeyCreateProxies(NULL);

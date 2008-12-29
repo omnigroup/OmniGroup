@@ -9,12 +9,12 @@
 
 #import <Foundation/NSDictionary.h>
 
-#import <OmniFoundation/OFDictionaryInitialization.h>
-
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Foundation/NSGeometry.h> // For NSPoint, NSSize, and NSRect
 #define OmniFoundation_NSDictionary_NSGeometry_Extensions
 #endif
+
+@class NSMutableArray;
 
 @interface NSDictionary (OFExtensions)
 
@@ -22,7 +22,6 @@
 - (NSDictionary *)dictionaryByAddingObjectsFromDictionary:(NSDictionary *)otherDictionary;
 
 - (id)anyObject;
-- (NSDictionary *)elementsAsInstancesOfClass:(Class)aClass withContext:(id)context;
 - (NSString *)keyForObjectEqualTo:(id)anObj;
 
 // ObjC methods to nil have undefined results for non-id values (though ints happen to currently work)

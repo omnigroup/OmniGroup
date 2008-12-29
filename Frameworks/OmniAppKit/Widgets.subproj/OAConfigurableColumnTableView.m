@@ -166,7 +166,7 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
         return;
 
     if (confDataSourceFlags.willActivate)
-        [[self dataSource] configurableColumnTableView: self willActivateColumn: column];
+        [(id)[self dataSource] configurableColumnTableView: self willActivateColumn: column];
         
     item = [self _itemForTableColumn: column];
     [item setState: YES];
@@ -182,7 +182,7 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
     }
         
     if (confDataSourceFlags.didActivate)
-        [[self dataSource] configurableColumnTableView: self didActivateColumn: column];
+        [(id)[self dataSource] configurableColumnTableView: self didActivateColumn: column];
 }
 
 - (void)deactivateTableColumn:(NSTableColumn *)column;
@@ -194,7 +194,7 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
         return;
 
     if (confDataSourceFlags.willDeactivate)
-        [[self dataSource] configurableColumnTableView: self willDeactivateColumn: column];
+        [(id)[self dataSource] configurableColumnTableView: self willDeactivateColumn: column];
         
     item = [self _itemForTableColumn: column];
     [item setState: NO];
@@ -210,7 +210,7 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
     }
         
     if (confDataSourceFlags.didDeactivate)
-        [[self dataSource] configurableColumnTableView: self didDeactivateColumn: column];
+        [(id)[self dataSource] configurableColumnTableView: self didDeactivateColumn: column];
 }
 
 - (void)toggleTableColumn:(NSTableColumn *)column;

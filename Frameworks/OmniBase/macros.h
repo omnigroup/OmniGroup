@@ -7,8 +7,8 @@
 //
 // $Id$
 
+#import <AvailabilityMacros.h>
 #import <Foundation/NSAutoreleasePool.h>
-#import <OmniBase/SystemType.h>
 
 #if !defined(SWAP)
 #define SWAP(A, B) do { __typeof__(A) __temp = (A); (A) = (B); (B) = __temp;} while(0)
@@ -62,4 +62,17 @@ do {						\
     #define NSLocalizedString Use_NSBundle_methods_if_you_really_want_to_look_up_strings_in_the_main_bundle
     #undef NSLocalizedStringFromTable
     #define NSLocalizedStringFromTable Use_NSBundle_methods_if_you_really_want_to_look_up_strings_in_the_main_bundle
+#endif
+
+// Hack to define a protocol for OBPostLoader to check for deprecated dataSource/delegate methods where _implementing_ a method with a given name is considered wrong (likely the method has been removed from the protocol or renamed).  The inline is enough to trick the compiler into emitting the protocol into the .o file, though this seems fragile.  OBPostLoader will use this macro itself once and will assert that at least one such deprecated protocol is found, just to make sure this hack keeps working.
+// Since these protocols are only examied when assertions are enabled, this should be wrapped in a OMNI_ASSERTIONS_ON check.
+#define OBDEPRECATED_METHODS(name) \
+@protocol name ## Deprecated; \
+static inline Protocol *name ## DeprecatedHack(void) { return @protocol(name ## Deprecated); } \
+@protocol name ## Deprecated
+
+// As promised, do this once here to make sure the hack works. This can also serve as a template for copying to make your own deperecation protocol.
+#ifdef OMNI_ASSERTIONS_ON
+OBDEPRECATED_METHODS(OBPostLoaderTestHack)
+@end
 #endif

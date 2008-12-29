@@ -15,12 +15,12 @@
 
 @class NSDictionary, NSMutableDictionary;
 
-@interface OBObject (Debug)
-
-// Debugging methods
+@interface NSObject (OBDebuggingExtensions)
 - (NSMutableDictionary *)debugDictionary;
+- (NSString *)shortDescription;
+@end
+
+@interface OBObject (OBDebugging)
 - (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(NSUInteger)level;
 - (NSString *)description;
-- (NSString *)shortDescription;
-
 @end

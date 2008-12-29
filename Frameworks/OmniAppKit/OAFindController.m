@@ -241,16 +241,12 @@ static NSString *OAFindPanelTitle = @"Find";
 
 - (id <OAFindControllerTarget>)target;
 {
-    NSWindow *mainWindow;
-    id target;
-    NSResponder *firstResponder, *responder;
-    
-    mainWindow = [NSApp mainWindow];
-    target = [[mainWindow delegate] omniFindControllerTarget];
+    NSWindow *mainWindow = [NSApp mainWindow];
+    id target = [(id)[mainWindow delegate] omniFindControllerTarget];
     if (target != nil)
         return target;
-    firstResponder = [mainWindow firstResponder];
-    responder = firstResponder;
+    NSResponder *firstResponder = [mainWindow firstResponder];
+    NSResponder *responder = firstResponder;
     do {
         target = [responder omniFindControllerTarget];
         if (target != nil)

@@ -200,7 +200,7 @@
 				<key>OWIncomingStringEncoding</key>
 				<string>iana WINDOWS-1252</string>
 				<key>OWLibraryDirectory</key>
-				<string>~/Library/Application Support/OmniWeb 5</string>
+				<string>~/Library/Application Support/OmniWeb 6</string>
 				<key>OWMaximumValidityPeriod</key>
 				<integer>86400</integer>
 				<key>OWNNTPServerHost</key>

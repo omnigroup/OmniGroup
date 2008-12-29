@@ -10,6 +10,7 @@
 #import <OmniDataObjects/ODOProperty.h>
 #import <OmniDataObjects/ODORelationship.h>
 
+#import "ODOObject-Accessors.h"
 #import "ODOObject-Internal.h"
 #import "ODOEntity-SQL.h"
 #import "ODODatabase-Internal.h"
@@ -31,7 +32,7 @@ RCS_ID("$Id$")
 {
     OBPRECONDITION(database);
     OBPRECONDITION([database connectedURL]);
-    OBPRECONDITION(![NSString isEmptyString:sql]);
+    OBPRECONDITION([sql length] > 0);
     
     _sql = [sql copy];
     
@@ -43,8 +44,8 @@ RCS_ID("$Id$")
         OBASSERT(_statement == NULL);
         ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
         
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL statement.", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable prepare statement for SQL '%@'.", nil, OMNI_BUNDLE, @"error reason"), _sql];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable prepare statement for SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), _sql];
         ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
         [self release];
         return nil;
@@ -145,8 +146,8 @@ BOOL ODOSQLStatementBindNull(struct sqlite3 *sqlite, ODOSQLStatement *statement,
         return YES;
     
     ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind null to SQL statement.", nil, OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind null to slot %d of statement with SQL '%@'.", nil, OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind null to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind null to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
     ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
     return NO;
 }
@@ -159,8 +160,8 @@ BOOL ODOSQLStatementBindString(struct sqlite3 *sqlite, ODOSQLStatement *statemen
         return YES;
     
     ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", nil, OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind string to slot %d of statement with SQL '%@'.", nil, OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind string to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
     ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
     return NO;
 }
@@ -173,8 +174,21 @@ BOOL ODOSQLStatementBindData(struct sqlite3 *sqlite, ODOSQLStatement *statement,
         return YES;
     
     ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", nil, OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind data to slot %d of statement with SQL '%@'.", nil, OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind data to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
+    ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
+    return NO;
+}
+
+BOOL ODOSQLStatementBindInt16(struct sqlite3 *sqlite, ODOSQLStatement *statement, int bindIndex, int16_t value, NSError **outError)
+{
+    int rc = sqlite3_bind_int(statement->_statement, bindIndex, value); // No int16 binding in SQLite; upgrade to a full int.
+    if (rc == SQLITE_OK)
+        return YES;
+    
+    ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind int16 to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
     ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
     return NO;
 }
@@ -186,8 +200,21 @@ BOOL ODOSQLStatementBindInt32(struct sqlite3 *sqlite, ODOSQLStatement *statement
         return YES;
     
     ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", nil, OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind int32 to slot %d of statement with SQL '%@'.", nil, OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind int32 to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
+    ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
+    return NO;
+}
+
+BOOL ODOSQLStatementBindInt64(struct sqlite3 *sqlite, ODOSQLStatement *statement, int bindIndex, int64_t value, NSError **outError)
+{
+    int rc = sqlite3_bind_int64(statement->_statement, bindIndex, value);
+    if (rc == SQLITE_OK)
+        return YES;
+    
+    ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind int64 to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
     ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
     return NO;
 }
@@ -201,8 +228,8 @@ BOOL ODOSQLStatementBindBoolean(struct sqlite3 *sqlite, ODOSQLStatement *stateme
         return YES;
     
     ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", nil, OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind boolean to slot %d of statement with SQL '%@'.", nil, OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind boolean to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
     ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
     return NO;
 }
@@ -219,8 +246,8 @@ BOOL ODOSQLStatementBindDate(struct sqlite3 *sqlite, ODOSQLStatement *statement,
         return YES;
     
     ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", nil, OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind date to slot %d of statement with SQL '%@'.", nil, OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind date to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
     ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
     return NO;
 }
@@ -233,8 +260,8 @@ BOOL ODOSQLStatementBindFloat64(struct sqlite3 *sqlite, ODOSQLStatement *stateme
         return YES;
     
     ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", nil, OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind float64 to slot %d of statement with SQL '%@'.", nil, OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind float64 to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
     ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
     return NO;
 }
@@ -261,8 +288,8 @@ BOOL ODOSQLStatementBindConstant(ODOSQLStatement *self, struct sqlite3 *sqlite, 
                     return NO;
                 break;
                 default: {
-                    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind constant to SQL statement.", nil, OMNI_BUNDLE, @"error description");
-                    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind number '%@' of type %d to slot %d of statement with SQL '%@'.", nil, OMNI_BUNDLE, @"error reason"), constant, type, bindIndex, self->_sql];
+                    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind constant to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+                    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind number '%@' of type %d to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), constant, type, bindIndex, self->_sql];
                     ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
                     return NO;
                 }
@@ -272,8 +299,8 @@ BOOL ODOSQLStatementBindConstant(ODOSQLStatement *self, struct sqlite3 *sqlite, 
             return NO;
     } else {
         OBASSERT_NOT_REACHED("Unknown constant type");
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind constant to SQL statement.", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind constant '%@' of unknown type to slot %d of statement with SQL '%@'.", nil, OMNI_BUNDLE, @"error reason"), constant, bindIndex, self->_sql];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind constant to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind constant '%@' of unknown type to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), constant, bindIndex, self->_sql];
         ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
         return NO;
     }
@@ -291,10 +318,17 @@ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
     }
         
     switch (type) {
-        case ODOAttributeTypeInt32: {
+        case ODOAttributeTypeInt16:
+        case ODOAttributeTypeInt32:
+        {
             // Could fetch as int64 and check the range.  Maybe in DEBUG builds?
             int intValue = sqlite3_column_int(statement->_statement, columnIndex);
             *value = [[NSNumber alloc] initWithInt:intValue];
+            return YES;
+        }
+        case ODOAttributeTypeInt64: {
+            int64_t intValue = sqlite3_column_int64(statement->_statement, columnIndex);
+            *value = [[NSNumber alloc] initWithLongLong:intValue];
             return YES;
         }
         case ODOAttributeTypeString: {
@@ -340,8 +374,8 @@ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
             return YES;
         }
         default: {
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to execute SQL.", nil, OMNI_BUNDLE, @"error description");
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable get value of type %d for result column %d of '%@'.", nil, OMNI_BUNDLE, @"error reason"), type, columnIndex, statement->_sql];
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to execute SQL.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable get value of type %d for result column %d of '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type, columnIndex, statement->_sql];
             ODOError(outError, ODOUnableToExecuteSQL, description, reason, nil);
             return NO;
         }
@@ -357,7 +391,7 @@ void ODOSQLStatementLogSQL(NSString *format, ...)
     NSString *sql = [[NSString alloc] initWithFormat:format arguments:args];
     va_end(args);
     
-    if (![NSString isEmptyString:sql]) {
+    if ([sql length] > 0) {
         CFDataRef data = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)sql, kCFStringEncodingUTF8, '?');
         OBASSERT(data);
         if (data) {
@@ -392,8 +426,8 @@ BOOL ODOSQLStatementRun(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOS
         sqlite3_reset(statement->_statement);
         
         ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to execute SQL.", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable run SQL for statement '%@'.", nil, OMNI_BUNDLE, @"error reason"), statement->_sql];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to execute SQL.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable run SQL for statement '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), statement->_sql];
         ODOError(outError, ODOUnableToExecuteSQL, description, reason, nil);
         return NO;
     }

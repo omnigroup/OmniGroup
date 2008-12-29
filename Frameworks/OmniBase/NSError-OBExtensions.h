@@ -26,7 +26,7 @@ extern NSString * const OBFileNameAndNumberErrorKey;
 @end
 
 extern void OBErrorv(NSError **error, NSString *domain, int code, const char *fileName, unsigned int line, NSString *firstKey, va_list args);
-extern void _OBError(NSError **error, NSString *domain, int code, const char *fileName, unsigned int line, NSString *firstKey, ...);
+extern void _OBError(NSError **error, NSString *domain, int code, const char *fileName, unsigned int line, NSString *firstKey, ...) NS_REQUIRES_NIL_TERMINATION;
 
 #ifdef OMNI_BUNDLE_IDENTIFIER
 // It is expected that -DOMNI_BUNDLE_IDENTIFIER=@"com.foo.bar" will be set when building your code.  Build configurations make this easy since you can set it in the target's configuration and then have your Other C Flags have -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\" and also use $(OMNI_BUNDLE_IDENTIFIER) in your Info.plist instead of duplicating it.
@@ -35,7 +35,7 @@ extern void _OBError(NSError **error, NSString *domain, int code, const char *fi
 #endif
 
 // Unlike the other routines in this file, but like all the other Foundation routines, this takes its key-value pairs with each value followed by its key.  The disadvantage to this is that you can't easily have runtime-ignored values (the nil value is a terminator rather than being skipped).
-void OBErrorWithErrnoObjectsAndKeys(NSError **error, int errno_value, const char *function, NSString *argument, NSString *localizedDescription, ...);
+void OBErrorWithErrnoObjectsAndKeys(NSError **error, int errno_value, const char *function, NSString *argument, NSString *localizedDescription, ...) NS_REQUIRES_NIL_TERMINATION;
 #define OBErrorWithErrno(error, errno_value, function, argument, localizedDescription) OBErrorWithErrnoObjectsAndKeys(error, errno_value, function, argument, localizedDescription, nil)
 
 

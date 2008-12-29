@@ -125,7 +125,7 @@ RCS_ID("$Id$")
     enumerator = [record keyEnumerator];
     while ((eventCode = [enumerator nextObject])) {
         key = [classDescription keyWithAppleEventCode:[eventCode unsignedLongValue]];
-        if (!key || [classDescription isReadOnlyKey:key])
+        if (!key || ![classDescription hasWritablePropertyForKey:key])
             continue;
         
         [self setValue:[self coerceValue:[record objectForKey:eventCode] forKey:key] forKey:key];
@@ -251,7 +251,7 @@ RCS_ID("$Id$")
         result = [[NSMutableDictionary alloc] init];
         enumerator = [[classDescription attributeKeys] objectEnumerator];
         while ((key = [enumerator nextObject])) {
-            if ([classDescription isReadOnlyKey:key])
+            if (![classDescription hasWritablePropertyForKey:key])
                 continue;
             NS_DURING {
                 value = [blankObject valueForKey:key];
@@ -348,7 +348,7 @@ RCS_ID("$Id$")
     NSString *key;
     while ((key = [enumerator nextObject])) {
         BOOL isExtraKey = [extraKeys containsObject:key];
-        if (!isExtraKey && ([classDescription isReadOnlyKey:key] || [self ignoreAppleScriptValueForKey:key]))
+        if (!isExtraKey && (![classDescription hasWritablePropertyForKey:key] || [self ignoreAppleScriptValueForKey:key]))
             continue;
         
         id value;

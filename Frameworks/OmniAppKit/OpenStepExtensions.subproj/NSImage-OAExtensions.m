@@ -17,7 +17,6 @@
 #import <QuartzCore/QuartzCore.h> // For CoreImage
 #endif
 
-#import "IconFamily.h"
 #import "OAImageManager.h"
 
 RCS_ID("$Id$")
@@ -586,19 +585,8 @@ static NSDictionary *titleFontAttributes;
 {
     NSBitmapImageRep *bitmapImageRep = (id)[self imageRepOfClass:[NSBitmapImageRep class]];
     if (bitmapImageRep == nil) {
-        NSCachedImageRep *cachedImageRep;
-        
-        cachedImageRep = (NSCachedImageRep *)[self imageRepOfClass:[NSCachedImageRep class]];
-        if (cachedImageRep == nil) {
-            NSLog(@"Warning: couldn't get PNG data for image %@, because it had no cached image representation", self);
-            return nil;
-        }
-        
-        [[[cachedImageRep window] contentView] lockFocus]; {
-            bitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:[cachedImageRep rect]] autorelease];
-        } [[[cachedImageRep window] contentView] unlockFocus];
-    }
-    
+	OBRequestConcreteImplementation(self, _cmd); // Used to have an NSCachedImageRep path, but that's deprecated.
+    }    
     return [bitmapImageRep representationUsingType:NSPNGFileType properties:nil];
 }
 
@@ -663,16 +651,30 @@ static NSDictionary *titleFontAttributes;
 // System Images
 //
 
+static NSImage *getSystemImage(OSType fourByteCode, BOOL flip, NSImage **buf)
+{
+    if (!*buf) {
+        IconRef iconRef;
+        
+        iconRef = 0; /* 0 is documented to be the invalid value for an IconRef */
+        OSErr result = GetIconRef(kOnSystemDisk, kSystemIconsCreator, fourByteCode, &iconRef);
+        if (result != noErr || iconRef == 0)
+            return nil;
+        
+        NSImage *iconImage = [[NSImage alloc] initWithIconRef:iconRef];
+        
+        ReleaseIconRef(iconRef);
+        
+        *buf = iconImage;
+    }
+
+    return *buf;
+}
+
 #define OA_SYSTEM_IMAGE(x, flip) \
 do { \
     static NSImage *image = nil; \
-    if (!image) { \
-        IconFamily *iconFamily = [[IconFamily alloc] initWithSystemIcon:x]; \
-        image = [[iconFamily imageWithAllReps] retain]; \
-        [image setFlipped:flip]; \
-        [iconFamily release]; \
-    } \
-    return image; \
+    return getSystemImage(x, flip, &image); \
 } while(0)
 
 + (NSImage *)httpInternetLocationImage;

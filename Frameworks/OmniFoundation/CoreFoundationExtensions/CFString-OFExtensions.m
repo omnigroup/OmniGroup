@@ -7,7 +7,7 @@
 
 #import <OmniFoundation/CFString-OFExtensions.h>
 #import <Foundation/NSObjCRuntime.h> // for BOOL
-#import <NSString-OFExtensions.h> // for OFStringStartLoopThroughCharacters/OFStringEndLoopThroughCharacters
+#import <NSString-OFCharacterEnumeration.h> // for OFStringStartLoopThroughCharacters/OFStringEndLoopThroughCharacters
 #import <OmniBase/rcsid.h>
 #import <string.h>
 
@@ -121,6 +121,37 @@ HandleUnicode:
     }
 }
 
+
+
+Boolean OFCaseInsensitiveStringIsEqual(const void *value1, const void *value2)
+{
+    OBASSERT([(id)value1 isKindOfClass:[NSString class]] && [(id)value2 isKindOfClass:[NSString class]]);
+    return CFStringCompare((CFStringRef)value1, (CFStringRef)value2, kCFCompareCaseInsensitive) == kCFCompareEqualTo;
+}
+
+CFHashCode OFCaseInsensitiveStringHash(const void *value)
+{
+    OBASSERT([(id)value isKindOfClass:[NSString class]]);
+    
+    // This is the only interesting function in the bunch.  We need to ensure that all
+    // case variants of the same string (when 'same' is determine case insensitively)
+    // have the same hash code.  We will do this by using CFStringGetCharacters over
+    // the first 16 characters of each key.
+    // This is obviously not a good hashing algorithm for all strings.
+    UniChar characters[16];
+    NSUInteger length;
+    CFStringRef string;
+    
+    string = (CFStringRef)value;
+    
+    length = CFStringGetLength(string);
+    if (length > 16)
+        length = 16;
+    
+    CFStringGetCharacters(string, CFRangeMake(0, length), characters);
+    
+    return OFCaseInsensitiveHash(characters, length);
+}
 
 CFIndex OFAppendStringBytesToBuffer(CFMutableDataRef buffer, CFStringRef source, CFRange range, CFStringEncoding encoding, UInt8 lossByte, Boolean isExternalRepresentation)
 {

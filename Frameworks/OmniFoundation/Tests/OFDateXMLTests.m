@@ -24,7 +24,7 @@ RCS_ID("$Id$")
     NSTimeZone *tz = [NSDate UTCTimeZone];
     should(tz != nil);
     should([tz secondsFromGMT] == 0);
-    shouldBeEqual([tz abbreviation], @"UTC");
+    shouldBeEqual([tz name], @"UTC");
 }
 
 - (void)testGregorianUTCCalendar;
@@ -74,6 +74,31 @@ RCS_ID("$Id$")
                   @"Mon, 01 Jan 2001 00:00:00 GMT");
     shouldBeEqual([[NSDate dateWithTimeIntervalSinceReferenceDate:242635426.0] descriptionWithHTTPFormat],
                   @"Tue, 09 Sep 2008 06:43:46 GMT");
+}
+
+- (void)test1000MillisecondRounding;
+{
+    // <bug://bugs/48662> ("can't save" error if action modified date has 1000 thousandths of a second)
+    // Make sure this does something reasonable instead of rounding the milliseconds portion to "1000Z"    
+    NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:239687680.999502]; // 2008-08-05 20:54:41 -0700
+    NSString *xmlString = [date xmlString];
+    shouldBeEqual(xmlString, @"2008-08-06T03:54:41.000Z");
+
+#if 0
+    while (YES) {
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        
+        NSDate *date = [NSDate date];
+        NSString *xmlString = [date xmlString];
+        
+        if ([xmlString hasSuffix:@"1000Z"]) {
+            NSLog(@"offset = %f, date = %@, xmlString = %@", [date timeIntervalSinceReferenceDate], date, xmlString);
+            break;
+        }
+        
+        [pool release];
+    }
+#endif
 }
 
 @end

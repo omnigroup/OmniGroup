@@ -27,10 +27,15 @@ RCS_ID("$Id$")
     [_properties release];
     if (_propertyNames)
         CFRelease(_propertyNames);
+    if (_propertyGetSelectors)
+        CFRelease(_propertyGetSelectors);
+    if (_propertySetSelectors)
+        CFRelease(_propertySetSelectors);
     [_propertiesByName release];
     [_relationshipsByName release];
     [_relationships release];
     [_toOneRelationships release];
+    [_toManyRelationships release];
     [_attributesByName release];
     [_primaryKeyAttribute release];
     [_snapshotProperties release];
@@ -42,6 +47,9 @@ RCS_ID("$Id$")
     [_deleteStatementKey release];
     [_queryByPrimaryKeyStatementKey release];
 
+    [_derivedPropertyNameSet release];
+    [_nonDateModifyingPropertyNameSet release];
+    
     [super dealloc];
 }
 
@@ -133,6 +141,38 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
     return nil;
 }
 
+- (ODOProperty *)propertyWithGetter:(SEL)getter;
+{
+    OBPRECONDITION(_properties);
+    OBPRECONDITION(_propertyGetSelectors);
+    OBPRECONDITION(getter);
+
+    CFRange range = CFRangeMake(0, CFArrayGetCount((CFArrayRef)_propertyGetSelectors));
+    OBASSERT((CFIndex)[_properties count] == range.length);
+
+    CFIndex propIndex = CFArrayGetFirstIndexOfValue((CFArrayRef)_propertyGetSelectors, range, getter);
+    if (propIndex != kCFNotFound)
+        return (ODOProperty *)CFArrayGetValueAtIndex((CFArrayRef)_properties, propIndex);
+
+    return nil;
+}
+
+- (ODOProperty *)propertyWithSetter:(SEL)setter;
+{
+    OBPRECONDITION(_properties);
+    OBPRECONDITION(_propertySetSelectors);
+    OBPRECONDITION(setter);
+        
+    CFRange range = CFRangeMake(0, CFArrayGetCount((CFArrayRef)_propertySetSelectors));
+    OBASSERT((CFIndex)[_properties count] == range.length);
+    
+    CFIndex propIndex = CFArrayGetFirstIndexOfValue((CFArrayRef)_propertySetSelectors, range, setter);
+    if (propIndex != kCFNotFound)
+        return (ODOProperty *)CFArrayGetValueAtIndex((CFArrayRef)_properties, propIndex);
+
+    return nil;
+}
+
 - (NSDictionary *)relationshipsByName;
 {
     OBPRECONDITION(_relationshipsByName);
@@ -151,6 +191,12 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
     return _toOneRelationships;
 }
 
+- (NSArray *)toManyRelationships;
+{
+    OBPRECONDITION(_toManyRelationships);
+    return _toManyRelationships;
+}
+
 - (NSDictionary *)attributesByName;
 {
     OBPRECONDITION(_attributesByName);
@@ -163,12 +209,27 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
     return _primaryKeyAttribute;
 }
 
+- (NSSet *)derivedPropertyNameSet;
+{
+    OBPRECONDITION(_derivedPropertyNameSet);
+    return _derivedPropertyNameSet;
+}
+
+- (NSSet *)nonDateModifyingPropertyNameSet;
+{
+    OBPRECONDITION(_nonDateModifyingPropertyNameSet);
+    return _nonDateModifyingPropertyNameSet;
+}
+
 #ifdef DEBUG
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict = [super debugDictionary];
     [dict setObject:_name forKey:@"name"];
-    [dict setObject:[_properties arrayByPerformingSelector:_cmd] forKey:@"properties"];
+    NSMutableArray *propertyDescriptions = [NSMutableArray array];
+    for (ODOProperty *property in _properties)
+        [propertyDescriptions addObject:[property debugDictionary]];
+    [dict setObject:propertyDescriptions forKey:@"properties"];
     return dict;
 }
 #endif
@@ -209,181 +270,115 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
 
 @end
 
-#import "ODOEntity-Internal.h"
+#import <OmniDataObjects/ODOModel-Creation.h>
 #import "ODOAttribute-Internal.h"
-#import "ODORelationship-Internal.h"
-
-NSString * const ODOEntityElementName = @"entity";
-NSString * const ODOEntityNameAttributeName = @"name";
-NSString * const ODOEntityInstanceClassAttributeName = @"class";
 
 @implementation ODOEntity (Internal)
 
-- (id)initWithCursor:(OFXMLCursor *)cursor model:(ODOModel *)model error:(NSError **)outError;
+#ifdef OMNI_ASSERTIONS_ON
+CFComparisonResult _compareByName(const void *val1, const void *val2, void *context)
 {
-    OBPRECONDITION(OFISEQUAL([cursor name], ODOEntityElementName));
-    
-    _nonretained_model = model;
-    _name = [[cursor attributeNamed:ODOEntityNameAttributeName] copy];
-    if ([NSString isEmptyString:_name]) {
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Entity has no name.", nil, OMNI_BUNDLE, @"error reason");
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-    
-    _insertStatementKey = [[NSString alloc] initWithFormat:@"INSERT:%@", _name];
-    _updateStatementKey = [[NSString alloc] initWithFormat:@"UPDATE:%@", _name];
-    _deleteStatementKey = [[NSString alloc] initWithFormat:@"DELETE:%@", _name];
-    _queryByPrimaryKeyStatementKey = [[NSString alloc] initWithFormat:@"PK:%@", _name];
-    
-    _instanceClassName = [[cursor attributeNamed:ODOEntityInstanceClassAttributeName] copy];
-    if ([NSString isEmptyString:_instanceClassName]) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Entity '%@' has no instance class name.", nil, OMNI_BUNDLE, @"error reason"), _name];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-    
-    _instanceClass = NSClassFromString(_instanceClassName);
-    if (!_instanceClass) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Entity '%@' specified instance class name of '%@', but no such class was found.", nil, OMNI_BUNDLE, @"error reason"), _name, _instanceClassName];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-    
-    if (!OBClassIsSubclassOfClass(_instanceClass, [ODOObject class])) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Entity '%@' specified instance class name of '%@', but this class is not a subclass of ODOObject.", nil, OMNI_BUNDLE, @"error reason"), _name, _instanceClassName];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
+    return [(ODOProperty *)val1 compareByName:(ODOProperty *)val2];
+}
+#endif
 
-    OBASSERT(![_instanceClass instancesRespondToSelector:@selector(validateForDelete:)]); // OmniFocus doesn't need this right now, so ODOEditingContext doesn't support it.
+extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString *updateKey, NSString *deleteKey, NSString *pkQueryKey,
+                                  NSString *instanceClassName, NSArray *properties)
+{
+    ODOEntity *entity = [[ODOEntity alloc] init];
+    entity->_nonretained_model = (id)0xdeadbeef; // TODO: Hook this up
+
+    OBASSERT([name length] > 0);
+    entity->_name = [name copy];
+
+    OBASSERT(insertKey);
+    OBASSERT(updateKey);
+    OBASSERT(deleteKey);
+    OBASSERT(pkQueryKey);
+    entity->_insertStatementKey = [insertKey copy];
+    entity->_updateStatementKey = [updateKey copy];
+    entity->_deleteStatementKey = [deleteKey copy];
+    entity->_queryByPrimaryKeyStatementKey = [pkQueryKey copy];
+    
+    OBASSERT(instanceClassName);
+    entity->_instanceClass = NSClassFromString(instanceClassName);
+    OBASSERT(OBClassIsSubclassOfClass(entity->_instanceClass, [ODOObject class]));
+
+    OBASSERT(![entity->_instanceClass instancesRespondToSelector:@selector(validateForDelete:)]); // OmniFocus doesn't need this right now, so ODOEditingContext doesn't support it.
     
     // Disallow subclassing some of the ODOObject methods for now.  We may want to optimize them or inline them in certain places
-    OBASSERT(OBClassImplementingMethod(_instanceClass, @selector(entity)) == [ODOObject class]);
-    OBASSERT(OBClassImplementingMethod(_instanceClass, @selector(primitiveValueForKey:)) == [ODOObject class]);
-    OBASSERT(OBClassImplementingMethod(_instanceClass, @selector(setPrimitiveValue:forKey:)) == [ODOObject class]);
+    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(entity)) == [ODOObject class]);
+    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(objectID)) == [ODOObject class]);
+    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(primitiveValueForKey:)) == [ODOObject class]);
+    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(setPrimitiveValue:forKey:)) == [ODOObject class]);
     
+    // Methods that used to exist but don't now and shouldn't on ODOObject or subclasses
+    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(primitiveValueForProperty:)) == Nil);
+    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(setPrimitiveValue:forProperty:)) == Nil);
     
-    NSMutableArray *properties = [NSMutableArray array];
+    entity->_instanceClassName = [instanceClassName copy];
+
+    // TODO: Could do more of this building in the Ruby script-generated code, if it is worth the effort.
+    OBPRECONDITION(properties);
+    entity->_properties = [properties copy];
+    
     NSMutableDictionary *propertiesByName = [NSMutableDictionary dictionary];
-    
-    // Read attributes
     NSMutableDictionary *attributesByName = [NSMutableDictionary dictionary];
-    while (([cursor openNextChildElementNamed:ODOAttributeElementName])) {
-        ODOAttribute *attribute = [[ODOAttribute alloc] initWithCursor:cursor entity:self error:outError];
-        if (!attribute) {
-            [self release];
-            return nil;
-        }
-        
-        NSString *name = [attribute name];
-        if ([propertiesByName objectForKey:name]) {
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Entity '%@' has multiple properties named '%@'.", nil, OMNI_BUNDLE, @"error reason"), _name];
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-            ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-            [self release];
-            return nil;
-        }
-
-        BOOL isPrimaryKey = [attribute isPrimaryKey];
-        if (isPrimaryKey) {
-            if (_primaryKeyAttribute) {
-                // We don't support compound primary keys
-                NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Entity '%@' has multiple primary key attributes.", nil, OMNI_BUNDLE, @"error reason"), _name];
-                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-                ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-                [self release];
-                return nil;
-            }
-            _primaryKeyAttribute = [attribute retain];
-        }
-        
-        [properties addObject:attribute];
-        [propertiesByName setObject:attribute forKey:name];
-        [attributesByName setObject:attribute forKey:name];
-
-        [cursor closeElement];
-    }
-    _attributesByName = [[NSDictionary alloc] initWithDictionary:attributesByName];
-    
-    if (!_primaryKeyAttribute) {
-        // Must have a primary key
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Entity '%@' has no primary key attributes.", nil, OMNI_BUNDLE, @"error reason"), _name];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-
-    if ([_primaryKeyAttribute defaultValue]) {
-        // Silly for a primary key to have a default value
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Entity '%@' specified primary key attribute '%@' with a default value.", nil, OMNI_BUNDLE, @"error reason"), _name, [_primaryKeyAttribute name]];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-    
-    // See -[ODODatabase _generatePrimaryKeyForEntity:].
-    if ([_primaryKeyAttribute type] != ODOAttributeTypeString) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Entity '%@' specified primary key attribute '%@' with type %d, but only strings are supported.", nil, OMNI_BUNDLE, @"error reason"), _name, [_primaryKeyAttribute name], [_primaryKeyAttribute type]];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-    
-    // Read relationships; their destination entity will be a string still since all the entities might not yet read.
     NSMutableDictionary *relationshipsByName = [NSMutableDictionary dictionary];
     NSMutableArray *relationships = [NSMutableArray array];
     NSMutableArray *toOneRelationships = [NSMutableArray array];
+    NSMutableArray *toManyRelationships = [NSMutableArray array];
     
-    while (([cursor openNextChildElementNamed:ODORelationshipElementName])) {
-        ODORelationship *rel = [[ODORelationship alloc] initWithCursor:cursor entity:self error:outError];
-        if (!rel) {
-            [self release];
-            return nil;
+    for (ODOProperty *prop in entity->_properties) {
+        struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+        NSString *name = [prop name];
+        
+        OBASSERT([propertiesByName objectForKey:name] == nil);
+        OBASSERT([attributesByName objectForKey:name] == nil);
+        OBASSERT([relationshipsByName objectForKey:name] == nil);
+        
+        [propertiesByName setObject:prop forKey:name];
+        if (flags.relationship) {
+            ODORelationship *rel = (ODORelationship *)prop;
+            
+            [relationships addObject:rel];
+            [flags.toMany ? toManyRelationships : toOneRelationships addObject:rel];
+            [relationshipsByName setObject:rel forKey:name];
+        } else {
+            ODOAttribute *attr = (ODOAttribute *)prop;
+            
+            [attributesByName setObject:attr forKey:name];
+            if ([attr isPrimaryKey]) {
+                OBASSERT(entity->_primaryKeyAttribute == nil);
+                entity->_primaryKeyAttribute = [attr retain];
+            }
         }
-        
-        NSString *name = [rel name];
-        if ([propertiesByName objectForKey:name]) {
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Entity '%@' has multiple properties named '%@'.", nil, OMNI_BUNDLE, @"error reason"), _name];
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-            ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-            [self release];
-            return nil;
-        }
-        
-        [properties addObject:rel];
-        [propertiesByName setObject:rel forKey:name];
-        [relationshipsByName setObject:rel forKey:name];
-        [relationships addObject:rel];
-        if ([rel isToMany] == NO)
-            [toOneRelationships addObject:rel];
-        
-        [cursor closeElement];
     }
     
-    // Sort so that -propertyNamed: can use binary search if it wants.  _properties and _propertyNames must be in exactly the same order.
-    [properties sortUsingSelector:@selector(compareByName:)];
-    _properties = [[NSArray alloc] initWithArray:properties];
+    // Should have found a primary key attribute.  Makes no sense for pk attribute to have a default value
+    OBASSERT(entity->_primaryKeyAttribute);
+    OBASSERT([entity->_primaryKeyAttribute defaultValue] == nil);
+    OBASSERT([entity->_primaryKeyAttribute type] == ODOAttributeTypeString); // See -[ODODatabase _generatePrimaryKeyForEntity:].
+
+    entity->_propertiesByName = [[NSDictionary alloc] initWithDictionary:propertiesByName];
+    entity->_attributesByName = [[NSDictionary alloc] initWithDictionary:attributesByName];
+    entity->_relationshipsByName = [[NSDictionary alloc] initWithDictionary:relationshipsByName];
+    entity->_relationships = [[NSArray alloc] initWithArray:relationships];
+    entity->_toOneRelationships = [[NSArray alloc] initWithArray:toOneRelationships];
+    entity->_toManyRelationships = [[NSArray alloc] initWithArray:toManyRelationships];
     
-    // Make an immutable CFArray that does NOT use CFEqual for equality, but just pointer equality (since we've interned our property names).
+    // Input properties must have been sorted by name so that -propertyNamed: can use binary search if it wants.
+    // _properties and _propertyNames must be in exactly the same order.
+    OBASSERT(OFCFArrayIsSortedAscendingUsingFunction((CFArrayRef)entity->_properties, _compareByName, NULL));
+    
+    // Make immutable CFArrays that do NOT use CFEqual for equality, but just pointer equality (since we've interned our property names and selectors are pointer-uniqued).
     {
-        NSArray *propertyNames = [_properties arrayByPerformingSelector:@selector(name)];
-        CFIndex propertyNameCount = [propertyNames count];
-        
-        NSString **propertyNamesCArray = malloc(sizeof(NSString *) * propertyNameCount);
-        [propertyNames getObjects:propertyNamesCArray];
-        
+        CFIndex propertyIndex, propertyCount = [entity->_properties count];
+        NSString **propertyNamesCArray = malloc(sizeof(NSString *) * propertyCount);
+
+        for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+            propertyNamesCArray[propertyIndex] = [[entity->_properties objectAtIndex:propertyIndex] name];
+                
         CFArrayCallBacks callbacks;
         memset(&callbacks, 0, sizeof(callbacks));
         callbacks.retain = OFNSObjectRetain;
@@ -391,28 +386,39 @@ NSString * const ODOEntityInstanceClassAttributeName = @"class";
         callbacks.copyDescription = OFNSObjectCopyDescription;
         // equal NULL for pointer equality, the whole point here.
         
-        _propertyNames = CFArrayCreate(kCFAllocatorDefault, (const void **)propertyNamesCArray, propertyNameCount, &callbacks);
+        entity->_propertyNames = CFArrayCreate(kCFAllocatorDefault, (const void **)propertyNamesCArray, propertyCount, &callbacks);
         free(propertyNamesCArray);
+        
+        
+        // Some of the setters may be NULL (eventually) when we support read-only properties.
+        SEL *getters = malloc(sizeof(SEL) * propertyCount);
+        SEL *setters = malloc(sizeof(SEL) * propertyCount);
+        
+        for (CFIndex propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
+            ODOProperty *property = [entity->_properties objectAtIndex:propertyIndex];
+            getters[propertyIndex] = ODOPropertyGetterSelector(property);
+            setters[propertyIndex] = ODOPropertySetterSelector(property);
+        }
+        
+        memset(&callbacks, 0, sizeof(callbacks));
+        entity->_propertyGetSelectors = CFArrayCreate(kCFAllocatorDefault, (const void **)getters, propertyCount, &callbacks);
+        entity->_propertySetSelectors = CFArrayCreate(kCFAllocatorDefault, (const void **)setters, propertyCount, &callbacks);
+        
+        free(getters);
+        free(setters);
     }
-    
-    _propertiesByName = [[NSDictionary alloc] initWithDictionary:propertiesByName];
-    _relationshipsByName = [[NSDictionary alloc] initWithDictionary:relationshipsByName];
-    _relationships = [[NSArray alloc] initWithArray:relationships];
-    _toOneRelationships = [[NSArray alloc] initWithArray:toOneRelationships];
-    
-    return self;
+
+    return entity;
 }
 
-- (BOOL)finalizeModelLoading:(NSError **)outError;
+void ODOEntityBind(ODOEntity *self, ODOModel *model)
 {
-    // hook up relationships, validating destination names
-    NSEnumerator *relationshipEnum = [_relationshipsByName objectEnumerator];
-    ODORelationship *rel;
-    while ((rel = [relationshipEnum nextObject])) {
-        if (![rel finalizeModelLoading:outError])
-            return NO;
-    }
+    OBPRECONDITION([self isKindOfClass:[ODOEntity class]]);
+    self->_nonretained_model = model;
+}
 
+- (void)finalizeModelLoading;
+{
     [self _buildSchemaProperties];
     
     // Build a list of snapshot properties.  These are all the properties that the ODOObject stores internally; everything but the primary key.  CoreData doesn't seem to snapshot the transient properties.  Also, it is unclear whether relationships are supported for CoreData actual snapshots, but they do need to be stored by ODOObject, so this is easy for now.
@@ -430,13 +436,41 @@ NSString * const ODOEntityInstanceClassAttributeName = @"class";
     _snapshotProperties = [[NSArray alloc] initWithArray:snapshotProperties];
     [snapshotProperties release];
     
-    return YES;
+    // Since we don't support many-to-many relationships, to-manys are totally derived from the inverse to-one.  Let the instance class add more derived properties.
+    NSMutableSet *derivedPropertyNameSet = [NSMutableSet set];
+    [_instanceClass addDerivedPropertyNames:derivedPropertyNameSet withEntity:self];
+    _derivedPropertyNameSet = [derivedPropertyNameSet copy];
+    
+    // Make sure the to-many relationships got added in ODOObject and not removed by subclasses.
+#ifdef OMNI_ASSERTIONS_ON
+    for (ODORelationship *rel in _toManyRelationships)
+        OBASSERT([_derivedPropertyNameSet member:[rel name]]);
+#endif
+    
+    // Allow instance classes to filter out properties that don't provoke date modified changes.
+    NSMutableSet *nonDateModifyingPropertyNameSet = [NSMutableSet set];
+    [_instanceClass computeNonDateModifyingPropertyNameSet:nonDateModifyingPropertyNameSet withEntity:self];
+    _nonDateModifyingPropertyNameSet = [nonDateModifyingPropertyNameSet copy];
+    
+    // Old API that our instance class shouldn't try to implement any more since we aren't going to use it!
+    OBASSERT(OBClassImplementingMethod(_instanceClass, @selector(derivedPropertyNameSet)) == Nil);
+    OBASSERT(OBClassImplementingMethod(_instanceClass, @selector(nonDateModifyingPropertyNameSet)) == Nil);
+
+    // Ensure the property didn't find a setter for the primary key attribute
+    OBASSERT(ODOPropertySetterImpl(_primaryKeyAttribute) == NULL);
 }
 
 - (NSArray *)snapshotProperties;
 {
     OBPRECONDITION(_snapshotProperties);
     return _snapshotProperties;
+}
+
+- (ODOProperty *)propertyWithSnapshotIndex:(unsigned int)snapshotIndex;
+{
+    ODOProperty *prop = [_snapshotProperties objectAtIndex:snapshotIndex];
+    OBASSERT(ODOPropertySnapshotIndex(prop) == snapshotIndex);
+    return prop;
 }
 
 @end

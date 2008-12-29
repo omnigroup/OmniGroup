@@ -8,11 +8,11 @@
 #import "ODOObject-Internal.h"
 
 #import <OmniDataObjects/ODORelationship.h>
+#import <OmniDataObjects/ODOEditingContext.h>
 #import <OmniDataObjects/ODOObjectID.h>
-#import <OmniDataObjects/ODOAttribute.h>
 
+#import "ODOObject-Accessors.h"
 #import "ODOProperty-Internal.h"
-#import "ODOEntity-Internal.h"
 #import "ODOEditingContext-Internal.h"
 
 RCS_ID("$Id$")
@@ -20,7 +20,7 @@ RCS_ID("$Id$")
 @implementation ODOObject (Internal)
 
 #ifdef OMNI_ASSERTIONS_ON
-static BOOL ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
+BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
 {
     // The snapshot should have no to-manys and all to-ones should be just primary keys.
     // All values shoudl be of the proper class
@@ -61,7 +61,7 @@ static BOOL ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapsh
 
     // Only create values up front if we aren't a fault
     if (_flags.isFault == NO)
-        ODOObjectCreateNullValues(self);
+        _ODOObjectCreateNullValues(self);
     
     return self;
 }
@@ -77,12 +77,8 @@ static BOOL ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapsh
     _editingContext = [context retain];
     _objectID = [objectID copy];
     _flags.isFault = NO;
-    
-    unsigned int snapshotPropertyCount = [[[objectID entity] snapshotProperties] count];
-    OBASSERT((CFIndex)snapshotPropertyCount == CFArrayGetCount(snapshot));
-    _valueArray = CFArrayCreateMutableCopy(kCFAllocatorDefault, snapshotPropertyCount, snapshot);
 
-    OBASSERT(ODOAssertSnapshotIsValidForObject(self, _valueArray));
+    _ODOObjectCreateValuesFromSnapshot(self, snapshot);
     
     return self;
 }
@@ -101,11 +97,10 @@ static BOOL ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapsh
     if (_flags.isFault) // check at runtime anyway
         return;
     
-    OBASSERT(_valueArray != NULL);
+    OBASSERT(_ODOObjectHasValues(self));
     [self willTurnIntoFault];
     
-    CFRelease(_valueArray);
-    _valueArray = NULL;
+    _ODOObjectReleaseValues(self);
 
     _flags.isFault = YES;
 }
@@ -117,10 +112,7 @@ static BOOL ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapsh
         [self _turnIntoFault:NO/*deleting*/];
     
     // Cleared in _turnIntoFault: and we have no way of ever becoming valid again.
-    if (_valueArray) {
-        CFRelease(_valueArray);
-        _valueArray = NULL;
-    }
+    _ODOObjectReleaseValuesIfPresent(self);
     
     // Once we are invalid, we are no longer a fault (we can't be resurrected/fetched)
     _flags.invalid = YES;
@@ -151,7 +143,7 @@ static BOOL ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapsh
         ODOProperty *prop = [snapshotProperties objectAtIndex:propIndex];
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         
-        id value = (id)CFArrayGetValueAtIndex(_valueArray, propIndex);
+        id value = _ODOObjectValueAtIndex(self, propIndex);
         
         if (flags.relationship) {
             if (flags.toMany) {
@@ -168,7 +160,7 @@ static BOOL ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapsh
     }
     
     OBASSERT(CFArrayGetCount(snapshot) == (CFIndex)propCount);
-    OBASSERT(ODOAssertSnapshotIsValidForObject(self, snapshot));
+    OBASSERT(_ODOAssertSnapshotIsValidForObject(self, snapshot));
 
     return (NSArray *)snapshot;
 }
@@ -208,7 +200,7 @@ static void _validateRelationshipDestination(const void *value, void *context)
     // Can't call -primitiveValueForKey: since that would cause lazy fault creation to fire.
     OBASSERT([[[dest entity] snapshotProperties] containsObject:ctx->toOne]);
     struct _ODOPropertyFlags flags = ODOPropertyFlags(ctx->toOne);
-    id relationshipValue = (id)CFArrayGetValueAtIndex(dest->_valueArray, flags.snapshotIndex);
+    id relationshipValue = _ODOObjectValueAtIndex(dest, flags.snapshotIndex);
 
     // If this is a lazy to-one fault, it will be the primary key of the owner instead of a pointer to the owner
     if ([relationshipValue isKindOfClass:[ODOObject class]]) {
@@ -229,7 +221,7 @@ static void _validateRelationshipDestination(const void *value, void *context)
     if (_flags.invalid) {
         OBASSERT(_editingContext == nil);
         OBASSERT(_flags.isFault == NO); // Can't be fetched, so not a fault
-        OBASSERT(_valueArray == NULL);
+        OBASSERT(_ODOObjectHasValues(self) == NO);
     } else {
         OBASSERT(_editingContext);
         OBASSERT([_editingContext objectRegisteredForID:_objectID] == self);
@@ -246,9 +238,9 @@ static void _validateRelationshipDestination(const void *value, void *context)
         if (fault) {
             OBASSERT(!inserted);
             OBASSERT(!updated);
-            OBASSERT(_valueArray == NULL); // No point in holding values.
+            OBASSERT(_ODOObjectHasValues(self) == NO); // No point in holding values.
         } else {
-            OBASSERT(_valueArray != NULL); // Real objects have values!
+            OBASSERT(_ODOObjectHasValues(self) == YES); // Real objects have values!
             OBASSERT(deleted == NO); // deleted objects are turned into faults first
             
             unsigned int mods = 0;
@@ -264,7 +256,7 @@ static void _validateRelationshipDestination(const void *value, void *context)
             while (propertyIndex--) {
                 ODOProperty *prop = [snapshotProperties objectAtIndex:propertyIndex];
                 struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-                id value = (id)CFArrayGetValueAtIndex(_valueArray, propertyIndex);
+                id value = _ODOObjectValueAtIndex(self, propertyIndex);
 
                 if (flags.relationship) {
                     if (flags.toMany) {
@@ -301,30 +293,6 @@ static void _validateRelationshipDestination(const void *value, void *context)
 
 #endif
 
-void ODOObjectCreateNullValues(ODOObject *self)
-{
-    OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
-    OBPRECONDITION(!self->_flags.invalid);
-    OBPRECONDITION(self->_editingContext);
-    OBPRECONDITION(self->_objectID);
-    OBPRECONDITION(![self isInserted]);
-    OBPRECONDITION(![self isUpdated]);
-    OBPRECONDITION(![self isDeleted]);
-    
-    // Use a CFArray since the snapshot will have nils for NULL properties and for uncreated to-many faults.
-    unsigned int snapshotPropertyCount = [[[self->_objectID entity] snapshotProperties] count];
-    OBASSERT(snapshotPropertyCount > 0);
-    
-    CFMutableArrayRef valueArray = CFArrayCreateMutable(kCFAllocatorDefault, snapshotPropertyCount, &OFNSObjectArrayCallbacks); // Fixed-length mutable array.  Probably 1 or 2 words of overhead (since it is fixed length, the storage should be inline with the array)
-    
-    // Fill out the value array with nils.  Sadly there is no bulk operations for this.  If we care, we could create an 'empty snapshot' on ODOEntity that we CFArrayCreateMutableCopy.
-    unsigned int snapshotPropertyIndex;
-    for (snapshotPropertyIndex = 0; snapshotPropertyIndex < snapshotPropertyCount; snapshotPropertyIndex++)
-        CFArrayAppendValue(valueArray, NULL);
-    
-    self->_valueArray = valueArray;
-}
-
 void ODOObjectClearValues(ODOObject *self, BOOL deleting)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
@@ -336,24 +304,8 @@ void ODOObjectClearValues(ODOObject *self, BOOL deleting)
     OBPRECONDITION(deleting || ![self isUpdated]);
     // allow deleted objects -- we clear values from objects as soon as they are snapshoted prior to being put in the deleted set.
 
-    CFMutableArrayRef valueArray = self->_valueArray;
-    if (valueArray) {
-        unsigned int propertyIndex = [[[self->_objectID entity] snapshotProperties] count];
-        while (propertyIndex--)
-            CFArraySetValueAtIndex(valueArray, propertyIndex, NULL);
-    }
-}
-
-void ODOObjectSetInternalValueForProperty(ODOObject *self, id value, ODOProperty *prop)
-{
-    OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
-    //OBPRECONDITION(!self->_flags.isFault); // Might be a fault if we are just clearing it.  TODO: Swap the order of filling in the values and clearing the fault flag?
-    OBPRECONDITION(!self->_flags.invalid);
-    OBPRECONDITION(self->_editingContext);
-    OBPRECONDITION(self->_objectID);
-
-    unsigned int snapshotIndex = ODOPropertySnapshotIndex(prop);
-    CFArraySetValueAtIndex(self->_valueArray, snapshotIndex, value);
+    if (_ODOObjectHasValues(self))
+        _ODOObjectSetValuesToNull(self);
 }
 
 // -awakeFromFetch support functions.  When awaking objects, we need to first prepare them, awake them and finally finalize the awake.  The awake function is *also* called in -valueForKey: if _flags.needsAwakeFromFetch is still set.  If a bunch of objects are fetched at the same time (say, all the assignable contexts in OmniFocus) and awoken, one object might try to reference another when it awakes (say, children trying to compute their transient rank path or hierarchical name properties).
@@ -426,7 +378,7 @@ BOOL ODOObjectToManyRelationshipIsFault(ODOObject *self, ODORelationship *rel)
     OBPRECONDITION([rel isToMany]);
     
     unsigned offset = ODOPropertySnapshotIndex(rel);
-    id value = (id)CFArrayGetValueAtIndex(self->_valueArray, offset);
+    id value = _ODOObjectValueAtIndex(self, offset);
     return ODOObjectValueIsLazyToManyFault(value);
 }
 
@@ -441,7 +393,7 @@ NSMutableSet *ODOObjectToManyRelationshipIfNotFault(ODOObject *self, ODORelation
         return nil;
     
     unsigned offset = ODOPropertySnapshotIndex(rel);
-    NSMutableSet *set = (id)CFArrayGetValueAtIndex(self->_valueArray, offset);
+    NSMutableSet *set = _ODOObjectValueAtIndex(self, offset);
 
     if (ODOObjectValueIsLazyToManyFault(set))
         return nil;
@@ -467,7 +419,7 @@ CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, CFArrayR
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     OBPRECONDITION(self->_objectID);
-    OBPRECONDITION(self->_valueArray);
+    OBPRECONDITION(_ODOObjectHasValues(self));
     
     OBPRECONDITION(snapshot);
     
@@ -488,7 +440,7 @@ CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, CFArrayR
             continue;
         
         id oldValue = (id)CFArrayGetValueAtIndex(snapshot, propertyIndex);
-        id newValue = (id)CFArrayGetValueAtIndex(self->_valueArray, propertyIndex);
+        id newValue = _ODOObjectValueAtIndex(self, propertyIndex);
 
         if (flags.relationship) {
             OBASSERT(flags.toMany == NO); // checked above
@@ -564,7 +516,7 @@ void ODOObjectApplyDifferenceRecord(ODOObject *self, CFArrayRef diff)
         // TODO: One-to-one relationships?  Maybe we should _not_ update the inverse here, but maybe it will be OK and the double-update will be OK.
         // Note that we do not currently undo the mapping of object->primary key.  We'll leave the fault to be lazily resolved again.
         [self willChangeValueForKey:key];
-        [self setPrimitiveValue:value forProperty:prop];
+        ODOObjectSetPrimitiveValueForProperty(self, value, prop);
         [self didChangeValueForKey:key];
     }
 }

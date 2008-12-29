@@ -28,8 +28,8 @@ RCS_ID("$Id$")
 @interface OWFileProcessor (Private)
 - (void)_processDirectoryAtPath:(NSString *)filePath;
 - (BOOL)_processLocationFromPath:(NSString *)filePath;
-- (void)_fetchDirectory:(OFDirectory *)directory;
-- (void)_fetchRegularFile:(NSString *)filePath;
+- (void)_fetchDirectoryWithPath:(NSString *)directoryPath;
+- (void)_fetchRegularFileWithPath:(NSString *)filePath;
 - (BOOL)_redirectToFTP;
 - (BOOL)_redirectHFSPathToPosixPath;
 @end
@@ -102,27 +102,29 @@ static OFPreference *fileRefreshIntervalPreference = nil;
         [pipeline addRedirectionContent:[OWAddress addressWithFilename:resolvedPath] sameURI:NO];
         return;
     }
+
+    // -attributesOfItemAtPath:error: will return nil if there is a ~ in this.
+    filePath = [filePath stringByExpandingTildeInPath];
+    
     if ([[filePath pathExtension] hasSuffix:@"loc"] && [self _processLocationFromPath:filePath])
         return;
 
-    OFFile *file = [OFUnixFile fileWithPath:filePath];
-
-    NSDate *lastChanged;
-    NS_DURING {
-	lastChanged = [file lastChanged];
-    } NS_HANDLER {
+    NSError *error = nil;
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filePath error:&error];
+    if (!attributes) {
         if ([self _redirectToFTP] || [self _redirectHFSPathToPosixPath])
             return;
-	[localException raise];
-     lastChanged = nil; // Unreached, making the compiler happy
-    } NS_ENDHANDLER;
+        // Used to raise here since this was in an exception handler. See:
+        // DiffSVN -r 106193:HEAD $SVNROOT/trunk/OmniGroup/Frameworks/OWF/Processors.subproj/Protocols.subproj/OWFileProcessor.m
+        OBRequestConcreteImplementation(self, _cmd);
+    }
 
-    [self cacheDate:lastChanged forAddress:sourceAddress];
+    [self cacheDate:[attributes fileModificationDate] forAddress:sourceAddress];
 
-    if (![file isDirectory]) {
-	[self _fetchRegularFile:filePath];
+    if (![[attributes fileType] isEqualToString:NSFileTypeDirectory]) {
+	[self _fetchRegularFileWithPath:filePath];
     } else if ([filePath hasSuffix:@"/"]) {
-	[self _fetchDirectory:[OFUnixDirectory directoryWithFile:file]];
+	[self _fetchDirectoryWithPath:filePath];
     } else {
         [self _processDirectoryAtPath:filePath];
     }
@@ -142,8 +144,6 @@ static OFPreference *fileRefreshIntervalPreference = nil;
 
 - (BOOL)_processLocationFromPath:(NSString *)filePath;
 {
-    filePath = [filePath stringByExpandingTildeInPath];
-
     // First, verify that the data fork is really empty
     if ([[NSData dataWithContentsOfMappedFile:filePath] length] != 0)
         return NO; // Wait, this doesn't look like the .fileloc files we know!
@@ -169,31 +169,37 @@ static OFPreference *fileRefreshIntervalPreference = nil;
     return YES;
 }
 
-- (void)_fetchDirectory:(OFDirectory *)directory;
+- (void)_fetchDirectoryWithPath:(NSString *)directoryPath;
 {
-    OWObjectStream *objectStream;
-    NSArray *files;
-    OWContent *newContent;
-    unsigned int fileIndex, fileCount;
-
     [self setStatusString:NSLocalizedStringFromTableInBundle(@"Reading directory", @"OWF", [OWFileProcessor bundle], @"fileprocessor status")];
 
+    NSError *error = nil;
+    NSArray *directoryContexts = [[NSFileManager defaultManager] subpathsOfDirectoryAtPath:directoryPath error:&error];
+    if (!directoryContexts) {
+        // TODO: Handle error for real.
+    }
+    
     NSString *directoryIndexFilename = [directoryIndexFilenamePreference stringValue];
-    if (![NSString isEmptyString:directoryIndexFilename] && [directory containsFileNamed:directoryIndexFilename]) {
-	[self _fetchRegularFile:[[directory path] stringByAppendingPathComponent:directoryIndexFilename]];
+    if (![NSString isEmptyString:directoryIndexFilename] && [directoryContexts containsObject:directoryIndexFilename]) {
+	[self _fetchRegularFileWithPath:[directoryPath stringByAppendingPathComponent:directoryIndexFilename]];
 	return;
     }
 
-    objectStream = [[OWObjectStream alloc] init];
-    newContent = [[OWContent alloc] initWithName:@"DirectoryListing" content:objectStream]; // TODO: Localize.
+    OWObjectStream *objectStream = [[OWObjectStream alloc] init];
+    OWContent *newContent = [[OWContent alloc] initWithName:@"DirectoryListing" content:objectStream]; // TODO: Localize.
     [newContent setContentTypeString:@"ObjectStream/OWFileInfoList"];
     [newContent markEndOfHeaders];
     [pipeline cacheControl:[OWCacheControlSettings cacheSettingsWithMaxAgeInterval:[fileRefreshIntervalPreference floatValue]]];
     [pipeline addContent:newContent fromProcessor:self flags:OWProcessorContentNoDiskCache|OWProcessorTypeRetrieval];
     [newContent release];
-    files = [directory sortedFiles];
-    fileCount = [files count];
+    
+    NSArray *files = [directoryContexts sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    unsigned int fileIndex, fileCount = [files count];
     for (fileIndex = 0; fileIndex < fileCount; fileIndex++) {
+#if 1
+        // Finish porting away from OFFile/OFDirectory
+        OBRejectUnusedImplementation(self, _cmd);
+#else
         OFFile *file;
         OWFileInfo *fileInfo;
 
@@ -201,12 +207,13 @@ static OFPreference *fileRefreshIntervalPreference = nil;
         fileInfo = [[OWFileInfo alloc] initWithAddress:[OWAddress addressWithFilename:[file path]] size:[file size] isDirectory:[file isDirectory] isShortcut:[file isShortcut] lastChangeDate:[[file lastChanged] dateWithCalendarFormat:NSLocalizedStringFromTableInBundle(@"%d-%b-%Y %H:%M:%S %z", @"OWF", [OWFileProcessor bundle], @"fileprocessor lastChangeDate calendar format") timeZone:nil]];
         [objectStream writeObject:fileInfo];
         [fileInfo release];
+#endif
     }
     [objectStream dataEnd];
     [objectStream release];
 }
 
-- (void)_fetchRegularFile:(NSString *)filePath;
+- (void)_fetchRegularFileWithPath:(NSString *)filePath;
 {
     [self setStatusString:NSLocalizedStringFromTableInBundle(@"Reading file", @"OWF", [OWFileProcessor bundle], @"fileprocessor status")];
 

@@ -52,8 +52,7 @@ do { \
     NSData *data = [[NSData alloc] initWithContentsOfFile:fileName]; \
     should(data != nil); \
     \
-NSLog(@"keeping %@", fileName);\
-    if (0)[[NSFileManager defaultManager] removeFileAtPath:fileName handler:nil]; \
+    OBShouldNotError([[NSFileManager defaultManager] removeItemAtPath:fileName error:&error]); \
     \
     NSString *string = (NSString *)CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)data, [doc stringEncoding]); \
     [data release]; \

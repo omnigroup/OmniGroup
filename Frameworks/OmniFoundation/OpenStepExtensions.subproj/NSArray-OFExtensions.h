@@ -9,7 +9,6 @@
 
 #import <Foundation/NSArray.h>
 
-#import <OmniFoundation/OFDictionaryInitialization.h>
 #import <CoreFoundation/CFSet.h>
 
 @class NSDecimalNumber, NSSet;
@@ -20,8 +19,6 @@
 - (id)anyObject;
     // Returns any object from the array.
 
-- (NSArray *)elementsAsInstancesOfClass:(Class)aClass withContext:(id)context;
-
 - (NSIndexSet *)copyIndexesOfObjectsInSet:(NSSet *)objects;
 
 // These are safe to use on mixed-content arrays.
@@ -30,8 +27,6 @@
 - (NSUInteger)indexOfString:(NSString *)aString options:(unsigned int)someOptions;
 - (NSUInteger)indexOfString:(NSString *)aString options:(unsigned int)someOptions 	range:(NSRange)aRange;
 - (NSString *)componentsJoinedByComma;
-- (NSString *)componentsJoinedByCommaAndAnd;
-    // (x) -> "x"; (x, y) -> "x and y";  (x, y, z) -> "x, y, and z", and so on
 
 - (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
 - (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingSelector:(SEL)selector;
@@ -47,9 +42,7 @@
 - (void)makeObjectsPerformSelector:(SEL)selector withObject:(id)arg1 withObject:(id)arg2;
 - (void)makeObjectsPerformSelector:(SEL)aSelector withBool:(BOOL)aBool;
 
-- (NSDecimalNumber *)decimalNumberSumForSelector:(SEL)aSelector;
 - (NSArray *)numberedArrayDescribedBySelector:(SEL)aSelector;
-- (NSArray *)objectsDescribedByIndexesString:(NSString *)indexesString;
 - (NSArray *)arrayByRemovingObject:(id)anObject;
 - (NSArray *)arrayByRemovingObjectIdenticalTo:(id)anObject;
 - (NSDictionary *)indexBySelector:(SEL)aSelector;

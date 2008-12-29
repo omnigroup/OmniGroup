@@ -75,8 +75,6 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 + (NSString *)defaultValueForCFStringEncoding:(CFStringEncoding)anEncoding;
 {
-    NSString *encodingName;
-
     switch(anEncoding) {
         case kCFStringEncodingInvalidId:
             return @"0";
@@ -84,8 +82,9 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
             break;
     }
 
-    encodingName = (NSString *)CFStringConvertEncodingToIANACharSetName(anEncoding);
-    if (encodingName != nil && ![encodingName hasPrefix:@"x-"] && ![encodingName hasPrefix:@"X-"])
+    // On 10.5 this returned uppercase, but that might not always be the case.
+    NSString *encodingName = [(NSString *)CFStringConvertEncodingToIANACharSetName(anEncoding) lowercaseString];
+    if (encodingName != nil && ![encodingName hasPrefix:@"x-"])
         return [@"iana " stringByAppendingString:encodingName];
 
     return [NSString stringWithFormat:@"cf %d", anEncoding];
@@ -1080,7 +1079,6 @@ static inline unichar hex(int i)
     int encodingIndex, byteIndex, byteCount, qpSize, b64Size;
     CFStringRef cfSelf = (CFStringRef)self;
     CFDataRef convertedBytes;
-    CFStringRef charsetName;
     const UInt8 *bytePtr;
     NSString *encodedWord;
 
@@ -1155,20 +1153,22 @@ static inline unichar hex(int i)
     OBASSERT(bestEncoding != kCFStringEncodingInvalidId);
     OBASSERT(convertedBytes != NULL);
 
-    charsetName = CFStringConvertEncodingToIANACharSetName(bestEncoding);
+    // On 10.5 this returned uppercase, but it might not always.
+    NSString *charsetName = [(NSString *)CFStringConvertEncodingToIANACharSetName(bestEncoding) lowercaseString];
+    
     // Hack for UTF16BE/UTF16LE.
     // Note that this doesn't screw up our byte count because we remove two bytes here but add two bytes in the encoding name.
     // We might still come out ahead because BASE64 is like that.
-    if ([(NSString *)charsetName isEqualToString:@"UTF-16"] && CFDataGetLength(convertedBytes) >= 2) {
+    if ([charsetName isEqualToString:@"utf-16"] && CFDataGetLength(convertedBytes) >= 2) {
         UInt8 maybeBOM[2];
         BOOL stripBOM = NO;
         
         CFDataGetBytes(convertedBytes, (CFRange){0,2},maybeBOM);
         if (maybeBOM[0] == 0xFE && maybeBOM[1] == 0xFF) {
-            charsetName = CFSTR("UTF-16BE");
+            charsetName = @"utf-16be";
             stripBOM = YES;
         } else if (maybeBOM[0] == 0xFF && maybeBOM[1] == 0xFE) {
-            charsetName = CFSTR("UTF-16LE");
+            charsetName = @"utf-16le";
             stripBOM = YES;
         }
         
@@ -1207,15 +1207,15 @@ static inline unichar hex(int i)
             if (byte < 128 && qpNonSpecials[byte]) {
                 if (byte == 0x20) /* RFC2047 4.2(2) */
                     byte = 0x5F;
-                [encodedContent appendCharacter:byte];
+                [encodedContent appendLongCharacter:byte];
             } else {
                 unichar highNybble, lowNybble;
 
                 highNybble = hex((byte & 0xF0) >> 4);
                 lowNybble = hex(byte & 0x0F);
-                [encodedContent appendCharacter:'='];
-                [encodedContent appendCharacter:highNybble];
-                [encodedContent appendCharacter:lowNybble];
+                [encodedContent appendLongCharacter:'='];
+                [encodedContent appendLongCharacter:highNybble];
+                [encodedContent appendLongCharacter:lowNybble];
             }
         }
         encodedWord = [NSString stringWithFormat:@"=?%@?Q?%@?=", charsetName, encodedContent];

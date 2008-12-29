@@ -18,14 +18,14 @@ RCS_ID("$Id$")
 {
     NSError *error = nil;
     
-    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[_model entityNamed:@"Master"] primaryKey:@"master"];
+    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Master"] primaryKey:@"master"];
     [_editingContext insertObject:master];
     [master release];
 
     [self closeUndoGroup];
     should([_editingContext saveWithDate:[NSDate date] error:&error]);
     
-    ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[_model entityNamed:@"Detail"] primaryKey:@"detail"];
+    ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Detail"] primaryKey:@"detail"];
     [_editingContext insertObject:detail];
 
     [detail setValue:master forKey:@"master"];
@@ -45,12 +45,12 @@ RCS_ID("$Id$")
 {
     NSError *error = nil;
     
-    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[_model entityNamed:@"Master"] primaryKey:@"master"];
+    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Master"] primaryKey:@"master"];
     ODOObjectID *masterID = [[master objectID] copy];
     [_editingContext insertObject:master];
     [master release];
 
-    ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[_model entityNamed:@"Detail"] primaryKey:@"detail"];
+    ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Detail"] primaryKey:@"detail"];
     ODOObjectID *detailID = [[detail objectID] copy];
     [_editingContext insertObject:detail];
     [detail release];
@@ -75,6 +75,30 @@ RCS_ID("$Id$")
     should([[_editingContext registeredObjectByID] count] == 2);
     should([_editingContext objectRegisteredForID:masterID] != nil);
     should([_editingContext objectRegisteredForID:detailID] != nil);
+}
+
+- (void)testClearingEmptyToManyAfterRedo_unconnected;
+{    
+    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Master"] primaryKey:@"master"];
+    ODOObjectID *masterID = [[master objectID] copy];
+    [_editingContext insertObject:master];
+    [master release];
+
+    [self closeUndoGroup];
+    [_undoManager undo];
+    
+    [_undoManager redo];
+    
+    // Re-find master after it got deleted and reinserted
+    master = [_editingContext objectRegisteredForID:masterID];
+    [masterID release];
+    should(master != nil);
+    
+    // Crashed prior to the fix
+    NSSet *details = [master valueForKey:@"details"];
+    should([master isInserted]);
+    should(details != nil);
+    should([details count] == 0);
 }
 
 @end

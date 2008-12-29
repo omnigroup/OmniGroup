@@ -8,28 +8,28 @@
 "%@ ago" = "%@ ago";
 
 /* abbreviated string for bytes format */
-"%@ GB" = "%@ GB";
-
-/* abbreviated string for bytes format */
-"%@ kB" = "%@ kB";
-
-/* abbreviated string for bytes format */
-"%@ MB" = "%@ MB";
-
-/* abbreviated string for bytes format */
-"%@ PB" = "%@ PB";
-
-/* abbreviated string for bytes format */
-"%@ TB" = "%@ TB";
+"%0.1f GB" = "%0.1f GB";
 
 /* abbreviated string for gigahertz format */
 "%0.1f GHz" = "%0.1f GHz";
 
+/* abbreviated string for bytes format */
+"%0.1f kB" = "%0.1f kB";
+
 /* abbreviated string for kilohertz format */
 "%0.1f KHz" = "%0.1f KHz";
 
+/* abbreviated string for bytes format */
+"%0.1f MB" = "%0.1f MB";
+
 /* abbreviated string for megahertz format */
 "%0.1f MHz" = "%0.1f MHz";
+
+/* abbreviated string for bytes format */
+"%0.1f PB" = "%0.1f PB";
+
+/* abbreviated string for bytes format */
+"%0.1f TB" = "%0.1f TB";
 
 /* abbreviated string for terahertz format */
 "%0.1f THz" = "%0.1f THz";
@@ -141,6 +141,9 @@
 /* time span formatter span */
 "months" = "months";
 
+/* error reason */
+"No root element was found" = "No root element was found";
+
 /* invalid bundle reason */
 "Not a valid bundle" = "Not a valid bundle";
 
@@ -224,6 +227,9 @@
 
 /* time span formatter span */
 "w" = "w";
+
+/* error description */
+"Warning encountered while loading XML." = "Warning encountered while loading XML.";
 
 /* time span formatter span */
 "week" = "week";

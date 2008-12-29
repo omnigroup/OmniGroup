@@ -11,8 +11,8 @@
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
-#import <OmniFoundation/NSError-OFExtensions.h>
 #import <OmniFoundation/NSBundle-OFExtensions.h>
+#import <OmniBase/NSError-OBExtensions.h>
 #import <unistd.h>
 
 #import <CoreServices/CoreServices.h>
@@ -201,7 +201,7 @@ RCS_ID("$Id$");
                 ok = NO;
                 
                 NSError *posixError = [NSError errorWithDomain:NSPOSIXErrorDomain code:OMNI_ERRNO() userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"unlink returned error", NSLocalizedDescriptionKey, nil]];
-                OFErrorWithInfo(outError, OFCacheFileUnableToWriteError, NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to write cache file to '%@'", @"OmniFoundation", OMNI_BUNDLE, @"error description"), filename], NSUnderlyingErrorKey, posixError, nil);
+                OBErrorWithInfo(outError, OFCacheFileUnableToWriteError, NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to write cache file to '%@'", @"OmniFoundation", OMNI_BUNDLE, @"error description"), filename], NSUnderlyingErrorKey, posixError, nil);
             }
         }
     }

@@ -48,7 +48,6 @@
 		3433031F0D86097E00C82A0B /* NSString-OFConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 3433031D0D86097E00C82A0B /* NSString-OFConversion.m */; };
 		345E73E60C6D06630034A811 /* OFErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 345E73E40C6D06630034A811 /* OFErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		345E73E70C6D06630034A811 /* OFErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E73E50C6D06630034A811 /* OFErrorRecovery.m */; };
-		3461493D08EA2E2900F4853E /* NSError-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3461493B08EA2E2900F4853E /* NSError-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346149F008EB0D2F00F4853E /* OFErrorExtensionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 346149EF08EB0D2F00F4853E /* OFErrorExtensionTests.m */; };
 		346DE9EB0D861EA7000C9E97 /* NSData-OFEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 346DE9E90D861EA7000C9E97 /* NSData-OFEncoding.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346DE9EC0D861EA7000C9E97 /* NSData-OFEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DE9EA0D861EA7000C9E97 /* NSData-OFEncoding.m */; };
@@ -93,6 +92,8 @@
 		34B4392E0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B4392C0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34B4392F0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B4392D0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.m */; };
 		34C4D94008C7CBC80072D2D6 /* OFComparisonPredicateExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4D93F08C7CBC80072D2D6 /* OFComparisonPredicateExtensions.m */; };
+		34D5F9F70E9EF0420055E958 /* OFXMLIdentifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D5F9F50E9EF0420055E958 /* OFXMLIdentifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34D5F9F80E9EF0420055E958 /* OFXMLIdentifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5F9F60E9EF0420055E958 /* OFXMLIdentifier.m */; };
 		34D606DD0CCAA74100467736 /* OFErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D606DC0CCAA74100467736 /* OFErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34DF03990B05108D00D82DFC /* OFRelativeDateFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34DF039A0B05108D00D82DFC /* OFRelativeDateFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DF03980B05108D00D82DFC /* OFRelativeDateFormatter.m */; };
@@ -145,11 +146,7 @@
 		4A4E062C08AA72B10098FF0F /* OFTrieNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CBBFE8AAEA611C9CC38 /* OFTrieNode.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E063208AA72B10098FF0F /* OFAlias.h in Headers */ = {isa = PBXBuildFile; fileRef = E2FCCB3C062205A40097A11C /* OFAlias.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E063308AA72B10098FF0F /* OFCacheFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 8BB21F1104014AD113F763DD /* OFCacheFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E063408AA72B10098FF0F /* OFDirectory.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CD8FE8AAEA611C9CC38 /* OFDirectory.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E063508AA72B10098FF0F /* OFFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CD9FE8AAEA611C9CC38 /* OFFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E063608AA72B10098FF0F /* OFScratchFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CDAFE8AAEA611C9CC38 /* OFScratchFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E063708AA72B10098FF0F /* OFUnixDirectory.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CDBFE8AAEA611C9CC38 /* OFUnixDirectory.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E063808AA72B10098FF0F /* OFUnixFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CDCFE8AAEA611C9CC38 /* OFUnixFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E063908AA72B10098FF0F /* OFCapitalizeFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CECFE8AAEA611C9CC38 /* OFCapitalizeFormatter.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4A4E063A08AA72B10098FF0F /* OFDateFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CEDFE8AAEA611C9CC38 /* OFDateFormatter.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4A4E063B08AA72B10098FF0F /* OFMultipleNumberFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = F5FBE7A8025BEF9F0100084B /* OFMultipleNumberFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -171,9 +168,7 @@
 		4A4E064D08AA72B10098FF0F /* OFBundledClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C6FFE8AAEA611C9CC38 /* OFBundledClass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E064F08AA72B10098FF0F /* OFCharacterScanner.h in Headers */ = {isa = PBXBuildFile; fileRef = 3D990C72FF3658F5C697A146 /* OFCharacterScanner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065008AA72B10098FF0F /* OFController.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C72FE8AAEA611C9CC38 /* OFController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E065108AA72B10098FF0F /* OFDictionaryInitialization.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C73FE8AAEA611C9CC38 /* OFDictionaryInitialization.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065208AA72B10098FF0F /* OFEnrichedTextReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C74FE8AAEA611C9CC38 /* OFEnrichedTextReader.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E065308AA72B10098FF0F /* OFForwardObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C76FE8AAEA611C9CC38 /* OFForwardObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065408AA72B10098FF0F /* OFGeometry.h in Headers */ = {isa = PBXBuildFile; fileRef = 3F41140E036614060297A14E /* OFGeometry.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065508AA72B10098FF0F /* OFMach.h in Headers */ = {isa = PBXBuildFile; fileRef = 011075B9FF708771C697A10E /* OFMach.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065608AA72B10098FF0F /* OFObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C77FE8AAEA611C9CC38 /* OFObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -298,11 +293,7 @@
 		4A4E06DA08AA72B10098FF0F /* OFTrieNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C9FFE8AAEA611C9CC38 /* OFTrieNode.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06DF08AA72B10098FF0F /* OFAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = E2FCCB3D062205A40097A11C /* OFAlias.m */; };
 		4A4E06E008AA72B10098FF0F /* OFCacheFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BB21F1004014AD113F763DD /* OFCacheFile.m */; };
-		4A4E06E108AA72B10098FF0F /* OFDirectory.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CD2FE8AAEA611C9CC38 /* OFDirectory.m */; settings = {ATTRIBUTES = (); }; };
-		4A4E06E208AA72B10098FF0F /* OFFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CD3FE8AAEA611C9CC38 /* OFFile.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06E308AA72B10098FF0F /* OFScratchFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CD4FE8AAEA611C9CC38 /* OFScratchFile.m */; settings = {ATTRIBUTES = (); }; };
-		4A4E06E408AA72B10098FF0F /* OFUnixDirectory.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CD5FE8AAEA611C9CC38 /* OFUnixDirectory.m */; settings = {ATTRIBUTES = (); }; };
-		4A4E06E508AA72B10098FF0F /* OFUnixFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CD6FE8AAEA611C9CC38 /* OFUnixFile.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06E608AA72B10098FF0F /* OFCapitalizeFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CE3FE8AAEA611C9CC38 /* OFCapitalizeFormatter.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06E708AA72B10098FF0F /* OFDateFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CE4FE8AAEA611C9CC38 /* OFDateFormatter.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06E808AA72B10098FF0F /* OFMultipleNumberFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = F5FBE7A7025BEF9F0100084B /* OFMultipleNumberFormatter.m */; };
@@ -319,7 +310,6 @@
 		4A4E06F408AA72B10098FF0F /* OFCharacterScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D990C74FF36598CC697A146 /* OFCharacterScanner.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06F508AA72B10098FF0F /* OFController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C61FE8AAEA611C9CC38 /* OFController.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06F608AA72B10098FF0F /* OFEnrichedTextReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C62FE8AAEA611C9CC38 /* OFEnrichedTextReader.m */; settings = {ATTRIBUTES = (); }; };
-		4A4E06F708AA72B10098FF0F /* OFForwardObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C63FE8AAEA611C9CC38 /* OFForwardObject.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06F808AA72B10098FF0F /* OFGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F41140F036614060297A14E /* OFGeometry.m */; };
 		4A4E06F908AA72B10098FF0F /* OFMach.m in Sources */ = {isa = PBXBuildFile; fileRef = 011075BAFF708771C697A10E /* OFMach.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06FA08AA72B10098FF0F /* OFObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C64FE8AAEA611C9CC38 /* OFObject.m */; settings = {ATTRIBUTES = (); }; };
@@ -549,7 +539,6 @@
 		00E51C60FE8AAEA611C9CC38 /* OFBundleRegistry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBundleRegistry.m; sourceTree = "<group>"; };
 		00E51C61FE8AAEA611C9CC38 /* OFController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFController.m; sourceTree = "<group>"; };
 		00E51C62FE8AAEA611C9CC38 /* OFEnrichedTextReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFEnrichedTextReader.m; sourceTree = "<group>"; };
-		00E51C63FE8AAEA611C9CC38 /* OFForwardObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFForwardObject.m; sourceTree = "<group>"; };
 		00E51C64FE8AAEA611C9CC38 /* OFObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFObject.m; sourceTree = "<group>"; };
 		00E51C65FE8AAEA611C9CC38 /* OFRegularExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRegularExpression.m; sourceTree = "<group>"; };
 		00E51C66FE8AAEA611C9CC38 /* OFRegularExpressionMatch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRegularExpressionMatch.m; sourceTree = "<group>"; };
@@ -560,9 +549,7 @@
 		00E51C6FFE8AAEA611C9CC38 /* OFBundledClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFBundledClass.h; sourceTree = "<group>"; };
 		00E51C70FE8AAEA611C9CC38 /* OFBundleRegistry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFBundleRegistry.h; sourceTree = "<group>"; };
 		00E51C72FE8AAEA611C9CC38 /* OFController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFController.h; sourceTree = "<group>"; };
-		00E51C73FE8AAEA611C9CC38 /* OFDictionaryInitialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFDictionaryInitialization.h; sourceTree = "<group>"; };
 		00E51C74FE8AAEA611C9CC38 /* OFEnrichedTextReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFEnrichedTextReader.h; sourceTree = "<group>"; };
-		00E51C76FE8AAEA611C9CC38 /* OFForwardObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFForwardObject.h; sourceTree = "<group>"; };
 		00E51C77FE8AAEA611C9CC38 /* OFObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFObject.h; sourceTree = "<group>"; };
 		00E51C78FE8AAEA611C9CC38 /* OFPendingMethodList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFPendingMethodList.h; sourceTree = "<group>"; };
 		00E51C79FE8AAEA611C9CC38 /* OFRegularExpression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFRegularExpression.h; sourceTree = "<group>"; };
@@ -619,16 +606,8 @@
 		00E51CBAFE8AAEA611C9CC38 /* OFTrieEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFTrieEnumerator.h; sourceTree = "<group>"; };
 		00E51CBBFE8AAEA611C9CC38 /* OFTrieNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFTrieNode.h; sourceTree = "<group>"; };
 		00E51CBDFE8AAEA611C9CC38 /* OFRandom.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRandom.m; sourceTree = "<group>"; };
-		00E51CD2FE8AAEA611C9CC38 /* OFDirectory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDirectory.m; sourceTree = "<group>"; };
-		00E51CD3FE8AAEA611C9CC38 /* OFFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFFile.m; sourceTree = "<group>"; };
 		00E51CD4FE8AAEA611C9CC38 /* OFScratchFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFScratchFile.m; sourceTree = "<group>"; };
-		00E51CD5FE8AAEA611C9CC38 /* OFUnixDirectory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFUnixDirectory.m; sourceTree = "<group>"; };
-		00E51CD6FE8AAEA611C9CC38 /* OFUnixFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFUnixFile.m; sourceTree = "<group>"; };
-		00E51CD8FE8AAEA611C9CC38 /* OFDirectory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFDirectory.h; sourceTree = "<group>"; };
-		00E51CD9FE8AAEA611C9CC38 /* OFFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFFile.h; sourceTree = "<group>"; };
 		00E51CDAFE8AAEA611C9CC38 /* OFScratchFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFScratchFile.h; sourceTree = "<group>"; };
-		00E51CDBFE8AAEA611C9CC38 /* OFUnixDirectory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFUnixDirectory.h; sourceTree = "<group>"; };
-		00E51CDCFE8AAEA611C9CC38 /* OFUnixFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFUnixFile.h; sourceTree = "<group>"; };
 		00E51CE3FE8AAEA611C9CC38 /* OFCapitalizeFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCapitalizeFormatter.m; sourceTree = "<group>"; };
 		00E51CE4FE8AAEA611C9CC38 /* OFDateFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDateFormatter.m; sourceTree = "<group>"; };
 		00E51CE5FE8AAEA611C9CC38 /* OFSimpleStringFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSimpleStringFormatter.m; sourceTree = "<group>"; };
@@ -833,7 +812,6 @@
 		345069110D747ED4004B40C2 /* OFCrashOnExceptionTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFCrashOnExceptionTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		345E73E40C6D06630034A811 /* OFErrorRecovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFErrorRecovery.h; sourceTree = "<group>"; };
 		345E73E50C6D06630034A811 /* OFErrorRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFErrorRecovery.m; sourceTree = "<group>"; };
-		3461493B08EA2E2900F4853E /* NSError-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSError-OFExtensions.h"; sourceTree = "<group>"; };
 		346149EF08EB0D2F00F4853E /* OFErrorExtensionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFErrorExtensionTests.m; sourceTree = "<group>"; };
 		346DE9E90D861EA7000C9E97 /* NSData-OFEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData-OFEncoding.h"; sourceTree = "<group>"; };
 		346DE9EA0D861EA7000C9E97 /* NSData-OFEncoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData-OFEncoding.m"; sourceTree = "<group>"; };
@@ -892,6 +870,8 @@
 		34B4392C0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSScriptCommand-OFExtensions.h"; sourceTree = "<group>"; };
 		34B4392D0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSScriptCommand-OFExtensions.m"; sourceTree = "<group>"; };
 		34C4D93F08C7CBC80072D2D6 /* OFComparisonPredicateExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFComparisonPredicateExtensions.m; sourceTree = "<group>"; };
+		34D5F9F50E9EF0420055E958 /* OFXMLIdentifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLIdentifier.h; sourceTree = "<group>"; };
+		34D5F9F60E9EF0420055E958 /* OFXMLIdentifier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLIdentifier.m; sourceTree = "<group>"; };
 		34D606DC0CCAA74100467736 /* OFErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFErrors.h; sourceTree = "<group>"; };
 		34DC612F06CD08E30097A113 /* OFMutableAttributedStringExtensionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFMutableAttributedStringExtensionsTest.m; sourceTree = "<group>"; };
 		34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFRelativeDateFormatter.h; sourceTree = "<group>"; };
@@ -1182,16 +1162,8 @@
 				E2FCCB3D062205A40097A11C /* OFAlias.m */,
 				8BB21F1104014AD113F763DD /* OFCacheFile.h */,
 				8BB21F1004014AD113F763DD /* OFCacheFile.m */,
-				00E51CD8FE8AAEA611C9CC38 /* OFDirectory.h */,
-				00E51CD2FE8AAEA611C9CC38 /* OFDirectory.m */,
-				00E51CD9FE8AAEA611C9CC38 /* OFFile.h */,
-				00E51CD3FE8AAEA611C9CC38 /* OFFile.m */,
 				00E51CDAFE8AAEA611C9CC38 /* OFScratchFile.h */,
 				00E51CD4FE8AAEA611C9CC38 /* OFScratchFile.m */,
-				00E51CDBFE8AAEA611C9CC38 /* OFUnixDirectory.h */,
-				00E51CD5FE8AAEA611C9CC38 /* OFUnixDirectory.m */,
-				00E51CDCFE8AAEA611C9CC38 /* OFUnixFile.h */,
-				00E51CD6FE8AAEA611C9CC38 /* OFUnixFile.m */,
 			);
 			name = FileManagement;
 			path = FileManagement.subproj;
@@ -1274,7 +1246,6 @@
 				00E51D24FE8AAEA611C9CC38 /* NSDecimalNumber-OFExtensions.m */,
 				00E51D2FFE8AAEA611C9CC38 /* NSDictionary-OFExtensions.h */,
 				00E51D12FE8AAEA611C9CC38 /* NSDictionary-OFExtensions.m */,
-				3461493B08EA2E2900F4853E /* NSError-OFExtensions.h */,
 				00E51D30FE8AAEA611C9CC38 /* NSException-OFExtensions.h */,
 				00E51D13FE8AAEA611C9CC38 /* NSException-OFExtensions.m */,
 				00E51D31FE8AAEA611C9CC38 /* NSFileManager-OFExtensions.h */,
@@ -1537,11 +1508,8 @@
 				34A2CE8A0D865E9200219E36 /* OFCharacterScanner-OFTrie.m */,
 				00E51C72FE8AAEA611C9CC38 /* OFController.h */,
 				00E51C61FE8AAEA611C9CC38 /* OFController.m */,
-				00E51C73FE8AAEA611C9CC38 /* OFDictionaryInitialization.h */,
 				00E51C74FE8AAEA611C9CC38 /* OFEnrichedTextReader.h */,
 				00E51C62FE8AAEA611C9CC38 /* OFEnrichedTextReader.m */,
-				00E51C76FE8AAEA611C9CC38 /* OFForwardObject.h */,
-				00E51C63FE8AAEA611C9CC38 /* OFForwardObject.m */,
 				00E51C77FE8AAEA611C9CC38 /* OFObject.h */,
 				00E51C64FE8AAEA611C9CC38 /* OFObject.m */,
 				00E51C78FE8AAEA611C9CC38 /* OFPendingMethodList.h */,
@@ -1569,6 +1537,8 @@
 			isa = PBXGroup;
 			children = (
 				34F1CADB066244350097A113 /* OFXMLIdentifierRegistryObject.h */,
+				34D5F9F50E9EF0420055E958 /* OFXMLIdentifier.h */,
+				34D5F9F60E9EF0420055E958 /* OFXMLIdentifier.m */,
 				B58A47670662B2E30097A154 /* OFXMLIdentifierRegistry.h */,
 				B58A47680662B2E30097A154 /* OFXMLIdentifierRegistry.m */,
 				344F2BF5050A921B0097A113 /* OFXMLDocument.h */,
@@ -1858,11 +1828,7 @@
 				4A4E062C08AA72B10098FF0F /* OFTrieNode.h in Headers */,
 				4A4E063208AA72B10098FF0F /* OFAlias.h in Headers */,
 				4A4E063308AA72B10098FF0F /* OFCacheFile.h in Headers */,
-				4A4E063408AA72B10098FF0F /* OFDirectory.h in Headers */,
-				4A4E063508AA72B10098FF0F /* OFFile.h in Headers */,
 				4A4E063608AA72B10098FF0F /* OFScratchFile.h in Headers */,
-				4A4E063708AA72B10098FF0F /* OFUnixDirectory.h in Headers */,
-				4A4E063808AA72B10098FF0F /* OFUnixFile.h in Headers */,
 				4A4E063908AA72B10098FF0F /* OFCapitalizeFormatter.h in Headers */,
 				4A4E063A08AA72B10098FF0F /* OFDateFormatter.h in Headers */,
 				4A4E063B08AA72B10098FF0F /* OFMultipleNumberFormatter.h in Headers */,
@@ -1884,9 +1850,7 @@
 				4A4E064D08AA72B10098FF0F /* OFBundledClass.h in Headers */,
 				4A4E064F08AA72B10098FF0F /* OFCharacterScanner.h in Headers */,
 				4A4E065008AA72B10098FF0F /* OFController.h in Headers */,
-				4A4E065108AA72B10098FF0F /* OFDictionaryInitialization.h in Headers */,
 				4A4E065208AA72B10098FF0F /* OFEnrichedTextReader.h in Headers */,
-				4A4E065308AA72B10098FF0F /* OFForwardObject.h in Headers */,
 				4A4E065408AA72B10098FF0F /* OFGeometry.h in Headers */,
 				4A4E065508AA72B10098FF0F /* OFMach.h in Headers */,
 				4A4E065608AA72B10098FF0F /* OFObject.h in Headers */,
@@ -1967,7 +1931,6 @@
 				4A4E06A508AA72B10098FF0F /* OFXMLString.h in Headers */,
 				4A4E06A608AA72B10098FF0F /* OFXMLWhitespaceBehavior.h in Headers */,
 				342A9EC808C89683006AA532 /* NSComparisonPredicate-OFExtensions.h in Headers */,
-				3461493D08EA2E2900F4853E /* NSError-OFExtensions.h in Headers */,
 				342877B308EC788400D89442 /* NSBundle-OFExtensions.h in Headers */,
 				A28D43B70916EAFC006D5336 /* NSSet-OFExtensions.h in Headers */,
 				A28161B309351CA20086A1EF /* OFRationalNumber.h in Headers */,
@@ -2007,6 +1970,7 @@
 				34AD4CB50DF846B8008974EB /* NSFileManager-OFTemporaryPath.h in Headers */,
 				34E576C20E245BEB00C1F5FB /* OFRelativeDateParser-Internal.h in Headers */,
 				A25B32540E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.h in Headers */,
+				34D5F9F70E9EF0420055E958 /* OFXMLIdentifier.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2294,7 +2258,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$CONFIGURATION\" = \"Coverage\" ]; then\n\t# Execute OmniFoundation's unit tests to collect coverage information.  Later maybe we should run these on all builds?\n\t../../Scripts/Coverage/xcode_generate\nfi\n";
+			shellScript = "if [ \"$CONFIGURATION\" = \"Coverage\" ]; then\n\t# Execute OmniFoundation's unit tests to collect coverage information.  Later maybe we should run these on all builds?\n\tOBJC_DISABLE_GC=YES ../../Scripts/Coverage/xcode_generate\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2353,11 +2317,7 @@
 				4A4E06DA08AA72B10098FF0F /* OFTrieNode.m in Sources */,
 				4A4E06DF08AA72B10098FF0F /* OFAlias.m in Sources */,
 				4A4E06E008AA72B10098FF0F /* OFCacheFile.m in Sources */,
-				4A4E06E108AA72B10098FF0F /* OFDirectory.m in Sources */,
-				4A4E06E208AA72B10098FF0F /* OFFile.m in Sources */,
 				4A4E06E308AA72B10098FF0F /* OFScratchFile.m in Sources */,
-				4A4E06E408AA72B10098FF0F /* OFUnixDirectory.m in Sources */,
-				4A4E06E508AA72B10098FF0F /* OFUnixFile.m in Sources */,
 				4A4E06E608AA72B10098FF0F /* OFCapitalizeFormatter.m in Sources */,
 				4A4E06E708AA72B10098FF0F /* OFDateFormatter.m in Sources */,
 				4A4E06E808AA72B10098FF0F /* OFMultipleNumberFormatter.m in Sources */,
@@ -2374,7 +2334,6 @@
 				4A4E06F408AA72B10098FF0F /* OFCharacterScanner.m in Sources */,
 				4A4E06F508AA72B10098FF0F /* OFController.m in Sources */,
 				4A4E06F608AA72B10098FF0F /* OFEnrichedTextReader.m in Sources */,
-				4A4E06F708AA72B10098FF0F /* OFForwardObject.m in Sources */,
 				4A4E06F808AA72B10098FF0F /* OFGeometry.m in Sources */,
 				4A4E06F908AA72B10098FF0F /* OFMach.m in Sources */,
 				4A4E06FA08AA72B10098FF0F /* OFObject.m in Sources */,
@@ -2487,6 +2446,7 @@
 				347EFD7D0DD4D7C900D6F347 /* OFXMLUnparsedElement.m in Sources */,
 				34AD4CB60DF846B8008974EB /* NSFileManager-OFTemporaryPath.m in Sources */,
 				A2B6E77F0E37D39600A71C3B /* OFSimpleLock.c in Sources */,
+				34D5F9F80E9EF0420055E958 /* OFXMLIdentifier.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

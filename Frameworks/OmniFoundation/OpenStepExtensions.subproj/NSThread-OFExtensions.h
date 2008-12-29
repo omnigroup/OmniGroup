@@ -13,7 +13,11 @@
 
 + (void)setMainThread;
 + (NSThread *)mainThread;
-+ (BOOL)inMainThread;
+
+#if (!defined(MAC_OS_X_VERSION_10_5) || (MAC_OS_X_VERSION_10_5 > MAC_OS_X_VERSION_MIN_REQUIRED)) && (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
++ (BOOL)isMainThread; // Built-in otherwise in 10.5 and on the iPhone
+#endif
+
 + (BOOL)mainThreadOpsOK;   // returns true if we are the main thread *or* if we have locked the main thread
 
 // For putting appkit stuff into subthreads without shipping data back and forth.  If you don't need the return value, then queuing a selector is much more efficient than this.
@@ -27,5 +31,5 @@
 
 @end
 
-#define ASSERT_IN_MAIN_THREAD(reason) NSAssert([NSThread inMainThread], reason)
+#define ASSERT_IN_MAIN_THREAD(reason) NSAssert([NSThread isMainThread], reason)
 #define ASSERT_MAIN_THREAD_OPS_OK(reason) NSAssert([NSThread mainThreadOpsOK], reason)

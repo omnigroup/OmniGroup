@@ -16,6 +16,8 @@ typedef enum {
     ODORelationshipDeleteRuleNullify,
     ODORelationshipDeleteRuleCascade,
     ODORelationshipDeleteRuleDeny,
+    //
+    ODORelationshipDeleteRuleCount
 } ODORelationshipDeleteRule;
 
 @interface ODORelationship : ODOProperty

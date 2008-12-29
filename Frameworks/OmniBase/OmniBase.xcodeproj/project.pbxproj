@@ -14,16 +14,13 @@
 		4A33D40A08A0191B003A3FA5 /* macros.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C25FE8AAE2511C9CC38 /* macros.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D40C08A0191B003A3FA5 /* NSData-OBObjectCompatibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C27FE8AAE2511C9CC38 /* NSData-OBObjectCompatibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D40D08A0191B003A3FA5 /* NSException-OBExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 07AA829000D177F4C697A14A /* NSException-OBExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A33D40E08A0191B003A3FA5 /* NSObject-OBObjectCompatibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C28FE8AAE2511C9CC38 /* NSObject-OBObjectCompatibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D40F08A0191B003A3FA5 /* OBObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C29FE8AAE2511C9CC38 /* OBObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D41008A0191B003A3FA5 /* OBPostLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2AFE8AAE2511C9CC38 /* OBPostLoader.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D41108A0191B003A3FA5 /* OBUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2BFE8AAE2511C9CC38 /* OBUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D41208A0191B003A3FA5 /* OmniBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2CFE8AAE2511C9CC38 /* OmniBase.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D41308A0191B003A3FA5 /* rcsid.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2DFE8AAE2511C9CC38 /* rcsid.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D41408A0191B003A3FA5 /* system.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2EFE8AAE2511C9CC38 /* system.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A33D41508A0191B003A3FA5 /* SystemType.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2FFE8AAE2511C9CC38 /* SystemType.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D41808A0191B003A3FA5 /* NSData-OBObjectCompatibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C1EFE8AAE2511C9CC38 /* NSData-OBObjectCompatibility.m */; settings = {ATTRIBUTES = (); }; };
-		4A33D41908A0191B003A3FA5 /* NSObject-OBObjectCompatibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C1FFE8AAE2511C9CC38 /* NSObject-OBObjectCompatibility.m */; settings = {ATTRIBUTES = (); }; };
 		4A33D41A08A0191B003A3FA5 /* OBObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C20FE8AAE2511C9CC38 /* OBObject.m */; settings = {ATTRIBUTES = (); }; };
 		4A33D41B08A0191B003A3FA5 /* OBPostLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C21FE8AAE2511C9CC38 /* OBPostLoader.m */; settings = {ATTRIBUTES = (); }; };
 		4A33D41C08A0191B003A3FA5 /* assertions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C31FE8AAE2511C9CC38 /* assertions.m */; settings = {ATTRIBUTES = (); }; };
@@ -36,20 +33,17 @@
 
 /* Begin PBXFileReference section */
 		00E51C1EFE8AAE2511C9CC38 /* NSData-OBObjectCompatibility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData-OBObjectCompatibility.m"; sourceTree = "<group>"; };
-		00E51C1FFE8AAE2511C9CC38 /* NSObject-OBObjectCompatibility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject-OBObjectCompatibility.m"; sourceTree = "<group>"; };
 		00E51C20FE8AAE2511C9CC38 /* OBObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBObject.m; sourceTree = "<group>"; };
 		00E51C21FE8AAE2511C9CC38 /* OBPostLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBPostLoader.m; sourceTree = "<group>"; };
 		00E51C23FE8AAE2511C9CC38 /* assertions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = assertions.h; sourceTree = "<group>"; };
 		00E51C25FE8AAE2511C9CC38 /* macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = macros.h; sourceTree = "<group>"; };
 		00E51C27FE8AAE2511C9CC38 /* NSData-OBObjectCompatibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData-OBObjectCompatibility.h"; sourceTree = "<group>"; };
-		00E51C28FE8AAE2511C9CC38 /* NSObject-OBObjectCompatibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject-OBObjectCompatibility.h"; sourceTree = "<group>"; };
 		00E51C29FE8AAE2511C9CC38 /* OBObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBObject.h; sourceTree = "<group>"; };
 		00E51C2AFE8AAE2511C9CC38 /* OBPostLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBPostLoader.h; sourceTree = "<group>"; };
 		00E51C2BFE8AAE2511C9CC38 /* OBUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBUtilities.h; sourceTree = "<group>"; };
 		00E51C2CFE8AAE2511C9CC38 /* OmniBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniBase.h; sourceTree = "<group>"; };
 		00E51C2DFE8AAE2511C9CC38 /* rcsid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rcsid.h; sourceTree = "<group>"; };
 		00E51C2EFE8AAE2511C9CC38 /* system.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = system.h; sourceTree = "<group>"; };
-		00E51C2FFE8AAE2511C9CC38 /* SystemType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemType.h; sourceTree = "<group>"; };
 		00E51C31FE8AAE2511C9CC38 /* assertions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = assertions.m; sourceTree = "<group>"; };
 		00E51C32FE8AAE2511C9CC38 /* OBUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBUtilities.m; sourceTree = "<group>"; };
 		00E51C3AFE8AAE2511C9CC38 /* OmniSourceLicense.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OmniSourceLicense.html; sourceTree = "<group>"; };
@@ -121,15 +115,12 @@
 				07AA829100D177F4C697A14A /* NSException-OBExtensions.m */,
 				347049730CFB6612007025F7 /* NSError-OBExtensions.h */,
 				347049740CFB6612007025F7 /* NSError-OBExtensions.m */,
-				00E51C28FE8AAE2511C9CC38 /* NSObject-OBObjectCompatibility.h */,
-				00E51C1FFE8AAE2511C9CC38 /* NSObject-OBObjectCompatibility.m */,
 				00E51C29FE8AAE2511C9CC38 /* OBObject.h */,
 				00E51C20FE8AAE2511C9CC38 /* OBObject.m */,
 				00E51C2AFE8AAE2511C9CC38 /* OBPostLoader.h */,
 				00E51C21FE8AAE2511C9CC38 /* OBPostLoader.m */,
 				00E51C2BFE8AAE2511C9CC38 /* OBUtilities.h */,
 				00E51C32FE8AAE2511C9CC38 /* OBUtilities.m */,
-				00E51C2FFE8AAE2511C9CC38 /* SystemType.h */,
 				00E51C23FE8AAE2511C9CC38 /* assertions.h */,
 				00E51C31FE8AAE2511C9CC38 /* assertions.m */,
 				A2E007850E5CA926007709A5 /* OBBacktraceBuffer.h */,
@@ -194,14 +185,12 @@
 				4A33D40A08A0191B003A3FA5 /* macros.h in Headers */,
 				4A33D40C08A0191B003A3FA5 /* NSData-OBObjectCompatibility.h in Headers */,
 				4A33D40D08A0191B003A3FA5 /* NSException-OBExtensions.h in Headers */,
-				4A33D40E08A0191B003A3FA5 /* NSObject-OBObjectCompatibility.h in Headers */,
 				4A33D40F08A0191B003A3FA5 /* OBObject.h in Headers */,
 				4A33D41008A0191B003A3FA5 /* OBPostLoader.h in Headers */,
 				4A33D41108A0191B003A3FA5 /* OBUtilities.h in Headers */,
 				4A33D41208A0191B003A3FA5 /* OmniBase.h in Headers */,
 				4A33D41308A0191B003A3FA5 /* rcsid.h in Headers */,
 				4A33D41408A0191B003A3FA5 /* system.h in Headers */,
-				4A33D41508A0191B003A3FA5 /* SystemType.h in Headers */,
 				34BBACA90BA76AA2002DA71E /* objc.h in Headers */,
 				347049750CFB6612007025F7 /* NSError-OBExtensions.h in Headers */,
 				A2E007860E5CA926007709A5 /* OBBacktraceBuffer.h in Headers */,
@@ -274,7 +263,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A33D41808A0191B003A3FA5 /* NSData-OBObjectCompatibility.m in Sources */,
-				4A33D41908A0191B003A3FA5 /* NSObject-OBObjectCompatibility.m in Sources */,
 				4A33D41A08A0191B003A3FA5 /* OBObject.m in Sources */,
 				4A33D41B08A0191B003A3FA5 /* OBPostLoader.m in Sources */,
 				4A33D41C08A0191B003A3FA5 /* assertions.m in Sources */,

@@ -7,7 +7,7 @@
 
 #import <OmniFoundation/NSArray-OFExtensions.h>
 
-#import <OmniFoundation/NSString-OFConversion.h>
+#import <OmniFoundation/CFArray-OFExtensions.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/OFNull.h>
 
@@ -18,30 +18,6 @@ RCS_ID("$Id$")
 - (id)anyObject;
 {
     return [self count] > 0 ? [self objectAtIndex:0] : nil;
-}
-
-- (NSArray *)elementsAsInstancesOfClass:(Class)aClass withContext:context;
-{
-    NSMutableArray *array;
-    NSAutoreleasePool *pool;
-    NSEnumerator *elementEnum;
-    NSDictionary *element;
-
-    // keep this out of the pool since we're returning it
-    array = [NSMutableArray array];
-
-    pool = [[NSAutoreleasePool alloc] init];
-    elementEnum = [self objectEnumerator];
-    while ((element = [elementEnum nextObject])) {
-	id instance;
-
-	instance = [[aClass alloc] initWithDictionary:element context:context];
-	[array addObject:instance];
-
-    }
-    [pool release];
-
-    return array;
 }
 
 - (NSIndexSet *)copyIndexesOfObjectsInSet:(NSSet *)objects;
@@ -91,27 +67,6 @@ RCS_ID("$Id$")
 - (NSString *)componentsJoinedByComma;
 {
     return [self componentsJoinedByString:@", "];
-}
-
-- (NSString *)componentsJoinedByCommaAndAnd;
-{
-    unsigned int count;
-    
-    count = [self count];
-    if (count == 0)
-        return @"";
-    else if (count == 1)
-        return [self objectAtIndex:0];
-    else if (count == 2)
-        return [NSString stringWithFormat:@"%@ and %@", [self objectAtIndex:0], [self objectAtIndex:1]];
-    else {
-        NSArray *headObjects;
-        id lastObject;
-        
-        headObjects = [self subarrayWithRange:NSMakeRange(0, count - 1)];
-        lastObject = [self lastObject];
-        return [[[headObjects componentsJoinedByComma] stringByAppendingString:@", and "] stringByAppendingString:lastObject];
-    }
 }
 
 - (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
@@ -250,21 +205,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 
 - (BOOL)isSortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
 {
-    unsigned int objectIndex, count;
-
-    count = [self count];
-    if (count < 2)
-        return YES;
-
-    id obj1, obj2;
-    obj2 = [self objectAtIndex: 0];
-    for (objectIndex = 1; objectIndex < count; objectIndex++) {
-        obj1 = obj2;
-        obj2 = [self objectAtIndex: objectIndex];
-        if (comparator(obj1, obj2, context) > 0)
-            return NO;
-    }
-    return YES;
+    return OFCFArrayIsSortedAscendingUsingFunction((CFArrayRef)self, (CFComparatorFunction)comparator, context);
 }
 
 - (BOOL)isSortedUsingSelector:(SEL)selector;
@@ -293,24 +234,6 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     }
 }
 
-- (NSDecimalNumber *)decimalNumberSumForSelector:(SEL)aSelector;
-{
-    NSDecimalNumber *result;
-    int objectIndex;
-
-    result = [NSDecimalNumber zero];
-    objectIndex = [self count];
-
-    while (objectIndex--) {
-        NSDecimalNumber *value;
-
-        value = objc_msgSend([self objectAtIndex:objectIndex], aSelector);
-        if (value)
-            result = [result decimalNumberByAdding:value];
-    }
-    return result;
-}
-
 - (NSArray *)numberedArrayDescribedBySelector:(SEL)aSelector;
 {
     NSArray *result;
@@ -326,26 +249,6 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
         result = [result arrayByAddingObject:[NSString stringWithFormat:@"%d. %@", arrayIndex, valueDescription]];
     }
 
-    return result;
-}
-
-- (NSArray *)objectsDescribedByIndexesString:(NSString *)indexesString;
-{
-    // TODO: Maybe we should eliminate this method in favor of -[foo objectsAtIndexes:[NSIndexSet indexSetWithRangeString:]]  (we would need to extend -indexSetWithRangeString: to accept space-separated indices as well as comma-separated ones)
-    NSArray *indexes;
-    NSMutableArray *results;
-    NSUInteger objectIndex, objectCount;
-
-    indexes = [indexesString componentsSeparatedByString:@" "];
-    objectCount = [indexes count];
-    results = [NSMutableArray arrayWithCapacity:objectCount];
-    for (objectIndex = 0; objectIndex < objectCount; objectIndex++) {
-        NSString *indexString = [indexes objectAtIndex:objectIndex];
-        [results addObject:[self objectAtIndex:[indexString unsignedIntValue]]];
-    }
-
-    NSArray *result = [NSArray arrayWithArray:results];
-    [results release];
     return result;
 }
 

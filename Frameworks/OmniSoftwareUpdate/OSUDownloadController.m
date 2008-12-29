@@ -49,8 +49,6 @@ static OSUDownloadController *CurrentDownloadController = nil;
     OBINITIALIZE;
     
     OSUDebugDownload = [[NSUserDefaults standardUserDefaults] boolForKey:@"OSUDebugDownload"];
-        
-    [self setKeys:[NSArray arrayWithObject:OSUDownloadControllerTotalSizeKey] triggerChangeNotificationsForDependentKey:OSUDownloadControllerSizeKnownKey];
 }
 
 + (OSUDownloadController *)currentDownloadController;
@@ -67,8 +65,8 @@ static OSUDownloadController *CurrentDownloadController = nil;
     // Only allow one download at a time for now.
     if (CurrentDownloadController) {
         // TODO: Add recovery options to cancel the existing download?
-        NSString *description = NSLocalizedStringFromTableInBundle(@"A download is already in progress.", nil, OMNI_BUNDLE, @"error description when trying to start a download when one is already in progress");
-        NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Please cancel the existing download before starting another.", nil, OMNI_BUNDLE, @"error suggestion when trying to start a download when one is already in progress");
+        NSString *description = NSLocalizedStringFromTableInBundle(@"A download is already in progress.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description when trying to start a download when one is already in progress");
+        NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Please cancel the existing download before starting another.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error suggestion when trying to start a download when one is already in progress");
         OSUError(outError, OSUDownloadAlreadyInProgress, description, suggestion);
         return NO;
     }
@@ -123,11 +121,11 @@ static OSUDownloadController *CurrentDownloadController = nil;
     [super windowDidLoad];
     
     NSString *name = [[[_request URL] path] lastPathComponent];
-    [self setValue:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Downloading %@ ...", nil, OMNI_BUNDLE, @"Download status"), name] forKey:OSUDownloadControllerStatusKey];
+    [self setValue:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Downloading %@ ...", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status"), name] forKey:OSUDownloadControllerStatusKey];
     
     [self _setBottomViewContentView:_plainStatusView];
     
-    [[self window] setTitle:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ Update", nil, OMNI_BUNDLE, @"Download window title"), [[NSProcessInfo processInfo] processName]]];
+    [[self window] setTitle:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ Update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download window title"), [[NSProcessInfo processInfo] processName]]];
 }
 
 #pragma mark -
@@ -200,7 +198,14 @@ static OSUDownloadController *CurrentDownloadController = nil;
 }
 
 #pragma mark -
-#pragma mark KVC
+#pragma mark KVC/KVO
+
++ (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key;
+{
+    if ([key isEqualToString:OSUDownloadControllerSizeKnownKey])
+	return [NSSet setWithObject:OSUDownloadControllerTotalSizeKey];
+    return [super keyPathsForValuesAffectingValueForKey:key];
+}
 
 - (BOOL)sizeKnown;
 {
@@ -373,8 +378,8 @@ static OSUDownloadController *CurrentDownloadController = nil;
         NSString *file = _destinationFile ? _destinationFile : _suggestedDestinationFile;
         
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  NSLocalizedStringFromTableInBundle(@"Download failed", nil, OMNI_BUNDLE, @"error title"), NSLocalizedDescriptionKey,
-                                  [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to download %@ to %@.\n\nPlease check the permissions and space available in your downloads folder.", nil, OMNI_BUNDLE, @"error suggestion"), _packageURL, file], NSLocalizedRecoverySuggestionErrorKey,
+                                  NSLocalizedStringFromTableInBundle(@"Download failed", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error title"), NSLocalizedDescriptionKey,
+                                  [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to download %@ to %@.\n\nPlease check the permissions and space available in your downloads folder.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error suggestion"), _packageURL, file], NSLocalizedRecoverySuggestionErrorKey,
                                   error, NSUnderlyingErrorKey,
                                   nil];
         error = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUDownloadFailed userInfo:userInfo];

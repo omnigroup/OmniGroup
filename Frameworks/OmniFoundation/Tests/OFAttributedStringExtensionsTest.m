@@ -16,7 +16,7 @@ RCS_ID("$Id$");
 @interface OFAttributedStringExtensionsTest : OFTestCase
 @end
 
-static void _testSeparate(id self, NSString *string, NSString *separator, ...)
+static void __attribute__((sentinel)) _testSeparate(id self, NSString *string, NSString *separator, ...)
 {
     NSAttributedString *sourceString = [[[NSAttributedString alloc] initWithString:string attributes:nil] autorelease];
     NSArray *components = [sourceString componentsSeparatedByString:separator];

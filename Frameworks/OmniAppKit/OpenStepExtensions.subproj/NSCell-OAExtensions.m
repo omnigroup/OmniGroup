@@ -34,7 +34,6 @@ RCS_ID("$Id$")
     [cell setAlignment: [self alignment]];
     [cell setWraps: [self wraps]];
     [cell setFont: [self font]];
-    [cell setEntryType: [self entryType]];
     // do something about -setFloatingPointFormat:left:right:?
     // do something about -keyEquivalent?
     [cell setFormatter: [self formatter]];

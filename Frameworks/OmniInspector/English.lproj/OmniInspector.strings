@@ -1,14 +1,29 @@
+/* delete workspace Cancel */
+"Cancel" = "Cancel";
+
+/* delete workspace warning - multiple selection */
+"Delete selected workspaces?" = "Delete selected workspaces?";
+
+/* delete workspace warning - single selection */
+"Delete workspace '%@'?" = "Delete workspace '%@'?";
+
+/* delete workspace warning - details */
+"Deleted workspaces cannot be restored." = "Deleted workspaces cannot be restored.";
+
 /* Edit Workspaces menu item */
 "Edit Workspaces" = "Edit Workspaces";
 
 /* menu title */
 "Hide Inspectors" = "Hide Inspectors";
 
+/* delete workspace OK */
+"OK" = "OK";
+
 /* Reset Inspector Locations menu item */
 "Reset Inspector Locations" = "Reset Inspector Locations";
 
 /* Save Workspace menu item */
-"Save Workspace..." = "Save Workspace...";
+"Save Workspace..." = "Save Workspace…";
 
 /* menu title */
 "Show Inspectors" = "Show Inspectors";

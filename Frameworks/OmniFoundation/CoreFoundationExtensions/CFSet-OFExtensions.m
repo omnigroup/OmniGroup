@@ -7,7 +7,7 @@
 
 #import <OmniFoundation/CFSet-OFExtensions.h>
 
-#import <OmniFoundation/OFCFCallbacks.h>
+#import <OmniFoundation/CFString-OFExtensions.h>
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniFoundation/OFCFWeakRetainCallbacks.h>
 #endif
@@ -24,53 +24,6 @@ OFCaseInsensitiveStringSetCallbacks = {
     OFCFTypeCopyDescription,
     OFCaseInsensitiveStringIsEqual,
     OFCaseInsensitiveStringHash,
-};
-
-const CFSetCallBacks OFNonOwnedPointerSetCallbacks  = {
-    0,    // version
-    NULL, // retain
-    NULL, // release
-    OFPointerCopyDescription,
-    NULL, // isEqual
-    NULL, // hash
-};
-
-const CFSetCallBacks OFIntegerSetCallbacks = {
-    0,    // version
-    NULL, // retain
-    NULL, // release
-    OFIntegerCopyDescription,
-    NULL, // isEqual
-    NULL, // hash
-};
-
-// -retain/-release, but no -hash/-isEqual:
-const CFSetCallBacks OFPointerEqualObjectSetCallbacks = {
-    0,   // version
-    OFNSObjectRetain,
-    OFNSObjectRelease,
-    OFNSObjectCopyDescription,
-    NULL,
-    NULL,
-};
-
-// Not retained, but -hash/-isEqual:
-const CFSetCallBacks OFNonOwnedObjectCallbacks = {
-    0,    // version
-    NULL, // retain
-    NULL, // release
-    OFNSObjectCopyDescription,
-    OFNSObjectIsEqual,
-    OFNSObjectHash,
-};
-
-const CFSetCallBacks OFNSObjectSetCallbacks = {
-    0,   // version
-    OFNSObjectRetain,
-    OFNSObjectRelease,
-    OFNSObjectCopyDescription,
-    OFNSObjectIsEqual,
-    OFNSObjectHash,
 };
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE

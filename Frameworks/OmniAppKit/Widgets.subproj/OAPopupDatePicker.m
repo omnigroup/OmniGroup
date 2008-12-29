@@ -93,7 +93,10 @@ static int defaultFirstWeekday = 0;
     return self;
 }
 
-- (void) dealloc {
+- (void)dealloc;
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
     [_datePickerObjectValue release];
     [_boundObject release];
     [_boundObjectKeyPath release];
@@ -194,7 +197,10 @@ static int defaultFirstWeekday = 0;
     
     [popupWindow setFrameTopLeftPoint:windowOrigin];
     [popupWindow makeKeyAndOrderFront:nil];
-    [[emergeFromView window] addChildWindow:popupWindow ordered:NSWindowAbove];
+    
+    NSWindow *parentWindow = [emergeFromView window];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_parentWindowWillClose:) name:NSWindowWillCloseNotification object:parentWindow];
+    [parentWindow addChildWindow:popupWindow ordered:NSWindowAbove];
 }
 
 - (id)destinationObject;
@@ -266,6 +272,13 @@ static int defaultFirstWeekday = 0;
 
 - (void)windowDidResignKey:(NSNotification *)notification;
 {
+    OBPRECONDITION([notification object] == [self window]);
+    
+    NSWindow *parentWindow = [[self window] parentWindow];
+    OBASSERT(parentWindow); // Should not have disassociated quite yet
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowWillCloseNotification object:parentWindow];
+
     // update the object
     if (_boundObject) {
 	[_boundObject setValue:_datePickerObjectValue forKeyPath:_boundObjectKeyPath];
@@ -277,6 +290,11 @@ static int defaultFirstWeekday = 0;
     _boundObject = nil;
     [_boundObjectKeyPath release];
     _boundObjectKeyPath = nil;
+}
+
+- (void)_parentWindowWillClose:(NSNotification *)note;
+{
+    [self close];
 }
 
 @end

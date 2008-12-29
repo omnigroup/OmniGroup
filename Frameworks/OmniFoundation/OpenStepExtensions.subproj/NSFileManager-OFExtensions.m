@@ -9,12 +9,12 @@
 
 #import <Foundation/NSPropertyList.h>
 #import <OmniBase/system.h>
+#import <OmniBase/NSError-OBExtensions.h>
 
 #import <OmniFoundation/NSProcessInfo-OFExtensions.h>
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSBundle-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
-#import <OmniFoundation/NSError-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/OFErrors.h>
@@ -221,42 +221,7 @@ static int permissionsMask = 0022;
 - (BOOL)createPath:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
     // Creates any directories needed to be able to create a file at the specified path.  Raises an exception on failure.
 {
-    // This whole method should be replaced by usage of the 10.5 API when 10.5 is the minimum OS.
-    if ([self respondsToSelector:@selector(createDirectoryAtPath:withIntermediateDirectories:attributes:error:)])
-        return [self createDirectoryAtPath:path withIntermediateDirectories:YES attributes:attributes error:outError];
-
-    NSArray *pathComponents = [path pathComponents];
-    unsigned int dirIndex, dirCount = [pathComponents count];
-    
-    // Short-circuit if the final directory already exists
-    path = [NSString pathWithComponents:pathComponents];
-
-    if ([self directoryExistsAtPath:path traverseLink:YES])
-        return YES;
-
-    *outError = nil;
-    
-    unsigned int startingIndex = 0;
-    for (dirIndex = startingIndex; dirIndex < dirCount; dirIndex++) {
-        NSString *partialPath = [NSString pathWithComponents:[pathComponents subarrayWithRange:NSMakeRange(0, dirIndex + 1)]];
-
-        // Don't use the 'fileExistsAtPath:isDirectory:' version since it doesn't traverse symlinks
-        BOOL fileExists = [self fileExistsAtPath:partialPath];
-        if (!fileExists) {
-            if (![self createDirectoryAtPath:partialPath attributes:attributes]) {
-                OFError(outError, OFUnableToCreatePathError, ([NSString stringWithFormat:@"Unable to create a directory at path: %@", partialPath]));
-                return NO;
-            }
-        } else {
-            NSDictionary *partialPathAttributes = [self fileAttributesAtPath:partialPath traverseLink:YES];
-            if (![[partialPathAttributes objectForKey:NSFileType] isEqualToString: NSFileTypeDirectory]) {
-                OFError(outError, OFUnableToCreatePathError, ([NSString stringWithFormat:@"Unable to write to path \"%@\" because \"%@\" is not a directory.", path, partialPath]));
-                return NO;
-            }
-        }
-    }
-    
-    return YES;
+    return [self createDirectoryAtPath:path withIntermediateDirectories:YES attributes:attributes error:outError];
 }
 
 - (BOOL)createPathToFile:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
@@ -306,13 +271,13 @@ static int permissionsMask = 0022;
                 [trim removeLastObject];
                 // continue
             } else {
-                OFErrorWithErrnoObjectsAndKeys(&error, err, "stat", trimmedPath,
+                OBErrorWithErrnoObjectsAndKeys(&error, err, "stat", trimmedPath,
                                                NSLocalizedStringFromTableInBundle(@"Could not create directory", @"OmniFoundation", OMNI_BUNDLE, @"Error message when stat() fails when trying to create a directory tree"),
                                                finalPath, NSFilePathErrorKey, nil);
                 
             }
         } else if ((statbuf.st_mode & S_IFMT) != S_IFDIR) {
-            OFErrorWithErrnoObjectsAndKeys(&error, ENOTDIR, "mkdir", trimmedPath,
+            OBErrorWithErrnoObjectsAndKeys(&error, ENOTDIR, "mkdir", trimmedPath,
                                            NSLocalizedStringFromTableInBundle(@"Could not create directory", @"OmniFoundation", OMNI_BUNDLE, @"Error message when mkdir() will fail because there's a file in the way"),
                                            finalPath, NSFilePathErrorKey, nil);
         } else {
@@ -340,7 +305,7 @@ static int permissionsMask = 0022;
         const char *path = [pathString fileSystemRepresentation];
         if (mkdir(path, mode) != 0) {
             int err = errno;
-            OFErrorWithErrnoObjectsAndKeys(outError, err, "mkdir", pathString,
+            OBErrorWithErrnoObjectsAndKeys(outError, err, "mkdir", pathString,
                                            NSLocalizedStringFromTableInBundle(@"Could not create directory", @"OmniFoundation", OMNI_BUNDLE, @"Error message when mkdir() fails"),
                                            finalPath, NSFilePathErrorKey, nil);
             return NO;
@@ -488,12 +453,12 @@ static int permissionsMask = 0022;
     NSData *data = [NSPropertyListSerialization dataFromPropertyList:lockDictionary format:NSPropertyListXMLFormat_v1_0 errorDescription:&errorDescription];
     
     if (!data) {
-        OFError(outError, OFUnableToSerializeLockFileDictionaryError, errorDescription);
+        OBError(outError, OFUnableToSerializeLockFileDictionaryError, errorDescription);
         return nil;
     }
     
     if (![data writeToFile:lockFilePath options:NSAtomicWrite error:outError]) {
-        OFError(outError, OFUnableToCreateLockFileError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to create lock file '%@'.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), lockFilePath]));
+        OBError(outError, OFUnableToCreateLockFileError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to create lock file '%@'.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), lockFilePath]));
         return nil;
     }
     
@@ -504,6 +469,10 @@ static int permissionsMask = 0022;
 
 - (void)unlockFileAtPath:(NSString *)path;
 {
+#if 1
+    // <bug://50010> Port or remove NSFileManager locking extensions
+    OBRequestConcreteImplementation(self, _cmd);
+#else
     NSString *lockFilePath;
     NSDictionary *lockDictionary;
     
@@ -524,6 +493,7 @@ static int permissionsMask = 0022;
     if ([self removeFileAtPath:lockFilePath handler:nil] == NO) {
         [NSException raise:NSGenericException format:@"Error unlocking file at %@: lock file couldn't be removed", path];
     }
+#endif
 }
 
 - (BOOL)_exchangeFileAtPath:(NSString *)originalFile withFileAtPath:(NSString *)newFile deleteOriginal:(BOOL)deleteOriginal error:(NSError **)outError;
@@ -535,12 +505,12 @@ static int permissionsMask = 0022;
     // Try FSExchangeObjects.  Under 10.2 this will only work if both files are on the same filesystem and both are files (not folders).  We could check for these conditions up front, but they might fix/extend FSExchangeObjects, so we'll just try it.
     FSRef originalRef, newRef;
     if (!CFURLGetFSRef((CFURLRef)originalURL, &originalRef)) {
-        OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to get file reference for '%@'", originalFile]));
+        OBError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to get file reference for '%@'", originalFile]));
         return NO;
     }
     
     if (!CFURLGetFSRef((CFURLRef)newURL, &newRef)) {
-        OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to get file reference for '%@'", newFile]));
+        OBError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to get file reference for '%@'", newFile]));
         return NO;
     }
 
@@ -566,7 +536,7 @@ static int permissionsMask = 0022;
         
         if (![self moveItemAtPath:newFile toPath:temporaryPath error:outError]) {
             // Wrap the *outError from -moveItemAtPath:toPath:error: in an OFCannotExchangeFileError
-            OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", newFile, temporaryPath]));
+            OBError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", newFile, temporaryPath]));
             return NO;
         }
         
@@ -595,7 +565,7 @@ static int permissionsMask = 0022;
             
             if (![self moveItemAtPath:originalFile toPath:originalAside error:outError]) {
                 // Wrap the *outError from -moveItemAtPath:toPath:error: in an OFCannotExchangeFileError
-                OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", originalFile, originalAside]));
+                OBError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", originalFile, originalAside]));
                 return NO;
             }
 
@@ -605,7 +575,7 @@ static int permissionsMask = 0022;
                 [self moveItemAtPath:originalAside toPath:originalFile error:NULL];
                 
                 // Wrap the *outError from -moveItemAtPath:toPath:error: in an OFCannotExchangeFileError
-                OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", temporaryPath, originalFile]));
+                OBError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", temporaryPath, originalFile]));
                 return NO;
             }
         }
@@ -686,125 +656,6 @@ static int permissionsMask = 0022;
     if ([[NSFileManager defaultManager] filesystemStats:&stats forPath:path] == -1)
         return nil; // Apparently the file doesn't exist
     return [NSString stringWithCString:stats.f_fstypename encoding:NSASCIIStringEncoding];
-}
-
-typedef struct {
-     long type;
-     long creator;
-     short flags;
-     short locationV;
-     short locationH;
-     short fldr;
-     short iconID;
-     short unused[3];
-     char script;
-     char xFlags;
-     short comment;
-     long putAway;
-} OFFinderInfo;
-
-- (int)getType:(unsigned long *)typeCode andCreator:(unsigned long *)creatorCode forPath:(NSString *)path;
-{
-    struct attrlist attributeList;
-    struct {
-        long ssize;
-        OFFinderInfo finderInfo;
-    } attributeBuffer;
-    int errorCode;
-
-    attributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
-    attributeList.reserved = 0;
-    attributeList.commonattr = ATTR_CMN_FNDRINFO;
-    attributeList.volattr = attributeList.dirattr = attributeList.fileattr = attributeList.forkattr = 0;
-    memset(&attributeBuffer, 0, sizeof(attributeBuffer));
-
-    errorCode = getattrlist([self fileSystemRepresentationWithPath:path], &attributeList, &attributeBuffer, sizeof(attributeBuffer), 0);
-    if (errorCode == -1) {
-        switch (errno) {
-            case EOPNOTSUPP: {
-                BOOL isDirectory;
-                NSString *ufsResourceForkPath;
-                unsigned long aTypeCode, aCreatorCode;
-                
-                ufsResourceForkPath = [[path stringByDeletingLastPathComponent] stringByAppendingPathComponent:[@"._" stringByAppendingString:[path lastPathComponent]]];
-                if ([self fileExistsAtPath:ufsResourceForkPath isDirectory:&isDirectory] == YES && isDirectory == NO) {
-                    NSData *resourceFork;
-                    const unsigned int offsetOfTypeInResourceFork = 50;
-                    
-                    resourceFork = [NSData dataWithContentsOfMappedFile:ufsResourceForkPath];
-                    if ([resourceFork length] < offsetOfTypeInResourceFork + sizeof(unsigned long) + sizeof(unsigned long))
-                        return errorCode;
-                    
-                    [resourceFork getBytes:&aTypeCode range:NSMakeRange(offsetOfTypeInResourceFork, sizeof(aTypeCode))];
-                    [resourceFork getBytes:&aCreatorCode range:NSMakeRange(offsetOfTypeInResourceFork + sizeof(aTypeCode), sizeof(aCreatorCode))];
-                    *typeCode = NSSwapBigLongToHost(aTypeCode);
-                    *creatorCode = NSSwapBigLongToHost(aCreatorCode);
-                    return 0;
-                } else {
-                    *typeCode = 0; // We could use the Mac APIs, or just read the "._" file.
-                    *creatorCode = 0;
-                }
-            }
-            default:
-                return errorCode;
-        }
-    } else {
-        *typeCode = attributeBuffer.finderInfo.type;
-        *creatorCode = attributeBuffer.finderInfo.creator;
-    }
-
-    return errorCode;
-}
-
-/* I really hope nobody is using this any more. */
-- (int)setType:(unsigned long)typeCode andCreator:(unsigned long)creatorCode forPath:(NSString *)path;
-{
-     struct attrlist attributeList;
-     struct {
-         long ssize;
-         OFFinderInfo finderInfo;
-     } attributeBuffer;
-     int errorCode;
-
-     attributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
-     attributeList.reserved = 0;
-     attributeList.commonattr = ATTR_CMN_FNDRINFO;
-     attributeList.volattr = attributeList.dirattr = attributeList.fileattr = attributeList.forkattr = 0;
-     memset(&attributeBuffer, 0, sizeof(attributeBuffer));
-
-     getattrlist([self fileSystemRepresentationWithPath:path], &attributeList, &attributeBuffer, sizeof(attributeBuffer), 0);
-
-     attributeBuffer.finderInfo.type = typeCode;
-     attributeBuffer.finderInfo.creator = creatorCode;
-
-     errorCode = setattrlist([self fileSystemRepresentationWithPath:path], &attributeList, &attributeBuffer.finderInfo, sizeof(OFFinderInfo), 0);
-     if (errorCode == 0)
-         return 0;
-
-     if (errno == EOPNOTSUPP) {
-#define MAGIC_HFS_FILE_LENGTH 82
-         unsigned char magicHFSFileContents[MAGIC_HFS_FILE_LENGTH] = {
-             0x00, 0x05, 0x16, 0x07, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x09, 0x00, 0x00,
-             0x00, 0x32, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x52, 0x00, 0x00,
-             0x00, 0x00, 't', 'y', 'p', 'e', 'c', 'r', 'e', 'a', 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-             0x00, 0x00};
-         unsigned int offsetWhereOSTypesAreStored = 50;
-         NSData *data;
-         NSString *magicHFSFilePath;
-
-         *((int *)(&magicHFSFileContents[offsetWhereOSTypesAreStored])) = typeCode;
-         *((int *)(&magicHFSFileContents[offsetWhereOSTypesAreStored + 4])) = creatorCode;
-         data = [NSData dataWithBytes:magicHFSFileContents length:MAGIC_HFS_FILE_LENGTH];
-         magicHFSFilePath = [[path stringByDeletingLastPathComponent] stringByAppendingPathComponent:[@"._" stringByAppendingString:[path lastPathComponent]]];
-
-         if ([self createFileAtPath:magicHFSFilePath contents:data attributes:[self fileAttributesAtPath:path traverseLink:NO]])
-             return 0;
-         else
-             return errorCode;
-     }
-     return errorCode;
 }
 
 - (NSString *)resolveAliasAtPath:(NSString *)path

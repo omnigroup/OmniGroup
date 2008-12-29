@@ -48,7 +48,14 @@ RCS_ID("$Id$")
     
     for (itemIndex = 1; itemIndex <= itemCount; itemIndex += 2) {
         NSString *key = [[descriptor descriptorAtIndex:itemIndex] stringValue];
-        NSString *value = [[descriptor descriptorAtIndex:itemIndex+1] stringValue];
+	id valueObject = [descriptor descriptorAtIndex:itemIndex+1];
+	
+	if ([valueObject typeCodeValue] == FOUR_CHAR_CODE('msng')) {
+	    [result setObject:[NSNull null] forKey:key];
+	    continue;
+	}
+	
+        NSString *value = [valueObject stringValue];
         [result setObject:value forKey:key];
     }
     return result;
@@ -62,9 +69,12 @@ RCS_ID("$Id$")
     int listCount = 0;
     
     while ((key = [enumerator nextObject])) {
-        NSString *value = [[self objectForKey:key] description];
         [listDescriptor insertDescriptor:[NSAppleEventDescriptor descriptorWithString:key] atIndex:++listCount];
-        [listDescriptor insertDescriptor:[NSAppleEventDescriptor descriptorWithString:value] atIndex:++listCount];
+        id value = [self objectForKey:key];
+	if (value == [NSNull null])
+	    [listDescriptor insertDescriptor:[NSAppleEventDescriptor descriptorWithTypeCode:FOUR_CHAR_CODE('msng')] atIndex:++listCount];
+	else 
+	    [listDescriptor insertDescriptor:[NSAppleEventDescriptor descriptorWithString:[value description]] atIndex:++listCount];
     }
     
     NSAppleEventDescriptor *result = [NSAppleEventDescriptor recordDescriptor];

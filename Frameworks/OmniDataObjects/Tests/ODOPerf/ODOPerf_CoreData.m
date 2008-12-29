@@ -60,23 +60,45 @@ RCS_ID("$Id$")
 
 - (void)perf_getStringProperty;
 {
-    State *state = [NSEntityDescription insertNewObjectForEntityForName:State_EntityName inManagedObjectContext:_moc];
+    State *state = [NSEntityDescription insertNewObjectForEntityForName:ODOPerfStateEntityName inManagedObjectContext:_moc];
     [self setupCompleted];
     
     NSUInteger steps = [[self class] stepCount];
     while (steps--)
-        [state valueForKey:State_Name];
+        [state valueForKey:ODOPerfStateName];
 }
 
 - (void)perf_setStringProperty;
 {
-    State *state = [NSEntityDescription insertNewObjectForEntityForName:State_EntityName inManagedObjectContext:_moc];
+    State *state = [NSEntityDescription insertNewObjectForEntityForName:ODOPerfStateEntityName inManagedObjectContext:_moc];
     [self setupCompleted];
     
     NSUInteger steps = [[self class] stepCount];
     while (steps--) {
-        [state setValue:@"a" forKey:State_Name];
-        [state setValue:@"b" forKey:State_Name];
+        [state setValue:@"a" forKey:ODOPerfStateName];
+        [state setValue:@"b" forKey:ODOPerfStateName];
+    }
+}
+
+- (void)perf_getDynamicStringProperty;
+{
+    State *state = [NSEntityDescription insertNewObjectForEntityForName:ODOPerfStateEntityName inManagedObjectContext:_moc];
+    [self setupCompleted];
+    
+    NSUInteger steps = [[self class] stepCount];
+    while (steps--)
+        state.name;
+}
+
+- (void)perf_setDynamicStringProperty;
+{
+    State *state = [NSEntityDescription insertNewObjectForEntityForName:ODOPerfStateEntityName inManagedObjectContext:_moc];
+    [self setupCompleted];
+    
+    NSUInteger steps = [[self class] stepCount];
+    while (steps--) {
+        state.name = @"a";
+        state.name = @"b";
     }
 }
 
@@ -89,8 +111,8 @@ RCS_ID("$Id$")
         NSUInteger batchIndex;
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         for (batchIndex = 0; batchIndex < batchSize; batchIndex++) {
-            State *state = [NSEntityDescription insertNewObjectForEntityForName:State_EntityName inManagedObjectContext:_moc];
-            [state setValue:@"foo" forKey:State_Name];
+            State *state = [NSEntityDescription insertNewObjectForEntityForName:ODOPerfStateEntityName inManagedObjectContext:_moc];
+            [state setValue:@"foo" forKey:ODOPerfStateName];
         }
         
         NSError *error = nil;
@@ -111,8 +133,8 @@ RCS_ID("$Id$")
         NSUInteger batchIndex;
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         for (batchIndex = 0; batchIndex < batchSize; batchIndex++) {
-            State *state = [NSEntityDescription insertNewObjectForEntityForName:State_EntityName inManagedObjectContext:_moc];
-            [state setValue:@"foo" forKey:State_Name];
+            State *state = [NSEntityDescription insertNewObjectForEntityForName:ODOPerfStateEntityName inManagedObjectContext:_moc];
+            [state setValue:@"foo" forKey:ODOPerfStateName];
         }
         
         NSError *error = nil;
@@ -129,7 +151,7 @@ RCS_ID("$Id$")
     // Fetch the objects back a bunch of times
     {
         NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
-        [fetch setEntity:[[[_psc managedObjectModel] entitiesByName] objectForKey:State_EntityName]];
+        [fetch setEntity:[[[_psc managedObjectModel] entitiesByName] objectForKey:ODOPerfStateEntityName]];
         
         NSUInteger batches = MAX(1U, [[self class] stepCount]/batchSize);
         while (batches--) {
@@ -147,6 +169,80 @@ RCS_ID("$Id$")
         
         [fetch release];
     }
+}
+
+- (void)perf_editToOneRelationship;
+{
+    // Make a bunch of bugs pointing to a state.
+    NSUInteger stepCount = 10000; // Not obeying the global default
+    {
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        State *state = [NSEntityDescription insertNewObjectForEntityForName:ODOPerfStateEntityName inManagedObjectContext:_moc];
+        [state setValue:@"open" forKey:ODOPerfStateName];
+        [pool release];
+        
+        NSUInteger batchSize = 100;
+        NSUInteger batches = MAX(1U, stepCount/batchSize);
+        
+        while (batches--) {
+            NSUInteger batchIndex;
+            pool = [[NSAutoreleasePool alloc] init];
+            NSDate *date = [NSDate date];
+            for (batchIndex = 0; batchIndex < batchSize; batchIndex++) {
+                Bug *bug = [NSEntityDescription insertNewObjectForEntityForName:ODOPerfBugEntityName inManagedObjectContext:_moc];
+                [bug setValue:date forKey:ODOPerfBugDateAdded];
+                [bug setValue:@"bug" forKey:ODOPerfBugTitle];
+                [bug setValue:state forKey:ODOPerfBugState];
+            }
+            
+            NSError *error = nil;
+            if (![_moc save:&error]) {
+                NSLog(@"Unable to save: %@", [error toPropertyList]);
+                return;
+            }
+            
+            [pool release];
+        }
+    }
+    
+    // Reset to get everything out of memory, refetch the state we want.
+    [_moc reset];
+    State *state;
+    {
+        NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
+        [fetch setEntity:[[[_psc managedObjectModel] entitiesByName] objectForKey:ODOPerfStateEntityName]];
+        
+        NSError *error = nil;
+        NSArray *states = [_moc executeFetchRequest:fetch error:&error];
+        if (!states) {
+            NSLog(@"Unable to fetch: %@", [error toPropertyList]);
+            return;
+        }
+        OBASSERT([states count] == 1);
+        state = [states lastObject];
+        OBASSERT([state hasFaultForRelationshipNamed:ODOPerfStateBugs]);
+    }
+    
+    [self setupCompleted];
+    
+    // Insert one bug refering to the existing state.
+//    ODOLogSQL = YES;
+    {
+        NSDate *date = [NSDate date];
+        Bug *bug = [NSEntityDescription insertNewObjectForEntityForName:ODOPerfBugEntityName inManagedObjectContext:_moc];
+        [bug setValue:date forKey:ODOPerfBugDateAdded];
+        [bug setValue:@"bug" forKey:ODOPerfBugTitle];
+        [bug setValue:state forKey:ODOPerfBugState];
+        
+        NSError *error = nil;
+        if (![_moc save:&error]) {
+            NSLog(@"Unable to save: %@", [error toPropertyList]);
+            return;
+        }
+        
+        OBASSERT([state hasFaultForRelationshipNamed:ODOPerfStateBugs]);
+    }
+//    ODOLogSQL = NO;
 }
 
 @end

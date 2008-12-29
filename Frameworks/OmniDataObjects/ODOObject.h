@@ -12,24 +12,24 @@
 #import <CoreFoundation/CFArray.h>
 #import <OmniDataObjects/ODOFeatures.h>
 
-@class NSString, NSArray, NSMutableDictionary, NSError, NSSet;
+@class NSString, NSArray, NSMutableDictionary, NSError, NSSet, NSMutableSet;
 @class ODOEntity, ODOEditingContext, ODOObjectID, ODOProperty, ODORelationship;
 
 @interface ODOObject : OFObject
 {
-@private
+@package
     ODOEditingContext *_editingContext;
     ODOObjectID *_objectID;
     void *_observationInfo;
 
-    CFMutableArrayRef _valueArray; // One for each -snapshotProperty on the ODOEntity.
+    id *_valueStorage; // One for each -snapshotProperty on the ODOEntity.
     
     struct {
         unsigned int isFault : 1;
         unsigned int changeProcessingDisabled : 1;
         unsigned int invalid : 1;
         unsigned int needsAwakeFromFetch : 1;
-        unsigned int hasChangedInterestingToManyRelationshipSinceLastSave : 1;
+        unsigned int hasChangedModifyingToManyRelationshipSinceLastSave : 1;
     } _flags;
 }
 
@@ -38,19 +38,16 @@
 - (void)willAccessValueForKey:(NSString *)key;
 - (void)didAccessValueForKey:(NSString *)key;
 
-- (void)setPrimitiveValue:(id)value forProperty:(ODOProperty *)property;
-- (id)primitiveValueForProperty:(ODOProperty *)property;
-
-- (void)setPrimitiveValue:(id)value forKey:(NSString *)key; // do not subclass; this calls the 'forProperty' version
-- (id)primitiveValueForKey:(NSString *)key;
+- (void)setPrimitiveValue:(id)value forKey:(NSString *)key; // do not subclass
+- (id)primitiveValueForKey:(NSString *)key; // do not subclass
 
 - (void)setDefaultAttributeValues;
 
 - (void)awakeFromInsert;
 - (void)awakeFromFetch;
-- (ODOEntity *)entity;
-- (ODOEditingContext *)editingContext;
-- (ODOObjectID *)objectID;
+- (ODOEntity *)entity; // do not subclass
+- (ODOEditingContext *)editingContext; // do not subclass
+- (ODOObjectID *)objectID; // do not subclass
 
 - (void)willSave;
 - (void)willInsert; // Just calls -willSave
@@ -84,8 +81,11 @@
 - (id)committedValueForKey:(NSString *)key;
 - (NSDictionary *)committedValuesForKeys:(NSArray *)keys;
 
-+ (NSSet *)derivedPropertyNameSet;
++ (void)addDerivedPropertyNames:(NSMutableSet *)set withEntity:(ODOEntity *)entity;
 - (BOOL)changedNonDerivedChangedValue;
+
++ (void)computeNonDateModifyingPropertyNameSet:(NSMutableSet *)set withEntity:(ODOEntity *)entity;
+- (BOOL)shouldChangeDateModified;
 
 @end
 

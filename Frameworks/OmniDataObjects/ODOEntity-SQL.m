@@ -9,10 +9,10 @@
 
 #import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODORelationship.h>
-#import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOEditingContext.h>
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
 
+#import "ODOObject-Accessors.h"
 #import "ODOProperty-Internal.h"
 #import "ODODatabase-Internal.h"
 #import "ODOAttribute-Internal.h"
@@ -96,8 +96,8 @@ static BOOL _appendColumnWithNameAndType(NSMutableString *str, ODOEntity *entity
             break;
             
         default: {
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Attribute %@.%@ has type %d with unknown SQL column type.", nil, OMNI_BUNDLE, @"error reason"), [entity name], name, type];
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create schema.", nil, OMNI_BUNDLE, @"error description");
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Attribute %@.%@ has type %d with unknown SQL column type.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [entity name], name, type];
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create schema.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             ODOError(outError, ODOUnableToCreateSchema, description, reason, nil);
             return NO;
         }
@@ -193,9 +193,15 @@ static BOOL _bindAttributeValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
         case ODOAttributeTypeString:
             OBASSERT([value isKindOfClass:[NSString class]]);
             return ODOSQLStatementBindString(sqlite, statement, oneBasedPropertyIndex, value, outError);
+        case ODOAttributeTypeInt16:
+            OBASSERT([value isKindOfClass:[NSNumber class]]);
+            return ODOSQLStatementBindInt16(sqlite, statement, oneBasedPropertyIndex, [value shortValue], outError);
         case ODOAttributeTypeInt32:
             OBASSERT([value isKindOfClass:[NSNumber class]]);
             return ODOSQLStatementBindInt32(sqlite, statement, oneBasedPropertyIndex, [value intValue], outError);
+        case ODOAttributeTypeInt64:
+            OBASSERT([value isKindOfClass:[NSNumber class]]);
+            return ODOSQLStatementBindInt64(sqlite, statement, oneBasedPropertyIndex, [value longLongValue], outError);
         case ODOAttributeTypeBoolean:
             OBASSERT([value isKindOfClass:[NSNumber class]]);
             return ODOSQLStatementBindBoolean(sqlite, statement, oneBasedPropertyIndex, [value boolValue], outError);
@@ -210,8 +216,8 @@ static BOOL _bindAttributeValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
             OBASSERT([value isKindOfClass:[NSNumber class]]);
             return ODOSQLStatementBindFloat64(sqlite, statement, oneBasedPropertyIndex, [value doubleValue], outError);
         default: {
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Attribute has type unsupported type %d.", nil, OMNI_BUNDLE, @"error reason"), type];
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind attribute value to SQL.", nil, OMNI_BUNDLE, @"error description");
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Attribute has type unsupported type %d.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type];
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind attribute value to SQL.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             ODOError(outError, ODOUnableToSave, description, reason, nil);
             return NO;
         }
@@ -223,11 +229,11 @@ static BOOL _bindRelationshipForeignKey(struct sqlite3 *sqlite, ODOSQLStatement 
 {
     ODOAttribute *attr = [[rel destinationEntity] primaryKeyAttribute];
     ODOAttributeType type = [attr type];
-    ODOObject *destObject = [object primitiveValueForProperty:rel];
+    ODOObject *destObject = ODOObjectPrimitiveValueForProperty(object, rel);
     
     id foreignKey;
     if (destObject)
-        foreignKey = [destObject primitiveValueForProperty:attr];
+        foreignKey = ODOObjectPrimitiveValueForProperty(destObject, attr);
     else
         foreignKey = nil;
     OBASSERT(!foreignKey || [foreignKey isKindOfClass:[attr valueClass]]);
@@ -238,7 +244,7 @@ static BOOL _bindRelationshipForeignKey(struct sqlite3 *sqlite, ODOSQLStatement 
 static BOOL _bindPlainAttribute(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, unsigned int zeroBasedPropertyIndex, ODOAttribute *attr, NSError **outError)
 {
     ODOAttributeType type = [attr type];
-    id value = [object primitiveValueForProperty:attr];
+    id value = ODOObjectPrimitiveValueForProperty(object, attr);
     
     OBASSERT(!value || [value isKindOfClass:[attr valueClass]]);
     

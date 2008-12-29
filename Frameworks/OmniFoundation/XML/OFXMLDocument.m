@@ -7,7 +7,7 @@
 
 #import <OmniFoundation/OFXMLDocument.h>
 
-#import <OmniFoundation/NSError-OFExtensions.h>
+#import <OmniBase/NSError-OBExtensions.h>
 #import <OmniFoundation/OFXMLCursor.h>
 #import <OmniFoundation/OFXMLElement.h>
 #import <OmniFoundation/OFXMLString.h>
@@ -32,7 +32,7 @@ RCS_ID("$Id$");
 - (id)_postInit:(NSError **)outError;
 {
     if (!_rootElement) {
-        OFError(outError, OFXMLDocumentNoRootElementError, NSLocalizedStringFromTableInBundle(@"No root element was found", nil, OMNI_BUNDLE, @"error reason"));
+        OBError(outError, OFXMLDocumentNoRootElementError, NSLocalizedStringFromTableInBundle(@"No root element was found", @"OmniFoundation", OMNI_BUNDLE, @"error reason"));
         [self release];
         return nil;
     }

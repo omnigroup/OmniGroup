@@ -44,12 +44,10 @@ RCS_ID("$Id$");
 - (void)testMakeDirectories
 {
     NSFileManager *fm = [NSFileManager defaultManager];
-    NSError *e = nil;
+    NSError *error = nil;
     BOOL isD;
     
-    e = nil;
-    BOOL ok = [fm createPathToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day"] attributes:nil error:&e];
-    STAssertTrue(ok, @"createPathToFile:... err=%@", e);
+    OBShouldNotError([fm createPathToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day"] attributes:nil error:&error]);
     
     STAssertTrue([fm fileExistsAtPath:[scratchDir stringByAppendingPathComponent:@"doo/dah"] isDirectory:&isD] && isD, nil);
     STAssertFalse([fm fileExistsAtPath:[scratchDir stringByAppendingPathComponent:@"doo/dah/day"]], nil);
@@ -61,7 +59,7 @@ RCS_ID("$Id$");
     STAssertEqualObjects([scratchDir stringByAppendingString:@"/doo/dah/"],
                          [fm existingPortionOfPath:[scratchDir stringByAppendingPathComponent:@"doo/dah/dilly/dally"]], nil);
     
-    [@"bletcherous" writeToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day"] atomically:NO];
+    OBShouldNotError([@"bletcherous" writeToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
     STAssertTrue([fm fileExistsAtPath:[scratchDir stringByAppendingPathComponent:@"doo/dah/day"] isDirectory:&isD] && !isD, nil);
     
     STAssertEqualObjects([NSArray array],
@@ -69,31 +67,31 @@ RCS_ID("$Id$");
     STAssertEqualObjects(nil,
                          [fm directoryContentsAtPath:[scratchDir stringByAppendingPathComponent:@"doo/dork"] havingExtension:@"blah" error:NULL], nil);
 
-    [@"bletcherous" writeToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day.blah"] atomically:NO];
+    OBShouldNotError([@"bletcherous" writeToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day.blah"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
     STAssertEqualObjects([NSArray arrayWithObject:@"day.blah"],
                          [fm directoryContentsAtPath:[scratchDir stringByAppendingPathComponent:@"doo/dah"] havingExtension:@"blah" error:NULL], nil);
     STAssertEqualObjects(nil,
                          [fm directoryContentsAtPath:[scratchDir stringByAppendingPathComponent:@"doo/dah/day"] havingExtension:@"blah" error:NULL], nil);
     
-    e = nil;
-    ok = [fm createPathToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day/ding/dong"] attributes:nil error:&e];
-    STAssertTrue(!ok, @"createPathToFile:... err=%@", e);
-    STAssertEqualObjects([e domain], NSPOSIXErrorDomain, nil);
-    NSLog(@"Failure message as expected (file in the way): %@", [e description]);
+    error = nil;
+    BOOL ok = [fm createPathToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day/ding/dong"] attributes:nil error:&error];
+    STAssertTrue(!ok, @"createPathToFile:... err=%@", error);
+    STAssertEqualObjects([error domain], NSPOSIXErrorDomain, nil);
+    NSLog(@"Failure message as expected (file in the way): %@", [error description]);
     
-    e = nil;
-    ok = [fm createPathToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day"] attributes:nil error:&e];
-    STAssertTrue(ok, @"createPathToFile:... err=%@", e);
+    error = nil;
+    ok = [fm createPathToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day"] attributes:nil error:&error];
+    STAssertTrue(ok, @"createPathToFile:... err=%@", error);
     
     [fm removeItemAtPath:[scratchDir stringByAppendingPathComponent:@"doo/dah/day"] error:NULL];
-    ok = [fm setAttributes:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:0111] forKey:NSFilePosixPermissions] ofItemAtPath:[scratchDir stringByAppendingPathComponent:@"doo/dah"] error:&e];
-    STAssertTrue(ok, @"setAttributes:... ofItemAtPath:%@ err=%@", [scratchDir stringByAppendingPathComponent:@"doo/dah"], e);
+    ok = [fm setAttributes:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:0111] forKey:NSFilePosixPermissions] ofItemAtPath:[scratchDir stringByAppendingPathComponent:@"doo/dah"] error:&error];
+    STAssertTrue(ok, @"setAttributes:... ofItemAtPath:%@ err=%@", [scratchDir stringByAppendingPathComponent:@"doo/dah"], error);
     
-    e = nil;
-    ok = [fm createPathToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day/ding/dong"] attributes:nil error:&e];
-    STAssertTrue(!ok, @"createPathToFile:... err=%@", e);
-    STAssertEqualObjects([e domain], NSPOSIXErrorDomain, nil);
-    NSLog(@"Failure message as expected (no write permission): %@", [e description]);
+    error = nil;
+    ok = [fm createPathToFile:[scratchDir stringByAppendingPathComponent:@"doo/dah/day/ding/dong"] attributes:nil error:&error];
+    STAssertTrue(!ok, @"createPathToFile:... err=%@", error);
+    STAssertEqualObjects([error domain], NSPOSIXErrorDomain, nil);
+    NSLog(@"Failure message as expected (no write permission): %@", [error description]);
 }
 
 - (void)testMakeDirectoriesWithMode
@@ -133,8 +131,10 @@ RCS_ID("$Id$");
     ok = [fm createDirectoryAtPath:workingDir withIntermediateDirectories:NO attributes:nil error:NULL];
     STAssertTrue(ok, @"createDirectoryAtPath:...");
     
-    [@"tweedledee" writeToFile:[workingDir stringByAppendingPathComponent:@"bigend"] atomically:NO];
-    [@"tweedledum" writeToFile:[workingDir stringByAppendingPathComponent:@"littleend"] atomically:NO];
+    NSError *error = nil;
+    
+    OBShouldNotError([@"tweedledee" writeToFile:[workingDir stringByAppendingPathComponent:@"bigend"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
+    OBShouldNotError([@"tweedledum" writeToFile:[workingDir stringByAppendingPathComponent:@"littleend"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
     STAssertEqualObjects(([NSArray arrayWithObjects:@"bigend", @"littleend", nil]),
                          [fm contentsOfDirectoryAtPath:workingDir error:NULL], nil);
     
@@ -151,7 +151,7 @@ RCS_ID("$Id$");
                          @"tweedledum", nil);
     
     
-    [@"tweedledork" writeToFile:[workingDir stringByAppendingPathComponent:@"middleend"] atomically:NO];
+    OBShouldNotError([@"tweedledork" writeToFile:[workingDir stringByAppendingPathComponent:@"middleend"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
     ok = [fm exchangeFileAtPath:[workingDir stringByAppendingPathComponent:@"bigend"] withFileAtPath:[workingDir stringByAppendingPathComponent:@"middleend"] error:NULL];
     STAssertTrue(ok, @"exchangeFileAtPath:...", nil);
     STAssertEqualObjects(([NSArray arrayWithObjects:@"bigend", @"middleend", nil]),
@@ -191,9 +191,11 @@ RCS_ID("$Id$");
     STAssertTrue(exists, @"Mounted volume didn't appear at the expected location");
     if (!exists)
         return;
+
+    NSError *error = nil;
     
-    [@"bacon" writeToFile:[workingDir stringByAppendingPathComponent:@"layer1.txt"] atomically:NO];
-    [@"lettuce" writeToFile:[otherworking stringByAppendingPathComponent:@"layer1.txt"] atomically:NO];
+    OBShouldNotError([@"bacon" writeToFile:[workingDir stringByAppendingPathComponent:@"layer1.txt"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
+    OBShouldNotError([@"lettuce" writeToFile:[otherworking stringByAppendingPathComponent:@"layer1.txt"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
     
     ok = [fm replaceFileAtPath:[otherworking stringByAppendingPathComponent:@"layer1.txt"] withFileAtPath:[workingDir stringByAppendingPathComponent:@"layer1.txt"] error:NULL];
     STAssertTrue(ok, @"exchangeFileAtPath:...", nil);
@@ -205,7 +207,7 @@ RCS_ID("$Id$");
                                                    encoding:NSASCIIStringEncoding error:NULL],
                          @"bacon", nil);
     
-    [@"tomato" writeToFile:[workingDir stringByAppendingPathComponent:@"vegetable.txt"] atomically:NO];
+    OBShouldNotError([@"tomato" writeToFile:[workingDir stringByAppendingPathComponent:@"vegetable.txt"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
     ok = [fm replaceFileAtPath:[otherworking stringByAppendingPathComponent:@"layer1.txt"] withFileAtPath:[workingDir stringByAppendingPathComponent:@"layer1.txt"] error:NULL];
     
     sh = [NSString stringWithFormat:@"hdiutil detach '/Volumes/%@' -force", volname];
@@ -228,11 +230,10 @@ RCS_ID("$Id$");
     if (!exists)
         return;
     
-    NSError *e = nil;
-    [@"mayonnaise" writeToFile:[workingDir stringByAppendingPathComponent:@"condiment.txt"] atomically:NO];
-    ok = [fm replaceFileAtPath:[otherworking stringByAppendingPathComponent:@"layer1.txt"] withFileAtPath:[workingDir stringByAppendingPathComponent:@"condiment.txt"] error:&e];
+    OBShouldNotError([@"mayonnaise" writeToFile:[workingDir stringByAppendingPathComponent:@"condiment.txt"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
+    ok = [fm replaceFileAtPath:[otherworking stringByAppendingPathComponent:@"layer1.txt"] withFileAtPath:[workingDir stringByAppendingPathComponent:@"condiment.txt"] error:&error];
     STAssertFalse(ok, @"Shouldn't be able to replace on a readonly volume");
-    STAssertNotNil(e, @"Failure should produce an NSError result");
+    STAssertNotNil(error, @"Failure should produce an NSError result");
     // NSLog(@"Resulting error: %@", [e toPropertyList]);
     
     sh = [NSString stringWithFormat:@"hdiutil detach '/Volumes/%@' -force", volname];

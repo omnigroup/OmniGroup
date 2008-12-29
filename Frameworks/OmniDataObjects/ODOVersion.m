@@ -7,9 +7,13 @@
 
 #import <OmniDataObjects/ODOVersion.h>
 
+#if !defined(NON_OMNI_BUILD_ENVIRONMENT)
+
 // In the case of the standalone framework, this will be generated from it.  Otherwise from the wrapper iPhone app.
 #import "SVNVersion.h"
 
 RCS_ID("$Id$")
 
 const unsigned int ODOVersionNumber = SVNREVISION;
+
+#endif

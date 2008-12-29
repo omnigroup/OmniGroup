@@ -179,8 +179,8 @@ static void _appendInExpressionValue(const void *value, void *context)
             
             // 10.5 adds support for fetch request expression for subqueries, but we will support static values, sets and arrays thereof.
             if ([rhs expressionType] != NSConstantValueExpressionType) {
-                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", nil, OMNI_BUNDLE, @"error description");
-                NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert IN expression with non-constant value; %@.", nil, OMNI_BUNDLE, @"error reason"), rhs];
+                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+                NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert IN expression with non-constant value; %@.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), rhs];
                 ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
                 OBASSERT_NOT_REACHED("Fix me");
                 return NO;
@@ -205,8 +205,8 @@ static void _appendInExpressionValue(const void *value, void *context)
             return YES;
         }
         default: {
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", nil, OMNI_BUNDLE, @"error description");
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert predicate of type %d (%@).", nil, OMNI_BUNDLE, @"error reason"), opType, self];
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert predicate of type %d (%@).", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), opType, self];
             ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
             OBASSERT_NOT_REACHED("Fix me");
             return NO;
@@ -227,7 +227,7 @@ static void _appendInExpressionValue(const void *value, void *context)
     switch (type) {
         case NSKeyPathExpressionType: {
             NSString *keyPath = [self keyPath];
-            if ([keyPath containsString:@"."]) {
+            if ([keyPath rangeOfString:@"."].length > 0) {
                 // OmniFocusModel needs to use in-memory predicates of the form %K.%K where the joined key is the primary key of the destination.  In this case we can use the foreign key locally.
                 NSArray *components = [keyPath componentsSeparatedByString:@"."];
                 if ([components count] == 2) {
@@ -267,8 +267,8 @@ static void _appendInExpressionValue(const void *value, void *context)
             return YES;
         }
         default: {
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", nil, OMNI_BUNDLE, @"error description");
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert expression of type %d (%@).", nil, OMNI_BUNDLE, @"error reason"), type, self];
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert expression of type %d (%@).", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type, self];
             ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
             OBASSERT_NOT_REACHED("Fix me");
             return NO;

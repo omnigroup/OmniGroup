@@ -9,12 +9,64 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>
 
-#import "ODOEntity-Internal.h"
-#import "ODOProperty-Internal.h"
-#import "ODOAttribute-Internal.h"
-#import "ODORelationship-Internal.h"
-
 RCS_ID("$Id$")
+
+static NSString * const ODOPropertyNameAttributeName = @"name";
+static NSString * const ODOPropertyOptionalAttributeName = @"optional";
+static NSString * const ODOPropertyTransientAttributeName = @"transient";
+
+static NSString * const ODOAttributeElementName = @"attribute";
+static NSString * const ODOAttributeTypeAttributeName = @"type";
+static NSString * const ODOAttributeDefaultValueAttributeName = @"default";
+static NSString * const ODOAttributePrimaryKeyAttributeName = @"primary";
+
+static NSString * const ODORelationshipElementName = @"relationship";
+static NSString * const ODORelationshipDeleteRuleAttributeName = @"delete";
+static NSString * const ODORelationshipToManyAttributeName = @"many";
+static NSString * const ODORelationshipDestinationEntityAttributeName = @"entity";
+static NSString * const ODORelationshipInverseRelationshipAttributeName = @"inverse";
+
+static NSString * const ODOEntityElementName = @"entity";
+static NSString * const ODOEntityNameAttributeName = @"name";
+static NSString * const ODOEntityInstanceClassAttributeName = @"class";
+
+static OFEnumNameTable *ODOAttributeTypeEnumNameTable(void)
+{
+    static OFEnumNameTable *table = nil;
+    
+    if (!table) {
+        table = [[OFEnumNameTable alloc] initWithDefaultEnumValue:ODOAttributeTypeInvalid];
+        [table setName:@"--invalid--" forEnumValue:ODOAttributeTypeInvalid];
+        
+        [table setName:@"undefined" forEnumValue:ODOAttributeTypeUndefined];
+        [table setName:@"int16" forEnumValue:ODOAttributeTypeInt16];
+        [table setName:@"int32" forEnumValue:ODOAttributeTypeInt32];
+        [table setName:@"int64" forEnumValue:ODOAttributeTypeInt64];
+        [table setName:@"float32" forEnumValue:ODOAttributeTypeFloat32];
+        [table setName:@"float64" forEnumValue:ODOAttributeTypeFloat64];
+        [table setName:@"string" forEnumValue:ODOAttributeTypeString];
+        [table setName:@"boolean" forEnumValue:ODOAttributeTypeBoolean];
+        [table setName:@"date" forEnumValue:ODOAttributeTypeDate];
+        [table setName:@"data" forEnumValue:ODOAttributeTypeData];
+    }
+    
+    return table;
+}
+
+static OFEnumNameTable *ODORelationshipDeleteRuleEnumNameTable(void)
+{
+    static OFEnumNameTable *table = nil;
+    if (!table) {
+        table = [[OFEnumNameTable alloc] initWithDefaultEnumValue:ODORelationshipDeleteRuleInvalid];
+        [table setName:@"--invalid--" forEnumValue:ODORelationshipDeleteRuleInvalid];
+
+        [table setName:@"nullify" forEnumValue:ODORelationshipDeleteRuleNullify];
+        [table setName:@"cascade" forEnumValue:ODORelationshipDeleteRuleCascade];
+        [table setName:@"deny" forEnumValue:ODORelationshipDeleteRuleDeny];
+    }
+    
+    return table;
+}
 
 static void _setPropertyAttributes(NSEntityDescription *entity, NSPropertyDescription *prop, OFXMLDocument *doc)
 {
@@ -54,9 +106,6 @@ static void _appendAttribute(NSEntityDescription *entity, NSAttributeDescription
                 break;
             case NSInteger64AttributeType:
                 oType = ODOAttributeTypeInt64;
-                break;
-            case NSDecimalAttributeType:
-                oType = ODOAttributeTypeDecimal;
                 break;
             case NSDoubleAttributeType:
                 oType = ODOAttributeTypeFloat64;

@@ -9,6 +9,7 @@
 
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
+#import <OmniBase/OBUtilities.h>
 
 RCS_ID("$Id$");
 
@@ -35,7 +36,24 @@ static NSMutableDictionary *_createUserInfo(NSString *firstKey, va_list args)
     return userInfo;
 }
 
+static id (*original_initWithDomainCodeUserInfo)(NSError *self, SEL _cmd, NSString *domain, NSInteger code, NSDictionary *dict) = NULL;
+
 @implementation NSError (OBExtensions)
+
++ (void)performPosing;
+{
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"OBLogErrorCreations"]) {
+        original_initWithDomainCodeUserInfo = (typeof(original_initWithDomainCodeUserInfo))OBReplaceMethodImplementationWithSelector(self, @selector(initWithDomain:code:userInfo:), @selector(logging_initWithDomain:code:userInfo:));
+    }
+}
+- (id)logging_initWithDomain:(NSString *)domain code:(NSInteger)code userInfo:(NSDictionary *)dict;
+{
+    self = original_initWithDomainCodeUserInfo(self, _cmd, domain, code, dict);
+    if (self)
+        NSLog(@"Error created: %@", [self toPropertyList]);
+    return self;
+}
+
 
 // Returns YES if the error or any of its underlying errors has the indicated domain and code.
 - (BOOL)hasUnderlyingErrorDomain:(NSString *)domain code:(int)code;

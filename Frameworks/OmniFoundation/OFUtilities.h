@@ -55,9 +55,6 @@ extern char *OFNameForPointer(id object, char *pointerName);
 
 #define OFForEachInArray(arrayExpression, valueType, valueVar, loopBody) { NSArray * valueVar ## _array = (arrayExpression); unsigned int valueVar ## _count , valueVar ## _index; valueVar ## _count = [( valueVar ## _array ) count]; for( valueVar ## _index = 0; valueVar ## _index < valueVar ## _count ; valueVar ## _index ++ ) { valueType valueVar = [( valueVar ## _array ) objectAtIndex:( valueVar ## _index )]; loopBody ; } }
 
-// Test whether ObjC2-style fast iterators can be used
-#define OF_FAST_ITERATORS_AVAILABLE ( defined(MAC_OS_X_VERSION_10_5) && (MAC_OS_X_VERSION_10_5 <= MAC_OS_X_VERSION_MIN_REQUIRED) && defined(__APPLE_CC__) && (__APPLE_CC__ >= 5465) )
-
 extern unsigned int OFLocalIPv4Address(void);
 
 // A string which uniquely identifies this computer. Currently, it's the MAC address for the built-in ethernet port, but that or the underlying implementation could change.

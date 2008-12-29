@@ -123,7 +123,8 @@ static NSString *removeScriptSuffix(NSString *string)
 
 - (void)executeScriptItem:sender;
 {
-    OAToolbarWindowController *controller = [[sender toolbar] delegate];
+    OAToolbarWindowController *controller = [(id)[sender toolbar] delegate];
+    OBASSERT([controller isKindOfClass:[OAToolbarWindowController class]]); // Need it non-nil for -window
     
     if ([controller respondsToSelector:@selector(scriptToolbarItemShouldExecute:)] &&
 	![controller scriptToolbarItemShouldExecute:sender])
@@ -136,10 +137,10 @@ static NSString *removeScriptSuffix(NSString *string)
 	    OAWorkflow *workflow = [OAWorkflow workflowWithContentsOfFile:scriptFilename];
 	    if (!workflow) {
 		NSBundle *frameworkBundle = [OAScriptToolbarHelper bundle];
-		NSString *errorText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to run workflow.", @"OmniAppKit", frameworkBundle, "workflow execution error")];
+		NSString *errorText = NSLocalizedStringFromTableInBundle(@"Unable to run workflow.", @"OmniAppKit", frameworkBundle, "workflow execution error");
 		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"workflow not found at %@", @"OmniAppKit", frameworkBundle, "script loading error message"), scriptFilename];
 		NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", frameworkBundle, "script error panel button");
-		NSBeginAlertSheet(errorText, okButton, nil, nil, [[sender toolbar] window], self, NULL, NULL, NULL, messageText);                                     
+		NSBeginAlertSheet(errorText, okButton, nil, nil, [controller window], self, NULL, NULL, NULL, messageText);                                     
 		return;
 	    }
 	    NSException   *raisedException = nil;
@@ -150,34 +151,42 @@ static NSString *removeScriptSuffix(NSString *string)
 	    } NS_ENDHANDLER;
 	    if (raisedException) {
 		NSBundle *frameworkBundle = [OAScriptToolbarHelper bundle];
-		NSString *errorText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to run workflow.", @"OmniAppKit", frameworkBundle, "workflow execution error")];
+		NSString *errorText = NSLocalizedStringFromTableInBundle(@"Unable to run workflow.", @"OmniAppKit", frameworkBundle, "workflow execution error");
 		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The following error was reported:\n%@", @"OmniAppKit", frameworkBundle, "script loading error message"), [raisedException reason]];
 		NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", frameworkBundle, "script error panel button");
-		NSBeginAlertSheet(errorText, okButton, nil, nil, [[sender toolbar] window], self, NULL, NULL, NULL, messageText);                                     
+		NSBeginAlertSheet(errorText, okButton, nil, nil, [controller window], self, NULL, NULL, NULL, messageText);                                     
 	    }
 	} else {
 	    NSDictionary *errorDictionary;
 	    NSString *scriptName = [[NSFileManager defaultManager] displayNameAtPath:scriptFilename];
-	    NSAppleScript *script = [[[NSAppleScript alloc] initWithContentsOfURL:[NSURL fileURLWithPath:scriptFilename] error:&errorDictionary] autorelease];
-	    NSAppleEventDescriptor *result;
-	    if (script == nil) {
-		NSString *errorText, *messageText, *okButton;
-		
-		errorText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The script file '%@' could not be opened.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error"), scriptName];
-		messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error message"), [errorDictionary objectForKey:NSAppleScriptErrorMessage]];
-		okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
-		NSBeginAlertSheet(errorText, okButton, nil, nil, [[sender toolbar] window], self, NULL, NULL, NULL, messageText);                                     
+	    
+	    // throw an error sheet if the script doesn't exist at all
+	    if (![[NSFileManager defaultManager] fileExistsAtPath:scriptFilename]) { 		
+		NSString *errorText = NSLocalizedStringFromTableInBundle(@"The script file could not be opened.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error");
+		NSString *messageText = NSLocalizedStringFromTableInBundle(@"The requested AppleScript does not exist", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error message");
+		NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
+		NSBeginAlertSheet(errorText, okButton, nil, nil, [controller window], self, NULL, NULL, NULL, messageText);                                     
 		return;
 	    }
+	    
+	    NSAppleScript *script = [[[NSAppleScript alloc] initWithContentsOfURL:[NSURL fileURLWithPath:scriptFilename] error:&errorDictionary] autorelease];
+	    // throw an error sheet if the script exists, but was not able to be created
+	    if (script == nil) {		
+		NSString *errorText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The script file '%@' could not be opened.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error"), scriptName];
+		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error message"), [errorDictionary objectForKey:NSAppleScriptErrorMessage]];
+		NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
+		NSBeginAlertSheet(errorText, okButton, nil, nil, [controller window], self, NULL, NULL, NULL, messageText);                                     
+		return;
+	    }
+	    
+	    NSAppleEventDescriptor *result;
 	    result = [script executeAndReturnError:&errorDictionary];
-	    if (result == nil) {
-		NSString *errorText, *messageText, *okButton, *editButton;
-		
-		errorText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The script '%@' could not complete.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error"), scriptName];
-		messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error message"), [errorDictionary objectForKey:NSAppleScriptErrorMessage]];
-		okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
-		editButton = NSLocalizedStringFromTableInBundle(@"Edit Script", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
-		NSBeginAlertSheet(errorText, okButton, editButton, nil, [[sender toolbar] window], self, @selector(errorSheetDidEnd:returnCode:contextInfo:), NULL, [scriptFilename retain], messageText);                                     
+	    if (result == nil) {		
+		NSString *errorText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The script '%@' could not complete.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error"), scriptName];
+		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error message"), [errorDictionary objectForKey:NSAppleScriptErrorMessage]];
+		NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
+		NSString *editButton = NSLocalizedStringFromTableInBundle(@"Edit Script", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
+		NSBeginAlertSheet(errorText, okButton, editButton, nil, [controller window], self, @selector(errorSheetDidEnd:returnCode:contextInfo:), NULL, [scriptFilename retain], messageText);                                     
 		
 		return;
 	    }

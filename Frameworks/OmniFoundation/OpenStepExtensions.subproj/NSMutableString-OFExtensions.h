@@ -19,8 +19,8 @@
 - (BOOL)replaceAllOccurrencesOfRegularExpressionString:(NSString *)matchString withString:(NSString *)newString;
 - (void)replaceAllLineEndingsWithString:(NSString *)newString;
 
-- (void)appendCharacter:(unsigned int)aCharacter;
-- (void)appendStrings: (NSString *)first, ...;
+- (void)appendLongCharacter:(UTF32Char)aCharacter; // This handles >16 bits characters, encoding with with surrogate pairs
+- (void)appendStrings: (NSString *)first, ... NS_REQUIRES_NIL_TERMINATION;
 
 - (void)removeSurroundingWhitespace OB_DEPRECATED_ATTRIBUTE;
 

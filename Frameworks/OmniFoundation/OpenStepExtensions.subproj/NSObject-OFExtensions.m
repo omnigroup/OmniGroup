@@ -7,8 +7,6 @@
 
 #import <OmniFoundation/NSObject-OFExtensions.h>
 
-#import <OmniFoundation/OFUtilities.h>
-
 RCS_ID("$Id$")
 
 @implementation NSObject (OFExtensions)
@@ -59,8 +57,6 @@ static BOOL implementsInstanceMethod(Class cls, SEL aSelector)
     return [isa bundle];
 }
 
-#if OF_FAST_ITERATORS_AVAILABLE
-
 - (void)performSelector:(SEL)sel withEachObjectInArray:(NSArray *)array
 {
     for (id loopItem in array) {
@@ -74,24 +70,6 @@ static BOOL implementsInstanceMethod(Class cls, SEL aSelector)
         [self performSelector:sel withObject:loopItem];
     }
 }
-
-#else
-
-- (void)performSelector:(SEL)sel withEachObjectInArray:(NSArray *)array
-{
-    OFForEachInArray(array, NSObject *, anObject, {
-        [self performSelector:sel withObject:anObject];
-    });
-}
-
-- (void)performSelector:(SEL)sel withEachObjectInSet:(NSSet *)set
-{
-    OFForEachObject([set objectEnumerator], NSObject *, anObject) {
-        [self performSelector:sel withObject:anObject];
-    }
-}
-
-#endif
 
 typedef char   (*byteImp_t)(id self, SEL _cmd, id arg);
 typedef short  (*shortImp_t)(id self, SEL _cmd, id arg);

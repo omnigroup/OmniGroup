@@ -30,6 +30,7 @@
 #import <OmniAppKit/NSObject-NSDraggingInfo-OAExtensions.h>
 #import <OmniAppKit/NSPasteboard-OAExtensions.h>
 #import <OmniAppKit/NSPopUpButton-OAExtensions.h>
+#import <OmniAppKit/NSResponder-OAExtensions.h>
 #import <OmniAppKit/NSScrollView-OAExtensions.h>
 #import <OmniAppKit/NSSliderCell-OAExtensions.h>
 #import <OmniAppKit/NSSplitView-OAExtensions.h>
@@ -67,8 +68,6 @@
 #import <OmniAppKit/OADocument.h>
 #import <OmniAppKit/OADocumentPositioningView.h>
 #import <OmniAppKit/OADragController.h>
-#import <OmniAppKit/OAExtendedOutlineView.h>
-#import <OmniAppKit/OAExtendedTableView.h>
 #import <OmniAppKit/OAFileWell.h>
 #import <OmniAppKit/OAFindController.h>
 #import <OmniAppKit/OAFindControllerTargetProtocol.h>

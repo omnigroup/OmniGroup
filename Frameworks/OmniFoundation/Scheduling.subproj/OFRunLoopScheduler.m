@@ -99,7 +99,7 @@ static OFRunLoopScheduler *runLoopScheduler = nil;
     NSDate *eventDate;
     double period;
 
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     [scheduleLock lock];
 
     [self cancelScheduledEvents];

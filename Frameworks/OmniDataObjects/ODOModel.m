@@ -7,120 +7,100 @@
 
 #import <OmniDataObjects/ODOModel.h>
 
+#import <OmniDataObjects/ODOObject.h>
+#import <OmniDataObjects/ODOModel-Creation.h>
 #import "ODOEntity-Internal.h"
 #import "ODODatabase-Internal.h"
 
 RCS_ID("$Id$")
 
-NSString * const ODOModelRootElementName = @"model";
-NSString * const ODOModelNamespaceURLString = @"http://www.omnigroup.com/namespace/xodo/1.0";
-
 @implementation ODOModel
 
-static NSMutableSet *InternedNames = nil;
+static CFMutableDictionaryRef ClassToEntity = nil;
+static CFMutableDictionaryRef EntityToClass = nil;
 
 + (void)initialize;
 {
     OBINITIALIZE;
-    InternedNames = [[NSMutableSet alloc] init];
+    ClassToEntity = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNonOwnedPointerDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks);
+    EntityToClass = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFNonOwnedPointerDictionaryValueCallbacks);
 }
 
-+ (NSString *)internName:(NSString *)name;
+// Not very happy with this registration API; see commentary at +[ODOObject resolveInstanceMethod:] for the involved issues
++ (void)registerClass:(Class)cls forEntity:(ODOEntity *)entity;
 {
-    // Only immutable strings should be passed in.
-    OBPRECONDITION(name == [[name copy] autorelease]);
+    // We require a 1-1 mapping from entity to class (for those with custom classes) AND we require only 'leaf' classes be associated with an entity (the latter restriction isn't enforced here).
+    OBPRECONDITION(CFDictionaryGetValue(ClassToEntity, cls) == nil);
+    OBPRECONDITION(CFDictionaryGetValue(EntityToClass, entity) == Nil);
     
-    NSString *intern = [InternedNames member:name];
-    if (!intern) {
-        [InternedNames addObject:name];
-        intern = name;
-    }
-
-    return intern;
+    CFDictionarySetValue(ClassToEntity, cls, entity);
+    CFDictionarySetValue(EntityToClass, entity, cls);
 }
 
-- (id)initWithContentsOfFile:(NSString *)path error:(NSError **)outError;
++ (ODOEntity *)entityForClass:(Class)cls;
 {
-    _path = [path copy];
-    
-    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithContentsOfFile:path whitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior] error:outError];
-    if (!doc) {
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Couldn't create OFXMLDocument.", nil, OMNI_BUNDLE, @"error reason");
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-    
-    OFXMLCursor *cursor = [[[OFXMLCursor alloc] initWithDocument:doc] autorelease];
-    [doc release];
-    
-    if (OFNOTEQUAL([cursor name], ODOModelRootElementName)) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Wrong root element name.  Was expecting '%@' but found '%@'.", nil, OMNI_BUNDLE, @"error reason"), ODOModelRootElementName, [cursor name]];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-    
-    
-    if (OFNOTEQUAL([cursor attributeNamed:@"xmlns"], ODOModelNamespaceURLString)) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Wrong root element namespace.  Was expecting '%@' but found '%@'.", nil, OMNI_BUNDLE, @"error reason"), ODOModelNamespaceURLString, [cursor attributeNamed:@"xmlns"]];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-        
-    NSMutableDictionary *entitiesByName = [NSMutableDictionary dictionary];
-    while ([cursor openNextChildElementNamed:ODOEntityElementName]) {
-        ODOEntity *entity = [[ODOEntity alloc] initWithCursor:cursor model:self error:outError];
-        if (!entity) {
-            [self release];
-            return nil;
-        }
-        
-        NSString *name = [entity name];
-        
-        if ([name isEqualToString:ODODatabaseMetadataTableName]) {
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Entity name '%@' is reserved.", nil, OMNI_BUNDLE, @"error reason"), ODODatabaseMetadataTableName];
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-            ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-            [self release];
-            return nil;
-        }
-        
-        if ([entitiesByName objectForKey:name]) {
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Model '%@' has multiple properties named '%@'.", nil, OMNI_BUNDLE, @"error reason"), path, name];
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-            ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-            [self release];
-            return nil;
-        }
-        
-        [entitiesByName setObject:entity forKey:name];
-        [cursor closeElement];
-    }
-    
-    _entitiesByName = [[NSDictionary alloc] initWithDictionary:entitiesByName];
+    return (ODOEntity *)CFDictionaryGetValue(ClassToEntity, cls);
+}
 
-    NSEnumerator *entityEnum = [_entitiesByName objectEnumerator];
-    ODOEntity *entity;
-    while ((entity = [entityEnum nextObject])) {
-        if (![entity finalizeModelLoading:outError]) {
-            [self release];
-            return nil;
+ODOModel *ODOModelCreate(NSString *name, NSArray *entities)
+{
+    ODOModel *model;
+    
+    // Make sure that our poking model classes doesn't cause their +initialize to ask for a shared model that is still in the process of loading...
+#ifdef OMNI_ASSERTIONS_ON
+    static BOOL CreatingModel = NO;
+    OBPRECONDITION(CreatingModel == NO);
+    CreatingModel = YES;
+    @try {
+#endif
+        model = [[ODOModel alloc] init];
+        
+        model->_name = [name copy];
+        
+        NSMutableDictionary *entitiesByName = [NSMutableDictionary dictionary];
+        for (ODOEntity *entity in entities) {
+            NSString *name = [entity name];
+            
+            OBASSERT(![name hasPrefix:@"ODO"]); // All entity names beginning with ODO are reserved
+            OBASSERT([entitiesByName objectForKey:name] == nil);
+            [entitiesByName setObject:entity forKey:name];
+        }
+        model->_entitiesByName = [[NSDictionary alloc] initWithDictionary:entitiesByName];
+#ifdef OMNI_ASSERTIONS_ON
+    } @finally {
+        CreatingModel = NO;
+    }
+#endif
+    return model;
+}
+
+void ODOModelFinalize(ODOModel *model)
+{
+    for (ODOEntity *entity in [model->_entitiesByName objectEnumerator]) {
+        [entity finalizeModelLoading];
+        Class cls = [entity instanceClass];
+        if (cls != [ODOObject class])
+            [ODOModel registerClass:cls forEntity:entity];
+    }
+    
+#ifdef OMNI_ASSERTIONS_ON
+    // Only 'leaf' instance classes should be registered.
+    for (ODOEntity *entity in [model->_entitiesByName objectEnumerator]) {
+        Class cls = [entity.instanceClass superclass];
+        while (cls) {
+            OBASSERT([ODOModel entityForClass:cls] == Nil);
+            cls = [cls superclass];
         }
     }
-
-    // TODO: Make sure that for all relationships, relationship.inverse.inverse is the relationship.  This will verify that two relationships don't both claim the same relationship as their inverse.
-    
-    return self;
+#endif
 }
 
 - (void)dealloc;
 {
-    [_path release];
+    // See the @dynamic support in ODOObject, including +resolveInstanceMethod:
+    OBRejectUnusedImplementation(self, _cmd);
+    
+    [_name release];
     [_entitiesByName release];
     [super dealloc];
 }
@@ -140,8 +120,11 @@ static NSMutableSet *InternedNames = nil;
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict = [super debugDictionary];
-    [dict setObject:_path forKey:@"path"];
-    [dict setObject:[[_entitiesByName allValues] arrayByPerformingSelector:_cmd] forKey:@"entities"];
+    [dict setObject:_name forKey:@"name"];
+    NSMutableArray *entityDescriptions = [NSMutableArray array];
+    for (ODOEntity *entity in [_entitiesByName objectEnumerator])
+        [entityDescriptions addObject:[entity debugDictionary]];
+    [dict setObject:entityDescriptions forKey:@"entities"];
     return dict;
 }
 #endif

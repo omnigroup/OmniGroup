@@ -123,6 +123,11 @@ static NSString *_variableSubstitutionInDictionary(NSString *key, void *context)
 - (NSString *)stringByReplacingKeys:(OFVariableReplacementFunction)replacer startingDelimiter:(NSString *)startingDelimiterString endingDelimiter:(NSString *)endingDelimiterString context:(void *)context;
 {
     NSScanner *scanner = [NSScanner scannerWithString:self];
+    
+    // <bug://bugs/11340> (Whitespace deletion bug in -stringByReplacingKeysInDictionary:startingDelimiter:endingDelimiter:removeUndefinedKeys:)
+    // Really there is no reason to use NSScanner here; could just use -rangeOfString:options:range:...
+    [scanner setCharactersToBeSkipped:[NSCharacterSet characterSetWithRange:NSMakeRange(0, 0)]];
+    
     NSMutableString *interpolatedString = [NSMutableString string];
     NSString *scannerOutput;
     BOOL didInterpolate = NO;

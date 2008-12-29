@@ -143,7 +143,7 @@ static unsigned int scrollEntriesCount = 0;
 {
     OADeferredScrollEntry *deferredScrollEntry;
 
-    if (![NSThread inMainThread])
+    if (![NSThread isMainThread])
         [NSException raise:NSInternalInconsistencyException format:@"+[NSView(OAExtensions) performDeferredScrolling] is not thread-safe"];
 
     deferredScrollEntry = scrollEntries + scrollEntriesCount;
@@ -165,7 +165,7 @@ static unsigned int scrollEntriesCount = 0;
 {
     OADeferredScrollEntry *deferredScrollEntry;
 
-    if (![NSThread inMainThread])
+    if (![NSThread isMainThread])
         [NSException raise:NSInternalInconsistencyException format:@"-[NSView(OAExtensions) scrollDownByAdjustedPixels:] is not thread-safe"];
 
 #ifdef DEBUG_kc0
@@ -181,7 +181,7 @@ static unsigned int scrollEntriesCount = 0;
 {
     OADeferredScrollEntry *deferredScrollEntry;
 
-    if (![NSThread inMainThread])
+    if (![NSThread isMainThread])
         [NSException raise:NSInternalInconsistencyException format:@"-[NSView(OAExtensions) scrollRightByAdjustedPixels:] is not thread-safe"];
 
 #ifdef DEBUG_kc0

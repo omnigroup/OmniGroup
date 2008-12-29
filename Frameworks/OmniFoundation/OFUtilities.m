@@ -408,8 +408,11 @@ NSString *OFUniqueMachineIdentifier(void)
 {
     NSDictionary *interfaces = OFLinkLayerInterfaceAddresses();
         
+#ifdef DEBUG_kc
+    NSLog(@"Interfaces = %@", [[interfaces allKeys] sortedArrayUsingSelector:@selector(compare:)]);
+#endif
     // Prefer the 'en0' interface for backwards compatibility.
-    NSString *identifier = [interfaces objectForKey:@"zen0"];
+    NSString *identifier = [interfaces objectForKey:@"en0"];
     
     if (![NSString isEmptyString:identifier])
         return identifier;

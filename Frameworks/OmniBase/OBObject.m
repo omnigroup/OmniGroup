@@ -8,7 +8,7 @@
 #import <OmniBase/OBObject.h>
 
 // If we do end up pulling over OBObject, let's try to avoid OBPostLoader on the iPhone.  This means no +didLoad, +performPosing, and friends (but quicker startup).
-#ifndef TARGET_OS_IPHONE
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniBase/OBPostLoader.h>
 #endif
 
@@ -52,7 +52,7 @@ static BOOL OBObjectDebug = NO;
 #endif
 
 
-#ifndef TARGET_OS_IPHONE
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
         [OBPostLoader processClasses];
 #endif
     }
@@ -118,21 +118,36 @@ See also: - dealloc (NSObject)
 
 @end
 
-@implementation OBObject (Debug)
-
-static const unsigned int MaxDebugDepth = 3;
+@implementation NSObject (OBDebuggingExtensions)
 
 /*"
-Returns a mutable dictionary describing the contents of the object. Subclasses should override this method, call the superclass implementation, and then add their contents to the returned dictionary. This is used for debugging purposes. It is highly recommended that you subclass this method in order to add information about your custom subclass (if appropriate), as this has no performance or memory requirement issues (it is never called unless you specifically call it, presumably from withing a gdb debugging session).
-
-See also: - descriptionWithLocale:indent:
-"*/
+ Returns a mutable dictionary describing the contents of the object. Subclasses should override this method, call the superclass implementation, and then add their contents to the returned dictionary. This is used for debugging purposes. It is highly recommended that you subclass this method in order to add information about your custom subclass (if appropriate), as this has no performance or memory requirement issues (it is never called unless you specifically call it, presumably from withing a gdb debugging session).
+ 
+ See also: - shortDescription (NSObject)
+ "*/
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     [dict setObject:[self shortDescription] forKey:@"__self__"];
     return dict;
 }
+
+/*"
+ Returns -description but can be customized to return some small amount of extra information about the instance itself (though not its contents).
+
+ See also: - description (NSObject)
+ "*/
+- (NSString *)shortDescription;
+{
+    return [self description];
+}
+
+@end
+
+// These are defined on other NSObject subclasses; extend OBObject to have them using our -debugDictionary and -shortDescription
+@implementation OBObject (OBDebugging)
+
+static const unsigned int MaxDebugDepth = 3;
 
 /*"
 Normally, calls [self debugDictionary], asks that dictionary to perform descriptionWithLocale:indent:, and returns the result. To minimize the chance of the resulting description being extremely large (and therefore more confusing than useful), if level is greater than 2 this method simply returns [self shortDescription].
@@ -156,10 +171,10 @@ See also: - debugDictionary
 }
 
 /*"
-Returns [super description]. See NSObject for details of its implementation of description; this method exists to provide access to the original implementation of description.
-
-See also: - description (NSObject)
-"*/
+ Returns [super description].  Without this, the NSObject -shortDescription would call our -description which could eventually recurse to -shortDescription.
+ 
+ See also: - description (NSObject)
+ "*/
 - (NSString *)shortDescription;
 {
     return [super description];

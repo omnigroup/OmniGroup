@@ -7,8 +7,9 @@
 //
 // $Id$
 
+#import <AvailabilityMacros.h>
+
 #import <OmniBase/assertions.h>
-#import <OmniBase/SystemType.h>
 #import <OmniBase/macros.h>
 #import <OmniBase/rcsid.h>
 
@@ -16,6 +17,5 @@
 #import <OmniBase/OBPostLoader.h>
 #import <OmniBase/OBUtilities.h>
 
-#import <OmniBase/NSObject-OBObjectCompatibility.h>
 #import <OmniBase/NSException-OBExtensions.h>
 #import <OmniBase/NSError-OBExtensions.h>

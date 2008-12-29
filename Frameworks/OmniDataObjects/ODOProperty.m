@@ -7,49 +7,23 @@
 
 #import <OmniDataObjects/ODOProperty.h>
 
-#import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOModel.h>
 
+#import "ODOObject-Accessors.h"
+#import "ODOAttribute-Internal.h"
 #import "ODOEntity-Internal.h"
+#import "ODOProperty-Internal.h"
+
 
 RCS_ID("$Id$")
 
-#ifdef OMNI_ASSERTIONS_ON
-@interface ODOProperty (Signatures)
-// Used for getting type signatures
-- (id)_getter_signature;
-- (void)_setter_signature:(id)arg;
-@end
-@implementation ODOProperty (Signatures)
-// Used for getting type signatures
-- (id)_getter_signature;
-{
-    return nil;
-}
-- (void)_setter_signature:(id)arg;
-{
-}
-@end
-#endif
-
-#ifdef OMNI_ASSERTIONS_ON
-const char *ODOPropertyGetterSignature = NULL;
-const char *ODOPropertySetterSignature = NULL;
-#endif
-
 @implementation ODOProperty
 
-#ifdef OMNI_ASSERTIONS_ON
 + (void)initialize;
 {
     OBINITIALIZE;
     
-    Method getter = class_getInstanceMethod(self, @selector(_getter_signature));
-    ODOPropertyGetterSignature = method_getTypeEncoding(getter);
-    Method setter = class_getInstanceMethod(self, @selector(_setter_signature:));
-    ODOPropertySetterSignature = method_getTypeEncoding(setter);
 }
-#endif
 
 - (void)dealloc;
 {
@@ -104,107 +78,101 @@ const char *ODOPropertySetterSignature = NULL;
 }
 #endif
 
-@end
-
-#import "ODOProperty-Internal.h"
-
-NSString * const ODOPropertyNameAttributeName = @"name";
-NSString * const ODOPropertyOptionalAttributeName = @"optional";
-NSString * const ODOPropertyTransientAttributeName = @"transient";
-
-@implementation ODOProperty (Internal)
-
-- (id)initWithCursor:(OFXMLCursor *)cursor entity:(ODOEntity *)entity baseFlags:(struct _ODOPropertyFlags)flags error:(NSError **)outError;
+void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags flags, BOOL optional, BOOL transient, SEL get, SEL set)
 {
-    OBPRECONDITION(entity);
+    OBPRECONDITION([self isKindOfClass:[ODOProperty class]]);
+    OBPRECONDITION([name length] > 0);
+    OBPRECONDITION(get);
+    OBPRECONDITION(set);
     
-    _nonretained_entity = entity;
-    _flags = flags; // We'll override the property-specific bits of this.
-    
-    NSString *name = [cursor attributeNamed:ODOPropertyNameAttributeName];
-    NSString *intern = [ODOModel internName:name];
+    self->_nonretained_entity = (ODOEntity *)0xdeadbeef;
+    self->_name = [name copy];
+    self->_flags = flags; // We'll override the property-specific bits of this.
+    self->_flags.optional = optional;
+    self->_flags.transient = transient;
+    self->_sel.get = get;
+    self->_sel.set = set;
+}
 
-#ifdef OMNI_ASSERTIONS_ON
-    if (name == intern) {
-        NSLog(@"Property name '%@' is not interned!", name);
-        OBASSERT(name != intern); // Your model should intern constant strings before reading the model so that we can pick them up.
-    }
-#endif
-    
-    _name = [intern retain];
-    
-    if ([NSString isEmptyString:_name]) {
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Property has no name.", nil, OMNI_BUNDLE, @"error reason");
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-    
-    NSString *str;
-    
-    str = [cursor attributeNamed:ODOPropertyOptionalAttributeName];
-    if (str) {
-        OBASSERT([str isEqualToString:@"true"] || [str isEqualToString:@"false"]);
-        _flags.optional = [str isEqualToString:@"true"] ? 1 : 0;
-    }
-    
-    str = [cursor attributeNamed:ODOPropertyTransientAttributeName];
-    if (str) {
-        OBASSERT([str isEqualToString:@"true"] || [str isEqualToString:@"false"]);
-        _flags.transient = [str isEqualToString:@"true"] ? 1 : 0;
-    }
-    
-    SEL getterSelector = NSSelectorFromString(_name);
-    if ([[entity instanceClass] instancesRespondToSelector:getterSelector]) {
-        // Only support id-returning getters for now
-#ifdef OMNI_ASSERTIONS_ON
-        Method method = class_getInstanceMethod([entity instanceClass], getterSelector);
-        const char *types = method_getTypeEncoding(method);
-        OBASSERT(strcmp(types, ODOPropertyGetterSignature) == 0);
-#endif
-        
-        if (_flags.relationship && _flags.toMany) {
-            OBASSERT_NOT_REACHED("We don't want getters for to-many relationships for now."); // What could possibly happen there that is valid?  If we do allow it, we need to consider how it would work in terms of mutability of the result, primativeValueForKey:, faulting, etc.
-            getterSelector = NULL;
-        }
-        
-        _getterSelector = getterSelector;
-    }
+void ODOPropertyBind(ODOProperty *self, ODOEntity *entity)
+{
+    OBPRECONDITION([self isKindOfClass:[ODOProperty class]]);
+    self->_nonretained_entity = entity;
+}
 
-    SEL setterSelector;
-    {
-        NSMutableString *setterName = [[NSMutableString alloc] initWithFormat:@"set%@:", _name];
-        [setterName replaceCharactersInRange:NSMakeRange(3,1) withString:[[_name substringToIndex:1] uppercaseString]];
-        setterSelector = NSSelectorFromString(setterName);
-        [setterName release];
-    }
+// Since we install method implementations if they don't exist, this can provoke +[ODOObject resolveInstanceMethod:] to fire and install methods.  We should bail on installing methods if properties are read-only, though, so the getter IMP should always get cached, but the setter might not.
+static void _ODOPropertyCacheImplementations(ODOProperty *self)
+{
+    OBPRECONDITION(self->_imp.get == NULL);
+    OBPRECONDITION(self->_imp.set == NULL);
+
+    Class instanceClass = [self->_nonretained_entity instanceClass];
+    Method method;
+
+    // This query should cause dynamic method creation via +[ODOObject resolveInstanceMethod:].
+    [instanceClass instancesRespondToSelector:self->_sel.get];
+
+    ODOPropertyGetter getter;
+    if ((method = class_getInstanceMethod(instanceClass, self->_sel.get))) {
+        OBASSERT(strcmp(method_getTypeEncoding(method), ODOObjectGetterSignature()) == 0); // Only support id-returning getters for now.
+        getter = (typeof(self->_imp.get))method_getImplementation(method);
+    } else
+        getter = ODOGetterForSelector(self);
     
-    if ([[entity instanceClass] instancesRespondToSelector:setterSelector]) {
-#ifdef OMNI_ASSERTIONS_ON
+    // TODO: if "self->_flags.relationship && self->_flags.toMany" and there is a @property, make sure the result type is NSSet, not NSMutableSet.  If the user implements the method themselves, then they are taking their fate into their own hands.
+    self->_imp.get = getter;
+    
+    // Again, provoke the method installation if it is going to be installed
+    [instanceClass instancesRespondToSelector:self->_sel.set];
+
+    ODOPropertySetter setter;
+    if ((method = class_getInstanceMethod(instanceClass, self->_sel.set))) {
         // Only support id-taking setters for now
-        Method method = class_getInstanceMethod([entity instanceClass], setterSelector);
-        const char *types = method_getTypeEncoding(method);
-        OBASSERT(strcmp(types, ODOPropertySetterSignature) == 0);
-#endif
-
-        if (_flags.relationship && _flags.toMany) {
-            OBASSERT_NOT_REACHED("We don't want setters for to-many relationships for now."); // What could possibly happen there that is valid?  If we do allow it, we need to consider how it would work in terms of mutability of the result, primativeValueForKey:, faulting, relational integrity, etc.
-            setterSelector = NULL;
-        }
-
-        _setterSelector = setterSelector;
+        OBASSERT(strcmp(method_getTypeEncoding(method), ODOObjectSetterSignature()) == 0);
+        setter = (typeof(self->_imp.set))method_getImplementation(method);
+    } else {
+        // TODO: Don't do this for read-only properties.  Only catching the primary key right now
+        if (self->_flags.relationship == NO && [(ODOAttribute *)self isPrimaryKey])
+            setter = NULL;
+        else
+            setter = ODOSetterForSelector(self);
     }
     
-    return self;
+    if (setter) {
+        if (self->_flags.relationship && self->_flags.toMany) {
+            // TODO: Should allow setting to-many sets by setting the inverse on elements of the set, if nothing else.
+            self->_imp.set = NULL;
+        } else {
+            self->_imp.set = setter;
+        }
+    }
+    
+    OBPOSTCONDITION(self->_imp.get != NULL); // Setter might be NULL, though.
 }
 
-#ifdef OMNI_ASSERTIONS_ON
-- (SEL)_setterSelector;
+SEL ODOPropertyGetterSelector(ODOProperty *property)
 {
-    return _setterSelector;
+    return property->_sel.get;
 }
-#endif
+
+SEL ODOPropertySetterSelector(ODOProperty *property)
+{
+    return property->_sel.set;
+}
+
+ODOPropertyGetter ODOPropertyGetterImpl(ODOProperty *property)
+{
+    if (!property->_imp.get)
+        _ODOPropertyCacheImplementations(property);
+    return property->_imp.get;
+}
+
+ODOPropertySetter ODOPropertySetterImpl(ODOProperty *property)
+{
+    if (!property->_imp.get)
+        _ODOPropertyCacheImplementations(property);
+    return property->_imp.set;
+}
 
 BOOL ODOPropertyHasIdenticalName(ODOProperty *property, NSString *name)
 {
@@ -212,47 +180,10 @@ BOOL ODOPropertyHasIdenticalName(ODOProperty *property, NSString *name)
     return property->_name == name;
 }
 
-struct _ODOPropertyFlags ODOPropertyFlags(ODOProperty *property)
-{
-    OBPRECONDITION([property isKindOfClass:[ODOProperty class]]);
-    return property->_flags;
-}
-
 void ODOPropertySnapshotAssignSnapshotIndex(ODOProperty *property, unsigned int snapshotIndex)
 {
     OBPRECONDITION(property->_flags.snapshotIndex == ODO_NON_SNAPSHOT_PROPERTY_INDEX); // shouldn't have been assigned yet.
     property->_flags.snapshotIndex = snapshotIndex;
-}
-
-id ODOPropertyGetValue(ODOObject *object, ODOProperty *property)
-{
-    OBPRECONDITION([property isKindOfClass:[ODOProperty class]]);
-
-    SEL getter = property->_getterSelector;
-    if (getter)
-        return objc_msgSend(object, getter);
-    else {
-        NSString *key = property->_name;
-        [object willAccessValueForKey:key];
-        id value = [object primitiveValueForProperty:property];
-        [object didAccessValueForKey:key];
-        return value;
-    }
-}
-
-void ODOPropertySetValue(ODOObject *object, ODOProperty *property, id value)
-{
-    OBPRECONDITION([property isKindOfClass:[ODOProperty class]]);
-
-    SEL setter = property->_setterSelector;
-    if (setter)
-        objc_msgSend(object, setter, value);
-    else {
-        NSString *key = property->_name;
-        [object willChangeValueForKey:key];
-        [object setPrimitiveValue:value forProperty:property];
-        [object didChangeValueForKey:key];
-    }
 }
 
 @end

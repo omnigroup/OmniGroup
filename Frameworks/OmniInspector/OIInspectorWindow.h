@@ -20,7 +20,7 @@
 
 @end
 
-@interface NSObject (OIAdditionalDelegateMethods)
+@protocol OIInspectorWindowDelegate <NSObject>
 - (void)windowWillBeginResizing:(NSWindow *)window;
 - (void)windowDidFinishResizing:(NSWindow *)window;
 - (NSRect)windowWillResizeFromFrame:(NSRect)fromRect toFrame:(NSRect)toRect;

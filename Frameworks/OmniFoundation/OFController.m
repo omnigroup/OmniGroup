@@ -111,7 +111,7 @@ static void _OFControllerCheckTerminated(void)
 
 - (id)init;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     
     // Ensure that +sharedController and nib loading produce a single instance
     OBPRECONDITION(!sharedController || [self class] == [sharedController class]); // Need to set OFControllerClass otherwise
@@ -147,7 +147,7 @@ static void _OFControllerCheckTerminated(void)
 
 - (void)dealloc;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
 
     [observers release];
     [postponingObservers release];
@@ -158,7 +158,7 @@ static void _OFControllerCheckTerminated(void)
 
 - (OFControllerStatus)status;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
 
     return status;
 }
@@ -232,7 +232,7 @@ static void _OFControllerCheckTerminated(void)
 /*" The application should call this once after it is initialized.  In AppKit applications, this should be called from -applicationWillFinishLaunching:. "*/
 - (void)didInitialize;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(status == OFControllerNotInitializedStatus);
     
     status = OFControllerInitializedStatus;
@@ -242,7 +242,7 @@ static void _OFControllerCheckTerminated(void)
 /*" The application should call this once after calling -didInitialize.  In AppKit applications, this should be called from -applicationDidFinishLaunching:. "*/
 - (void)startedRunning;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(status == OFControllerInitializedStatus);
     
     status = OFControllerRunningStatus;
@@ -252,7 +252,7 @@ static void _OFControllerCheckTerminated(void)
 /*" The application should call this when a termination request has been received.  If YES is returned, the termination can proceed (i.e., the caller should call -willTerminate) next. "*/
 - (OFControllerTerminateReply)requestTermination;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(status == OFControllerRunningStatus);
     
     status = OFControllerRequestingTerminateStatus;
@@ -296,7 +296,7 @@ static void _OFControllerCheckTerminated(void)
 /*" This method can be called during a -controllerRequestsTerminate: method when an object wishes to cancel the termination (typically in response to a user pressing the "Cancel" button on a Save panel). "*/
 - (void)cancelTermination;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     
     switch (status) {
         case OFControllerRequestingTerminateStatus:
@@ -313,14 +313,14 @@ static void _OFControllerCheckTerminated(void)
 
 - (void)postponeTermination:(id)observer;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
 
     [postponingObservers addObject:observer];
 }
 
 - (void)continuePostponedTermination:(id)observer;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION([postponingObservers containsObject:observer]);
     
     [postponingObservers removeObject:observer];
@@ -334,7 +334,7 @@ static void _OFControllerCheckTerminated(void)
 /*" The application should call this method when it is going to terminate and there is no chance of cancelling it (i.e., after it has called -requestTermination and a YES has been returned). "*/
 - (void)willTerminate;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(status == OFControllerTerminatingStatus); // We should have requested termination and not had it cancelled or postponed.
     
     [self _makeObserversPerformSelector:@selector(controllerWillTerminate:)];
@@ -552,7 +552,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 
 - (void)_makeObserversPerformSelector:(SEL)aSelector;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     
     NSArray *observersSnapshot = [self _observersSnapshot];
     unsigned int observerCount = [observersSnapshot count];
@@ -575,7 +575,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 
 - (NSArray *)_observersSnapshot;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
 
     [observerLock lock];
     NSMutableArray *observersSnapshot = [[NSMutableArray alloc] initWithArray:observers];

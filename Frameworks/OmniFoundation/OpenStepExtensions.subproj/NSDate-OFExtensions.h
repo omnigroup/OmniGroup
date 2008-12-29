@@ -11,6 +11,11 @@
 
 @class NSCalendar, NSString, NSTimeZone;
 
+@interface NSDate (UndeclaredAPI)
+// In 10.5+, but not declared yet in the Xcode 3.1 headers
+- (id)dateByAddingTimeInterval:(NSTimeInterval)ti;
+@end
+
 @interface NSDate (OFExtensions)
 
 - (NSString *)descriptionWithHTTPFormat; // rfc1123 format with TZ forced to GMT
@@ -28,8 +33,8 @@
 - initWithXMLDateString:(NSString *)xmlString;
 - (NSString *)xmlDateString;
 
-- initWithXMLString:(NSString *)xmlString;
 // dateTime formatted according to http://www.w3.org/2001/XMLSchema-datatypes
+- initWithXMLString:(NSString *)xmlString;
 - (NSString *)xmlString;
 
 @end

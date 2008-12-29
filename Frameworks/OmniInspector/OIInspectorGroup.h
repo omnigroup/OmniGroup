@@ -35,7 +35,6 @@
         unsigned int	isShowing:1;
         unsigned int	screenChangesEnabled:1;
         unsigned int	hasPositionedWindows:1;
-        unsigned int    forceFitToScreenWhenShown:1;
     } _inspectorGroupFlags;
 }
 

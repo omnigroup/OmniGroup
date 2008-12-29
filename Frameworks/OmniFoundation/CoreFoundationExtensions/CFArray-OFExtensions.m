@@ -12,31 +12,6 @@
 
 RCS_ID("$Id$");
 
-const CFArrayCallBacks OFNonOwnedPointerArrayCallbacks = {
-    0,     // version;
-    NULL,  // retain;
-    NULL,  // release;
-    OFPointerCopyDescription, // copyDescription
-    NULL,  // equal
-};
-
-const CFArrayCallBacks OFNSObjectArrayCallbacks = {
-    0,     // version;
-    OFNSObjectRetain,
-    OFNSObjectRelease,
-    OFNSObjectCopyDescription,
-    OFNSObjectIsEqual,
-};
-
-const CFArrayCallBacks OFIntegerArrayCallbacks = {
-    0,     // version;
-    NULL,  // retain;
-    NULL,  // release;
-    OFIntegerCopyDescription, // copyDescription
-    NULL,  // equal
-};
-
-
 NSMutableArray *OFCreateNonOwnedPointerArray(void)
 {
     return (NSMutableArray *)CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFNonOwnedPointerArrayCallbacks);
@@ -47,3 +22,19 @@ NSMutableArray *OFCreateIntegerArray(void)
     return (NSMutableArray *)CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFIntegerArrayCallbacks);
 }
 
+Boolean OFCFArrayIsSortedAscendingUsingFunction(CFArrayRef self, CFComparatorFunction comparator, void *context)
+{
+    unsigned int valueIndex, valueCount = CFArrayGetCount(self);
+    if (valueCount < 2)
+        return true;
+    
+    const void *value1, *value2 = CFArrayGetValueAtIndex(self, 0);
+    for (valueIndex = 1; valueIndex < valueCount; valueIndex++) {
+        value1 = value2;
+        value2 = CFArrayGetValueAtIndex(self, valueIndex);
+        if (comparator(value1, value2, context) > 0)
+            return false;
+    }
+    
+    return true;
+}

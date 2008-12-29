@@ -516,8 +516,8 @@ static void OSUAtExitHandler(void)
     NSError *error = nil;
     int terminationStatus = [_currentCheckOperation terminationStatus];
     if (terminationStatus != OSUTool_Success) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fetch software update information.", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Tool exited with %d", nil, OMNI_BUNDLE, @"error reason"), terminationStatus];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fetch software update information.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Tool exited with %d", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), terminationStatus];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
         error = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToFetchSoftwareUpdateInformation userInfo:userInfo];
     }
@@ -540,8 +540,8 @@ static void OSUAtExitHandler(void)
     
     NSData *data = [results objectForKey:OSUTool_ResultsDataKey];
     if (!error && !data) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fetch software update information.", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Tool returned no data", nil, OMNI_BUNDLE, @"error reason");
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fetch software update information.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Tool returned no data", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
         error = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToFetchSoftwareUpdateInformation userInfo:userInfo];
     }
@@ -587,8 +587,8 @@ static void OSUAtExitHandler(void)
     
     NSXMLDocument *document = [[NSXMLDocument alloc] initWithData:data options:NSXMLNodeOptionsNone error:outError];
     if (!document) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to parse response from the software update server.", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The data returned from <%@> was not a valid XML document.", nil, OMNI_BUNDLE, @"error description"), [[operation url] absoluteString]];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to parse response from the software update server.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The data returned from <%@> was not a valid XML document.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description"), [[operation url] absoluteString]];
         
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, *outError, NSUnderlyingErrorKey, nil];
         *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToParseSoftwareUpdateData userInfo:userInfo];

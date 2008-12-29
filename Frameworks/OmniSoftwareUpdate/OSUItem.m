@@ -36,7 +36,7 @@ static NSArray *_requireNodes(NSXMLNode *base, NSString *path, NSError **outErro
         return nil;
     
     if ([nodes count] == 0) { // no results to XQuery
-        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"RSS node contains no match for '%@'.", nil, OMNI_BUNDLE, @"error description"), path];
+        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"RSS node contains no match for '%@'.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description"), path];
         OSUError(outError, OSUUnableToParseSoftwareUpdateItem, description, nil);
         return nil;
     }
@@ -190,7 +190,7 @@ static NSDictionary *PaidAttributes = nil;
     AssignRequiredString(priceString, @"omniappcast:price");
 
     if ([priceString rangeOfCharacterFromSet:[[NSCharacterSet characterSetWithCharactersInString:@"0123456789."] invertedSet]].location != NSNotFound) {
-        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot parse price '%@' -- it should contain only digits and possibly a period as a decimal separator.", nil, OMNI_BUNDLE, @"error description"), priceString];
+        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot parse price '%@' -- it should contain only digits and possibly a period as a decimal separator.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description"), priceString];
         if (OSUItemDebug)
             NSLog(@"Ignoring item due to invalid price string, '%@'\n%@", description, element);
         [priceString release];
@@ -270,7 +270,7 @@ static NSDictionary *PaidAttributes = nil;
         }
         
         if (!bestEnclosureNode) {
-            NSString *description = NSLocalizedStringFromTableInBundle(@"No suitable enclosure found.", nil, OMNI_BUNDLE, @"error description");
+            NSString *description = NSLocalizedStringFromTableInBundle(@"No suitable enclosure found.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
             if (OSUItemDebug)
                 NSLog(@"Ignoring item without any suiteable enclosures:\n%@", element);
             OSUError(outError, OSUUnableToParseSoftwareUpdateItem, description, nil);
@@ -281,7 +281,7 @@ static NSDictionary *PaidAttributes = nil;
         NSString *urlString = [[(NSXMLElement *)bestEnclosureNode attributeForName:@"url"] stringValue];
         _downloadURL = [[NSURL alloc] initWithString:urlString];
         if (!_downloadURL) {
-            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot parse enclosure url '%@'.", nil, OMNI_BUNDLE, @"error description"), urlString];
+            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot parse enclosure url '%@'.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description"), urlString];
             if (OSUItemDebug)
                 NSLog(@"Ignoring item with unparseable enclosure URL '%@':\n%@", urlString, element);
             OSUError(outError, OSUUnableToParseSoftwareUpdateItem, description, nil);
@@ -305,7 +305,7 @@ static NSDictionary *PaidAttributes = nil;
     if (![NSString isEmptyString:releaseNotesURLString]) {
         _releaseNotesURL = [[NSURL alloc] initWithString:releaseNotesURLString];
         if (!_releaseNotesURL) {
-            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot parse release notes url '%@'.", nil, OMNI_BUNDLE, @"error description"), _releaseNotesURL];
+            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot parse release notes url '%@'.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description"), _releaseNotesURL];
             if (OSUItemDebug)
                 NSLog(@"Ignoring item unparseable release notes URL '%@':\n%@", releaseNotesURLString, element);
             OSUError(outError, OSUUnableToParseSoftwareUpdateItem, description, nil);
@@ -411,7 +411,7 @@ static NSDictionary *PaidAttributes = nil;
     if ([[NSDecimalNumber zero] isEqual:_price]) {
         static NSAttributedString *freeAttributedString = nil;
         if (!freeAttributedString)
-            freeAttributedString = [[NSAttributedString alloc] initWithString:NSLocalizedStringFromTableInBundle(@"free!", nil, OMNI_BUNDLE, @"free upgrade price string") attributes:FreeAttributes];
+            freeAttributedString = [[NSAttributedString alloc] initWithString:NSLocalizedStringFromTableInBundle(@"free!", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"free upgrade price string") attributes:FreeAttributes];
         return freeAttributedString;
     }
     

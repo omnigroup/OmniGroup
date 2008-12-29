@@ -9,8 +9,8 @@
 
 RCS_ID("$Id$")
 
-#import <OmniFoundation/NSError-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
+#import <OmniBase/NSError-OBExtensions.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <CoreServices/CoreServices.h>
@@ -98,7 +98,7 @@ static NSLock *tempFilenameLock = nil;
     err = FSGetCatalogInfo(&ref, kFSCatInfoVolume, &catalogInfo, NULL, NULL, NULL);
     if (err != noErr) {
         *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]; // underlying error
-        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to get catalog info for '%@' (for '%@')", attempt, path]));
+        OBError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to get catalog info for '%@' (for '%@')", attempt, path]));
         return nil;
     }
     
@@ -107,14 +107,14 @@ static NSLock *tempFilenameLock = nil;
     err = FSFindFolder(catalogInfo.volume, whatDirectoryType, createIfMissing? kCreateFolder : kDontCreateFolder, &folderRef);
     if (err != noErr) {
         *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]; // underlying error
-        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to find temporary items directory for '%@'", attempt]));
+        OBError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to find temporary items directory for '%@'", attempt]));
         return nil;
     }
     
     CFURLRef temporaryItemsURL;
     temporaryItemsURL = CFURLCreateFromFSRef(kCFAllocatorDefault, &folderRef);
     if (!temporaryItemsURL) {
-        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to create URL to temporary items directory for '%@'", attempt]));
+        OBError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to create URL to temporary items directory for '%@'", attempt]));
         return nil;
     }
     
@@ -209,7 +209,7 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
         // TODO: EINTR?
         // Probably EACCES, we aren't going to recover.
         *outError = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]; // underlying error
-        OFError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to create unique file from %@.", candidate]));
+        OBError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to create unique file from %@.", candidate]));
         return NO;
     } else {
         // We can use the original if it doesn't exist in this case.  We do _not_ want to probe whether we can create this here since the caller is just trying to determine a name to try to create.  They'll get the creation failure; we don't want to get it.  We do want to know if we can't even determine if the file exists (directory unreadable, etc).
@@ -224,7 +224,7 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
         
         // Don't know how to recover from any other errors.  Most likely this is EACCES and we don't have permissions to even check if the file exists.
         *outError = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]; // underlying error
-        OFError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to check for existence of %@.", candidate]));
+        OBError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to check for existence of %@.", candidate]));
         return NO;
     }
 }
@@ -268,7 +268,7 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
         }
     }
     
-    OFError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to find a variant of %@ that didn't already exist.", filename]));
+    OBError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to find a variant of %@ that didn't already exist.", filename]));
     return nil;
 }
 

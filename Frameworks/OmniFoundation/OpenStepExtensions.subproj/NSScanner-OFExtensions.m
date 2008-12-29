@@ -46,8 +46,8 @@ RCS_ID("$Id$")
         return NO;
 
     prefixes = [[NSMutableString alloc] initWithCapacity:2];
-    [prefixes appendCharacter:[escape characterAtIndex:0]];
-    [prefixes appendCharacter:[quoteMark characterAtIndex:0]];
+    [prefixes appendLongCharacter:[escape characterAtIndex:0]];
+    [prefixes appendLongCharacter:[quoteMark characterAtIndex:0]];
     stopSet = [NSCharacterSet characterSetWithCharactersInString:prefixes];
     [prefixes release];
 
@@ -144,9 +144,12 @@ RCS_ID("$Id$")
         return NO;
     
     NSMutableArray *components = [NSMutableArray array];
-    NSCharacterSet *whiteSpaceSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    NSMutableCharacterSet *whiteSpaceSet = [[NSCharacterSet whitespaceCharacterSet] mutableCopy];
+    [whiteSpaceSet removeCharactersInString:separator];
+    BOOL foundNewline = NO;
+    
     do {
-        [self scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
+        [self scanCharactersFromSet:whiteSpaceSet intoString:NULL];
 
         if ([self scanString:@"\"" intoString:NULL]) {
             // Scan Quoted String
@@ -159,8 +162,10 @@ RCS_ID("$Id$")
                 if ([self scanUpToString:@"\"" intoString:&tempString])
                     [myValue appendString:tempString];
                 
-                if (![self scanString:@"\"" intoString:NULL])
+                if (![self scanString:@"\"" intoString:NULL]) {
+                    [whiteSpaceSet release];
                     return NO;
+                }
                 
                 if (![self scanString:@"\"" intoString:NULL])
                     break;
@@ -177,12 +182,21 @@ RCS_ID("$Id$")
                 [components addObject:@""];
             }
         }
-	[self scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
+	[self scanCharactersFromSet:whiteSpaceSet intoString:NULL];
+
+	if ([self scanString:@"\n" intoString:NULL]) {
+            foundNewline = YES;
+            break;
+        }
     } while ([self scanString:separator intoString:NULL]);
     
-    if (![self scanString:@"\n" intoString:NULL] && ![self isAtEnd])
+    [whiteSpaceSet release];
+
+    if (!foundNewline && ![self isAtEnd]) {
+        // We must have stopped scanning when a quoted string was followed by optional whitespace and the next thing wasn't a separator.  Don't know how to handle that.  Die.
         return NO;
-    
+    }
+
     if (returnComponents)
         *returnComponents = components;
     return YES;

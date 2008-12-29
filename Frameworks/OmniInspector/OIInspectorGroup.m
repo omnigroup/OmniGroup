@@ -819,11 +819,6 @@ This method iterates over the inspectors controllers in each visible inspector g
                     [window setFrameTopLeftPoint:NSPointFromString(position)];
             }
         }
-
-        if (_inspectorGroupFlags.forceFitToScreenWhenShown) {
-            _inspectorGroupFlags.forceFitToScreenWhenShown = NO;
-            [self screensDidChange:nil];
-        }
     }
 
     // If there were previously no visible inspectors, update the inspection set.  We need to do this now (not queued) and even if there are no inspectors visible (since there aren't).  The issue is that the inspection set may hold pointers to objects from closed documents that are partially dead or otherwise invalid.  We want the inspectors to show the right stuff when they come on screen anyway rather than coming up and then getting updated.  We do NOT want to tell the inspectors about the updated inspection set immediately (+updateInspectionSetImmediatelyAndUnconditionally doesn't) since -prepareWindowForDisplay will do that and it would just be redundant.
@@ -915,8 +910,8 @@ This method iterates over the inspectors controllers in each visible inspector g
     
     NSRect groupRect;
     
-    if (!_inspectorGroupFlags.hasPositionedWindows || ![self getGroupFrame:&groupRect]) {
-        _inspectorGroupFlags.forceFitToScreenWhenShown = YES;
+    if (![self getGroupFrame:&groupRect]) {
+        OBASSERT_NOT_REACHED("Error calculating inspector group rect");
         return;
     }
     

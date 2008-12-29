@@ -9,22 +9,9 @@
 
 #import <CoreFoundation/CFDictionary.h>
 #import <Foundation/NSObjCRuntime.h>  // For NSInteger, etc.
+#import <OmniFoundation/OFCFCallbacks.h>
 
 extern const CFDictionaryKeyCallBacks OFCaseInsensitiveStringKeyDictionaryCallbacks;
-
-
-extern const CFDictionaryKeyCallBacks    OFNonOwnedPointerDictionaryKeyCallbacks;
-extern const CFDictionaryValueCallBacks  OFNonOwnedPointerDictionaryValueCallbacks;
-
-extern const CFDictionaryKeyCallBacks    OFPointerEqualObjectDictionaryKeyCallbacks;
-
-extern const CFDictionaryKeyCallBacks    OFIntegerDictionaryKeyCallbacks;
-extern const CFDictionaryValueCallBacks  OFIntegerDictionaryValueCallbacks;
-
-extern const CFDictionaryKeyCallBacks    OFNSObjectDictionaryKeyCallbacks;
-extern const CFDictionaryKeyCallBacks    OFNSObjectCopyDictionaryKeyCallbacks;
-extern const CFDictionaryValueCallBacks  OFNSObjectDictionaryValueCallbacks;
-
 
 // Convenience functions
 @class NSMutableDictionary;

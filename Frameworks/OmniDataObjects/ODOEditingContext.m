@@ -24,10 +24,8 @@
 #import <objc/message.h>
 #endif
 
-#import <OmniFoundation/OFCFCallbacks.h>
-
 #if ODO_SUPPORT_UNDO
-#import <OmniFoundation/NSUndoManager-OFExtensions.h>
+#import <Foundation/NSUndoManager.h>
 #endif
 
 #if 0 && defined(DEBUG)
@@ -187,7 +185,8 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
         [_database _discardPendingMetadataChanges];
         
         // invalidate all registered objects
-        [_registeredObjectByID makeValuesPerformSelector:@selector(_invalidate)];
+        for (ODOObject *object in [_registeredObjectByID objectEnumerator])
+            [object _invalidate];
         [_registeredObjectByID removeAllObjects];
     } @finally {
         _isResetting = NO;
@@ -471,7 +470,7 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     OBPRECONDITION([object editingContext] == self);
     OBPRECONDITION([_registeredObjectByID objectForKey:[object objectID]] == object); // has to be registered
 #if ODO_SUPPORT_UNDO
-    OBPRECONDITION(![_undoManager isUndoingOrRedoing]); // this public API shouldn't be called to undo/redo.  Only to 'do'.
+    OBPRECONDITION(![_undoManager isUndoing] && ![_undoManager isRedoing]); // this public API shouldn't be called to undo/redo.  Only to 'do'.
 #endif
     
     // Bail on objects that are already deleted or invalid instead of crashing.  This can easily happen if UI code can select both a parent and child and delete them w/o knowing that the deletion of the parent will get the child too.  Nice if the UI handles it, but shouldn't crash or do something crazy otherwise.
@@ -571,24 +570,6 @@ static void ODOEditingContextDidDeleteObjects(ODOEditingContext *self, NSSet *de
     CFSetApplyFunction((CFSetRef)deleted, _forgetObjectApplier, self->_registeredObjectByID);
 }
 
-static void _addMateriallyUpdatedObjects(const void *value, void *context)
-{
-    ODOObject *object = (ODOObject *)value;
-    NSMutableSet *materialUpdates = (NSMutableSet *)context;
-    
-    // Might be called for a recent update of a processed insert and -changedNonDerivedChangedValue currently does OBRequestConcreteImplementation() for inserted objects since its meaning is unclear in general.  Here we'll contend that an 'insert' is a material update (even if no recent updates are material).
-    if ([object isInserted] || [object changedNonDerivedChangedValue]) {
-        [materialUpdates addObject:object];
-#if 0 && defined(DEBUG_bungi)
-        NSLog(@"material update to %@: %@", [object shortDescription], [object isInserted] ? (id)object : (id)[object changedValues]);
-#endif
-    } else {
-#if 0 && defined(DEBUG_bungi)
-        NSLog(@"dropping phantom update to %@; changes = %@", [object shortDescription], [object changedValues]);
-#endif
-    }
-}
-
 static NSDictionary *_createChangeSetNotificationUserInfo(NSSet *inserted, NSSet *updated, NSSet *deleted)
 {
     // Making copies of these sets since we mutate _recentlyUpdatedObjects below while merging (at least for the call from -_internal_processPendingChanges
@@ -604,11 +585,27 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet *inserted, NSSet
         [set release];
         
         // Build a subset of the objects that have material edits.
-        NSMutableSet *materialUpdates  = [[NSMutableSet alloc] init];
-        [updated applyFunction:_addMateriallyUpdatedObjects context:materialUpdates];
-        if ([materialUpdates count] > 0)
+        NSMutableSet *materialUpdates = nil;
+        for (ODOObject *object in updated) {
+            // Might be called for a recent update of a processed insert and -changedNonDerivedChangedValue currently does OBRequestConcreteImplementation() for inserted objects since its meaning is unclear in general.  Here we'll contend that an 'insert' is a material update (even if no recent updates are material).
+            if ([object isInserted] || [object changedNonDerivedChangedValue]) {
+                if (!materialUpdates)
+                    materialUpdates = [[NSMutableSet alloc] init];
+                
+                [materialUpdates addObject:object];
+#if 0 && defined(DEBUG_bungi)
+                NSLog(@"material update to %@: %@", [object shortDescription], [object isInserted] ? (id)object : (id)[object changedValues]);
+#endif
+            } else {
+#if 0 && defined(DEBUG_bungi)
+                NSLog(@"dropping phantom update to %@; changes = %@", [object shortDescription], [object changedValues]);
+#endif
+            }
+        }
+        if (materialUpdates) {
             [userInfo setObject:materialUpdates forKey:ODOMateriallyUpdatedObjectsKey];
-        [materialUpdates release];
+            [materialUpdates release];
+        }
     }
     
     if (deleted) {
@@ -940,8 +937,8 @@ static BOOL _queryUniqueSet(NSSet *set, ODOObject *query)
     } @catch (NSException *exc) {
         OBINVARIANT([self _checkInvariants]);
         NSLog(@"Exception raised while sending -willSave: %@", exc);
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Exception raised while saving: %@", nil, OMNI_BUNDLE, @"error reason"), [exc reason]];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", nil, OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Exception raised while saving: %@", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [exc reason]];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         ODOError(outError, ODOUnableToSave, description, reason, nil);
         success = NO;
     } @finally {
@@ -1013,7 +1010,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
         object = nil;
     } else if ([object isFault]) {
         // Create the values array to take the values we are about to fetch
-        ODOObjectCreateNullValues(object);
+        _ODOObjectCreateNullValues(object);
 
         // Object was previously created as a fault, but hasn't been filled in yet.  Let's do so and mark it cleared.
         if (!ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(sqlite, statement, object, ctx, outError))
@@ -1070,7 +1067,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
         //NSLog(@"fetch: %@, predicate = %@, sort = %@", [[fetch entity] name], [fetch predicate], [fetch sortDescriptors]);
         if (ODOLogSQL) {
             NSString *reason = [fetch reason];
-            if ([NSString isEmptyString:reason])
+            if ([reason length] == 0)
                 reason = @"UNKNOWN";
             //ODOSQLStatementLogSQL(@"/* execute fetch: %@  predicate: %@  sort: %@  reason: %@ */", [[fetch entity] name], [fetch predicate], [fetch sortDescriptors], reason);
             ODOSQLStatementLogSQL(@"/* SQL fetch: %@  reason: %@ */ ", [[fetch entity] name], reason);
@@ -1120,7 +1117,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
 
         if (ODOLogSQL) {
             NSString *reason = [fetch reason];
-            if ([NSString isEmptyString:reason])
+            if ([reason length] == 0)
                 reason = @"UNKNOWN";
             ODOSQLStatementLogSQL(@"/* Memory fetch: %@  reason: %@ */\n/* ... %g sec, count now %d */\n", [[fetch entity] name], reason, end - start, [ctx.results count]);
         }
@@ -1230,8 +1227,8 @@ NSString * const ODOEditingContextDidReset = @"ODOEditingContextDidReset";
 #endif
             tries++;
             if (tries > 100) {
-                NSString *reason = NSLocalizedStringFromTableInBundle(@"Tried 100 times to settle -willSave, but edits kept being made.", nil, OMNI_BUNDLE, @"error reason");
-                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", nil, OMNI_BUNDLE, @"error description");
+                NSString *reason = NSLocalizedStringFromTableInBundle(@"Tried 100 times to settle -willSave, but edits kept being made.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
+                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
                 ODOError(outError, ODOUnableToSave, description, reason, nil);
                 return NO;
             }
@@ -1240,8 +1237,8 @@ NSString * const ODOEditingContextDidReset = @"ODOEditingContextDidReset";
         _isSendingWillSave = NO;
         
         NSLog(@"Exception raised while sending -willSave: %@", exc);
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Exception raised while sending -willSave: %@", nil, OMNI_BUNDLE, @"error reason"), [exc reason]];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", nil, OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Exception raised while sending -willSave: %@", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [exc reason]];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         ODOError(outError, ODOUnableToSave, description, reason, nil);
         success = NO;
     }
@@ -1296,8 +1293,8 @@ static void _validateApplier(const void *value, void *context)
     if ([ctx.validationErrors count] == 1) {
         *outError = [ctx.validationErrors lastObject];
     } else {
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Multiple validation errors occurred while saving.", nil, OMNI_BUNDLE, @"error reason");
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", nil, OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Multiple validation errors occurred while saving.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         ODOErrorWithInfo(outError, ODOUnableToSave, description, reason, ODODetailedErrorsKey, ctx.validationErrors, nil);
     }
     
@@ -1541,7 +1538,7 @@ static void _updateInverseToManyRelationshipsForUndo(ODOObject *object, ODOEntit
     
     OBINVARIANT([self _checkInvariants]);
     OBPRECONDITION(_undoManager);
-    OBPRECONDITION([_undoManager isUndoingOrRedoing]);
+    OBPRECONDITION([_undoManager isUndoing] || [_undoManager isRedoing]);
     OBPRECONDITION([_undoManager isUndoRegistrationEnabled]);
     OBPRECONDITION(!objectIDsAndSnapshotsToInsert || [objectIDsAndSnapshotsToInsert count] > 0);
     OBPRECONDITION(!updates || [updates count] > 0);

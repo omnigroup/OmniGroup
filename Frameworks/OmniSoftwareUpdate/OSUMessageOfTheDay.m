@@ -84,7 +84,7 @@ RCS_ID("$Id$")
     
     NSWindow *window = [self window];
     [window setFrameAutosaveName:@"Message of the Day"];
-    [window setTitle:NSLocalizedStringFromTableInBundle(@"Release Notes", nil, OMNI_BUNDLE, @"Window title for the release notes window")];
+    [window setTitle:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Window title for the release notes window")];
 }
 
 - (NSString *)windowNibName;

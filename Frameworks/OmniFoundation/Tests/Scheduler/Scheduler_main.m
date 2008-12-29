@@ -180,7 +180,7 @@ static void Test2(void)
 
 - (void)logDate:(NSDate *)date;
 {
-    NSLog(@"(%0.1f) %@ Processing event scheduled for %0.1f seconds", [[NSDate date] timeIntervalSinceDate:startDate], [NSThread inMainThread] ? @"[MainThread]" : @"[SchedulerThread]", [date timeIntervalSinceDate:startDate]);
+    NSLog(@"(%0.1f) %@ Processing event scheduled for %0.1f seconds", [[NSDate date] timeIntervalSinceDate:startDate], [NSThread isMainThread] ? @"[MainThread]" : @"[SchedulerThread]", [date timeIntervalSinceDate:startDate]);
     RemoveScheduledEventDate(date);
 }
 

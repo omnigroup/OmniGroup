@@ -66,6 +66,7 @@ typedef enum OAPreferencesViewStyle {
 // API
 - (void)close;
 - (NSWindow *)window;
+- (NSWindow *)windowIfLoaded; // doesn't for load the window
 - (void)setTitle:(NSString *)title;
 - (void)setCurrentClientByClassName:(NSString *)name;
 - (void)setCurrentClientRecord:(OAPreferenceClientRecord *)clientRecord;

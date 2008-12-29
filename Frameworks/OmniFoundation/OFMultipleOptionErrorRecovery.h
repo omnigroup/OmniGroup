@@ -15,7 +15,7 @@
 }
 
 // The list of options can be a mixture of strings and class objects (subclasses of OFErrorRecovery).  If a string is found, it is used as the title for the next OFErrorRecover created.  Otherwise, the OFErrorRecovery's default title is used.  If two strings in a row are found or a string is found before the terminating nil, the behavior is undefined, but currently you'll get an assertion failure and the string will be ignored.
-+ (NSError *)errorRecoveryErrorWithError:(NSError *)error object:(id)object options:(id)option1, ...;
++ (NSError *)errorRecoveryErrorWithError:(NSError *)error object:(id)object options:(id)option1, ... NS_REQUIRES_NIL_TERMINATION;
 
 - initWithRecoveries:(NSArray *)recoveries;
 - (NSArray *)recoveries;

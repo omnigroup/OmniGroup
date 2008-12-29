@@ -9,8 +9,10 @@
 
 #import <OmniDataObjects/ODOObjectID.h>
 #import <OmniDataObjects/ODORelationship.h>
+#import <OmniDataObjects/ODOModel.h>
 
 #import "ODOEntity-Internal.h"
+#import "ODOObject-Accessors.h"
 #import "ODOObject-Internal.h"
 #import "ODOEditingContext-Internal.h"
 #import "ODODatabase-Internal.h"
@@ -45,15 +47,11 @@ NSString * const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
     // For now, ODOEditingContext holds onto us until it is reset and we are made invalid.
     OBPRECONDITION(_editingContext == nil);
     OBPRECONDITION(_flags.invalid == YES);
-    OBPRECONDITION(_valueArray == NULL);
+    OBPRECONDITION(!_ODOObjectHasValues(self));
 
     OBPRECONDITION(_objectID != nil); // This doesn't get cleared when the object is invalidated.  Notification listeners need to know the entity/pk of deleted objects.
 
-    if (_valueArray) {
-        ODOObjectClearValues(self, NO/*deleting*/);
-        CFRelease(_valueArray);
-        _valueArray = NULL;
-    }
+    _ODOObjectReleaseValuesIfPresent(self); // Just in case
 
     [_editingContext release];
     [_objectID release];
@@ -61,19 +59,33 @@ NSString * const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
     [super dealloc];
 }
 
+// The vastly common case is that a single model is loaded once and never released.  Additionally, we assume that there is a 1-1 mapping between entities and instance classes AND that only 'leaf' classes are instance classes for an entity.  This won't satisfy everyone, but it should be the common case.  I'm not a big fan of making this assumption, but otherwise we're kinda screwed for @dynamic properties here.  I'm not sure which cases CoreData handles...
++ (BOOL)resolveInstanceMethod:(SEL)sel;
+{
+    // TODO: Verify that the property in class_copyPropertyList for each prop has the right attributes.  Should be an object, copy and dynamic.
+    ODOEntity *entity = [ODOModel entityForClass:self];
+    if (entity) {
+        ODOProperty *prop;
+        
+        if ((prop = [entity propertyWithGetter:sel])) {
+            //NSLog(@"Adding -[%@ %@]", NSStringFromClass(self), NSStringFromSelector(sel));
+            class_addMethod(self, sel, (IMP)ODOGetterForSelector(prop), ODOObjectGetterSignature());
+            return YES;
+        }
+        if ((prop = [entity propertyWithSetter:sel])) {
+            //NSLog(@"Adding -[%@ %@]", NSStringFromClass(self), NSStringFromSelector(sel));
+            class_addMethod(self, sel, (IMP)ODOSetterForSelector(prop), ODOObjectSetterSignature());
+            return YES;
+        }
+    }
+    
+    return [super resolveInstanceMethod:sel];
+}
+
+// Primarily for the benefit of subclasses.  Like CoreData, ODOObject won't guarantee this is called on every key access, but only if the object is a fault.
 - (void)willAccessValueForKey:(NSString *)key;
 {
-    OBPRECONDITION(![self isDeleted] || [key isEqualToString:[[[_objectID entity] primaryKeyAttribute] name]]);
-
-    if (!_flags.invalid && _flags.isFault) {
-        // Don't clear faults for the primary key
-        if (![key isEqualToString:[[[_objectID entity] primaryKeyAttribute] name]])
-            ODOFetchObjectFault(_editingContext, self);
-    }
-
-    // We might be part of a fetch result set that is still getting awoken.  If another object awaking tries to talk to us before we are awake, wake up early.  Not that circular awaking problems are still possible.
-    if (self->_flags.needsAwakeFromFetch)
-        ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(self);
+    ODOObjectWillAccessValueForKey(self, key);
 }
 
 - (void)didAccessValueForKey:(NSString *)key;
@@ -135,16 +147,16 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     ODOProperty *prop = [[self entity] propertyNamed:key];
 
     // These get called as we update inverse to-many relationships due to edits to to-one relationships.  ODO doesn't snapshot to-many relationships in -changedValues, so we track this here.  This adds one more reason that undo/redo needs to provide correct KVO notifiactions.
-    if (prop && !_flags.hasChangedInterestingToManyRelationshipSinceLastSave) {
+    if (prop && !_flags.hasChangedModifyingToManyRelationshipSinceLastSave) {
         
         // Only to-many relationship keys should go through here.
         OBASSERT([prop isKindOfClass:[ODORelationship class]]);
         OBASSERT([(ODORelationship *)prop isToMany]);
         
-        if (![[[self class] derivedPropertyNameSet] member:[prop name]]) {
-            _flags.hasChangedInterestingToManyRelationshipSinceLastSave = YES;
+        if ([[[self entity] nonDateModifyingPropertyNameSet] member:[prop name]] == nil) {
+            _flags.hasChangedModifyingToManyRelationshipSinceLastSave = YES;
 #if 0 && defined(DEBUG_bungi)
-            NSLog(@"Setting %@._hasChangedInterestingToManyRelationshipSinceLastSave for change to %@", [self shortDescription], [prop name]);
+            NSLog(@"Setting %@._hasChangedNonDerivedToManyRelationshipSinceLastSave for change to %@", [self shortDescription], [prop name]);
 #endif
         }
     }
@@ -178,7 +190,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 {
     ODOProperty *prop = [[self->_objectID entity] propertyNamed:key];
     OBASSERT(prop); // shouldn't ask for non-model properties via this interface
-    [self setPrimitiveValue:value forProperty:prop];
+    ODOObjectSetPrimitiveValueForProperty(self, value, prop);
 }
 
 - (id)primitiveValueForKey:(NSString *)key;
@@ -187,194 +199,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     ODOProperty *prop = [entity propertyNamed:key];
     OBASSERT(prop); // shouldn't ask for non-model properties via this interface
     
-    return [self primitiveValueForProperty:prop];
-}
-
-- (void)setPrimitiveValue:(id)value forProperty:(ODOProperty *)prop;
-{
-    OBPRECONDITION(prop);
-    // OBPRECONDITION(!_flags.isFault); Being a fault is allowed here since this is how faults will get set up.
-
-    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-    
-#ifdef OMNI_ASSERTIONS_ON
-    {
-        // The value should match the property.  We allow nil here, even if th property doesn't (that should only be enforced when saving).
-        if (value) {
-            if (!flags.relationship)
-                OBASSERT([value isKindOfClass:[(ODOAttribute *)prop valueClass]]);
-            else {
-                OBASSERT([prop isKindOfClass:[ODORelationship class]]);
-                ODORelationship *rel = (ODORelationship *)prop;
-
-                if (flags.toMany) {
-                    // We allow mutables sets consisting of instances of the destination entity's instance class.
-                    OBASSERT([value isKindOfClass:[NSMutableSet class]]); // Not sure the mutable will take effect...
-                    NSEnumerator *destEnum = [value objectEnumerator];
-                    ODOObject *dest;
-                    while ((dest = [destEnum nextObject]))
-                        OBASSERT([dest isKindOfClass:[[rel destinationEntity] instanceClass]]);
-                } else {
-                    // Destination object shouldn't be invalidated
-                    if (value) {
-                        if ([value isKindOfClass:[ODOObject class]])
-                            OBASSERT(![value isInvalid]);
-                    }
-      
-                    // For now, see if we can require ODOObjects, not primary keys.  Otherwise, we can't easily compare the new and old values (and we need the old value to be the the realized object for updating the inverse).
-                    OBASSERT(!value || [value isKindOfClass:[[rel destinationEntity] instanceClass]]);
-#if 0
-                    // We allow either instances of the destination entity or its primary key attribute (primitive value is the foreign key before the fault is created).
-                    if ([value isKindOfClass:[ODOObject class]])
-                        OBASSERT([value isKindOfClass:[[rel destinationEntity] instanceClass]]);
-                    else
-                        OBASSERT([value isKindOfClass:[[[rel destinationEntity] primaryKeyAttribute] valueClass]]);
-#endif
-                }
-            }
-        }
-    }
-#endif
-    
-    if (flags.snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX) {
-        OBASSERT_NOT_REACHED("Ignoring attempt to set the primary key");
-        return;
-    }
-    
-    id newValue = value;
-    id oldValue = [self primitiveValueForProperty:prop]; // It is important to use this so that we'll get lazy to-one faults created
-    if (oldValue == value)
-        return;
-
-    if (!_flags.changeProcessingDisabled) { // Might be fetching an object and setting up initial values, for example
-        // TODO: If we tweak inverses here, then it seems like we should tweak inverses in the to-many setter.
-        
-        // If we set a to-one relationship, the inverse must be updated (possibly another to-one or possibly a to-many)
-        if (flags.relationship && !flags.toMany) {
-            ODORelationship *rel = (ODORelationship *)prop;
-            ODORelationship *inverse = [rel inverseRelationship];
-            NSString *inverseKey = [inverse name];
-            
-            struct _ODOPropertyFlags inverseFlags = ODOPropertyFlags(inverse);
-            OBASSERT(inverseFlags.relationship);
-            
-            if (inverseFlags.toMany) {
-                NSSet *change = [NSSet setWithObject:self];
-                
-                if (oldValue) {
-                    NSMutableSet *inverseSet = ODOObjectToManyRelationshipIfNotFault(oldValue, inverse);
-                    OBASSERT(!inverseSet || [inverseSet member:self]);
-                    
-                    // Remove from the old set.  Have to send KVO even if we've not created the to-many relationship set.  Also, this will possibly put the to-many holder in the updated objects so that it'll get a -willUpdate (if it isn't inserted).
-                    // Actually any chance of being deallocated here?
-                    [[self retain] autorelease];
-
-                    [oldValue willChangeValueForKey:inverseKey withSetMutation:NSKeyValueMinusSetMutation usingObjects:change];
-                    [inverseSet removeObject:self];
-                    [oldValue didChangeValueForKey:inverseKey withSetMutation:NSKeyValueMinusSetMutation usingObjects:change];
-                }
-                
-                if (newValue) {
-                    NSMutableSet *inverseSet = ODOObjectToManyRelationshipIfNotFault(newValue, inverse);
-                    OBASSERT(![inverseSet member:self]);
-                    
-                    // Add to the new set.  Have to send KVO even if we've not created the to-many relationship set.  Also, this will possibly put the to-many holder in the updated objects so that it'll get a -willUpdate (if it isn't inserted).
-                    [newValue willChangeValueForKey:inverseKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:change];
-                    [inverseSet addObject:self];
-                    [newValue didChangeValueForKey:inverseKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:change];
-                }
-            } else {
-                // One-to-one
-                // There are up to 4 objects involved here.  If we had A<->B and C<->D and we are wanting A<->D then we need to update B and C too.
-
-                if (oldValue) {
-                    // Say we are A.  This will clear A->B and since change processing is on for the old value, it will clear B->A.
-                    OBASSERT(ODOObjectChangeProcessingEnabled(oldValue));
-                    [oldValue willChangeValueForKey:inverseKey];
-                    
-                    // turn off change processing while setting the internal value so it won't try to set the inverse inverse
-                    ODOObjectSetChangeProcessingEnabled(oldValue, NO);
-                    @try {
-                        [oldValue setPrimitiveValue:nil forProperty:inverse];
-                    } @finally {
-                        ODOObjectSetChangeProcessingEnabled(oldValue, YES);
-                    }
-                    
-                    [oldValue didChangeValueForKey:inverseKey];
-                }
-                    
-                // Kinda lame; need to set the back pointer w/o having it try to set us.  We *do* want it to get put in the update set.
-                if (newValue) {
-                    // First *clear* the inverse with change processing on.  This lets it clear the inverse inverse backpointer.  Feh.  This will terminate due to the nil.
-                    OBASSERT(ODOObjectChangeProcessingEnabled(newValue));
-                    [newValue willChangeValueForKey:inverseKey];
-                    [newValue setPrimitiveValue:nil forProperty:inverse];
-                    [newValue didChangeValueForKey:inverseKey];
-
-                    // Then, after the new value has been disassociated correctly, associate it to us.
-                    [newValue willChangeValueForKey:inverseKey];
-                    ODOObjectSetChangeProcessingEnabled(newValue, NO);
-                    @try {
-                        [newValue setPrimitiveValue:self forProperty:inverse];
-                    } @finally {
-                        ODOObjectSetChangeProcessingEnabled(newValue, YES);
-                    }
-                    [newValue didChangeValueForKey:inverseKey];
-                }
-            }
-        }
-    }
-    
-    CFArraySetValueAtIndex(_valueArray, flags.snapshotIndex, value);
-}
-
-- (id)primitiveValueForProperty:(ODOProperty *)prop;
-{
-    OBPRECONDITION(prop);
-    OBPRECONDITION(!_flags.isFault || prop == [[_objectID entity] primaryKeyAttribute]);
-    
-    // Could maybe have extra info in this lookup (attr vs. rel, to-one vs. to-many)?
-    unsigned int snapshotIndex = ODOPropertySnapshotIndex(prop);
-    if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX)
-        return [[self objectID] primaryKey];
-
-    OBASSERT(_valueArray != nil); // This is the case if the object is invalidated either due to deletion or the editing context being reset.  In CoreData, messaging an dead object will sometimes get an exception, sometimes get a crash or sometimes (if you are in the middle of invalidation) get you a stale value.  In ODO, it gets you dead.  Hopefully we won't have to relax this since it makes tracking down these (very real) problems easier.
-    id value = (id)CFArrayGetValueAtIndex(_valueArray, snapshotIndex);
-    
-    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-    
-    if (flags.relationship) {
-        ODORelationship *rel = (ODORelationship *)prop;
-        
-        if (flags.toMany) {
-            if (ODOObjectValueIsLazyToManyFault(value)) {
-                // When asking for the to-many relationship the first time, we fetch it.  We assume that the caller is going to do something useful with it, otherwise they shouldn't even ask.  If you want to conditionally avoid faulting, we could add a -isFaultForKey: or some such.
-                value = ODOFetchSetFault(_editingContext, self, rel);
-                CFArraySetValueAtIndex(_valueArray, snapshotIndex, value);
-            }
-        } else {
-            if ([value isKindOfClass:[ODOObject class]]) {
-                OBASSERT([value isKindOfClass:[[rel destinationEntity] instanceClass]]);
-                // All good
-            } else if (value) {
-                OBASSERT([value isKindOfClass:[[[rel destinationEntity] primaryKeyAttribute] valueClass]]);
-                
-                // Lazily find or create a to-one fault based on the primary key stored in our snapshot.
-                ODOEntity *destEntity = [rel destinationEntity];
-
-                ODOObjectID *destID = [[ODOObjectID alloc] initWithEntity:destEntity primaryKey:value];
-                value = ODOEditingContextLookupObjectOrRegisterFaultForObjectID(_editingContext, destID);
-                [destID release];
-                
-                // Replace the pk with the real fault.
-                CFArraySetValueAtIndex(_valueArray, snapshotIndex, value);
-            } else {
-                // to-one to nil; just fine
-            }
-        }
-    }
-    
-    return value;
+    return ODOObjectPrimitiveValueForProperty(self, prop);
 }
 
 - (id)valueForKey:(NSString *)key;
@@ -383,24 +208,36 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     if (!prop)
         return [super valueForKey:key];
 
-    return ODOPropertyGetValue(self, prop);
+    ODOPropertyGetter getter = ODOPropertyGetterImpl(prop);
+    
+    // Avoid looking up the property again
+    if (getter == ODOGetterForUnknownOffset)
+        return ODODynamicValueForProperty(self, prop);
+
+    SEL sel = ODOPropertyGetterSelector(prop);
+    return getter(self, sel);
 }
 
 - (void)setValue:(id)value forKey:(NSString *)key;
 {
     ODOProperty *prop = [[self->_objectID entity] propertyNamed:key];
-    
     if (!prop) {
         [super setValue:value forKey:key];
         return;
     }
 
-    // We don't allow editing to-many relationships from the to-many side.  We don't have many-to-many right now; edit the to-one on the other side.
-    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-    if (flags.relationship  && flags.toMany)
-        OBRejectInvalidCall(self, _cmd, @"Attempted to set %@.%@, but we don't allow setting to-many relationships directly right now.", [self shortDescription], key);
+    ODOPropertySetter setter = ODOPropertySetterImpl(prop);
+    SEL sel = ODOPropertySetterSelector(prop);
+    if (!setter) {
+        // We have a property but no setter; presumably it is read-only.
+        [self doesNotRecognizeSelector:sel];
+    }
     
-    ODOPropertySetValue(self, prop, value);
+    // Avoid looking up the property again
+    if (setter == ODOSetterForUnknownOffset)
+        ODODynamicSetValueForProperty(self, sel, prop, value);
+    else
+        setter(self, sel, value);
 }
 
 // Subclasses should call this before doing anything in their own implementation, otherwise, this might override any setup they do.
@@ -417,7 +254,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
             ODOAttribute *attr = (ODOAttribute *)prop;
             
             // Set this even if the default value is nil in case we are re-establishing default values
-            [self setPrimitiveValue:[attr defaultValue] forProperty:attr]; // Bypass this and set the primitive value to avoid and setter.
+            ODOObjectSetPrimitiveValueForProperty(self, [attr defaultValue], attr); // Bypass this and set the primitive value to avoid and setter.
         }
     }
 }
@@ -551,7 +388,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         
         // Directly accessing the values rather than going through the will/did lookup.  We aren't "accessing" the values.
-        id value = (id)CFArrayGetValueAtIndex(_valueArray, flags.snapshotIndex);
+        id value = _ODOObjectValueAtIndex(self, flags.snapshotIndex);
         
         // Not localizing these validation errors right now.  OmniFocus expects users to never see these, and we don't have CoreData's human-readability mappings right now.
         
@@ -656,7 +493,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     if (flags.toMany)
         return ODOObjectToManyRelationshipIsFault(self, rel);
     
-    id value = (id)CFArrayGetValueAtIndex(_valueArray, flags.snapshotIndex); // to-ones are stored as the primary key if they are lazy faults
+    id value = _ODOObjectValueAtIndex(self, flags.snapshotIndex); // to-ones are stored as the primary key if they are lazy faults
     if (value && ![value isKindOfClass:[ODOObject class]]) {
         OBASSERT([value isKindOfClass:[[[rel destinationEntity] primaryKeyAttribute] valueClass]]);
         return YES;
@@ -689,7 +526,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     if (!flags.relationship || flags.toMany)
         return NO;
     
-    id value = (id)CFArrayGetValueAtIndex(_valueArray, flags.snapshotIndex); // to-ones are stored as the primary key if they are lazy faults
+    id value = _ODOObjectValueAtIndex(self, flags.snapshotIndex); // to-ones are stored as the primary key if they are lazy faults
     
     // Several early-outs could be done here if it turns out to be useful; not doing them for now.
     
@@ -770,7 +607,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     id oldValue = [snapshot objectAtIndex:snapshotIndex];
     
     [self willAccessValueForKey:key];
-    id newValue = [self primitiveValueForProperty:prop];
+    id newValue = ODOObjectPrimitiveValueForProperty(self, prop);
     [self didAccessValueForKey:key];
     
     return OFNOTEQUAL(oldValue, newValue);
@@ -816,7 +653,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
             continue;
         
         id oldValue = [snapshot objectAtIndex:propIndex];
-        id newValue = (id)CFArrayGetValueAtIndex(_valueArray, propIndex);
+        id newValue = _ODOObjectValueAtIndex(self, propIndex);
         
         // early bail on equality
         if (OFISEQUAL(oldValue, newValue))
@@ -875,7 +712,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     if (!snapshot) {
         // Inserted or never modified.  This may perform lazy creation on a fault.
         [self willAccessValueForKey:key];
-        id value = [self primitiveValueForProperty:prop];
+        id value = ODOObjectPrimitiveValueForProperty(self, prop);
         [self didAccessValueForKey:key];
         return value;
     }
@@ -917,52 +754,74 @@ static void _validateRelatedObjectClass(const void *value, void *context)
 }
 
 #if 0 && defined(DEBUG)
-    #define DEBUG_DERIVED(format, ...) NSLog((format), ## __VA_ARGS__)
+    #define DEBUG_CHANGE_SET(format, ...) NSLog((format), ## __VA_ARGS__)
 #else
-    #define DEBUG_DERIVED(format, ...)
+    #define DEBUG_CHANGE_SET(format, ...)
 #endif
-
-+ (NSSet *)derivedPropertyNameSet;
-{
-    return [NSSet set];
-}
 
 typedef struct {
     ODOObject *self;
-    NSSet *derivedPropertyNameSet;
-    BOOL interesting;
-} HasInterestingChangeApplierContext;
+    const char *caller;
+    NSSet *ignoredPropertySet;
+    BOOL hasChanged;
+} HasChangedApplierContext;
 
 static void _hasInterestingChangeApplier(const void *key, const void *value, void *context)
 {
-    HasInterestingChangeApplierContext *ctx = (HasInterestingChangeApplierContext *)context;
-    if ([ctx->derivedPropertyNameSet member:(id)key] == nil) {
-        DEBUG_DERIVED(@"%@ has interesting change to %@", OBShortObjectDescription(ctx->self), key);
-        ctx->interesting = YES;
+    HasChangedApplierContext *ctx = (HasChangedApplierContext *)context;
+    if ([ctx->ignoredPropertySet member:(id)key] == nil) {
+        DEBUG_CHANGE_SET(@"%@ will return YES to %s due to %@", [ctx->self shortDescription], ctx->caller, key);
+        ctx->hasChanged = YES;
     }
 }
 
-// Checks if there are any entries in the changed values that are not in the derived properties.
-- (BOOL)changedNonDerivedChangedValue;
+static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet, const char *caller)
 {
     NSDictionary *changedValues = [self changedValues];
     if (!changedValues)
         return NO;
     
-    // Trival out if we've seen an interesting to-many change
-    if (_flags.hasChangedInterestingToManyRelationshipSinceLastSave)
-        return YES;
-    
-    HasInterestingChangeApplierContext ctx;
+    HasChangedApplierContext ctx;
     memset(&ctx, 0, sizeof(ctx));
     ctx.self = self;
-    ctx.derivedPropertyNameSet = [[self class] derivedPropertyNameSet];
-    ctx.interesting = NO;
+    ctx.ignoredPropertySet = ignoredPropertySet;
+    ctx.hasChanged = NO;
+    ctx.caller = caller;
     CFDictionaryApplyFunction((CFDictionaryRef)changedValues, _hasInterestingChangeApplier, &ctx);
     
-    return ctx.interesting;
+    return ctx.hasChanged;
 }
 
+// Should add the names of properties that are totally derived from other state, but are cached in the database for performance. Since we don't support many-to-many relationships, to-manys are totally derived from the inverse to-one.
++ (void)addDerivedPropertyNames:(NSMutableSet *)set withEntity:(ODOEntity *)entity;
+{
+    for (ODORelationship *rel in entity.toManyRelationships)
+        [set addObject:[rel name]];
+}
+
+// Checks if there are any entries in the changed values that are not in the derived properties.
+- (BOOL)changedNonDerivedChangedValue;
+{
+    NSSet *set = [[self entity] derivedPropertyNameSet];
+    return _changedPropertyNotInSet(self, set, __PRETTY_FUNCTION__);
+}
+
+// Utility for subclasses that want to try a 'date modified' property.  Usually an object is considered 'modified' when it has any non-derived property changed.  Sometimes, though, we want to restrict this even further.  For exampe, we might decide that moving an object from one container to another changes the container but not the object itself.  The object's to-one relationship to its container is still non-derived, but we don't want to consider it a 'change' for the purposes of tracking any 'date modified'.
++ (void)computeNonDateModifyingPropertyNameSet:(NSMutableSet *)set withEntity:(ODOEntity *)entity;
+{
+    // Default to derived properties not causing modification date changes.
+    [self addDerivedPropertyNames:set withEntity:entity];
+}
+
+- (BOOL)shouldChangeDateModified;
+{
+    // Trival out if we've seen an pertinent to-many change
+    if (_flags.hasChangedModifyingToManyRelationshipSinceLastSave)
+        return YES;
+    
+    NSSet *set = [[self entity] nonDateModifyingPropertyNameSet];
+    return _changedPropertyNotInSet(self, set, __PRETTY_FUNCTION__);
+}
 
 #pragma mark -
 #pragma mark Debugging
@@ -994,7 +853,7 @@ static void _hasInterestingChangeApplier(const void *key, const void *value, voi
             ODOProperty *prop = [props objectAtIndex:propIndex];
             
             unsigned snapshotIndex = ODOPropertySnapshotIndex(prop);
-            id value = (id)CFArrayGetValueAtIndex(_valueArray, snapshotIndex);
+            id value = _ODOObjectValueAtIndex(self, snapshotIndex);
             if (!value)
                 value = [NSNull null];
             else if ([value isKindOfClass:[NSSet class]])
@@ -1042,7 +901,7 @@ BOOL ODOSetUnsignedIntPropertyIfChanged(ODOObject *object, NSString *key, unsign
 static id _ODOGetPrimitiveProperty(ODOObject *object, ODOProperty *property, NSString *key)
 {
     [object willAccessValueForKey:key];
-    id value = [object primitiveValueForProperty:property];
+    id value = ODOObjectPrimitiveValueForProperty(object, property);
     [object didAccessValueForKey:key];
     return value;
 }
@@ -1066,7 +925,7 @@ BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, NSString *key, id value
         return NO;
     
     [object willChangeValueForKey:key];
-    [object setPrimitiveValue:value forProperty:prop];
+    ODOObjectSetPrimitiveValueForProperty(object, value, prop);
     [object didChangeValueForKey:key];
     return YES;
 }

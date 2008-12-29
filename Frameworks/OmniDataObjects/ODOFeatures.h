@@ -9,7 +9,7 @@
 
 
 // The iPhone doesn't have NSUndoManager, or you know, cmd-z.
-#ifdef TARGET_OS_IPHONE
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     #define ODO_SUPPORT_UNDO 0
 #else
     #define ODO_SUPPORT_UNDO 1

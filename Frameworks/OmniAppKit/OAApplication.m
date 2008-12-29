@@ -694,6 +694,42 @@ static NSArray *overrideWindows = nil;
     [self _activateFontsFromAppWrapper];
 }
 
+#pragma mark NSResponder subclass
+
+- (void)presentError:(NSError *)error modalForWindow:(NSWindow *)window delegate:(id)delegate didPresentSelector:(SEL)didPresentSelector contextInfo:(void *)contextInfo;
+{
+    OBPRECONDITION(error); // The superclass will call CFRetain and we'll crash if this is nil.
+    
+    // If you want to pass nil/NULL, could call the simpler method above.
+    OBPRECONDITION(delegate);
+    OBPRECONDITION(didPresentSelector);
+    
+    if (!error) {
+        NSLog(@"%s called with a nil error", __PRETTY_FUNCTION__);
+        NSBeep();
+        return;
+    }
+    
+    // nil/NULL here can crash in the superclass crash trying to build an NSInvocation from this goop.  Let's not.
+    if (!delegate) {
+        delegate = self;
+        didPresentSelector = @selector(noop_didPresentErrorWithRecovery:contextInfo:); // From NSResponder(OAExtensions)
+    }
+    
+    // Log all errors so users can report them.
+    if (![error causedByUserCancelling])
+        NSLog(@"Presenting application modal error for window %@: %@", [window title], [error toPropertyList]);
+    [super presentError:error modalForWindow:window delegate:delegate didPresentSelector:didPresentSelector contextInfo:contextInfo];
+}
+
+- (BOOL)presentError:(NSError *)error;
+{
+    // Log all errors so users can report them.
+    if (![error causedByUserCancelling])
+        NSLog(@"Presenting modal error: %@", [error toPropertyList]);
+    return [super presentError:error];
+}
+
 #pragma mark AppleScript
 
 static void _addPreferenceForKey(const void *value, void *context)

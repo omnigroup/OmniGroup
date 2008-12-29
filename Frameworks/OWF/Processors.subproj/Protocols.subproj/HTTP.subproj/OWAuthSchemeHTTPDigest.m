@@ -259,9 +259,9 @@ static void appendAuthParameter0(NSMutableString *buf, NSString *name, NSString 
 {
     NSCharacterSet *nonToken = [OWHTTPSession nonTokenCharacterSet];
     
-    [buf appendCharacter:' '];
+    [buf appendLongCharacter:' '];
     [buf appendString:name];
-    [buf appendCharacter:'='];
+    [buf appendLongCharacter:'='];
 
     if ([value containsCharacterInSet:nonToken]) {
         NSMutableString *quotedValue = [value mutableCopy];
@@ -269,9 +269,9 @@ static void appendAuthParameter0(NSMutableString *buf, NSString *name, NSString 
         [quotedValue replaceAllOccurrencesOfString:@"\"" withString:@"\\\""];
         // TODO: Check for totally bogus characters in value (non-ASCII, or controls).
 
-        [buf appendCharacter:'"'];
+        [buf appendLongCharacter:'"'];
         [buf appendString:quotedValue];
-        [buf appendCharacter:'"'];
+        [buf appendLongCharacter:'"'];
 
         [quotedValue release];
     } else
@@ -280,7 +280,7 @@ static void appendAuthParameter0(NSMutableString *buf, NSString *name, NSString 
 
 static void appendAuthParameter(NSMutableString *buf, NSString *name, NSString *value)
 {
-    [buf appendCharacter:','];
+    [buf appendLongCharacter:','];
     appendAuthParameter0(buf, name, value);
 }
 

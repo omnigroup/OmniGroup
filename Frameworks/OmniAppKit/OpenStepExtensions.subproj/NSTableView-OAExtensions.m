@@ -40,9 +40,9 @@ RCS_ID("$Id$")
 static IMP originalKeyDown;
 static IMP originalMouseDown;
 static IMP originalTextDidEndEditing;
-static IMP originalDragImageForRows;
+static NSImage *(*originalDragImageForRows)(NSTableView *self, SEL _cmd, NSIndexSet *dragRows, NSArray *tableColumns, NSEvent *dragEvent, NSPointPointer dragImageOffset);
 
-static NSArray *OATableViewRowsInCurrentDrag = nil;
+static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 // you'd think this should be instance-specific, but it doesn't have to be -- only one drag can be happening at a time.
 
 static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
@@ -54,7 +54,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
     originalKeyDown = OBReplaceMethodImplementationWithSelector(self, @selector(keyDown:), @selector(_replacementKeyDown:));
     originalMouseDown = OBReplaceMethodImplementationWithSelector(self, @selector(mouseDown:), @selector(_replacementMouseDown:));
     originalTextDidEndEditing = OBReplaceMethodImplementationWithSelector(self, @selector(textDidEndEditing:), @selector(_replacementTextDidEndEditing:));
-    originalDragImageForRows = OBReplaceMethodImplementationWithSelector(self, @selector(dragImageForRows:event:dragImageOffset:), @selector(_replacementDragImageForRows:event:dragImageOffset:));
+    originalDragImageForRows = (typeof(originalDragImageForRows))OBReplaceMethodImplementationWithSelector(self, @selector(dragImageForRowsWithIndexes:tableColumns:event:offset:), @selector(_replacement_dragImageForRowsWithIndexes:tableColumns:event:offset:));
 }
 
 
@@ -120,28 +120,20 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
     }
 }
 
-- (NSImage *)_replacementDragImageForRows:(NSArray *)dragRows event:(NSEvent *)dragEvent dragImageOffset:(NSPointPointer)dragImageOffset;
+- (NSImage *)_replacement_dragImageForRowsWithIndexes:(NSIndexSet *)dragRows tableColumns:(NSArray *)tableColumns event:(NSEvent*)dragEvent offset:(NSPointPointer)dragImageOffset;
 {
-    NSImage *dragImage;
-    NSEnumerator *rowEnumerator;
-    id rowNumber;
-    NSCachedImageRep *cachedImageRep;
-    NSView *contentView;
     NSPoint dragPoint;
 
     OATableViewRowsInCurrentDrag = [dragRows retain]; // hang on to these so we can use them in -draggedImage:endedAt:operation:.
 
     if ([self _columnIdentifiersForDragImage] == nil)
-        return originalDragImageForRows(self, _cmd, dragRows, dragEvent, dragImageOffset);
+        return originalDragImageForRows(self, _cmd, dragRows, tableColumns, dragEvent, dragImageOffset);
     
-    cachedImageRep = [[NSCachedImageRep alloc] initWithSize:[self bounds].size depth:[[NSScreen mainScreen] depth] separate:YES alpha:YES];
-    contentView = [[cachedImageRep window] contentView];
+    NSImage *dragImage = [[[NSImage alloc] initWithSize:[self bounds].size] autorelease];
 
-    [contentView lockFocus];
-    rowEnumerator = [dragRows objectEnumerator];
-    while ((rowNumber = [rowEnumerator nextObject])) {
-        int row = [rowNumber intValue];
-
+    [dragImage lockFocus];
+    
+    OFForEachIndex(dragRows, row) {
         if ([self _shouldShowDragImageForRow:row]) {
             NSArray *dragColumns;
             NSEnumerator *columnEnumerator;
@@ -169,19 +161,15 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
                 [cell setObjectValue:objectValue];
                 if ([cell respondsToSelector:@selector(setDrawsBackground:)])
                     [(NSTextFieldCell *)cell setDrawsBackground:0];
-                [cell drawWithFrame:cellRect inView:contentView];
+                [cell drawWithFrame:cellRect inView:nil];
             }
         }
     }
-    [contentView unlockFocus];
+    [dragImage unlockFocus];
 
     dragPoint = [self convertPoint:[dragEvent locationInWindow] fromView:nil];
     dragImageOffset->x = NSMidX([self bounds]) - dragPoint.x;
     dragImageOffset->y = dragPoint.y - NSMidY([self bounds]);
-
-    dragImage = [[NSImage alloc] init];
-    [dragImage addRepresentation:cachedImageRep];
-    [cachedImageRep release];
 
     return dragImage;
 }
@@ -189,34 +177,15 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 
 // New API
 
-- (NSArray *)selectedRows;
+- (NSRect)rectOfSelectedRows;
 {
-    NSMutableArray *selectedRows;
-    NSEnumerator *enumerator;
-    NSNumber *rowNumber;
-
-    selectedRows = [NSMutableArray arrayWithCapacity:[self numberOfSelectedRows]];
-    enumerator = [self selectedRowEnumerator];
-    while ((rowNumber = [enumerator nextObject]))
-        [selectedRows addObject:rowNumber];
-
-    return [NSArray arrayWithArray:selectedRows];
-}
-
-- (NSRect) rectOfSelectedRows;
-{
-    NSEnumerator *rowEnum;
-    NSNumber *row;
-    NSRect rect;
-    
-    rowEnum = [self selectedRowEnumerator];
-    row = [rowEnum nextObject];
-    if (!row)
-        return NSZeroRect;
-    rect = [self rectOfRow: [row intValue]];
-    
-    while ((row = [rowEnum nextObject])) {
-        rect = NSUnionRect(rect, [self rectOfRow: [row intValue]]);
+    NSRect rect = NSZeroRect;    
+    OFForEachIndex([self selectedRowIndexes], rowIndex) {
+	NSRect rowRect = [self rectOfRow: rowIndex];
+	if (NSEqualRects(rect, NSZeroRect))
+	    rect = rowRect;
+	else
+	    rect = NSUnionRect(rect, rowRect);
     }
     
     return rect;
@@ -294,7 +263,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
     columnIndex = [self columnAtPoint:point]; 
     if (rowIndex >= 0 && columnIndex >= 0) {
         if (![self isRowSelected:rowIndex])
-            [self selectRow:rowIndex byExtendingSelection:NO];
+            [self selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
     }
 
     return [self _contextMenuForRow:rowIndex column:columnIndex];
@@ -302,19 +271,8 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 
 - (void)moveUp:(id)sender;
 {
-    NSEnumerator *selectedRowEnumerator;
-    NSNumber *selectedRow;
-    int firstSelectedRow = -1;
-    
-    selectedRowEnumerator = [self selectedRowEnumerator];
-    while ((selectedRow = [selectedRowEnumerator nextObject]) != nil) {
-        if (firstSelectedRow == -1)
-            firstSelectedRow = [selectedRow intValue];
-        else
-            firstSelectedRow = MIN(firstSelectedRow, [selectedRow intValue]);
-    }
-    
-    if (firstSelectedRow == -1) { // If nothing was selected
+    NSUInteger firstSelectedRow = [[self selectedRowIndexes] firstIndex];
+    if (firstSelectedRow == NSNotFound) { // If nothing was selected
         int numberOfRows = [self numberOfRows];
         if (numberOfRows > 0) // If there are rows in the table
             firstSelectedRow = numberOfRows - 1; // Select the last row
@@ -330,23 +288,16 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
                 return;	// If we never find a selectable row, don't do anything
     
     // If the first row was selected, select only the first row.  This is consistent with the behavior of many Apple apps.
-    [self selectRow:firstSelectedRow byExtendingSelection:NO];
+    [self selectRowIndexes:[NSIndexSet indexSetWithIndex:firstSelectedRow] byExtendingSelection:NO];
     [self scrollRowToVisible:firstSelectedRow];
 }
 
 - (void)moveDown:(id)sender;
 {
-    NSEnumerator *selectedRowEnumerator;
-    NSNumber *selectedRow;
-    int lastSelectedRow = -1;
+    NSUInteger lastSelectedRow = [[self selectedRowIndexes] lastIndex];
     
-    selectedRowEnumerator = [self selectedRowEnumerator];
-    while ((selectedRow = [selectedRowEnumerator nextObject]) != nil) {
-        lastSelectedRow = MAX(lastSelectedRow, [selectedRow intValue]);
-    }
-    
-    int numberOfRows = [self numberOfRows];
-    if (lastSelectedRow == -1) { // If nothing was selected
+    NSUInteger numberOfRows = [self numberOfRows];
+    if (lastSelectedRow == NSNotFound) {
         if (numberOfRows > 0) // If there are rows in the table
             lastSelectedRow = 0; // Select the first row
         else
@@ -361,7 +312,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
                 return;	// If we never find a selectable row, don't do anything
         
     // If the first row was selected, select only the first row.  This is consistent with the behavior of many Apple apps.
-    [self selectRow:lastSelectedRow byExtendingSelection:NO];
+    [self selectRowIndexes:[NSIndexSet indexSetWithIndex:lastSelectedRow] byExtendingSelection:NO];
     [self scrollRowToVisible:lastSelectedRow];
 }
 
@@ -376,7 +327,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
             return;
 
         originalNumberOfRows = [self numberOfRows];
-        [_dataSource tableView:self deleteRows:[self selectedRows]];
+        [_dataSource tableView:self deleteRowsAtIndexes:[self selectedRowIndexes]];
         [self reloadData];
 
         // Maintain an appropriate selection after deletions
@@ -385,7 +336,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
         selectedRow = MIN(selectedRow + 1, numberOfRows - 1);
 
         if (numberOfRows > 0)
-            [self selectRow:selectedRow byExtendingSelection:NO];
+            [self selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
     }
 }
 
@@ -398,9 +349,9 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
             return;
 
         // -selectedRow is last row of multiple selection, no good for trying to select the row before the selection.
-        unsigned int selectedRow = [[[self selectedRows] objectAtIndex:0] unsignedIntValue];
+        NSUInteger selectedRow = [[self selectedRowIndexes] firstIndex];
         originalNumberOfRows = [self numberOfRows];
-        [_dataSource tableView:self deleteRows:[self selectedRows]];
+        [_dataSource tableView:self deleteRowsAtIndexes:[self selectedRowIndexes]];
         [self reloadData];
         unsigned int newNumberOfRows = [self numberOfRows];
         
@@ -409,11 +360,11 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
             if (selectedRow == 0) {
                 if ([_delegate respondsToSelector:@selector(tableView:shouldSelectRow:)]) {
                     if ([_delegate tableView:self shouldSelectRow:0])
-                        [self selectRow:0 byExtendingSelection:NO];
+                        [self selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
                     else
                         [self moveDown:nil];
                 } else {
-                    [self selectRow:0 byExtendingSelection:NO];
+                    [self selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
                 }
             } else {
                 // Don't try to go past the new # of rows
@@ -429,7 +380,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
                 if (selectedRow < 0)
                     [self moveDown:nil];
                 else
-                    [self selectRow:selectedRow byExtendingSelection:NO];
+                    [self selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
             }
         }
     }
@@ -566,7 +517,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
     // We get NSDragOperationDelete now for dragging to the Trash.
     if (operation == NSDragOperationDelete) {
         if ([_dataSource respondsToSelector:@selector(tableView:deleteRows:)]) {
-            [_dataSource tableView:self deleteRows:OATableViewRowsInCurrentDrag];
+            [_dataSource tableView:self deleteRowsAtIndexes:OATableViewRowsInCurrentDrag];
             [self reloadData];
         }
     }
@@ -607,7 +558,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
         
     while (YES) {
         if (rowIndex != [self selectedRow] && [_dataSource tableView:self itemAtRow:rowIndex matchesPattern:pattern]) {
-            [self selectRow:rowIndex byExtendingSelection:NO];
+            [self selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
             [self scrollRowToVisible:rowIndex];
             return YES;
         }
@@ -678,7 +629,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
             return NO;
     } else {
         if ([self numberOfSelectedRows] > 0 && [_dataSource respondsToSelector:@selector(tableView:writeRows:toPasteboard:)])
-            return [_dataSource tableView:self writeRows:[self selectedRows] toPasteboard:pasteboard];
+            return [_dataSource tableView:self writeRowsWithIndexes:[self selectedRowIndexes] toPasteboard:pasteboard];
         else
             return NO;
     }

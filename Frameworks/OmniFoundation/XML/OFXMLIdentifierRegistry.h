@@ -40,5 +40,4 @@
 
 @end
 
-extern NSString *OFXMLCreateID(void);
 extern NSString *OFXMLIDFromString(NSString *str);

@@ -36,7 +36,7 @@ RCS_ID("$Id$");
     
     for(encodingIndex = 0; allEncodings[encodingIndex] != kCFStringEncodingInvalidId; encodingIndex ++) {
         CFStringEncoding enc = allEncodings[encodingIndex];
-        
+	
         NSString *savable = [NSString defaultValueForCFStringEncoding:enc];
         CFStringEncoding roundTrip = [NSString cfStringEncodingForDefaultValue:savable];
 
@@ -45,7 +45,12 @@ RCS_ID("$Id$");
             NSLog(@"Allowing ShiftJIS_X0213_00 to map to ShiftJIS (via \"%@\") w/o unit test failure.", savable);
             continue;
         }
-        
+	if (enc == kCFStringEncodingGBK_95 && roundTrip == kCFStringEncodingDOSChineseSimplif) {
+            NSLog(@"Allowing kCFStringEncodingGBK_95 to map to kCFStringEncodingDOSChineseSimplif (via \"%@\") w/o unit test failure.", savable);
+	    // <http://www.iana.org/assignments/charset-reg/GBK> seems to indicate that GBK and CP936 are aliases.  10.5 didn't map GBK to CP936, but future OS versions might.  Waiting to hear back from Apple on this to determine if it was intentional.  <bug://50016> CFStringConvertIANACharSetNameToEncoding returning wrong value (Radar 6233750)
+	    continue;
+	}
+	
         should1(roundTrip == enc,
                 ([NSString stringWithFormat:@"CFEncoding %u encodes to \"%@\" decodes to %u", enc, savable, roundTrip]));
     }
@@ -405,15 +410,15 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     shouldBeEqual(s, ([Fuu substringWithRange:(NSRange){0,1}]));
     s = [s stringByAppendingString:[NSString stringWithCharacter:0x00FC]];  // LATIN SMALL LETTER U WITH DIAERESIS
     t = [[s mutableCopy] autorelease];
-    [t appendCharacter:'u']; // LATIN SMALL LETTER U
-    [t appendCharacter:0x308]; // COMBINING DIAERESIS
+    [t appendLongCharacter:'u']; // LATIN SMALL LETTER U
+    [t appendLongCharacter:0x308]; // COMBINING DIAERESIS
     should([t compare:Fuu options:0] == NSOrderedSame);
     should([t compare:Fuu16 options:0] == NSOrderedSame);
     should([Fuu compare:Fuu16 options:0] == NSOrderedSame);
     shouldBeEqual([t decomposedStringWithCanonicalMapping], [Fuu decomposedStringWithCanonicalMapping]);
     shouldBeEqual([t decomposedStringWithCanonicalMapping], [Fuu16 decomposedStringWithCanonicalMapping]);
     t = [[s mutableCopy] autorelease];
-    [t appendCharacter:0xFC]; // LATIN SMALL LETTER U WITH DIAERESIS
+    [t appendLongCharacter:0xFC]; // LATIN SMALL LETTER U WITH DIAERESIS
     shouldBeEqual(t, Fuu);
     
     s = [NSString stringWithCharacter:0x1D072]; // BYZANTINE MUSICAL SYMBOL GORGOSYNTHETON
@@ -422,10 +427,10 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     shouldBeEqual(Gorgo, Gorgo16);
     
     t = (NSMutableString *)[NSMutableString stringWithCharacter:'z'];
-    [t appendCharacter:0x1D072]; // BYZANTINE MUSICAL SYMBOL GORGOSYNTHETON
+    [t appendLongCharacter:0x1D072]; // BYZANTINE MUSICAL SYMBOL GORGOSYNTHETON
     [t replaceCharactersInRange:(NSRange){0,1} withString:@""];
     shouldBeEqual(t, Gorgo);
-    [t appendCharacter:'z'];
+    [t appendLongCharacter:'z'];
     should(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:0],(NSRange){0,2}));
     should(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:1],(NSRange){0,2}));
     should(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:2],(NSRange){2,1}));
@@ -472,14 +477,16 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     should([fm path:@"/foo/bar" isAncestorOfPath:@"/foo/bar/baz" relativePath:&relative]);
     shouldBeEqual(relative, @"baz");
     
+    NSError *error = nil;
+    
     NSString *scratchMe = [@"/tmp" stringByAppendingPathComponent:[NSString stringWithFormat:@"test-%@-%u-%u", NSUserName(), getpid(), time(NULL)]];
-    [fm createDirectoryAtPath:scratchMe attributes:nil];
+    OBShouldNotError([fm createDirectoryAtPath:scratchMe withIntermediateDirectories:NO attributes:nil error:&error]);
     NSString *sc0 = [scratchMe stringByAppendingPathComponent:@"zik"];
-    [fm createDirectoryAtPath:sc0 attributes:nil];
+    OBShouldNotError([fm createDirectoryAtPath:sc0 withIntermediateDirectories:NO attributes:nil error:&error]);
     NSString *sc1 = [sc0 stringByAppendingPathComponent:@"zak"];
-    [fm createDirectoryAtPath:sc1 attributes:nil];
+    OBShouldNotError([fm createDirectoryAtPath:sc1 withIntermediateDirectories:NO attributes:nil error:&error]);
     NSString *sc2 = [sc1 stringByAppendingPathComponent:@"zik"];
-    [fm createDirectoryAtPath:sc2 attributes:nil];
+    OBShouldNotError([fm createDirectoryAtPath:sc2 withIntermediateDirectories:NO attributes:nil error:&error]);
     
     //NSLog(@"%@", [[NSArray arrayWithObjects:scratchMe, sc0, sc1, sc2, nil] description]);
     shouldBeEqual([scratchMe relativePathToFilename:sc2], @"zik/zak/zik");

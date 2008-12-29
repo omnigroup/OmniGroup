@@ -55,7 +55,7 @@ typedef struct {
 - (void)appendString:(NSString *)string;
 - (void)appendData:(NSData *)data;
 - (void)appendBytes:(const unsigned char *)bytes length:(unsigned int)length;
-- (void)appendCharacter:(unsigned char)ch;
+- (void)appendUnprocessedCharacter:(unsigned char)ch;
     // N.B. Unlike the rest of our API, this "character" is a C char, not a Unicode character.
 
 @end

@@ -936,7 +936,7 @@ void checkClockwise_(OAGeometryTests *self, NSBezierPath *p, BOOL cw, const char
 #define checkCW(expr, want) val = [expr isClockwise]; if (val != want) \
     [self failWithException:[NSException failureInCondition: [NSString stringWithFormat:@"[%s isClockwise]", #expr] \
                                                      isTrue: val \
-                                                     inFile: [NSString stringWithCString:file] \
+                                                     inFile: [[NSFileManager defaultManager] stringWithFileSystemRepresentation:file length:strlen(file)] \
                                                      atLine: line \
                                             withDescription: [NSString stringWithFormat:@"Specific check failed at line %d; path is %@", __LINE__, [expr description]]]]
     checkCW(p, cw);

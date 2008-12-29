@@ -18,6 +18,82 @@
 
 RCS_ID("$Id$")
 
+@interface NSFileManager (UsedToBeInOmniFoundation)
+- (int)getType:(unsigned long *)typeCode andCreator:(unsigned long *)creatorCode forPath:(NSString *)path;
+@end
+
+@implementation NSFileManager (UsedToBeInOmniFoundation)
+
+typedef struct {
+    long type;
+    long creator;
+    short flags;
+    short locationV;
+    short locationH;
+    short fldr;
+    short iconID;
+    short unused[3];
+    char script;
+    char xFlags;
+    short comment;
+    long putAway;
+} OFFinderInfo;
+
+- (int)getType:(unsigned long *)typeCode andCreator:(unsigned long *)creatorCode forPath:(NSString *)path;
+{
+    struct attrlist attributeList;
+    struct {
+        long ssize;
+        OFFinderInfo finderInfo;
+    } attributeBuffer;
+    int errorCode;
+    
+    attributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
+    attributeList.reserved = 0;
+    attributeList.commonattr = ATTR_CMN_FNDRINFO;
+    attributeList.volattr = attributeList.dirattr = attributeList.fileattr = attributeList.forkattr = 0;
+    memset(&attributeBuffer, 0, sizeof(attributeBuffer));
+    
+    errorCode = getattrlist([self fileSystemRepresentationWithPath:path], &attributeList, &attributeBuffer, sizeof(attributeBuffer), 0);
+    if (errorCode == -1) {
+        switch (errno) {
+            case EOPNOTSUPP: {
+                BOOL isDirectory;
+                NSString *ufsResourceForkPath;
+                unsigned long aTypeCode, aCreatorCode;
+                
+                ufsResourceForkPath = [[path stringByDeletingLastPathComponent] stringByAppendingPathComponent:[@"._" stringByAppendingString:[path lastPathComponent]]];
+                if ([self fileExistsAtPath:ufsResourceForkPath isDirectory:&isDirectory] == YES && isDirectory == NO) {
+                    NSData *resourceFork;
+                    const unsigned int offsetOfTypeInResourceFork = 50;
+                    
+                    resourceFork = [NSData dataWithContentsOfMappedFile:ufsResourceForkPath];
+                    if ([resourceFork length] < offsetOfTypeInResourceFork + sizeof(unsigned long) + sizeof(unsigned long))
+                        return errorCode;
+                    
+                    [resourceFork getBytes:&aTypeCode range:NSMakeRange(offsetOfTypeInResourceFork, sizeof(aTypeCode))];
+                    [resourceFork getBytes:&aCreatorCode range:NSMakeRange(offsetOfTypeInResourceFork + sizeof(aTypeCode), sizeof(aCreatorCode))];
+                    *typeCode = NSSwapBigLongToHost(aTypeCode);
+                    *creatorCode = NSSwapBigLongToHost(aCreatorCode);
+                    return 0;
+                } else {
+                    *typeCode = 0; // We could use the Mac APIs, or just read the "._" file.
+                    *creatorCode = 0;
+                }
+            }
+            default:
+                return errorCode;
+        }
+    } else {
+        *typeCode = attributeBuffer.finderInfo.type;
+        *creatorCode = attributeBuffer.finderInfo.creator;
+    }
+    
+    return errorCode;
+}
+
+@end
+
 @interface OWContentType (Private)
 + (void)controllerDidInitialize:(OFController *)controller;
 + (void)reloadExpirationTimeIntervals:(NSNotification *)notification;

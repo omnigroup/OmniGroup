@@ -8,6 +8,7 @@
 // $Id$
 
 #import <AppKit/NSWindowController.h>
+#import <Availability.h>
 
 @class OAToolbar;
 @class NSToolbarItem;

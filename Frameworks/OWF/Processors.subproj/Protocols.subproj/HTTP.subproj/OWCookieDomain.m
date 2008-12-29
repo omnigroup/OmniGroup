@@ -627,7 +627,7 @@ static inline void _locked_checkCookiesLoaded()
     NSDictionary *attributes;
     
     // This must get executed in the main thread so that the notification gets posted in the main thread (since that is where the cookie preferences panel is listening).
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
 
     if (OWCookiesDebug)
         NSLog(@"COOKIES: Saving");

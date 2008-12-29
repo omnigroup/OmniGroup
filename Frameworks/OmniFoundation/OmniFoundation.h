@@ -26,14 +26,11 @@
 #import <OmniFoundation/OFDatedMutableDictionary.h>
 #import <OmniFoundation/OFDedicatedThreadScheduler.h>
 #import <OmniFoundation/OFDelayedEvent.h>
-#import <OmniFoundation/OFDirectory.h>
 #import <OmniFoundation/OFEnrichedTextReader.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFErrorRecovery.h>
 #import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniFoundation/OFFastMutableData.h>
-#import <OmniFoundation/OFFile.h>
-#import <OmniFoundation/OFForwardObject.h>
 #import <OmniFoundation/OFGeometry.h>
 #import <OmniFoundation/OFHeap.h>
 #import <OmniFoundation/OFImplementationHolder.h>
@@ -81,8 +78,6 @@
 #import <OmniFoundation/OFTrie.h>
 #import <OmniFoundation/OFTrieBucket.h>
 #import <OmniFoundation/OFTrieNode.h>
-#import <OmniFoundation/OFUnixDirectory.h>
-#import <OmniFoundation/OFUnixFile.h>
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
@@ -93,6 +88,8 @@
 #import <OmniFoundation/OFXMLUnparsedElement.h>
 #import <OmniFoundation/OFXMLString.h>
 #import <OmniFoundation/OFXMLComment.h>
+#import <OmniFoundation/OFXMLIdentifier.h>
+#import <OmniFoundation/OFXMLIdentifierRegistry.h>
 
 // AppleScript
 #import <OmniFoundation/NSAppleEventDescriptor-OFExtensions.h>
@@ -122,7 +119,6 @@
 #import <OmniFoundation/NSDate-OFExtensions.h>
 #import <OmniFoundation/NSDecimalNumber-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
-#import <OmniFoundation/NSError-OFExtensions.h>
 #import <OmniFoundation/NSException-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 #import <OmniFoundation/NSHost-OFExtensions.h>

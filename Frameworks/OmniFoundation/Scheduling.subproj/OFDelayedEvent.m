@@ -7,9 +7,11 @@
 
 #import <OmniFoundation/OFDelayedEvent.h>
 
+#import <Availability.h>
 #import <OmniFoundation/OFInvocation.h>
 #import <OmniFoundation/OFScheduler.h>
 #import <OmniFoundation/OFScheduledEvent.h>
+#import <OmniFoundation/NSDate-OFExtensions.h>
 
 RCS_ID("$Id$")
 
@@ -78,7 +80,7 @@ RCS_ID("$Id$")
 
 - (NSDate *)pendingDate;
 {
-    return [[scheduledEvent date] addTimeInterval:-delayInterval];
+    return [[scheduledEvent date] dateByAddingTimeInterval:-delayInterval];
 }
 
 - (NSDate *)fireDate;

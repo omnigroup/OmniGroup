@@ -8,6 +8,7 @@
 #import <OmniFoundation/OFBinding.h>
 
 #import <OmniFoundation/OFNull.h> // For OFISEQUAL()
+#import <OmniBase/OBObject.h>
 
 //#define DEBUG_KVO 1
 
@@ -52,6 +53,12 @@ RCS_ID("$Id$");
 - initWithSourcePoint:(OFBindingPoint)sourcePoint destinationPoint:(OFBindingPoint)destinationPoint;
 {
     return [self initWithSourceObject:sourcePoint.object sourceKey:sourcePoint.key destinationObject:destinationPoint.object destinationKey:destinationPoint.key];
+}
+
+- (void)finalize;
+{
+    [self invalidate];
+    [super finalize];
 }
 
 - (void)dealloc;
@@ -213,7 +220,7 @@ RCS_ID("$Id$");
     
     _registered = YES;
 #if DEBUG_KVO
-    NSLog(@"binding %p observing:%@.%@", self, [_sourceObject shortDescription], _sourceKey);
+    NSLog(@"binding %p observing:%@.%@ options:0x%x", self, [_sourceObject shortDescription], _sourceKey, options);
 #endif
 }
 

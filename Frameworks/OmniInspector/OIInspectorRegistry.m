@@ -539,7 +539,7 @@ static BOOL objectInterestsInspectorP(id anObject, void *anInspector)
     
     [self _buildWorkspacesInMenu];
     [editWorkspaceTable reloadData];
-    [editWorkspaceTable selectRow:[editWorkspaceTable numberOfRows]-1 byExtendingSelection:NO];
+    [editWorkspaceTable selectRowIndexes:[NSIndexSet indexSetWithIndex:[editWorkspaceTable numberOfRows]-1] byExtendingSelection:NO];
     [editWorkspaceTable editColumn:0 row:[editWorkspaceTable numberOfRows]-1 withEvent:nil select:YES];
 }
 
@@ -606,15 +606,10 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     [[editWorkspaceTable window] endEditingFor:nil];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSArray *sortedSelection = [[[editWorkspaceTable selectedRowEnumerator] allObjects] sortedArrayUsingSelector:@selector(compare:)];
-    NSEnumerator *enumerator = [sortedSelection reverseObjectEnumerator];
-    NSNumber *row;
-    int index;
     
-    while ((row = [enumerator nextObject])) {
-        index = [row intValue];
-        [defaults removeObjectForKey:[NSString stringWithFormat:@"%@-%@", [self inspectorWorkspacesPreference], [workspaces objectAtIndex:index]]];
-        [workspaces removeObjectAtIndex:index];
+    OFForEachIndexReverse([editWorkspaceTable selectedRowIndexes], row) {
+        [defaults removeObjectForKey:[NSString stringWithFormat:@"%@-%@", [self inspectorWorkspacesPreference], [workspaces objectAtIndex:row]]];
+        [workspaces removeObjectAtIndex:row];
     }
     [defaults setObject:workspaces forKey:[self inspectorWorkspacesPreference]];
     [editWorkspaceTable reloadData];
@@ -630,10 +625,9 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     [deleteAlert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace OK")];
     [deleteAlert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace Cancel")];
     
-    NSArray *selectedRows = [[editWorkspaceTable selectedRowEnumerator] allObjects];
+    NSIndexSet *selectedRows = [editWorkspaceTable selectedRowIndexes];
     if ([selectedRows count] == 1) {
-	int index = [[selectedRows objectAtIndex:0] intValue];
-	NSString *workspaceName = [workspaces objectAtIndex:index];
+	NSString *workspaceName = [workspaces objectAtIndex:[selectedRows firstIndex]];
 	[deleteAlert setMessageText:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Delete workspace '%@'?", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace warning - single selection"), workspaceName]];
     } else {
 	[deleteAlert setMessageText:NSLocalizedStringFromTableInBundle(@"Delete selected workspaces?", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace warning - multiple selection")];
@@ -824,17 +818,15 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     return NSDragOperationMove;
 }
 
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard;
+- (BOOL)tableView:(NSTableView *)tableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard;
 {
-    NSMutableArray *names = [NSMutableArray array];
-    NSEnumerator *enumerator = [rows objectEnumerator];
-    NSNumber *row;
-    
     if ([workspaces count] <= 1)
         return NO;
-        
-    while ((row = [enumerator nextObject]))
-        [names addObject:[workspaces objectAtIndex:[row intValue]]];
+    
+    NSMutableArray *names = [NSMutableArray array];
+    OFForEachIndex(rowIndexes, row) {
+        [names addObject:[workspaces objectAtIndex:row]];
+    }
 
     [pboard declareTypes:[NSArray arrayWithObject:OIWorkspaceOrderPboardType] owner:nil];
     [pboard setPropertyList:names forType:OIWorkspaceOrderPboardType];
@@ -971,7 +963,12 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     
     // Don't float over non-document windows, unless the window in question is already at a higher level.
     // For example, the Quick Entry panel in OmniFocus -- calling -orderFront: ends up screwing up its exclusive activation support.  <bug://bugs/41806> (Calling up QE shows OF window [Quick Entry])
-    BOOL hasDocument = ([[window delegate] isKindOfClass:[NSWindowController class]] && [[window delegate] document] != nil);
+    
+    NSWindowController *windowController = nil;
+    if ([[window delegate] isKindOfClass:[NSWindowController class]])
+	windowController = (NSWindowController *)[window delegate];
+    
+    BOOL hasDocument = ([windowController document] != nil);
     
     BOOL shouldFloat = window == nil || [window level] > NSFloatingWindowLevel || hasDocument;
     if (isFloating != shouldFloat) {

@@ -16,7 +16,7 @@
 - (void)insertObjectsFromArray:(NSArray *)anArray atIndex:(NSUInteger)anIndex;
 - (void)removeIdenticalObjectsFromArray:(NSArray *)removeArray;
 
-- (void)addObjects:(id)firstObject, ...;
+- (void)addObjects:(id)firstObject, ... NS_REQUIRES_NIL_TERMINATION;
 - (void)addObjectsFromSet:(NSSet *)aSet;
 - (void)removeObjectsInSet:(NSSet *)aSet;
 

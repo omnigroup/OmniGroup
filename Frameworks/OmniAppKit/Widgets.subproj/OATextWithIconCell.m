@@ -12,8 +12,6 @@
 
 #import "NSImage-OAExtensions.h"
 #import "NSAttributedString-OAExtensions.h"
-#import "OAExtendedOutlineView.h"
-#import "OAExtendedTableView.h"
 
 RCS_ID("$Id$");
 

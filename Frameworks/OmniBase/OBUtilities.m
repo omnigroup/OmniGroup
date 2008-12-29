@@ -8,11 +8,7 @@
 #import <OmniBase/OBUtilities.h>
 
 #import <Foundation/Foundation.h>
-#if !TARGET_OS_IPHONE
-#import <objc/objc-runtime.h>
-#else
 #import <objc/runtime.h>
-#endif
 
 #import <OmniBase/assertions.h>
 #import <OmniBase/rcsid.h>

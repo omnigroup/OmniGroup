@@ -11,17 +11,7 @@
 #import <OmniBase/system.h>
 
 #import <OmniFoundation/OFNull.h>
-#import <OmniFoundation/OFXMLDocument.h>
-#import <OmniFoundation/OFXMLCursor.h>
-#import <OmniFoundation/OFXMLElement.h>
-#import <OmniFoundation/OFXMLString.h>
-#import <OmniFoundation/OFEnumNameTable.h>
-#import <OmniFoundation/NSSet-OFExtensions.h>
-#import <OmniFoundation/NSMutableSet-OFExtensions.h>
-#import <OmniFoundation/NSString-OFSimpleMatching.h>
-#import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/CFArray-OFExtensions.h>
-#import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/OFCFCallbacks.h>
 
 #import <OmniDataObjects/Errors.h>
@@ -36,7 +26,6 @@
 #import <Foundation/NSData.h>
 #import <Foundation/NSPropertyList.h>
 #import <Foundation/NSNotification.h>
-#import <Foundation/NSDecimalNumber.h>
 #import <Foundation/NSDate.h>
 #import <Foundation/NSSet.h>
 #import <Foundation/NSKeyValueCoding.h>
@@ -45,6 +34,7 @@
 #import <Foundation/NSUserDefaults.h>
 
 #import <CoreFoundation/CFNumber.h>
+#import <CoreFoundation/CFSet.h>
 
 #if 0 && defined(DEBUG)
     #define DEBUG_UNDO(format, ...) NSLog((format), ## __VA_ARGS__)

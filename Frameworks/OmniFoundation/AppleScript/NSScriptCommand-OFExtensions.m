@@ -7,7 +7,7 @@
 
 #import <OmniFoundation/NSScriptCommand-OFExtensions.h>
 
-#import <OmniFoundation/NSError-OFExtensions.h>
+#import <OmniBase/NSError-OBExtensions.h>
 #import <OmniFoundation/NSScriptObjectSpecifier-OFExtensions.h>
 
 #import <Foundation/NSScriptCommandDescription.h>

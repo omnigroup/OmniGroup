@@ -8,7 +8,7 @@
 // $Id$
 
 #import <OmniBase/OBObject.h>
-
+#import <OmniBase/assertions.h>
 
 @interface OBPostLoader : OBObject
 

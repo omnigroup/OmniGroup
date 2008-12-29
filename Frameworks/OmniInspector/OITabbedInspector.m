@@ -208,8 +208,13 @@ RCS_ID("$Id$")
     if (inspectionView)
 	[self _layoutSelectedTabs];
     
-    if (!config)
-        [_nonretained_inspectorController showInspector];
+    if (!config) {
+        NSRect windowFrame = [[_nonretained_inspectorController window] frame];
+        [_nonretained_inspectorController setExpanded:YES withNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame))];
+        
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"OIShowInspectorsOnFirstLaunch"])
+            [_nonretained_inspectorController showInspector];
+    }
 }
 
 - (NSDictionary *)configuration;

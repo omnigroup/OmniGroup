@@ -7,15 +7,11 @@
 
 #import <OmniFoundation/OFCFCallbacks.h>
 
-#import <OmniFoundation/CFString-OFExtensions.h>
-
 #include <inttypes.h>
 
 RCS_ID("$Id$");
 
-//
-// NSObject callbacks
-//
+#pragma mark NSObject callbacks
 
 const void * OFNSObjectRetain(CFAllocatorRef allocator, const void *value)
 {
@@ -52,9 +48,7 @@ CFHashCode OFNSObjectHash(const void *value1)
     return [(id)value1 hash];
 }
 
-//
-// CFTypeRef callbacks
-//
+#pragma mark CFTypeRef callbacks
 
 const void *OFCFTypeRetain(CFAllocatorRef allocator, const void *value)
 {
@@ -81,9 +75,7 @@ CFHashCode OFCFTypeHash(const void *value)
     return CFHash((CFTypeRef)value);
 }
 
-//
-// Special purpose callbacks
-//
+#pragma mark Special purpose callbacks
 
 CFStringRef OFPointerCopyDescription(const void *ptr)
 {
@@ -104,33 +96,141 @@ CFStringRef OFUnsignedIntegerCopyDescription(const void *ptr)
     return CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%" PRIuPTR), u);
 }
 
+#pragma mark Collection callback structs using the callbacks above
 
-Boolean OFCaseInsensitiveStringIsEqual(const void *value1, const void *value2)
-{
-    OBASSERT([(id)value1 isKindOfClass:[NSString class]] && [(id)value2 isKindOfClass:[NSString class]]);
-    return CFStringCompare((CFStringRef)value1, (CFStringRef)value2, kCFCompareCaseInsensitive) == kCFCompareEqualTo;
-}
+const CFArrayCallBacks OFNonOwnedPointerArrayCallbacks = {
+    0,     // version;
+    NULL,  // retain;
+    NULL,  // release;
+    OFPointerCopyDescription, // copyDescription
+    NULL,  // equal
+};
 
-CFHashCode OFCaseInsensitiveStringHash(const void *value)
-{
-    OBASSERT([(id)value isKindOfClass:[NSString class]]);
-    
-    // This is the only interesting function in the bunch.  We need to ensure that all
-    // case variants of the same string (when 'same' is determine case insensitively)
-    // have the same hash code.  We will do this by using CFStringGetCharacters over
-    // the first 16 characters of each key.
-    // This is obviously not a good hashing algorithm for all strings.
-    UniChar characters[16];
-    NSUInteger length;
-    CFStringRef string;
-    
-    string = (CFStringRef)value;
-    
-    length = CFStringGetLength(string);
-    if (length > 16)
-        length = 16;
-        
-    CFStringGetCharacters(string, CFRangeMake(0, length), characters);
-    
-    return OFCaseInsensitiveHash(characters, length);
-}
+const CFArrayCallBacks OFNSObjectArrayCallbacks = {
+    0,     // version;
+    OFNSObjectRetain,
+    OFNSObjectRelease,
+    OFNSObjectCopyDescription,
+    OFNSObjectIsEqual,
+};
+
+const CFArrayCallBacks OFIntegerArrayCallbacks = {
+    0,     // version;
+    NULL,  // retain;
+    NULL,  // release;
+    OFIntegerCopyDescription, // copyDescription
+    NULL,  // equal
+};
+
+const CFDictionaryKeyCallBacks OFNonOwnedPointerDictionaryKeyCallbacks = {
+    0,    // version
+    NULL, // retain
+    NULL, // release
+    OFPointerCopyDescription,
+    NULL, // equal
+    NULL, // hash
+};
+const CFDictionaryValueCallBacks OFNonOwnedPointerDictionaryValueCallbacks = {
+    0, // version
+    0, // retain
+    0, // release
+    OFPointerCopyDescription,
+    0, // equal
+};
+
+// -retain/-release, but no -hash/-isEqual:
+const CFDictionaryKeyCallBacks OFPointerEqualObjectDictionaryKeyCallbacks = {
+    0,   // version
+    OFNSObjectRetain,
+    OFNSObjectRelease,
+    OFNSObjectCopyDescription,
+    NULL, // equal
+    NULL, // hash
+};
+
+const CFDictionaryKeyCallBacks OFIntegerDictionaryKeyCallbacks = {
+    0,    // version
+    NULL, // retain
+    NULL, // release
+    OFIntegerCopyDescription,
+    NULL, // equal
+    NULL, // hash
+};
+const CFDictionaryValueCallBacks OFIntegerDictionaryValueCallbacks = {
+    0, // version
+    0, // retain
+    0, // release
+    OFIntegerCopyDescription,
+    0, // equal
+};
+
+const CFDictionaryKeyCallBacks OFNSObjectDictionaryKeyCallbacks = {
+    0,    // version
+    OFNSObjectRetain,
+    OFNSObjectRelease,
+    OFNSObjectCopyDescription,
+    OFNSObjectIsEqual,
+    OFNSObjectHash
+};
+const CFDictionaryKeyCallBacks OFNSObjectCopyDictionaryKeyCallbacks = {
+    0,    // version
+    OFNSObjectRetainCopy,
+    OFNSObjectRelease,
+    OFNSObjectCopyDescription,
+    OFNSObjectIsEqual,
+    OFNSObjectHash
+};
+const CFDictionaryValueCallBacks OFNSObjectDictionaryValueCallbacks = {
+    0,    // version
+    OFNSObjectRetain,
+    OFNSObjectRelease,
+    OFNSObjectCopyDescription,
+    OFNSObjectIsEqual,
+};
+
+const CFSetCallBacks OFNonOwnedPointerSetCallbacks  = {
+    0,    // version
+    NULL, // retain
+    NULL, // release
+    OFPointerCopyDescription,
+    NULL, // isEqual
+    NULL, // hash
+};
+
+const CFSetCallBacks OFIntegerSetCallbacks = {
+    0,    // version
+    NULL, // retain
+    NULL, // release
+    OFIntegerCopyDescription,
+    NULL, // isEqual
+    NULL, // hash
+};
+
+// -retain/-release, but no -hash/-isEqual:
+const CFSetCallBacks OFPointerEqualObjectSetCallbacks = {
+    0,   // version
+    OFNSObjectRetain,
+    OFNSObjectRelease,
+    OFNSObjectCopyDescription,
+    NULL,
+    NULL,
+};
+
+// Not retained, but -hash/-isEqual:
+const CFSetCallBacks OFNonOwnedObjectCallbacks = {
+    0,    // version
+    NULL, // retain
+    NULL, // release
+    OFNSObjectCopyDescription,
+    OFNSObjectIsEqual,
+    OFNSObjectHash,
+};
+
+const CFSetCallBacks OFNSObjectSetCallbacks = {
+    0,   // version
+    OFNSObjectRetain,
+    OFNSObjectRelease,
+    OFNSObjectCopyDescription,
+    OFNSObjectIsEqual,
+    OFNSObjectHash,
+};

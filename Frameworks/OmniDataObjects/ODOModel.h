@@ -12,19 +12,16 @@
 @class NSDictionary;
 @class ODOEntity;
 
-extern NSString * const ODOModelRootElementName;
-extern NSString * const ODOModelNamespaceURLString;
-
 @interface ODOModel : OFObject
 {
 @private
-    NSString *_path;
+    NSString *_name;
     NSDictionary *_entitiesByName;
 }
 
-+ (NSString *)internName:(NSString *)name;
++ (void)registerClass:(Class)cls forEntity:(ODOEntity *)entity;
++ (ODOEntity *)entityForClass:(Class)cls;
 
-- (id)initWithContentsOfFile:(NSString *)path error:(NSError **)outError;
 - (NSDictionary *)entitiesByName;
 
 - (ODOEntity *)entityNamed:(NSString *)name;

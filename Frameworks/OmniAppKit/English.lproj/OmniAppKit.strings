@@ -231,11 +231,17 @@
 /* script loading error message */
 "The following error was reported:\n%@" = "The following error was reported:\n%@";
 
+/* script loading error message */
+"The requested AppleScript does not exist" = "The requested AppleScript does not exist";
+
 /* script execute error */
 "The script '%@' could not complete." = "The script '%@' could not complete.";
 
 /* script loading error */
 "The script file '%@' could not be opened." = "The script file '%@' could not be opened.";
+
+/* script loading error */
+"The script file could not be opened." = "The script file could not be opened.";
 
 /* launch services error */
 "Unable to launch URL %@" = "Unable to launch URL %@";

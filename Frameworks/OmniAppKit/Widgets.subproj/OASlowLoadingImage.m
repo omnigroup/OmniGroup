@@ -20,7 +20,9 @@ RCS_ID("$Id$");
 
 - initWithURL:(NSURL *)url;
 {
-    return [self initWithURLRequest:[NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:0] startImmediately:YES];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];    // allow default timeout interval to get set
+    [request setCachePolicy:NSURLRequestReturnCacheDataElseLoad];
+    return [self initWithURLRequest:request startImmediately:YES];
 }
 
 - initWithURLRequest:(NSURLRequest *)req startImmediately:(BOOL)startImmediately;  // D.I.

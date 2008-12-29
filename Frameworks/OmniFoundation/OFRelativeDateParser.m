@@ -102,7 +102,7 @@ typedef enum {
 			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tomorrow", @"DateProcessing", OMNI_BUNDLE, @"tomorrow"), 
 			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tom", @"DateProcessing", OMNI_BUNDLE, @"tom"), 
 			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"yesterday", @"DateProcessing", OMNI_BUNDLE, @"yesterday"), 
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"yes", @"DateProcessing", OMNI_BUNDLE, @"yes"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"yes", @"DateProcessing", OMNI_BUNDLE, @"the first theee letters of yesterday"), 
 			 /* use default day */
 			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"this month", @"DateProcessing", OMNI_BUNDLE, @"this month"),
 			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"next month", @"DateProcessing", OMNI_BUNDLE, @"next month"), 
@@ -379,7 +379,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     
     BOOL timeSpecific = NO;
     
-    if (dateString != nil) { 
+    if (![NSString isEmptyString:dateString]) { 
 	static OFRegularExpression *spacedDateRegex = nil;
 	if (!spacedDateRegex)
 	    spacedDateRegex = [[OFRegularExpression alloc] initWithString:@"^(\\d\\d?\\d?\\d?)\\s(\\d\\d?\\d?\\d?)\\s?(\\d?\\d?\\d?\\d?)$"];
@@ -443,7 +443,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     NSLog(@"Return date: %@", *date);
 #endif
     //if (!*date) {
-    //OFErrorWithInfo(&*error, "date parse error", @"GAH");  
+    //OBErrorWithInfo(&*error, "date parse error", @"GAH");  
     //return NO;
     //}
     return YES;
@@ -1016,7 +1016,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 - (NSDate *)parseDateNaturalLangauge:(NSString *)dateString withDate:(NSDate *)date timeSpecific:(BOOL *)timeSpecific useEndOfDuration:(BOOL)useEndOfDuration error:(NSError **)error;
 {
 #ifdef DEBUG_date
-    NSLog(@"Parse Natural Language Date String: %@", dateString );
+    NSLog(@"Parse Natural Language Date String: \"%@\"", dateString );
 #endif
     OFRelativeDateParserRelativity modifier = OFRelativeDateParserNoRelativity; // look for a modifier as the first part of the string
     NSDateComponents *currentComponents = [currentCalendar components:unitFlags fromDate:date]; // the given date as components
@@ -1034,6 +1034,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     
     int number = -1;
     DPCode dpCode = -1;
+    dateString = [dateString stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace];
     NSScanner *scanner = [NSScanner localizedScannerWithString:dateString];
     NSCharacterSet *whitespaceCharacterSet = [NSCharacterSet whitespaceCharacterSet];
     [scanner setCaseSensitive:NO];
@@ -1132,7 +1133,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		}
 		[sortedKeyArray release];
 	    }
-	    
+	   	    
 	    NSString *name;
 	    // check for any modifier after we check the relative date names, as the relative date names can be phrases that we want to match with
 	    NSEnumerator *patternEnum = [modifiers keyEnumerator];
@@ -1358,7 +1359,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	    }
 	}
 #ifdef DEBUG_date
-	NSLog(@"end of scanning cycle. month: %d, day: %d, year: %d, weekday: %d, number: %d", month, day, year, weekday, number);
+	NSLog(@"end of scanning cycle. month: %d, day: %d, year: %d, weekday: %d, number: %d, modifier: %d", month, day, year, weekday, number, multiplier);
 #endif
 	//OBError(&*error, // error
 	//		0,  // code enum
@@ -1449,12 +1450,13 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     token = [token lowercaseString];
     while (dayIndex--) {
 #ifdef DEBUG_date
-	NSLog(@"token: %@, weekdays: %@, short: %@, Ewdays: %@, EShort: %@", token, [[_weekdays objectAtIndex:dayIndex] lowercaseString], [token isEqualToString:[[_shortdays objectAtIndex:dayIndex] lowercaseString]], [[englishWeekdays objectAtIndex:dayIndex] lowercaseString], [[englishShortdays objectAtIndex:dayIndex] lowercaseString]);
+	if (dayIndex >= 0)
+	    NSLog(@"token: %@, weekdays: %@, short: %@, Ewdays: %@, EShort: %@", token, [[_weekdays objectAtIndex:dayIndex] lowercaseString], [[_shortdays objectAtIndex:dayIndex] lowercaseString], [[englishWeekdays objectAtIndex:dayIndex] lowercaseString], [[englishShortdays objectAtIndex:dayIndex] lowercaseString]);
 #endif
 	if ([token isEqualToString:[[_shortdays objectAtIndex:dayIndex] lowercaseString]] || [token isEqualToString:[[_weekdays objectAtIndex:dayIndex] lowercaseString]])
 	    return dayIndex;
 	
-	    // test the english weekdays
+	// test the english weekdays
 	if ([token isEqualToString:[[englishShortdays objectAtIndex:dayIndex] lowercaseString]] || [token isEqualToString:[[englishWeekdays objectAtIndex:dayIndex] lowercaseString]])
 		    return dayIndex;
     }

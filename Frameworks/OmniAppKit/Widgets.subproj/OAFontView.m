@@ -86,7 +86,7 @@ RCS_ID("$Id$")
         
         manager = [NSFontManager sharedFontManager];
         panel = [manager fontPanel: YES];
-        [panel setDelegate: self];
+        [panel setDelegate:(id)self];
 	[manager orderFrontFontPanel:sender];
     }
 }

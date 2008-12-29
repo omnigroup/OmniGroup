@@ -77,7 +77,7 @@ RCS_ID("$Id$")
 
 + (void)mainThreadPerformSelectorOnce:(SEL)aSelector;
 {
-    if ([NSThread inMainThread])
+    if ([NSThread isMainThread])
 	[self performSelector:aSelector];
     else
 	[self queueSelectorOnce:aSelector];
@@ -85,7 +85,7 @@ RCS_ID("$Id$")
 
 - (void)mainThreadPerformSelector:(SEL)aSelector;
 {
-    if ([NSThread inMainThread])
+    if ([NSThread isMainThread])
 	[self performSelector:aSelector];
     else
 	[self queueSelector:aSelector];
@@ -93,7 +93,7 @@ RCS_ID("$Id$")
 
 - (void)mainThreadPerformSelectorOnce:(SEL)aSelector;
 {
-    if ([NSThread inMainThread])
+    if ([NSThread isMainThread])
 	[self performSelector:aSelector];
     else
 	[self queueSelectorOnce:aSelector];
@@ -101,7 +101,7 @@ RCS_ID("$Id$")
 
 - (void)mainThreadPerformSelector:(SEL)aSelector withObject:(id)anObject;
 {
-    if ([NSThread inMainThread])
+    if ([NSThread isMainThread])
 	[self performSelector:aSelector withObject:anObject];
     else
 	[self queueSelector:aSelector withObject:anObject];
@@ -109,7 +109,7 @@ RCS_ID("$Id$")
 
 - (void)mainThreadPerformSelectorOnce:(SEL)aSelector withObject:(id)anObject;
 {
-    if ([NSThread inMainThread])
+    if ([NSThread isMainThread])
 	[self performSelector:aSelector withObject:anObject];
     else
 	[self queueSelectorOnce:aSelector withObject:anObject];
@@ -117,7 +117,7 @@ RCS_ID("$Id$")
 
 - (void)mainThreadPerformSelector:(SEL)aSelector withObject:(id)object1 withObject:(id)object2;
 {
-    if ([NSThread inMainThread])
+    if ([NSThread isMainThread])
 	[self performSelector:aSelector withObject:object1 withObject:object2];
     else
 	[self queueSelector:aSelector withObject:object1 withObject:object2];
@@ -125,7 +125,7 @@ RCS_ID("$Id$")
 
 - (void)mainThreadPerformSelector:(SEL)aSelector withObject:(id)object1 withObject:(id)object2 withObject:(id)object3;
 {
-    if ([NSThread inMainThread])
+    if ([NSThread isMainThread])
 	[self invokeSelector:aSelector withObject:object1 withObject:object2 withObject:object3];
     else
 	[self queueSelector:aSelector withObject:object1 withObject:object2 withObject:object3];
@@ -133,7 +133,7 @@ RCS_ID("$Id$")
 
 - (void)mainThreadPerformSelector:(SEL)aSelector withBool:(BOOL)aBool;
 {
-    if ([NSThread inMainThread]) {
+    if ([NSThread isMainThread]) {
 	Method method;
 
 	method = class_getInstanceMethod(isa, aSelector);
@@ -146,7 +146,7 @@ RCS_ID("$Id$")
 
 - (void)mainThreadPerformSelector:(SEL)aSelector withInt:(int)anInt;
 {
-    if ([NSThread inMainThread]) {
+    if ([NSThread isMainThread]) {
 	Method method;
 
 	method = class_getInstanceMethod(isa, aSelector);
@@ -159,7 +159,7 @@ RCS_ID("$Id$")
 
 - (void)mainThreadPerformSelector:(SEL)aSelector withInt:(int)anInt withInt:(int)anInt2;
 {
-    if ([NSThread inMainThread]) {
+    if ([NSThread isMainThread]) {
 	Method method;
 
 	method = class_getInstanceMethod(isa, aSelector);

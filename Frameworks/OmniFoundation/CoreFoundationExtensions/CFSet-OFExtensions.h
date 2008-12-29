@@ -8,14 +8,10 @@
 // $Id$
 
 #import <CoreFoundation/CFSet.h>
+#import <OmniFoundation/OFCFCallbacks.h>
 
 extern const CFSetCallBacks OFCaseInsensitiveStringSetCallbacks;
 
-extern const CFSetCallBacks OFNonOwnedPointerSetCallbacks;
-extern const CFSetCallBacks OFIntegerSetCallbacks;
-extern const CFSetCallBacks OFPointerEqualObjectSetCallbacks;
-extern const CFSetCallBacks OFNonOwnedObjectCallbacks;
-extern const CFSetCallBacks OFNSObjectSetCallbacks;
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 extern const CFSetCallBacks OFWeaklyRetainedObjectSetCallbacks;
 #endif

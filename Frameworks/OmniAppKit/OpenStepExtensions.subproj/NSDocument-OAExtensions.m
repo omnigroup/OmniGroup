@@ -257,7 +257,7 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
             if (!create)
                 return nil;
             
-            if (![fileManager createFileAtPath:insideWrapperFilename contents:[NSData data] attributes:[fileManager fileAttributesAtPath:fileName traverseLink:YES]])
+            if (![fileManager createFileAtPath:insideWrapperFilename contents:[NSData data] attributes:nil])
                 [NSException raise:NSInvalidArgumentException format:@"Unable to create backup file at %@", fileName];
         }
         

@@ -8,7 +8,7 @@
 // $Id$
 
 #if ODO_PERF_MODEL_ODO
-    #define ODO_PERF_MODEL_CLASS_NAME(x) ODO_ ## x
+    #define ODO_PERF_MODEL_CLASS_NAME(x) ODOPerf ## x
     #define ODO_PERF_MODEL_SUPERCLASS ODOObject
     #import <OmniDataObjects/OmniDataObjects.h>
 #elif ODO_PERF_MODEL_CD
@@ -47,3 +47,18 @@
 @end
 @implementation BugTag
 @end
+
+// Get the key names from ODO in all cases; but if we are in CoreData, we want to add @properties to the CD classes.
+#if ODO_PERF_MODEL_CD
+#define ODOPerfBug CD_Bug
+#define ODOPerfBugTag CD_BugTag
+#define ODOPerfNote CD_Note
+#define ODOPerfState CD_State
+#define ODOPerfTag CD_Tag
+#endif
+
+#import "ODOPerfBug-ODOPerfProperties.h"
+#import "ODOPerfBugTag-ODOPerfProperties.h"
+#import "ODOPerfNote-ODOPerfProperties.h"
+#import "ODOPerfState-ODOPerfProperties.h"
+#import "ODOPerfTag-ODOPerfProperties.h"

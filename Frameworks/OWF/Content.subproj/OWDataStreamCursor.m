@@ -501,7 +501,7 @@ PEEK_DATA_OF_TYPE(double, Double);
             break;
 
         if (ch > 0 && ch < 128 && (isgraph(ch) || (ch == ' '))) {
-            [descript appendCharacter:ch];
+            [descript appendLongCharacter:ch];
         } else if (ch == '\n') {
             [descript appendString:@"\\n"];
         } else if (ch == '\r') {

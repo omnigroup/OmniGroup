@@ -28,6 +28,10 @@ extern void _objc_resolve_categories_for_class(struct objc_class *cls);
 @interface OBPostLoader (PrivateAPI)
 + (BOOL)_processSelector:(SEL)selectorToCall inClass:(Class)aClass initialize:(BOOL)shouldInitialize;
 + (void)_becomingMultiThreaded:(NSNotification *)note;
+#ifdef OMNI_ASSERTIONS_ON
++ (void)_validateMethodSignatures;
++ (void)_checkForMethodsInDeprecatedProtocols;
+#endif
 @end
 
 //#define POSTLOADER_DEBUG
@@ -71,6 +75,11 @@ This method makes several passes, each time invoking a different selector.  On t
     // Handle the case that this doesn't get called until after we've gone multi-threaded
     if ([NSThread isMultiThreaded])
         [self _becomingMultiThreaded:nil];
+    
+#ifdef OMNI_ASSERTIONS_ON
+    [self _validateMethodSignatures];
+    [self _checkForMethodsInDeprecatedProtocols];
+#endif
 }
 
 /*"
@@ -244,5 +253,312 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
     isMultiThreaded = YES;
     isSendingBecomingMultiThreaded = NO;
 }
+
+#ifdef OMNI_ASSERTIONS_ON
+
+static unsigned MethodSignatureConflictCount = 0;
+
+static char *_copyNormalizeMethodSignature(const char *sig)
+{
+    // Radar 6328901: No #defines for ObjC runtime method type encodings 'V' and 'O'
+    if (sig[0] == 'V' && sig[1] == 'v') {
+        // oneway void; don't care to check the 'oneway' bit
+        sig++;
+    }
+    
+    // Easy calling convention; don't care how fast this code is since it is OMNI_ASSERTIONS_ON
+    char *copy = strdup(sig);
+    
+    char *src = copy, *dst = copy, c;
+    do {
+        c = *src;
+	
+	// Strip out any 'bycopy' markers (no #define for this either)
+        if (c == 'O' && src[1] == '@') {  // O@ means 'bycopy'; just want to copy the '@'.  Can't strip every 'O' since it might be part of a struct name (but only objects can be bycopy).
+            *dst = '@';
+	    dst += 1;
+	    src += 2;
+	    continue;
+        }
+	
+	// Strip out 'inout' markers 'N' (no #define for this either)
+	if (c == 'N' && src[1] == '^') {
+            *dst = '^';
+	    dst += 1;
+	    src += 2;
+	    continue;
+	}
+	
+	// Default, just copy it.
+	*dst = c;
+	dst++;
+        src++;
+    } while (c);
+    
+    //if (strcmp(sig, copy)) NSLog(@"Normalized '%s' to '%s'", sig, copy);
+    
+    return copy;
+}
+
+static BOOL _methodSignaturesCompatible(const char *sig1, const char *sig2)
+{
+    char *norm1 = _copyNormalizeMethodSignature(sig1);
+    char *norm2 = _copyNormalizeMethodSignature(sig2);
+
+    BOOL compatible = (strcmp(norm1, norm2) == 0);
+
+    free(norm1);
+    free(norm2);
+
+    return compatible;
+}
+
+static void _checkSignaturesVsSuperclass(Class cls)
+{
+    // Any method that is implemented by a class and its superclass should have the same signature.  ObjC doesn't encode static type declarations in method signatures, so we can't check for covariance.
+    Class superClass = class_getSuperclass(cls);
+    if (!superClass)
+        return;
+    
+    // Get our method list and check each one vs. the superclass
+    unsigned int methodIndex = 0;
+    Method *methods = class_copyMethodList(cls, &methodIndex);
+    if (methods) {
+        while (methodIndex--) {
+            Method method = methods[methodIndex];
+            SEL sel = method_getName(method);
+	    
+            Method superMethod = class_getInstanceMethod(cls, sel); // This could be a class method if cls is itself the metaclass, here "instance" just means "the class we passed in"
+            if (!superMethod)
+                continue;
+            
+            const char *types = method_getTypeEncoding(method);
+            const char *superTypes = method_getTypeEncoding(superMethod);
+            if (!_methodSignaturesCompatible(types, superTypes)) {
+                NSLog(@"Method %s has conflciting type signatures between class and its superclas:\n\tnormalized %s original %s (%s)\n\tnormalized %s original %s (%s)!",
+		      sel_getName(sel),
+		      _copyNormalizeMethodSignature(types), types, class_getName(cls),
+		      _copyNormalizeMethodSignature(superTypes), superTypes, class_getName(superClass));
+                MethodSignatureConflictCount++;
+            }
+        }
+        free(methods);
+    }
+}
+
+static void _checkMethodInClassVsMethodInProtocol(Class cls, Protocol *protocol, Method m, BOOL isRequiredMethod, BOOL isInstanceMethod)
+{
+    SEL sel = method_getName(m);
+
+    // Skip a couple Apple selectors that are known to be bad. Radar 6333710.
+    if (sel == @selector(invokeServiceIn:msg:pb:userData:error:) ||
+	sel == @selector(invokeServiceIn:msg:pb:userData:menu:remoteServices:))
+	return;
+    
+    struct objc_method_description desc = protocol_getMethodDescription(protocol, sel, isRequiredMethod, isInstanceMethod);
+    if (desc.name == NULL)
+        // No such method in the protocol
+        return;
+    
+    const char *types = method_getTypeEncoding(m);
+    if (!_methodSignaturesCompatible(types, desc.types)) {
+        NSLog(@"Method %s has type signatures conflicting with adopted protocol\n\tnormalized %s original %s(%s)\n\tnormalized %s original %s(%s)!",
+	      sel_getName(sel),
+	      _copyNormalizeMethodSignature(types), types, class_getName(cls),
+	      _copyNormalizeMethodSignature(desc.types), desc.types, protocol_getName(protocol));
+        MethodSignatureConflictCount++;
+    }
+}
+
+static void _checkMethodInClassVsMethodsInProtocol(Class cls, Protocol *protocol, BOOL isInstanceClass)
+{
+    unsigned int methodIndex = 0;
+    Method *methods = class_copyMethodList(cls, &methodIndex);
+    if (!methods)
+        return;
+    
+    while (methodIndex--) {
+        Method method = methods[methodIndex];
+
+        // Handle the required/optional split in the protocol method organization.
+        _checkMethodInClassVsMethodInProtocol(cls, protocol, method, YES/*required*/, isInstanceClass);
+        _checkMethodInClassVsMethodInProtocol(cls, protocol, method, NO/*required*/, isInstanceClass);
+    }
+    
+    free(methods);
+}
+
+static void _checkSignaturesVsProtocol(Class cls, Protocol *protocol)
+{
+    // Recursively check protocol conformed to by the original protocol.
+    {
+        unsigned int protocolIndex = 0;
+        Protocol **protocols = protocol_copyProtocolList(protocol, &protocolIndex);
+        if (protocols) {
+            while (protocolIndex--)
+                _checkSignaturesVsProtocol(cls, protocols[protocolIndex]);
+            free(protocols);
+        }
+    }
+
+    // Check each of our methods vs. those in the protocol.  Methods in the protocol are split up by instance vs. class and required vs. optional.  Handle the instance/class split here.
+    _checkMethodInClassVsMethodsInProtocol(cls, protocol, YES/*isInstanceClass*/);
+    _checkMethodInClassVsMethodsInProtocol(object_getClass(cls), protocol, NO/*isInstanceClass*/);
+}
+
+static void _checkSignaturesVsProtocols(Class cls)
+{
+    unsigned int protocolIndex = 0;
+    Protocol **protocols = class_copyProtocolList(cls, &protocolIndex);
+    if (protocols) {
+        while (protocolIndex--)
+            _checkSignaturesVsProtocol(cls, protocols[protocolIndex]);
+        free(protocols);
+    }
+}
+
+// Validate type signatures across inheritance and protocol conformance. For this to work in the most cases, delegates need to be implemented as conforming to protocols, possibly with @optional methods.  We can't check a class vs. everything it might conform to (for example -length returns signed in some protcols and unsigned int others).
++ (void)_validateMethodSignatures;
+{
+    // Reset this to zero to avoid double-counting errors if we get called again due to bundle loading.
+    MethodSignatureConflictCount = 0;
+    
+    int classIndex, classCount = 0, newClassCount;
+    Class *classes = NULL;
+    
+    newClassCount = objc_getClassList(NULL, 0);
+    while (classCount < newClassCount) {
+        classCount = newClassCount;
+        classes = realloc(classes, sizeof(Class) * classCount);
+        newClassCount = objc_getClassList(classes, classCount);
+    }
+    
+    for (classIndex = 0; classIndex < classCount; classIndex++) {
+        Class cls = classes[classIndex];
+        _checkSignaturesVsSuperclass(cls); // instance methods
+        _checkSignaturesVsSuperclass(object_getClass(cls)); // ... and class methods
+        
+        _checkSignaturesVsProtocols(cls); // checks instance and class and methods, so don't call with the metaclass
+    }
+
+    // TODO: Check that protocols done conform to other protocols and then change the signature.  Less important since most cases will actually involve a class conforming.
+    
+    // We should find zero conflicts!
+    OBASSERT(MethodSignatureConflictCount == 0);
+}
+
+/*
+ When we change the methods in a datasource or delegate and there are multiple apps using that protocol (and the methods are @optional) we'd not normally get a warning.  On a case-by-case basis we've added OBASSERTs in the  -setDelegate:/-setDataSource: methods before, but that doesn't work for extra optional data source methods (like those added to NSTableView in OmniAppKit) and requires more code in general.  Instead, let the developer write something like:
+ 
+ @protocol AnythingContainingTheWordDeprecated
+ ... signatures _without_ the @optional specifier ...
+ @end
+ 
+ Here, we'll check every class and and make sure that nobody implements the dead methods (hopefully there aren't naming conflicts if the methods were well named in the first place!)
+ 
+ */
+
+static unsigned int DeprecatedMethodImplementationCount = 0;
+
+static void _checkForDeprecatedMethodsInClass(Class cls, CFSetRef deprecatedSelectors, BOOL isClassMethod)
+{
+    // Can't iterate the set and then do class_getInstanceMethod().  This will provoke +initialize on classes, some of which may be deprecated.
+    unsigned int methodIndex = 0;
+    Method *methods = class_copyMethodList(cls, &methodIndex);
+    if (methods == NULL)
+        return;
+    
+    while (methodIndex--) {
+        SEL sel = method_getName(methods[methodIndex]);
+        if (CFSetContainsValue(deprecatedSelectors, sel)) {
+            NSLog(@"%s implements the deprecated method %c%s.", class_getName(cls), isClassMethod ? '+' : '-', sel_getName(sel));
+            DeprecatedMethodImplementationCount++;
+        }
+    }
+    free(methods);
+}
+
++ (void)_checkForMethodsInDeprecatedProtocols;
+{
+    // Reset this to zero to avoid double-counting errors if we get called again due to bundle loading.
+    DeprecatedMethodImplementationCount = 0;
+    
+    // Build an index of all the deprecated instance and class methods.
+    CFSetCallBacks callbacks;
+    memset(&callbacks, 0, sizeof(callbacks));
+    CFMutableSetRef deprecatedInstanceSelectors = CFSetCreateMutable(kCFAllocatorDefault, 0, &callbacks);
+    CFMutableSetRef deprecatedClassSelectors = CFSetCreateMutable(kCFAllocatorDefault, 0, &callbacks);
+    
+    BOOL oneDeprecatedProtocolFound = NO;
+    unsigned int protocolIndex = 0;
+    Protocol **protocols = objc_copyProtocolList(&protocolIndex);
+    if (protocols) {
+        while (protocolIndex--) {
+            Protocol *protocol = protocols[protocolIndex];
+            if (strstr(protocol_getName(protocol), "Deprecated") == NULL)
+                continue;
+            
+            //NSLog(@"Indexing deprecation protocol '%s'...", protocol_getName(protocol));
+            oneDeprecatedProtocolFound = YES;
+            
+            unsigned int descIndex;
+            struct objc_method_description *descs;
+            
+            // All the deprecated methods should in the required segment of the protocol.
+            descs = protocol_copyMethodDescriptionList(protocol, NO/*isRequired*/, YES/*isInstaceMethod*/, &descIndex);
+            OBASSERT(descs == NULL);
+            descs = protocol_copyMethodDescriptionList(protocol, NO/*isRequired*/, NO/*isInstaceMethod*/, &descIndex);
+            OBASSERT(descs == NULL);
+            
+            descIndex = 0;
+            if ((descs = protocol_copyMethodDescriptionList(protocol, YES/*isRequired*/, YES/*isInstanceMethod*/, &descIndex))) {
+                while (descIndex--)
+                    CFSetAddValue(deprecatedInstanceSelectors, descs[descIndex].name);
+                free(descs);
+            }
+
+            descIndex = 0;
+            if ((descs = protocol_copyMethodDescriptionList(protocol, YES/*isRequired*/, NO/*isInstanceMethod*/, &descIndex))) {
+                while (descIndex--)
+                    CFSetAddValue(deprecatedClassSelectors, descs[descIndex].name);
+                free(descs);
+            }
+        }
+        free(protocols);
+    }
+    
+    // Make sure the OBDEPRECATED_METHODS macro is forcing the otherwise unused protocols to be emitted
+    OBASSERT(oneDeprecatedProtocolFound);
+
+    // Check that classes don't implement any of the deprecated methods.
+    int classIndex, classCount = 0, newClassCount;
+    Class *classes = NULL;
+    
+    newClassCount = objc_getClassList(NULL, 0);
+    while (classCount < newClassCount) {
+        classCount = newClassCount;
+        classes = realloc(classes, sizeof(Class) * classCount);
+        newClassCount = objc_getClassList(classes, classCount);
+    }
+    
+    for (classIndex = 0; classIndex < classCount; classIndex++) {
+        Class cls = classes[classIndex];
+	
+	// Several Cocoa classes have problems.  Radar 6333766.
+	const char *name = class_getName(cls);
+	if (strcmp(name, "ISDComplainer") == 0 ||
+	    strcmp(name, "ABBackupManager") == 0 ||
+	    strcmp(name, "ABPeopleController") == 0 ||
+	    strcmp(name, "ABAddressBook") == 0)
+	    continue;
+
+        _checkForDeprecatedMethodsInClass(cls, deprecatedInstanceSelectors, NO/*isClassMethod*/);
+        _checkForDeprecatedMethodsInClass(object_getClass(cls), deprecatedClassSelectors, YES/*isClassMethod*/);
+    }
+    
+    OBASSERT(DeprecatedMethodImplementationCount == 0);
+}
+
+#endif
 
 @end

@@ -52,8 +52,9 @@ RCS_ID("$Id$")
 - (void)mouseDown:(NSEvent *)mouseEvent;
 {
     if ([mouseEvent clickCount] > 1) {
-        if ([[self delegate] respondsToSelector:@selector(splitView:multipleClick:)]) {
-            [[self delegate] splitView:self multipleClick:mouseEvent];
+	id <OASplitViewExtendedDelegate> delegate = (id)[self delegate];
+        if ([delegate respondsToSelector:@selector(splitView:multipleClick:)]) {
+            [delegate splitView:self multipleClick:mouseEvent];
             return;
         }
     }

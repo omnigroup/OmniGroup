@@ -19,7 +19,7 @@ RCS_ID("$Id$")
 {
     NSError *error = nil;
     
-    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[_model entityNamed:@"Master"] primaryKey:@"master"];
+    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Master"] primaryKey:@"master"];
     [_editingContext insertObject:master];
     [master release];
     
@@ -35,7 +35,7 @@ RCS_ID("$Id$")
 {
     NSError *error = nil;
 
-    ODOEntity *entity = [_model entityNamed:@"Master"];
+    ODOEntity *entity = [ODOTestCaseModel() entityNamed:@"Master"];
     
     ODOObject *master1 = [[ODOObject alloc] initWithEditingContext:_editingContext entity:entity primaryKey:@"master1"];
     [_editingContext insertObject:master1];
@@ -64,11 +64,11 @@ RCS_ID("$Id$")
 // This can easily happen if UI code can select both a parent and child and delete them w/o knowing that the deletion of the parent will get the child too.  Nice if the UI handles it, but shouldn't crash or do something crazy otherwise.
 - (void)testDeleteOfAlreadyCascadedDelete;
 {
-    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[_model entityNamed:@"Master"] primaryKey:@"master"];
+    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Master"] primaryKey:@"master"];
     [_editingContext insertObject:master];
     [master release];
     
-    ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[_model entityNamed:@"Detail"] primaryKey:@"detail"];
+    ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Detail"] primaryKey:@"detail"];
     [_editingContext insertObject:detail];
     [detail release];
 
@@ -89,11 +89,11 @@ RCS_ID("$Id$")
 // Inverse of the above, where the item that would be cascaded gets deleted first.  Due to set ordering, either of these could happen if the UI isn't specifically deleting only the container elements.
 - (void)testDeleteOfContainerWithAlreadyDeletedMember;
 {
-    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[_model entityNamed:@"Master"] primaryKey:@"master"];
+    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Master"] primaryKey:@"master"];
     [_editingContext insertObject:master];
     [master release];
     
-    ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[_model entityNamed:@"Detail"] primaryKey:@"detail"];
+    ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Detail"] primaryKey:@"detail"];
     [_editingContext insertObject:detail];
     [detail release];
     

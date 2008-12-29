@@ -1,0 +1,31 @@
+model "ODOTestCase" do
+  entity "Master", :instance_class => "ODOObject" do
+    attribute "pk", :string, :primary  => true
+    attribute "name", :string, :optional => true
+    relationship "details", "Detail", "master", :many => true, :delete  => :cascade
+  end
+
+  entity "Detail", :instance_class => "ODOObject" do
+    attribute "pk", :string, :primary  => true
+    attribute "name", :string, :optional => true
+    relationship "master", "Master", "details", :delete => :nullify
+  end
+
+  entity "AllAttributeTypes", :instance_class => "ODOObject" do
+    attribute "pk", :string, :primary => true
+    attribute "int16", :int16
+    attribute "int32", :int32
+    attribute "int64", :int64
+    attribute "float32", :float32
+    attribute "float64", :float64
+    attribute "string", :string
+    attribute "boolean", :boolean
+    attribute "date", :date
+    attribute "data", :data
+  end
+
+  entity "DynamicProperty" do
+    attribute "pk", :string, :primary => true
+    attribute "name", :string, :optional => true
+  end
+end

@@ -9,7 +9,6 @@
 
 #import <Foundation/NSFileManager.h>
 #import <Foundation/NSRange.h> // For NSRange
-#import <OmniBase/SystemType.h>
 #import <OmniBase/OBUtilities.h>
 
 // Split out other extensions
@@ -74,9 +73,6 @@
 - (NSString *)networkMountPointForPath:(NSString *)path returnMountSource:(NSString **)mountSource;
 - (NSString *)fileSystemTypeForPath:(NSString *)path;
 
-- (int)getType:(unsigned long *)typeCode andCreator:(unsigned long *)creatorCode forPath:(NSString *)path;
-- (int)setType:(unsigned long)typeCode andCreator:(unsigned long)creatorCode forPath:(NSString *)path OB_DEPRECATED_ATTRIBUTE;
-
 - (NSString *)resolveAliasAtPath:(NSString *)path;
     // Returns the original path if it isn't an alias, or the path pointed to by the alias (paths are all in POSIX form). Returns nil if an error occurs, such as not being able to resolve the alias. Note that this will not resolve aliases in the middle of the path (e.g. if /foo/bar is an alias to a directory, resolving /foo/bar/baz will fail and return nil).
 
@@ -88,4 +84,10 @@
    // Checks whether one path is a subdirectory of another, optionally returning the relative path (a suffix of thisPath). Consults the filesystem in an attempt to discover commonalities due to symlinks and file mounts. (Does not handle aliases, particularly.)
 - (BOOL)path:(NSString *)otherPath isAncestorOfPath:(NSString *)thisPath relativePath:(NSString **)relativeResult;
 
+@end
+
+#import <OmniBase/macros.h>
+OBDEPRECATED_METHODS(NSFileManagerHandler)
+- (BOOL)fileManager:(NSFileManager *)fm shouldProceedAfterError:(NSDictionary *)errorInfo;
+- (void)fileManager:(NSFileManager *)fm willProcessPath:(NSString *)path;
 @end

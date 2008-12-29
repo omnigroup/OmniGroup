@@ -16,26 +16,27 @@ typedef enum {
     ODOAttributeTypeInt16,
     ODOAttributeTypeInt32,
     ODOAttributeTypeInt64,
-    ODOAttributeTypeDecimal,
     ODOAttributeTypeFloat32,
     ODOAttributeTypeFloat64,
     ODOAttributeTypeString,
     ODOAttributeTypeBoolean,
     ODOAttributeTypeDate,
     ODOAttributeTypeData,
+    //
+    ODOAttributeTypeCount,
 } ODOAttributeType;
 
 @interface ODOAttribute : ODOProperty
 {
 @private
     ODOAttributeType _type;
-    id _defaultValue;
+    NSObject <NSCopying> *_defaultValue;
     BOOL _isPrimaryKey;
     Class _valueClass;
 }
 
 - (ODOAttributeType)type;
-- (id)defaultValue;
+- (NSObject <NSCopying> *)defaultValue;
 - (Class)valueClass;
 
 @end

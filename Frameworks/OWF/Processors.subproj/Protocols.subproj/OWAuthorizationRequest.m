@@ -478,7 +478,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
                         break;
                     if (character == '\\')  // backslash escape?
                         character = scannerReadCharacter(scanner);
-                    [fragment appendCharacter:character];
+                    [fragment appendLongCharacter:character];
                 }
  
                 value = [[fragment copy] autorelease];

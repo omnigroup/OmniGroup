@@ -261,7 +261,7 @@ static NSWindow *RootlessProgressWindow = nil;
 
 + (void)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize progressStyle:(NSProgressIndicatorStyle)progressStyle inWindow:(NSWindow *)documentWindow automaticallyEnds:(BOOL)shouldAutomaticallyEnd;
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
 
     DEBUG_LONG_OPERATION_INDICATOR(@"%s: documentWindow=%p operationDescription=%@", __PRETTY_FUNCTION__, documentWindow, operationDescription);
 
@@ -372,7 +372,7 @@ static NSWindow *RootlessProgressWindow = nil;
 + (void)continuingLongOperation:(NSString *)operationStatus;
 {
     DEBUG_LONG_OPERATION_INDICATOR(@"%s: documentWindow:%p operationStatus=%@", __PRETTY_FUNCTION__, [operationWindow parentWindow], operationStatus);
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
 
     if (!LongOperationIndicatorEnabledForWindow([operationWindow parentWindow]))
         return;
@@ -388,7 +388,7 @@ static NSWindow *RootlessProgressWindow = nil;
 + (void)continuingLongOperationWithProgress:(double)progress;
     // Not yet published, since we haven't yet published the progress bar style API
 {
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
 
     if (!LongOperationIndicatorEnabledForWindow([operationWindow parentWindow]))
         return;
@@ -416,7 +416,7 @@ static NSWindow *RootlessProgressWindow = nil;
 + (void)finishedLongOperation;
 {
     DEBUG_LONG_OPERATION_INDICATOR(@"%s documentWindow=%p", __PRETTY_FUNCTION__, [operationWindow parentWindow]);
-    OBPRECONDITION([NSThread inMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
 
     if (!LongOperationIndicatorEnabledForWindow(nil))
         return;

@@ -32,7 +32,7 @@ RCS_ID("$Id$")
         if (span.length == 0)
             break;
         if (!first)
-            [buf appendCharacter:','];
+            [buf appendLongCharacter:','];
         if (span.length == 1)
             [buf appendFormat:@"%u", span.location];
         else

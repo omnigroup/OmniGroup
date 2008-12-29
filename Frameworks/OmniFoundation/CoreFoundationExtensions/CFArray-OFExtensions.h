@@ -8,10 +8,7 @@
 // $Id$
 
 #import <CoreFoundation/CFArray.h>
-
-extern const CFArrayCallBacks OFNonOwnedPointerArrayCallbacks;
-extern const CFArrayCallBacks OFNSObjectArrayCallbacks;
-extern const CFArrayCallBacks OFIntegerArrayCallbacks;
+#import <OmniFoundation/OFCFCallbacks.h>
 
 // Convenience functions
 @class NSMutableArray;
@@ -63,3 +60,4 @@ static inline uintptr_t OFCFArrayGetUIntegerValueAtIndex(CFArrayRef theArray, CF
     return (uintptr_t)value;
 }
 
+extern Boolean OFCFArrayIsSortedAscendingUsingFunction(CFArrayRef self, CFComparatorFunction comparator, void *context);

@@ -11,17 +11,7 @@
 
 #import "ODOEntity-Internal.h"
 
-extern NSString * const ODOPropertyNameAttributeName;
-extern NSString * const ODOPropertyOptionalAttributeName;
-extern NSString * const ODOPropertyTransientAttributeName;
-
-@interface ODOProperty (Internal)
-- (id)initWithCursor:(OFXMLCursor *)cursor entity:(ODOEntity *)entity baseFlags:(struct _ODOPropertyFlags)flags error:(NSError **)outError;
-#ifdef OMNI_ASSERTIONS_ON
-- (SEL)_setterSelector;
-#endif
-@end
-
+extern void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags flags, BOOL optional, BOOL transient, SEL get, SEL set);
 
 @class ODOObject;
 __private_extern__ BOOL ODOPropertyHasIdenticalName(ODOProperty *property, NSString *name);
@@ -42,6 +32,7 @@ static inline unsigned ODOPropertySnapshotIndex(ODOProperty *property)
     return snapshotIndex;
 }
 
-__private_extern__ id ODOPropertyGetValue(ODOObject *object, ODOProperty *property);
-__private_extern__ void ODOPropertySetValue(ODOObject *object, ODOProperty *property, id value);
-
+__private_extern__ SEL ODOPropertyGetterSelector(ODOProperty *property);
+__private_extern__ SEL ODOPropertySetterSelector(ODOProperty *property);
+__private_extern__ ODOPropertyGetter ODOPropertyGetterImpl(ODOProperty *property);
+__private_extern__ ODOPropertySetter ODOPropertySetterImpl(ODOProperty *property);

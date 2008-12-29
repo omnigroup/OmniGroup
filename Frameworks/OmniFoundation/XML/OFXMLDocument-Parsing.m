@@ -814,12 +814,16 @@ static void _xmlStructuredErrorFunc(void *userData, xmlErrorPtr error)
 {
     OFMLDocumentParseState *state = userData;
 
+    // When parsing WebDAV results, we get a hojillion complaints that 'DAV:' is not a valid URI.  Nothing we can do about this as that's what Apache sends.  Sorry!
+    if (error->domain == XML_FROM_PARSER && error->code == XML_WAR_NS_URI)
+        return;
+    
     // libxml2 has its own notion of domain/code -- put those in the user info.
     NSMutableDictionary *userInfo = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
                                      [NSNumber numberWithInt:error->domain], @"libxml_domain",
                                      [NSNumber numberWithInt:error->code], @"libxml_code",
                                      [NSString stringWithUTF8String:error->message], NSLocalizedFailureReasonErrorKey,
-                                     NSLocalizedStringFromTableInBundle(@"Warning encountered while loading XML.", nil, OMNI_BUNDLE, @"error description"), NSLocalizedDescriptionKey,
+                                     NSLocalizedStringFromTableInBundle(@"Warning encountered while loading XML.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), NSLocalizedDescriptionKey,
                                      nil];
     
     if (error->file) {

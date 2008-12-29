@@ -21,7 +21,7 @@
 
 @end
 
-
-@interface NSObject (OASplitViewExtendedDelegate)
+@protocol OASplitViewExtendedDelegate <NSObject>
+@optional
 - (void)splitView:(OASplitView *)sender multipleClick:(NSEvent *)mouseEvent; // Called when the divider is double-clicked.
 @end

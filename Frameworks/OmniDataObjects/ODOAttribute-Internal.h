@@ -9,14 +9,6 @@
 
 #import <OmniDataObjects/ODOAttribute.h>
 
-extern NSString * const ODOAttributeElementName;
-extern NSString * const ODOAttributeTypeAttributeName;
-extern NSString * const ODOAttributeDefaultValueAttributeName;
-extern NSString * const ODOAttributePrimaryKeyAttributeName;
-
-extern OFEnumNameTable * ODOAttributeTypeEnumNameTable(void);
-
 @interface ODOAttribute (Internal)
-- (id)initWithCursor:(OFXMLCursor *)cursor entity:(ODOEntity *)entity error:(NSError **)outError;
 - (BOOL)isPrimaryKey;
 @end

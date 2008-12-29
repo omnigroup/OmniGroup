@@ -26,7 +26,7 @@
 
 RCS_ID("$Id$");
 
-@interface OIInspectorController (Private) <OIInspectorHeaderViewDelegateProtocol>
+@interface OIInspectorController (Private) <OIInspectorHeaderViewDelegateProtocol, OIInspectorWindowDelegate>
 - (void)toggleVisibleAction:sender;
 - (void)_buildHeadingView;
 - (void)_buildWindow;
@@ -343,44 +343,6 @@ static BOOL animateInspectorToggles;
     } NS_ENDHANDLER;
 }
 
-- (void)windowWillClose:(NSNotification *)notification;
-{
-    [self inspectNothing];
-}
-
-- (void)windowDidBecomeKey:(NSNotification *)notification;
-{
-    [headingBackground setNeedsDisplay:YES];
-}
-
-- (void)windowDidResignKey:(NSNotification *)notification;
-{
-    [headingBackground setNeedsDisplay:YES];
-    [window makeFirstResponder:window];
-}
-
-- (NSUndoManager *)windowWillReturnUndoManager:(NSWindow *)aWindow;
-{
-    NSWindow *mainWindow;
-    NSResponder *nextResponder;
-    NSUndoManager *undoManager = nil;
-
-    mainWindow = [NSApp mainWindow];
-    nextResponder = [mainWindow firstResponder];
-    if (nextResponder == nil)
-        nextResponder = mainWindow;
-
-    do {
-        if ([nextResponder respondsToSelector:@selector(undoManager)])
-            undoManager = [nextResponder undoManager];
-        else if ([nextResponder respondsToSelector:@selector(delegate)] && [[(id)nextResponder delegate] respondsToSelector:@selector(undoManager)])
-            undoManager = [[(id)nextResponder delegate] undoManager];
-        nextResponder = [nextResponder nextResponder];
-    } while (nextResponder && !undoManager);
-    
-    return undoManager;
-}
-
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *result = [super debugDictionary];
@@ -608,6 +570,48 @@ static BOOL animateInspectorToggles;
     [registry defaultsDidChange];
 }
 
+#pragma mark NSWindow delegate
+
+- (void)windowWillClose:(NSNotification *)notification;
+{
+    [self inspectNothing];
+}
+
+- (void)windowDidBecomeKey:(NSNotification *)notification;
+{
+    [headingBackground setNeedsDisplay:YES];
+}
+
+- (void)windowDidResignKey:(NSNotification *)notification;
+{
+    [headingBackground setNeedsDisplay:YES];
+    [window makeFirstResponder:window];
+}
+
+- (NSUndoManager *)windowWillReturnUndoManager:(NSWindow *)aWindow;
+{
+    NSWindow *mainWindow;
+    NSResponder *nextResponder;
+    NSUndoManager *undoManager = nil;
+    
+    mainWindow = [NSApp mainWindow];
+    nextResponder = [mainWindow firstResponder];
+    if (nextResponder == nil)
+        nextResponder = mainWindow;
+    
+    do {
+        if ([nextResponder respondsToSelector:@selector(undoManager)])
+            undoManager = [nextResponder undoManager];
+        else if ([nextResponder respondsToSelector:@selector(delegate)] && [[(id)nextResponder delegate] respondsToSelector:@selector(undoManager)])
+            undoManager = [[(id)nextResponder delegate] undoManager];
+        nextResponder = [nextResponder nextResponder];
+    } while (nextResponder && !undoManager);
+    
+    return undoManager;
+}
+
+#pragma mark OIInspectorWindow delegate
+
 - (void)windowWillBeginResizing:(NSWindow *)resizingWindow;
 {
     OBASSERT(resizingWindow == window);
@@ -667,7 +671,7 @@ static BOOL animateInspectorToggles;
     return result;
 }
 
-// OIInspectorHeaderViewDelegateProtocol
+#pragma mark OIInspectorHeaderViewDelegateProtocol
 
 - (BOOL)headerViewShouldDisplayCloseButton:(OIInspectorHeaderView *)view;
 {

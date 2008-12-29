@@ -98,7 +98,7 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
     if (!unpackedPath)
         return NO;
     
-    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Installing\\U2026", nil, OMNI_BUNDLE, @"status description")));
+    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Installing...", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
     
     // Read information about our bundle version and build a new name for any possible archived version.
     NSString *archivePath = nil;
@@ -144,7 +144,7 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
 	}
     }
     
-    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Restarting...", nil, OMNI_BUNDLE, @"status description")));
+    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Restarting...", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
     [self _relaunchFromPath:existingVersionPath];
     
     // We shouldn't get here.
@@ -162,16 +162,16 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
 
 + (NSString *)_unpackedPathFromDiskImage:(NSString *)diskImagePath existingVersionPath:(NSString *)existingVersionPath statusBindingPoint:(OFBindingPoint)statusBindingPoint error:(NSError **)outError;
 {
-    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Mounting disk image...", nil, OMNI_BUNDLE, @"status description")));
+    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Mounting disk image...", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
     NSString *mountPoint = [self _mountDiskImage:diskImagePath error:outError];
     if (!mountPoint)
         return NO;
     
-    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Extracting updated application...", nil, OMNI_BUNDLE, @"status description")));
+    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Extracting updated application...", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
     NSString *unpackedPath = [self _unpackApplicationFromMountPoint:mountPoint intoTemporaryLocationForCopyingTo:existingVersionPath error:outError];
     
     // The disk image is unneeded now; unmount even if there was an error unpacking it.
-    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Unmounting disk image...", nil, OMNI_BUNDLE, @"status description")));
+    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Unmounting disk image...", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
     [self _unmountDiskImage:mountPoint];
     
     return unpackedPath;
@@ -211,8 +211,8 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
     
     // filterDataThroughCommandAtPath:... will return an empty data in some cases -- once we figure out what that is, we should fix it.
     if (hdiResults == nil || [hdiResults length] == 0) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"hdiutil failed to attach the disk image", nil, OMNI_BUNDLE, @"error reason");
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"hdiutil failed to attach the disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
         NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, [self _reportStringForData:[errorStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey]], @"hdiutil-stderr", nil];
         
         if (hdiResults)
@@ -230,8 +230,8 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
     NSDictionary *plist = [NSPropertyListSerialization propertyListFromData:hdiResults mutabilityOption:NSPropertyListImmutable format:NULL errorDescription:&plistError];
     
     if (!plist && plistError) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to parse the response from hdiutil: %@", nil, OMNI_BUNDLE, @"error reason"), plistError];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to parse the response from hdiutil: %@", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), plistError];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, hdiResults, @"hdi-result-data", [self _reportStringForData:[errorStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey]], @"hdiutil-stderr", nil];
         *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToMountDiskImage userInfo:userInfo];
         return nil;
@@ -247,8 +247,8 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
         NSString *potentialMountPoint = [entity objectForKey:@"mount-point"];
         if (potentialMountPoint) {
             if (mountPoint && ![mountPoint isEqualToString:potentialMountPoint]) { // Never seen a case where they are equal, just checking.
-                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", nil, OMNI_BUNDLE, @"error description");
-                NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Multiple mount points found in hdiutil results.", nil, OMNI_BUNDLE, @"error reason"), plistError];
+                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+                NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Multiple mount points found in hdiutil results.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), plistError];
                 NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, plist, @"hdi-result-plist", [self _reportStringForData:[errorStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey]], @"hdiutil-stderr", nil];
                 *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToMountDiskImage userInfo:userInfo];
                 return nil;
@@ -258,8 +258,8 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
     }
 
     if (mountPoint == nil) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No mount point found in hdiutil results.", nil, OMNI_BUNDLE, @"error reason"), plistError];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No mount point found in hdiutil results.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), plistError];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, plist, @"hdi-result-plist", [self _reportStringForData:[errorStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey]], @"hdiutil-stderr", nil];
         *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToMountDiskImage userInfo:userInfo];
         return nil;
@@ -278,8 +278,8 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
 {
     NSString *extractPath = [OMNI_BUNDLE pathForResource:@"OSUExtract" ofType:@"rb"];
     if (!extractPath) {
-	NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Unable to find extract script.", nil, OMNI_BUNDLE, @"error reason");
+	NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Unable to find extract script.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
         OSUError(outError, OSUUnableToUpgrade, description, reason);
         return NO;
     }
@@ -300,8 +300,8 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
 #endif
     
     if (!extractResults) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Extract script failed.", nil, OMNI_BUNDLE, @"error reason");
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Extract script failed.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey,
             [self _reportStringForData:[errorStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey]], @"extract-stderr", nil];
         *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToUpgrade userInfo:userInfo];
@@ -316,7 +316,7 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
 
 + (NSString *)_unpackApplicationFromTarBzip2File:(NSString *)bzip2File existingVersionPath:(NSString *)existingVersionPath statusBindingPoint:(OFBindingPoint)statusBindingPoint error:(NSError **)outError;
 {
-    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Decompressing\\U2026", nil, OMNI_BUNDLE, @"status description")));
+    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Decompressing...", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
     
     // Create a temporary directory into which to unpack
     NSString *temporaryPath = [[NSFileManager defaultManager] temporaryPathForWritingToPath:existingVersionPath allowOriginalDirectory:YES create:NO error:outError];
@@ -325,7 +325,7 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
     
     NSFileManager *manager = [NSFileManager defaultManager];
     
-    if (![manager createDirectoryAtPath:temporaryPath attributes:nil]) {
+    if (![manager createDirectoryAtPath:temporaryPath withIntermediateDirectories:YES attributes:nil error:outError]) {
         NSString *reason = [NSString stringWithFormat:@"Could not create temporary directory at '%@'.", temporaryPath];
         OSUError(outError, OSUUnableToUpgrade, @"Unable to install update.", reason);
         return nil;
@@ -349,8 +349,8 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
 #endif
     
     if (!extractResults) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Extract script failed.", nil, OMNI_BUNDLE, @"error reason");
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Extract script failed.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey,
             [self _reportStringForData:[errorStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey]], @"extract-stderr", nil];
         *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToUpgrade userInfo:userInfo];
@@ -361,8 +361,8 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
     NSError *subError = nil;
     NSArray *applications = [manager directoryContentsAtPath:temporaryPath havingExtension:@"app" error:&subError];
     if ([applications count] != 1) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Expected to find exactly one application, but found %d.", nil, OMNI_BUNDLE, @"error reason"), [applications count]];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Expected to find exactly one application, but found %d.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), [applications count]];
         NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
         if (!applications && subError)
             [userInfo setObject:subError forKey:NSUnderlyingErrorKey];
@@ -436,19 +436,22 @@ static BOOL PerformAuthenticatedInstall(NSString *installerPath, NSArray *instal
     
     NSString *installerPath = [OMNI_BUNDLE pathForResource:@"OSUInstaller" ofType:@"sh"];
     if (!installerPath) {
-	NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Cannot find the installer script.", nil, OMNI_BUNDLE, @"error reason");
+	NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Cannot find the installer script.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
         OSUError(outError, OSUUnableToUpgrade, description, reason);
         return NO;
     }
 
     NSFileManager *manager = [NSFileManager defaultManager];
-    NSDictionary *destinationAttributes = [manager fileAttributesAtPath:destinationPath traverseLink:NO];
+    NSDictionary *destinationAttributes = [manager attributesOfItemAtPath:destinationPath error:outError];
+    if (!destinationAttributes)
+	return NO;
+    
     uid_t destinationUID = [[destinationAttributes objectForKey:NSFileOwnerAccountID] unsignedIntValue];
     gid_t destinationGID = [[destinationAttributes objectForKey:NSFileGroupOwnerAccountID] unsignedIntValue];
     
     // The authorization framework gives stdin/stdout if we ask, but we want stderr.  So, the installer script takes the name of a file to write its errors to.
-    NSString *errorFile = [manager temporaryPathForWritingToPath:@"/tmp/OSUInstallerErrors" allowOriginalDirectory:YES create:NO error:outError];
+    NSString *errorFile = [manager temporaryPathForWritingToPath:@"/tmp/OSUInstallerLog" allowOriginalDirectory:YES create:NO error:outError];
     if (!errorFile)
         return NO;
     
@@ -469,8 +472,8 @@ static BOOL PerformNormalInstall(NSString *installerPath, NSArray *installerArgu
     OBASSERT(!installerResults || [installerResults length] == 0); // nothing should be written to stdout, only stderr
     
     if (!installerResults) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", nil, OMNI_BUNDLE, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Install script failed.", nil, OMNI_BUNDLE, @"error reason");
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Install script failed.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
 
         NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey,
             [OSUInstaller _reportStringForData:[errorStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey]], @"install-stderr", nil];
@@ -490,7 +493,7 @@ static BOOL PerformNormalInstall(NSString *installerPath, NSArray *installerArgu
 
 static void AuthInstallError(NSError **outError, NSString *reason, NSError *underlyingError, NSString *errorFile)
 {
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", nil, OMNI_BUNDLE, @"error description");
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
     
     if (underlyingError)
@@ -510,7 +513,7 @@ static BOOL PerformAuthenticatedInstall(NSString *installerPath, NSArray *instal
     
     err = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment, kAuthorizationFlagDefaults, &auth);
     if (err != errAuthorizationSuccess) {
-        AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"Failed to created authorization.", nil, OMNI_BUNDLE, @"error reason"), [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil], nil);
+        AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"Failed to created authorization.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil], nil);
         return NO;
     }
     
@@ -526,7 +529,7 @@ static BOOL PerformAuthenticatedInstall(NSString *installerPath, NSArray *instal
     if (err != errAuthorizationSuccess) { // errAuthorizationToolEnvironmentError if our tool itself errored out
         free(argumentCStrings);
         AuthorizationFree(auth, 0);
-        AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"Failed to execute install script with authorization.", nil, OMNI_BUNDLE, @"error reason"), [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil], errorFile);
+        AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"Failed to execute install script with authorization.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil], errorFile);
         return NO;
     }
     
@@ -542,17 +545,17 @@ static BOOL PerformAuthenticatedInstall(NSString *installerPath, NSArray *instal
     AuthorizationFree(auth, 0);
     
     if (pid == -1) {
-        AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"System call wait() failed for install script.", nil, OMNI_BUNDLE, @"error reason"), [NSError errorWithDomain:NSPOSIXErrorDomain code:OMNI_ERRNO() userInfo:nil], errorFile);
+        AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"System call wait() failed for install script.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), [NSError errorWithDomain:NSPOSIXErrorDomain code:OMNI_ERRNO() userInfo:nil], errorFile);
         return NO;
     } else if (WIFEXITED(status)) {
         unsigned int terminationStatus = WEXITSTATUS(status);
         if (terminationStatus != 0) {
-            AuthInstallError(outError, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Install script exited with status %d.", nil, OMNI_BUNDLE, @"error reason"), terminationStatus], nil, errorFile);
+            AuthInstallError(outError, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Install script exited with status %d.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), terminationStatus], nil, errorFile);
             return NO;
         }
     } else {
         unsigned int terminationSignal = WTERMSIG(status);
-        AuthInstallError(outError, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Install script exited due to signal %d.", nil, OMNI_BUNDLE, @"error reason"), terminationSignal], nil, errorFile);
+        AuthInstallError(outError, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Install script exited due to signal %d.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), terminationSignal], nil, errorFile);
         return NO;
     }
     
@@ -581,9 +584,9 @@ static void _terminate(int status)
     if (pipe(childPipe) < 0) {
         // out of file descriptors?
         perror("pipe");
-	NSString *title = NSLocalizedStringFromTableInBundle(@"Unable to relaunch", nil, OMNI_BUNDLE, @"relaunch error title");
-        NSString *message = NSLocalizedStringFromTableInBundle(@"Failed to create child pipe: %s", nil, OMNI_BUNDLE, @"relaunch error message");	
-        NSString *quit = NSLocalizedStringFromTableInBundle(@"Quit", nil, OMNI_BUNDLE, @"relaunch error button");	
+	NSString *title = NSLocalizedStringFromTableInBundle(@"Unable to relaunch", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"relaunch error title");
+        NSString *message = NSLocalizedStringFromTableInBundle(@"Failed to create child pipe: %s", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"relaunch error message");	
+        NSString *quit = NSLocalizedStringFromTableInBundle(@"Quit", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"relaunch error button");	
         NSRunAlertPanel(title, message, quit, nil, nil, strerror(OMNI_ERRNO()));
         _terminate(1);
         return;
@@ -594,9 +597,9 @@ static void _terminate(int status)
     
     pid_t child = fork();
     if (child < 0) {
-	NSString *title = NSLocalizedStringFromTableInBundle(@"Unable to relaunch", nil, OMNI_BUNDLE, @"relaunch error title");
-        NSString *message = NSLocalizedStringFromTableInBundle(@"Failed to fork child process: %s", nil, OMNI_BUNDLE, @"relaunch error message");	
-        NSString *quit = NSLocalizedStringFromTableInBundle(@"Quit", nil, OMNI_BUNDLE, @"relaunch error button");	
+	NSString *title = NSLocalizedStringFromTableInBundle(@"Unable to relaunch", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"relaunch error title");
+        NSString *message = NSLocalizedStringFromTableInBundle(@"Failed to fork child process: %s", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"relaunch error message");	
+        NSString *quit = NSLocalizedStringFromTableInBundle(@"Quit", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"relaunch error button");	
         NSRunAlertPanel(title, message, quit, nil, nil, strerror(OMNI_ERRNO()));
         _terminate(1);
         return;

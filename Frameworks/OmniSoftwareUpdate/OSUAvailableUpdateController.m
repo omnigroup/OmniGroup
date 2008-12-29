@@ -39,13 +39,6 @@ RCS_ID("$Id$");
 
 @implementation OSUAvailableUpdateController
 
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    [self setKeys:[NSArray arrayWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, OSUAvailableUpdateControllerCheckInProgressBinding, nil] triggerChangeNotificationsForDependentKey:OSUAvailableUpdateControllerMessageBinding];
-}
-
 + (OSUAvailableUpdateController *)availableUpdateController;
 {
     static OSUAvailableUpdateController *availableUpdateController = nil;
@@ -122,6 +115,11 @@ RCS_ID("$Id$");
     return [super automaticallyNotifiesObserversForKey:key];
 }
 
++ (NSSet *)keyPathsForValuesAffectingValueForMessage;
+{
+    return [NSSet setWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, OSUAvailableUpdateControllerCheckInProgressBinding, nil];
+}
+
 - (NSString *)message;
 {
     NSArray *visibleItems = [_availableItemController arrangedObjects];
@@ -131,15 +129,15 @@ RCS_ID("$Id$");
     switch (count) {
         case 0:
             if ([[self valueForKey:OSUAvailableUpdateControllerCheckInProgressBinding] boolValue])
-                format = NSLocalizedStringFromTableInBundle(@"Checking for %1$@ updates.", nil, OMNI_BUNDLE, "title of new versions available dialog, when in the process of checking for updates");
+                format = NSLocalizedStringFromTableInBundle(@"Checking for %1$@ updates.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when in the process of checking for updates");
             else
-                format = NSLocalizedStringFromTableInBundle(@"%1$@ is up to date.", nil, OMNI_BUNDLE, "title of new versions available dialog, when no updates are available");
+                format = NSLocalizedStringFromTableInBundle(@"%1$@ is up to date.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when no updates are available");
             break;
         case 1:
-            format = NSLocalizedStringFromTableInBundle(@"There is an update available for %1$@.", nil, OMNI_BUNDLE, "title of new versions available dialog, when one update is available");
+            format = NSLocalizedStringFromTableInBundle(@"There is an update available for %1$@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when one update is available");
             break;
         default:
-            format = NSLocalizedStringFromTableInBundle(@"There are %2$d updates available for %1$@.", nil, OMNI_BUNDLE, "title of new versions available dialog, when multiple updates are available");
+            format = NSLocalizedStringFromTableInBundle(@"There are %2$d updates available for %1$@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when multiple updates are available");
             break;
 
     }
@@ -166,9 +164,9 @@ RCS_ID("$Id$");
     
     NSString *format;
     if ([[_availableItemController arrangedObjects] count])
-        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.  If you're not ready to update now, you can use the Update preference pane to check for updates later or adjust the frequency of automatic checking.", nil, OMNI_BUNDLE, "message of new versions available dialog");
+        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.  If you're not ready to update now, you can use the Update preference pane to check for updates later or adjust the frequency of automatic checking.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "message of new versions available dialog");
     else
-        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.", nil, OMNI_BUNDLE, "message of no updates are available dialog");
+        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "message of no updates are available dialog");
 
     return [NSString stringWithFormat:format, version];
 

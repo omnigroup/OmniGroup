@@ -10,7 +10,6 @@
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFNull.h>
 
-#import <Foundation/NSCalendarDate.h>
 #import <Foundation/NSDateFormatter.h>
 
 RCS_ID("$Id$")
@@ -57,7 +56,7 @@ RCS_ID("$Id$")
     static NSTimeZone *tz = nil;
     
     if (!tz) {
-        tz = [[NSTimeZone timeZoneWithAbbreviation:@"UTC"] retain];
+        tz = [[NSTimeZone timeZoneWithName:@"UTC"] retain];
         OBASSERT(tz);
         if (!tz) // another approach...
             tz = [NSTimeZone timeZoneForSecondsFromGMT:0];
@@ -81,30 +80,6 @@ RCS_ID("$Id$")
 
 #if 0 && defined(DEBUG)
     #define DEBUG_XML_STRING(format, ...) NSLog((format), ## __VA_ARGS__)
-
-    static void _appendUnit(NSDateComponents *self, NSMutableString *str, NSString *name, int value) {
-        if (value != NSUndefinedDateComponent)
-            [str appendFormat:@" %@:%d", name, value];
-    }
-#define APPEND(x) _appendUnit(self, desc, @#x, [self x])
-    static NSString *_comp(NSDateComponents *self) {
-        NSMutableString *desc = [NSMutableString stringWithString:@"<components:"];
-        
-        APPEND(era);
-        APPEND(year);
-        APPEND(month);
-        APPEND(day);
-        APPEND(hour);
-        APPEND(minute);
-        APPEND(second);
-        APPEND(week);
-        APPEND(weekday);
-        APPEND(weekdayOrdinal);
-#undef APPEND
-        
-        [desc appendString:@">"];
-        return desc;
-    }
 #else
     #define DEBUG_XML_STRING(format, ...)
 #endif
@@ -228,114 +203,60 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
     return result;
 }
 
-// The setup of this formatter cannot be changed willy-nilly.  This is used in XML archiving, and our file formats need to be stable.  Luckily this is a nicely defined format.
-static NSDateFormatter *formatterWithoutMilliseconds(void)
+static NSString *xmlDateStringIncludingTime(NSDate *self, SEL _cmd, BOOL includeTime)
 {
-    static NSDateFormatter *DateFormatter = nil;
+    DEBUG_XML_STRING(@"%s: input: %@ %f", __PRETTY_FUNCTION__, self, [self timeIntervalSinceReferenceDate]);
     
-    if (!DateFormatter) {
-        DateFormatter = [[NSDateFormatter alloc] init];
-        [DateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
-        OBASSERT([DateFormatter formatterBehavior] == NSDateFormatterBehavior10_4);
-        
-        NSCalendar *cal = [NSDate gregorianUTCCalendar];
-        if (!cal)
-            OBASSERT_NOT_REACHED("Built-in calendar missing");
-        else {
-            OBASSERT([cal timeZone] == [NSDate UTCTimeZone]); // Should have been set in the creation.
-            
-            [DateFormatter setCalendar:cal];
-            
-            NSTimeZone *tz = [NSDate UTCTimeZone];
-            if (!tz)
-                OBASSERT_NOT_REACHED("Can't find UTC time zone");
-            else {
-                // NOTE: NSDateComponents has busted API since -second returns an integer instead of a floating point (Radar 4867971).  Otherwise, we could conceivably implement our formatting by getting the components for the date and then using NSString formatting directly.
-                // Asking the date formatter to do the seconds doesn't work either -- Radar 4886510; NSDateFormatter/ICU is truncating the milliseconds instead of rounding it.
-                // So, we format up to the milliseconds and -xmlString does the rest.  Sigh.
-                [DateFormatter setTimeZone:tz];
-                [DateFormatter setDateFormat:@"yyyy'-'MM'-'dd'T'HH':'mm':'ss'."];
-            }
+    CFCalendarRef gregorianUTCCalendar = (CFCalendarRef)[NSDate gregorianUTCCalendar];
+    CFAbsoluteTime timeInterval = CFDateGetAbsoluteTime((CFDateRef)self);
+    
+    // Extract the non-millisecond portion.
+    unsigned year, month, day, hour, minute, second;
+    const char *components = "yMdHms"; // signature of CFCalendarComposeAbsoluteTime is fixed in newer headers to take signed instead of unsigned, avoiding need for the cast.
+    if (!CFCalendarDecomposeAbsoluteTime(gregorianUTCCalendar, timeInterval, components, &year, &month, &day, &hour, &minute, &second)) {
+        OBRejectInvalidCall(self, _cmd, @"Cannot decompose date %@!", self);
+        return nil;
+    }
+    DEBUG_XML_STRING(@"components: year:%d month:%d day:%d hour:%d minute:%d second:%d", year, month, day, hour, minute, second);
+    
+    // Figure out the milliseconds that got dropped
+    NSTimeInterval fractionalSeconds = timeInterval - floor(timeInterval);
+    OBASSERT(fractionalSeconds >= 0.0);
+    DEBUG_XML_STRING(@"fractionalSeconds: %f", fractionalSeconds);
+    
+    // Convert the milliseconds to an integer.  If this rolls over to the next second due to rounding, deal with it.
+    unsigned milliseconds = (unsigned)rint(fractionalSeconds * 1000.0);
+    if (milliseconds >= 1000) {
+        milliseconds = 0;
+        timeInterval += 1.0;
+        if (!CFCalendarDecomposeAbsoluteTime(gregorianUTCCalendar, timeInterval, components, &year, &month, &day, &hour, &minute, &second)) {
+            OBRejectInvalidCall(self, _cmd, @"Cannot decompose time interval %f", timeInterval);
+            return nil;
         }
     }
     
-    OBPOSTCONDITION([DateFormatter formatterBehavior] == NSDateFormatterBehavior10_4);
-    return DateFormatter;
-}
-
-// The setup of this formatter cannot be changed willy-nilly.  This is used in XML archiving, and our file formats need to be stable.  Luckily this is a nicely defined format.
-static NSDateFormatter *formatterWithoutTime(void)
-{
-    static NSDateFormatter *DateFormatter = nil;
+    NSString *result;
     
-    if (!DateFormatter) {
-        DateFormatter = [[NSDateFormatter alloc] init];
-        [DateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
-	[DateFormatter setTimeStyle:NSDateFormatterNoStyle];
-	
-        OBASSERT([DateFormatter formatterBehavior] == NSDateFormatterBehavior10_4);
-        
-        NSCalendar *cal = [NSDate gregorianUTCCalendar];
-        if (!cal)
-            OBASSERT_NOT_REACHED("Built-in calendar missing");
-        else {
-            OBASSERT([cal timeZone] == [NSDate UTCTimeZone]); // Should have been set in the creation.
-            
-            [DateFormatter setCalendar:cal];
-            
-            NSTimeZone *tz = [NSDate UTCTimeZone];
-            if (!tz)
-                OBASSERT_NOT_REACHED("Can't find UTC time zone");
-            else {
-                [DateFormatter setTimeZone:tz];
-                [DateFormatter setDateFormat:@"yyyy'-'MM'-'dd'"];
-            }
-        }
-    }
+    if (includeTime)
+        result = [NSString stringWithFormat:@"%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", year, month, day, hour, minute, second, milliseconds];
+    else
+        result = [NSString stringWithFormat:@"%04d-%02d-%02d", year, month, day];
     
-    OBPOSTCONDITION([DateFormatter formatterBehavior] == NSDateFormatterBehavior10_4);
-    return DateFormatter;
+    DEBUG_XML_STRING(@"result: %@", result);
+    
+    return result;
 }
 
 // date
 - (NSString *)xmlDateString;
 {
-    DEBUG_XML_STRING(@"-xmlString -- input: %@ %f", self, [self timeIntervalSinceReferenceDate]);
-    
-    NSString *result = [formatterWithoutTime() stringFromDate:self];
-    
-    DEBUG_XML_STRING(@"result: %@", result);
-    
-    return result;
+    return xmlDateStringIncludingTime(self, _cmd, NO);
 }
 
 // dateTime
 - (NSString *)xmlString;
 {
-    DEBUG_XML_STRING(@"-xmlString -- input: %@ %f", self, [self timeIntervalSinceReferenceDate]);
-
-    // Convert ourselves to date components and back, which drops the milliseconds.
-    NSCalendar *calendar = [NSDate gregorianUTCCalendar];
-    NSDateComponents *components = [calendar components:NSEraCalendarUnit|NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSSecondCalendarUnit fromDate:self];
-    DEBUG_XML_STRING(@"components: %@", _comp(components));
-
-    NSDate *truncated = [calendar dateFromComponents:components];
-
-    DEBUG_XML_STRING(@"truncated: %@", truncated);
-
-    // Figure out the milliseconds that got dropped
-    NSTimeInterval milliseconds = [self timeIntervalSinceReferenceDate] - [truncated timeIntervalSinceReferenceDate];
-    
-    DEBUG_XML_STRING(@"milliseconds: %f", milliseconds);
-
-    // Append the milliseconds, using rounding.
-    NSString *formattedString = [formatterWithoutMilliseconds() stringFromDate:self];
-    DEBUG_XML_STRING(@"formattedString: %@", formattedString);
-    
-    NSString *result = [formattedString stringByAppendingFormat:@"%03dZ", (int)rint(milliseconds * 1000.0)];
-    DEBUG_XML_STRING(@"result: %@", result);
-    
-    return result;
+    return xmlDateStringIncludingTime(self, _cmd, YES);
 }
 
 @end

@@ -20,7 +20,7 @@
 #import <OmniFoundation/OFRandom.h>
 
 #import <OmniFoundation/NSBundle-OFExtensions.h>
-#import <OmniFoundation/NSError-OFExtensions.h>
+#import <OmniBase/NSError-OBExtensions.h>
 #import <poll.h>
 
 RCS_ID("$Id$")
@@ -307,8 +307,8 @@ static BOOL _OFPipeCreate(struct _OFPipe *p, NSError **outError)
 {
     int pipeFD[2];
     if (pipe(pipeFD) != 0) {
-        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error creating pipe", @"OmniFoundation", OMNI_BUNDLE, @"error description")];
-        OFErrorWithErrno(outError, OMNI_ERRNO(), "pipe()", nil, description);
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Error creating pipe", @"OmniFoundation", OMNI_BUNDLE, @"error description");
+        OBErrorWithErrno(outError, OMNI_ERRNO(), "pipe()", nil, description);
         return NO;
     }
     
@@ -359,7 +359,7 @@ static BOOL _OFPipeCreate(struct _OFPipe *p, NSError **outError)
             close(error.read);
             close(error.write);
             NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command %@", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath];
-            OFErrorWithErrno(outError, OMNI_ERRNO(), "fork()", nil, description);
+            OBErrorWithErrno(outError, OMNI_ERRNO(), "fork()", nil, description);
             return nil;
 
         case 0: { // Child
@@ -575,7 +575,7 @@ ioFailure:
         close(error.read);
         waitpid(child, &childStatus, 0);
         NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command %@", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath];
-        OFErrorWithErrno(outError, OMNI_ERRNO(), failCmd, nil, description);
+        OBErrorWithErrno(outError, OMNI_ERRNO(), failCmd, nil, description);
         return nil;
     }
 
@@ -599,12 +599,12 @@ ioFailure:
     if (WIFEXITED(childStatus)) {
         unsigned int terminationStatus = WEXITSTATUS(childStatus);
         if (terminationStatus != 0 && outError != NULL) {
-            OFErrorWithInfo(outError, OFFilterDataCommandReturnedErrorCodeError, OBExceptionPosixErrorNumberKey, [NSNumber numberWithInt:OMNI_ERRNO()], NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command %@: command returned %d", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath, terminationStatus], nil);
+            OBErrorWithInfo(outError, OFFilterDataCommandReturnedErrorCodeError, OBExceptionPosixErrorNumberKey, [NSNumber numberWithInt:OMNI_ERRNO()], NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command %@: command returned %d", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath, terminationStatus], nil);
             return nil;
         }
     } else {
         unsigned int terminationSignal = WTERMSIG(childStatus);
-        OFErrorWithInfo(outError, OFFilterDataCommandReturnedErrorCodeError, OBExceptionPosixErrorNumberKey, [NSNumber numberWithInt:OMNI_ERRNO()], NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command %@: command exited due to signal %d", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath, terminationSignal], nil);
+        OBErrorWithInfo(outError, OFFilterDataCommandReturnedErrorCodeError, OBExceptionPosixErrorNumberKey, [NSNumber numberWithInt:OMNI_ERRNO()], NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command %@: command exited due to signal %d", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath, terminationSignal], nil);
         return nil;
     }
 

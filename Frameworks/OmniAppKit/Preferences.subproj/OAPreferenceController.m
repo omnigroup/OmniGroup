@@ -229,6 +229,11 @@ static NSString *windowFrameSaveName = @"Preferences";
     return window;
 }
 
+- (NSWindow *)windowIfLoaded; // doesn't for load the window
+{
+    return window;
+}
+
 - (void)setTitle:(NSString *)title;
 {
     [window setTitle:title];
@@ -281,6 +286,13 @@ static NSString *windowFrameSaveName = @"Preferences";
     oldView = [[contentView subviews] lastObject];
     [oldView removeFromSuperview];
     
+    // Only do this when we are on screen to avoid sending become/resign twice.  If we are off screen, the client got resigned when it went off and the new one will get a become when it goes on screen.
+
+    // As above, don't do this unless we are onscreen to avoid double become/resigns.
+    if ([window isVisible])
+        [nonretained_currentClient willBecomeCurrentPreferenceClient];
+
+    // Resize window for the new client box, after letting the client know that it's about to become current
     controlBox = [nonretained_currentClient controlBox];
     // It's an error for controlBox to be nil, but it's pretty unfriendly to resize our window to be infinitely high when that happens.
     controlBoxFrame = controlBox != nil ? [controlBox frame] : NSZeroRect;
@@ -296,12 +308,10 @@ static NSString *windowFrameSaveName = @"Preferences";
     animationResizeTime = [window animationResizeTime:newWindowFrame];
     [window setFrame:newWindowFrame display:YES animate:[window isVisible]];
     
-    // As above, don't do this unless we are onscreen to avoid double become/resigns.
     // Do this before putting the view in the view hierarchy to avoid flashiness in the controls.
-    if ([window isVisible]) {
-        [nonretained_currentClient willBecomeCurrentPreferenceClient];
+    if ([window isVisible])
         [self validateRestoreDefaultsButton];
-    }
+
     [nonretained_currentClient updateUI];
     
     // set up the global controls view
@@ -315,7 +325,10 @@ static NSString *windowFrameSaveName = @"Preferences";
     
     // Highlight the initial first responder, and also tell the window what it should be because I think there is some voodoo with nextKeyView not working unless the window has an initial first responder.
     [window setInitialFirstResponder:[nonretained_currentClient initialFirstResponder]];
-    [window makeFirstResponder:[nonretained_currentClient initialFirstResponder]];
+    NSView *initialKeyView = [nonretained_currentClient initialFirstResponder];
+    if (initialKeyView != nil && ![initialKeyView canBecomeKeyView])
+        initialKeyView = [initialKeyView nextValidKeyView];
+    [window makeFirstResponder:initialKeyView];
     
     // Hook up the pane's keyView loop to ours.  returnToOriginalValuesButton is always present, but the help button might get removed if there is no help URL for this pane.
     [[nonretained_currentClient lastKeyView] setNextKeyView:returnToOriginalValuesButton];
@@ -574,6 +587,11 @@ static NSString *windowFrameSaveName = @"Preferences";
 
     [[OAPreferenceController bundle] loadNibNamed:@"OAPreferences.nib" owner:self];
 
+    // These don't seem to get set by the nib.  We want autosizing on so that clients can resize the window by a delta (though it'd be nicer for us to have API for that).
+    [preferenceBox setAutoresizesSubviews:YES];
+    [[preferenceBox contentView] setAutoresizingMask:[preferenceBox autoresizingMask]];
+    [[preferenceBox contentView] setAutoresizesSubviews:YES];
+    
     // TJW: Is this really necessary -- it's a top level nib object.
     [globalControlsView retain];
     idealWidth = NSWidth([globalControlsView frame]);
@@ -604,17 +622,18 @@ static NSString *windowFrameSaveName = @"Preferences";
 	    if (!initialClientRecord)
 		initialClientRecord = [_clientRecords lastObject];
             break;
+        case OAPreferencesViewCustomizable:
+            [self _createShowAllItemsView];
+            [self _setupCustomizableToolbar];
+            [self _showAllIcons:nil];
+            break;
+	default:
         case OAPreferencesViewMultiple:
 	    [_clientRecords autorelease];
 	    _clientRecords = [[_clientRecords sortedArrayUsingSelector:@selector(compareOrdering:)] retain];
             [self _setupMultipleToolbar];
 	    if (!initialClientRecord)
 		initialClientRecord = [_clientRecords objectAtIndex:0];
-            break;
-        case OAPreferencesViewCustomizable:
-            [self _createShowAllItemsView];
-            [self _setupCustomizableToolbar];
-            [self _showAllIcons:nil];
             break;
     }
 
@@ -686,6 +705,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     [showAllIconsView setFrameSize:NSMakeSize(NSWidth([preferenceBox bounds]), boxHeight)];
 }
 
+// See <bug://50034> Stop using private API in OAPreferenceController on behalf of OmniWeb's preference panel
 - (void)_setupMultipleToolbar;
 {
     NSMutableArray *allClients;
@@ -955,7 +975,7 @@ static NSComparisonResult OAPreferenceControllerCompareCategoryNames(id name1, i
     }
 
     // All our preference pane identifiers should really be in reverse DNS style now.
-    OBASSERT([identifier containsString:@"."]);
+    OBASSERT([identifier containsString:@"."] || [[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.omnigroup.OmniWeb6"]);
     
     // Allow client records to hidden by default.  This is useful for developer preferences or other preference panes that aren't fit for human consumption yet.
     if ([description boolForKey:@"hidden" defaultValue:NO]) {

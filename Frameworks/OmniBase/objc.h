@@ -10,12 +10,5 @@
 #import <AvailabilityMacros.h>
 #import <TargetConditionals.h>
 #import <Foundation/NSObjCRuntime.h>
-
-#import <objc/objc.h>
-#if !TARGET_OS_IPHONE
-#import <objc/objc-class.h>
-#import <objc/objc-runtime.h>
-#else
 #import <objc/runtime.h>
-#endif
-#import <Foundation/NSObjCRuntime.h>
+#import <objc/message.h>

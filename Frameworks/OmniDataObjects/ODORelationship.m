@@ -7,12 +7,11 @@
 
 #import <OmniDataObjects/ODORelationship.h>
 
-#import "ODORelationship-Internal.h"
 #import "ODOProperty-Internal.h"
 
+#import <OmniDataObjects/ODOModel-Creation.h>
 #import <OmniDataObjects/ODOEntity.h>
 #import <OmniDataObjects/ODOModel.h>
-#import <OmniFoundation/OFEnumNameTable.h>
 
 RCS_ID("$Id$")
 
@@ -56,10 +55,10 @@ RCS_ID("$Id$")
     return [NSString stringWithFormat:@"<%@:%p %@.%@ %@ %@--%@ %@ %@.%@",
             NSStringFromClass([self class]), self,
             [[self entity] name], [self name],
-            [ODORelationshipDeleteRuleEnumNameTable() nameForEnum:_deleteRule],
+            [NSNumber numberWithInt:_deleteRule] /*[ODORelationshipDeleteRuleEnumNameTable() nameForEnum:_deleteRule]*/,
             [_inverseRelationship isToMany] ? @"<<" : @"<",
             [self isToMany] ? @">>" : @">",
-            [ODORelationshipDeleteRuleEnumNameTable() nameForEnum:[_inverseRelationship deleteRule]],
+            [NSNumber numberWithInt:[_inverseRelationship deleteRule]]/*[ODORelationshipDeleteRuleEnumNameTable() nameForEnum:[_inverseRelationship deleteRule]]*/,
             [[_inverseRelationship entity] name], [_inverseRelationship name]];
 }
 
@@ -73,124 +72,42 @@ RCS_ID("$Id$")
 }
 #endif
 
-@end
+#pragma mark -
+#pragma mark Creation
 
-NSString * const ODORelationshipElementName = @"relationship";
-NSString * const ODORelationshipDeleteRuleAttributeName = @"delete";
-NSString * const ODORelationshipToManyAttributeName = @"many";
-NSString * const ODORelationshipDestinationEntityAttributeName = @"entity";
-NSString * const ODORelationshipInverseRelationshipAttributeName = @"inverse";
-
-OFEnumNameTable * ODORelationshipDeleteRuleEnumNameTable(void)
+ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL transient, SEL get, SEL set,
+                                       BOOL toMany, ODORelationshipDeleteRule deleteRule)
 {
-    static OFEnumNameTable *table = nil;
+    OBPRECONDITION(deleteRule > ODORelationshipDeleteRuleInvalid);
+    OBPRECONDITION(deleteRule < ODORelationshipDeleteRuleCount);
     
-    if (!table) {
-        table = [[OFEnumNameTable alloc] initWithDefaultEnumValue:ODORelationshipDeleteRuleInvalid];
-        [table setName:@"--invalid--" forEnumValue:ODORelationshipDeleteRuleInvalid];
-        
-        [table setName:@"nullify" forEnumValue:ODORelationshipDeleteRuleNullify];
-        [table setName:@"cascade" forEnumValue:ODORelationshipDeleteRuleCascade];
-        [table setName:@"deny" forEnumValue:ODORelationshipDeleteRuleDeny];
-    }
-    
-    return table;
-}
-
-
-@implementation ODORelationship (Internal)
-
-- (id)initWithCursor:(OFXMLCursor *)cursor entity:(ODOEntity *)entity error:(NSError **)outError;
-{
-    OBPRECONDITION([[cursor name] isEqualToString:ODORelationshipElementName]);
+    ODORelationship *rel = [[ODORelationship alloc] init];
     
     struct _ODOPropertyFlags baseFlags;
     memset(&baseFlags, 0, sizeof(baseFlags));
     baseFlags.snapshotIndex = ODO_NON_SNAPSHOT_PROPERTY_INDEX; // start out not being in the snapshot properties; this'll get updated later if we are
-
+    
     // Add relationship-specific info to the flags
     baseFlags.relationship = YES;
+    baseFlags.toMany = toMany;
     
-    NSString *manyString = [cursor attributeNamed:ODORelationshipToManyAttributeName];
-    OBASSERT(!manyString || [manyString isEqualToString:@"true"] || [manyString isEqualToString:@"false"]);
-    baseFlags.toMany = [manyString isEqualToString:@"true"];
+    ODOPropertyInit(rel, name, baseFlags, optional, transient, get, set);
     
-    if (![super initWithCursor:cursor entity:entity baseFlags:baseFlags error:outError])
-        return nil;
-
-    NSString *deleteRuleName = [cursor attributeNamed:ODORelationshipDeleteRuleAttributeName];
-    if ([NSString isEmptyString:deleteRuleName]) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Relationship %@.%@ specified no type.", nil, OMNI_BUNDLE, @"error reason"), [entity name], [self name]];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
+    rel->_deleteRule = deleteRule;
     
-    _deleteRule = [ODORelationshipDeleteRuleEnumNameTable() enumForName:deleteRuleName];
-    if (_deleteRule == ODORelationshipDeleteRuleInvalid) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Relationship %@.%@ specified invalid type of '%@'.", nil, OMNI_BUNDLE, @"error reason"), [entity name], [self name], deleteRuleName];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-    
-    NSString *entityName = [cursor attributeNamed:ODORelationshipDestinationEntityAttributeName];
-    if ([NSString isEmptyString:entityName]) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Relationship %@.%@ specified no destination entity.", nil, OMNI_BUNDLE, @"error reason"), [entity name], [self name]];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-
-    NSString *inverseRelationshipName = [cursor attributeNamed:ODORelationshipInverseRelationshipAttributeName];
-    if ([NSString isEmptyString:inverseRelationshipName]) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Relationship %@.%@ specified no inverse relationship.", nil, OMNI_BUNDLE, @"error reason"), [entity name], [self name]];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        [self release];
-        return nil;
-    }
-    
-    // Not all the entities might be loaded yet.  Squirrel these away in the destination entity ivar until -finalizeRelationship:.
-    _destinationEntity = (id)[entityName retain];
-    _inverseRelationship = (id)[inverseRelationshipName retain];
-
-    return self;
+    return rel;
 }
 
-- (BOOL)finalizeModelLoading:(NSError **)outError;
+void ODORelationshipBind(ODORelationship *self, ODOEntity *sourceEntity, ODOEntity *destinationEntity, ODORelationship *inverse)
 {
-    OBPRECONDITION([_destinationEntity isKindOfClass:[NSString class]]);
-    OBPRECONDITION([_inverseRelationship isKindOfClass:[NSString class]]);
+    OBPRECONDITION([self isKindOfClass:[ODORelationship class]]);
+    OBPRECONDITION(destinationEntity);
+    OBPRECONDITION(inverse);
     
-    ODOEntity *entity = [self entity];
-    ODOModel *model = [entity model];
-    OBASSERT(model);
+    ODOPropertyBind(self, sourceEntity);
     
-    ODOEntity *destination = [[model entitiesByName] objectForKey:(NSString *)_destinationEntity];
-    if (!destination) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Relationship %@.%@ specified a destination entity of '%@', but there is no such entity.", nil, OMNI_BUNDLE, @"error reason"), [entity name], [self name], _destinationEntity];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        return NO;
-    }
-    [_destinationEntity release];
-    _destinationEntity = [destination retain]; // This and the inverse relationship make a retain cycle.  Not a problem in real life were we'll load a model once and never dealloc it.
-    
-    ODORelationship *inverse = [[destination relationshipsByName] objectForKey:(NSString *)_inverseRelationship];
-    if (!inverse) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Relationship %@.%@ specified an inverse relationship %@.%@, but there is no such relationship.", nil, OMNI_BUNDLE, @"error reason"), [entity name], [self name], [_destinationEntity name], _inverseRelationship];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to load model.", nil, OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToLoadModel, description, reason, nil);
-        return NO;
-    }
-    [_inverseRelationship release];
-    _inverseRelationship = [inverse retain];
-
-    return YES;
+    self->_destinationEntity = [destinationEntity retain];
+    self->_inverseRelationship = [inverse retain];
 }
 
 @end

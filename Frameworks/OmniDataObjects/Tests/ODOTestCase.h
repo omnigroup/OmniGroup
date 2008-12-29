@@ -11,11 +11,12 @@
 #import "OFTestCase.h"
 
 #import <OmniBase/rcsid.h>
-#import <OmniFoundation/NSError-OFExtensions.h>
+#import <OmniBase/NSError-OBExtensions.h>
+
+#import "ODOTestCaseModel.h"
 
 @interface ODOTestCase : OFTestCase
 {
-    ODOModel *_model;
     NSString *_databasePath;
     ODODatabase *_database;
     NSUndoManager *_undoManager;

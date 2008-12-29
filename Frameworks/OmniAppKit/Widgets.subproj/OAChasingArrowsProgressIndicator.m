@@ -17,9 +17,6 @@
 RCS_ID("$Id$")
 
 #define FRAMES_PER_CYCLE  (16)
-#define CYCLES_PER_SECOND (1.0)
-
-#define FRAMES_PER_SECOND ((float)(FRAMES_PER_CYCLE * CYCLES_PER_SECOND))
 
 static NSImage *ChasingArrows = nil;
 
@@ -40,7 +37,6 @@ static NSImage *ChasingArrows = nil;
         return nil;
 
     [self setIndeterminate:YES];
-    [self setAnimationDelay:1.0 / FRAMES_PER_SECOND];
     
     return self;
 }

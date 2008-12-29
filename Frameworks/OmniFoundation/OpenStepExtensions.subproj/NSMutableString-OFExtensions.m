@@ -95,7 +95,7 @@ RCS_ID("$Id$")
         [self replaceAllOccurrencesOfString:@"\n" withString:newString];
 }
 
-- (void)appendCharacter:(unsigned int)aCharacter;
+- (void)appendLongCharacter:(UTF32Char)aCharacter;
 {
     unichar utf16[2];
     

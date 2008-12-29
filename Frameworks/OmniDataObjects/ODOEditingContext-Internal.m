@@ -16,9 +16,8 @@
 #import "ODOObject-Internal.h"
 #import "ODOSQLStatement.h"
 
-#import <OmniFoundation/NSSet-OFExtensions.h>
 #if ODO_SUPPORT_UNDO
-#import <OmniFoundation/NSUndoManager-OFExtensions.h>
+#import <Foundation/NSUndoManager.h>
 #endif
 
 #import <sqlite3.h>
@@ -45,19 +44,30 @@ typedef struct {
     NSDictionary *objectByID;
 } CheckObjectRegisteredContext;
 
-static void _checkChangedObjectRegistered(const void *value, void *context)
+static void _checkRegisteredInSet(NSSet *set, CheckObjectRegisteredContext *ctx)
 {
-    ODOObject *object = (ODOObject *)value;
-    CheckObjectRegisteredContext *ctx = context;
-    
-    OBASSERT([object editingContext] == ctx->editingContext);
-    OBASSERT([ctx->objectByID objectForKey:[object objectID]] == object);
+    for (ODOObject *object in set) {
+        OBASSERT([object editingContext] == ctx->editingContext);
+        OBASSERT([ctx->objectByID objectForKey:[object objectID]] == object);
+    }
 }
 
-static void _checkRegisteredInSet(NSSet *set, void *ctx)
+static void _addObjectIdForEachObjectInSet(NSMutableSet *objectIDs, NSSet *objects)
 {
-    if (set)
-        CFSetApplyFunction((CFSetRef)set, _checkChangedObjectRegistered, ctx);
+    for (ODOObject *object in objects)
+        [objectIDs addObject:[object objectID]];
+}
+
+static void _removeObjectIdForEachObjectInSet(NSMutableSet *objectIDs, NSSet *objects)
+{
+    for (ODOObject *object in objects)
+        [objectIDs removeObject:[object objectID]];
+}
+
+static void _checkInvariantsApplier(const void *key, const void *value, void *context)
+{
+    // OmniFocusModel objects define _checkInvariants and theirs hate being called when ours are.
+    [(ODOObject *)value _odo_checkInvariants];
 }
 
 - (BOOL)_checkInvariants;
@@ -101,21 +111,21 @@ static void _checkRegisteredInSet(NSSet *set, void *ctx)
     OBINVARIANT(![_processedUpdatedObjects intersectsSet:_processedDeletedObjects]);
     
     // All registered objects must pass their invariants too.
-    // OmniFocusModel objects define _checkInvariants and theirs hate being called when ours are.
-    [_registeredObjectByID makeValuesPerformSelector:@selector(_odo_checkInvariants)];
+    if (_registeredObjectByID)
+        CFDictionaryApplyFunction((CFDictionaryRef)_registeredObjectByID, _checkInvariantsApplier, NULL);
     
     // Any objects in the recent updates or deletes should have a since-last-processing snapshot, EVEN if it is inserted (this stores the state the object was in after the last processing).  These should be the only snapshots therein.
     // Any objects in the recent OR processed updates or deletes that isn't also an insert (processed inserts can be updated later) should have a committed snapshot
     {
         NSMutableSet *expectedIDs = [NSMutableSet set];
-        [expectedIDs addObjectsFromArray:[[_recentlyUpdatedObjects setByPerformingSelector:@selector(objectID)] allObjects]];
-        [expectedIDs addObjectsFromArray:[[_recentlyDeletedObjects setByPerformingSelector:@selector(objectID)] allObjects]];
+        _addObjectIdForEachObjectInSet(expectedIDs, _recentlyUpdatedObjects);
+        _addObjectIdForEachObjectInSet(expectedIDs, _recentlyDeletedObjects);
         NSSet *lastProcessedIDs = [NSSet setWithArray:[_objectIDToLastProcessedSnapshot allKeys]];
         OBINVARIANT([expectedIDs isEqualToSet:lastProcessedIDs]);
         
-        [expectedIDs removeObjectsFromArray:[[_processedInsertedObjects setByPerformingSelector:@selector(objectID)] allObjects]];
-        [expectedIDs addObjectsFromArray:[[_processedUpdatedObjects setByPerformingSelector:@selector(objectID)] allObjects]];
-        [expectedIDs addObjectsFromArray:[[_processedDeletedObjects setByPerformingSelector:@selector(objectID)] allObjects]];
+        _removeObjectIdForEachObjectInSet(expectedIDs, _processedInsertedObjects);
+        _addObjectIdForEachObjectInSet(expectedIDs, _processedUpdatedObjects);
+        _addObjectIdForEachObjectInSet(expectedIDs, _processedDeletedObjects);
         NSSet *commitedIDs = [NSSet setWithArray:[_objectIDToCommittedPropertySnapshot allKeys]];
         OBINVARIANT([expectedIDs isEqualToSet:commitedIDs]);
     }
@@ -383,8 +393,8 @@ static BOOL PrepareQueryByKey(ODOSQLStatement *query, sqlite3 *sqlite, id key, N
         // TODO: Should make it so that objects can't be refaulted while not connected since you'll not be able to get them back.
         
         // Can't fetch while not connected; that's crazy.
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot prepare fetch for key %@ for query %@ while not connected to a database.", nil, OMNI_BUNDLE, @"error reason"), key, query->_sql];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", nil, OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot prepare fetch for key %@ for query %@ while not connected to a database.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), key, query->_sql];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         ODOError(outError, ODOUnableToFetchFault, description, reason, nil);
         return NO;
     }
@@ -416,20 +426,20 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
     ODOEditingContext *editingContext = ctx->editingContext;
     ODOObject *object = [editingContext objectRegisteredForID:objectID];
     if (!object) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@' and no such object was registered.", nil, OMNI_BUNDLE, @"error reason"), objectID];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", nil, OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@' and no such object was registered.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         ODOError(outError, ODOUnableToFetchFault, description, reason, nil);
     } else if ([object isFault]) {
         // Create the values array to take the values we are about to fetch
-        ODOObjectCreateNullValues(object);
+        _ODOObjectCreateNullValues(object);
 
         // Object was previously created as a fault, but hasn't been filled in yet.  Let's do so and mark it cleared.
         if (!ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(sqlite, statement, object, ctx, outError))
             return NO; // object will remain a fault but might have some values in it.  they'll get reset if we get fetched again.  might be nice to clean them out, though.
         [object _setIsFault:NO];
     } else {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared.", nil, OMNI_BUNDLE, @"error reason"), objectID];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", nil, OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         ODOError(outError, ODOUnableToFetchFault, description, reason, nil);
     }
     
@@ -454,7 +464,7 @@ static BOOL FetchObjectFaultWithContext(ODOEditingContext *self, ODOObject *obje
 
     ODOObjectID *objectID = [object objectID];
     id primaryKey = [objectID primaryKey];
-    OBASSERT(OFNOTNULL(primaryKey));
+    OBASSERT(primaryKey);
 
     if (!PrepareQueryByKey(query, sqlite, primaryKey, outError))
         return NO;
@@ -503,7 +513,7 @@ void ODOFetchObjectFault(ODOEditingContext *self, ODOObject *object)
     NSError *error = nil;
     if (!FetchObjectFaultWithContext(self, object, &ctx, &error)) {
         // CoreData raises when faulting fails.  We'd like to avoid that, but for now we'll mimic it.
-        [NSException raise:NSObjectInaccessibleException format:NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault: %@", nil, OMNI_BUNDLE, @"faulting exception"), [error toPropertyList]];
+        [NSException raise:NSObjectInaccessibleException format:NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault: %@", @"OmniDataObjects", OMNI_BUNDLE, @"faulting exception"), [error toPropertyList]];
     }
 }
 
@@ -540,13 +550,18 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
 static BOOL FetchSetFaultWithContext(ODOEditingContext *self, ODOObject *owner, ODORelationship *rel, ODORowFetchContext *ctx, NSError **outError)
 {
     ODODatabase *database = self->_database;
+    
+    if (![database connectedURL] || [database isFreshlyCreated])
+        // We are working in memory.  Nothing to do.
+        return YES;
+    
     ODOSQLStatement *query = [database _queryForDestinationPrimaryKeysByDestinationForeignKeyStatement:rel error:outError];
     if (!query)
         return NO;
 
     ODOObjectID *ownerID = [owner objectID];    
     id ownerPrimaryKey = [ownerID primaryKey];
-    OBASSERT(OFNOTNULL(ownerPrimaryKey));
+    OBASSERT(ownerPrimaryKey);
     sqlite3 *sqlite = [database _sqlite];
     
     if (!PrepareQueryByKey(query, sqlite, ownerPrimaryKey, outError))
@@ -580,11 +595,10 @@ NSMutableSet *ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORel
     if (ODOLogSQL)
         ODOSQLStatementLogSQL(@"/* to-many fault %@.%@ */ ", [owner shortDescription], [rel name]);
     
-    ODOEntity *destEntity = [rel destinationEntity];
     
     ODORowFetchContext ctx;
     memset(&ctx, 0, sizeof(ctx));
-    ctx.entity = destEntity;
+    ctx.entity = [rel destinationEntity];
     ctx.instanceClass = [ctx.entity instanceClass];
     ctx.primaryKeyAttribute = [ctx.entity primaryKeyAttribute];
     ctx.schemaProperties = [NSArray arrayWithObject:ctx.primaryKeyAttribute];
@@ -595,7 +609,7 @@ NSMutableSet *ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORel
     NSError *error = nil;
     if (!FetchSetFaultWithContext(self, owner, rel, &ctx, &error)) {
         // CoreData raises when faulting fails.  We'd like to avoid that, but for now we'll mimic it.
-        [NSException raise:NSObjectInaccessibleException format:NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault: %@", nil, OMNI_BUNDLE, @"faulting exception"), [error toPropertyList]];
+        [NSException raise:NSObjectInaccessibleException format:NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault: %@", @"OmniDataObjects", OMNI_BUNDLE, @"faulting exception"), [error toPropertyList]];
     }
 
     // TODO: Since we lazily clear the fault, we might need to treat undo specially.  For example, A->>B.  Fetch an A and a B w/o clearing the fault.  Delete the B.  Process changes.  Clear the fault (A->>Bs won't contain the B we deleted).  Undo.  If we clear the reverse fault when doing delete propagation, then this should just work if we snapshot the to-many.  But, if we snapshot the nil (lazy fault not yet created) and then undo after clearing, then the cleared set will be incorrect.

@@ -9,6 +9,7 @@
 
 #import <SystemConfiguration/SCDynamicStore.h>
 #import <SystemConfiguration/SCNetwork.h>
+#import <SystemConfiguration/SCNetworkReachability.h>
 
 RCS_ID("$Id$");
 
@@ -131,8 +132,8 @@ int main(int _argc, char **_argv) // Don't use these directly
             perform_check(url);
         }
     } @catch (NSException *exc) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Error while checking for updated version.", nil, OSUFrameworkBundle, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Exception raised: %@", nil, OSUFrameworkBundle, @"error reason"), exc];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Error while checking for updated version.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Exception raised: %@", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error reason"), exc];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
         exit_with_error([NSError errorWithDomain:OSUToolErrorDomain code:OSUToolExceptionRaised userInfo:userInfo]);
     }
@@ -142,22 +143,26 @@ int main(int _argc, char **_argv) // Don't use these directly
 
 static void contemplate_reachability(const char *hostname)
 {
-    SCNetworkConnectionFlags status;
-
     if (!hostname || !*hostname)
         return;
 
-    NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Your Internet connection might not be active, or there might be a problem somewhere along the network.", nil, OSUFrameworkBundle, @"error text generated when software update is unable to retrieve the list of current software versions");
-    if (!SCNetworkCheckReachabilityByName(hostname, &status)) {
+    SCNetworkConnectionFlags flags;
+    Boolean canDetermineReachability = SCNetworkCheckReachabilityByName(hostname, &flags);
+    
+    NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Your Internet connection might not be active, or there might be a problem somewhere along the network.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error text generated when software update is unable to retrieve the list of current software versions");
+    if (!canDetermineReachability) {
         // Unable to determine whether the host is reachable. Most likely problem is that we failed to look up the host name. Most likely reason for that is a network partition, or a multiple failure of name servers (because, of course, EVERYONE actually READS the dns specs and maintains at least two nameservers with decent geographical and topological separation, RIGHT?). Another possibility is that configd is screwed up somehow. At any rate, it's unlikely that we'd be able to retrieve the status info, so return an error.
         // TODO: Localize these.  We are running in a tool that doesn't have direct access to the .strings files, so we'll need to look them up out of our containing .framework's bundle.
-        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not contact %s.", nil, OSUFrameworkBundle, @"error text generated when software update is unable to retrieve the list of current software versions"), hostname];
+        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not contact %s.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error text generated when software update is unable to retrieve the list of current software versions"), hostname];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, suggestion, NSLocalizedRecoverySuggestionErrorKey, nil];
         exit_with_error([NSError errorWithDomain:OSUToolErrorDomain code:OSUToolRemoteNetworkFailure userInfo:userInfo]);
     }
 
-    if (!(status & kSCNetworkFlagsReachable)) {
-        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%s is not reachable.", nil, OSUFrameworkBundle, @"error description"), hostname];
+    Boolean reachable;
+    reachable = ((flags & kSCNetworkFlagsReachable) != 0);
+    
+    if (!reachable) {
+        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%s is not reachable.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error description"), hostname];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, suggestion, NSLocalizedRecoverySuggestionErrorKey, nil];
         exit_with_error([NSError errorWithDomain:OSUToolErrorDomain code:OSUToolLocalNetworkFailure userInfo:userInfo]);
     }
@@ -250,9 +255,9 @@ static void perform_check(NSURL *url)
         
         if (statusCode >= 400) {
             // While we may have gotten back a result data, it is an error response.
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Error fetching software update information.", nil, OSUFrameworkBundle, @"error description");
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Error fetching software update information.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error description");
             NSString *reason = [NSHTTPURLResponse localizedStringForStatusCode:statusCode];
-            NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Please try again later or contact us to let us know this is broken.", nil, OSUFrameworkBundle, @"error reason");
+            NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Please try again later or contact us to let us know this is broken.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error reason");
             NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, suggestion, NSLocalizedRecoverySuggestionErrorKey, nil];
             error = [NSError errorWithDomain:OSUToolErrorDomain code:OSUToolServerError userInfo:userInfo];
         }
@@ -265,8 +270,8 @@ static void perform_check(NSURL *url)
         if (document)
             [resultDict setObject:resourceData forKey:OSUTool_ResultsDataKey];
         else {
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to parse response from the software update server.", nil, OSUFrameworkBundle, @"error description");
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The data returned from <%@> was not a valid XML document.", nil, OSUFrameworkBundle, @"error description"), [url absoluteString]];
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to parse response from the software update server.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error description");
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The data returned from <%@> was not a valid XML document.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error description"), [url absoluteString]];
             NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, error, NSUnderlyingErrorKey, nil];
             error = [NSError errorWithDomain:OSUToolErrorDomain code:OSUToolUnableToParseSoftwareUpdateData userInfo:userInfo];
         }
