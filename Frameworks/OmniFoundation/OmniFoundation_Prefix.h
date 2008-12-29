@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OmniFoundation_Prefix.h 98221 2008-03-04 21:06:19Z kc $
+// $Id$
 
 // The '-H' compiler flag is good for figuring out this list.
 #import <CoreFoundation/CoreFoundation.h>

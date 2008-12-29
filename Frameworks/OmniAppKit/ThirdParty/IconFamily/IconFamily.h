@@ -1,5 +1,5 @@
 // Copyright 2005 Omni Development, Inc.  All rights reserved.
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/ThirdParty/IconFamily/IconFamily.h 66043 2005-07-25 21:17:05Z kc $
+// $Id$
 // IconFamily.h
 // IconFamily class interface
 // by Troy Stephens, Thomas Schnitzer, David Remahl, Nathan Day and Ben Haller

@@ -11,7 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSWindowController-OAExtensions.m 103689 2008-08-05 01:43:31Z bungi $");
+RCS_ID("$Id$");
 
 @interface NSWindowController (OAExtensionsPrivate)
 + (void)_longIndicatorThread:(id)arg;

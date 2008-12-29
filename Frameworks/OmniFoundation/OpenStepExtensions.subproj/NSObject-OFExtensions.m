@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFUtilities.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSObject-OFExtensions.m 104388 2008-08-27 17:56:41Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSObject (OFExtensions)
 

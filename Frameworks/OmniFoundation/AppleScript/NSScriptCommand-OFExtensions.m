@@ -13,7 +13,7 @@
 #import <Foundation/NSScriptCommandDescription.h>
 #import <Foundation/NSScriptObjectSpecifiers.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Templates/Developer%20Tools/File%20Templates/%20Omni/OmniFoundation%20public%20class.pbfiletemplate/class.m 70671 2005-11-22 01:01:39Z kc $");
+RCS_ID("$Id$");
 
 @implementation NSScriptCommand (OFExtensions)
 

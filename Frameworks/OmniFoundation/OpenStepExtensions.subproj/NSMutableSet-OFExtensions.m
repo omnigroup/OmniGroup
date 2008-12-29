@@ -7,7 +7,7 @@
 
 #import <OmniFoundation/NSMutableSet-OFExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSMutableSet-OFExtensions.m 104166 2008-08-19 22:47:53Z wiml $");
+RCS_ID("$Id$");
 
 @implementation NSMutableSet (OFExtensions)
 

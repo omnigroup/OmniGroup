@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OmniInspector_Prefix.h 104581 2008-09-06 21:18:23Z kc $
+// $Id$
 
 //
 // Prefix header for all source files of the 'OmniInspector' target in the 'OmniInspector' project.

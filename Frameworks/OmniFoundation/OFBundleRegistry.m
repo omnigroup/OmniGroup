@@ -19,7 +19,7 @@
 #import <OmniFoundation/OFBundledClass.h>
 #endif
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFBundleRegistry.m 104385 2008-08-27 17:49:34Z wiml $")
+RCS_ID("$Id$")
 
 /* Bundle descriptions are currently NSMutableDictionaries with the following keys:
 

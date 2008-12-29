@@ -10,7 +10,7 @@
 #define ODO_PERF_MODEL_CD 1
 #include "ODOPerfModel_Impl.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniDataObjects/Tests/ODOPerf/ODOPerf_CoreData.m 104583 2008-09-06 21:23:18Z kc $")
+RCS_ID("$Id$")
 
 @implementation ODOPerf_CoreData
 

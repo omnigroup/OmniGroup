@@ -15,7 +15,7 @@
 
 #include <inttypes.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSUserDefaults-OAExtensions.m 103396 2008-07-28 19:50:03Z wiml $")
+RCS_ID("$Id$")
 
 static NSColor *nsColorFromRGBAString(NSString *value)
 {

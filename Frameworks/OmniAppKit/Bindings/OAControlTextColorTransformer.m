@@ -12,7 +12,7 @@
 #import <OmniFoundation/OFNull.h>
 #import <AppKit/AppKit.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Bindings/OAControlTextColorTransformer.m 103138 2008-07-22 02:23:17Z wiml $");
+RCS_ID("$Id$");
 
 @implementation OAControlTextColorTransformer
 

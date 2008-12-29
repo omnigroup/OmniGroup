@@ -13,7 +13,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/NSImage-OAExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OAAquaButton.m 92241 2007-10-03 19:33:24Z wiml $")
+RCS_ID("$Id$")
 
 @interface OAAquaButton (PrivateAPI)
 - (void)_setButtonImages;

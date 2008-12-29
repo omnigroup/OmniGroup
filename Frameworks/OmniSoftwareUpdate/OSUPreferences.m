@@ -18,7 +18,7 @@
 #import "OSUController.h"
 #import "OSUChecker.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSoftwareUpdate/OSUPreferences.m 98221 2008-03-04 21:06:19Z kc $");
+RCS_ID("$Id$");
 
 typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
 

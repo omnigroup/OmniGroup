@@ -14,7 +14,7 @@
 #import <OmniFoundation/OFMultiValueDictionary.h>
 #import <OmniBase/OmniBase.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFArrayTests.m 102862 2008-07-15 05:14:37Z bungi $");
+RCS_ID("$Id$");
 
 @interface OFSortedArrayManipulations : OFTestCase
 {

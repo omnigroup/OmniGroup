@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniDataObjects/OmniDataObjects.h 104581 2008-09-06 21:18:23Z kc $
+// $Id$
 
 #import <sys/types.h> // NSPredicate.h needs this =(
 

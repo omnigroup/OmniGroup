@@ -14,7 +14,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSWindow-OAExtensions.m 104581 2008-09-06 21:18:23Z kc $")
+RCS_ID("$Id$")
 
 
 static void (*oldMakeKeyAndOrderFront)(id self, SEL _cmd, id sender);

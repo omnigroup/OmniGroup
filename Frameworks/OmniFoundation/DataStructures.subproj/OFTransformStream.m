@@ -9,7 +9,7 @@
 #import <OmniFoundation/OFTransformStream.h>
 #import <Foundation/Foundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/DataStructures.subproj/OFTransformStream.m 86638 2007-05-09 00:40:14Z wiml $");
+RCS_ID("$Id$");
 
 NSString * const OFStreamUnderlyingStreamKey = @"OFStreamUnderlyingStream";
 NSString * const OFStreamTransformerKey = @"OFStreamTransformer";

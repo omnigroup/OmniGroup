@@ -12,7 +12,7 @@
 
 #import <OmniFoundation/OFDataBuffer.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/DataStructures.subproj/OFDataCursor.m 104638 2008-09-09 05:38:31Z kc $")
+RCS_ID("$Id$")
 
 @implementation OFDataCursor
 

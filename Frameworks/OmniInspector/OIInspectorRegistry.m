@@ -25,7 +25,7 @@
 
 #import "OIInspectionSet.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OIInspectorRegistry.m 102469 2008-07-07 06:04:09Z kevin $");
+RCS_ID("$Id$");
 
 @interface OIInspectorRegistry (Private)
 + (NSString *)_workspacesHelpURL;

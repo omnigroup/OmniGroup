@@ -10,7 +10,7 @@
 #import <SystemConfiguration/SCDynamicStore.h>
 #import <SystemConfiguration/SCNetwork.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSoftwareUpdate/OSUCheckTool.m 102860 2008-07-15 04:58:34Z bungi $");
+RCS_ID("$Id$");
 
 static void contemplate_reachability(const char *hostname);
 static NSURL *check_url(const char *baseURLCString, const char *appIdentifierCString, const char *appVersionCString, const char *trackCString, const char *osuVersionCString, CFDictionaryRef info);

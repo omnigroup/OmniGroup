@@ -13,7 +13,7 @@
 
 #import <libkern/OSAtomic.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFObject.m 104581 2008-09-06 21:18:23Z kc $")
+RCS_ID("$Id$")
 
 #if OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT
 @interface OFObject (Private)

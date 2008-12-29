@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OIF/OIF_Prefix.h 67112 2005-08-17 14:18:34Z kc $
+// $Id$
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>

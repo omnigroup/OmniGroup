@@ -16,7 +16,7 @@
 #import "NSView-OAExtensions.h"
 #import "OATypeAheadSelectionHelper.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSTableView-OAExtensions.m 104303 2008-08-25 18:51:08Z wiml $")
+RCS_ID("$Id$")
 
 @interface NSTableView (OAExtensionsPrivate)
 - (BOOL)_copyToPasteboard:(NSPasteboard *)pasteboard;

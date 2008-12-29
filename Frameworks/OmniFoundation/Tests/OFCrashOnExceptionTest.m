@@ -10,7 +10,7 @@
 #import <ExceptionHandling/NSExceptionHandler.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFCrashOnExceptionTest.m 98217 2008-03-04 20:56:16Z kc $")
+RCS_ID("$Id$")
 
 // This doesn't use OCUnit right now since, (1) it uses a custom OFController subclass and OFController isn't currently able to reset its shared instance and (2) some of the tests are intended to crash.  Both of these could be fixed, but they haven't been yet.
 

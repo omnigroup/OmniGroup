@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniBase/OBUtilities.h 103166 2008-07-22 20:04:47Z wiml $
+// $Id$
 
 #import <Foundation/NSString.h>
 #import <Foundation/NSBundle.h>

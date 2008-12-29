@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Frameworks/OmniFoundation/XML/OFXMLString.h 79079 2006-09-07 22:35:32Z kc $
+// $Id$
 
 #import <Foundation/NSObject.h>
 

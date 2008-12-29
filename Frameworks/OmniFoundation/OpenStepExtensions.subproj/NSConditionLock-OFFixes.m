@@ -10,7 +10,7 @@
 
 #import <OmniFoundation/NSDate-OFExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSConditionLock-OFFixes.m 103130 2008-07-22 01:14:47Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSConditionLock (OFFixes)
 

@@ -11,7 +11,7 @@
 #import <OmniAppKit/OmniAppKit.h>
 #import <OmniBase/OmniBase.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OIInspectorHeaderBackground.m 91117 2007-09-12 17:33:10Z wiml $")
+RCS_ID("$Id$")
 
 @implementation OIInspectorHeaderBackground
 

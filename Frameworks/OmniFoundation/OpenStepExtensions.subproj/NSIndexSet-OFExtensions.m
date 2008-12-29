@@ -10,7 +10,7 @@
 #import <OmniFoundation/NSMutableString-OFExtensions.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSIndexSet-OFExtensions.m 103782 2008-08-06 02:37:28Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSIndexSet (OFExtensions)
 

@@ -26,7 +26,7 @@
 #import <OWF/OWProxyServer.h>
 #import <OWF/OWURL.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Processors.subproj/Protocols.subproj/FTP.subproj/OWFTPSession.m 66176 2005-07-28 17:48:26Z kc $")
+RCS_ID("$Id$")
 
 @interface OWFTPSession (Private)
 

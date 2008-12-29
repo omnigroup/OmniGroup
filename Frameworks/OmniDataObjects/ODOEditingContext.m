@@ -38,7 +38,7 @@
 
 #import <sqlite3.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniDataObjects/ODOEditingContext.m 104636 2008-09-09 04:38:55Z bungi $")
+RCS_ID("$Id$")
 
 @interface ODOEditingContext (Private)
 - (void)_databaseConnectionDidChange:(NSNotification *)note;

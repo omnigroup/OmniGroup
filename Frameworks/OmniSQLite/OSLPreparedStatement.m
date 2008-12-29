@@ -13,7 +13,7 @@
 #import "OSLDatabaseController.h"
 #import "sqlite3.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSQLite/OSLPreparedStatement.m 98218 2008-03-04 20:59:21Z kc $")
+RCS_ID("$Id$")
 
 @interface OSLDatabaseController (Private)
 - (void *)_database;

@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniBase/system.h 102858 2008-07-15 04:25:10Z bungi $
+// $Id$
 //
 // This file contains stuff that isn't necessarily portable between operating systems.
 

@@ -23,7 +23,7 @@
 #import <OmniFoundation/NSError-OFExtensions.h>
 #import <poll.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSData-OFExtensions.m 102927 2008-07-16 05:30:50Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSData (OFExtensions)
 

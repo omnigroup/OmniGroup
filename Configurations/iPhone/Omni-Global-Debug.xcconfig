@@ -1,6 +1,6 @@
 // Copyright 2008 Omni Development, Inc.  All rights reserved.
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/OmniFocus/1.x/OmniGroup/Configurations/Omni-Global-Debug.xcconfig 92887 2007-10-16 09:44:23Z bungi $
+// $Id$
 
 // Common settings
 #include "Omni-Global-Common.xcconfig"

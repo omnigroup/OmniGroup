@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFPreference.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSUserDefaults-OFExtensions.m 102875 2008-07-15 06:07:25Z bungi $")
+RCS_ID("$Id$")
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniFoundation/OFScheduler.h>

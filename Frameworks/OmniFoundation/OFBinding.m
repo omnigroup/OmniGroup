@@ -11,7 +11,7 @@
 
 //#define DEBUG_KVO 1
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFBinding.m 102862 2008-07-15 05:14:37Z bungi $");
+RCS_ID("$Id$");
 
 @interface OFBinding (Private)
 - (void)_register;

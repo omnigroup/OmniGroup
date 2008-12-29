@@ -18,7 +18,7 @@
 #import <OWF/OWObjectStream.h>
 #import <OWF/OWPipeline.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Processors.subproj/Protocols.subproj/FTP.subproj/OWFTPListingProcessor.m 79079 2006-09-07 22:35:32Z kc $");
+RCS_ID("$Id$");
 
 @implementation OWFTPListingProcessor
 

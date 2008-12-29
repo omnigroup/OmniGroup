@@ -15,7 +15,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <AppKit/AppKit.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OADatePickerTextField.m 104300 2008-08-25 18:10:48Z wiml $");
+RCS_ID("$Id$");
 
 static NSString * const DefaultDateBinding = @"defaultDateBinding";
 

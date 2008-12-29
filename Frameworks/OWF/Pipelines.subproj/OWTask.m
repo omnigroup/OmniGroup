@@ -13,7 +13,7 @@
 
 #import <OWF/OWContentInfo.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Pipelines.subproj/OWTask.m 89466 2007-08-01 23:35:13Z kc $")
+RCS_ID("$Id$")
 
 @implementation OWTask
 

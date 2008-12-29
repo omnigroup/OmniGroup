@@ -14,7 +14,7 @@
 
 #import <OmniAppKit/OAColorPalette.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSAttributedString-OAExtensions.m 103451 2008-07-29 19:10:40Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSAttributedString (OAExtensions)
 

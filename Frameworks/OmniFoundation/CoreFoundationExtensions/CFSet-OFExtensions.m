@@ -13,7 +13,7 @@
 #endif
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/CoreFoundationExtensions/CFSet-OFExtensions.m 102858 2008-07-15 04:25:10Z bungi $")
+RCS_ID("$Id$")
 
 
 const CFSetCallBacks

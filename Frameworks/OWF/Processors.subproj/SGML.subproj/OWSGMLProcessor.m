@@ -29,7 +29,7 @@
 #import "OWURL.h"
 
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Processors.subproj/SGML.subproj/OWSGMLProcessor.m 90855 2007-09-06 19:29:13Z rachael $")
+RCS_ID("$Id$")
 
 @interface OWSGMLProcessor (Private)
 @end

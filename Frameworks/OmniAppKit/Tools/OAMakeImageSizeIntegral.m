@@ -9,7 +9,7 @@
 #import <OmniBase/rcsid.h>
 #import <OmniAppKit/NSImage-OAExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Tools/OAMakeImageSizeIntegral.m 68913 2005-10-03 19:36:19Z kc $")
+RCS_ID("$Id$")
 
 // This is intended to strip bogus DPI settings. Photoshop will save 72.00001 DPI which can lead to hard to find bugs later.
 // It'll probably also come in handy in stripping layers.

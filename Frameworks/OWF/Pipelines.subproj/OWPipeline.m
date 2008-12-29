@@ -31,7 +31,7 @@
 // [wiml jan2004] ugly - should not be necessary to import these here at all
 #import "OWStaticArc.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Pipelines.subproj/OWPipeline.m 79093 2006-09-08 00:05:45Z kc $")
+RCS_ID("$Id$")
 
 #define OWF_Bundle [OWPipeline bundle]
 

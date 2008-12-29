@@ -7,7 +7,7 @@
 
 #import <OmniFoundation/NSCalendarDate-OFExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSCalendarDate-OFExtensions.m 102920 2008-07-16 05:13:51Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSCalendarDate (OFExtensions)
 

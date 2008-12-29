@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/NSString-OFExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/DataStructures.subproj/OFTrieNode.m 98770 2008-03-17 22:25:33Z kc $")
+RCS_ID("$Id$")
 
 @implementation OFTrieNode
 

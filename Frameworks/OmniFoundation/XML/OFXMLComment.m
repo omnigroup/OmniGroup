@@ -17,7 +17,7 @@
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/XML/OFXMLComment.m 102870 2008-07-15 05:53:56Z bungi $")
+RCS_ID("$Id$")
 
 // OFXMLDocument currently doesn't generate these when reading documents, though that could be done.  Currently this is just intended to allow writers to emit comments.
 

@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-NAMED_RCS_ID(OFUnits_Private, "$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFUnits-Private.h 79089 2006-09-07 23:41:01Z kc $");
+NAMED_RCS_ID(OFUnits_Private, "$Id$");
 
 // These are the constant strings used as keys in OFUnit plists.
 // (Using #defines here since the compiler will go ahead and unique the NSStrings for us anyway.)

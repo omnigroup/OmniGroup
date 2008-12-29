@@ -18,7 +18,7 @@ static void writeCanonicalHostname(const char *hostname);
 static void writeHostAddresses(int family, int length, void **addresses);
 static int usage(void);
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/ONGetHostEntry.tproj/ONGetHostEntry_main.m 68913 2005-10-03 19:36:19Z kc $");
+RCS_ID("$Id$");
 
 static const char *toolName;
 

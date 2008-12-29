@@ -12,7 +12,7 @@
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OIButtonMatrixBackgroundView.m 98223 2008-03-04 21:07:09Z kc $");
+RCS_ID("$Id$");
 
 @implementation OIButtonMatrixBackgroundView
 

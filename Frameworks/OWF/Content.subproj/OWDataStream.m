@@ -21,7 +21,7 @@
 #include <sys/mman.h>
 #import <CommonCrypto/CommonDigest.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Content.subproj/OWDataStream.m 104666 2008-09-09 08:04:25Z kc $")
+RCS_ID("$Id$")
 
 @interface OWDataStream (Private)
 - (void)flushContentsToFile;

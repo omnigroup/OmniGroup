@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/ONPortAddress.h 68913 2005-10-03 19:36:19Z kc $
+// $Id$
 
 //
 // This class was not part of the original design, and it clearly suffers as a result.  For example, it doesn't handle multiple host addresses at all.  I'm tempted to remove it altogether, but it does serve a useful purpose and while I don't have time to fix it right now it might be useful to some.

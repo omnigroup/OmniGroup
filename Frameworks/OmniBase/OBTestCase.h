@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniBase/OBTestCase.h 102866 2008-07-15 05:27:40Z bungi $
+// $Id$
 
 #import <SenTestingKit/SenTestingKit.h>
 

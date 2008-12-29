@@ -10,7 +10,7 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniBase/NSError-OBExtensions.m 103848 2008-08-07 00:10:55Z wiml $");
+RCS_ID("$Id$");
 
 // If this is built as part of a tool (like the OSU check tool), we won't get a bundle identifier defined.
 #ifndef OMNI_BUNDLE_IDENTIFIER

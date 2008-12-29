@@ -11,7 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OADefaultSettingIndicatorButton.m 94948 2007-11-21 21:26:07Z kc $")
+RCS_ID("$Id$")
 
 @interface OADefaultSettingIndicatorButton (Private)
 - (void)_setupButton;

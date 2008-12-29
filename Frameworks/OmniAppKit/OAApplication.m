@@ -22,7 +22,7 @@
 #import "OAPreferenceController.h"
 #import "OASheetRequest.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OAApplication.m 104406 2008-08-27 21:28:50Z wiml $")
+RCS_ID("$Id$")
 
 NSString *OAFlagsChangedNotification = @"OAFlagsChangedNotification";
 NSString *OAFlagsChangedQueuedNotification = @"OAFlagsChangedNotification (Queued)";

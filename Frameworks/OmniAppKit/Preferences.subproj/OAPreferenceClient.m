@@ -15,7 +15,7 @@
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniAppKit/OAPreferenceClientRecord.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Preferences.subproj/OAPreferenceClient.m 104581 2008-09-06 21:18:23Z kc $")
+RCS_ID("$Id$")
 
 @interface OAPreferenceClient (Private)
 - (void)_restoreDefaultsSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;

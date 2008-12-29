@@ -10,7 +10,7 @@
 #import "ODOEntity-Internal.h"
 #import "ODODatabase-Internal.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniDataObjects/ODOModel.m 104581 2008-09-06 21:18:23Z kc $")
+RCS_ID("$Id$")
 
 NSString * const ODOModelRootElementName = @"model";
 NSString * const ODOModelNamespaceURLString = @"http://www.omnigroup.com/namespace/xodo/1.0";

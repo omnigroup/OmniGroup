@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSoftwareUpdate/OSUPreferences.h 78373 2006-08-17 02:14:23Z bungi $
+// $Id$
 
 #import <OmniAppKit/OAPreferenceClient.h>
 

@@ -12,7 +12,7 @@
 #import <OmniFoundation/OFXMLString.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/XML/OFXMLCursor.m 102636 2008-07-10 00:34:56Z wiml $");
+RCS_ID("$Id$");
 
 struct _OFXMLCursorState {
     // Not retained -- the document should be retaining it (and it is invalid to modify the document while we are alive).

@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/CoreFoundationExtensions/CFDictionary-OFExtensions.h 103920 2008-08-11 20:16:00Z wiml $
+// $Id$
 
 #import <CoreFoundation/CFDictionary.h>
 #import <Foundation/NSObjCRuntime.h>  // For NSInteger, etc.

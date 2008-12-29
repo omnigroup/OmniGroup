@@ -21,7 +21,7 @@
 #import <OmniFoundation/OFUnit.h>
 #import <OmniFoundation/OFUnits.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFUnitValueTests.m 89466 2007-08-01 23:35:13Z kc $");
+RCS_ID("$Id$");
 
 @interface OFUnitValueTests : SenTestCase
 {

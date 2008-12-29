@@ -12,7 +12,7 @@
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniBase/OmniBase.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFSearchingTests.m 102898 2008-07-15 20:25:19Z wiml $");
+RCS_ID("$Id$");
 
 @interface OFDataSearch : OFTestCase
 {

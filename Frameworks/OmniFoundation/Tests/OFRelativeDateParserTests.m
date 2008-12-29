@@ -19,7 +19,7 @@
 #import <OmniBase/OmniBase.h>
 
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFRelativeDateParserTests.m 104400 2008-08-27 20:07:03Z wiml $")
+RCS_ID("$Id$")
 
 static NSArray *dateFormats;
 static NSArray *timeFormats;

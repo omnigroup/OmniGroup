@@ -9,7 +9,7 @@
 
 #import <CommonCrypto/CommonDigest.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/DataStructures.subproj/OFSignature.m 102833 2008-07-15 00:56:16Z bungi $")
+RCS_ID("$Id$")
 
 #define CONTEXT  ((CC_SHA1_CTX *)_private)
 

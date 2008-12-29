@@ -15,7 +15,7 @@
 #import <CoreServices/CoreServices.h>
 #endif
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/DataStructures.subproj/OFVersionNumber.m 102858 2008-07-15 04:25:10Z bungi $");
+RCS_ID("$Id$");
 
 @implementation OFVersionNumber
 

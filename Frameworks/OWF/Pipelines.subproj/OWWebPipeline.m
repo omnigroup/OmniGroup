@@ -21,7 +21,7 @@
 #import <OWF/OWHeaderDictionary.h>
 #import <OWF/OWURL.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Pipelines.subproj/OWWebPipeline.m 68913 2005-10-03 19:36:19Z kc $")
+RCS_ID("$Id$")
 
 #warning correctly make use of OWWebPipelineReferringContentInfoKey when applied to an OWAddress by OmniWebKit
 NSString *OWWebPipelineReferringContentInfoKey = @"OWWebPipelineReferringContentInfoKey";

@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/NSNumber-OFExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/DataStructures.subproj/OFRationalNumber.m 103115 2008-07-21 22:18:44Z wiml $");
+RCS_ID("$Id$");
 
 typedef long long ofr_signed_wide;
 typedef unsigned long long ofr_unsigned_wide;

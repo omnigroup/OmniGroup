@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniDataObjects/ODOPredicate.h 104583 2008-09-06 21:23:18Z kc $
+// $Id$
 
 // The actual device doesn't have NSPredicate and friends.  We need to use these on the Mac to be compatible with NS*Controller and OOTreeController, but we need to implement them ourselves on the phone with _different_ names (in case Apple adds them later).  But, they _are_ in the simulator and there isn't a good way to avoid those definitions there.  So, we'll only do this when building for the device.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR

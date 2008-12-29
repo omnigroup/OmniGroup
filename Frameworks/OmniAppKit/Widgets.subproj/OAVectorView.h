@@ -4,7 +4,7 @@
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OAVectorView.h 79090 2006-09-07 23:55:58Z kc $
+// $Id$
 
 #import <AppKit/NSControl.h>
 

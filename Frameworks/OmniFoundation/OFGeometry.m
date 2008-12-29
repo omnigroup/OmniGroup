@@ -13,7 +13,7 @@
 // avoids warning from -Wshadow.  We never use the bessel functions here...
 #define y1 _y1
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFGeometry.m 98560 2008-03-12 17:28:00Z bungi $");
+RCS_ID("$Id$");
 
 
 

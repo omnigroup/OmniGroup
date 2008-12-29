@@ -11,7 +11,7 @@
 #import <OmniBase/rcsid.h>
 #import <string.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/CoreFoundationExtensions/CFString-OFExtensions.m 89466 2007-08-01 23:35:13Z kc $")
+RCS_ID("$Id$")
 
 
 void OFCaseConversionBufferInit(OFCaseConversionBuffer *caseBuffer)

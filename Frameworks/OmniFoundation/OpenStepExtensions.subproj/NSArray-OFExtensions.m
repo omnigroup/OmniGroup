@@ -11,7 +11,7 @@
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/OFNull.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSArray-OFExtensions.m 102821 2008-07-14 22:22:52Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSArray (OFExtensions)
 

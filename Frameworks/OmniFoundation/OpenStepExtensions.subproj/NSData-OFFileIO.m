@@ -9,7 +9,7 @@
 
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSData-OFFileIO.m 98771 2008-03-17 22:31:08Z kc $")
+RCS_ID("$Id$")
 
 @implementation NSData (OFFileIO)
 

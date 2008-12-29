@@ -16,7 +16,7 @@
 #import "ONInterface.h"
 #import "ONLinkLayerHostAddress.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/ONHostAddress.m 93428 2007-10-25 16:36:11Z kc $")
+RCS_ID("$Id$")
 
 // The 10.5 SDK shows this as being availabe on 10.4, but the 10.4 SDK doesn't list it (presumably this was SPI but then opened up).
 #if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5

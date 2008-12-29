@@ -10,7 +10,7 @@
 #import <OmniBase/OmniBase.h>
 #import <AppKit/AppKit.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Bindings/OATextFieldBinder.m 84394 2007-03-06 20:14:23Z wiml $");
+RCS_ID("$Id$");
 
 @implementation OATextFieldBinder
 

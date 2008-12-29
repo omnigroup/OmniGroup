@@ -15,7 +15,7 @@
 #import <OmniFoundation/OFXMLBuffer.h>
 #import <OmniFoundation/OFErrors.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/XML/OFXMLDocument.m 102934 2008-07-16 16:50:25Z bungi $");
+RCS_ID("$Id$");
 
 @interface OFXMLDocument (PrivateAPI)
 - (void)_preInit;

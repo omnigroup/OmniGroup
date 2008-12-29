@@ -13,7 +13,7 @@
 #import <Foundation/NSCalendarDate.h>
 #import <Foundation/NSDateFormatter.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSDate-OFExtensions.m 104651 2008-09-09 07:09:15Z kc $")
+RCS_ID("$Id$")
 
 @implementation NSDate (OFExtensions)
 

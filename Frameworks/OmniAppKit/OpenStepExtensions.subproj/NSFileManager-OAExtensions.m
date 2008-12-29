@@ -15,7 +15,7 @@
 
 #import "NSImage-OAExtensions.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSFileManager-OAExtensions.m 103999 2008-08-13 22:17:23Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSFileManager (OAExtensions)
 

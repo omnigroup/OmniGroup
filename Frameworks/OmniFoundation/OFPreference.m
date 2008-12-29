@@ -16,7 +16,7 @@
 #import <Foundation/NSScriptObjectSpecifiers.h>
 #endif
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFPreference.m 102875 2008-07-15 06:07:25Z bungi $");
+RCS_ID("$Id$");
 
 //#define DEBUG_PREFERENCES
 

@@ -12,7 +12,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/OmniAppKit.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSoftwareUpdate/OSUMessageOfTheDay.m 98221 2008-03-04 21:06:19Z kc $")
+RCS_ID("$Id$")
 
 @interface OSUMessageOfTheDay (FindControllerTarget) <OAFindControllerTarget>
 @end

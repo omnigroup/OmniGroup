@@ -15,7 +15,7 @@
 #import "ONHost.h"
 #import "ONPortAddress.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/ONUDPSocket.m 66423 2005-08-03 00:31:11Z kc $")
+RCS_ID("$Id$")
 
 
 #define THIS_BUNDLE [NSBundle bundleForClass:[ONUDPSocket class]]

@@ -14,7 +14,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OWF/OWF.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OIF/OIImage.m 66178 2005-07-28 17:50:20Z kc $")
+RCS_ID("$Id$")
 
 @implementation OIImage
 

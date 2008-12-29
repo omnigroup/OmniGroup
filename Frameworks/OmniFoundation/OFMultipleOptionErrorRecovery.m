@@ -11,7 +11,7 @@
 
 #import <OmniFoundation/OFErrorRecovery.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFMultipleOptionErrorRecovery.m 102876 2008-07-15 06:19:58Z bungi $")
+RCS_ID("$Id$")
 
 @implementation OFMultipleOptionErrorRecovery
 

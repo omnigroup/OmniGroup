@@ -19,7 +19,7 @@
 #import <OmniFoundation/OFChildScheduler.h>
 #import <OmniFoundation/OFRunLoopScheduler.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Scheduling.subproj/OFScheduler.m 102930 2008-07-16 05:44:31Z wiml $")
+RCS_ID("$Id$")
 
 @interface OFScheduler (Private)
 + (void)setDebug:(BOOL)newDebug;

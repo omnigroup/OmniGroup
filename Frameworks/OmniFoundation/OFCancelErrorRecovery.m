@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/NSBundle-OFExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Frameworks/OmniFoundation/OFErrorRecovery.m 89919 2007-08-10 21:12:37Z bungi $");
+RCS_ID("$Id$");
 
 @implementation OFCancelErrorRecovery
 

@@ -14,7 +14,7 @@
 
 #import <OmniAppKit/NSTextStorage-OAExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSText-OAExtensions.m 96325 2007-12-19 23:23:18Z andrew $")
+RCS_ID("$Id$")
 
 @implementation NSText (OAExtensions)
 

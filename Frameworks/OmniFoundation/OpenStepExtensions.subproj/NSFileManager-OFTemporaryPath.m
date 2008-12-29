@@ -7,7 +7,7 @@
 
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSFileManager-OFTemporaryPath.m 104584 2008-09-06 21:49:43Z kc $")
+RCS_ID("$Id$")
 
 #import <OmniFoundation/NSError-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>

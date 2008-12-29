@@ -8,7 +8,7 @@
 #import <OmniFoundation/OFSimpleLock.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Locks.subproj/OFSimpleLock.c 104402 2008-08-27 20:17:47Z wiml $")
+RCS_ID("$Id$")
 
 
 #if defined(__i386__) || defined(__x86_64__) || defined(__amd64__)

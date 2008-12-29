@@ -12,7 +12,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import "OAMouseTipView.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OAMouseTipWindow.m 89466 2007-08-01 23:35:13Z kc $");
+RCS_ID("$Id$");
 
 #define FADE_OUT_INTERVAL (0.1f)
 #define OFFSET_FROM_MOUSE_LOCATION 10.0

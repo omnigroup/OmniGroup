@@ -11,7 +11,7 @@
 #import <OmniFoundation/NSScriptCommand-OFExtensions.h>
 #import <Foundation/NSScriptObjectSpecifiers.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/AppleScript/OFAddScriptCommand.m 93428 2007-10-25 16:36:11Z kc $");
+RCS_ID("$Id$");
 
 
 /*

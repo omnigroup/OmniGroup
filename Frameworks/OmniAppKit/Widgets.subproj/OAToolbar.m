@@ -11,7 +11,7 @@
 #import <AppKit/AppKit.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OAToolbar.m 71191 2005-12-15 22:25:26Z bungi $");
+RCS_ID("$Id$");
 
 @implementation OAToolbar
 

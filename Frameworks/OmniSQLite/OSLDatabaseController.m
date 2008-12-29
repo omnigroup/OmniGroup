@@ -14,7 +14,7 @@
 
 #import "OSLPreparedStatement.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSQLite/OSLDatabaseController.m 98768 2008-03-17 21:55:59Z bungi $")
+RCS_ID("$Id$")
 
 @interface OSLDatabaseController (Private)
 - (void *)_database;

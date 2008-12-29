@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Cache.subproj/OWCacheSearch.h 66176 2005-07-28 17:48:26Z kc $
+// $Id$
 
 #import <OmniFoundation/OFObject.h>
 #import <OWF/OWContentCacheProtocols.h>

@@ -19,7 +19,7 @@
 #import "OITabMatrix.h"
 #import "OIButtonMatrixBackgroundView.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m 95989 2007-12-13 06:19:16Z bungi $")
+RCS_ID("$Id$")
 
 @interface OITabbedInspector (Private)
 - (OIInspectorTabController *)_tabWithIdentifier:(NSString *)identifier;

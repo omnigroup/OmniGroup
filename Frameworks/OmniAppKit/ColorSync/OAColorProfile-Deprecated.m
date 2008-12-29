@@ -9,7 +9,7 @@
 #import "OAColorProfile-Deprecated.h"
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/ColorSync/OAColorProfile-Deprecated.m 103102 2008-07-21 18:57:20Z wiml $");
+RCS_ID("$Id$");
 
 @implementation OAColorProfile (Deprecated)
 

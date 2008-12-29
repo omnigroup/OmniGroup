@@ -7,7 +7,7 @@
 
 #import <OmniFoundation/OFErrorRecovery.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFErrorRecovery.m 98560 2008-03-12 17:28:00Z bungi $");
+RCS_ID("$Id$");
 
 @implementation OFErrorRecovery
 

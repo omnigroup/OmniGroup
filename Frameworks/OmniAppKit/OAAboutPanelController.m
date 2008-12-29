@@ -15,7 +15,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OAAboutPanelController.m 102974 2008-07-17 02:58:07Z wiml $");
+RCS_ID("$Id$");
 
 static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundleContentVariants";
 

@@ -24,7 +24,7 @@
 
 #define THIS_BUNDLE [NSBundle bundleForClass:[ONTCPSocket class]]
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/ONTCPSocket.m 66168 2005-07-28 17:34:52Z kc $")
+RCS_ID("$Id$")
 
 #define ONTCP_OPT_USE_DEFAULT 2
 

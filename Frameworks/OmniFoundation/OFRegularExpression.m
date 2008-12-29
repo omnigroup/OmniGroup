@@ -10,7 +10,7 @@
 #import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/OFStringScanner.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFRegularExpression.m 102929 2008-07-16 05:40:32Z wiml $")
+RCS_ID("$Id$")
 
 #define MAX_SUBEXPRESSION_NESTING 10
 

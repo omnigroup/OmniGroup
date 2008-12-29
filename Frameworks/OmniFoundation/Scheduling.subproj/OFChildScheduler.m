@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFScheduledEvent.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Scheduling.subproj/OFChildScheduler.m 98770 2008-03-17 22:25:33Z kc $")
+RCS_ID("$Id$")
 
 @implementation OFChildScheduler
 

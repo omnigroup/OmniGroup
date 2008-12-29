@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFUtilities.h 103118 2008-07-21 22:39:32Z wiml $
+// $Id$
 
 #import <OmniBase/objc.h>
 #import <stddef.h> // For size_t

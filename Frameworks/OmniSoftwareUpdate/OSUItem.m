@@ -15,7 +15,7 @@
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/OFNull.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSoftwareUpdate/OSUItem.m 104009 2008-08-14 00:21:08Z wiml $");
+RCS_ID("$Id$");
 
 #if 0 && defined(DEBUG)
     #define DEBUG_FLAGS(format, ...) NSLog((format), ## __VA_ARGS__)

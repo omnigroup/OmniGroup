@@ -13,7 +13,7 @@
 #import "OSUPreferences.h"
 #import "OSUChecker.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSoftwareUpdate/OSUCheckOperation.m 104009 2008-08-14 00:21:08Z wiml $");
+RCS_ID("$Id$");
 
 #define ImpossibleTerminationStatus 0xEFFACED
 

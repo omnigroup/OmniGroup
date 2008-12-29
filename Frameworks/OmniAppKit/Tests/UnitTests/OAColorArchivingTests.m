@@ -10,7 +10,7 @@
 #import <OmniBase/rcsid.h>
 #import <OmniAppKit/NSColor-OAExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Tests/UnitTests/OAColorArchivingTests.m 103556 2008-07-31 01:30:39Z wiml $")
+RCS_ID("$Id$")
 
 @interface OAColorArchivingTests : OATestCase
 @end

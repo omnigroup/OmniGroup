@@ -11,7 +11,7 @@
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <Foundation/NSAppleEventDescriptor.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSDictionary-OFExtensions.m 104396 2008-08-27 20:03:52Z wiml $")
+RCS_ID("$Id$")
 
 NSString * const OmniDictionaryElementNameKey = @"__omniDictionaryElementNameKey";
 

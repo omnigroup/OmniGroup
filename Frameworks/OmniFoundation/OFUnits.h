@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFUnits.h 71726 2006-01-18 21:58:55Z wiml $
+// $Id$
 
 #import <OmniFoundation/OFObject.h>
 #import <OmniFoundation/NSNumber-OFExtensions.h>

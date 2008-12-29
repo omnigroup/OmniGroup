@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSString-OFUnicodeCharacters.h 98560 2008-03-12 17:28:00Z bungi $
+// $Id$
 
 #import <OmniFoundation/NSString-OFUnicodeCharacters.h>
 

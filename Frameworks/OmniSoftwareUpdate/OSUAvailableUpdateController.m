@@ -29,7 +29,7 @@ NSString * const OSUAvailableUpdateControllerDetailsBinding = @"details";
 NSString * const OSUAvailableUpdateControllerLoadingReleaseNotesBinding = @"loadingReleaseNotes";
 
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSoftwareUpdate/OSUAvailableUpdateController.m 98221 2008-03-04 21:06:19Z kc $");
+RCS_ID("$Id$");
 
 @interface OSUAvailableUpdateController (Private)
 - (void)_resizeInterface;

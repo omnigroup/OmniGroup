@@ -10,7 +10,7 @@
 #import <OmniFoundation/OFDataBuffer.h>
 #import <OmniFoundation/NSString-OFConversion.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/Staff/bungi/OmniFocus-20080310-iPhoneFactor/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSData-OFExtensions.m 93315 2007-10-24 11:51:50Z bungi $")
+RCS_ID("$Id$")
 
 @implementation NSData (OFEncoding)
 

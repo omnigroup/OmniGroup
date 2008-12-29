@@ -19,7 +19,7 @@
 
 #import <OmniBase/OmniBase.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFXMLDocumentTests.m 102862 2008-07-15 05:14:37Z bungi $");
+RCS_ID("$Id$");
 
 static NSString * const DTDName = @"root-element";
 static CFURLRef dtdURL = NULL;

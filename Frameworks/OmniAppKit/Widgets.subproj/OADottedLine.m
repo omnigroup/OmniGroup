@@ -10,7 +10,7 @@
 #import <Cocoa/Cocoa.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OADottedLine.m 103137 2008-07-22 02:19:51Z wiml $");
+RCS_ID("$Id$");
 
 @implementation OADottedLine
 

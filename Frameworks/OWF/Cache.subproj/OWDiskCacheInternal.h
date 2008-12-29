@@ -7,7 +7,7 @@
 
 #import <OmniBase/rcsid.h>
 
-NAMED_RCS_ID(cache_constants, "$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Cache.subproj/OWDiskCacheInternal.h 89475 2007-08-01 23:58:16Z kc $");
+NAMED_RCS_ID(cache_constants, "$Id$");
 
 #define OWDiskCache_DBVersion 10
 #define OWDiskCache_DBVersion_Key (@"OWDiskCache DB Version")

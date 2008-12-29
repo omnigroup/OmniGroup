@@ -9,7 +9,7 @@
 
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/AppleScript/NSAppleEventDescriptor-OFExtensions.m 104389 2008-08-27 17:59:28Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSAppleEventDescriptor (OFExtensions)
 

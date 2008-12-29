@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/OmniNetworking_Prefix.h 66942 2005-08-15 02:00:38Z kc $
+// $Id$
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>

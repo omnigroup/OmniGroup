@@ -14,7 +14,7 @@
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSString-OFConversion.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/Staff/bungi/OmniFocus-20080310-iPhoneFactor/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSSet-OFExtensions.m 98499 2008-03-11 03:23:38Z bungi $");
+RCS_ID("$Id$");
 
 /* To set up character set used for deferred string decoding (see OFStringDecoder.[hm]) */
 __private_extern__ CFCharacterSetRef OFDeferredDecodingCharacterSet(void);

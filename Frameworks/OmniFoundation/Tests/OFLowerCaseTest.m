@@ -10,7 +10,7 @@
 #import <SenTestingKit/SenTestingKit.h>
 #import <OmniBase/OmniBase.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFLowerCaseTest.m 103919 2008-08-11 20:11:34Z wiml $")
+RCS_ID("$Id$")
 
 @interface OFLowerCaseTests : SenTestCase
 {

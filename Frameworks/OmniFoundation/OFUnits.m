@@ -12,7 +12,7 @@
 #import <OmniFoundation/OFDimensionedValue.h>
 #import <OmniFoundation/OFUnit.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFUnits.m 102930 2008-07-16 05:44:31Z wiml $");
+RCS_ID("$Id$");
 
 @interface OFUnits (Private)
 

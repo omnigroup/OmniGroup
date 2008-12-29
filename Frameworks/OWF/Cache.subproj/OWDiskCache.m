@@ -22,7 +22,7 @@
 
 #import "OWDiskCacheInternal.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Cache.subproj/OWDiskCache.m 67560 2005-08-28 06:48:50Z kc $");
+RCS_ID("$Id$");
 
 // OWDiskCache maintains a small LRU cache of retrieved objects
 // TODO: Do some profiling to tune these parameters.

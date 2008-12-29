@@ -11,7 +11,7 @@
 
 #include <inttypes.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/CoreFoundationExtensions/OFCFCallbacks.m 103106 2008-07-21 20:34:05Z wiml $");
+RCS_ID("$Id$");
 
 //
 // NSObject callbacks

@@ -14,7 +14,7 @@
 #import <Foundation/NSString.h>
 #import <Foundation/NSLock.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/DataStructures.subproj/OFLowercaseStringCache.m 68913 2005-10-03 19:36:19Z kc $")
+RCS_ID("$Id$")
 
 
 // TJW: We could probably get away with one global lock since the vast majority of the time we should expect successful lookups.

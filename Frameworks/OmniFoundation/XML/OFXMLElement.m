@@ -17,7 +17,7 @@
 #import <OmniFoundation/OFXMLBuffer.h>
 #import <OmniFoundation/OFXMLFrozenElement.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/XML/OFXMLElement.m 102870 2008-07-15 05:53:56Z bungi $");
+RCS_ID("$Id$");
 
 @implementation OFXMLElement
 

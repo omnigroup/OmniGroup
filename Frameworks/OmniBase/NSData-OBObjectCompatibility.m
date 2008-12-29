@@ -9,7 +9,7 @@
 
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniBase/NSData-OBObjectCompatibility.m 98221 2008-03-04 21:06:19Z kc $")
+RCS_ID("$Id$")
 
 @implementation NSData (OBObjectCompatibility)
 

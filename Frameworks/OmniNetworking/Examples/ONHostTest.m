@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/Examples/ONHostTest.m 79079 2006-09-07 22:35:32Z kc $");
+RCS_ID("$Id$");
 
 struct workArea {
     int byName;

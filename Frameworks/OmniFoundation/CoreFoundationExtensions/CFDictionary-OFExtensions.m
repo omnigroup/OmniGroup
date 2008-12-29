@@ -13,7 +13,7 @@
 #import <Foundation/NSString.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/CoreFoundationExtensions/CFDictionary-OFExtensions.m 69856 2005-11-01 02:42:33Z wiml $")
+RCS_ID("$Id$")
 
 
 const CFDictionaryKeyCallBacks OFNonOwnedPointerDictionaryKeyCallbacks = {

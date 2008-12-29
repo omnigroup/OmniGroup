@@ -11,7 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSFileWrapper-OAExtensions.m 103551 2008-07-31 01:06:43Z wiml $");
+RCS_ID("$Id$");
 
 @implementation NSFileWrapper (OAExtensions)
 

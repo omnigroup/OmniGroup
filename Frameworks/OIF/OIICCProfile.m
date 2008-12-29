@@ -11,7 +11,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OIF/OIICCProfile.m 104666 2008-09-09 08:04:25Z kc $");
+RCS_ID("$Id$");
 
 static NSLock *sharedProfileLock = nil;
 static NSMapTable *sharedProfiles = NULL;

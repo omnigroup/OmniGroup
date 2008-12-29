@@ -15,7 +15,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import "OAVersion.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OAWorkflow.m 68908 2005-10-03 19:30:38Z kc $");
+RCS_ID("$Id$");
 
 @interface OAWorkflow (Private)
 

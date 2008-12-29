@@ -13,7 +13,7 @@
 #import <OmniFoundation/OFInvocation.h>
 #import <OmniFoundation/OFMessageQueue.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Scheduling.subproj/OFObject-Queue.m 101396 2008-06-10 18:43:02Z wiml $")
+RCS_ID("$Id$")
 
 
 @implementation NSObject (Queue)

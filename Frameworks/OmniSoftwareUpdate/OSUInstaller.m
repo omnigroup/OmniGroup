@@ -19,7 +19,7 @@
 #import "OSUErrors.h"
 #import <unistd.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/Staff/bungi/OSU-AutoUpdate-20070801/OmniGroup/Frameworks/OmniSoftwareUpdate/OSUChecker.m 89447 2007-08-01 21:24:22Z bungi $");
+RCS_ID("$Id$");
 
 @interface OSUInstaller (Private)
 // Disk image support

@@ -7,7 +7,7 @@
 # distributed with this project and can also be found at
 # <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 #
-# $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Scripts/BuildSVNVersionInclude 104596 2008-09-07 18:20:36Z kc $
+# $Id$
 
 setopt ERR_EXIT
 

@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/DataStructures.subproj/OFBTree.h 102836 2008-07-15 02:13:52Z wiml $
+// $Id$
 
 #import <objc/objc.h> // For BOOL
 #import <stddef.h> // For size_t

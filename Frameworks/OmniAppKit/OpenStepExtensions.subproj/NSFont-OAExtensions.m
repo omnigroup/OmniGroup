@@ -13,7 +13,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <ApplicationServices/ApplicationServices.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSFont-OAExtensions.m 103157 2008-07-22 18:54:48Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSFont (OAExtensions)
 

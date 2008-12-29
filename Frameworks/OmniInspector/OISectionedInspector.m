@@ -20,7 +20,7 @@
 #import "OITabMatrix.h"
 #import "OIButtonMatrixBackgroundView.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/Staff/bungi/OmniFocus-20071207-InspectorSections/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m 91673 2007-09-21 18:21:04Z bungi $")
+RCS_ID("$Id$")
 
 @interface OISectionedInspector (Private)
 - (void)_layoutSections;

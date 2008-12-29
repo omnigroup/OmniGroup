@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSAttributedString-OAExtensions.h 103451 2008-07-29 19:10:40Z wiml $
+// $Id$
 
 #import <Foundation/NSAttributedString.h>
 #import <Foundation/NSGeometry.h> // For NSRect

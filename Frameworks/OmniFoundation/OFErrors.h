@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFErrors.h 102862 2008-07-15 05:14:37Z bungi $
+// $Id$
 
 // Domain is the OmniFoundation bundle identifier.
 enum {

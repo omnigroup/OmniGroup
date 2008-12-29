@@ -12,7 +12,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OAConfigurableColumnTableView.m 80280 2006-10-16 14:23:17Z kc $")
+RCS_ID("$Id$")
 
 @interface NSTableView (PrivateParts)
 - (void)_writePersistentTableColumns;

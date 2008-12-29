@@ -14,7 +14,7 @@
 #import <OmniBase/assertions.h>
 #import "OAColorProfile-Deprecated.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/ColorSync/OAColorProfile.m 103140 2008-07-22 02:26:31Z wiml $");
+RCS_ID("$Id$");
 
 @interface OAColorProfile (Private)
 + (void)_deviceNotification:(NSNotification *)notification;

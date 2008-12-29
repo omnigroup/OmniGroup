@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Tests/OAResizingByteFormatterTest/main.m 79082 2006-09-07 22:52:47Z kc $");
+RCS_ID("$Id$");
 
 int main(int argc, char *argv[])
 {

@@ -17,7 +17,7 @@
 #import <OmniBase/assertions.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniBase/OBUtilities.m 103165 2008-07-22 19:52:58Z wiml $")
+RCS_ID("$Id$")
 
 static BOOL _OBRegisterMethod(IMP imp, Class cls, const char *types, SEL name)
 {

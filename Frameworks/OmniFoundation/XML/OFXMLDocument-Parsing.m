@@ -17,7 +17,7 @@
 #import <OmniFoundation/CFDictionary-OFExtensions.h>
 #import <OmniFoundation/OFXMLUnparsedElement.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/Staff/bungi/OmniFocus-20080107-Syncing/OmniGroup/Frameworks/OmniFoundation/XML/OFXMLDocument.m 90130 2007-08-15 07:15:53Z bungi $");
+RCS_ID("$Id$");
 
 
 typedef struct _OFMLDocumentParseState {

@@ -13,7 +13,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import "NSImage-OAExtensions.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OASearchField.m 103137 2008-07-22 02:19:51Z wiml $");
+RCS_ID("$Id$");
 
 @interface OASearchField (Private)
 - (NSString *)_searchModeString;

@@ -11,7 +11,7 @@
 #import <bzlib.h>
 #import <zlib.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/Staff/bungi/OmniFocus-20080310-iPhoneFactor/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSData-OFExtensions.m 98499 2008-03-11 03:23:38Z bungi $")
+RCS_ID("$Id$")
 
 @implementation NSData (OFCompression)
 

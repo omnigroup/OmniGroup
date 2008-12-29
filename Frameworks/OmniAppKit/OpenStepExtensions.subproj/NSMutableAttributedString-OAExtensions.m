@@ -12,7 +12,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSMutableAttributedString-OAExtensions.m 94382 2007-11-09 23:57:48Z joshua $");
+RCS_ID("$Id$");
 #define CELL_PADDING 4.0
 
 @implementation NSMutableAttributedString (OAExtensions)

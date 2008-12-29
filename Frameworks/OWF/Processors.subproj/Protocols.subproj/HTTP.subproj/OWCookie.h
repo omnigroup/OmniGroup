@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Processors.subproj/Protocols.subproj/HTTP.subproj/OWCookie.h 71111 2005-12-13 22:46:31Z kc $
+// $Id$
 
 #import <OmniFoundation/OFObject.h>
 #import <OmniFoundation/OFDataBuffer.h>

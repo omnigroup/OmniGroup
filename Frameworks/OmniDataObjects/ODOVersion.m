@@ -10,6 +10,6 @@
 // In the case of the standalone framework, this will be generated from it.  Otherwise from the wrapper iPhone app.
 #import "SVNVersion.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniDataObjects/ODOVersion.m 104581 2008-09-06 21:18:23Z kc $")
+RCS_ID("$Id$")
 
 const unsigned int ODOVersionNumber = SVNREVISION;

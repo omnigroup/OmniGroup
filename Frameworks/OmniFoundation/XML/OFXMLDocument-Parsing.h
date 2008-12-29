@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/Staff/bungi/OmniFocus-20080107-Syncing/OmniGroup/Frameworks/OmniFoundation/XML/OFXMLDocument.h 92222 2007-10-03 00:00:44Z wiml $
+// $Id$
 
 #import <OmniFoundation/OFXMLDocument.h>
 

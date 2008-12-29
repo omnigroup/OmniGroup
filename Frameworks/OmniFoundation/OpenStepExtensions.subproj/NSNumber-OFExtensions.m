@@ -8,7 +8,7 @@
 #import <OmniFoundation/NSNumber-OFExtensions.h>
 #import <OmniFoundation/OFRationalNumber.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSNumber-OFExtensions.m 90130 2007-08-15 07:15:53Z bungi $")
+RCS_ID("$Id$")
 
 struct numericTypeAttributes {
     unsigned short width;

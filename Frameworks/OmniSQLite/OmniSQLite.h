@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSQLite/OmniSQLite.h 98220 2008-03-04 21:01:15Z kc $
+// $Id$
 
 #import <OmniSQLite/OSLDatabaseController.h>
 #import <OmniSQLite/OSLPreparedStatement.h>

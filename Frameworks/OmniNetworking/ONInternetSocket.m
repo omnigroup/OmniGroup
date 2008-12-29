@@ -18,7 +18,7 @@
 #import "ONInterface.h"
 #import "ONPortAddress.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/ONInternetSocket.m 89466 2007-08-01 23:35:13Z kc $")
+RCS_ID("$Id$")
 
 #ifdef OMNI_ASSERTIONS_ON
 static BOOL is_mutex_locked(pthread_mutex_t *m);

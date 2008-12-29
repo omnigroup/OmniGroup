@@ -10,7 +10,7 @@
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <Foundation/NSCalendarDate.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Formatters.subproj/OFDateFormatter.m 98770 2008-03-17 22:25:33Z kc $")
+RCS_ID("$Id$")
 
 @implementation OFDateFormatter
 

@@ -15,7 +15,7 @@
 #import "OIInspectorGroup.h"
 #import "OIInspectorRegistry.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OAApplication-OIExtensions.m 79095 2006-09-08 00:19:03Z kc $")
+RCS_ID("$Id$")
 
 @implementation OAApplication (OIExtensions)
 

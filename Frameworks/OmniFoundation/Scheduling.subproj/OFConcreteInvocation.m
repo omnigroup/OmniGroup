@@ -7,7 +7,7 @@
 
 #import <OmniFoundation/OFConcreteInvocation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Scheduling.subproj/OFConcreteInvocation.m 104633 2008-09-09 01:42:31Z bungi $")
+RCS_ID("$Id$")
 
 #import <OmniFoundation/OFMessageQueuePriorityProtocol.h>
 

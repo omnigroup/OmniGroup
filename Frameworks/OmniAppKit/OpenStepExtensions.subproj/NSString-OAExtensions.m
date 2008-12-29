@@ -14,7 +14,7 @@
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/OAApplication.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSString-OAExtensions.m 104654 2008-09-09 07:28:02Z kc $")
+RCS_ID("$Id$")
 
 @implementation NSString (OAExtensions)
 

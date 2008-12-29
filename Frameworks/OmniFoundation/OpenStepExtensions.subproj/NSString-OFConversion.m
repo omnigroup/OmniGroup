@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFStringDecoder.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSString-OFConversion.m 104167 2008-08-19 22:50:52Z wiml $");
+RCS_ID("$Id$");
 
 @implementation NSString (OFConversion)
 

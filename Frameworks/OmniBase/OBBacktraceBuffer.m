@@ -10,7 +10,7 @@
 #import <OmniBase/rcsid.h>
 #include <execinfo.h>  // For backtrace()
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniBase/OBBacktraceBuffer.m 104204 2008-08-21 00:15:14Z wiml $")
+RCS_ID("$Id$")
 
 #if defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__ ) >= 401)
 #define BUILTIN_ATOMICS  /* GCC 4.1.x has some builtins for atomic operations */ 

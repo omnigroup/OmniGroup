@@ -11,7 +11,7 @@
 #import <OmniBase/OBUtilities.h>
 #import <unistd.h> // For getpid()
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniBase/assertions.m 102862 2008-07-15 05:14:37Z bungi $")
+RCS_ID("$Id$")
 
 #ifdef OMNI_ASSERTIONS_ON
 

@@ -11,7 +11,7 @@
 #import <OmniFoundation/OFTrieBucket.h>
 #import <OmniFoundation/OFTrieNode.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/Staff/bungi/OmniFocus-20080310-iPhoneFactor/OmniGroup/Frameworks/OmniFoundation/OFCharacterScanner.m 90130 2007-08-15 07:15:53Z bungi $")
+RCS_ID("$Id$")
 
 @implementation OFCharacterScanner (OFTrie)
 

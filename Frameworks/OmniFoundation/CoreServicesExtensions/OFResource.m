@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/NSString-OFExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/CoreServicesExtensions/OFResource.m 104645 2008-09-09 06:07:42Z kc $");
+RCS_ID("$Id$");
 
 @interface OFResource (Private)
 @end

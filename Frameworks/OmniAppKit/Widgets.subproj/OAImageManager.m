@@ -12,7 +12,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OAImageManager.m 92241 2007-10-03 19:33:24Z wiml $");
+RCS_ID("$Id$");
 
 @implementation OAImageManager
 

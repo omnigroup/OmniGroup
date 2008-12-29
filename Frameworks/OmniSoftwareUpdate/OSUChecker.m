@@ -31,7 +31,7 @@
 #import "OSUItem.h"
 #import "OSUSendFeedbackErrorRecovery.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSoftwareUpdate/OSUChecker.m 99002 2008-03-25 00:47:08Z wiml $");
+RCS_ID("$Id$");
 
 #if 1 && defined(DEBUG_bungi)
 #define OSU_DEBUG

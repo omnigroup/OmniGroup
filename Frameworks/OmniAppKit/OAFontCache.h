@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OAFontCache.h 103137 2008-07-22 02:19:51Z wiml $
+// $Id$
 
 #import <OmniFoundation/OFObject.h>
 #import <Foundation/NSGeometry.h>

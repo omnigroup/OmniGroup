@@ -9,7 +9,7 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSNumber-OFExtensions-CGTypes.m 103145 2008-07-22 02:54:38Z wiml $")
+RCS_ID("$Id$")
 
 @implementation NSNumber (OFCGTypeExtensions)
 

@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/UnitTests/ONUDPTrafficTests.m 75916 2006-06-01 16:16:00Z bungi $");
+RCS_ID("$Id$");
 
 const char *s1 = "This is some test data.";
 const char *s2 = "This is also some test data. It's a bit longer.";

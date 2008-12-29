@@ -7,7 +7,7 @@
 
 #import "OIInspectorSection.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OIInspectorSection.m 96302 2007-12-19 21:20:20Z bungi $")
+RCS_ID("$Id$")
 
 @implementation OIInspectorSection
 

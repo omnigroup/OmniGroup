@@ -12,7 +12,7 @@
 
 #import <Foundation/NSNumberFormatter.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Formatters.subproj/OFTimeSpanFormatter.m 99220 2008-04-02 19:11:23Z tom $")
+RCS_ID("$Id$")
 
 #if 0 && defined(DEBUG)
     #define DLOG(format, ...) NSLog((format), ## __VA_ARGS__)

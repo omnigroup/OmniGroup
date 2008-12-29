@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OAAquaButton.h 92244 2007-10-03 20:26:28Z wiml $
+// $Id$
 
 #import <AppKit/NSButton.h>
 #import <OmniAppKit/FrameworkDefines.h>

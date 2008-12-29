@@ -31,7 +31,7 @@
 #import <sys/attr.h>
 #import <fcntl.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSFileManager-OFExtensions.m 103848 2008-08-07 00:10:55Z wiml $")
+RCS_ID("$Id$")
 
 @interface NSFileManager (OFPrivate)
 - (int)filesystemStats:(struct statfs *)stats forPath:(NSString *)path;

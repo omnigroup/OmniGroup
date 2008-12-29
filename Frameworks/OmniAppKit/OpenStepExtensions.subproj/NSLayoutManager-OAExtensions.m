@@ -12,7 +12,7 @@
 
 #import "NSTextStorage-OAExtensions.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSLayoutManager-OAExtensions.m 98223 2008-03-04 21:07:09Z kc $");
+RCS_ID("$Id$");
 
 @implementation NSLayoutManager (OAExtensions)
 

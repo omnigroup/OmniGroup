@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/Staff/bungi/OmniFocus-20071207-InspectorSections/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.h 91673 2007-09-21 18:21:04Z bungi $
+// $Id$
 
 #import "OIInspector.h"
 

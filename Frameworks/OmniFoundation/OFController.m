@@ -18,7 +18,7 @@
 
 #include <execinfo.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFController.m 104481 2008-09-02 16:51:37Z wiml $")
+RCS_ID("$Id$")
 
 
 // The following exception can be raised during an OFControllerRequestsTerminateNotification.

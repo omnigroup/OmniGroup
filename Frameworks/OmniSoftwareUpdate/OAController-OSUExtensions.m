@@ -11,7 +11,7 @@
 
 #import "OSUMessageOfTheDay.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniSoftwareUpdate/OAController-OSUExtensions.m 94355 2007-11-09 21:51:45Z kc $")
+RCS_ID("$Id$")
 
 @implementation OAController (OSUExtensions)
 

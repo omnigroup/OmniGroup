@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/ColorSync/OAColorProfile-Deprecated.h 101712 2008-06-21 18:28:39Z kevin $
+// $Id$
 
 #import <Cocoa/Cocoa.h>
 

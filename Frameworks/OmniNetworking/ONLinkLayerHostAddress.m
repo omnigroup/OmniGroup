@@ -15,7 +15,7 @@
 #include <net/if_types.h>
 #include <net/if_dl.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/ONLinkLayerHostAddress.m 79079 2006-09-07 22:35:32Z kc $");
+RCS_ID("$Id$");
 
 @implementation ONLinkLayerHostAddress
 

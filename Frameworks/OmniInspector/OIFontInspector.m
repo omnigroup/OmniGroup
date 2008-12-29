@@ -11,7 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OIFontInspector.m 79095 2006-09-08 00:19:03Z kc $");
+RCS_ID("$Id$");
 
 static void (*original_orderFront)(id self, SEL _cmd, id sender) = NULL;
 static void (*original_orderOut)(id self, SEL _cmd, id sender) = NULL;

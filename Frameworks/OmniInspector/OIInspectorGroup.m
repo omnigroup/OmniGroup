@@ -17,7 +17,7 @@
 #import "OIInspectorRegistry.h"
 #import "OIInspector.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OIInspectorGroup.m 92658 2007-10-11 18:47:26Z kevin $");
+RCS_ID("$Id$");
 
 @interface OIInspectorGroup (Private)
 - (void)_showGroup;

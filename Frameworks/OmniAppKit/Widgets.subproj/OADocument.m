@@ -11,7 +11,7 @@
 #import <AppKit/AppKit.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OADocument.m 66043 2005-07-25 21:17:05Z kc $");
+RCS_ID("$Id$");
 
 @implementation OADocument
 

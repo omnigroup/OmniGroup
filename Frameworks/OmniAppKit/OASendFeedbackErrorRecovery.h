@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Frameworks/OmniAppKit/OAController.h 89915 2007-08-10 20:39:48Z bungi $
+// $Id$
 
 #import <OmniFoundation/OFErrorRecovery.h>
 

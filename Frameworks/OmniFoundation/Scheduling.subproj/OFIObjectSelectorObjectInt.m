@@ -10,7 +10,7 @@
 #import <objc/objc-class.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Scheduling.subproj/OFIObjectSelectorObjectInt.m 102642 2008-07-10 01:00:32Z wiml $")
+RCS_ID("$Id$")
 
 @implementation OFIObjectSelectorObjectInt
 

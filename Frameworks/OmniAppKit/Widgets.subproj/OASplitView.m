@@ -11,7 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OASplitView.m 98733 2008-03-16 15:47:30Z kc $")
+RCS_ID("$Id$")
 
 @interface OASplitView (Private)
 - (void)didResizeSubviews:(NSNotification *)notification;

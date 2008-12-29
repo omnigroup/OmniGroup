@@ -1,6 +1,6 @@
 // Copyright 2008 Omni Development, Inc.  All rights reserved.
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Configurations/Omni-Global-Release.xcconfig 72991 2006-03-04 01:11:23Z andrew $
+// $Id$
 
 // Common settings
 #include "Omni-Global-Common.xcconfig"

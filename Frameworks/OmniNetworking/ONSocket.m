@@ -12,7 +12,7 @@
 
 #include <sys/uio.h>  // for struct iovec
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniNetworking/ONSocket.m 68913 2005-10-03 19:36:19Z kc $")
+RCS_ID("$Id$")
 
 static NSStringEncoding defaultStringEncoding = NSISOLatin1StringEncoding;
 static unsigned int defaultReadBufferSize = 2048;

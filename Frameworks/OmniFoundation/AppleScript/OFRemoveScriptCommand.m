@@ -19,7 +19,7 @@
 
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/AppleScript/OFRemoveScriptCommand.m 80612 2006-10-25 16:10:52Z bungi $");
+RCS_ID("$Id$");
 
 @implementation OFRemoveScriptCommand
 

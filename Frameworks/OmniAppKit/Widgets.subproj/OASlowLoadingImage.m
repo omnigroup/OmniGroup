@@ -10,7 +10,7 @@
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OASlowLoadingImage.m 103461 2008-07-29 20:34:03Z wiml $");
+RCS_ID("$Id$");
 
 @interface OASlowLoadingImage (Private)
 - (void)_start;

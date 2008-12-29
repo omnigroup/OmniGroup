@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Scheduling.subproj/OFIObjectSelector.h 98770 2008-03-17 22:25:33Z kc $
+// $Id$
 
 #import <OmniFoundation/OFConcreteInvocation.h>
 

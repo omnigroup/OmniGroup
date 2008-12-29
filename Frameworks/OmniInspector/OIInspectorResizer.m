@@ -13,7 +13,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/NSImage-OAExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OIInspectorResizer.m 72316 2006-02-07 18:59:27Z bungi $")
+RCS_ID("$Id$")
 
 @implementation OIInspectorResizer
 

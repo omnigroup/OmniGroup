@@ -9,7 +9,7 @@
 
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFTestCase.m 103775 2008-08-06 00:17:59Z wiml $")
+RCS_ID("$Id$")
 
 @implementation OFTestCase
 

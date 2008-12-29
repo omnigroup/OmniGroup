@@ -20,7 +20,7 @@
 #import <OmniFoundation/OFStringScanner.h>
 #import <OmniFoundation/OFUtilities.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OpenStepExtensions.subproj/NSString-OFExtensions.m 103518 2008-07-30 20:53:54Z wiml $")
+RCS_ID("$Id$")
 
 /* Character sets used for mail header encoding */
 static NSCharacterSet *nonNonCTLChars = nil;

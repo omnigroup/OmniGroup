@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/DataStructures.subproj/OFDimensionedValue.h 71092 2005-12-13 18:43:42Z wiml $
+// $Id$
 
 #import <OmniFoundation/OFRationalNumber.h>
 #import <OmniFoundation/OFUnit.h>

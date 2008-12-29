@@ -12,7 +12,7 @@
 #import <OmniFoundation/OFTransformStream.h>
 #import <OmniFoundation/OFCompressionStream.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFStreamTransformTests.m 92224 2007-10-03 00:08:05Z wiml $");
+RCS_ID("$Id$");
 
 @interface OFStreamTransformTests : SenTestCase
 {

@@ -14,7 +14,7 @@
 #import <AppKit/AppKit.h>
 #import <OmniAppKit/OmniAppKit.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Tests/UnitTests/OAGeometryTests.m 104581 2008-09-06 21:18:23Z kc $");
+RCS_ID("$Id$");
 
 @interface OAGeometryTests : OATestCase
 @end

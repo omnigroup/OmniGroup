@@ -15,7 +15,7 @@
 #import "OIInspector.h"
 #import "OIInspectorTabController.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OITabMatrix.m 95874 2007-12-11 22:09:59Z bungi $");
+RCS_ID("$Id$");
 
 @implementation OITabMatrix
 

@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/Staff/bungi/OmniFocus-20080310-iPhoneFactor/OmniGroup/Frameworks/OmniFoundation/OFCharacterScanner.h 98499 2008-03-11 03:23:38Z bungi $
+// $Id$
 
 #import <OmniFoundation/OFCharacterScanner.h>
 

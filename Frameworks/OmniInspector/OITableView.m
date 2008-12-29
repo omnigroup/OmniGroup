@@ -9,7 +9,7 @@
 
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniInspector/OITableView.m 89476 2007-08-01 23:59:32Z kc $")
+RCS_ID("$Id$")
 
 @implementation OITableView
 

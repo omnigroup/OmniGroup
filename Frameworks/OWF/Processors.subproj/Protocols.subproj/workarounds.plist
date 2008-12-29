@@ -3,7 +3,7 @@
         Workarounds for buggy servers. Each entry contains some number of keys which determine the applicability of that entry to a given request, and some number of keys which modify the behavior of the protocol processor.
         Note: ALL ENTRIES IN THIS FILE MUST BE MARKED WITH THEIR CORRESPONDING BUGSNACKER NUMBERS, so that we can remove them when possible.
         
-        $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Processors.subproj/Protocols.subproj/workarounds.plist 66043 2005-07-25 21:17:05Z kc $
+        $Id$
     */
     
     

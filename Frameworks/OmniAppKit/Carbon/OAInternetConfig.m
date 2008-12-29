@@ -16,7 +16,7 @@
 
 #import "OAOSAScript.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Carbon/OAInternetConfig.m 104581 2008-09-06 21:18:23Z kc $")
+RCS_ID("$Id$")
 
 // The InternetConfig documentation can be found at http://www.quinn.echidna.id.au/Quinn/Config/.
 

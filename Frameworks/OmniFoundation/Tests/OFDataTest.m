@@ -14,7 +14,7 @@
 #import <OmniFoundation/OFScratchFile.h>
 #import <OmniBase/OmniBase.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFDataTest.m 104118 2008-08-18 19:45:55Z wiml $");
+RCS_ID("$Id$");
 
 @interface OFDataTest : OFTestCase
 {

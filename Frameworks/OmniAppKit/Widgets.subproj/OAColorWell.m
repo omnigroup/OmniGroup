@@ -12,7 +12,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniAppKit/Widgets.subproj/OAColorWell.m 103137 2008-07-22 02:19:51Z wiml $");
+RCS_ID("$Id$");
 
 /*
  NSColorWell and NSColorPanel have some terrible interaction.  In particular, if you have an active color well on an inspector but your main window's first responder has a -changeColor: method, the first responder's method still gets called instead of the inspector's action being responsible!

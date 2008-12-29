@@ -13,7 +13,7 @@
 #import <OWF/OWAddress.h>
 #import <OWF/OWURL.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/OWSitePreference.m 71110 2005-12-13 22:45:49Z kc $");
+RCS_ID("$Id$");
 
 NSString *OWSitePreferenceDidChangeNotification = @"OWSitePreferenceDidChangeNotification";
 

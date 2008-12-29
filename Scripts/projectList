@@ -7,7 +7,7 @@
 # distributed with this project and can also be found at
 # <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 #
-# $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Scripts/projectList 104585 2008-09-06 22:02:42Z kc $
+# $Id$
 
 # At Omni, this is a big perl script that figures out the appropriate dependencies for whichever project is passed on the command line and produces the right build order.  But that's overkill for our published source distribution--here, we'll just specify the build order by hand.
 

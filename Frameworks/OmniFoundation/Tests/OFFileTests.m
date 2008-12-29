@@ -11,7 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Tests/OFFileTests.m 103852 2008-08-07 00:55:29Z wiml $");
+RCS_ID("$Id$");
 
 @interface OFFileTests : OFTestCase
 {

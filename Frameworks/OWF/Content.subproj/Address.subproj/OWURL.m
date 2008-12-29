@@ -18,7 +18,7 @@
 #import "OWNetLocation.h"
 #import "OWHTMLToSGMLObjects.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Content.subproj/Address.subproj/OWURL.m 79079 2006-09-07 22:35:32Z kc $")
+RCS_ID("$Id$")
 
 @interface OWURL (Private)
 + (void)controllerDidInitialize:(OFController *)controller;

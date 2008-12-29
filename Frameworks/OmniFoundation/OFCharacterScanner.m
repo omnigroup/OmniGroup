@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFStringDecoder.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/OFCharacterScanner.m 102919 2008-07-16 05:11:43Z wiml $")
+RCS_ID("$Id$")
 
 @implementation OFCharacterScanner
 

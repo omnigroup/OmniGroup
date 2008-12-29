@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Frameworks/OmniBase/OBPostLoader.m 81954 2006-12-01 18:40:08Z bungi $
+// $Id$
 
 #import <AvailabilityMacros.h>
 #import <TargetConditionals.h>

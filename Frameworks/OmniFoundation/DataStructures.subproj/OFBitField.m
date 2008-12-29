@@ -10,7 +10,7 @@
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSMutableData-OFExtensions.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/DataStructures.subproj/OFBitField.m 102841 2008-07-15 02:31:02Z wiml $")
+RCS_ID("$Id$")
 
 static const uint8_t bitsPerByte[256];
 static const unsigned int firstBitInByte[256];

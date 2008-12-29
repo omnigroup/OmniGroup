@@ -13,7 +13,7 @@
 #import <Foundation/NSDictionary.h>
 #import <OmniBase/rcsid.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OWF/Processors.subproj/OWAddressProcessor.m 68913 2005-10-03 19:36:19Z kc $");
+RCS_ID("$Id$");
 
 
 @implementation OWAddressProcessor
