@@ -1,0 +1,8 @@
+// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Configurations/Omni-Application-Common.xcconfig 83993 2007-02-17 19:27:29Z bungi $
+
+// Common settings for Application targets
+GCC_SYMBOLS_PRIVATE_EXTERN = NO
+
+OTHER_CFLAGS = $(value) -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\"

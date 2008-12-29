@@ -1,0 +1,88 @@
+#!/bin/zsh -f
+#
+# Copyright 2008 Omni Development, Inc.  All rights reserved.
+#
+# This software may only be used and reproduced according to the
+# terms in the file OmniSourceLicense.html, which should be
+# distributed with this project and can also be found at
+# <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+#
+# $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Scripts/BuildSVNVersionInclude 104596 2008-09-07 18:20:36Z kc $
+
+setopt ERR_EXIT
+
+# Check the version of OmniGroup
+cd $(dirname $0) # This is OmniGroup/Scripts
+cd .. # This is OmniGroup
+
+PN="$0:t"
+Usage () {
+    echo >&2 "Usage: $PN [options]"
+    echo >&2 "  Options:"
+    echo >&2 "    --help                - show the usage"
+    echo >&2 "    --build-versions-txt  - build SVNVersion.txt"
+    exit 1
+}
+
+GENERATE_VERSIONS_TXT=NO
+while [ $# -gt 0 ]
+do
+    case "$1" in
+        --)
+            shift
+            break
+            ;;
+        --help|-h)
+            Usage
+            ;;
+        --build-versions-txt)
+            GENERATE_VERSIONS_TXT=YES
+            ;;
+        *)
+            Usage
+            ;;
+    esac
+    shift
+done
+
+BUILD_DATE=`TZ=UTC date +"%Y-%m-%dT%H:%M:%S.000Z"`
+SVNURL=`svn info . | grep "^URL: " | sed 's/^URL: //'`
+if [ -n "$OMNI_VERSIONS" -a -f "$OMNI_VERSIONS" ]; then
+    SVNREVISION=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
+else
+    SVNREVISION=`svn info . | grep "^Last Changed Rev: " | sed 's/^Last Changed Rev: //'`
+fi
+
+if [ -z "$SVNURL" ]; then; SVNURL="local build"; fi
+if [ -z "$SVNREVISION" ]; then; SVNREVISION=0; fi
+
+mkdir -p "$PROJECT_DERIVED_FILE_DIR"
+
+(
+	echo -n "#define SVNVERSION @\""
+	echo -n $SVNURL
+	echo -n "@"
+	echo -n $SVNREVISION
+	echo "\""
+
+	echo "#define SVNREVISION $SVNREVISION"
+	echo "#define SVNURL $SVNURL"
+	echo "#define BUILD_DATE @\"$BUILD_DATE\""
+) > "$PROJECT_DERIVED_FILE_DIR/SVNVersion.h"
+
+if [ "$GENERATE_VERSIONS_TXT" = "YES" ]; then
+    mkdir -p "$BUILT_PRODUCTS_DIR"
+    if [ -n "$OMNI_VERSIONS" -a -f "$OMNI_VERSIONS" ]; then
+        cp -p "$OMNI_VERSIONS" "$BUILT_PRODUCTS_DIR/Versions.txt"
+    else
+        (
+            echo "Build details:"
+            echo ""
+            echo "Product: [development build]"
+            echo "Date:" `date +"%Y-%m-%d %H:%M:%S %z"`
+            echo "Builder: $USER"
+            echo "Host:" `hostname`
+            echo "Revision: $SVNREVISION"
+        ) > "$BUILT_PRODUCTS_DIR/Versions.txt"
+    fi
+fi

@@ -1,0 +1,8 @@
+// Copyright 2006 Omni Development, Inc.  All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/branches/MacOSX-10.4/OmniGroup/Configurations/Omni-Global-Common.xcconfig 72081 2006-01-30 18:48:41Z kc $
+
+// Common settings for 10.5 builds
+SDKROOT = /Developer/SDKs/MacOSX10.5.sdk
+MACOSX_DEPLOYMENT_TARGET = 10.5
+GCC_FAST_OBJC_DISPATCH = YES

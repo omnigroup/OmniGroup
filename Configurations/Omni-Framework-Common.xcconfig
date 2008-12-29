@@ -1,0 +1,14 @@
+// Copyright 2006 Omni Development, Inc.  All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Configurations/Omni-Framework-Common.xcconfig 94298 2007-11-09 00:41:41Z kc $
+
+// Common settings for Framework targets
+DYLIB_CURRENT_VERSION = 1
+DYLIB_COMPATIBILITY_VERSION = 1
+FRAMEWORK_VERSION = A
+
+OTHER_CFLAGS = $(value) -DOMNI_BUILDING_FRAMEWORK -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\"
+
+OMNI_FRAMEWORK_TARGET_PATH = $(CONFIGURATION_BUILD_DIR)
+DYLIB_INSTALL_NAME_BASE = $(OMNI_FRAMEWORK_TARGET_PATH)
+

@@ -1,0 +1,13 @@
+// Copyright 2005-2006 Omni Development, Inc.  All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Configurations/Omni-Global-Coverage.xcconfig 83992 2007-02-17 19:13:36Z bungi $
+
+// Common settings
+#include "Omni-Global-Common.xcconfig"
+
+// Common settings for Coverage configurations
+OTHER_CFLAGS = -fprofile-arcs -ftest-coverage $(value)
+OTHER_LDFLAGS = -lgcov
+GCC_PREPROCESSOR_DEFINITIONS = COVERAGE
+GCC_OPTIMIZATION_LEVEL = 0
+GCC_WARN_UNINITIALIZED_AUTOS = NO
