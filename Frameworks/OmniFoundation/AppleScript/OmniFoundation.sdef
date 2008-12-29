@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+<!--
+Definitions for script commands in OmniFoundation.  These can be included in your application's sdef by its build process (say by using XSL to merge multiple sdef files).
+-->
+<dictionary title="OmniFoundation">
+	<suite name="OmniFoundation Scripting" code="OFss" description="OmniFoundation scripting support.">
+		<cocoa name="OmniFoundation"/>
+
+		<!-- add/remove commands for many-to-many relationships -->
+		<command name="add" code="OFssiadd" description="Add the given object(s) to the container.">
+			<cocoa class="OFAddScriptCommand"/>
+			<direct-parameter description="the object(s) to add.">
+				<type type="specifier" list="yes"/>
+				<type type="specifier"/>
+			</direct-parameter>
+			<parameter name="to" code="to  " description="The container to which to add the object.">
+				<cocoa key="ToContainer"/>
+				<type type="specifier"/>
+			</parameter>
+		</command>
+		<command name="remove" code="OFssremv" description="Remove the given object(s) from the container.">
+			<cocoa class="OFRemoveScriptCommand"/>
+			<direct-parameter description="the object(s) to remove.">
+				<type type="specifier" list="yes"/>
+				<type type="specifier"/>
+			</direct-parameter>
+			<parameter name="from" code="from" description="The container from which to remove the object.">
+				<cocoa key="FromContainer"/>
+				<type type="specifier"/>
+			</parameter>
+		</command>
+
+		<!-- preferences.  this requires that your app subclass have a element to preferences. -->
+		<class name="preference" code="OFpf" description="Application preference">
+			<cocoa class="OFPreference"/>
+			<!-- This is what is used for defaults write.  Reserving 'name' in case we want to add something more human readable, though arguably we'd want that to be 'display name' or something of the like. -->
+			<property name="id" code="ID  " type="text" access="r" description="The identifier of the preference.">
+				<cocoa key="scriptIdentifier"/>
+			</property>
+			<property name="value" code="valL" description="The current value of the preference.">
+				<cocoa key="scriptValue"/>
+				<type type="text"/>
+				<type type="real"/>
+				<type type="integer"/>
+				<!-- <type type="number"/> Causes exceptions in Leopard at the moment -->
+				<type type="boolean"/>
+				<type type="missing value"/>
+				<!-- Not handling NSData, but it is a valid plist type for preferences -->
+			</property>
+			<property name="default value" code="OFdv" description="The default value of the preference.">
+				<cocoa key="scriptDefaultValue"/>
+				<type type="text"/>
+				<type type="real"/>
+				<type type="integer"/>
+				<!-- <type type="number"/> Causes exceptions in Leopard at the moment -->
+				<type type="boolean"/>
+				<type type="missing value"/>
+				<!-- Not handling NSData, but it is a valid plist type for preferences -->
+			</property>
+		</class>
+	</suite>
+</dictionary>

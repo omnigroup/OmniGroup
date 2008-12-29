@@ -1,0 +1,201 @@
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 30;
+	objects = {
+		06F69522FFA4D356CD999A53 = {
+			isa = PBXProject;
+			mainGroup = 06F69523FFA4D356CD999A53;
+			productRefGroup = 06F69533FFA4D356CD999A53;
+			projectDirPath = .;
+			targets = (
+				06F69535FFA4D356CD999A53,
+			);
+		};
+		06F69523FFA4D356CD999A53 = {
+			children = (
+				06F69525FFA4D356CD999A53,
+				06F69526FFA4D356CD999A53,
+				06F6952FFFA4D356CD999A53,
+				06F69533FFA4D356CD999A53,
+			);
+			isa = PBXGroup;
+			name = SHA1;
+			refType = 4;
+		};
+		06F69525FFA4D356CD999A53 = {
+			isa = PBXFileReference;
+			path = SHA1_main.m;
+			refType = 4;
+		};
+		06F69526FFA4D356CD999A53 = {
+			children = (
+				06F6952AFFA4D356CD999A53,
+				06F6952BFFA4D356CD999A53,
+				06F6952CFFA4D356CD999A53,
+				06F6952DFFA4D356CD999A53,
+				06F6952EFFA4D356CD999A53,
+			);
+			isa = PBXGroup;
+			name = "Supporting Files";
+			refType = 4;
+		};
+		06F6952AFFA4D356CD999A53 = {
+			isa = PBXFileReference;
+			path = test1;
+			refType = 4;
+		};
+		06F6952BFFA4D356CD999A53 = {
+			isa = PBXFileReference;
+			path = test2;
+			refType = 4;
+		};
+		06F6952CFFA4D356CD999A53 = {
+			isa = PBXFileReference;
+			path = test3;
+			refType = 4;
+		};
+		06F6952DFFA4D356CD999A53 = {
+			isa = PBXFileReference;
+			path = expectedResults;
+			refType = 4;
+		};
+		06F6952EFFA4D356CD999A53 = {
+			isa = PBXFileReference;
+			path = .gdbinit;
+			refType = 4;
+		};
+		06F6952FFFA4D356CD999A53 = {
+			children = (
+				06F69530FFA4D356CD999A53,
+				06F69531FFA4D356CD999A53,
+			);
+			isa = PBXGroup;
+			name = "External Frameworks and Libraries";
+			refType = 4;
+		};
+		06F69530FFA4D356CD999A53 = {
+			isa = PBXFrameworkReference;
+			name = Foundation.framework;
+			path = /System/Library/Frameworks/Foundation.framework;
+			refType = 0;
+		};
+		06F69531FFA4D356CD999A53 = {
+			isa = PBXFrameworkReference;
+			name = OmniFoundation.framework;
+			path = /System/Library/Frameworks/OmniFoundation.framework;
+			refType = 0;
+		};
+		06F69533FFA4D356CD999A53 = {
+			children = (
+				06F69534FFA4D356CD999A53,
+			);
+			isa = PBXGroup;
+			name = Products;
+			refType = 4;
+		};
+		06F69534FFA4D356CD999A53 = {
+			isa = PBXExecutableFileReference;
+			path = SHA1;
+			refType = 3;
+		};
+		06F69535FFA4D356CD999A53 = {
+			buildPhases = (
+				06F69536FFA4D356CD999A53,
+				06F69537FFA4D356CD999A53,
+				06F69539FFA4D356CD999A53,
+				06F6953CFFA4D356CD999A53,
+			);
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = "";
+				OPTIMIZATION_CFLAGS = "";
+				OTHER_CFLAGS = "-Wall -O2";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+			};
+			conditionalBuildSettings = {
+			};
+			dependencies = (
+			);
+			isa = PBXToolTarget;
+			name = "SHA1 (Tool)";
+			productInstallPath = /bin;
+			productName = SHA1;
+			productReference = 06F69534FFA4D356CD999A53;
+			shouldUseHeadermap = 0;
+		};
+		06F69536FFA4D356CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXHeadersBuildPhase;
+			name = Headers;
+		};
+		06F69537FFA4D356CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+				06F69538FFA4D356CD999A53,
+			);
+			isa = PBXSourcesBuildPhase;
+			name = Sources;
+		};
+		06F69538FFA4D356CD999A53 = {
+			fileRef = 06F69525FFA4D356CD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Debug,
+				);
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F69539FFA4D356CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+				06F6953AFFA4D356CD999A53,
+				06F6953BFFA4D356CD999A53,
+			);
+			isa = PBXFrameworksBuildPhase;
+			name = "Frameworks & Libraries";
+		};
+		06F6953AFFA4D356CD999A53 = {
+			fileRef = 06F69530FFA4D356CD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F6953BFFA4D356CD999A53 = {
+			fileRef = 06F69531FFA4D356CD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F6953CFFA4D356CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXRezBuildPhase;
+			name = "ResourceManager Resources";
+		};
+	};
+	rootObject = 06F69522FFA4D356CD999A53;
+}

@@ -1,0 +1,20 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {showAboutPanel = id; showNextContentVariant = id; }; 
+            CLASS = OAAboutPanelController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                appIconImageView = NSImageView; 
+                applicationNameTextField = NSTextField; 
+                copyrightTextField = NSTextField; 
+                creditsTextView = NSTextView; 
+                fullReleaseNameButton = NSButton; 
+                panel = NSPanel; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

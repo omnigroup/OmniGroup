@@ -1,0 +1,179 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 38;
+	objects = {
+		06F69460FFA4CFA4CD999A53 = {
+			buildStyles = (
+				F0364A690340D8C33897A113,
+				F0364A6A0340D8C33897A113,
+			);
+			isa = PBXProject;
+			mainGroup = 06F69461FFA4CFA4CD999A53;
+			productRefGroup = 06F6946CFFA4CFA4CD999A53;
+			projectDirPath = "";
+			targets = (
+				06F6946EFFA4CFA4CD999A53,
+			);
+		};
+		06F69461FFA4CFA4CD999A53 = {
+			children = (
+				06F69463FFA4CFA4CD999A53,
+				06F69468FFA4CFA4CD999A53,
+				06F6946CFFA4CFA4CD999A53,
+			);
+			isa = PBXGroup;
+			name = UDPTest;
+			refType = 4;
+		};
+		06F69463FFA4CFA4CD999A53 = {
+			isa = PBXFileReference;
+			path = UDPTest_main.m;
+			refType = 4;
+		};
+		06F69468FFA4CFA4CD999A53 = {
+			children = (
+				06F69469FFA4CFA4CD999A53,
+				06F6946AFFA4CFA4CD999A53,
+			);
+			isa = PBXGroup;
+			name = "External Frameworks and Libraries";
+			refType = 4;
+		};
+		06F69469FFA4CFA4CD999A53 = {
+			isa = PBXFrameworkReference;
+			name = OmniNetworking.framework;
+			path = /System/Library/Frameworks/OmniNetworking.framework;
+			refType = 0;
+		};
+		06F6946AFFA4CFA4CD999A53 = {
+			isa = PBXFrameworkReference;
+			name = Foundation.framework;
+			path = /System/Library/Frameworks/Foundation.framework;
+			refType = 0;
+		};
+		06F6946CFFA4CFA4CD999A53 = {
+			children = (
+				06F6946DFFA4CFA4CD999A53,
+			);
+			isa = PBXGroup;
+			name = Products;
+			refType = 4;
+		};
+		06F6946DFFA4CFA4CD999A53 = {
+			isa = PBXExecutableFileReference;
+			path = UDPTest;
+			refType = 3;
+		};
+		06F6946EFFA4CFA4CD999A53 = {
+			buildPhases = (
+				06F6946FFFA4CFA4CD999A53,
+				06F69470FFA4CFA4CD999A53,
+				06F69472FFA4CFA4CD999A53,
+				06F69475FFA4CFA4CD999A53,
+			);
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "\"$(OMNI_FRAMEWORKS)\"";
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_CFLAGS = "-Wall -O2";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = UDPTest;
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+			};
+			dependencies = (
+			);
+			isa = PBXToolTarget;
+			name = "UDPTest (Tool)";
+			productInstallPath = /usr/local/bin;
+			productName = UDPTest;
+			productReference = 06F6946DFFA4CFA4CD999A53;
+			shouldUseHeadermap = 0;
+		};
+		06F6946FFFA4CFA4CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXHeadersBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		06F69470FFA4CFA4CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+				06F69471FFA4CFA4CD999A53,
+			);
+			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		06F69471FFA4CFA4CD999A53 = {
+			fileRef = 06F69463FFA4CFA4CD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+				);
+			};
+		};
+		06F69472FFA4CFA4CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+				06F69473FFA4CFA4CD999A53,
+				06F69474FFA4CFA4CD999A53,
+			);
+			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		06F69473FFA4CFA4CD999A53 = {
+			fileRef = 06F69469FFA4CFA4CD999A53;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		06F69474FFA4CFA4CD999A53 = {
+			fileRef = 06F6946AFFA4CFA4CD999A53;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		06F69475FFA4CFA4CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXRezBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+//060
+//061
+//062
+//063
+//064
+//F00
+//F01
+//F02
+//F03
+//F04
+		F0364A690340D8C33897A113 = {
+			buildRules = (
+			);
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				OPTIMIZATION_CFLAGS = "-O0";
+			};
+			isa = PBXBuildStyle;
+			name = Development;
+		};
+		F0364A6A0340D8C33897A113 = {
+			buildRules = (
+			);
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			isa = PBXBuildStyle;
+			name = Deployment;
+		};
+	};
+	rootObject = 06F69460FFA4CFA4CD999A53;
+}

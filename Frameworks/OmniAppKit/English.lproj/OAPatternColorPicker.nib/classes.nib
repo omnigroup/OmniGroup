@@ -1,0 +1,13 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {imageChanged = id; }; 
+            CLASS = OAPatternColorPicker; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {imageView = NSView; view = NSView; }; 
+            SUPERCLASS = NSColorPicker; 
+        }
+    ); 
+    IBVersion = 1; 
+}

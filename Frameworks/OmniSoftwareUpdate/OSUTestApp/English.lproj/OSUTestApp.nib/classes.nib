@@ -1,0 +1,48 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {checkForNewVersion = id; }; 
+            CLASS = NSApplication; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSResponder; 
+        }, 
+        {CLASS = NSObject; LANGUAGE = ObjC; }, 
+        {CLASS = NSResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {
+                closeAllMainWindows = id; 
+                cycleToNextMainWindow = id; 
+                cycleToPreviousMainWindow = id; 
+                miniaturizeAll = id; 
+                showPreferencesPanel = id; 
+            }; 
+            CLASS = OAApplication; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSApplication; 
+        }, 
+        {
+            ACTIONS = {showAboutPanel = id; }; 
+            CLASS = OAController; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = OFController; 
+        }, 
+        {CLASS = OBObject; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = OFController; LANGUAGE = ObjC; SUPERCLASS = OFObject; }, 
+        {CLASS = OFObject; LANGUAGE = ObjC; SUPERCLASS = OBObject; }, 
+        {
+            CLASS = OSUTAController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                buildVersionField = NSTextField; 
+                bundleIdentifierField = NSTextField; 
+                marketingVersionField = NSTextField; 
+                systemVersionField = NSTextField; 
+                visibleTracksTextView = NSTextView; 
+                window = NSWindow; 
+            }; 
+            SUPERCLASS = OAController; 
+        }
+    ); 
+    IBVersion = 1; 
+}

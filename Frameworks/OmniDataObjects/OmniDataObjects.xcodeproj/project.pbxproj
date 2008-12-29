@@ -1,0 +1,1027 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		3484096B0D89F9CD00E74C9D /* Build SVNVersion.h */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 3484096E0D89F9EB00E74C9D /* Build configuration list for PBXAggregateTarget "Build SVNVersion.h" */;
+			buildPhases = (
+				3484096A0D89F9CD00E74C9D /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = "Build SVNVersion.h";
+			productName = "Build SVNVersion.h";
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		3400B7E30D8C7CED00390D08 /* ODOEditingContext-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400B7D70D8C7BD800390D08 /* ODOEditingContext-Internal.m */; };
+		3400BAA20D8E23CE00390D08 /* ODOSQLStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */; };
+		3400BAA30D8E23CE00390D08 /* ODOSQLStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400BAA10D8E23CE00390D08 /* ODOSQLStatement.m */; };
+		34043DF90DA4086400761C40 /* NSPredicate-ODOExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34043DF70DA4086400761C40 /* NSPredicate-ODOExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34043DFA0DA4086400761C40 /* NSPredicate-ODOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34043DF80DA4086400761C40 /* NSPredicate-ODOExtensions.m */; };
+		340D21A50E5DF7090049EBA0 /* ODOPerf.m in Sources */ = {isa = PBXBuildFile; fileRef = 340D21A40E5DF7090049EBA0 /* ODOPerf.m */; };
+		340D21AB0E5DF7550049EBA0 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A77A190D89D6880037DE8C /* OmniFoundation.framework */; };
+		340D21AC0E5DF7590049EBA0 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 340D5ED90DAAD1F700BF27F8 /* CoreData.framework */; };
+		340D21AD0E5DF75A0049EBA0 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 344FB29F0D8999F400AA63FE /* OmniBase.framework */; };
+		340D21B20E5DF7620049EBA0 /* OmniDataObjects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* OmniDataObjects.framework */; };
+		340D21B40E5DF76D0049EBA0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		340D21DB0E5DFE4D0049EBA0 /* ODOPerf_ODO.m in Sources */ = {isa = PBXBuildFile; fileRef = 340D21DA0E5DFE4D0049EBA0 /* ODOPerf_ODO.m */; };
+		340D21DE0E5DFE760049EBA0 /* ODOPerf_CoreData.m in Sources */ = {isa = PBXBuildFile; fileRef = 340D21DD0E5DFE760049EBA0 /* ODOPerf_CoreData.m */; };
+		340D22330E5E01F50049EBA0 /* ODOPerf.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 340D22320E5E01F50049EBA0 /* ODOPerf.xcdatamodel */; };
+		340D23170E5E11430049EBA0 /* ODOPerfModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 340D23160E5E11430049EBA0 /* ODOPerfModel.m */; };
+		340D5DDA0DAACF6900BF27F8 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 340D5DD60DAACF5200BF27F8 /* SenTestingKit.framework */; };
+		340D5DDE0DAACF6F00BF27F8 /* OmniDataObjects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* OmniDataObjects.framework */; };
+		340D5DED0DAAD03500BF27F8 /* ODOUndoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 340D5DEB0DAAD02500BF27F8 /* ODOUndoTests.m */; };
+		340D5DFD0DAAD0EF00BF27F8 /* ODOTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 340D5DFC0DAAD0EF00BF27F8 /* ODOTestCase.m */; };
+		340D5E120DAAD1CB00BF27F8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		340D5E130DAAD1CE00BF27F8 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 344FB29F0D8999F400AA63FE /* OmniBase.framework */; };
+		340D5EDA0DAAD1F700BF27F8 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 340D5ED90DAAD1F700BF27F8 /* CoreData.framework */; };
+		340D5EF30DAAD27800BF27F8 /* ODOTestCase.xodo in Resources */ = {isa = PBXBuildFile; fileRef = 340D5EF20DAAD27800BF27F8 /* ODOTestCase.xodo */; };
+		340D5F200DAAD5E600BF27F8 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A77A190D89D6880037DE8C /* OmniFoundation.framework */; };
+		340DD2EC0D89A3090049D65E /* ODOObjectID.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD2EA0D89A3090049D65E /* ODOObjectID.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		340DD2ED0D89A3090049D65E /* ODOObjectID.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD2EB0D89A3090049D65E /* ODOObjectID.m */; };
+		342A26680D90DF39003C611F /* ODOSnapshotDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 342A26660D90DF39003C611F /* ODOSnapshotDictionary.h */; };
+		342A26690D90DF39003C611F /* ODOSnapshotDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 342A26670D90DF39003C611F /* ODOSnapshotDictionary.m */; };
+		344FB1B00D89973500AA63FE /* ODOAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1A70D89973500AA63FE /* ODOAttribute.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		344FB1B10D89973500AA63FE /* ODOEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1A80D89973500AA63FE /* ODOEntity.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		344FB1B20D89973500AA63FE /* ODOFetchRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1A90D89973500AA63FE /* ODOFetchRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		344FB1B30D89973500AA63FE /* ODOObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1AA0D89973500AA63FE /* ODOObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		344FB1B40D89973500AA63FE /* ODOEditingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1AB0D89973500AA63FE /* ODOEditingContext.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		344FB1B50D89973500AA63FE /* ODOModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1AC0D89973500AA63FE /* ODOModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		344FB1B60D89973500AA63FE /* ODODatabase.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1AD0D89973500AA63FE /* ODODatabase.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		344FB1B70D89973500AA63FE /* ODOProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1AE0D89973500AA63FE /* ODOProperty.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		344FB1B80D89973500AA63FE /* ODORelationship.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1AF0D89973500AA63FE /* ODORelationship.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		344FB1C20D89979200AA63FE /* ODOAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1B90D89979200AA63FE /* ODOAttribute.m */; };
+		344FB1C30D89979200AA63FE /* ODOEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1BA0D89979200AA63FE /* ODOEntity.m */; };
+		344FB1C40D89979200AA63FE /* ODOFetchRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1BB0D89979200AA63FE /* ODOFetchRequest.m */; };
+		344FB1C50D89979200AA63FE /* ODOObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1BC0D89979200AA63FE /* ODOObject.m */; };
+		344FB1C60D89979200AA63FE /* ODOEditingContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1BD0D89979200AA63FE /* ODOEditingContext.m */; };
+		344FB1C70D89979200AA63FE /* ODOModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1BE0D89979200AA63FE /* ODOModel.m */; };
+		344FB1C80D89979200AA63FE /* ODODatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1BF0D89979200AA63FE /* ODODatabase.m */; };
+		344FB1C90D89979200AA63FE /* ODOProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1C00D89979200AA63FE /* ODOProperty.m */; };
+		344FB1CA0D89979200AA63FE /* ODORelationship.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1C10D89979200AA63FE /* ODORelationship.m */; };
+		344FB2200D8999D100AA63FE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		344FB2A00D8999F400AA63FE /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 344FB29F0D8999F400AA63FE /* OmniBase.framework */; };
+		3465D9F70D89C13B00D0B1D9 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 3465D9F60D89C13B00D0B1D9 /* Errors.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3472C2D20DAFD8A800AAD622 /* ODODeleteTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3472C2D10DAFD8A800AAD622 /* ODODeleteTests.m */; };
+		3475A0810DE2356400FB73CC /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0800DE2356400FB73CC /* OFTestCase.m */; };
+		3475A0840DE2357400FB73CC /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0830DE2357400FB73CC /* OBTestCase.m */; };
+		3477F3DC0DA29344001CF280 /* ODOFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 3477F3DB0DA29343001CF280 /* ODOFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3481A9B40D899C210050FC54 /* OmniDataObjects.h in Headers */ = {isa = PBXBuildFile; fileRef = 3481A9B30D899C210050FC54 /* OmniDataObjects.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		348409530D89F5EF00E74C9D /* ODOVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 348409510D89F5EF00E74C9D /* ODOVersion.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		348409540D89F5EF00E74C9D /* ODOVersion.m in Sources */ = {isa = PBXBuildFile; fileRef = 348409520D89F5EF00E74C9D /* ODOVersion.m */; };
+		348E07230D904E99003C22D6 /* ODOObject-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 348E07220D904E99003C22D6 /* ODOObject-Internal.m */; };
+		348ECFF70D8F78BE007ADAC9 /* ODOPredicate-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ECFF50D8F78BE007ADAC9 /* ODOPredicate-SQL.h */; };
+		348ECFF80D8F78BE007ADAC9 /* ODOPredicate-SQL.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ECFF60D8F78BE007ADAC9 /* ODOPredicate-SQL.m */; };
+		348ED05D0D8F7AD9007ADAC9 /* ODOPredicate.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ED05B0D8F7AD9007ADAC9 /* ODOPredicate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		348ED05E0D8F7AD9007ADAC9 /* ODOPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ED05C0D8F7AD9007ADAC9 /* ODOPredicate.m */; };
+		34905A640D8A3B97001E6B6B /* OmniDataObjects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* OmniDataObjects.framework */; };
+		34A5E1430D8995A00006DF9F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 34A5E1410D8995A00006DF9F /* InfoPlist.strings */; };
+		34A779F60D89D5550037DE8C /* xcd2odo.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A779E20D89D3EA0037DE8C /* xcd2odo.m */; };
+		34A779F80D89D5590037DE8C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		34A779F90D89D55A0037DE8C /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 344FB29F0D8999F400AA63FE /* OmniBase.framework */; };
+		34A77A1A0D89D6880037DE8C /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A77A190D89D6880037DE8C /* OmniFoundation.framework */; };
+		34A77AC90D89D6980037DE8C /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A77A190D89D6880037DE8C /* OmniFoundation.framework */; };
+		34B9CCE20D8B0599001A5AB1 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 34B9CCE10D8B0599001A5AB1 /* libsqlite3.dylib */; };
+		34B9CCF30D8B065C001A5AB1 /* Errors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B9CCF20D8B065C001A5AB1 /* Errors.m */; };
+		34B9CDD90D8B1A4E001A5AB1 /* ODOEntity-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B9CDD70D8B1A4E001A5AB1 /* ODOEntity-SQL.h */; };
+		34B9CDDA0D8B1A4E001A5AB1 /* ODOEntity-SQL.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B9CDD80D8B1A4E001A5AB1 /* ODOEntity-SQL.m */; };
+		34B9CDDB0D8B1A56001A5AB1 /* ODOModel-SQL.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B9CDD20D8B19BC001A5AB1 /* ODOModel-SQL.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		340D21A00E5DF6E20049EBA0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = OmniDataObjects;
+		};
+		340D22530E5E077F0049EBA0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34A779EF0D89D5450037DE8C;
+			remoteInfo = xcd2odo;
+		};
+		340D5E0F0DAAD1BA00BF27F8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = OmniDataObjects;
+		};
+		348409920D89FA3800E74C9D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3484096B0D89F9CD00E74C9D;
+			remoteInfo = "Build SVNVersion.h";
+		};
+		34A779F40D89D54B0037DE8C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = OmniDataObjects;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		32DBCF5E0370ADEE00C91783 /* OmniDataObjects_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDataObjects_Prefix.h; sourceTree = "<group>"; };
+		3400B6880D8C625700390D08 /* ODOObject-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOObject-Internal.h"; sourceTree = "<group>"; };
+		3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOEditingContext-Internal.h"; sourceTree = "<group>"; };
+		3400B7D70D8C7BD800390D08 /* ODOEditingContext-Internal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOEditingContext-Internal.m"; sourceTree = "<group>"; };
+		3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOSQLStatement.h; sourceTree = "<group>"; };
+		3400BAA10D8E23CE00390D08 /* ODOSQLStatement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOSQLStatement.m; sourceTree = "<group>"; };
+		34043DF70DA4086400761C40 /* NSPredicate-ODOExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSPredicate-ODOExtensions.h"; sourceTree = "<group>"; };
+		34043DF80DA4086400761C40 /* NSPredicate-ODOExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSPredicate-ODOExtensions.m"; sourceTree = "<group>"; };
+		340D21970E5DF69D0049EBA0 /* ODOPerf */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ODOPerf; sourceTree = BUILT_PRODUCTS_DIR; };
+		340D21A40E5DF7090049EBA0 /* ODOPerf.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOPerf.m; sourceTree = "<group>"; };
+		340D21D70E5DFE170049EBA0 /* ODOPerf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOPerf.h; sourceTree = "<group>"; };
+		340D21D90E5DFE4D0049EBA0 /* ODOPerf_ODO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOPerf_ODO.h; sourceTree = "<group>"; };
+		340D21DA0E5DFE4D0049EBA0 /* ODOPerf_ODO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOPerf_ODO.m; sourceTree = "<group>"; };
+		340D21DC0E5DFE760049EBA0 /* ODOPerf_CoreData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOPerf_CoreData.h; sourceTree = "<group>"; };
+		340D21DD0E5DFE760049EBA0 /* ODOPerf_CoreData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOPerf_CoreData.m; sourceTree = "<group>"; };
+		340D22320E5E01F50049EBA0 /* ODOPerf.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; path = ODOPerf.xcdatamodel; sourceTree = "<group>"; };
+		340D226F0E5E0ADF0049EBA0 /* ODOPerfModel_Impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOPerfModel_Impl.h; sourceTree = "<group>"; };
+		340D22B20E5E0D680049EBA0 /* ODOPerf_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOPerf_Prefix.h; sourceTree = "<group>"; };
+		340D23160E5E11430049EBA0 /* ODOPerfModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOPerfModel.m; sourceTree = "<group>"; };
+		340D23180E5E11530049EBA0 /* ODOPerfModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOPerfModel.h; sourceTree = "<group>"; };
+		340D5DB50DAACED300BF27F8 /* ODOTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ODOTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		340D5DD60DAACF5200BF27F8 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = /Developer/Library/Frameworks/SenTestingKit.framework; sourceTree = "<absolute>"; };
+		340D5DEB0DAAD02500BF27F8 /* ODOUndoTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOUndoTests.m; sourceTree = "<group>"; };
+		340D5DFB0DAAD0EF00BF27F8 /* ODOTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOTestCase.h; sourceTree = "<group>"; };
+		340D5DFC0DAAD0EF00BF27F8 /* ODOTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOTestCase.m; sourceTree = "<group>"; };
+		340D5ED90DAAD1F700BF27F8 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		340D5EF20DAAD27800BF27F8 /* ODOTestCase.xodo */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ODOTestCase.xodo; sourceTree = "<group>"; };
+		340D5F390DAAD71B00BF27F8 /* ODOTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "ODOTests-Info.plist"; sourceTree = "<group>"; };
+		340DD2EA0D89A3090049D65E /* ODOObjectID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOObjectID.h; sourceTree = "<group>"; };
+		340DD2EB0D89A3090049D65E /* ODOObjectID.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOObjectID.m; sourceTree = "<group>"; };
+		342A26660D90DF39003C611F /* ODOSnapshotDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOSnapshotDictionary.h; sourceTree = "<group>"; };
+		342A26670D90DF39003C611F /* ODOSnapshotDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOSnapshotDictionary.m; sourceTree = "<group>"; };
+		344FB1A70D89973500AA63FE /* ODOAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOAttribute.h; sourceTree = "<group>"; };
+		344FB1A80D89973500AA63FE /* ODOEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOEntity.h; sourceTree = "<group>"; };
+		344FB1A90D89973500AA63FE /* ODOFetchRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOFetchRequest.h; sourceTree = "<group>"; };
+		344FB1AA0D89973500AA63FE /* ODOObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOObject.h; sourceTree = "<group>"; };
+		344FB1AB0D89973500AA63FE /* ODOEditingContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOEditingContext.h; sourceTree = "<group>"; };
+		344FB1AC0D89973500AA63FE /* ODOModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOModel.h; sourceTree = "<group>"; };
+		344FB1AD0D89973500AA63FE /* ODODatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODODatabase.h; sourceTree = "<group>"; };
+		344FB1AE0D89973500AA63FE /* ODOProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOProperty.h; sourceTree = "<group>"; };
+		344FB1AF0D89973500AA63FE /* ODORelationship.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODORelationship.h; sourceTree = "<group>"; };
+		344FB1B90D89979200AA63FE /* ODOAttribute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOAttribute.m; sourceTree = "<group>"; };
+		344FB1BA0D89979200AA63FE /* ODOEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOEntity.m; sourceTree = "<group>"; };
+		344FB1BB0D89979200AA63FE /* ODOFetchRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOFetchRequest.m; sourceTree = "<group>"; };
+		344FB1BC0D89979200AA63FE /* ODOObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOObject.m; sourceTree = "<group>"; };
+		344FB1BD0D89979200AA63FE /* ODOEditingContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOEditingContext.m; sourceTree = "<group>"; };
+		344FB1BE0D89979200AA63FE /* ODOModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOModel.m; sourceTree = "<group>"; };
+		344FB1BF0D89979200AA63FE /* ODODatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODODatabase.m; sourceTree = "<group>"; };
+		344FB1C00D89979200AA63FE /* ODOProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOProperty.m; sourceTree = "<group>"; };
+		344FB1C10D89979200AA63FE /* ODORelationship.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODORelationship.m; sourceTree = "<group>"; };
+		344FB29F0D8999F400AA63FE /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3465D9F60D89C13B00D0B1D9 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
+		3472C2D10DAFD8A800AAD622 /* ODODeleteTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODODeleteTests.m; sourceTree = "<group>"; };
+		3475A07F0DE2356400FB73CC /* OFTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFTestCase.h; path = ../../OmniFoundation/Tests/OFTestCase.h; sourceTree = "<group>"; };
+		3475A0800DE2356400FB73CC /* OFTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFTestCase.m; path = ../../OmniFoundation/Tests/OFTestCase.m; sourceTree = "<group>"; };
+		3475A0820DE2357400FB73CC /* OBTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OBTestCase.h; path = ../../OmniBase/OBTestCase.h; sourceTree = "<group>"; };
+		3475A0830DE2357400FB73CC /* OBTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OBTestCase.m; path = ../../OmniBase/OBTestCase.m; sourceTree = "<group>"; };
+		3477F3DB0DA29343001CF280 /* ODOFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOFeatures.h; sourceTree = "<group>"; };
+		3481A9B30D899C210050FC54 /* OmniDataObjects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDataObjects.h; sourceTree = "<group>"; };
+		348409510D89F5EF00E74C9D /* ODOVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOVersion.h; sourceTree = "<group>"; };
+		348409520D89F5EF00E74C9D /* ODOVersion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOVersion.m; sourceTree = "<group>"; };
+		348E07220D904E99003C22D6 /* ODOObject-Internal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOObject-Internal.m"; sourceTree = "<group>"; };
+		348ECFF50D8F78BE007ADAC9 /* ODOPredicate-SQL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOPredicate-SQL.h"; sourceTree = "<group>"; };
+		348ECFF60D8F78BE007ADAC9 /* ODOPredicate-SQL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOPredicate-SQL.m"; sourceTree = "<group>"; };
+		348ED05B0D8F7AD9007ADAC9 /* ODOPredicate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOPredicate.h; sourceTree = "<group>"; };
+		348ED05C0D8F7AD9007ADAC9 /* ODOPredicate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOPredicate.m; sourceTree = "<group>"; };
+		34905A160D8A3261001E6B6B /* ODOEntity-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOEntity-Internal.h"; sourceTree = "<group>"; };
+		34905A360D8A34E0001E6B6B /* ODOAttribute-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOAttribute-Internal.h"; sourceTree = "<group>"; };
+		34905A3A0D8A354A001E6B6B /* ODOProperty-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOProperty-Internal.h"; sourceTree = "<group>"; };
+		34905AC20D8A3FE7001E6B6B /* ODORelationship-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODORelationship-Internal.h"; sourceTree = "<group>"; };
+		34A5E1210D89940F0006DF9F /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Common.xcconfig"; path = "../../Configurations/Omni-Application-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1220D89940F0006DF9F /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Coverage.xcconfig"; path = "../../Configurations/Omni-Application-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1230D89940F0006DF9F /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Debug.xcconfig"; path = "../../Configurations/Omni-Application-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1240D89940F0006DF9F /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Release.xcconfig"; path = "../../Configurations/Omni-Application-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1250D89940F0006DF9F /* Omni-Bundle-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Bundle-Common.xcconfig"; path = "../../Configurations/Omni-Bundle-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1260D89940F0006DF9F /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Bundle-Coverage.xcconfig"; path = "../../Configurations/Omni-Bundle-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1270D89940F0006DF9F /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Bundle-Debug.xcconfig"; path = "../../Configurations/Omni-Bundle-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1280D89940F0006DF9F /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Bundle-Release.xcconfig"; path = "../../Configurations/Omni-Bundle-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1290D89940F0006DF9F /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Common.xcconfig"; path = "../../Configurations/Omni-Framework-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E12A0D89940F0006DF9F /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Coverage.xcconfig"; path = "../../Configurations/Omni-Framework-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E12B0D89940F0006DF9F /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Debug.xcconfig"; path = "../../Configurations/Omni-Framework-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E12C0D89940F0006DF9F /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Release.xcconfig"; path = "../../Configurations/Omni-Framework-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E12D0D89940F0006DF9F /* Omni-Global-Common-10.3.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Global-Common-10.3.xcconfig"; path = "../../Configurations/Omni-Global-Common-10.3.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E12E0D89940F0006DF9F /* Omni-Global-Common-10.4.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Global-Common-10.4.xcconfig"; path = "../../Configurations/Omni-Global-Common-10.4.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E12F0D89940F0006DF9F /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Global-Common.xcconfig"; path = "../../Configurations/Omni-Global-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1300D89940F0006DF9F /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Global-Coverage.xcconfig"; path = "../../Configurations/Omni-Global-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1310D89940F0006DF9F /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Global-Debug.xcconfig"; path = "../../Configurations/Omni-Global-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1320D89940F0006DF9F /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Global-Release.xcconfig"; path = "../../Configurations/Omni-Global-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1330D89940F0006DF9F /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Tool-Common.xcconfig"; path = "../../Configurations/Omni-Tool-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1340D89940F0006DF9F /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Tool-Coverage.xcconfig"; path = "../../Configurations/Omni-Tool-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1350D89940F0006DF9F /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Tool-Debug.xcconfig"; path = "../../Configurations/Omni-Tool-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1360D89940F0006DF9F /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Tool-Release.xcconfig"; path = "../../Configurations/Omni-Tool-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
+		34A5E1420D8995A00006DF9F /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		34A779E20D89D3EA0037DE8C /* xcd2odo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xcd2odo.m; sourceTree = "<group>"; };
+		34A779F00D89D5450037DE8C /* xcd2odo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xcd2odo; sourceTree = BUILT_PRODUCTS_DIR; };
+		34A77A190D89D6880037DE8C /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OmniFoundation.framework; path = ../../../Products/Debug/OmniFoundation.framework; sourceTree = SOURCE_ROOT; };
+		34B9CCE10D8B0599001A5AB1 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = /usr/lib/libsqlite3.dylib; sourceTree = "<absolute>"; };
+		34B9CCF20D8B065C001A5AB1 /* Errors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Errors.m; sourceTree = "<group>"; };
+		34B9CDBD0D8B1893001A5AB1 /* ODODatabase-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODODatabase-Internal.h"; sourceTree = "<group>"; };
+		34B9CDCE0D8B1954001A5AB1 /* ODOModel-SQL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOModel-SQL.h"; sourceTree = "<group>"; };
+		34B9CDD20D8B19BC001A5AB1 /* ODOModel-SQL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOModel-SQL.m"; sourceTree = "<group>"; };
+		34B9CDD70D8B1A4E001A5AB1 /* ODOEntity-SQL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOEntity-SQL.h"; sourceTree = "<group>"; };
+		34B9CDD80D8B1A4E001A5AB1 /* ODOEntity-SQL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOEntity-SQL.m"; sourceTree = "<group>"; };
+		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8DC2EF5B0486A6940098B216 /* OmniDataObjects.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniDataObjects.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		340D21950E5DF69D0049EBA0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				340D21AB0E5DF7550049EBA0 /* OmniFoundation.framework in Frameworks */,
+				340D21AC0E5DF7590049EBA0 /* CoreData.framework in Frameworks */,
+				340D21AD0E5DF75A0049EBA0 /* OmniBase.framework in Frameworks */,
+				340D21B20E5DF7620049EBA0 /* OmniDataObjects.framework in Frameworks */,
+				340D21B40E5DF76D0049EBA0 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		340D5DB20DAACED300BF27F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				340D5DDA0DAACF6900BF27F8 /* SenTestingKit.framework in Frameworks */,
+				340D5DDE0DAACF6F00BF27F8 /* OmniDataObjects.framework in Frameworks */,
+				340D5E120DAAD1CB00BF27F8 /* Foundation.framework in Frameworks */,
+				340D5E130DAAD1CE00BF27F8 /* OmniBase.framework in Frameworks */,
+				340D5F200DAAD5E600BF27F8 /* OmniFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34A779EE0D89D5450037DE8C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34A779F80D89D5590037DE8C /* Foundation.framework in Frameworks */,
+				34A779F90D89D55A0037DE8C /* OmniBase.framework in Frameworks */,
+				34A77AC90D89D6980037DE8C /* OmniFoundation.framework in Frameworks */,
+				34905A640D8A3B97001E6B6B /* OmniDataObjects.framework in Frameworks */,
+				340D5EDA0DAAD1F700BF27F8 /* CoreData.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8DC2EF560486A6940098B216 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				344FB2200D8999D100AA63FE /* Foundation.framework in Frameworks */,
+				344FB2A00D8999F400AA63FE /* OmniBase.framework in Frameworks */,
+				34A77A1A0D89D6880037DE8C /* OmniFoundation.framework in Frameworks */,
+				34B9CCE20D8B0599001A5AB1 /* libsqlite3.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DC2EF5B0486A6940098B216 /* OmniDataObjects.framework */,
+				34A779F00D89D5450037DE8C /* xcd2odo */,
+				340D5DB50DAACED300BF27F8 /* ODOTests.octest */,
+				340D21970E5DF69D0049EBA0 /* ODOPerf */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* OmniDataObjects */ = {
+			isa = PBXGroup;
+			children = (
+				34A5E1190D89940F0006DF9F /* Configurations */,
+				08FB77AEFE84172EC02AAC07 /* Classes */,
+				089C1665FE841158C02AAC07 /* Resources */,
+				34A779E10D89D3D00037DE8C /* Tools */,
+				340D5DAD0DAACEB500BF27F8 /* Tests */,
+				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				034768DFFF38A50411DB9C8B /* Products */,
+			);
+			name = OmniDataObjects;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				340D5ED90DAAD1F700BF27F8 /* CoreData.framework */,
+				340D5DD60DAACF5200BF27F8 /* SenTestingKit.framework */,
+				34B9CCE10D8B0599001A5AB1 /* libsqlite3.dylib */,
+				34A77A190D89D6880037DE8C /* OmniFoundation.framework */,
+				344FB29F0D8999F400AA63FE /* OmniBase.framework */,
+				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C1665FE841158C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8DC2EF5A0486A6940098B216 /* Info.plist */,
+				34A5E1410D8995A00006DF9F /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		08FB77AEFE84172EC02AAC07 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				32C88DFF0371C24200C91783 /* Misc */,
+				34A77BBC0D89F0F80037DE8C /* Schema */,
+				34ECAC210D8C55C400B8CAA6 /* Object Graph */,
+				3400BA9E0D8E23B400390D08 /* Persistence */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		32C88DFF0371C24200C91783 /* Misc */ = {
+			isa = PBXGroup;
+			children = (
+				3465D9F60D89C13B00D0B1D9 /* Errors.h */,
+				34B9CCF20D8B065C001A5AB1 /* Errors.m */,
+				3477F3DB0DA29343001CF280 /* ODOFeatures.h */,
+				348409510D89F5EF00E74C9D /* ODOVersion.h */,
+				348409520D89F5EF00E74C9D /* ODOVersion.m */,
+				3481A9B30D899C210050FC54 /* OmniDataObjects.h */,
+				32DBCF5E0370ADEE00C91783 /* OmniDataObjects_Prefix.h */,
+			);
+			name = Misc;
+			sourceTree = "<group>";
+		};
+		3400BA9E0D8E23B400390D08 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				34043DF70DA4086400761C40 /* NSPredicate-ODOExtensions.h */,
+				34043DF80DA4086400761C40 /* NSPredicate-ODOExtensions.m */,
+				34B9CDBD0D8B1893001A5AB1 /* ODODatabase-Internal.h */,
+				344FB1AD0D89973500AA63FE /* ODODatabase.h */,
+				344FB1BF0D89979200AA63FE /* ODODatabase.m */,
+				344FB1A90D89973500AA63FE /* ODOFetchRequest.h */,
+				344FB1BB0D89979200AA63FE /* ODOFetchRequest.m */,
+				348ECFF50D8F78BE007ADAC9 /* ODOPredicate-SQL.h */,
+				348ECFF60D8F78BE007ADAC9 /* ODOPredicate-SQL.m */,
+				348ED05B0D8F7AD9007ADAC9 /* ODOPredicate.h */,
+				348ED05C0D8F7AD9007ADAC9 /* ODOPredicate.m */,
+				3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */,
+				3400BAA10D8E23CE00390D08 /* ODOSQLStatement.m */,
+				342A26660D90DF39003C611F /* ODOSnapshotDictionary.h */,
+				342A26670D90DF39003C611F /* ODOSnapshotDictionary.m */,
+			);
+			name = Persistence;
+			sourceTree = "<group>";
+		};
+		340D21A30E5DF6FA0049EBA0 /* ODOPerf */ = {
+			isa = PBXGroup;
+			children = (
+				340D22B20E5E0D680049EBA0 /* ODOPerf_Prefix.h */,
+				340D21D70E5DFE170049EBA0 /* ODOPerf.h */,
+				340D21A40E5DF7090049EBA0 /* ODOPerf.m */,
+				340D21D90E5DFE4D0049EBA0 /* ODOPerf_ODO.h */,
+				340D21DA0E5DFE4D0049EBA0 /* ODOPerf_ODO.m */,
+				340D21DC0E5DFE760049EBA0 /* ODOPerf_CoreData.h */,
+				340D21DD0E5DFE760049EBA0 /* ODOPerf_CoreData.m */,
+				340D226F0E5E0ADF0049EBA0 /* ODOPerfModel_Impl.h */,
+				340D23180E5E11530049EBA0 /* ODOPerfModel.h */,
+				340D23160E5E11430049EBA0 /* ODOPerfModel.m */,
+				340D22320E5E01F50049EBA0 /* ODOPerf.xcdatamodel */,
+			);
+			path = ODOPerf;
+			sourceTree = "<group>";
+		};
+		340D5DAD0DAACEB500BF27F8 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				340D21A30E5DF6FA0049EBA0 /* ODOPerf */,
+				340D5EED0DAAD21000BF27F8 /* Support */,
+				340D5DEB0DAAD02500BF27F8 /* ODOUndoTests.m */,
+				3472C2D10DAFD8A800AAD622 /* ODODeleteTests.m */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		340D5EED0DAAD21000BF27F8 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				3475A0820DE2357400FB73CC /* OBTestCase.h */,
+				3475A0830DE2357400FB73CC /* OBTestCase.m */,
+				3475A07F0DE2356400FB73CC /* OFTestCase.h */,
+				3475A0800DE2356400FB73CC /* OFTestCase.m */,
+				340D5F390DAAD71B00BF27F8 /* ODOTests-Info.plist */,
+				340D5DFB0DAAD0EF00BF27F8 /* ODOTestCase.h */,
+				340D5DFC0DAAD0EF00BF27F8 /* ODOTestCase.m */,
+				340D5EF20DAAD27800BF27F8 /* ODOTestCase.xodo */,
+			);
+			name = Support;
+			sourceTree = "<group>";
+		};
+		34A5E1190D89940F0006DF9F /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				34A5E1210D89940F0006DF9F /* Omni-Application-Common.xcconfig */,
+				34A5E1220D89940F0006DF9F /* Omni-Application-Coverage.xcconfig */,
+				34A5E1230D89940F0006DF9F /* Omni-Application-Debug.xcconfig */,
+				34A5E1240D89940F0006DF9F /* Omni-Application-Release.xcconfig */,
+				34A5E1250D89940F0006DF9F /* Omni-Bundle-Common.xcconfig */,
+				34A5E1260D89940F0006DF9F /* Omni-Bundle-Coverage.xcconfig */,
+				34A5E1270D89940F0006DF9F /* Omni-Bundle-Debug.xcconfig */,
+				34A5E1280D89940F0006DF9F /* Omni-Bundle-Release.xcconfig */,
+				34A5E1290D89940F0006DF9F /* Omni-Framework-Common.xcconfig */,
+				34A5E12A0D89940F0006DF9F /* Omni-Framework-Coverage.xcconfig */,
+				34A5E12B0D89940F0006DF9F /* Omni-Framework-Debug.xcconfig */,
+				34A5E12C0D89940F0006DF9F /* Omni-Framework-Release.xcconfig */,
+				34A5E12D0D89940F0006DF9F /* Omni-Global-Common-10.3.xcconfig */,
+				34A5E12E0D89940F0006DF9F /* Omni-Global-Common-10.4.xcconfig */,
+				34A5E12F0D89940F0006DF9F /* Omni-Global-Common.xcconfig */,
+				34A5E1300D89940F0006DF9F /* Omni-Global-Coverage.xcconfig */,
+				34A5E1310D89940F0006DF9F /* Omni-Global-Debug.xcconfig */,
+				34A5E1320D89940F0006DF9F /* Omni-Global-Release.xcconfig */,
+				34A5E1330D89940F0006DF9F /* Omni-Tool-Common.xcconfig */,
+				34A5E1340D89940F0006DF9F /* Omni-Tool-Coverage.xcconfig */,
+				34A5E1350D89940F0006DF9F /* Omni-Tool-Debug.xcconfig */,
+				34A5E1360D89940F0006DF9F /* Omni-Tool-Release.xcconfig */,
+			);
+			name = Configurations;
+			path = ../../Configurations;
+			sourceTree = SOURCE_ROOT;
+		};
+		34A779E10D89D3D00037DE8C /* Tools */ = {
+			isa = PBXGroup;
+			children = (
+				34A779E20D89D3EA0037DE8C /* xcd2odo.m */,
+			);
+			path = Tools;
+			sourceTree = "<group>";
+		};
+		34A77BBC0D89F0F80037DE8C /* Schema */ = {
+			isa = PBXGroup;
+			children = (
+				34905A360D8A34E0001E6B6B /* ODOAttribute-Internal.h */,
+				344FB1A70D89973500AA63FE /* ODOAttribute.h */,
+				344FB1B90D89979200AA63FE /* ODOAttribute.m */,
+				34905A160D8A3261001E6B6B /* ODOEntity-Internal.h */,
+				34B9CDD70D8B1A4E001A5AB1 /* ODOEntity-SQL.h */,
+				34B9CDD80D8B1A4E001A5AB1 /* ODOEntity-SQL.m */,
+				344FB1A80D89973500AA63FE /* ODOEntity.h */,
+				344FB1BA0D89979200AA63FE /* ODOEntity.m */,
+				34B9CDCE0D8B1954001A5AB1 /* ODOModel-SQL.h */,
+				34B9CDD20D8B19BC001A5AB1 /* ODOModel-SQL.m */,
+				344FB1AC0D89973500AA63FE /* ODOModel.h */,
+				344FB1BE0D89979200AA63FE /* ODOModel.m */,
+				34905A3A0D8A354A001E6B6B /* ODOProperty-Internal.h */,
+				344FB1AE0D89973500AA63FE /* ODOProperty.h */,
+				344FB1C00D89979200AA63FE /* ODOProperty.m */,
+				34905AC20D8A3FE7001E6B6B /* ODORelationship-Internal.h */,
+				344FB1AF0D89973500AA63FE /* ODORelationship.h */,
+				344FB1C10D89979200AA63FE /* ODORelationship.m */,
+			);
+			name = Schema;
+			sourceTree = "<group>";
+		};
+		34ECAC210D8C55C400B8CAA6 /* Object Graph */ = {
+			isa = PBXGroup;
+			children = (
+				3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */,
+				3400B7D70D8C7BD800390D08 /* ODOEditingContext-Internal.m */,
+				344FB1AB0D89973500AA63FE /* ODOEditingContext.h */,
+				344FB1BD0D89979200AA63FE /* ODOEditingContext.m */,
+				3400B6880D8C625700390D08 /* ODOObject-Internal.h */,
+				348E07220D904E99003C22D6 /* ODOObject-Internal.m */,
+				344FB1AA0D89973500AA63FE /* ODOObject.h */,
+				344FB1BC0D89979200AA63FE /* ODOObject.m */,
+				340DD2EA0D89A3090049D65E /* ODOObjectID.h */,
+				340DD2EB0D89A3090049D65E /* ODOObjectID.m */,
+			);
+			name = "Object Graph";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		8DC2EF500486A6940098B216 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				344FB1B00D89973500AA63FE /* ODOAttribute.h in Headers */,
+				344FB1B10D89973500AA63FE /* ODOEntity.h in Headers */,
+				344FB1B20D89973500AA63FE /* ODOFetchRequest.h in Headers */,
+				344FB1B30D89973500AA63FE /* ODOObject.h in Headers */,
+				344FB1B40D89973500AA63FE /* ODOEditingContext.h in Headers */,
+				344FB1B50D89973500AA63FE /* ODOModel.h in Headers */,
+				344FB1B60D89973500AA63FE /* ODODatabase.h in Headers */,
+				344FB1B70D89973500AA63FE /* ODOProperty.h in Headers */,
+				344FB1B80D89973500AA63FE /* ODORelationship.h in Headers */,
+				3481A9B40D899C210050FC54 /* OmniDataObjects.h in Headers */,
+				340DD2EC0D89A3090049D65E /* ODOObjectID.h in Headers */,
+				3465D9F70D89C13B00D0B1D9 /* Errors.h in Headers */,
+				348409530D89F5EF00E74C9D /* ODOVersion.h in Headers */,
+				34B9CDD90D8B1A4E001A5AB1 /* ODOEntity-SQL.h in Headers */,
+				3400BAA20D8E23CE00390D08 /* ODOSQLStatement.h in Headers */,
+				348ECFF70D8F78BE007ADAC9 /* ODOPredicate-SQL.h in Headers */,
+				348ED05D0D8F7AD9007ADAC9 /* ODOPredicate.h in Headers */,
+				342A26680D90DF39003C611F /* ODOSnapshotDictionary.h in Headers */,
+				3477F3DC0DA29344001CF280 /* ODOFeatures.h in Headers */,
+				34043DF90DA4086400761C40 /* NSPredicate-ODOExtensions.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		340D21960E5DF69D0049EBA0 /* ODOPerf */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 340D219F0E5DF6C70049EBA0 /* Build configuration list for PBXNativeTarget "ODOPerf" */;
+			buildPhases = (
+				340D21940E5DF69D0049EBA0 /* Sources */,
+				340D22590E5E07990049EBA0 /* Build xodo file from CoreData model */,
+				340D21950E5DF69D0049EBA0 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				340D21A10E5DF6E20049EBA0 /* PBXTargetDependency */,
+				340D22540E5E077F0049EBA0 /* PBXTargetDependency */,
+			);
+			name = ODOPerf;
+			productName = ODOPerf;
+			productReference = 340D21970E5DF69D0049EBA0 /* ODOPerf */;
+			productType = "com.apple.product-type.tool";
+		};
+		340D5DB40DAACED300BF27F8 /* ODOTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 340D5DB90DAACED300BF27F8 /* Build configuration list for PBXNativeTarget "ODOTests" */;
+			buildPhases = (
+				340D5DB00DAACED300BF27F8 /* Resources */,
+				340D5DB10DAACED300BF27F8 /* Sources */,
+				340D5DB20DAACED300BF27F8 /* Frameworks */,
+				340D5DB30DAACED300BF27F8 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				340D5E100DAAD1BA00BF27F8 /* PBXTargetDependency */,
+			);
+			name = ODOTests;
+			productName = ODOTests;
+			productReference = 340D5DB50DAACED300BF27F8 /* ODOTests.octest */;
+			productType = "com.apple.product-type.bundle";
+		};
+		34A779EF0D89D5450037DE8C /* xcd2odo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 34A77A060D89D55E0037DE8C /* Build configuration list for PBXNativeTarget "xcd2odo" */;
+			buildPhases = (
+				34A779ED0D89D5450037DE8C /* Sources */,
+				34A779EE0D89D5450037DE8C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				34A779F50D89D54B0037DE8C /* PBXTargetDependency */,
+			);
+			name = xcd2odo;
+			productName = xcd2odo;
+			productReference = 34A779F00D89D5450037DE8C /* xcd2odo */;
+			productType = "com.apple.product-type.tool";
+		};
+		8DC2EF4F0486A6940098B216 /* OmniDataObjects */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB91AD08733DA50010E9CD /* Build configuration list for PBXNativeTarget "OmniDataObjects" */;
+			buildPhases = (
+				8DC2EF500486A6940098B216 /* Headers */,
+				8DC2EF520486A6940098B216 /* Resources */,
+				8DC2EF540486A6940098B216 /* Sources */,
+				8DC2EF560486A6940098B216 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				348409930D89FA3800E74C9D /* PBXTargetDependency */,
+			);
+			name = OmniDataObjects;
+			productInstallPath = "$(HOME)/Library/Frameworks";
+			productName = OmniDataObjects;
+			productReference = 8DC2EF5B0486A6940098B216 /* OmniDataObjects.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniDataObjects" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 0867D691FE84028FC02AAC07 /* OmniDataObjects */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DC2EF4F0486A6940098B216 /* OmniDataObjects */,
+				34A779EF0D89D5450037DE8C /* xcd2odo */,
+				3484096B0D89F9CD00E74C9D /* Build SVNVersion.h */,
+				340D5DB40DAACED300BF27F8 /* ODOTests */,
+				340D21960E5DF69D0049EBA0 /* ODOPerf */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		340D5DB00DAACED300BF27F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				340D5EF30DAAD27800BF27F8 /* ODOTestCase.xodo in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8DC2EF520486A6940098B216 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34A5E1430D8995A00006DF9F /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		340D22590E5E07990049EBA0 /* Build xodo file from CoreData model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build xodo file from CoreData model";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "$CONFIGURATION_BUILD_DIR/xcd2odo $CONFIGURATION_BUILD_DIR/ODOPerf.mom $CONFIGURATION_BUILD_DIR/ODOPerf.xodo\nperl -spi -e 's/CD_/ODO_/g' $CONFIGURATION_BUILD_DIR/ODOPerf.xodo\n\n";
+		};
+		340D5DB30DAACED300BF27F8 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
+		3484096A0D89F9CD00E74C9D /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/SVNVersion.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "../../Scripts/BuildSVNVersionInclude\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		340D21940E5DF69D0049EBA0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				340D21A50E5DF7090049EBA0 /* ODOPerf.m in Sources */,
+				340D21DB0E5DFE4D0049EBA0 /* ODOPerf_ODO.m in Sources */,
+				340D21DE0E5DFE760049EBA0 /* ODOPerf_CoreData.m in Sources */,
+				340D22330E5E01F50049EBA0 /* ODOPerf.xcdatamodel in Sources */,
+				340D23170E5E11430049EBA0 /* ODOPerfModel.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		340D5DB10DAACED300BF27F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				340D5DED0DAAD03500BF27F8 /* ODOUndoTests.m in Sources */,
+				340D5DFD0DAAD0EF00BF27F8 /* ODOTestCase.m in Sources */,
+				3472C2D20DAFD8A800AAD622 /* ODODeleteTests.m in Sources */,
+				3475A0810DE2356400FB73CC /* OFTestCase.m in Sources */,
+				3475A0840DE2357400FB73CC /* OBTestCase.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34A779ED0D89D5450037DE8C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34A779F60D89D5550037DE8C /* xcd2odo.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8DC2EF540486A6940098B216 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				344FB1C20D89979200AA63FE /* ODOAttribute.m in Sources */,
+				344FB1C30D89979200AA63FE /* ODOEntity.m in Sources */,
+				344FB1C40D89979200AA63FE /* ODOFetchRequest.m in Sources */,
+				344FB1C50D89979200AA63FE /* ODOObject.m in Sources */,
+				344FB1C60D89979200AA63FE /* ODOEditingContext.m in Sources */,
+				344FB1C70D89979200AA63FE /* ODOModel.m in Sources */,
+				344FB1C80D89979200AA63FE /* ODODatabase.m in Sources */,
+				344FB1C90D89979200AA63FE /* ODOProperty.m in Sources */,
+				344FB1CA0D89979200AA63FE /* ODORelationship.m in Sources */,
+				340DD2ED0D89A3090049D65E /* ODOObjectID.m in Sources */,
+				348409540D89F5EF00E74C9D /* ODOVersion.m in Sources */,
+				34B9CCF30D8B065C001A5AB1 /* Errors.m in Sources */,
+				34B9CDDA0D8B1A4E001A5AB1 /* ODOEntity-SQL.m in Sources */,
+				34B9CDDB0D8B1A56001A5AB1 /* ODOModel-SQL.m in Sources */,
+				3400B7E30D8C7CED00390D08 /* ODOEditingContext-Internal.m in Sources */,
+				3400BAA30D8E23CE00390D08 /* ODOSQLStatement.m in Sources */,
+				348ECFF80D8F78BE007ADAC9 /* ODOPredicate-SQL.m in Sources */,
+				348ED05E0D8F7AD9007ADAC9 /* ODOPredicate.m in Sources */,
+				348E07230D904E99003C22D6 /* ODOObject-Internal.m in Sources */,
+				342A26690D90DF39003C611F /* ODOSnapshotDictionary.m in Sources */,
+				34043DFA0DA4086400761C40 /* NSPredicate-ODOExtensions.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		340D21A10E5DF6E20049EBA0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DC2EF4F0486A6940098B216 /* OmniDataObjects */;
+			targetProxy = 340D21A00E5DF6E20049EBA0 /* PBXContainerItemProxy */;
+		};
+		340D22540E5E077F0049EBA0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34A779EF0D89D5450037DE8C /* xcd2odo */;
+			targetProxy = 340D22530E5E077F0049EBA0 /* PBXContainerItemProxy */;
+		};
+		340D5E100DAAD1BA00BF27F8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DC2EF4F0486A6940098B216 /* OmniDataObjects */;
+			targetProxy = 340D5E0F0DAAD1BA00BF27F8 /* PBXContainerItemProxy */;
+		};
+		348409930D89FA3800E74C9D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3484096B0D89F9CD00E74C9D /* Build SVNVersion.h */;
+			targetProxy = 348409920D89FA3800E74C9D /* PBXContainerItemProxy */;
+		};
+		34A779F50D89D54B0037DE8C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DC2EF4F0486A6940098B216 /* OmniDataObjects */;
+			targetProxy = 34A779F40D89D54B0037DE8C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		34A5E1410D8995A00006DF9F /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				34A5E1420D8995A00006DF9F /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB91AE08733DA50010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E12B0D89940F0006DF9F /* Omni-Framework-Debug.xcconfig */;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = $PROJECT_DERIVED_FILE_DIR;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_PREPROCESS = YES;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
+				PRODUCT_NAME = OmniDataObjects;
+			};
+			name = Debug;
+		};
+		1DEB91AF08733DA50010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E12C0D89940F0006DF9F /* Omni-Framework-Release.xcconfig */;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = $PROJECT_DERIVED_FILE_DIR;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_PREPROCESS = YES;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
+				PRODUCT_NAME = OmniDataObjects;
+			};
+			name = Release;
+		};
+		1DEB91B208733DA50010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1310D89940F0006DF9F /* Omni-Global-Debug.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		1DEB91B308733DA50010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1320D89940F0006DF9F /* Omni-Global-Release.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		340D219A0E5DF69E0049EBA0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1350D89940F0006DF9F /* Omni-Tool-Debug.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../Products/Debug\"",
+				);
+				GCC_PREFIX_HEADER = Tests/ODOPerf/ODOPerf_Prefix.h;
+				PRODUCT_NAME = ODOPerf;
+			};
+			name = Debug;
+		};
+		340D219B0E5DF69E0049EBA0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1360D89940F0006DF9F /* Omni-Tool-Release.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../Products/Debug\"",
+				);
+				GCC_PREFIX_HEADER = Tests/ODOPerf/ODOPerf_Prefix.h;
+				PRODUCT_NAME = ODOPerf;
+			};
+			name = Release;
+		};
+		340D5DB70DAACED300BF27F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1270D89940F0006DF9F /* Omni-Bundle-Debug.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					/Developer/Library/Frameworks,
+					/Library/Frameworks,
+				);
+				GCC_PREFIX_HEADER = OmniDataObjects.h;
+				INFOPLIST_FILE = "Tests/ODOTests-Info.plist";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
+				PRODUCT_NAME = ODOTests;
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Debug;
+		};
+		340D5DB80DAACED300BF27F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1280D89940F0006DF9F /* Omni-Bundle-Release.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					/Developer/Library/Frameworks,
+					/Library/Frameworks,
+				);
+				GCC_PREFIX_HEADER = OmniDataObjects.h;
+				INFOPLIST_FILE = "Tests/ODOTests-Info.plist";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
+				PRODUCT_NAME = ODOTests;
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Release;
+		};
+		3484096C0D89F9CD00E74C9D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Build SVNVersion.h";
+			};
+			name = Debug;
+		};
+		3484096D0D89F9CD00E74C9D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = "Build SVNVersion.h";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		34A779F20D89D5450037DE8C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1350D89940F0006DF9F /* Omni-Tool-Debug.xcconfig */;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PREFIX_HEADER = OmniDataObjects.h;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = xcd2odo;
+			};
+			name = Debug;
+		};
+		34A779F30D89D5450037DE8C /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1360D89940F0006DF9F /* Omni-Tool-Release.xcconfig */;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_MODEL_TUNING = G5;
+				GCC_PREFIX_HEADER = OmniDataObjects.h;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = xcd2odo;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB91AD08733DA50010E9CD /* Build configuration list for PBXNativeTarget "OmniDataObjects" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB91AE08733DA50010E9CD /* Debug */,
+				1DEB91AF08733DA50010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniDataObjects" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB91B208733DA50010E9CD /* Debug */,
+				1DEB91B308733DA50010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		340D219F0E5DF6C70049EBA0 /* Build configuration list for PBXNativeTarget "ODOPerf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				340D219A0E5DF69E0049EBA0 /* Debug */,
+				340D219B0E5DF69E0049EBA0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		340D5DB90DAACED300BF27F8 /* Build configuration list for PBXNativeTarget "ODOTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				340D5DB70DAACED300BF27F8 /* Debug */,
+				340D5DB80DAACED300BF27F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3484096E0D89F9EB00E74C9D /* Build configuration list for PBXAggregateTarget "Build SVNVersion.h" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3484096C0D89F9CD00E74C9D /* Debug */,
+				3484096D0D89F9CD00E74C9D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		34A77A060D89D55E0037DE8C /* Build configuration list for PBXNativeTarget "xcd2odo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34A779F20D89D5450037DE8C /* Debug */,
+				34A779F30D89D5450037DE8C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}

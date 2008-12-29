@@ -1,0 +1,287 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4AB9E6E908BBA1E3002A253E /* OSLPreparedStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB9E6E708BBA1E3002A253E /* OSLPreparedStatement.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AB9E6EA08BBA1E3002A253E /* OSLPreparedStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB9E6E808BBA1E3002A253E /* OSLPreparedStatement.m */; };
+		4AB9E6F708BBA242002A253E /* OSLDatabaseController.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB9E6F508BBA242002A253E /* OSLDatabaseController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AB9E6F808BBA242002A253E /* OSLDatabaseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB9E6F608BBA242002A253E /* OSLDatabaseController.m */; };
+		4AB9E73808BBA967002A253E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AB9E73708BBA967002A253E /* Foundation.framework */; };
+		4AB9E7BE08BBA9AC002A253E /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AB9E7BC08BBA9AC002A253E /* OmniBase.framework */; };
+		4AB9E7BF08BBA9AC002A253E /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AB9E7BD08BBA9AC002A253E /* OmniFoundation.framework */; };
+		4AB9E7D908BBAA0A002A253E /* OmniSQLite.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB9E7D808BBAA0A002A253E /* OmniSQLite.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AC436D10B9E85E300A09E1A /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AC436D00B9E85E300A09E1A /* libsqlite3.0.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		4A293E2808B0044800100C11 /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4A293E2908B0044800100C11 /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		4A293E2A08B0044800100C11 /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		4A293E2B08B0044800100C11 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4A293E2C08B0044800100C11 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		4A293E2D08B0044800100C11 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		4A293E2E08B0044800100C11 /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4A293E2F08B0044800100C11 /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		4A293E3008B0044800100C11 /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		4A293E3108B0044800100C11 /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4A293E3208B0044800100C11 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
+		4A293E3308B0044800100C11 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
+		4A293E3408B0044800100C11 /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4A293E3508B0044800100C11 /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
+		4A293E3608B0044800100C11 /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
+		4A4092900D7DEFBD0038AAAF /* OmniSourceLicense.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OmniSourceLicense.html; sourceTree = "<group>"; };
+		4AB9E6DC08BBA136002A253E /* OmniSQLite.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniSQLite.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AB9E6DD08BBA136002A253E /* OmniSQLite-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "OmniSQLite-Info.plist"; sourceTree = "<group>"; };
+		4AB9E6E708BBA1E3002A253E /* OSLPreparedStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSLPreparedStatement.h; sourceTree = "<group>"; };
+		4AB9E6E808BBA1E3002A253E /* OSLPreparedStatement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSLPreparedStatement.m; sourceTree = "<group>"; };
+		4AB9E6F508BBA242002A253E /* OSLDatabaseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSLDatabaseController.h; sourceTree = "<group>"; };
+		4AB9E6F608BBA242002A253E /* OSLDatabaseController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSLDatabaseController.m; sourceTree = "<group>"; };
+		4AB9E73708BBA967002A253E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		4AB9E7BC08BBA9AC002A253E /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AB9E7BD08BBA9AC002A253E /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AB9E7D808BBAA0A002A253E /* OmniSQLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniSQLite.h; sourceTree = "<group>"; };
+		4AC436D00B9E85E300A09E1A /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = /usr/lib/libsqlite3.0.dylib; sourceTree = "<absolute>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4AB9E6DA08BBA136002A253E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AB9E73808BBA967002A253E /* Foundation.framework in Frameworks */,
+				4AB9E7BE08BBA9AC002A253E /* OmniBase.framework in Frameworks */,
+				4AB9E7BF08BBA9AC002A253E /* OmniFoundation.framework in Frameworks */,
+				4AC436D10B9E85E300A09E1A /* libsqlite3.0.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4A293E2708B0044800100C11 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				4A293E2808B0044800100C11 /* Omni-Application-Coverage.xcconfig */,
+				4A293E2908B0044800100C11 /* Omni-Application-Debug.xcconfig */,
+				4A293E2A08B0044800100C11 /* Omni-Application-Release.xcconfig */,
+				4A293E2B08B0044800100C11 /* Omni-Bundle-Coverage.xcconfig */,
+				4A293E2C08B0044800100C11 /* Omni-Bundle-Debug.xcconfig */,
+				4A293E2D08B0044800100C11 /* Omni-Bundle-Release.xcconfig */,
+				4A293E2E08B0044800100C11 /* Omni-Framework-Coverage.xcconfig */,
+				4A293E2F08B0044800100C11 /* Omni-Framework-Debug.xcconfig */,
+				4A293E3008B0044800100C11 /* Omni-Framework-Release.xcconfig */,
+				4A293E3108B0044800100C11 /* Omni-Global-Coverage.xcconfig */,
+				4A293E3208B0044800100C11 /* Omni-Global-Debug.xcconfig */,
+				4A293E3308B0044800100C11 /* Omni-Global-Release.xcconfig */,
+				4A293E3408B0044800100C11 /* Omni-Tool-Coverage.xcconfig */,
+				4A293E3508B0044800100C11 /* Omni-Tool-Debug.xcconfig */,
+				4A293E3608B0044800100C11 /* Omni-Tool-Release.xcconfig */,
+			);
+			name = Configurations;
+			path = ../../Configurations;
+			sourceTree = SOURCE_ROOT;
+		};
+		4AB9E71308BBA444002A253E /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				4AB9E6DD08BBA136002A253E /* OmniSQLite-Info.plist */,
+				4AB9E6F508BBA242002A253E /* OSLDatabaseController.h */,
+				4AB9E6F608BBA242002A253E /* OSLDatabaseController.m */,
+				4AB9E6E708BBA1E3002A253E /* OSLPreparedStatement.h */,
+				4AB9E6E808BBA1E3002A253E /* OSLPreparedStatement.m */,
+				4AB9E7D808BBAA0A002A253E /* OmniSQLite.h */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		4AB9E7BA08BBA96B002A253E /* Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				4AC436D00B9E85E300A09E1A /* libsqlite3.0.dylib */,
+				4AB9E7BC08BBA9AC002A253E /* OmniBase.framework */,
+				4AB9E7BD08BBA9AC002A253E /* OmniFoundation.framework */,
+				4AB9E73708BBA967002A253E /* Foundation.framework */,
+			);
+			name = "Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		BFF16A5406ECEC1300D38503 = {
+			isa = PBXGroup;
+			children = (
+				4A4092900D7DEFBD0038AAAF /* OmniSourceLicense.html */,
+				4A293E2708B0044800100C11 /* Configurations */,
+				4AB9E71308BBA444002A253E /* Source */,
+				4AB9E7BA08BBA96B002A253E /* Frameworks and Libraries */,
+				BFF16A6706ECEC3500D38503 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BFF16A6706ECEC3500D38503 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4AB9E6DC08BBA136002A253E /* OmniSQLite.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		4AB9E6D708BBA136002A253E /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AB9E6E908BBA1E3002A253E /* OSLPreparedStatement.h in Headers */,
+				4AB9E6F708BBA242002A253E /* OSLDatabaseController.h in Headers */,
+				4AB9E7D908BBAA0A002A253E /* OmniSQLite.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		4AB9E6DB08BBA136002A253E /* OmniSQLite */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4AB9E6DE08BBA137002A253E /* Build configuration list for PBXNativeTarget "OmniSQLite" */;
+			buildPhases = (
+				4AB9E6D708BBA136002A253E /* Headers */,
+				4AB9E6D808BBA136002A253E /* Resources */,
+				4AB9E6D908BBA136002A253E /* Sources */,
+				4AB9E6DA08BBA136002A253E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OmniSQLite;
+			productName = OmniSQLite;
+			productReference = 4AB9E6DC08BBA136002A253E /* OmniSQLite.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BFF16A5806ECEC1300D38503 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 4AECC81F08B00400004B92BF /* Build configuration list for PBXProject "OmniSQLite" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 1;
+			mainGroup = BFF16A5406ECEC1300D38503;
+			productRefGroup = BFF16A6706ECEC3500D38503 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4AB9E6DB08BBA136002A253E /* OmniSQLite */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4AB9E6D808BBA136002A253E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4AB9E6D908BBA136002A253E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AB9E6EA08BBA1E3002A253E /* OSLPreparedStatement.m in Sources */,
+				4AB9E6F808BBA242002A253E /* OSLDatabaseController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		4AB9E6DF08BBA137002A253E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A293E2F08B0044800100C11 /* Omni-Framework-Debug.xcconfig */;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				INFOPLIST_FILE = "OmniSQLite-Info.plist";
+				PRODUCT_NAME = OmniSQLite;
+			};
+			name = Debug;
+		};
+		4AB9E6E008BBA137002A253E /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A293E3008B0044800100C11 /* Omni-Framework-Release.xcconfig */;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				INFOPLIST_FILE = "OmniSQLite-Info.plist";
+				PRODUCT_NAME = OmniSQLite;
+			};
+			name = Release;
+		};
+		4AB9E6E108BBA137002A253E /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A293E2E08B0044800100C11 /* Omni-Framework-Coverage.xcconfig */;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				INFOPLIST_FILE = "OmniSQLite-Info.plist";
+				PRODUCT_NAME = OmniSQLite;
+			};
+			name = Coverage;
+		};
+		4AECC82008B00400004B92BF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A293E3208B0044800100C11 /* Omni-Global-Debug.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		4AECC82108B00400004B92BF /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A293E3308B0044800100C11 /* Omni-Global-Release.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		4AECC82208B00400004B92BF /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A293E3108B0044800100C11 /* Omni-Global-Coverage.xcconfig */;
+			buildSettings = {
+			};
+			name = Coverage;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4AB9E6DE08BBA137002A253E /* Build configuration list for PBXNativeTarget "OmniSQLite" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4AB9E6DF08BBA137002A253E /* Debug */,
+				4AB9E6E008BBA137002A253E /* Release */,
+				4AB9E6E108BBA137002A253E /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4AECC81F08B00400004B92BF /* Build configuration list for PBXProject "OmniSQLite" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4AECC82008B00400004B92BF /* Debug */,
+				4AECC82108B00400004B92BF /* Release */,
+				4AECC82208B00400004B92BF /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BFF16A5806ECEC1300D38503 /* Project object */;
+}

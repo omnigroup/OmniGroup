@@ -1,0 +1,51 @@
+{
+    patternTests = {
+        unadornedLowercaseHexString = (
+            ( "", "00", "0000", "000000", "00000000", "0000000000" ),
+            ( "", "ff", "ffff", "ffffff", "ffffffff", "ffffffffff" ),
+            ( "", "01", "0101", "010101", "01010101", "0101010101" ),
+            ( "", "80", "8080", "808080", "80808080", "8080808080" ),
+            ( "", "12", "1234", "123456", "12345678", "123456789a", "123456789abc", "123456789abcde", "123456789abcdef0" )
+        );
+    
+        base64String = (
+            ( "", "AA==", "AAA=", "AAAA", "AAAAAA==", "AAAAAAA=", "AAAAAAAA", "AAAAAAAAAA==", "AAAAAAAAAAA=", "AAAAAAAAAAAA", "AAAAAAAAAAAAAA==" ),
+            ( "", "/w==", "//8=", "////", "/////w==", "//////8=", "////////", "/////////w==", "//////////8=", "////////////", "/////////////w==" ),
+            ( "", "AQ==", "AQE=", "AQEB", "AQEBAQ==", "AQEBAQE=", "AQEBAQEB", "AQEBAQEBAQ==", "AQEBAQEBAQE=", "AQEBAQEBAQEB", "AQEBAQEBAQEBAQ==" ),
+            ( "", "gA==", "gIA=", "gICA", "gICAgA==", "gICAgIA=", "gICAgICA", "gICAgICAgA==", "gICAgICAgIA=", "gICAgICAgICA", "gICAgICAgICAgA==" ),
+            ( "", "Eg==", "EjQ=", "EjRW", "EjRWeA==", "EjRWeJo=", "EjRWeJq8", "EjRWeJq83g==", "EjRWeJq83vA=", "EjRWeJq83vAS", "EjRWeJq83vASNA==" )
+        );
+    
+        ascii85String = (
+            ( "", "!!", "!!!", "!!!!", "z", "z!!", "z!!!", "z!!!!", "zz" ),
+            ( "", "rr", "s8N", "s8W*", "s8W-!", "s8W-!rr", "s8W-!s8N" ),
+            ( "", "!<", "!<E", "!<E3", "!<E3%", "!<E3%!<" ),
+            ( "", "J,", "J:I", "J:N.", "J:N0#", "J:N0#J," ),
+            ( "", "&c", "&i9", "&i<V", "&i<X6", "&i<X6RK" )
+        );
+
+        ascii26String = (
+            ( "", "AA", "AAAA", "AAAAAA", "AAAAAAA", "AAAAAAAAA" ),
+            ( "", "JV", "DSYP", "BKSOJN", "NXMRLXV", "NXMRLXVJV" ),
+            ( "", "AB", "AAJX", "AADTIN", "ABKWHSB", "ABKWHSBAB" ),
+            ( "", "EY", "BWRG", "ASLDWA", "GZLTWUY", "GZLTWUYEY" ),
+            ( "", "AS", "AGXG", "ACPWWK", "AZSJCPC", "AZSJCPCFY", "AZSJCPCCGPO", "AZSJCPCAWEZIK" )
+        );
+    };
+    
+    knownStrings = {
+        ascii85String = {
+            "0eOS8De+-4@<-G" = <312E2042 6F647970 617274>;
+            "f,Guc" = <D71B2480>;
+            "Gb\"0P%<I.E" = <789cedd6 0d738320>;
+            "Gb\"0P%<I.E$jL*hHN1P1D:]B@f,GucSN3k=+l\\&l]0T_!!`rs6g+1`p[p>0" = <789cedd6 0d738320 0c06607f 7affb9db 6dd711c8 d71b2480 9d39aeeb 21e28170 bb415d50 025765ab da2bd672 b75d93>;
+        };
+        
+        ascii26String = {
+            reversible = 0;
+            "AAAA-AAAA-A" = <00000000 00>;
+            "LXBR-LOKB-DBYCS-" = <DADFEEDACABB1E>;
+            "-----------------------J--V---------------------" = <FF>;
+        };
+    };
+}

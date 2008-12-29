@@ -1,0 +1,78 @@
+/* error - socket is unxepectedly closed or not connected */
+"Attempted read from a non-connected socket" = "Attempted read from a non-connected socket";
+
+/* error - socket is not connected
+   error - socket is unxepectedly closed, not connected, or not listening for connections */
+"Attempted write to a non-connected socket" = "Attempted write to a non-connected socket";
+
+/* error - resource is missing from framework bundle */
+"Cannot find the ONGetHostEntry tool" = "Cannot find the ONGetHostEntry tool";
+
+/* error - user (or other event) canceled attempt to connect to remote host */
+"Connect aborted" = "Connect aborted";
+
+/* gethostbyname error - other errors - specific cause of error is not known */
+"Error looking up host %@" = "Error looking up host %@";
+
+/* getnameinfo or getaddrinfo error - EAI_SYSTEM - specific cause of error is not known
+   gethostbyname error - other errors - specific cause of error is not known */
+"Error looking up host %@: %s" = "Error looking up host %1$@: %2$s";
+
+/* error return from select() */
+"Error waiting for input: %s" = "Error waiting for input: %s";
+
+/* gethostbyname error - EAI_NODATA - The specified hostname is valid but does not have not have an IP  address; this is not a temporary error. This means that the name is known to the name server but there is no address associated with this name. */
+"Found no address for host %@" = "Found no address for host %@";
+
+/* gethostbyname error - NO_DATA - 'The  requested  name  is  valid but does not have an IP  address;  this is  not  a  temporary  error.  This means that the name is known to the name server but there is no address associated with this name.' */
+"Found no addresses for host %@" = "Found no addresses for host %@";
+
+/* gethostbyname error - EAI_ADDRFAMILY - The specified name is valid but does not have an address we can use. This probably means it has an address of some other address family. */
+"Found no appropriate addresses for host %@" = "Found no appropriate addresses for host %@";
+
+/* gethostbyname error - EAI_NONAME - The specified address is valid but does not have a corresponding hostname. This probably means that the address has no reverse DNS information. */
+"Found no hostname for  %@" = "Found no hostname for  %@";
+
+/* gethostbyname error - HOST_NOT_FOUND - 'No such host is known.' */
+"No such host %@" = "No such host %@";
+
+/* error: EAGAIN
+   error: userAbort
+   error */
+"Read aborted" = "Read aborted";
+
+/* error - one of ETIMEDOUT ECONNREFUSED ENETDOWN ENETUNREACH EHOSTDOWN or EHOSTUNREACH */
+"Temporarily unable to connect to %@: %s" = "Temporarily unable to connect to %1$@: %2$s";
+
+/* getaddrinfo error - EAI_AGAIN - 'This  is  usually a temporary error and means that the local server did not  receive  a  response  from  an authoritative server.  A  retry  at some later time may succeed.'
+   gethostbyname error - TRY_AGAIN - 'This  is  usually a temporary error and means that the local server did not  receive  a  response  from  an authoritative server.  A  retry  at some later time may succeed.' */
+"Temporary error looking up host %@, try again" = "Temporary error looking up host %@, try again";
+
+/* error - non-transient error when connecting to remote host */
+"Unable to connect to %@: %s" = "Unable to connect to %1$@: %2$s";
+
+/* error */
+"Unable to connect: no IP addresses to connect to" = "Unable to connect: no IP addresses to connect to";
+
+/* error */
+"Unable to create port address: no IP address for host '%@'" = "Unable to create port address: no IP address for host '%@'";
+
+/* error */
+"Unable to read from socket: %s" = "Unable to read from socket: %s";
+
+/* error - attempted to change protocol family after the fact */
+"Unable to set address family of already-allocated socket" = "Unable to set address family of already-allocated socket";
+
+/* error */
+"Unable to write to socket: %s" = "Unable to write to socket: %s";
+
+/* getaddrinfo error - miscellaneous unrecoverable or internal errors - bad parameter passed to get_info call or other unexpected problem */
+"Unexpected server failure (%d: %s) looking up host %@" = "Unexpected server failure (%1$d: %2$s) looking up host %3$@";
+
+/* gethostbyname error - NO_RECOVERY - 'Some  unexpected server failure was encountered.  This is a  non-recoverable error.' */
+"Unexpected server failure looking up host %@" = "Unexpected server failure looking up host %@";
+
+/* error: EAGAIN
+   error: userAbort */
+"Write aborted" = "Write aborted";
+

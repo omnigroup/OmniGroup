@@ -1,0 +1,2035 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE outline PUBLIC "-//omnigroup.com//DTD OUTLINE 3.0//EN" "http://www.omnigroup.com/namespace/OmniOutliner/xmloutline-v3.dtd">
+<outline xmlns="http://www.omnigroup.com/namespace/OmniOutliner/v3">
+  <style-attribute-registry>
+    <style-attribute version="1" key="font-fill" group="font" name="fill color" class="color">
+      <color w="0"/>
+    </style-attribute>
+    <style-attribute version="0" key="font-italic" group="font" name="italic" class="bool">no</style-attribute>
+    <style-attribute version="0" key="font-size" group="font" name="size" class="number">12</style-attribute>
+    <style-attribute version="0" key="font-weight" group="font" name="weight" class="number">5</style-attribute>
+    <style-attribute version="0" key="text-background-color" group="text" name="background color" class="color">
+      <color w="0" a="0"/>
+    </style-attribute>
+    <style-attribute version="1" key="underline-color" group="underline" name="color" class="color">
+      <color w="0"/>
+    </style-attribute>
+    <style-attribute version="1" key="underline-style" group="underline" name="style" class="enum">
+      <enum-name-table default-value="0">
+        <enum-name-table-element value="0" name="none"/>
+        <enum-name-table-element value="1" name="single"/>
+        <enum-name-table-element value="2" name="thick"/>
+        <enum-name-table-element value="9" name="double"/>
+      </enum-name-table>
+    </style-attribute>
+  </style-attribute-registry>
+  <named-styles>
+    <named-style id="nQ2oLGJ1ajX" name="Highlight" display-order="0">
+      <style>
+        <value key="text-background-color">
+          <color r="1" g="1" b="0.4"/>
+        </value>
+      </style>
+    </named-style>
+    <named-style id="caSh-BWu2VY" name="Citation" display-order="1">
+      <style>
+        <value key="underline-color">
+          <color r="0" g="0" b="1"/>
+        </value>
+        <value key="underline-style">thick</value>
+      </style>
+    </named-style>
+    <named-style id="lI8ikIhMb_m" name="Emphasis" display-order="2">
+      <style>
+        <value key="font-italic">yes</value>
+      </style>
+    </named-style>
+  </named-styles>
+  <attachments>
+    <attachment id="att0" href="sqlite3.h"/>
+  </attachments>
+  <settings>
+    <page-adornment>
+      <first-page-headers is-active="yes">
+        <header location="center">
+          <text>
+            <p>
+              <run>
+                <lit><cell variable="OOSectionTitleVariableIdentifier"/></lit>
+              </run>
+            </p>
+          </text>
+        </header>
+      </first-page-headers>
+    </page-adornment>
+    <print-info>
+      <print-info-key name="OOScaleDocumentToFitPageWidth" type="boolean">true</print-info-key>
+    </print-info>
+    <auto-generate-level-styles>no</auto-generate-level-styles>
+  </settings>
+  <editor content-size="{995, 1085}" is-spellchecking-enabled="yes">
+    <drawer display="sections" palette-height="167"/>
+    <selected-rows ids="iqtw9CTvWhY"/>
+  </editor>
+  <columns>
+    <column id="dTpN3JwYpBn" type="text" width="18" minimum-width="18" maximum-width="18" text-export-width="1" is-note-column="yes">
+      <style>
+        <value key="font-fill">
+          <color r="0.33" g="0.33" b="0.33"/>
+        </value>
+        <value key="font-italic">yes</value>
+        <value key="font-size">11</value>
+      </style>
+      <title>
+        <text>
+          <p/>
+        </text>
+      </title>
+    </column>
+    <column id="jFqHUGd_Dg1" type="text" width="959" minimum-width="13" maximum-width="1000000" text-export-width="72" is-outline-column="yes">
+      <title>
+        <text>
+          <p>
+            <run>
+              <lit>Topic</lit>
+            </run>
+          </p>
+        </text>
+      </title>
+    </column>
+  </columns>
+  <root>
+    <style>
+      <value key="font-weight">9</value>
+      <value key="underline-style">single</value>
+    </style>
+    <item id="dxhXX3BsEyA">
+      <values>
+        <text>
+          <p>
+            <run>
+              <lit>To-many relationships</lit>
+            </run>
+          </p>
+        </text>
+      </values>
+      <children>
+        <item id="e0RoyWx62tj">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Use NSSet/NSMutableSet-like as the primitive value</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="aK5TAx4u0eN">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Don&apos;t create the internal value until first needed</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="meU-bLLg5B4">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Add API to determine whether the fault has been realized</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="g2JbTmiE3jn">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>When a to-one is set and the reverse is a to-many don&apos;t create or fire the fault to update it -- only update it if it has already been fired</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="c99DbSmHcAz">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>When firing a to-many fault, consult the current edits (need to deal with recent as well as processed, probably).</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <children>
+            <item id="kf_3emceqPs">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Can probably do this in two phases.  Consult the processed edits, applying them.  Then consult the recent edits the same way.</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+          </children>
+        </item>
+        <item id="f-SjHdb7hSk">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>NSMO acts as a to-many holder for its relationships. That is, if an item is added, NSMO will ping KVO with a set mutation.  We should do this too.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="bW02hxpUuTw">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Questions</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <children>
+            <item id="mdlp3jptm3s">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>If -[ODOObject valueForKey:@&quot;toMany&quot;] is called is there some way we can return a fault?  The problem is that we can&apos;t return a plain NSMutableSet since that doesn&apos;t know who the owner is and can&apos;t clear itself.  If we have API for checking if some key is a fault, then this isn&apos;t necessary.  We could just fully realize the fault in -valueForKey:.</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="ll5pn8lXXgJ">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>What do we get for the primitive value?  In CoreData, you can install mutable sets via primitive value w/o the inverse being hooked up or some such.  But our to-one back fixup will probably be done in the primitive set (since the setters don&apos;t have to hook up the reverse in CD).</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="kZU9zDOSoEi">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>What should we return from -mutableSetValueForKey:?  NSMO overrides this, presumably for helping solve some of these issues</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="isrJxxx8qz0">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Should we allow editing from the to-many side at all?  I think NSMO allows it, but it isn&apos;t clear that we need to.  The to-many properties are typed as NSSet, but are probably mutable.  If we do, we shouldn&apos;t allow mutating the set directly, but rather using the KVC set-owner methods via -mutableSetValueForKey:</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+              <children>
+                <item id="nI14HexIXl8">
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>But, then were are the edits made?</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                  <children>
+                    <item id="lIdzEwC0Fvq">
+                      <values>
+                        <text>
+                          <p>
+                            <run>
+                              <lit>If our internal set really is mutable, then an external caller could accidentally screw it up w/o noticing</lit>
+                            </run>
+                          </p>
+                        </text>
+                      </values>
+                    </item>
+                    <item id="maiRC53hFmI">
+                      <values>
+                        <text>
+                          <p>
+                            <run>
+                              <lit>If our internal set is immutable, then we either need to make a new set on each edit -- maybe expensive, or we need our own set class with seekrit editing methods (and &lt;NSCopying&gt; that does a copy instead of retain).</lit>
+                            </run>
+                          </p>
+                        </text>
+                      </values>
+                    </item>
+                  </children>
+                </item>
+              </children>
+            </item>
+            <item id="gT7b32eb6d3">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>For now, the best bet might be to disallow editing on the to-many side, but publish the edits.  This still has the question of where &amp; how the edits are made to prevent the naïve caller from screwing up our set.  Maybe our -valueForKey: returns a cheap proxy to our internal mutable set that only allows reading.  Or maybe it just makes a new autoreleased set.</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+              <children>
+                <item id="eTit-fFPjRt">
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>Some of this only works if we disallow getters on the to-many key.  Otherwise, they&apos;ll need to call primitiveValueForKey: and do any proxy too.  They could do the copy bit, though.  Or we could just disallow the getter (and probably setter) until someone needs it.</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+              </children>
+            </item>
+          </children>
+        </item>
+      </children>
+    </item>
+    <item id="gh7CphxQ1c0">
+      <values>
+        <text>
+          <p>
+            <run>
+              <lit>Misc notes about CoreData</lit>
+            </run>
+          </p>
+        </text>
+      </values>
+      <children>
+        <item id="meySKdnXOu4">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>-[NSManagedObject mutableSetValueForKey:] is implemented.  Maybe they return a custom proxy for the to-many relationships</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="dL-2-4CeZ_A">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>CoreData references several &apos;usearch&apos; library functions that appear to be from ICU.  This might be for installing diacritical insensitive indexes or performing such queries.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="kzxS8vE-tpn">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>_sys_icache_invalidate referenced in CoreData too.  Goodness, what are they doing.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="jYhr9pfVkiE">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>10.4 usage an older version of sqlite (3.1.3) than 10.5.  CoreData seems to be written to the older API.  OmniSQLite is written to an even older API.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <note expanded="yes">
+            <text>
+              <p>
+                <run>
+                  <style>
+                    <value key="font-fill">
+                      <color w="0"/>
+                    </value>
+                    <value key="font-italic">no</value>
+                    <value key="font-size">12</value>
+                  </style>
+                  <lit>10.4 header </lit>
+                </run>
+                <run>
+                  <style>
+                    <value key="font-fill">
+                      <color w="0"/>
+                    </value>
+                    <value key="font-italic">no</value>
+                    <value key="font-size">12</value>
+                  </style>
+                  <lit><cell refid="att0" name="sqlite3"/></lit>
+                </run>
+              </p>
+            </text>
+          </note>
+        </item>
+        <item id="l2mJTLnGNk5">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>SQLite symbols</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <children>
+            <item id="mfLahK0icle">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_bind_blob</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="kT84v7Nssth">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_bind_double</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="ldwyw_s_NNT">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_bind_int</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="hHiY6ly2Zme">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_bind_int64</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="kHBgpUiJ81C">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_bind_null</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="oiCe5XWfWU5">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_bind_text</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="jmhUsAK8-nT">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_busy_handler</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="nhlWCVMo_zE">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_changes</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="otFPSuueGDO">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_close</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="n2ZtZIUbrWd">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_column_blob</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="nquFG_3W5Oj">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_column_bytes</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="hsAcDxrWD0N">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_column_count</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="fUMtlNvIA_H">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_column_double</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="e1kpPQyfsuh">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_column_int</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="gW5gRdFeevA">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_column_int64</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="hlVn5MKp5n8">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_column_text</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="pHzp3u-jF5T">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_column_type</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="k0X_2KcCjV2">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_create_collation</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="jDTTNq0fJ8F">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_create_function</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="j9G6D4Q3GBK">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_errmsg</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="kPyvFQcNNQL">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_finalize</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="oL6h1oyt6hN">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_libversion</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="icmtemKvnxl">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_open</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="l4MBQeMaJbx">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_prepare</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="d1Q6mjIJF25">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_reset</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="f2ljlh9rSyG">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_result_error</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="iH0RvyndmCn">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_result_int</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="gtzjqi23zgE">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_step</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="lakVgicg1xa">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_user_data</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="eodMu0ZixiL">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_value_int</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="jeG4YNTspyW">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>sqlite3_value_text</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+          </children>
+        </item>
+        <item id="pPXRegJ06OJ">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Interesting other symbols</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <children>
+            <item id="nB7CFaKo8qr">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>_malloc_zone_batch_free</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="p7V4blTLmIn">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>_malloc_zone_batch_malloc</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="eIvlivZ5orh">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>_property_getAttributes</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="eo2ZXiXc7jU">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>_kCFAllocatorUseContext</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+          </children>
+        </item>
+        <item id="psHAAr78oXi">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Schema created by CoreData</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <note>
+            <text>
+              <p>
+                <run>
+                  <lit>CREATE TABLE ZATTACHMENT ( Z_ENT INTEGER, Z_PK INTEGER PRIMARY KEY, Z_OPT INTEGER, ZCREATIONORDINAL INTEGER, ZTASK INTEGER, ZFOLDER INTEGER, ZCONTEXT INTEGER, ZDATEADDED TIMESTAMP, ZDATEMODIFIED TIMESTAMP, ZPERSISTENTIDENTIFIER VARCHAR, ZLINKBACKDATA BLOB, ZCUSTOMPREVIEWIMAGEPNGDATA BLOB, ZSERIALIZEDFILEWRAPPERDATA BLOB, ZFILEALIASDATA BLOB );</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE ZCONTEXT ( ZPARENT INTEGER, Z_PK INTEGER PRIMARY KEY, Z_OPT INTEGER, ZTOTALNUMBEROFDUESOONTASKS INTEGER, ZEFFECTIVEACTIVE INTEGER, ZACTIVE INTEGER, ZAVAILABLETASKCOUNT INTEGER, ZTOTALNUMBEROFOVERDUETASKS INTEGER, ZCHILDRENCOUNT INTEGER, ZLOCALNUMBEROFOVERDUETASKS INTEGER, ZALLOWSNEXTACTION INTEGER, ZLOCALNUMBEROFDUESOONTASKS INTEGER, ZCREATIONORDINAL INTEGER, ZREMAININGTASKCOUNT INTEGER, ZRANK INTEGER, Z_ENT INTEGER, ZDATEADDED TIMESTAMP, ZDATEMODIFIED TIMESTAMP, ZPERSISTENTIDENTIFIER VARCHAR, ZNAME VARCHAR, ZNOTEPLAINTEXTSTRING VARCHAR, ZNOTEXMLDATA BLOB );</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE ZFOLDER ( Z_ENT INTEGER, Z_PK INTEGER PRIMARY KEY, Z_OPT INTEGER, ZRANK INTEGER, ZEFFECTIVEACTIVE INTEGER, ZACTIVE INTEGER, ZNUMBEROFDUESOONTASKS INTEGER, ZCHILDRENCOUNT INTEGER, ZCREATIONORDINAL INTEGER, ZNUMBEROFOVERDUETASKS INTEGER, ZPARENT INTEGER, ZDATEMODIFIED TIMESTAMP, ZDATEADDED TIMESTAMP, ZNOTEPLAINTEXTSTRING VARCHAR, ZPERSISTENTIDENTIFIER VARCHAR, ZNAME VARCHAR, ZNOTEXMLDATA BLOB );</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE ZPROJECTINFO ( Z_ENT INTEGER, Z_PK INTEGER PRIMARY KEY, Z_OPT INTEGER, ZNUMBEROFOVERDUETASKS INTEGER, ZTASKBLOCKED INTEGER, ZNUMBEROFDUESOONTASKS INTEGER, ZFOLDEREFFECTIVEACTIVE INTEGER, ZTASKBLOCKEDBYFUTURESTARTDATE INTEGER, ZTASK INTEGER, ZNEXTTASK INTEGER, ZFOLDER INTEGER, ZCONTAINSSINGLETONACTIONS INTEGER, ZLASTREVIEWDATE TIMESTAMP, ZMINIMUMDUEDATE TIMESTAMP, ZNEXTREVIEWDATE TIMESTAMP, ZTASKDATETOSTART TIMESTAMP, ZREVIEWREPETITIONSTRING VARCHAR, ZSTATUS VARCHAR );</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE ZTASK ( ZPROJECTINFO INTEGER, Z_PK INTEGER PRIMARY KEY, Z_OPT INTEGER, ZESTIMATEDMINUTES INTEGER, ZININBOX INTEGER, ZCONTAINSNEXTTASK INTEGER, ZEFFECTIVECONTAININGCONTEXTACTIVE INTEGER, ZCREATIONORDINAL INTEGER, ZISDUESOON INTEGER, ZBLOCKED INTEGER, ZEFFECTIVECONTAININGPROJECTINFOACTIVE INTEGER, ZPARENT INTEGER, ZNEXTTASKOFPROJECTINFO INTEGER, ZCONTEXT INTEGER, ZCONTAININGPROJECTINFO INTEGER, Z_ENT INTEGER, ZEFFECTIVEFLAGGED INTEGER, ZCHILDRENCOUNTAVAILABLE INTEGER, ZMINIMUMESTIMATEINTREE INTEGER, ZBLOCKEDBYFUTURESTARTDATE INTEGER, ZHASFLAGGEDTASKINTREE INTEGER, ZMAXIMUMESTIMATEINTREE INTEGER, ZSEQUENTIAL INTEGER, ZHASCOMPLETEDDESCENDANT INTEGER, ZRANK INTEGER, ZFLAGGED INTEGER, ZCONTAININGPROJECTCONTAINSSINGLETONS INTEGER, ZCHILDRENCOUNT INTEGER, ZHASUNESTIMATEDLEAFTASKINTREE INTEGER, ZISOVERDUE INTEGER, ZCHILDRENCOUNTCOMPLETED INTEGER, ZEFFECTIVEDATETOSTART TIMESTAMP, ZDATETOSTART TIMESTAMP, ZEFFECTIVEDATEDUE TIMESTAMP, ZDATEMODIFIED TIMESTAMP, ZDATEDUE TIMESTAMP, ZDATECOMPLETED TIMESTAMP, ZDATEADDED TIMESTAMP, ZPERSISTENTIDENTIFIER VARCHAR, ZNAME VARCHAR, ZNOTEPLAINTEXTSTRING VARCHAR, ZREPETITIONSTRING VARCHAR, ZNOTEXMLDATA BLOB );</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE Z_METADATA (Z_VERSION INTEGER PRIMARY KEY, Z_UUID VARCHAR(255), Z_PLIST BLOB);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE Z_PRIMARYKEY (Z_ENT INTEGER PRIMARY KEY, Z_NAME VARCHAR, Z_SUPER INTEGER, Z_MAX INTEGER);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZATTACHMENT_ZCONTEXT_INDEX ON ZATTACHMENT (ZCONTEXT);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZATTACHMENT_ZFOLDER_INDEX ON ZATTACHMENT (ZFOLDER);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZATTACHMENT_ZTASK_INDEX ON ZATTACHMENT (ZTASK);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZCONTEXT_ZPARENT_INDEX ON ZCONTEXT (ZPARENT);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZFOLDER_ZPARENT_INDEX ON ZFOLDER (ZPARENT);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZPROJECTINFO_ZFOLDER_INDEX ON ZPROJECTINFO (ZFOLDER);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZPROJECTINFO_ZNEXTTASK_INDEX ON ZPROJECTINFO (ZNEXTTASK);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZPROJECTINFO_ZTASK_INDEX ON ZPROJECTINFO (ZTASK);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZTASK_ZCONTAININGPROJECTINFO_INDEX ON ZTASK (ZCONTAININGPROJECTINFO);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZTASK_ZCONTEXT_INDEX ON ZTASK (ZCONTEXT);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZTASK_ZNEXTTASKOFPROJECTINFO_INDEX ON ZTASK (ZNEXTTASKOFPROJECTINFO);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZTASK_ZPARENT_INDEX ON ZTASK (ZPARENT);</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZTASK_ZPROJECTINFO_INDEX ON ZTASK (ZPROJECTINFO);</lit>
+                </run>
+              </p>
+              <p/>
+            </text>
+          </note>
+        </item>
+        <item id="nyufnkvg9wO">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>SQL generated by CoreData when creating a new database:</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <note>
+            <text>
+              <p>
+                <run>
+                  <lit>pragma synchronous=normal</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>pragma auto_vacuum=1</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>pragma page_size=4096</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>BEGIN EXCLUSIVE</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE ZATTACHMENT ( Z_ENT INTEGER, Z_PK INTEGER PRIMARY KEY, Z_OPT INTEGER, ZCREATIONORDINAL INTEGER, ZTASK INTEGER, ZFOLDER INTEGER, ZCONTEXT INTEGER, ZDATEADDED TIMESTAMP, ZDATEMODIFIED TIMESTAMP, ZPERSISTENTIDENTIFIER VARCHAR, ZLINKBACKDATA BLOB, ZCUSTOMPREVIEWIMAGEPNGDATA BLOB, ZSERIALIZEDFILEWRAPPERDATA BLOB, ZFILEALIASDATA BLOB ) </lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZATTACHMENT_ZTASK_INDEX ON ZATTACHMENT (ZTASK)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZATTACHMENT_ZFOLDER_INDEX ON ZATTACHMENT (ZFOLDER)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZATTACHMENT_ZCONTEXT_INDEX ON ZATTACHMENT (ZCONTEXT)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE ZCONTEXT ( ZPARENT INTEGER, Z_PK INTEGER PRIMARY KEY, Z_OPT INTEGER, ZTOTALNUMBEROFDUESOONTASKS INTEGER, ZEFFECTIVEACTIVE INTEGER, ZACTIVE INTEGER, ZAVAILABLETASKCOUNT INTEGER, ZTOTALNUMBEROFOVERDUETASKS INTEGER, ZCHILDRENCOUNT INTEGER, ZLOCALNUMBEROFOVERDUETASKS INTEGER, ZALLOWSNEXTACTION INTEGER, ZLOCALNUMBEROFDUESOONTASKS INTEGER, ZCREATIONORDINAL INTEGER, ZREMAININGTASKCOUNT INTEGER, ZRANK INTEGER, Z_ENT INTEGER, ZDATEADDED TIMESTAMP, ZDATEMODIFIED TIMESTAMP, ZPERSISTENTIDENTIFIER VARCHAR, ZNAME VARCHAR, ZNOTEPLAINTEXTSTRING VARCHAR, ZNOTEXMLDATA BLOB ) </lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZCONTEXT_ZPARENT_INDEX ON ZCONTEXT (ZPARENT)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE ZFOLDER ( Z_ENT INTEGER, Z_PK INTEGER PRIMARY KEY, Z_OPT INTEGER, ZRANK INTEGER, ZEFFECTIVEACTIVE INTEGER, ZACTIVE INTEGER, ZNUMBEROFDUESOONTASKS INTEGER, ZCHILDRENCOUNT INTEGER, ZCREATIONORDINAL INTEGER, ZNUMBEROFOVERDUETASKS INTEGER, ZPARENT INTEGER, ZDATEMODIFIED TIMESTAMP, ZDATEADDED TIMESTAMP, ZNOTEPLAINTEXTSTRING VARCHAR, ZPERSISTENTIDENTIFIER VARCHAR, ZNAME VARCHAR, ZNOTEXMLDATA BLOB ) </lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZFOLDER_ZPARENT_INDEX ON ZFOLDER (ZPARENT)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE ZPROJECTINFO ( Z_ENT INTEGER, Z_PK INTEGER PRIMARY KEY, Z_OPT INTEGER, ZNUMBEROFOVERDUETASKS INTEGER, ZTASKBLOCKED INTEGER, ZNUMBEROFDUESOONTASKS INTEGER, ZFOLDEREFFECTIVEACTIVE INTEGER, ZTASKBLOCKEDBYFUTURESTARTDATE INTEGER, ZTASK INTEGER, ZNEXTTASK INTEGER, ZFOLDER INTEGER, ZCONTAINSSINGLETONACTIONS INTEGER, ZLASTREVIEWDATE TIMESTAMP, ZMINIMUMDUEDATE TIMESTAMP, ZNEXTREVIEWDATE TIMESTAMP, ZTASKDATETOSTART TIMESTAMP, ZREVIEWREPETITIONSTRING VARCHAR, ZSTATUS VARCHAR ) </lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZPROJECTINFO_ZTASK_INDEX ON ZPROJECTINFO (ZTASK)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZPROJECTINFO_ZNEXTTASK_INDEX ON ZPROJECTINFO (ZNEXTTASK)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZPROJECTINFO_ZFOLDER_INDEX ON ZPROJECTINFO (ZFOLDER)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE ZTASK ( ZPROJECTINFO INTEGER, Z_PK INTEGER PRIMARY KEY, Z_OPT INTEGER, ZESTIMATEDMINUTES INTEGER, ZININBOX INTEGER, ZCONTAINSNEXTTASK INTEGER, ZEFFECTIVECONTAININGCONTEXTACTIVE INTEGER, ZCREATIONORDINAL INTEGER, ZISDUESOON INTEGER, ZBLOCKED INTEGER, ZEFFECTIVECONTAININGPROJECTINFOACTIVE INTEGER, ZPARENT INTEGER, ZNEXTTASKOFPROJECTINFO INTEGER, ZCONTEXT INTEGER, ZCONTAININGPROJECTINFO INTEGER, Z_ENT INTEGER, ZEFFECTIVEFLAGGED INTEGER, ZCHILDRENCOUNTAVAILABLE INTEGER, ZMINIMUMESTIMATEINTREE INTEGER, ZBLOCKEDBYFUTURESTARTDATE INTEGER, ZHASFLAGGEDTASKINTREE INTEGER, ZMAXIMUMESTIMATEINTREE INTEGER, ZSEQUENTIAL INTEGER, ZHASCOMPLETEDDESCENDANT INTEGER, ZRANK INTEGER, ZFLAGGED INTEGER, ZCONTAININGPROJECTCONTAINSSINGLETONS INTEGER, ZCHILDRENCOUNT INTEGER, ZHASUNESTIMATEDLEAFTASKINTREE INTEGER, ZISOVERDUE INTEGER, ZCHILDRENCOUNTCOMPLETED INTEGER, ZEFFECTIVEDATETOSTART TIMESTAMP, ZDATETOSTART TIMESTAMP, ZEFFECTIVEDATEDUE TIMESTAMP, ZDATEMODIFIED TIMESTAMP, ZDATEDUE TIMESTAMP, ZDATECOMPLETED TIMESTAMP, ZDATEADDED TIMESTAMP, ZPERSISTENTIDENTIFIER VARCHAR, ZNAME VARCHAR, ZNOTEPLAINTEXTSTRING VARCHAR, ZREPETITIONSTRING VARCHAR, ZNOTEXMLDATA BLOB ) </lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZTASK_ZPARENT_INDEX ON ZTASK (ZPARENT)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZTASK_ZNEXTTASKOFPROJECTINFO_INDEX ON ZTASK (ZNEXTTASKOFPROJECTINFO)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZTASK_ZCONTEXT_INDEX ON ZTASK (ZCONTEXT)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZTASK_ZCONTAININGPROJECTINFO_INDEX ON ZTASK (ZCONTAININGPROJECTINFO)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE INDEX ZTASK_ZPROJECTINFO_INDEX ON ZTASK (ZPROJECTINFO)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE Z_PRIMARYKEY (Z_ENT INTEGER PRIMARY KEY, Z_NAME VARCHAR, Z_SUPER INTEGER, Z_MAX INTEGER)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>INSERT INTO Z_PRIMARYKEY(Z_ENT, Z_NAME, Z_SUPER, Z_MAX) VALUES(1, &apos;Attachment&apos;, 0, 0)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>INSERT INTO Z_PRIMARYKEY(Z_ENT, Z_NAME, Z_SUPER, Z_MAX) VALUES(2, &apos;Context&apos;, 0, 0)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>INSERT INTO Z_PRIMARYKEY(Z_ENT, Z_NAME, Z_SUPER, Z_MAX) VALUES(3, &apos;Folder&apos;, 0, 0)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>INSERT INTO Z_PRIMARYKEY(Z_ENT, Z_NAME, Z_SUPER, Z_MAX) VALUES(4, &apos;ProjectInfo&apos;, 0, 0)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>INSERT INTO Z_PRIMARYKEY(Z_ENT, Z_NAME, Z_SUPER, Z_MAX) VALUES(5, &apos;Task&apos;, 0, 0)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>CREATE TABLE Z_METADATA (Z_VERSION INTEGER PRIMARY KEY, Z_UUID VARCHAR(255), Z_PLIST BLOB)</lit>
+                </run>
+              </p>
+              <p>
+                <run>
+                  <lit>COMMIT</lit>
+                </run>
+              </p>
+              <p/>
+            </text>
+          </note>
+        </item>
+      </children>
+    </item>
+    <item id="ktF5ie8vNew">
+      <values>
+        <text>
+          <p>
+            <run>
+              <lit>Edge cases</lit>
+            </run>
+          </p>
+        </text>
+      </values>
+      <children>
+        <item id="gGm2nJwEj3w">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>On the phone, if SQLITE_BUSY is returned (locked by another process), we should torch the SQLite database and rebuild it.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="kBpcbSXeYCE">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>When writing integers, validate that the value in the column fit in the supposed type.  SQLite just has &apos;integer&apos; while we have int{16,32,64}, boolean all mapped to that type.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+      </children>
+    </item>
+    <item id="fXTjip6k336">
+      <values>
+        <text>
+          <p>
+            <run>
+              <lit>SQLite3 notes</lit>
+            </run>
+          </p>
+        </text>
+      </values>
+      <children>
+        <item id="azjQnNobGxa">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>With &quot;?&quot; value binding, do strings need to be SQL-quoted?</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <children>
+            <item id="pavYDC8yOQ0">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>From </lit>
+                    </run>
+                    <run>
+                      <lit><cell href="http://www.sqlite.org/limits.html" name="www.sqlite.org—limits.html"/></lit>
+                    </run>
+                  </p>
+                  <p>
+                    <run>
+                      <lit>&quot;The use of binding obviates the need to escape quote characters in the string, reducing the risk of SQL injection attacks.&quot;</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+          </children>
+        </item>
+        <item id="n6w1kPPYsqJ">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>&quot;BEGIN EXCLUSIVE&quot; means no one else can read.  Shouldn&apos;t matter for us, but good form.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="nnrQ-1iSt0_">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>&quot;v2&quot; interfaces on SQLite are better in many ways, but 10.4 doesn&apos;t have them.  Rather than writing two versions, include SQLite for now?</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+      </children>
+    </item>
+    <item id="lZSA5eGI_96">
+      <values>
+        <text>
+          <p>
+            <run>
+              <lit>If we cache statements in the entity/relationship/attributes, then we can&apos;t have more than one database connected at a time (unless we change the API so that the database loads the model from a URL and owns the model).</lit>
+            </run>
+          </p>
+        </text>
+      </values>
+    </item>
+    <item id="nAL0Q8XRMMJ">
+      <values>
+        <text>
+          <p>
+            <run>
+              <lit>Undo support</lit>
+            </run>
+          </p>
+        </text>
+      </values>
+      <children>
+        <item id="e-QOS-joIcX">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>10.5 (Xcode 3.1) docs claim that NSMOC uses KVO to notice changes in managed objects.  Might be a worthwhile pattern to follow.  Though, it also says something about batching undos together.  So, maybe it uses KVO to find out that an object needs comparison vs. its committed snapshot (or rather the recent-changes snapshot) and then doesn&apos;t actually do the compare until the -processRecentChanges.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="i5Dq80mOi9G">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>On the iPhone, we should not have an undo manager.  And, when we don&apos;t have an undo manager, we shouldn&apos;t register for the KVO.  Might be worth having the editing context take the undo manager at init time and be unable to change it (so we can make the decision and not have to change our minds if the undo manager gets changed mid-stream).</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+      </children>
+    </item>
+    <item id="iDpFE9aGyXR" expanded="yes" state="indeterminate">
+      <style>
+        <value key="font-weight">9</value>
+      </style>
+      <values>
+        <text>
+          <p>
+            <run>
+              <lit>TODO:</lit>
+            </run>
+          </p>
+        </text>
+      </values>
+      <children>
+        <item id="ds3sHl2pPuF" expanded="yes">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Add a notion of &apos;derived&apos; attributes (not relationships probably).</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <children>
+            <item id="eKXL2YeezrD">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Use this as part of the &apos;interesting&apos; check in OFM</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="j8vjH5iw5vM">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>These *should* do KVC/KVO</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="kPtsBMyLgVk">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>These should NOT initiate undo, though they could participate in it if they happen to get changed</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="hPTQ8b4SfOf" expanded="yes">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>This would help solve the problem of undo vs. timed changes to objects</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+              <children>
+                <item id="iqtw9CTvWhY">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>If a task has a future start date, it elapses and then you undo, the change will immediately get redone.</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+              </children>
+            </item>
+          </children>
+        </item>
+        <item id="hkvpYLz8F2Z">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Snapshot objects when they are first updated/deleted for &apos;pending&apos; updates.  Need this for undo registration.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="mTQ7NGnGnUp" state="checked">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Reenable -[OFMDataStoreCaches checkSaveInvariants]</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="cEJajiesxTk" state="checked">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Reenable -[OFMTreeObject _checkInvariants]</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="oCAtHNTy2wk">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Test undo of paste.  XMLData/ODOObject-XML.m logs undos on the primitive value for relationships (to-one and to-many).</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="b6zgTDxT43_">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>XMLData/ODOObject(XML) importing code is poking relationships with primitive value setting w/o doing KVO.  Fine for initial imports, but for incremental imports, this could result in KVO not firing (with ODO, anyway).</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="jOD1mXwlT_d" expanded="yes" state="indeterminate">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>ODOObject</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <children>
+            <item id="kqnVPaftolH">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Figure out why NSMO subclasses the &apos;did&apos; KVO methods.</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="eGRnwbgNbIg">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>NSMO is a mutable proxy container for its to-many relationships, including implementing KVO methods for &apos;will&apos;/&apos;did&apos; change on set values.</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="dCAPXEyqB0r">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Inline retain count.  Maybe fix OFObject to use OSAtomic, trimming out OFSimpleLock stuff (and we don&apos;t have an ARM variant anyway).</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="kUSw6kNAxvE">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Build undo in -processPendingChanges</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="m8Dy0pPC7Oe" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Fault generation/clearing</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="f_pWk4JANmu" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Relationship mgmt</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="nqg4Zo75AMx" expanded="yes" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>On the -awakeFromInsert path, no undos should be generated.  Need a switch we can flip after calling -awakeFromInsert that says the object should track undos.</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+              <children>
+                <item id="oIWGpm6qb4w" state="checked">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>This should be automatic if we put the undo building in -processPendingChanges (not in KVC or primitive KVC methods)</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+              </children>
+            </item>
+            <item id="f6Ekpz6hcw_" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Update inverse relationships when setting.  Do this in primitive or non-primitive?</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="nKlqPA9wjkL">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Deal with getting/setting values on deleted/invalidated objects.  Instead of asploding, maybe we should assert and ignore it.</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="bOezDRk6EUf" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Replace values dictionary with array of values.</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+              <children>
+                <item id="be8m7r-ipld" state="checked">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>Ended up not sorting the attributes based on transient vs. schema; have a slot for every property in -properties order for now</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+                <item id="iLVhYmpGu4C" state="checked">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>First, the schema-represnted values (non-transient attributes and to-one relationships).</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+                <item id="bfo3I8-Hp9P" state="checked">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>Then, any transient attributes, to-one relationships and all to-many relationships</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+                <item id="kvmIYTUTbKM" state="checked">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>Cache an offset in the array in the property.</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+                <item id="mZ6TIabqr6P" state="checked">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>Use the shorter array for database snapshots.</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+              </children>
+            </item>
+            <item id="jt3aeAR6eYV" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Faulting</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+              <children>
+                <item id="kX3qtuD5b72" state="checked">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>For to-one relationships, store foreign key in values array and snapshots until -will{Access,Change}ValueForKey: is called for that key.  Then turn it into a fault</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+                <item id="kgATu2dwPog" state="checked">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>For to-many relationships, put nil in the array until it is queried.  Build the fault or empty set (for inserted owners) on the first access for read or write</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+              </children>
+            </item>
+            <item id="do4nUTUpg4A" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Editing to-many</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+              <children>
+                <item id="cBjFyj0YziV" state="checked">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>How to deal with adding to a to-many?  Disallow direct editing and only allow the to-one side to be updated?  Currently allowing direct setting of the primitive value for the to-many.</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+              </children>
+            </item>
+            <item id="kE-zsHGP-aV" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Editing to-one</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+              <children>
+                <item id="jXiR-JWkbeZ" state="checked">
+                  <style>
+                    <value key="font-weight">9</value>
+                  </style>
+                  <values>
+                    <text>
+                      <p>
+                        <run>
+                          <lit>When setting the to-one, if the inverse is to-many, check if the inverse value is set up (don&apos;t provoke it).  If the inverse isn&apos;t set up or the fault isn&apos;t cleared, leave it alone.  Then, when clearing the to-many fault, look in the uncommitted updates for objects that are pointing to the to-many owner and add them to the set.  In many cases, we should be able to avoid ever clearing the inverse to-many.</lit>
+                        </run>
+                      </p>
+                    </text>
+                  </values>
+                </item>
+              </children>
+            </item>
+          </children>
+        </item>
+        <item id="ghsj0u0818N" expanded="yes" state="checked">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>ODODatabase+ODOObject</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <children>
+            <item id="iiBY5b8mbpU" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Need a snapshot representation for -changedValues, -committedValuesForKeys: and UPDATE statement building</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+          </children>
+        </item>
+        <item id="joZgpzWb9W2" state="checked">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>ODOEditingContext</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <children>
+            <item id="p4Ic405Iznw" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Deal with additional edits performed while saving (validation/will{Insert,Update,Delete} and so forth).</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+            <item id="lRK6Jxdpeju" state="checked">
+              <style>
+                <value key="font-weight">9</value>
+              </style>
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>Need notification of changes.  Should these be batched?  If so, then we need some sort of -processPendingChanges, which sucks since we end up having to call it all over the darn place.</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+          </children>
+        </item>
+        <item id="jffIlXQ7Y2P">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Check whether the plist unarchiving code for QE works -- might need to specify identifiers on insertion of the resulting objects</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="iunZ4avmrNv" state="checked">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>The primary key attribute should neither be allowed to implement its setter, nor should it get one for free.  That is, the attribute marked as the primary key attribute should be read-only.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="eoGPrcy7HrT">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>When creating an object with a pre-given primary key, should we validate that the primary key isn&apos;t already in use?  Does SQLite enforce unique constraints (we aren&apos;t currently specifying UNIQUE on the pk).</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="aOyBjoYhnkh">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Check for relationships to non-inserted objects when saving.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="hWyZQpqD3HD">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Review {M,}EOEditingContext and MEOVirtualDatabase for edge cases.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="cpbOP4Xr3r0">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Ensure that the &apos;awake from&apos; methods are called on the right state transitions.  Deal with undo/redo of an insert (redo shouldn&apos;t re-call it), for example.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="eL_2yx4qXK-">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Undo support</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="epETQabKehj">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Distinguish between undo of an original insert and undo of an insert that was manually done to perform a delete, etc.  In some cases, undoing an insert will go to the deleted state; sometimes it will go to unregistered.  Alternatively we could disallow manually inserting objects that have been deleted to make our lives simpler.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="aIr65E83_Lk">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>More on undo -- If we undo a change and re-call -willSave when it saves, further changes could be made, which would screw stuff up.  CoreData has this problem, so we need to somehow check that this doesn&apos;t happen.  Maybe when a set of changes come through undo/redo we can freeze them and detect any further changes made?  Help?</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="mu6Nne0eDQ1">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Need automatic end-of-event -processPendingChanges</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+      </children>
+    </item>
+    <item id="pvw9iPTXrWr" expanded="yes">
+      <style>
+        <value key="font-weight">9</value>
+      </style>
+      <values>
+        <text>
+          <p>
+            <run>
+              <lit>Possible Enhancements</lit>
+            </run>
+          </p>
+        </text>
+      </values>
+      <children>
+        <item id="kzrkUsa2lhX">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Merge -[OFMEC reset] into ODOEC.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="dQjQykl8gAN">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Add a &apos;will delete&apos; notification.  Sign up for this in the inspectors and remove objects from the inspection set before they are deleted?</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+        <item id="edan6H5cst4">
+          <style>
+            <value key="font-weight">9</value>
+          </style>
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Try to stop caching date added and creation ordinal in OFMDatedObject (for deletion).  Instead, maybe get them from the database&apos;s committed snapshot when we need them during deletion (this requires that we be able to write our xaction file *after* all mutation is done but before we&apos;ve saved to SQLite and torched the committed snapshots for deleted objects).</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+        </item>
+      </children>
+    </item>
+  </root>
+</outline>

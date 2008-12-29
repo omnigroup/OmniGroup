@@ -1,0 +1,181 @@
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 30;
+	objects = {
+		06F69430FFA4CF53CD999A53 = {
+			isa = PBXProject;
+			mainGroup = 06F69431FFA4CF53CD999A53;
+			productRefGroup = 06F6943DFFA4CF53CD999A53;
+			projectDirPath = .;
+			targets = (
+				06F6943FFFA4CF53CD999A53,
+			);
+		};
+		06F69431FFA4CF53CD999A53 = {
+			children = (
+				06F69433FFA4CF53CD999A53,
+				06F69438FFA4CF53CD999A53,
+				06F6943DFFA4CF53CD999A53,
+			);
+			isa = PBXGroup;
+			name = MulticastTest;
+			refType = 4;
+		};
+		06F69433FFA4CF53CD999A53 = {
+			isa = PBXFileReference;
+			path = MulticastTest_main.m;
+			refType = 4;
+		};
+		06F69438FFA4CF53CD999A53 = {
+			children = (
+				06F69439FFA4CF53CD999A53,
+				06F6943AFFA4CF53CD999A53,
+				06F6943BFFA4CF53CD999A53,
+			);
+			isa = PBXGroup;
+			name = "External Frameworks and Libraries";
+			refType = 4;
+		};
+		06F69439FFA4CF53CD999A53 = {
+			isa = PBXFrameworkReference;
+			name = OmniBase.framework;
+			path = /System/Library/Frameworks/OmniBase.framework;
+			refType = 0;
+		};
+		06F6943AFFA4CF53CD999A53 = {
+			isa = PBXFrameworkReference;
+			name = OmniNetworking.framework;
+			path = /System/Library/Frameworks/OmniNetworking.framework;
+			refType = 0;
+		};
+		06F6943BFFA4CF53CD999A53 = {
+			isa = PBXFrameworkReference;
+			name = Foundation.framework;
+			path = /System/Library/Frameworks/Foundation.framework;
+			refType = 0;
+		};
+		06F6943DFFA4CF53CD999A53 = {
+			children = (
+				06F6943EFFA4CF53CD999A53,
+			);
+			isa = PBXGroup;
+			name = Products;
+			refType = 4;
+		};
+		06F6943EFFA4CF53CD999A53 = {
+			isa = PBXExecutableFileReference;
+			path = MulticastTest;
+			refType = 3;
+		};
+		06F6943FFFA4CF53CD999A53 = {
+			buildPhases = (
+				06F69440FFA4CF53CD999A53,
+				06F69441FFA4CF53CD999A53,
+				06F69443FFA4CF53CD999A53,
+				06F69447FFA4CF53CD999A53,
+			);
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "\"$(OMNI_FRAMEWORKS)\"";
+				OPTIMIZATION_CFLAGS = "";
+				OTHER_CFLAGS = "-Wall -O2";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+			};
+			conditionalBuildSettings = {
+			};
+			dependencies = (
+			);
+			isa = PBXToolTarget;
+			name = "MulticastTest (Tool)";
+			productInstallPath = "$(OMNI_$(OMNI_UPPER_PROJECT_TYPE)_DIR)";
+			productName = MulticastTest;
+			productReference = 06F6943EFFA4CF53CD999A53;
+			shouldUseHeadermap = 0;
+		};
+		06F69440FFA4CF53CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXHeadersBuildPhase;
+			name = Headers;
+		};
+		06F69441FFA4CF53CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+				06F69442FFA4CF53CD999A53,
+			);
+			isa = PBXSourcesBuildPhase;
+			name = Sources;
+		};
+		06F69442FFA4CF53CD999A53 = {
+			fileRef = 06F69433FFA4CF53CD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Debug,
+				);
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F69443FFA4CF53CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+				06F69444FFA4CF53CD999A53,
+				06F69445FFA4CF53CD999A53,
+				06F69446FFA4CF53CD999A53,
+			);
+			isa = PBXFrameworksBuildPhase;
+			name = "Frameworks & Libraries";
+		};
+		06F69444FFA4CF53CD999A53 = {
+			fileRef = 06F69439FFA4CF53CD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F69445FFA4CF53CD999A53 = {
+			fileRef = 06F6943AFFA4CF53CD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F69446FFA4CF53CD999A53 = {
+			fileRef = 06F6943BFFA4CF53CD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F69447FFA4CF53CD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXRezBuildPhase;
+			name = "ResourceManager Resources";
+		};
+	};
+	rootObject = 06F69430FFA4CF53CD999A53;
+}

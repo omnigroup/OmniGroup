@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Classes</key>
+	<dict>
+		<key>NSAttachmentTextStorage</key>
+		<dict>
+			<key>Attributes</key>
+			<dict>
+				<key>filename</key>
+				<dict>
+					<key>Description</key>
+					<string>The path to the file for the attachment</string>
+					<key>Name</key>
+					<string>file name</string>
+				</dict>
+			</dict>
+			<key>Description</key>
+			<string>Represents an inline text attachment.  This class is used mainly for make commands.</string>
+			<key>Name</key>
+			<string>text attachment</string>
+			<key>PluralName</key>
+			<string>text attachments</string>
+		</dict>
+		<key>NSTextStorage</key>
+		<dict>
+			<key>Attributes</key>
+			<dict>
+				<key>baselineOffset</key>
+				<dict>
+					<key>Description</key>
+					<string>Number of pixels shifted above or below the normal baseline.</string>
+					<key>Name</key>
+					<string>baseline offset</string>
+				</dict>
+				<key>fontName</key>
+				<dict>
+					<key>Description</key>
+					<string>The name of the font of the first character.</string>
+					<key>Name</key>
+					<string>font</string>
+				</dict>
+				<key>fontSize</key>
+				<dict>
+					<key>Description</key>
+					<string>The size in points of the first character.</string>
+					<key>Name</key>
+					<string>size</string>
+				</dict>
+				<key>foregroundColor</key>
+				<dict>
+					<key>Description</key>
+					<string>The color of the first character.</string>
+					<key>Name</key>
+					<string>color</string>
+				</dict>
+				<key>isUnderlined</key>
+				<dict>
+					<key>Description</key>
+					<string>Is the first character underlined?</string>
+					<key>Name</key>
+					<string>underlined</string>
+				</dict>
+				<key>superscriptLevel</key>
+				<dict>
+					<key>Description</key>
+					<string>The superscript level of the text.</string>
+					<key>Name</key>
+					<string>superscript</string>
+				</dict>
+				<key>text</key>
+				<dict>
+					<key>Description</key>
+					<string>The actual text content.</string>
+					<key>Name</key>
+					<string>text</string>
+				</dict>
+				<key>textAlignment</key>
+				<dict>
+					<key>Description</key>
+					<string>Alignment of the text.</string>
+					<key>Name</key>
+					<string>alignment</string>
+				</dict>
+			</dict>
+			<key>Description</key>
+			<string>Rich (styled) text</string>
+			<key>Name</key>
+			<string>text</string>
+			<key>PluralName</key>
+			<string>texts</string>
+		</dict>
+	</dict>
+	<key>Commands</key>
+	<dict>
+		<key>Bold</key>
+		<dict>
+			<key>Description</key>
+			<string>Bold some text</string>
+			<key>Name</key>
+			<string>bold</string>
+		</dict>
+		<key>Italicize</key>
+		<dict>
+			<key>Description</key>
+			<string>Italicize some text</string>
+			<key>Name</key>
+			<string>italicize</string>
+		</dict>
+		<key>Replace</key>
+		<dict>
+			<key>Arguments</key>
+			<dict>
+				<key>ignoreCase</key>
+				<dict>
+					<key>Description</key>
+					<string>When doing a string replace (not regular expression), this controls whether to consider differences in case as significant.</string>
+					<key>Name</key>
+					<string>ignore case</string>
+					<key>Number</key>
+					<string>singular</string>
+				</dict>
+				<key>regexp</key>
+				<dict>
+					<key>Description</key>
+					<string>Regular expression to find</string>
+					<key>Name</key>
+					<string>regexp</string>
+				</dict>
+				<key>replacement</key>
+				<dict>
+					<key>Description</key>
+					<string>Replacement string</string>
+					<key>Name</key>
+					<string>replacement</string>
+				</dict>
+				<key>string</key>
+				<dict>
+					<key>Description</key>
+					<string>String to find</string>
+					<key>Name</key>
+					<string>string</string>
+				</dict>
+				<key>wholeWords</key>
+				<dict>
+					<key>Description</key>
+					<string>When doing a string replace (not regular expression), this controls whether the pattern only matches whole words.</string>
+					<key>Name</key>
+					<string>whole words</string>
+					<key>Number</key>
+					<string>singular</string>
+				</dict>
+			</dict>
+			<key>Name</key>
+			<string>replace</string>
+		</dict>
+		<key>Unbold</key>
+		<dict>
+			<key>Description</key>
+			<string>Unbold some text</string>
+			<key>Name</key>
+			<string>unbold</string>
+		</dict>
+		<key>Underline</key>
+		<dict>
+			<key>Description</key>
+			<string>Underline some text</string>
+			<key>Name</key>
+			<string>underline</string>
+		</dict>
+		<key>Unitalicize</key>
+		<dict>
+			<key>Description</key>
+			<string>Unitalicize some text</string>
+			<key>Name</key>
+			<string>unitalicize</string>
+		</dict>
+		<key>Ununderline</key>
+		<dict>
+			<key>Description</key>
+			<string>Ununderline some text</string>
+			<key>Name</key>
+			<string>ununderline</string>
+		</dict>
+	</dict>
+	<key>Description</key>
+	<string>Extended functionality for text.</string>
+	<key>Enumerations</key>
+	<dict>
+		<key>TextAlignment</key>
+		<dict>
+			<key>center</key>
+			<dict>
+				<key>Name</key>
+				<string>center</string>
+			</dict>
+			<key>justified</key>
+			<dict>
+				<key>Name</key>
+				<string>justified</string>
+			</dict>
+			<key>left</key>
+			<dict>
+				<key>Name</key>
+				<string>left</string>
+			</dict>
+			<key>natural</key>
+			<dict>
+				<key>Name</key>
+				<string>natural</string>
+			</dict>
+			<key>right</key>
+			<dict>
+				<key>Name</key>
+				<string>right</string>
+			</dict>
+		</dict>
+	</dict>
+	<key>Name</key>
+	<string>Extended Text Suite</string>
+	<key>Synonyms</key>
+	<dict>
+		<key>catr</key>
+		<dict>
+			<key>Description</key>
+			<string>This subdivides the text into chunks that all have the same attributes.</string>
+			<key>Name</key>
+			<string>attribute run</string>
+			<key>PluralName</key>
+			<string>attribute runs</string>
+		</dict>
+		<key>cha </key>
+		<dict>
+			<key>Description</key>
+			<string>This subdivides the text into characters.</string>
+			<key>Name</key>
+			<string>character</string>
+			<key>PluralName</key>
+			<string>characters</string>
+		</dict>
+		<key>cpar</key>
+		<dict>
+			<key>Description</key>
+			<string>This subdivides the text into paragraphs.</string>
+			<key>Name</key>
+			<string>paragraph</string>
+			<key>PluralName</key>
+			<string>paragraphs</string>
+		</dict>
+		<key>cwor</key>
+		<dict>
+			<key>Description</key>
+			<string>This subdivides the text into words.</string>
+			<key>Name</key>
+			<string>word</string>
+			<key>PluralName</key>
+			<string>words</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

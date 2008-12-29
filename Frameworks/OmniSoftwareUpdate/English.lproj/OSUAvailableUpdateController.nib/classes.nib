@@ -1,0 +1,42 @@
+{
+    IBClasses =     (
+                {
+            CLASS = FirstResponder;
+            LANGUAGE = ObjC;
+            SUPERCLASS = NSObject;
+        },
+                {
+            ACTIONS =             {
+                installSelectedItem = id;
+            };
+            CLASS = OSUAvailableUpdateController;
+            LANGUAGE = ObjC;
+            OUTLETS =             {
+                "_appIconImageView" = NSImageView;
+                "_availableItemController" = NSArrayController;
+                "_itemTableView" = NSTableView;
+                "_itemsAndReleaseNotesSplitView" = NSSplitView;
+                "_messageTextField" = NSTextField;
+                "_releaseNotesWebView" = WebView;
+                "_titleTextField" = NSTextField;
+            };
+            SUPERCLASS = NSWindowController;
+        },
+                {
+            CLASS = OSUFlippedView;
+            LANGUAGE = ObjC;
+            SUPERCLASS = NSView;
+        },
+                {
+            CLASS = OSUItemTableView;
+            LANGUAGE = ObjC;
+            SUPERCLASS = NSTableView;
+        },
+                {
+            CLASS = OSUThinBorderView;
+            LANGUAGE = ObjC;
+            SUPERCLASS = NSView;
+        }
+    );
+    IBVersion = 1;
+}

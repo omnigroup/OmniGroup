@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>OmniNetworking</string>
+	<key>CFBundleGetInfoString</key>
+	<string></string>
+	<key>CFBundleIconFile</key>
+	<string></string>
+	<key>CFBundleIdentifier</key>
+	<string>$(OMNI_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string></string>
+	<key>CFBundlePackageType</key>
+	<string>FMWK</string>
+	<key>CFBundleShortVersionString</key>
+	<string></string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>2003A</string>
+	<key>OFRegistrations</key>
+	<dict>
+		<key>NSException</key>
+		<dict>
+			<key>displayNames</key>
+			<dict>
+				<key>ONHostNameLookupErrorExceptionName</key>
+				<string>Host lookup error</string>
+				<key>ONHostNotFoundExceptionName</key>
+				<string>Host not found</string>
+				<key>ONInternetSocketBindFailedExceptionName</key>
+				<string>Bind failed</string>
+				<key>ONInternetSocketConnectFailedExceptionName</key>
+				<string>Connect failed</string>
+				<key>ONInternetSocketConnectTemporarilyFailedExceptionName</key>
+				<string>Busy, retry</string>
+				<key>ONInternetSocketGetNameFailedExceptionName</key>
+				<string>No such service</string>
+				<key>ONInternetSocketNotConnectedExceptionName</key>
+				<string>Disconnected</string>
+				<key>ONInternetSocketReadFailedExceptionName</key>
+				<string>Read error</string>
+				<key>ONInternetSocketUserAbortExceptionName</key>
+				<string>User stopped</string>
+				<key>ONInternetSocketWriteFailedExceptionName</key>
+				<string>Write error</string>
+				<key>ONMulticastSocketFailedToSelectLooping</key>
+				<string>Multicast failure</string>
+				<key>ONMulticastSocketGroupMembershipOperationFailed</key>
+				<string>Multicast failure</string>
+				<key>ONMulticastSocketNonMulticastAddress</key>
+				<string>Non-multicast address</string>
+				<key>ONMulticastSocketReuseSelectionFailed</key>
+				<string>Multicast failure</string>
+				<key>ONMulticastSocketSendInterfaceSelectionFailed</key>
+				<string>Multicast failure</string>
+				<key>ONMulticastSocketSetTimeToLiveFailed</key>
+				<string>Multicast failure</string>
+				<key>ONTCPSocketAcceptFailedExceptionName</key>
+				<string>Could not accept</string>
+				<key>ONTCPSocketListenFailedExceptionName</key>
+				<string>Could not listen</string>
+			</dict>
+		</dict>
+	</dict>
+</dict>
+</plist>

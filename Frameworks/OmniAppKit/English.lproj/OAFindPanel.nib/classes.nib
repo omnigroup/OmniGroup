@@ -1,0 +1,51 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {replace = id; replaceAll = id; replaceAndFind = id; }; 
+            CLASS = FirstResponder; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {
+                enterSelection = id; 
+                findNext = id; 
+                findPrevious = id; 
+                findTypeChanged = id; 
+                panelFindNext = id; 
+                panelFindNextAndClosePanel = id; 
+                panelFindPrevious = id; 
+                replace = id; 
+                replaceAll = id; 
+                replaceAndFind = id; 
+                showFindPanel = id; 
+            }; 
+            CLASS = OAFindController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                additionalControlsBox = NSBox; 
+                currentPattern = id; 
+                findNextButton = NSButton; 
+                findPanel = NSWindow; 
+                findPreviousButton = NSButton; 
+                findTypeMatrix = NSMatrix; 
+                ignoreCaseButton = NSButton; 
+                regularExpressionControlsView = NSView; 
+                replaceAllButton = NSButton; 
+                replaceAndFindButton = NSButton; 
+                replaceButton = NSButton; 
+                replaceInSelectionCheckbox = NSButton; 
+                replaceTextForm = NSForm; 
+                searchTextForm = NSForm; 
+                stringControlsView = NSView; 
+                subexpressionPopUp = NSPopUpButton; 
+                wholeWordButton = NSButton; 
+            }; 
+            SUPERCLASS = OFObject; 
+        }, 
+        {CLASS = OBObject; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = OFObject; LANGUAGE = ObjC; SUPERCLASS = OBObject; }, 
+        {CLASS = "java.lang.Object"; LANGUAGE = Java; }
+    ); 
+    IBVersion = 1; 
+}

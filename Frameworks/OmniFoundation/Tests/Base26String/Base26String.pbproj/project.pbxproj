@@ -1,0 +1,181 @@
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 30;
+	objects = {
+		06F69494FFA4D2DFCD999A53 = {
+			isa = PBXProject;
+			mainGroup = 06F69495FFA4D2DFCD999A53;
+			productRefGroup = 06F694A1FFA4D2DFCD999A53;
+			projectDirPath = .;
+			targets = (
+				06F694A3FFA4D2DFCD999A53,
+			);
+		};
+		06F69495FFA4D2DFCD999A53 = {
+			children = (
+				06F69497FFA4D2DFCD999A53,
+				06F6949CFFA4D2DFCD999A53,
+				06F694A1FFA4D2DFCD999A53,
+			);
+			isa = PBXGroup;
+			name = Base26String;
+			refType = 4;
+		};
+		06F69497FFA4D2DFCD999A53 = {
+			isa = PBXFileReference;
+			path = Base26String_main.m;
+			refType = 4;
+		};
+		06F6949CFFA4D2DFCD999A53 = {
+			children = (
+				06F6949DFFA4D2DFCD999A53,
+				06F6949EFFA4D2DFCD999A53,
+				06F6949FFFA4D2DFCD999A53,
+			);
+			isa = PBXGroup;
+			name = "External Frameworks and Libraries";
+			refType = 4;
+		};
+		06F6949DFFA4D2DFCD999A53 = {
+			isa = PBXFrameworkReference;
+			name = OmniBase.framework;
+			path = /System/Library/Frameworks/OmniBase.framework;
+			refType = 0;
+		};
+		06F6949EFFA4D2DFCD999A53 = {
+			isa = PBXFrameworkReference;
+			name = Foundation.framework;
+			path = /System/Library/Frameworks/Foundation.framework;
+			refType = 0;
+		};
+		06F6949FFFA4D2DFCD999A53 = {
+			isa = PBXFrameworkReference;
+			name = OmniFoundation.framework;
+			path = /System/Library/Frameworks/OmniFoundation.framework;
+			refType = 0;
+		};
+		06F694A1FFA4D2DFCD999A53 = {
+			children = (
+				06F694A2FFA4D2DFCD999A53,
+			);
+			isa = PBXGroup;
+			name = Products;
+			refType = 4;
+		};
+		06F694A2FFA4D2DFCD999A53 = {
+			isa = PBXExecutableFileReference;
+			path = Base26String;
+			refType = 3;
+		};
+		06F694A3FFA4D2DFCD999A53 = {
+			buildPhases = (
+				06F694A4FFA4D2DFCD999A53,
+				06F694A5FFA4D2DFCD999A53,
+				06F694A7FFA4D2DFCD999A53,
+				06F694ABFFA4D2DFCD999A53,
+			);
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "\"$(OMNI_FRAMEWORKS)\"";
+				OPTIMIZATION_CFLAGS = "";
+				OTHER_CFLAGS = "-Wall -O2";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+			};
+			conditionalBuildSettings = {
+			};
+			dependencies = (
+			);
+			isa = PBXToolTarget;
+			name = "Base26String (Tool)";
+			productInstallPath = /usr/local/bin;
+			productName = Base26String;
+			productReference = 06F694A2FFA4D2DFCD999A53;
+			shouldUseHeadermap = 0;
+		};
+		06F694A4FFA4D2DFCD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXHeadersBuildPhase;
+			name = Headers;
+		};
+		06F694A5FFA4D2DFCD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+				06F694A6FFA4D2DFCD999A53,
+			);
+			isa = PBXSourcesBuildPhase;
+			name = Sources;
+		};
+		06F694A6FFA4D2DFCD999A53 = {
+			fileRef = 06F69497FFA4D2DFCD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Debug,
+				);
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F694A7FFA4D2DFCD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+				06F694A8FFA4D2DFCD999A53,
+				06F694A9FFA4D2DFCD999A53,
+				06F694AAFFA4D2DFCD999A53,
+			);
+			isa = PBXFrameworksBuildPhase;
+			name = "Frameworks & Libraries";
+		};
+		06F694A8FFA4D2DFCD999A53 = {
+			fileRef = 06F6949DFFA4D2DFCD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F694A9FFA4D2DFCD999A53 = {
+			fileRef = 06F6949EFFA4D2DFCD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F694AAFFA4D2DFCD999A53 = {
+			fileRef = 06F6949FFFA4D2DFCD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F694ABFFA4D2DFCD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXRezBuildPhase;
+			name = "ResourceManager Resources";
+		};
+	};
+	rootObject = 06F69494FFA4D2DFCD999A53;
+}

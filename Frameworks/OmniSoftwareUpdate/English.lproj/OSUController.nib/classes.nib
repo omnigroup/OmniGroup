@@ -1,0 +1,33 @@
+{
+    IBClasses =     (
+                {
+            CLASS = FirstResponder;
+            LANGUAGE = ObjC;
+            SUPERCLASS = NSObject;
+        },
+                {
+            ACTIONS =             {
+                cancel = id;
+                downloadNow = id;
+                privacyNoticePanelOK = id;
+                privacyNoticePanelShowPreferences = id;
+                showMoreInfo = id;
+            };
+            CLASS = OSUController;
+            LANGUAGE = ObjC;
+            OUTLETS =             {
+                enableHardwareCollectionButton = NSButton;
+                privacyNoticeAppIconImageView = NSImageView;
+                privacyNoticeMessageTextField = NSTextField;
+                privacyNoticePanel = NSPanel;
+                privacyNoticeTitleTextField = NSTextField;
+            };
+            SUPERCLASS = NSObject;
+        },
+                {
+            CLASS = "java.lang.Object";
+            LANGUAGE = Java;
+        }
+    );
+    IBVersion = 1;
+}

@@ -1,0 +1,400 @@
+%{
+//
+//  OGScaleGrammar.ym
+//  OmniGraffle
+//
+//  Created by Wim Lewis on Wed Feb 16 2005.
+//  Copyright (c) 2005-2006 Omni Development. All rights reserved.
+//
+
+#import <OmniFoundation/OFUnit.h>
+#import <OmniFoundation/OFUnits.h>
+#import <OmniFoundation/OFRationalNumber.h>
+#import <OmniFoundation/OFDimensionedValue.h>
+#import <OmniFoundation/NSScanner-OFExtensions.h>
+#import <OmniFoundation/NSNumber-OFExtensions.h>
+
+RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/tags/OmniSourceRelease/2008-09-09/OmniGroup/Frameworks/OmniFoundation/Formatters.subproj/OFScaleGrammar.ym 92224 2007-10-03 00:08:05Z wiml $");
+
+#ifdef DEBUG
+#define YYDEBUG 1
+#endif
+
+%}
+
+%pure_parser
+
+%union {
+    NSString *str;
+    NSNumber *num;
+    OFUnit *unit;
+    OFDimensionedValue *num_unit;
+}
+
+%{
+
+/* scanContext is the struct passed to yyparse; it contains the scanner and a place to stash the result values */
+struct scanContext {
+    int toExpect;            // Initial token to be returned by yylex
+    NSScanner *scanner;      // String scanner
+    BOOL skippingWhitespace; // return WSP token, or just ignore?
+    
+    // Return value when parsing a scale.
+    OFDimensionedValue *left, *right;
+    
+    // Return value and default unit when parsing a distance expression.
+    OFDimensionedValue *expr;
+    OFUnit *defaultUnit;
+    
+    // Localization info for the lexer
+    NSCharacterSet *parsePunctuationSet;
+    NSCharacterSet *parseUnitsSet;
+    NSCharacterSet *parseWhitespaceSet;
+    NSString *parseDecimalPoint;
+    OFUnits *scales;
+};
+
+#define YYPARSE_PARAM scanContext
+#define YYCTXT ((struct scanContext *)scanContext)
+#define YYLEX_PARAM scanContext
+
+/* functions called by yyparse() */
+static int yylex(YYSTYPE *lvalp, void *context);
+static NSNumber *numFromDecimal(NSString *a, NSString *b);
+static NSNumber *negate(NSNumber *n)
+{
+    return [OFRationalNumber numberByPerformingOperation:OFArithmeticOperation_Multiply withNumber:n andNumber:[NSNumber numberWithInt:-1]];
+}
+#ifdef YYDEBUG
+static void yyerror(char *msg) {
+    NSLog(@"OGScale: error: %s", msg);
+}
+#else
+#define yyerror(msg)  do{}while(0)
+#endif
+
+/* yyparse() is the only other non-static symbol defined here: give it a non-colliding name */
+#define yyparse OFScaleGrammar_parse
+
+#define NOT_NULL(x) if(x == nil) { YYERROR; }
+
+%}
+
+%token <str> UNITS
+%token <str> DIGITS
+%token <str> RADIX
+
+%token EXPECT_SCALE
+%token EXPECT_EXPR
+
+/* whitespace */
+%token WSP
+
+/* Semantic types of different nonterminals */
+%type <num> simpleNumericValue numericValue floatValue fraction intValue 
+%type <num_unit> distance dimExpr dimTerm
+%type <num> expr term
+%type <unit> unit
+%type <str> first_digits
+
+/* Precedence and associativity */
+%left '+' '-'
+%nonassoc UNITS
+%left '*' '/'
+%nonassoc FRAC
+%left UMINUS
+
+%%
+
+/* We want to be able to parse either a scale string or a distance expression, depending on our entry point. We fake this up by inserting a token at the beginning of the yylex() output which indicates which nonterminal to proceed with. */
+parse: EXPECT_SCALE scaleString
+     | EXPECT_EXPR dimExpr { YYCTXT->expr = $2; }
+     ;
+
+scaleString:  distance separator distance
+    { YYCTXT->left = $1; YYCTXT->right = $3; }
+    |     numericValue separator numericValue
+    { YYCTXT->left = [OFDimensionedValue valueWithDimension:nil value:$1]; YYCTXT->right = [OFDimensionedValue valueWithDimension:nil value:$3]; }
+    |     simpleNumericValue '%'
+    { YYCTXT->left = [OFDimensionedValue valueWithDimension:nil value:$1]; YYCTXT->right = [OFDimensionedValue valueWithDimension:nil integerValue:100]; }
+    ;
+
+separator: '=' | ':' ;
+
+distance: numericValue unit { $$ = [OFDimensionedValue valueWithDimension:$2 value:$1]; }
+        | numericValue unit numericValue
+        {
+            OFUnit *subunit = [$2 postfixUnit];
+            if (subunit == nil) { YYERROR; }
+            OFDimensionedValue *supervalue = [OFDimensionedValue valueWithDimension:$2 value:$1];
+            OFDimensionedValue *subvalue = [OFDimensionedValue valueWithDimension:subunit value:$3];
+            $$ = [YYCTXT->scales numberByPerformingOperation:OFArithmeticOperation_Add withNumber:supervalue andNumber:subvalue];
+            NOT_NULL($$);
+        }
+        | numericValue unit distance
+        {
+            OFDimensionedValue *supervalue = [OFDimensionedValue valueWithDimension:$2 value:$1];
+            $$ = [YYCTXT->scales numberByPerformingOperation:OFArithmeticOperation_Add withNumber:supervalue andNumber:$3];
+            NOT_NULL($$);
+        }
+        ;
+
+/* Expressions : simple math. We have parallel rules for dimensioned and non-dimensioned values. */
+
+expr : term
+     | expr '+' expr  { $$ = [OFRationalNumber numberByPerformingOperation:OFArithmeticOperation_Add withNumber:$1 andNumber:$3]; NOT_NULL($$); }
+     | expr '-' expr  { $$ = [OFRationalNumber numberByPerformingOperation:OFArithmeticOperation_Subtract withNumber:$1 andNumber:$3]; NOT_NULL($$); }
+     | '-' expr  %prec UMINUS     { $$ = negate($2); }
+     | '+' expr  %prec UMINUS     { $$ = $2; }
+     ;
+dimExpr : dimTerm 
+        | dimExpr '+' dimExpr             { $$ = [YYCTXT->scales numberByPerformingOperation:OFArithmeticOperation_Add withNumber:$1 andNumber:$3]; NOT_NULL($$); }
+        | dimExpr '-' dimExpr             { $$ = [YYCTXT->scales numberByPerformingOperation:OFArithmeticOperation_Subtract withNumber:$1 andNumber:$3]; NOT_NULL($$); }
+        | '-' dimExpr  %prec UMINUS       { $$ = [OFDimensionedValue valueWithDimension:[$2 dimension] value:negate([$2 value])]; }
+        | '+' dimExpr  %prec UMINUS       { $$ = $2; }
+        ;
+
+term : '(' expr ')'   { $$ = $2; }
+     | term '*' term  { $$ = [OFRationalNumber numberByPerformingOperation:OFArithmeticOperation_Multiply withNumber:$1 andNumber:$3]; NOT_NULL($$); }
+     | term '/' term  { $$ = [OFRationalNumber numberByPerformingOperation:OFArithmeticOperation_Divide withNumber:$1 andNumber:$3]; NOT_NULL($$); }
+     | numericValue
+     ;
+dimTerm : '(' dimExpr ')' { $$ = $2; }
+     | dimTerm '*' term
+     {
+         NSNumber *product = [OFRationalNumber numberByPerformingOperation:OFArithmeticOperation_Multiply withNumber:[$1 value] andNumber:$3];
+         NOT_NULL(product);
+         $$ = [OFDimensionedValue valueWithDimension:[$1 dimension] value:product];
+     }
+     | dimTerm '/' term
+     {
+         NSNumber *division = [OFRationalNumber numberByPerformingOperation:OFArithmeticOperation_Divide withNumber:[$1 value] andNumber:$3];
+         NOT_NULL(division);
+         $$ = [OFDimensionedValue valueWithDimension:[$1 dimension] value:division];
+     }
+     | term '*' dimTerm
+     {
+         NSNumber *product = [OFRationalNumber numberByPerformingOperation:OFArithmeticOperation_Multiply withNumber:$1 andNumber:[$3 value]];
+         NOT_NULL(product);
+         $$ = [OFDimensionedValue valueWithDimension:[$3 dimension] value:product];
+     }
+     /* We don't have a rule for term '/' dimTerm because it would produce new units we can't represent (and don't want to). */
+     | distance
+     | numericValue  { if (YYCTXT->defaultUnit == nil) {YYERROR;} $$ = [OFDimensionedValue valueWithDimension:YYCTXT->defaultUnit value:$1]; }
+     ;
+
+/* General-purpose input syntax */
+
+simpleNumericValue: floatValue | intValue;
+
+numericValue: simpleNumericValue 
+            | fraction 
+            | simpleNumericValue fraction { $$ = [OFRationalNumber numberByPerformingOperation:OFArithmeticOperation_Add withNumber:$1 andNumber:$2]; NOT_NULL($$); }
+            ;
+
+fraction: intValue '/' intValue  %prec FRAC
+            { $$ = [OFRationalNumber numberByPerformingOperation:OFArithmeticOperation_Divide withNumber:$1 andNumber:$3]; NOT_NULL($$); };
+
+
+first_digits: DIGITS { $$ = $1; YYCTXT->skippingWhitespace = NO; }
+first_radix: RADIX { YYCTXT->skippingWhitespace = NO; }
+eat_wsp: WSP { YYCTXT->skippingWhitespace = YES; }
+       |     { YYCTXT->skippingWhitespace = YES; }
+       ;
+
+intValue: first_digits eat_wsp { $$ = numFromDecimal($1, nil); };
+
+/* note no whitespace is allowed within a number! */
+floatValue: first_digits RADIX DIGITS eat_wsp { $$ = numFromDecimal($1, $3); }
+          | first_radix DIGITS eat_wsp { $$ = numFromDecimal((NSString *)CFSTR("0"), $2);  } 
+          ;
+
+unit: UNITS
+    {
+        $$ = [YYCTXT->scales unitFromString:$1];
+        if ($$ == nil) {
+            YYERROR;
+        }
+    };
+    
+
+%%
+
+static int yylex(YYSTYPE *_lvalp, void *_context)
+{
+    struct scanContext *context = _context;
+    NSString **lvalp = &(_lvalp->str); /* a noop, but typesafe */
+    NSString *dot;
+    
+    if (context->toExpect) {
+        int expecting = context->toExpect;
+        context->toExpect = 0;
+        return expecting;
+    }
+    
+    NSScanner *scanner = context->scanner;
+    NSString *buf;
+    
+    if (context->skippingWhitespace) {
+        [scanner scanCharactersFromSet:context->parseWhitespaceSet intoString:NULL];
+    } else {
+        NSString *wsp = nil;
+        if ([scanner scanCharactersFromSet:context->parseWhitespaceSet intoString:&wsp]) {
+            *lvalp = wsp;
+            return WSP;
+        }
+    }
+    
+    if ([scanner isAtEnd]) {
+        *lvalp = nil;
+        return YYEOF;
+    }
+    
+    if ([scanner scanCharactersFromSet:[NSCharacterSet decimalDigitCharacterSet] intoString:&buf]) {
+        *lvalp = buf;
+        return DIGITS;
+    }
+    
+    if ((context->parseDecimalPoint != nil && [scanner scanString:context->parseDecimalPoint intoString:&dot]) ||
+        [scanner scanString:@"." intoString:&dot]) {
+        *lvalp = dot;
+        return RADIX;
+    }
+    
+    unichar nextCharacter = [[scanner string] characterAtIndex:[scanner scanLocation]];
+    if ([context->parsePunctuationSet characterIsMember:nextCharacter]) {
+        [scanner scanStringOfLength:1 intoString:lvalp];
+        return nextCharacter;
+    }
+    
+    if ([scanner scanCharactersFromSet:context->parseUnitsSet intoString:&buf]) {
+        *lvalp = buf;
+        return UNITS;
+    }
+    
+    [scanner scanStringOfLength:1 intoString:&buf];
+#if YYDEBUG
+    if (yydebug) {
+        NSLog(@"OGParse: unexpected character '%@'", buf);
+    }
+#endif
+    *lvalp = buf;
+    return '?';
+}
+
+static NSNumber *numFromDecimal(NSString *a, NSString *b)
+{
+    if ([NSString isEmptyString:b]) {
+        if ([a length] < 9)
+            return [NSNumber numberWithInt:[a intValue]];
+        else if ([a length] < 18) {
+            // We want to call NSScanLongLong(), but that's not public API, so we have to call it via NSScanner.
+            NSScanner *scan = [[NSScanner alloc] initWithString:a];
+            long long v = 0;
+            if ([scan scanLongLong:&v]) {
+                [scan release];
+                return [NSNumber numberWithLongLong:v];
+            } else {
+                [scan release];
+            }
+        }
+    } else {
+        a = [NSString stringWithStrings:a, @".", b, nil];
+    }
+
+    return [NSNumber numberWithDouble:[a doubleValue]];
+}
+
+static int OGRunParser(struct scanContext *scanContext, NSString *str)
+{
+    int yyresult;
+
+    if ([NSString isEmptyString:str])
+        return 1;
+        
+    scanContext->scanner = [[NSScanner alloc] initWithString:str];
+    [scanContext->scanner setCharactersToBeSkipped:nil];
+    scanContext->skippingWhitespace = YES;
+    yyresult = yyparse(scanContext);
+    /* Nonzero --> Error return. We don't really care about the reason for the failure. */
+    [scanContext->scanner release];
+    scanContext->scanner = nil;
+
+    return yyresult;
+}
+
+#if 0
+BOOL OGScaleParse(OGScale *into, NSString *str)
+{
+    struct scanContext scanContext;
+    
+    scanContext.toExpect = EXPECT_SCALE;
+    if (OGRunParser(&scanContext, str) != 0) {
+        /* Error return. We don't really care about the reason for the failure. */
+        return NO;
+    }
+
+    /* Success return from the parser indicates it's syntactically valid; make sure it's somewhat sane. */
+    
+    if (scanContext.left.number <= 0 || scanContext.right.number <= 0 ||
+        !isfinite(scanContext.left.number/scanContext.right.number) ||
+        !isnormal(scanContext.left.number/scanContext.right.number))
+        return NO;  // Sorry, bub.
+    
+    [into setDisplay:scanContext.right.number inUnits:scanContext.right.unit
+            andPaper:scanContext.left.number inUnits:scanContext.left.unit];
+    return YES;
+}
+#endif
+
+@implementation OFUnits (InputParsing)
+
+- (void)_initScanContext:(struct scanContext *)scanContext
+{
+    /* TODO: Cache some of these things. */
+    
+    NSMutableCharacterSet *temporarySet = [[NSMutableCharacterSet alloc] init];
+    [temporarySet formUnionWithCharacterSet:[NSCharacterSet letterCharacterSet]];
+    [temporarySet formUnionWithCharacterSet:[NSCharacterSet characterSetWithCharactersInString:@"\"'"]];
+    scanContext->parseUnitsSet = temporarySet;
+    
+    scanContext->parsePunctuationSet = [NSCharacterSet characterSetWithCharactersInString:@"+-/(*)=:%"];
+    
+    NSString *decimalSeparator = [[NSUserDefaults standardUserDefaults] valueForKey:NSDecimalSeparator];
+    if (decimalSeparator && ![decimalSeparator isEqualToString:@"."])
+        scanContext->parseDecimalPoint = [decimalSeparator copy];
+    else
+        scanContext->parseDecimalPoint = nil;
+    
+    scanContext->parseWhitespaceSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    
+    scanContext->scales = self;
+
+#if 0
+#if YYDEBUG
+    yydebug = 1;
+#endif
+#endif
+}
+
+- (OFDimensionedValue *)parseString:(NSString *)str defaultUnit:(OFUnit *)defaultUnit
+{
+    struct scanContext scanContext;
+    
+    [self _initScanContext:&scanContext];
+    scanContext.toExpect = EXPECT_EXPR;
+    scanContext.defaultUnit = defaultUnit;
+    
+    if (OGRunParser(&scanContext, str) != 0) {
+        /* Error return. We don't really care about the reason for the failure. */
+        return nil;
+    }
+    
+    /* Success return from the parser indicates it's syntactically valid; make sure it's somewhat sane. */
+    /* TODO: sanity, as mentioned above */
+    
+    return scanContext.expr;
+}
+
+@end
+

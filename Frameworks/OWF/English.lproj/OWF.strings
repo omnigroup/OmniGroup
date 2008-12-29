@@ -1,0 +1,299 @@
+/* simpleTarget targetTypeFormatString - generic description when no type string is supplied */
+"%@ File" = "%@ File";
+
+/* httpsession status for HTTP/0.9 servers */
+"%@ is ancient, good luck!" = "%@ is ancient, good luck!";
+
+/* webpipeline timed refresh NSCalendarDate format */
+"%b %d %H:%M:%S" = "%1$b %2$d %3$H:%4$M:%5$S";
+
+/* fileprocessor lastChangeDate calendar format */
+"%d-%b-%Y %H:%M:%S %z" = "%1$d-%2$b-%3$Y %4$H:%5$M:%6$S %7$z";
+
+/* netlocation string to remove from addresses when displaying them in short form */
+".com" = ".com";
+
+/* OWFileProcessor error: file access denied */
+"<%@> is not allowed to access <%@>" = "<%1$@> is not allowed to access <%2$@>";
+
+/* task hours time interval since start */
+"about %.1f hours" = "about %.1f hours";
+
+/* task minutes time interval since start */
+"about %d minutes" = "about %d minutes";
+
+/* task seconds time interval since start */
+"about %d seconds" = "about %d seconds";
+
+/* task one minute time interval since start */
+"about a minute" = "about a minute";
+
+/* task one hour time interval since start */
+"about an hour" = "about an hour";
+
+/* task statusString */
+"Activity finished" = "Activity finished";
+
+/* httpsession status */
+"Authorizing %@" = "Authorizing %@";
+
+/* httpsession status */
+"Awaiting document from %@" = "Awaiting document from %@";
+
+/* httpsession status */
+"Awaiting document info from %@" = "Awaiting document info from %@";
+
+/* pipeline status */
+"Beginning fetch" = "Beginning fetch";
+
+/* datastream error: format items are path and errno string */
+"Can't create file at path %@: %s" = "Can't create file at path %1$@: %2$s";
+
+/* datastream error: format items are path and errno string */
+"Can't open file %@ for writing: %s" = "Can't open file %1$@ for writing: %2$s";
+
+/* ftpsession status */
+"Changing directory to %@" = "Changing directory to %@";
+
+/* ftpsession error - CWD failed */
+"Changing directory to %@ failed: %@" = "Changing directory to %1$@ failed: %2$@";
+
+/* ftpsession status - will send FEAT command */
+"Checking server features" = "Checking server features";
+
+/* ftpsession status - will send SYST command */
+"Checking system type" = "Checking system type";
+
+/* contentinfo name of processes which have no parents */
+"Closing" = "Closing";
+
+/* ftpsession error - connection rejected */
+"Connection to %@ failed: %@" = "Connection to %1$@ failed: %2$@";
+
+/* session status */
+"Contacted %@" = "Contacted %@";
+
+/* ftp session status
+   http session status */
+"Contacting %@" = "Contacting %@";
+
+/* ftpsession error - MKD command failed */
+"Creation of directory %@ failed: %@" = "Creation of directory %1$@ failed: %2$@";
+
+/* error when authenticating - exception raised while using the credentials cache - parameters are exception reason and name - this should rarely if ever happen */
+"Credential cache access exception: %@ (%@)" = "Credential cache access exception: %1$@ (%2$@)";
+
+/* data: url error */
+"data: URL does not contain comma" = "data: URL does not contain comma";
+
+/* data: url error */
+"data: URL parameter has no value" = "data: URL parameter has no value";
+
+/* ftpsession error - DELE command failed */
+"Delete of %@ failed: %@" = "Delete of %1$@ failed: %2$@";
+
+/* default suggested filename if not html */
+"download" = "download";
+
+/* error when authenticating - an exception was raised. parameters are the exception reason and the exception name. */
+"Exception raised while gathering credentials: %@ (%@)" = "Exception raised while gathering credentials: %1$@ (%2$@)";
+
+/* processor status */
+"Exiting" = "Exiting";
+
+/* ftpsession error - TYPE command failed */
+"Failed to change transfer type: %@" = "Failed to change transfer type: %@";
+
+/* pipeline status */
+"Fetch aborted" = "Fetch aborted";
+
+/* ftpsession error */
+"Fetch stopped" = "Fetch stopped";
+
+/* pipeline status */
+"Fetching" = "Fetching";
+
+/* ftp session status
+   http session status */
+"Finding %@" = "Finding %@";
+
+/* fileprocessor status */
+"Finished reading" = "Finished reading";
+
+/* ftpsession error */
+"FTP data contains characters which cannot be converted to ISO Latin-1" = "FTP data contains characters which cannot be converted to ISO Latin-1";
+
+/* ftpsession error */
+"FTP does not support the \"%@\" method" = "FTP does not support the \"%@\" method";
+
+/* ftpsession error - dangerous metacharacters in a command argument
+   ftpsession error - unexpected or unencodable characters in a command argument */
+"FTP parameter contains invalid characters" = "FTP parameter contains invalid characters";
+
+/* contenttype readable name of 'text/html' encodings */
+"HTML" = "HTML";
+
+/* default address format to use in your country when user just types a single word */
+"http://www.%@.com/" = "http://www.%@.com/";
+
+/* contenttype readable name of 'image/' encodings */
+"Image" = "Image";
+
+/* ftpsession error - MLST (directory listing) command returned invalid data */
+"Incorrect response to MLST command" = "Incorrect response to MLST command";
+
+/* ftpsession error */
+"Invalid response from FTP server: %@" = "Invalid response from FTP server: %@";
+
+/* ftpsession error - MLSD command failed
+   ftpsession error - LIST command failed
+   ftpsession error */
+"List stopped: %@" = "List stopped: %@";
+
+/* task statusString */
+"Loading elements" = "Loading elements";
+
+/* httpsession error - required header missing in response */
+"Location header missing on redirect" = "Location header missing on redirect";
+
+/* ftpsession status */
+"Logged in" = "Logged in";
+
+/* ftpsession error - PASS required but no password available to us
+   ftpsession error - USER command rejected
+   ftpsession error - PASS command failed */
+"Login to %@ failed: %@" = "Login to %1$@ failed: %2$@";
+
+/* mailto error */
+"No mail address" = "No mail address";
+
+/* error when authenticating - unable to find any credentials [passwords or other info] which can be used for this server */
+"No useful credentials found or generated." = "No useful credentials found or generated.";
+
+/* ftpsession status */
+"Not a plain file; retrying as directory" = "Not a plain file; retrying as directory";
+
+/* processor status */
+"Not Started" = "Not Started";
+
+/* ftpsession status */
+"Opening data stream" = "Opening data stream";
+
+/* fileprocessor status */
+"Opening file" = "Opening file";
+
+/* mailto status */
+"Parsing mail address" = "Parsing mail address";
+
+/* mulitpart datastream processor status format */
+"Part %d..." = "Part %d...";
+
+/* httpsession status */
+"Preparing to request document from %@" = "Preparing to request document from %@";
+
+/* processor status */
+"Queued" = "Queued";
+
+/* mailto subject line before page name */
+"Re: " = "Re: ";
+
+/* ftpsession status */
+"Reading data" = "Reading data";
+
+/* ftpsession status
+   fileprocessor status */
+"Reading directory" = "Reading directory";
+
+/* httpsession status */
+"Reading document from %@" = "Reading document from %@";
+
+/* fileprocessor status */
+"Reading file" = "Reading file";
+
+/* httpsession status */
+"Redirected to %@" = "Redirected to %@";
+
+/* httpsession status */
+"Requesting document from %@" = "Requesting document from %@";
+
+/* ftpsession error */
+"Retrieve of %@ failed: %@" = "Retrieve of %1$@ failed: %2$@";
+
+/* ftpsession error */
+"Retrieve of %@ stopped: %@" = "Retrieve of %1$@ stopped: %2$@";
+
+/* processor status */
+"Running" = "Running";
+
+/* mailto status */
+"Sending mail to %@" = "Sending mail to %@";
+
+/* error when authenticating - server requires authentication but doesnt supply any methods for authenticating */
+"Server requested authentication, but did not provide an authentication method." = "Server requested authentication, but did not provide an authentication method.";
+
+/* error when authenticating - omniweb does not support any of the methods that the server accepts */
+"Server requested authentication, but OmniWeb does not support the requested authentication method(s)." = "Server requested authentication, but OmniWeb does not support the requested authentication method(s).";
+
+/* httpsession 400-series error - string and numeric code from server
+   httpsession 500-series error - string and numeric code from server
+   httpsession error - string and numeric code from server */
+"Server returns \"%@\" (%d)" = "Server returns \"%1$@\" (%2$d)";
+
+/* ftpsession status */
+"Setting transfer type to %@" = "Setting transfer type to %@";
+
+/* processor status */
+"Stopping" = "Stopping";
+
+/* ftpsession error - STOR command failed */
+"Store of %@ failed: %@" = "Store of %1$@ failed: %2$@";
+
+/* ftpsession error */
+"Store of %@ stopped: %@" = "Store of %1$@ stopped: %2$@";
+
+/* ftpsession status */
+"Storing data" = "Storing data";
+
+/* ftpsession status - result of SYST command */
+"System is %@" = "System is %@";
+
+/* unknowndatastreamprocessor status */
+"Taking a guess at content type" = "Taking a guess at content type";
+
+/* httpprocessor error - URL does not contain a server address */
+"The name of the web server is missing from the address '%@'." = "The name of the web server is missing from the address '%@'.";
+
+/* httpsession error - no response */
+"The web server closed the connection without sending any response" = "The web server closed the connection without sending any response";
+
+/* filtered address exception */
+"This address has been filtered by your privacy settings" = "This address has been filtered by your privacy settings";
+
+/* webpipeline timed refresh message */
+"Timed Refresh at %@" = "Timed Refresh at %@";
+
+/* about: protocol error */
+"Unable to locate about: aliases resource" = "Unable to locate about: aliases resource";
+
+/* OWFileProcessor error: file unreadable */
+"Unable to read file data from <%@>" = "Unable to read file data from <%@>";
+
+/* the about: has its version of 404-not-found */
+"Unknown about: item \"%@\"" = "Unknown about: item \"%@\"";
+
+/* error when authenticating using keychain - user canceled */
+"User canceled keychain access" = "User canceled keychain access";
+
+/* cursor error */
+"User Stopped" = "User Stopped";
+
+/* authorization error */
+"Username or password contains characters which cannot be encoded" = "Username or password contains characters which cannot be encoded";
+
+/* pipeline status
+   processor status */
+"Waiting" = "Waiting";
+
+/* mailto fallback subject line */
+"Web page" = "Web page";
+

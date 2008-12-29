@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE outline PUBLIC "-//omnigroup.com//DTD OUTLINE 3.0//EN" "xmloutline-v3.dtd">
+<outline xmlns="http://www.omnigroup.com/namespace/OmniOutliner/v3" version="1.0">
+  <attachments/>
+  <columns>
+    <column type="rich-text" width="13" minimum-width="13" maximum-width="30" text-export-width="1" is-note-column="yes">
+      <title/>
+    </column>
+    <column type="rich-text" width="512" minimum-width="13" maximum-width="1000000" text-export-width="72" is-outline-column="yes">
+      <title>Topic</title>
+    </column>
+  </columns>
+  <level-styles>
+    <level-style>
+      <text-color>#000000</text-color>
+      <font-family>Helvetica</font-family>
+      <font-size>12</font-size>
+      <heading type="None"/>
+    </level-style>
+    <level-style>
+      <text-color>#000000</text-color>
+      <font-family>Helvetica</font-family>
+      <font-size>12</font-size>
+      <heading type="None"/>
+    </level-style>
+  </level-styles>
+  <root background-color="#ffffff">
+    <item>
+      <values>
+        <rich-text><p/></rich-text>
+      </values>
+    </item>
+  </root>
+  <settings>
+    <note-height>100</note-height>
+    <is-status-visible>yes</is-status-visible>
+    <is-spellchecking-enabled>yes</is-spellchecking-enabled>
+    <is-note-expanded>yes</is-note-expanded>
+    <should-print-column-headers>yes</should-print-column-headers>
+    <should-print-notes>yes</should-print-notes>
+    <should-print-background>yes</should-print-background>
+    <page-adornment header-top-margin="36" header-bottom-margin="36" footer-top-margin="36" footer-bottom-margin="36"/>
+    <print-info>BAt0eXBlZHN0cmVhbYED6IQBQISEhAtOU1ByaW50SW5mbwGEhAhOU09iamVjdACFkoSEhBNOU011dGFibGVEaWN0aW9uYXJ5AISEDE5TRGljdGlvbmFyeQCUhAFpCJKEhIQITlNTdHJpbmcBlIQBKw5OU0JvdHRvbU1hcmdpboaShISECE5TTnVtYmVyAISEB05TVmFsdWUAlIQBKoSEAWadJIaShJmZFE5TVmVydGljYWxseUNlbnRlcmVkhpKEm5yEhAFjngCGkoSZmQxOU0xlZnRNYXJnaW6GkoSbnJ2dJIaShJmZDU5TUmlnaHRNYXJnaW6GkoSbnJ2dJIaShJmZFE5TVmVydGljYWxQYWdpbmF0aW9uhpKEm5yEl5cAhpKEmZkWTlNIb3Jpem9udGFsbHlDZW50ZXJlZIaSn5KEmZkLTlNUb3BNYXJnaW6GkoSbnJ2dJIaShJmZFU5TSG9yaXpvbmFsUGFnaW5hdGlvboaShJucp5cAhoaG</print-info>
+  </settings>
+  <conduit-settings has-outline-changed="yes"/>
+</outline>

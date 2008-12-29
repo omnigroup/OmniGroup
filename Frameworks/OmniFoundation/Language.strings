@@ -1,0 +1,170 @@
+// copied from /System/Library/privateFrameworks/IntlPreferences.framework on 10.2.3, with some extra stuff uncommented.
+
+
+// *** Language names should NOT be localized. ***
+// It contains a mapping of ISO language (and country) names to language names in native languages.
+
+// tier 0
+"en"					=	"English";							// verInternational: International English
+"fr"					=	"Français";							// verFrenchUniversal: French
+"de"					=	"Deutsch";							// German
+"ja"					=	"日本語";								// Japanese
+
+"en_US"					=	"U.S. English";						// verUS: U.S. English
+"en_GB"					=	"British English";					// verBritain: British English
+"en_AU"					=	"Australian English";				// verAustralia: Australian English
+
+"fr_CA"					=	"Français canadien";				// verFrCanada: Canadian French
+"fr_CH"					=	"Français suisse";					// verFrSwiss: Swiss French
+
+"de_AT"					=	"Österreichisches Deutsch";			// verAustria: Austrian German
+"de_CH"					=	"Schweizer Deutsch";				// verGrSwiss: Swiss German
+
+// tier 1
+"nl"					=	"Nederlands";                       // Dutch
+"it"					=	"Italiano";							// Italian
+"es"					=	"Español";							// Spanish
+
+// tier 2
+"pt"					=	"Português";						// verBrazil: Brazilian Portuguese (or "universal" Portuguese)
+"da"      	      	    = 	"Dansk";							// Danish
+"fi"					=	"Suomi";							// Finnish
+"no"					=	"Norsk";							// Norwegian
+"sv"					=	"Svenska";							// Swedish
+
+"pt_BR"					=	"Português do Brasil";				// verBrazil: Brazilian Portuguese
+
+"ko"					=	"한글";								// Korean
+"zh_CN"					=	"简体中文";								// Simplified Chinese
+"zh_TW"					=	"繁體中文";								// Traditional Chinese
+
+// tier 3
+"pt_PT"					=	"Português de Portugal";			// verPortugal: Portugal Portuguese
+
+"ru"					=	"русский";							// verRussia: Russian
+"bg"					=	"български";						// verBulgaria: Bulgarian
+"uk"					=	"українська";						// Ukrainian (modified smCyrillic-Ukrainian)
+
+"cs"					=	"český";							// verCzech: Czech
+"sk"					=	"slovenský";						// smCentralEuroRoman: Slovak
+"pl"					=	"polski";                           			// verPoland: Polish
+"hu"					=	"magyar";							// verHungary: Hungarian
+
+// [2781064]  Cocoa doesn't like Arabic for now...
+"ar"					=	"العربية";							// verArabic: Arabic
+//"ar"					=	"Arabic (in English as workaround)";	// verArabic: Arabic
+"he"					=	"עברית";							// verIsrael: Hebrew
+"th"					=	"ภาษาไทย";							// verThailand: Thai
+
+"hr"					=	"hrvatski";							// verCroatia: Croatian (modified smRoman-Croatian)
+"el"					=	"Ελληνικά";							// verGreece: Greek (smGreek/langGreekPoly)
+"ro"					=	"româneşte";						// verRomania: Romanian (modified smRoman)
+"tr"					=	"Türkçe";							// verTurkey: Turkish (modified smRoman)
+
+"sl"					=	"slovenski";						// verSlovenian: Slovenian (modified smRoman-Croatian)
+"yi"					=	"ייִדיש";							// Yiddish (smHebrew)
+
+// [2784080]  Cocoa doesn't like Indic for now...
+"hi"					=	"हिन्दी";							// smDevanagari: Hindi
+"gu"					=	"ગુજરાતી";							// smGujarati: Gujarati
+"pa"					=	"ਪਂਜਾਬੀ";							// smGurmukhi: Punjabi
+//"hi"					=	"Hindi (in English as workaround)";							// smDevanagari: Hindi
+//"gu"					=	"Gujarati (in English as workaround)";							// smGujarati: Gujarati
+//"pa"					=	"Punjabi (in English as workaround)";							// smGurmukhi: Punjabi
+
+// tier 3
+"is"				=	"Íslenska";						// Icelandic; modified smRoman/Icelandic script
+"ga"				=	"Gaeilge";							// Irish Gaelic: smRoman or modified smRoman/Celtic script (without dot above)
+"mt"				=	"Malti";							// Maltese: Roman script
+"sq"				=	"shqip";							// Albanian: smRoman script
+"sr"				=	"Српски";							// Serbian: smCyrillic script
+"mk"				=	"македонски";						// Macedonian: smCyrillic script
+"uz"				=	"узбек";							// Uzbek: Cyrillic script
+"ky"				=	"кыргызча";						// Kirghiz: Cyrillic script
+"tg"				=	"точики";							// Tajiki: Cyrillic script
+"ne"				=	"नेपाली";							// Nepali: smDevanagari script
+"sa"				= 	"संस्कृतः";							// Sanskrit: smDevanagari script
+"mr"				=	"मराठी";							// Marathi: smDevanagari script
+"vi"				=	"Việt";							// Vietnamese: smVietnamese script
+"eo"				=	"Esperanton";						// Esperanto: Roman script
+"cy"				=	"Cymraeg";						// Welsh: modified smRoman-Celtic script
+"eu"				=	"Euzkeraz";						// Basque: smRoman script
+"ca"				=	"català";							// Catalan: smRoman script
+"tt"				=	"татарча";							// Tatar: Cyrillic script
+"gd"				=	"Gàidhlige";						// ScottishGaelic: smRoman or modified smRoman-Celtic script
+"tl"				=	"Tagalog";							// Roman script
+"iu"				=	"ᐃᓄᑦᑎᑐ";							// Inuktitut: Inuit script using smEthiopic script code
+
+
+// [2586896]  Arabic, Hebrew, and Thai don't work in Lucida.
+
+"en_CA"					=	"Canadian English";			// verEngCanada: Canadian English
+
+"ur"					=	"ﻮﺪﺭﺃ";						// Urdu: smArabic script
+"lt"            		=	"Lithuanian";	                    			// smCentralEuroRoman script
+"et"				=	"Estonian";							// smCentralEuroRoman script
+"lv"				=	"Latvian";							// smCentralEuroRoman script
+"Sami"					=	"Sami";								// language of the Sami people of N. Scandinavia
+"fo"				=	"Faroese";							// modified smRoman/Icelandic script
+"fa"					=	"فارسى";							// Farsi/Persian: modified smArabic/Farsi script
+"Persian"				=	"Persian";							// Synonym for langFarsi
+"Flemish"				=	"Vlaams";							// smRoman script
+"be"			=	"Byelorussian";						// Belarusian: smCyrillic script
+"Belorussian"			=	"Belorussian";						// Synonym for langByelorussian
+"az"			=	"азярбайжан";						// Azerbaijani: Azerbaijani in Cyrillic script
+"az.?"			=	"AzerbaijanAr";						// AzerbaijaniAr: Azerbaijani in Arabic script
+"kk"				=	"қазақ";							// Kazakh: Cyrillic script
+"hy"				=	"Հայերեն";					// Armenian: smArmenian script
+"ka"				=	"ქართულად";					// Georgian: smGeorgian script
+"mo"				=	"Moldavian";						// Moldavian: smCyrillic script
+"tk"				=	"Turkmen";							// Cyrillic script
+"mn"				=	"Mongolian";						// Mongolian in smMongolian script
+"MongolianCyr"			=	"MongolianCyr";						// Mongolian in Cyrillic script
+"Pashto"				=	"Pashto";							// Arabic script
+"ku"				=	"Kurdish";							// smArabic script
+"ks"				=	"Kashmiri";							// Arabic script
+"sd"				=	"سِندهِي";							// Sindhi: Arabic script
+"bo"				=	"བོད་";								// Tibetan: smTibetan script
+"bn"				=	"বাংলা";							// Bengali: smBengali script
+"as"				=	"অসমীয়া";							// Assamese: smBengali script
+"or"					=	"ଉଡିଯା";							// Oriya: smOriya script
+"ml"				=	"മലയായ്മ";							// Malayalam: smMalayalam script
+"kn"				=	"ಕನ್ನಡ";							// Kannada: smKannada script
+"ta"				=	"தமிழில்";							// Tamil: smTamil script
+"te"				=	"తెలుగు";							// Telugu: smTelugu script
+"si"				=	"සිංහල";								// Sinhalese: smSinhalese script
+"my"				=	"Burmese";							// smBurmese script
+"km"					=	"ខ្មែរ";							// Khmer: smKhmer script
+"lo"					=	"Lao";								// smLao script
+"id"				=	"bahasa Indonesia";					// Indonesian: smRoman script
+"MalayRoman"			=	"MalayRoman";						// Malay in smRoman script
+"MalayArabic"			=	"MalayArabic";						// Malay in Arabic script
+"am"				=	"አማርኛ";									// Amharic: smEthiopic script
+"ti"				=	"Tigrinya";							// smEthiopic script
+"om"					=	"Oromo";							// smEthiopic script
+"so"				=	"Somali";							// smRoman script
+"sw"				=	"Swahili";							// smRoman script
+"rw"				=	"Kinyarwanda";						// smRoman script
+"Ruanda"				=	"Ruanda";							// synonym for langKinyarwanda
+"rn"					=	"Rundi";							// smRoman script
+"ny"				=	"Nyanja";							// smRoman script
+"Chewa"					=	"Chewa";							// synonym for langNyanja
+"mg"				=	"Malagasy";							// smRoman script
+"la"					=	"Latin";							// smRoman script
+"Quechua"				=	"Quechua";							// smRoman script
+"gn"				=	"Guarani";							// smRoman script
+"ay"				=	"Aymara";							// smRoman script
+"ug"				=	"Uighur";							// Arabic script
+"dz"				=	"Dzongkha";							// (lang of Bhutan) smTibetan script
+"JavaneseRom"			=	"basa Jawa";						// Javanese in smRoman script
+"SundaneseRom"			=	"SundaneseRom";						// Sundanese in smRoman script
+"Galician"				=	"Galician";							// smRoman script
+"af"				=	"Afrikaans";						// smRoman script
+"br"				=	"Breton";							// smRoman or modified smRoman-Celtic script
+"ManxGaelic"			=	"ManxGaelic";						// smRoman or modified smRoman-Celtic script
+"IrishGaelicScript"		=	"Gaeilge (using dot above)";		// modified smRoman/Gaelic script (using dot above)
+"Tongan"				=	"Tongan";							// smRoman script
+"GreekPoly"				=	"Ἑλληνικὴν";						// smGreek script
+"Greenlandic"			=	"Greenlandic";						// smRoman script
+"AzerbaijanRoman"		=	"AzerbaijanRoman";					// Azerbaijani in Roman script
+

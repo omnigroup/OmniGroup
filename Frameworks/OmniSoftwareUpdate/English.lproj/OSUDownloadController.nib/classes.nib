@@ -1,0 +1,25 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {
+                cancelAndClose = id; 
+                continueDownloadWithCredentials = id; 
+                installAndRelaunch = id; 
+                revealDownloadInFinder = id; 
+            }; 
+            CLASS = OSUDownloadController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                "_bottomView" = OSUFlippedView; 
+                "_credentialsView" = NSView; 
+                "_installView" = NSView; 
+                "_plainStatusView" = NSView; 
+                "_progressView" = NSView; 
+            }; 
+            SUPERCLASS = NSWindowController; 
+        }, 
+        {CLASS = OSUFlippedView; LANGUAGE = ObjC; SUPERCLASS = NSView; }
+    ); 
+    IBVersion = 1; 
+}

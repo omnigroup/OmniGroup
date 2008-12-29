@@ -1,0 +1,508 @@
+#!DG_TEXT-Version-2
+# D2 Version: Built by spencer on Mon May  1 17:41:27 PDT 1995
+
+
+windowOrigin 193.00 7.00
+viewOrigin 1.00 9.00
+viewSize 775.00 595.00
+visibleOrigin 0.00 0.00
+showTools
+snapToGrid
+defaultFont "Helvetica"
+defaultFontSize 12.00
+printInfoFile "PrintInfo"
+colorFile "Colors.clr"
+
+symbol 2147483647
+	default
+	layer -1
+	shape "Rectangle"
+	location 20.00 20.00
+	size 60.00 30.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	textPlacement top
+end
+
+symbol 24
+	layer 39
+	shape "Rounded Rectangle"
+	location 459.00 324.00
+	size 126.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\fc0\cf0 ONUDPSocket
+}
+
+	textPlacement middle
+end
+
+symbol 22
+	layer 40
+	shape "Rounded Rectangle"
+	location 459.00 306.00
+	size 126.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\fc0\cf0 ONTCPSocket
+}
+
+	textPlacement middle
+end
+
+symbol 20
+	layer 41
+	shape "Rounded Rectangle"
+	location 162.00 315.00
+	size 135.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\fc0\cf0 ONSocket
+}
+
+	textPlacement middle
+end
+
+symbol 18
+	layer 42
+	shape "Rounded Rectangle"
+	location 162.00 288.00
+	size 135.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\fc0\cf0 ONSocketStream
+}
+
+	textPlacement middle
+end
+
+symbol 16
+	layer 43
+	shape "Rounded Rectangle"
+	location 162.00 261.00
+	size 135.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\fc0\cf0 ONServiceEntry
+}
+
+	textPlacement middle
+end
+
+symbol 14
+	layer 44
+	shape "Rounded Rectangle"
+	location 162.00 234.00
+	size 135.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\fc0\cf0 ONPortAddress
+}
+
+	textPlacement middle
+end
+
+symbol 12
+	layer 45
+	shape "Rounded Rectangle"
+	location 594.00 324.00
+	size 126.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\fc0\cf0 ONMulticastSocket
+}
+
+	textPlacement middle
+end
+
+symbol 10
+	layer 46
+	shape "Rounded Rectangle"
+	location 306.00 315.00
+	size 135.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\fc0\cf0 ONInternetSocket
+}
+
+	textPlacement middle
+end
+
+symbol 8
+	layer 47
+	shape "Rounded Rectangle"
+	location 0.00 234.00
+	size 135.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+{\colortbl;\red85\green85\blue85;}
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\gray333\fc1\cf1 OBObject
+}
+
+	textPlacement middle
+end
+
+symbol 6
+	layer 48
+	shape "Rounded Rectangle"
+	location 162.00 189.00
+	size 135.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\fc0\cf0 ONHost
+}
+
+	textPlacement middle
+end
+
+symbol 4
+	layer 49
+	shape "Rounded Rectangle"
+	location 162.00 216.00
+	size 135.00 18.00
+	framed
+	fillColor colorIndex 0
+	frameColor colorIndex 1
+	shadowColor colorIndex 2
+	lineWidth 1.00
+	filled
+	rtfText {\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
+\margl40
+\margr40
+\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b0\i0\ulnone\qc\fs24\fc0\cf0 ONHostAddress
+}
+
+	textPlacement middle
+end
+
+vertex 2147483645
+	default
+	layer -1
+	location 0.00 0.00
+end
+vertex 2147483644
+	default
+	layer -1
+	location 0.00 0.00
+end
+vertex 83
+	layer 0
+	location 459.00 315.00
+end
+vertex 84
+	layer 1
+	location 450.00 315.00
+end
+vertex 82
+	layer 2
+	location 450.00 324.00
+end
+vertex 78
+	layer 4
+	location 459.00 333.00
+end
+vertex 80
+	layer 5
+	location 450.00 333.00
+end
+vertex 79
+	layer 6
+	location 450.00 324.00
+end
+vertex 77
+	layer 7
+	location 441.00 324.00
+end
+vertex 75
+	layer 9
+	location 594.00 333.00
+end
+vertex 74
+	layer 10
+	location 585.00 333.00
+end
+vertex 63
+	layer 12
+	location 306.00 324.00
+end
+vertex 62
+	layer 13
+	location 297.00 324.00
+end
+vertex 59
+	layer 15
+	location 162.00 324.00
+end
+vertex 60
+	layer 16
+	location 144.00 324.00
+end
+vertex 58
+	layer 17
+	location 144.00 297.00
+end
+vertex 55
+	layer 19
+	location 162.00 297.00
+end
+vertex 56
+	layer 20
+	location 144.00 297.00
+end
+vertex 54
+	layer 21
+	location 144.00 270.00
+end
+vertex 51
+	layer 23
+	location 162.00 270.00
+end
+vertex 52
+	layer 24
+	location 144.00 270.00
+end
+vertex 50
+	layer 25
+	location 144.00 243.00
+end
+vertex 47
+	layer 27
+	location 162.00 198.00
+end
+vertex 48
+	layer 28
+	location 144.00 198.00
+end
+vertex 46
+	layer 29
+	location 144.00 225.00
+end
+vertex 43
+	layer 31
+	location 162.00 225.00
+end
+vertex 44
+	layer 32
+	location 144.00 225.00
+end
+vertex 42
+	layer 33
+	location 144.00 243.00
+end
+vertex 39
+	layer 35
+	location 162.00 243.00
+end
+vertex 40
+	layer 36
+	location 144.00 243.00
+end
+vertex 38
+	layer 37
+	location 135.00 243.00
+end
+line 2147483646
+	default
+	from 2147483645
+	to 2147483644
+	2147483645
+	2147483644
+	layer -1
+	lineWidth 1.00
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end
+line 81
+	from 79
+	to 22
+	82
+	84
+	83
+	layer 3
+	lineWidth 1.51
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end
+line 76
+	from 10
+	to 24
+	77
+	79
+	80
+	78
+	layer 8
+	lineWidth 1.51
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end
+line 73
+	from 24
+	to 12
+	74
+	75
+	layer 11
+	lineWidth 1.51
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end
+line 61
+	from 20
+	to 10
+	62
+	63
+	layer 14
+	lineWidth 1.51
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end
+line 57
+	from 56
+	to 20
+	58
+	60
+	59
+	layer 18
+	lineWidth 1.51
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end
+line 53
+	from 52
+	to 18
+	54
+	56
+	55
+	layer 22
+	lineWidth 1.51
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end
+line 49
+	from 40
+	to 16
+	50
+	52
+	51
+	layer 26
+	lineWidth 1.51
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end
+line 45
+	from 44
+	to 6
+	46
+	48
+	47
+	layer 30
+	lineWidth 1.51
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end
+line 41
+	from 40
+	to 4
+	42
+	44
+	43
+	layer 34
+	lineWidth 1.51
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end
+line 37
+	from 8
+	to 14
+	38
+	40
+	39
+	layer 38
+	lineWidth 1.51
+	filled
+	frameColor colorIndex 1
+	fillColor colorIndex 0
+end

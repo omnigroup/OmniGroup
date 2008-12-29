@@ -1,0 +1,162 @@
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 30;
+	objects = {
+		06F694C4FFA4D31DCD999A53 = {
+			isa = PBXProject;
+			mainGroup = 06F694C5FFA4D31DCD999A53;
+			productRefGroup = 06F694D0FFA4D31DCD999A53;
+			projectDirPath = .;
+			targets = (
+				06F694D2FFA4D31DCD999A53,
+			);
+		};
+		06F694C5FFA4D31DCD999A53 = {
+			children = (
+				06F694C7FFA4D31DCD999A53,
+				06F694CCFFA4D31DCD999A53,
+				06F694D0FFA4D31DCD999A53,
+			);
+			isa = PBXGroup;
+			name = FileManagerExtensions;
+			refType = 4;
+		};
+		06F694C7FFA4D31DCD999A53 = {
+			isa = PBXFileReference;
+			path = FileManagerExtensions_main.m;
+			refType = 4;
+		};
+		06F694CCFFA4D31DCD999A53 = {
+			children = (
+				06F694CDFFA4D31DCD999A53,
+				06F694CEFFA4D31DCD999A53,
+			);
+			isa = PBXGroup;
+			name = "External Frameworks and Libraries";
+			refType = 4;
+		};
+		06F694CDFFA4D31DCD999A53 = {
+			isa = PBXFrameworkReference;
+			name = Foundation.framework;
+			path = /System/Library/Frameworks/Foundation.framework;
+			refType = 0;
+		};
+		06F694CEFFA4D31DCD999A53 = {
+			isa = PBXFrameworkReference;
+			name = OmniFoundation.framework;
+			path = /System/Library/Frameworks/OmniFoundation.framework;
+			refType = 0;
+		};
+		06F694D0FFA4D31DCD999A53 = {
+			children = (
+				06F694D1FFA4D31DCD999A53,
+			);
+			isa = PBXGroup;
+			name = Products;
+			refType = 4;
+		};
+		06F694D1FFA4D31DCD999A53 = {
+			isa = PBXExecutableFileReference;
+			path = FileManagerExtensions;
+			refType = 3;
+		};
+		06F694D2FFA4D31DCD999A53 = {
+			buildPhases = (
+				06F694D3FFA4D31DCD999A53,
+				06F694D4FFA4D31DCD999A53,
+				06F694D6FFA4D31DCD999A53,
+				06F694D9FFA4D31DCD999A53,
+			);
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "\"$(OMNI_FRAMEWORKS)\"";
+				OPTIMIZATION_CFLAGS = "";
+				OTHER_CFLAGS = "-Wall -O2";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+			};
+			conditionalBuildSettings = {
+			};
+			dependencies = (
+			);
+			isa = PBXToolTarget;
+			name = "FileManagerExtensions (Tool)";
+			productInstallPath = /bin;
+			productName = FileManagerExtensions;
+			productReference = 06F694D1FFA4D31DCD999A53;
+			shouldUseHeadermap = 0;
+		};
+		06F694D3FFA4D31DCD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXHeadersBuildPhase;
+			name = Headers;
+		};
+		06F694D4FFA4D31DCD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+				06F694D5FFA4D31DCD999A53,
+			);
+			isa = PBXSourcesBuildPhase;
+			name = Sources;
+		};
+		06F694D5FFA4D31DCD999A53 = {
+			fileRef = 06F694C7FFA4D31DCD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Debug,
+				);
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F694D6FFA4D31DCD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+				06F694D7FFA4D31DCD999A53,
+				06F694D8FFA4D31DCD999A53,
+			);
+			isa = PBXFrameworksBuildPhase;
+			name = "Frameworks & Libraries";
+		};
+		06F694D7FFA4D31DCD999A53 = {
+			fileRef = 06F694CDFFA4D31DCD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F694D8FFA4D31DCD999A53 = {
+			fileRef = 06F694CEFFA4D31DCD999A53;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		06F694D9FFA4D31DCD999A53 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXRezBuildPhase;
+			name = "ResourceManager Resources";
+		};
+	};
+	rootObject = 06F694C4FFA4D31DCD999A53;
+}

@@ -1,0 +1,437 @@
+CFArray-OFExtensions.o:___rcs_id_hack
+CFDictionary-OFExtensions.o:___rcs_id_hack
+CFPropertyList-OFExtensions.o:___rcs_id_hack
+CFSet-OFExtensions.o:___rcs_id_hack
+CFString-OFExtensions.o:___rcs_id_hack
+NSArray-OFExtensions.o:___rcs_id_hack
+NSAttributedString-OFExtensions.o:___rcs_id_hack
+NSBundle-OFFixes.o:___rcs_id_hack
+NSCalendarDate-OFExtensions.o:___rcs_id_hack
+NSData-OFExtensions.o:___rcs_id_hack
+NSDate-OFExtensions.o:___rcs_id_hack
+NSDecimalNumber-OFExtensions.o:___rcs_id_hack
+NSDictionary-OFExtensions.o:___rcs_id_hack
+NSException-OFExtensions.o:___rcs_id_hack
+NSFileManager-OFExtensions.o:___rcs_id_hack
+NSHost-OFExtensions.o:___rcs_id_hack
+NSInvocation-OFExtensions.o:___rcs_id_hack
+NSMutableArray-OFExtensions.o:___rcs_id_hack
+NSMutableAttributedString-OFExtensions.o:___rcs_id_hack
+NSMutableData-OFExtensions.o:___rcs_id_hack
+NSMutableDictionary-OFExtensions.o:___rcs_id_hack
+NSMutableSet-OFExtensions.o:___rcs_id_hack
+NSMutableString-OFExtensions.o:___rcs_id_hack
+NSNotificationCenter-OFExtensions.o:___rcs_id_hack
+NSNotificationQueue-OFExtensions.o:___rcs_id_hack
+NSNumber-OFExtensions.o:___rcs_id_hack
+NSNumberFormatter-OFFixes.o:___rcs_id_hack
+NSObject-OFExtensions.o:___rcs_id_hack
+NSObjectSpecifier-OFFixes.o:___rcs_id_hack
+NSProcessInfo-OFExtensions.o:___rcs_id_hack
+NSScanner-OFExtensions.o:___rcs_id_hack
+NSString-OFExtensions.o:___rcs_id_hack
+NSString-OFPathExtensions.o:___rcs_id_hack
+NSThread-OFExtensions.o:___rcs_id_hack
+NSUndoManager-OFExtensions.o:___rcs_id_hack
+NSUserDefaults-OFExtensions.o:___rcs_id_hack
+OFAddScriptCommand.o:___rcs_id_hack
+OFAlias.o:___rcs_id_hack
+OFAutoreleasedMemory.o:___rcs_id_hack
+OFBTree.o:___rcs_id_hack
+OFBitField.o:___rcs_id_hack
+OFBulkBlockPool.o:___rcs_id_hack
+OFBundleRegistry.o:___rcs_id_hack
+OFBundledClass.o:___rcs_id_hack
+OFByteSet.o:___rcs_id_hack
+OFCFCallbacks.o:___rcs_id_hack
+OFCacheFile.o:___rcs_id_hack
+OFCapitalizeFormatter.o:___rcs_id_hack
+OFCharacterScanner.o:___rcs_id_hack
+OFCharacterSet.o:___rcs_id_hack
+OFChildScheduler.o:___rcs_id_hack
+OFClobberDetectionZone.o:___rcs_id_hack
+OFConcreteInvocation.o:___rcs_id_hack
+OFController.o:___rcs_id_hack
+OFDOServer.o:___rcs_id_hack
+OFDataBuffer.o:___rcs_id_hack
+OFDataCursor.o:___rcs_id_hack
+OFDateFormatter.o:___rcs_id_hack
+OFDatedMutableDictionary.o:___rcs_id_hack
+OFDedicatedThreadScheduler.o:___rcs_id_hack
+OFDelayedEvent.o:___rcs_id_hack
+OFDirectory.o:___rcs_id_hack
+OFEnrichedTextReader.o:___rcs_id_hack
+OFEnumNameTable.o:___rcs_id_hack
+OFFastMutableData.o:___rcs_id_hack
+OFFile.o:___rcs_id_hack
+OFForwardObject.o:___rcs_id_hack
+OFGeometry.o:___rcs_id_hack
+OFHeap.o:___rcs_id_hack
+OFIObjectNSInvocation.o:___rcs_id_hack
+OFIObjectSelector.o:___rcs_id_hack
+OFIObjectSelectorBool.o:___rcs_id_hack
+OFIObjectSelectorInt.o:___rcs_id_hack
+OFIObjectSelectorIntInt.o:___rcs_id_hack
+OFIObjectSelectorObject.o:___rcs_id_hack
+OFIObjectSelectorObjectInt.o:___rcs_id_hack
+OFIObjectSelectorObjectObject.o:___rcs_id_hack
+OFIObjectSelectorObjectObjectObject.o:___rcs_id_hack
+OFImplementationHolder.o:___rcs_id_hack
+OFInvocation.o:___rcs_id_hack
+OFKnownKeyDictionaryTemplate.o:___rcs_id_hack
+OFLowercaseStringCache.o:___rcs_id_hack
+OFMach.o:___rcs_id_hack
+OFMatrix.o:___rcs_id_hack
+OFMessageQueue.o:___rcs_id_hack
+OFMultiValueDictionary.o:___rcs_id_hack
+OFMultipleNumberFormatter.o:___rcs_id_hack
+OFMutableKnownKeyDictionary.o:___rcs_id_hack
+OFNull.o:___rcs_id_hack
+OFObject-Queue.o:___rcs_id_hack
+OFObject.o:___rcs_id_hack
+OFOid.o:___rcs_id_hack
+OFPoint.o:___rcs_id_hack
+OFPreference.o:___rcs_id_hack
+OFQueue.o:___rcs_id_hack
+OFQueueProcessor.o:___rcs_id_hack
+OFRTFGenerator.o:___rcs_id_hack
+OFRandom.o:___rcs_id_hack
+OFReadWriteLock.o:___rcs_id_hack
+OFRegularExpression.o:___rcs_id_hack
+OFRegularExpressionMatch.o:___rcs_id_hack
+OFRemoveScriptCommand.o:___rcs_id_hack
+OFResource.o:___rcs_id_hack
+OFResourceFork.o:___rcs_id_hack
+OFResultHolder.o:___rcs_id_hack
+OFRetainableObject.o:___rcs_id_hack
+OFRunLoopQueueProcessor.o:___rcs_id_hack
+OFRunLoopScheduler.o:___rcs_id_hack
+OFScheduledEvent.o:___rcs_id_hack
+OFScheduler.o:___rcs_id_hack
+OFScratchFile.o:___rcs_id_hack
+OFScriptPlaceholder.o:___rcs_id_hack
+OFSignature.o:___rcs_id_hack
+OFSimpleStringFormatter.o:___rcs_id_hack
+OFSparseArray.o:___rcs_id_hack
+OFStack.o:___rcs_id_hack
+OFStringDecoder.o:___rcs_id_hack
+OFStringScanner.o:___rcs_id_hack
+OFTelephoneFormatter.o:___rcs_id_hack
+OFTemporaryPlaceholderInvocation.o:___rcs_id_hack
+OFTimeSpanFormatter.o:___rcs_id_hack
+OFTrie.o:___rcs_id_hack
+OFTrieBucket.o:___rcs_id_hack
+OFTrieEnumerator.o:___rcs_id_hack
+OFTrieNode.o:___rcs_id_hack
+OFUnixDirectory.o:___rcs_id_hack
+OFUnixFile.o:___rcs_id_hack
+OFUppercaseFormatter.o:___rcs_id_hack
+OFUtilities.o:___rcs_id_hack
+OFWeakRetainConcreteImplementation.o:___rcs_id_hack
+OFXMLCursor.o:___rcs_id_hack
+OFXMLDocument.o:___rcs_id_hack
+OFXMLElement.o:___rcs_id_hack
+OFXMLIdentifierRegistry.o:___rcs_id_hack
+OFXMLString.o:___rcs_id_hack
+OFXMLWhitespaceBehavior.o:___rcs_id_hack
+OFZipCodeFormatter.o:___rcs_id_hack
+md5c.o:___rcs_id_hack
+sha1.o:___rcs_id_hack
+OFBundledClass.o:-[OFBundledClass debugDictionary]
+OFByteSet.o:-[OFByteSet debugDictionary]
+OFCharacterScanner.o:-[OFCharacterScanner debugDictionary]
+OFCharacterSet.o:-[OFCharacterSet debugDictionary]
+OFChildScheduler.o:-[OFChildScheduler debugDictionary]
+OFDataCursor.o:-[OFDataCursor debugDictionary]
+OFDatedMutableDictionary.o:-[OFDatedMutableDictionary debugDictionary]
+OFDatedMutableDictionary.o:-[OFDatedMutableDictionaryEntry debugDictionary]
+OFDedicatedThreadScheduler.o:-[OFDedicatedThreadScheduler debugDictionary]
+OFDirectory.o:-[OFDirectory debugDictionary]
+OFHeap.o:-[OFHeap debugDictionary]
+OFIObjectNSInvocation.o:-[OFIObjectNSInvocation debugDictionary]
+OFIObjectSelector.o:-[OFIObjectSelector debugDictionary]
+OFIObjectSelectorBool.o:-[OFIObjectSelectorBool debugDictionary]
+OFIObjectSelectorInt.o:-[OFIObjectSelectorInt debugDictionary]
+OFIObjectSelectorIntInt.o:-[OFIObjectSelectorIntInt debugDictionary]
+OFIObjectSelectorObject.o:-[OFIObjectSelectorObject debugDictionary]
+OFIObjectSelectorObjectInt.o:-[OFIObjectSelectorObjectInt debugDictionary]
+OFIObjectSelectorObjectObject.o:-[OFIObjectSelectorObjectObject debugDictionary]
+OFIObjectSelectorObjectObjectObject.o:-[OFIObjectSelectorObjectObjectObject debugDictionary]
+OFMatrix.o:-[OFMatrix debugDictionary]
+OFMessageQueue.o:-[OFMessageQueue(Private) debugDictionary]
+OFMultiValueDictionary.o:-[OFMultiValueDictionary debugDictionary]
+OFQueueProcessor.o:-[OFQueueProcessor debugDictionary]
+OFRegularExpression.o:-[OFRegularExpression debugDictionary]
+OFRunLoopScheduler.o:-[OFRunLoopScheduler debugDictionary]
+OFScheduledEvent.o:-[OFScheduledEvent debugDictionary]
+OFScheduler.o:-[OFScheduler debugDictionary]
+OFScratchFile.o:-[OFScratchFile debugDictionary]
+OFScriptPlaceholder.o:-[OFScriptPlaceholder debugDictionary]
+OFSparseArray.o:-[OFSparseArray debugDictionary]
+OFTrie.o:-[OFTrie debugDictionary]
+OFTrieBucket.o:-[OFTrieBucket debugDictionary]
+OFTrieNode.o:-[OFTrieNode debugDictionary]
+OFXMLCursor.o:-[OFXMLCursor debugDictionary]
+OFXMLDocument.o:-[OFXMLDocument debugDictionary]
+OFXMLElement.o:-[OFXMLElement debugDictionary]
+OFXMLIdentifierRegistry.o:-[OFXMLIdentifierRegistry debugDictionary]
+OFBundledClass.o:-[OFBundledClass shortDescription]
+OFIObjectNSInvocation.o:-[OFIObjectNSInvocation shortDescription]
+OFIObjectSelector.o:-[OFIObjectSelector shortDescription]
+OFIObjectSelectorBool.o:-[OFIObjectSelectorBool shortDescription]
+OFIObjectSelectorInt.o:-[OFIObjectSelectorInt shortDescription]
+OFIObjectSelectorIntInt.o:-[OFIObjectSelectorIntInt shortDescription]
+OFIObjectSelectorObject.o:-[OFIObjectSelectorObject shortDescription]
+OFIObjectSelectorObjectInt.o:-[OFIObjectSelectorObjectInt shortDescription]
+OFIObjectSelectorObjectObject.o:-[OFIObjectSelectorObjectObject shortDescription]
+OFIObjectSelectorObjectObjectObject.o:-[OFIObjectSelectorObjectObjectObject shortDescription]
+OFNull.o:-[OFNull shortDescription]
+OFNull.o:-[OFNullString shortDescription]
+OFScheduledEvent.o:-[OFScheduledEvent shortDescription]
+NSBundle-OFFixes.o:+[NSBundle(OFFixes) performPosing]
+NSNumberFormatter-OFFixes.o:+[NSNumberFormatter(OFFixes) performPosing]
+NSObjectSpecifier-OFFixes.o:+[OFFixedWhoseSpecifier performPosing]
+NSFileManager-OFExtensions.o:+[NSFileManager(OFExtensions) didLoad]
+NSString-OFExtensions.o:+[NSString(OFExtensions) didLoad]
+NSThread-OFExtensions.o:+[NSThread(OFExtensions) didLoad]
+NSUserDefaults-OFExtensions.o:+[NSUserDefaults(OFPrivate) didLoad]
+OFBundleRegistry.o:+[OFBundleRegistry didLoad]
+OFRunLoopQueueProcessor.o:+[OFRunLoopQueueProcessor didLoad]
+OFKnownKeyDictionaryTemplate.o:+[OFKnownKeyDictionaryTemplate becomingMultiThreaded]
+OFAutoreleasedMemory.o:+[OFAutoreleasedMemory initialize]
+OFBundleRegistry.o:+[OFBundleRegistry initialize]
+OFBundledClass.o:+[OFBundledClass initialize]
+OFCharacterScanner.o:+[OFCharacterScanner initialize]
+OFController.o:+[OFController initialize]
+OFDataCursor.o:+[OFDataCursor initialize]
+OFDedicatedThreadScheduler.o:+[OFDedicatedThreadScheduler initialize]
+OFEnrichedTextReader.o:+[OFEnrichedTextReader initialize]
+OFFastMutableData.o:+[OFFastMutableData initialize]
+OFFile.o:+[OFFile initialize]
+OFForwardObject.o:+[OFForwardObject initialize]
+OFIObjectNSInvocation.o:+[OFIObjectNSInvocation initialize]
+OFIObjectSelector.o:+[OFIObjectSelector initialize]
+OFIObjectSelectorBool.o:+[OFIObjectSelectorBool initialize]
+OFIObjectSelectorInt.o:+[OFIObjectSelectorInt initialize]
+OFIObjectSelectorIntInt.o:+[OFIObjectSelectorIntInt initialize]
+OFIObjectSelectorObject.o:+[OFIObjectSelectorObject initialize]
+OFIObjectSelectorObjectObject.o:+[OFIObjectSelectorObjectObject initialize]
+OFIObjectSelectorObjectObjectObject.o:+[OFIObjectSelectorObjectObjectObject initialize]
+OFInvocation.o:+[OFInvocation initialize]
+OFKnownKeyDictionaryTemplate.o:+[OFKnownKeyDictionaryTemplate initialize]
+OFMatrix.o:+[OFMatrix initialize]
+OFMultipleNumberFormatter.o:+[OFMultipleNumberFormatter initialize]
+OFNull.o:+[OFNull initialize]
+OFObject.o:+[OFObject initialize]
+OFOid.o:+[OFOid initialize]
+OFPoint.o:+[OFPoint initialize]
+OFPreference.o:+[OFPreference initialize]
+OFQueueProcessor.o:+[OFQueueProcessor initialize]
+OFRetainableObject.o:+[OFRetainableObject initialize]
+OFRunLoopScheduler.o:+[OFRunLoopScheduler initialize]
+OFScheduledEvent.o:+[OFScheduledEvent initialize]
+OFSignature.o:+[OFSignature initialize]
+OFSimpleStringFormatter.o:+[OFSimpleStringFormatter initialize]
+OFSparseArray.o:+[OFSparseArray initialize]
+OFTrieEnumerator.o:+[OFTrieEnumerator initialize]
+OFXMLDocument.o:+[OFXMLDocument initialize]
+OFXMLElement.o:+[OFXMLElement initialize]
+NSThread-OFExtensions.o:+[NSThread(OFExtensions) setMainThread]
+NSUserDefaults-OFExtensions.o:+[NSUserDefaults(OFExtensions) registerItemName:bundle:description:]
+OFBundleRegistry.o:+[OFBundleRegistry(Private) _defaultsDidChange:]
+OFBundleRegistry.o:+[OFBundleRegistry(Private) bundlesInDirectory:ignoringPaths:]
+OFBundleRegistry.o:+[OFBundleRegistry(Private) linkedBundles]
+OFBundleRegistry.o:+[OFBundleRegistry(Private) newBundlesFromStandardPath]
+OFBundleRegistry.o:+[OFBundleRegistry(Private) readConfigDictionary]
+OFBundleRegistry.o:+[OFBundleRegistry(Private) registerBundles:]
+OFBundleRegistry.o:+[OFBundleRegistry(Private) registerDictionary:forBundle:]
+OFBundledClass.o:+[OFBundledClass bundledClassNamed:]
+OFBundledClass.o:+[OFBundledClass createBundledClassWithName:bundle:description:]
+OFBundledClass.o:-[OFBundledClass(Private) addDependencyClassNames:]
+OFBundledClass.o:-[OFBundledClass(Private) initWithClassName:]
+OFBundledClass.o:-[OFBundledClass(Private) modifiesClassesNamed:]
+OFBundledClass.o:-[OFBundledClass(Private) processDescription:]
+OFBundledClass.o:-[OFBundledClass(Private) setBundle:]
+NSException-OFExtensions.o:+[NSException(OFExtensions) registerItemName:bundle:description:]
+NSObject-OFExtensions.o:+[NSObject(OFASExtensions) registerConversionFromRecord]
+NSData-OFExtensions.o:-[NSData(OFExtensions) ascii26String]
+NSData-OFExtensions.o:-[NSData(OFExtensions) decompressedBzip2Data]
+NSData-OFExtensions.o:-[NSData(OFExtensions) decompressedData]
+NSData-OFExtensions.o:-[NSData(OFExtensions) initWithASCII26String:]
+NSData-OFExtensions.o:-[NSData(OFExtensions) mightBeCompressed]
+NSData-OFExtensions.o:-[NSData(OFExtensions) openReadOnlyStandardIOFile]
+NSData-OFExtensions.o:-[NSData(OFExtensions) sha1Signature]
+OFController.o:-[OFController addObserver:]
+OFController.o:-[OFController didInitialize]
+OFController.o:-[OFController startedRunning]
+OFController.o:-[OFController(PrivateAPI) _init]
+OFController.o:-[OFController(PrivateAPI) _makeObserversPerformSelector:]
+OFController.o:-[OFController(PrivateAPI) _observersSnapshot]
+OFDedicatedThreadScheduler.o:-[OFDedicatedThreadScheduler init]
+OFPreference.o:-[OFPreference(Private) _initWithKey:]
+OFQueueProcessor.o:-[OFQueueProcessor initForQueue:]
+OFRegularExpression.o:-[OFRegularExpression initWithCharacters:]
+OFRegularExpression.o:-[OFRegularExpression initWithString:]
+OFRegularExpression.o:-[OFRegularExpression matchInString:]
+OFRegularExpression.o:-[OFRegularExpression matchInString:range:]
+OFRegularExpression.o:-[OFRegularExpression subexpressionCount]
+OFRegularExpression.o:-[OFRegularExpression(Compilation) compile:parenthesized:flags:]
+OFRegularExpression.o:-[OFRegularExpression(Compilation) compileAtom:flags:]
+OFRegularExpression.o:-[OFRegularExpression(Compilation) compileBranch:flags:]
+OFRegularExpression.o:-[OFRegularExpression(Compilation) compilePiece:flags:]
+OFRegularExpression.o:-[OFRegularExpression(Compilation) findOptimizations:]
+OFRegularExpression.o:-[OFRegularExpression(Search) findMatch:withScanner:]
+OFRegularExpressionMatch.o:-[OFRegularExpressionMatch(privateUsedByOFRegularExpression) dealloc]
+OFRegularExpressionMatch.o:-[OFRegularExpressionMatch(privateUsedByOFRegularExpression) initWithExpression:inScanner:]
+OFRunLoopQueueProcessor.o:-[OFRunLoopQueueProcessor initForQueue:]
+OFXMLCursor.o:-[OFXMLCursor currentChild]
+OFXMLCursor.o:-[OFXMLCursor initWithDocument:]
+OFXMLCursor.o:-[OFXMLCursor nextChild]
+OFXMLCursor.o:-[OFXMLCursor openElement]
+OFXMLDocument.o:-[OFXMLDocument addProcessingInstructionNamed:value:]
+OFXMLDocument.o:-[OFXMLDocument initWithData:whitespaceBehavior:]
+OFXMLDocument.o:-[OFXMLDocument rootElement]
+OFXMLDocument.o:-[OFXMLDocument topElement]
+OFXMLDocument.o:-[OFXMLDocument whitespaceBehavior]
+OFXMLDocument.o:-[OFXMLDocument(PrivateAPI) _preInit]
+OFXMLDocument.o:-[OFXMLDocument(XMLReadingSupport) _elementStarted:]
+OFXMLDocument.o:-[OFXMLDocument(XMLReadingSupport) _setRootElementName:systemID:publicID:]
+OFXMLDocument.o:-[OFXMLDocument(XMLReadingSupport) _setSourceURL:encoding:]
+OFXMLElement.o:-[OFXMLElement initWithName:]
+OFXMLElement.o:-[OFXMLElement(OFXMLReading) initWithName:elementInfo:]
+OFXMLIdentifierRegistry.o:-[OFXMLIdentifierRegistry initWithRegistry:]
+OFXMLIdentifierRegistry.o:-[OFXMLIdentifierRegistry init]
+OFXMLIdentifierRegistry.o:-[OFXMLIdentifierRegistry registerIdentifier:forObject:]
+OFXMLIdentifierRegistry.o:-[OFXMLIdentifierRegistry(PrivateAPI) _setup:]
+OFXMLIdentifierRegistry.o:_OFXMLCreateID
+sha1.o:_SHA1Final
+sha1.o:_SHA1Init
+sha1.o:_SHA1Transform
+sha1.o:_SHA1Update
+NSData-OFExtensions.o:__NSData_closefn
+NSData-OFExtensions.o:__NSData_readfn
+OFXMLDocument.o:_createXMLStructure
+NSBundle-OFFixes.o:+[NSBundle(OFFixes) replacement_bundleForClass:]
+NSObject-OFExtensions.o:+[NSObject(OFExtensions) bundle]
+OFWeakRetainConcreteImplementation.o:+[NSObject(OFWeakRetain) incrementWeakRetainCount]
+NSString-OFExtensions.o:+[NSString(OFExtensions) commandKeyIndicatorString]
+NSString-OFExtensions.o:+[NSString(OFExtensions) horizontalEllipsisString]
+NSString-OFExtensions.o:+[NSString(OFExtensions) isEmptyString:]
+NSString-OFExtensions.o:+[NSString(OFExtensions) stringWithCharacter:]
+NSString-OFExtensions.o:+[NSString(OFExtensions) stringWithData:encoding:]
+NSThread-OFExtensions.o:+[NSThread(OFExtensions) inMainThread]
+OFConcreteInvocation.o:+[OFConcreteInvocation allocWithZone:]
+OFConcreteInvocation.o:+[OFConcreteInvocation alloc]
+OFController.o:+[OFController sharedController]
+OFDedicatedThreadScheduler.o:+[OFDedicatedThreadScheduler dedicatedThreadScheduler]
+OFEnumNameTable.o:+[OFEnumNameTable xmlElementName]
+OFInvocation.o:+[OFInvocation alloc]
+OFKnownKeyDictionaryTemplate.o:+[OFKnownKeyDictionaryTemplate templateWithKeys:]
+OFMessageQueue.o:+[OFMessageQueue mainQueue]
+OFMutableKnownKeyDictionary.o:+[OFMutableKnownKeyDictionary newWithTemplate:]
+OFMutableKnownKeyDictionary.o:+[OFMutableKnownKeyDictionary newWithTemplate:zone:]
+NSNumber-OFExtensions.o:+[OFNaN sharedNaN]
+OFPoint.o:+[OFPoint pointWithPoint:]
+OFPreference.o:+[OFPreference preferenceForKey:]
+OFPreference.o:+[OFPreference preferenceForKey:enumeration:]
+OFPreference.o:+[OFPreference recacheRegisteredKeys]
+OFPreference.o:+[OFPreferenceWrapper sharedPreferenceWrapper]
+NSArray-OFExtensions.o:-[NSArray(OFExtensions) arrayByPerformingSelector:]
+NSArray-OFExtensions.o:-[NSArray(OFExtensions) arrayByPerformingSelector:withObject:]
+NSArray-OFExtensions.o:-[NSArray(OFExtensions) containsObjectIdenticalTo:]
+NSArray-OFExtensions.o:-[NSArray(OFExtensions) isIdenticalToArray:]
+NSDictionary-OFExtensions.o:-[NSDictionary(OFExtensions) boolForKey:]
+NSDictionary-OFExtensions.o:-[NSDictionary(OFExtensions) boolForKey:defaultValue:]
+NSDictionary-OFExtensions.o:-[NSDictionary(OFExtensions) objectForKey:defaultObject:]
+NSFileManager-OFExtensions.o:-[NSFileManager(OFExtensions) directoryContentsAtPath:havingExtension:]
+NSFileManager-OFExtensions.o:-[NSFileManager(OFExtensions) directoryExistsAtPath:]
+NSFileManager-OFExtensions.o:-[NSFileManager(OFExtensions) directoryExistsAtPath:traverseLink:]
+NSMutableArray-OFExtensions.o:-[NSMutableArray(OFExtensions) insertObject:inArraySortedUsingSelector:]
+NSMutableAttributedString-OFExtensions.o:-[NSMutableAttributedString(OFExtensions) appendString:attributes:]
+NSMutableAttributedString-OFExtensions.o:-[NSMutableAttributedString(OFExtensions) mutateRanges:inRange:matchingString:context:]
+NSMutableAttributedString-OFExtensions.o:-[NSMutableAttributedString(OFExtensions) mutateRanges:matchingString:context:]
+NSMutableSet-OFExtensions.o:-[NSMutableSet(OFExtensions) exclusiveDisjoinSet:]
+NSMutableString-OFExtensions.o:-[NSMutableString(OFExtensions) replaceAllOccurrencesOfCharactersInSet:withString:]
+OFNull.o:-[NSObject(Null) isNull]
+NSObject-OFExtensions.o:-[NSObject(OFExtensions) bundle]
+OFWeakRetainConcreteImplementation.o:-[NSObject(OFWeakRetain) weakRetain]
+NSProcessInfo-OFExtensions.o:-[NSProcessInfo(OFExtensions) processNumber]
+NSString-OFExtensions.o:-[NSString(OFExtensions) boolValue]
+NSString-OFExtensions.o:-[NSString(OFExtensions) containsCharacterInSet:]
+NSString-OFExtensions.o:-[NSString(OFExtensions) containsString:]
+NSString-OFExtensions.o:-[NSString(OFExtensions) stringByRemovingSuffix:]
+NSString-OFExtensions.o:-[NSString(OFExtensions) stringByReplacingCharactersInSet:withString:]
+NSString-OFExtensions.o:-[NSString(OFExtensions) stringByReplacingKeysInDictionary:startingDelimiter:endingDelimiter:]
+NSString-OFExtensions.o:-[NSString(OFExtensions) stringByReplacingKeysInDictionary:startingDelimiter:endingDelimiter:removeUndefinedKeys:]
+NSString-OFExtensions.o:-[NSString(OFExtensions) stringBySeparatingSubstringsOfLength:withString:startingFromBeginning:]
+NSString-OFExtensions.o:-[NSString(OFExtensions) unsignedIntValue]
+NSThread-OFExtensions.o:-[NSThread(OFExtensions) yieldMainThreadLock]
+NSUndoManager-OFExtensions.o:-[NSUndoManager(OFExtensions) isUndoingOrRedoing]
+OFCharacterScanner.o:-[OFCharacterScanner setScanLocation:]
+OFCharacterSet.o:-[OFCharacterSet addCharactersInString:]
+OFCharacterSet.o:-[OFCharacterSet initWithString:]
+OFCharacterSet.o:-[OFCharacterSet init]
+OFCharacterSet.o:-[OFCharacterSet removeAllCharacters]
+OFConcreteInvocation.o:-[OFConcreteInvocation initForObject:]
+OFEnumNameTable.o:-[OFEnumNameTable defaultEnumValue]
+OFEnumNameTable.o:-[OFEnumNameTable enumForName:]
+OFEnumNameTable.o:-[OFEnumNameTable initFromXML:]
+OFEnumNameTable.o:-[OFEnumNameTable initWithDefaultEnumValue:]
+OFEnumNameTable.o:-[OFEnumNameTable nameForEnum:]
+OFEnumNameTable.o:-[OFEnumNameTable setName:forEnumValue:]
+OFIObjectSelector.o:-[OFIObjectSelector hash]
+OFIObjectSelector.o:-[OFIObjectSelector initForObject:selector:]
+OFIObjectSelector.o:-[OFIObjectSelector isEqual:]
+OFIObjectSelectorIntInt.o:-[OFIObjectSelectorIntInt hash]
+OFIObjectSelectorIntInt.o:-[OFIObjectSelectorIntInt initForObject:selector:withInt:withInt:]
+OFConcreteInvocation.o:-[OFInvocation(Inits) initForObject:selector:]
+OFConcreteInvocation.o:-[OFInvocation(Inits) initForObject:selector:withInt:withInt:]
+OFKnownKeyDictionaryTemplate.o:-[OFKnownKeyDictionaryTemplate release]
+OFKnownKeyDictionaryTemplate.o:-[OFKnownKeyDictionaryTemplate retain]
+OFKnownKeyDictionaryTemplate.o:-[OFKnownKeyDictionaryTemplate(PrivateAPI) _initWithKeys:]
+OFMessageQueue.o:-[OFMessageQueue addQueueEntryOnce:]
+OFMessageQueue.o:-[OFMessageQueue hasInvocations]
+OFMessageQueue.o:-[OFMessageQueue init]
+OFMessageQueue.o:-[OFMessageQueue nextRetainedInvocationWithBlock:]
+OFMessageQueue.o:-[OFMessageQueue queueSelectorOnce:forObject:]
+OFMessageQueue.o:-[OFMessageQueue setDelegate:]
+OFMessageQueue.o:-[OFMessageQueue setSchedulesBasedOnPriority:]
+OFMutableKnownKeyDictionary.o:-[OFMutableKnownKeyDictionary addLocallyAbsentValuesFromDictionary:]
+OFMutableKnownKeyDictionary.o:-[OFMutableKnownKeyDictionary objectForKey:]
+OFMutableKnownKeyDictionary.o:-[OFMutableKnownKeyDictionary setObject:forKey:]
+OFMutableKnownKeyDictionary.o:-[OFMutableKnownKeyDictionary(PrivateAPI) _initWithTemplate:]
+NSNumber-OFExtensions.o:-[OFNaN copyWithZone:]
+NSNumber-OFExtensions.o:-[OFNaN retain]
+OFObject.o:-[OFObject release]
+OFObject.o:-[OFObject retainCount]
+OFObject.o:-[OFObject retain]
+OFPoint.o:-[OFPoint copyWithZone:]
+OFPoint.o:-[OFPoint initWithPoint:]
+OFPoint.o:-[OFPoint isEqual:]
+OFPreference.o:-[OFPreference autorelease]
+OFPreference.o:-[OFPreference objectValue]
+OFPreference.o:-[OFPreference retain]
+OFPreference.o:-[OFPreference stringValue]
+OFPreference.o:-[OFPreferenceWrapper retain]
+OFQueueProcessor.o:-[OFQueueProcessor processQueueUntilEmpty:]
+OFQueueProcessor.o:-[OFQueueProcessor processQueueUntilEmpty]
+OFRunLoopQueueProcessor.o:-[OFRunLoopQueueProcessor disable]
+OFRunLoopQueueProcessor.o:-[OFRunLoopQueueProcessor enable]
+OFRunLoopQueueProcessor.o:-[OFRunLoopQueueProcessor incrementWeakRetainCount]
+OFRunLoopQueueProcessor.o:-[OFRunLoopQueueProcessor processQueueUntilEmpty]
+OFRunLoopQueueProcessor.o:-[OFRunLoopQueueProcessor release]
+OFRunLoopQueueProcessor.o:-[OFRunLoopQueueProcessor runFromCurrentRunLoopInModes:]
+OFScheduledEvent.o:-[OFScheduledEvent initWithInvocation:atDate:]
+OFStringScanner.o:-[OFStringScanner dealloc]
+OFStringScanner.o:-[OFStringScanner initWithString:]
+CFArray-OFExtensions.o:_OFCreateIntegerArray
+CFArray-OFExtensions.o:_OFCreateNonOwnedPointerArray
+CFSet-OFExtensions.o:_OFCreatePointerEqualObjectSet
+OFCFCallbacks.o:_OFNSObjectHash
+OFCFCallbacks.o:_OFNSObjectIsEqual
+OFCFCallbacks.o:_OFNSObjectRelease
+OFCFCallbacks.o:_OFNSObjectRetain
+OFCFCallbacks.o:_OFNSObjectRetainCopy
+OFStringDecoder.o:_OFStringDecoder_DidLoad
+OFWeakRetainConcreteImplementation.o:__OFWeakRetainRelease
+OFPreference.o:__retainedObjectValue

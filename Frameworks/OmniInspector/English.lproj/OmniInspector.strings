@@ -1,0 +1,21 @@
+/* Edit Workspaces menu item */
+"Edit Workspaces" = "Edit Workspaces";
+
+/* menu title */
+"Hide Inspectors" = "Hide Inspectors";
+
+/* Reset Inspector Locations menu item */
+"Reset Inspector Locations" = "Reset Inspector Locations";
+
+/* Save Workspace menu item */
+"Save Workspace..." = "Save Workspace...";
+
+/* menu title */
+"Show Inspectors" = "Show Inspectors";
+
+/* Save Workspace default title */
+"Untitled" = "Untitled";
+
+/* Workspace submenu item */
+"Workspace" = "Workspace";
+

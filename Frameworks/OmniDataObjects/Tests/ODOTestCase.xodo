@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<model xmlns="http://www.omnigroup.com/namespace/xodo/1.0">
+	<entity name="Master" class="ODOObject">
+		<attribute name="pk" type="string" primary="true"/>
+		<attribute name="name" optional="true" type="string"/>
+		<relationship name="details" entity="Detail" many="true" delete="cascade" inverse="master"/>
+	</entity>
+
+	<entity name="Detail" class="ODOObject">
+		<attribute name="pk" type="string" primary="true"/>
+		<attribute name="name" optional="true" type="string"/>
+		<relationship name="master" entity="Master" delete="nullify" inverse="details"/>
+	</entity>
+</model>

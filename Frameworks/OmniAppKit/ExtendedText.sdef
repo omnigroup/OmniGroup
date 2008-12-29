@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+
+<!--
+  Omni's extensions to the NSTextSuite.
+  
+  NOTE that we do NOT use this right now.  The Jaguar version of 'sdp' is busted and doesn't support synonyms.  Also Cocoa scripting is busted so that subclassing (apparently) doesn't inherit 'elements'.  Thus we have to redefine 'words' and such but can't since we can't do synonyms.
+  
+  Still, this file is useful for inclusion in other sdp files (like OmniOutliner).
+-->
+
+<dictionary title="ExtendedText">
+    <suite name="Extended Text Suite" code="OETS" description="Extended functionality for text.">
+	<cocoa name="ExtendedText"/>
+	<types>
+	    <enumeration name="TextAlignment" code="OTta">
+		<enumerator name="left"      code="OTa0">
+		    <cocoa name="left"/>
+		</enumerator>
+		<enumerator name="right"     code="OTa2">
+		    <cocoa name="right"/>
+		</enumerator>
+		<enumerator name="center"    code="OTa1">
+		    <cocoa name="center"/>
+		</enumerator>
+		<enumerator name="justified" code="OTa3">
+		    <cocoa name="justified"/>
+		</enumerator>
+		<enumerator name="natural"   code="OTa4">
+		    <cocoa name="natural"/>
+		</enumerator>
+	    </enumeration>
+	</types>
+	<classes>
+	    <class name="text attachment" plural="text attachments" code="atts" inherits="text" description="Represents an inline text attachment.  This class is used mainly for make commands.">
+		<cocoa class="NSAttachmentTextStorage"/>
+		<properties>
+		    <property name="file name" code="atfn" type="string" description="The path to the file for the attachment">
+			<cocoa method="filename"/>
+		    </property>
+		</properties>
+	    </class>
+
+	    <class name="text" plural="texts" code="ctxt" inherits="Abstract object" description="Rich (styled) text">
+		<cocoa class="NSTextStorage"/>
+		<properties>
+		    <property name="baseline offset" code="OTbo" type="real" description="Number of pixels shifted above or below the normal baseline."/>
+		    <property name="font" code="font" type="string" description="The name of the font of the first character.">
+			<cocoa method="fontName"/>
+		    </property>
+		    <property name="size" code="ptsz" type="real" description="The size in points of the first character.">
+			<cocoa method="fontSize"/>
+		    </property>
+		    <property name="color" code="colr" type="color" description="The color of the first character.">
+			<cocoa method="foregroundColor"/>
+		    </property>
+		    <property name="underlined" code="OTun" type="boolean" description="Is the first character underlined?">
+			<cocoa method="isUnderlined"/>
+		    </property>
+		    <property name="superscript" code="OTss" type="integer" description="The superscript level of the text.">
+			<cocoa method="superscriptLevel"/>
+		    </property>
+		    <property name="text" code="ctxt" type="string" description="The actual text content."/>
+		    <property name="alignment" code="OTta" type="TextAlignment" description="Alignment of the text.">
+			<cocoa method="textAlignment"/>
+		    </property>
+		</properties>
+		<elements>
+		    <element type="text">
+			<cocoa method="attributeRuns"/>
+		    </element>
+		    <element type="text">
+			<cocoa method="characters"/>
+		    </element>
+		    <element type="text">
+			<cocoa method="paragraphs"/>
+		    </element>
+		    <element type="text">
+			<cocoa method="words"/>
+		    </element>
+		</elements>
+		<responds-to-commands>
+		    <responds-to name="bold">
+			<cocoa method="handleBoldScriptCommand:"/>
+		    </responds-to>
+		    <responds-to name="italicize">
+			<cocoa method="handleItalicizeScriptCommand:"/>
+		    </responds-to>
+		    <responds-to name="replace">
+			<cocoa method="handleReplaceScriptCommand:"/>
+		    </responds-to>
+		    <responds-to name="unbold">
+			<cocoa method="handleUnboldScriptCommand:"/>
+		    </responds-to>
+		    <responds-to name="underline">
+			<cocoa method="handleUnderlineScriptCommand:"/>
+		    </responds-to>
+		    <responds-to name="unitalicize">
+			<cocoa method="handleUnitalicizeScriptCommand:"/>
+		    </responds-to>
+		    <responds-to name="ununderline">
+			<cocoa method="handleUnunderlineScriptCommand:"/>
+		    </responds-to>
+		</responds-to-commands>
+	    </class>
+	</classes>
+
+	<commands>
+	    <command name="bold" code="OETSOTbo" description="Bold some text">
+		<cocoa name="Bold"/>
+		<direct-parameter type="object"/>
+	    </command>
+	    <command name="italicize" code="OETSOTit" description="Italicize some text">
+		<cocoa name="Italicize"/>
+		<direct-parameter type="object"/>
+	    </command>
+	    <command name="replace" code="OETSOTre">
+		<cocoa name="Replace"/>
+		<direct-parameter type="object"/>
+		<parameter name="regexp" code="OTrx" type="string" optional="optional" description="Regular expression to find"/>
+		<parameter name="replacement" code="OTrp" type="string" description="Replacement string"/>
+		<parameter name="string" code="OTst" type="string" optional="optional" description="String to find"/>
+	    </command>
+	    <command name="unbold" code="OETSOTub" description="Unbold some text">
+		<cocoa name="Unbold"/>
+		<direct-parameter type="object"/>
+	    </command>
+	    <command name="underline" code="OETSOTun" description="Underline some text">
+		<direct-parameter type="object"/>
+	    </command>
+	    <command name="unitalicize" code="OETSOTui" description="Unitalicize some text">
+		<direct-parameter type="object"/>
+	    </command>
+	    <command name="ununderline" code="OETSOTuu" description="Ununderline some text">
+		<direct-parameter type="object"/>
+	    </command>
+	</commands>
+    </suite>
+</dictionary>

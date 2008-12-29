@@ -1,0 +1,119 @@
+<!-- This file must be saved with UTF-8 encoding for OSUPreferences.m to load it correctly! -->
+
+<html>
+
+	<head>
+		<title>Omni Software Update : Hardware Description</title>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+	</head>
+
+	<body>
+		<br>
+		<p>When ${APP} checks for new and updated versions of itself, it optionally includes some basic information about your system configuration. We use this data to determine what systems our customers are using and therefore what systems are most important to support.</p>
+		<p>Omni will <b>never</b> release information about an individual's computer configuration — only statistical information about all collected configurations. We honestly respect your privacy.</p>
+		<p>If you prefer not to submit your system info, no problem - simply do not turn on the checkbox in the Omni Software Update preferences pane in this application.</p>
+		<p>We do make the statistics we gather public so that other developers can also benefit from this knowledge. You can see what the information we release looks like by viewing the <a href="http://update.omnigroup.com/">Omni Software Update</a> page.</p>
+		<p>The following pieces of information are always sent with the query:</p>
+		<p></p>
+		<center>
+			<table width="80%" border="0" cellpadding="2">
+				<tr>
+					<td align="right" bgcolor="#dddddd">OmniSoftwareUpdate version</td>
+					<td bgcolor="#ddddee">${OSU_VER}</td>
+				</tr>
+				<tr>
+					<td align="right" bgcolor="#dddddd">Application ID</td>
+					<td bgcolor="#ddddee">${OSU_APP_ID}</td>
+				</tr>
+				<tr>
+					<td align="right" bgcolor="#dddddd">Application Version</td>
+					<td bgcolor="#ddddee">${OSU_APP_VER}</td>
+				</tr>
+				<tr>
+					<td align="right" bgcolor="#dddddd">Update Track</td>
+					<td bgcolor="#ddddee">${OSU_TRACK}</td>
+				</tr>
+				<tr>
+					<td align="right" bgcolor="#dddddd">Visible Update Tracks</td>
+					<td bgcolor="#ddddee">${OSU_VISIBLE_TRACKS}</td>
+				</tr>
+			</table>
+		</center>
+		<br>
+		If enabled in the 'Update' preferences, the following additional information is sent with the query:
+		<p></p>
+		<center>
+			<table width="80%" border="0" cellpadding="2">
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" valign="top" bgcolor="#dddddd">UUID</td>
+					<td bgcolor="#ddddee">${uuid}<br>
+					<font size="-1" color="#555555">A random string that anonymously identifies your computer. This allows us to keep our database up to date when your system configuration changes. This is not associated with your name or any other personal information.</font></td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" valign="top" bgcolor="#dddddd">License Type</td>
+					<td bgcolor="#ddddee">${license-type}<br>
+					<font size="-1" color="#555555">Your license key itself will never be sent.</font></td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" bgcolor="#dddddd">OS Version</td>
+					<td bgcolor="#ddddee">${os}</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" bgcolor="#dddddd">Preferred Language</td>
+					<td bgcolor="#ddddee">${lang}</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" valign="top" bgcolor="#dddddd">General Location</td>
+					<td bgcolor="#ddddee">Latitude: ${LATITUDE} Longitude: ${LONGITUDE}<br>
+<font size="-1" color="#555555">This general location is based on the closest major city that the System Preferences application selected when you picked a time zone while setting up your computer.  You can see exactly what location this reports at <a href="http://www.mapquest.com/maps/map.adp?searchtype=address&formtype=address&latlongtype=decimal&latitude=${LATITUDE}&longitude=${LONGITUDE}">MapQuest</a>.</font>
+</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" bgcolor="#dddddd">Computer Model</td>
+					<td bgcolor="#ddddee">${machine_name} (${hw-model})</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" bgcolor="#dddddd">CPU Count</td>
+					<td bgcolor="#ddddee">${ncpu}</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" bgcolor="#dddddd">CPU Type</td>
+					<td bgcolor="#ddddee">${cpu_type} (${cpu})</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" bgcolor="#dddddd">CPU Speed</td>
+					<td bgcolor="#ddddee">${cpuhz}</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" bgcolor="#dddddd">Bus Speed</td>
+					<td bgcolor="#ddddee">${bushz}</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" bgcolor="#dddddd">Memory</td>
+					<td bgcolor="#ddddee">${mem}</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" bgcolor="#dddddd">Display Settings</td>
+					<td bgcolor="#ddddee">${DISPLAYS}</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" bgcolor="#dddddd">Network Speed</td>
+					<td bgcolor="#ddddee">${qt_netspeed}</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" valign="top" bgcolor="#dddddd">Video Cards</td>
+					<td bgcolor="#ddddee">${VIDEO}</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" valign="top" bgcolor="#dddddd">OpenGL Information</td>
+					<td bgcolor="#ddddee">${OPENGL}</td>
+				</tr>
+				<tr>
+					<td width="${KeyColumnWidthPercentage}%" align="right" valign="top" bgcolor="#dddddd">Run Count and Times</td>
+					<td bgcolor="#ddddee">${RUNTIME}</td>
+				</tr>
+			</table>
+		</center>
+	</body>
+
+</html>

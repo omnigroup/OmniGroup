@@ -1,0 +1,691 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0A6C01C40CC046EF0014024A /* OIWorkspaceRestore.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A6C01C20CC046EF0014024A /* OIWorkspaceRestore.png */; };
+		0A6C01C50CC046EF0014024A /* OIWorkspaceStore.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A6C01C30CC046EF0014024A /* OIWorkspaceStore.png */; };
+		0A6C02900CC04ABB0014024A /* OIWorkspaceSnap.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 0A6C028F0CC04ABB0014024A /* OIWorkspaceSnap.aiff */; };
+		342CD98B08D21501009D42C3 /* OmniInspector.strings in Resources */ = {isa = PBXBuildFile; fileRef = 342CD98908D21501009D42C3 /* OmniInspector.strings */; };
+		346DEF3209992425008F5B5F /* OIInspectorTabController.h in Headers */ = {isa = PBXBuildFile; fileRef = 346DEF3009992425008F5B5F /* OIInspectorTabController.h */; settings = {ATTRIBUTES = (); }; };
+		346DEF3309992425008F5B5F /* OIInspectorTabController.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DEF3109992425008F5B5F /* OIInspectorTabController.m */; };
+		34A652370D0A0A7D003F4D4C /* OISectionedInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A652350D0A0A7D003F4D4C /* OISectionedInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34A652380D0A0A7D003F4D4C /* OISectionedInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */; };
+		34A6524A0D0A0B0B003F4D4C /* OISectionedInspector.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34A652490D0A0B0B003F4D4C /* OISectionedInspector.nib */; };
+		34B2544408D0DCEE00DD2070 /* OIColorInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2542708D0DCEE00DD2070 /* OIColorInspector.h */; };
+		34B2544508D0DCEE00DD2070 /* OIColorInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2542808D0DCEE00DD2070 /* OIColorInspector.m */; };
+		34B2544608D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2542908D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.h */; };
+		34B2544708D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2542A08D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.m */; };
+		34B2544808D0DCEE00DD2070 /* OIFontInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2542B08D0DCEE00DD2070 /* OIFontInspector.h */; };
+		34B2544908D0DCEE00DD2070 /* OIFontInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2542C08D0DCEE00DD2070 /* OIFontInspector.m */; };
+		34B2544B08D0DCEE00DD2070 /* OIInspectableControllerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2542E08D0DCEE00DD2070 /* OIInspectableControllerProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34B2544C08D0DCEE00DD2070 /* OIInspectionSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2542F08D0DCEE00DD2070 /* OIInspectionSet.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34B2544D08D0DCEE00DD2070 /* OIInspectionSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2543008D0DCEE00DD2070 /* OIInspectionSet.m */; };
+		34B2544E08D0DCEE00DD2070 /* OIInspectorController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2543108D0DCEE00DD2070 /* OIInspectorController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34B2544F08D0DCEE00DD2070 /* OIInspectorController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2543208D0DCEE00DD2070 /* OIInspectorController.m */; };
+		34B2545008D0DCEE00DD2070 /* OIInspectorGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2543308D0DCEE00DD2070 /* OIInspectorGroup.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34B2545108D0DCEE00DD2070 /* OIInspectorGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2543408D0DCEE00DD2070 /* OIInspectorGroup.m */; };
+		34B2545408D0DCEE00DD2070 /* OIInspectorHeaderView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2543708D0DCEE00DD2070 /* OIInspectorHeaderView.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34B2545508D0DCEE00DD2070 /* OIInspectorHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2543808D0DCEE00DD2070 /* OIInspectorHeaderView.m */; };
+		34B2545608D0DCEE00DD2070 /* OIInspectorRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2543908D0DCEE00DD2070 /* OIInspectorRegistry.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34B2545708D0DCEE00DD2070 /* OIInspectorRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2543A08D0DCEE00DD2070 /* OIInspectorRegistry.m */; };
+		34B2545808D0DCEE00DD2070 /* OIInspectorResizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2543B08D0DCEE00DD2070 /* OIInspectorResizer.h */; };
+		34B2545908D0DCEE00DD2070 /* OIInspectorResizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2543C08D0DCEE00DD2070 /* OIInspectorResizer.m */; };
+		34B2545A08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2543D08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.h */; };
+		34B2545B08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2543E08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.m */; };
+		34B2545C08D0DCEE00DD2070 /* OIInspectorVerticalResizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2543F08D0DCEE00DD2070 /* OIInspectorVerticalResizer.h */; };
+		34B2545D08D0DCEE00DD2070 /* OIInspectorVerticalResizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2544008D0DCEE00DD2070 /* OIInspectorVerticalResizer.m */; };
+		34B2545E08D0DCEE00DD2070 /* OIInspectorWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2544108D0DCEE00DD2070 /* OIInspectorWindow.h */; };
+		34B2545F08D0DCEE00DD2070 /* OIInspectorWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2544208D0DCEE00DD2070 /* OIInspectorWindow.m */; };
+		34B2546008D0DCEE00DD2070 /* OmniInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2544308D0DCEE00DD2070 /* OmniInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34B2549708D0DE8900DD2070 /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34B2549408D0DE8900DD2070 /* OmniAppKit.framework */; };
+		34B2549808D0DE8900DD2070 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34B2549508D0DE8900DD2070 /* OmniBase.framework */; };
+		34B2549908D0DE8900DD2070 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34B2549608D0DE8900DD2070 /* OmniFoundation.framework */; };
+		34B443AB09F595BE008956F6 /* Tabbed.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34B443AA09F595BE008956F6 /* Tabbed.nib */; };
+		34BA7D6F0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BA7D6D0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h */; };
+		34BA7D700A6D904000E029F8 /* OIButtonMatrixBackgroundView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BA7D6E0A6D904000E029F8 /* OIButtonMatrixBackgroundView.m */; };
+		34C4FA900D19B3BE0009E860 /* OIInspectorSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C4FA8E0D19B3BE0009E860 /* OIInspectorSection.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34C4FA910D19B3BE0009E860 /* OIInspectorSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4FA8F0D19B3BE0009E860 /* OIInspectorSection.m */; };
+		34D2B77808D0E09C00C74260 /* ColorsInfo.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76308D0E09C00C74260 /* ColorsInfo.png */; };
+		34D2B77908D0E09C00C74260 /* FontsInfo.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76408D0E09C00C74260 /* FontsInfo.png */; };
+		34D2B77A08D0E09C00C74260 /* OICollapsed.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76508D0E09C00C74260 /* OICollapsed.png */; };
+		34D2B77B08D0E09C00C74260 /* OIColorInspector.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76608D0E09C00C74260 /* OIColorInspector.png */; };
+		34D2B77C08D0E09C00C74260 /* OIExpanded.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76708D0E09C00C74260 /* OIExpanded.png */; };
+		34D2B77D08D0E09C00C74260 /* OIFontInspector.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76808D0E09C00C74260 /* OIFontInspector.png */; };
+		34D2B77E08D0E09C00C74260 /* OIHeaderCap-Ice-Pressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76908D0E09C00C74260 /* OIHeaderCap-Ice-Pressed.png */; };
+		34D2B77F08D0E09C00C74260 /* OIHeaderCap-Ice.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76A08D0E09C00C74260 /* OIHeaderCap-Ice.png */; };
+		34D2B78008D0E09C00C74260 /* OIHeaderWash-Ice-Pressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76B08D0E09C00C74260 /* OIHeaderWash-Ice-Pressed.png */; };
+		34D2B78108D0E09C00C74260 /* OIHeaderWash-Ice.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76C08D0E09C00C74260 /* OIHeaderWash-Ice.png */; };
+		34D2B78208D0E09C00C74260 /* OITitlebarActive.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76D08D0E09C00C74260 /* OITitlebarActive.png */; };
+		34D2B78308D0E09C00C74260 /* OITitlebarActivePressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76E08D0E09C00C74260 /* OITitlebarActivePressed.png */; };
+		34D2B78408D0E09C00C74260 /* OITitlebarInactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B76F08D0E09C00C74260 /* OITitlebarInactive.png */; };
+		34D2B78508D0E09C00C74260 /* OITitlebarInactivePressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77008D0E09C00C74260 /* OITitlebarInactivePressed.png */; };
+		34D2B78608D0E09C00C74260 /* OIWindowResize.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77108D0E09C00C74260 /* OIWindowResize.png */; };
+		34D2B78708D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Graphite.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77208D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Graphite.png */; };
+		34D2B78808D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Ice.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77308D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Ice.png */; };
+		34D2B78908D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Graphite.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77408D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Graphite.png */; };
+		34D2B78A08D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77508D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png */; };
+		34D2B78B08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77608D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png */; };
+		34D2B78C08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77708D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png */; };
+		34D2B79208D0E0A700C74260 /* OIInspectorWorkspacePanels.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B78F08D0E0A700C74260 /* OIInspectorWorkspacePanels.nib */; };
+		34D2B7A908D0E17C00C74260 /* OAApplication-OIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D2B7A708D0E17C00C74260 /* OAApplication-OIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34D2B7AA08D0E17C00C74260 /* OAApplication-OIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D2B7A808D0E17C00C74260 /* OAApplication-OIExtensions.m */; };
+		34D2B7D008D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D2B7CE08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34D2B7D108D0E32900C74260 /* OAToolbarWindowController-OIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D2B7CF08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.m */; };
+		34E221EE0932A28400087E32 /* OIInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E221EC0932A28300087E32 /* OIInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34E221EF0932A28400087E32 /* OIInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E221ED0932A28300087E32 /* OIInspector.m */; };
+		4914964D0C9B39DF006E9EAB /* OITabLock.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 4914964C0C9B39DF006E9EAB /* OITabLock.pdf */; };
+		6C34FC2B08DA46430055F81A /* OITabbedInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC2908DA46430055F81A /* OITabbedInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6C34FC2C08DA46430055F81A /* OITabbedInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC2A08DA46430055F81A /* OITabbedInspector.m */; };
+		6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC3A08DA47590055F81A /* OITabMatrix.h */; };
+		6C34FC3D08DA47590055F81A /* OITabMatrix.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC3B08DA47590055F81A /* OITabMatrix.m */; };
+		6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC4908DA478D0055F81A /* OITabCell.h */; };
+		6C34FC4C08DA478D0055F81A /* OITabCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC4A08DA478D0055F81A /* OITabCell.m */; };
+		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
+		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		947D53040B8F699E001F9E30 /* OITableView.h in Headers */ = {isa = PBXBuildFile; fileRef = 947D53020B8F699E001F9E30 /* OITableView.h */; };
+		947D53050B8F699E001F9E30 /* OITableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 947D53030B8F699E001F9E30 /* OITableView.m */; };
+		94D1DDDA0B93701E0006D793 /* OIMatrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 94D1DDD80B93701E0006D793 /* OIMatrix.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		94D1DDDB0B93701E0006D793 /* OIMatrix.m in Sources */ = {isa = PBXBuildFile; fileRef = 94D1DDD90B93701E0006D793 /* OIMatrix.m */; };
+		A2BB54B30C973E8500274A08 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2BB54B20C973E8500274A08 /* QuartzCore.framework */; };
+		A2F861290C960DAF00BE4827 /* OITabDepressionBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = A2F861280C960DAF00BE4827 /* OITabDepressionBackground.png */; };
+		A2F8617C0C961A4800BE4827 /* OIInspectorHeaderBackground.h in Headers */ = {isa = PBXBuildFile; fileRef = A2F8617A0C961A4800BE4827 /* OIInspectorHeaderBackground.h */; };
+		A2F8617D0C961A4800BE4827 /* OIInspectorHeaderBackground.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F8617B0C961A4800BE4827 /* OIInspectorHeaderBackground.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		0A6C01C20CC046EF0014024A /* OIWorkspaceRestore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIWorkspaceRestore.png; sourceTree = "<group>"; };
+		0A6C01C30CC046EF0014024A /* OIWorkspaceStore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIWorkspaceStore.png; sourceTree = "<group>"; };
+		0A6C028F0CC04ABB0014024A /* OIWorkspaceSnap.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = OIWorkspaceSnap.aiff; sourceTree = "<group>"; };
+		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		32DBCF5E0370ADEE00C91783 /* OmniInspector_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniInspector_Prefix.h; sourceTree = "<group>"; };
+		342CD98A08D21501009D42C3 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniInspector.strings; sourceTree = "<group>"; };
+		346DEF3009992425008F5B5F /* OIInspectorTabController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorTabController.h; sourceTree = "<group>"; };
+		346DEF3109992425008F5B5F /* OIInspectorTabController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorTabController.m; sourceTree = "<group>"; };
+		34A652350D0A0A7D003F4D4C /* OISectionedInspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OISectionedInspector.h; sourceTree = "<group>"; };
+		34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OISectionedInspector.m; sourceTree = "<group>"; };
+		34A652490D0A0B0B003F4D4C /* OISectionedInspector.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = OISectionedInspector.nib; sourceTree = "<group>"; };
+		34B253CE08D0D6BD00DD2070 /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34B253CF08D0D6BD00DD2070 /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		34B253D008D0D6BD00DD2070 /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		34B253D108D0D6BD00DD2070 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34B253D208D0D6BD00DD2070 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		34B253D308D0D6BD00DD2070 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		34B253D408D0D6BD00DD2070 /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34B253D508D0D6BD00DD2070 /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		34B253D608D0D6BD00DD2070 /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		34B253D708D0D6BD00DD2070 /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34B253D808D0D6BD00DD2070 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
+		34B253D908D0D6BD00DD2070 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
+		34B253DA08D0D6BD00DD2070 /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34B253DB08D0D6BD00DD2070 /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
+		34B253DC08D0D6BD00DD2070 /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
+		34B2542708D0DCEE00DD2070 /* OIColorInspector.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIColorInspector.h; sourceTree = "<group>"; };
+		34B2542808D0DCEE00DD2070 /* OIColorInspector.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIColorInspector.m; sourceTree = "<group>"; };
+		34B2542908D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIDynamicInspectorMenuItem.h; sourceTree = "<group>"; };
+		34B2542A08D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIDynamicInspectorMenuItem.m; sourceTree = "<group>"; };
+		34B2542B08D0DCEE00DD2070 /* OIFontInspector.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIFontInspector.h; sourceTree = "<group>"; };
+		34B2542C08D0DCEE00DD2070 /* OIFontInspector.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIFontInspector.m; sourceTree = "<group>"; };
+		34B2542E08D0DCEE00DD2070 /* OIInspectableControllerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectableControllerProtocol.h; sourceTree = "<group>"; };
+		34B2542F08D0DCEE00DD2070 /* OIInspectionSet.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectionSet.h; sourceTree = "<group>"; };
+		34B2543008D0DCEE00DD2070 /* OIInspectionSet.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectionSet.m; sourceTree = "<group>"; };
+		34B2543108D0DCEE00DD2070 /* OIInspectorController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorController.h; sourceTree = "<group>"; };
+		34B2543208D0DCEE00DD2070 /* OIInspectorController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorController.m; sourceTree = "<group>"; };
+		34B2543308D0DCEE00DD2070 /* OIInspectorGroup.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorGroup.h; sourceTree = "<group>"; };
+		34B2543408D0DCEE00DD2070 /* OIInspectorGroup.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorGroup.m; sourceTree = "<group>"; };
+		34B2543708D0DCEE00DD2070 /* OIInspectorHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorHeaderView.h; sourceTree = "<group>"; };
+		34B2543808D0DCEE00DD2070 /* OIInspectorHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorHeaderView.m; sourceTree = "<group>"; };
+		34B2543908D0DCEE00DD2070 /* OIInspectorRegistry.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorRegistry.h; sourceTree = "<group>"; };
+		34B2543A08D0DCEE00DD2070 /* OIInspectorRegistry.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorRegistry.m; sourceTree = "<group>"; };
+		34B2543B08D0DCEE00DD2070 /* OIInspectorResizer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorResizer.h; sourceTree = "<group>"; };
+		34B2543C08D0DCEE00DD2070 /* OIInspectorResizer.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorResizer.m; sourceTree = "<group>"; };
+		34B2543D08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorResizerAvoidingScrollView.h; sourceTree = "<group>"; };
+		34B2543E08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorResizerAvoidingScrollView.m; sourceTree = "<group>"; };
+		34B2543F08D0DCEE00DD2070 /* OIInspectorVerticalResizer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorVerticalResizer.h; sourceTree = "<group>"; };
+		34B2544008D0DCEE00DD2070 /* OIInspectorVerticalResizer.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorVerticalResizer.m; sourceTree = "<group>"; };
+		34B2544108D0DCEE00DD2070 /* OIInspectorWindow.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorWindow.h; sourceTree = "<group>"; };
+		34B2544208D0DCEE00DD2070 /* OIInspectorWindow.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorWindow.m; sourceTree = "<group>"; };
+		34B2544308D0DCEE00DD2070 /* OmniInspector.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OmniInspector.h; sourceTree = "<group>"; };
+		34B2549408D0DE8900DD2070 /* OmniAppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		34B2549508D0DE8900DD2070 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		34B2549608D0DE8900DD2070 /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		34B443AA09F595BE008956F6 /* Tabbed.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = Tabbed.nib; sourceTree = "<group>"; };
+		34BA7D6D0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIButtonMatrixBackgroundView.h; sourceTree = "<group>"; };
+		34BA7D6E0A6D904000E029F8 /* OIButtonMatrixBackgroundView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIButtonMatrixBackgroundView.m; sourceTree = "<group>"; };
+		34C4FA8E0D19B3BE0009E860 /* OIInspectorSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorSection.h; sourceTree = "<group>"; };
+		34C4FA8F0D19B3BE0009E860 /* OIInspectorSection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorSection.m; sourceTree = "<group>"; };
+		34D2B76308D0E09C00C74260 /* ColorsInfo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ColorsInfo.png; sourceTree = "<group>"; };
+		34D2B76408D0E09C00C74260 /* FontsInfo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FontsInfo.png; sourceTree = "<group>"; };
+		34D2B76508D0E09C00C74260 /* OICollapsed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OICollapsed.png; sourceTree = "<group>"; };
+		34D2B76608D0E09C00C74260 /* OIColorInspector.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIColorInspector.png; sourceTree = "<group>"; };
+		34D2B76708D0E09C00C74260 /* OIExpanded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIExpanded.png; sourceTree = "<group>"; };
+		34D2B76808D0E09C00C74260 /* OIFontInspector.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIFontInspector.png; sourceTree = "<group>"; };
+		34D2B76908D0E09C00C74260 /* OIHeaderCap-Ice-Pressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIHeaderCap-Ice-Pressed.png"; sourceTree = "<group>"; };
+		34D2B76A08D0E09C00C74260 /* OIHeaderCap-Ice.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIHeaderCap-Ice.png"; sourceTree = "<group>"; };
+		34D2B76B08D0E09C00C74260 /* OIHeaderWash-Ice-Pressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIHeaderWash-Ice-Pressed.png"; sourceTree = "<group>"; };
+		34D2B76C08D0E09C00C74260 /* OIHeaderWash-Ice.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIHeaderWash-Ice.png"; sourceTree = "<group>"; };
+		34D2B76D08D0E09C00C74260 /* OITitlebarActive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OITitlebarActive.png; sourceTree = "<group>"; };
+		34D2B76E08D0E09C00C74260 /* OITitlebarActivePressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OITitlebarActivePressed.png; sourceTree = "<group>"; };
+		34D2B76F08D0E09C00C74260 /* OITitlebarInactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OITitlebarInactive.png; sourceTree = "<group>"; };
+		34D2B77008D0E09C00C74260 /* OITitlebarInactivePressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OITitlebarInactivePressed.png; sourceTree = "<group>"; };
+		34D2B77108D0E09C00C74260 /* OIWindowResize.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIWindowResize.png; sourceTree = "<group>"; };
+		34D2B77208D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Graphite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Normal-Graphite.png"; sourceTree = "<group>"; };
+		34D2B77308D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Ice.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Normal-Ice.png"; sourceTree = "<group>"; };
+		34D2B77408D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Graphite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Pressed-Graphite.png"; sourceTree = "<group>"; };
+		34D2B77508D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Pressed-Ice.png"; sourceTree = "<group>"; };
+		34D2B77608D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Rollover-Graphite.png"; sourceTree = "<group>"; };
+		34D2B77708D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Rollover-Ice.png"; sourceTree = "<group>"; };
+		34D2B79008D0E0A700C74260 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OIInspectorWorkspacePanels.nib; sourceTree = "<group>"; };
+		34D2B7A708D0E17C00C74260 /* OAApplication-OIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAApplication-OIExtensions.h"; sourceTree = "<group>"; };
+		34D2B7A808D0E17C00C74260 /* OAApplication-OIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OAApplication-OIExtensions.m"; sourceTree = "<group>"; };
+		34D2B7CE08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAToolbarWindowController-OIExtensions.h"; sourceTree = "<group>"; };
+		34D2B7CF08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OAToolbarWindowController-OIExtensions.m"; sourceTree = "<group>"; };
+		34D2B80708D0E43500C74260 /* OmniInspector.order */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = OmniInspector.order; sourceTree = "<group>"; };
+		34E221EC0932A28300087E32 /* OIInspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspector.h; sourceTree = "<group>"; };
+		34E221ED0932A28300087E32 /* OIInspector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspector.m; sourceTree = "<group>"; };
+		4914964C0C9B39DF006E9EAB /* OITabLock.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = OITabLock.pdf; sourceTree = "<group>"; };
+		6C34FC2908DA46430055F81A /* OITabbedInspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OITabbedInspector.h; sourceTree = "<group>"; };
+		6C34FC2A08DA46430055F81A /* OITabbedInspector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OITabbedInspector.m; sourceTree = "<group>"; };
+		6C34FC3A08DA47590055F81A /* OITabMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OITabMatrix.h; sourceTree = "<group>"; };
+		6C34FC3B08DA47590055F81A /* OITabMatrix.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OITabMatrix.m; sourceTree = "<group>"; };
+		6C34FC4908DA478D0055F81A /* OITabCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OITabCell.h; sourceTree = "<group>"; };
+		6C34FC4A08DA478D0055F81A /* OITabCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OITabCell.m; sourceTree = "<group>"; };
+		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8DC2EF5B0486A6940098B216 /* OmniInspector.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniInspector.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		947D53020B8F699E001F9E30 /* OITableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OITableView.h; sourceTree = "<group>"; };
+		947D53030B8F699E001F9E30 /* OITableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OITableView.m; sourceTree = "<group>"; };
+		94D1DDD80B93701E0006D793 /* OIMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIMatrix.h; sourceTree = "<group>"; };
+		94D1DDD90B93701E0006D793 /* OIMatrix.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIMatrix.m; sourceTree = "<group>"; };
+		A2AE8756095767D7003D8E00 /* InfoPlistKeys.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = InfoPlistKeys.rtf; sourceTree = "<group>"; };
+		A2BB54B20C973E8500274A08 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = /System/Library/Frameworks/QuartzCore.framework; sourceTree = "<absolute>"; };
+		A2F861280C960DAF00BE4827 /* OITabDepressionBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OITabDepressionBackground.png; sourceTree = "<group>"; };
+		A2F8617A0C961A4800BE4827 /* OIInspectorHeaderBackground.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorHeaderBackground.h; sourceTree = "<group>"; };
+		A2F8617B0C961A4800BE4827 /* OIInspectorHeaderBackground.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorHeaderBackground.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DC2EF560486A6940098B216 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */,
+				34B2549708D0DE8900DD2070 /* OmniAppKit.framework in Frameworks */,
+				34B2549808D0DE8900DD2070 /* OmniBase.framework in Frameworks */,
+				34B2549908D0DE8900DD2070 /* OmniFoundation.framework in Frameworks */,
+				A2BB54B30C973E8500274A08 /* QuartzCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DC2EF5B0486A6940098B216 /* OmniInspector.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* OmniInspector */ = {
+			isa = PBXGroup;
+			children = (
+				A2AE8756095767D7003D8E00 /* InfoPlistKeys.rtf */,
+				34B253CD08D0D6BD00DD2070 /* Configurations */,
+				08FB77AEFE84172EC02AAC07 /* Source */,
+				089C1665FE841158C02AAC07 /* Resources */,
+				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				034768DFFF38A50411DB9C8B /* Products */,
+			);
+			name = OmniInspector;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				34B2549408D0DE8900DD2070 /* OmniAppKit.framework */,
+				34B2549508D0DE8900DD2070 /* OmniBase.framework */,
+				34B2549608D0DE8900DD2070 /* OmniFoundation.framework */,
+				1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */,
+				1058C7B2FEA5585E11CA2CBB /* Other Frameworks */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C1665FE841158C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				34D2B76008D0E06D00C74260 /* Images */,
+				342CD98908D21501009D42C3 /* OmniInspector.strings */,
+				8DC2EF5A0486A6940098B216 /* Info.plist */,
+				34D2B78F08D0E0A700C74260 /* OIInspectorWorkspacePanels.nib */,
+				089C1666FE841158C02AAC07 /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		08FB77AEFE84172EC02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				32DBCF5E0370ADEE00C91783 /* OmniInspector_Prefix.h */,
+				34D2B80708D0E43500C74260 /* OmniInspector.order */,
+				34B2544308D0DCEE00DD2070 /* OmniInspector.h */,
+				34D2B7A708D0E17C00C74260 /* OAApplication-OIExtensions.h */,
+				34D2B7A808D0E17C00C74260 /* OAApplication-OIExtensions.m */,
+				34D2B7CE08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h */,
+				34D2B7CF08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.m */,
+				34B2542708D0DCEE00DD2070 /* OIColorInspector.h */,
+				34B2542808D0DCEE00DD2070 /* OIColorInspector.m */,
+				34B2542908D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.h */,
+				34B2542A08D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.m */,
+				34B2542B08D0DCEE00DD2070 /* OIFontInspector.h */,
+				34B2542C08D0DCEE00DD2070 /* OIFontInspector.m */,
+				34B2542E08D0DCEE00DD2070 /* OIInspectableControllerProtocol.h */,
+				34B2542F08D0DCEE00DD2070 /* OIInspectionSet.h */,
+				34B2543008D0DCEE00DD2070 /* OIInspectionSet.m */,
+				34E221EC0932A28300087E32 /* OIInspector.h */,
+				34E221ED0932A28300087E32 /* OIInspector.m */,
+				34B2543108D0DCEE00DD2070 /* OIInspectorController.h */,
+				34B2543208D0DCEE00DD2070 /* OIInspectorController.m */,
+				34B2543308D0DCEE00DD2070 /* OIInspectorGroup.h */,
+				34B2543408D0DCEE00DD2070 /* OIInspectorGroup.m */,
+				34B2543708D0DCEE00DD2070 /* OIInspectorHeaderView.h */,
+				34B2543808D0DCEE00DD2070 /* OIInspectorHeaderView.m */,
+				A2F8617A0C961A4800BE4827 /* OIInspectorHeaderBackground.h */,
+				A2F8617B0C961A4800BE4827 /* OIInspectorHeaderBackground.m */,
+				34B2543908D0DCEE00DD2070 /* OIInspectorRegistry.h */,
+				34B2543A08D0DCEE00DD2070 /* OIInspectorRegistry.m */,
+				34B2543B08D0DCEE00DD2070 /* OIInspectorResizer.h */,
+				34B2543C08D0DCEE00DD2070 /* OIInspectorResizer.m */,
+				34B2543D08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.h */,
+				34B2543E08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.m */,
+				34B2543F08D0DCEE00DD2070 /* OIInspectorVerticalResizer.h */,
+				34B2544008D0DCEE00DD2070 /* OIInspectorVerticalResizer.m */,
+				34B2544108D0DCEE00DD2070 /* OIInspectorWindow.h */,
+				34B2544208D0DCEE00DD2070 /* OIInspectorWindow.m */,
+				947D53020B8F699E001F9E30 /* OITableView.h */,
+				947D53030B8F699E001F9E30 /* OITableView.m */,
+				94D1DDD80B93701E0006D793 /* OIMatrix.h */,
+				94D1DDD90B93701E0006D793 /* OIMatrix.m */,
+				6C34FC2608DA461E0055F81A /* Tabbed */,
+				34A652330D0A0975003F4D4C /* Sectioned */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */,
+				A2BB54B20C973E8500274A08 /* QuartzCore.framework */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7B2FEA5585E11CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0867D6A5FE840307C02AAC07 /* AppKit.framework */,
+				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		34A652330D0A0975003F4D4C /* Sectioned */ = {
+			isa = PBXGroup;
+			children = (
+				34A652350D0A0A7D003F4D4C /* OISectionedInspector.h */,
+				34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */,
+				34C4FA8E0D19B3BE0009E860 /* OIInspectorSection.h */,
+				34C4FA8F0D19B3BE0009E860 /* OIInspectorSection.m */,
+				34A652490D0A0B0B003F4D4C /* OISectionedInspector.nib */,
+			);
+			name = Sectioned;
+			sourceTree = "<group>";
+		};
+		34B253CD08D0D6BD00DD2070 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				34B253CE08D0D6BD00DD2070 /* Omni-Application-Coverage.xcconfig */,
+				34B253CF08D0D6BD00DD2070 /* Omni-Application-Debug.xcconfig */,
+				34B253D008D0D6BD00DD2070 /* Omni-Application-Release.xcconfig */,
+				34B253D108D0D6BD00DD2070 /* Omni-Bundle-Coverage.xcconfig */,
+				34B253D208D0D6BD00DD2070 /* Omni-Bundle-Debug.xcconfig */,
+				34B253D308D0D6BD00DD2070 /* Omni-Bundle-Release.xcconfig */,
+				34B253D408D0D6BD00DD2070 /* Omni-Framework-Coverage.xcconfig */,
+				34B253D508D0D6BD00DD2070 /* Omni-Framework-Debug.xcconfig */,
+				34B253D608D0D6BD00DD2070 /* Omni-Framework-Release.xcconfig */,
+				34B253D708D0D6BD00DD2070 /* Omni-Global-Coverage.xcconfig */,
+				34B253D808D0D6BD00DD2070 /* Omni-Global-Debug.xcconfig */,
+				34B253D908D0D6BD00DD2070 /* Omni-Global-Release.xcconfig */,
+				34B253DA08D0D6BD00DD2070 /* Omni-Tool-Coverage.xcconfig */,
+				34B253DB08D0D6BD00DD2070 /* Omni-Tool-Debug.xcconfig */,
+				34B253DC08D0D6BD00DD2070 /* Omni-Tool-Release.xcconfig */,
+			);
+			name = Configurations;
+			path = ../../Configurations;
+			sourceTree = SOURCE_ROOT;
+		};
+		34D2B76008D0E06D00C74260 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				34D2B76308D0E09C00C74260 /* ColorsInfo.png */,
+				34D2B76408D0E09C00C74260 /* FontsInfo.png */,
+				34D2B76508D0E09C00C74260 /* OICollapsed.png */,
+				34D2B76608D0E09C00C74260 /* OIColorInspector.png */,
+				34D2B76708D0E09C00C74260 /* OIExpanded.png */,
+				34D2B76808D0E09C00C74260 /* OIFontInspector.png */,
+				34D2B76908D0E09C00C74260 /* OIHeaderCap-Ice-Pressed.png */,
+				34D2B76A08D0E09C00C74260 /* OIHeaderCap-Ice.png */,
+				34D2B76B08D0E09C00C74260 /* OIHeaderWash-Ice-Pressed.png */,
+				34D2B76C08D0E09C00C74260 /* OIHeaderWash-Ice.png */,
+				4914964C0C9B39DF006E9EAB /* OITabLock.pdf */,
+				34D2B76D08D0E09C00C74260 /* OITitlebarActive.png */,
+				34D2B76E08D0E09C00C74260 /* OITitlebarActivePressed.png */,
+				34D2B76F08D0E09C00C74260 /* OITitlebarInactive.png */,
+				34D2B77008D0E09C00C74260 /* OITitlebarInactivePressed.png */,
+				34D2B77108D0E09C00C74260 /* OIWindowResize.png */,
+				34D2B77208D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Graphite.png */,
+				34D2B77308D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Ice.png */,
+				34D2B77408D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Graphite.png */,
+				34D2B77508D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png */,
+				34D2B77608D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png */,
+				34D2B77708D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png */,
+				0A6C01C20CC046EF0014024A /* OIWorkspaceRestore.png */,
+				0A6C01C30CC046EF0014024A /* OIWorkspaceStore.png */,
+				0A6C028F0CC04ABB0014024A /* OIWorkspaceSnap.aiff */,
+			);
+			name = Images;
+			sourceTree = "<group>";
+		};
+		6C34FC2608DA461E0055F81A /* Tabbed */ = {
+			isa = PBXGroup;
+			children = (
+				6C34FC2908DA46430055F81A /* OITabbedInspector.h */,
+				6C34FC2A08DA46430055F81A /* OITabbedInspector.m */,
+				346DEF3009992425008F5B5F /* OIInspectorTabController.h */,
+				346DEF3109992425008F5B5F /* OIInspectorTabController.m */,
+				6C34FC3A08DA47590055F81A /* OITabMatrix.h */,
+				6C34FC3B08DA47590055F81A /* OITabMatrix.m */,
+				A2F861280C960DAF00BE4827 /* OITabDepressionBackground.png */,
+				34BA7D6D0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h */,
+				34BA7D6E0A6D904000E029F8 /* OIButtonMatrixBackgroundView.m */,
+				6C34FC4908DA478D0055F81A /* OITabCell.h */,
+				6C34FC4A08DA478D0055F81A /* OITabCell.m */,
+				34B443AA09F595BE008956F6 /* Tabbed.nib */,
+			);
+			name = Tabbed;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		8DC2EF500486A6940098B216 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34B2544408D0DCEE00DD2070 /* OIColorInspector.h in Headers */,
+				34B2544608D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.h in Headers */,
+				34B2544808D0DCEE00DD2070 /* OIFontInspector.h in Headers */,
+				34B2544B08D0DCEE00DD2070 /* OIInspectableControllerProtocol.h in Headers */,
+				34B2544C08D0DCEE00DD2070 /* OIInspectionSet.h in Headers */,
+				34B2544E08D0DCEE00DD2070 /* OIInspectorController.h in Headers */,
+				34B2545008D0DCEE00DD2070 /* OIInspectorGroup.h in Headers */,
+				34B2545408D0DCEE00DD2070 /* OIInspectorHeaderView.h in Headers */,
+				34B2545608D0DCEE00DD2070 /* OIInspectorRegistry.h in Headers */,
+				34B2545808D0DCEE00DD2070 /* OIInspectorResizer.h in Headers */,
+				34B2545A08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.h in Headers */,
+				34B2545C08D0DCEE00DD2070 /* OIInspectorVerticalResizer.h in Headers */,
+				34B2545E08D0DCEE00DD2070 /* OIInspectorWindow.h in Headers */,
+				34B2546008D0DCEE00DD2070 /* OmniInspector.h in Headers */,
+				34D2B7A908D0E17C00C74260 /* OAApplication-OIExtensions.h in Headers */,
+				34D2B7D008D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h in Headers */,
+				6C34FC2B08DA46430055F81A /* OITabbedInspector.h in Headers */,
+				6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */,
+				6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */,
+				34E221EE0932A28400087E32 /* OIInspector.h in Headers */,
+				346DEF3209992425008F5B5F /* OIInspectorTabController.h in Headers */,
+				34BA7D6F0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h in Headers */,
+				947D53040B8F699E001F9E30 /* OITableView.h in Headers */,
+				94D1DDDA0B93701E0006D793 /* OIMatrix.h in Headers */,
+				A2F8617C0C961A4800BE4827 /* OIInspectorHeaderBackground.h in Headers */,
+				34A652370D0A0A7D003F4D4C /* OISectionedInspector.h in Headers */,
+				34C4FA900D19B3BE0009E860 /* OIInspectorSection.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		8DC2EF4F0486A6940098B216 /* OmniInspector */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 34B253BF08D0D6AD00DD2070 /* Build configuration list for PBXNativeTarget "OmniInspector" */;
+			buildPhases = (
+				8DC2EF500486A6940098B216 /* Headers */,
+				8DC2EF520486A6940098B216 /* Resources */,
+				8DC2EF540486A6940098B216 /* Sources */,
+				8DC2EF560486A6940098B216 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OmniInspector;
+			productInstallPath = "$(HOME)/Library/Frameworks";
+			productName = OmniInspector;
+			productReference = 8DC2EF5B0486A6940098B216 /* OmniInspector.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 1;
+			mainGroup = 0867D691FE84028FC02AAC07 /* OmniInspector */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DC2EF4F0486A6940098B216 /* OmniInspector */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8DC2EF520486A6940098B216 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */,
+				34D2B77808D0E09C00C74260 /* ColorsInfo.png in Resources */,
+				34D2B77908D0E09C00C74260 /* FontsInfo.png in Resources */,
+				34D2B77A08D0E09C00C74260 /* OICollapsed.png in Resources */,
+				34D2B77B08D0E09C00C74260 /* OIColorInspector.png in Resources */,
+				34D2B77C08D0E09C00C74260 /* OIExpanded.png in Resources */,
+				34D2B77D08D0E09C00C74260 /* OIFontInspector.png in Resources */,
+				34D2B77E08D0E09C00C74260 /* OIHeaderCap-Ice-Pressed.png in Resources */,
+				34D2B77F08D0E09C00C74260 /* OIHeaderCap-Ice.png in Resources */,
+				34D2B78008D0E09C00C74260 /* OIHeaderWash-Ice-Pressed.png in Resources */,
+				34D2B78108D0E09C00C74260 /* OIHeaderWash-Ice.png in Resources */,
+				34D2B78208D0E09C00C74260 /* OITitlebarActive.png in Resources */,
+				34D2B78308D0E09C00C74260 /* OITitlebarActivePressed.png in Resources */,
+				34D2B78408D0E09C00C74260 /* OITitlebarInactive.png in Resources */,
+				34D2B78508D0E09C00C74260 /* OITitlebarInactivePressed.png in Resources */,
+				34D2B78608D0E09C00C74260 /* OIWindowResize.png in Resources */,
+				34D2B78708D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Graphite.png in Resources */,
+				34D2B78808D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Ice.png in Resources */,
+				34D2B78908D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Graphite.png in Resources */,
+				34D2B78A08D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png in Resources */,
+				34D2B78B08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png in Resources */,
+				34D2B78C08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png in Resources */,
+				34D2B79208D0E0A700C74260 /* OIInspectorWorkspacePanels.nib in Resources */,
+				342CD98B08D21501009D42C3 /* OmniInspector.strings in Resources */,
+				34B443AB09F595BE008956F6 /* Tabbed.nib in Resources */,
+				A2F861290C960DAF00BE4827 /* OITabDepressionBackground.png in Resources */,
+				4914964D0C9B39DF006E9EAB /* OITabLock.pdf in Resources */,
+				0A6C01C40CC046EF0014024A /* OIWorkspaceRestore.png in Resources */,
+				0A6C01C50CC046EF0014024A /* OIWorkspaceStore.png in Resources */,
+				0A6C02900CC04ABB0014024A /* OIWorkspaceSnap.aiff in Resources */,
+				34A6524A0D0A0B0B003F4D4C /* OISectionedInspector.nib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DC2EF540486A6940098B216 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34B2544508D0DCEE00DD2070 /* OIColorInspector.m in Sources */,
+				34B2544708D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.m in Sources */,
+				34B2544908D0DCEE00DD2070 /* OIFontInspector.m in Sources */,
+				34B2544D08D0DCEE00DD2070 /* OIInspectionSet.m in Sources */,
+				34B2544F08D0DCEE00DD2070 /* OIInspectorController.m in Sources */,
+				34B2545108D0DCEE00DD2070 /* OIInspectorGroup.m in Sources */,
+				34B2545508D0DCEE00DD2070 /* OIInspectorHeaderView.m in Sources */,
+				34B2545708D0DCEE00DD2070 /* OIInspectorRegistry.m in Sources */,
+				34B2545908D0DCEE00DD2070 /* OIInspectorResizer.m in Sources */,
+				34B2545B08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.m in Sources */,
+				34B2545D08D0DCEE00DD2070 /* OIInspectorVerticalResizer.m in Sources */,
+				34B2545F08D0DCEE00DD2070 /* OIInspectorWindow.m in Sources */,
+				34D2B7AA08D0E17C00C74260 /* OAApplication-OIExtensions.m in Sources */,
+				34D2B7D108D0E32900C74260 /* OAToolbarWindowController-OIExtensions.m in Sources */,
+				6C34FC2C08DA46430055F81A /* OITabbedInspector.m in Sources */,
+				6C34FC3D08DA47590055F81A /* OITabMatrix.m in Sources */,
+				6C34FC4C08DA478D0055F81A /* OITabCell.m in Sources */,
+				34E221EF0932A28400087E32 /* OIInspector.m in Sources */,
+				346DEF3309992425008F5B5F /* OIInspectorTabController.m in Sources */,
+				34BA7D700A6D904000E029F8 /* OIButtonMatrixBackgroundView.m in Sources */,
+				947D53050B8F699E001F9E30 /* OITableView.m in Sources */,
+				94D1DDDB0B93701E0006D793 /* OIMatrix.m in Sources */,
+				A2F8617D0C961A4800BE4827 /* OIInspectorHeaderBackground.m in Sources */,
+				34A652380D0A0A7D003F4D4C /* OISectionedInspector.m in Sources */,
+				34C4FA910D19B3BE0009E860 /* OIInspectorSection.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		089C1666FE841158C02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C1667FE841158C02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		342CD98908D21501009D42C3 /* OmniInspector.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				342CD98A08D21501009D42C3 /* English */,
+			);
+			name = OmniInspector.strings;
+			sourceTree = "<group>";
+		};
+		34D2B78F08D0E0A700C74260 /* OIInspectorWorkspacePanels.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				34D2B79008D0E0A700C74260 /* English */,
+			);
+			name = OIInspectorWorkspacePanels.nib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		34B253C008D0D6AD00DD2070 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34B253D508D0D6BD00DD2070 /* Omni-Framework-Debug.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
+				PRODUCT_NAME = OmniInspector;
+			};
+			name = Debug;
+		};
+		34B253C108D0D6AD00DD2070 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34B253D608D0D6BD00DD2070 /* Omni-Framework-Release.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
+				PRODUCT_NAME = OmniInspector;
+				SECTORDER_FLAGS = (
+					"-sectorder",
+					__TEXT,
+					__text,
+					"$(PRODUCT_NAME).order",
+				);
+			};
+			name = Release;
+		};
+		34B253C208D0D6AD00DD2070 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34B253D408D0D6BD00DD2070 /* Omni-Framework-Coverage.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
+				PRODUCT_NAME = OmniInspector;
+			};
+			name = Coverage;
+		};
+		34B253C408D0D6AD00DD2070 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34B253D808D0D6BD00DD2070 /* Omni-Global-Debug.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		34B253C508D0D6AD00DD2070 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34B253D908D0D6BD00DD2070 /* Omni-Global-Release.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		34B253C608D0D6AD00DD2070 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34B253D708D0D6BD00DD2070 /* Omni-Global-Coverage.xcconfig */;
+			buildSettings = {
+			};
+			name = Coverage;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		34B253BF08D0D6AD00DD2070 /* Build configuration list for PBXNativeTarget "OmniInspector" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34B253C008D0D6AD00DD2070 /* Debug */,
+				34B253C108D0D6AD00DD2070 /* Release */,
+				34B253C208D0D6AD00DD2070 /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34B253C408D0D6AD00DD2070 /* Debug */,
+				34B253C508D0D6AD00DD2070 /* Release */,
+				34B253C608D0D6AD00DD2070 /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}

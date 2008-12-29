@@ -1,0 +1,9 @@
+OBObject.o:+[OBObject initialize]
+OBPostLoader.o:+[OBPostLoader initialize]
+OBPostLoader.o:+[OBPostLoader processClasses]
+OBPostLoader.o:+[OBPostLoader processSelector:initialize:]
+OBPostLoader.o:+[OBPostLoader(PrivateAPI) _processSelector:inClass:initialize:]
+OBPostLoader.o:+[OBPostLoader(PrivateAPI) _becomingMultiThreaded:]
+OBUtilities.o:_OBReplaceMethodImplementation
+OBUtilities.o:_OBReplaceMethodImplementationWithSelector
+OBUtilities.o:_OBReplaceMethodImplementationWithSelectorOnClass

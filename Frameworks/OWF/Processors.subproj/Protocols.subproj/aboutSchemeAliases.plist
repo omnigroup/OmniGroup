@@ -1,0 +1,16 @@
+{
+    /* These are the aliases for the about: URL scheme used by Netscape. Unfortunately, despite it being non-standard, lots of people use about:blank. (data: would be better, and standard, but who knows about that?) */
+    
+    /* this is the only one that people actually use */
+    blank = "data:";
+    
+    /* these are easy enough to implement */
+    logo = "omniweb:/StartPage/omniweb-splash.png";
+    omnigroup = "http://www.omnigroup.com/";
+    omniweb = "http://www.omnigroup.com/products/omniweb/";
+    "" = "data:";
+    
+    /* other useful things */
+    mozilla = "http://www.mozilla.org/";
+    turnips = "http://www.google.com/search?q=turnips";
+}

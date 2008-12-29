@@ -1,0 +1,117 @@
+/* modifier */
+"-" = "-";
+
+/* modifier */
+"+" = "+";
+
+/* modifier */
+"~" = "~";
+
+/* days */
+"d" = "d";
+
+/* days */
+"day" = "day";
+
+/* days */
+"days" = "days";
+
+/* hours */
+"h" = "h";
+
+/* hours */
+"hour" = "hour";
+
+/* hours */
+"hours" = "hours";
+
+/* modifier */
+"last" = "last";
+
+/* last month */
+"last month" = "last month";
+
+/* time */
+"last week" = "last week";
+
+/* last year */
+"last year" = "last year";
+
+/* weeks */
+"m" = "m";
+
+/* weeks */
+"month" = "month";
+
+/* weeks */
+"months" = "months";
+
+/* modifier */
+"next" = "next";
+
+/* next month */
+"next month" = "next month";
+
+/* time */
+"next week" = "next week";
+
+/* next year */
+"next year" = "next year";
+
+/* noon */
+"noon" = "noon";
+
+/* now */
+"now" = "now";
+
+/* modifier */
+"this" = "this";
+
+/* this month */
+"this month" = "this month";
+
+/* time */
+"this week" = "this week";
+
+/* this year */
+"this year" = "this year";
+
+/* tod */
+"tod" = "tod";
+
+/* today */
+"today" = "today";
+
+/* tom */
+"tom" = "tom";
+
+/* tomorrow */
+"tomorrow" = "tomorrow";
+
+/* tonight */
+"tonight" = "tonight";
+
+/* weeks */
+"w" = "w";
+
+/* weeks */
+"week" = "week";
+
+/* weeks */
+"weeks" = "weeks";
+
+/* 365 day periods */
+"y" = "y";
+
+/* 365 day periods */
+"year" = "year";
+
+/* 365 day periods */
+"years" = "years";
+
+/* yes */
+"yes" = "yes";
+
+/* yesterday */
+"yesterday" = "yesterday";
+

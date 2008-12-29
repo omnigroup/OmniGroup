@@ -1,0 +1,4 @@
+file /Users/Shared/kc/Products/Debug/OmniSoftwareUpdate.framework/Resources/OmniSoftwareUpdateCheck
+#set args update.omnigroup.com http://update.omnigroup.com/SoftwareVersions-2004A.plist foo 1 with-hardware report
+#set args "www.omnigroup.com" "http://update.omnigroup.com/appcast" "com.omnigroup.OmniFocus" "14.0.89632" "alpha" "without-hardware" query registered 2006
+set args update.omnigroup.com "http://update.omnigroup.com/appcast" "com.omnigroup.OmniWeb5" "611.0.89632" sneakpeek "without-hardware" query registered 2006

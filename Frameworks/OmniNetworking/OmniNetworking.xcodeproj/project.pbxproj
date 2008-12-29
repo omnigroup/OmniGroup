@@ -1,0 +1,995 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4AFE726C08A02E9D00ED9F2D /* FrameworkDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E96FE8AB1FF11C9CC38 /* FrameworkDefines.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
+		4AFE726D08A02E9D00ED9F2D /* OmniNetworking.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E97FE8AB1FF11C9CC38 /* OmniNetworking.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE726E08A02E9D00ED9F2D /* ONHost.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E99FE8AB1FF11C9CC38 /* ONHost.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE726F08A02E9D00ED9F2D /* ONHostAddress.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E9AFE8AB1FF11C9CC38 /* ONHostAddress.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727008A02E9D00ED9F2D /* ONInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E9BFE8AB1FF11C9CC38 /* ONInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727108A02E9D00ED9F2D /* ONInternetSocket-Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E9CFE8AB1FF11C9CC38 /* ONInternetSocket-Private.h */; };
+		4AFE727208A02E9D00ED9F2D /* ONInternetSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E9DFE8AB1FF11C9CC38 /* ONInternetSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727308A02E9D00ED9F2D /* ONMulticastSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E9EFE8AB1FF11C9CC38 /* ONMulticastSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727408A02E9D00ED9F2D /* ONPortAddress.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E9FFE8AB1FF11C9CC38 /* ONPortAddress.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727508A02E9D00ED9F2D /* ONServiceEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51EA0FE8AB1FF11C9CC38 /* ONServiceEntry.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727608A02E9D00ED9F2D /* ONSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51EA1FE8AB1FF11C9CC38 /* ONSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727708A02E9D00ED9F2D /* ONSocketStream.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51EA2FE8AB1FF11C9CC38 /* ONSocketStream.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727808A02E9D00ED9F2D /* ONTCPDatagramSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51EA3FE8AB1FF11C9CC38 /* ONTCPDatagramSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727908A02E9D00ED9F2D /* ONTCPSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51EA4FE8AB1FF11C9CC38 /* ONTCPSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727A08A02E9D00ED9F2D /* ONUDPSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51EA5FE8AB1FF11C9CC38 /* ONUDPSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727B08A02E9D00ED9F2D /* ONHost-InternalAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E98FE8AB1FF11C9CC38 /* ONHost-InternalAPI.h */; };
+		4AFE727C08A02E9D00ED9F2D /* ONHostAddress-Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 8BB04DBD044391BE13219B50 /* ONHostAddress-Private.h */; };
+		4AFE727D08A02E9D00ED9F2D /* ONLinkLayerHostAddress.h in Headers */ = {isa = PBXBuildFile; fileRef = 8B82CFED0444CA9113F6A094 /* ONLinkLayerHostAddress.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AFE727F08A02E9D00ED9F2D /* OmniNetworking.strings in Resources */ = {isa = PBXBuildFile; fileRef = 18EAC01DFFC40E94C697A14E /* OmniNetworking.strings */; };
+		4AFE728108A02E9D00ED9F2D /* ONHost.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E89FE8AB1FF11C9CC38 /* ONHost.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728208A02E9D00ED9F2D /* ONHostAddress.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E8AFE8AB1FF11C9CC38 /* ONHostAddress.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728308A02E9D00ED9F2D /* ONInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E8BFE8AB1FF11C9CC38 /* ONInterface.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728408A02E9D00ED9F2D /* ONInternetSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E8CFE8AB1FF11C9CC38 /* ONInternetSocket.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728508A02E9D00ED9F2D /* ONMulticastSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E8DFE8AB1FF11C9CC38 /* ONMulticastSocket.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728608A02E9D00ED9F2D /* ONPortAddress.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E8EFE8AB1FF11C9CC38 /* ONPortAddress.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728708A02E9D00ED9F2D /* ONServiceEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E8FFE8AB1FF11C9CC38 /* ONServiceEntry.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728808A02E9D00ED9F2D /* ONSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E90FE8AB1FF11C9CC38 /* ONSocket.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728908A02E9D00ED9F2D /* ONSocketStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E91FE8AB1FF11C9CC38 /* ONSocketStream.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728A08A02E9D00ED9F2D /* ONTCPDatagramSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E92FE8AB1FF11C9CC38 /* ONTCPDatagramSocket.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728B08A02E9D00ED9F2D /* ONTCPSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E93FE8AB1FF11C9CC38 /* ONTCPSocket.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728C08A02E9D00ED9F2D /* ONUDPSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51E94FE8AB1FF11C9CC38 /* ONUDPSocket.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE728D08A02E9D00ED9F2D /* ONLinkLayerHostAddress.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B82CFEC0444CA9113F6A094 /* ONLinkLayerHostAddress.m */; };
+		4AFE728F08A02E9D00ED9F2D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBBFE8AB1FF11C9CC38 /* OmniBase.framework */; };
+		4AFE729008A02E9D00ED9F2D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */; };
+		4AFE729108A02E9D00ED9F2D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2B5A9F005192F930097A146 /* SystemConfiguration.framework */; };
+		4AFE729F08A02E9D00ED9F2D /* ONGetHostEntry_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EA9FE8AB1FF11C9CC38 /* ONGetHostEntry_main.m */; settings = {ATTRIBUTES = (); }; };
+		4AFE72A108A02E9D00ED9F2D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */; };
+		4AFE72B008A02E9D00ED9F2D /* ONSocketStreamTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B086B3504195FDD1339F5EC /* ONSocketStreamTests.m */; };
+		4AFE72B108A02E9D00ED9F2D /* ONHostAddressTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2D556100454A4CB0097A146 /* ONHostAddressTests.m */; };
+		4AFE72B208A02E9D00ED9F2D /* ONUDPTrafficTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2D3FF4C0458A9E70097A146 /* ONUDPTrafficTests.m */; };
+		4AFE72B308A02E9D00ED9F2D /* IDNEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2962D2506D28BAA00D7261C /* IDNEncodingTests.m */; };
+		4AFE72B508A02E9D00ED9F2D /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B5B6FEF041972B8135B98E4 /* SenTestingKit.framework */; };
+		4AFE72B608A02E9D00ED9F2D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */; };
+		4AFE72B708A02E9D00ED9F2D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBBFE8AB1FF11C9CC38 /* OmniBase.framework */; };
+		4AFE72C708A02E9D00ED9F2D /* ListInterfaces.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B82CFFA0444F39D13F6A094 /* ListInterfaces.m */; };
+		4AFE72C908A02E9D00ED9F2D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBBFE8AB1FF11C9CC38 /* OmniBase.framework */; };
+		4AFE72CA08A02E9D00ED9F2D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */; };
+		4AFE72D908A02E9D00ED9F2D /* ONHostTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B8FE0690445E73B13DE13AB /* ONHostTest.m */; };
+		4AFE72DB08A02E9D00ED9F2D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBBFE8AB1FF11C9CC38 /* OmniBase.framework */; };
+		4AFE72DC08A02E9D00ED9F2D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */; };
+		4AFE72EE08A02E9E00ED9F2D /* ONGetHostEntry in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4AFE72A808A02E9D00ED9F2D /* ONGetHostEntry */; };
+		4AFE72EF08A02E9E00ED9F2D /* OmniNetworking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AFE729B08A02E9D00ED9F2D /* OmniNetworking.framework */; };
+		4AFE72F008A02E9E00ED9F2D /* OmniNetworking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AFE729B08A02E9D00ED9F2D /* OmniNetworking.framework */; };
+		4AFE72F108A02E9E00ED9F2D /* OmniNetworking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AFE729B08A02E9D00ED9F2D /* OmniNetworking.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4AFE72E608A02E9E00ED9F2D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51E85FE8AB1FF11C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4AFE729C08A02E9D00ED9F2D;
+			remoteInfo = "ONGetHostEntry (Tool) (Upgraded)";
+		};
+		4AFE72E808A02E9E00ED9F2D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51E85FE8AB1FF11C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4AFE726808A02E9D00ED9F2D;
+			remoteInfo = "OmniNetworking (Framework) (Upgraded)";
+		};
+		4AFE72EA08A02E9E00ED9F2D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51E85FE8AB1FF11C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4AFE726808A02E9D00ED9F2D;
+			remoteInfo = "OmniNetworking (Framework) (Upgraded)";
+		};
+		4AFE72EC08A02E9E00ED9F2D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51E85FE8AB1FF11C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4AFE726808A02E9D00ED9F2D;
+			remoteInfo = "OmniNetworking (Framework) (Upgraded)";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4AFE729308A02E9D00ED9F2D /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Resources;
+			dstSubfolderSpec = 1;
+			files = (
+				4AFE72EE08A02E9E00ED9F2D /* ONGetHostEntry in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		00E51E89FE8AB1FF11C9CC38 /* ONHost.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONHost.m; sourceTree = "<group>"; };
+		00E51E8AFE8AB1FF11C9CC38 /* ONHostAddress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONHostAddress.m; sourceTree = "<group>"; };
+		00E51E8BFE8AB1FF11C9CC38 /* ONInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONInterface.m; sourceTree = "<group>"; };
+		00E51E8CFE8AB1FF11C9CC38 /* ONInternetSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONInternetSocket.m; sourceTree = "<group>"; };
+		00E51E8DFE8AB1FF11C9CC38 /* ONMulticastSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONMulticastSocket.m; sourceTree = "<group>"; };
+		00E51E8EFE8AB1FF11C9CC38 /* ONPortAddress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONPortAddress.m; sourceTree = "<group>"; };
+		00E51E8FFE8AB1FF11C9CC38 /* ONServiceEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONServiceEntry.m; sourceTree = "<group>"; };
+		00E51E90FE8AB1FF11C9CC38 /* ONSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONSocket.m; sourceTree = "<group>"; };
+		00E51E91FE8AB1FF11C9CC38 /* ONSocketStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONSocketStream.m; sourceTree = "<group>"; };
+		00E51E92FE8AB1FF11C9CC38 /* ONTCPDatagramSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONTCPDatagramSocket.m; sourceTree = "<group>"; };
+		00E51E93FE8AB1FF11C9CC38 /* ONTCPSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONTCPSocket.m; sourceTree = "<group>"; };
+		00E51E94FE8AB1FF11C9CC38 /* ONUDPSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONUDPSocket.m; sourceTree = "<group>"; };
+		00E51E96FE8AB1FF11C9CC38 /* FrameworkDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameworkDefines.h; sourceTree = "<group>"; };
+		00E51E97FE8AB1FF11C9CC38 /* OmniNetworking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniNetworking.h; sourceTree = "<group>"; };
+		00E51E98FE8AB1FF11C9CC38 /* ONHost-InternalAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ONHost-InternalAPI.h"; sourceTree = "<group>"; };
+		00E51E99FE8AB1FF11C9CC38 /* ONHost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONHost.h; sourceTree = "<group>"; };
+		00E51E9AFE8AB1FF11C9CC38 /* ONHostAddress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONHostAddress.h; sourceTree = "<group>"; };
+		00E51E9BFE8AB1FF11C9CC38 /* ONInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONInterface.h; sourceTree = "<group>"; };
+		00E51E9CFE8AB1FF11C9CC38 /* ONInternetSocket-Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ONInternetSocket-Private.h"; sourceTree = "<group>"; };
+		00E51E9DFE8AB1FF11C9CC38 /* ONInternetSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONInternetSocket.h; sourceTree = "<group>"; };
+		00E51E9EFE8AB1FF11C9CC38 /* ONMulticastSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONMulticastSocket.h; sourceTree = "<group>"; };
+		00E51E9FFE8AB1FF11C9CC38 /* ONPortAddress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONPortAddress.h; sourceTree = "<group>"; };
+		00E51EA0FE8AB1FF11C9CC38 /* ONServiceEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONServiceEntry.h; sourceTree = "<group>"; };
+		00E51EA1FE8AB1FF11C9CC38 /* ONSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONSocket.h; sourceTree = "<group>"; };
+		00E51EA2FE8AB1FF11C9CC38 /* ONSocketStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONSocketStream.h; sourceTree = "<group>"; };
+		00E51EA3FE8AB1FF11C9CC38 /* ONTCPDatagramSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONTCPDatagramSocket.h; sourceTree = "<group>"; };
+		00E51EA4FE8AB1FF11C9CC38 /* ONTCPSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONTCPSocket.h; sourceTree = "<group>"; };
+		00E51EA5FE8AB1FF11C9CC38 /* ONUDPSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONUDPSocket.h; sourceTree = "<group>"; };
+		00E51EA9FE8AB1FF11C9CC38 /* ONGetHostEntry_main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONGetHostEntry_main.m; sourceTree = "<group>"; };
+		00E51EB7FE8AB1FF11C9CC38 /* OmniSourceLicense.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OmniSourceLicense.html; sourceTree = "<group>"; };
+		00E51EBBFE8AB1FF11C9CC38 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		18EAC01EFFC40E94C697A14E /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniNetworking.strings; sourceTree = "<group>"; };
+		34A1595A056458170097A113 /* OmniNetworking.order */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniNetworking.order; sourceTree = "<group>"; };
+		4A3CECEF08B02E15003A2A9D /* OmniNetworking_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniNetworking_Prefix.h; sourceTree = "<group>"; };
+		4AB8F3C108AD260400DBB061 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4AB8F3C208AD260400DBB061 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		4AB8F3C308AD260400DBB061 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		4AB8F3C408AD260400DBB061 /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4AB8F3C508AD260400DBB061 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
+		4AB8F3C608AD260400DBB061 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
+		4AFE729B08A02E9D00ED9F2D /* OmniNetworking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniNetworking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AFE72A808A02E9D00ED9F2D /* ONGetHostEntry */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ONGetHostEntry; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AFE72C108A02E9D00ED9F2D /* ONUnitTests.otest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ONUnitTests.otest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AFE72D208A02E9D00ED9F2D /* ListInterfaces */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ListInterfaces; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AFE72E408A02E9E00ED9F2D /* ONThreadedLookupTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ONThreadedLookupTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AFE72F808A02F7F00ED9F2D /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Coverage.xcconfig"; path = "../../Configurations/Omni-Framework-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
+		4AFE72F908A02F7F00ED9F2D /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Debug.xcconfig"; path = "../../Configurations/Omni-Framework-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
+		4AFE72FA08A02F7F00ED9F2D /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Release.xcconfig"; path = "../../Configurations/Omni-Framework-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
+		4AFE733D08A042A400ED9F2D /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4AFE733E08A042A400ED9F2D /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		4AFE733F08A042A400ED9F2D /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		4AFE734008A042A400ED9F2D /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4AFE734108A042A400ED9F2D /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
+		4AFE734208A042A400ED9F2D /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
+		8B086B3504195FDD1339F5EC /* ONSocketStreamTests.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; path = ONSocketStreamTests.m; sourceTree = "<group>"; };
+		8B5B6FEF041972B8135B98E4 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = /System/Library/Frameworks/SenTestingKit.framework; sourceTree = "<absolute>"; };
+		8B82CFEC0444CA9113F6A094 /* ONLinkLayerHostAddress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONLinkLayerHostAddress.m; sourceTree = "<group>"; };
+		8B82CFED0444CA9113F6A094 /* ONLinkLayerHostAddress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONLinkLayerHostAddress.h; sourceTree = "<group>"; };
+		8B82CFFA0444F39D13F6A094 /* ListInterfaces.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = ListInterfaces.m; path = Examples/ListInterfaces.m; sourceTree = "<group>"; };
+		8B8FE0690445E73B13DE13AB /* ONHostTest.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = ONHostTest.m; path = Examples/ONHostTest.m; sourceTree = "<group>"; };
+		8BB04DBD044391BE13219B50 /* ONHostAddress-Private.h */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.h; path = "ONHostAddress-Private.h"; sourceTree = "<group>"; };
+		8BEC418D04463496133F7B26 /* MTUTest_main.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = MTUTest_main.m; path = Examples/MTUTest/MTUTest_main.m; sourceTree = "<group>"; };
+		8BEC418E044634AC133F7B26 /* MulticastTest_main.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = MulticastTest_main.m; path = Examples/MulticastTest/MulticastTest_main.m; sourceTree = "<group>"; };
+		8BEC418F044634BB133F7B26 /* TCPTest_main.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = TCPTest_main.m; path = Examples/TCPTest/TCPTest_main.m; sourceTree = "<group>"; };
+		8BEC4190044634C9133F7B26 /* UDPTest_main.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = UDPTest_main.m; path = Examples/UDPTest/UDPTest_main.m; sourceTree = "<group>"; };
+		A2962CFD06D26FA700D7261C /* rfc3492.txt */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 1; name = rfc3492.txt; path = /Network/Public/Documentation/RFC/rfc3492.txt; sourceTree = "<absolute>"; };
+		A2962D0406D2703C00D7261C /* rfc3490.txt */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 1; name = rfc3490.txt; path = /Network/Public/Documentation/RFC/rfc3490.txt; sourceTree = "<absolute>"; };
+		A2962D0506D2703C00D7261C /* rfc3491.txt */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 1; name = rfc3491.txt; path = /Network/Public/Documentation/RFC/rfc3491.txt; sourceTree = "<absolute>"; };
+		A2962D1006D2735900D7261C /* rfc3454.txt */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 1; name = rfc3454.txt; path = /Network/Public/Documentation/RFC/rfc3454.txt; sourceTree = "<absolute>"; };
+		A2962D2506D28BAA00D7261C /* IDNEncodingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = IDNEncodingTests.m; path = UnitTests/IDNEncodingTests.m; sourceTree = "<group>"; };
+		A2B5A9F005192F930097A146 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = /System/Library/Frameworks/SystemConfiguration.framework; sourceTree = "<absolute>"; };
+		A2D3FF4C0458A9E70097A146 /* ONUDPTrafficTests.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = ONUDPTrafficTests.m; path = UnitTests/ONUDPTrafficTests.m; sourceTree = "<group>"; };
+		A2D556100454A4CB0097A146 /* ONHostAddressTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ONHostAddressTests.m; path = UnitTests/ONHostAddressTests.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4AFE728E08A02E9D00ED9F2D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE728F08A02E9D00ED9F2D /* OmniBase.framework in Frameworks */,
+				4AFE729008A02E9D00ED9F2D /* Foundation.framework in Frameworks */,
+				4AFE729108A02E9D00ED9F2D /* SystemConfiguration.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72A008A02E9D00ED9F2D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE72A108A02E9D00ED9F2D /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72B408A02E9D00ED9F2D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE72B508A02E9D00ED9F2D /* SenTestingKit.framework in Frameworks */,
+				4AFE72B608A02E9D00ED9F2D /* Foundation.framework in Frameworks */,
+				4AFE72B708A02E9D00ED9F2D /* OmniBase.framework in Frameworks */,
+				4AFE72EF08A02E9E00ED9F2D /* OmniNetworking.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72C808A02E9D00ED9F2D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE72C908A02E9D00ED9F2D /* OmniBase.framework in Frameworks */,
+				4AFE72CA08A02E9D00ED9F2D /* Foundation.framework in Frameworks */,
+				4AFE72F008A02E9E00ED9F2D /* OmniNetworking.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72DA08A02E9D00ED9F2D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE72DB08A02E9D00ED9F2D /* OmniBase.framework in Frameworks */,
+				4AFE72DC08A02E9D00ED9F2D /* Foundation.framework in Frameworks */,
+				4AFE72F108A02E9E00ED9F2D /* OmniNetworking.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		00E51E86FE8AB1FF11C9CC38 /* OmniNetworking */ = {
+			isa = PBXGroup;
+			children = (
+				00E51EB7FE8AB1FF11C9CC38 /* OmniSourceLicense.html */,
+				4AFE72F708A02F7E00ED9F2D /* Configurations */,
+				00E51E87FE8AB1FF11C9CC38 /* Source */,
+				00E51EB0FE8AB1FF11C9CC38 /* Supporting Files */,
+				00E51EBAFE8AB1FF11C9CC38 /* External Frameworks and Libraries */,
+				8B086B3404195E521339F5EC /* Tests and Examples */,
+				00E51EB8FE8AB1FF11C9CC38 /* Products */,
+			);
+			name = OmniNetworking;
+			sourceTree = "<group>";
+		};
+		00E51E87FE8AB1FF11C9CC38 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				4A3CECEF08B02E15003A2A9D /* OmniNetworking_Prefix.h */,
+				4A25D9DC05ED21B80097A149 /* OmniNetworking */,
+				00E51EA7FE8AB1FF11C9CC38 /* ONGetHostEntry tool */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		00E51EA7FE8AB1FF11C9CC38 /* ONGetHostEntry tool */ = {
+			isa = PBXGroup;
+			children = (
+				00E51EA9FE8AB1FF11C9CC38 /* ONGetHostEntry_main.m */,
+			);
+			name = "ONGetHostEntry tool";
+			path = ONGetHostEntry.tproj;
+			sourceTree = "<group>";
+		};
+		00E51EB0FE8AB1FF11C9CC38 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		00E51EB8FE8AB1FF11C9CC38 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4AFE729B08A02E9D00ED9F2D /* OmniNetworking.framework */,
+				4AFE72A808A02E9D00ED9F2D /* ONGetHostEntry */,
+				4AFE72D208A02E9D00ED9F2D /* ListInterfaces */,
+				8BEC418904463436133F7B26 /* Tests */,
+			);
+			name = Products;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		00E51EBAFE8AB1FF11C9CC38 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				00E51EBBFE8AB1FF11C9CC38 /* OmniBase.framework */,
+				00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */,
+				A2B5A9F005192F930097A146 /* SystemConfiguration.framework */,
+				8B5B6FEF041972B8135B98E4 /* SenTestingKit.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		4A25D9DC05ED21B80097A149 /* OmniNetworking */ = {
+			isa = PBXGroup;
+			children = (
+				00E51E97FE8AB1FF11C9CC38 /* OmniNetworking.h */,
+				00E51E96FE8AB1FF11C9CC38 /* FrameworkDefines.h */,
+				18EAC01DFFC40E94C697A14E /* OmniNetworking.strings */,
+				34A1595A056458170097A113 /* OmniNetworking.order */,
+				4A25D9DD05ED21C50097A149 /* DNS */,
+				4A25D9DE05ED21D00097A149 /* Sockets */,
+			);
+			name = OmniNetworking;
+			sourceTree = "<group>";
+		};
+		4A25D9DD05ED21C50097A149 /* DNS */ = {
+			isa = PBXGroup;
+			children = (
+				A2962D1006D2735900D7261C /* rfc3454.txt */,
+				A2962D0406D2703C00D7261C /* rfc3490.txt */,
+				A2962D0506D2703C00D7261C /* rfc3491.txt */,
+				A2962CFD06D26FA700D7261C /* rfc3492.txt */,
+				00E51EA0FE8AB1FF11C9CC38 /* ONServiceEntry.h */,
+				00E51E8FFE8AB1FF11C9CC38 /* ONServiceEntry.m */,
+				00E51E9FFE8AB1FF11C9CC38 /* ONPortAddress.h */,
+				00E51E8EFE8AB1FF11C9CC38 /* ONPortAddress.m */,
+				8B82CFED0444CA9113F6A094 /* ONLinkLayerHostAddress.h */,
+				8B82CFEC0444CA9113F6A094 /* ONLinkLayerHostAddress.m */,
+				00E51E99FE8AB1FF11C9CC38 /* ONHost.h */,
+				00E51E89FE8AB1FF11C9CC38 /* ONHost.m */,
+				00E51E98FE8AB1FF11C9CC38 /* ONHost-InternalAPI.h */,
+				00E51E9AFE8AB1FF11C9CC38 /* ONHostAddress.h */,
+				00E51E8AFE8AB1FF11C9CC38 /* ONHostAddress.m */,
+				8BB04DBD044391BE13219B50 /* ONHostAddress-Private.h */,
+			);
+			name = DNS;
+			sourceTree = "<group>";
+		};
+		4A25D9DE05ED21D00097A149 /* Sockets */ = {
+			isa = PBXGroup;
+			children = (
+				00E51EA1FE8AB1FF11C9CC38 /* ONSocket.h */,
+				00E51E90FE8AB1FF11C9CC38 /* ONSocket.m */,
+				00E51EA2FE8AB1FF11C9CC38 /* ONSocketStream.h */,
+				00E51E91FE8AB1FF11C9CC38 /* ONSocketStream.m */,
+				00E51EA3FE8AB1FF11C9CC38 /* ONTCPDatagramSocket.h */,
+				00E51E92FE8AB1FF11C9CC38 /* ONTCPDatagramSocket.m */,
+				00E51EA4FE8AB1FF11C9CC38 /* ONTCPSocket.h */,
+				00E51E93FE8AB1FF11C9CC38 /* ONTCPSocket.m */,
+				00E51EA5FE8AB1FF11C9CC38 /* ONUDPSocket.h */,
+				00E51E94FE8AB1FF11C9CC38 /* ONUDPSocket.m */,
+				00E51E9BFE8AB1FF11C9CC38 /* ONInterface.h */,
+				00E51E8BFE8AB1FF11C9CC38 /* ONInterface.m */,
+				00E51E9DFE8AB1FF11C9CC38 /* ONInternetSocket.h */,
+				00E51E9CFE8AB1FF11C9CC38 /* ONInternetSocket-Private.h */,
+				00E51E8CFE8AB1FF11C9CC38 /* ONInternetSocket.m */,
+				00E51E9EFE8AB1FF11C9CC38 /* ONMulticastSocket.h */,
+				00E51E8DFE8AB1FF11C9CC38 /* ONMulticastSocket.m */,
+			);
+			name = Sockets;
+			sourceTree = "<group>";
+		};
+		4AFE72F708A02F7E00ED9F2D /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				4AFE733D08A042A400ED9F2D /* Omni-Application-Coverage.xcconfig */,
+				4AFE733E08A042A400ED9F2D /* Omni-Application-Debug.xcconfig */,
+				4AFE733F08A042A400ED9F2D /* Omni-Application-Release.xcconfig */,
+				4AB8F3C108AD260400DBB061 /* Omni-Bundle-Coverage.xcconfig */,
+				4AB8F3C208AD260400DBB061 /* Omni-Bundle-Debug.xcconfig */,
+				4AB8F3C308AD260400DBB061 /* Omni-Bundle-Release.xcconfig */,
+				4AFE72F808A02F7F00ED9F2D /* Omni-Framework-Coverage.xcconfig */,
+				4AFE72F908A02F7F00ED9F2D /* Omni-Framework-Debug.xcconfig */,
+				4AFE72FA08A02F7F00ED9F2D /* Omni-Framework-Release.xcconfig */,
+				4AB8F3C408AD260400DBB061 /* Omni-Global-Coverage.xcconfig */,
+				4AB8F3C508AD260400DBB061 /* Omni-Global-Debug.xcconfig */,
+				4AB8F3C608AD260400DBB061 /* Omni-Global-Release.xcconfig */,
+				4AFE734008A042A400ED9F2D /* Omni-Tool-Coverage.xcconfig */,
+				4AFE734108A042A400ED9F2D /* Omni-Tool-Debug.xcconfig */,
+				4AFE734208A042A400ED9F2D /* Omni-Tool-Release.xcconfig */,
+			);
+			name = Configurations;
+			path = ../../Configurations;
+			sourceTree = SOURCE_ROOT;
+		};
+		8B086B3404195E521339F5EC /* Tests and Examples */ = {
+			isa = PBXGroup;
+			children = (
+				8B82CFFA0444F39D13F6A094 /* ListInterfaces.m */,
+				8BEC418D04463496133F7B26 /* MTUTest_main.m */,
+				8BEC418E044634AC133F7B26 /* MulticastTest_main.m */,
+				8BEC418F044634BB133F7B26 /* TCPTest_main.m */,
+				8BEC4190044634C9133F7B26 /* UDPTest_main.m */,
+				8B8FE0690445E73B13DE13AB /* ONHostTest.m */,
+				A2962D2506D28BAA00D7261C /* IDNEncodingTests.m */,
+				8B086B3504195FDD1339F5EC /* ONSocketStreamTests.m */,
+				A2D556100454A4CB0097A146 /* ONHostAddressTests.m */,
+				A2D3FF4C0458A9E70097A146 /* ONUDPTrafficTests.m */,
+			);
+			name = "Tests and Examples";
+			sourceTree = "<group>";
+		};
+		8BEC418904463436133F7B26 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				4AFE72C108A02E9D00ED9F2D /* ONUnitTests.otest */,
+				4AFE72E408A02E9E00ED9F2D /* ONThreadedLookupTest */,
+			);
+			name = Tests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		4AFE726B08A02E9D00ED9F2D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE726C08A02E9D00ED9F2D /* FrameworkDefines.h in Headers */,
+				4AFE726D08A02E9D00ED9F2D /* OmniNetworking.h in Headers */,
+				4AFE726E08A02E9D00ED9F2D /* ONHost.h in Headers */,
+				4AFE726F08A02E9D00ED9F2D /* ONHostAddress.h in Headers */,
+				4AFE727008A02E9D00ED9F2D /* ONInterface.h in Headers */,
+				4AFE727108A02E9D00ED9F2D /* ONInternetSocket-Private.h in Headers */,
+				4AFE727208A02E9D00ED9F2D /* ONInternetSocket.h in Headers */,
+				4AFE727308A02E9D00ED9F2D /* ONMulticastSocket.h in Headers */,
+				4AFE727408A02E9D00ED9F2D /* ONPortAddress.h in Headers */,
+				4AFE727508A02E9D00ED9F2D /* ONServiceEntry.h in Headers */,
+				4AFE727608A02E9D00ED9F2D /* ONSocket.h in Headers */,
+				4AFE727708A02E9D00ED9F2D /* ONSocketStream.h in Headers */,
+				4AFE727808A02E9D00ED9F2D /* ONTCPDatagramSocket.h in Headers */,
+				4AFE727908A02E9D00ED9F2D /* ONTCPSocket.h in Headers */,
+				4AFE727A08A02E9D00ED9F2D /* ONUDPSocket.h in Headers */,
+				4AFE727B08A02E9D00ED9F2D /* ONHost-InternalAPI.h in Headers */,
+				4AFE727C08A02E9D00ED9F2D /* ONHostAddress-Private.h in Headers */,
+				4AFE727D08A02E9D00ED9F2D /* ONLinkLayerHostAddress.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE729D08A02E9D00ED9F2D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72AD08A02E9D00ED9F2D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72C508A02E9D00ED9F2D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72D708A02E9D00ED9F2D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		4AFE726808A02E9D00ED9F2D /* OmniNetworking (Framework) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4AFE729508A02E9D00ED9F2D /* Build configuration list for PBXNativeTarget "OmniNetworking (Framework)" */;
+			buildPhases = (
+				4AFE726B08A02E9D00ED9F2D /* Headers */,
+				4AFE727E08A02E9D00ED9F2D /* Resources */,
+				4AFE728008A02E9D00ED9F2D /* Sources */,
+				4AFE728E08A02E9D00ED9F2D /* Frameworks */,
+				4AFE729208A02E9D00ED9F2D /* Rez */,
+				4AFE729308A02E9D00ED9F2D /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4AFE72E708A02E9E00ED9F2D /* PBXTargetDependency */,
+			);
+			name = "OmniNetworking (Framework)";
+			productInstallPath = "$(OMNI_INSTALLED_PRODUCTS)";
+			productName = OmniNetworking;
+			productReference = 4AFE729B08A02E9D00ED9F2D /* OmniNetworking.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		4AFE729C08A02E9D00ED9F2D /* ONGetHostEntry (Tool) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4AFE72A308A02E9D00ED9F2D /* Build configuration list for PBXNativeTarget "ONGetHostEntry (Tool)" */;
+			buildPhases = (
+				4AFE729D08A02E9D00ED9F2D /* Headers */,
+				4AFE729E08A02E9D00ED9F2D /* Sources */,
+				4AFE72A008A02E9D00ED9F2D /* Frameworks */,
+				4AFE72A208A02E9D00ED9F2D /* Rez */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "ONGetHostEntry (Tool)";
+			productName = ONGetHostEntry;
+			productReference = 4AFE72A808A02E9D00ED9F2D /* ONGetHostEntry */;
+			productType = "com.apple.product-type.tool";
+		};
+		4AFE72AA08A02E9D00ED9F2D /* ONUnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4AFE72BB08A02E9D00ED9F2D /* Build configuration list for PBXNativeTarget "ONUnitTests" */;
+			buildPhases = (
+				4AFE72AD08A02E9D00ED9F2D /* Headers */,
+				4AFE72AE08A02E9D00ED9F2D /* Resources */,
+				4AFE72AF08A02E9D00ED9F2D /* Sources */,
+				4AFE72B408A02E9D00ED9F2D /* Frameworks */,
+				4AFE72BA08A02E9D00ED9F2D /* Rez */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4AFE72E908A02E9E00ED9F2D /* PBXTargetDependency */,
+			);
+			name = ONUnitTests;
+			productInstallPath = "$(USER_LIBRARY_DIR)/Bundles";
+			productName = ONUnitTests;
+			productReference = 4AFE72C108A02E9D00ED9F2D /* ONUnitTests.otest */;
+			productType = "com.apple.product-type.bundle";
+		};
+		4AFE72C208A02E9D00ED9F2D /* ListInterfaces */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4AFE72CD08A02E9D00ED9F2D /* Build configuration list for PBXNativeTarget "ListInterfaces" */;
+			buildPhases = (
+				4AFE72C508A02E9D00ED9F2D /* Headers */,
+				4AFE72C608A02E9D00ED9F2D /* Sources */,
+				4AFE72C808A02E9D00ED9F2D /* Frameworks */,
+				4AFE72CC08A02E9D00ED9F2D /* Rez */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4AFE72EB08A02E9E00ED9F2D /* PBXTargetDependency */,
+			);
+			name = ListInterfaces;
+			productInstallPath = /usr/local/bin;
+			productName = dumpInterfaces;
+			productReference = 4AFE72D208A02E9D00ED9F2D /* ListInterfaces */;
+			productType = "com.apple.product-type.tool";
+		};
+		4AFE72D408A02E9D00ED9F2D /* ONThreadedLookupTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4AFE72DF08A02E9D00ED9F2D /* Build configuration list for PBXNativeTarget "ONThreadedLookupTest" */;
+			buildPhases = (
+				4AFE72D708A02E9D00ED9F2D /* Headers */,
+				4AFE72D808A02E9D00ED9F2D /* Sources */,
+				4AFE72DA08A02E9D00ED9F2D /* Frameworks */,
+				4AFE72DE08A02E9D00ED9F2D /* Rez */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4AFE72ED08A02E9E00ED9F2D /* PBXTargetDependency */,
+			);
+			name = ONThreadedLookupTest;
+			productInstallPath = /usr/local/bin;
+			productName = ONThreadedLookupTest;
+			productReference = 4AFE72E408A02E9E00ED9F2D /* ONThreadedLookupTest */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		00E51E85FE8AB1FF11C9CC38 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 4A07274708A02D1300A31187 /* Build configuration list for PBXProject "OmniNetworking" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 1;
+			mainGroup = 00E51E86FE8AB1FF11C9CC38 /* OmniNetworking */;
+			productRefGroup = 00E51E86FE8AB1FF11C9CC38 /* OmniNetworking */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4AFE726808A02E9D00ED9F2D /* OmniNetworking (Framework) */,
+				4AFE729C08A02E9D00ED9F2D /* ONGetHostEntry (Tool) */,
+				4AFE72AA08A02E9D00ED9F2D /* ONUnitTests */,
+				4AFE72C208A02E9D00ED9F2D /* ListInterfaces */,
+				4AFE72D408A02E9D00ED9F2D /* ONThreadedLookupTest */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4AFE727E08A02E9D00ED9F2D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE727F08A02E9D00ED9F2D /* OmniNetworking.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72AE08A02E9D00ED9F2D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXRezBuildPhase section */
+		4AFE729208A02E9D00ED9F2D /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72A208A02E9D00ED9F2D /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72BA08A02E9D00ED9F2D /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72CC08A02E9D00ED9F2D /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72DE08A02E9D00ED9F2D /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4AFE728008A02E9D00ED9F2D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE728108A02E9D00ED9F2D /* ONHost.m in Sources */,
+				4AFE728208A02E9D00ED9F2D /* ONHostAddress.m in Sources */,
+				4AFE728308A02E9D00ED9F2D /* ONInterface.m in Sources */,
+				4AFE728408A02E9D00ED9F2D /* ONInternetSocket.m in Sources */,
+				4AFE728508A02E9D00ED9F2D /* ONMulticastSocket.m in Sources */,
+				4AFE728608A02E9D00ED9F2D /* ONPortAddress.m in Sources */,
+				4AFE728708A02E9D00ED9F2D /* ONServiceEntry.m in Sources */,
+				4AFE728808A02E9D00ED9F2D /* ONSocket.m in Sources */,
+				4AFE728908A02E9D00ED9F2D /* ONSocketStream.m in Sources */,
+				4AFE728A08A02E9D00ED9F2D /* ONTCPDatagramSocket.m in Sources */,
+				4AFE728B08A02E9D00ED9F2D /* ONTCPSocket.m in Sources */,
+				4AFE728C08A02E9D00ED9F2D /* ONUDPSocket.m in Sources */,
+				4AFE728D08A02E9D00ED9F2D /* ONLinkLayerHostAddress.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE729E08A02E9D00ED9F2D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE729F08A02E9D00ED9F2D /* ONGetHostEntry_main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72AF08A02E9D00ED9F2D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE72B008A02E9D00ED9F2D /* ONSocketStreamTests.m in Sources */,
+				4AFE72B108A02E9D00ED9F2D /* ONHostAddressTests.m in Sources */,
+				4AFE72B208A02E9D00ED9F2D /* ONUDPTrafficTests.m in Sources */,
+				4AFE72B308A02E9D00ED9F2D /* IDNEncodingTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72C608A02E9D00ED9F2D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE72C708A02E9D00ED9F2D /* ListInterfaces.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AFE72D808A02E9D00ED9F2D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AFE72D908A02E9D00ED9F2D /* ONHostTest.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4AFE72E708A02E9E00ED9F2D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4AFE729C08A02E9D00ED9F2D /* ONGetHostEntry (Tool) */;
+			targetProxy = 4AFE72E608A02E9E00ED9F2D /* PBXContainerItemProxy */;
+		};
+		4AFE72E908A02E9E00ED9F2D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4AFE726808A02E9D00ED9F2D /* OmniNetworking (Framework) */;
+			targetProxy = 4AFE72E808A02E9E00ED9F2D /* PBXContainerItemProxy */;
+		};
+		4AFE72EB08A02E9E00ED9F2D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4AFE726808A02E9D00ED9F2D /* OmniNetworking (Framework) */;
+			targetProxy = 4AFE72EA08A02E9E00ED9F2D /* PBXContainerItemProxy */;
+		};
+		4AFE72ED08A02E9E00ED9F2D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4AFE726808A02E9D00ED9F2D /* OmniNetworking (Framework) */;
+			targetProxy = 4AFE72EC08A02E9E00ED9F2D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		18EAC01DFFC40E94C697A14E /* OmniNetworking.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				18EAC01EFFC40E94C697A14E /* English */,
+			);
+			name = OmniNetworking.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		4A07274808A02D1300A31187 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AB8F3C508AD260400DBB061 /* Omni-Global-Debug.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		4A07274908A02D1300A31187 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AB8F3C608AD260400DBB061 /* Omni-Global-Release.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		4A07274A08A02D1300A31187 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AB8F3C408AD260400DBB061 /* Omni-Global-Coverage.xcconfig */;
+			buildSettings = {
+			};
+			name = Coverage;
+		};
+		4AFE729608A02E9D00ED9F2D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE72F908A02F7F00ED9F2D /* Omni-Framework-Debug.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking;
+				PRODUCT_NAME = OmniNetworking;
+				SECTORDER_FLAGS = (
+					"-sectorder",
+					__TEXT,
+					__text,
+					"$(PRODUCT_NAME).order",
+				);
+			};
+			name = Debug;
+		};
+		4AFE729708A02E9D00ED9F2D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE72FA08A02F7F00ED9F2D /* Omni-Framework-Release.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking;
+				PRODUCT_NAME = OmniNetworking;
+				SECTORDER_FLAGS = (
+					"-sectorder",
+					__TEXT,
+					__text,
+					"$(PRODUCT_NAME).order",
+				);
+			};
+			name = Release;
+		};
+		4AFE729808A02E9D00ED9F2D /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE72F808A02F7F00ED9F2D /* Omni-Framework-Coverage.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking;
+				PRODUCT_NAME = OmniNetworking;
+				SECTORDER_FLAGS = (
+					"-sectorder",
+					__TEXT,
+					__text,
+					"$(PRODUCT_NAME).order",
+				);
+			};
+			name = Coverage;
+		};
+		4AFE72A408A02E9D00ED9F2D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE734108A042A400ED9F2D /* Omni-Tool-Debug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = ONGetHostEntry;
+			};
+			name = Debug;
+		};
+		4AFE72A508A02E9D00ED9F2D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE734208A042A400ED9F2D /* Omni-Tool-Release.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = ONGetHostEntry;
+			};
+			name = Release;
+		};
+		4AFE72A608A02E9D00ED9F2D /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE734008A042A400ED9F2D /* Omni-Tool-Coverage.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = ONGetHostEntry;
+			};
+			name = Coverage;
+		};
+		4AFE72BC08A02E9D00ED9F2D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE72F908A02F7F00ED9F2D /* Omni-Framework-Debug.xcconfig */;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(GCC_PREPROCESSOR_DEFINITIONS)",
+					"STEnableDeprecatedAssertionMacros=1",
+				);
+				INFOPLIST_FILE = "Info-ONUnitTests.plist";
+				PRODUCT_NAME = ONUnitTests;
+				SDKROOT_ppc = "";
+				WRAPPER_EXTENSION = otest;
+			};
+			name = Debug;
+		};
+		4AFE72BD08A02E9D00ED9F2D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE72FA08A02F7F00ED9F2D /* Omni-Framework-Release.xcconfig */;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(GCC_PREPROCESSOR_DEFINITIONS)",
+					"STEnableDeprecatedAssertionMacros=1",
+				);
+				INFOPLIST_FILE = "Info-ONUnitTests.plist";
+				PRODUCT_NAME = ONUnitTests;
+				SDKROOT_ppc = "";
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = otest;
+			};
+			name = Release;
+		};
+		4AFE72BE08A02E9D00ED9F2D /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE72F808A02F7F00ED9F2D /* Omni-Framework-Coverage.xcconfig */;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(GCC_PREPROCESSOR_DEFINITIONS)",
+					"STEnableDeprecatedAssertionMacros=1",
+				);
+				INFOPLIST_FILE = "Info-ONUnitTests.plist";
+				PRODUCT_NAME = ONUnitTests;
+				SDKROOT_ppc = "";
+				WRAPPER_EXTENSION = otest;
+			};
+			name = Coverage;
+		};
+		4AFE72CE08A02E9D00ED9F2D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE734108A042A400ED9F2D /* Omni-Tool-Debug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = ListInterfaces;
+			};
+			name = Debug;
+		};
+		4AFE72CF08A02E9D00ED9F2D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE734208A042A400ED9F2D /* Omni-Tool-Release.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = ListInterfaces;
+			};
+			name = Release;
+		};
+		4AFE72D008A02E9D00ED9F2D /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE734008A042A400ED9F2D /* Omni-Tool-Coverage.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = ListInterfaces;
+			};
+			name = Coverage;
+		};
+		4AFE72E008A02E9D00ED9F2D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE734108A042A400ED9F2D /* Omni-Tool-Debug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = ONThreadedLookupTest;
+			};
+			name = Debug;
+		};
+		4AFE72E108A02E9D00ED9F2D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE734208A042A400ED9F2D /* Omni-Tool-Release.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = ONThreadedLookupTest;
+			};
+			name = Release;
+		};
+		4AFE72E208A02E9D00ED9F2D /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AFE734008A042A400ED9F2D /* Omni-Tool-Coverage.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = ONThreadedLookupTest;
+			};
+			name = Coverage;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4A07274708A02D1300A31187 /* Build configuration list for PBXProject "OmniNetworking" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A07274808A02D1300A31187 /* Debug */,
+				4A07274908A02D1300A31187 /* Release */,
+				4A07274A08A02D1300A31187 /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4AFE729508A02E9D00ED9F2D /* Build configuration list for PBXNativeTarget "OmniNetworking (Framework)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4AFE729608A02E9D00ED9F2D /* Debug */,
+				4AFE729708A02E9D00ED9F2D /* Release */,
+				4AFE729808A02E9D00ED9F2D /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4AFE72A308A02E9D00ED9F2D /* Build configuration list for PBXNativeTarget "ONGetHostEntry (Tool)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4AFE72A408A02E9D00ED9F2D /* Debug */,
+				4AFE72A508A02E9D00ED9F2D /* Release */,
+				4AFE72A608A02E9D00ED9F2D /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4AFE72BB08A02E9D00ED9F2D /* Build configuration list for PBXNativeTarget "ONUnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4AFE72BC08A02E9D00ED9F2D /* Debug */,
+				4AFE72BD08A02E9D00ED9F2D /* Release */,
+				4AFE72BE08A02E9D00ED9F2D /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4AFE72CD08A02E9D00ED9F2D /* Build configuration list for PBXNativeTarget "ListInterfaces" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4AFE72CE08A02E9D00ED9F2D /* Debug */,
+				4AFE72CF08A02E9D00ED9F2D /* Release */,
+				4AFE72D008A02E9D00ED9F2D /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4AFE72DF08A02E9D00ED9F2D /* Build configuration list for PBXNativeTarget "ONThreadedLookupTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4AFE72E008A02E9D00ED9F2D /* Debug */,
+				4AFE72E108A02E9D00ED9F2D /* Release */,
+				4AFE72E208A02E9D00ED9F2D /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 00E51E85FE8AB1FF11C9CC38 /* Project object */;
+}

@@ -1,0 +1,18 @@
+{
+    IBClasses =     (
+                {
+            CLASS = FirstResponder;
+            LANGUAGE = ObjC;
+            SUPERCLASS = NSObject;
+        },
+                {
+            CLASS = OSUMessageOfTheDay;
+            LANGUAGE = ObjC;
+            OUTLETS =             {
+                webView = WebView;
+            };
+            SUPERCLASS = NSWindowController;
+        }
+    );
+    IBVersion = 1;
+}

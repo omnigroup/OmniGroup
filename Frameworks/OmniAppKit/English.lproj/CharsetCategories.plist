@@ -1,0 +1,59 @@
+{   /* -*-plist-*- */
+    /* This plist can be changed for different localizations to determine how the character sets are organized (for example, a Japanese version would presumably put the Japanese charsets in their own category at the top of the list, instead of down in "Non-European"). Category names and SortingStrings can be any appropriate string. */
+    
+    Categories = {
+	"Latin / Roman" = (
+	    1536, 1040, 3074, 513, 515, 527, 2564, 0, 252, 2817, 1280, 
+	    1024 /* Latin */
+	);
+	
+	"Other European" = ( 
+	    525, 1287,  /* Baltic Rim */
+	    526, /* Celtic */
+	    514, 516, 29, 1281,  /* Central European */
+	    36, /* Croatian */
+	    517, 2562, 152, 7, 1282, /* Cyrillic */
+	    519, 6, 1283, /* Greek */
+	    37, /* Icelandic (stretching "europe" a little?) */
+	    522, /* ISO "Nordic" */
+	    521, 35, 1284, /* Turkish */
+	    38 /* Romanian */
+	);
+	
+	Other = (
+	    256, /* UTF-16 */
+	    3071, /* Non-Lossy ASCII */
+	    134217984, /* UTF-8 */
+	    259, /* unicode 2.1? huh? */
+	    34, 41, 33 /* Dingbats and symbols */
+	);
+	
+	"Non-European" = (
+	    1049, 518, 4, 1286,  /* Arabic */
+	    1585, 2352, 25, 1057, 2563, 2353, 2, 1059, /* Chinese */
+	    9, 11, 10, /* Various Indian scripts: Devanagari, Gujarati, Gurmukhi */
+	    140, /* Farsi (used in the Middle East) */
+	    520, 5, 1285, /* Hebrew */
+	    2336, 2080, 1, 2561, 1056,  /* Japanese */
+	    2368, 2112, 3, 1058, /* Korean */
+	    523, 21, 1053, /* Thai */
+	    26, /* Tibetan */
+	    1288 /* Vietnamese */
+	);
+    };
+
+    CategoryOrder = ( 
+	"Latin / Roman",
+	"Other European",
+	"Non-European",
+	"Other"
+    );
+
+    OtherCategory = Other;
+
+    SortingStrings = ( "ISO", "Mac", "Windows", "DOS" );
+    
+    /* This could just as well go in the strings table --- it's a printf format to be used for encodings whose name we don't know */
+    BadEncodingFormat = "(encoding #%d)";
+}
+

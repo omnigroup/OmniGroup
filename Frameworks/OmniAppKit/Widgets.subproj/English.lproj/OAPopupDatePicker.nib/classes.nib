@@ -1,0 +1,14 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = NSDatePicker; LANGUAGE = ObjC; SUPERCLASS = NSControl; }, 
+        {CLASS = OADatePicker; LANGUAGE = ObjC; SUPERCLASS = NSDatePicker; }, 
+        {
+            CLASS = OAPopupDatePicker; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {datePicker = NSDatePicker; timePicker = NSDatePicker; }; 
+            SUPERCLASS = NSWindowController; 
+        }
+    ); 
+    IBVersion = 1; 
+}

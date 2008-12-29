@@ -1,0 +1,113 @@
+(
+   {
+      name = "feet";
+      unit = "ft";
+      aliases = ( foot, feet );
+      selection = "feet";
+      smallerUnit = Inches;
+      definition = "12 in";
+      aetype = <66656574>;
+   },
+   {
+      name = "tick feet";
+      selection = "feet";
+      unit = "'";
+      display = "%@'";
+      smallerUnit = "tick inches";
+      definition = "1 ft";
+   },
+   {
+      name = "Inches";
+      aliases = ( inch, inches );
+      unit = "in";
+      selection = "inches";
+      definition = "2.54 cm";
+      aetype = <696e6368>;
+      groupbase = YES;
+   },
+   {
+      name = "decimal inches";
+      selection = "decimal inches";
+      definition = "1 in";
+      unit = "in";
+   },
+   {
+      name = "tick inches";
+      selection = "inches";
+      display = "%@\"";
+      definition = "1 in";
+      unit = "\"";
+   },
+   {
+      aliases = ( meters, meter, metres, metre );
+      unit = "m";
+      selection = "meters";
+      aetype = <6d657472>;
+   },
+   {
+      aliases = ( yard, yards );
+      unit = "yd";
+      selection = "yards";
+      smallerUnit = "feet";
+      definition = "3 ft";
+      aetype = <79617264>;
+   },
+   {
+      aliases = ( mile, miles );
+      unit = "mi";
+      selection = "miles";
+      definition = "5280 ft";
+      aetype = <6d696c65>;
+   },
+   {
+      aliases = ( point, points );
+      unit = "pt";
+      selection = "points";
+      definition = "1/72 in";
+   },
+   {
+      aliases = ( pixel, pixels );
+      unit = "px";
+      selection = "pixels";
+   },
+   {
+      aliases = ( pica, picas );
+      name = "Picas";
+      unit = "p";
+      selection = "picas";
+      display = "%@p";
+      smallerUnit = "pt";
+      definition = "12 pt";
+   },
+   {
+      aliases = ( millimeter, millimeters, millimetre, millimetres );
+      unit = "mm";
+      selection = "millimeters";
+      definition = "1/1000 m";
+   },
+   {
+      name = "Centimeters";
+      aliases = ( centimeter, centimeters, centimetre, centimetres );
+      unit = "cm";
+      selection = "centimeters";
+      definition = "1/100 m";
+      aetype = <636d7472>;
+   },
+   {
+      aliases = ( kilometer, kilometers, kilometre, kilometres );
+      unit = "km";
+      selection = "kilometers";
+      definition = "1000 m";
+      aetype = <6b6d7472>;
+   },
+/*   {
+      unit = "Å";
+      selection = "Ångstroms";
+      definition = "1/10000000000 m";
+   }, */
+   {
+      unit = "cu";
+      definition = "3*6 in";
+      selection = "Cubits";
+   }
+)

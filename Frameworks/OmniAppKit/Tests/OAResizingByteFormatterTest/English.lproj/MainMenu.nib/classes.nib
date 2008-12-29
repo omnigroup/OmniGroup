@@ -1,0 +1,16 @@
+{
+    IBClasses = (
+        {
+            CLASS = Controller; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {tableColumn = NSTableColumn; }; 
+            SUPERCLASS = OFController; 
+        }, 
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = NSObject; LANGUAGE = ObjC; }, 
+        {CLASS = OBObject; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = OFController; LANGUAGE = ObjC; SUPERCLASS = OFObject; }, 
+        {CLASS = OFObject; LANGUAGE = ObjC; SUPERCLASS = OBObject; }
+    ); 
+    IBVersion = 1; 
+}

@@ -1,0 +1,346 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<base target="_top">
+<TITLE>IconFamily class and MakeThumbnail example for Mac OS X</TITLE>
+<LINK REL="stylesheet" TYPE="text/css" HREF="http://homepage.mac.com/troy_stephens/styles.css">
+</HEAD>
+<BODY BGCOLOR=#FFFFFF TEXT=#000000 LINK=#0000C0 ALINK=#0000FF VLINK=#000080>
+<font face="Lucida Grande,Geneva,Verdana,Arial,Helvetica,sans-serif" size=2 class="normal">
+
+<div align="center">
+<h2>IconFamily class and MakeThumbnail example<br>for Mac OS X</h2>
+<font face="Geneva,Verdana,Arial,Helvetica,sans-serif" size=1 class="small">
+<p>by Troy Stephens, Thomas Schnitzer, David Remahl, Nathan Day, and Ben
+Haller</p>
+</font>
+
+<font face="Geneva,Verdana,Arial,Helvetica,sans-serif" size=1 class="small"><p><font color="#ff0000">(See the <a
+href="http://homepage.mac.com/troy_stephens/software/objects/IconFamily/">IconFamily
+project page</a> for the latest release and info!)</font></p></font>
+
+<p><img src="http://homepage.mac.com/troy_stephens/software/objects/IconFamily/MakeThumbnail.jpg" width=467 height=272></p>
+
+<font face="Geneva,Verdana,Arial,Helvetica,sans-serif" size=1 class="small">
+
+<br>
+
+<p><i>Congratulations to David Remahl on winning an <a
+href="http://developer.apple.com/designawards/winners.html">Apple Design
+Award</a> at WWDC 2002 for <a href="http://www.ittpoi.com/cci.html">Can
+Combine Icons 2.1</a> (Runner Up, Best Mac OS X Student Product)!  CCI builds
+on the IconFamily class and provides a nice, intuitive interface for
+compositing icons to make new ones.  Way to go, David!</i> :-)</p>
+
+<br>
+
+<p><i>August 6, 2002 - Version 0.5 released!</p>
+</font>
+</div>
+
+<h3>Overview</h3>
+
+<p>"IconFamily" is a Cocoa/Objective-C wrapper for the Mac OS X Carbon API's
+"icon family" data type.  Its main purpose is to enable Cocoa applications
+to easily create custom file icons from NSImage instances, and thus take
+advantage of Mac OS X's new 128x128 RGBA "thumbnail" icon format to provide
+richly detailed thumbnail previews of the files' contents.  Using the
+IconFamily class you can also:</p>
+
+<ul>
+
+<li>read and write .icns files</li>
+
+<li>copy icon data to and from the scrap (pasteboard)</li>
+
+<li>assign an icon family as a file's kCustomIconResource, so it will appear
+in Finder views</li>
+
+<li>get and set the elements of an icon family in convenient, Cocoa-compatible
+NSBitmapImageRep form</li>
+
+</ul>
+
+<p>The IconFamily code has spawned several useful image and icon processing
+tools for Mac&nbsp;OS&nbsp;X (see "Related Projects" below).  It's also
+extensively commented, so extending it further and fixing problems should be
+pretty easy.  I intend to put more work into it as I find the time, and
+welcome <a href="mailto:troy_stephens@mac.com">feedback and
+suggestions</a>.</p>
+
+<hr>
+
+<h3>Downloading</h3>
+
+<p>
+The complete package for the current version is available here: <a href="http://homepage.mac.com/troy_stephens/software/objects/IconFamily/IconFamily-0.5.tgz">IconFamily-0.5.tgz</a>
+</p>
+
+<p>For those who might just want to try the MakeThumbnail example program
+without having to compile it first, there is also a "Deployment" build of the
+application: <a
+href="http://homepage.mac.com/troy_stephens/software/objects/IconFamily/MakeThumbnail-0.5.dmg.gz">MakeThumbnail-0.5.dmg.gz</a></p>
+
+<p>
+This package includes the source for a simple Cocoa testbed app called
+"MakeThumbnail" that demonstrates the use of the IconFamily class.
+MakeThumbnail lets you open any NSImage-supported image file and re-save it as
+a JPEG with an icon family consisting of various-sized thumbnail versions of
+the image assigned as the file's custom icon.  It also enables you to save the
+same icon family to an .icns file.
+</p>
+
+<p>
+You can also browse the core source code online:
+</p>
+
+<ul>
+<li><a href="IconFamily.h">IconFamily.h</a>
+<li><a href="IconFamily.m">IconFamily.m</a>
+<li><a href="NSString+CarbonFSSpecCreation.h">NSString+CarbonFSSpecCreation.h</a>
+<li><a href="NSString+CarbonFSSpecCreation.m">NSString+CarbonFSSpecCreation.m</a>
+</ul>
+
+<p>(The complete source code for the MakeThumbnail example is included in the
+.tgz archive.)</p>
+
+<hr>
+
+<h3>Usage Notes</h3>
+
+<p>
+One <i>caveat</i>: The data for an icon family that contains a "thumbnail"
+(128x128 32-bit RGBA) version isn't particularly small.  Apple does some
+compression on the bitmap data assigned via SetIconFamilyData() (though
+apparently not on the 8-bit masks), but nonetheless a custom icon resource can
+take up in the neighborhood of 35,000 to 60,000 bytes in a file's resource
+fork (in my experience, using Mac OS X Public Beta).  Storage is of course
+getting cheaper per gigabyte all the time, and users who work with a lot of
+image files may consider the
+extra use of disk space to be worth it.  But while 50k of icon data adds
+comparatively little to a 5+ MB uncompressed image file, it can, at the other
+extreme, be larger than the actual image data for, say, a small JPEG file.  It
+is also about 10x the size of the thumbnail data generated by image browsers I
+have used (albeit for lower, though I think adequate, resolution and quality).
+In short, my humble suggestion is to use this feature judiciously, and offer
+users the option of whether to save custom thumbnail icons with their image
+files.
+</p>
+
+<hr>
+
+<h3>Credits / Contributors</h3>
+
+<p><a href="http://homepage.mac.com/troy_stephens/main.html">Troy Stephens</a> wrote the initial releases of
+the IconFamily code and MakeThumbnail demo.  <a
+href="mailto:tschnitzer@t-online.de">Thomas Schnitzer</a> provided valuable
+help in understanding the related Carbon APIs, as well as contributions to the
+icon family element extraction code, that made these releases possible.</p>
+
+<p><a href="http://www.ittpoi.com">David Remahl</a>, author of <a
+href="http://www.ittpoi.com/cci.html">Can Combine Icons</a>, generously
+donated his own extensions to the IconFamily class for the 0.3 and 0.4.x
+releases.  <a href="http://homepage.mac.com/nathan_day/">Nathan Day</a> has
+likewise helped fix bugs and has contributed useful extensions, in the course
+of using the IconFamily code to build Popup Dock.  Ben Haller, author of <a
+href="http://www.sticksoftware.com">Stick Software</a>'s <a
+href="http://www.sticksoftware.com/software/Constrictor.html">Constrictor</a>,
+pitched in his own contributions and dedication to get the 0.4 release out the
+door.</p>
+
+<p><a href="mailto:mike@sugarcubesoftware.com">Mike Margolis</a>, author of <a
+href="http://sugarcubesoftware.com">Sugar Cube Software</a>'s <a
+href="http://sugarcubesoftware.com/sw/index.php?pic2icon">Pic2Icon</a> tool,
+has contributed support for creating shadowed, dog-eared document-like
+thumbnail icons that I hope to have folded in for the next (0.5) release.</p>
+
+<hr>
+
+<h3>Related Projects</h3>
+
+<p><a href="http://www.ittpoi.com">David Remahl</a> built on
+the IconFamily class to create <a
+href="http://www.ittpoi.com/cci.html">Can Combine Icons</a>, an
+elegant Cocoa-based Mac OS X application that makes short work of
+compositing icons to create new ones.</p>
+
+<p>The bitmap manipulation code in <a
+href="http://www.loos.li/trollin/index.html">Trollin</a>'s <a
+href="http://www.loos.li/trollin/readme/index.html">iconCompo</a>,
+another versatile icon compositing tool, was influenced by the IconFamily
+source.</p>
+
+<p>Thomas Schnitzer's <a
+href="http://homepage.mac.com/tschnitzer/">Iconizer</a> lets you zoom and
+drag-select to choose specific regions of your images from which to create
+thumbnail icons.</p>
+
+<p><a href="http://sugarcubesoftware.com">Sugar Cube Software</a>'s
+free <a
+href="http://sugarcubesoftware.com/sw/index.php?pic2icon">Pic2Icon</a>
+leverages the IconFamily class, enabling you to create thumbnails for
+image files with drag-and-drop simplicity.</p>
+
+<p><a href="http://www.sticksoftware.com">Stick Software</a>'s <a
+href="http://www.sticksoftware.com/software/Constrictor.html">Constrictor</a>
+uses the IconFamily class to provide thumbnail icons for saved screen
+snapshots.</p>
+
+<p><a href="http://www.gideonsoftworks.com">Gideon Softworks'</a> <a
+href="http://www.gideonsoftworks.com/filexaminer.html">FileXaminer</a>
+(a Finder "Get Info" enhancement) uses IconFamily to support custom
+icon assignments.</p>
+
+<p><a href="http://homepage.mac.com/extraneous/index.html">Extraneous
+Software</a>'s <a
+href="http://homepage.mac.com/extraneous/software/LameSecure/About.html">LameSecure</a>,
+a lightweight security tool, reportedly uses IconFamily somewhere, for
+something or other. :-)</p>
+
+<hr>
+
+<h3>Version History</h3>
+
+<font face="Geneva,Verdana,Arial,Helvetica,sans-serif" size=1 class="small">
+<p><b><u>Version 0.5 - August 6, 2002</u></b></p>
+</font>
+
+<p>Updated for compatibility with Mac OS X 10.2:</p>
+
+<ul>
+
+<li>Fixed <tt>-init</tt> method so it works on both 10.1.x and 10.2</li>
+
+<li>Added calls to <tt>FNNotify()</tt> to improve Finder synchronization</li>
+
+</ul>
+
+<p>Applications that rely on the <tt>-init</tt> method that was added in
+Version 0.4 should be recompiled with this new version of the IconFamily
+class for compatibility with Mac OS X 10.2.</p>
+
+<font face="Geneva,Verdana,Arial,Helvetica,sans-serif" size=1 class="small">
+<p><b><u>Version 0.4.1 - May 2, 2002</u></b></p>
+</font>
+
+<p>Released within hours of 0.4, this version fixed the omission of two new
+methods submitted by David Remahl:</p>
+
+<ul>
+
+<li><tt>-setAsCustomIconForDirectory:</tt></li>
+
+<li><tt>-setAsCustomIconForDirectory:withCompatibility:</tt></li>
+
+</ul>
+
+<p>There is also a new method in the "CarbonFSSpecCreation" category on
+NSString, which permits getting an <tt>FSRef</tt> for a given path.  The prior
+method to get an <tt>FSSpec</tt> is now implemented in terms of this
+method.</p>
+
+<font face="Geneva,Verdana,Arial,Helvetica,sans-serif" size=1 class="small">
+<p><b><u>Version 0.4 - May 2, 2002</u></b></p>
+</font>
+
+<p>Nathan Day, Ben Haller, and David Remahl contributed new features and bug
+fixes for the 0.4 release, including:</p>
+
+<ul>
+
+<li>fixes for the <tt>-init</tt> and <tt>-setAsCustomIconOfFile:</tt>
+methods</li>
+
+<li>a new <tt>+removeCustomIconFromFile:</tt> class method</li>
+
+<li>support for creating 8-bit indexed-color icon family elements</li>
+
+<li>respect for exiting type/creator codes in
+<tt>-setAsCustomIconForFile:...</tt> A new "compatibility" parameter to this
+method causes "large" and "small" 8-bit images and their 1-bit masks to be
+stored as independent resources in addition to being stored as members of the
+icon family resource</li>
+
+<li>a fix for <tt>-writeToFile:</tt> (previously there was a problem with
+certain kinds of paths)</li>
+
+<li>a probably more efficient alternative to going through <tt>-tiffData</tt>
+to get bitmap image representations in
+<tt>-initWithThumbnailsOfImage:usingImageInterpolation:</tt></li>
+
+</ul>
+
+<p>Special thanks to Ben for folding his and David's changes into a
+ready-to-go 0.4 release!</p>
+
+<p>I've also fixed a potential divide-by-zero error in
+<tt>+get32BitdataFromBitmapImageRep:</tt>.</p>
+
+<font face="Geneva,Verdana,Arial,Helvetica,sans-serif" size=1 class="small">
+<p><b><u>Version 0.3 - January 26, 2002</u></b></p>
+</font>
+
+<p>David Remahl contributed a number of useful extensions and fixes for this
+release, including:</p>
+
+<ul>
+
+<li>new init methods for creating an IconFamily from a standard system
+icon, from the Finder icon of a specified file, or from the Carbon
+Scrap Manager (Cocoa Pasteboard)</li>
+
+<li>a <tt>-putOnScrap</tt> method for placing a copy of an IconFamily on
+the Scrap (Pasteboard)</li>
+
+<li>code to undo the effects of premultiplied alpha in <tt>get32BitDataFromBitmapImageRep:</tt></li>
+
+<li>a fix for 1-bit mask generation</li>
+
+</ul>
+
+<p>Mike Margolis and David Remahl jointly suggested the use of
+NSGraphicsContext's <tt>-setImageInterpolation:</tt> method to specify the
+resampling algorithm to use.  By default, the IconFamily class now uses
+<tt>NSImageInterpolationHigh</tt>, which produces higher-quality thumbnails
+than previous versions of the code, but you can easily choose from among
+<tt>Default/None/Low/High</tt>.</p>
+
+<p>I added an accessory view to MakeThumbnail's "Save" panel to facilitate
+experimenting with the various <tt>NSImageInterpolation...</tt> settings that
+are now available.  I've also added generation of "small" (16x16) icons, fixed
+memory leaks, and fixed a bug that affected the display size of the loaded
+image in the MakeThumbnail example under Mac OS X 10.0 and later versions.</p>
+
+<p>IconFamily 0.3 has been tested on Mac OS X 10.1.2, using the December 2001
+Developer Tools.</p>
+
+<font face="Geneva,Verdana,Arial,Helvetica,sans-serif" size=1 class="small">
+<p><b><u>Version 0.2 - April 25, 2001</u></b></p>
+</font>
+
+<p>
+This release fixed a bug in the -bitmapImageRepWithAlphaForIconFamilyElement:
+method, where the NSBitmapImageRep's data was being referenced instead of
+copied and retained (sometimes resulting in a damaged bitmap or one containing
+random garbage).
+</p>
+
+<p>
+I also added an init method for creating an IconFamily from an existing
+IconFamilyHandle, and removed the warnings about post-Public Beta Mac OS X
+compatibility, since the code appeared to work just fine on Mac OS X 10.0.
+</p>
+
+<font face="Geneva,Verdana,Arial,Helvetica,sans-serif" size=1 class="small">
+<p><b><u>Version 0.1 alpha - February 28, 2001</u></b></p>
+</font>
+
+<p>First public release.</p>
+
+<hr>
+<font face="Geneva,Verdana,Arial,Helvetica,sans-serif" size=1 class="small"><I><A HREF="http://homepage.mac.com/troy_stephens/main.html">Troy Stephens</A> (<A HREF="mailto:troy_stephens@mac.com">troy_stephens@mac.com</A>)</I><BR>Last Updated Monday, August 05, 2002</font>
+</font>
+</BODY>
+</HTML>
+

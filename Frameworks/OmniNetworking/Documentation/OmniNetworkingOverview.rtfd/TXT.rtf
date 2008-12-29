@@ -1,0 +1,130 @@
+{\rtf0\ansi{\fonttbl\f0\fnil Times-Roman;\f1\ftech Symbol;\f2\fswiss Helvetica;}
+\paperw14760
+\paperh20980
+\margl120
+\margr0
+{\colortbl;\red0\green0\blue0;}
+\f0\b0\i0\ulnone\ql\fs24\fi0\li0\gray0\fc0\cf0\up0\dn0 Copyright 
+\f1 ã
+\f0 1997 by Omni Development, Inc.  All Rights Reserved.\
+\
+
+\fs14 \
+
+\pard\tx360\tx740\tx1120\fs28\fc0\cf0 \
+
+\fs14 \
+
+\fs6 \
+
+\pard\i\fs88\fc0\cf0 The OmniNetworking Framework\
+
+\fs120 \
+
+\pard\tx2520\f2\b\i0\fs28\fi-3540\li3520\fc0\cf0 Framework:	
+\f0\b0 LocalLibrary/Frameworks/Omni/OmniNetworking.framework\
+
+\fs20 \
+
+\pard\tx3520\f2\b\fs28\fi-3540\li3520\fc0\cf0 Header File Directories:	
+\f0\b0\fc1\cf1 LocalLibrary
+\fc0\cf0 /Frameworks/Omni/OmniNetworking.framework/Headers\
+
+\fs20 \
+
+\fs60 \
+
+\pard\f2\b\fs52\fc0\cf0 Introduction\
+
+\fs30 \
+
+\pard\tx360\tx740\tx1120\f0\b0\fs28\fc0\cf0 The OmniNetworking Framework defines a base layer of Objective-C classes to wrap the BSD sockets API in an object-oriented form. :\
+
+\fs14 \
+
+\fs28\fi-380\li360 ·	Provide a small set of basic utility classes\
+
+\fs14 \
+
+\fs28 ·	Make software development easier by introducing consistent conventions for things such as deallocation\
+
+\fs14 \
+
+\fs28 ·	Support Unicode strings, object persistence, and object distribution\
+
+\fs14 \
+
+\fs28 ·	Provide a level of OS independence, to enhance portability\
+
+\fs14 \
+
+\fs28\fi0\li0 The Foundation Framework includes the root object class, classes representing basic data types such as strings and byte arrays, and collections of other objects, and classes representing system information such as dates and communication ports between applications.  See ªFoundation Framework Classesº for a detailed description of the Foundation Framework.\
+
+\fs14 \
+
+\fs28 The Foundation Framework introduces several paradigms to avoid confusion in common situations, and to introduce a level of consistency across class hierarchies. This is done with some standard policies, such as that for object ownership (that is, who's responsible for disposing of objects), and with abstract classes like NSEnumerator. These new paradigms reduce the number of special and exceptional cases in API, and allow you to code more efficiently by reusing the same mechanisms with various kinds of objects.\
+
+\fs14 \
+
+\fs56 \
+
+\pard\f2\b\fs48\fc0\cf0 OmniNetworking Framework Classes \
+
+\fs20 \
+
+\pard\tx360\tx740\tx1120\f0\b0\fs28\fc0\cf0 The OmniNetworking class hierarchy is rooted in the OmniBase Framework's OBObject class which itself is a subclass of the Foundation Framework's NSObject class. (see Figure 1-1). \
+
+\fs14 \
+
+\fs28 The complete OmniNetworking Framework class inheritance hierarchy looks like this:\
+
+\fs14 \
+
+\fs26 \
+
+{\pard\fs28\fc0\cf0{\NeXTGraphic1867 paste.eps \width14400 \height3060
+}
+¬}\f0\b0\i0\ulnone\ql\fs28\fi0\li0\gray0\fc0\cf0\up0\dn0 \
+\
+
+\fs20 \
+
+\f2\b\fs28 Figure 0-1
+\f0\b0 .  The OmniNetworking Framework class hierarchy\
+
+\fs40 \
+
+\f2\b\fs28 Note:  
+\f0\b0 The OBObject class listed in gray in this diagram is not included in this framework.\
+
+\fs14 \
+
+\pard\tx360\tx740\tx1120\fs28\fc0\cf0 Many of these classes have closely related functionality:\
+
+\fs14 \
+
+\fs28\fi-380\li360 ·	
+\b\fc1\cf1 Network Addresses
+\fc0\cf0 .
+\b0  ONHost, ONHostAddress, ONPortAddress, and ONServiceEntry provide object-oriented storage for complete Internet addresses and portions of addresses .\
+
+\fs14 \
+
+\fs28 ·	
+\b Communications sockets
+\b0 . ONSocket and its subclasses represent connections to other processes on possible other machines across the internet, and provide functionality for sending and receiving data across the network. Various subclasses are provided which use different communication protocols suited for different purposes.\
+
+\fs14 \
+
+\fs28 ·	
+\b Stream-oriented IO. 
+\b0 The ONSocketStream class provides buffered I/O for socket communications, allowing higher level use of sockets without using the read/write primitives provided by ONSocket.\
+
+\fs14 \
+\
+
+\fs56 \
+
+\pard\fs14\fc0\cf0 \
+
+}

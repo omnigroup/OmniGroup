@@ -1,0 +1,959 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3416018E0C67E84B002839DF /* OSUCheckTool-Hardware.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416017B0C67E838002839DF /* OSUCheckTool-Hardware.m */; };
+		3416044C0C6913CC002839DF /* OSUCheckOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3416044A0C6913CC002839DF /* OSUCheckOperation.h */; };
+		3416044D0C6913CC002839DF /* OSUCheckOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416044B0C6913CC002839DF /* OSUCheckOperation.m */; };
+		341605EC0C693324002839DF /* OSUItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 341605EA0C693324002839DF /* OSUItem.h */; };
+		341605ED0C693324002839DF /* OSUItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 341605EB0C693324002839DF /* OSUItem.m */; };
+		341607700C6A27AA002839DF /* OSUFlippedView.h in Headers */ = {isa = PBXBuildFile; fileRef = 3416076E0C6A27AA002839DF /* OSUFlippedView.h */; };
+		341607710C6A27AA002839DF /* OSUFlippedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416076F0C6A27AA002839DF /* OSUFlippedView.m */; };
+		3434CC240DCFF9EE00340C82 /* OBUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 3434CC220DCFF9EE00340C82 /* OBUtilities.h */; };
+		3434CC250DCFF9EE00340C82 /* OBUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3434CC230DCFF9EE00340C82 /* OBUtilities.m */; };
+		3456AED20C1201300066F5F4 /* OSURunTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 3456AED00C1201300066F5F4 /* OSURunTime.h */; };
+		3456AED30C1201300066F5F4 /* OSURunTime.m in Sources */ = {isa = PBXBuildFile; fileRef = 3456AED10C1201300066F5F4 /* OSURunTime.m */; };
+		34591B870A751FAD00BA6CCA /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34591B860A751FAD00BA6CCA /* WebKit.framework */; };
+		346F34C10C627E4600AAEE4D /* OSUInstaller.h in Headers */ = {isa = PBXBuildFile; fileRef = 346F34BF0C627E4600AAEE4D /* OSUInstaller.h */; };
+		346F34C20C627E4600AAEE4D /* OSUInstaller.m in Sources */ = {isa = PBXBuildFile; fileRef = 346F34C00C627E4600AAEE4D /* OSUInstaller.m */; };
+		3479B1940D007103005EBC8A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3479B1920D007103005EBC8A /* Localizable.strings */; };
+		3483BE880CCE6B1800232DF2 /* OSUExtract.rb in Resources */ = {isa = PBXBuildFile; fileRef = 3483BE870CCE6B1800232DF2 /* OSUExtract.rb */; };
+		348AC9F90CC9F66400A04318 /* OSUExtract-tbz2.sh in Resources */ = {isa = PBXBuildFile; fileRef = 348AC9F80CC9F66400A04318 /* OSUExtract-tbz2.sh */; };
+		34B627C60C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html in Resources */ = {isa = PBXBuildFile; fileRef = 34B627C40C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html */; };
+		34BC77810C6BAEBF006EFE2E /* OSUItemTableView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BC777F0C6BAEBF006EFE2E /* OSUItemTableView.h */; };
+		34BC77820C6BAEBF006EFE2E /* OSUItemTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BC77800C6BAEBF006EFE2E /* OSUItemTableView.m */; };
+		34D10CAA0D85ACF500090705 /* NSError-OBExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D10CA90D85ACF500090705 /* NSError-OBExtensions.m */; };
+		34E6552C0C95C85D0005A12E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34E6552B0C95C85D0005A12E /* Security.framework */; };
+		34EDDEC90C6127FD009E2E27 /* OSUErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EDDEC80C6127FD009E2E27 /* OSUErrors.h */; };
+		34EFFFED0CCA75CC002B3B07 /* OSUInstaller.sh in Resources */ = {isa = PBXBuildFile; fileRef = 34EFFFEC0CCA75CC002B3B07 /* OSUInstaller.sh */; };
+		34F93B8F0C12282100440763 /* OSURunTime.m in Sources */ = {isa = PBXBuildFile; fileRef = 3456AED10C1201300066F5F4 /* OSURunTime.m */; };
+		34F93B9F0C12291C00440763 /* assertions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F93B9E0C12291C00440763 /* assertions.m */; };
+		4912144509D4B6D7003DC19F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4912144409D4B6D7003DC19F /* main.m */; };
+		4912144809D4B6EF003DC19F /* OSUTestApp.nib in Resources */ = {isa = PBXBuildFile; fileRef = 4912144609D4B6EF003DC19F /* OSUTestApp.nib */; };
+		4912145709D4BDD9003DC19F /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		4912145809D4BDDD003DC19F /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2C063409180097A113 /* OmniAppKit.framework */; };
+		4912145909D4BDDE003DC19F /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2D063409180097A113 /* OmniBase.framework */; };
+		4912145A09D4BDDF003DC19F /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2E063409180097A113 /* OmniFoundation.framework */; };
+		4912145C09D4BE36003DC19F /* OmniSoftwareUpdate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4912145B09D4BE36003DC19F /* OmniSoftwareUpdate.framework */; };
+		4912150409D8B1DB003DC19F /* OSUTAController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4912150309D8B1DB003DC19F /* OSUTAController.m */; };
+		49E586BD09EC853000F3BFA7 /* OSUTAChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 49E586BC09EC853000F3BFA7 /* OSUTAChecker.m */; };
+		4A40EBED08AB009A00E1769D /* OmniSoftwareUpdate_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = 32DBCF5E0370ADEE00C91783 /* OmniSoftwareUpdate_Prefix.h */; };
+		4A40EBEE08AB009A00E1769D /* OSUController.h in Headers */ = {isa = PBXBuildFile; fileRef = BF3171DE062F410E0097A147 /* OSUController.h */; };
+		4A40EBEF08AB009A00E1769D /* OSUPreferences.h in Headers */ = {isa = PBXBuildFile; fileRef = BF3171E0062F410E0097A147 /* OSUPreferences.h */; };
+		4A40EBF008AB009A00E1769D /* OSUChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 34821EFE0634074F0097A113 /* OSUChecker.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A40EBF108AB009A00E1769D /* NSApplication-OSUSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 34821F3D06340B750097A113 /* NSApplication-OSUSupport.h */; };
+		4A40EBF308AB009A00E1769D /* OSUPreferences.png in Resources */ = {isa = PBXBuildFile; fileRef = BF3171E6062F41550097A147 /* OSUPreferences.png */; };
+		4A40EBF508AB009A00E1769D /* OSUPreferences.nib in Resources */ = {isa = PBXBuildFile; fileRef = BF3171EA062F41740097A147 /* OSUPreferences.nib */; };
+		4A40EBF608AB009A00E1769D /* Preferences.strings in Resources */ = {isa = PBXBuildFile; fileRef = BF3171EC062F41740097A147 /* Preferences.strings */; };
+		4A40EBF808AB009A00E1769D /* HardwareDescription.html in Resources */ = {isa = PBXBuildFile; fileRef = 3482205506342C1E0097A113 /* HardwareDescription.html */; };
+		4A40EBF908AB009A00E1769D /* OSUController.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34AF861B0637796C0097A113 /* OSUController.nib */; };
+		4A40EBFB08AB009A00E1769D /* OSUController.m in Sources */ = {isa = PBXBuildFile; fileRef = BF3171DF062F410E0097A147 /* OSUController.m */; };
+		4A40EBFC08AB009A00E1769D /* OSUPreferences.m in Sources */ = {isa = PBXBuildFile; fileRef = BF3171E1062F410E0097A147 /* OSUPreferences.m */; };
+		4A40EBFD08AB009A00E1769D /* OSUChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 34821EFF0634074F0097A113 /* OSUChecker.m */; };
+		4A40EBFE08AB009A00E1769D /* NSApplication-OSUSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 34821F3E06340B750097A113 /* NSApplication-OSUSupport.m */; };
+		4A40EC0008AB009A00E1769D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		4A40EC0108AB009A00E1769D /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2C063409180097A113 /* OmniAppKit.framework */; };
+		4A40EC0208AB009A00E1769D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2D063409180097A113 /* OmniBase.framework */; };
+		4A40EC0308AB009A00E1769D /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2E063409180097A113 /* OmniFoundation.framework */; };
+		4A40EC0408AB009A00E1769D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F180634086B0097A113 /* SystemConfiguration.framework */; };
+		4A40EC0E08AB009A00E1769D /* OSUCheckTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 34821F000634074F0097A113 /* OSUCheckTool.h */; };
+		4A40EC1008AB009A00E1769D /* OSUCheckTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 34821F010634074F0097A113 /* OSUCheckTool.m */; };
+		4A40EC1208AB009A00E1769D /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F140634086B0097A113 /* CoreFoundation.framework */; };
+		4A40EC1308AB009A00E1769D /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F150634086B0097A113 /* CoreServices.framework */; };
+		4A40EC1408AB009A00E1769D /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F160634086B0097A113 /* IOKit.framework */; };
+		4A40EC1508AB009A00E1769D /* QuickTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F170634086B0097A113 /* QuickTime.framework */; };
+		4A40EC1608AB009A00E1769D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F180634086B0097A113 /* SystemConfiguration.framework */; };
+		4A40EC1708AB009A00E1769D /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 345478850635F5FD0097A113 /* ApplicationServices.framework */; };
+		4A40EC1808AB009A00E1769D /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3424B2230636F5DB0097A113 /* OpenGL.framework */; };
+		4A40EC1908AB009A00E1769D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		4A40EC2308AB009A00E1769D /* OmniSoftwareUpdateCheck in Resources */ = {isa = PBXBuildFile; fileRef = 4A40EC1F08AB009A00E1769D /* OmniSoftwareUpdateCheck */; };
+		4A6474C40CE50BAC00F6EE03 /* OSUMessageOfTheDay.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6474C20CE50BAC00F6EE03 /* OSUMessageOfTheDay.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A6474C50CE50BAC00F6EE03 /* OSUMessageOfTheDay.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6474C30CE50BAC00F6EE03 /* OSUMessageOfTheDay.m */; };
+		4A6474D30CE50D0C00F6EE03 /* OAController-OSUExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6474D10CE50D0C00F6EE03 /* OAController-OSUExtensions.h */; };
+		4A6474D40CE50D0C00F6EE03 /* OAController-OSUExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6474D20CE50D0C00F6EE03 /* OAController-OSUExtensions.m */; };
+		4A64766C0CE518C500F6EE03 /* OSUMessageOfTheDay.nib in Resources */ = {isa = PBXBuildFile; fileRef = 4A6474C70CE50BBD00F6EE03 /* OSUMessageOfTheDay.nib */; };
+		6A93324E0C6141A0002DC78C /* OSUDownloadController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6A93324C0C6141A0002DC78C /* OSUDownloadController.h */; };
+		6A93324F0C6141A0002DC78C /* OSUDownloadController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6A93324D0C6141A0002DC78C /* OSUDownloadController.m */; };
+		6A9332C90C6146C6002DC78C /* OSUDownloadController.nib in Resources */ = {isa = PBXBuildFile; fileRef = 6A9332C70C6146C5002DC78C /* OSUDownloadController.nib */; };
+		6A950E4F0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 6A950E4D0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h */; };
+		6A950E500C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 6A950E4E0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m */; };
+		6AC963510C6A756600256B9C /* OSUThinBorderView.h in Headers */ = {isa = PBXBuildFile; fileRef = 6AC9634F0C6A756600256B9C /* OSUThinBorderView.h */; };
+		6AC963520C6A756600256B9C /* OSUThinBorderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC963500C6A756600256B9C /* OSUThinBorderView.m */; };
+		6ACC21370C67DC7B001633C1 /* OSUAvailableUpdateController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6ACC21350C67DC7B001633C1 /* OSUAvailableUpdateController.h */; };
+		6ACC21380C67DC7B001633C1 /* OSUAvailableUpdateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6ACC21360C67DC7B001633C1 /* OSUAvailableUpdateController.m */; };
+		6ACC21420C67DCC0001633C1 /* OSUAvailableUpdateController.nib in Resources */ = {isa = PBXBuildFile; fileRef = 6ACC21400C67DCC0001633C1 /* OSUAvailableUpdateController.nib */; };
+		A234D5000E366FA800691906 /* OBBacktraceBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = A234D4FF0E366FA800691906 /* OBBacktraceBuffer.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4912160E09DA0B8A003DC19F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A40EBE908AB009A00E1769D;
+			remoteInfo = OmniSoftwareUpdate;
+		};
+		4A40EC2108AB009A00E1769D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A40EC0C08AB009A00E1769D;
+			remoteInfo = "OmniSoftwareUpdateCheck (Upgraded)";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		32DBCF5E0370ADEE00C91783 /* OmniSoftwareUpdate_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniSoftwareUpdate_Prefix.h; sourceTree = "<group>"; };
+		3416017B0C67E838002839DF /* OSUCheckTool-Hardware.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OSUCheckTool-Hardware.m"; sourceTree = "<group>"; };
+		3416044A0C6913CC002839DF /* OSUCheckOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUCheckOperation.h; sourceTree = "<group>"; };
+		3416044B0C6913CC002839DF /* OSUCheckOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUCheckOperation.m; sourceTree = "<group>"; };
+		341605EA0C693324002839DF /* OSUItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUItem.h; sourceTree = "<group>"; };
+		341605EB0C693324002839DF /* OSUItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUItem.m; sourceTree = "<group>"; };
+		3416076E0C6A27AA002839DF /* OSUFlippedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUFlippedView.h; sourceTree = "<group>"; };
+		3416076F0C6A27AA002839DF /* OSUFlippedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUFlippedView.m; sourceTree = "<group>"; };
+		3424B2230636F5DB0097A113 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		3434CC220DCFF9EE00340C82 /* OBUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBUtilities.h; sourceTree = "<group>"; };
+		3434CC230DCFF9EE00340C82 /* OBUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBUtilities.m; sourceTree = "<group>"; };
+		345478850635F5FD0097A113 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
+		3456AED00C1201300066F5F4 /* OSURunTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSURunTime.h; sourceTree = "<group>"; };
+		3456AED10C1201300066F5F4 /* OSURunTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSURunTime.m; sourceTree = "<group>"; };
+		34591B860A751FAD00BA6CCA /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = /System/Library/Frameworks/WebKit.framework; sourceTree = "<absolute>"; };
+		346F34BF0C627E4600AAEE4D /* OSUInstaller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUInstaller.h; sourceTree = "<group>"; };
+		346F34C00C627E4600AAEE4D /* OSUInstaller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUInstaller.m; sourceTree = "<group>"; };
+		3479B1930D007103005EBC8A /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
+		34821EFE0634074F0097A113 /* OSUChecker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUChecker.h; sourceTree = "<group>"; };
+		34821EFF0634074F0097A113 /* OSUChecker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUChecker.m; sourceTree = "<group>"; };
+		34821F000634074F0097A113 /* OSUCheckTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUCheckTool.h; sourceTree = "<group>"; };
+		34821F010634074F0097A113 /* OSUCheckTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUCheckTool.m; sourceTree = "<group>"; };
+		34821F140634086B0097A113 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		34821F150634086B0097A113 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
+		34821F160634086B0097A113 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
+		34821F170634086B0097A113 /* QuickTime.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickTime.framework; path = /System/Library/Frameworks/QuickTime.framework; sourceTree = "<absolute>"; };
+		34821F180634086B0097A113 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = /System/Library/Frameworks/SystemConfiguration.framework; sourceTree = "<absolute>"; };
+		34821F2C063409180097A113 /* OmniAppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		34821F2D063409180097A113 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		34821F2E063409180097A113 /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		34821F3D06340B750097A113 /* NSApplication-OSUSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSApplication-OSUSupport.h"; sourceTree = "<group>"; };
+		34821F3E06340B750097A113 /* NSApplication-OSUSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSApplication-OSUSupport.m"; sourceTree = "<group>"; };
+		3482205606342C1E0097A113 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = English; path = English.lproj/HardwareDescription.html; sourceTree = "<group>"; };
+		3483BE870CCE6B1800232DF2 /* OSUExtract.rb */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.ruby; path = OSUExtract.rb; sourceTree = "<group>"; };
+		348AC9F80CC9F66400A04318 /* OSUExtract-tbz2.sh */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.sh; path = "OSUExtract-tbz2.sh"; sourceTree = SOURCE_ROOT; };
+		34AF861C0637796C0097A113 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OSUController.nib; sourceTree = "<group>"; };
+		34B627C50C6A5B9F00A34AA2 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = English; path = English.lproj/NoReleaseNotesAvailable.html; sourceTree = "<group>"; };
+		34BC777F0C6BAEBF006EFE2E /* OSUItemTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUItemTableView.h; sourceTree = "<group>"; };
+		34BC77800C6BAEBF006EFE2E /* OSUItemTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUItemTableView.m; sourceTree = "<group>"; };
+		34D10CA90D85ACF500090705 /* NSError-OBExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError-OBExtensions.m"; sourceTree = "<group>"; };
+		34E6552B0C95C85D0005A12E /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = /System/Library/Frameworks/Security.framework; sourceTree = "<absolute>"; };
+		34EDDEC80C6127FD009E2E27 /* OSUErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUErrors.h; sourceTree = "<group>"; };
+		34EFFFEC0CCA75CC002B3B07 /* OSUInstaller.sh */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.sh; path = OSUInstaller.sh; sourceTree = "<group>"; };
+		34F93B9E0C12291C00440763 /* assertions.m */ = {isa = PBXFileReference; comments = "This is included here so that the checker tool can use assertions w/o linking OmniBase."; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = assertions.m; sourceTree = "<group>"; };
+		4912123B09D39ED7003DC19F /* OSUTestApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OSUTestApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4912123D09D39ED7003DC19F /* OSUTestApp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "OSUTestApp-Info.plist"; sourceTree = "<group>"; };
+		4912144409D4B6D7003DC19F /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		4912144709D4B6EF003DC19F /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OSUTestApp.nib; sourceTree = "<group>"; };
+		4912145B09D4BE36003DC19F /* OmniSoftwareUpdate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OmniSoftwareUpdate.framework; path = ../../Products.osu/Debug/OmniSoftwareUpdate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4912150209D8B1DB003DC19F /* OSUTAController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUTAController.h; sourceTree = "<group>"; };
+		4912150309D8B1DB003DC19F /* OSUTAController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUTAController.m; sourceTree = "<group>"; };
+		491215F909DA08D5003DC19F /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		491215FA09DA08DF003DC19F /* Omni-Bundle-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		491215FB09DA08E9003DC19F /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		491215FC09DA08FB003DC19F /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
+		491215FD09DA08FB003DC19F /* Omni-Global-Common-10.3.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-10.3.xcconfig"; sourceTree = "<group>"; };
+		491215FE09DA08FB003DC19F /* Omni-Global-Common-10.4.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-10.4.xcconfig"; sourceTree = "<group>"; };
+		491215FF09DA0907003DC19F /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
+		49E586BB09EC853000F3BFA7 /* OSUTAChecker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUTAChecker.h; sourceTree = "<group>"; };
+		49E586BC09EC853000F3BFA7 /* OSUTAChecker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUTAChecker.m; sourceTree = "<group>"; };
+		4A102C1408AB00D00059F5BD /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4A102C1508AB00D00059F5BD /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		4A102C1608AB00D00059F5BD /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		4A102C1708AB00D00059F5BD /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4A102C1808AB00D00059F5BD /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		4A102C1908AB00D00059F5BD /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		4A102C1A08AB00D00059F5BD /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4A102C1B08AB00D00059F5BD /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
+		4A102C1C08AB00D00059F5BD /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
+		4A40EC0A08AB009A00E1769D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4A40EC0B08AB009A00E1769D /* OmniSoftwareUpdate.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniSoftwareUpdate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A40EC1F08AB009A00E1769D /* OmniSoftwareUpdateCheck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OmniSoftwareUpdateCheck; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A6474C20CE50BAC00F6EE03 /* OSUMessageOfTheDay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUMessageOfTheDay.h; sourceTree = "<group>"; };
+		4A6474C30CE50BAC00F6EE03 /* OSUMessageOfTheDay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUMessageOfTheDay.m; sourceTree = "<group>"; };
+		4A6474C70CE50BBD00F6EE03 /* OSUMessageOfTheDay.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = OSUMessageOfTheDay.nib; sourceTree = "<group>"; };
+		4A6474D10CE50D0C00F6EE03 /* OAController-OSUExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAController-OSUExtensions.h"; sourceTree = "<group>"; };
+		4A6474D20CE50D0C00F6EE03 /* OAController-OSUExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OAController-OSUExtensions.m"; sourceTree = "<group>"; };
+		4AB8F42908AD27BF00DBB061 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4AB8F42A08AD27BF00DBB061 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		4AB8F42B08AD27BF00DBB061 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		4AB8F42C08AD27BF00DBB061 /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
+		4AB8F42D08AD27BF00DBB061 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
+		4AB8F42E08AD27BF00DBB061 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
+		6A93324C0C6141A0002DC78C /* OSUDownloadController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUDownloadController.h; sourceTree = "<group>"; };
+		6A93324D0C6141A0002DC78C /* OSUDownloadController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUDownloadController.m; sourceTree = "<group>"; };
+		6A9332C80C6146C5002DC78C /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OSUDownloadController.nib; sourceTree = "<group>"; };
+		6A950E4D0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUSendFeedbackErrorRecovery.h; sourceTree = "<group>"; };
+		6A950E4E0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUSendFeedbackErrorRecovery.m; sourceTree = "<group>"; };
+		6AC9634F0C6A756600256B9C /* OSUThinBorderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUThinBorderView.h; sourceTree = "<group>"; };
+		6AC963500C6A756600256B9C /* OSUThinBorderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUThinBorderView.m; sourceTree = "<group>"; };
+		6ACC21350C67DC7B001633C1 /* OSUAvailableUpdateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUAvailableUpdateController.h; sourceTree = "<group>"; };
+		6ACC21360C67DC7B001633C1 /* OSUAvailableUpdateController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUAvailableUpdateController.m; sourceTree = "<group>"; };
+		6ACC21410C67DCC0001633C1 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OSUAvailableUpdateController.nib; sourceTree = "<group>"; };
+		A234D4FF0E366FA800691906 /* OBBacktraceBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBBacktraceBuffer.m; sourceTree = "<group>"; };
+		BF04952B0A75EC56000E2C2C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = /System/Library/Frameworks/WebKit.framework/Frameworks/JavaScriptCore.framework; sourceTree = "<absolute>"; };
+		BF04952C0A75EC56000E2C2C /* WebCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebCore.framework; path = /System/Library/Frameworks/WebKit.framework/Frameworks/WebCore.framework; sourceTree = "<absolute>"; };
+		BF3171DE062F410E0097A147 /* OSUController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUController.h; sourceTree = "<group>"; };
+		BF3171DF062F410E0097A147 /* OSUController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUController.m; sourceTree = "<group>"; };
+		BF3171E0062F410E0097A147 /* OSUPreferences.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUPreferences.h; sourceTree = "<group>"; };
+		BF3171E1062F410E0097A147 /* OSUPreferences.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUPreferences.m; sourceTree = "<group>"; };
+		BF3171E6062F41550097A147 /* OSUPreferences.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OSUPreferences.png; sourceTree = "<group>"; };
+		BF3171EB062F41740097A147 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OSUPreferences.nib; sourceTree = "<group>"; };
+		BF3171ED062F41740097A147 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Preferences.strings; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4912123909D39ED7003DC19F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4912145709D4BDD9003DC19F /* Cocoa.framework in Frameworks */,
+				4912145809D4BDDD003DC19F /* OmniAppKit.framework in Frameworks */,
+				4912145909D4BDDE003DC19F /* OmniBase.framework in Frameworks */,
+				4912145A09D4BDDF003DC19F /* OmniFoundation.framework in Frameworks */,
+				4912145C09D4BE36003DC19F /* OmniSoftwareUpdate.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A40EBFF08AB009A00E1769D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A40EC0008AB009A00E1769D /* Cocoa.framework in Frameworks */,
+				4A40EC0108AB009A00E1769D /* OmniAppKit.framework in Frameworks */,
+				4A40EC0208AB009A00E1769D /* OmniBase.framework in Frameworks */,
+				4A40EC0308AB009A00E1769D /* OmniFoundation.framework in Frameworks */,
+				4A40EC0408AB009A00E1769D /* SystemConfiguration.framework in Frameworks */,
+				34591B870A751FAD00BA6CCA /* WebKit.framework in Frameworks */,
+				34E6552C0C95C85D0005A12E /* Security.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A40EC1108AB009A00E1769D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A40EC1208AB009A00E1769D /* CoreFoundation.framework in Frameworks */,
+				4A40EC1308AB009A00E1769D /* CoreServices.framework in Frameworks */,
+				4A40EC1408AB009A00E1769D /* IOKit.framework in Frameworks */,
+				4A40EC1508AB009A00E1769D /* QuickTime.framework in Frameworks */,
+				4A40EC1608AB009A00E1769D /* SystemConfiguration.framework in Frameworks */,
+				4A40EC1708AB009A00E1769D /* ApplicationServices.framework in Frameworks */,
+				4A40EC1808AB009A00E1769D /* OpenGL.framework in Frameworks */,
+				4A40EC1908AB009A00E1769D /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4A40EC0B08AB009A00E1769D /* OmniSoftwareUpdate.framework */,
+				4A40EC1F08AB009A00E1769D /* OmniSoftwareUpdateCheck */,
+				4912123B09D39ED7003DC19F /* OSUTestApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* OmniSoftwareUpdate */ = {
+			isa = PBXGroup;
+			children = (
+				4A102C1308AB00D00059F5BD /* Configurations */,
+				4A102C0F08AB00B10059F5BD /* Framework Source */,
+				4912140D09D3A198003DC19F /* Test Application */,
+				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				034768DFFF38A50411DB9C8B /* Products */,
+			);
+			name = OmniSoftwareUpdate;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */,
+				1058C7B2FEA5585E11CA2CBB /* Other Frameworks */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C1665FE841158C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				3479B1920D007103005EBC8A /* Localizable.strings */,
+				34B627C40C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html */,
+				3482205506342C1E0097A113 /* HardwareDescription.html */,
+				34AF861B0637796C0097A113 /* OSUController.nib */,
+				BF3171E6062F41550097A147 /* OSUPreferences.png */,
+				BF3171EA062F41740097A147 /* OSUPreferences.nib */,
+				BF3171EC062F41740097A147 /* Preferences.strings */,
+				6A9332C70C6146C5002DC78C /* OSUDownloadController.nib */,
+				6ACC21400C67DCC0001633C1 /* OSUAvailableUpdateController.nib */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		08FB77AEFE84172EC02AAC07 /* Preferences */ = {
+			isa = PBXGroup;
+			children = (
+				BF3171DE062F410E0097A147 /* OSUController.h */,
+				BF3171DF062F410E0097A147 /* OSUController.m */,
+				BF3171E0062F410E0097A147 /* OSUPreferences.h */,
+				BF3171E1062F410E0097A147 /* OSUPreferences.m */,
+			);
+			name = Preferences;
+			sourceTree = "<group>";
+		};
+		1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				34821F2C063409180097A113 /* OmniAppKit.framework */,
+				34821F2E063409180097A113 /* OmniFoundation.framework */,
+				34821F2D063409180097A113 /* OmniBase.framework */,
+				4912145B09D4BE36003DC19F /* OmniSoftwareUpdate.framework */,
+				BF04955B0A75EC70000E2C2C /* WebKit */,
+				1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */,
+				34821F140634086B0097A113 /* CoreFoundation.framework */,
+				34821F150634086B0097A113 /* CoreServices.framework */,
+				34821F160634086B0097A113 /* IOKit.framework */,
+				34821F170634086B0097A113 /* QuickTime.framework */,
+				345478850635F5FD0097A113 /* ApplicationServices.framework */,
+				34821F180634086B0097A113 /* SystemConfiguration.framework */,
+				3424B2230636F5DB0097A113 /* OpenGL.framework */,
+				34E6552B0C95C85D0005A12E /* Security.framework */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7B2FEA5585E11CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
+				0867D6A5FE840307C02AAC07 /* AppKit.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		34821EFD063407360097A113 /* Checking */ = {
+			isa = PBXGroup;
+			children = (
+				34821F3D06340B750097A113 /* NSApplication-OSUSupport.h */,
+				34821F3E06340B750097A113 /* NSApplication-OSUSupport.m */,
+				34821EFE0634074F0097A113 /* OSUChecker.h */,
+				34821EFF0634074F0097A113 /* OSUChecker.m */,
+				3416044A0C6913CC002839DF /* OSUCheckOperation.h */,
+				3416044B0C6913CC002839DF /* OSUCheckOperation.m */,
+				34821F000634074F0097A113 /* OSUCheckTool.h */,
+				34821F010634074F0097A113 /* OSUCheckTool.m */,
+				3416017B0C67E838002839DF /* OSUCheckTool-Hardware.m */,
+				341605EA0C693324002839DF /* OSUItem.h */,
+				341605EB0C693324002839DF /* OSUItem.m */,
+				3456AED00C1201300066F5F4 /* OSURunTime.h */,
+				3456AED10C1201300066F5F4 /* OSURunTime.m */,
+				6ACC21350C67DC7B001633C1 /* OSUAvailableUpdateController.h */,
+				6ACC21360C67DC7B001633C1 /* OSUAvailableUpdateController.m */,
+				6A93324C0C6141A0002DC78C /* OSUDownloadController.h */,
+				6A93324D0C6141A0002DC78C /* OSUDownloadController.m */,
+				346F34BF0C627E4600AAEE4D /* OSUInstaller.h */,
+				346F34C00C627E4600AAEE4D /* OSUInstaller.m */,
+				348AC9F80CC9F66400A04318 /* OSUExtract-tbz2.sh */,
+				3483BE870CCE6B1800232DF2 /* OSUExtract.rb */,
+				34EFFFEC0CCA75CC002B3B07 /* OSUInstaller.sh */,
+				3416076E0C6A27AA002839DF /* OSUFlippedView.h */,
+				3416076F0C6A27AA002839DF /* OSUFlippedView.m */,
+				6AC9634F0C6A756600256B9C /* OSUThinBorderView.h */,
+				6AC963500C6A756600256B9C /* OSUThinBorderView.m */,
+				34BC777F0C6BAEBF006EFE2E /* OSUItemTableView.h */,
+				34BC77800C6BAEBF006EFE2E /* OSUItemTableView.m */,
+				6A950E4D0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h */,
+				6A950E4E0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m */,
+			);
+			name = Checking;
+			sourceTree = "<group>";
+		};
+		34F93BA00C12292500440763 /* Source (OmniBase) */ = {
+			isa = PBXGroup;
+			children = (
+				34D10CA90D85ACF500090705 /* NSError-OBExtensions.m */,
+				34F93B9E0C12291C00440763 /* assertions.m */,
+				3434CC220DCFF9EE00340C82 /* OBUtilities.h */,
+				3434CC230DCFF9EE00340C82 /* OBUtilities.m */,
+				A234D4FF0E366FA800691906 /* OBBacktraceBuffer.m */,
+			);
+			name = "Source (OmniBase)";
+			path = ../OmniBase;
+			sourceTree = SOURCE_ROOT;
+		};
+		4912140D09D3A198003DC19F /* Test Application */ = {
+			isa = PBXGroup;
+			children = (
+				4912144609D4B6EF003DC19F /* OSUTestApp.nib */,
+				4912144409D4B6D7003DC19F /* main.m */,
+				4912123D09D39ED7003DC19F /* OSUTestApp-Info.plist */,
+				4912150209D8B1DB003DC19F /* OSUTAController.h */,
+				4912150309D8B1DB003DC19F /* OSUTAController.m */,
+				49E586BB09EC853000F3BFA7 /* OSUTAChecker.h */,
+				49E586BC09EC853000F3BFA7 /* OSUTAChecker.m */,
+			);
+			name = "Test Application";
+			path = OSUTestApp;
+			sourceTree = "<group>";
+		};
+		4A102C0F08AB00B10059F5BD /* Framework Source */ = {
+			isa = PBXGroup;
+			children = (
+				4A40EC0A08AB009A00E1769D /* Info.plist */,
+				32DBCF5E0370ADEE00C91783 /* OmniSoftwareUpdate_Prefix.h */,
+				34EDDEC80C6127FD009E2E27 /* OSUErrors.h */,
+				4A6474C10CE50B9700F6EE03 /* Message of the Day */,
+				34F93BA00C12292500440763 /* Source (OmniBase) */,
+				34821EFD063407360097A113 /* Checking */,
+				08FB77AEFE84172EC02AAC07 /* Preferences */,
+				089C1665FE841158C02AAC07 /* Resources */,
+			);
+			name = "Framework Source";
+			sourceTree = "<group>";
+		};
+		4A102C1308AB00D00059F5BD /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				491215F909DA08D5003DC19F /* Omni-Application-Common.xcconfig */,
+				4A102C1408AB00D00059F5BD /* Omni-Application-Coverage.xcconfig */,
+				4A102C1508AB00D00059F5BD /* Omni-Application-Debug.xcconfig */,
+				4A102C1608AB00D00059F5BD /* Omni-Application-Release.xcconfig */,
+				491215FA09DA08DF003DC19F /* Omni-Bundle-Common.xcconfig */,
+				4AB8F42908AD27BF00DBB061 /* Omni-Bundle-Coverage.xcconfig */,
+				4AB8F42A08AD27BF00DBB061 /* Omni-Bundle-Debug.xcconfig */,
+				4AB8F42B08AD27BF00DBB061 /* Omni-Bundle-Release.xcconfig */,
+				491215FB09DA08E9003DC19F /* Omni-Framework-Common.xcconfig */,
+				4A102C1708AB00D00059F5BD /* Omni-Framework-Coverage.xcconfig */,
+				4A102C1808AB00D00059F5BD /* Omni-Framework-Debug.xcconfig */,
+				4A102C1908AB00D00059F5BD /* Omni-Framework-Release.xcconfig */,
+				491215FC09DA08FB003DC19F /* Omni-Global-Common.xcconfig */,
+				491215FD09DA08FB003DC19F /* Omni-Global-Common-10.3.xcconfig */,
+				491215FE09DA08FB003DC19F /* Omni-Global-Common-10.4.xcconfig */,
+				4AB8F42C08AD27BF00DBB061 /* Omni-Global-Coverage.xcconfig */,
+				4AB8F42D08AD27BF00DBB061 /* Omni-Global-Debug.xcconfig */,
+				4AB8F42E08AD27BF00DBB061 /* Omni-Global-Release.xcconfig */,
+				491215FF09DA0907003DC19F /* Omni-Tool-Common.xcconfig */,
+				4A102C1A08AB00D00059F5BD /* Omni-Tool-Coverage.xcconfig */,
+				4A102C1B08AB00D00059F5BD /* Omni-Tool-Debug.xcconfig */,
+				4A102C1C08AB00D00059F5BD /* Omni-Tool-Release.xcconfig */,
+			);
+			name = Configurations;
+			path = ../../Configurations;
+			sourceTree = SOURCE_ROOT;
+		};
+		4A6474C10CE50B9700F6EE03 /* Message of the Day */ = {
+			isa = PBXGroup;
+			children = (
+				4A6474C70CE50BBD00F6EE03 /* OSUMessageOfTheDay.nib */,
+				4A6474C20CE50BAC00F6EE03 /* OSUMessageOfTheDay.h */,
+				4A6474C30CE50BAC00F6EE03 /* OSUMessageOfTheDay.m */,
+				4A6474D10CE50D0C00F6EE03 /* OAController-OSUExtensions.h */,
+				4A6474D20CE50D0C00F6EE03 /* OAController-OSUExtensions.m */,
+			);
+			name = "Message of the Day";
+			sourceTree = "<group>";
+		};
+		BF04955B0A75EC70000E2C2C /* WebKit */ = {
+			isa = PBXGroup;
+			children = (
+				34591B860A751FAD00BA6CCA /* WebKit.framework */,
+				BF04952C0A75EC56000E2C2C /* WebCore.framework */,
+				BF04952B0A75EC56000E2C2C /* JavaScriptCore.framework */,
+			);
+			name = WebKit;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		4A40EBEC08AB009A00E1769D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A40EBED08AB009A00E1769D /* OmniSoftwareUpdate_Prefix.h in Headers */,
+				4A40EBEE08AB009A00E1769D /* OSUController.h in Headers */,
+				4A40EBEF08AB009A00E1769D /* OSUPreferences.h in Headers */,
+				4A40EBF008AB009A00E1769D /* OSUChecker.h in Headers */,
+				4A40EBF108AB009A00E1769D /* NSApplication-OSUSupport.h in Headers */,
+				3456AED20C1201300066F5F4 /* OSURunTime.h in Headers */,
+				34EDDEC90C6127FD009E2E27 /* OSUErrors.h in Headers */,
+				6A93324E0C6141A0002DC78C /* OSUDownloadController.h in Headers */,
+				346F34C10C627E4600AAEE4D /* OSUInstaller.h in Headers */,
+				6ACC21370C67DC7B001633C1 /* OSUAvailableUpdateController.h in Headers */,
+				3416044C0C6913CC002839DF /* OSUCheckOperation.h in Headers */,
+				341605EC0C693324002839DF /* OSUItem.h in Headers */,
+				341607700C6A27AA002839DF /* OSUFlippedView.h in Headers */,
+				6AC963510C6A756600256B9C /* OSUThinBorderView.h in Headers */,
+				34BC77810C6BAEBF006EFE2E /* OSUItemTableView.h in Headers */,
+				6A950E4F0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h in Headers */,
+				4A6474C40CE50BAC00F6EE03 /* OSUMessageOfTheDay.h in Headers */,
+				4A6474D30CE50D0C00F6EE03 /* OAController-OSUExtensions.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A40EC0D08AB009A00E1769D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A40EC0E08AB009A00E1769D /* OSUCheckTool.h in Headers */,
+				3434CC240DCFF9EE00340C82 /* OBUtilities.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		4912123A09D39ED7003DC19F /* OSUTestApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4912123E09D39ED7003DC19F /* Build configuration list for PBXNativeTarget "OSUTestApp" */;
+			buildPhases = (
+				4912123709D39ED7003DC19F /* Resources */,
+				4912123809D39ED7003DC19F /* Sources */,
+				4912123909D39ED7003DC19F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4912160F09DA0B8A003DC19F /* PBXTargetDependency */,
+			);
+			name = OSUTestApp;
+			productName = OSUTestApp;
+			productReference = 4912123B09D39ED7003DC19F /* OSUTestApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		4A40EBE908AB009A00E1769D /* OmniSoftwareUpdate */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A40EC0608AB009A00E1769D /* Build configuration list for PBXNativeTarget "OmniSoftwareUpdate" */;
+			buildPhases = (
+				4A40EBEC08AB009A00E1769D /* Headers */,
+				4A40EBF208AB009A00E1769D /* Resources */,
+				4A40EBFA08AB009A00E1769D /* Sources */,
+				4A40EBFF08AB009A00E1769D /* Frameworks */,
+				4A40EC0508AB009A00E1769D /* Rez */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4A40EC2208AB009A00E1769D /* PBXTargetDependency */,
+			);
+			name = OmniSoftwareUpdate;
+			productInstallPath = "$(OMNI_INSTALLED_PRODUCTS)";
+			productName = OmniSoftwareUpdate;
+			productReference = 4A40EC0B08AB009A00E1769D /* OmniSoftwareUpdate.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		4A40EC0C08AB009A00E1769D /* OmniSoftwareUpdateCheck */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A40EC1B08AB009A00E1769D /* Build configuration list for PBXNativeTarget "OmniSoftwareUpdateCheck" */;
+			buildPhases = (
+				4A40EC0D08AB009A00E1769D /* Headers */,
+				4A40EC0F08AB009A00E1769D /* Sources */,
+				4A40EC1108AB009A00E1769D /* Frameworks */,
+				4A40EC1A08AB009A00E1769D /* Rez */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OmniSoftwareUpdateCheck;
+			productInstallPath = /usr/local/bin;
+			productName = OmniSoftwareUpdateCheck;
+			productReference = 4A40EC1F08AB009A00E1769D /* OmniSoftwareUpdateCheck */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 4A40EBE308AB009200E1769D /* Build configuration list for PBXProject "OmniSoftwareUpdate" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 1;
+			mainGroup = 0867D691FE84028FC02AAC07 /* OmniSoftwareUpdate */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4A40EBE908AB009A00E1769D /* OmniSoftwareUpdate */,
+				4A40EC0C08AB009A00E1769D /* OmniSoftwareUpdateCheck */,
+				4912123A09D39ED7003DC19F /* OSUTestApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4912123709D39ED7003DC19F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4912144809D4B6EF003DC19F /* OSUTestApp.nib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A40EBF208AB009A00E1769D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A40EBF308AB009A00E1769D /* OSUPreferences.png in Resources */,
+				4A40EBF508AB009A00E1769D /* OSUPreferences.nib in Resources */,
+				4A40EBF608AB009A00E1769D /* Preferences.strings in Resources */,
+				4A40EC2308AB009A00E1769D /* OmniSoftwareUpdateCheck in Resources */,
+				4A40EBF808AB009A00E1769D /* HardwareDescription.html in Resources */,
+				4A40EBF908AB009A00E1769D /* OSUController.nib in Resources */,
+				6A9332C90C6146C6002DC78C /* OSUDownloadController.nib in Resources */,
+				6ACC21420C67DCC0001633C1 /* OSUAvailableUpdateController.nib in Resources */,
+				34B627C60C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html in Resources */,
+				348AC9F90CC9F66400A04318 /* OSUExtract-tbz2.sh in Resources */,
+				34EFFFED0CCA75CC002B3B07 /* OSUInstaller.sh in Resources */,
+				3483BE880CCE6B1800232DF2 /* OSUExtract.rb in Resources */,
+				4A64766C0CE518C500F6EE03 /* OSUMessageOfTheDay.nib in Resources */,
+				3479B1940D007103005EBC8A /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXRezBuildPhase section */
+		4A40EC0508AB009A00E1769D /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A40EC1A08AB009A00E1769D /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4912123809D39ED7003DC19F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4912144509D4B6D7003DC19F /* main.m in Sources */,
+				4912150409D8B1DB003DC19F /* OSUTAController.m in Sources */,
+				49E586BD09EC853000F3BFA7 /* OSUTAChecker.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A40EBFA08AB009A00E1769D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A40EBFB08AB009A00E1769D /* OSUController.m in Sources */,
+				4A40EBFC08AB009A00E1769D /* OSUPreferences.m in Sources */,
+				4A40EBFD08AB009A00E1769D /* OSUChecker.m in Sources */,
+				4A40EBFE08AB009A00E1769D /* NSApplication-OSUSupport.m in Sources */,
+				3456AED30C1201300066F5F4 /* OSURunTime.m in Sources */,
+				6A93324F0C6141A0002DC78C /* OSUDownloadController.m in Sources */,
+				346F34C20C627E4600AAEE4D /* OSUInstaller.m in Sources */,
+				6ACC21380C67DC7B001633C1 /* OSUAvailableUpdateController.m in Sources */,
+				3416044D0C6913CC002839DF /* OSUCheckOperation.m in Sources */,
+				341605ED0C693324002839DF /* OSUItem.m in Sources */,
+				341607710C6A27AA002839DF /* OSUFlippedView.m in Sources */,
+				6AC963520C6A756600256B9C /* OSUThinBorderView.m in Sources */,
+				34BC77820C6BAEBF006EFE2E /* OSUItemTableView.m in Sources */,
+				6A950E500C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m in Sources */,
+				4A6474C50CE50BAC00F6EE03 /* OSUMessageOfTheDay.m in Sources */,
+				4A6474D40CE50D0C00F6EE03 /* OAController-OSUExtensions.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A40EC0F08AB009A00E1769D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A40EC1008AB009A00E1769D /* OSUCheckTool.m in Sources */,
+				34F93B8F0C12282100440763 /* OSURunTime.m in Sources */,
+				34F93B9F0C12291C00440763 /* assertions.m in Sources */,
+				3416018E0C67E84B002839DF /* OSUCheckTool-Hardware.m in Sources */,
+				34D10CAA0D85ACF500090705 /* NSError-OBExtensions.m in Sources */,
+				3434CC250DCFF9EE00340C82 /* OBUtilities.m in Sources */,
+				A234D5000E366FA800691906 /* OBBacktraceBuffer.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4912160F09DA0B8A003DC19F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4A40EBE908AB009A00E1769D /* OmniSoftwareUpdate */;
+			targetProxy = 4912160E09DA0B8A003DC19F /* PBXContainerItemProxy */;
+		};
+		4A40EC2208AB009A00E1769D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4A40EC0C08AB009A00E1769D /* OmniSoftwareUpdateCheck */;
+			targetProxy = 4A40EC2108AB009A00E1769D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		3479B1920D007103005EBC8A /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3479B1930D007103005EBC8A /* English */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		3482205506342C1E0097A113 /* HardwareDescription.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3482205606342C1E0097A113 /* English */,
+			);
+			name = HardwareDescription.html;
+			sourceTree = "<group>";
+		};
+		34AF861B0637796C0097A113 /* OSUController.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				34AF861C0637796C0097A113 /* English */,
+			);
+			name = OSUController.nib;
+			sourceTree = "<group>";
+		};
+		34B627C40C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				34B627C50C6A5B9F00A34AA2 /* English */,
+			);
+			name = NoReleaseNotesAvailable.html;
+			sourceTree = "<group>";
+		};
+		4912144609D4B6EF003DC19F /* OSUTestApp.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4912144709D4B6EF003DC19F /* English */,
+			);
+			name = OSUTestApp.nib;
+			sourceTree = "<group>";
+		};
+		6A9332C70C6146C5002DC78C /* OSUDownloadController.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6A9332C80C6146C5002DC78C /* English */,
+			);
+			name = OSUDownloadController.nib;
+			sourceTree = "<group>";
+		};
+		6ACC21400C67DCC0001633C1 /* OSUAvailableUpdateController.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6ACC21410C67DCC0001633C1 /* English */,
+			);
+			name = OSUAvailableUpdateController.nib;
+			sourceTree = "<group>";
+		};
+		BF3171EA062F41740097A147 /* OSUPreferences.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BF3171EB062F41740097A147 /* English */,
+			);
+			name = OSUPreferences.nib;
+			sourceTree = "<group>";
+		};
+		BF3171EC062F41740097A147 /* Preferences.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BF3171ED062F41740097A147 /* English */,
+			);
+			name = Preferences.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		4912123F09D39ED7003DC19F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A102C1508AB00D00059F5BD /* Omni-Application-Debug.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = "OSUTestApp/OSUTestApp-Info.plist";
+				INSTALL_PATH = "";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OSUTestApp;
+				PRODUCT_NAME = OSUTestApp;
+			};
+			name = Debug;
+		};
+		4912124009D39ED7003DC19F /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A102C1608AB00D00059F5BD /* Omni-Application-Release.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = "OSUTestApp/OSUTestApp-Info.plist";
+				INSTALL_PATH = "";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OSUTestApp;
+				PRODUCT_NAME = OSUTestApp;
+			};
+			name = Release;
+		};
+		4912124109D39ED7003DC19F /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A102C1408AB00D00059F5BD /* Omni-Application-Coverage.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = "OSUTestApp/OSUTestApp-Info.plist";
+				INSTALL_PATH = "";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OSUTestApp;
+				PRODUCT_NAME = OSUTestApp;
+			};
+			name = Coverage;
+		};
+		4A40EBE408AB009200E1769D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AB8F42D08AD27BF00DBB061 /* Omni-Global-Debug.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		4A40EBE508AB009200E1769D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AB8F42E08AD27BF00DBB061 /* Omni-Global-Release.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		4A40EBE608AB009200E1769D /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AB8F42C08AD27BF00DBB061 /* Omni-Global-Coverage.xcconfig */;
+			buildSettings = {
+			};
+			name = Coverage;
+		};
+		4A40EC0708AB009A00E1769D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A102C1808AB00D00059F5BD /* Omni-Framework-Debug.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_VERSION = 2004A;
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
+				OTHER_LDFLAGS = (
+					"$(OTHER_LDFLAGS)",
+					"$(OMNIWEB_WEBKIT_LDFLAGS)",
+				);
+				PRODUCT_NAME = OmniSoftwareUpdate;
+			};
+			name = Debug;
+		};
+		4A40EC0808AB009A00E1769D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A102C1908AB00D00059F5BD /* Omni-Framework-Release.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_VERSION = 2004A;
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
+				OTHER_LDFLAGS = (
+					"$(OTHER_LDFLAGS)",
+					"$(OMNIWEB_WEBKIT_LDFLAGS)",
+				);
+				PRODUCT_NAME = OmniSoftwareUpdate;
+			};
+			name = Release;
+		};
+		4A40EC0908AB009A00E1769D /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A102C1708AB00D00059F5BD /* Omni-Framework-Coverage.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_VERSION = 2004A;
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
+				OTHER_LDFLAGS = (
+					"$(OTHER_LDFLAGS)",
+					"$(OMNIWEB_WEBKIT_LDFLAGS)",
+				);
+				PRODUCT_NAME = OmniSoftwareUpdate;
+			};
+			name = Coverage;
+		};
+		4A40EC1C08AB009A00E1769D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A102C1B08AB00D00059F5BD /* Omni-Tool-Debug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OmniSoftwareUpdateCheck;
+			};
+			name = Debug;
+		};
+		4A40EC1D08AB009A00E1769D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A102C1C08AB00D00059F5BD /* Omni-Tool-Release.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OmniSoftwareUpdateCheck;
+			};
+			name = Release;
+		};
+		4A40EC1E08AB009A00E1769D /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A102C1A08AB00D00059F5BD /* Omni-Tool-Coverage.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OmniSoftwareUpdateCheck;
+			};
+			name = Coverage;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4912123E09D39ED7003DC19F /* Build configuration list for PBXNativeTarget "OSUTestApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4912123F09D39ED7003DC19F /* Debug */,
+				4912124009D39ED7003DC19F /* Release */,
+				4912124109D39ED7003DC19F /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4A40EBE308AB009200E1769D /* Build configuration list for PBXProject "OmniSoftwareUpdate" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A40EBE408AB009200E1769D /* Debug */,
+				4A40EBE508AB009200E1769D /* Release */,
+				4A40EBE608AB009200E1769D /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4A40EC0608AB009A00E1769D /* Build configuration list for PBXNativeTarget "OmniSoftwareUpdate" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A40EC0708AB009A00E1769D /* Debug */,
+				4A40EC0808AB009A00E1769D /* Release */,
+				4A40EC0908AB009A00E1769D /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4A40EC1B08AB009A00E1769D /* Build configuration list for PBXNativeTarget "OmniSoftwareUpdateCheck" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A40EC1C08AB009A00E1769D /* Debug */,
+				4A40EC1D08AB009A00E1769D /* Release */,
+				4A40EC1E08AB009A00E1769D /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}
