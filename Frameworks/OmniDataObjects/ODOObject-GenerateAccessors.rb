@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-SLOT_COUNT = ENV["SLOT_COUNT"] || 32
+SLOT_COUNT = ENV["SLOT_COUNT"] || 64
 output_path = ENV["SCRIPT_OUTPUT_FILE_0"] || fail("SCRIPT_OUTPUT_FILE_0 not set in environment")
 
 # Build into a buffer and only write the output if different
