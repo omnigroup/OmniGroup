@@ -13,6 +13,10 @@
 if [ "$PWD:t" = "OmniGroup" ]; then
   cd ..
   echo "Now in: $PWD"
+else
+  # github requires lowercase for project names.  Alert the user that we require 'OmniGroup' for now.
+  echo "This script should be run from the main source directory, which must be named 'OmniGroup'"
+  exit 1
 fi
 
 PUBLIC=/Users/Shared
