@@ -9,12 +9,14 @@
 
 #import <OmniFoundation/OFDataBuffer.h>
 #import <OmniFoundation/NSString-OFConversion.h>
+#import <OmniFoundation/OFErrors.h>
 
 RCS_ID("$Id$")
 
 @implementation NSData (OFEncoding)
 
-static inline unsigned char fromhex(unsigned char hexDigit)
+// Returns 0x0 through 0xf if the digit is valid, or 0xff if not valid.
+static inline uint8_t _fromhex(unichar hexDigit)
 {
     if (hexDigit >= '0' && hexDigit <= '9')
         return hexDigit - '0';
@@ -22,59 +24,65 @@ static inline unsigned char fromhex(unsigned char hexDigit)
         return hexDigit - 'a' + 10;
     if (hexDigit >= 'A' && hexDigit <= 'F')
         return hexDigit - 'A' + 10;
-    [NSException raise:@"IllegalHexDigit" format:@"Attempt to interpret a string containing '%c' as a hexidecimal value", hexDigit];
-    return 0; // Never reached
+    return 0xff;
 }
 
-+ (id)dataWithHexString:(NSString *)hexString;
++ (id)dataWithHexString:(NSString *)hexString error:(NSError **)outError;
 {
-    return [[[self alloc] initWithHexString:hexString] autorelease];
+    return [[[self alloc] initWithHexString:hexString error:outError] autorelease];
 }
 
-- initWithHexString:(NSString *)hexString;
+// Interprets strings of the form (0[xX])?[0-9a-fA-F]* as hexadecimal byte sequences. Any deviation from this pattern should result in nil being returned with an error supplied.
+- initWithHexString:(NSString *)hexString error:(NSError **)outError;
 {
-    unsigned int length;
-    unsigned int destIndex;
-    unichar *inputCharacters, *inputCharactersEnd;
-    const unichar *inputPtr;
-    OFByte *outputBytes;
-    NSData *returnValue;
+    NSUInteger length = [hexString length];
+
+    // -getCharacters: doesn't append a NUL; leave room for one and we'll append it.
+    unichar *inputBase = malloc((length + 1) * sizeof(unichar));
+    [hexString getCharacters:inputBase];
+    inputBase[length] = 0;
+
+    NSUInteger inputPosition = 0;
+    if (inputBase[0] == '0' && (inputBase[1] == 'x' || inputBase[1] == 'X'))
+        inputPosition += 2;
     
-    length = [hexString length];
-    inputCharacters = NSZoneMalloc(NULL, length * sizeof(unichar));
+    // Account for half bytes in our output buffer and parsing so that 0xf08 is interpreted as 0x0f08
+    const NSUInteger digitCount = length - inputPosition;
+    const NSUInteger outputLength = (digitCount + 1) / 2;
+    uint8_t *outputBytes = malloc(outputLength);
+
+    NSData *result = nil;
+#define READ_DIGIT(v) do { \
+    unichar c = inputBase[inputPosition++]; \
+    v = _fromhex(c); \
+    if (v == 0xff) { \
+        if (outError) \
+	    OBError(outError, OFInvalidHexDigit, ([NSString stringWithFormat:@"The character '%C' (0x%x) is not a valid hexadecimal digit.", c, c])); \
+        goto cleanup; \
+    } \
+} while(0)
+
+    NSUInteger outputPosition = 0;
+    uint8_t digit0, digit1;
     
-    [hexString getCharacters:inputCharacters];
-    inputCharactersEnd = inputCharacters + length;
+    if (digitCount & 0x01) {
+        READ_DIGIT(digit0);
+        outputBytes[outputPosition++] = digit0;
+    }
+    OBASSERT((length - inputPosition) % 2 == 0);
     
-    inputPtr = inputCharacters;
-    while (isspace(*inputPtr))
-        inputPtr++;
-    
-    if (*inputPtr == '0' && (inputPtr[1] == 'x' || inputPtr[1] == 'X'))
-        inputPtr += 2;
-    
-    outputBytes = NSZoneMalloc(NULL, (inputCharactersEnd - inputPtr) / 2 + 1);
-    
-    destIndex = 0;
-    if ((inputCharactersEnd - inputPtr) & 0x01) {
-        // 0xf08 must be interpreted as 0x0f08
-        outputBytes[destIndex++] = fromhex(*inputPtr++);
+    while (inputPosition < length) {
+        READ_DIGIT(digit0);
+        READ_DIGIT(digit1);
+        outputBytes[outputPosition++] = (digit0 << 4) | digit1;
     }
     
-    while (inputPtr < inputCharactersEnd) {
-        unsigned char outputByte;
-        
-        outputByte = fromhex(*inputPtr++) << 4;
-        outputByte |= fromhex(*inputPtr++);
-        outputBytes[destIndex++] = outputByte;
-    }
+    result = [self initWithBytesNoCopy:outputBytes length:outputLength];
+    OBASSERT(outputPosition == outputLength);
     
-    returnValue = [self initWithBytes:outputBytes length:destIndex];
-    
-    NSZoneFree(NULL, inputCharacters);
-    NSZoneFree(NULL, outputBytes);
-    
-    return returnValue;
+cleanup:
+    free(inputBase);
+    return result;
 }
 
 - (NSString *)_lowercaseHexStringWithPrefix:(const unichar *)prefix

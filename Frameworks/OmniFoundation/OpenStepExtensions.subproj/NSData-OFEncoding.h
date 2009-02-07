@@ -12,8 +12,9 @@
 
 @interface NSData (OFEncoding) 
 
-+ (id)dataWithHexString:(NSString *)hexString;
-- initWithHexString:(NSString *)hexString;
++ (id)dataWithHexString:(NSString *)hexString error:(NSError **)outError;
+- initWithHexString:(NSString *)hexString error:(NSError **)outError;
+
 - (NSString *)lowercaseHexString; /* has a leading 0x (sigh) */
 - (NSString *)unadornedLowercaseHexString;  /* no 0x */
 

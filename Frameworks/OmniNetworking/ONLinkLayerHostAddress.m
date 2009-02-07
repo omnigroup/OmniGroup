@@ -118,13 +118,10 @@ RCS_ID("$Id$");
     return NO;  // actually, maybe it is, but we don't understand this link's address type.
 }
 
-- (unsigned)hash
+- (NSUInteger)hash
 {
-    unsigned hashValue;
-    int byteIndex;
-
-    hashValue = 0;
-    for(byteIndex = 0; byteIndex < linkAddress->sdl_nlen + linkAddress->sdl_alen + linkAddress->sdl_slen; byteIndex ++)
+    NSUInteger hashValue = 0;
+    for (int byteIndex = 0; byteIndex < linkAddress->sdl_nlen + linkAddress->sdl_alen + linkAddress->sdl_slen; byteIndex ++)
         hashValue = ( hashValue << 8 ) | ( 0xFF&( ((hashValue & 0xFF000000) >> 24) ^ (linkAddress->sdl_data[byteIndex]) ) );
 
     return hashValue;

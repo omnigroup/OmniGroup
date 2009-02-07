@@ -7,6 +7,9 @@
 FRAMEWORK_SEARCH_PATHS = $(value) /Library/Frameworks
 BZ2_LDFLAGS = -lbz2
 
+// Make CG and NS geometry types be the same.
+OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64
+	
 // Keep precomps in the build dir so that switching branches/products doesn't confuse the precomp builds
 SHARED_PRECOMPS_DIR = $(CONFIGURATION_BUILD_DIR)/SharedPrecompiledHeaders
 

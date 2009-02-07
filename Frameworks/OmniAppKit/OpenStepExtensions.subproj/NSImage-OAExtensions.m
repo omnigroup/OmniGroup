@@ -342,8 +342,6 @@ static NSDictionary *titleFontAttributes;
 
 - (int)addDataToPasteboard:(NSPasteboard *)aPasteboard exceptTypes:(NSMutableSet *)notThese
 {
-    NSArray *myRepresentations;
-    int repIndex, repCount;
     int count = 0;
 
     if (!notThese)
@@ -354,21 +352,17 @@ static NSDictionary *titleFontAttributes;
 #define ADD_CHEAP_DATA(typename, expr) IF_ADD(typename, nil) { [aPasteboard setData:(expr) forType:(typename)]; [notThese addObject:(typename)]; count ++; }
         
     /* If we have image representations lying around that already have data in some concrete format, add that data to the pasteboard. */
-    myRepresentations = [self representations];
-    repCount = [myRepresentations count];
-    for(repIndex = 0; repIndex < repCount; repIndex ++) {
-        NSImageRep *aRep = [myRepresentations objectAtIndex:repIndex];
-            
-        if ([aRep respondsToSelector:@selector(PDFRepresentation)]) {
-            ADD_CHEAP_DATA(NSPDFPboardType, [(NSPDFImageRep *)aRep PDFRepresentation]);
+    for (NSImageRep *rep in self.representations) {
+        if ([rep respondsToSelector:@selector(PDFRepresentation)]) {
+            ADD_CHEAP_DATA(NSPDFPboardType, [(NSPDFImageRep *)rep PDFRepresentation]);
         }
 
-        if ([aRep respondsToSelector:@selector(PICTRepresentation)]) {
-            ADD_CHEAP_DATA(NSPICTPboardType, [(NSPICTImageRep *)aRep PICTRepresentation]);
+        if ([rep respondsToSelector:@selector(PICTRepresentation)]) {
+            ADD_CHEAP_DATA(NSPICTPboardType, [(NSPICTImageRep *)rep PICTRepresentation]);
         }
 
-        if ([aRep respondsToSelector:@selector(EPSRepresentation)]) {
-            ADD_CHEAP_DATA(NSPostScriptPboardType, [(NSEPSImageRep *)aRep EPSRepresentation]);
+        if ([rep respondsToSelector:@selector(EPSRepresentation)]) {
+            ADD_CHEAP_DATA(NSPostScriptPboardType, [(NSEPSImageRep *)rep EPSRepresentation]);
         }
     }
     

@@ -128,7 +128,7 @@ RCS_ID("$Id$")
         return nil;
 }
 
-- (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(unsigned int)level
+- (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(NSUInteger)level
 {
     return [self stringValue];
 }
@@ -169,7 +169,7 @@ RCS_ID("$Id$")
 // NSCoding protocol
 //
 
-+ (int)version
++ (NSInteger)version
 {
     return 3;
 }

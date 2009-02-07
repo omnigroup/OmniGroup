@@ -13,17 +13,15 @@
 
 RCS_ID("$Id$");
 
-@interface OACompositeColorProfile (Private)
-@end
-
 @implementation OACompositeColorProfile
-
-// Init and dealloc
 
 - initWithProfiles:(NSArray *)someProfiles;
 {
-    [super init];
-    profiles = [someProfiles retain];
+    if (!(self = [super init]))
+        return nil;
+    
+    profiles = [someProfiles copy];
+    
     return self;
 }
 
@@ -38,7 +36,7 @@ RCS_ID("$Id$");
     return [profiles description];
 }
 
-// API
+#pragma mark OAColorProfile subclass
 
 - (BOOL)_hasRGBSpace;
 {
@@ -104,7 +102,12 @@ RCS_ID("$Id$");
     return *colorWorld;
 }
 
-@end
+#pragma mark NSCopying
 
-@implementation OACompositeColorProfile (Private)
+- (id)copyWithZone:(NSZone *)zone;
+{
+    OBPRECONDITION(!isMutable); // Superclass does something funky otherwise.
+    return [self retain];
+}
+
 @end

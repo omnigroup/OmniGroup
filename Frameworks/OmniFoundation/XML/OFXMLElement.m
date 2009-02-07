@@ -274,6 +274,24 @@ RCS_ID("$Id$");
     [str release];
 }
 
+- (NSString *)stringValueForAttributeNamed:(NSString *)name defaultValue:(NSString *)defaultValue;
+{
+    NSString *value = [self attributeNamed:name];
+    return value ? value : defaultValue;
+}
+
+- (int)integerValueForAttributeNamed:(NSString *)name defaultValue:(int)defaultValue;
+{
+    NSString *value = [self attributeNamed:name];
+    return value ? [value intValue] : defaultValue;
+}
+
+- (float)realValueForAttributeNamed:(NSString *)name defaultValue:(float)defaultValue;
+{
+    NSString *value = [self attributeNamed:name];
+    return value ? [value floatValue] : defaultValue;
+}
+
 - (OFXMLElement *)appendElement:(NSString *)elementName containingString:(NSString *)contents;
 {
     OFXMLElement *child = [[OFXMLElement alloc] initWithName: elementName];

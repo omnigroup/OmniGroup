@@ -293,14 +293,14 @@ static float minHeightOfItemTableScrollView(NSTableView *itemTableView)
     [borderView setFrame:borderViewFrame];
 }
 
-- (float)splitView:(NSSplitView *)splitView constrainMinCoordinate:(float)proposedMinimumPosition ofSubviewAt:(int)dividerIndex;
+- (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMinimumPosition ofSubviewAt:(NSInteger)dividerIndex;
 {
     if (dividerIndex == 0)
         return MAX(proposedMinimumPosition, minHeightOfItemTableScrollView(_itemTableView));
     return proposedMinimumPosition;
 }
 
-- (float)splitView:(NSSplitView *)splitView constrainSplitPosition:(float)proposedPosition ofSubviewAt:(int)dividerIndex;
+- (CGFloat)splitView:(NSSplitView *)splitView constrainSplitPosition:(CGFloat)proposedPosition ofSubviewAt:(NSInteger)dividerIndex;
 {
     if (dividerIndex == 0)
         return MAX(proposedPosition, minHeightOfItemTableScrollView(_itemTableView));

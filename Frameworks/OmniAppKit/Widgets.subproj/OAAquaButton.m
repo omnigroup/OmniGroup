@@ -54,7 +54,7 @@ NSString *OAAquaButtonClearImageSuffix = @"Clear";
 // NSButton subclass
 //
 
-- (void)setState:(int)value;
+- (void)setState:(NSInteger)value;
 {
     [super setState:value];
     [self _setButtonImages];

@@ -86,13 +86,13 @@ static NSData *tripletsAndSuffix(unsigned char triplet, unsigned int count, unsi
     /* We can only test bitstrings of lengths which are multiples of 8, not bitstrings of arbitrary length */
 
     shouldBeEqual([tripletsAndSuffix(6, 149, 1, 1) sha1Signature],
-                  [NSData dataWithHexString:@"A3D2982427AE39C8920CA5F499D6C2BD71EBF03C"]);
+                  [NSData dataWithHexString:@"A3D2982427AE39C8920CA5F499D6C2BD71EBF03C" error:NULL]);
 
     shouldBeEqual([tripletsAndSuffix(6, 170, 3, 2) sha1Signature],
-                  [NSData dataWithHexString:@"9E92C5542237B957BA2244E8141FDB66DEC730A5"]);
+                  [NSData dataWithHexString:@"9E92C5542237B957BA2244E8141FDB66DEC730A5" error:NULL]);
 
     shouldBeEqual([tripletsAndSuffix(3, 490, 1, 2) sha1Signature],
-                  [NSData dataWithHexString:@"75FACE1802B9F84F326368AB06E73E0502E9EA34"]);
+                  [NSData dataWithHexString:@"75FACE1802B9F84F326368AB06E73E0502E9EA34" error:NULL]);
 
 }
 
@@ -110,13 +110,13 @@ static NSData *tripletsAndSuffix(unsigned char triplet, unsigned int count, unsi
     pool = [[NSAutoreleasePool alloc] init];
 
     shouldBeEqual([tripletsAndSuffix(6, 1431655765, 1, 1) sha1Signature],
-                  [NSData dataWithHexString:@"d5e09777a94f1ea9240874c48d9fecb6b634256b"]);
+                  [NSData dataWithHexString:@"d5e09777a94f1ea9240874c48d9fecb6b634256b" error:NULL]);
 
     [pool release];
     pool = [[NSAutoreleasePool alloc] init];
 
     shouldBeEqual([tripletsAndSuffix(3, 1431655765, 0, 1) sha1Signature],
-                  [NSData dataWithHexString:@"A3D7438C589B0B932AA91CC2446F06DF9ABC73F0"]);
+                  [NSData dataWithHexString:@"A3D7438C589B0B932AA91CC2446F06DF9ABC73F0" error:NULL]);
 
     [pool release];
 

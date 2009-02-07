@@ -227,6 +227,51 @@ shouldBeEqual(result, expectedDate); \
 } while(0)
 //NSLog( @"string: %@, expected: %@, result: %@", string, expectedDate, result );
 
+- (void)testDayWeekCodes;
+{
+    NSString *timeFormat = @"h:mm a";
+    NSString *dateFormat = @"d-MMM-yy";
+
+    // now, should be this instant
+    NSString *string = @" thu+1w";
+    NSDate *baseDate     = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2001, 1, 11, 0, 0, 0, calendar);
+    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+}
+
+- (void)testRelativeDateNames;
+{
+    // test our relative date names
+    unsigned int dateIndex = [dateFormats count];
+    while (dateIndex--) {
+	unsigned int timeIndex = [timeFormats count];
+	while (timeIndex--) {
+            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	    
+	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
+	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
+	    
+	    // now, should be this instant
+	    NSString *string = @"now";
+	    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+	    NSDate *expectedDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+	    
+	    // should be 12pm of today
+	    string = @"noon";
+	    baseDate     = _dateFromYear(2001, 1, 1, 15, 0, 0, calendar);
+	    expectedDate = _dateFromYear(2001, 1, 1, 12, 0, 0, calendar);
+	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+	    
+	    string = @"tonight";
+	    baseDate     = _dateFromYear(2001, 1, 1, 15, 0, 0, calendar);
+	    expectedDate = _dateFromYear(2001, 1, 1, 23, 0, 0, calendar);
+	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+	    
+	    [pool release];
+	}
+    }
+}
 
 - (void)testCanada;
 {

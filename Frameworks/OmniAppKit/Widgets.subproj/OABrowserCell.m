@@ -17,21 +17,19 @@ RCS_ID("$Id$")
 
 - (void) dealloc;
 {
-    [userInfo release];
+    [_userInfo release];
     [super dealloc];
 }
 
-- (NSDictionary *) userInfo;
-{
-    return userInfo;
-}
+@synthesize userInfo = _userInfo;
 
-- (void)setUserInfo: (NSDictionary *) newInfo;
+#pragma mark NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
 {
-    if (userInfo != newInfo) {
-	[userInfo release];
-	userInfo = [newInfo copy];
-    }
+    OABrowserCell *copy = [super copyWithZone:zone];
+    copy->_userInfo = [_userInfo copyWithZone:zone];
+    return copy;
 }
 
 @end

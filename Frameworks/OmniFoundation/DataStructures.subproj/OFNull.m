@@ -87,12 +87,12 @@ static OFNull *nullObject;
 
 @implementation OFNullString
 
-- (unsigned int)length;
+- (NSUInteger)length;
 {
     return 0;
 }
 
-- (unichar)characterAtIndex:(unsigned)anIndex;
+- (unichar)characterAtIndex:(NSUInteger)anIndex;
 {
     [NSException raise:NSRangeException format:@""];
     return '\0';

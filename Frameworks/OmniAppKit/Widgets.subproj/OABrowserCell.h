@@ -13,10 +13,9 @@
 
 @interface OABrowserCell : NSBrowserCell
 {
-    NSDictionary   *userInfo;
+    NSDictionary *_userInfo;
 }
 
-- (NSDictionary *) userInfo;
-- (void)setUserInfo: (NSDictionary *) newInfo;
+@property(copy,nonatomic) NSDictionary *userInfo;
 
 @end

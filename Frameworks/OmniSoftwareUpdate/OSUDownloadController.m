@@ -286,7 +286,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
     DEBUG_DOWNLOAD(@"willResumeWithResponse %@ fromByte %d", response, startingByte);
 }
 
-- (void)download:(NSURLDownload *)download didReceiveDataOfLength:(unsigned)length;
+- (void)download:(NSURLDownload *)download didReceiveDataOfLength:(NSUInteger)length;
 {
     off_t newBytesDownloaded = _currentBytesDownloaded + length;
     [self setValue:[NSNumber numberWithUnsignedLongLong:newBytesDownloaded] forKey:OSUDownloadControllerCurrentBytesDownloadedKey];

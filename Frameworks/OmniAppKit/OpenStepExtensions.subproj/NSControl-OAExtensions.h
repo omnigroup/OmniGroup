@@ -21,4 +21,6 @@
 
 - (void)setStringValueIfDifferent:(NSString *)newString;
 
+- (CGFloat)cgFloatValue;
+
 @end

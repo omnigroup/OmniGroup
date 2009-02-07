@@ -225,7 +225,7 @@ error:
     return [self initWithBytes: [data bytes] length: [data length]];
 }
 
-- (unsigned int)length;
+- (NSUInteger)length;
 {
     return OFOID_LENGTH;
 }

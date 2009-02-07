@@ -125,7 +125,7 @@ static unsigned int launchModifierFlags;
     }
 }
 
-- (void)endSheet:(NSWindow *)sheet returnCode:(int)returnCode;
+- (void)endSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode;
 {
     NSWindow *docWindow;
     OASheetRequest *queuedSheet = nil;

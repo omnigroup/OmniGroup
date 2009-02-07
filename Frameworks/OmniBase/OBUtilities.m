@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,15 +55,35 @@ IMP OBReplaceMethodImplementation(Class aClass, SEL oldSelector, IMP newImp)
             method_setImplementation(localMethod, newImp);
             OBASSERT(oldImp == previous); // method_setImplementation is supposed to return the old implementation, but we already grabbed it.
 	}
-	
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-	// Flush the method cache
-	_objc_flush_caches(aClass);
-#endif
     }
     
     return oldImp;
 }
+
+#if NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
+static void _NSToCG(char *p)
+{
+    strcpy(p, p+1); // Eat the '_'
+    p[0] = 'C';
+    p[1] = 'G';
+}
+
+const char *_OBGeometryAdjustedSignature(const char *sig)
+{
+    // Convert _NS{Point,Size,Rect} to CG{Point,Size,Rect}
+    char *adj = strdup(sig);
+    char *p;
+    
+    while ((p = strstr(adj, "_NSPoint=")))
+        _NSToCG(p);
+    while ((p = strstr(adj, "_NSSize=")))
+        _NSToCG(p);
+    while ((p = strstr(adj, "_NSRect=")))
+        _NSToCG(p);
+    
+    return adj;
+}
+#endif
 
 IMP OBReplaceMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod)
 {
@@ -79,11 +99,26 @@ IMP OBReplaceMethodImplementationFromMethod(Class aClass, SEL oldSelector, Metho
         {
             const char *oldSignature = method_getTypeEncoding(localMethod);
             const char *newSignature = method_getTypeEncoding(newMethod);
-            if(strcmp(oldSignature, newSignature) != 0) {
+            BOOL freeSignatures = NO;
+            
+#if NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
+            // Cocoa is built w/o this under 10.5, it seems. If we turn it on and then do method replacement, we'll get spurious warnings about type mismatches due to the struct name embedded in the type encoding.
+            oldSignature = _OBGeometryAdjustedSignature(oldSignature);
+            newSignature = _OBGeometryAdjustedSignature(newSignature);
+            freeSignatures = YES;
+#endif
+            if (strcmp(oldSignature, newSignature) != 0) {
                 NSLog(@"WARNING: OBReplaceMethodImplementation: Replacing %@ (signature: %s) with %@ (signature: %s)",
                       NSStringFromSelector(oldSelector), oldSignature,
                       NSStringFromSelector(method_getName(newMethod)), newSignature);
+                OBASSERT_NOT_REACHED("Fix type signature mismatch");
             }
+            
+            if (freeSignatures) {
+                free((char *)oldSignature);
+                free((char *)newSignature);
+            }
+                
         }
 #endif
 	oldImp = method_getImplementation(localMethod);

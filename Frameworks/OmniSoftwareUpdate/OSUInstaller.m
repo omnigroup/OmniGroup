@@ -64,7 +64,7 @@ RCS_ID("$Id$");
 static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
 {
     id object = statusBindingPoint.object;
-    [object setValue:status forKey:statusBindingPoint.key];
+    [object setValue:status forKeyPath:statusBindingPoint.keyPath];
     
     if ([object respondsToSelector:@selector(window)])
         [[object window] displayIfNeeded];
@@ -123,7 +123,7 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
     
     if (deleteDiskImageOnSuccess) {
         // The install portion is done; we can torch the dmg now.  Put it in the trash instead of deleting it forever.
-        int tag;
+        NSInteger tag;
         if (![[NSWorkspace sharedWorkspace] performFileOperation:NSWorkspaceRecycleOperation source:[packagePath stringByDeletingLastPathComponent] destination:@"" files:[NSArray arrayWithObject:[packagePath lastPathComponent]] tag:&tag]) {
 #ifdef DEBUG	
             NSLog(@"Error moving package from '%@' to the trash.", packagePath);
@@ -133,7 +133,7 @@ static void _setStatus(OFBindingPoint statusBindingPoint, NSString *status)
     
     if (!archiveExistingVersion) {
         // Delete the old version
-        int tag;
+        NSInteger tag;
         if (![[NSWorkspace sharedWorkspace] performFileOperation:NSWorkspaceRecycleOperation source:[archivePath stringByDeletingLastPathComponent] destination:@"" files:[NSArray arrayWithObject:[archivePath lastPathComponent]] tag:&tag]) {
 #ifdef DEBUG	
             NSLog(@"Error moving previous version from '%@' to the trash.", archivePath);

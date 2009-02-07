@@ -158,8 +158,7 @@ static void contemplate_reachability(const char *hostname)
         exit_with_error([NSError errorWithDomain:OSUToolErrorDomain code:OSUToolRemoteNetworkFailure userInfo:userInfo]);
     }
 
-    Boolean reachable;
-    reachable = ((flags & kSCNetworkFlagsReachable) != 0);
+    Boolean reachable = ((flags & kSCNetworkFlagsReachable) != 0);
     
     if (!reachable) {
         NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%s is not reachable.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error description"), hostname];

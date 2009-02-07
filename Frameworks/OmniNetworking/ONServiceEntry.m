@@ -169,7 +169,7 @@ static NSMutableDictionary *portHints;
     return portNumber;
 }
 
-- (unsigned)hash
+- (NSUInteger)hash
 {
     return [serviceName hash] ^ [protocolName hash];
 }

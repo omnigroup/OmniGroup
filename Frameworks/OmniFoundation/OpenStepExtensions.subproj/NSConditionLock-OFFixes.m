@@ -12,9 +12,16 @@
 
 RCS_ID("$Id$")
 
+// To avoid warnings from OBReplaceMethodImplementationWithSelector, we can't use int or NSInteger since we have NS_BUILD_32_LIKE_64 on, NSInteger would become long, which woule mismatch with int in AppKit's signature.  
+#if defined (__LP64__)
+    #define CONDITION_TYPE NSInteger
+#else
+    #define CONDITION_TYPE int
+#endif
+
 @implementation NSConditionLock (OFFixes)
 
-static BOOL (*originalLockWhenConditionBeforeDate)(id self, SEL _cmd, int condition, NSDate *limit);
+static BOOL (*originalLockWhenConditionBeforeDate)(id self, SEL _cmd, CONDITION_TYPE condition, NSDate *limit);
 
 + (void)performPosing;
 {
@@ -23,7 +30,7 @@ static BOOL (*originalLockWhenConditionBeforeDate)(id self, SEL _cmd, int condit
 
 #define LIMIT_DATE_ACCURACY 0.1
 
-- (BOOL)replacement_lockWhenCondition:(NSInteger)condition beforeDate:(NSDate *)limitDate;
+- (BOOL)replacement_lockWhenCondition:(CONDITION_TYPE)condition beforeDate:(NSDate *)limitDate;
 {
     do {
         BOOL locked = originalLockWhenConditionBeforeDate(self, _cmd, condition, limitDate);

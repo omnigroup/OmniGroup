@@ -95,7 +95,7 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark NSObject (NSErrorRecoveryAttempting)
 
-- (void)attemptRecoveryFromError:(NSError *)error optionIndex:(unsigned int)recoveryOptionIndex delegate:(id)delegate didRecoverSelector:(SEL)didRecoverSelector contextInfo:(void *)contextInfo;
+- (void)attemptRecoveryFromError:(NSError *)error optionIndex:(NSUInteger)recoveryOptionIndex delegate:(id)delegate didRecoverSelector:(SEL)didRecoverSelector contextInfo:(void *)contextInfo;
 {
     OBPRECONDITION(recoveryOptionIndex == 0); // Use OFMultipleOptionErrorRecovery if you need multiple options
     
@@ -114,7 +114,7 @@ RCS_ID("$Id$");
     }
 }
 
-- (BOOL)attemptRecoveryFromError:(NSError *)error optionIndex:(unsigned int)recoveryOptionIndex;
+- (BOOL)attemptRecoveryFromError:(NSError *)error optionIndex:(NSUInteger)recoveryOptionIndex;
 {
     OBPRECONDITION(recoveryOptionIndex == 0); // Use OFMultipleOptionErrorRecovery if you need multiple options
     return [self attemptRecoveryFromError:error];

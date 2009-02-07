@@ -97,7 +97,9 @@ static void _mapPlistValueToUserInfoEntry(const void *key, const void *value, vo
     // This is lossy, but once something is plist-ified, we can't be sure where it came from.
     if ([keyString isEqualToString:NSUnderlyingErrorKey])
         valueObject = [[[NSError alloc] initWithPropertyList:valueObject] autorelease];
-    
+    else if ([keyString isEqualToString:NSRecoveryAttempterErrorKey] && [valueObject isKindOfClass:[NSString class]])
+        return; // We can't turn an NSString back into a valid -recoveryAttempter object
+
     [mappedUserInfo setObject:valueObject forKey:keyString];
 }
 

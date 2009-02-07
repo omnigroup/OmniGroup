@@ -22,48 +22,10 @@ RCS_ID("$Id$");
 
 #pragma mark API
 
-- (void)setDefaultTimeDateComponents:(NSDateComponents *)dateComponents;
-{
-    if (_defaultTimeDateComponents == dateComponents)
-        return;
-    [_defaultTimeDateComponents release];
-    _defaultTimeDateComponents = [dateComponents copy];
-}
-
-- (NSDateComponents *)defaultTimeDateComponents;
-{
-    return _defaultTimeDateComponents;
-}
-
-- (void)setUseEndOfDuration:(BOOL)useEndOfDuration;
-{
-    _useEndOfDuration = useEndOfDuration;
-}
-
-- (BOOL)useEndOfDuration;
-{
-    return _useEndOfDuration;
-}
+@synthesize defaultTimeDateComponents = _defaultTimeDateComponents;
+@synthesize useEndOfDuration = _useEndOfDuration;
 
 #pragma mark NSFomatter subclass
-
-#if 0
-- (NSString *)stringForObjectValue:(id)obj;
-{
-    NSString *result = [super stringForObjectValue:obj];
-    //NSLog(@"%s: obj:%@ result:%@", __PRETTY_FUNCTION__, obj, result);
-    return result;
-}
-#endif
-
-#if 0
-- (NSAttributedString *)attributedStringForObjectValue:(id)obj withDefaultAttributes:(NSDictionary *)attrs;
-{
-    NSAttributedString *result = [super attributedStringForObjectValue:obj withDefaultAttributes:attrs];
-    //NSLog(@"%s: obj:%@ result:%@", __PRETTY_FUNCTION__, obj, result);
-    return result;
-}
-#endif
 
 - (NSString *)editingStringForObjectValue:(id)obj;
 {
@@ -72,65 +34,54 @@ RCS_ID("$Id$");
 
 - (BOOL)getObjectValue:(id *)obj forString:(NSString *)string errorDescription:(NSString **)error;
 {
-    //NSLog(@"%s: string:%@", __PRETTY_FUNCTION__, string);
     NSError *relativeError = nil;
     NSDate *date = nil;
     
     BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents error:&relativeError];
 
-    //NSLog(@"%s: date:%@ %@", __PRETTY_FUNCTION__, [date class], date);
-    *obj = date;
-
-    if (success) {
-//        *obj = date;
-        //NSLog(@"date = %@", date);
-        return YES;
-    }
-
-    //*error = [relativeError localizedDescription];
-    return NO;
+    if (success)
+        *obj = date;
+    
+    return success;
  }
 
 - (BOOL)isPartialStringValid:(NSString **)partialStringPtr proposedSelectedRange:(NSRangePointer)proposedSelRangePtr originalString:(NSString *)origString originalSelectedRange:(NSRange)origSelRange errorDescription:(NSString **)error;
 {
-    //NSLog(@"%s: string:%@", __PRETTY_FUNCTION__, *partialStringPtr);
     NSError *relativeError = nil;
     NSDate *date = nil;
-    BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:*partialStringPtr useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents error:&relativeError];
-
-    if (success) {
-        //NSLog(@"date = %@", date);
-        return YES;
-    }
-    return NO;
+    return [[OFRelativeDateParser sharedParser] getDateValue:&date forString:*partialStringPtr useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents error:&relativeError];
 }
 
 - (BOOL)getObjectValue:(id *)obj forString:(NSString *)string range:(inout NSRange *)rangep error:(NSError **)error;
 {
-    //NSLog(@"%s: string:%@", __PRETTY_FUNCTION__, string);
     NSDate *date = nil;
     BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents error:error];
 
-    //NSLog(@"%s: date:%@ %@", __PRETTY_FUNCTION__, [date class], date);
-    *obj = date;
+    if (success)
+        *obj = date;
 
-    if (success) {
-        //*obj = date;
-        return YES;
-    }
-    return NO;
+    return success;
 }
 
 - (NSString *)stringFromDate:(NSDate *)date;
 {
-    OBASSERT_NOT_REACHED("x");
+    OBRejectUnusedImplementation(self, _cmd);
     return nil;
 }
 
 - (NSDate *)dateFromString:(NSString *)string;
 {
-    OBASSERT_NOT_REACHED("x");
+    OBRejectUnusedImplementation(self, _cmd);
     return nil;
+}
+
+#pragma mark NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    OFRelativeDateFormatter *copy = [super copyWithZone:zone];
+    copy->_defaultTimeDateComponents = [_defaultTimeDateComponents copy];
+    return copy;
 }
 
 @end

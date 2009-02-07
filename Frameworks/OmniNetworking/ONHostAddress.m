@@ -307,7 +307,7 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
 
 @implementation ONHostAddress (Debugging)
 
-- (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(unsigned int)level
+- (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(NSUInteger)level
 {
     return [self stringValue];
 }
@@ -453,9 +453,9 @@ static u_int32_t parseIpaddrPart(NSString *str, int *ok)
     return IN_MULTICAST(ntohl(internetAddress.s_addr));
 }
 
-- (unsigned)hash
+- (NSUInteger)hash
 {
-    return (unsigned)(internetAddress.s_addr);
+    return (NSUInteger)(internetAddress.s_addr);
 }
 
 @end
@@ -512,9 +512,9 @@ static u_int32_t parseIpaddrPart(NSString *str, int *ok)
     return IN6_IS_ADDR_MULTICAST(&internetAddress);
 }
 
-- (unsigned)hash
+- (NSUInteger)hash
 {
-    unsigned hashValue;
+    NSUInteger hashValue;
 
     hashValue  = (internetAddress.s6_addr[ 0] << 24  |  internetAddress.s6_addr[ 1] << 16  | internetAddress.s6_addr[ 2] << 8  | internetAddress.s6_addr[ 3]);
     hashValue ^= (internetAddress.s6_addr[ 4] << 24  |  internetAddress.s6_addr[ 5] << 16  | internetAddress.s6_addr[ 6] << 8  | internetAddress.s6_addr[ 7]);
@@ -620,9 +620,9 @@ scanFailure:
     return ( appletalkAddress.s_node == ATADDR_BCASTNODE ) ? YES : NO;
 }
 
-- (unsigned)hash
+- (NSUInteger)hash
 {
-    return ( appletalkAddress.s_node ) | ( (int)(appletalkAddress.s_net) << 8 );;
+    return ( appletalkAddress.s_node ) | ( (NSUInteger)(appletalkAddress.s_net) << 8 );;
 }
 
 - (NSString *)stringValue

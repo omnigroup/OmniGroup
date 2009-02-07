@@ -67,6 +67,10 @@ typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);
 - (void) setAttribute: (NSString *) name real: (float) value;  // "%g"
 - (void) setAttribute: (NSString *) name real: (float) value format: (NSString *) formatString;
 
+- (NSString *)stringValueForAttributeNamed:(NSString *)name defaultValue:(NSString *)defaultValue;
+- (int)integerValueForAttributeNamed:(NSString *)name defaultValue:(int)defaultValue;
+- (float)realValueForAttributeNamed:(NSString *)name defaultValue:(float)defaultValue;
+
 - (OFXMLElement *)appendElement:(NSString *)elementName containingString:(NSString *)contents;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingInteger:(int)contents;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingReal:(float)contents; // "%g"

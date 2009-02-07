@@ -52,7 +52,7 @@ RCS_ID("$Id$")
 }
 
 #ifdef DEBUG
-- (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(unsigned int)level;
+- (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(NSUInteger)level;
 {
     return [self shortDescription];
 }
@@ -73,7 +73,7 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark Comparison
 
-- (unsigned)hash;
+- (NSUInteger)hash;
 {
     return [_primaryKey hash] ^ (uintptr_t)_entity; // Hash values not archivable due to pointer case.  Could use [[_entity name] hash]...
 }

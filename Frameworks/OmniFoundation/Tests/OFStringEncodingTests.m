@@ -55,7 +55,11 @@ RCS_ID("$Id$");
             memset([mutable mutableBytes], (int)byte, thisLength);
         encoded = [mutable performSelector:encodeSelector];
         shouldBeEqual1(encoded, [results objectAtIndex:thisLength], ([NSString stringWithFormat:@"%d-byte-long buffer containing 0x%02x", thisLength, byte]));
-        immutable = [[NSData alloc] performSelector:decodeSelector withObject:encoded];
+        
+        NSError *error = nil;
+        immutable = objc_msgSend([NSData alloc], decodeSelector, encoded, &error);
+        OBShouldNotError(immutable != nil);
+
         shouldBeEqual1(mutable, immutable, ([NSString stringWithFormat:@"%d-byte-long buffer containing 0x%02x", thisLength, byte]));
         [mutable release];
         [immutable release];
@@ -90,7 +94,11 @@ RCS_ID("$Id$");
         }
         encoded = [mutable performSelector:encodeSelector];
         shouldBeEqual(encoded, [countingNybblesEncodings objectAtIndex:thisLength]);
-        immutable = [[NSData alloc] performSelector:decodeSelector withObject:encoded];
+
+        NSError *error = nil;
+        immutable = objc_msgSend([NSData alloc], decodeSelector, encoded, &error);
+        OBShouldNotError(immutable != nil);
+        
         shouldBeEqual(mutable, immutable);
         [mutable release];
         [immutable release];
@@ -198,7 +206,7 @@ RCS_ID("$Id$");
     suite = [SenTestSuite testSuiteWithName:[self description]];
     [suite addTest: [self testsForEncode:@selector(base64String) decode:@selector(initWithBase64String:) inf:knownResults]];
     [suite addTest: [self testsForEncode:@selector(ascii85String) decode:@selector(initWithASCII85String:) inf:knownResults]];
-    [suite addTest: [self testsForEncode:@selector(unadornedLowercaseHexString) decode:@selector(initWithHexString:) inf:knownResults]];
+    [suite addTest: [self testsForEncode:@selector(unadornedLowercaseHexString) decode:@selector(initWithHexString:error:) inf:knownResults]];
     [suite addTest: [self testsForEncode:@selector(ascii26String) decode:@selector(initWithASCII26String:) inf:knownResults]];
 
     [suite retain];

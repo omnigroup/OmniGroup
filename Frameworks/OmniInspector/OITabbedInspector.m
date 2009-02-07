@@ -141,7 +141,7 @@ RCS_ID("$Id$")
     if (!duringMouseDown && [buttonMatrix window]) {
         NSPoint point = [[buttonMatrix window] mouseLocationOutsideOfEventStream];
         point = [buttonMatrix convertPoint:point fromView:nil];
-        int row, column;
+        NSInteger row, column;
         if ([buttonMatrix getRow:&row column:&column forPoint:point]) {
 	    OIInspectorTabController *tab = [_tabControllers objectAtIndex:column];
             

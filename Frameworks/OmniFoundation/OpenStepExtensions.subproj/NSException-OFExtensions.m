@@ -26,6 +26,11 @@ static NSMutableDictionary *displayNames = nil;
 
 // Declared methods
 
++ (void)raise:(NSString *)name reason:(NSString *)reason;
+{
+    [[self exceptionWithName:name reason:reason userInfo:nil] raise];
+}
+
 - (NSString *)displayName;
 {
     NSString *exceptionName;

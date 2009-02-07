@@ -137,7 +137,7 @@ RCS_ID("$Id$")
     return (memcmp(&_components, &otherSpan->_components, sizeof(_components)) == 0);
 }
 
-- (unsigned)hash;
+- (NSUInteger)hash;
 {
     OBASSERT_NOT_REACHED("-isEqual: defined, but -hash not -- this would break hashing invariants");
     return 0;

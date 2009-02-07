@@ -17,9 +17,8 @@
     BOOL _useEndOfDuration;
 }
 
-- (void)setDefaultTimeDateComponents:(NSDateComponents *)dateComponents;
-- (NSDateComponents *)defaultTimeDateComponents;
-- (void)setUseEndOfDuration:(BOOL)useEndOfDuration;
-- (BOOL)useEndOfDuration;
+@property(nonatomic,copy) NSDateComponents *defaultTimeDateComponents;
+@property(nonatomic,assign) BOOL useEndOfDuration;
+
 @end
 

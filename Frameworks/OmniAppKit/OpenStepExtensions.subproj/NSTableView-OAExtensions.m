@@ -21,15 +21,15 @@ RCS_ID("$Id$")
 @interface NSTableView (OAExtensionsPrivate)
 - (BOOL)_copyToPasteboard:(NSPasteboard *)pasteboard;
 - (void)_pasteFromPasteboard:(NSPasteboard *)pasteboard;
-- (NSString *)_typeAheadLabelForRow:(int)row;
+- (NSString *)_typeAheadLabelForRow:(NSInteger)row;
 - (BOOL)_processKeyDownCharacter:(unichar)character;
 @end
 
 @interface NSTableView (OATableDelegateDataSourceCoverMethods)
 - (BOOL)_dataSourceHandlesPaste;
 - (BOOL)_dataSourceHandlesContextMenu;
-- (NSMenu *)_contextMenuForRow:(int)row column:(int)column;
-- (BOOL)_shouldShowDragImageForRow:(int)row;
+- (NSMenu *)_contextMenuForRow:(NSInteger)row column:(NSInteger)column;
+- (BOOL)_shouldShowDragImageForRow:(NSInteger)row;
 - (NSArray *)_columnIdentifiersForDragImage;
 - (NSTableColumn *)_typeAheadSelectionColumn;
 - (BOOL)_shouldEditNextItemWhenEditingEnds;
@@ -237,13 +237,8 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 
 - (void)setFont:(NSFont *)font;
 {
-    NSArray *tableColumns;
-    unsigned int columnIndex;
-    
-    tableColumns = [self tableColumns];
-    columnIndex = [tableColumns count];
-    while (columnIndex--)
-        [[(NSTableColumn *)[tableColumns objectAtIndex:columnIndex] dataCell] setFont:font];
+    for (NSTableColumn *column in self.tableColumns) 
+        [[column dataCell] setFont:font];
 }
 
 
@@ -251,16 +246,13 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 
 - (NSMenu *)menuForEvent:(NSEvent *)event;
 {
-    NSPoint point;
-    int rowIndex, columnIndex;
-
     if (![self _dataSourceHandlesContextMenu])
         return [super menuForEvent:event];
     
-    point = [self convertPoint:[event locationInWindow] fromView:nil];
-    rowIndex = [self rowAtPoint:point];
+    NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
+    NSInteger rowIndex = [self rowAtPoint:point];
     // Christiaan M. Hofman: fixed bug in following line
-    columnIndex = [self columnAtPoint:point]; 
+    NSInteger columnIndex = [self columnAtPoint:point]; 
     if (rowIndex >= 0 && columnIndex >= 0) {
         if (![self isRowSelected:rowIndex])
             [self selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
@@ -273,7 +265,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 {
     NSUInteger firstSelectedRow = [[self selectedRowIndexes] firstIndex];
     if (firstSelectedRow == NSNotFound) { // If nothing was selected
-        int numberOfRows = [self numberOfRows];
+        NSInteger numberOfRows = [self numberOfRows];
         if (numberOfRows > 0) // If there are rows in the table
             firstSelectedRow = numberOfRows - 1; // Select the last row
         else
@@ -319,19 +311,16 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 - (void)deleteForward:(id)sender;
 {
     if ([_dataSource respondsToSelector:@selector(tableView:deleteRows:)]) {
-        int selectedRow;
-        int originalNumberOfRows, numberOfRows;
-
-        selectedRow = [self selectedRow]; // last selected row if there's a multiple selection -- that's ok.
+        NSInteger selectedRow = [self selectedRow]; // last selected row if there's a multiple selection -- that's ok.
         if (selectedRow == -1)
             return;
 
-        originalNumberOfRows = [self numberOfRows];
+        NSInteger originalNumberOfRows = [self numberOfRows];
         [_dataSource tableView:self deleteRowsAtIndexes:[self selectedRowIndexes]];
         [self reloadData];
 
         // Maintain an appropriate selection after deletions
-        numberOfRows = [self numberOfRows];
+        NSInteger numberOfRows = [self numberOfRows];
         selectedRow -= originalNumberOfRows - numberOfRows;
         selectedRow = MIN(selectedRow + 1, numberOfRows - 1);
 
@@ -343,17 +332,15 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 - (void)deleteBackward:(id)sender;
 {
     if ([_dataSource respondsToSelector:@selector(tableView:deleteRows:)]) {
-        unsigned int originalNumberOfRows;
-        
         if ([self numberOfSelectedRows] == 0)
             return;
 
         // -selectedRow is last row of multiple selection, no good for trying to select the row before the selection.
-        NSUInteger selectedRow = [[self selectedRowIndexes] firstIndex];
-        originalNumberOfRows = [self numberOfRows];
+        NSInteger selectedRow = [[self selectedRowIndexes] firstIndex];
+        NSInteger originalNumberOfRows = [self numberOfRows];
         [_dataSource tableView:self deleteRowsAtIndexes:[self selectedRowIndexes]];
         [self reloadData];
-        unsigned int newNumberOfRows = [self numberOfRows];
+        NSInteger newNumberOfRows = [self numberOfRows];
         
         // Maintain an appropriate selection after deletions
         if (originalNumberOfRows != newNumberOfRows) {
@@ -539,14 +526,12 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 
 - (BOOL)findPattern:(id <OAFindPattern>)pattern backwards:(BOOL)backwards wrap:(BOOL)wrap;
 {
-    int rowIndex;
-    BOOL hasWrapped = NO;
-    
     // Can't search an empty table
     if ([self numberOfRows] == 0)
         return NO;
     
     // Start at the first selected item, if any.  If not, start at the first item, if any
+    NSInteger rowIndex;
     if ([self numberOfSelectedRows])
         rowIndex = [self selectedRow];
     else {
@@ -556,6 +541,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
             rowIndex = 0;
     }
         
+    BOOL hasWrapped = NO;
     while (YES) {
         if (rowIndex != [self selectedRow] && [_dataSource tableView:self itemAtRow:rowIndex matchesPattern:pattern]) {
             [self selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
@@ -590,7 +576,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 - (NSArray *)typeAheadSelectionItems;
 {
     NSMutableArray *visibleItemLabels;
-    int row;
+    NSInteger row;
 
     visibleItemLabels = [NSMutableArray arrayWithCapacity:[self numberOfRows]];
     for (row = 0; row < [self numberOfRows]; row++) {
@@ -640,7 +626,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
     [_dataSource tableView:self addItemsFromPasteboard:pasteboard];
 }
 
-- (NSString *)_typeAheadLabelForRow:(int)row;
+- (NSString *)_typeAheadLabelForRow:(NSInteger)row;
 {
     id cellValue = [_dataSource tableView:self objectValueForTableColumn:[self _typeAheadSelectionColumn] row:row];
     if ([cellValue isKindOfClass:[NSString class]])
@@ -686,14 +672,14 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
     return [_dataSource respondsToSelector:@selector(tableView:contextMenuForRow:column:)];
 }
 
-- (NSMenu *)_contextMenuForRow:(int)row column:(int)column;
+- (NSMenu *)_contextMenuForRow:(NSInteger)row column:(NSInteger)column;
 {
     // This is an override point so that OutlineView can get our implementation for free but provide item-based datasource API
     OBASSERT([self _dataSourceHandlesContextMenu]); // should already know this by the time we get here
     return [_dataSource tableView:self contextMenuForRow:row column:column];
 }
 
-- (BOOL)_shouldShowDragImageForRow:(int)row;
+- (BOOL)_shouldShowDragImageForRow:(NSInteger)row;
 {
     if ([_dataSource respondsToSelector:@selector(tableView:shouldShowDragImageForRow:)])
         return [_dataSource tableView:self shouldShowDragImageForRow:row];

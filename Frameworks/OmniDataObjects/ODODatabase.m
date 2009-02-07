@@ -214,6 +214,33 @@ BOOL ODOLogSQL = NO;
     [_pendingMetadataChanges setObject:value forKey:key];
 }
 
+static BOOL _fetchRowCountCallback(struct sqlite3 *sqlite, ODOSQLStatement *statement, void *context, NSError **outError)
+{
+    uint64_t *outRowCount = context;
+    OBASSERT(sqlite3_column_count(statement->_statement) == 1);
+    *outRowCount = sqlite3_column_int64(statement->_statement, 0);
+    return YES;
+}
+
+- (BOOL)fetchCommittedRowCount:(uint64_t *)outRowCount fromEntity:entity matchingPredicate:(NSPredicate *)predicate error:(NSError **)outError;
+{
+    OBPRECONDITION(_sqlite);
+    
+    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initRowCountFromEntity:entity database:self predicate:predicate error:outError];
+    if (!statement)
+        return NO;
+    
+    ODOSQLStatementCallbacks callbacks;
+    memset(&callbacks, 0, sizeof(callbacks));
+    callbacks.row = _fetchRowCountCallback;
+
+    BOOL success = ODOSQLStatementRun(_sqlite, statement, callbacks, outRowCount, outError);
+
+    [statement release];
+
+    return success;
+}
+
 #pragma mark Dangerous API
 
 // The given SQL is expected to be a single statement that is executed once and returns no result rows.  Any quoting should have already happened.

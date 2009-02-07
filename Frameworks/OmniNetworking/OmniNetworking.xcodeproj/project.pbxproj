@@ -836,6 +836,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AFE72F908A02F7F00ED9F2D /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(GCC_PREPROCESSOR_DEFINITIONS)",
 					"STEnableDeprecatedAssertionMacros=1",
@@ -851,6 +855,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AFE72FA08A02F7F00ED9F2D /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(GCC_PREPROCESSOR_DEFINITIONS)",
 					"STEnableDeprecatedAssertionMacros=1",
@@ -867,6 +875,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AFE72F808A02F7F00ED9F2D /* Omni-Framework-Coverage.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(GCC_PREPROCESSOR_DEFINITIONS)",
 					"STEnableDeprecatedAssertionMacros=1",

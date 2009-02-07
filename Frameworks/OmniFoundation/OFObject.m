@@ -25,7 +25,7 @@ RCS_ID("$Id$")
 /*" If enabled, OFObject provides an inline retain count for much more efficient reference counting. "*/
 
 #if OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT
-- (unsigned int)retainCount;
+- (NSUInteger)retainCount;
 {
     return _extraRefCount + 1;
 }

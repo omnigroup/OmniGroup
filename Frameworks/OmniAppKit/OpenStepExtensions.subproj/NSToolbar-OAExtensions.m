@@ -15,6 +15,7 @@ RCS_ID("$Id$");
 
 @implementation NSToolbar (OAExtensions)
 
+// Get rid of these terrible hacks
 // We could optimize this code to cache the resolved ivars and offsets, but first we should check to make sure we still need to be mucking with private instance variables.
 
 - (NSWindow *)window;

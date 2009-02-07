@@ -13,10 +13,15 @@
 
 @interface OADatePicker : NSDatePicker
 {
+    BOOL _clicked;
     BOOL sentAction;
     NSDate *_lastDate;
     BOOL ignoreNextDateRequest; // <bug://bugs/38625> (Selecting date selects current date first when switching between months, disappears (with some filters) before proper date can be selected)
 }
+
+- (void)setClicked:(BOOL)clicked;
+- (BOOL)clicked;
+
 
 - (void)reset;
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,40 +34,41 @@ typedef void (*OBAssertionFailureHandler)(const char *type, const char *expressi
 extern void OBLogAssertionFailure(const char *type, const char *expression, const char *file, unsigned int lineNumber); // in case you want to integrate the normal behavior with your handler
 
 #if defined(OMNI_ASSERTIONS_ON)
-
+    
     extern void OBSetAssertionFailureHandler(OBAssertionFailureHandler handler);
 
-    extern void OBAssertFailed(const char *type, const char *expression, const char *file, unsigned int lineNumber);
-
+    extern void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber);
+    extern void OBAssertFailed(void) __attribute__((noinline)); // This is a convenience breakpoint for in the debugger.
+    
     extern BOOL OBEnableExpensiveAssertions;
 
     #define OBPRECONDITION(expression)                                            \
     do {                                                                        \
         if (!(expression))                                                      \
-            OBAssertFailed("PRECONDITION", #expression, __FILE__, __LINE__);    \
+            OBInvokeAssertionFailureHandler("PRECONDITION", #expression, __FILE__, __LINE__); \
     } while (NO)
 
     #define OBPOSTCONDITION(expression)                                           \
     do {                                                                        \
         if (!(expression))                                                      \
-            OBAssertFailed("POSTCONDITION", #expression, __FILE__, __LINE__);   \
+            OBInvokeAssertionFailureHandler("POSTCONDITION", #expression, __FILE__, __LINE__); \
     } while (NO)
 
     #define OBINVARIANT(expression)                                               \
     do {                                                                        \
         if (!(expression))                                                      \
-            OBAssertFailed("INVARIANT", #expression, __FILE__, __LINE__);       \
+            OBInvokeAssertionFailureHandler("INVARIANT", #expression, __FILE__, __LINE__); \
     } while (NO)
 
     #define OBASSERT(expression)                                                  \
     do {                                                                        \
         if (!(expression))                                                      \
-            OBAssertFailed("ASSERT", #expression, __FILE__, __LINE__);          \
+            OBInvokeAssertionFailureHandler("ASSERT", #expression, __FILE__, __LINE__); \
     } while (NO)
 
     #define OBASSERT_NOT_REACHED(reason)                                        \
     do {                                                                        \
-        OBAssertFailed("NOTREACHED", reason, __FILE__, __LINE__);              \
+        OBInvokeAssertionFailureHandler("NOTREACHED", reason, __FILE__, __LINE__); \
     } while (NO)
 
     #define OBPRECONDITION_EXPENSIVE(expression) do { \
@@ -90,6 +91,19 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
             OBASSERT(expression); \
     } while(NO)
 
+    #ifdef __OBJC__
+        #import <Foundation/NSObject.h>
+        // Useful when you are changing subclass or delegate API and you want to ensure there aren't lingering implementations of API that will no longer get called.
+        static inline void _OBAssertNotImplemented(id self, SEL sel)
+        {
+            if ([self respondsToSelector:sel]) {
+                NSLog(@"%@ has implementation of %@", NSStringFromClass([self class]), NSStringFromSelector(sel));
+                OBAssertFailed();
+            }
+        }
+        #define OBASSERT_NOT_IMPLEMENTED(obj, sel) _OBAssertNotImplemented(obj, sel)
+    #endif
+    
 #else	// else insert blank lines into the code
 
     #define OBPRECONDITION(expression)
@@ -103,6 +117,7 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
     #define OBINVARIANT_EXPENSIVE(expression)
     #define OBASSERT_EXPENSIVE(expression)
 
+    #define OBASSERT_NOT_IMPLEMENTED(obj, sel)
 #endif
 #if defined(__cplusplus)
 } // extern "C"

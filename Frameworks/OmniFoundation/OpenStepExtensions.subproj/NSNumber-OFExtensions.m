@@ -7,6 +7,7 @@
 
 #import <OmniFoundation/NSNumber-OFExtensions.h>
 #import <OmniFoundation/OFRationalNumber.h>
+#import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 
 RCS_ID("$Id$")
 
@@ -85,6 +86,10 @@ static NSCharacterSet *dotCharacterSet = nil;
 - (const char *)objCType;
 {
     return @encode(float);
+}
+- (CGFloat)cgFloatValue;
+{
+    return NAN;
 }
 - (float)floatValue;
 {

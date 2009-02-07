@@ -73,7 +73,7 @@ static OADragController *sharedDragController;
 
 // NSDraggingSource informal protocol
 
-- (unsigned int)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
     return NSDragOperationAll;
 }

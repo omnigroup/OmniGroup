@@ -211,6 +211,14 @@ static OFPreference *enablingPreference;
     [mouseTipInstance setLevel:windowLevel];
 }
 
+#pragma mark NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    OBASSERT_NOT_REACHED("Should be using the class methods and be unable to copy.");
+    return [self retain];
+}
+
 @end
 
 @implementation OAMouseTipWindow (Private)

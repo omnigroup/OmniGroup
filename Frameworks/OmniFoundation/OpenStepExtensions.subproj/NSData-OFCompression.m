@@ -8,6 +8,7 @@
 #import <OmniFoundation/NSData-OFCompression.h>
 
 #import <OmniFoundation/NSData-OFFileIO.h>
+#import <OmniFoundation/NSException-OFExtensions.h>
 #import <bzlib.h>
 #import <zlib.h>
 
@@ -55,7 +56,7 @@ static inline BOOL _OFMightBeGzipCompressedData(const unsigned char *bytes, unsi
     if (_OFMightBeGzipCompressedData(initial, dataLength))
         return [self decompressedGzipData];
     
-    [NSException raise:NSInvalidArgumentException format:NSLocalizedStringFromTableInBundle(@"Unable to decompress data: unrecognized compression format", @"OmniFoundation", OMNI_BUNDLE, @"decompression exception format")];
+    [NSException raise:NSInvalidArgumentException reason:NSLocalizedStringFromTableInBundle(@"Unable to decompress data: unrecognized compression format", @"OmniFoundation", OMNI_BUNDLE, @"decompression exception format")];
     return nil; /* NOTREACHED */
 }
 
@@ -76,7 +77,7 @@ static inline BOOL _OFMightBeGzipCompressedData(const unsigned char *bytes, unsi
                                  0); // workFactor, 0-250, 0==default of 30
     if (!bzFile) {
         fclose(dataFile);
-        [NSException raise:NSInvalidArgumentException format:NSLocalizedStringFromTableInBundle(@"Unable to initialize compression", @"OmniFoundation", OMNI_BUNDLE, @"compression exception format")];
+        [NSException raise:NSInvalidArgumentException reason:NSLocalizedStringFromTableInBundle(@"Unable to initialize compression", @"OmniFoundation", OMNI_BUNDLE, @"compression exception format")];
     }
     
     // BZ2_bzWrite fails with BZ_PARAM_ERROR when passed length==0; allow compressing empty data by just not doing a write.
@@ -96,7 +97,7 @@ static inline BOOL _OFMightBeGzipCompressedData(const unsigned char *bytes, unsi
     BZ2_bzWriteClose(&err, bzFile, 0, NULL, NULL);
     if (err != BZ_OK) {
         fclose(dataFile);
-        [NSException raise:NSInvalidArgumentException format:NSLocalizedStringFromTableInBundle(@"Unable to finish compressing data", @"OmniFoundation", OMNI_BUNDLE, @"compression exception format")];
+        [NSException raise:NSInvalidArgumentException reason:NSLocalizedStringFromTableInBundle(@"Unable to finish compressing data", @"OmniFoundation", OMNI_BUNDLE, @"compression exception format")];
     }
     
     fclose(dataFile);
@@ -121,7 +122,7 @@ static inline BOOL _OFMightBeGzipCompressedData(const unsigned char *bytes, unsi
                                 NULL, 0); // unused
     if (!bzFile) {
         fclose(dataFile);
-        [NSException raise:NSInvalidArgumentException format:NSLocalizedStringFromTableInBundle(@"Unable to initialize decompression", @"OmniFoundation", OMNI_BUNDLE, @"decompression exception format")];
+        [NSException raise:NSInvalidArgumentException reason:NSLocalizedStringFromTableInBundle(@"Unable to initialize decompression", @"OmniFoundation", OMNI_BUNDLE, @"decompression exception format")];
     }
     
     size_t pageSize  = NSPageSize();

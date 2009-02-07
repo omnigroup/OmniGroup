@@ -25,6 +25,7 @@
 
 - initWithDatabase:(ODODatabase *)database sql:(NSString *)sql error:(NSError **)outError;
 - initSelectProperties:(NSArray *)properties fromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
+- initRowCountFromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
 
 - (void)invalidate;
 

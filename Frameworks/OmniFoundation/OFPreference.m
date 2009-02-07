@@ -254,7 +254,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 
 // Subclass methods
 
-- (unsigned) hash;
+- (NSUInteger) hash;
 {
     return [_key hash];
 }

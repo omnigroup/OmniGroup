@@ -18,7 +18,7 @@
     NSString *_optionKeyToolTip;
     SEL _optionKeyAction;
     
-    id _delegate;
+    id _nonretained_delegate;
     BOOL inOptionKeyState;
     BOOL observingTintChanges;
     BOOL observingTintOverrideChanges;
@@ -28,20 +28,15 @@
     NSBundle *tintedImageBundle;
 }
 
-- (id)delegate;
-- (void)setDelegate:(id)delegate;
+@property(nonatomic,assign) id delegate;
     // Right now, the only thing we're doing with our delegate is using it as a validator; AppKit's auto-validation scheme can be useful for changing more attributes than just enabled/disabled, but it currently only works for items that have a target and action, which many custom toolbar items don't.
 
-- (NSImage *)optionKeyImage;
-- (void)setOptionKeyImage:(NSImage *)image;
-- (NSString *)optionKeyLabel;
-- (void)setOptionKeyLabel:(NSString *)label;
-- (NSString *)optionKeyToolTip;
-- (void)setOptionKeyToolTip:(NSString *)toolTip;
+@property(nonatomic,retain) NSImage *optionKeyImage;
+@property(nonatomic,copy) NSString *optionKeyLabel;
+@property(nonatomic,copy) NSString *optionKeyToolTip;
     // Show an alternate image, label, and tooltop if the user holds the option/alternate key.
 
-- (SEL)optionKeyAction;
-- (void)setOptionKeyAction:(SEL)action;
+@property(nonatomic,assign) SEL optionKeyAction;
     // And perform an alternate action when clicked in the option-key-down state
 
 - (void)setUsesTintedImage:(NSString *)imageName inBundle:(NSBundle *)imageBundle;

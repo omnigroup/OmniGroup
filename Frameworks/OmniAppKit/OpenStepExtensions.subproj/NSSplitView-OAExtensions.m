@@ -155,8 +155,7 @@ RCS_ID("$Id$")
     NSMutableArray *animationArray = [NSArray arrayWithObject:animationDictionary];
     NSAnimation *animation = [[NSViewAnimation alloc] initWithViewAnimations:animationArray];
     
-    id delegate;
-    delegate = (id)[self delegate]; // Let our delegate implement some of the animation delegate methods if it wants
+    id delegate = (id)[self delegate]; // Let our delegate implement some of the animation delegate methods if it wants
     [animation setDelegate:delegate];
     [animation setAnimationBlockingMode:NSAnimationBlocking];
     [animation setDuration:0.25];

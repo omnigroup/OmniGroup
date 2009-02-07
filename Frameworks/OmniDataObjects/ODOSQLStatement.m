@@ -26,6 +26,10 @@
 
 RCS_ID("$Id$")
 
+@interface ODOSQLStatement (Private)
+- (id)_initSelectStatement:(NSMutableString *)mutableSQL fromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
+@end
+
 @implementation ODOSQLStatement
 
 - initWithDatabase:(ODODatabase *)database sql:(NSString *)sql error:(NSError **)outError;
@@ -58,9 +62,6 @@ RCS_ID("$Id$")
 - initSelectProperties:(NSArray *)properties fromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
 {
     OBPRECONDITION([properties count] > 0);
-    OBPRECONDITION(rootEntity);
-    OBPRECONDITION(database);
-    OBPRECONDITION([rootEntity model] == [database model]);
     
     // TODO: Not handling joins until we actually need them.
     
@@ -80,20 +81,63 @@ RCS_ID("$Id$")
             [sql appendString:@", "];
         [sql appendString:[prop name]];
     }
-    
+
     [sql appendFormat:@" FROM %@", [rootEntity name]];
+    
+    return [self _initSelectStatement:sql fromEntity:rootEntity database:database predicate:predicate error:outError];
+}
+
+- initRowCountFromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
+{
+    OBPRECONDITION(rootEntity != nil);
+
+    NSMutableString *sql = [NSMutableString stringWithFormat:@"SELECT COUNT(*) FROM %@", [rootEntity name]];
+    return [self _initSelectStatement:sql fromEntity:rootEntity database:database predicate:predicate error:outError];
+}
+
+- (void)dealloc;
+{
+    if (_statement)
+        [self invalidate];
+    [_sql release];
+    [super dealloc];
+}
+
+- (void)invalidate;
+{
+    OBPRECONDITION(_statement);
+    
+    if (!_statement)
+        return;
+    
+    TRACK_INSTANCES(@"STMT %p:FIN", self);
+    sqlite3_finalize(_statement);
+    _statement = NULL;
+}
+
+@end
+
+@implementation ODOSQLStatement (Private)
+
+- (id)_initSelectStatement:(NSMutableString *)mutableSQL fromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
+{
+    OBPRECONDITION(rootEntity != nil);
+    OBPRECONDITION(database != nil);
+    OBPRECONDITION([rootEntity model] == [database model]);
+    
+    // TODO: Not handling joins until we actually need them.
     
     NSMutableArray *constants = nil;
     if (predicate) {
         constants = [NSMutableArray array];
-        [sql appendString:@" WHERE "];
-        if (![predicate _appendSQL:sql entity:rootEntity constants:constants error:outError]) {
+        [mutableSQL appendString:@" WHERE "];
+        if (![predicate _appendSQL:mutableSQL entity:rootEntity constants:constants error:outError]) {
             [self release];
             return nil;
         }
     }
     
-    if (![self initWithDatabase:database sql:sql error:outError])
+    if (![self initWithDatabase:database sql:mutableSQL error:outError])
         return nil;
     
     if (constants) {
@@ -115,26 +159,6 @@ RCS_ID("$Id$")
 #endif
     
     return self;
-}
-
-- (void)dealloc;
-{
-    if (_statement)
-        [self invalidate];
-    [_sql release];
-    [super dealloc];
-}
-
-- (void)invalidate;
-{
-    OBPRECONDITION(_statement);
-    
-    if (!_statement)
-        return;
-    
-    TRACK_INSTANCES(@"STMT %p:FIN", self);
-    sqlite3_finalize(_statement);
-    _statement = NULL;
 }
 
 @end

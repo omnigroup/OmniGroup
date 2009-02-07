@@ -874,8 +874,8 @@
 		34D5F9F60E9EF0420055E958 /* OFXMLIdentifier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLIdentifier.m; sourceTree = "<group>"; };
 		34D606DC0CCAA74100467736 /* OFErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFErrors.h; sourceTree = "<group>"; };
 		34DC612F06CD08E30097A113 /* OFMutableAttributedStringExtensionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFMutableAttributedStringExtensionsTest.m; sourceTree = "<group>"; };
-		34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFRelativeDateFormatter.h; sourceTree = "<group>"; };
-		34DF03980B05108D00D82DFC /* OFRelativeDateFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRelativeDateFormatter.m; sourceTree = "<group>"; };
+		34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFRelativeDateFormatter.h; path = ../OFRelativeDateFormatter.h; sourceTree = "<group>"; };
+		34DF03980B05108D00D82DFC /* OFRelativeDateFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFRelativeDateFormatter.m; path = ../OFRelativeDateFormatter.m; sourceTree = "<group>"; };
 		34E576C10E245BEB00C1F5FB /* OFRelativeDateParser-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OFRelativeDateParser-Internal.h"; sourceTree = "<group>"; };
 		34E7BCBF09A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSScriptClassDescription-OFExtensions.h"; sourceTree = "<group>"; };
 		34E7BCC009A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSScriptClassDescription-OFExtensions.m"; sourceTree = "<group>"; };
@@ -1175,6 +1175,7 @@
 				00E51CE3FE8AAEA611C9CC38 /* OFCapitalizeFormatter.m */,
 				00E51CE4FE8AAEA611C9CC38 /* OFDateFormatter.m */,
 				00E51CE5FE8AAEA611C9CC38 /* OFSimpleStringFormatter.m */,
+				34DF03980B05108D00D82DFC /* OFRelativeDateFormatter.m */,
 				00E51CE6FE8AAEA611C9CC38 /* OFSocialSecurityFormatter.m */,
 				00E51CE8FE8AAEA611C9CC38 /* OFTelephoneFormatter.m */,
 				28C3E2D1FEF0F1AAC697A12D /* OFTimeSpanFormatter.m */,
@@ -1184,6 +1185,7 @@
 				F5FBE7A7025BEF9F0100084B /* OFMultipleNumberFormatter.m */,
 				00E51CECFE8AAEA611C9CC38 /* OFCapitalizeFormatter.h */,
 				00E51CEDFE8AAEA611C9CC38 /* OFDateFormatter.h */,
+				34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */,
 				00E51CEEFE8AAEA611C9CC38 /* OFSimpleStringFormatter.h */,
 				00E51CEFFE8AAEA611C9CC38 /* OFSocialSecurityFormatter.h */,
 				00E51CF1FE8AAEA611C9CC38 /* OFTelephoneFormatter.h */,
@@ -1489,8 +1491,6 @@
 			isa = PBXGroup;
 			children = (
 				34B435290C6D110100874D95 /* Error Recovery */,
-				34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */,
-				34DF03980B05108D00D82DFC /* OFRelativeDateFormatter.m */,
 				9FE23DFD0AB0EBC600E3D795 /* OFRelativeDateParser.h */,
 				34E576C10E245BEB00C1F5FB /* OFRelativeDateParser-Internal.h */,
 				9FE23DFE0AB0EBC600E3D795 /* OFRelativeDateParser.m */,

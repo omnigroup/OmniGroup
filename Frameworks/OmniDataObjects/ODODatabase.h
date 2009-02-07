@@ -48,6 +48,8 @@ extern BOOL ODOLogSQL; // Not set until +[ODODatabase initialize]
 
 - (NSDictionary *)committedMetadata;
 
+- (BOOL)fetchCommittedRowCount:(uint64_t *)outRowCount fromEntity:entity matchingPredicate:(NSPredicate *)predicate error:(NSError **)outError;
+
 // Dangerous API
 - (BOOL)executeSQLWithoutResults:(NSString *)sql error:(NSError **)outError;
 

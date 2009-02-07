@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -171,6 +171,11 @@ extern NSString *OBShortObjectDescription(id anObject);
 // Apple doesn't have an NSNotFound equivalent for NSUInteger values (NSNotFound is an NSInteger).
 // Note that for APIs which should match Foundation APIs, you'll need to use NSNotFound even for NSUInteger values.
 #define OB_NSUInteger_NotFound (~(NSUInteger)0)
+
+#if NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
+// Returns a copy of the method signature with the NSGeometry types replaced with CG types.  The result should be free'd by the caller.
+__private_extern__ const char *_OBGeometryAdjustedSignature(const char *sig);
+#endif
 
 #if defined(__cplusplus)
 } // extern "C"

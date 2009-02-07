@@ -94,14 +94,11 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     [monthAndYearTextFieldCell setFormatter:monthAndYearFormatter];
     [monthAndYearFormatter release];
 
-#if defined(MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
-    // Not tested yet
     NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
     shortWeekDays = [formatter shortWeekdaySymbols];
-#else
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    shortWeekDays = [defaults objectForKey:NSShortWeekDayNameArray];
-#endif
+    if (!shortWeekDays)
+        shortWeekDays = [NSArray arrayWithObjects:@"Sun", @"Mon", @"Tue", @"Wed", @"Thu", @"Fri", @"Sat", nil];
+    OBASSERT(shortWeekDays);
     
     for (index = 0; index < OACalendarViewNumDaysPerWeek; index++) {
 	dayOfWeekCell[index] = [[NSTextFieldCell alloc] init];

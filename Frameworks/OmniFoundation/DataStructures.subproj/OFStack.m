@@ -39,7 +39,7 @@ void OFStackDeallocate(OFStack *stack)
     NSZoneFree(stack->stackZone, stack);
 }
 
-static inline void _OFStackEnsurePushSpace(OFStack *stack, unsigned long aSize)
+static inline void _OFStackEnsurePushSpace(OFStack *stack, size_t aSize)
 {
     while (stack->stackSize - stack->stackPointer < aSize) {
 	if (!stack->stackSize) {
@@ -68,7 +68,7 @@ static inline void _OFStackEnsurePushSpace(OFStack *stack, unsigned long aSize)
     }
 }
 
-static inline void _OFStackEnsurePopSpace(OFStack *stack, unsigned long aSize)
+static inline void _OFStackEnsurePopSpace(OFStack *stack, size_t aSize)
 {
     if (aSize > stack->currentFrameSize) {
         fprintf(stderr, "OFStack: UnderFlow! (wanted %ld bytes, but had only %ld)\n",
@@ -83,10 +83,10 @@ static inline void _OFStackEnsurePopSpace(OFStack *stack, unsigned long aSize)
 #define OMNI_DEBUG_OP(cType, size, op, value, format)					\
     do {										\
         if (_stackDebug)								\
-	    fprintf(stderr, "\t%s   -> [0x%08lx|0x%08lx|0x%08lx] %s %d " format "\n",	\
+	    fprintf(stderr, "\t%s   -> [0x%08lx|0x%08lx|0x%08lx] %s %" PRIuPTR " " format "\n",	\
 		    op, stack->stackPointer, stack->basePointer,			\
 		    stack->currentFrameSize,						\
-		    #cType, (int)size, value);						\
+		    #cType, size, value);						\
     } while (NO)
 
 
@@ -105,19 +105,19 @@ static inline void _OFStackEnsurePopSpace(OFStack *stack, unsigned long aSize)
 	OMNI_DEBUG_OP(cType, sizeof(aVal), "push", aVal, format);				\
     }												\
 									    			\
-    void OFStackPeek ## strType (OFStack *stack, unsigned long basePointer,			\
-                                   int offset, cType *aVal)					\
+    void OFStackPeek ## strType (OFStack *stack, size_t basePointer,				\
+                                   ptrdiff_t offset, cType *aVal)				\
     {												\
-        OBASSERT(basePointer >= abs(offset));							\
+        OBASSERT(basePointer >= (size_t)(offset));						\
         OBASSERT(stack->stackPointer >= basePointer + offset + sizeof(*aVal));	\
         *aVal = *(cType *)((char *)stack->stackRoot + basePointer + offset);			\
-        OMNI_DEBUG_OP(cType, sizeof(aVal), "peek", *aVal, format);				\
+        OMNI_DEBUG_OP(cType, sizeof(*aVal), "peek", *aVal, format);				\
     }												\
                                                                                                 \
-    void OFStackPoke ## strType (OFStack *stack, unsigned long basePointer,			\
-                                   int offset, cType aVal)					\
+    void OFStackPoke ## strType (OFStack *stack, size_t basePointer,			\
+                                   ptrdiff_t offset, cType aVal)				\
     {												\
-        OBASSERT(basePointer >= abs(offset));							\
+        OBASSERT(basePointer >= (size_t)(offset));							\
         OBASSERT(stack->stackPointer >= basePointer + offset + sizeof(aVal));	\
         *(cType *)((char *)stack->stackRoot + basePointer + offset) = aVal;			\
         OMNI_DEBUG_OP(cType, sizeof(aVal), "poke", aVal, format);				\
@@ -137,14 +137,14 @@ static inline void _OFStackEnsurePopSpace(OFStack *stack, unsigned long aSize)
         _OFStackPop ## strType (stack, aVal);							\
     }
 
-OMNI_TYPE_OP(unsigned long, UnsignedLong, "0x%08lx")
-OMNI_TYPE_OP(id,            Id,           "%p")
-OMNI_TYPE_OP(SEL,           SEL,          "%p")
-OMNI_TYPE_OP(void *,        Pointer,      "%p")
+OMNI_TYPE_OP(uintptr_t, Unsigned, "0x%" PRIxPTR)
+OMNI_TYPE_OP(id, Id, "%p")
+OMNI_TYPE_OP(SEL, SEL, "%p")
+OMNI_TYPE_OP(void *, Pointer, "%p")
 
 #undef OMNI_TYPE_OP
 
-void OFStackPushBytes(OFStack *stack, const void *bytes, unsigned long size)
+void OFStackPushBytes(OFStack *stack, const void *bytes, size_t size)
 {
     _OFStackEnsurePushSpace(stack, size);
     stack->currentFrameSize += size;
@@ -152,7 +152,7 @@ void OFStackPushBytes(OFStack *stack, const void *bytes, unsigned long size)
     stack->stackPointer += size;
 }
 
-void OFStackPopBytes(OFStack *stack, void *bytes, unsigned long size)
+void OFStackPopBytes(OFStack *stack, void *bytes, size_t size)
 {
     _OFStackEnsurePopSpace(stack, size);
     stack->currentFrameSize -= size;
@@ -162,7 +162,7 @@ void OFStackPopBytes(OFStack *stack, void *bytes, unsigned long size)
 
 void OFStackPushFrame(OFStack *stack)
 {
-    OFStackPushUnsignedLong(stack, stack->basePointer);
+    OFStackPushUnsigned(stack, stack->basePointer);
     stack->basePointer = stack->stackPointer;
     stack->currentFrameSize = 0;
     stack->frameCount++;
@@ -176,24 +176,23 @@ void OFStackPopFrame(OFStack *stack)
     }
 
     stack->stackPointer -= stack->currentFrameSize;
-    stack->currentFrameSize = sizeof(unsigned long);
+    stack->currentFrameSize = sizeof(size_t);
 
     stack->stackPointer = stack->basePointer;
-    _OFStackPopUnsignedLong(stack, &stack->basePointer);
+    _OFStackPopUnsigned(stack, &stack->basePointer);
     stack->currentFrameSize = stack->stackPointer - stack->basePointer;
 
     stack->frameCount--;
 }
 
-unsigned long OFStackPreviousFrame(OFStack *stack, unsigned long basePointer)
+size_t OFStackPreviousFrame(OFStack *stack, size_t basePointer)
 {
-    unsigned long previousFrame;
-
-    OFStackPeekUnsignedLong(stack, basePointer, -4, &previousFrame);
+    size_t previousFrame;
+    OFStackPeekUnsigned(stack, basePointer, -sizeof(previousFrame), &previousFrame);
     return previousFrame;
 }
 
-void OFStackDiscardBytes(OFStack *stack, unsigned long size)
+void OFStackDiscardBytes(OFStack *stack, size_t size)
 {
     _OFStackEnsurePopSpace(stack, size);
     stack->currentFrameSize -= size;
@@ -202,27 +201,22 @@ void OFStackDiscardBytes(OFStack *stack, unsigned long size)
 
 void OFStackPrint(OFStack *stack)
 {
-    unsigned long nextFrame = stack->basePointer;
-    unsigned long stackIndex;
+    fprintf(stderr, "fp = 0x%" PRIxPTR "\n", stack->basePointer);
+    fprintf(stderr, "sp = 0x%" PRIxPTR "\n", stack->stackPointer);
 
-    fprintf(stderr, "fp = 0x%08lx\n", stack->basePointer);
-    fprintf(stderr, "sp = 0x%08lx\n", stack->stackPointer);
-
-    nextFrame = stack->basePointer - sizeof(unsigned long);
-    stackIndex = stack->stackPointer;
+    size_t nextFrame = stack->basePointer - sizeof(size_t);
+    size_t stackIndex = stack->stackPointer;
 
     while (stackIndex) {
-	unsigned long value;
-
 	OBASSERT(stackIndex <= stack->stackPointer);
 
-	stackIndex -= sizeof(unsigned long);
-	value = *(unsigned long *)((char *)stack->stackRoot + stackIndex);
+	stackIndex -= sizeof(size_t);
+	size_t value = *(size_t *)((char *)stack->stackRoot + stackIndex);
 
 	if (stackIndex == nextFrame) {
-	    fprintf(stderr, "frame->[0x%08lx] : 0x%08lx\n", stackIndex, value);
-	    nextFrame = value - sizeof(unsigned long);
+	    fprintf(stderr, "frame->[0x%" PRIxPTR "] : 0x%" PRIxPTR "\n", stackIndex, value);
+	    nextFrame = value - sizeof(size_t);
 	} else
-	    fprintf(stderr, "       [0x%08lx] : 0x%08lx\n", stackIndex, value);
+	    fprintf(stderr, "       [0x%" PRIxPTR "] : 0x%" PRIxPTR "\n", stackIndex, value);
     }
 }

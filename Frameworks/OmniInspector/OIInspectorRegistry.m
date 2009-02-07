@@ -733,12 +733,12 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 #pragma mark NSTableView data source methods
 
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
     return [workspaces count];
 }
 
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 {
     if ([[aTableColumn identifier] isEqualToString:@"Name"]) {
         return [workspaces objectAtIndex:rowIndex];
@@ -752,7 +752,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     }
 }
 
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSString *oldName = [workspaces objectAtIndex:rowIndex];
@@ -780,7 +780,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     }
 }
 
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(int)row;
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row;
 {
     if (tableColumn == [[tableView tableColumns] objectAtIndex:1]) {
         if ([tableView isRowSelected:row])
@@ -792,7 +792,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     }
 }
 
-- (BOOL)tableView:(NSTableView *)tableView acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation;
+- (BOOL)tableView:(NSTableView *)tableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation;
 {
     NSArray *names = [[info draggingPasteboard] propertyListForType:OIWorkspaceOrderPboardType];
     int workspaceIndex, nameIndex = [names count];
@@ -810,7 +810,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     return YES;
 }
 
-- (NSDragOperation)tableView:(NSTableView *)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row proposedDropOperation:(NSTableViewDropOperation)operation;
+- (NSDragOperation)tableView:(NSTableView *)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation;
 {
     if (row == -1)
         row = [tableView numberOfRows];

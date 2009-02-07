@@ -101,7 +101,7 @@ OAStackView assumes that all of its subviews line up in one direction (only vert
 
 @implementation OAStackView (PrivateAPI)
 
-static int compareBasedOnArray(id object1, id object2, void *orderedObjects)
+static NSInteger compareBasedOnArray(id object1, id object2, void *orderedObjects)
 {
     int index1, index2;
 

@@ -22,4 +22,6 @@ enum {
     OFXMLDocumentLoadWarning,
     OFXMLDocumentNoRootElementError,
     OFXMLCannotCreateStringFromUnparsedData,
+    
+    OFInvalidHexDigit,
 };

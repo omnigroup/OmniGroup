@@ -27,7 +27,7 @@
 - initWithBytes:(const void *)bytes length:(NSUInteger)length;
 - initWithString:(NSString *)string;
 - (const void *)bytes;
-- (unsigned int)length;
+- (NSUInteger)length;
 
 - (NSString *)sqlString;
 - (BOOL)isZero;

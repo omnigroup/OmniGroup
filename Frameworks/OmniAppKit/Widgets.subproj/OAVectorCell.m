@@ -27,9 +27,8 @@ static inline float _scaling(NSRect frame)
     [super dealloc];
 }
 
-//
-// NSCell subclass
-//
+#pragma mark NSCell subclass
+
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 {
     if (_imageCell == nil) {
@@ -142,9 +141,8 @@ static inline float _scaling(NSRect frame)
     return YES;
 }
 
-//
-// API
-//
+#pragma mark API
+
 - (void)setIsMultiple:(BOOL)flag;
 {
     _isMultiple = flag;
@@ -153,6 +151,15 @@ static inline float _scaling(NSRect frame)
 - (BOOL)isMultiple;
 {
     return _isMultiple;
+}
+
+#pragma mark NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    OAVectorCell *copy = [super copyWithZone:zone];
+    copy->_imageCell = [_imageCell copyWithZone:zone];
+    return copy;
 }
 
 @end

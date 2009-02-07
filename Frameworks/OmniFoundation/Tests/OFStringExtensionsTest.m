@@ -45,12 +45,7 @@ RCS_ID("$Id$");
             NSLog(@"Allowing ShiftJIS_X0213_00 to map to ShiftJIS (via \"%@\") w/o unit test failure.", savable);
             continue;
         }
-	if (enc == kCFStringEncodingGBK_95 && roundTrip == kCFStringEncodingDOSChineseSimplif) {
-            NSLog(@"Allowing kCFStringEncodingGBK_95 to map to kCFStringEncodingDOSChineseSimplif (via \"%@\") w/o unit test failure.", savable);
-	    // <http://www.iana.org/assignments/charset-reg/GBK> seems to indicate that GBK and CP936 are aliases.  10.5 didn't map GBK to CP936, but future OS versions might.  Waiting to hear back from Apple on this to determine if it was intentional.  <bug://50016> CFStringConvertIANACharSetNameToEncoding returning wrong value (Radar 6233750)
-	    continue;
-	}
-	
+
         should1(roundTrip == enc,
                 ([NSString stringWithFormat:@"CFEncoding %u encodes to \"%@\" decodes to %u", enc, savable, roundTrip]));
     }

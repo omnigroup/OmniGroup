@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,12 +25,20 @@ static BOOL isSendingBecomingMultiThreaded = NO;
 extern void _objc_resolve_categories_for_class(struct objc_class *cls);
 #endif
 
+// This can produce lots of false positivies, but provides a way to start looking for some potential problem cases.
+#if 1 && defined(DEBUG)
+#define OB_CHECK_COPY_WITH_ZONE
+#endif
+
 @interface OBPostLoader (PrivateAPI)
 + (BOOL)_processSelector:(SEL)selectorToCall inClass:(Class)aClass initialize:(BOOL)shouldInitialize;
 + (void)_becomingMultiThreaded:(NSNotification *)note;
 #ifdef OMNI_ASSERTIONS_ON
 + (void)_validateMethodSignatures;
 + (void)_checkForMethodsInDeprecatedProtocols;
+#endif
+#ifdef OB_CHECK_COPY_WITH_ZONE
++ (void)_checkCopyWithZoneImplementations;
 #endif
 @end
 
@@ -71,7 +79,7 @@ This method makes several passes, each time invoking a different selector.  On t
 {
     [self processSelector:@selector(performPosing) initialize:NO];
     [self processSelector:@selector(didLoad) initialize:YES];
-
+    
     // Handle the case that this doesn't get called until after we've gone multi-threaded
     if ([NSThread isMultiThreaded])
         [self _becomingMultiThreaded:nil];
@@ -79,6 +87,9 @@ This method makes several passes, each time invoking a different selector.  On t
 #ifdef OMNI_ASSERTIONS_ON
     [self _validateMethodSignatures];
     [self _checkForMethodsInDeprecatedProtocols];
+#endif
+#ifdef OB_CHECK_COPY_WITH_ZONE
+    [self _checkCopyWithZoneImplementations];
 #endif
 }
 
@@ -300,7 +311,7 @@ static char *_copyNormalizeMethodSignature(const char *sig)
     return copy;
 }
 
-static BOOL _methodSignaturesCompatible(const char *sig1, const char *sig2)
+static BOOL _methodSignaturesCompatible(SEL sel, const char *sig1, const char *sig2)
 {
     char *norm1 = _copyNormalizeMethodSignature(sig1);
     char *norm2 = _copyNormalizeMethodSignature(sig2);
@@ -310,6 +321,28 @@ static BOOL _methodSignaturesCompatible(const char *sig1, const char *sig2)
     free(norm1);
     free(norm2);
 
+    if (!compatible) {
+        // A couple cases in QuartzCore where somehow one version has the offset info and the other doesn't.
+        if (((strcmp(sig1, "v@:d") == 0) || (strcmp(sig2, "v@:d") == 0)) &&
+            ((strcmp(sig1, "v16@0:4d8") == 0) || (strcmp(sig2, "v16@0:4d8") == 0)))
+            return YES;
+        if (((strcmp(sig1, "v@:@") == 0) || (strcmp(sig2, "v@:@") == 0)) &&
+            ((strcmp(sig1, "v12@0:4@8") == 0) || (strcmp(sig2, "v12@0:4@8") == 0)))
+            return YES;
+        
+        // Radar 6529241: Incorrect dragging source method declarations in AppKit.
+        // NSControl and NSTableView have mismatching signatures for these methods (32/64 bit issue).
+        if (sel == @selector(draggingSourceOperationMaskForLocal:) &&
+            ((strcmp(sig1, "I12@0:4c8") == 0 && strcmp(sig2, "L12@0:4c8") == 0) ||
+             (strcmp(sig1, "L12@0:4c8") == 0 && strcmp(sig2, "I12@0:4c8") == 0)))
+            return YES;
+        
+        if (sel == @selector(draggedImage:endedAt:operation:) &&
+            ((strcmp(sig1, "v24@0:4@8{CGPoint=ff}12I20") == 0 && strcmp(sig2, "v24@0:4@8{CGPoint=ff}12L20") == 0) ||
+             (strcmp(sig1, "v24@0:4@8{CGPoint=ff}12L20") == 0 && strcmp(sig2, "v24@0:4@8{CGPoint=ff}12I20") == 0)))
+            return YES;
+        
+    }
     return compatible;
 }
 
@@ -334,12 +367,26 @@ static void _checkSignaturesVsSuperclass(Class cls)
             
             const char *types = method_getTypeEncoding(method);
             const char *superTypes = method_getTypeEncoding(superMethod);
-            if (!_methodSignaturesCompatible(types, superTypes)) {
+            BOOL freeSignatures = NO;
+
+#if NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
+            // Cocoa is built w/o this under 10.5, it seems. If we turn it on and then do method replacement, we'll get spurious warnings about type mismatches due to the struct name embedded in the type encoding.
+            types = _OBGeometryAdjustedSignature(types);
+            superTypes = _OBGeometryAdjustedSignature(superTypes);
+            freeSignatures = YES;
+#endif
+            
+            if (!_methodSignaturesCompatible(sel, types, superTypes)) {
                 NSLog(@"Method %s has conflciting type signatures between class and its superclas:\n\tnormalized %s original %s (%s)\n\tnormalized %s original %s (%s)!",
 		      sel_getName(sel),
 		      _copyNormalizeMethodSignature(types), types, class_getName(cls),
 		      _copyNormalizeMethodSignature(superTypes), superTypes, class_getName(superClass));
                 MethodSignatureConflictCount++;
+            }
+
+            if (freeSignatures) {
+                free((char *)types);
+                free((char *)superTypes);
             }
         }
         free(methods);
@@ -361,7 +408,7 @@ static void _checkMethodInClassVsMethodInProtocol(Class cls, Protocol *protocol,
         return;
     
     const char *types = method_getTypeEncoding(m);
-    if (!_methodSignaturesCompatible(types, desc.types)) {
+    if (!_methodSignaturesCompatible(sel, types, desc.types)) {
         NSLog(@"Method %s has type signatures conflicting with adopted protocol\n\tnormalized %s original %s(%s)\n\tnormalized %s original %s(%s)!",
 	      sel_getName(sel),
 	      _copyNormalizeMethodSignature(types), types, class_getName(cls),
@@ -549,7 +596,10 @@ static void _checkForDeprecatedMethodsInClass(Class cls, CFSetRef deprecatedSele
 	if (strcmp(name, "ISDComplainer") == 0 ||
 	    strcmp(name, "ABBackupManager") == 0 ||
 	    strcmp(name, "ABPeopleController") == 0 ||
-	    strcmp(name, "ABAddressBook") == 0)
+	    strcmp(name, "ABAddressBook") == 0 ||
+            strcmp(name, "ABPhoneFormatsPreferencesModule") == 0 ||
+            strcmp(name, "GFNodeManagerView") == 0 ||
+            strcmp(name, "QCPatchActor") == 0)
 	    continue;
 
         _checkForDeprecatedMethodsInClass(cls, deprecatedInstanceSelectors, NO/*isClassMethod*/);
@@ -559,6 +609,103 @@ static void _checkForDeprecatedMethodsInClass(Class cls, CFSetRef deprecatedSele
     OBASSERT(DeprecatedMethodImplementationCount == 0);
 }
 
+#endif
+
+#if defined(OB_CHECK_COPY_WITH_ZONE)
+// Look through all classes and find those that respond to -copyWithZone:. If the class has object-typed ivars and does not itself implement -copyWithZone:, log a warnings.  This will generate false positives in some cases, but it is a useful check to help make sure that NSCell subclasses are doing the right thing, for example.
+
+static BOOL _classIsKindOfClassNamed(Class cls, const char *superclassName)
+{
+    Class superclass = objc_getClass(superclassName);
+    if (!superclass)
+        return NO;
+    return OBClassIsSubclassOfClass(cls, superclass);
+}
+
+static void _checkCopyWithZoneImplementationForClass(Class cls, SEL copySel)
+{
+    Class impCls = OBClassImplementingMethod(cls, copySel);
+    if (!impCls || impCls == cls)
+        // No implementation at all or the implementation is on this class -- we assume it is OK
+        return;
+    
+    unsigned int ivarCount = 0;
+    Ivar *ivars = class_copyIvarList(cls, &ivarCount);
+    if (!ivars)
+        // No ivars in this class, so no problem
+        return;
+    
+    // Yucky hacks. There is no great way for objects to declare that they are immutable and implement -copyWithZone: to return [self retain] (and can no longer have mutable properties).  Special case some classes in the Omni frameworks that we know do this.  Also, NSTextAttachment, which doesn't declare NSCopying, but implements it to return [self retain], even though attachmets are mutable.
+    if (copySel == @selector(copyWithZone:) &&
+        (_classIsKindOfClassNamed(cls, "NSTextAttachment") ||
+         _classIsKindOfClassNamed(cls, "ODOProperty") ||
+         _classIsKindOfClassNamed(cls, "ContentOptionDescription") ||
+         _classIsKindOfClassNamed(cls, "OSStyleAttribute")))
+        return;
+    
+    // We'll assume that if there are any object-typed ivars ('@' _anywhere_ in the signature -- might be an object-containing struct in bizarro cases) that it should be retained unless it has 'nonretained' in the name (an Omni convention).  Clearly there will be false positives, but this is just a filter to show places to check.    
+    for (unsigned int ivarIndex = 0; ivarIndex < ivarCount; ivarIndex++) {
+        Ivar ivar = ivars[ivarIndex];
+        const char *type = ivar_getTypeEncoding(ivar);
+        if (strchr(type, '@') == NULL)
+            continue;
+        const char *name = ivar_getName(ivar);
+        if (strstr(name, "nonretained") == NULL) {
+            NSLog(@"  ### Found retained object ivar %s in class %s", name, class_getName(cls));
+        }
+    }
+    
+    free(ivars);
+}
+
++ (void)_checkCopyWithZoneImplementations;
+{
+    // Get the class list
+    int classIndex, classCount = 0, newClassCount;
+    Class *classes = NULL;
+    newClassCount = objc_getClassList(NULL, 0);
+    while (classCount < newClassCount) {
+        classCount = newClassCount;
+        classes = realloc(classes, sizeof(Class) * classCount);
+        newClassCount = objc_getClassList(classes, classCount);
+    }
+    
+    for (classIndex = 0; classIndex < classCount; classIndex++) {
+        Class cls = classes[classIndex];
+        // Some classes (that aren't our problem) don't asplode if they try to dynamically create setters when asked about 'copyWithZone:'.
+        const char *clsName = class_getName(cls);
+        if (strcmp(clsName, "_NSWindowAnimator") == 0 ||
+            strcmp(clsName, "_NSViewAnimator") == 0)
+            continue;
+        
+        // Also, skip class prefix ranges that are 'owned' by Apple and produce lots of (hopefully) false positives.
+        if (strstr(clsName, "CI") == clsName ||
+            strstr(clsName, "QF") == clsName ||
+            strstr(clsName, "NS") == clsName ||
+            strstr(clsName, "_NS") == clsName ||
+            strstr(clsName, "AB") == clsName ||
+            strstr(clsName, "WebCore") == clsName ||
+            strstr(clsName, "WebElement") == clsName ||
+            strstr(clsName, "IK") == clsName ||
+            strstr(clsName, "QL") == clsName ||
+            strstr(clsName, "HI") == clsName ||
+            strstr(clsName, "CA") == clsName ||
+            strstr(clsName, "DS") == clsName ||
+            strstr(clsName, "__NS") == clsName ||
+            strstr(clsName, "DOM") == clsName ||
+            strstr(clsName, "GF") == clsName ||
+            strstr(clsName, "SF") == clsName ||
+            strstr(clsName, "ISD") == clsName ||
+            strstr(clsName, "%NS") == clsName || // Cocoa class that got pose-as'd
+            strstr(clsName, "QC") == clsName)
+            continue;
+        
+        _checkCopyWithZoneImplementationForClass(cls, @selector(copyWithZone:));
+        _checkCopyWithZoneImplementationForClass(cls, @selector(mutableCopyWithZone:));
+    }
+    
+    free(classes);
+}
 #endif
 
 @end

@@ -7,8 +7,6 @@
 
 #import <OmniFoundation/OFCancelErrorRecovery.h>
 
-#import <OmniFoundation/NSBundle-OFExtensions.h>
-
 RCS_ID("$Id$");
 
 @implementation OFCancelErrorRecovery

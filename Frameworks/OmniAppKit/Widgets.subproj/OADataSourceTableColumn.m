@@ -14,7 +14,7 @@ RCS_ID("$Id$");
 
 @implementation OADataSourceTableColumn
 
-- (id)dataCellForRow:(int)row;
+- (id)dataCellForRow:(NSInteger)row;
 {
     // Can't cache whether the data source implementes the extra data source method since table columns don't get notified of data source changes.  Instead, just assume that the data source implements it (otherwise, how would we get one of these?).
 

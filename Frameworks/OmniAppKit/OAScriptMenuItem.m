@@ -79,6 +79,15 @@ static NSImage *scriptImage;
     return [super submenu];
 }
 
+#pragma mark NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    // Just a nib placeholder; shouldn't be copied.
+    OBRequestConcreteImplementation(self, _cmd);
+    return nil;
+}
+
 @end
 
 @implementation OAScriptMenuItem (Private)

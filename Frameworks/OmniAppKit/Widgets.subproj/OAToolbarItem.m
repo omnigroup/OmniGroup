@@ -62,69 +62,13 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-// API
+#pragma mark API
 
-- (id)delegate;
-{
-    return _delegate;
-}
-
-- (void)setDelegate:(id)delegate;
-{
-    _delegate = delegate;
-}
-
-- (NSImage *)optionKeyImage;
-{
-    return _optionKeyImage;
-}
-
-- (void)setOptionKeyImage:(NSImage *)image;
-{
-    if (image == _optionKeyImage)
-        return;
-
-    [_optionKeyImage release];
-    _optionKeyImage = [image retain];
-}
-
-- (NSString *)optionKeyLabel;
-{
-    return _optionKeyLabel;
-}
-
-- (void)setOptionKeyLabel:(NSString *)label;
-{
-    if (label == _optionKeyLabel)
-        return;
-
-    [_optionKeyLabel release];
-    _optionKeyLabel = [label retain];
-}
-
-- (NSString *)optionKeyToolTip;
-{
-    return _optionKeyToolTip;
-}
-
-- (void)setOptionKeyToolTip:(NSString *)toolTip;
-{
-    if (toolTip == _optionKeyToolTip)
-        return;
-
-    [_optionKeyToolTip release];
-    _optionKeyToolTip = [toolTip retain];
-}
-
-- (SEL)optionKeyAction;
-{
-    return _optionKeyAction;
-}
-
-- (void)setOptionKeyAction:(SEL)action;
-{
-    _optionKeyAction = action;
-}
+@synthesize delegate = _nonretained_delegate;
+@synthesize optionKeyImage = _optionKeyImage;
+@synthesize optionKeyLabel = _optionKeyLabel;
+@synthesize optionKeyToolTip = _optionKeyToolTip;
+@synthesize optionKeyAction = _optionKeyAction;
 
 - (void)setUsesTintedImage:(NSString *)imageName inBundle:(NSBundle *)imageBundle;
 {
@@ -156,13 +100,27 @@ RCS_ID("$Id$");
     }
 }
 
-// NSToolbarItem subclass
+#pragma mark NSToolbarItem subclass
 
 - (void)validate;
 {
     [super validate];
-    if (_delegate)
-        [self setEnabled:[_delegate validateToolbarItem:self]];
+    if (_nonretained_delegate)
+        [self setEnabled:[_nonretained_delegate validateToolbarItem:self]];
+}
+
+#pragma mark NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    OAToolbarItem *copy = [super copyWithZone:zone];
+    copy->_optionKeyImage = [_optionKeyImage retain];
+    copy->_optionKeyLabel = [_optionKeyLabel copy];
+    copy->_optionKeyToolTip = [_optionKeyToolTip copy];
+    copy->tintedImageStem = [tintedImageStem copy];
+    copy->tintedOptionImageStem = [tintedOptionImageStem copy];
+    copy->tintedImageBundle = [tintedImageBundle retain];
+    return copy;
 }
 
 @end
@@ -195,9 +153,7 @@ RCS_ID("$Id$");
 
 - (void)_swapImage;
 {
-    NSImage *image;
-
-    image = [[self image] retain];
+    NSImage *image = [[self image] retain];
     [self setImage:[self optionKeyImage]];
     [self setOptionKeyImage:image];
     [image release];
@@ -205,9 +161,7 @@ RCS_ID("$Id$");
 
 - (void)_swapLabel;
 {
-    NSString *label;
-
-    label = [[self label] retain];
+    NSString *label = [[self label] retain];
     [self setLabel:[self optionKeyLabel]];
     [self setOptionKeyLabel:label];
     [label release];
@@ -215,9 +169,7 @@ RCS_ID("$Id$");
 
 - (void)_swapToolTip;
 {
-    NSString *toolTip;
-
-    toolTip = [[self toolTip] retain];
+    NSString *toolTip = [[self toolTip] retain];
     [self setToolTip:[self optionKeyToolTip]];
     [self setOptionKeyToolTip:toolTip];
     [toolTip release];
@@ -225,9 +177,7 @@ RCS_ID("$Id$");
 
 - (void)_swapAction;
 {
-    SEL action;
-    action = [self action];
-
+    SEL action = [self action];
     [self setAction:[self optionKeyAction]];
     [self setOptionKeyAction:action];
 }

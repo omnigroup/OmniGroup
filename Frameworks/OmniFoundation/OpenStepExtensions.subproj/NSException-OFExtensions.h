@@ -10,5 +10,6 @@
 #import <Foundation/NSException.h>
 
 @interface NSException (OFExtensions)
++ (void)raise:(NSString *)name reason:(NSString *)reason;
 - (NSString *)displayName;
 @end

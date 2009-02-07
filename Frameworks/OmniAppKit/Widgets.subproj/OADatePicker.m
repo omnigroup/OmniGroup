@@ -44,6 +44,7 @@ RCS_ID("$Id$");
         [[self window] resignKeyWindow];
     }
     
+    _clicked = YES;
     sentAction = NO;
 }
 
@@ -53,6 +54,16 @@ RCS_ID("$Id$");
 	return _lastDate;
     }
     return [super dateValue];
+}
+
+- (void)setClicked:(BOOL)clicked;
+{
+    _clicked = clicked;
+}
+
+- (BOOL)clicked;
+{
+    return _clicked;
 }
 
 - (void)reset;

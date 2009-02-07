@@ -80,7 +80,7 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
     isPinned = newValue;    // Set our state to On before turning on pinning, so that we're always in a consistent state (can't be pinned and not on)
 }
 
-- (void)setState:(int)value
+- (void)setState:(NSInteger)value
 {
     // If we're pinned, don't allow ourself to be turned off
     if (isPinned) {
@@ -181,6 +181,15 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
     }
     
     return;
+}
+
+#pragma mark NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    // We have retained ivars that would need to be addressed.
+    OBRequestConcreteImplementation(self, _cmd);
+    return nil;
 }
 
 @end

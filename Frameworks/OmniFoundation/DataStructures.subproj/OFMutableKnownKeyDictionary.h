@@ -20,7 +20,7 @@ This subclass of NSMutableDictionary should be used when the set of possible key
 */
 {
     OFKnownKeyDictionaryTemplate *_template;
-    NSObject                     *_values[0];
+    NSObject *_values[0];
 }
 
 + (OFMutableKnownKeyDictionary *) newWithTemplate: (OFKnownKeyDictionaryTemplate *)aTemplate zone: (NSZone *) zone;

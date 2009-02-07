@@ -11,6 +11,7 @@
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
+#import <OmniAppKit/NSWindow-OAExtensions.h>
 
 #import "NSImage-OAExtensions.h"
 #import "OAWindowCascade.h"
@@ -89,7 +90,9 @@ static int defaultFirstWeekday = 0;
     if ([self initWithWindowNibName:@"OAPopupDatePicker"] == nil)
         return nil;
 
-    [self window];
+    NSWindow *window = [self window];
+    if ([window respondsToSelector:@selector(setCollectionBehavior:)])
+	[window setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];   
     return self;
 }
 
@@ -118,16 +121,18 @@ static int defaultFirstWeekday = 0;
     NSString *bindingKeyPath = [bindingInfo objectForKey:NSObservedKeyPathKey];
     bindingKeyPath = [bindingKeyPath stringByReplacingAllOccurrencesOfString:@"selectedObjects." withString:@"selection."];
      
-    [self startPickingDateWithTitle:title fromRect:[aControl visibleRect] inView:aControl bindToObject:[bindingInfo objectForKey:NSObservedObjectKey] withKeyPath:bindingKeyPath control:aControl controlFormatter:[aControl formatter] stringUpdateSelector:stringUpdateSelector defaultDate:defaultDate];
+    [self startPickingDateWithTitle:title fromRect:[aControl visibleRect] inView:aControl bindToObject:[bindingInfo objectForKey:NSObservedObjectKey] withKeyPath:bindingKeyPath control:aControl controlFormatter:[aControl formatter] stringUpdateSelector:stringUpdateSelector noDateOnEscape:YES defaultDate:defaultDate];
 }
 
-- (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter stringUpdateSelector:(SEL)stringUpdateSelector defaultDate:(NSDate *)defaultDate;
+- (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter stringUpdateSelector:(SEL)stringUpdateSelector noDateOnEscape:(BOOL)noDateOnEscape defaultDate:(NSDate *)defaultDate;
 {
     [self close];
     
     // retain the bound object and keypath
     _boundObject = [bindObject retain];
     _boundObjectKeyPath = [bindingKeyPath retain];
+ 
+    _noDateOnEscape = noDateOnEscape;
     
     // retain the field editor, its containg view, and optionally formatter so that we can update it as we make changes since we're not pushing values to it each time
     _control = [control retain];
@@ -166,7 +171,7 @@ static int defaultFirstWeekday = 0;
     [timePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:NSAllowsEditingMultipleValuesSelectionBindingOption]];
         
     [self setDatePickerObjectValue:_datePickerObjectValue];
-    
+    [datePicker setClicked:NO];
     /* Finally, place the editor window on-screen */
     [popupWindow setTitle:title];
     
@@ -211,6 +216,17 @@ static int defaultFirstWeekday = 0;
 - (NSString *)bindingKeyPath;
 {
     return [[datePicker infoForBinding:@"value"] objectForKey:NSObservedKeyPathKey];
+}
+
+- (void)clearIfNotClicked;
+{
+    if (![datePicker clicked] && _noDateOnEscape)
+	_datePickerObjectValue = nil;
+}
+
+- (BOOL)noDateOnEscape;
+{
+    return _noDateOnEscape;
 }
 
 - (BOOL)isKey;
@@ -278,7 +294,14 @@ static int defaultFirstWeekday = 0;
     OBASSERT(parentWindow); // Should not have disassociated quite yet
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowWillCloseNotification object:parentWindow];
-
+    
+    [self clearIfNotClicked]; // set the date to nil if we started with a nil date and there was no interaction
+    
+    NSEvent *currentEvent = [NSApp currentEvent];
+    if (_noDateOnEscape && ([currentEvent type] == NSKeyDown) && ([[NSApp currentEvent] keyCode] == 53)) { 
+	_datePickerObjectValue = nil;
+    } 
+    
     // update the object
     if (_boundObject) {
 	[_boundObject setValue:_datePickerObjectValue forKeyPath:_boundObjectKeyPath];

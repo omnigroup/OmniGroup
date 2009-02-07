@@ -15,7 +15,6 @@
 #import "OWContent.h"
 #import "OWProcessorCache.h"
 #import "OWMemoryCache.h"
-#import "OWDiskCache.h"
 #import "OWFilteredAddressCache.h"
 
 RCS_ID("$Id$");
@@ -84,34 +83,6 @@ static OFSimpleLockType observersLock;
         [filterCache release];
     }
 
-}
-
-+ (void)registerItemName:(NSString *)itemName bundle:(NSBundle *)bundle description:(NSDictionary *)description;
-{
-    if ([description boolForKey:@"include" defaultValue:NO]) {
-        Class cacheClass = [OFBundledClass classNamed:itemName];
-        NSString *cachePath;
-        OWDiskCache *diskCache;
-
-        cachePath = [[OFCacheFile applicationCacheDirectory] stringByAppendingPathComponent:@"Cache.db"];
-        diskCache = [cacheClass openCacheAtPath:cachePath];
-        if (diskCache == nil)
-            diskCache = [cacheClass createCacheAtPath:cachePath];
-        if (diskCache != nil) {
-            OWContentCacheGroup *group = [self defaultCacheGroup];
-            [group addCache:diskCache atStart:NO];
-            OFForEachObject([[group caches] reverseObjectEnumerator], OWMemoryCache *, aCache) {
-                if ([aCache respondsToSelector:@selector(setResultCache:)] &&
-                    ![aCache resultCache]) {
-#ifdef DEBUG_wiml
-                    NSLog(@"Setting %@ as result cache for %@", OBShortObjectDescription(diskCache), OBShortObjectDescription(aCache));
-#endif
-                    [aCache setResultCache:diskCache];
-                    break;
-                }
-            }
-        }
-    }
 }
 
 + (OWContentCacheGroup *)defaultCacheGroup;

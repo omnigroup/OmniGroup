@@ -229,19 +229,10 @@
 		4AA5367908B27DE600F0872D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E52132FE8AB39F11C9CC38 /* OmniBase.framework */; };
 		4AA5367A08B27DE600F0872D /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E52134FE8AB39F11C9CC38 /* OmniFoundation.framework */; };
 		4AA5367B08B27DE600F0872D /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2E965E6050D4E580097A146 /* SenTestingKit.framework */; };
-		4AA5368808B27DE600F0872D /* OWDiskCache.h in Headers */ = {isa = PBXBuildFile; fileRef = A24855A70561B949001A78E3 /* OWDiskCache.h */; };
-		4AA5368A08B27DE600F0872D /* OWDiskCacheInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = A2C0338F057D62DB0097A146 /* OWDiskCacheInternal.h */; };
-		4AA5368D08B27DE600F0872D /* OWDiskCache.m in Sources */ = {isa = PBXBuildFile; fileRef = A24855A80561B949001A78E3 /* OWDiskCache.m */; };
 		4AA5369108B27DE600F0872D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E52132FE8AB39F11C9CC38 /* OmniBase.framework */; };
 		4AA5369208B27DE600F0872D /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E52134FE8AB39F11C9CC38 /* OmniFoundation.framework */; };
 		4AA5369308B27DE600F0872D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E52135FE8AB39F11C9CC38 /* Foundation.framework */; };
 		4AA5369508B27DE600F0872D /* OmniNetworking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E52133FE8AB39F11C9CC38 /* OmniNetworking.framework */; };
-		4AA5369F08B27DE600F0872D /* OWDiskCacheInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = A2C0338F057D62DB0097A146 /* OWDiskCacheInternal.h */; };
-		4AA536A008B27DE600F0872D /* OWDiskCache.h in Headers */ = {isa = PBXBuildFile; fileRef = A24855A70561B949001A78E3 /* OWDiskCache.h */; };
-		4AA536A108B27DE600F0872D /* OWXPlistValue.h in Headers */ = {isa = PBXBuildFile; fileRef = A2BE95FC057BFEE40097A146 /* OWXPlistValue.h */; };
-		4AA536A308B27DE600F0872D /* owxtool.m in Sources */ = {isa = PBXBuildFile; fileRef = A25CDB9F056EFEAB0097A146 /* owxtool.m */; };
-		4AA536A408B27DE600F0872D /* OWDiskCache.m in Sources */ = {isa = PBXBuildFile; fileRef = A24855A80561B949001A78E3 /* OWDiskCache.m */; };
-		4AA536A508B27DE600F0872D /* OWXPlistValue.m in Sources */ = {isa = PBXBuildFile; fileRef = A2BE95FD057BFEE40097A146 /* OWXPlistValue.m */; };
 		4AA536A708B27DE600F0872D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E52135FE8AB39F11C9CC38 /* Foundation.framework */; };
 		4AA536A808B27DE600F0872D /* OmniIndex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A249947C0557778A0097A146 /* OmniIndex.framework */; };
 		4AA536A908B27DE600F0872D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E52132FE8AB39F11C9CC38 /* OmniBase.framework */; };
@@ -492,7 +483,6 @@
 		4AA5366608B27DE600F0872D /* OWFWebPounder */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OWFWebPounder; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA5368208B27DE600F0872D /* Info-OWFUnitTests.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info-OWFUnitTests.plist"; path = "../Info-OWFUnitTests.plist"; sourceTree = "<group>"; };
 		4AA5368308B27DE600F0872D /* OWF.otest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OWF.otest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AA5369B08B27DE600F0872D /* Info-OWDiskCache.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info-OWDiskCache.plist"; path = "../Info-OWDiskCache.plist"; sourceTree = "<group>"; };
 		4AA5369C08B27DE600F0872D /* OWDiskCache.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OWDiskCache.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA536B108B27DE600F0872D /* owxtool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = owxtool; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA536C808B27DE600F0872D /* OWFGetURL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OWFGetURL; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -527,14 +517,11 @@
 		A2434ADA053B679C0097A146 /* OWContent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWContent.m; sourceTree = "<group>"; };
 		A245AE32054F07F00097A146 /* OWObjectToDataStreamProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWObjectToDataStreamProcessor.h; sourceTree = "<group>"; };
 		A245AE33054F07F00097A146 /* OWObjectToDataStreamProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWObjectToDataStreamProcessor.m; sourceTree = "<group>"; };
-		A24855A70561B949001A78E3 /* OWDiskCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWDiskCache.h; sourceTree = "<group>"; };
-		A24855A80561B949001A78E3 /* OWDiskCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWDiskCache.m; sourceTree = "<group>"; };
 		A249947C0557778A0097A146 /* OmniIndex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniIndex.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A24B5F8905486CBD0097A146 /* OWAddressTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWAddressTests.m; sourceTree = "<group>"; };
 		A2507B1D053F8C230097A146 /* OWMemoryCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWMemoryCache.h; sourceTree = "<group>"; };
 		A2507B1E053F8C230097A146 /* OWMemoryCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWMemoryCache.m; sourceTree = "<group>"; };
 		A258F27A052CEB4E0097A146 /* OWContentCacheProtocols.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWContentCacheProtocols.h; sourceTree = "<group>"; };
-		A25CDB9F056EFEAB0097A146 /* owxtool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = owxtool.m; sourceTree = "<group>"; };
 		A27DEEA2057E73A80097A146 /* rfc2389.txt */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = text; name = rfc2389.txt; path = /Network/Public/Documentation/RFC/rfc2389.txt; sourceTree = "<absolute>"; };
 		A27DEEA3057E73FF0097A146 /* rfc2640.txt */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = text; name = rfc2640.txt; path = /Network/Public/Documentation/RFC/rfc2640.txt; sourceTree = "<absolute>"; };
 		A27DEEA4057E75130097A146 /* rfc1639.txt */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = text; name = rfc1639.txt; path = /Network/Public/Documentation/RFC/rfc1639.txt; sourceTree = "<absolute>"; };
@@ -544,10 +531,7 @@
 		A2AE867704992AB90097A146 /* workarounds.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; name = workarounds.plist; path = Processors.subproj/Protocols.subproj/workarounds.plist; sourceTree = SOURCE_ROOT; };
 		A2BDC13B05574D5F0097A146 /* OWMultipartDataStreamProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWMultipartDataStreamProcessor.h; sourceTree = "<group>"; };
 		A2BDC13C05574D5F0097A146 /* OWMultipartDataStreamProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWMultipartDataStreamProcessor.m; sourceTree = "<group>"; };
-		A2BE95FC057BFEE40097A146 /* OWXPlistValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWXPlistValue.h; sourceTree = "<group>"; };
-		A2BE95FD057BFEE40097A146 /* OWXPlistValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWXPlistValue.m; sourceTree = "<group>"; };
 		A2BED0A30574031A0097A146 /* rfc2616.txt */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = text; name = rfc2616.txt; path = /Network/Public/Documentation/RFC/rfc2616.txt; sourceTree = "<absolute>"; };
-		A2C0338F057D62DB0097A146 /* OWDiskCacheInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWDiskCacheInternal.h; sourceTree = "<group>"; };
 		A2C3608E054DE2280097A146 /* OWContentCacheGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWContentCacheGroup.h; sourceTree = "<group>"; };
 		A2C3608F054DE2280097A146 /* OWContentCacheGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWContentCacheGroup.m; sourceTree = "<group>"; };
 		A2C6DBC7057E79EC0097A146 /* draft-ietf-ftpext-mlst-16.txt */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = text; name = "draft-ietf-ftpext-mlst-16.txt"; path = "/Network/Public/Documentation/RFC/draft-ietf-ftpext-mlst-16.txt"; sourceTree = "<absolute>"; };
@@ -1152,7 +1136,6 @@
 				00E520A4FE8AB39F11C9CC38 /* OWContentInfo.m */,
 				A2507B1D053F8C230097A146 /* OWMemoryCache.h */,
 				A2507B1E053F8C230097A146 /* OWMemoryCache.m */,
-				A2499477055776D30097A146 /* Disk Cache */,
 			);
 			name = Cache;
 			path = Cache.subproj;
@@ -1190,20 +1173,6 @@
 				A21CC7E805AA52490097A146 /* OWFilteredAddressCache.m */,
 			);
 			name = Pseudo;
-			sourceTree = "<group>";
-		};
-		A2499477055776D30097A146 /* Disk Cache */ = {
-			isa = PBXGroup;
-			children = (
-				4AA5369B08B27DE600F0872D /* Info-OWDiskCache.plist */,
-				A2C0338F057D62DB0097A146 /* OWDiskCacheInternal.h */,
-				A24855A70561B949001A78E3 /* OWDiskCache.h */,
-				A24855A80561B949001A78E3 /* OWDiskCache.m */,
-				A2BE95FC057BFEE40097A146 /* OWXPlistValue.h */,
-				A2BE95FD057BFEE40097A146 /* OWXPlistValue.m */,
-				A25CDB9F056EFEAB0097A146 /* owxtool.m */,
-			);
-			name = "Disk Cache";
 			sourceTree = "<group>";
 		};
 		B59C0A5305474D250097A10E /* Site Preferences */ = {
@@ -1362,8 +1331,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AA5368808B27DE600F0872D /* OWDiskCache.h in Headers */,
-				4AA5368A08B27DE600F0872D /* OWDiskCacheInternal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1371,9 +1338,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AA5369F08B27DE600F0872D /* OWDiskCacheInternal.h in Headers */,
-				4AA536A008B27DE600F0872D /* OWDiskCache.h in Headers */,
-				4AA536A108B27DE600F0872D /* OWXPlistValue.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1738,7 +1702,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AA5368D08B27DE600F0872D /* OWDiskCache.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1746,9 +1709,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AA536A308B27DE600F0872D /* owxtool.m in Sources */,
-				4AA536A408B27DE600F0872D /* OWDiskCache.m in Sources */,
-				4AA536A508B27DE600F0872D /* OWXPlistValue.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

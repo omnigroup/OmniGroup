@@ -151,7 +151,7 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark Comparison
 
-- (unsigned)hash;
+- (NSUInteger)hash;
 {
     return [_cleanVersionString hash];
 }

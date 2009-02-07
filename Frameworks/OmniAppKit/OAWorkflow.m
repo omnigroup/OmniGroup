@@ -67,7 +67,7 @@ RCS_ID("$Id$");
     CFURLRef launchApplicationURL = [self _createLaunchApplicationURL];
     if (launchApplicationURL == NULL) {
         NSString *exceptionReason = NSLocalizedStringFromTableInBundle(@"Couldn't locate Automator Launcher.app.", @"OmniAppKit", [OAWorkflow bundle], "workflow execution exception format string");
-        [NSException raise:NSInternalInconsistencyException format:exceptionReason];
+        [NSException raise:NSInternalInconsistencyException reason:exceptionReason];
     }
 
     spec.appURL			= (CFURLRef)launchApplicationURL;

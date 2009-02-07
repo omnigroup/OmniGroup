@@ -9,7 +9,7 @@
 
 // This is not included in OmniBase.h since system.h shouldn't be used except when covering OS specific behaviour
 #import <OmniBase/system.h>
-#import <OmniBAse/assertions.h>
+#import <OmniBase/assertions.h>
 
 RCS_ID("$Id$")
 

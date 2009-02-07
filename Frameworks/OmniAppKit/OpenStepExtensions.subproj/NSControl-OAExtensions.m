@@ -70,4 +70,14 @@ RCS_ID("$Id$")
     [self setStringValue:newString];
 }
 
+- (CGFloat)cgFloatValue;
+{
+    // Rely on compile-time optimization of the call, and implicit conversion of the retrieved float type to our return type
+    if (sizeof(CGFloat) > sizeof(float)) {
+        return [self doubleValue];
+    } else {
+        return [self floatValue];
+    }
+}
+
 @end

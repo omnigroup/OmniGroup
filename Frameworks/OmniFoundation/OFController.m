@@ -467,6 +467,9 @@ static void _OFControllerCheckTerminated(void)
 	      OBShortObjectDescription(object), NSStringFromSelector(selector), fileName, line, description, symbolicTrace);
 	[description release];
 	[symbolicTrace release];
+#if defined(OMNI_ASSERTIONS_ON)
+        OBAssertFailed(); // In case there is a breakpoint in the debugger for assertion failures.
+#endif
     } else {
         NSString *description = [[NSString alloc] initWithFormat:format arguments:args];
         NSString *report = [[NSString alloc] initWithFormat:@"Assertion Failed:\n---------------------------\nObject: %@\nSelector: %@\nFile: %@\nLine: %d\nDescription: %@\n---------------------------",
@@ -493,6 +496,9 @@ static void _OFControllerCheckTerminated(void)
 	      functionName, fileName, line, description, symbolicTrace);
 	[description release];
 	[symbolicTrace release];
+#if defined(OMNI_ASSERTIONS_ON)
+        OBAssertFailed(); // In case there is a breakpoint in the debugger for assertion failures.
+#endif
     } else {
         NSString *description = [[NSString alloc] initWithFormat:format arguments:args];
         NSString *report = [[NSString alloc] initWithFormat:@"Assertion Failed:\n---------------------------\nFunction: %@\nFile: %@\nLine: %d\nDescription: %@\n---------------------------",

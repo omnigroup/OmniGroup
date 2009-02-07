@@ -13,7 +13,7 @@
 
 typedef struct {
     id object;
-    NSString *key;
+    NSString *keyPath;
 } OFBindingPoint;
 
 @interface OFBinding : NSObject
@@ -22,13 +22,13 @@ typedef struct {
     unsigned int _enabledCount;
     BOOL _registered;
     id        _sourceObject;
-    NSString *_sourceKey;
+    NSString *_sourceKeyPath;
     id        _nonretained_destinationObject; // We assume the destantion owns us
-    NSString *_destinationKey;
+    NSString *_destinationKeyPath;
 }
 
-- initWithSourceObject:(id)sourceObject sourceKey:(NSString *)sourceKey
-     destinationObject:(id)destinationObject destinationKey:(NSString *)destinationKey; // designated initializer for now...
+- initWithSourceObject:(id)sourceObject sourceKeyPath:(NSString *)sourceKeyPath
+     destinationObject:(id)destinationObject destinationKeyPath:(NSString *)destinationKeyPath; // designated initializer for now...
 
 - initWithSourcePoint:(OFBindingPoint)sourcePoint destinationPoint:(OFBindingPoint)destinationPoint;
 
@@ -41,10 +41,10 @@ typedef struct {
 - (void)reset;
 
 - (id)sourceObject;
-- (NSString *)sourceKey;
+- (NSString *)sourceKeyPath;
 
 - (id)destinationObject;
-- (NSString *)destinationKey;
+- (NSString *)destinationKeyPath;
 
 - (id)currentValue;
 - (void)propagateCurrentValue;
@@ -52,17 +52,22 @@ typedef struct {
 - (NSString *)humanReadableDescription;
 - (NSString *)shortHumanReadableDescription;
 
-- (BOOL)isEqualConsideringSourceAndKey:(OFBinding *)otherBinding;
+- (BOOL)isEqualConsideringSourceAndKeyPath:(OFBinding *)otherBinding;
 
 @end
 
 
 @interface NSObject (OFBindingSourceObject)
 - (void)bindingWillInvalidate:(OFBinding *)binding;
-- (NSString *)humanReadableDescriptionForKey:(NSString *)key;
+- (NSString *)humanReadableDescriptionForKeyPath:(NSString *)keyPath;
+- (NSString *)shortHumanReadableDescriptionForKeyPath:(NSString *)keyPath;
+@end
+#ifdef OMNI_ASSERTIONS_ON
+OBDEPRECATED_METHODS(OFBindingSourceObject)
+- (NSString *)humanReadableDescriptionForKey:(NSString *)key; // Use the key path variant
 - (NSString *)shortHumanReadableDescriptionForKey:(NSString *)key;
 @end
-
+#endif
 
 // For plain attributes and to-one relationships.  If you bind this for a to-many, it won't do insert/remove/replace calls.
 // This is the default if you create an ODBinding

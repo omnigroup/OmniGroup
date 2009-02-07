@@ -140,7 +140,7 @@ static const CGFunctionCallbacks linearFunctionCallbacks = {0, &linearColorBlend
     [self setNeedsDisplay:YES]; // we display extra because we draw multiple contiguous selected rows differently, so changing one row's selection can change how others draw.
 }
 
-- (void)deselectRow:(int)row;
+- (void)deselectRow:(NSInteger)row;
 {
     [super deselectRow:row];
     [self setNeedsDisplay:YES]; // we display extra because we draw multiple contiguous selected rows differently, so changing one row's selection can change how others draw.
