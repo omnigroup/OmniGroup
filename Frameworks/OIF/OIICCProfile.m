@@ -20,12 +20,12 @@ static NSMapTableKeyCallBacks profileDataKeyCallBacks;
 
 @implementation OIICCProfile
 
-static unsigned hashData(NSMapTable *table, const void *key)
+static NSUInteger hashData(NSMapTable *table, const void *key)
 {
-    unsigned hashValue;
+    NSUInteger hashValue;
     NSData *theData = (NSData *)key;
     hashValue = [theData hash];
-    NSLog(@"hash <%s %p> --> %u", theData, hashValue);
+    //NSLog(@"hash <%s %p> --> %u", theData, hashValue);
     return hashValue;
 }
 

@@ -14,9 +14,6 @@
 
 RCS_ID("$Id$");
 
-@interface OICoreGraphicsImageRep (Private)
-@end
-
 @implementation OICoreGraphicsImageRep
 
 + (void)initialize
@@ -73,12 +70,11 @@ RCS_ID("$Id$");
 
 // NSImageRep attributes
 
-- (int)bitsPerSample
+- (NSInteger)bitsPerSample
 {
     if (cgImage)
         return CGImageGetBitsPerComponent(cgImage);
-    else
-        return 0;
+    return 0;
 }
 
 - (NSString *)colorSpaceName
@@ -162,26 +158,18 @@ RCS_ID("$Id$");
     return NO;
 }
 
-- (int)pixelsHigh
+- (NSInteger)pixelsHigh
 {
-    if (cgImage == NULL)
-        return 0;
-    else
+    if (cgImage)
         return CGImageGetHeight(cgImage);
+    return 0;
 }
 
-- (int)pixelsWide
+- (NSInteger)pixelsWide
 {
-    if (cgImage == NULL)
-        return 0;
-    else
+    if (cgImage)
         return CGImageGetWidth(cgImage);
+    return 0;
 }
 
-@end
-
-@implementation OICoreGraphicsImageRep (NotificationsDelegatesDatasources)
-@end
-
-@implementation OICoreGraphicsImageRep (Private)
 @end
