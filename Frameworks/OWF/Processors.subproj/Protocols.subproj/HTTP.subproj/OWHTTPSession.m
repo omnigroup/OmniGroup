@@ -1059,7 +1059,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
 }
 
 /* A comparison function which we use for sorting the types we place in the Accept headers */
-static int acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
+static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 {
     OBPRECONDITION([a isKindOfClass:[NSString class]]);
     OBPRECONDITION([b isKindOfClass:[NSString class]]);
@@ -1188,7 +1188,7 @@ static int acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 }
 
 /* A comparison function which we use for sorting the types we place in the Accept headers */
-static int acceptHeaderOrdering(id a, id b, void *ctxt)
+static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
 {
     OWContentType *typeA = a, *typeB = b;
     BOOL aInteresting, bInteresting;

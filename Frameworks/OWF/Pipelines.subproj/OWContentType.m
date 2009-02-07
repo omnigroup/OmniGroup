@@ -808,7 +808,7 @@ got_path:
 
 // NSObject subclass and protocol
 
-- (unsigned int)hash;
+- (NSUInteger)hash;
 {
     return hash;
 }

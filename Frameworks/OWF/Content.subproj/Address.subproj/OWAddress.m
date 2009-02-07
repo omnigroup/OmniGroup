@@ -717,7 +717,7 @@ addressForNotSoObviousHostname(NSString *string)
 
 // Equality and hashing
 
-- (unsigned)hash;
+- (NSUInteger)hash;
 {
     return [url hash];
 }

@@ -1086,17 +1086,15 @@ static void Thingy(id mememe, SEL wheee)
     return YES;
 }
 
-- (unsigned)hash
+- (NSUInteger)hash
 {
-    unsigned myContentHash;
-    
     if (!metadataComplete)
         [NSException raise:NSInternalInconsistencyException format:@"Cannot compute hash of %@", [self description]];
 
-    myContentHash = [self contentHash];
+    NSUInteger myContentHash = [self contentHash];
 
     if (metadataHash == 0) {
-        unsigned hashAccum = 0xfaded;
+        NSUInteger hashAccum = 0xfaded;
         
         OFForEachObject([metaData keyEnumerator], NSString *, aKey) {
             hashAccum ^= ( [aKey hash] | 1 ) * ( [[metaData lastObjectForKey:aKey] hash] | 1 );
@@ -1111,10 +1109,10 @@ static void Thingy(id mememe, SEL wheee)
     return myContentHash ^ metadataHash;
 }
 
-- (unsigned)contentHash
+- (NSUInteger)contentHash
 {
     if (contentHash == 0) {
-        unsigned myContentHash;
+        NSUInteger myContentHash;
         NSEnumerator *cacheEnumerator;
         id <OWCacheContentProvider> aCache;
         id valueToHash;
@@ -1133,7 +1131,7 @@ static void Thingy(id mememe, SEL wheee)
                     [handle release];
                     if (myContentHash != 0) {
                         contentHash = myContentHash;
-                        NS_VALUERETURN(myContentHash, unsigned);
+                        NS_VALUERETURN(myContentHash, NSUInteger);
                     }
                     OFSimpleLock(&lock);
                 }
@@ -1171,7 +1169,8 @@ static void Thingy(id mememe, SEL wheee)
             myContentHash = [valueToHash contentHash];
         } else if ([valueToHash respondsToSelector:@selector(md5Signature)]) {
             NSData *md5 = [valueToHash md5Signature];
-            myContentHash = CFSwapInt32BigToHost(*(unsigned int *)[md5 bytes]);
+            OBASSERT([md5 length] >= sizeof(NSUInteger));
+            myContentHash = CFSwapInt32BigToHost(*(NSUInteger *)[md5 bytes]);
         } else {
             myContentHash = [valueToHash hash];
         }

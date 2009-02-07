@@ -851,7 +851,7 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 //
 
-- (unsigned)hash;
+- (NSUInteger)hash;
 {
 #if 1
     /*

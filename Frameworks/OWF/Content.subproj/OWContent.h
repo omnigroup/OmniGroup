@@ -31,8 +31,8 @@
     NSMutableDictionary *containingCaches;
 
     OFMultiValueDictionary *metaData;
-    unsigned metadataHash;  // 0 if not computed (incl. if !metadataComplete)
-    unsigned contentHash;   // 0 if not computed (incl. if content is not complete)
+    NSUInteger metadataHash;  // 0 if not computed (incl. if !metadataComplete)
+    NSUInteger contentHash;   // 0 if not computed (incl. if content is not complete)
     BOOL metadataComplete;
     unsigned char dataComplete;
     unsigned char hasValidator; // 0, 1, or '?' if not computed
@@ -70,7 +70,7 @@
 - (OWObjectStreamCursor *)objectCursor;
 - (id)objectValue;
 
-- (unsigned)contentHash;  // This returns a hash that depends on the content, but not on any metadata
+- (NSUInteger)contentHash;  // This returns a hash that depends on the content, but not on any metadata
   // NB: -contentHash can currently raise if the data has been invalidated, e.g. by a processor abort
 
 - (BOOL)isAddress;      // Returns YES if this content is an OWAddress.

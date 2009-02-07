@@ -18,7 +18,7 @@
 @interface OWContentType : OFObject <NSCoding>
 {
     NSString *contentTypeString;
-    unsigned int hash;
+    NSUInteger hash;
     NSMutableArray *links;
     NSMutableSet *reverseLinks;
     NSMutableDictionary *bestPathByType;
