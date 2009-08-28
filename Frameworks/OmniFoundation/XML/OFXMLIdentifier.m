@@ -49,55 +49,44 @@ BOOL OFXMLIsValidID(NSString *identifier)
     return YES;
 }
 
-/*" Creates a valid XML 'ID' attribute.  These must match the 'NAME' production in <http://www.w3.org/TR/2004/REC-xml-20040204/>.  We want these to be short but still typically unique.  For example, we don't want two users editing the same file in CVS to create duplicate identifiers.  We can't satisfy both of these goals all the time, but we can make it extremely unlikely.  We'll make our IDs be 64-bits of data out of /dev/random encoded via a simple packing.  If opening /dev/urandom fails for some reason, we'll use CFUUID.
+/*" Creates a valid XML 'ID' attribute.  These must match the 'NAME' production in <http://www.w3.org/TR/2004/REC-xml-20040204/>.  We want these to be short but still typically unique.  For example, we don't want two users editing the same file in CVS to create duplicate identifiers.  We can't satisfy both of these goals all the time, but we can make it extremely unlikely.  We'll make our IDs be 64-bits of pseudo data out of encoded via a simple packing.
  "*/
 
-#define RANDOM_FILE "/dev/urandom"
+#import <OmniFoundation/OFRandom.h>
 
 NSString *OFXMLCreateID(void)
 {
-    static BOOL  initialized = NO;
-    static FILE *device = NULL; // Use stdio so that we get some buffering rather than a kernel trap on every ID creation
+    static OFRandomState State;
+    static BOOL initialized = NO;
+    
     if (!initialized) {
         initialized = YES;
-        device = fopen(RANDOM_FILE, "r");
-        if (!device)
-            perror(RANDOM_FILE);
+        OFRandomSeed(&State, OFRandomGenerateRandomSeed());
     }
     
-    if (device) {
-        uint64_t value;
-        if (fread(&value, 1, sizeof(value), device) == sizeof(value)) {
-            // ':' is allowed in all positions, and '.' after the first position.  But as these have meaning on some filesystems, let's not use it in case our ids are used in file names.  This, also means our choice of characters is 64 options.
-            static const char chars[64] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
-            
-            // Encoding 64 bits 6 bits at a time yields 11 characters (64/6 == 10 + rem 4).
-            char encode[11];
-            
-            // We'll actually encode 4 of the bits in the first character to ensure that it is a letter (which is required in the XML 'NAME' production).
-            encode[0] = chars[value & ((1<<4) - 1)];
-            value >>= 4;
-            
-            unsigned int encodeIndex;
-            for (encodeIndex = 1; encodeIndex < 11; encodeIndex++) {
-                unsigned char i = value & ((1<<6) - 1);
-                encode[encodeIndex] = chars[i];
-                value >>= 6;
-            }
-            
-            OBASSERT(value == 0); // should have consumed the whole value at this point
-            
-            return [[NSString alloc] initWithBytes:encode length:sizeof(encode) encoding:NSASCIIStringEncoding];
-        }
+    uint32_t low  = OFRandomNextState(&State);
+    uint32_t high = OFRandomNextState(&State);
+    uint64_t value = (((uint64_t)high) << 32) | low;
+    
+    
+    // ':' is allowed in all positions, and '.' after the first position.  But as these have meaning on some filesystems, let's not use it in case our ids are used in file names.  This, also means our choice of characters is 64 options.
+    static const char chars[64] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+    
+    // Encoding 64 bits 6 bits at a time yields 11 characters (64/6 == 10 + rem 4).
+    char encode[11];
+    
+    // We'll actually encode 4 of the bits in the first character to ensure that it is a letter (which is required in the XML 'NAME' production).
+    encode[0] = chars[value & ((1<<4) - 1)];
+    value >>= 4;
+    
+    unsigned int encodeIndex;
+    for (encodeIndex = 1; encodeIndex < 11; encodeIndex++) {
+        unsigned char i = value & ((1<<6) - 1);
+        encode[encodeIndex] = chars[i];
+        value >>= 6;
     }
     
-    CFUUIDRef uuid = CFUUIDCreate(kCFAllocatorDefault);
-    NSString *uuidString = (NSString *)CFUUIDCreateString(kCFAllocatorDefault, uuid);
-    CFRelease(uuid);
+    OBASSERT(value == 0); // should have consumed the whole value at this point
     
-    NSString *ident = [[NSString alloc] initWithFormat:@":%@", uuidString]; // Prefix with '_' to make sure it is a valid XML ID
-    [uuidString release];
-    
-    return ident;
+    return [[NSString alloc] initWithBytes:encode length:sizeof(encode) encoding:NSASCIIStringEncoding];
 }
-

@@ -1,14 +1,21 @@
 {
     IBClasses = (
-        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
             ACTIONS = {checkForNewVersion = id; }; 
             CLASS = NSApplication; 
             LANGUAGE = ObjC; 
             SUPERCLASS = NSResponder; 
         }, 
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {CLASS = NSObject; LANGUAGE = ObjC; }, 
-        {CLASS = NSResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = OFController; LANGUAGE = ObjC; SUPERCLASS = OFObject; }, 
+        {CLASS = OBObject; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {showAboutPanel = id; showMessageOfTheDay = id; }; 
+            CLASS = OAController; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = OFController; 
+        }, 
         {
             ACTIONS = {
                 closeAllMainWindows = id; 
@@ -21,23 +28,23 @@
             LANGUAGE = ObjC; 
             SUPERCLASS = NSApplication; 
         }, 
-        {
-            ACTIONS = {showAboutPanel = id; }; 
-            CLASS = OAController; 
-            LANGUAGE = ObjC; 
-            SUPERCLASS = OFController; 
-        }, 
-        {CLASS = OBObject; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
-        {CLASS = OFController; LANGUAGE = ObjC; SUPERCLASS = OFObject; }, 
         {CLASS = OFObject; LANGUAGE = ObjC; SUPERCLASS = OBObject; }, 
+        {CLASS = NSResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
+            ACTIONS = {
+                acceptURL = id; 
+                changeLicenseState = id; 
+                forceInstall = id; 
+            }; 
             CLASS = OSUTAController; 
             LANGUAGE = ObjC; 
             OUTLETS = {
                 buildVersionField = NSTextField; 
                 bundleIdentifierField = NSTextField; 
+                licenseStatePopUp = NSPopUpButton; 
                 marketingVersionField = NSTextField; 
                 systemVersionField = NSTextField; 
+                urlPromptField = NSTextField; 
                 visibleTracksTextView = NSTextView; 
                 window = NSWindow; 
             }; 

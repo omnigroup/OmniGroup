@@ -17,9 +17,9 @@ This class holds information common to a set of OFMutableKnownKeyDictionaries.  
 */
 {
 @public // These should really only be accessed by OFMutableKnownKeyDictionary
-    NSArray       *_keyArray;
-    unsigned int   _keyCount;
-    NSObject      *_keys[0];
+    NSArray *_keyArray;
+    NSUInteger _keyCount;
+    NSObject *_keys[0];
 }
 
 + (OFKnownKeyDictionaryTemplate *) templateWithKeys: (NSArray *) keys;

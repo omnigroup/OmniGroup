@@ -37,14 +37,22 @@ RCS_ID("$Id$");
     Gestalt(gestaltSystemVersionMinor, &minor);
     Gestalt(gestaltSystemVersionBugFix, &bug);
     
-    NSString *versionString = (NSString *)CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%d.%d.%d"), major, minor, bug);
+    NSString *versionString = [NSMakeCollectable(CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%d.%d.%d"), major, minor, bug)) autorelease];
 #endif
 
     // TODO: Add a -initWithComponents:count:?
     userVisibleOperatingSystemVersionNumber = [[self alloc] initWithVersionString:versionString];
-    [versionString release];
 
     return userVisibleOperatingSystemVersionNumber;
+}
+
+// Meant to be called during initialization, not repeatedly, since this allocates and discards an instance.
++ (BOOL)isOperatingSystemLaterThanVersionString:(NSString *)versionString;
+{
+    OFVersionNumber *version = [[OFVersionNumber alloc] initWithVersionString:versionString];
+    BOOL isLater = ([[OFVersionNumber userVisibleOperatingSystemVersionNumber] compareToVersionNumber:version] != NSOrderedAscending);
+    [version release];
+    return isLater;
 }
 
 /* Initializes the receiver from a string representation of a version number.  The input string may have an optional leading 'v' or 'V' followed by a sequence of positive integers separated by '.'s.  Any trailing component of the input string that doesn't match this pattern is ignored.  If no portion of this string matches the pattern, nil is returned. */
@@ -68,7 +76,7 @@ RCS_ID("$Id$");
 
     while (scannerHasData(scanner)) {
         // TODO: Add a OFCharacterScanner method that allows you specify the maximum uint32 value (and a parameterless version that uses UINT_MAX) and passes back a BOOL indicating success (since any uint32 would be valid).
-        unsigned int location = scannerScanLocation(scanner);
+        NSUInteger location = scannerScanLocation(scanner);
         unsigned int component = [scanner scanUnsignedIntegerMaximumDigits:10];
 
         if (location == scannerScanLocation(scanner))

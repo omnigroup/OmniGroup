@@ -20,6 +20,7 @@
 
 - (void)performSelector:(SEL)sel withEachObjectInArray:(NSArray *)array;
 - (void)performSelector:(SEL)sel withEachObjectInSet:(NSSet *)set;
+- (NSArray *)arrayByPerformingSelector:(SEL)sel withEachObjectInArray:(NSArray *)array;
 
 - (BOOL)satisfiesCondition:(SEL)sel withObject:(id)object;
 

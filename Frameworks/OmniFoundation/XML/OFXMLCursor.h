@@ -16,7 +16,7 @@
 {
     OFXMLDocument *_document;
     OFXMLElement *_startingElement;
-    struct _OFXMLCursorState *_state;
+    __strong struct _OFXMLCursorState *_state;
     unsigned int _stateCount;
     unsigned int _stateSize;
 }

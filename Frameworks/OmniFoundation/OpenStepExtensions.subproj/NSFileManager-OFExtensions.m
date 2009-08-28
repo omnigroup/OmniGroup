@@ -407,7 +407,8 @@ static int permissionsMask = 0022;
 
 - (NSDictionary *)lockFileAtPath:(NSString *)path overridingExistingLock:(BOOL)override created:(BOOL *)outCreated error:(NSError **)outError;
 {
-    *outError = nil;
+    if (outError)
+        *outError = nil;
     *outCreated = NO;
     
     NSString *lockFilePath = [self lockFilePathForPath:path];
@@ -658,6 +659,60 @@ static int permissionsMask = 0022;
     return [NSString stringWithCString:stats.f_fstypename encoding:NSASCIIStringEncoding];
 }
 
+- (FSVolumeRefNum)volumeRefNumForPath:(NSString *)path error:(NSError **)outError;
+{
+    FSRef pathRef;
+    FSCatalogInfo pathInfo;
+    OSErr err;
+    
+    bzero(&pathRef, sizeof(pathRef));
+    err = FSPathMakeRef((const UInt8 *)[path fileSystemRepresentation], &pathRef, NULL);
+    if (err != noErr) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObject:path forKey:NSFilePathErrorKey]];
+        return kFSInvalidVolumeRefNum;
+    }
+
+    bzero(&pathInfo, sizeof(pathInfo));
+    err = FSGetCatalogInfo(&pathRef, kFSCatInfoVolume, &pathInfo, NULL, NULL, NULL);
+    if (err != noErr) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObject:path forKey:NSFilePathErrorKey]];
+        return kFSInvalidVolumeRefNum;
+    }
+    
+    if (pathInfo.volume == kFSInvalidVolumeRefNum) {
+        // Shouldn't happen, but let's not cause our caller to crash when it looks at *outError.
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:nsvErr userInfo:[NSDictionary dictionaryWithObject:path forKey:NSFilePathErrorKey]];
+        return kFSInvalidVolumeRefNum;
+    }
+    
+    return pathInfo.volume;
+}
+
+- (NSString *)volumeNameForPath:(NSString *)filePath error:(NSError **)outError;
+{    
+    FSVolumeRefNum vRef = [self volumeRefNumForPath:filePath error:outError];
+    if (vRef == kFSInvalidVolumeRefNum)
+        return nil;
+    
+    OSErr err;
+    HFSUniStr255 nameBuf;
+    bzero(&nameBuf, sizeof(nameBuf));
+    err = FSGetVolumeInfo(vRef, 0, NULL,
+                          kFSVolInfoNone, NULL,
+                          &nameBuf, NULL);
+    
+    if (err != noErr) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObject:filePath forKey:NSFilePathErrorKey]];
+        return nil;
+    }
+    
+    return [NSString stringWithCharacters:nameBuf.unicode length:nameBuf.length];
+}
+
 - (NSString *)resolveAliasAtPath:(NSString *)path
 {
     FSRef ref;
@@ -830,7 +885,7 @@ static int permissionsMask = 0022;
             *relativeResult = [NSString pathWithComponents:myContinuation];
         return YES;
     }
-        
+    
     NSString *lastParentComponent = [otherPath lastPathComponent];
     NSDictionary *lastParentComponentStat = nil;
     NSArray *myComponents = [thisPath pathComponents];
@@ -860,6 +915,63 @@ static int permissionsMask = 0022;
     }
     
     return NO;
+}
+
+- (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
+{
+    FSRef carbonRef;
+    OSStatus err;
+    
+    bzero(&carbonRef, sizeof(carbonRef));
+    err = FSPathMakeRef((void *)[self fileSystemRepresentationWithPath:path], &carbonRef, NULL);
+    if (err != noErr)
+        goto errorReturn;
+    
+    err = LSSetItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, quarantineDictionary);
+    if (err != noErr)
+        goto errorReturn;
+    
+    return YES;
+    
+errorReturn:
+    if (outError) {
+        *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, quarantineDictionary, kLSItemQuarantineProperties, nil]];
+    }
+    return NO;
+}
+
+- (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError;
+{
+    FSRef carbonRef;
+    OSStatus err;
+    
+    bzero(&carbonRef, sizeof(carbonRef));
+    err = FSPathMakeRef((void *)[self fileSystemRepresentationWithPath:path], &carbonRef, NULL);
+    if (err != noErr)
+        goto errorReturn;
+    
+    CFTypeRef quarantineDictionary = NULL;
+    err = LSCopyItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, &quarantineDictionary);
+    if (err != noErr)
+        goto errorReturn;
+    if (!quarantineDictionary) {
+        // This doesn't appear to happen in practice (we get kLSAttributeNotFoundErr instead), but just to be safe...
+        err = kLSAttributeNotFoundErr;
+        goto errorReturn;
+    }
+    if (CFGetTypeID(quarantineDictionary) != CFDictionaryGetTypeID()) {
+        CFRelease(quarantineDictionary);
+        err = kLSUnknownErr;
+        goto errorReturn;
+    }
+    
+    return [NSMakeCollectable(quarantineDictionary) autorelease];
+    
+errorReturn:
+    if (outError) {
+        *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, nil]];
+    }
+    return nil;
 }
 
 @end

@@ -13,12 +13,12 @@ static NSLock              *lock = nil;
 static NSMutableDictionary *uniqueTable = nil;
 
 @interface OFKnownKeyDictionaryTemplate (PrivateAPI)
-- _initWithKeys: (NSArray *) keys;
+- _initWithKeys:(NSArray *)keys;
 @end
 
 @implementation OFKnownKeyDictionaryTemplate
 
-+ (void) becomingMultiThreaded;
++ (void)becomingMultiThreaded;
 {
     lock = [[NSLock alloc] init];
 }
@@ -30,44 +30,41 @@ static NSMutableDictionary *uniqueTable = nil;
     uniqueTable = [[NSMutableDictionary alloc] init];
 }
 
-+ (OFKnownKeyDictionaryTemplate *) templateWithKeys: (NSArray *) keys;
++ (OFKnownKeyDictionaryTemplate *)templateWithKeys:(NSArray *)keys;
 {
     OFKnownKeyDictionaryTemplate *template;
 
     [lock lock];
-    NS_DURING {
+    @try {
         if (!(template = [uniqueTable objectForKey: keys])) {
             template = (OFKnownKeyDictionaryTemplate *)NSAllocateObject(self, sizeof(NSObject *) * [keys count], NULL);
             template = [template _initWithKeys: keys];
             [uniqueTable setObject: template forKey: keys];
             [template release];
         }
-    } NS_HANDLER {
-        template = nil;
+    } @finally {
         [lock unlock];
-        [localException raise];
-    } NS_ENDHANDLER;
-    [lock unlock];
+    }
     
     return template;
 }
 
-- (NSArray *) keys;
+- (NSArray *)keys;
 {
     return _keyArray;
 }
 
-- (id) retain
+- (id)retain
 {
     return self;
 }
 
-- (id) autorelease;
+- (id)autorelease;
 {
     return self;
 }
 
-- (void) release;
+- (void)release;
 {
 }
 
@@ -75,9 +72,9 @@ static NSMutableDictionary *uniqueTable = nil;
 
 @implementation OFKnownKeyDictionaryTemplate (PrivateAPI)
 
-- _initWithKeys: (NSArray *) keys;
+- _initWithKeys:(NSArray *)keys;
 {
-    unsigned int keyIndex;
+    NSUInteger keyIndex;
     
     _keyArray = [keys copy];
     _keyCount = [keys count];

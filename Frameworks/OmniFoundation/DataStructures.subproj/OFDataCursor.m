@@ -59,7 +59,7 @@ static OFByteSet *endOfLineByteSet;
     return currentPosition < endPosition;
 }
 
-- (unsigned int)seekToOffset:(int)offset fromPosition:(OFDataCursorSeekPosition)position;
+- (size_t)seekToOffset:(off_t)offset fromPosition:(OFDataCursorSeekPosition)position;
 {
     const OFByte *newPosition;
 
@@ -84,7 +84,7 @@ static OFByteSet *endOfLineByteSet;
     return currentPosition - startPosition;
 }
 
-- (unsigned int)currentOffset;
+- (size_t)currentOffset;
 {
     return currentPosition - startPosition;
 }
@@ -160,26 +160,26 @@ static OFByteSet *endOfLineByteSet;
     INCREMENT_OFFSETS(readType);					\
 }
 
-- (void)readBytes:(unsigned int)byteCount intoBuffer:(void *)buffer;
+- (void)readBytes:(size_t)byteCount intoBuffer:(void *)buffer;
 {
     ENSURE_ENOUGH_DATA(byteCount);
     memcpy(buffer, currentPosition, byteCount);
     currentPosition += byteCount;
 }
 
-- (void)peekBytes:(unsigned int)byteCount intoBuffer:(void *)buffer;
+- (void)peekBytes:(size_t)byteCount intoBuffer:(void *)buffer;
 {
     ENSURE_ENOUGH_DATA(byteCount);
     memcpy(buffer, currentPosition, byteCount);
 }
 
-- (void)skipBytes:(unsigned int)byteCount;
+- (void)skipBytes:(size_t)byteCount;
 {
     ENSURE_ENOUGH_DATA(byteCount);
     currentPosition += byteCount;
 }
 
-- (unsigned int)readMaximumBytes:(unsigned int)byteCount
+- (size_t)readMaximumBytes:(size_t)byteCount
     intoBuffer:(void *)buffer;
 {
     if (currentPosition + byteCount > endPosition)
@@ -189,7 +189,7 @@ static OFByteSet *endOfLineByteSet;
     return byteCount;
 }
 
-- (unsigned int)peekMaximumBytes:(unsigned int)byteCount
+- (size_t)peekMaximumBytes:(size_t)byteCount
     intoBuffer:(void *)buffer;
 {
     if (currentPosition + byteCount > endPosition)
@@ -198,7 +198,7 @@ static OFByteSet *endOfLineByteSet;
     return byteCount;
 }
 
-- (unsigned int)skipMaximumBytes:(unsigned int)byteCount;
+- (size_t)skipMaximumBytes:(size_t)byteCount;
 {
     if (currentPosition + byteCount > endPosition)
 	byteCount = endPosition - currentPosition;
@@ -206,7 +206,7 @@ static OFByteSet *endOfLineByteSet;
     return byteCount;
 }
 
-static inline unsigned int offsetToByte(OFDataCursor *self, OFByte aByte)
+static inline size_t offsetToByte(OFDataCursor *self, OFByte aByte)
 {
     const OFByte *offset;
 
@@ -216,7 +216,7 @@ static inline unsigned int offsetToByte(OFDataCursor *self, OFByte aByte)
     return offset - self->currentPosition;
 }
 
-static inline unsigned int
+static inline size_t
 offsetToByteInSet(OFDataCursor *self, OFByteSet *byteSet)
 {
     const OFByte *offset;
@@ -230,12 +230,12 @@ offsetToByteInSet(OFDataCursor *self, OFByteSet *byteSet)
     return offset - self->currentPosition;
 }
 
-- (unsigned int)offsetToByte:(OFByte)aByte;
+- (size_t)offsetToByte:(OFByte)aByte;
 {
     return offsetToByte(self, aByte);
 }
 
-- (unsigned int)offsetToByteInSet:(OFByteSet *)aByteSet;
+- (size_t)offsetToByteInSet:(OFByteSet *)aByteSet;
 {
     return offsetToByteInSet(self, aByteSet);
 }
@@ -362,7 +362,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 //
 
-- (NSData *)readDataOfLength:(unsigned int)aLength;
+- (NSData *)readDataOfLength:(size_t)aLength;
 {
     NSData *returnData;
 
@@ -372,7 +372,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
     return returnData;
 }
 
-- (NSData *)peekDataOfLength:(unsigned int)aLength;
+- (NSData *)peekDataOfLength:(size_t)aLength;
 {
     NSData *returnData;
 
@@ -383,9 +383,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSData *)readDataUpToByte:(OFByte)aByte;
 {
-    int aLength;
-    
-    aLength = offsetToByte(self, aByte);
+    size_t aLength = offsetToByte(self, aByte);
     if (aLength == 0)
 	return nil;
     return [self readDataOfLength:aLength];
@@ -393,9 +391,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSData *)peekDataUpToByte:(OFByte)aByte;
 {
-    int aLength;
-    
-    aLength = offsetToByte(self, aByte);
+    size_t aLength = offsetToByte(self, aByte);
     if (aLength == 0)
 	return nil;
     return [self peekDataOfLength:aLength];
@@ -403,9 +399,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSData *)readDataUpToByteInSet:(OFByteSet *)aByteSet;
 {
-    unsigned int aLength;
-    
-    aLength = offsetToByteInSet(self, aByteSet);
+    size_t aLength = offsetToByteInSet(self, aByteSet);
     if (aLength == 0)
 	return nil;
     return [self readDataOfLength:aLength];
@@ -413,15 +407,13 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSData *)peekDataUpToByteInSet:(OFByteSet *)aByteSet;
 {
-    unsigned int aLength;
-    
-    aLength = offsetToByteInSet(self, aByteSet);
+    size_t aLength = offsetToByteInSet(self, aByteSet);
     if (aLength == 0)
 	return nil;
     return [self peekDataOfLength:aLength];
 }
 
-- (NSString *)readStringOfLength:(unsigned int)aLength;
+- (NSString *)readStringOfLength:(size_t)aLength;
 {
     NSData *someData;
     NSString *aString;
@@ -434,7 +426,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
     return aString;
 }
 
-- (NSString *)peekStringOfLength:(unsigned int)aLength;
+- (NSString *)peekStringOfLength:(size_t)aLength;
 {
     NSData *someData;
     NSString *aString;
@@ -448,9 +440,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSString *)readStringUpToByte:(OFByte)aByte;
 {
-    unsigned int aLength;
-    
-    aLength = offsetToByte(self, aByte);
+    size_t aLength = offsetToByte(self, aByte);
     if (aLength == 0)
 	return nil;
     return [self readStringOfLength:aLength];
@@ -458,9 +448,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSString *)peekStringUpToByte:(OFByte)aByte;
 {
-    unsigned int aLength;
-    
-    aLength = offsetToByte(self, aByte);
+    size_t aLength = offsetToByte(self, aByte);
     if (aLength == 0)
 	return nil;
     return [self peekStringOfLength:aLength];
@@ -468,9 +456,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSString *)readStringUpToByteInSet:(OFByteSet *)aByteSet;
 {
-    unsigned int aLength;
-    
-    aLength = offsetToByteInSet(self, aByteSet);
+    size_t aLength = offsetToByteInSet(self, aByteSet);
     if (aLength == 0)
 	return nil;
     return [self readStringOfLength:aLength];
@@ -478,9 +464,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSString *)peekStringUpToByteInSet:(OFByteSet *)aByteSet;
 {
-    unsigned int aLength;
-    
-    aLength = offsetToByteInSet(self, aByteSet);
+    size_t aLength = offsetToByteInSet(self, aByteSet);
     if (aLength == 0)
 	return nil;
     return [self peekStringOfLength:aLength];
@@ -493,10 +477,8 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSString *)readLine;
 {
-    unsigned int lineLength;
     NSString *line;
-
-    lineLength = offsetToByteInSet(self, endOfLineByteSet);
+    size_t lineLength = offsetToByteInSet(self, endOfLineByteSet);
     if (lineLength == 0)
         line = @"";
     else
@@ -521,9 +503,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSString *)peekLine;
 {
-    unsigned int lineLength;
-
-    lineLength = offsetToByteInSet(self, endOfLineByteSet);
+    size_t lineLength = offsetToByteInSet(self, endOfLineByteSet);
     if (lineLength == 0)
         return @"";
     else
@@ -532,9 +512,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (void)skipLine;
 {
-    unsigned int lineLength;
-
-    lineLength = offsetToByteInSet(self, endOfLineByteSet);
+    size_t lineLength = offsetToByteInSet(self, endOfLineByteSet);
     currentPosition += lineLength;
 
     if (currentPosition + 1 <= endPosition) {
@@ -556,9 +534,7 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
 
     if (data)
 	[debugDictionary setObject:data forKey:@"data"];

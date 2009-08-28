@@ -1,0 +1,54 @@
+#
+#  This is a Relax-NG schema for the detailed downloadable information.
+#
+#  $Id$
+#
+
+start = installable
+
+# Terminology:
+#
+# A "downloadable" is something we can download: a disk image, a tarfile, etc.
+# An "installable" is something we can install: a specific version of an app. We get installables by unpacking downloadables. But there might be several downloadables all of which contain the same installable (e.g., a disk image, a tarfile, a patch file).
+#
+
+
+downloadable =
+    element file {
+        # A local XML ID to allow crossreferences
+        attribute id { text } &
+        
+        # The type of this downloadable (disk image, or what)
+        attribute type { text }? &
+        
+        # Some number of checksums
+        element hash {
+            attribute alg { "size" | "sha1" | "rmd160" | "sha256" | "sha512" } &
+            text
+        }* &
+        
+        # Direct download URLs
+        link* &
+        
+        # Downloadbles which can be derived from things the user might already have
+        element delta {
+            # The patch algorithm (we only have the one right now)
+            attribute alg { "xdelta" } &
+            
+            # Inputs to the patch algorithm; the rel= should indicate what kind (patch, source file, etc) and should ideally be a local fragment identifier pointing to another <file> element
+            link+
+        }*
+    }
+
+# Links.
+# TODO: This is actually used for two disjoint purposes: actual download links (which must be real URLs with no fragment), and intra-document links in <delta>s, which should be only a fragment and must have a 'rel'. So should they maybe be two different elements?
+link =
+    element link {
+        attribute href { xsd:anyURI } &
+        attribute rel { text }?
+    }
+
+installable =
+    element install {  # TODO: better element name?
+        downloadable+
+    }

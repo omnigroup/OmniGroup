@@ -13,9 +13,4 @@
 {
 }
 
-+ (NSString *)defaultBundleIdentifier;
-+ (NSString *)defaultBundleBuildVersionString;
-+ (NSString *)defaultBundleMarketingVersionString;
-+ (NSString *)defaultUserVisibleSystemVersion;
-
 @end

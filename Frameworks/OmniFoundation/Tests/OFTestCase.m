@@ -41,37 +41,32 @@ RCS_ID("$Id$")
 
 + (SenTest *)testSuiteForMethod:(NSString *)methodName cases:(NSArray *)testCases
 {
-    SEL method;
-    NSMethodSignature *methodSignature;
-    SenTestSuite *suite;
-    unsigned caseIndex, caseCount;
-    
-    method = NSSelectorFromString([methodName stringByAppendingString:@":"]);
+    SEL method = NSSelectorFromString([methodName stringByAppendingString:@":"]);
     if (method == NULL || ![self instancesRespondToSelector:method]) {
         [NSException raise:NSGenericException format:@"Unimplemented method -[%@ %@:] referenced in test case file", [self description], methodName];
     }
-    methodSignature = [self instanceMethodSignatureForSelector:method];
+    
+    return [self testSuiteNamed:methodName usingSelector:method cases:testCases];
+}
+
++ (SenTest *)testSuiteNamed:(NSString *)suiteName usingSelector:(SEL)testSelector cases:(NSArray *)testCases;
+{
+    NSMethodSignature *methodSignature = [self instanceMethodSignatureForSelector:testSelector];
     if (!methodSignature ||
         [methodSignature numberOfArguments] != 3 || /* 3 args: self, _cmd, and the test case */
         strcmp([methodSignature methodReturnType], "v") != 0) {
-        [NSException raise:NSGenericException format:@"Method -[%@ %@:] referenced in test case file has incorrect signature", [self description], methodName];
+        [NSException raise:NSGenericException format:@"Method -[%@ %@] referenced in test case file has incorrect signature", [self description], NSStringFromSelector(testSelector)];
     }
     
-    suite = [[SenTestSuite alloc] initWithName:methodName];
-    [suite autorelease];
+    SenTestSuite *suite = [[[SenTestSuite alloc] initWithName:suiteName] autorelease];
     
-    caseCount = [testCases count];
-    for(caseIndex = 0; caseIndex < caseCount; caseIndex ++) {
-        id testArguments = [testCases objectAtIndex:caseIndex];
-        NSInvocation *testInvocation;
-        OFTestCase *testCase;
-        
-        testInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
-        [testInvocation setSelector:method];
+    for (id testArguments in testCases) {
+        NSInvocation *testInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
+        [testInvocation setSelector:testSelector];
         [testInvocation setArgument:&testArguments atIndex:2];
         [testInvocation retainArguments];
         
-        testCase = [self testCaseWithInvocation:testInvocation];
+        OFTestCase *testCase = [self testCaseWithInvocation:testInvocation];
         [suite addTest:testCase];
     }
     
@@ -79,3 +74,38 @@ RCS_ID("$Id$")
 } 
 
 @end
+
+#import <OmniFoundation/NSFileManager-OFExtensions.h>
+#import <OmniBase/NSError-OBExtensions.h>
+
+void OFDiffData(SenTestCase *testCase, NSData *expected, NSData *actual)
+{
+    NSString *name = [testCase name];
+    
+    NSError *error = nil;
+    NSString *expectedPath = [[NSFileManager defaultManager] scratchFilenameNamed:[@"expected-" stringByAppendingString:name] error:&error];
+    if (!expectedPath) {
+        NSLog(@"Unable to create scratch path: %@", [error toPropertyList]);
+        return;
+    }
+    
+    NSString *actualPath = [[NSFileManager defaultManager] scratchFilenameNamed:[@"actual-" stringByAppendingString:name] error:&error];
+    if (!actualPath) {
+        NSLog(@"Unable to create scratch path: %@", [error toPropertyList]);
+        return;
+    }
+    
+    if (![expected writeToURL:[NSURL fileURLWithPath:expectedPath] options:0 error:&error]) {
+        NSLog(@"Unable to write scratch file to %@: %@", expectedPath, [error toPropertyList]);
+        return;
+    }
+    if (![actual writeToURL:[NSURL fileURLWithPath:actualPath] options:0 error:&error]) {
+        NSLog(@"Unable to write scratch file to %@: %@", actualPath, [error toPropertyList]);
+        return;
+    }
+    
+    NSLog(@"Diffs:\nopendiff '%@' '%@'", expectedPath, actualPath);
+    NSTask *diffTask = [NSTask launchedTaskWithLaunchPath:@"/usr/bin/diff" arguments:[NSArray arrayWithObjects:@"-u", expectedPath, actualPath, nil]];
+    [diffTask waitUntilExit]; // result should be 1 if they are different, so not worth checking
+}
+

@@ -128,6 +128,9 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
     CHECK([NSColor colorWithCalibratedWhite:0.5 alpha:0.75]);
 }
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+    // In fact, NSCalibratedBlackColorSpace is deprecated on 10.6.
+#else
 - (void)testBlack;
 {
     // There seems to be no way to *get* a color in NSCalibratedBlackColorSpace.  Let's verify that that is still true.
@@ -144,6 +147,7 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
     NSColor *rgbToBlack = [rgb colorUsingColorSpaceName:NSCalibratedBlackColorSpace];
     STAssertNil(rgbToBlack, @"converting rgb->black expected to produce nil");
 }
+#endif
 
 - (void)testCatalog;
 {

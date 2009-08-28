@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,13 @@
 #import <OmniAppKit/OAColorPalette.h>
 
 RCS_ID("$Id$")
+
+@interface OAInlineImageTextAttachmentCell : NSImageCell /* <NSTextAttachmentCell> */
+{
+    NSTextAttachment *nonretained_attachment;
+}
+@property (readwrite, assign) NSTextAttachment *attachment;
+@end
 
 @implementation NSAttributedString (OAExtensions)
 
@@ -47,6 +54,18 @@ static NSString *blackColorString;
         AttachmentString = [[NSString alloc] initWithCharacters:&c length:1];
     }
     return AttachmentString;
+}
+
++ (NSAttributedString *)attributedStringWithImage:(NSImage *)anImage;
+{
+    OAInlineImageTextAttachmentCell *imageCell = [[OAInlineImageTextAttachmentCell alloc] initImageCell:anImage];
+    NSTextAttachment *attach = [[NSTextAttachment alloc] initWithFileWrapper:nil];
+    [attach setAttachmentCell:(id <NSTextAttachmentCell>)imageCell];
+    [imageCell release];
+    
+    NSAttributedString *result = [self attributedStringWithAttachment:attach];
+    [attach release];
+    return result;
 }
 
 - (void)resetAttributes;
@@ -590,3 +609,37 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 }
 
 @end
+
+
+@implementation OAInlineImageTextAttachmentCell
+
+// Many of the NSTextAttachmentCell protocol's methods are supplied by NSCell.
+// - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
+// - (void)highlight:(BOOL)flag withFrame:(NSRect)cellFrame inView:(NSView *)controlView;
+// - (BOOL)trackMouse:(NSEvent *)theEvent inRect:(NSRect)cellFrame ofView:(NSView *)controlView untilMouseUp:(BOOL)flag;
+
+- (BOOL)wantsToTrackMouse;
+{
+    return NO;
+}
+
+- (NSPoint)cellBaselineOffset;
+{
+    NSImage *img = [self image];
+    if (img) {
+        return [img alignmentRect].origin;
+    } else {
+        return (NSPoint){0, 0};
+    }
+}
+
+@synthesize attachment = nonretained_attachment;
+
+- (NSSize)cellSize
+{
+    return [[self image] size];
+}
+
+@end
+
+

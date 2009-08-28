@@ -9,8 +9,6 @@
 
 #import <AppKit/NSView.h>
 
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
 @interface OAConstructionTimeView : NSView
 @end
-#endif
 

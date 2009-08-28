@@ -55,4 +55,12 @@ OFTemporaryPlaceholderInvocation *temporaryPlaceholderInvocation;
     OBRequestConcreteImplementation(self, _cmd);
 }
 
+#pragma mark NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    // All invocations should be immutable.
+    return [self retain];
+}
+
 @end

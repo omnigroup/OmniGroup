@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,8 +7,10 @@
 //
 // $Id$
 
-#import <OmniDataObjects/ODOAttribute.h>
+#import <libxml/parser.h>
+#import <libxml/xmlerror.h>
 
-@interface ODOAttribute (Internal)
-- (BOOL)isPrimaryKey;
-@end
+@class NSError;
+
+// Returns nil if the error should be ignored.
+__private_extern__ NSError *OFXMLCreateError(xmlErrorPtr error);

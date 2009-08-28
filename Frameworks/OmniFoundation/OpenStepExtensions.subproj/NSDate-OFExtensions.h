@@ -11,10 +11,12 @@
 
 @class NSCalendar, NSString, NSTimeZone;
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
 @interface NSDate (UndeclaredAPI)
 // In 10.5+, but not declared yet in the Xcode 3.1 headers
 - (id)dateByAddingTimeInterval:(NSTimeInterval)ti;
 @end
+#endif
 
 @interface NSDate (OFExtensions)
 
@@ -35,6 +37,7 @@
 
 // dateTime formatted according to http://www.w3.org/2001/XMLSchema-datatypes
 - initWithXMLString:(NSString *)xmlString;
+- initWithXMLCString:(const char *)cString;
 - (NSString *)xmlString;
 
 @end

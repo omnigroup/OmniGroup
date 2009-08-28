@@ -155,7 +155,12 @@ RCS_ID("$Id$")
     NSMutableArray *animationArray = [NSArray arrayWithObject:animationDictionary];
     NSAnimation *animation = [[NSViewAnimation alloc] initWithViewAnimations:animationArray];
     
-    id delegate = (id)[self delegate]; // Let our delegate implement some of the animation delegate methods if it wants
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+    id <NSAnimationDelegate> delegate;
+#else
+    id delegate;
+#endif
+    delegate = (id)[self delegate]; // Let our delegate implement some of the animation delegate methods if it wants
     [animation setDelegate:delegate];
     [animation setAnimationBlockingMode:NSAnimationBlocking];
     [animation setDuration:0.25];

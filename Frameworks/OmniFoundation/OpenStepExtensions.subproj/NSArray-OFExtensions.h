@@ -62,8 +62,6 @@
 
 - (NSArray *)reversedArray;
 
-- (NSArray *)deepCopyWithReplacementFunction:(id (*)(id, void *))funct context:(void *)context;
-
 - (BOOL)isIdenticalToArray:(NSArray *)otherArray;
 
 - (BOOL)containsObjectsInOrder:(NSArray *)orderedObjects;

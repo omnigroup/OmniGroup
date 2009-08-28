@@ -57,7 +57,11 @@ RCS_ID("$Id$")
     [self appendDescription:result];
     return result;
 }
-
+- (id)copyWithZone:(NSZone *)zone;
+{
+    // All predicates should be immutable
+    return [self retain];
+}
 @end
 
 @implementation  NSCompoundPredicate

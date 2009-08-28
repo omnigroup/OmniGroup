@@ -45,6 +45,7 @@ static void exit_with_error(NSError *error)
 {
     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:[error toPropertyList], OSUTool_ResultsErrorKey, nil];
     exit_with_plist(dict);
+    [dict release]; // clang
 }
 
 
@@ -146,8 +147,15 @@ static void contemplate_reachability(const char *hostname)
     if (!hostname || !*hostname)
         return;
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+    SCNetworkReachabilityRef target = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, hostname);
+    SCNetworkReachabilityFlags flags = 0;
+    Boolean canDetermineReachability = SCNetworkReachabilityGetFlags(target, &flags);
+    CFRelease(target);
+#else
     SCNetworkConnectionFlags flags;
     Boolean canDetermineReachability = SCNetworkCheckReachabilityByName(hostname, &flags);
+#endif
     
     NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Your Internet connection might not be active, or there might be a problem somewhere along the network.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error text generated when software update is unable to retrieve the list of current software versions");
     if (!canDetermineReachability) {
@@ -158,7 +166,12 @@ static void contemplate_reachability(const char *hostname)
         exit_with_error([NSError errorWithDomain:OSUToolErrorDomain code:OSUToolRemoteNetworkFailure userInfo:userInfo]);
     }
 
-    Boolean reachable = ((flags & kSCNetworkFlagsReachable) != 0);
+    Boolean reachable;
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+    reachable = ((flags & kSCNetworkReachabilityFlagsReachable) != 0);
+#else
+    reachable = ((flags & kSCNetworkFlagsReachable) != 0);
+#endif
     
     if (!reachable) {
         NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%s is not reachable.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error description"), hostname];
@@ -167,20 +180,45 @@ static void contemplate_reachability(const char *hostname)
     }
 }
 
+static BOOL isGLExtensionsKey(CFStringRef keyString)
+{
+    if (CFStringHasPrefix(keyString, CFSTR("gl_extensions"))) {
+        // Assume no more than 10 GL adapters for now... where's my CFRegExp?
+        
+        if (CFStringGetLength(keyString) == 14) {
+            UniChar ch = CFStringGetCharacterAtIndex(keyString, 13);
+            if (ch >= '0' && ch <= '9')
+                return YES;
+        }
+    }
+    
+    return NO;
+}
+
 static void _queryStringApplier(const void *key, const void *value, void *context)
 {
-    CFStringRef escapedKey   = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)key, NULL, NULL, kCFStringEncodingUTF8);
-    CFStringRef escapedValue = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)value, NULL, NULL, kCFStringEncodingUTF8);
+    CFStringRef keyString = (CFStringRef)key;
+    CFStringRef valueString = (CFStringRef)value;
     CFMutableStringRef query = (CFMutableStringRef)context;
-
     
-    CFStringRef format;
+    CFStringRef escapedKey = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, keyString, NULL, NULL, kCFStringEncodingUTF8);
+    CFStringRef escapedValue;
+    
+    if (isGLExtensionsKey(keyString)) {
+        CFStringRef compactedValue = copyCompactedGLExtensionsList(valueString);
+        escapedValue = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, compactedValue, NULL, NULL, kCFStringEncodingUTF8);
+        CFRelease(compactedValue);
+    } else {
+        escapedValue = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, valueString, NULL, NULL, kCFStringEncodingUTF8);
+    }
+    
+    
     if (CFStringGetLength(query) > 1)
-        format = CFSTR(";%@=%@");
-    else
-        format = CFSTR("%@=%@");
+        CFStringAppend(query, CFSTR(";"));
+    CFStringAppend(query, escapedKey);
+    CFStringAppend(query, CFSTR("="));
+    CFStringAppend(query, escapedValue);
 
-    CFStringAppendFormat((CFMutableStringRef)context, NULL, format, escapedKey, escapedValue);
     CFRelease(escapedKey);
     CFRelease(escapedValue);
 }
@@ -212,6 +250,8 @@ static NSURL *check_url(const char *baseURLCString, const char *appIdentifierCSt
         // Build a URL from what was given and the query string
         url = [[NSURL URLWithString:(NSString *)queryString relativeToURL:scopeURL] absoluteURL];
     }
+    
+    CFRelease(queryString);
     
     if (baseURLCString[0] == '-') {
         // Just log the URL, instead of actually fetching it
@@ -266,9 +306,10 @@ static void perform_check(NSURL *url)
         // Ensure that the response is parsable as XML.  We don't do anything with the parsed response here, but we want to ensure that any parse errors/crashes don't destroy the main app, just our little fetching tool.
         // Note that we don't currently check if we got a XML-ish content type back.  The normal cause of this would be getting HTML back for a 404 page, but we check for that above.
         NSXMLDocument *document = [[NSXMLDocument alloc] initWithData:resourceData options:NSXMLNodeOptionsNone error:&error];
-        if (document)
+        if (document) {
             [resultDict setObject:resourceData forKey:OSUTool_ResultsDataKey];
-        else {
+            [document release];
+        } else {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to parse response from the software update server.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error description");
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The data returned from <%@> was not a valid XML document.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error description"), [url absoluteString]];
             NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, error, NSUnderlyingErrorKey, nil];

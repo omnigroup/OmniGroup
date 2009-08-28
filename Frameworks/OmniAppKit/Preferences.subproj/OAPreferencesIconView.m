@@ -20,15 +20,12 @@
 
 RCS_ID("$Id$")
 
-@interface OAPreferencesIconView (Private)
-@end
-
 @implementation OAPreferencesIconView
 
-const NSSize buttonSize = {82.0, 74.0};
-const NSSize iconSize = {32.0, 32.0};
-const CGFloat titleCellHeight = 35;
-const CGFloat iconBaseline = 36;
+static const NSSize buttonSize = {82.0, 74.0};
+static const NSSize iconSize = {32.0, 32.0};
+static const CGFloat titleCellHeight = 35;
+static const CGFloat iconBaseline = 36;
 
 #define IconIndexNone (~(unsigned int)0)
 
@@ -349,7 +346,4 @@ const CGFloat iconBaseline = 36;
 }
 
 
-@end
-
-@implementation OAPreferencesIconView (Private)
 @end

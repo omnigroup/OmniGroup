@@ -36,4 +36,11 @@ enum {
 extern NSString * const ODOSQLiteErrorDomain; // Underlying errors will be formed with this, using the SQLite return code and error message.
 
 struct sqlite3;
-extern void ODOSQLiteError(NSError **outError, int code, struct sqlite3 *sqlite);
+extern NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sqlite);
+
+#define ODOSQLiteError(outError, code, sqlite) do { \
+    NSError **_outErorr = (outError); \
+    OBASSERT(outError); \
+    if (_outErorr) \
+        *_outErorr = _ODOSQLiteError(*_outErorr, code, sqlite); \
+} while(0)

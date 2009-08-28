@@ -404,7 +404,7 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
 
 + (id)coerceRecord:(NSDictionary *)dictionary toClass:(Class)aClass
 {
-    NSTextStorage *result = [[NSTextStorage alloc] init];
+    NSTextStorage *result = [[[NSTextStorage alloc] init] autorelease];
 
     // Set text first so we have a range to apply the other attributes over.
     NSMutableDictionary *tempDict = [dictionary mutableCopy];
@@ -429,7 +429,7 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
 
 + (id)coerceList:(NSArray *)array toClass:(Class)aClass;
 {
-    NSTextStorage *result = [[NSTextStorage alloc] init];
+    NSTextStorage *result = [[[NSTextStorage alloc] init] autorelease];
     NSScriptCoercionHandler *coercer = [NSScriptCoercionHandler sharedCoercionHandler];
     int index, count;
     

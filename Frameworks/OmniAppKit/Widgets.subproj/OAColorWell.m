@@ -24,7 +24,7 @@ RCS_ID("$Id$");
 
 static NSMutableArray *activeColorWells;
 
-NSString *OAColorWellWillActivate = @"OAColorWellWillActivate";
+NSString * const OAColorWellWillActivate = @"OAColorWellWillActivate";
 
 @interface OAColorWell (Private)
 - (void)_containingWindowWillClose:(NSNotification *)notification;

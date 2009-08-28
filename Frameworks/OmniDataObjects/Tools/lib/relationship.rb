@@ -36,9 +36,33 @@ module OmniDataObjects
       "ODORelationshipDeleteRule#{delete.capitalize_first}"
     end
     
+    # Would be better to have emitInterface have a way for use to declare properties and pass the class.  Then it could collect those and emit the @class w/o us repeating this logic.
+    def add_class_names(names)
+      if @many
+        return if self.inherited_from
+        names << "NSSet"
+      else
+        if entity.abstract
+          names << entity.instance_class
+        else
+          names << @target.instance_class
+       end
+      end
+    end
     def emitInterface(f)
-      # Relationships are all to-many sets and are (currently) read-only.  For now the inverse to-one is the editing point.
-      f << "@property(readonly) NSSet *#{name};\n"
+      if @many
+        # To many relationships are all sets and are (currently) read-only.  For now the inverse to-one is the editing point.
+        return if self.inherited_from # don't redeclare inherited to-many relationships since they'll have the same definition in the superclass
+        f << "@property(readonly) NSSet *#{name};\n"
+      else
+        if entity.abstract
+          # Hacky; we have abstract self relationships for parent children.  Abstract entities don't have their relationship destinations resolved since they don't point to something real. We can at least declare the type of the to-one as specifically as we know it. Declare it read-only though, since we would prefer typechecking of the exact right class for writes.
+          fail "Expect abstract entities to be self joins." unless entity.name == target
+          f << "@property(readonly) #{entity.instance_class} *#{name};\n"
+        else
+          f << "@property(nonatomic,retain) #{@target.instance_class} *#{name};\n"
+       end
+      end
     end
 
     def emitCreation(f)

@@ -30,7 +30,7 @@
 
 - (NSString *) unquotedString;
 
-- (NSString *)createQuotedStringForDocument:(OFXMLDocument *)doc;
+- (NSString *)newQuotedStringForDocument:(OFXMLDocument *)doc;
 
 // Writing support called from OFXMLDocument
 - (BOOL)appendXML:(struct _OFXMLBuffer *)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;

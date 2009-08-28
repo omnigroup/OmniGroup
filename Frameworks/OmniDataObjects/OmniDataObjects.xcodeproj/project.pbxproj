@@ -224,7 +224,6 @@
 		348ED05C0D8F7AD9007ADAC9 /* ODOPredicate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOPredicate.m; sourceTree = "<group>"; };
 		348EE2AD0EAE3B6300C6998E /* ODOObject-GenerateAccessors.rb */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.ruby; path = "ODOObject-GenerateAccessors.rb"; sourceTree = "<group>"; };
 		34905A160D8A3261001E6B6B /* ODOEntity-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOEntity-Internal.h"; sourceTree = "<group>"; };
-		34905A360D8A34E0001E6B6B /* ODOAttribute-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOAttribute-Internal.h"; sourceTree = "<group>"; };
 		34905A3A0D8A354A001E6B6B /* ODOProperty-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOProperty-Internal.h"; sourceTree = "<group>"; };
 		34A5E1210D89940F0006DF9F /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Common.xcconfig"; path = "../../Configurations/Omni-Application-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
 		34A5E1220D89940F0006DF9F /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Coverage.xcconfig"; path = "../../Configurations/Omni-Application-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
@@ -262,7 +261,7 @@
 		34C25F7E0EAE61C300F5FC90 /* ODOObject-Accessors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOObject-Accessors.h"; sourceTree = "<group>"; };
 		34C25F7F0EAE61C300F5FC90 /* ODOObject-Accessors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOObject-Accessors.m"; sourceTree = "<group>"; };
 		34D5FB1B0E9F20890055E958 /* ODOModel-Creation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOModel-Creation.h"; sourceTree = "<group>"; };
-		34D5FB8F0EA06D910055E958 /* ODOTestCase.odomodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ODOTestCase.odomodel; sourceTree = "<group>"; };
+		34D5FB8F0EA06D910055E958 /* ODOTestCase.odomodel */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; fileEncoding = 4; path = ODOTestCase.odomodel; sourceTree = "<group>"; };
 		34F4CD2C0EA926870075D4B2 /* ODOObject-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOObject-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
 		34F4CD2D0EA926870075D4B2 /* ODOTestCaseDynamicProperty-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOTestCaseDynamicProperty-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
 		34F4CD2E0EA926870075D4B2 /* ODOTestCaseModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOTestCaseModel.h; sourceTree = "<group>"; };
@@ -536,7 +535,6 @@
 		34A77BBC0D89F0F80037DE8C /* Schema */ = {
 			isa = PBXGroup;
 			children = (
-				34905A360D8A34E0001E6B6B /* ODOAttribute-Internal.h */,
 				344FB1A70D89973500AA63FE /* ODOAttribute.h */,
 				344FB1B90D89979200AA63FE /* ODOAttribute.m */,
 				34905A160D8A3261001E6B6B /* ODOEntity-Internal.h */,
@@ -1079,6 +1077,84 @@
 			};
 			name = Release;
 		};
+		34AE99A50FC6090700538090 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1300D89940F0006DF9F /* Omni-Global-Coverage.xcconfig */;
+			buildSettings = {
+			};
+			name = Coverage;
+		};
+		34AE99A60FC6090700538090 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E12A0D89940F0006DF9F /* Omni-Framework-Coverage.xcconfig */;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = $PROJECT_DERIVED_FILE_DIR;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_PREPROCESS = YES;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
+				PRODUCT_NAME = OmniDataObjects;
+			};
+			name = Coverage;
+		};
+		34AE99A70FC6090700538090 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1340D89940F0006DF9F /* Omni-Tool-Coverage.xcconfig */;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PREFIX_HEADER = OmniDataObjects.h;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = xcd2odo;
+			};
+			name = Coverage;
+		};
+		34AE99A80FC6090700538090 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Build SVNVersion.h";
+			};
+			name = Coverage;
+		};
+		34AE99A90FC6090700538090 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1260D89940F0006DF9F /* Omni-Bundle-Coverage.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					/Developer/Library/Frameworks,
+					/Library/Frameworks,
+				);
+				GCC_PREFIX_HEADER = OmniDataObjects.h;
+				INFOPLIST_FILE = "Tests/ODOTests-Info.plist";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
+				PRODUCT_NAME = ODOTests;
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Coverage;
+		};
+		34AE99AA0FC6090700538090 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34A5E1340D89940F0006DF9F /* Omni-Tool-Coverage.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../Products/Debug\"",
+				);
+				GCC_PREFIX_HEADER = Tests/ODOPerf/ODOPerf_Prefix.h;
+				PRODUCT_NAME = ODOPerf;
+			};
+			name = Coverage;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1086,6 +1162,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB91AE08733DA50010E9CD /* Debug */,
+				34AE99A60FC6090700538090 /* Coverage */,
 				1DEB91AF08733DA50010E9CD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1095,6 +1172,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB91B208733DA50010E9CD /* Debug */,
+				34AE99A50FC6090700538090 /* Coverage */,
 				1DEB91B308733DA50010E9CD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1104,6 +1182,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				340D219A0E5DF69E0049EBA0 /* Debug */,
+				34AE99AA0FC6090700538090 /* Coverage */,
 				340D219B0E5DF69E0049EBA0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1113,6 +1192,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				340D5DB70DAACED300BF27F8 /* Debug */,
+				34AE99A90FC6090700538090 /* Coverage */,
 				340D5DB80DAACED300BF27F8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1122,6 +1202,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3484096C0D89F9CD00E74C9D /* Debug */,
+				34AE99A80FC6090700538090 /* Coverage */,
 				3484096D0D89F9CD00E74C9D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1131,6 +1212,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				34A779F20D89D5450037DE8C /* Debug */,
+				34AE99A70FC6090700538090 /* Coverage */,
 				34A779F30D89D5450037DE8C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;

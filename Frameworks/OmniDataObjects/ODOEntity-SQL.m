@@ -15,7 +15,6 @@
 #import "ODOObject-Accessors.h"
 #import "ODOProperty-Internal.h"
 #import "ODODatabase-Internal.h"
-#import "ODOAttribute-Internal.h"
 #import "ODOSQLStatement.h"
 
 RCS_ID("$Id$")
@@ -298,6 +297,9 @@ static BOOL _bindInsertSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
         
         [database _setCachedStatement:insertStatement forKey:_insertStatementKey];
         [insertStatement release];
+        
+        // clang scan-build will issue a use-after release warning below if we don't do this (since it doesn't know that -_setCachedStatement:forKey: will retain.  Really, this makes sense since the method might do anything, including rejecting the new statement for some reason.  So, look it up again.
+        insertStatement = [database _cachedStatementForKey:_insertStatementKey];
     }
     
     // Bind all the property values.
@@ -363,7 +365,10 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
 
         [database _setCachedStatement:updateStatement forKey:_updateStatementKey];
         [updateStatement release];
-    }
+
+        // clang scan-build will issue a use-after release warning below if we don't do this (since it doesn't know that -_setCachedStatement:forKey: will retain.  Really, this makes sense since the method might do anything, including rejecting the new statement for some reason.  So, look it up again.
+        updateStatement = [database _cachedStatementForKey:_updateStatementKey];
+}
     
     // Bind all the property values.
     if (!_bindUpdateSchemaProperties(sqlite, updateStatement, object, _schemaProperties, _primaryKeyAttribute, outError))
@@ -390,6 +395,10 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
         
         [database _setCachedStatement:statement forKey:_deleteStatementKey];
         [statement release];
+
+    
+        // clang scan-build will issue a use-after release warning below if we don't do this (since it doesn't know that -_setCachedStatement:forKey: will retain.  Really, this makes sense since the method might do anything, including rejecting the new statement for some reason.  So, look it up again.
+        statement = [database _cachedStatementForKey:_deleteStatementKey];
     }
     
     // Bind the primary key attribute in the single slot for the WHERE

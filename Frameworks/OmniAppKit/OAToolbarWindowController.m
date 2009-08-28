@@ -181,7 +181,7 @@ static NSMutableDictionary *helpersByExtension = nil;
  3: item dictionary with key "<identifier>"; this is only for backwards compatibility and will hit an assertion
  
  */
-static NSString *_displayName(NSBundle *bundle, NSString *stringsFileName, NSString *identifier, NSString *displayKey, NSDictionary *itemInfo)
+static NSString *_displayName(NSBundle *bundle, NSString *stringsFileName, NSString *identifier, NSString *displayKey, NSDictionary *itemInfo, BOOL preferNilToFallback)
 {
     NSString *key, *value;
     NSString *novalue = @" -NO VALUE- ";  // Hopefully no one will actually want to localize something to this value.
@@ -190,14 +190,17 @@ static NSString *_displayName(NSBundle *bundle, NSString *stringsFileName, NSStr
     value = [bundle localizedStringForKey:key value:novalue table:stringsFileName];
     if (OFNOTEQUAL(novalue, value))
         return value;
-    
+
+    if (preferNilToFallback)
+        return nil;
+
     key = identifier;
     value = [bundle localizedStringForKey:key value:novalue table:stringsFileName];
     if (OFNOTEQUAL(novalue, value))
         return value;
     
     key = displayKey;
-    value = [itemInfo objectForKey:displayKey]; // Grab the unlocalized display name out of the item dictionary
+    value = [itemInfo objectForKey:key]; // Grab the unlocalized display name out of the item dictionary
     OBASSERT(value == nil); // This assertion succeeds when a display key doesn't exist at all; it fails when its name is unlocalized
     return value;
 }
@@ -208,9 +211,10 @@ static void copyProperty(NSToolbarItem *anItem,
                          NSString *stringsFileName,
                          NSString *itemIdentifier,
                          NSDictionary *itemInfo,
-                         NSString *specificItemDisplayName)
+                         NSString *specificItemDisplayName,
+                         BOOL preferNilToFallback)
 {
-    NSString *value = _displayName(bundle, stringsFileName, itemIdentifier, propertyName, itemInfo);
+    NSString *value = _displayName(bundle, stringsFileName, itemIdentifier, propertyName, itemInfo, preferNilToFallback);
     
     if (!value)
         return;
@@ -255,11 +259,11 @@ static void copyProperty(NSToolbarItem *anItem,
     
     itemInfo = [self toolbarInfoForItem:effectiveItemIdentifier];
 
-    copyProperty(newItem, @"label",             bundle, stringsFileName, effectiveItemIdentifier, itemInfo, nameWithoutExtension);
-    copyProperty(newItem, @"toolTip",           bundle, stringsFileName, effectiveItemIdentifier, itemInfo, nameWithoutExtension);
-    copyProperty(newItem, @"optionKeyLabel",    bundle, stringsFileName, effectiveItemIdentifier, itemInfo, nameWithoutExtension);
-    copyProperty(newItem, @"optionKeyToolTip",  bundle, stringsFileName, effectiveItemIdentifier, itemInfo, nameWithoutExtension);
-    copyProperty(newItem, @"paletteLabel",      bundle, stringsFileName, effectiveItemIdentifier, itemInfo, nameWithoutExtension);
+    copyProperty(newItem, @"label",             bundle, stringsFileName, effectiveItemIdentifier, itemInfo, nameWithoutExtension, NO);
+    copyProperty(newItem, @"toolTip",           bundle, stringsFileName, effectiveItemIdentifier, itemInfo, nameWithoutExtension, YES);
+    copyProperty(newItem, @"optionKeyLabel",    bundle, stringsFileName, effectiveItemIdentifier, itemInfo, nameWithoutExtension, YES);
+    copyProperty(newItem, @"optionKeyToolTip",  bundle, stringsFileName, effectiveItemIdentifier, itemInfo, nameWithoutExtension, YES);
+    copyProperty(newItem, @"paletteLabel",      bundle, stringsFileName, effectiveItemIdentifier, itemInfo, nameWithoutExtension, NO);
     
     if (helper) {
         // let custom item have custom image
@@ -272,19 +276,17 @@ static void copyProperty(NSToolbarItem *anItem,
     
     if ((value = [itemInfo objectForKey:@"customView"])) {
         // customView should map to a method or ivar on a subclass
-        NSView *customView;
-        NSRect frame;
-        
-        customView = [self valueForKey: value];
+        NSView *customView = [self valueForKey:value];
         OBASSERT(customView);
-        [newItem setView: customView];
+        
+        [newItem setView:customView];
         
         // We have to provide validation for items with custom views.
-        [newItem setDelegate: self];
+        [newItem setDelegate:self];
         
         // Default to having the min size be the current size of the view and the max size unbounded.
-        frame = [customView frame];
-        [newItem setMinSize: frame.size];
+        if (customView)
+            [newItem setMinSize:customView.frame.size];
     }
     
     if ((value = [itemInfo objectForKey:@"target"])) {

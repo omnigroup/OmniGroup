@@ -12,9 +12,9 @@
 
 @class NSArray, NSEnumerator, NSMutableDictionary;
 
-@interface OFMultiValueDictionary : OFObject <NSCoding, NSMutableCopying>
+@interface OFMultiValueDictionary : OFObject </*NSCoding,*/ NSMutableCopying>
 {
-    CFMutableDictionaryRef dictionary;
+    __strong CFMutableDictionaryRef dictionary;
     short dictionaryFlags;
 }
 

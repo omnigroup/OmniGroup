@@ -41,7 +41,7 @@ RCS_ID("$Id$")
         fail1(([NSString stringWithFormat:@"Cannot parse \"%@\" as NSCalendarDate", spec]));
     }
 
-    return result;
+    return [result autorelease];
 }
 
 - (void)testRoundingToHHMM:(NSArray *)testCase;
@@ -58,9 +58,6 @@ RCS_ID("$Id$")
 
     shouldBeEqual1(output, desired,
                    ([NSString stringWithFormat:@"RoundToHHMM%@", [testCase description]]));
-    
-    [input release];
-    [desired release];
 }
 
 - (void)testRoundingToDOW:(NSArray *)testCase;
@@ -76,9 +73,6 @@ RCS_ID("$Id$")
 
     shouldBeEqual1(output, desired,
                    ([NSString stringWithFormat:@"RoundToDOW%@", [testCase description]]));
-    
-    [input release];
-    [desired release];
 }
 
 - (NSString *)name

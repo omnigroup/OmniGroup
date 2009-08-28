@@ -47,19 +47,16 @@ _OFDataBufferGetXMLStringPointer(CFStringRef string)
 
 void OFDataBufferAppendXMLQuotedString(OFDataBuffer *dataBuffer, CFStringRef string)
 {
-    const OFByte *source;
-    OFByte *dest, *ptr;
-    unsigned int characterIndex, characterCount;
-    
     OBPRECONDITION(string);
     
-    characterCount = CFStringGetLength(string);
+    NSUInteger characterIndex, characterCount = CFStringGetLength(string);
 
     // If everything is quoted, we could end up with N * characterCount bytes
     // where N = MAX(MaxUTF8CharacterLength, MaxEntityLength).
-    dest = OFDataBufferGetPointer(dataBuffer, sizeof("&#xffff;") * characterCount);
+    OFByte *dest = OFDataBufferGetPointer(dataBuffer, sizeof("&#xffff;") * characterCount);
 
-    source = _OFDataBufferGetXMLStringPointer(string);
+    const OFByte *source = _OFDataBufferGetXMLStringPointer(string);
+    OFByte *ptr;
     if (source) {
         ptr = dest;
         for (characterIndex = 0; characterIndex < characterCount; characterIndex++, source++) {

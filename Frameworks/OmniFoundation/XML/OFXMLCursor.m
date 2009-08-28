@@ -58,9 +58,9 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     _document = [document retain];
     _startingElement = [element retain];
     
-    _state      = malloc(sizeof(*_state));
+    _state = NSAllocateCollectable(sizeof(*_state), NSScannedOption);
     _stateCount = 1;
-    _stateSize  = 1;
+    _stateSize = 1;
 
     _OFXMLCursorStateInit(_state, element);
 
@@ -79,10 +79,10 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     OBINVARIANT([self _checkInvariants]);
     [_startingElement release];
     [_document release];
-    free(_state);
+    if (_state)
+        free(_state);
     [super dealloc];
 }
-
 
 - (OFXMLDocument *)document;
 {
@@ -179,7 +179,7 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     _stateCount++;
     if (_stateCount > _stateSize) {
         _stateSize = 2 * _stateCount;
-        _state = realloc(_state, sizeof(*_state) * _stateSize);
+        _state = NSReallocateCollectable(_state, sizeof(*_state) * _stateSize, NSScannedOption);
     }
 
     _OFXMLCursorStateInit(&_state[_stateCount - 1], currentChild);
@@ -268,6 +268,9 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
 {
     // There should always be a stack and it should be relatively well formed
     OBINVARIANT(_state != NULL);
+    if (!_state)
+        return YES;
+    
     OBINVARIANT(_stateCount >= 1);
     OBINVARIANT(_stateSize >= _stateCount);
 

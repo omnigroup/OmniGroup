@@ -29,11 +29,11 @@ static NSImage *leftBackgroundImage, *centerBackgroundImage, *rightBackgroundIma
 {
     OBINITIALIZE;
 
-    leftBackgroundImage = [NSImage imageNamed:@"OADockStatusItemLeft" inBundleForClass:self];
+    leftBackgroundImage = [[NSImage imageNamed:@"OADockStatusItemLeft" inBundleForClass:self] retain];
     OBASSERT(leftBackgroundImage != nil);
-    centerBackgroundImage = [NSImage imageNamed:@"OADockStatusItemCenter" inBundleForClass:self];
+    centerBackgroundImage = [[NSImage imageNamed:@"OADockStatusItemCenter" inBundleForClass:self] retain];
     OBASSERT(centerBackgroundImage != nil);
-    rightBackgroundImage = [NSImage imageNamed:@"OADockStatusItemRight" inBundleForClass:self];
+    rightBackgroundImage = [[NSImage imageNamed:@"OADockStatusItemRight" inBundleForClass:self] retain];
     OBASSERT(rightBackgroundImage != nil);
 }
 

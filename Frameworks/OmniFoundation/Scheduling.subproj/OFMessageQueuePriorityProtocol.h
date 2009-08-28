@@ -20,7 +20,7 @@ typedef struct {
     unsigned int _private:8; // Input ignored, used internally to hold state
 } OFMessageQueueSchedulingInfo;
 
-#define OFMessageQueueSchedulingInfoDefault ((OFMessageQueueSchedulingInfo){group:NULL, priority:OFMediumPriority, maximumSimultaneousThreadsInGroup:255})
+#define OFMessageQueueSchedulingInfoDefault ((OFMessageQueueSchedulingInfo){.group = NULL, .priority = OFMediumPriority, .maximumSimultaneousThreadsInGroup = 255})
 
 @protocol OFMessageQueuePriority
 - (OFMessageQueueSchedulingInfo)messageQueueSchedulingInfo;

@@ -14,7 +14,7 @@
 
 #import <AppKit/NSNibDeclarations.h>
 
-extern NSString *OAFavoriteCharsetsDefaultsKey;
+extern NSString * const OAFavoriteCharsetsDefaultsKey;
 
 @interface OAHierarchicalPopUpController : NSObject
 {

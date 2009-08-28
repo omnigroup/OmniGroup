@@ -48,9 +48,3 @@
 - (BOOL)_dragIconImage:(NSImage *)iconImage andName:(NSString *)name event:(NSEvent *)event;
 - (BOOL)_dragIconImage:(NSImage *)iconImage andName:(NSString *)name andIdentifier:(NSString *)identifier event:(NSEvent *)event;
 @end
-
-
-#import <OmniAppKit/FrameworkDefines.h>
-
-OmniAppKit_EXTERN const NSSize buttonSize, iconSize;
-OmniAppKit_EXTERN const CGFloat titleBaseline, iconBaseline;

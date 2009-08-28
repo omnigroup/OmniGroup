@@ -16,7 +16,7 @@
 RCS_ID("$Id$");
 
 @interface OASwitcherBarMatrix (Private)
-- (id)_commonSwitcherBarMatrixInit;
+- (id)_initCommonSwitcherBarMatrix;
 - (void)_maintainFocusRing:(BOOL)subscribe deregister:(BOOL)unsubscribe;
 @end
 
@@ -32,9 +32,9 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(!aCell || [aCell isKindOfClass:[OASwitcherBarButtonCell class]]);
     if (!aCell)
-        aCell = [[OASwitcherBarButtonCell alloc] initImageCell:nil];
+        aCell = [[[OASwitcherBarButtonCell alloc] initImageCell:nil] autorelease];
     self = [super initWithFrame:frameRect mode:aMode prototype:aCell numberOfRows:rowsHigh numberOfColumns:colsWide];
-    return [self _commonSwitcherBarMatrixInit];
+    return [self _initCommonSwitcherBarMatrix];
 }
 
 - (id)initWithFrame:(NSRect)frameRect mode:(NSMatrixMode)aMode cellClass:(Class)factoryId numberOfRows:(NSInteger)rowsHigh numberOfColumns:(NSInteger)colsWide;
@@ -43,7 +43,7 @@ RCS_ID("$Id$");
     if (!factoryId)
         factoryId = [OASwitcherBarButtonCell class];
     self = [super initWithFrame:frameRect mode:aMode cellClass:factoryId numberOfRows:rowsHigh numberOfColumns:colsWide];
-    return [self _commonSwitcherBarMatrixInit];
+    return [self _initCommonSwitcherBarMatrix];
 }
 
 - (void)dealloc
@@ -138,7 +138,7 @@ RCS_ID("$Id$");
 
 @implementation OASwitcherBarMatrix (Private)
 
-- (id)_commonSwitcherBarMatrixInit;
+- (id)_initCommonSwitcherBarMatrix;
 {
     [self setIntercellSpacing:NSZeroSize];
     return self;

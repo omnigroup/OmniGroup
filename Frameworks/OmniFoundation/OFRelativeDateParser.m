@@ -887,7 +887,6 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	}
     }
     // month
-    BOOL namedMonth = NO;
     if (datePosition.month <= count) {
 	NSString *monthName = [[dateComponents objectAtIndex:datePosition.month-1] lowercaseString];
 	
@@ -897,7 +896,6 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	    match = [match lowercaseString];
 	    if ([match isEqualToString:monthName]) {
 		dateSet.month = [self _monthIndexForString:match];
-		namedMonth = YES;
 	    }
 	}
 	NSEnumerator *shortMonthEnum = [_shortmonths objectEnumerator];
@@ -905,7 +903,6 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	    match = [match lowercaseString];
 	    if ([match isEqualToString:monthName]) {
 		dateSet.month = [self _monthIndexForString:match];
-		namedMonth = YES;
 	    }
 	}
 	
@@ -1385,7 +1382,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	//		0,  // code enum
 	//		@"we were unable to parse something, return an error for string" // description
 	//		);
-	if (number == -1) {
+	if (number == -1 && !scanned) {
 	    if (!punctuation) {
 #ifdef DEBUG_date
 		NSLog(@"ERROR String: %@, number: %d loc: %d", dateString, number, [scanner scanLocation]);
@@ -1523,6 +1520,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 #ifdef DEBUG_date
 	    NSLog(@"return today");
 #endif	
+            [components release];
 	    return date; 
 	} else if (currentWeekday > requestedWeekday) {
 #ifdef DEBUG_date    
@@ -1563,7 +1561,9 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	[components setDay:(requestedWeekday- currentWeekday)+dayModification];
     }
     
-    return [currentCalendar dateByAddingComponents:components toDate:date options:0];; //return next week
+    NSDate *result = [currentCalendar dateByAddingComponents:components toDate:date options:0];; //return next week
+    [components release];
+    return result;
 }
 
 - (void)_addToComponents:(NSDateComponents *)components codeString:(DPCode)dpCode codeInt:(int)codeInt withMultiplier:(int)multiplier;

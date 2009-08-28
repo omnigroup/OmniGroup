@@ -31,7 +31,7 @@ const struct OBBacktraceBufferInfo OBBacktraceBufferInfo = {
 
 void OBRecordBacktrace(uintptr_t ctxt, int optype)
 {
-    OBASSERT(optype != 0); // 0 indicates an unused buffer
+    assert(optype != OBBacktraceBuffer_Unused && optype != OBBacktraceBuffer_Allocated); // 0 and 1 reserved for us
     
     struct OBBacktraceBuffer *buf = OBAcquireBacktraceBuffer();
     
@@ -71,7 +71,7 @@ static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer()
     }
     
     struct OBBacktraceBuffer *buf = &(backtraces[slot]);
-    buf->type = 0;
+    buf->type = OBBacktraceBuffer_Allocated;
     
 #ifdef BUILTIN_ATOMICS
     __sync_synchronize();

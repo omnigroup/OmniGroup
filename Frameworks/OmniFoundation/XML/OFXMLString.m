@@ -46,14 +46,14 @@ RCS_ID("$Id$");
     return _unquotedString;
 }
 
-- (NSString *)createQuotedStringForEncoding:(NSStringEncoding)encoding;
+static NSString *CreateQuotedStringForEncoding(OFXMLString *self, CFStringEncoding encoding)
 {
-    return OFXMLCreateStringWithEntityReferencesInCFEncoding(_unquotedString, _quotingMask, _newlineReplacement, encoding);
+    return OFXMLCreateStringWithEntityReferencesInCFEncoding(self->_unquotedString, self->_quotingMask, self->_newlineReplacement, encoding);
 }
 
-- (NSString *)createQuotedStringForDocument:(OFXMLDocument *)doc;
+- (NSString *)newQuotedStringForDocument:(OFXMLDocument *)doc;
 {
-    return [self createQuotedStringForEncoding:[doc stringEncoding]];
+    return CreateQuotedStringForEncoding(self, [doc stringEncoding]);
 }
 
 #pragma mark -
@@ -61,7 +61,7 @@ RCS_ID("$Id$");
 
 - (BOOL)appendXML:(struct _OFXMLBuffer *)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
 {
-    NSString *text = [self createQuotedStringForDocument:doc];
+    NSString *text = [self newQuotedStringForDocument:doc];
     OBASSERT(text);
     if (text)
 	OFXMLBufferAppendString(xml, (CFStringRef)text);
@@ -85,8 +85,8 @@ RCS_ID("$Id$");
         return YES;
     
     // Check if the resulting output would be the same, even if we get there a different way.
-    NSString *quotedString = [self createQuotedStringForEncoding:NSUTF8StringEncoding];
-    NSString *otherQuotedString = [otherString createQuotedStringForEncoding:NSUTF8StringEncoding];
+    NSString *quotedString = CreateQuotedStringForEncoding(self, kCFStringEncodingUTF8);
+    NSString *otherQuotedString = CreateQuotedStringForEncoding(otherString, kCFStringEncodingUTF8);
     
     BOOL result = [quotedString isEqualToString:otherQuotedString];
     
@@ -185,56 +185,53 @@ static NSString *_OFXMLCreateStringWithEntityReferences(NSString *sourceString, 
 // Replace characters not representable in string encoding with numbered character references
 NSString *OFXMLCreateStringInCFEncoding(NSString *sourceString, CFStringEncoding anEncoding)
 {
-    NSMutableString *resultString;
-    NSRange scanningRange;
-    NSRange aRange, composedRange;
-    unichar *composedCharacter;
-    unsigned int componentIndex;
+    NSRange scanningRange = NSMakeRange(0, [sourceString length]);
+    NSUInteger unrepresentableCharacterIndex = [sourceString indexOfCharacterNotRepresentableInCFEncoding:anEncoding range:scanningRange];
+    if (unrepresentableCharacterIndex == NSNotFound) {
+        // Vastly common case.
+        return [sourceString retain];
+    }
 
-    resultString = nil;
+    // Some character of string needs quoting
+    NSMutableString *resultString = [[NSMutableString alloc] init];
 
-    scanningRange.location = 0;
-    scanningRange.length = [sourceString length];
     while (scanningRange.length > 0) {
-        NSUInteger thisBad = [sourceString indexOfCharacterNotRepresentableInCFEncoding:anEncoding range:scanningRange];
-        if (thisBad == NSNotFound) {
-            if (scanningRange.location == 0)
-                return [sourceString retain];  // Shortcut for common case
-            else if (!resultString)
-                // Remainder of string has no characters needing quoting
-                resultString = [[NSMutableString alloc] init];
+        unrepresentableCharacterIndex = [sourceString indexOfCharacterNotRepresentableInCFEncoding:anEncoding range:scanningRange];
+        if (unrepresentableCharacterIndex == NSNotFound) {
+            // Remainder of string has no characters needing quoting
             [resultString appendString:[sourceString substringWithRange:scanningRange]];
             break;
-        } else if (!resultString)
-            // Some character of string needs quoting
-            resultString = [[NSMutableString alloc] init];
-        
-        aRange.location = scanningRange.location;
-        aRange.length = thisBad - aRange.location;
-        if (aRange.length > 0)
-            [resultString appendString:[sourceString substringWithRange:aRange]];
+        }
 
-        composedRange = [sourceString rangeOfComposedCharacterSequenceAtIndex:thisBad];
-        composedCharacter = malloc(composedRange.length * sizeof(*composedCharacter));
-        [sourceString getCharacters:composedCharacter range:composedRange];
-        for (componentIndex = 0; componentIndex < composedRange.length; componentIndex++) {
+        // Gather any characters before the unrepresentable characters.
+        NSRange representableRange = NSMakeRange(scanningRange.location, unrepresentableCharacterIndex - scanningRange.location);
+        if (representableRange.length > 0)
+            [resultString appendString:[sourceString substringWithRange:representableRange]];
+
+        // Then append a quoted form of the unrepresentable characters.
+        NSRange composedRange = [sourceString rangeOfComposedCharacterSequenceAtIndex:unrepresentableCharacterIndex];
+        unichar *composedCharacters = malloc(composedRange.length * sizeof(*composedCharacters));
+        [sourceString getCharacters:composedCharacters range:composedRange];
+        for (NSUInteger componentIndex = 0; componentIndex < composedRange.length; componentIndex++) {
             UnicodeScalarValue ch;  // this is a full 32-bit Unicode value
 
-            if (OFCharacterIsSurrogate(composedCharacter[componentIndex]) == OFIsSurrogate_HighSurrogate &&
+            if (OFCharacterIsSurrogate(composedCharacters[componentIndex]) == OFIsSurrogate_HighSurrogate &&
                 (componentIndex + 1 < composedRange.length) &&
-                OFCharacterIsSurrogate(composedCharacter[componentIndex+1]) == OFIsSurrogate_LowSurrogate) {
-                ch = OFCharacterFromSurrogatePair(composedCharacter[componentIndex], composedCharacter[componentIndex+1]);
+                OFCharacterIsSurrogate(composedCharacters[componentIndex+1]) == OFIsSurrogate_LowSurrogate) {
+                ch = OFCharacterFromSurrogatePair(composedCharacters[componentIndex], composedCharacters[componentIndex+1]);
                 componentIndex ++;
             } else {
-                ch = composedCharacter[componentIndex];
+                ch = composedCharacters[componentIndex];
             }
 
             [resultString appendFormat:@"&#%u;", ch];
         }
-        free(composedCharacter);
-        composedCharacter = NULL;
+        free(composedCharacters);
+        composedCharacters = NULL;
+        
+        // Skip past any stuff we've now handled.
         scanningRange.location = NSMaxRange(composedRange);
-        scanningRange.length -= aRange.length + composedRange.length;
+        scanningRange.length -= representableRange.length + composedRange.length;
     }
 
     // (this point is not reached if no changes are necessary to the source string)
@@ -266,20 +263,14 @@ NSString *OFXMLCreateParsedEntityString(NSString *sourceString)
         // Can't have any entity references then.
         return [sourceString copy];
     
-    NSMutableString *result;
-    NSScanner *scanner;
-    NSString *scannedString;
-    NSCharacterSet *letterCharacterSet;
-
-    result = [[NSMutableString alloc] init];
-    scanner = [[NSScanner alloc] initWithString:sourceString];
+    NSMutableString *result = [[NSMutableString alloc] init];
+    NSScanner *scanner = [[NSScanner alloc] initWithString:sourceString];
     [scanner setCharactersToBeSkipped:nil];
-
-    letterCharacterSet = [NSCharacterSet letterCharacterSet];
 
     while ([scanner isAtEnd] == NO) {
         //NSLog(@"Start of loop, scan location: %d", [scanner scanLocation]);
         //NSLog(@"remaining string: %@", [sourceString substringFromIndex:[scanner scanLocation]]);
+        NSString *scannedString;
         if ([scanner scanUpToString:@"&" intoString:&scannedString] == YES)
             [result appendString:scannedString];
 

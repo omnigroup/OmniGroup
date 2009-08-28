@@ -62,9 +62,7 @@ RCS_ID("$Id$");
 
 - (void) testBasicCursor;
 {
-    OFXMLCursor *cursor;
-    
-    cursor = [doc createCursor];
+    OFXMLCursor *cursor = [doc cursor];
     should(cursor != nil);
     should([cursor currentElement] == [doc rootElement]);
     should([cursor currentChild] == nil);
@@ -72,17 +70,14 @@ RCS_ID("$Id$");
     shouldBeEqual([cursor attributeNamed: @"id"], @"0");
     
     shouldBeEqual([cursor currentPath], @"/root/");  // trailing slash since we haven't started enumerating children
-
-    [cursor release];
 }
 
 - (void) testEnumerateChildren;
 {
-    OFXMLCursor *cursor;
     id child;
     unsigned int childIndex, childCount;
     
-    cursor = [doc createCursor];
+    OFXMLCursor *cursor = [doc cursor];
 
     childCount = [[[doc rootElement] children] count];
     for (childIndex = 0; childIndex < childCount; childIndex++) {
@@ -101,16 +96,13 @@ RCS_ID("$Id$");
 
     child = [cursor nextChild];
     shouldBeEqual(child, nil);
-
-    [cursor release];
 }
 
 - (void) testOpenCloseElement;
 {
-    OFXMLCursor *cursor;
     id child1;
     
-    cursor = [doc createCursor];
+    OFXMLCursor *cursor = [doc cursor];
 
     child1 = [cursor nextChild];
 

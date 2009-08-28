@@ -41,7 +41,9 @@ static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, 
 - (void)_loadInterface;
 - (void)_createShowAllItemsView;
 - (void)_setupMultipleToolbar;
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
 - (void)_setupCustomizableToolbar;
+#endif
 - (void)_resetWindowTitle;
 - (OAPreferenceClient *)_clientForRecord:(OAPreferenceClientRecord *)record;
 - (void)_showAllIcons:(id)sender;
@@ -263,7 +265,6 @@ static NSString *windowFrameSaveName = @"Preferences";
     unsigned int newWindowHeight;
     NSRect controlBoxFrame, windowFrame, newWindowFrame;
     NSView *oldView;
-    NSTimeInterval animationResizeTime;
     
     if (nonretained_currentClientRecord == clientRecord)
         return;
@@ -305,7 +306,6 @@ static NSString *windowFrameSaveName = @"Preferences";
         newWindowHeight += NSHeight([[toolbar _toolbarView] frame]); 
     
     newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, MAX(idealWidth, NSWidth(controlBoxFrame)), newWindowHeight) styleMask:[window styleMask]];
-    animationResizeTime = [window animationResizeTime:newWindowFrame];
     [window setFrame:newWindowFrame display:YES animate:[window isVisible]];
     
     // Do this before putting the view in the view hierarchy to avoid flashiness in the controls.
@@ -622,11 +622,13 @@ static NSString *windowFrameSaveName = @"Preferences";
 	    if (!initialClientRecord)
 		initialClientRecord = [_clientRecords lastObject];
             break;
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
         case OAPreferencesViewCustomizable:
             [self _createShowAllItemsView];
             [self _setupCustomizableToolbar];
             [self _showAllIcons:nil];
             break;
+#endif
 	default:
         case OAPreferencesViewMultiple:
 	    [_clientRecords autorelease];
@@ -697,6 +699,8 @@ static NSString *windowFrameSaveName = @"Preferences";
             separator = [[NSBox alloc] initWithFrame:NSMakeRect(separatorMargin, boxHeight + verticalSpaceBelowTextField, NSWidth([preferenceBox bounds]) - separatorMargin - separatorMargin, 1)];
             [separator setBoxType:NSBoxSeparator];
             [showAllIconsView addSubview:separator];
+            [separator release];
+            
             boxHeight += verticalSpaceAboveTextField + verticalSpaceBelowTextField;
         }
         boxHeight += verticalSpaceBelowTextField + 1;
@@ -719,10 +723,13 @@ static NSString *windowFrameSaveName = @"Preferences";
     [toolbar setAllowsUserCustomization:NO];
     [toolbar setAutosavesConfiguration:NO]; // Don't store the configured items or new items won't show up!
     [toolbar setDelegate:self];
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
     [toolbar setShowsContextMenu:NO];
+#endif
     [window setToolbar:toolbar];
 }
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
 - (void)_setupCustomizableToolbar;
 {
     NSArray *constantToolbarItems, *defaultClients, *allClients;
@@ -747,6 +754,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     [window setToolbar:toolbar];
     [toolbar setIndexOfFirstMovableItem:4]; // first four items are always ShowAll, Previous, Next, and Separator
 }
+#endif
 
 - (void)_resetWindowTitle;
 {
@@ -775,7 +783,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     NSString *identifier = [record identifier];
     OAPreferenceClient *client = [_clientByRecordIdentifier objectForKey:identifier];
     if (!client) {
-	client = [record createClientInstanceInController:self];
+	client = [record newClientInstanceInController:self];
 	[_clientByRecordIdentifier setObject:client forKey:identifier];
 	[client release];
     }
@@ -786,7 +794,6 @@ static NSString *windowFrameSaveName = @"Preferences";
 {
     NSRect windowFrame, newWindowFrame;
     unsigned int newWindowHeight;
-    NSTimeInterval animationResizeTime;
 
     // Are we already showing?
     if ([[[preferenceBox contentView] subviews] lastObject] == showAllIconsView)
@@ -808,7 +815,6 @@ static NSString *windowFrameSaveName = @"Preferences";
     if ([toolbar isVisible])
         newWindowHeight += NSHeight([[toolbar _toolbarView] frame]);
     newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, idealWidth, newWindowHeight) styleMask:[window styleMask]];
-    animationResizeTime = [window animationResizeTime:newWindowFrame];
     [window setFrame:newWindowFrame display:YES animate:[window isVisible]];
 
     // Add new icons view

@@ -358,7 +358,7 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
     if (relation != NSWindowOut) {
         OBASSERT(newIndex == swoopCellCount);
     }
-    mapping[newIndex ++] = InvalidCellIndex;
+    mapping[newIndex] = InvalidCellIndex;
 
     [self _reorderCells:mapping];
 
@@ -431,7 +431,7 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
             
         if (tFraction >= 1.0) {
             tFraction = 1.0;
-            pFraction = 1.0;
+            pFraction = tFraction;
             swoop[swoopIndex].flags &= ~ SF_Motion;  // we are done moving this cell
             cellsJustFinished ++;
         } else {
@@ -464,11 +464,10 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
         struct swooper *s = &swoop[swoopIndex];
         cPoint.x   = s->begins.x + pFraction * s->slideVector.x;
         cPoint.y   = s->begins.y + pFraction * s->slideVector.y;
-        cParameter = s->begins.x + pFraction * s->slideVector.x; // 'parameter' is stored in X component only
             
         cFrame.origin = (swooperFlags & SF_Origin)    ? cPoint                        : c->rect.origin;
         cFrame.size   = (swooperFlags & SF_Size  )    ? ((NSSize){cPoint.x,cPoint.y}) : c->rect.size;
-        cParameter    = (swooperFlags & SF_Parameter) ? cPoint.x                      : c->parameter;
+        cParameter    = (swooperFlags & SF_Parameter) ? cPoint.x                      : c->parameter; // 'parameter' is stored in X component only
         
         if (NSEqualRects(cFrame, c->rect) && cParameter == c->parameter)
             continue;
@@ -764,11 +763,12 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
 
 - (void)_fixupSwoopIndices:(unsigned *)cellRemap newCellCount:(unsigned)newCellCount
 {
-    unsigned oldCellCount;
     unsigned swoopIndex, newSwoopIndex, oldSwoopCount;
 
-    oldCellCount = swoopCellCount;
-    OBASSERT(newCellCount <= oldCellCount);
+#ifdef DEBUG_SWOOP
+    unsigned oldCellCount = swoopCellCount;
+#endif
+    OBASSERT(newCellCount <= swoopCellCount);
     swoopCellCount = newCellCount;
 
 #ifdef DEBUG_SWOOP
@@ -787,7 +787,9 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
         if (swoop[swoopIndex].duration >= 0) {
             /* update this entry's cell pointer to its cell's new location */
             if (swoop[swoopIndex].cellIndex != InvalidCellIndex) {
+#ifdef DEBUG_SWOOP
                 OBASSERT(swoop[swoopIndex].cellIndex < oldCellCount);
+#endif
                 swoop[swoopIndex].cellIndex = cellRemap[swoop[swoopIndex].cellIndex];
                 OBASSERT(swoop[swoopIndex].cellIndex < swoopCellCount);
             }

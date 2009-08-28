@@ -20,6 +20,9 @@ RCS_ID("$Id$");
     OBPRECONDITION([labelTextField isKindOfClass:[NSTextField class]]);
     OBPRECONDITION(![labelTextField isEditable]);
     
+    if (!labelTextField)
+        return;
+    
     [labelTextField sizeToFit];
 
     NSRect ruleFrame = [self frame];

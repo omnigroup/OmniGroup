@@ -39,7 +39,7 @@ typedef NSString *(*OFSubstringReplacementFunction)(NSString *, NSRange *, void 
 - (NSString *)stringByPerformingReplacement:(OFSubstringReplacementFunction)replacer
                                onCharacters:(NSCharacterSet *)replaceMe
                                     context:(void *)context
-                                    options:(unsigned int)options
+                                    options:(NSStringCompareOptions)options
                                       range:(NSRange)touchMe;
 - (NSString *)stringByPerformingReplacement:(OFSubstringReplacementFunction)replacer
                                onCharacters:(NSCharacterSet *)replaceMe;

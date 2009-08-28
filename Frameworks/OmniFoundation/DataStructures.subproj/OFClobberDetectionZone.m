@@ -346,11 +346,7 @@ static malloc_zone_t *_OFClobberDetectionZoneCreate(void)
     // Assign to the zone this way so that we'll get a warning/error if the
     // layout of the zone struct changes
     zone->basicZone = (malloc_zone_t) {
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
         NULL, // reserved1
-#else
-        0, // version
-#endif
         NULL, // reserved2
         _OFClobberDetectionZoneSize,
         _OFClobberDetectionZoneMalloc,

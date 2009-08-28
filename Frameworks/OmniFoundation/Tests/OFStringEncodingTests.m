@@ -46,23 +46,17 @@ RCS_ID("$Id$");
     int thisLength;
 
     for(thisLength = 0; thisLength <= maxLength; thisLength ++) {
-        NSMutableData *mutable;
-        NSData *immutable;
-        NSString *encoded;
-
-        mutable = [[NSMutableData alloc] initWithLength:thisLength];
+        NSMutableData *mutable = [[[NSMutableData alloc] initWithLength:thisLength] autorelease];
         if (thisLength > 0)
             memset([mutable mutableBytes], (int)byte, thisLength);
-        encoded = [mutable performSelector:encodeSelector];
+        NSString *encoded = [mutable performSelector:encodeSelector];
         shouldBeEqual1(encoded, [results objectAtIndex:thisLength], ([NSString stringWithFormat:@"%d-byte-long buffer containing 0x%02x", thisLength, byte]));
         
         NSError *error = nil;
-        immutable = objc_msgSend([NSData alloc], decodeSelector, encoded, &error);
+        NSData *immutable = [objc_msgSend(objc_msgSend([NSData class], @selector(alloc)), decodeSelector, encoded, &error) autorelease];
         OBShouldNotError(immutable != nil);
 
         shouldBeEqual1(mutable, immutable, ([NSString stringWithFormat:@"%d-byte-long buffer containing 0x%02x", thisLength, byte]));
-        [mutable release];
-        [immutable release];
     }
 }
 
@@ -96,7 +90,7 @@ RCS_ID("$Id$");
         shouldBeEqual(encoded, [countingNybblesEncodings objectAtIndex:thisLength]);
 
         NSError *error = nil;
-        immutable = objc_msgSend([NSData alloc], decodeSelector, encoded, &error);
+        immutable = objc_msgSend(objc_msgSend([NSData class], @selector(alloc)), decodeSelector, encoded, &error);
         OBShouldNotError(immutable != nil);
         
         shouldBeEqual(mutable, immutable);
@@ -117,7 +111,7 @@ RCS_ID("$Id$");
         should(randomness != nil);
         encoded = [randomness performSelector:encodeSelector];
         should(encoded != nil);
-        decoded = [[NSData alloc] performSelector:decodeSelector withObject:encoded];
+        decoded = [objc_msgSend([NSData class], @selector(alloc)) performSelector:decodeSelector withObject:encoded];
         shouldBeEqual(randomness, decoded);
         [decoded release];
     }
@@ -125,27 +119,21 @@ RCS_ID("$Id$");
 
 - (void)testKnownStrings:(NSDictionary *)cases
 {
-    NSData *testValue, *decoded;
-    NSString *encoded, *expected;
-    NSEnumerator *caseEnumerator;
     BOOL reversible = [[cases objectForKey:@"reversible"] intValue];
 
-    caseEnumerator = [cases keyEnumerator];
-    while( (expected = [caseEnumerator nextObject]) != nil ) {
-    
+    for (NSString *expected in cases) {
         if ([expected isEqual:@"reversible"])
             continue;
             
-        testValue = [cases objectForKey:expected];
-        
+        NSData *testValue = [cases objectForKey:expected];
+        NSString *encoded = nil;
         if (reversible) {
             encoded = [testValue performSelector:encodeSelector];
             shouldBeEqual(encoded, expected);
         }
         
-        decoded = [[NSData alloc] performSelector:decodeSelector withObject:expected];
+        NSData *decoded = [[objc_msgSend([NSData class], @selector(alloc)) performSelector:decodeSelector withObject:expected] autorelease];
         shouldBeEqual(decoded, testValue);
-        [decoded release];
     }
 }
 

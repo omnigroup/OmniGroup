@@ -38,7 +38,7 @@ typedef enum {
 
 + (OFEnumNameTable *)visibilityStateNameTable;
 
-+ createInspectorWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
++ newInspectorWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
 
 - initWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
 

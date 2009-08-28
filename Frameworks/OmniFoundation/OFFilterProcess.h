@@ -29,7 +29,6 @@
         size_t buffer_contents_start, buffer_contents_length, buffer_size;
         NSOutputStream *nsstream;
         BOOL filterEnabled, streamReady;
-        BOOL streamDelegate;
     } stdoutCopyBuf, stderrCopyBuf;    
     
     pid_t child;
@@ -37,6 +36,7 @@
     int kevent_fd;
     CFFileDescriptorRef kevent_cf; // Lazily created
     CFRunLoopSourceRef kevent_cfrunloop;
+    CFRunLoopTimerRef poll_timer; // Workaround for RADAR 6898524
 #define OFFilterProcess_CHANGE_QUEUE_MAX 5
     struct kevent pending_changes[OFFilterProcess_CHANGE_QUEUE_MAX];
     int num_pending_changes;
@@ -57,8 +57,11 @@
 #define OFFilterProcessWorkingDirectoryPathKey      (@"chdir")       /* NSString */
 #define OFFilterProcessInputDataKey                 (@"input-data")  /* NSData */
 /* #define OFFilterProcessInputDataKey              (@"input-stream")  NSStream is too buggy to implement this yet (RADAR 5177472 / 5177598) */
-#define OFFilterProcessReplacementEnvironmentKey    (@"envp")        /* NSDictionary of NSString->NSString */
+#define OFFilterProcessReplacementEnvironmentKey    (@"envp")        /* NSDictionary of NSString->NSString or NSData */
+#define OFFilterProcessAdditionalEnvironmentKey     (@"setenv")      /* NSDictionary of NSString->NSString or NSData */
+#define OFFilterProcessAdditionalPathEntryKey       (@"+PATH")       /* NSString */
 #define OFFilterProcessDetachTTYKey                 (@"detach")      /* NSNumber, defaults to TRUE */
+#define OFFilterProcessNewProcessGroupKey           (@"setpgrp")     /* NSNumber, defaults to FALSE */
 
 /* Init actually creates and starts the task */
 - initWithParameters:(NSDictionary *)filterParameters standardOutput:(NSOutputStream *)stdoutStream standardError:(NSOutputStream *)stderrStream;
@@ -75,6 +78,9 @@
 - (void)scheduleInRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode;
 - (void)removeFromRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode;
 
+/* Convenience method. If stdoutStreamData and stderrStreamData are the same address, stdout and stderr will be merged. If runLoopMode is nil, then it will run without using the runloop. Returns YES on success, NO on failure, or propagates an exception if one occurs in the run loop. */
++ (BOOL)runWithParameters:(NSDictionary *)filterParameters inMode:(NSString *)runLoopMode standardOutput:(NSData **)stdoutStreamData standardError:(NSData **)stderrStreamData error:(NSError **)errorPtr;
+
 @end
 
 @interface NSData (OFFilterProcess)
@@ -86,4 +92,6 @@
 @end
 
 NSString *OFDescribeKevent(const struct kevent *ev);
+
+// BOOL OFIncludeInPathEnvironment(const char *pathdir) // Not used right now. Uncomment if you need it.
 

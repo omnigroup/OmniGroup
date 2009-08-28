@@ -13,6 +13,7 @@
 
 @interface NSToolbar (OAExtensions)
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
 - (NSWindow *)window;
 - (NSView *)toolbarView;
 
@@ -29,6 +30,7 @@
 - (unsigned int)indexOfFirstMovableItem;
 - (void)setIndexOfFirstMovableItem:(unsigned int)anIndex;
     // Items before this index can't be reordered or removed even if the toolbar is customizable.
+#endif
 
 - (NSUInteger)indexOfFirstItemWithIdentifier:(NSString *)identifier;
 

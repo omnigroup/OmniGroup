@@ -41,5 +41,5 @@
 - (OAStackView *) enclosingStackView;
 @end
 
-extern NSString *OAStackViewDidLayoutSubviews;
+extern NSString * const OAStackViewDidLayoutSubviews;
 

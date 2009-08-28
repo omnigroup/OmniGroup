@@ -20,8 +20,8 @@
 
 RCS_ID("$Id$")
 
-NSString *OSAScriptException = @"OSAScriptException";
-NSString *OSAScriptExceptionSourceRangeKey = @"OSAScriptExceptionSourceRangeKey";
+NSString * const OSAScriptException = @"OSAScriptException";
+NSString * const OSAScriptExceptionSourceRangeKey = @"OSAScriptExceptionSourceRangeKey";
 
 @interface OAOSAScript (PrivateMethods)
 - (void)raiseScriptException;

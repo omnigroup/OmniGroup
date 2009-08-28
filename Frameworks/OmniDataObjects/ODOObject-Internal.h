@@ -9,16 +9,15 @@
 
 #import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOProperty.h>
+#import <OmniDataObjects/ODOAttribute.h>
 
 #import "ODOEntity-Internal.h"
-#import "ODOAttribute-Internal.h"
 
 @interface ODOObject (Internal)
 - (id)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID isFault:(BOOL)isFault;
 - (id)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(CFArrayRef)snapshot;
 - (void)_setIsFault:(BOOL)isFault;
 - (void)_turnIntoFault:(BOOL)deleting;
-- (NSArray *)_createPropertySnapshot;
 - (void)_invalidate;
 
 #ifdef OMNI_ASSERTIONS_ON
@@ -27,6 +26,7 @@
 
 @end
 
+__private_extern__ NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self);
 
 // Make it more clear what we mean when we compare to nil.
 #define ODO_OBJECT_LAZY_TO_MANY_FAULT_MARKER (nil)
@@ -137,7 +137,7 @@ static inline void _ODOObjectSetValueAtIndex(ODOObject *self, unsigned int snaps
         return;
     
     // Not doing -copy since this might be a mutable to-many set.  Higher level code should copy attribute values?  Maybe we should have a setter that passes in a retained value.
-    [self->_valueStorage[snapshotIndex] retain];
+    [self->_valueStorage[snapshotIndex] release];
     self->_valueStorage[snapshotIndex] = [value retain];
 }
 

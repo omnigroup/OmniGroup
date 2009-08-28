@@ -8,7 +8,6 @@
 // $Id$
 
 #import "NSBezierPath-OAExtensions.h"
-#import "FrameworkDefines.h"
 
 #import <OmniBase/assertions.h>
 
@@ -30,15 +29,13 @@ typedef struct {
 #define MAX_INTERSECTIONS_WITH_LINE 3       // The maximum number of intersections between a cubic curve and a line
 #define MAX_INTERSECTIONS_PER_ELT_PAIR 16   // Maximum intersections between two cubic curves (an overestimate; 9 is the real number)
 
-OmniAppKit_EXTERN void _parameterizeLine(NSPoint *coefficients, NSPoint startPoint, NSPoint endPoint);
-OmniAppKit_EXTERN void _parameterizeCurve(NSPoint *coefficients, NSPoint startPoint, NSPoint endPoint, NSPoint controlPoint1, NSPoint controlPoint2);
-OmniAppKit_EXTERN int intersectionsBetweenLineAndLine(const NSPoint *l1, const NSPoint *l2, struct intersectionInfo *results);
-OmniAppKit_EXTERN int intersectionsBetweenCurveAndLine(const NSPoint *c, const NSPoint *a, struct intersectionInfo *results);
-OmniAppKit_EXTERN int intersectionsBetweenCurveAndCurve(const NSPoint *c1coefficients, const NSPoint *c2coefficients, struct intersectionInfo *results);
-OmniAppKit_EXTERN int intersectionsBetweenCurveAndSelf(const NSPoint *coefficients, struct intersectionInfo *results);
+extern void _parameterizeLine(NSPoint *coefficients, NSPoint startPoint, NSPoint endPoint);
+extern void _parameterizeCurve(NSPoint *coefficients, NSPoint startPoint, NSPoint endPoint, NSPoint controlPoint1, NSPoint controlPoint2);
+extern int intersectionsBetweenLineAndLine(const NSPoint *l1, const NSPoint *l2, struct intersectionInfo *results);
+extern int intersectionsBetweenCurveAndLine(const NSPoint *c, const NSPoint *a, struct intersectionInfo *results);
+extern int intersectionsBetweenCurveAndCurve(const NSPoint *c1coefficients, const NSPoint *c2coefficients, struct intersectionInfo *results);
+extern int intersectionsBetweenCurveAndSelf(const NSPoint *coefficients, struct intersectionInfo *results);
 
 // Happy fun arbitrary constants.
 #define EPSILON 1e-10
 #define FLATNESS 2e-5
-
-

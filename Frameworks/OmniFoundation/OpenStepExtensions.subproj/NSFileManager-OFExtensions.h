@@ -14,6 +14,9 @@
 // Split out other extensions
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 
+// For FSVolumeRefNum
+#import <CoreServices/CoreServices.h>
+
 @class NSNumber;
 
 @interface NSFileManager (OFExtensions)
@@ -53,6 +56,9 @@
 
 - (NSArray *) directoryContentsAtPath: (NSString *) path havingExtension: (NSString *) extension  error:(NSError **)outError;
 
+- (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
+// - (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError; // Implement if needed.
+
 // File locking
 // Note: these are *not* industrial-strength robust file locks, but will do for occasional use.
 
@@ -72,6 +78,12 @@
 
 - (NSString *)networkMountPointForPath:(NSString *)path returnMountSource:(NSString **)mountSource;
 - (NSString *)fileSystemTypeForPath:(NSString *)path;
+
+- (FSVolumeRefNum)volumeRefNumForPath:(NSString *)path error:(NSError **)outError;
+    // Returns the Carbon volume ref num for a POSIX path. Returns kFSInvalidVolumeRefNum (and optionally fills *outError) on failure.
+
+- (NSString *)volumeNameForPath:(NSString *)filePath error:(NSError **)outError;
+    // Returns Carbon's textual name for the volume on which a file resides. Returns nil on failure.
 
 - (NSString *)resolveAliasAtPath:(NSString *)path;
     // Returns the original path if it isn't an alias, or the path pointed to by the alias (paths are all in POSIX form). Returns nil if an error occurs, such as not being able to resolve the alias. Note that this will not resolve aliases in the middle of the path (e.g. if /foo/bar is an alias to a directory, resolving /foo/bar/baz will fail and return nil).

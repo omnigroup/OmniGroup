@@ -20,6 +20,7 @@
 }
 
 + (OFVersionNumber *)userVisibleOperatingSystemVersionNumber;
++ (BOOL)isOperatingSystemLaterThanVersionString:(NSString *)versionString;
 
 - initWithVersionString:(NSString *)versionString;
 

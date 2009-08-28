@@ -60,10 +60,11 @@ OmniNetworking_PRIVATE_EXTERN BOOL ONSocketStateDebug = NO;
     pthread_mutex_lock(&socketLock);
     
     if (socketFD != -1 && !flags.shouldNotCloseFD) {
-	BOOL socketCloseSucceeded;
-
-	socketCloseSucceeded = OBSocketClose(socketFD) == 0;
-	OBASSERT(socketCloseSucceeded);
+#ifdef OMNI_ASSERTIONS_ON
+	int closeReturn = 
+#endif
+	OBSocketClose(socketFD);
+	OBASSERT(closeReturn == 0);
     }
     socketFD = -1;
 
@@ -359,11 +360,9 @@ static ONPortAddress *getEndpointAddress(ONInternetSocket *self, int (*getaddr)(
 
 - (void)connectToAddressFromArray:(NSArray *)portAddresses
 {
-    int _addressFamily;
     int addressCount, addressIndex;
     NSException *firstTemporaryException;
 
-    _addressFamily = AF_UNSPEC;
     firstTemporaryException = nil;
     
     addressCount = [portAddresses count];
@@ -760,9 +759,11 @@ static BOOL is_mutex_locked(pthread_mutex_t *m)
         shutdown(oldSocketFD, 2); // disallow further sends and receives
     
     if (!flags.shouldNotCloseFD) {
-        BOOL socketCloseSucceeded;
-        socketCloseSucceeded = OBSocketClose(oldSocketFD) == 0;
-        OBASSERT(socketCloseSucceeded);
+#ifdef OMNI_ASSERTIONS_ON
+        int closeReturn =
+#endif
+        OBSocketClose(oldSocketFD);
+        OBASSERT(closeReturn == 0);
     }
 
     if (localAddress != nil) {

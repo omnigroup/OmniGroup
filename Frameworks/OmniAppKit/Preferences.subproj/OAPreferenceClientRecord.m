@@ -239,7 +239,7 @@ static NSString * const OAPreferenceClientRecordIconNameAppPrefix = @"app:"; // 
     return result;
 }
 
-- (OAPreferenceClient *)createClientInstanceInController:(OAPreferenceController *)controller;
+- (OAPreferenceClient *)newClientInstanceInController:(OAPreferenceController *)controller;
 {
     [controller setTitle:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Loading %@...", @"OmniAppKit", [OAPreferenceClientRecord bundle], "preference bundle loading message format"), title]];
 

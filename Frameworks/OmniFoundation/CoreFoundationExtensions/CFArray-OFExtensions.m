@@ -24,7 +24,7 @@ NSMutableArray *OFCreateIntegerArray(void)
 
 Boolean OFCFArrayIsSortedAscendingUsingFunction(CFArrayRef self, CFComparatorFunction comparator, void *context)
 {
-    unsigned int valueIndex, valueCount = CFArrayGetCount(self);
+    CFIndex valueIndex, valueCount = CFArrayGetCount(self);
     if (valueCount < 2)
         return true;
     

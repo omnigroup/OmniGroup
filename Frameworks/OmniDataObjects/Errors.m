@@ -13,9 +13,9 @@ RCS_ID("$Id$")
 
 NSString * const ODOSQLiteErrorDomain = @"org.sqlite.sqlite3";
 
-void ODOSQLiteError(NSError **outError, int code, struct sqlite3 *sqlite)
+NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sqlite)
 {
-    OBPRECONDITION(outError);
+    OBPRECONDITION(underlyingError == nil); // *outError should be nil
     OBPRECONDITION(sqlite);
     OBPRECONDITION(code != SQLITE_OK);
     
@@ -37,7 +37,10 @@ void ODOSQLiteError(NSError **outError, int code, struct sqlite3 *sqlite)
         message = @"Null message from SQLite";
     
     NSDictionary *userInfo = [[NSDictionary alloc] initWithObjectsAndKeys:NSLocalizedDescriptionKey, message, nil];
-    *outError = [NSError errorWithDomain:ODOSQLiteErrorDomain code:code userInfo:userInfo];
+    [message release];
+    
+    NSError *error = [NSError errorWithDomain:ODOSQLiteErrorDomain code:code userInfo:userInfo];
     [userInfo release];
+    return error;
 }
 

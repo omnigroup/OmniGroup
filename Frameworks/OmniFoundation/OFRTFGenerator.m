@@ -235,9 +235,4 @@ RCS_ID("$Id$")
         rtfAppendUnprocessedCharacter(self, bytes[byteIndex]);
 }
 
-- (void)appendUnprocessedCharacter:(unsigned char)ch;
-{
-    rtfAppendUnprocessedCharacter(self, ch);
-}
-
 @end

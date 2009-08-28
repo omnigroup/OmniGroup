@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+#import <OmniBase/macros.h>
 
 @class NSSet, NSMutableSet, NSMutableArray;
 
@@ -15,6 +16,14 @@ typedef struct {
     id object;
     NSString *keyPath;
 } OFBindingPoint;
+
+static inline OFBindingPoint OFBindingPointMake(id object, NSString *keyPath)
+{
+    OFBindingPoint p;
+    p.object = object;
+    p.keyPath = keyPath;
+    return p;
+}
 
 @interface OFBinding : NSObject
 {
@@ -84,5 +93,5 @@ OBDEPRECATED_METHODS(OFBindingSourceObject)
 - (NSMutableSet *)mutableValue;
 @end
 
-extern void OFSetMutableSet(id self, NSString *key, NSMutableSet *ivar, NSSet *set);
+extern void OFSetMutableSet(id self, NSString *key, NSMutableSet **ivar, NSSet *set);
 extern void OFSetMutableSetByProxy(id self, NSString *key, NSSet *ivar, NSSet *set);

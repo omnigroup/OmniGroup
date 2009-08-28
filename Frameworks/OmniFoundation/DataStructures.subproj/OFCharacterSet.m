@@ -95,20 +95,20 @@ RCS_ID("$Id$");
 
 - (void)addCharactersInRange:(NSRange)characterRange;
 {
-    unsigned int character, endCharacter;
-
-    endCharacter = NSMaxRange(characterRange);
-    for (character = characterRange.location; character < endCharacter; character++) {
+    OBPRECONDITION(NSMaxRange(characterRange) <= USHRT_MAX); // Since OFCharacterSetAddCharacter takes a unichar.
+    
+    unsigned int character, endCharacter = (unichar)NSMaxRange(characterRange);
+    for (character = (unsigned int)characterRange.location; character < endCharacter; character++) {
         OFCharacterSetAddCharacter(self, character);
     }
 }
 
 - (void)removeCharactersInRange:(NSRange)characterRange;
 {
-    unsigned int character, endCharacter;
+    OBPRECONDITION(NSMaxRange(characterRange) <= USHRT_MAX); // Since OFCharacterSetAddCharacter takes a unichar.
 
-    endCharacter = NSMaxRange(characterRange);
-    for (character = characterRange.location; character < endCharacter; character++) {
+    unsigned int character, endCharacter = (unsigned int)NSMaxRange(characterRange);
+    for (character = (unsigned int)characterRange.location; character < endCharacter; character++) {
         OFCharacterSetRemoveCharacter(self, character);
     }
 }
@@ -162,9 +162,7 @@ RCS_ID("$Id$");
 - (void)addCharactersInString:(NSString *)string;
 {
     CFStringInlineBuffer inlineBuffer;
-    unsigned int characterIndex, length;
-    
-    length = CFStringGetLength((CFStringRef)string);
+    NSUInteger characterIndex, length = CFStringGetLength((CFStringRef)string);
     CFStringInitInlineBuffer((CFStringRef)string, &inlineBuffer, CFRangeMake(0, length));
     for (characterIndex = 0; characterIndex < length; characterIndex++)
         OFCharacterSetAddCharacter(self, CFStringGetCharacterFromInlineBuffer(&inlineBuffer, characterIndex));
@@ -173,9 +171,7 @@ RCS_ID("$Id$");
 - (void)removeCharactersInString:(NSString *)string;
 {
     CFStringInlineBuffer inlineBuffer;
-    unsigned int characterIndex, length;
-    
-    length = CFStringGetLength((CFStringRef)string);
+    NSUInteger characterIndex, length = CFStringGetLength((CFStringRef)string);
     CFStringInitInlineBuffer((CFStringRef)string, &inlineBuffer, CFRangeMake(0, length));
     for (characterIndex = 0; characterIndex < length; characterIndex++)
         OFCharacterSetRemoveCharacter(self, CFStringGetCharacterFromInlineBuffer(&inlineBuffer, characterIndex));
@@ -239,10 +235,13 @@ RCS_ID("$Id$");
             } else {
                 [ranges appendString:@", "];
             }
-            [ranges appendFormat:@"'%@'", [NSString stringWithCharacter:currentRange.location]];
+            
+            OBASSERT(currentRange.location <= UINT_MAX); // UnicodeScalarValue is UInt32
+            [ranges appendFormat:@"'%@'", [NSString stringWithCharacter:(UnicodeScalarValue)currentRange.location]];
             OBASSERT(currentRange.length != 0);
             if (currentRange.length != 1) {
-                [ranges appendFormat:@" - '%@'", [NSString stringWithCharacter:NSMaxRange(currentRange) - 1]];
+                OBASSERT(NSMaxRange(currentRange) - 1 <= UINT_MAX); // UnicodeScalarValue is UInt32
+                [ranges appendFormat:@" - '%@'", [NSString stringWithCharacter:(UnicodeScalarValue)(NSMaxRange(currentRange) - 1)]];
             }
         }
     }

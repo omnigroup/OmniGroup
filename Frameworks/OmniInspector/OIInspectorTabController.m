@@ -42,7 +42,7 @@ RCS_ID("$Id$");
 	imageName = [tabPlist objectForKey:@"image"];
     }
     
-    _inspector = [OIInspector createInspectorWithDictionary:inspectorPlist bundle:fromBundle];
+    _inspector = [OIInspector newInspectorWithDictionary:inspectorPlist bundle:fromBundle];
     if (!_inspector) {
 	// Don't log an error; OIInspector should have already if it is an error (might just be an OS version check)
 	[self release];

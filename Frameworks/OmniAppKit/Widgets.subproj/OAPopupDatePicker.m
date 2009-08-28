@@ -104,7 +104,8 @@ static int defaultFirstWeekday = 0;
     [_boundObject release];
     [_boundObjectKeyPath release];
     [_control release];
-    [_controlFormatter release];    
+    [_controlFormatter release];  
+    [_datePickerOriginalValue release];
     [super dealloc];
 }
 
@@ -121,19 +122,17 @@ static int defaultFirstWeekday = 0;
     NSString *bindingKeyPath = [bindingInfo objectForKey:NSObservedKeyPathKey];
     bindingKeyPath = [bindingKeyPath stringByReplacingAllOccurrencesOfString:@"selectedObjects." withString:@"selection."];
      
-    [self startPickingDateWithTitle:title fromRect:[aControl visibleRect] inView:aControl bindToObject:[bindingInfo objectForKey:NSObservedObjectKey] withKeyPath:bindingKeyPath control:aControl controlFormatter:[aControl formatter] stringUpdateSelector:stringUpdateSelector noDateOnEscape:YES defaultDate:defaultDate];
+    [self startPickingDateWithTitle:title fromRect:[aControl visibleRect] inView:aControl bindToObject:[bindingInfo objectForKey:NSObservedObjectKey] withKeyPath:bindingKeyPath control:aControl controlFormatter:[aControl formatter] stringUpdateSelector:stringUpdateSelector defaultDate:defaultDate];
 }
 
-- (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter stringUpdateSelector:(SEL)stringUpdateSelector noDateOnEscape:(BOOL)noDateOnEscape defaultDate:(NSDate *)defaultDate;
+- (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter stringUpdateSelector:(SEL)stringUpdateSelector defaultDate:(NSDate *)defaultDate;
 {
     [self close];
     
     // retain the bound object and keypath
     _boundObject = [bindObject retain];
     _boundObjectKeyPath = [bindingKeyPath retain];
- 
-    _noDateOnEscape = noDateOnEscape;
-    
+     
     // retain the field editor, its containg view, and optionally formatter so that we can update it as we make changes since we're not pushing values to it each time
     _control = [control retain];
     _controlFormatter = [controlFormatter retain];
@@ -150,14 +149,18 @@ static int defaultFirstWeekday = 0;
     
     NSWindow *emergeFromWindow = [emergeFromView window];
     NSWindow *popupWindow = [self window];    
-       
+
     // set the default date picker value to the bound value
     [_datePickerObjectValue release];
     _datePickerObjectValue = nil;
     id defaultObject = [_boundObject valueForKeyPath:_boundObjectKeyPath];
+    _startedWithNilDate = YES;
     if (defaultObject) {
-	if ([defaultObject isKindOfClass:[NSDate class]])
+	if ([defaultObject isKindOfClass:[NSDate class]]) {
 	    _datePickerObjectValue = [defaultObject retain]; 
+	    _datePickerOriginalValue = [_datePickerObjectValue retain];
+	    _startedWithNilDate = NO;
+	} 
     }
     
     //if there is no value, use the passed in default time
@@ -220,13 +223,9 @@ static int defaultFirstWeekday = 0;
 
 - (void)clearIfNotClicked;
 {
-    if (![datePicker clicked] && _noDateOnEscape)
+    if (![datePicker clicked] && _startedWithNilDate) {
 	_datePickerObjectValue = nil;
-}
-
-- (BOOL)noDateOnEscape;
-{
-    return _noDateOnEscape;
+    } 
 }
 
 - (BOOL)isKey;
@@ -249,7 +248,7 @@ static int defaultFirstWeekday = 0;
 - (void)setWindow:(NSWindow *)window;
 {
     NSView *contentView = [window contentView];
-    NSWindow *newWindow = [[OAPopupDatePickerWindow alloc] initWithContentRect:[contentView frame] styleMask:NSBorderlessWindowMask|NSUnifiedTitleAndToolbarWindowMask backing:NSBackingStoreBuffered defer:NO];
+    NSWindow *newWindow = [[[OAPopupDatePickerWindow alloc] initWithContentRect:[contentView frame] styleMask:NSBorderlessWindowMask|NSUnifiedTitleAndToolbarWindowMask backing:NSBackingStoreBuffered defer:NO] autorelease];
     [newWindow setContentView:contentView];
     [newWindow setLevel:NSPopUpMenuWindowLevel];
     [newWindow setDelegate:self];
@@ -298,8 +297,14 @@ static int defaultFirstWeekday = 0;
     [self clearIfNotClicked]; // set the date to nil if we started with a nil date and there was no interaction
     
     NSEvent *currentEvent = [NSApp currentEvent];
-    if (_noDateOnEscape && ([currentEvent type] == NSKeyDown) && ([[NSApp currentEvent] keyCode] == 53)) { 
-	_datePickerObjectValue = nil;
+    if (([currentEvent type] == NSKeyDown) && ([[NSApp currentEvent] keyCode] == 53)) { 
+	if (_startedWithNilDate) {
+	    _datePickerObjectValue = nil;
+	    [_control setObjectValue:nil];
+	} else if (!_startedWithNilDate && _datePickerOriginalValue) {
+	    _datePickerObjectValue = _datePickerOriginalValue;
+	    [_control setObjectValue:_datePickerOriginalValue];
+	}
     } 
     
     // update the object

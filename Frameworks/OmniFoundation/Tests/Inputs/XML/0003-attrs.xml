@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<foo singlequote="it's" doublequote="a 1/4&quot; plug" bothquotes="it's a 1/4&quot; plug" emptystring="" ampersand="rhythm&amp;blues" nonascii="∀p p⊆q"/>

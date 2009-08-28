@@ -15,6 +15,7 @@
 // Extra methods factored out into another category
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSData-OFCompression.h>
+#import <OmniFoundation/OFFilterProcess.h>
 
 typedef struct OFQuotedPrintableMapping {
     char map[256];   // 256 entries, one for each octet value
@@ -23,7 +24,7 @@ typedef struct OFQuotedPrintableMapping {
 
 @interface NSData (OFExtensions)
 
-+ (NSData *)randomDataOfLength:(unsigned int)length;
++ (NSData *)randomDataOfLength:(NSUInteger)byteCount;
 // Returns a new autoreleased instance that contains the number of requested random bytes.
 
 + dataWithDecodedURLString:(NSString *)urlString;
@@ -39,8 +40,13 @@ typedef struct OFQuotedPrintableMapping {
 - (NSData *)sha1Signature;
     // Uses the SHA-1 algorithm to compute a signature for the receiver.
 
+- (NSData *)sha256Signature;
+    // Uses the SHA-256 algorithm to compute a signature for the receiver.
+
 - (NSData *)md5Signature;
     // Computes an MD5 digest of the receiver and returns it. (Derived from the RSA Data Security, Inc. MD5 Message-Digest Algorithm.)
+
+- (NSData *)signatureWithAlgorithm:(NSString *)algName;
 
 - (BOOL)writeToFile:(NSString *)path atomically:(BOOL)atomically createDirectories:(BOOL)shouldCreateDirectories error:(NSError **)outError;
 
@@ -58,8 +64,10 @@ typedef struct OFQuotedPrintableMapping {
     // a cover for the CoreFoundation function call
 
 // UNIX filters
+#if 0 // Supplanted by OFFilterProcess
 - (NSData *)filterDataThroughCommandAtPath:(NSString *)commandPath withArguments:(NSArray *)arguments includeErrorsInOutput:(BOOL)includeErrorsInOutput errorStream:(NSOutputStream *)errorStream error:(NSError **)outError;
 - (NSData *)filterDataThroughCommandAtPath:(NSString *)commandPath withArguments:(NSArray *)arguments includeErrorsInOutput:(BOOL)includeErrorsInOutput;
 - (NSData *)filterDataThroughCommandAtPath:(NSString *)commandPath withArguments:(NSArray *)arguments;
+#endif
 
 @end

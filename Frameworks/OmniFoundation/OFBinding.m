@@ -23,7 +23,6 @@ RCS_ID("$Id$");
 
 + (id)allocWithZone:(NSZone *)zone;
 {
-    OBPRECONDITION((self == [OFBinding class]) || (self == [OFObjectBinding class]) || (self == [OFArrayBinding class]) || (self == [OFSetBinding class]));
     if (self == [OFBinding class])
 	return [OFObjectBinding allocWithZone:zone];
     return [super allocWithZone:zone];
@@ -416,32 +415,47 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
 
 // Directly modifies the set, publishing KVO changes
 // Computes the delta operations necessary to transition to the new set.  NSController has a bug where whole-property replacement doesn't send the right KVO, so this can be a workaround for that problem, as well as possibly being more efficient.
-void OFSetMutableSet(id self, NSString *key, NSMutableSet *ivar, NSSet *set)
+void OFSetMutableSet(id self, NSString *key, NSMutableSet **ivar, NSSet *set)
 {
     OBPRECONDITION(self);
     OBPRECONDITION(key);
-    OBPRECONDITION(ivar);
+    OBPRECONDITION(ivar); // Allow it to point to nil since we can fill in the set.
     OBPRECONDITION(set);
-    OBPRECONDITION([key rangeOfString:@"."].length == 0); // Not a path
+    OBPRECONDITION(key && [key rangeOfString:@"."].length == 0); // Not a path
+
+    if (!ivar)
+        [NSException raise:NSInvalidArgumentException format:@"Must pass a non-NULL ivar pointer to %s.", __PRETTY_FUNCTION__];
+    
+    // If the two sets are disjoint, it'll be just as fast and maybe faster to do a single set.
+    // A NSKeyValueSetSetMutation change would send a NSKeyValueChangeReplacement change, with the old and new values but without any way of knowing it was a complete replacement (we don't want to read the destination in OFSetBinding).  So, we take a pointer to a set and do NSKeyValueChangeSetting.
+    if (![*ivar intersectsSet:set]) {
+        [self willChangeValueForKey:key]; 
+        [*ivar release];
+        *ivar = [[NSMutableSet alloc] initWithSet:set];
+        [self didChangeValueForKey:key];
+        return;
+    }
+    
+    NSMutableSet *ivarValue = *ivar;
     
     // Add everything in the new set that we don't already have
     NSMutableSet *toAdd = [NSMutableSet setWithSet:set];
-    [toAdd minusSet:ivar];
+    [toAdd minusSet:ivarValue];
     
     // Remove everything in the existing set that isn't in the new one
-    NSMutableSet *toRemove = [NSMutableSet setWithSet:ivar];
+    NSMutableSet *toRemove = [NSMutableSet setWithSet:ivarValue];
     [toRemove minusSet:set];
     
     // Do the add first; this will prevent the target set from being empty temporarily, which is important for cases where that has special meaning.  If we need the opposite, an argument must be added to this function or a new function added to allow the caller to specify what they want.
     if ([toAdd count] > 0) {
         [self willChangeValueForKey:key withSetMutation:NSKeyValueUnionSetMutation usingObjects:toAdd];
-        [ivar unionSet:toAdd];
+        [ivarValue unionSet:toAdd];
         [self didChangeValueForKey:key withSetMutation:NSKeyValueUnionSetMutation usingObjects:toAdd];
     }
     
     if ([toRemove count] > 0) {
         [self willChangeValueForKey:key withSetMutation:NSKeyValueMinusSetMutation usingObjects:toRemove];
-        [ivar minusSet:toRemove];
+        [ivarValue minusSet:toRemove];
         [self didChangeValueForKey:key withSetMutation:NSKeyValueMinusSetMutation usingObjects:toRemove];
     }
 }
@@ -453,7 +467,7 @@ void OFSetMutableSetByProxy(id self, NSString *key, NSSet *ivar, NSSet *set)
     OBPRECONDITION(key);
     OBPRECONDITION(ivar);
     //OBPRECONDITION(set);
-    OBPRECONDITION([key rangeOfString:@"."].length == 0); // Not a path, though we could support it here.
+    OBPRECONDITION(key && [key rangeOfString:@"."].length == 0); // Not a path, though we could support it here.
     
     // Add everything in the new set that we don't already have
     NSMutableSet *toAdd = [NSMutableSet setWithSet:set];

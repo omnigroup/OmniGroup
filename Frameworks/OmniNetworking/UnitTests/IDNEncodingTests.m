@@ -124,7 +124,7 @@ extern NSStringEncoding _NSCStringEncoding, _NSDefaultStringEncoding;
 
     int i;
     for(i = 0; i < 11; i++) {
-        NSString *intl = [[NSString alloc] initWithCharacters:cases[i] length:caselengths[i]];
+        NSString *intl = [[[NSString alloc] initWithCharacters:cases[i] length:caselengths[i]] autorelease];
         NSString *puny = [NSString stringWithFormat:@"xn--%s", results[i]];
         NSString *puny_out = [ONHost IDNEncodedHostname:intl];
         NSString *intl_out = [ONHost IDNDecodedHostname:puny];
@@ -132,7 +132,6 @@ extern NSStringEncoding _NSCStringEncoding, _NSDefaultStringEncoding;
         shouldBeEqual([puny lowercaseString], [puny_out lowercaseString]);
         shouldBeEqual(intl, intl_out);
         // NSLog(@"%@ <-- %@", puny, intl);
-        [intl release];
     }
     
     
@@ -157,7 +156,7 @@ extern NSStringEncoding _NSCStringEncoding, _NSDefaultStringEncoding;
     
     int i;
     for(i = 0; i < 7; i++) {
-        NSString *intl = [[NSString alloc] initWithCharacters:cases[i] length:caselengths[i]];
+        NSString *intl = [[[NSString alloc] initWithCharacters:cases[i] length:caselengths[i]] autorelease];
         NSString *puny = [NSString stringWithFormat:@"xn--%s", results[i]];
         NSString *puny_out = [ONHost IDNEncodedHostname:intl];
         NSString *intl_out = [ONHost IDNDecodedHostname:puny];
@@ -174,8 +173,8 @@ extern NSStringEncoding _NSCStringEncoding, _NSDefaultStringEncoding;
     NSString *expectedEncoding = @"xn--br-jia4i";
     NSString *denormalizedEncoding = @"xn--ubar-svc9b";
     
-    NSString *uncombined = [[NSString alloc] initWithCharacters:combiningAccent length:6];
-    NSString *combined = [[NSString alloc] initWithCharacters:combinedAccent length:4];
+    NSString *uncombined = [[[NSString alloc] initWithCharacters:combiningAccent length:6] autorelease];
+    NSString *combined = [[[NSString alloc] initWithCharacters:combinedAccent length:4] autorelease];
     
     should([uncombined compare:combined] == NSOrderedSame);
     shouldnt([uncombined compare:combined options:NSLiteralSearch] == NSOrderedSame);
@@ -189,9 +188,6 @@ extern NSStringEncoding _NSCStringEncoding, _NSDefaultStringEncoding;
     shouldBeEqual(decoded, combined);
     should([decoded compare:uncombined options:0] == NSOrderedSame);
     shouldnt([decoded compare:uncombined options:NSLiteralSearch] == NSOrderedSame);
-    
-    [combined release];
-    [uncombined release];
     
     // verify that we don't accept incorrectly normalized labels
     shouldBeEqual(denormalizedEncoding, [ONHost IDNDecodedHostname:denormalizedEncoding]);

@@ -27,17 +27,16 @@ RCS_ID("$Id$")
 
 @implementation NSData (OFExtensions)
 
-+ (NSData *)randomDataOfLength:(unsigned int)length;
++ (NSData *)randomDataOfLength:(NSUInteger)byteCount;
 {
-    OFByte *bytes;
-    unsigned int byteIndex;
-
-    bytes = (OFByte *)NSZoneMalloc(NULL, length);
-    for (byteIndex = 0; byteIndex < length; byteIndex++)
+    OFByte *bytes = (OFByte *)malloc(byteCount);
+    
+    for (NSUInteger byteIndex = 0; byteIndex < byteCount; byteIndex++)
         bytes[byteIndex] = OFRandomNext() & 0xff;
 
     // Send to self rather than NSData so that we'll get mutable instances when the caller sent the message to NSMutableData
-    return [self dataWithBytesNoCopy:bytes length:length];
+    // clang checker-0.209 incorrectly reports this as a +1 ref <http://llvm.org/bugs/show_bug.cgi?id=4292>
+    return objc_msgSend(self, @selector(dataWithBytesNoCopy:length:), bytes, byteCount);
 }
 
 + dataWithDecodedURLString:(NSString *)urlString
@@ -160,9 +159,42 @@ static inline unichar hex(int i)
     return [[self copySHA1Signature] autorelease];
 }
 
+- (NSData *)sha256Signature;
+{
+    return [(NSData *)OFDataCreateSHA256Digest(kCFAllocatorDefault, (CFDataRef)self) autorelease];
+}
+
 - (NSData *)md5Signature;
 {
     return [(NSData *)OFDataCreateMD5Digest(kCFAllocatorDefault, (CFDataRef)self) autorelease];
+}
+
+- (NSData *)signatureWithAlgorithm:(NSString *)algName;
+{
+    switch ([algName caseInsensitiveCompare:@"sha1"]) {
+        case NSOrderedSame:
+            return [self sha1Signature];
+        case NSOrderedAscending:
+            switch ([algName caseInsensitiveCompare:@"md5"]) {
+                case NSOrderedSame:
+                    return [self md5Signature];
+                default:
+                    break;
+            }
+            break;
+        case NSOrderedDescending:
+            switch ([algName caseInsensitiveCompare:@"sha256"]) {
+                case NSOrderedSame:
+                    return [self sha256Signature];
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+    
+    return nil;
 }
 
 - (BOOL)hasPrefix:(NSData *)data;
@@ -196,14 +228,14 @@ static inline unichar hex(int i)
     patternLength = [data length];
     patternLocation = [self indexOfBytes:[data bytes] length:patternLength];
     if (patternLocation == NSNotFound)
-        return (NSRange){location: NSNotFound, length: 0};
+        return NSMakeRange(NSNotFound, 0);
     else
-        return (NSRange){location: patternLocation, length: patternLength};
+        return NSMakeRange(patternLocation, patternLength);
 }
 
 - (NSUInteger)indexOfBytes:(const void *)patternBytes length:(NSUInteger)patternLength;
 {
-    return [self indexOfBytes:patternBytes length:patternLength range:(NSRange){0, [self length]}];
+    return [self indexOfBytes:patternBytes length:patternLength range:NSMakeRange(0, [self length])];
 }
 
 - (NSUInteger)indexOfBytes:(const void *)patternBytes length:(NSUInteger)patternLength range:(NSRange)searchRange
@@ -297,6 +329,7 @@ static inline unichar hex(int i)
     return [result autorelease];
 }
 
+#if 0 // Supplanted by OFFilterProcess
 
 // UNIX filters
 
@@ -320,8 +353,6 @@ static BOOL _OFPipeCreate(struct _OFPipe *p, NSError **outError)
 - (NSData *)filterDataThroughCommandAtPath:(NSString *)commandPath withArguments:(NSArray *)arguments includeErrorsInOutput:(BOOL)includeErrorsInOutput errorStream:(NSOutputStream *)errorStream error:(NSError **)outError;
 {
     OBPRECONDITION(includeErrorsInOutput == NO || errorStream == nil); // Having both set makes no sense
-    
-    *outError = nil; // No underlying error
     
     struct _OFPipe input, output, error;
     if (!_OFPipeCreate(&input, outError))
@@ -548,7 +579,8 @@ static BOOL _OFPipeCreate(struct _OFPipe *p, NSError **outError)
                         byteCountLeftToAppend -= streamBytesWritten;
                         bytesToAppend += streamBytesWritten;
                     } else {
-                        *outError = [errorStream streamError];
+                        if (outError)
+                            *outError = [errorStream streamError];
                         failCmd = "-[NSStream write:maxLength:]";
                         goto ioFailure;
                     }
@@ -625,6 +657,7 @@ ioFailure:
 {
     return [self filterDataThroughCommandAtPath:commandPath withArguments:arguments includeErrorsInOutput:NO];
 }
+#endif
 
 @end
 

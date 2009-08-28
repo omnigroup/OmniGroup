@@ -7,10 +7,6 @@
 //
 // $Id$
 
-/*
- There is no NSAppKitVersionNumber10_2 or NSAppKitVersionNumber10_3 under 10.2's PB.
- */
-
 #define OAAppKitVersionNumber10_2   (663.0)
 #define OAAppKitVersionNumber10_2_3 (663.6)
 

@@ -80,4 +80,34 @@ RCS_ID("$Id$")
     }
 }
 
+- (void)sizeToFitVertically;
+{
+    [self setFrameSize:[self desiredFrameSize:NSViewHeightSizable]];
+}
+
+- (NSSize)desiredFrameSize:(unsigned int)autosizingMask;
+{
+    OBASSERT( (autosizingMask & (NSViewHeightSizable|NSViewWidthSizable)) != 0 );
+    
+    NSRect bounds = [self bounds];
+    
+    NSRect tallBounds = bounds;
+    
+    if (autosizingMask & NSViewHeightSizable)
+        tallBounds.size.height = FLT_MAX;
+    if (autosizingMask & NSViewWidthSizable)
+        tallBounds.size.width = FLT_MAX;
+    
+    NSSize size = [[self cell] cellSizeForBounds:tallBounds];
+    
+    if (!(autosizingMask & NSViewWidthSizable))
+        size.width = bounds.size.width;
+    if (!(autosizingMask & NSViewHeightSizable))
+        size.height = bounds.size.height;
+    
+    NSSize frameSize = [self convertSize:size toView:[self superview]];
+    
+    return frameSize;
+}
+
 @end

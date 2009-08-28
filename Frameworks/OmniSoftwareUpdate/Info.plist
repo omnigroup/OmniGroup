@@ -23,7 +23,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>2006</string>
+	<string>2009</string>
 	<key>OFRegistrations</key>
 	<dict>
 		<key>NSUserDefaults</key>
@@ -34,6 +34,8 @@
 				<true/>
 				<key>OSUCheckInterval</key>
 				<integer>168</integer>
+                                <key>OSUIgnoredUpdates</key>
+                                <array/>
 				<key>OSUIncludeHardwareDetails</key>
 				<true/>
 			</dict>

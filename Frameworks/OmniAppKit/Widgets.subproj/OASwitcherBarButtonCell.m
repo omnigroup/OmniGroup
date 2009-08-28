@@ -132,23 +132,23 @@ static NSImage *DividerRightImage[7];
     NSBundle *bundle = [self bundle];
     
     // clear, normal
-    FillImage[0] = [NSImage imageNamed:@"SwitcherBar_Fill" inBundle:bundle];
-    CapLeftImage[0] = [NSImage imageNamed:@"SwitcherBar_CapLeft" inBundle:bundle];
-    CapRightImage[0] = [NSImage imageNamed:@"SwitcherBar_CapRight" inBundle:bundle];
-    DividerLeftImage[0] = [NSImage imageNamed:@"SwitcherBar_DivLeft" inBundle:bundle];
-    DividerRightImage[0] = [NSImage imageNamed:@"SwitcherBar_DivRight" inBundle:bundle];
+    FillImage[0] = [[NSImage imageNamed:@"SwitcherBar_Fill" inBundle:bundle] retain];
+    CapLeftImage[0] = [[NSImage imageNamed:@"SwitcherBar_CapLeft" inBundle:bundle] retain];
+    CapRightImage[0] = [[NSImage imageNamed:@"SwitcherBar_CapRight" inBundle:bundle] retain];
+    DividerLeftImage[0] = [[NSImage imageNamed:@"SwitcherBar_DivLeft" inBundle:bundle] retain];
+    DividerRightImage[0] = [[NSImage imageNamed:@"SwitcherBar_DivRight" inBundle:bundle] retain];
     // clear, pressed
-    FillImage[1] = [NSImage imageNamed:@"SwitcherBar_Fill_Press" inBundle:bundle];
-    CapLeftImage[1] = [NSImage imageNamed:@"SwitcherBar_CapLeft_Press" inBundle:bundle];
-    CapRightImage[1] = [NSImage imageNamed:@"SwitcherBar_CapRight_Press" inBundle:bundle];
-    DividerLeftImage[1] = [NSImage imageNamed:@"SwitcherBar_DivLeft_Press" inBundle:bundle];
-    DividerRightImage[1] = [NSImage imageNamed:@"SwitcherBar_DivRight_Press" inBundle:bundle];
+    FillImage[1] = [[NSImage imageNamed:@"SwitcherBar_Fill_Press" inBundle:bundle] retain];
+    CapLeftImage[1] = [[NSImage imageNamed:@"SwitcherBar_CapLeft_Press" inBundle:bundle] retain];
+    CapRightImage[1] = [[NSImage imageNamed:@"SwitcherBar_CapRight_Press" inBundle:bundle] retain];
+    DividerLeftImage[1] = [[NSImage imageNamed:@"SwitcherBar_DivLeft_Press" inBundle:bundle] retain];
+    DividerRightImage[1] = [[NSImage imageNamed:@"SwitcherBar_DivRight_Press" inBundle:bundle] retain];
     // window is not key
-    FillImage[6] = [NSImage imageNamed:@"SwitcherBar_Fill_Select" inBundle:bundle];
-    CapLeftImage[6] = [NSImage imageNamed:@"SwitcherBar_CapLeft_Select" inBundle:bundle];
-    CapRightImage[6] = [NSImage imageNamed:@"SwitcherBar_CapRight_Select" inBundle:bundle];
-    DividerLeftImage[6] = [NSImage imageNamed:@"SwitcherBar_DivLeft_Select" inBundle:bundle];
-    DividerRightImage[6] = [NSImage imageNamed:@"SwitcherBar_DivRight_Select" inBundle:bundle];
+    FillImage[6] = [[NSImage imageNamed:@"SwitcherBar_Fill_Select" inBundle:bundle] retain];
+    CapLeftImage[6] = [[NSImage imageNamed:@"SwitcherBar_CapLeft_Select" inBundle:bundle] retain];
+    CapRightImage[6] = [[NSImage imageNamed:@"SwitcherBar_CapRight_Select" inBundle:bundle] retain];
+    DividerLeftImage[6] = [[NSImage imageNamed:@"SwitcherBar_DivLeft_Select" inBundle:bundle] retain];
+    DividerRightImage[6] = [[NSImage imageNamed:@"SwitcherBar_DivRight_Select" inBundle:bundle] retain];
     
     ImagesSetup = YES; // that's a whole damn lot of images.
 }
@@ -158,17 +158,17 @@ static NSImage *DividerRightImage[7];
     NSBundle *bundle = [self bundle];
 
     // blue, normal
-    FillImage[2] = [NSImage imageNamed:@"SwitcherBar_Fill_A" inBundle:bundle];
-    CapLeftImage[2] = [NSImage imageNamed:@"SwitcherBar_CapLeft_A" inBundle:bundle];
-    CapRightImage[2] = [NSImage imageNamed:@"SwitcherBar_CapRight_A" inBundle:bundle];
-    DividerLeftImage[2] = [NSImage imageNamed:@"SwitcherBar_DivLeft_A" inBundle:bundle];
-    DividerRightImage[2] = [NSImage imageNamed:@"SwitcherBar_DivRight_A" inBundle:bundle];
+    FillImage[2] = [[NSImage imageNamed:@"SwitcherBar_Fill_A" inBundle:bundle] retain];
+    CapLeftImage[2] = [[NSImage imageNamed:@"SwitcherBar_CapLeft_A" inBundle:bundle] retain];
+    CapRightImage[2] = [[NSImage imageNamed:@"SwitcherBar_CapRight_A" inBundle:bundle] retain];
+    DividerLeftImage[2] = [[NSImage imageNamed:@"SwitcherBar_DivLeft_A" inBundle:bundle] retain];
+    DividerRightImage[2] = [[NSImage imageNamed:@"SwitcherBar_DivRight_A" inBundle:bundle] retain];
     // blue, pressed
-    FillImage[3] = [NSImage imageNamed:@"SwitcherBar_Fill_Press_A" inBundle:bundle];
-    CapLeftImage[3] = [NSImage imageNamed:@"SwitcherBar_CapLeft_Press_A" inBundle:bundle];
-    CapRightImage[3] = [NSImage imageNamed:@"SwitcherBar_CapRight_Press_A" inBundle:bundle];
-    DividerLeftImage[3] = [NSImage imageNamed:@"SwitcherBar_DivLeft_Press_A" inBundle:bundle];
-    DividerRightImage[3] = [NSImage imageNamed:@"SwitcherBar_DivRight_Press_A" inBundle:bundle];
+    FillImage[3] = [[NSImage imageNamed:@"SwitcherBar_Fill_Press_A" inBundle:bundle] retain];
+    CapLeftImage[3] = [[NSImage imageNamed:@"SwitcherBar_CapLeft_Press_A" inBundle:bundle] retain];
+    CapRightImage[3] = [[NSImage imageNamed:@"SwitcherBar_CapRight_Press_A" inBundle:bundle] retain];
+    DividerLeftImage[3] = [[NSImage imageNamed:@"SwitcherBar_DivLeft_Press_A" inBundle:bundle] retain];
+    DividerRightImage[3] = [[NSImage imageNamed:@"SwitcherBar_DivRight_Press_A" inBundle:bundle] retain];
     
     BlueImagesSetup = YES;
 }
@@ -178,17 +178,17 @@ static NSImage *DividerRightImage[7];
     NSBundle *bundle = [self bundle];
 
     // graphite, normal
-    FillImage[4] = [NSImage imageNamed:@"SwitcherBar_Fill_G" inBundle:bundle];
-    CapLeftImage[4] = [NSImage imageNamed:@"SwitcherBar_CapLeft_G" inBundle:bundle];
-    CapRightImage[4] = [NSImage imageNamed:@"SwitcherBar_CapRight_G" inBundle:bundle];
-    DividerLeftImage[4] = [NSImage imageNamed:@"SwitcherBar_DivLeft_G" inBundle:bundle];
-    DividerRightImage[4] = [NSImage imageNamed:@"SwitcherBar_DivRight_G" inBundle:bundle];
+    FillImage[4] = [[NSImage imageNamed:@"SwitcherBar_Fill_G" inBundle:bundle] retain];
+    CapLeftImage[4] = [[NSImage imageNamed:@"SwitcherBar_CapLeft_G" inBundle:bundle] retain];
+    CapRightImage[4] = [[NSImage imageNamed:@"SwitcherBar_CapRight_G" inBundle:bundle] retain];
+    DividerLeftImage[4] = [[NSImage imageNamed:@"SwitcherBar_DivLeft_G" inBundle:bundle] retain];
+    DividerRightImage[4] = [[NSImage imageNamed:@"SwitcherBar_DivRight_G" inBundle:bundle] retain];
     // graphite, pressed
-    FillImage[5] = [NSImage imageNamed:@"SwitcherBar_Fill_Press_G" inBundle:bundle];
-    CapLeftImage[5] = [NSImage imageNamed:@"SwitcherBar_CapLeft_Press_G" inBundle:bundle];
-    CapRightImage[5] = [NSImage imageNamed:@"SwitcherBar_CapRight_Press_G" inBundle:bundle];
-    DividerLeftImage[5] = [NSImage imageNamed:@"SwitcherBar_DivLeft_Press_G" inBundle:bundle];
-    DividerRightImage[5] = [NSImage imageNamed:@"SwitcherBar_DivRight_Press_G" inBundle:bundle];
+    FillImage[5] = [[NSImage imageNamed:@"SwitcherBar_Fill_Press_G" inBundle:bundle] retain];
+    CapLeftImage[5] = [[NSImage imageNamed:@"SwitcherBar_CapLeft_Press_G" inBundle:bundle] retain];
+    CapRightImage[5] = [[NSImage imageNamed:@"SwitcherBar_CapRight_Press_G" inBundle:bundle] retain];
+    DividerLeftImage[5] = [[NSImage imageNamed:@"SwitcherBar_DivLeft_Press_G" inBundle:bundle] retain];
+    DividerRightImage[5] = [[NSImage imageNamed:@"SwitcherBar_DivRight_Press_G" inBundle:bundle] retain];
     
     GraphiteImagesSetup = YES;
 }

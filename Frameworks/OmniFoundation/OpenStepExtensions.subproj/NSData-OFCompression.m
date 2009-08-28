@@ -247,7 +247,7 @@ static NSMutableData *makeRFC1952MemberHeader(time_t modtime,
     if (withCRC16) {
         header[0] = ( headerCRC & 0x00FF );
         header[1] = ( headerCRC & 0xFF00 ) >> 8;
-        header += 2;
+        //header += 2; clang hates the dead increment.
     }
     
     OBPOSTCONDITION( (unsigned)((char *)header - (char *)[result bytes]) == [result length] );
@@ -442,11 +442,18 @@ static NSException *handleRFC1952MemberBody(FILE *fp,
             return error;
         }
     }
-    
-    if (compressing)
-        ok = deflateEnd(&compressionState);
-    else
-        ok = inflateEnd(&compressionState);
+
+    if (compressing) {
+#ifdef OMNI_ASSERTIONS_ON
+        ok = 
+#endif
+        deflateEnd(&compressionState);
+    } else {
+#ifdef OMNI_ASSERTIONS_ON
+        ok = 
+#endif
+        inflateEnd(&compressionState);
+    }
     OBASSERT(ok == Z_OK);
     if (compressing || !withTrailer) {
         OBASSERT(compressionState.avail_in == 0);

@@ -20,9 +20,9 @@ RCS_ID("$Id$")
 - (NSImage *)_imageForCurrentControlTint;
 @end
 
-NSString *OAAquaButtonAquaImageSuffix = @"Aqua";
-NSString *OAAquaButtonGraphiteImageSuffix = @"Graphite";
-NSString *OAAquaButtonClearImageSuffix = @"Clear";
+NSString * const OAAquaButtonAquaImageSuffix = @"Aqua";
+NSString * const OAAquaButtonGraphiteImageSuffix = @"Graphite";
+NSString * const OAAquaButtonClearImageSuffix = @"Clear";
 
 @implementation OAAquaButton
 

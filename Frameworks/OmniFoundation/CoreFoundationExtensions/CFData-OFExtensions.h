@@ -10,4 +10,5 @@
 #import <CoreFoundation/CFData.h>
 
 extern CFDataRef OFDataCreateSHA1Digest(CFAllocatorRef allocator, CFDataRef data);
+extern CFDataRef OFDataCreateSHA256Digest(CFAllocatorRef allocator, CFDataRef data);
 extern CFDataRef OFDataCreateMD5Digest(CFAllocatorRef allocator, CFDataRef data);

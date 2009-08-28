@@ -11,18 +11,14 @@ RCS_ID("$Id$")
 
 @implementation OFTrieBucket
 
-- (void)setRemainingLower:(unichar *)lower upper:(unichar *)upper length:(int)aLength;
+- (void)setRemainingLower:(unichar *)lower upper:(unichar *)upper length:(NSUInteger)aLength;
 {
-    unichar *old;
-    NSZone *myZone;
-    
-    myZone = [self zone];
-    old = lowerCharacters;
+    unichar *old = lowerCharacters;
     if (lower && upper && aLength > 0) {
         if (lower != upper) {
-            lowerCharacters = (unichar *)NSZoneMalloc(myZone, (aLength + aLength + 2) * sizeof(unichar));
+            lowerCharacters = (unichar *)malloc((aLength + aLength + 2) * sizeof(unichar));
         } else {
-            lowerCharacters = (unichar *)NSZoneMalloc(myZone, (aLength + 1) * sizeof(unichar));
+            lowerCharacters = (unichar *)malloc((aLength + 1) * sizeof(unichar));
         }
         memmove(lowerCharacters, lower, aLength * sizeof(unichar));
         lowerCharacters[aLength] = '\0';
@@ -35,17 +31,18 @@ RCS_ID("$Id$")
             upperCharacters = lowerCharacters;
         }
     } else {
-        lowerCharacters = (unichar *)NSZoneMalloc(myZone, sizeof(unichar));
+        lowerCharacters = (unichar *)malloc(sizeof(unichar));
 	*lowerCharacters = '\0';
 	upperCharacters = lowerCharacters; // Share storage for efficiency
     }
     if (old)
-        NSZoneFree(myZone, old);
+        free(old);
 }
 
 - (void)dealloc;
 {
-    NSZoneFree([self zone], lowerCharacters);
+    if (lowerCharacters)
+        free(lowerCharacters);
     [super dealloc];
 }
 
@@ -53,11 +50,9 @@ RCS_ID("$Id$")
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     if (lowerCharacters) {
-        unsigned int length;
+        NSUInteger length;
         unichar *ptr;
 
         ptr = lowerCharacters;

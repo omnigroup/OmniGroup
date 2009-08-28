@@ -25,8 +25,11 @@ __private_extern__ void ODODynamicSetValueForProperty(ODOObject *object, SEL _cm
 __private_extern__ id ODOGetterForUnknownOffset(ODOObject *self, SEL _cmd);
 __private_extern__ void ODOSetterForUnknownOffset(ODOObject *self, SEL _cmd, id value);
 
-__private_extern__ ODOPropertyGetter ODOGetterForSelector(ODOProperty *prop);
-__private_extern__ ODOPropertySetter ODOSetterForSelector(ODOProperty *prop);
+__private_extern__ ODOPropertyGetter ODOGetterForProperty(ODOProperty *prop);
+__private_extern__ ODOPropertySetter ODOSetterForProperty(ODOProperty *prop);
 
 __private_extern__ void ODOObjectSetInternalValueForProperty(ODOObject *self, id value, ODOProperty *prop);
 
+#if !LAZY_DYNAMIC_ACCESSORS
+__private_extern__ void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity);
+#endif

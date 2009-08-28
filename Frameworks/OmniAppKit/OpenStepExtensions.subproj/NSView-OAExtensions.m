@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,43 @@
 RCS_ID("$Id$")
 
 @implementation NSView (OAExtensions)
+
+#pragma mark Snapping to base coordinates.
+
+// Might want floor, truncate, or rint, but at least we say what we are doing.
+- (NSPoint)floorSnappedPoint:(NSPoint)point;
+{
+    point = [self convertPointToBase:point];
+    point.x = floor(point.x);
+    point.y = floor(point.y);
+    return [self convertPointFromBase:point];
+}
+
+- (NSSize)floorSnappedSize:(NSSize)size;
+{
+    size = [self convertSizeToBase:size];
+    size.width = floor(size.width);
+    size.height = floor(size.height);
+    return [self convertSizeFromBase:size];
+}
+
+// Rects are likely be more tricky since we may want to floor the origin and extent, or maybe we want to floor the origin and ceil the extent.  This will floor the origin and extent.
+- (NSRect)floorSnappedRect:(NSRect)rect;
+{
+    rect = [self convertRectToBase:rect];
+    NSPoint extent = NSMakePoint(NSMaxX(rect), NSMaxY(rect));
+    
+    rect.origin.x = floor(rect.origin.x);
+    rect.origin.y = floor(rect.origin.y);
+    
+    extent.x = floor(extent.x);
+    extent.y = floor(extent.y);
+    
+    rect.size.width = extent.x - rect.origin.x;
+    rect.size.height = extent.y - rect.origin.y;
+    
+    return [self convertRectFromBase:rect];
+}
 
 // Drawing
 
@@ -379,6 +416,35 @@ static unsigned int scrollEntriesCount = 0;
     return nil;
 }
 
+- (NSView *)lastChildKeyView;
+{
+    NSView *cursor = self;
+    for(;;) {
+        NSView *after = [cursor nextKeyView];
+        
+        // If there's no key view after the cursor, stop.
+        if (!after)
+            return cursor;
+        
+        // If we've looped around to ourself, stop.
+        if (after == self)
+            return cursor;
+        
+        // Follow "after"'s superview chain up; if we reach the end before reaching ourselves, stop.
+        NSView *supra = after;
+        for(;;) {
+            supra = [supra superview];
+            if (supra == self)
+                break;
+            if (supra == nil)
+                return cursor;
+        }
+        
+        // "after" is still in the chain we want to follow.
+        cursor = after;
+    }
+}
+
 // Dragging
 
 - (BOOL)shouldStartDragFromMouseDownEvent:(NSEvent *)event dragSlop:(float)dragSlop finalEvent:(NSEvent **)finalEventPointer timeoutDate:(NSDate *)timeoutDate;
@@ -450,6 +516,102 @@ static inline NSAffineTransformStruct computeTransformFromExamples(NSPoint origi
     return computeTransformFromExamples([self convertPoint:(NSPoint){0, 0} fromView:otherView],
                                         [self convertPoint:(NSPoint){1, 0} fromView:otherView],
                                         [self convertPoint:(NSPoint){0, 1} fromView:otherView]);
+}
+
+// Laying out
+
+/*"
+ 
+ This method helps lay out views which have a varying set of subviews arranged in a vertical stack. The passed-in views are made subviews and arranged vertically. A list of NSViewAnimation dictionaries is returned which will fade in any new subviews, fade out any old subviews, and move subviews which were already there. (Old subviews are not removed, but are marked hidden.)
+ 
+ The receiver is not resized, but it returns in *outNewFrameSize the frame size it should have in order to exactly contain the new stack of subviews. The caller is responsible for running the returned animations (if any) and for arranging for the receiver to have the specified size. If there are no views in newContent, *outNewFrameSize is unchanged, so you can simply initialize it to a default/fallback value.
+ 
+ This is only useful for rigid layouts with no resizable content views. For more flexible stacks, see OAStackView.
+ 
+ Right now this method requires that the receiver be flipped. We might want to extend this to handle horizontal stacks, width-resizeable content views, or the like (maybe add an options: parameter).
+ 
+"*/
+- (NSMutableArray *)animationsToStackSubviews:(NSArray *)newContent finalFrameSize:(NSSize *)outNewFrameSize;
+{
+    // Our stacking calculations assume we're flipped.
+    // We could make them adapt to either orientation, if we need to.
+    OBASSERT([self isFlipped]);
+    
+    NSMutableArray *animations = [NSMutableArray array];
+    NSArray *oldContent = [self subviews];
+    NSUInteger oldContentCount = [oldContent count], newContentCount = [newContent count];
+    
+    // If the first responder is a child of ours but not one of the views in the new content list, tell it to resign
+    NSResponder *currentFirstResponder = [[self window] firstResponder];
+    if (currentFirstResponder && [currentFirstResponder isKindOfClass:[NSView class]]) {
+        NSView *responderView = (NSView *)currentFirstResponder;
+        while(responderView) {
+            if (responderView == self) {
+                // We've reached ourselves without going through a view that we are keeping.
+                [[self window] makeFirstResponder:nil];
+                break;
+            }
+            if ([newContent containsObjectIdenticalTo:responderView]) {
+                // It's in the new display list, so everything's fine.
+                break;
+            }
+            responderView = [responderView superview];
+        }
+    }
+    
+    // Fade out any views that are no longer wanted
+    for(NSUInteger contentIndex = 0; contentIndex < oldContentCount; contentIndex ++) {
+        NSView *old = [oldContent objectAtIndex:contentIndex];
+        if (![old isHidden] && ![newContent containsObjectIdenticalTo:old]) {
+            [animations addObject:[NSDictionary dictionaryWithObjectsAndKeys:old, NSViewAnimationTargetKey, NSViewAnimationFadeOutEffect, NSViewAnimationEffectKey, nil]];
+        }
+    }
+    
+    // Compute the new width of the view stack.
+    CGFloat maxWidth = 0;
+    for(NSUInteger contentIndex = 0; contentIndex < newContentCount; contentIndex ++) {
+        CGFloat w = [[newContent objectAtIndex:contentIndex] frame].size.width;
+        maxWidth = MAX(maxWidth, w);
+    }
+    maxWidth = ceil(maxWidth);
+    
+    // Compute locations for all the new content within _bottomView
+    // Starting at the top (y=0, since it's flipped) and working downwards
+    NSPoint placementPoint = [self bounds].origin;
+    
+    for(NSUInteger contentIndex = 0; contentIndex < newContentCount; contentIndex ++) {
+        NSView *newView = [newContent objectAtIndex:contentIndex];
+        
+        NSRect newViewFrame = [newView frame];
+        newViewFrame.origin.y = placementPoint.y;
+        newViewFrame.origin.x = placementPoint.x;
+        placementPoint.y += newViewFrame.size.height;
+        
+        if ([oldContent containsObjectIdenticalTo:newView] && ![newView isHidden]) {
+            // Just changing the view frame.
+            if (!NSEqualRects(newViewFrame, [newView frame]))
+                [animations addObject:[NSDictionary dictionaryWithObjectsAndKeys:newView, NSViewAnimationTargetKey, [NSValue valueWithRect:newViewFrame], NSViewAnimationEndFrameKey, nil]];
+        } else {
+            // Adding a new view.
+            if ([newView superview] != self) {
+                [newView setHidden:YES];
+                [self addSubview:newView];
+            }
+            [newView setFrame:newViewFrame];
+            NSValue *frameValue = [NSValue valueWithRect:newViewFrame];
+            NSString *keys[4] = { NSViewAnimationTargetKey, NSViewAnimationStartFrameKey, NSViewAnimationEndFrameKey, NSViewAnimationEffectKey };
+            id values[4] = { newView, frameValue, frameValue, NSViewAnimationFadeInEffect };
+            [animations addObject:[NSDictionary dictionaryWithObjects:values forKeys:keys count:4]];
+        }
+    }
+    
+    if (newContentCount == 0) {
+        // As a special case, use the passed-in frame as the default frame if we have no content now.
+    } else {
+        *outNewFrameSize = [self convertSize:(NSSize){ .width = maxWidth, .height = placementPoint.y } toView:[self superview]];
+    }
+    
+    return animations;
 }
 
 // Debugging

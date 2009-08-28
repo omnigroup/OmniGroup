@@ -23,15 +23,15 @@ RCS_ID("$Id$");
 
 @implementation OSUCheckOperation
 
-- initForQuery:(BOOL)doQuery url:(NSURL *)url versionNumber:(OFVersionNumber *)versionNumber licenseType:(NSString *)licenseType;
+- initForQuery:(BOOL)doQuery url:(NSURL *)url licenseType:(NSString *)licenseType;
 {
     OBPRECONDITION(url);
     OBPRECONDITION(licenseType); // App might not have set it yet; this is considered an error, but we should send *something*
-    OBPRECONDITION(versionNumber);
     
     if (!licenseType)
         licenseType = OSULicenseTypeUnset;
 
+    OFVersionNumber *versionNumber = [OSUChecker OSUVersionNumber];
     if (!versionNumber)
         versionNumber = [[[OFVersionNumber alloc] initWithVersionString:@"1.0"] autorelease];
     
@@ -60,10 +60,6 @@ RCS_ID("$Id$");
     
     [_task setLaunchPath:helperPath];
     
-    CFBundleRef bundle = CFBundleGetMainBundle();
-    NSString *bundleIdentifier = (NSString *)CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleIdentifierKey);
-    NSString *bundleVersion    = (NSString *)CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey);
-    
     // If we aren't actually submitting the query, this is probably due to the user popping up the sheet in the preferences to see what we *would* submit.
     BOOL includeHardwareDetails = !doQuery || [[OSUPreferences includeHardwareDetails] boolValue];
     NSString *withHardware = includeHardwareDetails ? @"with-hardware" : @"without-hardware";
@@ -75,10 +71,20 @@ RCS_ID("$Id$");
         host = @"localhost"; // needed to not have an empty array below and for the checker to determine network availability.
     }
     
-    // Send the current track to the server so it can make decisions about what we'll see.  In particular, this means that we will no longer perform client side track subsumption _and_ if you switch to a final build, you'll no longer see beta/sneakypeak builds until the next time you run one of those.
-    NSString *track = [OSUChecker applicationTrack];
+    OSUChecker *checker = [OSUChecker sharedUpdateChecker];
     
-    NSArray *arguments = [NSArray arrayWithObjects:host, [url absoluteString], bundleIdentifier, bundleVersion, track, withHardware, doQuery ? @"query" : @"report", licenseType, [versionNumber cleanVersionString], nil];
+    // Send the current track to the server so it can make decisions about what we'll see.  In particular, this means that we will no longer perform client side track subsumption _and_ if you switch to a final build, you'll no longer see beta/sneakypeak builds until the next time you run one of those.
+    NSString *track = [checker applicationTrack];
+    
+    NSArray *arguments = [NSArray arrayWithObjects:host, [url absoluteString],
+                          [checker applicationIdentifier],
+                          [checker applicationEngineeringVersion],
+                          track,
+                          withHardware,
+                          doQuery ? @"query" : @"report",
+                          licenseType,
+                          [versionNumber cleanVersionString],
+                          nil];
     [_task setArguments:arguments];
     //NSLog(@"Running %@ with arguments %@", helperPath, arguments);
     
@@ -150,10 +156,8 @@ RCS_ID("$Id$");
     return [[[_task standardOutput] fileHandleForReading] readDataToEndOfFile];
 }
 
-- (OSUCheckOperationRunType)runType;
-{
-    return _runType;
-}
+@synthesize runType = _runType;
+@synthesize initiatedByUser = _initiatedByUser;
 
 - (void)waitUntilExit;
 {
@@ -165,10 +169,7 @@ RCS_ID("$Id$");
     return _output;
 }
 
-- (int)terminationStatus;
-{
-    return _terminationStatus;
-}
+@synthesize terminationStatus = _terminationStatus;
 
 @end
 

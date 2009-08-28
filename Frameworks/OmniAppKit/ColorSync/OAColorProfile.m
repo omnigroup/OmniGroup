@@ -32,8 +32,8 @@ RCS_ID("$Id$");
 
 @end
 
-NSString *DefaultDocumentColorProfileDidChangeNotification = @"DefaultDocumentColorProfileDidChangeNotification";
-NSString *ColorProofingDevicesDidChangeNotification = @"ColorProofingDevicesDidChangeNotification";
+NSString * const OADefaultDocumentColorProfileDidChangeNotification = @"OADefaultDocumentColorProfileDidChangeNotification";
+NSString * const OAColorProofingDevicesDidChangeNotification = @"OAColorProofingDevicesDidChangeNotification";
 
 @implementation OAColorProfile
 
@@ -213,9 +213,6 @@ OSErr deviceListIterator(const CMDeviceInfo *deviceInfo, const NCMDeviceProfileI
 
 OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
 {
-    NSString *name;
-    OAColorProfile *profile;
-    
     if (resetProfileLists) {
         [rgbProfileDictionary release];
         [cmykProfileDictionary release];
@@ -226,15 +223,15 @@ OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
         resetProfileLists = NO;
     }
        
-    name = [NSString stringWithCharacters:iterateData->uniCodeName length:iterateData->uniCodeNameCount - 1]; // -1 because iterateData includes null on end
-    profile = [[OAColorProfile alloc] init];
-
+    NSString *name = [NSString stringWithCharacters:iterateData->uniCodeName length:iterateData->uniCodeNameCount - 1]; // -1 because iterateData includes null on end
     CMProfileRef cmProfile = NULL;
     CMError err = CMOpenProfile((CMProfileRef *)&cmProfile, &iterateData->location);
     if (err != noErr) {
         NSLog(@"CMOpenProfile() for '%@' returns %d", name, err);
         return err;
     }
+    
+    OAColorProfile *profile = [[OAColorProfile alloc] init];
     
     // NSLog(@"Profile name %@ (v %08x) = %p", name, iterateData->dataVersion, cmProfile);
     switch(iterateData->header.dataColorSpace) {
@@ -635,7 +632,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 
 + (void)_forwardDeviceNotification;
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:ColorProofingDevicesDidChangeNotification object:nil]; 
+    [[NSNotificationCenter defaultCenter] postNotificationName:OAColorProofingDevicesDidChangeNotification object:nil]; 
 }
 
 + (void)_deviceNotification:(NSNotification *)notification;
@@ -651,11 +648,9 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     CFStringRef string = nil;
     CMError error;
     
-#if defined(MAC_OS_X_VERSION_10_3) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_3
     error = CMCopyProfileDescriptionString((CMProfileRef)aProfile, &string);
     if (error == noErr)
         return (NSString *)string;
-#endif
     
     error = CMCopyProfileLocalizedString((CMProfileRef)aProfile, cmProfileDescriptionTag, 0, 0, &string);
     if (error == noErr)
@@ -694,7 +689,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     CMGetDefaultProfileBySpace(cmCMYKData, (CMProfileRef *)&cmykProfile);
     CMGetDefaultProfileBySpace(cmGrayData, (CMProfileRef *)&grayProfile);
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:DefaultDocumentColorProfileDidChangeNotification object:nil]; 
+    [[NSNotificationCenter defaultCenter] postNotificationName:OADefaultDocumentColorProfileDidChangeNotification object:nil]; 
 }
 
 - initDefaultDocumentProfile;

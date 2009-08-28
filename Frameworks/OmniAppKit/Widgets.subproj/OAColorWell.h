@@ -20,4 +20,4 @@
 
 @end
 
-extern NSString *OAColorWellWillActivate;
+extern NSString * const OAColorWellWillActivate;

@@ -7,8 +7,9 @@
 //
 // $Id$
 
+#import <OmniFoundation/OFWeakRetainProtocol.h>
+
 @class OFMessageQueue;
-@protocol OFWeakRetain;
 
 @protocol OFMessageQueueDelegate <OFWeakRetain>
 - (void)queueHasInvocations:(OFMessageQueue *)aQueue;

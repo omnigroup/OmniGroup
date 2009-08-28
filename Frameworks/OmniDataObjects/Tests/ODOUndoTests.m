@@ -25,9 +25,9 @@ RCS_ID("$Id$")
     [self closeUndoGroup];
     should([_editingContext saveWithDate:[NSDate date] error:&error]);
     
-    ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Detail"] primaryKey:@"detail"];
+    ODOObject *detail = [[[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Detail"] primaryKey:@"detail"] autorelease];
     [_editingContext insertObject:detail];
-
+    
     [detail setValue:master forKey:@"master"];
     
     [self closeUndoGroup];
@@ -46,12 +46,12 @@ RCS_ID("$Id$")
     NSError *error = nil;
     
     ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Master"] primaryKey:@"master"];
-    ODOObjectID *masterID = [[master objectID] copy];
+    ODOObjectID *masterID = [[[master objectID] copy] autorelease];
     [_editingContext insertObject:master];
     [master release];
 
     ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Detail"] primaryKey:@"detail"];
-    ODOObjectID *detailID = [[detail objectID] copy];
+    ODOObjectID *detailID = [[[detail objectID] copy] autorelease];
     [_editingContext insertObject:detail];
     [detail release];
 

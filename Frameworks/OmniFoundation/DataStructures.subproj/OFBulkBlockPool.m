@@ -132,20 +132,20 @@ void OFBulkBlockPoolDeallocateAllBlocks(OFBulkBlockPool *pool)
 
 void OFBulkBlockPoolReportStatistics(OFBulkBlockPool *pool)
 {
-    unsigned int pageIndex;
-    unsigned int blocksPerPage;
+    NSUInteger pageIndex;
+    NSUInteger blocksPerPage;
 
     blocksPerPage = (NSPageSize() - sizeof(OFBulkBlockPage)) / pool->allocationSize;
     
     fprintf(stderr, "pool = %p\n", (void *)pool);
-    fprintf(stderr, "  number of pages       = %d\n", pool->pageCount);
-    fprintf(stderr, "  bytes per block       = %zd (%zd allocated)\n", pool->blockSize, pool->allocationSize);
-    fprintf(stderr, "  blocks per page       = %d\n", blocksPerPage);
-    fprintf(stderr, "  wasted bytes per page = %zd\n", (size_t)NSPageSize() - blocksPerPage * pool->blockSize);
+    fprintf(stderr, "  number of pages       = %" PRIiPTR "\n", pool->pageCount);
+    fprintf(stderr, "  bytes per block       = %" PRIiPTR " (%" PRIiPTR " allocated)\n", pool->blockSize, pool->allocationSize);
+    fprintf(stderr, "  blocks per page       = %" PRIiPTR "\n", blocksPerPage);
+    fprintf(stderr, "  wasted bytes per page = %" PRIiPTR "\n", (size_t)NSPageSize() - blocksPerPage * pool->blockSize);
 
     for (pageIndex = 0; pageIndex < pool->pageCount; pageIndex++) {
         OFBulkBlockPage *page;
-        unsigned int freeCount;
+        NSUInteger freeCount;
         void *freeBlock;
         
         page = pool->pages[pageIndex];
@@ -160,7 +160,7 @@ void OFBulkBlockPoolReportStatistics(OFBulkBlockPool *pool)
             freeCount++;
         }
 
-        fprintf(stderr, "  page = %p, free blocks = %d, allocated blocks = %d\n", (void *)page, freeCount, blocksPerPage - freeCount);
+        fprintf(stderr, "  page = %p, free blocks = %" PRIiPTR ", allocated blocks = %" PRIiPTR "\n", (void *)page, freeCount, blocksPerPage - freeCount);
     }
 }
 

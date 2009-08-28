@@ -156,11 +156,25 @@ static inline unsigned int parseHexString(NSString *hexString, unsigned long lon
     }
 }
 
+- (uintmax_t)maxHexValue;
+{
+    // strtoumax() does accept an optional 0x prefix for base==16
+    char buf[40];
+    uintmax_t result;
+    char *endptr;
+    if ([self getCString:buf maxLength:40 encoding:NSASCIIStringEncoding]) {
+        result = strtoumax(buf, &endptr, 16);
+    } else {
+        result = strtoumax([self UTF8String], &endptr, 16);
+    }
+    return result;
+}
+
 - (NSData *)dataUsingCFEncoding:(CFStringEncoding)anEncoding;
 {
     CFDataRef result;
     
-    result = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, (CFRange){location: 0, length:[self length]}, anEncoding, (char)0);
+    result = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, CFRangeMake(0, [self length]), anEncoding, (char)0);
     
     return [(NSData *)result autorelease];
 }
@@ -169,7 +183,7 @@ static inline unsigned int parseHexString(NSString *hexString, unsigned long lon
 {
     CFDataRef result;
     
-    result = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, (CFRange){location: 0, length:[self length]}, anEncoding, lossy?'?':0);
+    result = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, CFRangeMake(0, [self length]), anEncoding, lossy?'?':0);
     
     return [(NSData *)result autorelease];
 }

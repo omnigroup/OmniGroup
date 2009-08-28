@@ -31,6 +31,7 @@
 - (NSData *)dataValue;
 
 - (unsigned int)hexValue;
+- (uintmax_t)maxHexValue;
 
 /* Covers for the C functions in CoreFoundation */
 - (NSData *)dataUsingCFEncoding:(CFStringEncoding)anEncoding;

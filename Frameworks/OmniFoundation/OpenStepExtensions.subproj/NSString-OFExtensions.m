@@ -651,10 +651,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
         componentRange.length = ( separatorRange.location - tailRange.location );
         [components addObject:[self substringWithRange:componentRange]];
 
-        tailRange = (NSRange){
-            location: NSMaxRange(separatorRange),
-            length: NSMaxRange(tailRange) - NSMaxRange(separatorRange)
-        };
+        tailRange = NSMakeRange(NSMaxRange(separatorRange), NSMaxRange(tailRange) - NSMaxRange(separatorRange));
         atMost --;
     }
     

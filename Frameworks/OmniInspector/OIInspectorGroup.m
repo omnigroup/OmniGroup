@@ -58,6 +58,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 
 + (void)initialize;
 {
+    OBINITIALIZE;
     existingGroups = [[NSMutableArray alloc] init];
 }
 
@@ -165,6 +166,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
         if (group == nil) {
             group = [[OIInspectorGroup alloc] init];
             [inspectorGroupsByNumber setObject:group forKey:groupKey];
+            [group release];
         }
         [group addInspector:controller];
     }
@@ -193,24 +195,35 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
             freeVerticalSpace = NSHeight(mainScreenVisibleRect);
         }
     }
-
-    float inspectorWidth = [[OIInspectorRegistry sharedInspector] inspectorWidth];
-    NSPoint topLeft = NSMakePoint(NSMaxX(mainScreenVisibleRect) - screenScaleFactor * (inspectorWidth + INSPECTOR_PADDING),
-                                  NSMaxY(mainScreenVisibleRect) - screenScaleFactor * MIN(INSPECTOR_PADDING, minFreeHeight));
     
+    // Determine the default inspector position
+    NSPoint topLeft;
+    float inspectorWidth = [[OIInspectorRegistry sharedInspector] inspectorWidth];
+    NSString *defaultPositionString = [[OFPreferenceWrapper sharedPreferenceWrapper] objectForKey:@"OIInspectorDefaultTopLeftPosition"];
+    // If a default position has been specified, use it
+    if (defaultPositionString) {
+        topLeft = NSPointFromString(defaultPositionString);
+        // interpret y as a distance from the top of the screen, not from the bottom
+        topLeft.y = NSMaxY(mainScreenVisibleRect) - topLeft.y;
+    }
+    // Otherwise, calculate the default inspector position based on the screen size
+    else {
+        NSString *defaultPlacementString = [[OFPreferenceWrapper sharedPreferenceWrapper] objectForKey:@"OIInspectorSideOfScreen"];
+        if ([defaultPlacementString isEqualToString:@"left"]) {
+            // position on the left side of the screen
+            topLeft.x = screenScaleFactor * INSPECTOR_PADDING;
+        } else {
+            // position on the right side of the screen
+            topLeft.x = NSMaxX(mainScreenVisibleRect) - screenScaleFactor * (inspectorWidth + INSPECTOR_PADDING);
+        }
+        topLeft.y = NSMaxY(mainScreenVisibleRect) - screenScaleFactor * MIN(INSPECTOR_PADDING, minFreeHeight);
+    }
     topLeft = [[OIInspectorRegistry sharedInspector] adjustTopLeftDefaultPositioningPoint:topLeft];
     
-    unsigned int columnIndex = [inspectorColumns count];
-    while (columnIndex--) {
-        NSArray *groupsInColumn = [inspectorColumns objectAtIndex:columnIndex];
-        unsigned int groupIndex, groupCount;
-        groupCount = [groupsInColumn count];
-        for (groupIndex = 0; groupIndex < groupCount; groupIndex++) {
-            OIInspectorGroup *group = [groupsInColumn objectAtIndex:groupIndex];
-            
+    for (NSArray *groupsInColumn in inspectorColumns) {
+        for (OIInspectorGroup *group in groupsInColumn) {
             [group setInitialBottommostInspector];
             [group setTopLeftPoint:topLeft];
-            [group autorelease];
 
             if ([group defaultGroupVisibility])
                 [group showGroup];
@@ -419,29 +432,29 @@ This method iterates over the inspectors controllers in each visible inspector g
 
 - (void)detachFromGroup:(OIInspectorController *)aController;
 {
-    unsigned int originalIndex = [_inspectors indexOfObject:aController];
-    NSWindow *topWindow;
-    OIInspectorGroup *newGroup;
-    unsigned int index, count;
-    
-    if (!originalIndex)
+    NSUInteger originalIndex = [_inspectors indexOfObject:aController];
+    if (originalIndex == NSNotFound || originalIndex == 0)
         return;
-        
+
     _inspectorGroupFlags.ignoreResizing = YES;
     [[_inspectors objectAtIndex:(originalIndex - 1)] setBottommostInGroup:YES];
     _inspectorGroupFlags.ignoreResizing = NO;
 
-    topWindow = [[_inspectors objectAtIndex:0] window];
-    newGroup = [[OIInspectorGroup alloc] init];
-    count = [_inspectors count];
+#ifdef OMNI_ASSERTIONS_ON
+    NSWindow *topWindow = [[_inspectors objectAtIndex:0] window];
+#endif
+    OIInspectorGroup *newGroup = [[[OIInspectorGroup alloc] init] autorelease];
+    OBASSERT([existingGroups indexOfObjectIdenticalTo:newGroup]); // It is in this array and retained by it.
+    
+    NSUInteger inpectorCount = [_inspectors count];
     
     [self disconnectWindows];
     
-    for (index = originalIndex; index < count; index++) {
-        OIInspectorController *controller = [_inspectors objectAtIndex:index];
+    for (NSUInteger inspectorIndex = originalIndex; inspectorIndex < inpectorCount; inspectorIndex++) {
+        OIInspectorController *controller = [_inspectors objectAtIndex:inspectorIndex];
         [newGroup addInspector:controller];
     }
-    [_inspectors removeObjectsInRange:NSMakeRange(originalIndex, count - originalIndex)];  
+    [_inspectors removeObjectsInRange:NSMakeRange(originalIndex, inpectorCount - originalIndex)];  
 
     [self connectWindows];
     [newGroup connectWindows];
@@ -610,17 +623,13 @@ This method iterates over the inspectors controllers in each visible inspector g
 
 - (NSRect)snapToOtherGroupWithFrame:(NSRect)aRect;
 {
-    int index, count = [_inspectors count];
     id closestSoFar = nil;
     NSRect closestFrame = NSZeroRect;
     float closestDistance = 99999.0;
     float position;
-    NSArray *documents;
 
     // Snap to top or bottom of other group
-    count = [existingGroups count];
-    for (index = 0; index < count; index++) {
-        OIInspectorGroup *otherGroup = [existingGroups objectAtIndex:index];
+    for (OIInspectorGroup *otherGroup in existingGroups) {
         NSRect otherGroupFrame;
             
         if (self == otherGroup || ![otherGroup isVisible] || ![otherGroup getGroupFrame:&otherGroupFrame])
@@ -641,9 +650,7 @@ This method iterates over the inspectors controllers in each visible inspector g
 
     // Check for snap to side of other group
     
-    count = [existingGroups count];
-    for (index = 0; index < count; index++) {
-        OIInspectorGroup *otherGroup = [existingGroups objectAtIndex:index];
+    for (OIInspectorGroup *otherGroup in existingGroups) {
         NSRect otherFrame;
         float distance;
 
@@ -663,14 +670,9 @@ This method iterates over the inspectors controllers in each visible inspector g
     }
     
     // Check for snap to side of document window
-    documents = [[NSDocumentController sharedDocumentController] documents];
-    count = [documents count];
-    for (index = 0; index < count; index++) {
-        NSArray *windowControllers = [[documents objectAtIndex:index] windowControllers];
-        int windowCount = [windowControllers count];
-        
-        while (windowCount--) {
-            NSWindow *window = [[windowControllers objectAtIndex:windowCount] window];
+    for (NSDocument *document in [[NSDocumentController sharedDocumentController] documents]) {
+        for (NSWindowController *windowController in [document windowControllers]) {
+            NSWindow *window = windowController.window;
             
             if (!window || ![window isVisible])
                 continue;
@@ -709,6 +711,8 @@ This method iterates over the inspectors controllers in each visible inspector g
     }    
 
 
+    // TJW: This seems to do nothing (no side effects, no return value).  What was it supposed to do?
+#if 0
     {
         OIInspectorGroup *closestGroupWithoutSnapping = nil;
         float closestVerticalDistance = 1e10;
@@ -731,20 +735,16 @@ This method iterates over the inspectors controllers in each visible inspector g
             }
         }
     }
+#endif
     
     return aRect;
 }
 
 - (void)windowsDidMoveToFrame:(NSRect)aFrame;
-{
-    int index, count = [_inspectors count];
-    
+{    
     [self retain];
-    
-    count = [existingGroups count];
-    for (index = 0; index < count; index++) {
-        OIInspectorGroup *otherGroup = [existingGroups objectAtIndex:index];
-        
+
+    for (OIInspectorGroup *otherGroup in existingGroups) {
         if (self == otherGroup || ![otherGroup isVisible])
             continue;
         if ([self willConnectToBottomOfGroup:otherGroup withFrame:aFrame]) {
@@ -900,7 +900,7 @@ This method iterates over the inspectors controllers in each visible inspector g
     NSWindow *window = [[_inspectors objectAtIndex:0] window];
     OBASSERT(window);
 
-    return [window frame];
+    return window ? [window frame] : NSZeroRect;
 }
 
 - (void)screensDidChange:(NSNotification *)notification;
@@ -1017,6 +1017,8 @@ This method iterates over the inspectors controllers in each visible inspector g
         
     [self disconnectWindows];
     [otherGroup disconnectWindows];
+    
+    [[otherGroup retain] autorelease]; // remove below could be the last reference
     [existingGroups removeObject:otherGroup];
     
     count = [_inspectors count];
@@ -1088,6 +1090,7 @@ This method iterates over the inspectors controllers in each visible inspector g
         }
     }
     if (![_inspectors count]) {
+        [[self retain] autorelease]; // don't deallocate ourselves here if we get removed.
         [existingGroups removeObject:self];
         return;
     }
@@ -1230,7 +1233,7 @@ static NSComparisonResult sortByGroupAndDisplayOrder(OIInspectorController *a, O
     itemIndex = dynamicMenuItemIndex;
 
     if (useWorkspaces && !useASeparateMenuForWorkspaces) {
-        item = [[NSMenuItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Workspace", @"OmniInspector", bundle, @"Workspace submenu item") action:NULL keyEquivalent:@""];
+        item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Workspace", @"OmniInspector", bundle, @"Workspace submenu item") action:NULL keyEquivalent:@""] autorelease];
         [item setSubmenu:[[OIInspectorRegistry sharedInspector] workspaceMenu]];
     } else {
         item = [[OIInspectorRegistry sharedInspector] resetPanelsItem];

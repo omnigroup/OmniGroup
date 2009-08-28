@@ -11,29 +11,20 @@
 
 @interface OFFastMutableData : NSMutableData
 {
-    OFFastMutableData   *_nextBlock;
+    OFFastMutableData *_nextBlock;
 
-    unsigned int         _realLength;
-    void                *_realBytes;
+    NSUInteger _realLength;
+    void *_realBytes;
 
-    unsigned int         _currentLength;
-    void                *_currentBytes;
+    NSUInteger _currentLength;
+    void *_currentBytes;
 }
-+ (OFFastMutableData *) newFastMutableDataWithLength: (unsigned) length;
 
-- (void) fillWithZeros;
++ (OFFastMutableData *)newFastMutableDataWithLength:(NSUInteger)length;
 
-// NSData methods
-- (unsigned) length;
-- (const void *) bytes;
+- (void)fillWithZeros;
 
-// NSMutableData methods
-- (void *) mutableBytes;
-
-
-- (void) setStartingOffset: (unsigned) offset;
-- (unsigned) startingOffset;
-
-- (void) setLength: (unsigned) length;
+- (void)setStartingOffset:(NSUInteger)offset;
+- (NSUInteger)startingOffset;
 
 @end

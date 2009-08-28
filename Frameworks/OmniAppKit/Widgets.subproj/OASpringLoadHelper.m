@@ -1,20 +1,18 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OASpringLoadHelper.h"
+#import <OmniAppKit/OASpringLoadHelper.h>
 
-#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
-@interface OASpringLoadHelper (Private)
-+ (NSNumberFormatter *)_numberFormatter;
+@interface OASpringLoadHelper (/*Private*/)
 - (id)_initWithDelegate:(id <OASpringLoadHelper>)aDelegate;
 - (void)_startSpringTimer;
 - (BOOL)_shouldFlash;
@@ -31,8 +29,6 @@ RCS_ID("$Id$");
     return [[[OASpringLoadHelper alloc] _initWithDelegate:aDelegate] autorelease];
 }
 
-// Init and dealloc
-
 - (void)dealloc;
 {
     [self _stopSpringTimer];
@@ -42,7 +38,7 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-// API
+#pragma mark API
 
 - (void)beginSpringLoad;
 {
@@ -67,23 +63,11 @@ RCS_ID("$Id$");
     [self _stopSpringTimer];
 }
 
-@end
-
-@implementation OASpringLoadHelper (Private)
-
-+ (NSNumberFormatter *)_numberFormatter;
-{
-    static NSNumberFormatter *numberFormatter = nil;
-
-    if (numberFormatter == nil)
-        numberFormatter = [[NSNumberFormatter alloc] init];
-
-    return numberFormatter;
-}
+#pragma mark Private
 
 - (id)_initWithDelegate:(id <OASpringLoadHelper>)aDelegate;
 {
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
 
     nonretainedDelegate = aDelegate;
@@ -96,36 +80,29 @@ RCS_ID("$Id$");
     if (springTimer != nil)
         [self _stopSpringTimer];
 
-    double springingDelayMilliseconds = 668.0; // Magic value that's Finder's default
-    CFPropertyListRef finderDefaultValue = CFPreferencesCopyAppValue((CFStringRef)@"SpringingDelayMilliseconds", (CFStringRef)@"com.apple.finder");
-    if (finderDefaultValue != NULL) {
-        NSNumber *number = (id)finderDefaultValue;
-        if (![number isKindOfClass:[NSNumber class]]) {
-            NSString *inputString = [number description];
-            NSNumber *outputNumber;
-            NSString *errorDescription = nil;
+    NSTimeInterval springingDelaySeconds = 0.5; // The value for 'Medium' in Finder's preferences.
 
-            if ([[isa _numberFormatter] getObjectValue:&outputNumber forString:inputString errorDescription:&errorDescription]) {
-                number = outputNumber;
-            } else {
-                number = nil;
-#ifdef DEBUG_kc
-                NSLog(@"-[%@ %s]: Unable to convert '%@' to a number: %@", OBShortObjectDescription(self), _cmd, inputString, errorDescription);
-#endif
-            }
+    // As of 10.5, Finder's spring-loaded folder preference is in the global domain under com.apple.springing.delay, as seconds.
+    NSNumber *springLoadedFolderDelayNumber = [[NSUserDefaults standardUserDefaults] objectForKey:@"com.apple.springing.delay"];
+    if (springLoadedFolderDelayNumber) {
+        // Might be a different type than we expect; be careful.
+        if ([springLoadedFolderDelayNumber respondsToSelector:@selector(doubleValue)])
+            springingDelaySeconds = [springLoadedFolderDelayNumber doubleValue];
+        else if ([springLoadedFolderDelayNumber respondsToSelector:@selector(floatValue)])
+            springingDelaySeconds = [springLoadedFolderDelayNumber floatValue];
+        else {
+            OBASSERT_NOT_REACHED("Unable to interpret com.apple.springing.delay preference value");
         }
-        if (number != nil)
-            springingDelayMilliseconds = [number doubleValue];
     }
-
+    
 #ifdef DEBUG_kc
-    NSLog(@"-[%@ %s]: Springing delay set to %0.3f seconds (%@=%@)", OBShortObjectDescription(self), _cmd, springingDelayMilliseconds / 1000.0, NSStringFromClass([(id)finderDefaultValue class]), [(id)finderDefaultValue description]);
+    NSLog(@"-[%@ %s]: Springing delay set to %0.3f seconds (%@=%@)", OBShortObjectDescription(self), _cmd, springingDelaySeconds, NSStringFromClass([springLoadedFolderDelayNumber class]), springLoadedFolderDelayNumber);
 #endif
 
     if ([self _shouldFlash]) {
-        springTimer = [[NSTimer scheduledTimerWithTimeInterval:(springingDelayMilliseconds / 1000.0) target:self selector:@selector(_startFlashing) userInfo:nil repeats:NO] retain];
+        springTimer = [[NSTimer scheduledTimerWithTimeInterval:springingDelaySeconds target:self selector:@selector(_startFlashing) userInfo:nil repeats:NO] retain];
     } else {
-        springTimer = [[NSTimer scheduledTimerWithTimeInterval:(springingDelayMilliseconds / 1000.0) target:self selector:@selector(_springLoad) userInfo:nil repeats:NO] retain];
+        springTimer = [[NSTimer scheduledTimerWithTimeInterval:springingDelaySeconds target:self selector:@selector(_springLoad) userInfo:nil repeats:NO] retain];
     }
 }
 

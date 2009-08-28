@@ -37,7 +37,7 @@ typedef struct _OFBulkBlockPool {
     OFByte *freeList; // A cache of the freeList of the current page
     OFBulkBlockPage *currentPage;
     OFBulkBlockPage **pages;
-    unsigned int pageCount;
+    NSUInteger pageCount;
     size_t blockSize;
     size_t allocationSize; // blockSize rounded up to a multiple of sizeof(unsigned int)
 } OFBulkBlockPool;

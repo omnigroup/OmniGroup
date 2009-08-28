@@ -471,6 +471,11 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return result;
 }
 
+- (NSArray *) stringArrayValue;
+{
+    return [self arrayValue];
+}
+
 - (int) enumeratedValue
 {
     [NSException raise:NSInvalidArgumentException format:@"-%s called on non-enumerated %@ (%@)", _cmd, [self shortDescription], _key];
@@ -646,6 +651,15 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
         return defaultValue;
 }
 
+- (int) defaultEnumeratedValue
+{
+    id defaultValue = [super defaultObjectValue];
+    if (defaultValue == nil)
+        return [names defaultEnumValue];
+    else
+        return [names enumForName:defaultValue];
+}
+
 #define BAD_TYPE_IMPL(x) { [NSException raise:NSInvalidArgumentException format:@"-%s called on enumerated %@ (%@)", _cmd, [self shortDescription], _key]; x; }
 
 - (NSString *) stringValue;            BAD_TYPE_IMPL(return nil)
@@ -779,7 +793,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 
 - (NSArray *)stringArrayForKey:(NSString *)defaultName;
 {
-    return [[OFPreference preferenceForKey: defaultName] arrayValue];
+    return [[OFPreference preferenceForKey: defaultName] stringArrayValue];
 }
 
 - (int)integerForKey:(NSString *)defaultName;

@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,11 +34,11 @@ RCS_ID("$Id$")
             nextTitle = option;
         } else if (OBPointerIsClass(option) && OBClassIsSubclassOfClass(option, [OFErrorRecovery class])) {
             Class recoveryClass = option;
-            NSString *title = [NSString isEmptyString:nextTitle] ? [recoveryClass defaultLocalizedRecoveryOption] : nextTitle;
-
-            [titles addObject:title];
-            OFErrorRecovery *recovery = [[recoveryClass alloc] initWithLocalizedRecoveryOption:title object:object];
-            [recoveries addObject:recovery];
+            OFErrorRecovery *recovery = [[recoveryClass alloc] initWithLocalizedRecoveryOption:nextTitle object:object];
+            if ([recovery isApplicableToError:error]) {
+                [titles addObject:[recovery localizedRecoveryOption]];
+                [recoveries addObject:recovery];
+            }
             [recovery release];
             
             // Title is now consumed

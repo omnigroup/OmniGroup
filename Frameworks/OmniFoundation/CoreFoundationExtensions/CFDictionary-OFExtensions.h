@@ -100,4 +100,24 @@ static inline void OFCFDictionarySetValueForUInteger(CFMutableDictionaryRef theD
     CFDictionarySetValue(theDict, (const void *)key, value);
 }
 
+static inline const void *OFCFDictionaryGetValueForInteger(CFMutableDictionaryRef theDict, intptr_t key)
+{
+    return CFDictionaryGetValue(theDict, (const void *)key);
+}
+
+static inline const void *OFCFDictionaryGetValueForUInteger(CFMutableDictionaryRef theDict, uintptr_t key)
+{
+    return CFDictionaryGetValue(theDict, (const void *)key);
+}
+
+static inline void OFCFDictionaryRemoveValueForInteger(CFMutableDictionaryRef theDict, intptr_t key)
+{
+    CFDictionaryRemoveValue(theDict, (const void *)key);
+}
+
+static inline void OFCFDictionaryRemoveValueForUInteger(CFMutableDictionaryRef theDict, uintptr_t key)
+{
+    CFDictionaryRemoveValue(theDict, (const void *)key);
+}
+
 

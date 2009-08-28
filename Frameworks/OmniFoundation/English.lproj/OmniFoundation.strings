@@ -70,10 +70,19 @@
 /* error recovery option */
 "Cancel <error recovery>" = "Cancel";
 
+/* error description - a UNIX subprocess exited due to a signal */
+"command '%@' exited due to signal %d (%s)" = "command '%1$@' exited due to signal %2$d (%3$s)";
+
+/* error description - a UNIX subprocess exited with a nonzero status */
+"command '%@' returned %d" = "command '%1$@' returned %2$d";
+
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
 "Could not create directory" = "Could not create directory";
+
+/* error description */
+"Could not fork '%@'" = "Could not fork '%@'";
 
 /* time span formatter span */
 "d" = "d";
@@ -93,20 +102,8 @@
 /* error description */
 "Error creating pipe" = "Error creating pipe";
 
-/* Error encountered when trying to pass data through a UNIX command, details in parameters */
-"Error filtering data through UNIX command %@: %s: %s" = "Error filtering data through UNIX command %1$@: %2$s: %3$s";
-
-/* error description */
-"Error filtering data through UNIX command %@" = "Error filtering data through UNIX command %@";
-
-/* error description */
-"Error filtering data through UNIX command %@: command exited due to signal %d" = "Error filtering data through UNIX command %1$@: command exited due to signal %2$d";
-
-/* error description */
-"Error filtering data through UNIX command %@: command exited due to signal %d" = "Error filtering data through UNIX command %1$@: command exited due to signal %2$d";
-
-/* Error encountered when trying to pass data through a UNIX command, details in parameters */
-"Error filtering data through UNIX command %@: command returned %d" = "Error filtering data through UNIX command %1$@: command returned %2$d";
+/* error description - parameter is underlying error text */
+"Error filtering data through UNIX command: %@" = "Error filtering data through UNIX command: %@";
 
 /* time span formatter span */
 "h" = "h";
@@ -182,9 +179,6 @@
 
 /* formatter input error */
 "That is not a valid social security number." = "That is not a valid social security number.";
-
-/* formatter input error */
-"That is not a valid state abbreviation." = "That is not a valid state abbreviation.";
 
 /* formatter input error */
 "That is not a valid zip code." = "That is not a valid zip code.";

@@ -33,8 +33,6 @@
 
 @end
 
-#import "FrameworkDefines.h"
-
-// Use as keys into an NSDIctionary when you call -setObjectValue: on this cell, or a dictionary you build and return in a tableView dataSource's -objectValue:forItem:row: method.
-OmniAppKit_EXTERN NSString *OATextWithIconCellStringKey;
-OmniAppKit_EXTERN NSString *OATextWithIconCellImageKey;
+// Use as keys into an NSDictionary when you call -setObjectValue: on this cell, or a dictionary you build and return in a tableView dataSource's -objectValue:forItem:row: method.
+extern NSString const *OATextWithIconCellStringKey;
+extern NSString const *OATextWithIconCellImageKey;

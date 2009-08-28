@@ -17,7 +17,7 @@ I don't see how a NSConditionLock can be used to implement an overlapping state 
 
 @implementation OFQueue
 
-- initWithCount:(unsigned int)maxCount;
+- initWithCount:(NSUInteger)maxCount;
 {
     closed = NO;
     max = maxCount;
@@ -40,14 +40,14 @@ I don't see how a NSConditionLock can be used to implement an overlapping state 
     [super dealloc];
 }
 
-- (unsigned int)maxCount;
+- (NSUInteger)maxCount;
 {
     return max;
 }
 
-- (unsigned int)count;
+- (NSUInteger)count;
 {
-    unsigned int ret;
+    NSUInteger ret;
 
     pthread_mutex_lock(&mutex);
     ret = count;

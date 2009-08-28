@@ -26,10 +26,12 @@ RCS_ID("$Id$")
 		OFRegularExpression *rx = [[OFRegularExpression alloc] initWithString:(regex)]; \
 		OFRegularExpressionMatch *match = [(rx) matchInString:(text)]; \
 		should(match != nil); \
-		should1(NSEqualRanges([match matchRange], (NSRange){(loc),(len)}), \
-		([NSString stringWithFormat:@"Got match range={%d,%d}, should be range={%d,%d}", \
-									[match matchRange].location, [match matchRange].length, (loc), (len)])); \
-									shouldBeEqual([match matchString], (matchText)); \
+                if (match) { \
+                    should1(NSEqualRanges([match matchRange], (NSRange){(loc),(len)}), \
+                    ([NSString stringWithFormat:@"Got match range={%d,%d}, should be range={%d,%d}", \
+                                                                            [match matchRange].location, [match matchRange].length, (loc), (len)])); \
+                                                                            shouldBeEqual([match matchString], (matchText)); \
+                } \
 		[rx release]; \
 	} while (0)
 

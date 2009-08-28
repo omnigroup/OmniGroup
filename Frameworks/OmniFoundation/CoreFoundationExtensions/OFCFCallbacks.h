@@ -44,7 +44,9 @@ extern const CFDictionaryValueCallBacks  OFNonOwnedPointerDictionaryValueCallbac
 extern const CFDictionaryKeyCallBacks    OFPointerEqualObjectDictionaryKeyCallbacks;
 
 extern const CFDictionaryKeyCallBacks    OFIntegerDictionaryKeyCallbacks;
+extern const CFDictionaryKeyCallBacks    OFUnsignedIntegerDictionaryKeyCallbacks;
 extern const CFDictionaryValueCallBacks  OFIntegerDictionaryValueCallbacks;
+extern const CFDictionaryValueCallBacks  OFUnsignedIntegerDictionaryValueCallbacks;
 
 extern const CFDictionaryKeyCallBacks    OFNSObjectDictionaryKeyCallbacks;
 extern const CFDictionaryKeyCallBacks    OFNSObjectCopyDictionaryKeyCallbacks;

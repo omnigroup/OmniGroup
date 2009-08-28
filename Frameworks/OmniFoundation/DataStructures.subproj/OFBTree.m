@@ -16,9 +16,9 @@ RCS_ID("$Id$")
 Each node in the btree has some non-zero number of elements (depending upon whether it is the root node or not different constraints apply).  If there are N elements, there are always N+1 pointers to children nodes.
 "*/
 typedef struct _OFBTreeNode {
-    unsigned int elementCount;
+    NSUInteger elementCount;
     struct _OFBTreeNode *childZero;
-    unsigned char contents[0];
+    uint8_t contents[0];
 } OFBTreeNode;
 
 
@@ -75,7 +75,7 @@ void OFBTreeDestroy(OFBTree *tree)
     _OFBTreeDestroyNode(tree, tree->root);
 }
 
-static inline void *_OFBTreeElementAtIndex(OFBTree *btree, OFBTreeNode *node, unsigned int elementIndex)
+static inline void *_OFBTreeElementAtIndex(OFBTree *btree, OFBTreeNode *node, NSUInteger elementIndex)
 {
     return node->contents + elementIndex * (btree->elementSize + sizeof(OFBTreeNode *));
 }
@@ -95,9 +95,9 @@ static inline OFBTreeNode *_OFBTreeValueGreaterChildNode(OFBTree *btree, void *v
 "*/
 static BOOL _OFBTreeScan(OFBTree *btree, void *value)
 {
-    unsigned int low = 0;
-    unsigned int range = 1;
-    unsigned int test = 0;
+    NSUInteger low = 0;
+    NSUInteger range = 1;
+    NSUInteger test = 0;
     OFBTreeNode *node;
     void *testValue;
     int testResult;
@@ -158,7 +158,7 @@ static void _OFBTreeSplitAdd(OFBTree *btree, void *value)
     OFBTreeNode *node;
     void *insertionPoint;
     OFBTreeNode *right;
-    unsigned int insertionIndex;
+    NSUInteger insertionIndex;
     BOOL needsPromotion;
     const size_t entrySize = btree->elementSize + sizeof(OFBTreeNode *);
 
@@ -265,7 +265,7 @@ Finds the element in the tree that compares the same to the given bytes and dele
 BOOL OFBTreeDelete(OFBTree *btree, void *value)
 {
     OFBTreeNode *node, *childNode;
-    unsigned int fullLength;
+    size_t fullLength;
     BOOL replacePointerWithGreaterChild;
     
     if (!_OFBTreeFind(btree, value))
@@ -331,7 +331,7 @@ Calls the supplied callback once for each element in the tree, passing the eleme
 
 static void _OFBTreeEnumerateNode(OFBTree *tree, OFBTreeNode *node, OFBTreeEnumeratorCallback callback, void *arg)
 {
-    unsigned int elementIndex;
+    NSUInteger elementIndex;
     
     if (node->childZero)
         _OFBTreeEnumerateNode(tree, node->childZero, callback, arg);
@@ -441,13 +441,13 @@ void *OFBTreeNext(OFBTree *btree, void *value)
 
 static void OFBTreeDumpNodes(FILE *fp, OFBTree *btree, OFBTreeNode *node)
 {
-    fprintf(fp, "Node at %p: %u elements\n\tNode at %p\n", node, node->elementCount, node->childZero);
-    unsigned int eltIndex, byteIndex;
+    fprintf(fp, "Node at %p: %" PRIuPTR " elements\n\tNode at %p\n", node, node->elementCount, node->childZero);
+    NSUInteger eltIndex, byteIndex;
     for(eltIndex = 0; eltIndex < node->elementCount; eltIndex ++) {
         void *value = _OFBTreeElementAtIndex(btree, node, eltIndex);
         fprintf(fp, "\t[");
         for(byteIndex = 0; byteIndex < btree->elementSize; byteIndex ++) {
-            fprintf(fp, " %02X", ((unsigned char *)value)[byteIndex]);
+            fprintf(fp, " %02X", ((uint8_t *)value)[byteIndex]);
         }
         fprintf(fp, " ]\n\tNode at %p\n", _OFBTreeValueGreaterChildNode(btree, value));
     }

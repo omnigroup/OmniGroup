@@ -16,32 +16,33 @@
 
 @interface OFEnumNameTable : NSObject
 {
-    int                    _defaultEnumValue;
-    CFMutableArrayRef      _enumOrder;
-    CFMutableDictionaryRef _enumToName;
-    CFMutableDictionaryRef _enumToDisplayName;
-    CFMutableDictionaryRef _nameToEnum;
+@private
+    NSInteger _defaultEnumValue;
+    __strong CFMutableArrayRef _enumOrder;
+    __strong CFMutableDictionaryRef _enumToName;
+    __strong CFMutableDictionaryRef _enumToDisplayName;
+    __strong CFMutableDictionaryRef _nameToEnum;
 }
 
-- initWithDefaultEnumValue: (int) defaultEnumValue;
-- (int) defaultEnumValue;
+- initWithDefaultEnumValue:(NSInteger)defaultEnumValue;
+- (NSInteger)defaultEnumValue;
 
-- (void)setName:(NSString *)enumName forEnumValue:(int)enumValue;
-- (void)setName:(NSString *)enumName displayName:(NSString *)displayName forEnumValue:(int)enumValue;
+- (void)setName:(NSString *)enumName forEnumValue:(NSInteger)enumValue;
+- (void)setName:(NSString *)enumName displayName:(NSString *)displayName forEnumValue:(NSInteger)enumValue;
 
-- (NSString *)nameForEnum:(int)enumValue;
-- (NSString *)displayNameForEnum:(int)enumValue;
-- (int) enumForName: (NSString *) name;
-- (BOOL) isEnumValue: (int) enumValue;
-- (BOOL) isEnumName: (NSString *) name;
+- (NSString *)nameForEnum:(NSInteger)enumValue;
+- (NSString *)displayNameForEnum:(NSInteger)enumValue;
+- (NSInteger)enumForName:(NSString *)name;
+- (BOOL)isEnumValue:(NSInteger)enumValue;
+- (BOOL)isEnumName:(NSString *)name;
 
-- (unsigned int)count;
-- (int)enumForIndex:(CFIndex)enumIndex;
-- (int)nextEnum:(int)enumValue;
+- (NSUInteger)count;
+- (NSInteger)enumForIndex:(NSUInteger)enumIndex;
+- (NSInteger)nextEnum:(NSInteger)enumValue;
 - (NSString *)nextName:(NSString *)name;
 
 // Comparison
-- (BOOL) isEqual: (id)anotherEnumeration;
+- (BOOL)isEqual:(id)anotherEnumeration;
 
 // Masks
 

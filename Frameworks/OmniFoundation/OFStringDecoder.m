@@ -211,7 +211,7 @@ static struct OFCharacterScanResult OFScanUTF8CharactersIntoBuffer(struct OFStri
         /* the outer loop will take care of multibyte sequences */
     }
     
-    return (struct OFCharacterScanResult){state, bytesConsumed: in_bytes - in_bytes_orig, charactersProduced: out_characters - out_characters_orig};
+    return (struct OFCharacterScanResult){.state = state, .bytesConsumed = in_bytes - in_bytes_orig, .charactersProduced = out_characters - out_characters_orig};
     
 }
 
@@ -277,7 +277,7 @@ struct OFCharacterScanResult OFScanCharactersIntoBuffer(struct OFStringDecoderSt
                 OBASSERT([stringBuffer length] == toScan);
                 [stringBuffer getCharacters:out_characters];
                 [stringBuffer release];
-                return (struct OFCharacterScanResult){state, bytesConsumed:toScan, charactersProduced:toScan};
+                return (struct OFCharacterScanResult){.state = state, .bytesConsumed = toScan, .charactersProduced = toScan};
             }
     }
     
@@ -377,11 +377,11 @@ CFDataRef OFCreateDataFromStringWithDeferredEncoding(CFStringRef str, CFRange ra
     while (slowCursor < conversionEnd) {
 
         if (slowCursor < fastCursor) {
-            slowCursor += OFAppendStringBytesToBuffer(octets, str, (CFRange){ location:slowCursor, length: fastCursor - slowCursor }, newEncoding, lossByte, ( slowCursor == 0 )? TRUE : FALSE);
+            slowCursor += OFAppendStringBytesToBuffer(octets, str, CFRangeMake(slowCursor, fastCursor - slowCursor), newEncoding, lossByte, ( slowCursor == 0 )? TRUE : FALSE);
         }
         OBASSERT(slowCursor == fastCursor);
 
-        if (CFStringFindCharacterFromSet(str, nonDeferredCharacters, ((CFRange){ location:slowCursor, length:conversionEnd-slowCursor }), 0, &deferred)) 
+        if (CFStringFindCharacterFromSet(str, nonDeferredCharacters, CFRangeMake(slowCursor, conversionEnd-slowCursor), 0, &deferred)) 
             fastCursor = deferred.location;
         else
             fastCursor = conversionEnd;
@@ -409,7 +409,7 @@ CFDataRef OFCreateDataFromStringWithDeferredEncoding(CFStringRef str, CFRange ra
             CFDataSetLength(octets, precedingChars);
         }
 
-        if (CFStringFindCharacterFromSet(str, deferredCharactersSet, ((CFRange){ location:slowCursor, length:conversionEnd-slowCursor }), 0, &deferred))
+        if (CFStringFindCharacterFromSet(str, deferredCharactersSet, CFRangeMake(slowCursor, conversionEnd-slowCursor), 0, &deferred))
             fastCursor = deferred.location;
         else
             fastCursor = conversionEnd;
@@ -429,7 +429,7 @@ extern NSString *OFApplyDeferredEncoding(NSString *str, CFStringEncoding newEnco
     if (str == nil)
         return str;
 
-    octets = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)str, (CFRange){location: 0, length:stringLength}, newEncoding, 0);
+    octets = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)str, CFRangeMake(0, stringLength), newEncoding, 0);
     if (!octets)
         return nil;
 
@@ -441,51 +441,43 @@ extern NSString *OFApplyDeferredEncoding(NSString *str, CFStringEncoding newEnco
 
 extern NSString *OFMostlyApplyDeferredEncoding(NSString *str, CFStringEncoding newEncoding)
 {
-    CFDataRef octets;
-    CFStringRef immutableResult;
-    CFMutableStringRef resultBuffer;
-    unsigned int inputStringLength;
-    struct OFStringDecoderState recodeState;
-    unsigned int recodePosition;
-    unsigned int recodeBufferSize;
-    unsigned int octetCount;
-    unichar *resultCharacters;
-    
     if (str == nil)
         return str;
     
-    inputStringLength = [str length];
-    octets = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)str, (CFRange){location: 0, length:inputStringLength}, newEncoding, 0);
+    NSUInteger inputStringLength = [str length];
+    CFDataRef octets = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)str, CFRangeMake(0, inputStringLength), newEncoding, 0);
     if (!octets)
         return str;
     
-    recodeState = OFInitialStateForEncoding(newEncoding);
-    octetCount = CFDataGetLength(octets);
-    recodeBufferSize = MIN(8192U, inputStringLength);
-    resultCharacters = NULL;
-    resultBuffer = NULL;
-    immutableResult = NULL;
-    recodePosition = 0;
-    while(recodePosition < octetCount) {
-        if (resultCharacters == NULL)
-            resultCharacters = malloc(sizeof(*resultCharacters) * recodeBufferSize);
-
+    NSUInteger octetCount = CFDataGetLength(octets);
+    if (octetCount == 0) {
+        CFRelease(octets);
+        return str;
+    }
+    
+    struct OFStringDecoderState recodeState = OFInitialStateForEncoding(newEncoding);
+    NSUInteger recodeBufferSize = MIN(8192U, inputStringLength);
+    unichar *resultCharacters = malloc(sizeof(*resultCharacters) * recodeBufferSize);
+    
+    /* The most common case is that we scan the whole buffer in one gulp. */
+    struct OFCharacterScanResult firstScan = OFScanCharactersIntoBuffer(recodeState, CFDataGetBytePtr(octets), octetCount, resultCharacters, recodeBufferSize);
+    if (firstScan.bytesConsumed == octetCount) {
+        NSString *immutableResult = [(id)CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, resultCharacters, firstScan.charactersProduced, kCFAllocatorMalloc) autorelease];
+        CFRelease(octets);
+        // resultCharacters owned by the result.
+        return immutableResult;
+    }
+    
+    /* General case. Append scanned characters to a buffer. */
+    CFMutableStringRef resultBuffer = CFStringCreateMutable(kCFAllocatorDefault, 0);
+    NSUInteger recodePosition = 0;
+    while (recodePosition < octetCount) {
         struct OFCharacterScanResult partialScan = OFScanCharactersIntoBuffer(recodeState,
                                                                               CFDataGetBytePtr(octets) + recodePosition,
                                                                               octetCount - recodePosition,
                                                                               resultCharacters,
                                                                               recodeBufferSize);
         
-        /* The most common case is that we scan the whole buffer in one gulp. */
-        if (immutableResult == nil && (partialScan.bytesConsumed == octetCount)) {
-            immutableResult = CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, resultCharacters, partialScan.charactersProduced, kCFAllocatorMalloc);
-            resultCharacters = NULL;
-            break;
-        }
-        
-        /* General case. Append scanned characters to a buffer. */
-        if (resultBuffer == nil)
-            resultBuffer = CFStringCreateMutable(kCFAllocatorDefault, 0);
         if (partialScan.charactersProduced > 0)
             CFStringAppendCharacters(resultBuffer, resultCharacters, partialScan.charactersProduced);
         recodePosition += partialScan.bytesConsumed;
@@ -502,17 +494,12 @@ extern NSString *OFMostlyApplyDeferredEncoding(NSString *str, CFStringEncoding n
     }
     
     CFRelease(octets);
-    if (resultCharacters)
-          free(resultCharacters);
+    free(resultCharacters);
     
-    if (immutableResult == NULL) {
-        immutableResult = CFStringCreateCopy(kCFAllocatorDefault, resultBuffer);
-        CFRelease(resultBuffer);
-    } else {
-        OBASSERT(resultBuffer == NULL);
-    }
+    NSString *immutableResult = [(id)CFStringCreateCopy(kCFAllocatorDefault, resultBuffer) autorelease];
+    CFRelease(resultBuffer);
           
-    return [(NSString *)immutableResult autorelease];
+    return immutableResult;
 }
 
 extern BOOL OFStringContainsDeferredEncodingCharacters(NSString *str)
@@ -526,7 +513,7 @@ extern BOOL OFStringContainsDeferredEncodingCharacters(NSString *str)
     if (stringLength == 0)
         return NO;
     if (CFStringFindCharacterFromSet((CFStringRef)str, OFDeferredDecodingCharacterSet(),
-                                     ((CFRange){location: 0, length:stringLength}), 0,
+                                     CFRangeMake(0, stringLength), 0/*options*/,
                                      &firstDeferredCharacter)) {
         return YES;
     }
@@ -539,7 +526,7 @@ static pthread_once_t once = PTHREAD_ONCE_INIT;
 static void createDeferredCharactersSet(void)
 {
     OBPRECONDITION(deferredCharactersSet_ == NULL);
-    deferredCharactersSet_ = CFCharacterSetCreateWithCharactersInRange(kCFAllocatorDefault, ((CFRange){ location: OFDeferredASCIISupersetBase, length: 256 }));
+    deferredCharactersSet_ = CFCharacterSetCreateWithCharactersInRange(kCFAllocatorDefault, CFRangeMake(OFDeferredASCIISupersetBase, 256));
 }
 
 __private_extern__ CFCharacterSetRef OFDeferredDecodingCharacterSet(void)

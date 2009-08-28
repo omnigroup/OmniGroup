@@ -38,7 +38,6 @@ OFAddScriptCommand.o:___rcs_id_hack
 OFAlias.o:___rcs_id_hack
 OFAutoreleasedMemory.o:___rcs_id_hack
 OFBTree.o:___rcs_id_hack
-OFBitField.o:___rcs_id_hack
 OFBulkBlockPool.o:___rcs_id_hack
 OFBundleRegistry.o:___rcs_id_hack
 OFBundledClass.o:___rcs_id_hack
@@ -86,7 +85,6 @@ OFMutableKnownKeyDictionary.o:___rcs_id_hack
 OFNull.o:___rcs_id_hack
 OFObject-Queue.o:___rcs_id_hack
 OFObject.o:___rcs_id_hack
-OFOid.o:___rcs_id_hack
 OFPoint.o:___rcs_id_hack
 OFPreference.o:___rcs_id_hack
 OFQueue.o:___rcs_id_hack
@@ -215,7 +213,6 @@ OFMatrix.o:+[OFMatrix initialize]
 OFMultipleNumberFormatter.o:+[OFMultipleNumberFormatter initialize]
 OFNull.o:+[OFNull initialize]
 OFObject.o:+[OFObject initialize]
-OFOid.o:+[OFOid initialize]
 OFPoint.o:+[OFPoint initialize]
 OFPreference.o:+[OFPreference initialize]
 OFQueueProcessor.o:+[OFQueueProcessor initialize]

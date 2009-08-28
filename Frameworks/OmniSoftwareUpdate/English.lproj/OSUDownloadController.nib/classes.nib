@@ -1,9 +1,18 @@
 {
     IBClasses = (
+        {CLASS = OSUFlippedView; LANGUAGE = ObjC; SUPERCLASS = NSView; }, 
+        {
+            ACTIONS = {checkForNewVersion = id; }; 
+            CLASS = NSApplication; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSResponder; 
+        }, 
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = NSObject; LANGUAGE = ObjC; }, 
         {
             ACTIONS = {
                 cancelAndClose = id; 
+                chooseDirectory = id; 
                 continueDownloadWithCredentials = id; 
                 installAndRelaunch = id; 
                 revealDownloadInFinder = id; 
@@ -11,15 +20,21 @@
             CLASS = OSUDownloadController; 
             LANGUAGE = ObjC; 
             OUTLETS = {
-                "_bottomView" = OSUFlippedView; 
+                "_bottomView" = NSView; 
                 "_credentialsView" = NSView; 
-                "_installView" = NSView; 
+                "_installBasicView" = NSView; 
+                "_installButtonsView" = NSView; 
+                "_installOptionsNoteView" = NSView; 
+                "_installOptionsView" = NSView; 
+                "_installViewCautionText" = NSTextField; 
+                "_installViewInstallButton" = NSButton; 
+                "_installViewMessageText" = NSTextField; 
+                "_installWarningView" = NSView; 
                 "_plainStatusView" = NSView; 
                 "_progressView" = NSView; 
             }; 
             SUPERCLASS = NSWindowController; 
-        }, 
-        {CLASS = OSUFlippedView; LANGUAGE = ObjC; SUPERCLASS = NSView; }
+        }
     ); 
     IBVersion = 1; 
 }

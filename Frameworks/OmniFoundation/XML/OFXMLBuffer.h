@@ -16,9 +16,13 @@ extern OFXMLBuffer OFXMLBufferCreate(void);
 extern void OFXMLBufferDestroy(OFXMLBuffer buf);
 
 extern void OFXMLBufferAppendString(OFXMLBuffer buf, CFStringRef str);
-extern void OFXMLBufferAppendASCIICString(OFXMLBuffer buf, const char *str);
+extern void OFXMLBufferAppendUTF8CString(OFXMLBuffer buf, const char *str);
+extern void OFXMLBufferAppendQuotedUTF8CString(OFXMLBuffer buf, const char *unquotedString);
+
+extern void OFXMLBufferAppendUTF8Bytes(OFXMLBuffer buf, const char *str, size_t byteCount);
 extern void OFXMLBufferAppendSpaces(OFXMLBuffer buf, CFIndex count);
 
-extern BOOL OFXMLBufferAppendUTF8Data(OFXMLBuffer buf, CFDataRef data, NSError **outError);
+extern void OFXMLBufferAppendUTF8Data(OFXMLBuffer buf, CFDataRef data);
 
 extern CFDataRef OFXMLBufferCopyData(OFXMLBuffer buf, CFStringEncoding encoding);
+extern CFStringRef OFXMLBufferCopyString(OFXMLBuffer buf);

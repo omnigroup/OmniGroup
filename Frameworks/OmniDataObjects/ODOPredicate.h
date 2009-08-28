@@ -72,7 +72,7 @@ typedef enum {
 - (void)appendDescription:(NSMutableString *)desc;
 @end
 
-@interface NSPredicate : OFObject
+@interface NSPredicate : OFObject <NSCopying>
 {
 }
 + (NSPredicate *)predicateWithValue:(BOOL)value;

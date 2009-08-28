@@ -134,8 +134,10 @@ static NSData *utf8(NSString *str)
         NSData *gzData = [data compressedDataWithGzipHeader:YES compressionLevel:levels[levelIndex]];
         should(gzData != nil);
 
-        NSData *gzipDecompressed = [gzData filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObjects:@"--decompress", @"--to-stdout", nil]];
+        NSError *fail = nil;
+        NSData *gzipDecompressed = [gzData filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObjects:@"--decompress", @"--to-stdout", nil] error:&fail];
         shouldBeEqual(data, gzipDecompressed);
+        should(fail == nil);
 
         NSData *decompressed = [gzData decompressedData];
         shouldBeEqual(data, decompressed);

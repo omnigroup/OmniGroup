@@ -16,33 +16,30 @@
 // Functions used as the comparison in an OFHeap should return NSOrderedAscending if
 // object1 should be above the heap as compared to object2.  That is, the 'least'
 // object will be returned from the heap first.
-typedef NSComparisonResult (*OFHeapComparisonFunction)(OFHeap *heap, void *userInfo, id object1, id object2);
+typedef NSComparisonResult (*OFHeapComparisonFunction)(OFHeap *heap, __strong void *userInfo, id object1, id object2);
 
 
 @interface OFHeap : OFObject
 {
-    id                        *_objects;
-    unsigned int               _count, _capacity;
-    OFHeapComparisonFunction   _comparisonFunction;
-    void                      *_userInfo;
+    __strong id *_objects;
+    NSUInteger _count, _capacity;
+    OFHeapComparisonFunction _comparisonFunction;
+    __strong void *_userInfo;
 }
 
-- initWithCapacity: (unsigned int)newCapacity
-   compareFunction: (OFHeapComparisonFunction) comparisonFunction
-          userInfo: (void *) userInfo;
+- initWithCapacity:(NSUInteger)newCapacity compareFunction:(OFHeapComparisonFunction)comparisonFunction userInfo:(__strong void *)userInfo;
 
-- initWithCapacity: (unsigned int)newCapacity
-   compareSelector: (SEL) comparisonSelector;
+- initWithCapacity:(NSUInteger)newCapacity compareSelector:(SEL)comparisonSelector;
 
-- (unsigned int) count;
+- (NSUInteger)count;
 
-- (void)addObject:(id) anObject;
+- (void)addObject:(id)anObject;
 
-- (id) removeObject;
-- (id) removeObjectLessThanObject: (id) object;
+- (id)removeObject;
+- (id)removeObjectLessThanObject:(id)object;
 
-- (void) removeAllObjects;
+- (void)removeAllObjects;
 
-- (id) peekObject;
+- (id)peekObject;
 
 @end

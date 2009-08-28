@@ -19,9 +19,23 @@ enum {
     OFCannotExchangeFileError,
     OFCannotUniqueFileNameError,
     
-    OFXMLDocumentLoadWarning,
+    OFXMLLibraryError, // An error from libxml; might be a warning, might be fatal.
     OFXMLDocumentNoRootElementError,
     OFXMLCannotCreateStringFromUnparsedData,
     
     OFInvalidHexDigit,
+    
+    OFXMLReaderCannotCreateInputStream,
+    OFXMLReaderCannotCreateXMLInputBuffer,
+    OFXMLReaderCannotCreateXMLReader,
+    OFXMLReaderUnexpectedNodeType,
+    
+    OFXMLSignatureValidationError,    // Signature information could not be parsed
+    OFXMLSignatureValidationFailure,  // Signature information could be parsed, but did not validate
+    OFASN1Error,                      // Problem parsing an ASN.1 BER or DER encoded value
 };
+
+
+// This key holds the exit status of a process which has exited
+#define OFProcessExitStatusErrorKey (@"OFExitStatus")
+#define OFProcessExitSignalErrorKey (@"OFExitSignal")

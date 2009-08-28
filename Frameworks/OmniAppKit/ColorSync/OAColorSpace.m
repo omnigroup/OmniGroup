@@ -820,5 +820,5 @@ static NSString *getProfileName(CMProfileRef p)
 
 @end
 
-NSString *OAColorSyncException = @"OAColorSyncException";
+NSString * const OAColorSyncException = @"OAColorSyncException";
 

@@ -1,4 +1,4 @@
-// Copyright 2005-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,13 +13,13 @@ RCS_ID("$Id$");
 
 typedef long long ofr_signed_wide;
 typedef unsigned long long ofr_unsigned_wide;
-#define OFR_WORKING_WIDTH (CHAR_BIT * sizeof(ofr_signed_wide) - 1)
+#define OFR_WORKING_WIDTH (unsigned int)(CHAR_BIT * sizeof(ofr_signed_wide) - 1)
 #define OFR_WORKING_MAX (ofr_signed_wide)((UINTMAX_C(1) << OFR_WORKING_WIDTH) - 1)
 #define OFR_DENOMINATOR_WIDTH (OFR_WORKING_WIDTH/2) /* A product must fit in an ofr_signed_wide */
-#define OFR_DENOMINATOR_MAX ( (INTMAX_C(1) << OFR_DENOMINATOR_WIDTH) - 1 )
+#define OFR_DENOMINATOR_MAX (ofr_component)( (INTMAX_C(1) << OFR_DENOMINATOR_WIDTH) - 1 )
 
-static void OFRationalFromParts(struct OFRationalNumberStruct *r, unsigned long numerator, unsigned long denominator, BOOL negative);
-static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_signed_wide numerator, ofr_signed_wide denominator, int exponent, BOOL negative);
+static void OFRationalFromParts(struct OFRationalNumberStruct *r, ofr_unsigned_wide numerator, ofr_unsigned_wide denominator, BOOL negative);
+static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_unsigned_wide numerator, ofr_unsigned_wide denominator, int exponent, BOOL negative);
 static BOOL OFRationalFromStringScanner(NSScanner *scan, struct OFRationalNumberStruct *n);
 
 struct OFRationalNumberStruct OFRationalFromRatio(int numerator, int denominator)
@@ -39,7 +39,7 @@ struct OFRationalNumberStruct OFRationalFromDouble(double d)
 
     int exponent;
     int mbits;
-    unsigned long m;
+    ofr_unsigned_wide m;
     struct OFRationalNumberStruct r;
     
     r.lop = 0;
@@ -247,7 +247,7 @@ static ofr_unsigned_wide ofr_gcd(ofr_unsigned_wide n, ofr_unsigned_wide m)
  This is one of those rare coincidences in which the obvious greedy algorithm also produces the correct result. I'm going to go celebrate!  [wim nov05]
 */
 
-static void ofr_reduce(ofr_signed_wide *p_, ofr_signed_wide *q_, ofr_signed_wide maxp, ofr_signed_wide maxq)
+static void ofr_reduce(ofr_unsigned_wide *p_, ofr_unsigned_wide *q_, ofr_signed_wide maxp, ofr_signed_wide maxq)
 {
     ofr_signed_wide p, pl, pr, q, ql, qr;
         
@@ -270,13 +270,16 @@ static void ofr_reduce(ofr_signed_wide *p_, ofr_signed_wide *q_, ofr_signed_wide
             ofr_signed_wide inv[2];
             ofr_ext_euclid(p, q, inv); // --> inv[0] * p + inv[1] * q == 1, but inv may be < 0
             if (inv[0] > 0) {
+                OBASSERT(inv[0] < q);
                 OBASSERT(inv[1] < 0);
                 ql = inv[0];
                 qr = q - inv[0];
                 pl = - inv[1];
                 pr = p + inv[1];
             } else {
+                OBASSERT(inv[0] < 0);
                 OBASSERT(inv[1] > 0);
+                OBASSERT(inv[1] < p);
                 ql = q + inv[0];
                 qr = - inv[0];
                 pl = p - inv[1];
@@ -314,21 +317,21 @@ static void ofr_reduce(ofr_signed_wide *p_, ofr_signed_wide *q_, ofr_signed_wide
     }
 }
 
-static void OFRationalFromParts(struct OFRationalNumberStruct *r, unsigned long numerator, unsigned long denominator, BOOL negative)
+static void OFRationalFromParts(struct OFRationalNumberStruct *r, ofr_unsigned_wide numerator, ofr_unsigned_wide denominator, BOOL negative)
 {
     OFRationalFromPartsExp(r, numerator, denominator, 0, negative);
 }
 
-static int ofr_width(ofr_unsigned_wide n)
+static unsigned int ofr_width(ofr_unsigned_wide n)
 {
     OBASSERT(n >= 0);
-    int shift = 0;
+    unsigned int shift = 0;
     
     for(;;) {
         if (n < INT_MAX)
             return shift + ffs((int)n);
         n >>= ( CHAR_BIT * sizeof(int) );
-        shift += ( CHAR_BIT * sizeof(int) );
+        shift += (unsigned int)( CHAR_BIT * sizeof(int) );
     }
 }
 
@@ -343,8 +346,8 @@ static BOOL OFRationalSpecialCases(struct OFRationalNumberStruct *r, ofr_unsigne
     
     if (denominator == 0) {
         /* Ugh, there's not much we can do here. */
-        r->numerator = numerator;
-        r->denominator = denominator;
+        r->numerator = ( numerator > OFR_DENOMINATOR_MAX )? OFR_DENOMINATOR_MAX : (ofr_component)numerator;
+        r->denominator = 0;
         r->negative = negative? 1:0;
         r->lop = 1;
         return YES;
@@ -353,10 +356,9 @@ static BOOL OFRationalSpecialCases(struct OFRationalNumberStruct *r, ofr_unsigne
     return NO;
 }
 
-static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_signed_wide numerator, ofr_signed_wide denominator, int exponent, BOOL negative)
+static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_unsigned_wide numerator, ofr_unsigned_wide denominator, int exponent, BOOL negative)
 {
     //NSLog(@"OFRationalFromPartsExp(%lld, %lld, %d, %s)", numerator, denominator, exponent, negative?"neg":"pos");
-    
     if (numerator < 0) {
         numerator = -numerator;
         negative = !negative;
@@ -365,7 +367,7 @@ static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_signed_
         denominator = -denominator;
         negative = !negative;
     }
-    
+
     if (OFRationalSpecialCases(r, numerator, denominator, negative))
         return;
     
@@ -384,7 +386,7 @@ static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_signed_
     denominator /= d;
     
     while(exponent != 0 || numerator > OFR_DENOMINATOR_MAX || denominator > OFR_DENOMINATOR_MAX) {
-        int numeratorWidth, denominatorWidth;
+        unsigned int numeratorWidth, denominatorWidth;
         numeratorWidth = ofr_width(numerator);
         denominatorWidth = ofr_width(denominator);
         //NSLog(@"Possibly reducing: n=%lld(%d) d=%lld(%d) exp=%d", numerator, numeratorWidth, denominator, denominatorWidth, exponent);
@@ -407,15 +409,16 @@ static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_signed_
             return;
     }
     
-    r->numerator = numerator;
-    r->denominator = denominator;
+    /* We know that both the numerator and the denominator are <= OFR_DENOMINATOR_MAX (that's the termination condition of the above loop), so this cast is safe. */
+    r->numerator = (ofr_component)numerator;
+    r->denominator = (ofr_component)denominator;
     r->negative = negative?1:0;
     /* r->lop is unchanged */
 }
 
 void OFRationalMAdd(struct OFRationalNumberStruct *a, struct OFRationalNumberStruct b, int c)
 {
-    unsigned long d, xa, xb;
+    ofr_unsigned_wide d, xa, xb;
     BOOL differencing;
     BOOL negate;
     
@@ -459,9 +462,9 @@ void OFRationalMAdd(struct OFRationalNumberStruct *a, struct OFRationalNumberStr
     xb = b.denominator / d;
     // TODO: Overflow / loss-of-precision
     
-    unsigned long m = a->denominator * xb;
-    unsigned long left = a->numerator * xb;
-    unsigned long right = b.numerator * xa * c;
+    ofr_unsigned_wide m = a->denominator * xb;
+    ofr_unsigned_wide left = a->numerator * xb;
+    ofr_unsigned_wide right = b.numerator * xa * c;
     if (differencing) {
         if (left > right)
             left -= right;
@@ -511,8 +514,8 @@ struct OFRationalNumberStruct OFRationalMultiply(struct OFRationalNumberStruct a
         return r;
     }
     
-    crossl = ofr_gcd(a.numerator, b.denominator);
-    crossr = ofr_gcd(a.denominator, b.numerator);
+    crossl = (ofr_component)ofr_gcd(a.numerator, b.denominator);
+    crossr = (ofr_component)ofr_gcd(a.denominator, b.numerator);
     if (crossl > 1) {
         a.numerator /= crossl;
         b.denominator /= crossl;
@@ -633,7 +636,7 @@ BOOL OFRationalFromStringForStorage(NSString *s, struct OFRationalNumberStruct *
 static BOOL OFRationalFromStringScanner(NSScanner *scan, struct OFRationalNumberStruct *n)
 {
     long long ll;
-    ofr_signed_wide numerator, denominator;
+    ofr_unsigned_wide numerator, denominator;
     int exponent;
     BOOL negative;
     
@@ -648,7 +651,12 @@ static BOOL OFRationalFromStringScanner(NSScanner *scan, struct OFRationalNumber
     
     if (![scan scanLongLong:&ll])
         return NO;
-    numerator = ll;
+    if (ll < 0) {
+        negative = !negative;
+        numerator = - ll;
+    } else {
+        numerator = ll;
+    }
     if ([scan scanString:@"!" intoString:NULL]) {
         if (![scan scanInt:&exponent])
             return NO;
@@ -658,7 +666,12 @@ static BOOL OFRationalFromStringScanner(NSScanner *scan, struct OFRationalNumber
     if ([scan scanString:@"/" intoString:NULL]) {
         if (![scan scanLongLong:&ll])
             return NO;
-        denominator = ll;
+        if (ll < 0) {
+            negative = !negative;
+            denominator = - ll;
+        } else {
+            denominator = ll;
+        }
     } else
         denominator = 1;
     OFRationalFromPartsExp(n, numerator, denominator, exponent, negative);    
@@ -671,14 +684,14 @@ void OFRationalRound(struct OFRationalNumberStruct *n, unsigned long max_denomin
     if (max_denominator < 2)
         max_denominator = 1;
     
-    ofr_signed_wide num = n->numerator;
-    ofr_signed_wide den = n->denominator;
+    ofr_unsigned_wide num = n->numerator;
+    ofr_unsigned_wide den = n->denominator;
     
     ofr_reduce(&num, &den, OFR_DENOMINATOR_MAX, max_denominator);
     
     // TODO: We know that num/den are rel. prime, so we don't really need to use the full OFRationalFromParts here
-    // NB: We know that num and den are less than or equal to max_denominator, which is an unsigned long, so it's safe to cast them to unsigned long
-    OFRationalFromParts(n, (unsigned long)num, (unsigned long)den, n->negative);
+    // NB: We know that num and den are less than or equal to OFR_DENOMINATOR_MAX, which is an unsigned long, so it's safe to cast them to unsigned long
+    OFRationalFromParts(n, num, den, n->negative);
 }
 
 #ifdef FAREY_TEST
@@ -712,7 +725,7 @@ int main(int argc, char **argv) {
 
 // Note that we don't actually have to override -alloc and -allocWithZone: in order to avoid NSNumber's placeholder goo: it checks the receiving class and behaves normally (calling NSAllocateObject()) if it's not NSNumber.
 
-- initWithBytes:(void *)rat objCType:(const char *)typeEncoding
+- initWithBytes:(const void *)rat objCType:(const char *)typeEncoding;
 {
     static const char * const rationalType = @encode(struct OFRationalNumberStruct);
     if (rationalType != typeEncoding && strcmp(rationalType, typeEncoding) != 0) {
@@ -887,7 +900,7 @@ int main(int argc, char **argv) {
     if (result.denominator == 1 && result.numerator < INT_MAX) {
         /* If it fits in an int, return it that way. */
         OBASSERT(!result.lop);
-        return [NSNumber numberWithInt: result.negative? -result.numerator : result.numerator];
+        return [NSNumber numberWithInteger: result.negative? -result.numerator : result.numerator];
     }
     
     return [NSNumber numberWithRatio:result];

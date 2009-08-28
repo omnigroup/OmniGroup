@@ -1,0 +1,15 @@
+// Copyright 2005-2009 Omni Development, Inc.  All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings
+#include "Omni-Global-Common.xcconfig"
+
+// Common settings for Coverage configurations
+OTHER_CFLAGS = -fprofile-arcs -ftest-coverage $(value)
+OTHER_LDFLAGS = -lgcov
+GCC_PREPROCESSOR_DEFINITIONS = COVERAGE
+
+// If you are doing coverage for link-order optimization, you'd want optimization to match that of the release build.  Otherwise, you might want unoptimized to be able to see the basic blocks in more detail.
+GCC_OPTIMIZATION_LEVEL = 2
+GCC_WARN_UNINITIALIZED_AUTOS = YES

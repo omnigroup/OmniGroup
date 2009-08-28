@@ -16,11 +16,18 @@
 {
     IBOutlet NSWindow *window;
     IBOutlet NSTextField *bundleIdentifierField;
+    IBOutlet NSPopUpButton *licenseStatePopUp;
     IBOutlet NSTextField *marketingVersionField;
     IBOutlet NSTextField *buildVersionField;
     IBOutlet NSTextField *systemVersionField;
     IBOutlet NSTextView *visibleTracksTextView;
+    
+    IBOutlet NSTextField *urlPromptField;
 }
+
+- (IBAction)forceInstall:sender;
+- (IBAction)acceptURL:sender;
+- (IBAction)changeLicenseState:sender;
 
 @end
 

@@ -209,6 +209,7 @@ RCS_ID("$Id$");
     
     OBShouldNotError([@"tomato" writeToFile:[workingDir stringByAppendingPathComponent:@"vegetable.txt"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
     ok = [fm replaceFileAtPath:[otherworking stringByAppendingPathComponent:@"layer1.txt"] withFileAtPath:[workingDir stringByAppendingPathComponent:@"layer1.txt"] error:NULL];
+    STAssertTrue(ok, @"exchangeFileAtPath:...", nil);
     
     sh = [NSString stringWithFormat:@"hdiutil detach '/Volumes/%@' -force", volname];
     rv = system([sh UTF8String]);

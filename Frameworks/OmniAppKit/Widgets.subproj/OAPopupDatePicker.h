@@ -16,8 +16,12 @@
 @class /* OmniAppKit     */ OADatePicker;
 
 @interface OAPopupDatePicker : NSWindowController
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+<NSWindowDelegate>
+#endif
 {
     id _datePickerObjectValue;
+    id _datePickerOriginalValue;
     
     id _boundObject;
     id _boundObjectKeyPath;
@@ -26,7 +30,7 @@
     NSFormatter *_controlFormatter;
     SEL _stringUpdateSelector;
     
-    BOOL _noDateOnEscape;
+    BOOL _startedWithNilDate;
     
     IBOutlet OADatePicker *datePicker;
     IBOutlet NSDatePicker *timePicker;
@@ -42,13 +46,12 @@
 - (void)setCalendar:(NSCalendar *)calendar;
 
 - (void)startPickingDateWithTitle:(NSString *)title forControl:(NSControl *)aControl stringUpdateSelector:(SEL)stringUpdateSelector defaultDate:(NSDate *)defaultDate;
-- (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter stringUpdateSelector:(SEL)stringUpdateSelector noDateOnEscape:(BOOL)noDateOnEscape defaultDate:(NSDate *)defaultDate;
+- (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter stringUpdateSelector:(SEL)stringUpdateSelector defaultDate:(NSDate *)defaultDate;
 
 - (id)destinationObject;
 - (NSString *)bindingKeyPath;
 
 - (void)clearIfNotClicked;
-- (BOOL)noDateOnEscape;
 - (BOOL)isKey;
 - (void)close;
 

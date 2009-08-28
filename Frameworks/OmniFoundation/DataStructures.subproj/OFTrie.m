@@ -23,7 +23,7 @@ RCS_ID("$Id$")
     if (![super init])
         return nil;
 
-    head = [[OFTrieNode allocWithZone:[self zone]] init];
+    head = [[OFTrieNode alloc] init];
     caseSensitive = shouldBeCaseSensitive;
 
     return self;
@@ -51,24 +51,20 @@ RCS_ID("$Id$")
 
 - (void)addBucket:(OFTrieBucket *)bucket forString:(NSString *)aString;
 {
-    unsigned int length;
-    unichar *buffer, *upperBuffer, *ptr;
     OFTrieNode *to, *attachTo = head;
-    Class trieNodeClass;
-    unsigned int bufferSize;
-    BOOL useMalloc;
+    unichar *buffer, *upperBuffer, *ptr;
 
-    length = [aString length];
-    bufferSize = (length + 1) * sizeof(unichar);
-    useMalloc = bufferSize * 2 >= SAFE_ALLOCA_SIZE;
+    NSUInteger length = [aString length];
+    NSUInteger bufferSize = (length + 1) * sizeof(unichar);
+    BOOL useMalloc = bufferSize * 2 >= SAFE_ALLOCA_SIZE;
     if (useMalloc) {
-	buffer = (unichar *)NSZoneMalloc(NULL, bufferSize);
+	buffer = (unichar *)malloc(bufferSize);
     } else {
         buffer = (unichar *)alloca(bufferSize);
     }
     if (!caseSensitive) {
         if (useMalloc) {
-            upperBuffer = (unichar *)NSZoneMalloc(NULL, bufferSize);
+            upperBuffer = (unichar *)malloc(bufferSize);
         } else {
             upperBuffer = (unichar *)alloca(bufferSize);
         }
@@ -90,7 +86,7 @@ RCS_ID("$Id$")
     }
     [aString getCharacters:buffer];
     buffer[length] = '\0';
-    trieNodeClass = ((OFTrie *)head)->isa;
+    Class trieNodeClass = ((OFTrie *)head)->isa;
     if (head->childCount != 0) {
 	while ((to = trieFindChild(attachTo, *ptr))) {
             if (((OFTrie *)to)->isa != trieNodeClass) {
@@ -109,7 +105,7 @@ RCS_ID("$Id$")
 		do {
                     OFTrieNode *new;
 
-                    new = [[OFTrieNode allocWithZone:[end zone]] init];
+                    new = [[OFTrieNode alloc] init];
 		    [end addChild:new withCharacter:*ptr];
                     if (!caseSensitive)
                         [end addChild:new withCharacter:upperBuffer[ptr - buffer]];
@@ -120,11 +116,11 @@ RCS_ID("$Id$")
 		} while (*ptr && *ptr == *existingPtr);
 
 		if (*existingPtr || *ptr) {
-                    unsigned int offset;
+                    NSUInteger offset;
 
                     offset = existingPtr - existingBucket->lowerCharacters;
 		    if (*existingPtr) {
-                        unsigned int existingLength;
+                        NSUInteger existingLength;
 
 			[end addChild:existingBucket withCharacter:*existingPtr];
                         if (!caseSensitive)
@@ -162,27 +158,26 @@ RCS_ID("$Id$")
     }
 
     if (useMalloc) {
-	NSZoneFree(NULL, buffer);
+	free(buffer);
         if (!caseSensitive)
-            NSZoneFree(NULL, upperBuffer);
+            free(upperBuffer);
     }
 }
 
 - (OFTrieBucket *)bucketForString:(NSString *)aString;
 {
-    unsigned int length;
     unichar *buffer, *ptr;
     OFTrieNode *currentNode;
     Class trieNodeClass;
-    BOOL useMalloc;
+    ;
 
     if (head->childCount == 0)
 	return nil;
 
-    length = [aString length];
-    useMalloc = (length + 1) * sizeof(*buffer) >= SAFE_ALLOCA_SIZE;
+    NSUInteger length = [aString length];
+    BOOL useMalloc = (length + 1) * sizeof(*buffer) >= SAFE_ALLOCA_SIZE;
     if (useMalloc)
-	buffer = (unichar *)NSZoneMalloc(NULL, (length + 1) * sizeof(*buffer));
+	buffer = (unichar *)malloc((length + 1) * sizeof(*buffer));
     else
 	buffer = (unichar *)alloca((length + 1) * sizeof(*buffer));
     [aString getCharacters:buffer];
@@ -200,7 +195,7 @@ RCS_ID("$Id$")
 	    upperPtr = test->upperCharacters;
 	    if (!ptr[-1] && !*lowerPtr) {
 		if (useMalloc)
-		    NSZoneFree(NULL, buffer);
+		    free(buffer);
 		return test;
 	    }
 	    while (*ptr) {
@@ -209,12 +204,12 @@ RCS_ID("$Id$")
 		lowerPtr++, upperPtr++, ptr++;
 	    }
 	    if (useMalloc)
-		NSZoneFree(NULL, buffer);
+		free(buffer);
 	    return *lowerPtr ? nil : test;
 	}
     }
     if (useMalloc)
-	NSZoneFree(NULL, buffer);
+	free(buffer);
     return nil;
 }
 

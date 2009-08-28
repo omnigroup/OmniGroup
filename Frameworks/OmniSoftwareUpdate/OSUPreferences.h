@@ -1,4 +1,4 @@
-// Copyright 2001-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2006,2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniAppKit/OAPreferenceClient.h>
 
+@class OSUItem;
 @class NSButton, NSPopUpButton, NSTextField, NSTextView;
 @class WebView;
 
@@ -26,6 +27,10 @@
 + (OFPreference *)automaticSoftwareUpdateCheckEnabled;
 + (OFPreference *)checkInterval;
 + (OFPreference *)includeHardwareDetails;
++ (OFPreference *)ignoredUpdates;
+
++ (void)setItem:(OSUItem *)anItem isIgnored:(BOOL)shouldBeIgnored;
++ (BOOL)itemIsIgnored:(OSUItem *)anItem;
 
 - (IBAction)checkNow:(id)sender;
 - (IBAction)showSystemConfigurationDetailsSheet:(id)sender;

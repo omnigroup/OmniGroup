@@ -55,6 +55,7 @@
 - (unsigned int) unsignedIntValue;
 - (float) floatValue;
 - (BOOL) boolValue;
+- (NSArray *) stringArrayValue;
 - (int) enumeratedValue;
 
 - (void) setObjectValue: (id) value;

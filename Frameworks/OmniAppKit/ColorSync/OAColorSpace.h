@@ -8,7 +8,6 @@
 // $Id$
 
 #import <AppKit/NSColor.h>
-#import <OmniAppKit/FrameworkDefines.h>
 #import <ApplicationServices/ApplicationServices.h>
 
 @interface OAColorSpace : NSObject <NSCoding>
@@ -65,6 +64,6 @@
 
 @end
 
-OmniAppKit_EXTERN NSString *OAColorSyncException;
+extern NSString * const OAColorSyncException;
 
 

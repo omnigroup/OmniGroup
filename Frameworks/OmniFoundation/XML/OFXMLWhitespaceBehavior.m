@@ -13,6 +13,16 @@ RCS_ID("$Id$");
 
 @implementation OFXMLWhitespaceBehavior
 
++ (OFXMLWhitespaceBehavior *)autoWhitespaceBehavior;
+{
+    static OFXMLWhitespaceBehavior *whitespace = nil;
+    
+    if (!whitespace)
+        whitespace = [[OFXMLWhitespaceBehavior alloc] initWithDefaultBehavior:OFXMLWhitespaceBehaviorTypeAuto];
+    
+    return whitespace;
+}
+
 + (OFXMLWhitespaceBehavior *)ignoreWhitespaceBehavior;
 {
     static OFXMLWhitespaceBehavior *whitespace = nil;

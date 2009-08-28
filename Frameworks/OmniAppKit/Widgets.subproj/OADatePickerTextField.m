@@ -20,7 +20,7 @@ RCS_ID("$Id$");
 static NSString * const DefaultDateBinding = @"defaultDateBinding";
 
 @interface OADatePickerTextField (Private)
-- (id)_datePickerTextFieldPostInit;
+- (id)_initDatePickerTextFieldPost;
 - (void)_toggleDatePicker;
 @end
 
@@ -38,14 +38,14 @@ static NSString * const DefaultDateBinding = @"defaultDateBinding";
 {
     if ([super initWithFrame:frameRect] == nil)
         return nil;
-    return [self _datePickerTextFieldPostInit];
+    return [self _initDatePickerTextFieldPost];
 }
 
 - (id)initWithCoder:(NSCoder *)aDecoder;
 {
     if ([super initWithCoder:aDecoder] == nil)
         return nil;
-    return [self _datePickerTextFieldPostInit];
+    return [self _initDatePickerTextFieldPost];
 }
 
 - (void)dealloc;
@@ -191,7 +191,7 @@ static NSString * const DefaultDateBinding = @"defaultDateBinding";
 
 @implementation OADatePickerTextField (Private)
 
-- (id)_datePickerTextFieldPostInit;
+- (id)_initDatePickerTextFieldPost;
 {
     if (!calendarButton) {
 	calendarButton = [OAPopupDatePicker newCalendarButton];

@@ -9,6 +9,9 @@
 
 RCS_ID("$Id$")
 
+#import <OmniDataObjects/ODOModel-Creation.h>
+#import "ODOProperty-Internal.h"
+
 @implementation ODOAttribute
 
 - (void)dealloc;
@@ -34,6 +37,8 @@ RCS_ID("$Id$")
     return _valueClass;
 }
 
+@synthesize isPrimaryKey = _isPrimaryKey;
+
 #pragma mark -
 #pragma mark Debugging
 
@@ -48,13 +53,7 @@ RCS_ID("$Id$")
 }
 #endif
 
-@end
-
-#import "ODOAttribute-Internal.h"
-#import "ODOProperty-Internal.h"
-#import <OmniDataObjects/ODOModel-Creation.h>
-
-@implementation ODOAttribute (Internal)
+#pragma mark ODOModel creation
 
 // No validation is done for non-DEBUG builds.  The Ruby generator is expected to have done it.
 ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL transient, SEL get, SEL set,
@@ -83,11 +82,6 @@ ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL transient, 
     attr->_defaultValue = [defaultValue copy];
     
     return attr;
-}
-
-- (BOOL)isPrimaryKey;
-{
-    return _isPrimaryKey;
 }
 
 @end

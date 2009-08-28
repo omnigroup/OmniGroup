@@ -16,6 +16,9 @@
 @class OAPreferencesMultipleIconView;
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+#import <AppKit/NSToolbar.h>
+#endif
 
 typedef enum OAPreferencesViewStyle {
         OAPreferencesViewSingle = 0, // one client, so no navigation bar
@@ -24,6 +27,9 @@ typedef enum OAPreferencesViewStyle {
 } OAPreferencesViewStyle;
 
 @interface OAPreferenceController : OFObject
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+<NSToolbarDelegate>
+#endif
 {
     IBOutlet OAPreferencesWindow *window;
     IBOutlet NSBox *preferenceBox;

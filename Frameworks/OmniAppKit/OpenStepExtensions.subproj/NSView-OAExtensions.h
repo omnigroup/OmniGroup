@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,11 @@
 @class NSBitmapImageRep, NSFont;
 
 @interface NSView (OAExtensions)
+
+// Snapping to base coordinates.
+- (NSPoint)floorSnappedPoint:(NSPoint)point;
+- (NSSize)floorSnappedSize:(NSSize)size;
+- (NSRect)floorSnappedRect:(NSRect)rect;
 
 // Drawing
 + (void)drawRoundedRect:(NSRect)rect cornerRadius:(float)radius color:(NSColor *)color isFilled:(BOOL)isFilled;
@@ -55,6 +60,7 @@
 
 // Finding views
 - anyViewOfClass:(Class)cls;
+- (NSView *)lastChildKeyView;
 
 // Dragging
 - (BOOL)shouldStartDragFromMouseDownEvent:(NSEvent *)event dragSlop:(float)dragSlop finalEvent:(NSEvent **)finalEventPointer timeoutDate:(NSDate *)timeoutDate;
@@ -64,6 +70,9 @@
 // Transforms
 - (NSAffineTransformStruct)transformToView:(NSView *)otherView;
 - (NSAffineTransformStruct)transformFromView:(NSView *)otherView;
+
+// A convenience method for animating layout
+- (NSMutableArray *)animationsToStackSubviews:(NSArray *)newContent finalFrameSize:(NSSize *)outNewFrameSize;
 
 // Debugging
 - (void)logViewHierarchy;

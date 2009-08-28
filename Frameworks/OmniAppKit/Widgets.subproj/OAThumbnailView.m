@@ -65,12 +65,9 @@ static NSFont *labelFont = nil;
 
 - (void)setFrameSize:(NSSize)_newSize
 {
-    NSRect		superBounds;
-    
     [self getMaximumThumbnailSize];
 
-    superBounds = NSZeroRect;
-    superBounds = [[self superview] bounds];
+    NSRect superBounds = [[self superview] bounds];
      
     cellSize.width = padding.width * 2 + maximumThumbnailSize.width;
     cellSize.height = padding.height * 2 + maximumThumbnailSize.height;

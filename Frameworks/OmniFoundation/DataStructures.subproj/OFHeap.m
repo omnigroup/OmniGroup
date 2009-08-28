@@ -10,46 +10,42 @@
 RCS_ID("$Id$")
 
 // In this case, the userInfo is the selector
-static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, void *userInfo, id object1, id object2)
+static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, __strong void *userInfo, id object1, id object2)
 {
     return (NSComparisonResult)objc_msgSend(object1, (SEL)userInfo, object2);
 }
                                                   
 @implementation OFHeap
 
-- initWithCapacity: (unsigned int)newCapacity
-   compareFunction: (OFHeapComparisonFunction) comparisonFunction
-          userInfo: (void *) userInfo;
+- initWithCapacity:(NSUInteger)newCapacity compareFunction:(OFHeapComparisonFunction)comparisonFunction userInfo:(__strong void *)userInfo;
 {
-    if ([super init] == nil)
+    if (!(self == [super init]))
         return nil;
 
     _capacity = newCapacity ? newCapacity : 4;
-    _count    = 0;
-    _objects  = (id *)NSZoneMalloc([self zone], sizeof(_objects) * _capacity);
+    _count = 0;
+    _objects = (__strong id *)NSAllocateCollectable(sizeof(_objects) * _capacity, NSScannedOption);
     
     _comparisonFunction = comparisonFunction;
-    _userInfo           = userInfo;
+    _userInfo = userInfo;
     
     return self;
 }
 
-- initWithCapacity: (unsigned int)newCapacity
-   compareSelector: (SEL) comparisonSelector;
+- initWithCapacity:(NSUInteger)newCapacity compareSelector:(SEL) comparisonSelector;
 {
-    return [self initWithCapacity: newCapacity
-                  compareFunction: OFHeapCompareBySelector
-                         userInfo: comparisonSelector];
+    return [self initWithCapacity:newCapacity compareFunction:OFHeapCompareBySelector userInfo:comparisonSelector];
 }
 
 - (void) dealloc;
 {
     [self removeAllObjects];
-    NSZoneFree(NULL, _objects);
+    if (_objects)
+        free(_objects);
     [super dealloc];
 }
 
-- (unsigned int) count;
+- (NSUInteger) count;
 {
     return _count;
 }
@@ -60,13 +56,13 @@ static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, void *userInfo, 
 #define LEFTCHILD(a)  ((a << 1) + 1)
 #define RIGHTCHILD(a) ((a << 1) + 2)
 
-- (void)addObject:(id) anObject;
+- (void)addObject:(id)anObject;
 {
-    unsigned int                upFrom, upTo;
+    NSUInteger upFrom, upTo;
 
     if (_count == _capacity) {
         _capacity <<= 1;
-        _objects = (id *)NSZoneRealloc([self zone], _objects, sizeof(*_objects) * _capacity);
+        _objects = (__strong id *)NSReallocateCollectable(_objects, sizeof(*_objects) * _capacity, NSScannedOption);
     }
 
     _objects[_count] = [anObject retain];
@@ -86,10 +82,10 @@ static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, void *userInfo, 
     _count++;
 }
 
-- (id) removeObject;
+- (id)removeObject;
 {
-    unsigned int root, left, right, swapWith;
-    id           result;
+    NSUInteger root, left, right, swapWith;
+    id result;
 
     if (!_count)
 	return nil;
@@ -112,7 +108,7 @@ static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, void *userInfo, 
     return [result autorelease];
 }
 
-- (id) removeObjectLessThanObject: (id) object;
+- (id)removeObjectLessThanObject:(id)object;
 {
     if (_comparisonFunction(self, _userInfo, _objects[0], object) == NSOrderedAscending)
 	return [self removeObject];
@@ -120,7 +116,7 @@ static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, void *userInfo, 
 	return nil;
 }
 
-- (void) removeAllObjects;
+- (void)removeAllObjects;
 {
     while (_count--)
         [_objects[_count] release];
@@ -129,24 +125,19 @@ static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, void *userInfo, 
     _count = 0;
 }
 
-- (id) peekObject;
+- (id)peekObject;
 {
     if (_count)
         return _objects[0];
-    else
-	return nil;
+    return nil;
 }
 
-- (NSMutableDictionary *) debugDictionary;
+- (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *dict;
-    unsigned int         i;
-    NSMutableArray      *objectDescriptions;
+    NSMutableDictionary *dict = [super debugDictionary];
+    NSMutableArray *objectDescriptions = [[NSMutableArray alloc] init];
 
-    dict = [super debugDictionary];
-    objectDescriptions = [[NSMutableArray alloc] init];
-
-    for (i = 0; i < _count; i++)
+    for (NSUInteger i = 0; i < _count; i++)
         [objectDescriptions addObject: [_objects[i] debugDictionary]];
     [dict setObject: objectDescriptions forKey: @"objects"];
     [objectDescriptions release];

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,8 @@
 
 #import <AppKit/NSImage.h>
 #import <AppKit/NSCell.h>  // For NSControlTint
-#import <OmniBase/OBUtilities.h> // For OB_DEPRECATED_ATTRIBUTE
+
+@class CIImage, CIContext;
 
 #define OAAquaImageTintSuffix      (@"Aqua")
 #define OAGraphiteImageTintSuffix  (@"Graphite")
@@ -17,11 +18,6 @@
 
 @class /* Foundation     */ NSMutableSet;
 @class /* OmniFoundation */ OFEnumNameTable;
-
-@interface NSImage (OAImageExtensions)
-// This method doesn't work, and can't work, since it will only ever look for the image in NSImage's bundle, that is, AppKit.
-+ (NSImage *)imageInClassBundleNamed:(NSString *)imageName OB_DEPRECATED_ATTRIBUTE;
-@end
 
 @interface NSImage (OAExtensions)
 
@@ -54,10 +50,8 @@
 
 - (NSImage *)scaledImageOfSize:(NSSize)aSize;
 
-#ifdef MAC_OS_X_VERSION_10_2 && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_2
 - (NSData *)bmpData;
 - (NSData *)bmpDataWithBackgroundColor:(NSColor *)backgroundColor;
-#endif
 
 - (NSData *)pngData;
 
@@ -81,16 +75,9 @@
 // For storing image tints
 + (OFEnumNameTable *)tintNameEnumeration;
 
-@end
+// CoreImage
 
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
-@class CIImage, CIContext;
-
-@interface NSImage (OACoreImageExtensions)
-
-    // Returns a CIImage containing this NSImage. If there is a NSCIImageRep or NSBitmapImageRep in the image, it will be used; otherwise the image will be rendered into a CGLayer and a CIImage created from that.
+// Returns a CIImage containing this NSImage. If there is a NSCIImageRep or NSBitmapImageRep in the image, it will be used; otherwise the image will be rendered into a CGLayer and a CIImage created from that.
 - (CIImage *)ciImageForContext:(CIContext *)ctxt;
 
 @end
-#endif
-

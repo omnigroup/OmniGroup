@@ -1,4 +1,4 @@
-// Copyright 2005-2006, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2006, 2008-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,10 @@
 
 #import <Foundation/NSValue.h>
 
+typedef unsigned long ofr_component;
+
 struct OFRationalNumberStruct {
-    unsigned long numerator, denominator;    
+    ofr_component numerator, denominator;    
     unsigned short negative: 1;
     unsigned short lop: 1;
 };
@@ -37,7 +39,7 @@ struct OFRationalNumberStruct OFRationalInverse(struct OFRationalNumberStruct n)
 BOOL OFRationalIsEqual(struct OFRationalNumberStruct a, struct OFRationalNumberStruct b);
 NSComparisonResult OFRationalCompare(struct OFRationalNumberStruct a, struct OFRationalNumberStruct b);
 BOOL OFRationalIsWellFormed(struct OFRationalNumberStruct n);
-void OFRationalRound(struct OFRationalNumberStruct *n, unsigned long max_denominator);
+void OFRationalRound(struct OFRationalNumberStruct *n, ofr_component max_denominator);
 
 @interface OFRationalNumber : NSNumber
 {

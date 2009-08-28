@@ -167,6 +167,11 @@ static void addIfMatchesPredicateFunction(const void *value, const void *sequenc
         [self removeObject:[toRemove objectAtIndex:objectIndex]];
 }
 
+- (void)removeAllObjects;
+{
+    [self removeObjectsInArray:[self allObjects]];
+}
+
 static NSComparisonResult compareSequence(id obj1, id obj2, void *context)
 {
     Boolean exists1, exists2;

@@ -16,6 +16,7 @@ RCS_ID("$Id$");
 @implementation NSToolbar (OAExtensions)
 
 // Get rid of these terrible hacks
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
 // We could optimize this code to cache the resolved ivars and offsets, but first we should check to make sure we still need to be mucking with private instance variables.
 
 - (NSWindow *)window;
@@ -77,6 +78,7 @@ static struct __tbFlags *getPrivateToolbarFlags(NSToolbar *tb)
     if (anIndex <= [[self items] count])
         getPrivateToolbarFlags(self)->firstMoveableItemIndex = anIndex;
 }
+#endif
 
 - (NSUInteger)indexOfFirstItemWithIdentifier:(NSString *)identifier;
 {

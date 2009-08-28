@@ -114,9 +114,18 @@ module OmniDataObjects
       
       func = "#{name}Model"
       fp.br
+
       fp.h << "@class ODOModel;\n"
       fp.h << "extern ODOModel *#{func}(void);\n"
+
+      # Disable clang scan-build in the model creation function.  We allocate a bunch of stuff and don't bother releasing it since we intend for it to stick around anyway.
+      fp.m << "#ifdef __clang__\n"
+      fp.m << "static void DisableAnalysis(void) __attribute__((analyzer_noreturn));\n"
+      fp.m << "#endif\n"
+      fp.m << "static void DisableAnalysis(void) {}\n\n"
+      
       fp.m << "ODOModel * #{func}(void)\n{\n"
+      fp.m << "    DisableAnalysis();\n\n"
       fp.m << "    static ODOModel *model = nil;\n"
       fp.m << "    if (model) return model;\n\n"
       

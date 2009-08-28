@@ -45,6 +45,8 @@
 
 - (void)awakeFromInsert;
 - (void)awakeFromFetch;
+- (void)awakeFromUnarchive; // Never called by the framework; for subclasses and apps that implement archiving
+
 - (ODOEntity *)entity; // do not subclass
 - (ODOEditingContext *)editingContext; // do not subclass
 - (ODOObjectID *)objectID; // do not subclass

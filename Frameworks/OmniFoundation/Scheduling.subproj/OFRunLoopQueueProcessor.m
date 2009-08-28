@@ -18,6 +18,9 @@
 RCS_ID("$Id$")
 
 @interface OFRunLoopQueueProcessor ()
+#if defined(MAC_OS_X_VERSION_10_6) && MAC_OS_X_VERSION_10_6 >= MAC_OS_X_VERSION_MIN_REQUIRED
+<NSPortDelegate>
+#endif
 - (void)handlePortMessage:(NSPortMessage *)message;
 @end
 

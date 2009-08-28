@@ -161,16 +161,12 @@ static NSString *hexPairInserter(NSString *string, NSRange *defRange, void *cont
 
 - (NSData *)dataUsingCFEncoding:(CFStringEncoding)anEncoding allowLossyConversion:(BOOL)lossy hexEscapes:(NSString *)escapePrefix;
 {
-    unsigned int stringLength;
-    NSMutableData *buffer;
-    NSRange remaining;
-    
-    stringLength = [self length];
+    unsigned int stringLength = [self length];
     if (stringLength == 0)
         return [NSData data];
     
-    buffer = nil;
-    remaining = (NSRange){ location: 0, length: stringLength };
+    NSMutableData *buffer = nil;
+    NSRange remaining = NSMakeRange(0, stringLength);
     while (remaining.length > 0) {
         NSRange prefix;
         CFRange escapelessRange;

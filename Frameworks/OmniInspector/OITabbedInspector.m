@@ -164,7 +164,8 @@ RCS_ID("$Id$")
     if (duringMouseDown) {
         int partial = [prefix length];
         [windowTitleAttributedstring setAttributes:textAttributes range:NSMakeRange(0, partial)];
-        NSDictionary *italicAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[NSFont userFontOfSize:[NSFont labelFontSize]] toHaveTrait:NSItalicFontMask], NSFontAttributeName, nil];
+	// Apparently NSFont's +systemFontOfSize: does not have an italic variant.  So I'm just using Lucida Sans.  +userFontOfSize: is not a good option because the userFont can be changed for other reasons by apps.
+        NSDictionary *italicAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[[NSFontManager sharedFontManager] convertFont:[NSFont systemFontOfSize:[NSFont labelFontSize]] toFamily:@"Helvetica"] toHaveTrait:NSItalicFontMask], NSFontAttributeName, nil];
         [windowTitleAttributedstring setAttributes:italicAttributes range:NSMakeRange(partial, [[windowTitleAttributedstring string] length] - partial)];
     } else {
         [windowTitleAttributedstring setAttributes:textAttributes range:NSMakeRange(0, [[windowTitleAttributedstring string] length])];
@@ -430,6 +431,8 @@ RCS_ID("$Id$")
     
     NSMutableArray *newTabControllers = [[NSMutableArray alloc] initWithArray:_tabControllers];
     [newTabControllers insertObject:tabController inArraySortedUsingFunction:sortByDefaultDisplayOrderInGroup context:NULL];
+    [tabController release];
+    
     [_tabControllers release];
     _tabControllers = [[NSArray alloc] initWithArray:newTabControllers];
     [newTabControllers release];

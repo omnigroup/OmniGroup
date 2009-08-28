@@ -47,12 +47,12 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return OIVisibilityStateNameTable;
 }
 
-//+ createInspectorWithDictionary:(NSDictionary *)dict;
+//+ newInspectorWithDictionary:(NSDictionary *)dict;
 //{
-//    return [self createInspectorWithDictionary:dict bundle:nil];
+//    return [self newInspectorWithDictionary:dict bundle:nil];
 //}
 
-+ createInspectorWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
++ newInspectorWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
 {
     // Do the OS version check before allocating an instance
     NSString *minimumOSVersionString = [dict objectForKey:@"minimumOSVersion"];

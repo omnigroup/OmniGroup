@@ -22,6 +22,15 @@ RCS_ID("$Id$")
 
 @implementation OFRegularExpressionMatch
 
+- (void)dealloc;
+{
+    [expression release];
+    [scanner release];
+    if (subExpressionMatches)
+        NSZoneFree([self zone], subExpressionMatches);
+    [super dealloc];
+}
+
 - (NSRange)matchRange;
 {
     return matchRange;
@@ -121,15 +130,6 @@ RCS_ID("$Id$")
         return nil;
     }
     return self;
-}
-
-- (void)dealloc;
-{
-    [expression release];
-    [scanner release];
-    if (subExpressionMatches)
-        NSZoneFree([self zone], subExpressionMatches);
-    [super dealloc];
 }
 
 @end

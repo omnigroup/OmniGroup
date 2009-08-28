@@ -7,8 +7,6 @@
 
 #import "OAConstructionTimeView.h"
 
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
-
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
@@ -66,5 +64,3 @@ RCS_ID("$Id$");
 }
 
 @end
-
-#endif

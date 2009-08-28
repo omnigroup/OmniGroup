@@ -10,6 +10,7 @@
 #import <OmniDataObjects/ODOEntity.h>
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOObjectID.h>
+#import <OmniDataObjects/ODOModel.h>
 
 #import "ODOObject-Internal.h"
 #import "ODOProperty-Internal.h"
@@ -398,7 +399,7 @@ void ODOSetterForUnknownOffset(ODOObject *self, SEL _cmd, id value)
     ODODynamicSetValueForProperty(self, _cmd, prop, value);
 }
 
-ODOPropertyGetter ODOGetterForSelector(ODOProperty *prop)
+ODOPropertyGetter ODOGetterForProperty(ODOProperty *prop)
 {
     unsigned int snapshotIndex = ODOPropertySnapshotIndex(prop);
     if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX)
@@ -422,7 +423,7 @@ ODOPropertyGetter ODOGetterForSelector(ODOProperty *prop)
     return ODOGetterForUnknownOffset;
 }
 
-ODOPropertySetter ODOSetterForSelector(ODOProperty *prop)
+ODOPropertySetter ODOSetterForProperty(ODOProperty *prop)
 {
     // Generic property setter; for now we aren't doing specific-index setters (we are already a little faster than CoreData here, but we could still add them if it ends up showing up on a profile).
     return ODOSetterForUnknownOffset;
@@ -441,3 +442,33 @@ void ODOObjectSetInternalValueForProperty(ODOObject *self, id value, ODOProperty
     _ODOObjectSetValueAtIndex(self, snapshotIndex, value);
 }
 
+// See the disabled implementation of +[ODOObject resolveInstanceMethod:].
+#if !LAZY_DYNAMIC_ACCESSORS
+void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity)
+{
+    Class instanceClass = [entity instanceClass];
+    OBASSERT(instanceClass != [ODOObject class]);
+    OBASSERT(entity == [ODOModel entityForClass:[entity instanceClass]]);
+
+    DEBUG_DYNAMIC_METHODS(@"Registering dynamic methods for %@ -> %@", [entity name], NSStringFromClass(instanceClass));
+    
+    // Force dynamic property accessors to be registered now. The NSKVO cover class screws this up.
+    for (ODOProperty *prop in entity.properties) {
+        SEL sel;
+        
+        if ((sel = prop->_sel.get) && !class_getInstanceMethod(instanceClass, sel)) {
+            IMP imp = (IMP)ODOGetterForProperty(prop);
+            const char *signature = ODOObjectGetterSignature();
+            DEBUG_DYNAMIC_METHODS(@"  Adding -[%@ %@] with %p %s", NSStringFromClass(instanceClass), NSStringFromSelector(sel), imp, signature);
+            class_addMethod(instanceClass, sel, imp, signature);
+        }
+        if ((sel = prop->_sel.set) && !class_getInstanceMethod(instanceClass, sel)) {
+            IMP imp = (IMP)ODOSetterForProperty(prop);
+            const char *signature = ODOObjectSetterSignature();
+            DEBUG_DYNAMIC_METHODS(@"  Adding -[%@ %@] with %p %s", NSStringFromClass(instanceClass), NSStringFromSelector(sel), imp, signature);
+            class_addMethod(instanceClass, sel, imp, signature);
+        }
+    }
+    
+}
+#endif

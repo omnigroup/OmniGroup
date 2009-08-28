@@ -10,6 +10,6 @@
 #import <OmniFoundation/OFEnumNameTable.h>
 
 @interface OFEnumNameTable (OFFlagMask)
-- (NSString *)copyStringForMask:(unsigned int)mask withSeparator:(unichar)separator;
-- (unsigned int)maskForString:(NSString *)string withSeparator:(unichar)separator;
+- (NSString *)copyStringForMask:(NSUInteger)mask withSeparator:(unichar)separator;
+- (NSUInteger)maskForString:(NSString *)string withSeparator:(unichar)separator;
 @end

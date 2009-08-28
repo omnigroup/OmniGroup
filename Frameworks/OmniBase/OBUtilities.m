@@ -63,7 +63,10 @@ IMP OBReplaceMethodImplementation(Class aClass, SEL oldSelector, IMP newImp)
 #if NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 static void _NSToCG(char *p)
 {
-    strcpy(p, p+1); // Eat the '_'
+    // Eat the '_'
+    // strcpy(p, p+1); valgrind complains about this
+    memmove(p, p+1, strlen(p+1) + 1); // include the NUL
+    
     p[0] = 'C';
     p[1] = 'G';
 }
@@ -207,6 +210,8 @@ NSString *OBShortObjectDescription(id anObject)
     
     return nsObjectDescription(anObject, @selector(description));
 }
+
+CFStringRef const OBBuildByCompilerVersion = CFSTR("OBBuildByCompilerVersion: " __VERSION__);
 
 void _OBRequestConcreteImplementation(id self, SEL _cmd, const char *file, unsigned int line)
 {

@@ -8,7 +8,8 @@
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 
-#import <objc/objc-runtime.h>
+#import <objc/runtime.h>
+#import <objc/message.h>
 #import <pthread.h>
 
 RCS_ID("$Id$")
@@ -196,6 +197,7 @@ BOOL OFInstanceIsKindOfClass(id instance, Class aClass)
     return NO;
 }
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 NSString *OFDescriptionForObject(id object, NSDictionary *locale, unsigned indentLevel)
 {
     if ([object isKindOfClass:[NSString class]])
@@ -209,7 +211,7 @@ NSString *OFDescriptionForObject(id object, NSDictionary *locale, unsigned inden
             [NSString spacesOfLength:(indentLevel + 1) * 4],
             [object description]];
 }
-
+#endif
 
 /*"
 Ensures that the given selName maps to a registered selector.  If it doesn't, a copy of the string is made and it is registered with the runtime.  The registered selector is returned, in any case.
@@ -242,6 +244,8 @@ SEL OFRegisterSelectorIfAbsent(const char *selName)
     return sel;
 }
 
+// Lots of SystemConfiguration is deprecated on the iPhone; need to write another path if we want this.
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <SystemConfiguration/SystemConfiguration.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -315,6 +319,7 @@ unsigned int OFLocalIPv4Address(void)
     CFRelease(store);
     return (unsigned int)INADDR_LOOPBACK; // Localhost (127.0.0.1)
 }
+#endif
 
 
 NSString *OFISOLanguageCodeForEnglishName(NSString *languageName)
@@ -404,11 +409,11 @@ static NSDictionary *OFLinkLayerInterfaceAddresses(void)
 }
 
 // There is no perfect unique identifier for a machine since Apple doesn't guarantee that the machine's serial number will be accessible or present.  It's unclear if the caveats to the machine serial number are really for old Macs or current ones.
-NSString *OFUniqueMachineIdentifier(void)
+NSString *_OFCalculateUniqueMachineIdentifier(void)
 {
     NSDictionary *interfaces = OFLinkLayerInterfaceAddresses();
         
-#ifdef DEBUG_kc
+#ifdef DEBUG_kc0
     NSLog(@"Interfaces = %@", [[interfaces allKeys] sortedArrayUsingSelector:@selector(compare:)]);
 #endif
     // Prefer the 'en0' interface for backwards compatibility.
@@ -432,8 +437,20 @@ NSString *OFUniqueMachineIdentifier(void)
     return @"no unique machine identifier found";
 }
 
+NSString *OFUniqueMachineIdentifier(void)
+{
+    static NSString *uniqueMachineIdentifier = nil;
+
+    if (uniqueMachineIdentifier == nil)
+        uniqueMachineIdentifier = [_OFCalculateUniqueMachineIdentifier() retain];
+    return uniqueMachineIdentifier;
+}
+
 NSString *OFHostName(void)
 {
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    return @"localhost";
+#else
     static NSString *cachedHostname = nil;
 
     if (cachedHostname == nil) {
@@ -447,6 +464,7 @@ NSString *OFHostName(void)
     }
 
     return cachedHostname;
+#endif
 }
 
 static inline char _toHex(unsigned int i)
@@ -471,7 +489,7 @@ static inline unsigned int _fillByte(unsigned char c, char *out)
     }
 }
 
-char *OFFormatFCC(unsigned long fcc, char fccString[13])
+char *OFFormatFCC(uint32_t fcc, char fccString[13])
 {
     char *s = fccString;
 
@@ -556,7 +574,9 @@ id OFCreatePlistFor4CC(uint32_t v)
     }
 }
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <ApplicationServices/ApplicationServices.h> // CGFloat
+#endif
 
 static const struct {
     const char *typespec;

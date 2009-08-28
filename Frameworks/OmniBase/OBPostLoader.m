@@ -14,6 +14,8 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/objc.h>
 
+#import <dlfcn.h>
+
 RCS_ID("$Id$")
 
 static NSRecursiveLock *lock = nil;
@@ -26,7 +28,7 @@ extern void _objc_resolve_categories_for_class(struct objc_class *cls);
 #endif
 
 // This can produce lots of false positivies, but provides a way to start looking for some potential problem cases.
-#if 1 && defined(DEBUG)
+#if 0 && defined(DEBUG)
 #define OB_CHECK_COPY_WITH_ZONE
 #endif
 
@@ -268,6 +270,8 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
 #ifdef OMNI_ASSERTIONS_ON
 
 static unsigned MethodSignatureConflictCount = 0;
+static unsigned SuppressedConflictCount = 0;
+static unsigned MethodMultipleImplementationCount = 0;
 
 static char *_copyNormalizeMethodSignature(const char *sig)
 {
@@ -313,6 +317,14 @@ static char *_copyNormalizeMethodSignature(const char *sig)
 
 static BOOL _methodSignaturesCompatible(SEL sel, const char *sig1, const char *sig2)
 {
+    /* In the vast majority of cases (99.7% of the time in my test with Dazzle) the two pointers passed to this routine are actually the same pointer. */
+    if (sig1 == sig2)
+        return YES;
+
+    /* In > 90% of the *remaining* cases, the signatures are identical even without normalization. */
+    if (strcmp(sig1, sig2) == 0)
+        return YES;
+    
     char *norm1 = _copyNormalizeMethodSignature(sig1);
     char *norm2 = _copyNormalizeMethodSignature(sig2);
 
@@ -346,7 +358,88 @@ static BOOL _methodSignaturesCompatible(SEL sel, const char *sig1, const char *s
     return compatible;
 }
 
-static void _checkSignaturesVsSuperclass(Class cls)
+static NSString *describeMethod(Method m, BOOL *nonSystem)
+{
+    Dl_info dli;
+    IMP i = method_getImplementation(m);
+    if (!dladdr(i, &dli)) { dli.dli_fname = NULL; dli.dli_sname = NULL; dli.dli_saddr = NULL; }
+    
+    NSMutableString *buf = [NSMutableString stringWithFormat:@"imp %s at %p",
+                            dli.dli_sname? dli.dli_sname : "(unknown)",
+                            i];
+    
+    if (i != dli.dli_saddr)
+        [buf appendFormat:@"/%p", dli.dli_saddr];
+    
+    if (dli.dli_fname) {
+        [buf appendString:@" in "];
+        NSString *path = [NSString stringWithCString:dli.dli_fname encoding:NSUTF8StringEncoding];
+        NSArray *parts = [path componentsSeparatedByString:@"/"];
+        NSUInteger c = [parts count];
+        if (c > 3 && [[parts objectAtIndex:c-3] isEqual:@"Versions"] && [[parts objectAtIndex:c-4] isEqual:[[parts objectAtIndex:c-1] stringByAppendingString:@".framework"]]) {
+            [buf appendString:[parts objectAtIndex:c-4]];
+        } else if (c > 1) {
+            [buf appendString:[parts objectAtIndex:c-1]];
+        } else {
+            [buf appendString:path];
+        }
+        
+        if (![path hasPrefix:@"/System/"] && ![path hasPrefix:@"/usr/lib/"])
+            *nonSystem = YES;
+    }
+    
+    return buf;
+}
+
+struct sorted_sel_info {
+    Method meth;
+    const char *mname;
+};
+
+static int compare_by_sel(const void *a, const void *b)
+{
+    return strcmp( ((struct sorted_sel_info *)a)->mname, ((struct sorted_sel_info *)b)->mname );
+}
+
+static void  __attribute__((unused)) _checkSignaturesWithinClass(Class cls, Method *methods, unsigned int methodCount)
+{
+    // Any given selector should only be implemented once on a given class.
+    struct sorted_sel_info *sorted;
+    sorted = malloc(methodCount * sizeof(*sorted));
+    
+    unsigned int checkedMethodCount = 0;
+    
+    for(unsigned int methodIndex = 0; methodIndex < methodCount; methodIndex ++) {
+        SEL msel = method_getName(methods[methodIndex]);
+        /* There are some methods that we expect to be multiply defined */
+        if (class_isMetaClass(cls) && (sel_isEqual(msel, @selector(didLoad)) || sel_isEqual(msel, @selector(performPosing)) || sel_isEqual(msel, @selector(becomingMultiThreaded))))
+            continue;
+        sorted[checkedMethodCount++] = (struct sorted_sel_info){
+            .meth = methods[methodIndex],
+            .mname = sel_getName(msel)
+        };
+    }
+    
+    qsort(sorted, checkedMethodCount, sizeof(*sorted), compare_by_sel);
+    for(unsigned int methodIndex = 1; methodIndex < checkedMethodCount; methodIndex ++) {
+        if (!strcmp(sorted[methodIndex-1].mname, sorted[methodIndex].mname)) {
+            BOOL nonSystem = NO;
+            NSString *a = describeMethod(sorted[methodIndex-1].meth, &nonSystem);
+            NSString *b = describeMethod(sorted[methodIndex].meth, &nonSystem);
+            if (nonSystem) {
+                NSLog(@"Class %s has more than one implementation of %s:\n\t%@\n\t%@",
+                      class_getName(cls), sorted[methodIndex-1].mname, a, b);
+                MethodMultipleImplementationCount++;
+            } else {
+                SuppressedConflictCount ++;
+            }
+        }
+    }
+    
+    free(sorted);
+}
+
+static void _checkSignaturesVsSuperclass(Class cls, Method *methods, unsigned int methodCount)
 {
     // Any method that is implemented by a class and its superclass should have the same signature.  ObjC doesn't encode static type declarations in method signatures, so we can't check for covariance.
     Class superClass = class_getSuperclass(cls);
@@ -354,14 +447,13 @@ static void _checkSignaturesVsSuperclass(Class cls)
         return;
     
     // Get our method list and check each one vs. the superclass
-    unsigned int methodIndex = 0;
-    Method *methods = class_copyMethodList(cls, &methodIndex);
     if (methods) {
+        unsigned int methodIndex = methodCount;
         while (methodIndex--) {
             Method method = methods[methodIndex];
             SEL sel = method_getName(method);
 	    
-            Method superMethod = class_getInstanceMethod(cls, sel); // This could be a class method if cls is itself the metaclass, here "instance" just means "the class we passed in"
+            Method superMethod = class_getInstanceMethod(superClass, sel); // This could be a class method if cls is itself the metaclass, here "instance" just means "the class we passed in"
             if (!superMethod)
                 continue;
             
@@ -377,11 +469,22 @@ static void _checkSignaturesVsSuperclass(Class cls)
 #endif
             
             if (!_methodSignaturesCompatible(sel, types, superTypes)) {
-                NSLog(@"Method %s has conflciting type signatures between class and its superclas:\n\tnormalized %s original %s (%s)\n\tnormalized %s original %s (%s)!",
-		      sel_getName(sel),
-		      _copyNormalizeMethodSignature(types), types, class_getName(cls),
-		      _copyNormalizeMethodSignature(superTypes), superTypes, class_getName(superClass));
-                MethodSignatureConflictCount++;
+                BOOL nonSystem = NO;
+                NSString *methodInfo = describeMethod(method, &nonSystem);
+                NSString *superMethodInfo = describeMethod(superMethod, &nonSystem);
+                if (nonSystem) {
+                    const char *normalizedSig = _copyNormalizeMethodSignature(types);
+                    const char *normalizedSigSuper = _copyNormalizeMethodSignature(superTypes);
+                    NSLog(@"Method %s has conflicting type signatures between class and its superclass:\n\tsignature %s for class %s has %@\n\tsignature %s for class %s has %@",
+                          sel_getName(sel),
+                          normalizedSig, class_getName(cls), methodInfo,
+                          normalizedSigSuper, class_getName(superClass), superMethodInfo);
+                    free((void *)normalizedSig);
+                    free((void *)normalizedSigSuper);
+                    MethodSignatureConflictCount++;
+                } else {
+                    SuppressedConflictCount++;
+                }
             }
 
             if (freeSignatures) {
@@ -389,7 +492,6 @@ static void _checkSignaturesVsSuperclass(Class cls)
                 free((char *)superTypes);
             }
         }
-        free(methods);
     }
 }
 
@@ -469,6 +571,8 @@ static void _checkSignaturesVsProtocols(Class cls)
 {
     // Reset this to zero to avoid double-counting errors if we get called again due to bundle loading.
     MethodSignatureConflictCount = 0;
+    MethodMultipleImplementationCount = 0;
+    SuppressedConflictCount = 0;
     
     int classIndex, classCount = 0, newClassCount;
     Class *classes = NULL;
@@ -482,8 +586,19 @@ static void _checkSignaturesVsProtocols(Class cls)
     
     for (classIndex = 0; classIndex < classCount; classIndex++) {
         Class cls = classes[classIndex];
-        _checkSignaturesVsSuperclass(cls); // instance methods
-        _checkSignaturesVsSuperclass(object_getClass(cls)); // ... and class methods
+        
+        unsigned int methodIndex = 0;
+        Method *methods = class_copyMethodList(cls, &methodIndex);
+        _checkSignaturesVsSuperclass(cls, methods, methodIndex); // instance methods
+        // _checkSignaturesWithinClass(cls, methods, methodIndex); 
+        free(methods);
+        
+        methodIndex = 0;
+        Class metaClass = object_getClass(cls);
+        methods = class_copyMethodList(metaClass, &methodIndex);
+        _checkSignaturesVsSuperclass(metaClass, methods, methodIndex); // ... and class methods
+        // _checkSignaturesWithinClass(metaClass, methods, methodIndex); 
+        free(methods);
         
         _checkSignaturesVsProtocols(cls); // checks instance and class and methods, so don't call with the metaclass
     }
@@ -492,6 +607,12 @@ static void _checkSignaturesVsProtocols(Class cls)
     
     // We should find zero conflicts!
     OBASSERT(MethodSignatureConflictCount == 0);
+    OBASSERT(MethodMultipleImplementationCount == 0);
+    
+    if (SuppressedConflictCount)
+        NSLog(@"Warning: Suppressed %u messages about problems in system frameworks", SuppressedConflictCount);
+    
+    free(classes);
 }
 
 /*
@@ -594,6 +715,7 @@ static void _checkForDeprecatedMethodsInClass(Class cls, CFSetRef deprecatedSele
 	// Several Cocoa classes have problems.  Radar 6333766.
 	const char *name = class_getName(cls);
 	if (strcmp(name, "ISDComplainer") == 0 ||
+	    strcmp(name, "ILMediaObjectsViewController") == 0 ||
 	    strcmp(name, "ABBackupManager") == 0 ||
 	    strcmp(name, "ABPeopleController") == 0 ||
 	    strcmp(name, "ABAddressBook") == 0 ||
@@ -605,6 +727,10 @@ static void _checkForDeprecatedMethodsInClass(Class cls, CFSetRef deprecatedSele
         _checkForDeprecatedMethodsInClass(cls, deprecatedInstanceSelectors, NO/*isClassMethod*/);
         _checkForDeprecatedMethodsInClass(object_getClass(cls), deprecatedClassSelectors, YES/*isClassMethod*/);
     }
+    
+    free(classes);
+    CFRelease(deprecatedInstanceSelectors);
+    CFRelease(deprecatedClassSelectors);
     
     OBASSERT(DeprecatedMethodImplementationCount == 0);
 }

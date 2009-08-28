@@ -11,6 +11,7 @@
 #import <OmniDataObjects/ODOModel-Creation.h>
 #import "ODOEntity-Internal.h"
 #import "ODODatabase-Internal.h"
+#import "ODOObject-Accessors.h"
 
 RCS_ID("$Id$")
 
@@ -79,8 +80,12 @@ void ODOModelFinalize(ODOModel *model)
     for (ODOEntity *entity in [model->_entitiesByName objectEnumerator]) {
         [entity finalizeModelLoading];
         Class cls = [entity instanceClass];
-        if (cls != [ODOObject class])
+        if (cls != [ODOObject class]) {
             [ODOModel registerClass:cls forEntity:entity];
+#if !LAZY_DYNAMIC_ACCESSORS
+            ODOObjectCreateDynamicAccessorsForEntity(entity);
+#endif
+        }
     }
     
 #ifdef OMNI_ASSERTIONS_ON

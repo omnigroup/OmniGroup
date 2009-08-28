@@ -31,8 +31,11 @@ NSString * const ODODatabaseMetadataKeyColumnName = @"key";
 NSString * const ODODatabaseMetadataPlistColumnName = @"value";
 
 BOOL ODOLogSQL = NO;
+static BOOL ODOAsynchronousWrites = NO;
+static BOOL ODOKeepTemporaryStoreInMemory = NO;
+static BOOL ODOVacuumOnDisconnect = NO;
 
-@interface ODODatabase (Private)
+@interface ODODatabase (/*Private*/)
 - (BOOL)_setupNewDatabase:(NSError **)outError;
 - (BOOL)_populateCachedMetadata:(NSError **)outError;
 - (BOOL)_disconnectWithoutNotifying:(NSError **)outError;
@@ -47,6 +50,9 @@ BOOL ODOLogSQL = NO;
 {
     OBINITIALIZE;
     ODOLogSQL = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOLogSQL"];
+    ODOAsynchronousWrites = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOAsynchronousWrites"];
+    ODOKeepTemporaryStoreInMemory = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOKeepTemporaryStoreInMemory"];
+    ODOVacuumOnDisconnect = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOVacuumOnDisconnect"];
 }
 
 - (id)initWithModel:(ODOModel *)model;
@@ -136,6 +142,22 @@ BOOL ODOLogSQL = NO;
     _connectedURL = [fileURL copy];
     _committedMetadata = [[NSMutableDictionary alloc] init];
 
+    if (ODOAsynchronousWrites) {
+        if (![self executeSQLWithoutResults:@"PRAGMA synchronous = off" error:outError])
+            return NO;
+    } else {
+        if (![self executeSQLWithoutResults:@"PRAGMA synchronous = normal" error:outError])
+            return NO;
+    }
+
+    if (ODOKeepTemporaryStoreInMemory) {
+        if (![self executeSQLWithoutResults:@"PRAGMA temp_store = memory" error:outError])
+            return NO;
+    }
+
+    if (![self executeSQLWithoutResults:@"PRAGMA auto_vacuum = none" error:outError]) // According to the sqlite documentation: "Auto-vacuum does not defragment the database nor repack individual database pages the way that the VACUUM command does. In fact, because it moves pages around within the file, auto-vacuum can actually make fragmentation worse."
+        return NO;
+
     if (!existed) {
         if (![self _setupNewDatabase:outError]) {
             // Not so much with the working.  Disconnect (tossing any error that might happen) to clear out the optimistic connection state.
@@ -170,6 +192,9 @@ BOOL ODOLogSQL = NO;
 // TODO: This should poke the attached ODOEditingContext into resetting or the like.
 - (BOOL)disconnect:(NSError **)outError;
 {
+    if (ODOVacuumOnDisconnect && ![self executeSQLWithoutResults:@"VACUUM" error:outError])
+        return NO;
+
     if (![self _disconnectWithoutNotifying:outError])
         return NO;
     
@@ -258,23 +283,12 @@ static BOOL _fetchRowCountCallback(struct sqlite3 *sqlite, ODOSQLStatement *stat
 }
 
 
-@end
+#pragma mark Private
 
 NSString * const ODODatabaseConnectedURLChangedNotification = @"ODODatabaseConnectedURLChanged";
 
-
-@implementation ODODatabase (Private)
-
 - (BOOL)_setupNewDatabase:(NSError **)outError;
 {
-    // Set up pragma options.  Thes are what CoreData uses when it creates a database.
-    if (![self executeSQLWithoutResults:@"pragma synchronous=normal" error:outError])
-        return NO;
-    if (![self executeSQLWithoutResults:@"pragma auto_vacuum=1" error:outError])
-        return NO;
-    if (![self executeSQLWithoutResults:[NSString stringWithFormat:@"pragma page_size=%d", NSPageSize()] error:outError])
-        return NO;
-    
     // Create the metadata table
     NSString *metadataSchema = [NSString stringWithFormat:@"CREATE TABLE %@ (%@ VARCHAR NOT NULL PRIMARY KEY, %@ BLOB NOT NULL)", ODODatabaseMetadataTableName, ODODatabaseMetadataKeyColumnName, ODODatabaseMetadataPlistColumnName];
     if (![self executeSQLWithoutResults:metadataSchema error:outError])

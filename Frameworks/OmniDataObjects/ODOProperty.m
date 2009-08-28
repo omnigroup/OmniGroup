@@ -8,9 +8,9 @@
 #import <OmniDataObjects/ODOProperty.h>
 
 #import <OmniDataObjects/ODOModel.h>
+#import <OmniDataObjects/ODOAttribute.h>
 
 #import "ODOObject-Accessors.h"
-#import "ODOAttribute-Internal.h"
 #import "ODOEntity-Internal.h"
 #import "ODOProperty-Internal.h"
 
@@ -117,7 +117,7 @@ static void _ODOPropertyCacheImplementations(ODOProperty *self)
         OBASSERT(strcmp(method_getTypeEncoding(method), ODOObjectGetterSignature()) == 0); // Only support id-returning getters for now.
         getter = (typeof(self->_imp.get))method_getImplementation(method);
     } else
-        getter = ODOGetterForSelector(self);
+        getter = ODOGetterForProperty(self);
     
     // TODO: if "self->_flags.relationship && self->_flags.toMany" and there is a @property, make sure the result type is NSSet, not NSMutableSet.  If the user implements the method themselves, then they are taking their fate into their own hands.
     self->_imp.get = getter;
@@ -135,7 +135,7 @@ static void _ODOPropertyCacheImplementations(ODOProperty *self)
         if (self->_flags.relationship == NO && [(ODOAttribute *)self isPrimaryKey])
             setter = NULL;
         else
-            setter = ODOSetterForSelector(self);
+            setter = ODOSetterForProperty(self);
     }
     
     if (setter) {

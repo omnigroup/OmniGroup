@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		001FD73F0FCC9B9100FC3ADB /* OBError.h in Headers */ = {isa = PBXBuildFile; fileRef = 001FD73D0FCC9B9100FC3ADB /* OBError.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		001FD7400FCC9B9100FC3ADB /* OBError.m in Sources */ = {isa = PBXBuildFile; fileRef = 001FD73E0FCC9B9100FC3ADB /* OBError.m */; };
 		347049750CFB6612007025F7 /* NSError-OBExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 347049730CFB6612007025F7 /* NSError-OBExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		347049760CFB6612007025F7 /* NSError-OBExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 347049740CFB6612007025F7 /* NSError-OBExtensions.m */; };
 		34BBACA90BA76AA2002DA71E /* objc.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BBACA80BA76AA2002DA71E /* objc.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -32,6 +34,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		001FD73D0FCC9B9100FC3ADB /* OBError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBError.h; sourceTree = "<group>"; };
+		001FD73E0FCC9B9100FC3ADB /* OBError.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBError.m; sourceTree = "<group>"; };
 		00E51C1EFE8AAE2511C9CC38 /* NSData-OBObjectCompatibility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData-OBObjectCompatibility.m"; sourceTree = "<group>"; };
 		00E51C20FE8AAE2511C9CC38 /* OBObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBObject.m; sourceTree = "<group>"; };
 		00E51C21FE8AAE2511C9CC38 /* OBPostLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBPostLoader.m; sourceTree = "<group>"; };
@@ -115,6 +119,8 @@
 				07AA829100D177F4C697A14A /* NSException-OBExtensions.m */,
 				347049730CFB6612007025F7 /* NSError-OBExtensions.h */,
 				347049740CFB6612007025F7 /* NSError-OBExtensions.m */,
+				001FD73D0FCC9B9100FC3ADB /* OBError.h */,
+				001FD73E0FCC9B9100FC3ADB /* OBError.m */,
 				00E51C29FE8AAE2511C9CC38 /* OBObject.h */,
 				00E51C20FE8AAE2511C9CC38 /* OBObject.m */,
 				00E51C2AFE8AAE2511C9CC38 /* OBPostLoader.h */,
@@ -194,6 +200,7 @@
 				34BBACA90BA76AA2002DA71E /* objc.h in Headers */,
 				347049750CFB6612007025F7 /* NSError-OBExtensions.h in Headers */,
 				A2E007860E5CA926007709A5 /* OBBacktraceBuffer.h in Headers */,
+				001FD73F0FCC9B9100FC3ADB /* OBError.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -270,6 +277,7 @@
 				4A33D41E08A0191B003A3FA5 /* NSException-OBExtensions.m in Sources */,
 				347049760CFB6612007025F7 /* NSError-OBExtensions.m in Sources */,
 				A2581A630E2D36DD001ABDA6 /* OBBacktraceBuffer.m in Sources */,
+				001FD7400FCC9B9100FC3ADB /* OBError.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

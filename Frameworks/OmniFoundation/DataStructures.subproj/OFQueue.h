@@ -13,17 +13,18 @@
 
 @interface OFQueue : NSObject
 {
+@private
     BOOL closed;
     id *objects;
-    unsigned int max, count, head, tail;
+    NSUInteger max, count, head, tail;
     pthread_mutex_t mutex;
     pthread_cond_t condition;
 }
 
-- initWithCount:(unsigned int)maxCount;
+- initWithCount:(NSUInteger)maxCount;
 
-- (unsigned int)maxCount;
-- (unsigned int)count;
+- (NSUInteger)maxCount;
+- (NSUInteger)count;
 
 - (BOOL)isClosed;
 - (void)close;

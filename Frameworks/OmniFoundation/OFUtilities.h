@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,7 +69,7 @@ extern NSString *OFLocalizedNameForISOLanguageCode(NSString *languageCode);
 
 // Formats a four character code into a ASCII representation.  This can take up to 4*3+1 characters.  Each byte can be up to three characters ('\ff'), plus the trailing NULL.  Returns the given fccString for ease in passing to NSLog/printf.
 // The fcc is really a FourCharCode (or OSType, OSStatus, ComponentResult, etc, etc, etc).  Don't want to include MacTypes.h here though.
-extern char *OFFormatFCC(unsigned long fcc, char fccString[13]);
+extern char *OFFormatFCC(uint32_t fcc, char fccString[13]);
 
 // Parses a FourCharCode (or OSType) from an ObjC property-list type. This is compatible with the strings created by UTCreateStringForOSType(), but also accepts NSDatas and NSNumbers. Returns YES if successful, NO if not.
 BOOL OFGet4CCFromPlist(id pl, uint32_t *fourcc);
@@ -98,4 +98,11 @@ static inline NSUInteger OFHashUIntptr(uintptr_t v)
         return (NSUInteger)(v >> (8*(sizeof(uintptr_t)-sizeof(NSUInteger)))) ^ (NSUInteger)v;
     }
 }
+
+/* NSFoundationVersionNumber values for various OS releases (since Apple only ever includes past releases in the headers, and we often want to know the current or even a "future" (from this SDK's viewpoint) version number) */
+#define OFFoundationVersionNumber10_4_11 NSFoundationVersionNumber10_4_11
+#define OFFoundationVersionNumber10_5    677
+#define OFFoundationVersionNumber10_5_7  677.24
+#define OFFoundationVersionNumber10_5_8  677.26
+#define OFFoundationVersionNumber10_6    747
 

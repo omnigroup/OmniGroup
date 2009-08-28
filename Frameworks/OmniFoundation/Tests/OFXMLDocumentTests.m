@@ -190,12 +190,12 @@ do { \
 {
     NSString *stringElementName = @"s";
     NSError *error = nil;
-    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithRootElementName:DTDName
-                                                            dtdSystemID:dtdURL
-                                                            dtdPublicID:@"-//omnigroup.com//XML Document Test//EN"
-                                                     whitespaceBehavior:nil
-                                                         stringEncoding:kCFStringEncodingASCII
-                                                                  error:&error];
+    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithRootElementName:DTDName
+                                                             dtdSystemID:dtdURL
+                                                             dtdPublicID:@"-//omnigroup.com//XML Document Test//EN"
+                                                      whitespaceBehavior:nil
+                                                          stringEncoding:kCFStringEncodingASCII
+                                                                   error:&error] autorelease];
 
     NSString *supplementalChararacter1 = [NSString stringWithCharacter:0x12345];
     NSString *supplementalChararacter2 = [NSString stringWithCharacter:0xFEDCB];
@@ -249,12 +249,12 @@ do { \
 {
     NSString *stringElementName = @"s";
     NSError *error = nil;
-    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithRootElementName:DTDName
-                                                            dtdSystemID:dtdURL
-                                                            dtdPublicID:@"-//omnigroup.com//XML Document Test//EN"
-                                                     whitespaceBehavior:nil
-                                                         stringEncoding:kCFStringEncodingUTF8
-                                                                  error:&error];
+    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithRootElementName:DTDName
+                                                             dtdSystemID:dtdURL
+                                                             dtdPublicID:@"-//omnigroup.com//XML Document Test//EN"
+                                                      whitespaceBehavior:nil
+                                                          stringEncoding:kCFStringEncodingUTF8
+                                                                   error:&error] autorelease];
 
     NSString *supplementalChararacter1 = [NSString stringWithCharacter:0x12345];
     NSString *supplementalChararacter2 = [NSString stringWithCharacter:0xFEDCB];

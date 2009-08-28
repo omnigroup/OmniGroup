@@ -133,18 +133,18 @@ void OSURunTimeApplicationTerminated(NSString *appIdentifier, NSString *bundleVe
     if (OSUHasHandledTermination)
         return;
     
-    NSNumber *startTimeNumber = (NSNumber *)CFPreferencesCopyAppValue((CFStringRef)OSULastRunStartIntervalKey, (CFStringRef)appIdentifier);
+    NSNumber *startTimeNumber = [(NSNumber *)CFPreferencesCopyAppValue((CFStringRef)OSULastRunStartIntervalKey, (CFStringRef)appIdentifier) autorelease];
     OBASSERT(startTimeNumber == nil || [startTimeNumber isKindOfClass:[NSNumber class]]);
     if (![startTimeNumber isKindOfClass:[NSNumber class]])
         startTimeNumber = nil;
 
-    NSDictionary *statisticsValue = (NSDictionary *)CFPreferencesCopyAppValue((CFStringRef)OSURunTimeStatisticsKey, (CFStringRef)appIdentifier);
+    NSDictionary *statisticsValue = [(NSDictionary *)CFPreferencesCopyAppValue((CFStringRef)OSURunTimeStatisticsKey, (CFStringRef)appIdentifier) autorelease];
     if (statisticsValue && ![statisticsValue isKindOfClass:[NSDictionary class]]) {
         OBASSERT([statisticsValue isKindOfClass:[NSDictionary class]]);
         statisticsValue = nil;
     }
     
-    NSMutableDictionary *statistics = statisticsValue ? [statisticsValue mutableCopy] : [NSMutableDictionary dictionary];
+    NSDictionary *statistics = statisticsValue ? [[statisticsValue copy] autorelease] : [NSDictionary dictionary];
 
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     NSDictionary *all = _OSURunTimeUpdateStatisticsScope([statistics objectForKey:OSURunTimeStatisticsAllVersionsScopeKey], nil/*version*/, startTimeNumber, now, crashed);
@@ -152,6 +152,7 @@ void OSURunTimeApplicationTerminated(NSString *appIdentifier, NSString *bundleVe
     
     statistics = [[NSDictionary alloc] initWithObjectsAndKeys:all, OSURunTimeStatisticsAllVersionsScopeKey, current, OSURunTimeStatisticsCurrentVersionsScopeKey, nil];
     CFPreferencesSetAppValue((CFStringRef)OSURunTimeStatisticsKey, (CFDictionaryRef)statistics, (CFStringRef)appIdentifier);
+    [statistics release];
 
     CFPreferencesSetAppValue((CFStringRef)OSULastRunStartIntervalKey, NULL, (CFStringRef)appIdentifier);
     OSUHasHandledTermination = YES;
@@ -175,7 +176,7 @@ static void _OSURunTimeAddStatisticsToInfo(NSMutableDictionary *info, NSDictiona
 
 void OSURunTimeAddStatisticsToInfo(NSString *appIdentifier, NSMutableDictionary *info)
 {
-    NSDictionary *statistics = (NSDictionary *)CFPreferencesCopyAppValue((CFStringRef)OSURunTimeStatisticsKey, (CFStringRef)appIdentifier);
+    NSDictionary *statistics = [(NSDictionary *)CFPreferencesCopyAppValue((CFStringRef)OSURunTimeStatisticsKey, (CFStringRef)appIdentifier) autorelease];
     if (!statistics || ![statistics isKindOfClass:[NSDictionary class]])
         statistics = nil;
     

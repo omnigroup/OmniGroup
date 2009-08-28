@@ -12,7 +12,7 @@
 
 @class NSDictionary;
 @class NSButton, NSImageView, NSPanel, NSTextField, NSTextView, NSWindow;
-@class OSUDownloadController, OSUItem;
+@class OSUDownloadController, OSUItem, OSUCheckOperation;
 
 typedef enum _OSUPrivacyNoticeResult {
     OSUPrivacyNoticeResultOK,
@@ -52,7 +52,7 @@ extern NSString *OSUReleaseApplicationSummaryKey;
 // API
 + (OSUController *)sharedController;
 + (void)checkSynchronouslyWithUIAttachedToWindow:(NSWindow *)aWindow;
-+ (void)newVersionsAvailable:(NSArray *)versionInfos;
++ (void)newVersionsAvailable:(NSArray *)versionInfos fromCheck:(OSUCheckOperation *)op;
 + (void)startingCheckForUpdates;
 
 - (OSUPrivacyNoticeResult)runPrivacyNoticePanelHavingSeenPreviousVersion:(BOOL)hasSeenPreviousVersion;

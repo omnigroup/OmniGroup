@@ -175,7 +175,8 @@ static NSString *helperKeyPrefix = nil;
     else
         reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"ICSetPref returned an error while setting key %@: %@", @"OmniAppKit", [OAInternetConfig bundle], "internet config error"), helperKeyString, OANameForInternetConfigErrorCode(error)];
     NSDictionary  *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
-    *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:error userInfo:userInfo];
+    if (outError)
+        *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:error userInfo:userInfo];
     return NO;
 }
 
@@ -195,7 +196,8 @@ static NSString *helperKeyPrefix = nil;
     NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to launch URL %@", @"OmniAppKit", [OAInternetConfig bundle], "launch services error"), urlString];
     NSString *reason = NSLocalizedStringFromTableInBundle(@"Launch Services returned an error while opening URL %@: %@", @"OmniAppKit", [OAInternetConfig bundle], "launch services error");
     NSDictionary  *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
-    *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:error userInfo:userInfo];
+    if (outError)
+        *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:error userInfo:userInfo];
 
     return NO;
 }
@@ -227,11 +229,7 @@ static NSString *helperKeyPrefix = nil;
     if ([icPrefData length] > kICFileSpecHeaderSize) {
         const FSRef *inRef;
         const AliasRecord * const aliasPointer = &(downloadFolderICFileSpecPtr->alias);
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
         Size aliasSize = GetAliasSizeFromPtr(aliasPointer);
-#else
-        Size aliasSize = aliasPointer->aliasSize;
-#endif
 
         // this must be a real handle, or FSResolveAlias returns -50
 
@@ -393,7 +391,8 @@ static NSString *helperKeyPrefix = nil;
         NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error reading InternetConfig preference for key %@", @"OmniAppKit", OMNI_BUNDLE, "internet config error"), preferenceKey];
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"ICFindPrefHandle returned %d -- %@", @"OmniAppKit", OMNI_BUNDLE, "internet config error"), error, OANameForInternetConfigErrorCode(error)];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
-        *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:error userInfo:userInfo];
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:error userInfo:userInfo];
         return nil;
     }
 }
@@ -625,15 +624,10 @@ static BOOL _executeScript(NSString *source)
 
 - (void)sendMailViaAppleScriptWithApplication:(NSString *)mailApp mailtoURL:(NSString *)url codedBody:(NSString *)body;
 {
-    NSMutableString *script;
-    BOOL firstArgument;
-
-    firstArgument = YES;
-    
     OBPRECONDITION(mailApp != nil);
     OBPRECONDITION(url != nil);
 
-    script = [NSMutableString stringWithFormat:@"tell application \"%@\"\n %@event GURLGURL%@ %@", mailApp, [NSString leftPointingDoubleAngleQuotationMarkString], [NSString rightPointingDoubleAngleQuotationMarkString], OAFragmentedAppleScriptStringForString(url)];
+    NSMutableString *script = [NSMutableString stringWithFormat:@"tell application \"%@\"\n %@event GURLGURL%@ %@", mailApp, [NSString leftPointingDoubleAngleQuotationMarkString], [NSString rightPointingDoubleAngleQuotationMarkString], OAFragmentedAppleScriptStringForString(url)];
     /* Since it's pretty hard to read, here's an example of what the preceding stament produces:
            tell application "Mail"
            <<event GURLGURL>> "mailto:foo@bar.com?carbonCopy=blegga@bar.com&subject=stuff

@@ -25,6 +25,22 @@
 #undef ASSERT
 #endif
 
+/*
+ When building with clang, we want it to understand that some of our assertions mean certain paths through the code shouldn't be analyzed. A very common case is asserting that some object is non-nil and then sending a non-void * sized returning message to it.  In this case we'd like to do:
+ 
+ OBASSERT(object);
+ 
+ CGFloat thing = [object stuff];
+ 
+ So, we can annotate the body of the assertion failure with a special clang attribute to discontinue the analysis on that path.  Unlike using __attribute__((noreturn)), this doesn't lie to the compiler's data flow and possibly cause problems due to a function returning when it said it wouldn't.
+ */
+
+#ifdef __clang__
+    #define CLANG_ANALYZER_NORETURN __attribute__((analyzer_noreturn))
+#else
+    #define CLANG_ANALYZER_NORETURN
+#endif
+
 #if defined(__cplusplus)
 extern "C" {
 #endif    
@@ -37,7 +53,7 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
     
     extern void OBSetAssertionFailureHandler(OBAssertionFailureHandler handler);
 
-    extern void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber);
+    extern void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber) CLANG_ANALYZER_NORETURN;
     extern void OBAssertFailed(void) __attribute__((noinline)); // This is a convenience breakpoint for in the debugger.
     
     extern BOOL OBEnableExpensiveAssertions;
@@ -91,16 +107,24 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
             OBASSERT(expression); \
     } while(NO)
 
+    // Scalar-taking variants that also do the test at compile time to just signal clang attributes.  The input must be a scalar l-value to avoid evaluation of code.  This will mark the value as referenced, though, so we don't get unused variable warnings.
+    #define OBASSERT_NULL(pointer) do { \
+        if (pointer) { \
+            void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
+            OBInvokeAssertionFailureHandler("OBASSERT_NULL", #pointer, __FILE__, __LINE__); \
+        } \
+    } while(NO);
+    #define OBASSERT_NOTNULL(pointer) do { \
+        if (!pointer) { \
+            void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
+            OBInvokeAssertionFailureHandler("OBASSERT_NOTNULL", #pointer, __FILE__, __LINE__); \
+        } \
+    } while(NO);
+    
     #ifdef __OBJC__
         #import <Foundation/NSObject.h>
         // Useful when you are changing subclass or delegate API and you want to ensure there aren't lingering implementations of API that will no longer get called.
-        static inline void _OBAssertNotImplemented(id self, SEL sel)
-        {
-            if ([self respondsToSelector:sel]) {
-                NSLog(@"%@ has implementation of %@", NSStringFromClass([self class]), NSStringFromSelector(sel));
-                OBAssertFailed();
-            }
-        }
+        extern void _OBAssertNotImplemented(id self, SEL sel);
         #define OBASSERT_NOT_IMPLEMENTED(obj, sel) _OBAssertNotImplemented(obj, sel)
     #endif
     
@@ -117,6 +141,23 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
     #define OBINVARIANT_EXPENSIVE(expression)
     #define OBASSERT_EXPENSIVE(expression)
 
+    // Pointer checks to satisfy clang scan-build in non-assertion builds too.
+    static inline void _OBAnalyzerNoReturn(void) CLANG_ANALYZER_NORETURN;
+    static inline void _OBAnalyzerNoReturn(void) { }
+
+    #define OBASSERT_NULL(pointer) do { \
+        if (pointer) { \
+            void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
+            _OBAnalyzerNoReturn(); \
+        } \
+    } while(NO);
+    #define OBASSERT_NOTNULL(pointer) do { \
+        if (!pointer) { \
+            void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
+            _OBAnalyzerNoReturn(); \
+        } \
+    } while(NO);
+    
     #define OBASSERT_NOT_IMPLEMENTED(obj, sel)
 #endif
 #if defined(__cplusplus)

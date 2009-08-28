@@ -110,12 +110,12 @@ static BOOL OFMessageQueueDebug = NO;
     return hasInvocations;
 }
 
-- (OFInvocation *)nextRetainedInvocation;
+- (OFInvocation *)copyNextInvocation;
 {
-    return [self nextRetainedInvocationWithBlock:YES];
+    return [self copyNextInvocationWithBlock:YES];
 }
 
-- (OFInvocation *)nextRetainedInvocationWithBlock:(BOOL)shouldBlock;
+- (OFInvocation *)copyNextInvocationWithBlock:(BOOL)shouldBlock;
 {
     unsigned int invocationCount;
     OFInvocation *nextRetainedInvocation = nil;
@@ -230,6 +230,8 @@ static BOOL OFMessageQueueDebug = NO;
     NSObject <OFMessageQueueDelegate> *retainedDelegate = nil;
 
     OBPRECONDITION(aQueueEntry);
+    if (!aQueueEntry)
+        return;
     
 #ifdef OW_DISALLOW_MULTI_THREADING
     if (self != [OFMessageQueue mainQueue]) {

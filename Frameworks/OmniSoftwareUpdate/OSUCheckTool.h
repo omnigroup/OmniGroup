@@ -31,3 +31,5 @@ enum {
 #define OSUTool_ResultsStatusCodeKey @"status" // Any HTTP status, NSNumber
 
 extern CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifier, bool collectHardwareInformation, const char *licenseType, bool reportMode);
+extern CFStringRef copyCompactedGLExtensionsList(CFStringRef extList);
+extern CFSetRef copyParsedGLExtensionsList(CFStringRef extList);

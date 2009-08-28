@@ -73,6 +73,6 @@
 - (void *)_grayProfile;
 @end
 
-extern NSString *DefaultDocumentColorProfileDidChangeNotification;
-extern NSString *ColorProofingDevicesDidChangeNotification;
+extern NSString * const OADefaultDocumentColorProfileDidChangeNotification;
+extern NSString * const OAColorProofingDevicesDidChangeNotification;
 

@@ -8,6 +8,7 @@
 #import <OmniFoundation/OFRandom.h>
 
 #import <OmniBase/system.h>
+#import <inttypes.h> // For PRIu8
 
 RCS_ID("$Id$")
 
@@ -29,10 +30,10 @@ RCS_ID("$Id$")
 #define IMP_B             (480227068)
 
 /* Uses Euclids algorithm to find x such that ax = 1 mod p where p is prime */
-static inline unsigned long _invert(unsigned long a, unsigned long p)
+static inline uint32_t _invert(uint32_t a, uint32_t p)
 {
-    unsigned long               q, d;
-    long                        u, v, inv, t;
+    uint32_t q, d;
+    int32_t u, v, inv, t;
 
     OBPRECONDITION(a != 0 && a != 1);
 
@@ -56,7 +57,7 @@ static inline unsigned long _invert(unsigned long a, unsigned long p)
 
     if (d != 1) {
 	/* This should never happen, really */
-	fprintf(stderr, "Cannot invert %ld mod p", a);
+	fprintf(stderr, "Cannot invert %"PRIu8" mod p", a);
     }
 
     OBPOSTCONDITION(inv != 0 && inv != 1);
@@ -64,9 +65,9 @@ static inline unsigned long _invert(unsigned long a, unsigned long p)
 }
 
 /* Modular Multiplication: Decomposition method (from L'Ecuyer & Cote) */
-static inline unsigned long _mult_mod(unsigned long a, unsigned long s, unsigned long m)
+static inline uint32_t _mult_mod(uint32_t a, uint32_t s, uint32_t m)
 {
-    unsigned long                        H, a0, a1, q, qh, rh, k, p;
+    uint32_t                        H, a0, a1, q, qh, rh, k, p;
 
 
     H = 32768;			/* 2 ^ 15  for 32 bit basetypes. */
@@ -118,11 +119,11 @@ static inline unsigned long _mult_mod(unsigned long a, unsigned long s, unsigned
 
 
 float OFRandomMax = (float)INT_MAX;
-static const unsigned int nRand = 4;
+static const uint32_t nRand = 4;
 static float gaussAdd, gaussFac;
 static BOOL  gaussInitialized = NO;
 
-void OFRandomSeed(OFRandomState *state, unsigned long y)
+void OFRandomSeed(OFRandomState *state, uint32_t y)
 {
     if (!gaussInitialized) {
         float aRand;
@@ -141,9 +142,9 @@ void OFRandomSeed(OFRandomState *state, unsigned long y)
 /*"
 Generates a random seed value appropriate for supplying to OFRandomSeed. Attempts to use /dev/urandom for (presumably) the best randomness for the seed (doesn't use /dev/random as that can block and we wish not to block). If we can't use /dev/urandom for some reason, we fall back to generating a seed value using the clock.
  "*/
-unsigned int OFRandomGenerateRandomSeed(void)
+uint32_t OFRandomGenerateRandomSeed(void)
 {
-    unsigned int seed;
+    uint32_t seed;
     BOOL haveSeed  = NO;
     FILE *urandomDevice;
 
@@ -159,7 +160,7 @@ unsigned int OFRandomGenerateRandomSeed(void)
     if (!haveSeed) {
         NSTimeInterval interval;
         char *seedp, *intervalp;
-        unsigned int seedSize, intervalSize;
+        uint32_t seedSize, intervalSize;
 
         seedp = (char *)&seed;
         seedSize = sizeof(seed);
@@ -177,25 +178,33 @@ unsigned int OFRandomGenerateRandomSeed(void)
         }
     }
 
-    return seed;
+    // Make sure the returned seed meets the needs of the implementation (>= 2 and < MERSENNE_PRIME_31).
+    while (seed >= MERSENNE_PRIME_31)
+        seed -= MERSENNE_PRIME_31;
+    if (seed >= 2)
+        return seed;
+    return OFRandomGenerateRandomSeed(); // try again.
 }
 
 /*"
 Returns an unsigned number between 0 and OF_RANDOM_MAX.  Note that the function does NOT return a number up to UINT_MAX (0xffffffff).
 "*/
-unsigned long OFRandomNextState(OFRandomState *state)
+uint32_t OFRandomNextState(OFRandomState *state)
 {
-    unsigned long invY, tmp;
-    unsigned long old;
-
     OBPRECONDITION(state->y >= 2);
 
+    if (state->y < 2) {
+        OBASSERT_NOT_REACHED("Degenerate state?");
+        OFRandomSeed(state, OFRandomGenerateRandomSeed());
+        OBASSERT(state->y >= 2);
+    }
+    
     // We need to find IMP_A * invY + IMP_B mod M
 
-    old = state->y;
-    invY = _invert(old, MERSENNE_PRIME_31);
+    uint32_t old = state->y;
+    uint32_t invY = _invert(old, MERSENNE_PRIME_31);
 
-    tmp = _mult_mod(IMP_A, invY, MERSENNE_PRIME_31);
+    uint32_t tmp = _mult_mod(IMP_A, invY, MERSENNE_PRIME_31);
 
     state->y = tmp + IMP_B;
 
@@ -203,12 +212,12 @@ unsigned long OFRandomNextState(OFRandomState *state)
 	state->y -= MERSENNE_PRIME_31;
 
     OBPOSTCONDITION(state->y >= 2);
-#warning TJW: Figure out why this sometimes fails.  Maybe some detail of my implementation of this algorithm is wrong
-//    OBPOSTCONDITION(old <= OF_RANDOM_MAX);
+    OBPOSTCONDITION(old <= OF_RANDOM_MAX);
+
     return (old);
 }
 
-unsigned long OFRandomNext(void)
+uint32_t OFRandomNext(void)
 {
     static OFRandomState defaultRandomState;
     static BOOL firstTime  = YES;
@@ -223,7 +232,7 @@ unsigned long OFRandomNext(void)
 
 float OFRandomGaussState(OFRandomState *state)
 {
-    unsigned int i;
+    uint32_t i;
     float sum;
     
     i = nRand;

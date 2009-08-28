@@ -56,6 +56,7 @@
 + (void)toggleAllInspectors;
 + (void)updateInspector;
 + (void)updateInspectionSetImmediatelyAndUnconditionally;
++ (void)clearInspectionSet;
 
 - (BOOL)hasSingleInspector;
 

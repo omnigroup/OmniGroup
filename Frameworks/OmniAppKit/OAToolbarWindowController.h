@@ -10,6 +10,9 @@
 #import <AppKit/NSWindowController.h>
 #import <Availability.h>
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+#import <AppKit/NSToolbar.h>
+#endif
 @class OAToolbar;
 @class NSToolbarItem;
 @class NSBundle, NSDictionary;
@@ -22,6 +25,9 @@
 @end
 
 @interface OAToolbarWindowController : NSWindowController 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+<NSToolbarDelegate>
+#endif
 {
     OAToolbar *toolbar;
     BOOL _isCreatingToolbar;

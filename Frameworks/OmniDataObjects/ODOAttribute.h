@@ -39,4 +39,6 @@ typedef enum {
 - (NSObject <NSCopying> *)defaultValue;
 - (Class)valueClass;
 
+@property(readonly) BOOL isPrimaryKey;
+
 @end

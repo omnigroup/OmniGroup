@@ -20,9 +20,7 @@
 
 // Import just a few commonly used headers from OmniAppKit itself
 #import "OAUtilities.h"
-#import "FrameworkDefines.h"
 #import "OAFindControllerTargetProtocol.h"
-//#import "NSImage-OAExtensions.h"
 
 #endif /* __OBJC__ */
 

@@ -21,6 +21,7 @@ typedef enum _OFXMLWhitespaceBehaviorType {
     CFMutableDictionaryRef _nameToBehavior;
 }
 
++ (OFXMLWhitespaceBehavior *)autoWhitespaceBehavior;
 + (OFXMLWhitespaceBehavior *)ignoreWhitespaceBehavior;
 
 - initWithDefaultBehavior:(OFXMLWhitespaceBehaviorType)defaultBehavior;

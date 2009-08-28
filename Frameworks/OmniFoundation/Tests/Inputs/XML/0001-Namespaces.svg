@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 450 140" width="450pt" height="140pt">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:description>An example of an SVG document.</dc:description>
+  </metadata>
+  <defs>
+    <radialGradient id="generic_illumination" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="52">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#aaa"/>
+    </radialGradient>
+    <radialGradient id="illum1" xl:href="#generic_illumination" gradientTransform="translate(123.7 34.5)"/>
+    <radialGradient id="illum2" xl:href="#generic_illumination" gradientTransform="translate(220.7 34.5)"/>
+    <radialGradient id="illum3" xl:href="#generic_illumination" gradientTransform="translate(315.7 34.5)"/>
+  </defs>
+  <g stroke="black" stroke-opacity="1" fill-opacity="1">
+    <path d="M 82 28 L 19 116 L 357 116 L 417 27 Z" fill="white"/>
+    <a xl:href="http://www.omnigroup.com/">
+      <circle cx="115" cy="46" r="32" fill="url(#illum1)"/>
+    </a>
+    <a xl:href="http://www.omnigroup.com/applications">
+      <circle cx="212" cy="46" r="32" fill="url(#illum2)"/>
+    </a>
+    <a xl:href="http://www.omnigroup.com/support">
+      <circle cx="307" cy="46" r="32" fill="url(#illum3)"/>
+    </a>
+  </g>
+</svg>

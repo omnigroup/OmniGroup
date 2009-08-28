@@ -151,7 +151,7 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
     stringSize.height = ceil(stringSize.height);
     
     NSRect indicatorRect;
-    NSRect progressIndicatorFrame = [_progressIndicator frame];
+    NSRect progressIndicatorFrame = _progressIndicator ? [_progressIndicator frame] : NSZeroRect; // Make clang happy; we know it isn't nil.
     NSRect documentWindowRect = [documentWindow frame];
 
     if ([_progressIndicator style] == NSProgressIndicatorBarStyle) {

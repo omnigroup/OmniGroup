@@ -63,8 +63,6 @@
 
 - (id)deepMutableCopy;
 
-- (NSDictionary *)deepCopyWithReplacementFunction:(id (*)(id, void *))funct context:(void *)context;
-
 - (NSArray *) copyKeys;
 - (NSMutableArray *) mutableCopyKeys;
 

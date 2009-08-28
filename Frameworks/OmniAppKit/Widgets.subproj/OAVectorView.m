@@ -63,7 +63,7 @@ RCS_ID("$Id$")
         if (vectorValueTransformer != nil) 
             newObjectValue = [vectorValueTransformer reverseTransformedValue:newObjectValue]; 
         
-        [observedObjectForVector setValue:objectValue forKeyPath:observedKeyPathForVector];
+        [observedObjectForVector setValue:newObjectValue forKeyPath:observedKeyPathForVector];
     }
     [self _updateFields];
 }

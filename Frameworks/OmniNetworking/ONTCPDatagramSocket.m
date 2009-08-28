@@ -35,8 +35,6 @@ RCS_ID("$Id$")
 
 - (unsigned int)readBytes:(unsigned int)byteCount intoBuffer:(void *)aBuffer;
 {
-    unsigned int totalBytesRead, start;
-    
     // read the packet length - if the socket raises we already have all the state we need to continue later
     if (readLength < sizeof(unsigned int)) {
         while (readLength < sizeof(unsigned int)) {
@@ -55,18 +53,21 @@ RCS_ID("$Id$")
         [NSException raise:ONTCPDatagramSocketPacketTooLargeExceptionName format:@"Attempted to read a packet with a buffer that is too small"];
 
     // read the packet
-    totalBytesRead = readLength - sizeof(unsigned int);
-    start = totalBytesRead;
-    NS_DURING {
+    unsigned int totalBytesRead = readLength - sizeof(unsigned int);
+    unsigned int start = totalBytesRead;
+    NSException *raisedException = nil;
+    @try {
         while (totalBytesRead < readPacketLength) {
-            unsigned int bytesRead;
-
-            bytesRead = [socket readBytes:(readPacketLength - totalBytesRead) intoBuffer:(aBuffer + totalBytesRead)];
+            unsigned int bytesRead = [socket readBytes:(readPacketLength - totalBytesRead) intoBuffer:(aBuffer + totalBytesRead)];
             if (bytesRead == 0)
-                NS_VALUERETURN(0, unsigned int);
+                return 0;
             totalBytesRead += bytesRead;
         }
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
+        raisedException = [[localException retain] autorelease];
+    }
+
+    if (raisedException) {
         // if we got a partial packet save it to try more later
         if (totalBytesRead != start) {
             if (!readRemainder)
@@ -74,9 +75,9 @@ RCS_ID("$Id$")
             memcpy(readRemainder + start, aBuffer + start, totalBytesRead - start);
         }
         readLength = totalBytesRead + sizeof(unsigned int);
-        [localException raise];
-    } NS_ENDHANDLER;
-
+        [raisedException raise];
+    }
+    
     // copy previously saved partial packet into the buffer
     if (readRemainder) {
         memcpy(aBuffer, readRemainder, readLength - sizeof(unsigned int));

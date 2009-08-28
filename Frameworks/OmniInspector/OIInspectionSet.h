@@ -25,6 +25,7 @@ typedef BOOL (*OIInspectionSetPredicateFunction)(id anObject, void *context);
 - (void)addObjectsFromArray:(NSArray *)objects;
 - (void)removeObject:(id)object;
 - (void)removeObjectsInArray:(NSArray *)toRemove;
+- (void)removeAllObjects;
 
 - (BOOL)containsObject:(id)object;
 - (NSUInteger)count;

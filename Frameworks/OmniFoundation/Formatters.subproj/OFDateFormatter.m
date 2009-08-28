@@ -176,7 +176,6 @@ static unsigned int lastPossibleDayOfMonth[12] = {31, 29, 31, 30, 31, 30, 31, 31
             if ((c >= '0') && (c <= '9')) {
                 day += c - '0';
                 if (day > lastPossibleDayOfMonth[month-1]) {
-                    changed = YES;
                     day -= c - '0';
                     *resultPtr = resultPtr[-1];
                     resultPtr[-1] = '0';

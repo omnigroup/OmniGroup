@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,9 +10,13 @@
 #import <Foundation/NSAttributedString.h>
 #import <Foundation/NSGeometry.h> // For NSRect
 
+@class NSImage;
+
 @interface NSAttributedString (OAExtensions)
 
 + (NSString *)attachmentString;
+
++ (NSAttributedString *)attributedStringWithImage:(NSImage *)anImage;
 
 - (NSAttributedString *)initWithHTML:(NSString *)htmlString;
 - (NSString *)htmlString;

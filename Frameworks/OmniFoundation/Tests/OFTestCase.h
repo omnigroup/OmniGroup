@@ -13,5 +13,17 @@
 
 + (SenTest *)dataDrivenTestSuite;
 + (SenTest *)testSuiteForMethod:(NSString *)methodName cases:(NSArray *)testCases;
++ (SenTest *)testSuiteNamed:(NSString *)suiteName usingSelector:(SEL)testSelector cases:(NSArray *)testCases;
 
 @end
+
+extern void OFDiffData(SenTestCase *testCase, NSData *expected, NSData *actual);
+
+#define OFDataShouldBeEqual(expected,actual) \
+do { \
+    BOOL dataEqual = [expected isEqual:actual]; \
+    if (!dataEqual) { \
+        OFDiffData(self, expected, actual); \
+        should(dataEqual); \
+    } \
+} while (0)

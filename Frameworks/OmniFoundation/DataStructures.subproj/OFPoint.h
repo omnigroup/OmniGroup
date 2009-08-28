@@ -10,7 +10,7 @@
 #import <Foundation/NSObject.h>
 #import <Foundation/NSGeometry.h>
 
-@interface OFPoint : NSObject <NSCopying, NSCoding>
+@interface OFPoint : NSObject <NSCopying /*, NSCoding*/>
 {
     NSPoint _value;
 }

@@ -7,12 +7,7 @@
 //
 // $Id$
 
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-typedef float CGFloat;
-#define cgFloatValue floatValue
-#else
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
-#endif
 
 #ifdef __ppc__
 

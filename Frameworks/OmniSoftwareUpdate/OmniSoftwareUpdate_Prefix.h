@@ -19,7 +19,7 @@
     #else
         // Instead, the tool uses one code-less header from OmniBase and then directly references two source files from it.
         #import <OmniBase/rcsid.h>
-        #import "assertions.h"
-        #import "NSError-OBExtensions.h"
+        #import <OmniBase/assertions.h>
+        #import <OmniBase/NSError-OBExtensions.h>
     #endif
 #endif

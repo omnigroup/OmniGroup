@@ -168,7 +168,7 @@ static void addObjectBySelector(const void *value, void *context)
 - (void)addObjects:(NSArray *)manyObjects keyedBySelector:(SEL)aSelector;
 {
     struct binsortContext context = { aSelector, self };
-    CFArrayApplyFunction((CFArrayRef)manyObjects, (CFRange){ location: 0, length: [manyObjects count] },
+    CFArrayApplyFunction((CFArrayRef)manyObjects, CFRangeMake(0, [manyObjects count]),
                          &addObjectBySelector, &context);
 }
 
@@ -195,7 +195,7 @@ static void addObjectBySelector(const void *value, void *context)
 - (BOOL)removeObject:(id)anObject forKey:(id)aKey
 {
     NSMutableArray *valueArray = [self _arrayForKey:aKey alloc:0];
-    unsigned int objectIndex;
+    NSUInteger objectIndex;
 
     if (!valueArray)
         return NO;
@@ -215,7 +215,7 @@ static void addObjectBySelector(const void *value, void *context)
 - (BOOL)removeObjectIdenticalTo:(id)anObject forKey:(id)aKey
 {
     NSMutableArray *valueArray = [self _arrayForKey:aKey alloc:0];
-    unsigned int objectIndex;
+    NSUInteger objectIndex;
 
     if (!valueArray)
         return NO;

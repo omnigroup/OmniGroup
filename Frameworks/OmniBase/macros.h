@@ -42,16 +42,19 @@ do {						\
 // For when you have an outError to deal with too
 #define OMNI_POOL_ERROR_END \
     } @catch (NSException *__exc) { \
-        *outError = nil; \
+        if (outError) \
+            *outError = nil; \
         [__exc retain]; \
         [__pool release]; \
         __pool = nil; \
         [__exc autorelease]; \
         [__exc raise]; \
     } @finally { \
-        [*outError retain]; \
+        if (outError) \
+            [*outError retain]; \
         [__pool release]; \
-        [*outError autorelease]; \
+        if (outError) \
+            [*outError autorelease]; \
     } \
 } while(0)
 

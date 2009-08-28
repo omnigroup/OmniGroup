@@ -13,28 +13,20 @@
 
 RCS_ID("$Id$");
 
-// If this is built as part of a tool (like the OSU check tool), we won't get a bundle identifier defined.
-#ifndef OMNI_BUNDLE_IDENTIFIER
-    #define OMNI_BUNDLE_IDENTIFIER @"com.omnigroup.framework.OmniBase"
+// This might be useful for non-debug builds too.  These are only included in our errors, not Cocoa's, but if we use OBChainError when our code fails due to a Mac OS X framework call failing, we'll get information there.
+#if 0 && defined(DEBUG)
+    #define INCLUDE_BACKTRACE_IN_ERRORS 1
+#else
+    #define INCLUDE_BACKTRACE_IN_ERRORS 0
 #endif
 
-NSString * const OBUserCancelledActionErrorKey = OMNI_BUNDLE_IDENTIFIER @".ErrorDomain.ErrorDueToUserCancel";
-NSString * const OBFileNameAndNumberErrorKey = OMNI_BUNDLE_IDENTIFIER @".ErrorDomain.FileLineAndNumber";
+#if INCLUDE_BACKTRACE_IN_ERRORS
+    #include <execinfo.h>  // For backtrace()
+    static NSString * const OBBacktraceAddressesErrorKey = @"com.omnigroup.framework.OmniBase.ErrorDomain.BacktraceAddresses";
+    static NSString * const OBBacktraceNamesErrorKey = @"com.omnigroup.framework.OmniBase.ErrorDomain.Backtrace";
+#endif
 
-static NSMutableDictionary *_createUserInfo(NSString *firstKey, va_list args)
-{
-    NSMutableDictionary *userInfo = [[NSMutableDictionary alloc] init];
-
-    NSString *key = firstKey;
-    while (key) { // firstKey might be nil
-	id value = va_arg(args, id);
-        if (value)
-            [userInfo setObject:value forKey:key];
-	key = va_arg(args, id);
-    }
-    
-    return userInfo;
-}
+NSString * const OBUserCancelledActionErrorKey = @"com.omnigroup.framework.OmniBase.ErrorDomain.ErrorDueToUserCancel";
 
 static id (*original_initWithDomainCodeUserInfo)(NSError *self, SEL _cmd, NSString *domain, NSInteger code, NSDictionary *dict) = NULL;
 
@@ -121,29 +113,85 @@ static void _mapPlistValueToUserInfoEntry(const void *key, const void *value, vo
     return [self initWithDomain:domain code:[code intValue] userInfo:userInfo];
 }
 
-static void _mapUserInfoEntryToPlistValue(const void *key, const void *value, void *context)
+static void _addMappedUserInfoValueToArray(const void *value, void *context);
+static void _addMapppedUserInfoValueToDictionary(const void *key, const void *value, void *context);
+
+static id _mapUserInfoValueToPlistValue(const void *value)
 {
-    NSString *keyString = (NSString *)key;
     id valueObject = (id)value;
-    NSMutableDictionary *mappedUserInfo = (NSMutableDictionary *)context;
+
+    if (!valueObject)
+        return @"<nil>";
     
+    // Handle some specific non-plist values
     if ([valueObject isKindOfClass:[NSError class]])
-        valueObject = [(NSError *)valueObject toPropertyList];
+        return [(NSError *)valueObject toPropertyList];
     
     if ([valueObject isKindOfClass:[NSURL class]])
-        valueObject = [valueObject absoluteString];
+        return [valueObject absoluteString];
+    
+    // Handle containers explicitly since they might contain non-plist values
+    if ([valueObject isKindOfClass:[NSArray class]]) {
+        NSMutableArray *mapped = [NSMutableArray array];
+        CFArrayApplyFunction((CFArrayRef)valueObject, CFRangeMake(0, [valueObject count]), _addMappedUserInfoValueToArray, mapped);
+        return mapped;
+    }
+    if ([valueObject isKindOfClass:[NSSet class]]) {
+        // Map sets to arrays.
+        NSMutableArray *mapped = [NSMutableArray array];
+        CFSetApplyFunction((CFSetRef)valueObject, _addMappedUserInfoValueToArray, mapped);
+        return mapped;
+    }
+    if ([valueObject isKindOfClass:[NSDictionary class]]) {
+        NSMutableDictionary *mapped = [NSMutableDictionary dictionary];
+        CFDictionaryApplyFunction((CFDictionaryRef)valueObject, _addMapppedUserInfoValueToDictionary, mapped);
+        return mapped;
+    }
     
     // We can only bring along plist-able values (so, for example, no NSRecoveryAttempterErrorKey).
     if (![NSPropertyListSerialization propertyList:valueObject isValidForFormat:NSPropertyListXMLFormat_v1_0]) {
 #ifdef DEBUG
         NSLog(@"'%@' of class '%@' is not a property list value.", valueObject, [valueObject class]);
 #endif
-        valueObject = [valueObject description];
+        return [valueObject description];
     }
     
-    if (!valueObject)
-        valueObject = @"<empty string>";
-    
+    return valueObject;
+}
+
+static void _addMappedUserInfoValueToArray(const void *value, void *context)
+{
+    id valueObject = _mapUserInfoValueToPlistValue(value);
+    OBASSERT(valueObject); // mapping returns something for nil
+    [(NSMutableArray *)context addObject:valueObject];
+}
+
+static void _addMapppedUserInfoValueToDictionary(const void *key, const void *value, void *context)
+{
+    NSString *keyString = (NSString *)key;
+    id valueObject = (id)value;
+    NSMutableDictionary *mappedUserInfo = (NSMutableDictionary *)context;
+
+#if INCLUDE_BACKTRACE_IN_ERRORS
+    if ([keyString isEqualToString:OBBacktraceAddressesErrorKey]) {
+        // Transform this to symbol names when actually interested in it.
+        NSData *frameData = valueObject;
+        const void* const* frames = [frameData bytes];
+        int frameCount = [frameData length] / sizeof(frames[0]);
+        char **names = backtrace_symbols((void* const* )frames, frameCount);
+        if (names) {
+            NSMutableArray *namesArray = [NSMutableArray array];
+            for (int nameIndex = 0; nameIndex < frameCount; nameIndex++)
+                [namesArray addObject:[NSString stringWithCString:names[nameIndex] encoding:NSUTF8StringEncoding]];
+            free(names);
+            
+            [mappedUserInfo setObject:namesArray forKey:OBBacktraceNamesErrorKey];
+            return;
+        }
+    }
+#endif
+
+    valueObject = _mapUserInfoValueToPlistValue(valueObject);
     [mappedUserInfo setObject:valueObject forKey:keyString];
 }
 
@@ -155,91 +203,10 @@ static void _mapUserInfoEntryToPlistValue(const void *key, const void *value, vo
     [plist setObject:[NSNumber numberWithInt:[self code]] forKey:@"code"];
     
     NSDictionary *userInfo = [self userInfo];
-    if (userInfo) {
-        NSMutableDictionary *mappedUserInfo = [NSMutableDictionary dictionary];
-        CFDictionaryApplyFunction((CFDictionaryRef)userInfo, _mapUserInfoEntryToPlistValue, mappedUserInfo);
-        [plist setObject:mappedUserInfo forKey:@"userInfo"];
-    }
+    if (userInfo)
+        [plist setObject:_mapUserInfoValueToPlistValue(userInfo) forKey:@"userInfo"];
     
     return plist;
 }
 
 @end
-
-void OBErrorWithDomainv(NSError **error, NSString *domain, int code, const char *fileName, unsigned int line, NSString *firstKey, va_list args)
-{
-    // Some uncertainty about whether it's really kosher to have a NULL error here. Some Foundation code on 10.4 would crash if you did this, but on 10.5, many methods are documented to allow it. So let's allow it also.
-    if (!error)
-        return;
-    
-    NSMutableDictionary *userInfo = _createUserInfo(firstKey, args);
-    
-    // Add in the previous error, if there was one
-    if (*error) {
-	OBASSERT(![userInfo objectForKey:NSUnderlyingErrorKey]); // Don't pass NSUnderlyingErrorKey in the varargs to this macro, silly!
-	[userInfo setObject:*error forKey:NSUnderlyingErrorKey];
-    }
-    
-    // Add in file and line information if the file was supplied
-    if (fileName) {
-	NSString *fileString = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:fileName length:strlen(fileName)];
-	[userInfo setObject:[fileString stringByAppendingFormat:@":%d", line] forKey:OBFileNameAndNumberErrorKey];
-    }
-    
-    *error = [NSError errorWithDomain:domain code:code userInfo:userInfo];
-    [userInfo release];
-}
-
-/*" Convenience function, invoked by the OBError macro, that allows for creating error objects with user info objects without creating a dictionary object.  The keys and values list must be terminated with a nil key. "*/
-void _OBError(NSError **error, NSString *domain, int code, const char *fileName, unsigned int line, NSString *firstKey, ...)
-{
-    OBPRECONDITION(domain != nil && [domain length] > 0);
-    
-    if (!error)
-        return;
-    
-    va_list args;
-    va_start(args, firstKey);
-    OBErrorWithDomainv(error, domain, code, fileName, line, firstKey, args);
-    va_end(args);
-}
-
-void OBErrorWithErrnoObjectsAndKeys(NSError **error, int errno_value, const char *function, NSString *argument, NSString *localizedDescription, ...)
-{
-    if (!error)
-        return;
-    
-    NSMutableString *description = [[NSMutableString alloc] init];
-    if (function)
-        [description appendFormat:@"%s: ", function];
-    if (argument) {
-        [description appendString:argument];
-        [description appendString:@": "];
-    }
-    [description appendFormat:@"%s", strerror(errno_value)];
-    
-    NSMutableDictionary *userInfo = [[NSMutableDictionary alloc] init];
-    [userInfo setObject:description forKey:NSLocalizedFailureReasonErrorKey];
-    [description release];
-    if (localizedDescription)
-        [userInfo setObject:localizedDescription forKey:NSLocalizedDescriptionKey];
-    
-    va_list kvargs;
-    va_start(kvargs, localizedDescription);
-    for(;;) {
-        NSObject *anObject = va_arg(kvargs, NSObject *);
-        if (!anObject)
-            break;
-        NSString *aKey = va_arg(kvargs, NSString *);
-        if (!aKey) {
-            NSLog(@"*** OBErrorWithErrnoObjectsAndKeys(..., %s, %@, ...) called with an odd number of varargs!", function, localizedDescription);
-            break;
-        }
-        [userInfo setObject:anObject forKey:aKey];
-    }
-    va_end(kvargs);
-    
-    *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno_value userInfo:userInfo];
-    [userInfo release];
-}
-

@@ -21,12 +21,12 @@ RCS_ID("$Id$");
 #define OmniAppKitBackupFourCharCode FOUR_CHAR_CODE('OABK')
 
 @interface NSDocument (OAExtensions_Private)
-- (OFResourceFork *)_retained_resourceForkCreateIfMissing:(BOOL)create;
+- (OFResourceFork *)_newResourceForkCreateIfMissing:(BOOL)create;
 @end
 
 @implementation NSDocument (OAExtensions)
 
-#if defined(OMNI_ASSERTIONS_ON) && defined(MAC_OS_X_VERSION_10_4) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4)
+#ifdef OMNI_ASSERTIONS_ON
 
 static void checkDeprecatedSelector(Class documentSubclass, Class documentClass, SEL sel)
 {
@@ -37,7 +37,7 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 
 + (void)didLoad;
 {
-    // Check that no deprecated APIs are implemented in subclasses of NSDocument if we are build for 10.4 or later.  NSDocument changes its behavior if you *implement* the deprecated APIs and we want to stay on the mainstream path.
+    // Check that no deprecated APIs are implemented in subclasses of NSDocument.  NSDocument changes its behavior if you *implement* the deprecated APIs and we want to stay on the mainstream path.
     // This assumes that all NSDocument subclasses are present at launch time.
     
     // Get the class list
@@ -91,25 +91,17 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 
 - (void)writeToBackupInResourceFork;
 {
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
     NSString *fileName = [[self fileURL] path];
-#else
-    NSString *fileName = [self fileName];
-#endif
     if (!fileName)
         return;
 
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
     NSError *error = nil;
     NSFileWrapper *wrapper = [self fileWrapperOfType:[self fileType] saveOperation:NSSaveOperation error:&error];
     if (error)
 	NSLog(@"Failed to create file wrapper in %s -- %@", __PRETTY_FUNCTION__, error);
-#else
-    NSFileWrapper *wrapper = [self fileWrapperRepresentationOfType:[self fileType] saveOperation:NSSaveOperation];
-#endif
     NSData *contentData = [wrapper serializedRepresentation];
 
-    OFResourceFork *newFork = [self _retained_resourceForkCreateIfMissing:YES];
+    OFResourceFork *newFork = [self _newResourceForkCreateIfMissing:YES];
     OBASSERT(newFork != nil);
     [newFork setData:contentData forResourceType:OmniAppKitBackupFourCharCode];
     // release newFork so that deleteAllBackups... can open it.
@@ -119,7 +111,7 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 
 - (NSFileWrapper *)fileWrapperFromBackupInResourceFork;
 {
-    OFResourceFork *newFork = [self _retained_resourceForkCreateIfMissing:NO];
+    OFResourceFork *newFork = [self _newResourceForkCreateIfMissing:NO];
     if (!newFork)
         return nil;
     
@@ -147,7 +139,7 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 
 - (BOOL)hasBackupInResourceFork;
 {
-    OFResourceFork *newFork = [self _retained_resourceForkCreateIfMissing:NO];
+    OFResourceFork *newFork = [self _newResourceForkCreateIfMissing:NO];
     
     if (!newFork)
         return NO;
@@ -163,7 +155,7 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 
 - (void)deleteAllBackupsInResourceFork;
 {
-    OFResourceFork *newFork = [self _retained_resourceForkCreateIfMissing:NO];
+    OFResourceFork *newFork = [self _newResourceForkCreateIfMissing:NO];
     if (!newFork)
         return;
 
@@ -178,7 +170,7 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 
 - (void)deleteAllBackupsButMostRecentInResourceFork;
 {
-    OFResourceFork *newFork = [self _retained_resourceForkCreateIfMissing:NO];
+    OFResourceFork *newFork = [self _newResourceForkCreateIfMissing:NO];
     if (!newFork)
         return;
     
@@ -236,7 +228,7 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 
 @implementation NSDocument (OAExtensions_Private)
 
-- (OFResourceFork *)_retained_resourceForkCreateIfMissing:(BOOL)create;
+- (OFResourceFork *)_newResourceForkCreateIfMissing:(BOOL)create;
 {
     BOOL isDirectory = NO;
     NSFileManager *fileManager = [NSFileManager defaultManager];

@@ -21,8 +21,8 @@ RCS_ID("$Id$");
 @end
 
 static NSMutableParagraphStyle *OATextWithIconCellParagraphStyle = nil;
-NSString *OATextWithIconCellStringKey = @"string";
-NSString *OATextWithIconCellImageKey = @"image";
+NSString const *OATextWithIconCellStringKey = @"string";
+NSString const *OATextWithIconCellImageKey = @"image";
 
 @implementation OATextWithIconCell
 

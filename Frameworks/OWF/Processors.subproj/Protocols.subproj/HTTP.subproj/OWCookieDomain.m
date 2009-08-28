@@ -947,7 +947,7 @@ static NSString *OWCookiesElementName = @"OmniWebCookies";
     [whitespaceBehavior release];
 
     // Read domains
-    OFXMLCursor *domainCursor = [document createCursor];
+    OFXMLCursor *domainCursor = [document cursor];
     OFXMLElement *domainElement;
     while ((domainElement = [domainCursor nextChild]) != nil) {
         OBASSERT([domainElement isKindOfClass:[OFXMLElement class]]);
@@ -986,7 +986,6 @@ static NSString *OWCookiesElementName = @"OmniWebCookies";
         }
     }
 
-    [domainCursor release];
     [document release];
     
     [pool release];

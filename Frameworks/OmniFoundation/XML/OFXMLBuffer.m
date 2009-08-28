@@ -11,16 +11,12 @@
 
 RCS_ID("$Id$");
 
-
+// Store a buffer of UTF-8 encoded characters.
 struct _OFXMLBuffer {
-    unsigned int   length;
-    unsigned int   size;
-    unichar       *characters;
+    size_t used;
+    size_t size;
+    uint8_t *utf8;
 };
-
-/*
- TODO: Instead of storing Unicode internally, it would be good to store UTF-8.  One question with that is how to implement OFXMLBufferAppendString efficiently, though.
- */
 
 OFXMLBuffer OFXMLBufferCreate(void)
 {
@@ -29,16 +25,16 @@ OFXMLBuffer OFXMLBufferCreate(void)
 
 void OFXMLBufferDestroy(OFXMLBuffer buf)
 {
-    if (buf->characters)
-        free(buf->characters);
+    if (buf->utf8)
+        free(buf->utf8);
     free(buf);
 }
 
-static inline void _OFXMLBufferEnsureSpace(OFXMLBuffer buf, CFIndex additionalLength)
+static inline void _OFXMLBufferEnsureSpace(OFXMLBuffer buf, size_t additionalLength)
 {
-    if (buf->length + additionalLength > buf->size) {
-        buf->size = 2 * (buf->length + additionalLength);
-        buf->characters = (unichar *)realloc(buf->characters, sizeof(*buf->characters) * buf->size);
+    if (buf->used + additionalLength > buf->size) {
+        buf->size = 2 * (buf->used + additionalLength);
+        buf->utf8 = (uint8_t *)realloc(buf->utf8, sizeof(*buf->utf8) * buf->size);
     }
 }
 
@@ -48,56 +44,106 @@ void OFXMLBufferAppendString(OFXMLBuffer buf, CFStringRef str)
     if (!str)
 	return;
     
-    unsigned additionalLength = CFStringGetLength(str);
+    CFIndex characterCount = CFStringGetLength(str);
+    
+    size_t additionalLength = characterCount * 4; // The maximum size that a unichar can be in UTF-8.
     _OFXMLBufferEnsureSpace(buf, additionalLength);
-    CFStringGetCharacters(str, (CFRange){0, additionalLength}, &buf->characters[buf->length]);
-    buf->length += additionalLength;
+    
+    CFIndex availableSpace = buf->size - buf->used;
+    CFIndex usedBufLen = 0;
+    
+    // Does not zero terminate.
+    CFIndex charactersConverted = CFStringGetBytes(str, CFRangeMake(0, characterCount), kCFStringEncodingUTF8, 0/*lossByte; loss not allowed*/, false/*isExternalRepresentation*/,
+                                                   &buf->utf8[buf->used], availableSpace, &usedBufLen);
+    if (charactersConverted != characterCount) {
+        OBASSERT_NOT_REACHED("Everything should be representable in UTF-8 and we should have enough space");
+        return;
+    }
+    
+    buf->used += usedBufLen;
 }
 
 // TODO: Should probably make callers pass the length (or at least add a variant where they can)
-void OFXMLBufferAppendASCIICString(OFXMLBuffer buf, const char *str)
+void OFXMLBufferAppendUTF8CString(OFXMLBuffer buf, const char *str)
 {
     char c;
     while ((c = *str++)) {
         _OFXMLBufferEnsureSpace(buf, 1);
-        buf->characters[buf->length] = c;
-        buf->length++;
+        buf->utf8[buf->used] = c;
+        buf->used++;
     }
+}
+
+// Appends the quoted form of the given unquoted string.  We assume the input is valid UTF-8, is NUL terminated and is not already quoted.  This is intended to operate like OFXMLCreateStringWithEntityReferencesInCFEncoding, given a mask of OFXMLBasicEntityMask and an encoding of kCFStringEncodingUTF8. We could use that, except we want to avoid creating temporary objects on this path since it is used to capture sub-element data on the iPhone.
+void OFXMLBufferAppendQuotedUTF8CString(OFXMLBuffer buf, const char *unquotedString)
+{
+    char c;
+    while ((c = *unquotedString++)) {
+        if ((c & 0x80) == 0) {
+            // A 7-bit character.  XML doesn't allow low ASCII characters (see _OFXMLCreateStringWithEntityReferences) other than some specific entries.
+            switch (c) {
+#define QUOTE_WITH(s) OFXMLBufferAppendUTF8Bytes(buf, s, strlen(s)); break
+                case '&': QUOTE_WITH("&amp;");
+                case '<': QUOTE_WITH("&lt;");
+                case '>': QUOTE_WITH("&gt;");
+                case '\'': QUOTE_WITH("&apos;");
+                case '"': QUOTE_WITH("&quot;");
+#undef QUOTE_WITH
+                default:
+                    if (c >= 0x20 || c == '\n' || c == '\t' || c == '\r') {
+                        _OFXMLBufferEnsureSpace(buf, 1);
+                        buf->utf8[buf->used] = c;
+                        buf->used++;
+                    } else {
+                        // This is a low-ascii, non-whitespace byte and isn't allowed in XML character at all.  Drop it.
+                        OBASSERT(c < 0x20 && c != 0x9 && c != 0xA && c != 0xD);
+                    }
+                    break;
+            }
+        } else {
+            // Part of a UTF-8 sequence.  We assume these are valid and just pass them through.
+            _OFXMLBufferEnsureSpace(buf, 1);
+            buf->utf8[buf->used] = c;
+            buf->used++;
+        }
+    }
+}
+
+void OFXMLBufferAppendUTF8Bytes(OFXMLBuffer buf, const char *str, size_t byteCount)
+{
+    _OFXMLBufferEnsureSpace(buf, byteCount);
+    memcpy(&buf->utf8[buf->used], str, byteCount);
+    buf->used += byteCount;
 }
 
 void OFXMLBufferAppendSpaces(OFXMLBuffer buf, CFIndex count)
 {
     _OFXMLBufferEnsureSpace(buf, count);
     
-    // Can't memset since we are going to a unichar buffer.
-    unichar *p = &buf->characters[buf->length];
-    
-    CFIndex charIndex;
-    for (charIndex = 0; charIndex < count; charIndex++)
-        p[charIndex] = ' ';
-    
-    buf->length += count;
+    // Can memset since we are going to a UTF-8 buffer and space is a single byte in UTF-8.
+    memset(&buf->utf8[buf->used], ' ', count);
+    buf->used += count;
 }
 
-BOOL OFXMLBufferAppendUTF8Data(OFXMLBuffer buf, CFDataRef data, NSError **outError)
+void OFXMLBufferAppendUTF8Data(OFXMLBuffer buf, CFDataRef data)
 {
-    CFStringRef str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, data, kCFStringEncodingUTF8);
-    if (!str) {
-        // Should be very rare if people are being consistent.
-        *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OFXMLCannotCreateStringFromUnparsedData userInfo:nil];
-        return NO;
-    }
-    
-    OFXMLBufferAppendString(buf, str);
-    CFRelease(str);
-    return YES;
+    OFXMLBufferAppendUTF8Bytes(buf, (const char *)CFDataGetBytePtr(data), CFDataGetLength(data));
 }
 
 CFDataRef OFXMLBufferCopyData(OFXMLBuffer buf, CFStringEncoding encoding)
 {
-    CFStringRef str = CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, buf->characters, buf->length, kCFAllocatorNull/*no free*/);
+    if (encoding == kCFStringEncodingUTF8)
+        return CFDataCreate(kCFAllocatorDefault, buf->utf8, buf->used);
+    
+    CFStringRef str = CFStringCreateWithBytesNoCopy(kCFAllocatorDefault, buf->utf8, buf->used, kCFStringEncodingUTF8, false/*isExternalRepresentation*/, kCFAllocatorNull/*no free*/);
     OBASSERT(str);
     CFDataRef data = CFStringCreateExternalRepresentation(kCFAllocatorDefault, str, encoding, 0/*lossByte*/);
+    OBASSERT(data);
     CFRelease(str);
     return data;
+}
+
+CFStringRef OFXMLBufferCopyString(OFXMLBuffer buf)
+{
+    return CFStringCreateWithBytes(kCFAllocatorDefault, buf->utf8, buf->used, kCFStringEncodingUTF8, false/*isExternalRepresentation*/);
 }

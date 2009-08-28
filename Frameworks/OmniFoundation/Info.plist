@@ -38,6 +38,14 @@
 				<integer>23</integer>
 				<key>RelativeDateFormatterDefaultMinute</key>
 				<integer>59</integer>
+				<key>RelativeDateFormatterDefaultWantsTruncatedTime</key>
+				<false/>
+				<key>RelativeDateFormatterShowTime</key>
+				<false/>
+				<key>RelativeDateFormatterUseRelativeDayNames</key>
+				<true/>
+				<key>RelativeDateFormatterDateFormatStyle</key>
+				<string>short</string>
 			</dict>
 		</dict>
 	</dict>

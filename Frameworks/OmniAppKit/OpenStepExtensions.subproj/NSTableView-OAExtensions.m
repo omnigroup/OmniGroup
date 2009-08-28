@@ -63,6 +63,12 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 - (void)_replacementKeyDown:(NSEvent *)theEvent;
 {
     NSString *characters = [theEvent characters];
+    if (![characters length]) {
+	originalKeyDown(self, _cmd, theEvent);
+	return;
+    }
+    
+    OBASSERT([characters length] != 0);
     unichar firstCharacter = [characters characterAtIndex:0];
     
     // See if there's an item whose title matches what the user is typing.
@@ -488,16 +494,6 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 
 
 // NSDraggingSource
-
-- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)flag;
-{
-    if ([_dataSource respondsToSelector:@selector(tableView:draggingSourceOperationMaskForLocal:)])
-        return [_dataSource tableView:self draggingSourceOperationMaskForLocal:flag];
-    else if (flag)
-        return NSDragOperationEvery;
-    else
-        return NSDragOperationNone;        
-}
 
 - (void)draggedImage:(NSImage *)image endedAt:(NSPoint)screenPoint operation:(NSDragOperation)operation;
 {

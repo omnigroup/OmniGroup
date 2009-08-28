@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,21 +12,12 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <pthread.h>
+#import <QuartzCore/QuartzCore.h>
 
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
-#import <QuartzCore/QuartzCore.h> // For CoreImage
-#endif
 
 #import "OAImageManager.h"
 
 RCS_ID("$Id$")
-
-@implementation NSImage (OAImageExtensions)
-+ (NSImage *)imageInClassBundleNamed:(NSString *)imageName;
-{
-    return [NSImage imageNamed:imageName inBundleForClass:self];
-}
-@end
 
 @implementation NSImage (OAExtensions)
 
@@ -357,6 +348,9 @@ static NSDictionary *titleFontAttributes;
             ADD_CHEAP_DATA(NSPDFPboardType, [(NSPDFImageRep *)rep PDFRepresentation]);
         }
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+        // -PICTRepresentation is deprecated on 10.6
+#else
         if ([rep respondsToSelector:@selector(PICTRepresentation)]) {
             ADD_CHEAP_DATA(NSPICTPboardType, [(NSPICTImageRep *)rep PICTRepresentation]);
         }
@@ -364,6 +358,7 @@ static NSDictionary *titleFontAttributes;
         if ([rep respondsToSelector:@selector(EPSRepresentation)]) {
             ADD_CHEAP_DATA(NSPostScriptPboardType, [(NSEPSImageRep *)rep EPSRepresentation]);
         }
+#endif
     }
     
     /* Always offer to convert to TIFF. Do this lazily, though, since we probably have to extract it from a bitmap image rep. */
@@ -423,7 +418,6 @@ static NSDictionary *titleFontAttributes;
     return scaledImage;
 }
 
-#ifdef MAC_OS_X_VERSION_10_2 && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_2
 #include <stdlib.h>
 #include <memory.h>
 
@@ -573,15 +567,19 @@ static NSDictionary *titleFontAttributes;
 
     return mutableBMPData;
 }
-#endif
 
 - (NSData *)pngData;
 {
     NSBitmapImageRep *bitmapImageRep = (id)[self imageRepOfClass:[NSBitmapImageRep class]];
-    if (bitmapImageRep == nil) {
-	OBRequestConcreteImplementation(self, _cmd); // Used to have an NSCachedImageRep path, but that's deprecated.
-    }    
-    return [bitmapImageRep representationUsingType:NSPNGFileType properties:nil];
+    if (bitmapImageRep)
+        return [bitmapImageRep representationUsingType:NSPNGFileType properties:nil];
+    
+    // Not sure what this does with there are multiples.  Does it write multi-resolution TIFF? What does it do for PNG?
+    NSArray *representations = [self representations];
+    OBASSERT([representations count] == 1);
+    NSData *result = [NSBitmapImageRep representationOfImageRepsInArray:representations usingType:NSPNGFileType properties:nil];
+    OBASSERT(result);
+    return result;
 }
 
 + (NSImage *)documentIconWithContent:(NSImage *)contentImage;
@@ -720,10 +718,7 @@ static void setupTintTable(void)
     return tintTable;
 }
 
-@end
-
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
-@implementation NSImage (OACoreImageExtensions)
+#pragma mark CoreImage
 
 - (CIImage *)ciImageForContext:(CIContext *)ctxt;
 {
@@ -736,13 +731,11 @@ static void setupTintTable(void)
         NSImageRep *rep = [reps objectAtIndex:repIndex];
         if ([rep isKindOfClass:[NSCIImageRep class]])
             return [(NSCIImageRep *)rep CIImage];
-#if defined(MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-        if ([rep isKindOfClass:[NSBitmapImageRep class]] && [rep respondsToSelector:@selector(CGImage)]) {
+        if ([rep isKindOfClass:[NSBitmapImageRep class]]) {
             CGImageRef cgImage = [(NSBitmapImageRep *)rep CGImage];
             if (cgImage != NULL)
                 return [CIImage imageWithCGImage:cgImage];
         }
-#endif
     }
     
     /* Fallback: render the image into a CGLayer and get a CIImage from that. */
@@ -763,6 +756,6 @@ static void setupTintTable(void)
     
     return result;
 }
+
 @end
-#endif
 

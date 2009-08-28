@@ -29,7 +29,7 @@ RCS_ID("$Id$");
     if (childCount) {
         NSMutableArray *frozenChildren = (NSMutableArray *)CFArrayCreateMutable(kCFAllocatorDefault, childCount, &OFNSObjectArrayCallbacks);
         for (childIndex = 0; childIndex < childCount; childIndex++) {
-            id child = [[children objectAtIndex:childIndex] createFrozenElement];
+            id child = [[children objectAtIndex:childIndex] copyFrozenElement];
             [frozenChildren addObject:child];
             [child release];
         }
@@ -91,7 +91,7 @@ RCS_ID("$Id$");
     if (whitespaceBehavior == OFXMLWhitespaceBehaviorTypeAuto)
         whitespaceBehavior = parentBehavior;
 
-    OFXMLBufferAppendASCIICString(xml, "<");
+    OFXMLBufferAppendUTF8CString(xml, "<");
     OFXMLBufferAppendString(xml, (CFStringRef)_name);
 
     if (_attributeNamesAndValues) {
@@ -102,14 +102,14 @@ RCS_ID("$Id$");
             NSString *name  = [_attributeNamesAndValues objectAtIndex:2*attributeIndex+0];
             NSString *value = [_attributeNamesAndValues objectAtIndex:2*attributeIndex+1];
             
-            OFXMLBufferAppendASCIICString(xml, " ");
+            OFXMLBufferAppendUTF8CString(xml, " ");
             OFXMLBufferAppendString(xml, (CFStringRef)name);
 
-            OFXMLBufferAppendASCIICString(xml, "=\"");
+            OFXMLBufferAppendUTF8CString(xml, "=\"");
             NSString *quotedString = OFXMLCreateStringWithEntityReferencesInCFEncoding(value, OFXMLBasicEntityMask, nil, encoding);
             OFXMLBufferAppendString(xml, (CFStringRef)quotedString);
             [quotedString release];
-            OFXMLBufferAppendASCIICString(xml, "\"");
+            OFXMLBufferAppendUTF8CString(xml, "\"");
         }
     }
 
@@ -129,10 +129,10 @@ RCS_ID("$Id$");
 
         // Close off the parent tag if this is the first child
         if (!hasWrittenChild)
-            OFXMLBufferAppendASCIICString(xml, ">");
+            OFXMLBufferAppendUTF8CString(xml, ">");
 
         if (doIntenting) {
-            OFXMLBufferAppendASCIICString(xml, "\n");
+            OFXMLBufferAppendUTF8CString(xml, "\n");
             OFXMLBufferAppendSpaces(xml, 2*(level + 1));
         }
 
@@ -143,16 +143,16 @@ RCS_ID("$Id$");
     }
 
     if (doIntenting) {
-        OFXMLBufferAppendASCIICString(xml, "\n");
+        OFXMLBufferAppendUTF8CString(xml, "\n");
         OFXMLBufferAppendSpaces(xml, 2*level);
     }
 
     if (hasWrittenChild) {
-        OFXMLBufferAppendASCIICString(xml, "</");
+        OFXMLBufferAppendUTF8CString(xml, "</");
         OFXMLBufferAppendString(xml, (CFStringRef)_name);
-        OFXMLBufferAppendASCIICString(xml, ">");
+        OFXMLBufferAppendUTF8CString(xml, ">");
     } else
-        OFXMLBufferAppendASCIICString(xml, "/>");
+        OFXMLBufferAppendUTF8CString(xml, "/>");
 
     return YES;
 }

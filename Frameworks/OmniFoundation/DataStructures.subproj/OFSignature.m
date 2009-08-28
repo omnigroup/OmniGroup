@@ -59,12 +59,10 @@ RCS_ID("$Id$")
 
 - (void) addBytes: (const void *) bytes length: (NSUInteger) length;
 {
-    unsigned int currentLengthToProcess;
-
     OBPRECONDITION(!_signatureData);
     
     while (length) {
-        currentLengthToProcess = MIN(length, 16384u);
+        CC_LONG currentLengthToProcess = MIN((CC_LONG)length, 16384u);
         CC_SHA1_Update(CONTEXT, bytes, currentLengthToProcess);
         length -= currentLengthToProcess;
         bytes += currentLengthToProcess;

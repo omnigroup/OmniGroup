@@ -35,9 +35,9 @@
 @end
 
 // XML Archiving user object key
-extern NSString *OAColorXMLAdditionalColorSpace;
+extern NSString * const OAColorXMLAdditionalColorSpace;
 
 // Value transformers
-extern NSString *OAColorToPropertyListTransformerName;
-extern NSString *OABooleanToControlColorTransformerName;
-extern NSString *OANegateBooleanToControlColorTransformerName;
+extern NSString * const OAColorToPropertyListTransformerName;
+extern NSString * const OABooleanToControlColorTransformerName;
+extern NSString * const OANegateBooleanToControlColorTransformerName;

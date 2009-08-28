@@ -9,7 +9,10 @@
 
 #import <Foundation/NSString.h>
 #import <Foundation/NSValue.h>
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Foundation/NSGeometry.h>  // This seems to be the most parsimonious way to include CGBase.h for the CGFloat typedef
+#endif
 
 @interface NSNumber (OFCGTypeExtensions)
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,14 +14,14 @@
 @interface OFSparseArray : OFObject
 {
     NSMutableArray *values;
-    unsigned int valuesLength;
+    NSUInteger valuesLength;
     id defaultValue;
 }
 
 - initWithCapacity:(NSUInteger)aCapacity;
-- (unsigned int)count;
-- (id)objectAtIndex:(unsigned int)anIndex;
-- (void)setObject:(id)anObject atIndex:(unsigned int)anIndex;
+- (NSUInteger)count;
+- (id)objectAtIndex:(NSUInteger)anIndex;
+- (void)setObject:(id)anObject atIndex:(NSUInteger)anIndex;
 - (void)setDefaultValue:(id)aDefaultValue;
 - (NSArray *)valuesArray;
 

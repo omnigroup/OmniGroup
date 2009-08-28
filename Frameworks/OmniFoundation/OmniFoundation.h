@@ -10,7 +10,6 @@
 #import <OmniFoundation/OFAutoreleasedMemory.h>
 #import <OmniFoundation/OFBTree.h>
 #import <OmniFoundation/OFBinding.h>
-#import <OmniFoundation/OFBitField.h>
 #import <OmniFoundation/OFBulkBlockPool.h>
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFBundledClass.h>
@@ -47,7 +46,6 @@
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFObject-Queue.h>
 #import <OmniFoundation/OFObject.h>
-#import <OmniFoundation/OFOid.h>
 #import <OmniFoundation/OFPoint.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFQueue.h>
@@ -82,14 +80,20 @@
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
 #import <OmniFoundation/OFWeakRetainProtocol.h>
+
+#import <OmniFoundation/OFXMLComment.h>
 #import <OmniFoundation/OFXMLCursor.h>
 #import <OmniFoundation/OFXMLDocument.h>
 #import <OmniFoundation/OFXMLElement.h>
-#import <OmniFoundation/OFXMLUnparsedElement.h>
-#import <OmniFoundation/OFXMLString.h>
-#import <OmniFoundation/OFXMLComment.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
 #import <OmniFoundation/OFXMLIdentifierRegistry.h>
+#import <OmniFoundation/OFXMLInternedStringTable.h>
+#import <OmniFoundation/OFXMLMaker.h>
+#import <OmniFoundation/OFXMLParser.h>
+#import <OmniFoundation/OFXMLQName.h>
+#import <OmniFoundation/OFXMLReader.h>
+#import <OmniFoundation/OFXMLString.h>
+#import <OmniFoundation/OFXMLUnparsedElement.h>
 
 // AppleScript
 #import <OmniFoundation/NSAppleEventDescriptor-OFExtensions.h>

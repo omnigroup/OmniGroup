@@ -29,7 +29,7 @@ typedef enum {
     CFByteOrder byteOrder;
     NSStringEncoding stringEncoding;
 
-    unsigned int dataLength;
+    size_t dataLength;
     const OFByte *startPosition, *endPosition;
     const OFByte *currentPosition;
 }
@@ -40,20 +40,20 @@ typedef enum {
 - (CFByteOrder)byteOrder;
 
 - (BOOL)hasMoreData;
-- (unsigned int)seekToOffset:(int)offset fromPosition:(OFDataCursorSeekPosition)position;
-- (unsigned int)currentOffset;
+- (size_t)seekToOffset:(off_t)offset fromPosition:(OFDataCursorSeekPosition)position;
+- (size_t)currentOffset;
 - (void)rewind;
 
-- (void)readBytes:(unsigned int)byteCount intoBuffer:(void *)buffer;
-- (void)peekBytes:(unsigned int)byteCount intoBuffer:(void *)buffer;
-- (void)skipBytes:(unsigned int)byteCount;
+- (void)readBytes:(size_t)byteCount intoBuffer:(void *)buffer;
+- (void)peekBytes:(size_t)byteCount intoBuffer:(void *)buffer;
+- (void)skipBytes:(size_t)byteCount;
 
-- (unsigned int)readMaximumBytes:(unsigned int)byteCount intoBuffer:(void *)buffer;
-- (unsigned int)peekMaximumBytes:(unsigned int)byteCount intoBuffer:(void *)buffer;
-- (unsigned int)skipMaximumBytes:(unsigned int)byteCount;
+- (size_t)readMaximumBytes:(size_t)byteCount intoBuffer:(void *)buffer;
+- (size_t)peekMaximumBytes:(size_t)byteCount intoBuffer:(void *)buffer;
+- (size_t)skipMaximumBytes:(size_t)byteCount;
 
-- (unsigned int)offsetToByte:(OFByte)aByte;
-- (unsigned int)offsetToByteInSet:(OFByteSet *)aByteSet;
+- (size_t)offsetToByte:(OFByte)aByte;
+- (size_t)offsetToByteInSet:(OFByteSet *)aByteSet;
 
 - (long int)readLongInt;
 - (long int)peekLongInt;
@@ -81,14 +81,14 @@ typedef enum {
 - (long long int)peekCompressedLongLongInt;
 - (void)skipCompressedLongLongInt;
 
-- (NSData *)readDataOfLength:(unsigned int)aLength;
-- (NSData *)peekDataOfLength:(unsigned int)aLength;
+- (NSData *)readDataOfLength:(size_t)aLength;
+- (NSData *)peekDataOfLength:(size_t)aLength;
 - (NSData *)readDataUpToByte:(OFByte)aByte;
 - (NSData *)peekDataUpToByte:(OFByte)aByte;
 - (NSData *)readDataUpToByteInSet:(OFByteSet *)aByteSet;
 - (NSData *)peekDataUpToByteInSet:(OFByteSet *)aByteSet;
-- (NSString *)readStringOfLength:(unsigned int)aLength;
-- (NSString *)peekStringOfLength:(unsigned int)aLength;
+- (NSString *)readStringOfLength:(size_t)aLength;
+- (NSString *)peekStringOfLength:(size_t)aLength;
 - (NSString *)readStringUpToByte:(OFByte)aByte;
 - (NSString *)peekStringUpToByte:(OFByte)aByte;
 - (NSString *)readStringUpToByteInSet:(OFByteSet *)aByteSet;

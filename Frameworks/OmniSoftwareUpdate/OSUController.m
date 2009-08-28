@@ -18,6 +18,8 @@
 #import "OSUDownloadController.h"
 #import "OSUAvailableUpdateController.h"
 #import "OSUErrors.h"
+#import "OSUItem.h"
+#import "OSUCheckOperation.h"
 
 RCS_ID("$Id$");
 
@@ -35,8 +37,6 @@ NSString *OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  Do we re
 
 @interface OSUController (Private)
 - (BOOL)_loadNib:(BOOL)hasSeenPreviousVersion;
-- (void)_runNewVersionsDialog:(NSArray *)versionInfos;
-- (void)_startingCheckForUpdates;
 @end
 
 @implementation OSUController
@@ -57,14 +57,34 @@ NSString *OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  Do we re
     [[OSUChecker sharedUpdateChecker] checkSynchronously];
 }
 
-+ (void)newVersionsAvailable:(NSArray *)versionInfos;
++ (void)newVersionsAvailable:(NSArray *)versionInfos fromCheck:(OSUCheckOperation *)op;
 {
-    [[self sharedController] _runNewVersionsDialog:versionInfos];
+    /* In the common case, there are no new versions available, and we don't want to create the ... for nothing. */
+    BOOL quiet = YES;
+    
+    // If this is an asynchronous run (not prompted by the user), and there are no items that would be displayed with the default predicate, don't call the target/action.
+    if (!op.initiatedByUser) {
+        NSArray *filteredItems = [versionInfos filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededOrIgnoredPredicate]];
+        if ([filteredItems count] > 0)
+            quiet = NO;
+    }
+    
+    OSUAvailableUpdateController *availableUpdateController = [OSUAvailableUpdateController availableUpdateController:!quiet];
+    if (availableUpdateController) {
+        // If there is a controller, update it even if quiet=YES
+        [availableUpdateController setValue:versionInfos forKey:OSUAvailableUpdateControllerAvailableItemsBinding];
+    }
+    
+    if (!quiet)
+        [availableUpdateController showWindow:nil];
 }
 
 + (void)startingCheckForUpdates;
 {
-    [[self sharedController] _startingCheckForUpdates];
+    /* This method is only called for explicit user requests, not for background operations. So go ahead and pop up the window. */
+    OSUAvailableUpdateController *availableUpdateController = [OSUAvailableUpdateController availableUpdateController:YES];
+    [availableUpdateController setValue:nil forKey:OSUAvailableUpdateControllerAvailableItemsBinding];
+    [availableUpdateController showWindow:nil];
 }
 
 - (OSUPrivacyNoticeResult)runPrivacyNoticePanelHavingSeenPreviousVersion:(BOOL)hasSeenPreviousVersion;
@@ -88,7 +108,10 @@ NSString *OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  Do we re
 
 - (BOOL)beginDownloadAndInstallFromPackageAtURL:(NSURL *)packageURL item:(OSUItem *)item error:(NSError **)outError;
 {
-    OSUDownloadController *download = [[OSUDownloadController alloc] initWithPackageURL:packageURL item:item error:outError];
+    // As a standard NSWindowController pattern, this will self-destruct when the window closes.  clang scan-build doesn't understand that, though.
+    // Under there is a better fix for this, doing this still stuff to make scan-build oblivious.
+    // There is an existing clang scan-build bug for this at <http://llvm.org/bugs/show_bug.cgi?id=2633>
+    OSUDownloadController *download = [objc_msgSend([OSUDownloadController class], @selector(alloc)) initWithPackageURL:packageURL item:item error:outError];
     return (download != nil);
 }
 
@@ -135,22 +158,6 @@ NSString *OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  Do we re
     [privacyNoticeAppIconImageView setImage:[NSApp applicationIconImage]];
     
     return YES;
-}
-
-- (void)_runNewVersionsDialog:(NSArray *)versionInfos;
-{
-    OSUAvailableUpdateController *availableUpdateController = [OSUAvailableUpdateController availableUpdateController];
-    [availableUpdateController setValue:versionInfos forKey:OSUAvailableUpdateControllerAvailableItemsBinding];
-    [availableUpdateController setValue:[NSNumber numberWithBool:NO] forKey:OSUAvailableUpdateControllerCheckInProgressBinding];
-    [availableUpdateController showWindow:nil];
-}
-
-- (void)_startingCheckForUpdates;
-{
-    OSUAvailableUpdateController *availableUpdateController = [OSUAvailableUpdateController availableUpdateController];
-    [availableUpdateController setValue:nil forKey:OSUAvailableUpdateControllerAvailableItemsBinding];
-    [availableUpdateController setValue:[NSNumber numberWithBool:YES] forKey:OSUAvailableUpdateControllerCheckInProgressBinding];
-    [availableUpdateController showWindow:nil];
 }
 
 @end

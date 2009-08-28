@@ -1,4 +1,4 @@
-// Copyright 2005-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2007, 2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,6 @@ RCS_ID("$Id$");
 
 - (NSString *)charactersWithModifiers:(unsigned int)modifierFlags;
 {
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5  // Uses API deprecated on 10.5
     UInt32 eventModifiers = 0;
     if (modifierFlags & NSShiftKeyMask)
         eventModifiers |= shiftKey;
@@ -33,69 +32,21 @@ RCS_ID("$Id$");
     if (modifierFlags & NSCommandKeyMask)
         eventModifiers |= cmdKey;
 
-    // check if the shifted version of this key would have made the font bigger...
-    SInt16 currentKeyScript = GetScriptManagerVariable(smKeyScript);
-    SInt16 currentKeyLayoutID = GetScriptVariable(currentKeyScript, smScriptKeys);
-    UCKeyboardLayout **myKeyLayout = (UCKeyboardLayout **)GetResource('uchr', currentKeyLayoutID);
-    // if there is a 'uchr' for the current keyboard layout, 
-    // use it
-    if (myKeyLayout != NULL) {
-        UniCharCount actualStringLength;
-        UInt32 deadKeyState = 0;
-        UniChar unicodeInputString[255];
-        
-        //NSLog(@"keyLayout = %p", myKeyLayout);
-        OSStatus status = UCKeyTranslate(*myKeyLayout, 
-                                         [self keyCode], 
-                                         kUCKeyActionDown,
-                                         eventModifiers >> 8, 
-                                         LMGetKbdType(), 
-                                         kUCKeyTranslateNoDeadKeysMask,
-                                         &deadKeyState,
-                                         255,
-                                         &actualStringLength, 
-                                         unicodeInputString);
-        // now do something with status and unicodeInputString
-        if (status == noErr) {
-            //NSLog(@"unicodeInputString = %c", unicodeInputString[0]);
-            return [NSString stringWithCharacters:unicodeInputString length:actualStringLength];
-        } else {
-            // NSLog(@"status = %d", status);
-            return nil;
-        }
+    // Check to see what character we would have gotten with the specified modifier flags.  (For example, would the Shift key have turned "=" into "+" for this key?)
+    CFDataRef unicodeKeyLayoutData = TISGetInputSourceProperty(TISCopyCurrentKeyboardInputSource(), kTISPropertyUnicodeKeyLayoutData);
+    const UCKeyboardLayout *keyboardLayout = (const UCKeyboardLayout *)CFDataGetBytePtr(unicodeKeyLayoutData);
+
+    UniCharCount actualStringLength;
+    UInt32 deadKeyState = 0;
+    UniChar unicodeString[255];
+    
+    OSStatus status = UCKeyTranslate(keyboardLayout, [self keyCode], kUCKeyActionDown, eventModifiers >> 8, LMGetKbdType(), kUCKeyTranslateNoDeadKeysMask, &deadKeyState, sizeof(unicodeString) / sizeof(*unicodeString), &actualStringLength, unicodeString);
+    OBASSERT(status == noErr);
+    if (status == noErr) {
+        return [NSString stringWithCharacters:unicodeString length:actualStringLength];
     } else {
-        // no 'uchr' resource, do something with 'KCHR'?
-        //NSLog(@"myKeyboardLayout was null");
-        const void **transData = (const void **)GetResource('KCHR', currentKeyLayoutID);
-        UInt32 state = 0;
-        if (transData != NULL) {
-            UInt32 result = KeyTranslate(*transData,
-                                         ([self keyCode] & 0x3F) | (eventModifiers & 0xFF00), 
-                                         &state);
-            //NSLog(@"result = %08llx", (long long)result);
-            
-            char macRomanChars[2];
-            int length = 0;
-            
-            if (result & 0x00FF0000) {
-                length = 2;
-                macRomanChars[0] = (result & 0x00FF0000) >> 16;
-                macRomanChars[1] = result & 0x000000FF;
-            } else if (result & 0x000000FF) {
-                length = 1;
-                macRomanChars[0] = result & 0x000000FF;
-            }
-            return [[[NSString alloc] initWithData:[NSData dataWithBytes:macRomanChars length:length] encoding:NSMacOSRomanStringEncoding] autorelease];
-        } else {
-            // no 'KCHR' resource, punt!!!
-            //NSLog(@"no 'KCHR' resource, punt!!!");
-            return nil;
-        }
+        return nil;
     }
-#else
-    OBRequestConcreteImplementation(self, _cmd);
-    return nil;
-#endif
 }
 
 @end

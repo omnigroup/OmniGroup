@@ -27,6 +27,11 @@
 
 RCS_ID("$Id$");
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+@interface OIInspectorRegistry () <NSTableViewDelegate>
+@end
+#endif
+
 @interface OIInspectorRegistry (Private)
 + (NSString *)_workspacesHelpURL;
 - (void)_ensureNibLoaded;
@@ -102,7 +107,7 @@ static NSString *inspectorDefaultsVersion = nil;
         }
         [(OITabbedInspector *)parent registerInspectorDictionary:descriptionDictionary bundle:bundle];
     } else {
-        OIInspector *inspector = [OIInspector createInspectorWithDictionary:descriptionDictionary bundle:bundle];
+        OIInspector *inspector = [OIInspector newInspectorWithDictionary:descriptionDictionary bundle:bundle];
         [registry _registerInspector:inspector];
         [inspector release];
     }
@@ -249,6 +254,12 @@ static NSMutableArray *hiddenPanels = nil;
     [[self sharedInspector] _inspectWindow:[NSApp mainWindow] queue:NO onlyIfVisible:NO updateInspectors:NO];
 }
 
++ (void)clearInspectionSet;
+{
+    [[[self sharedInspector] inspectionSet] removeAllObjects];
+    [[self sharedInspector] inspectionSetChanged];
+}
+
 - (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
 {
     OFForEachInArray(inspectorControllers, OIInspectorController *, anInspector, {
@@ -371,7 +382,7 @@ static NSMutableArray *hiddenPanels = nil;
     unsigned int inspectorIndex, inspectorCount = [inspectorPlists count];
     for (inspectorIndex = 0; inspectorIndex < inspectorCount; inspectorIndex++) {
         @try {
-            OIInspector *inspector = [OIInspector createInspectorWithDictionary:[inspectorPlists objectAtIndex:inspectorIndex] bundle:nil];
+            OIInspector *inspector = [OIInspector newInspectorWithDictionary:[inspectorPlists objectAtIndex:inspectorIndex] bundle:nil];
             [inspector setDefaultOrderingWithinGroup:inspectorIndex];
             [self _registerInspector:inspector];
             [inspector release];
@@ -620,7 +631,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 {
     [[editWorkspaceTable window] endEditingFor:nil];
     
-    NSAlert *deleteAlert = [[NSAlert alloc] init];
+    NSAlert *deleteAlert = [[[NSAlert alloc] init] autorelease];
     [deleteAlert setAlertStyle:NSWarningAlertStyle];
     [deleteAlert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace OK")];
     [deleteAlert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace Cancel")];

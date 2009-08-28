@@ -51,7 +51,7 @@
 
 @end
 
-extern NSString *OSAScriptException;
-extern NSString *OSAScriptExceptionSourceRangeKey;
+extern NSString * const OSAScriptException;
+extern NSString * const OSAScriptExceptionSourceRangeKey;
 
 #endif

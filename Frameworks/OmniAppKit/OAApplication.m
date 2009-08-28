@@ -24,8 +24,8 @@
 
 RCS_ID("$Id$")
 
-NSString *OAFlagsChangedNotification = @"OAFlagsChangedNotification";
-NSString *OAFlagsChangedQueuedNotification = @"OAFlagsChangedNotification (Queued)";
+NSString * const OAFlagsChangedNotification = @"OAFlagsChangedNotification";
+NSString * const OAFlagsChangedQueuedNotification = @"OAFlagsChangedNotification (Queued)";
 
 @interface OAApplication (Private)
 + (unsigned int)_currentModifierFlags;
@@ -46,13 +46,17 @@ static unsigned int launchModifierFlags;
     launchModifierFlags = [self _currentModifierFlags];
 }
 
+static NSImage *HelpIcon = nil;
+static NSImage *CautionIcon = nil;
+
 + (void)setupOmniApplication;
 {
     [OBObject self]; // Trigger +[OBPostLoader processClasses]
     
-    // make these images available to client nibs and whatnot
-    [NSImage imageNamed:@"OAHelpIcon" inBundleForClass:[OAApplication class]];
-    [NSImage imageNamed:@"OACautionIcon" inBundleForClass:[OAApplication class]];
+    // make these images available to client nibs and whatnot (retaining them so they stick around in cache).
+    // Store them in ivars to avoid clang scan-build warnings.
+    HelpIcon = [[NSImage imageNamed:@"OAHelpIcon" inBundleForClass:[OAApplication class]] retain];
+    CautionIcon = [[NSImage imageNamed:@"OACautionIcon" inBundleForClass:[OAApplication class]] retain];
 }
 
 + (NSApplication *)sharedApplication;
@@ -77,7 +81,7 @@ static unsigned int launchModifierFlags;
 
 - (void)finishLaunching;
 {
-    windowsForSheets = [[NSMutableDictionary alloc] init];
+    windowsForSheets = NSCreateMapTable(NSObjectMapKeyCallBacks, NSObjectMapValueCallBacks, 0);
     sheetQueue = [[NSMutableArray alloc] init];
 
     [[OFController sharedController] addObserver:(id)[OAApplication class]];
@@ -115,12 +119,12 @@ static unsigned int launchModifierFlags;
 
 - (void)beginSheet:(NSWindow *)sheet modalForWindow:(NSWindow *)docWindow modalDelegate:(id)modalDelegate didEndSelector:(SEL)didEndSelector contextInfo:(void *)contextInfo;
 {
-    if ([[windowsForSheets allValues] indexOfObjectIdenticalTo:docWindow] != NSNotFound) {
+    if ([NSAllMapTableValues(windowsForSheets) indexOfObjectIdenticalTo:docWindow] != NSNotFound) {
         // This window already has a sheet, we need to wait for it to finish
         [sheetQueue addObject:[OASheetRequest sheetRequestWithSheet:sheet modalForWindow:docWindow modalDelegate:modalDelegate didEndSelector:didEndSelector contextInfo:contextInfo]];
     } else {
         if (docWindow != nil)
-            [windowsForSheets setObject:docWindow forKey:sheet];
+            NSMapInsertKnownAbsent(windowsForSheets, sheet, docWindow);
         [super beginSheet:sheet modalForWindow:docWindow modalDelegate:modalDelegate didEndSelector:didEndSelector contextInfo:contextInfo];
     }
 }
@@ -131,12 +135,12 @@ static unsigned int launchModifierFlags;
     OASheetRequest *queuedSheet = nil;
     unsigned int requestIndex, requestCount;
 
+    // Find the document window associated with the sheet we just ended
+    docWindow = [[(NSWindow *)NSMapGet(windowsForSheets, sheet) retain] autorelease];
+    NSMapRemove(windowsForSheets, sheet);
+    
     // End this sheet
     [super endSheet:sheet returnCode:returnCode]; // Note: This runs the event queue itself until the sheet finishes retracting
-
-    // Find the document window associated with the sheet we just ended
-    docWindow = [[windowsForSheets objectForKey:sheet] retain];
-    [windowsForSheets removeObjectForKey:sheet];
 
     // See if we have another sheet queued for this document window
     requestCount = [sheetQueue count];
@@ -150,7 +154,6 @@ static unsigned int launchModifierFlags;
             break;
         }
     }
-    [docWindow release];
 
     // Start the queued sheet
     [queuedSheet beginSheet];
@@ -264,9 +267,7 @@ static NSArray *flagsChangedRunLoopModes;
                 if (!flagsChangedRunLoopModes)
                     flagsChangedRunLoopModes = [[NSArray alloc] initWithObjects:
                                                 NSDefaultRunLoopMode,
-#if defined(MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
                                                 NSRunLoopCommonModes,
-#endif
                                                 NSEventTrackingRunLoopMode, nil];
                 [[NSNotificationQueue defaultQueue] enqueueNotification:[NSNotification notificationWithName:OAFlagsChangedQueuedNotification object:event]
                                                            postingStyle:NSPostWhenIdle
@@ -522,20 +523,7 @@ static NSArray *flagsChangedRunLoopModes;
 
 - (NSArray *)supportDirectoriesInDomain:(NSSearchPathDomainMask)domains;
 {
-    // TODO: Cache this?
-    NSArray *appSupp;
-    
-    appSupp = nil;
-#if MAC_OS_X_VERSION_10_4 <= MAC_OS_X_VERSION_MAX_ALLOWED
-    // Unfortunately, calling NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, ...) on 10.3 doesn't return a reasonable failure, like nil or something --- it returns an array containing some garbage paths. So we check the Foundation version number here.
-#ifndef NSFoundationVersionNumber10_4
-#define NSFoundationVersionNumber10_4 501  // Unknown. Apple doesn't declare it anywhere. But 10.3.9 is 500.59.
-#endif
-    if (NSFoundationVersionNumber >= NSFoundationVersionNumber10_4) {
-        appSupp = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, domains, YES);
-    }
-#endif
-    
+    NSArray *appSupp = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, domains, YES);
     if (appSupp == nil) {
         NSArray *library = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, domains, YES);
         if (library == nil)

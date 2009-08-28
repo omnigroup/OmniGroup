@@ -14,6 +14,13 @@ RCS_ID("$Id$");
 static unsigned int OFUndoManagerLoggingOptions = OFUndoManagerNoLogging;
 static CFMutableSetRef OFUndoManagerStates = NULL;
 
+#ifdef __OBJC2__
+#if __OBJC2__
+static Ivar targetIvar;
+#define USE_IVAR_INDIRECTION
+#endif
+#endif
+
 typedef struct {
     NSUndoManager *undoManager; // non-retained
     unsigned int indentLevel;
@@ -65,6 +72,8 @@ static void (*logging_original_undo)(id self, SEL _cmd) = NULL;
 static void (*logging_original_redo)(id self, SEL _cmd) = NULL;
 static void (*logging_original_beginUndoGrouping)(id self, SEL _cmd) = NULL;
 static void (*logging_original_endUndoGrouping)(id self, SEL _cmd) = NULL;
+static void (*logging_original_disableUndoRegistration)(id self, SEL _cmd) = NULL;
+static void (*logging_original_enableUndoRegistration)(id self, SEL _cmd) = NULL;
 static void (*logging_original_dealloc)(id self, SEL _cmd) = NULL;
 
 @implementation NSUndoManager (OFExtensions)
@@ -125,6 +134,11 @@ static void (*logging_original_dealloc)(id self, SEL _cmd) = NULL;
         
         static BOOL methodsInstalled = NO;
         if (!methodsInstalled) {
+            
+#ifdef USE_IVAR_INDIRECTION
+            targetIvar = class_getInstanceVariable(self, "_target");
+#endif
+            
 #define REPL(old, name) old = (typeof(old))OBReplaceMethodImplementationWithSelector(self, @selector(name), @selector(logging_replacement_ ## name))
             
             REPL(logging_original_removeAllActions, removeAllActions);
@@ -135,6 +149,8 @@ static void (*logging_original_dealloc)(id self, SEL _cmd) = NULL;
             REPL(logging_original_redo, redo);
             REPL(logging_original_beginUndoGrouping, beginUndoGrouping);
             REPL(logging_original_endUndoGrouping, endUndoGrouping);
+            REPL(logging_original_disableUndoRegistration, disableUndoRegistration);
+            REPL(logging_original_enableUndoRegistration, enableUndoRegistration);
             REPL(logging_original_dealloc, dealloc);
             methodsInstalled = YES;
         }
@@ -219,10 +235,17 @@ void _OFUndoManagerPopCallSite(NSUndoManager *undoManager)
 - (id)getInvocationTarget;
 @end
 @implementation NSUndoManager (Private)
+#ifdef USE_IVAR_INDIRECTION
+- (id)getInvocationTarget;
+{
+    return object_getIvar(self, targetIvar);
+}
+#else
 - (id)getInvocationTarget;
 {
     return _target;
 }
+#endif
 @end
 
 @interface NSUndoManager (OFUndoLogging)
@@ -238,6 +261,7 @@ void _OFUndoManagerPopCallSite(NSUndoManager *undoManager)
 
 - (void)logging_replacement_removeAllActions;
 {
+    OBASSERT([self isUndoRegistrationEnabled]);
     if ((OFUndoManagerLoggingOptions != OFUndoManagerNoLogging))
         _log(self, NO, @"REMOVE ALL ACTIONS\n");
     logging_original_removeAllActions(self, _cmd);
@@ -273,7 +297,7 @@ void _OFUndoManagerPopCallSite(NSUndoManager *undoManager)
 
     if ((OFUndoManagerLoggingOptions != OFUndoManagerNoLogging) && [self isUndoRegistrationEnabled]) {
         Class cls = [target class];
-        _log(self, YES, @">> <%s:0x%08x> %s ", class_getName(cls), target, [anInvocation selector]);
+        _log(self, YES, @">> <%s:%p> %s ", class_getName(cls), target, [anInvocation selector]);
 
         NSMethodSignature *signature = [anInvocation methodSignature];
         unsigned int argIndex, argCount;
@@ -386,6 +410,26 @@ void _OFUndoManagerPopCallSite(NSUndoManager *undoManager)
         OFUndoManagerLoggingState *state = _OFUndoManagerLoggingStateGet(self);
         state->indentLevel--;
         _log(self, YES, @"} (%08x)END GROUPING\n", self);
+    }
+}
+
+- (void)logging_replacement_disableUndoRegistration;
+{
+    logging_original_disableUndoRegistration(self, _cmd);
+    if ((OFUndoManagerLoggingOptions != OFUndoManagerNoLogging)) {
+        OFUndoManagerLoggingState *state = _OFUndoManagerLoggingStateGet(self);
+        state->indentLevel++;
+        _log(self, YES, @"BEGIN DISABLE UNDO REGISTRATION(%08x) {\n", self);
+    }
+}
+
+- (void)logging_replacement_enableUndoRegistration;
+{
+    logging_original_enableUndoRegistration(self, _cmd);
+    if ((OFUndoManagerLoggingOptions != OFUndoManagerNoLogging)) {
+        OFUndoManagerLoggingState *state = _OFUndoManagerLoggingStateGet(self);
+        _log(self, YES, @"} (%08x)END DISABLE UNDO REGISTRATION{\n", self);
+        state->indentLevel--;
     }
 }
 

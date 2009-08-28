@@ -66,40 +66,22 @@ RCS_ID("$Id$")
 
 - (NSArray *)objectsOlderThanDate:(NSDate *)cutoffDate;
 {
-    NSArray *allKeys;
-    NSMutableArray *oldObjects;
-    unsigned int i, count;
-
-    allKeys = [_dictionary allKeys];
-    oldObjects = [[NSMutableArray alloc] init];
+    NSMutableArray *oldObjects = [NSMutableArray array];
     
-    for (i = 0, count = [allKeys count]; i < count; i++) {
-        NSString *aKey;
-        OFDatedMutableDictionaryEntry *entry;
-
-        aKey = [allKeys objectAtIndex:i];
-        entry = [_dictionary objectForKey:aKey];
+    for (NSString *aKey in [_dictionary allKeys]) {
+        OFDatedMutableDictionaryEntry *entry = [_dictionary objectForKey:aKey];
 
         if ([cutoffDate isAfterDate:[entry lastAccess]])
             [oldObjects addObject:[entry objectWithNoAccessUpdate]];
     }
-
-    return [oldObjects autorelease];
+    
+    return oldObjects;
 }
 
 - (void)removeObjectsOlderThanDate:(NSDate *)cutoffDate;
 {
-    NSArray *allKeys;
-    unsigned int i, count;
-
-    allKeys = [_dictionary allKeys];
-    
-    for (i = 0, count = [allKeys count]; i < count; i++) {
-        NSString *aKey;
-        OFDatedMutableDictionaryEntry *entry;
-
-        aKey = [allKeys objectAtIndex:i];
-        entry = [_dictionary objectForKey:aKey];
+    for (NSString *aKey in [_dictionary allKeys]) {
+        OFDatedMutableDictionaryEntry *entry = [_dictionary objectForKey:aKey];
 
         if ([cutoffDate isAfterDate:[entry lastAccess]])
             [_dictionary removeObjectForKey:aKey];

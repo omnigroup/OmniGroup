@@ -16,7 +16,7 @@
 
 typedef struct _OFLowercaseStringCache {
     // This pointer should never be touched outside of the inlines below since it may change at any time (although the old value will be valid for a while).
-    CFMutableSetRef set;
+    __strong CFMutableSetRef set;
     
     NSLock *lock;
 } OFLowercaseStringCache;

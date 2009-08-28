@@ -14,3 +14,23 @@
 #else
     #define ODO_SUPPORT_UNDO 1
 #endif
+
+
+#if 0 && defined(DEBUG) && defined(ODO_SUPPORT_UNDO)
+    #define DEBUG_UNDO(format, ...) NSLog((format), ## __VA_ARGS__)
+#else
+    #define DEBUG_UNDO(format, ...)
+#endif
+
+#if 0 && defined(DEBUG)
+    #define DEBUG_DYNAMIC_METHODS(format, ...) NSLog((format), ## __VA_ARGS__)
+#else
+    #define DEBUG_DYNAMIC_METHODS(format, ...)
+#endif
+
+// <rdar://6663569> Lazy method resolution and KVO can conflict such that resolution is invoked on the NSKVONotifying_* subclass and the method is added to the real class.  Method lookup then doesn't restart and the bogus cache entry is used, resulting in a bogus -doesNotRecognizeSelector:.
+#if 0 && defined(DEBUG)
+    #define LAZY_DYNAMIC_ACCESSORS 1
+#else
+    #define LAZY_DYNAMIC_ACCESSORS 0
+#endif

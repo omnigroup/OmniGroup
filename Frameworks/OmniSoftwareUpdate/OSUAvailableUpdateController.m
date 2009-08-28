@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,11 +10,14 @@
 #import "OSUChecker.h"
 #import "OSUItem.h"
 #import "OSUController.h"
+#import "OSUPreferences.h"
 
 #import <OmniFoundation/NSBundle-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/OFNull.h> // OFISEQUAL
 #import <OmniAppKit/NSTextField-OAExtensions.h>
+#import <OmniAppKit/OAPreferenceController.h>
+#import <OmniAppKit/OAPreferenceClientRecord.h>
 #import <WebKit/WebDataSource.h>
 #import <WebKit/WebFrame.h>
 #import <WebKit/WebPolicyDelegate.h>
@@ -32,17 +35,18 @@ NSString * const OSUAvailableUpdateControllerLoadingReleaseNotesBinding = @"load
 RCS_ID("$Id$");
 
 @interface OSUAvailableUpdateController (Private)
-- (void)_resizeInterface;
+- (void)_resizeInterface:(BOOL)resetDividerPosition;
 - (void)_refreshSelectedItem;
+- (void)_refreshDefaultAction;
 - (void)_loadReleaseNotes;
 @end
 
 @implementation OSUAvailableUpdateController
 
-+ (OSUAvailableUpdateController *)availableUpdateController;
++ (OSUAvailableUpdateController *)availableUpdateController:(BOOL)shouldCreate;
 {
     static OSUAvailableUpdateController *availableUpdateController = nil;
-    if (!availableUpdateController)
+    if (!availableUpdateController && shouldCreate)
         availableUpdateController = [[self alloc] init];
     return availableUpdateController;
 }
@@ -69,6 +73,13 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark NSWindowController subclass
 
+- (void)dealloc
+{
+    [self unbind:OSUAvailableUpdateControllerCheckInProgressBinding];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSViewFrameDidChangeNotification object:nil];
+    [super dealloc];
+}
+
 - (NSString *)windowNibName;
 {
     return NSStringFromClass([self class]);
@@ -93,6 +104,11 @@ RCS_ID("$Id$");
     // Allow @media {...} in the release notes to display differently when we are showing the content
     [_releaseNotesWebView setMediaStyle:@"osu-available-updates"];
     
+    [self bind:OSUAvailableUpdateControllerCheckInProgressBinding
+      toObject:[OSUChecker sharedUpdateChecker]
+   withKeyPath:OSUCheckerCheckInProgressBinding
+       options:nil];
+    
     // Set the available items binding here, after all the UI has been loaded, so that the final value of -message isn't determined while are partially unarchived from nib.
     // Also have to poke the message binding since its value changes based on the available items in the controller we are setting up.
     // The nicer way to do this would probably be to split part of this class out into an NSArrayController subclass.
@@ -100,7 +116,9 @@ RCS_ID("$Id$");
     [_availableItemController bind:NSContentArrayBinding toObject:self withKeyPath:OSUAvailableUpdateControllerAvailableItemsBinding options:nil];
     [self didChangeValueForKey:OSUAvailableUpdateControllerMessageBinding];
 
-    [self _resizeInterface];
+    [self _resizeInterface:YES];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_adjustViewLayout:) name:NSViewFrameDidChangeNotification object:[_messageTextField superview]];
+    [self _refreshDefaultAction];
     [self _loadReleaseNotes];
 }
 
@@ -115,7 +133,7 @@ RCS_ID("$Id$");
     return [super automaticallyNotifiesObserversForKey:key];
 }
 
-+ (NSSet *)keyPathsForValuesAffectingValueForMessage;
++ (NSSet *)keyPathsForValuesAffectingMessage;
 {
     return [NSSet setWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, OSUAvailableUpdateControllerCheckInProgressBinding, nil];
 }
@@ -129,15 +147,15 @@ RCS_ID("$Id$");
     switch (count) {
         case 0:
             if ([[self valueForKey:OSUAvailableUpdateControllerCheckInProgressBinding] boolValue])
-                format = NSLocalizedStringFromTableInBundle(@"Checking for %1$@ updates.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when in the process of checking for updates");
+                format = NSLocalizedStringFromTableInBundle(@"Checking for %1$@ updates.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when in the process of checking for updates - text is name of application");
             else
-                format = NSLocalizedStringFromTableInBundle(@"%1$@ is up to date.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when no updates are available");
+                format = NSLocalizedStringFromTableInBundle(@"%1$@ is up to date.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when no updates are available - text is name of application");
             break;
         case 1:
-            format = NSLocalizedStringFromTableInBundle(@"There is an update available for %1$@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when one update is available");
+            format = NSLocalizedStringFromTableInBundle(@"There is an update available for %1$@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when one update is available - text is name of application");
             break;
         default:
-            format = NSLocalizedStringFromTableInBundle(@"There are %2$d updates available for %1$@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when multiple updates are available");
+            format = NSLocalizedStringFromTableInBundle(@"There are %2$d updates available for %1$@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when multiple updates are available - text is name of application");
             break;
 
     }
@@ -148,7 +166,12 @@ RCS_ID("$Id$");
     return [NSString stringWithFormat:format, appName, count];
 }
 
-- (NSString *)details;
++ (NSSet *)keyPathsForValuesAffectingDetails;
+{
+    return [NSSet setWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, nil];
+}
+
+- (NSAttributedString *)details;
 {
     NSDictionary *bundleInfo = [[NSBundle mainBundle] infoDictionary];
 
@@ -157,19 +180,41 @@ RCS_ID("$Id$");
     // If we are _not_ on the release track, show more detailed release information.  The marketing version might not get updated on every build on other tracks.
     NSString *version = [NSString stringWithFormat:@"%@ %@", name, [bundleInfo objectForKey:@"CFBundleShortVersionString"]];
     
-    if (![OSUChecker applicationOnReleaseTrack]) {
+    if (![[OSUChecker sharedUpdateChecker] applicationOnReleaseTrack]) {
         // Append the bundle version
         version = [version stringByAppendingFormat:@" (v%@)", [bundleInfo objectForKey:(NSString *)kCFBundleVersionKey]];
     }
     
     NSString *format;
     if ([[_availableItemController arrangedObjects] count])
-        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.  If you're not ready to update now, you can use the Update preference pane to check for updates later or adjust the frequency of automatic checking.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "message of new versions available dialog");
+        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.  If you're not ready to update now, you can use the [Update preference pane] to check for updates later or adjust the frequency of automatic checking.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "message of new versions available dialog");
     else
         format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "message of no updates are available dialog");
-
-    return [NSString stringWithFormat:format, version];
-
+    
+    NSMutableAttributedString *detailText = [[[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:format, version]] autorelease];
+    [detailText addAttribute:NSFontAttributeName value:[NSFont messageFontOfSize:[NSFont smallSystemFontSize]] range:(NSRange){0, [detailText length]}];
+    NSRange leftBracket = [[detailText string] rangeOfString:@"["];
+    NSRange rightBracket = [[detailText string] rangeOfString:@"]"];
+    if (leftBracket.length && rightBracket.length && leftBracket.location < rightBracket.location) {
+        [detailText beginEditing];
+        NSRange between;
+        between.location = NSMaxRange(leftBracket);
+        between.length = rightBracket.location - between.location;
+        OAPreferenceClientRecord *rec = [OAPreferenceController clientRecordWithIdentifier:[OMNI_BUNDLE_IDENTIFIER stringByAppendingString:@".preferences"]];
+        OBASSERT(rec != nil);
+        if (rec) {
+            // The link URL doesn't actually matter; we'll always just display the prefs pane if we get a click.
+            [detailText addAttribute:NSLinkAttributeName value:[rec title] range:between];
+            [detailText addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInt:NSUnderlineStyleSingle] range:between];
+            [detailText addAttribute:NSForegroundColorAttributeName value:[NSColor blueColor] range:between];
+        }
+        
+        [detailText deleteCharactersInRange:rightBracket];
+        [detailText deleteCharactersInRange:leftBracket];
+        [detailText endEditing];
+    }
+    
+    return detailText;
 }
 
 - (void)setAvailableItems:(NSArray *)items;
@@ -182,8 +227,29 @@ RCS_ID("$Id$");
     _availableItems = [[NSArray alloc] initWithArray:items];
     [self didChangeValueForKey:OSUAvailableUpdateControllerAvailableItemsBinding];
     
-    [self _resizeInterface];
+    [self _resizeInterface:NO];
+    
+    /* In the special (but common) case that there's exactly one update available, and it's free, go ahead and select it by default */
+    NSArray *nonIgnoredItems = [_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededOrIgnoredPredicate]];
+    if ([nonIgnoredItems count] == 1) {
+        OSUItem *theItem = [nonIgnoredItems objectAtIndex:0];
+        if ([theItem isFree] && [theItem available] && ![theItem superseded])
+            [_availableItemController setSelectedObjects:nonIgnoredItems];
+    }
+    
     [self _refreshSelectedItem];
+}
+
+- (void)setCheckInProgress:(BOOL)yn
+{
+    if (yn == _checkInProgress)
+        return;
+    
+    [self willChangeValueForKey:OSUAvailableUpdateControllerCheckInProgressBinding];
+    _checkInProgress = yn;
+    [self didChangeValueForKey:OSUAvailableUpdateControllerCheckInProgressBinding];
+    [self _resizeInterface:NO];
+    [self _refreshDefaultAction];
 }
 
 - (void)setSelectedItemIndexes:(NSIndexSet *)indexes;
@@ -196,6 +262,23 @@ RCS_ID("$Id$");
     _selectedItemIndexes = [indexes copy];
     [self didChangeValueForKey:OSUAvailableUpdateControllerSelectedItemIndexesBinding];
     [self _refreshSelectedItem];
+}
+
+- (IBAction)ignoreSelectedItem:(id)sender;
+{
+    OSUItem *anItem = [self selectedItem];
+    BOOL shouldIgnore = ![OSUPreferences itemIsIgnored:anItem];
+    [OSUPreferences setItem:anItem isIgnored:shouldIgnore];
+    
+    // Deselect ignored items
+    if (shouldIgnore) {
+        [_availableItemController removeSelectedObjects:[NSArray arrayWithObject:anItem]];
+    }
+    
+    // If the user just ignored the last non-ignored item, then assume they're not interested in upgrading and close the window
+    if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededOrIgnoredPredicate]] count] == 0) {
+        [[self window] performClose:nil];
+    }
 }
 
 - (OSUItem *)selectedItem;
@@ -249,30 +332,47 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
 }
 
 #pragma mark -
+#pragma mark OSUTextField / NSTextView delegates
+
+- (BOOL)textView:(NSTextView *)aView clickedOnLink:(id)aLink atIndex:(NSUInteger)idx
+{
+    // The only time we're interested in this is when the user clicks on the hyperlink we set up in -details
+    OAPreferenceClientRecord *rec = [OAPreferenceController clientRecordWithIdentifier:[OMNI_BUNDLE_IDENTIFIER stringByAppendingString:@".preferences"]];
+    if (!rec)
+        return NO;
+    OAPreferenceController *prefController = [OAPreferenceController sharedPreferenceController];
+    [prefController setCurrentClientRecord:rec];
+    [prefController showPreferencesPanel:aView];
+    return YES;
+}
+
+#pragma mark -
 #pragma mark NSSplitView delegates
 
-static float minHeightOfItemTableView(NSTableView *itemTableView)
+static CGFloat minHeightOfItemTableView(NSTableView *itemTableView)
 {
     // TODO: This is returning bounds coordinates but the caller is using it as frame coordinates.  Unlikely this will be scaled relative to its superview, but still...
     // We want at least 3 rows shown so that the scroller doesn't get smooshed.
     return 3 * ([itemTableView rowHeight] + [itemTableView intercellSpacing].height);
 }
 
-static float minHeightOfItemTableScrollView(NSTableView *itemTableView)
+static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
 {
     NSScrollView *scrollView = [itemTableView enclosingScrollView];
-    float height = minHeightOfItemTableView(itemTableView);
+    NSSize contentSize;
+    contentSize.width = 100;
+    contentSize.height = minHeightOfItemTableView(itemTableView);
     
-    NSSize frame = [NSScrollView frameSizeForContentSize:NSMakeSize(100.0, height) hasHorizontalScroller:[scrollView hasHorizontalScroller] hasVerticalScroller:[scrollView hasVerticalScroller] borderType:[scrollView borderType]];
+    NSSize frame = [NSScrollView frameSizeForContentSize:contentSize hasHorizontalScroller:[scrollView hasHorizontalScroller] hasVerticalScroller:[scrollView hasVerticalScroller] borderType:[scrollView borderType]];
     return frame.height;
 }
 
-- (void)_resizeSplitViewViewsWithTableViewExistingHeight:(float)height;
+- (void)_resizeSplitViewViewsWithTableViewExistingHeight:(CGFloat)height;
 {
     // Give/take all the side on the web view side, leaving the item list the same height as it was.  Also, constrain the release list height to a minimum value.
     NSRect bounds = [_itemsAndReleaseNotesSplitView bounds];
     
-    float dividerHeight = [_itemsAndReleaseNotesSplitView dividerThickness];
+    CGFloat dividerHeight = [_itemsAndReleaseNotesSplitView dividerThickness];
     
     NSScrollView *scrollView = [_itemTableView enclosingScrollView];
     NSView *borderView = [_releaseNotesWebView superview];
@@ -310,7 +410,7 @@ static float minHeightOfItemTableScrollView(NSTableView *itemTableView)
 
 - (void)splitView:(NSSplitView *)splitView resizeSubviewsWithOldSize:(NSSize)oldSize;
 {
-    float tableViewHeight = NSHeight([_itemTableView frame]);
+    CGFloat tableViewHeight = NSHeight([_itemTableView frame]);
     [self _resizeSplitViewViewsWithTableViewExistingHeight:tableViewHeight];
 }
 
@@ -320,7 +420,7 @@ static float minHeightOfItemTableScrollView(NSTableView *itemTableView)
 
 #define INTER_ELEMENT_GAP (12.0f)
 
-- (void)_resizeInterface;
+- (void)_resizeInterface:(BOOL)resetDividerPosition;
 {
     if (![self isWindowLoaded])
         return;
@@ -328,35 +428,65 @@ static float minHeightOfItemTableScrollView(NSTableView *itemTableView)
     // We have a flipped container view for all these views.  This makes layout easier, but it also means that when we first load the nib, the views will be upside down (since IB archives the view's frames as if the container were not flipped).  So, we have to manually stack the views.
     float yOffset = 0;
     
-    //NSRect oldTitleFrame = [_titleTextField frame];
-    NSRect oldMessageFrame = [_messageTextField frame];
     NSRect oldSplitViewFrame = [_itemsAndReleaseNotesSplitView frame];
     NSRect oldAppIconImageFrame = [_appIconImageView frame];
+    NSRect containerBounds = [[_appIconImageView superview] bounds];
+    
+    // Icon on the left
+    NSRect newAppIconImageFrame = (NSRect){NSMakePoint(oldAppIconImageFrame.origin.x, 0), [_appIconImageView frame].size};
+    [_appIconImageView setFrame:newAppIconImageFrame];
+    
+    // Progress indicator
+    NSRect spinnerFrame = [_spinner frame];
+    // Put its centerline on the same line as the app icon
+    spinnerFrame.origin.y = newAppIconImageFrame.origin.y - (spinnerFrame.size.height - newAppIconImageFrame.size.height)/2;
+    spinnerFrame.origin.x = NSMaxX(containerBounds) - 1.5 * NSWidth(spinnerFrame);
+    spinnerFrame = [[_spinner superview] centerScanRect:spinnerFrame];
+    [_spinner setFrame:spinnerFrame];
+    
+    NSRect oldTitleFrame = [_titleTextField frame];
+    NSRect oldMessageFrame = [_messageTextField frame];
 
     // Title
-    [_titleTextField sizeToFitVertically];
-    NSRect newTitleFrame = [_titleTextField frame];
+    NSRect newTitleFrame;
+    newTitleFrame.origin.x = oldTitleFrame.origin.x;
     newTitleFrame.origin.y = yOffset;
+    newTitleFrame.size.height = oldTitleFrame.size.height;
+    newTitleFrame.size.width = NSMaxX(spinnerFrame) - NSMinX(oldTitleFrame);
+    [_titleTextField setFrame:newTitleFrame];
+    newTitleFrame.size = [_titleTextField desiredFrameSize:NSViewHeightSizable];
     [_titleTextField setFrame:newTitleFrame];
     yOffset = NSMaxY(newTitleFrame) + INTER_ELEMENT_GAP;
 
-    NSRect newAppIconImageFrame = (NSRect){NSMakePoint(oldAppIconImageFrame.origin.x, 0), [_appIconImageView frame].size};
-    [_appIconImageView setFrame:newAppIconImageFrame];
-
     // Message
-    [_messageTextField sizeToFitVertically];
-    NSRect newMessageFrame = (NSRect){NSMakePoint(oldMessageFrame.origin.x, yOffset), [_messageTextField frame].size};
+    NSRect newMessageFrame;
+    newMessageFrame = oldMessageFrame;
+    if ([_spinner isHiddenOrHasHiddenAncestor])
+        newMessageFrame.size.width = NSMaxX(spinnerFrame) - NSMinX(oldMessageFrame);
+    else
+        newMessageFrame.size.width = NSMinX(spinnerFrame) - INTER_ELEMENT_GAP - NSMinX(oldMessageFrame);
+    [_messageTextField setFrameSize:newMessageFrame.size];
+    newMessageFrame.size = [_messageTextField desiredFrameSize:NSViewHeightSizable];
+    newMessageFrame.origin.y = yOffset;
     [_messageTextField setFrame:newMessageFrame];
     yOffset = MAX(NSMaxY(newAppIconImageFrame), NSMaxY(newMessageFrame)) + INTER_ELEMENT_GAP;
 
+    CGFloat oldTablePaneHeight = [[_itemTableView enclosingScrollView] frame].size.height;
+    
     // Splitview -- any extra space gets taking/given here.  We're assuming that the delta between the minimum window size and the growth of the other fields is small enough to make this reasonable.  We could adjust the window size, but we want to allow the user to set it via the frame autosave.  If this becomes a problem, we could look at the resulting size for the split view and it it is too small, force the window to be bigger.        
     NSRect newSplitViewFrame = oldSplitViewFrame;
     newSplitViewFrame.origin.y = yOffset;
     newSplitViewFrame.size.height = NSMaxY([[_itemsAndReleaseNotesSplitView superview] bounds]) - yOffset;
     [_itemsAndReleaseNotesSplitView setFrame:newSplitViewFrame];
     
-    // Start with the splitter as tight up against the limit as possible (3 rows currently)
-    [self _resizeSplitViewViewsWithTableViewExistingHeight:0.0f];
+    [[_messageTextField superview] setNeedsDisplay:YES];
+    
+    if (resetDividerPosition) {
+        // Start with the splitter as tight up against the limit as possible (3 rows currently)
+        [self _resizeSplitViewViewsWithTableViewExistingHeight:0.0f];
+    } else {
+        [self _resizeSplitViewViewsWithTableViewExistingHeight:oldTablePaneHeight];
+    }
 }
 
 - (void)_refreshSelectedItem;
@@ -370,7 +500,22 @@ static float minHeightOfItemTableScrollView(NSTableView *itemTableView)
     }
     
     [self setValue:item forKey:OSUAvailableUpdateControllerSelectedItemBinding];
+    [self _refreshDefaultAction];
     [self _loadReleaseNotes];
+}
+
+- (void)_refreshDefaultAction
+{
+    if (![self isWindowLoaded])
+        return;
+    
+    NSArray *visibleItems = [_availableItemController arrangedObjects];
+
+    if ([visibleItems count] == 0 && !_checkInProgress) {
+        [[self window] setDefaultButtonCell:[_cancelButton cell]];
+    } else {
+        [[self window] setDefaultButtonCell:[_installButton cell]];
+    }
 }
 
 - (void)_loadReleaseNotes;
@@ -391,6 +536,11 @@ static float minHeightOfItemTableScrollView(NSTableView *itemTableView)
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:releaseNotesURL cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:120.0];
     [[_releaseNotesWebView mainFrame] loadRequest:request];
     [request release];
+}
+
+- (void)_adjustViewLayout:(NSNotification *)note
+{
+    [self _resizeInterface:NO];
 }
 
 @end

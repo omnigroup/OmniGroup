@@ -1,4 +1,4 @@
-// Copyright 2005-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,17 +14,24 @@
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
-#import <OmniFoundation/NSError-OFExtensions.h>
+#import <OmniBase/NSError-OBExtensions.h>
 
 #include <sys/pipe.h>
+#include <crt_externs.h>
 
 RCS_ID("$Id$")
 
 @interface OFFilterProcess (Private)
 
+enum handleKeventsHow {
+    keventJustPush = -1,
+    keventProcessButDontBlock = 0,
+    keventBlockUntilActivity = 1
+};
+
 - (BOOL)_waitpid;
 - (void)_pushq:(int)ident filter:(short)evfilter flags:(unsigned short)flags;
-- (void)_handleKevents:(int)flag;
+- (int)_handleKevents:(enum handleKeventsHow)flag;
 - (void)_setError:(NSError *)err;
 
 static void init_copyout(struct copy_out_state *into, int fd, NSOutputStream *stream);
@@ -33,6 +40,12 @@ static void free_copyout(struct copy_out_state *into);
 static void copy_from_subprocess(const struct kevent *ev, struct copy_out_state *into, OFFilterProcess *self);
 static void copy_to_stream(struct copy_out_state *into, OFFilterProcess *self);
 static void keventRunLoopCallback(CFFileDescriptorRef f, CFOptionFlags callBackTypes, void *info);
+static void pollTimerRunLoopCallback(CFRunLoopTimerRef timer, void *info);
+
+static char **computeToolEnvironment(NSDictionary *envp, NSDictionary *setenv, NSString *ensurePath);
+static void freeToolEnvironment(char **envp);
+static char *makeEnvEntry(id key, size_t *sepindex, id value);
+static char *pathStringIncludingDirectory(const char *currentPath, const char *pathdir, const char *sep);
 
 @end
 
@@ -48,8 +61,8 @@ static BOOL OFPipeCreate(struct OFPipe *p, NSError **outError)
 {
     int pipeFD[2];
     if (pipe(pipeFD) != 0) {
-        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error creating pipe", @"OmniFoundation", OMNI_BUNDLE, @"error description")];
-        OFErrorWithErrno(outError, OMNI_ERRNO(), "pipe()", nil, description);
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Error creating pipe", @"OmniFoundation", OMNI_BUNDLE, @"error description");
+        OBErrorWithErrno(outError, OMNI_ERRNO(), "pipe()", nil, description);
         return NO;
     }
     
@@ -80,6 +93,7 @@ static void OFPipeClose(struct OFPipe *p)
     OFPipeCloseWrite(p);
 }
 
+
 - initWithParameters:(NSDictionary *)filterParameters standardOutput:(NSOutputStream *)stdoutStream standardError:(NSOutputStream *)stderrStream;
 {
     self = [super init];
@@ -92,7 +106,10 @@ static void OFPipeClose(struct OFPipe *p)
     /* Parameters we don't store in an instance variable */
     NSString *workingDirectoryPath = [filterParameters objectForKey:OFFilterProcessWorkingDirectoryPathKey];
     NSDictionary *replacementEnvironment = [filterParameters objectForKey:OFFilterProcessReplacementEnvironmentKey];
+    NSDictionary *additionalEnvironment = [filterParameters objectForKey:OFFilterProcessAdditionalEnvironmentKey];
+    NSString *ensurePathDirectory = [filterParameters objectForKey:OFFilterProcessAdditionalPathEntryKey];
     BOOL detachFromTTY = [filterParameters boolForKey:OFFilterProcessDetachTTYKey defaultValue:YES];
+    BOOL newProcessGroup = [filterParameters boolForKey:OFFilterProcessNewProcessGroupKey defaultValue:NO];
     
     /* Initialize ivars */
     /* In particular, make sure that all our fds are -1 instead of 0, so that if we dealloc early we don't end up closing stdin by accident */
@@ -150,10 +167,10 @@ static void OFPipeClose(struct OFPipe *p)
     /* Since we're vforking, build all our string buffers in the parent process (not sure if this is strictly necessary) */
     const char *toolPath = [fileManager fileSystemRepresentationWithPath:commandPath];
     if (access(toolPath, X_OK) != 0) {
-        OFErrorWithErrno(&errorBuf, errno, toolPath, nil, nil);
+        OBErrorWithErrno(&errorBuf, errno, toolPath, nil, nil);
         goto fail_early;
     }
-    const char *chdirPath = workingDirectoryPath? [fileManager fileSystemRepresentationWithPath:commandPath] : NULL;
+    const char *chdirPath = workingDirectoryPath? [fileManager fileSystemRepresentationWithPath:workingDirectoryPath] : NULL;
     NSUInteger argumentIndex, argumentCount = [arguments count];
     const char **toolParameters = malloc(sizeof(const char *) * (argumentCount + 2));
     toolParameters[0] = toolPath;
@@ -162,19 +179,7 @@ static void OFPipeClose(struct OFPipe *p)
     }
     toolParameters[argumentIndex + 1] = NULL;
     
-    const char **toolEnvironment;
-    if (replacementEnvironment == nil) {
-        toolEnvironment = NULL; // Inherit our environment
-    } else {
-        NSUInteger envIndex, envCount = [replacementEnvironment count];
-        toolEnvironment = malloc(sizeof(*toolEnvironment) * (envCount+1));
-        envIndex = 0;
-        for(NSString *envItem in replacementEnvironment) {
-            toolEnvironment[envIndex++] = [[NSString stringWithStrings:envItem, @"=", [replacementEnvironment objectForKey:envItem], nil] cStringUsingEncoding:NSUTF8StringEncoding];
-        }
-        OBASSERT(envIndex == envCount);
-        toolEnvironment[envIndex] = 0;
-    }
+    char **toolEnvironment = computeToolEnvironment(replacementEnvironment, additionalEnvironment, ensurePathDirectory);
     
     /* Fork off a child process */
     
@@ -182,11 +187,10 @@ static void OFPipeClose(struct OFPipe *p)
     switch (child) {
         case -1: // Error
             ;
-            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command %@", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath];
-            OFErrorWithErrno(&errorBuf, OMNI_ERRNO(), "fork()", nil, description);
+            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not fork '%@'", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath];
+            OBErrorWithErrno(&errorBuf, OMNI_ERRNO(), "fork()", nil, description);
             free(toolParameters);
-            if (toolEnvironment)
-                free(toolEnvironment);
+            freeToolEnvironment(toolEnvironment);
             goto fail_early;
             
         case 0: { // Child
@@ -203,6 +207,11 @@ static void OFPipeClose(struct OFPipe *p)
                     ioctl(tty, TIOCNOTTY, 0);
                     close(tty);
                 }
+            }
+            if (newProcessGroup) {
+                // Put the new process in its own process group.
+                // This also detaches from the controlling TTY (but detaching from the controlling TTY doesn't necessarily mean a new pgrp).
+                setpgrp();
             }
             
             // Purge our output buffers, in case we want to die with an error message
@@ -241,15 +250,16 @@ static void OFPipeClose(struct OFPipe *p)
             
             if (chdirPath != NULL) {
                 if (chdir(chdirPath) != 0) {
+                    write(STDERR_FILENO, "chdir: ", 7);
                     perror(chdirPath);
                     _exit(1);
                 }
             }
             
             if (toolEnvironment)
-                execve(toolPath, toolParameters, toolEnvironment);
+                execve(toolPath, (char * const *)toolParameters, (char * const *)toolEnvironment);
             else
-                execv(toolPath, toolParameters);
+                execv(toolPath, (char * const *)toolParameters);
             perror(toolPath);
             _exit(1); // Use _exit() not exit(): don't flush the parent's file buffers
             OBASSERT_NOT_REACHED("_exit() should not return");
@@ -261,8 +271,7 @@ static void OFPipeClose(struct OFPipe *p)
             OFPipeCloseWrite(&output);
             OFPipeCloseWrite(&errors);
             free(toolParameters);
-            if (toolEnvironment)
-                free(toolEnvironment);
+            freeToolEnvironment(toolEnvironment);
             break;
     }
     
@@ -312,6 +321,12 @@ static void OFPipeClose(struct OFPipe *p)
         kevent_cfrunloop = NULL;
     }
     
+    if (poll_timer != NULL) {
+        CFRunLoopTimerInvalidate(poll_timer);
+        CFRelease(poll_timer);
+        poll_timer = NULL;
+    }
+    
     if (kevent_cf != NULL) {
         CFFileDescriptorInvalidate(kevent_cf);
         CFRelease(kevent_cf);
@@ -335,7 +350,7 @@ static void OFPipeClose(struct OFPipe *p)
     [subprocStdinBytes release];
     [commandPath release];
     [arguments release];
-    [error release];
+    [error autorelease];
     
     [super dealloc];
 }
@@ -346,7 +361,7 @@ static void OFPipeClose(struct OFPipe *p)
     sig_t oldPipeHandler = signal(SIGPIPE, SIG_IGN);
     
     while(state == OFFilterProcess_Started) {
-        [self _handleKevents:1];
+        [self _handleKevents:keventBlockUntilActivity];
     }
     
     // Restore the old signal handler before we leave
@@ -364,11 +379,11 @@ static void OFPipeClose(struct OFPipe *p)
     /* Create the CFFileDescriptor and its corresponding CFRunLoopSource */
     if (kevent_cf == NULL) {
         CFFileDescriptorContext ctxt = {
-                    version: 0,
-                       info: self,
-                     retain: NULL,
-                    release: NULL,
-            copyDescription: NULL
+                    .version = 0,
+                       .info = self,
+                     .retain = NULL,
+                    .release = NULL,
+            .copyDescription = NULL
         };
         kevent_cf = CFFileDescriptorCreate(kCFAllocatorDefault, kevent_fd, FALSE, keventRunLoopCallback, &ctxt);
         CFFileDescriptorEnableCallBacks(kevent_cf, kCFFileDescriptorReadCallBack);
@@ -386,30 +401,45 @@ static void OFPipeClose(struct OFPipe *p)
     
     /* Add our streams to the run loop as well */
     if (stdoutCopyBuf.nsstream) {
-        if (!(stdoutCopyBuf.streamDelegate)) {
-            OBPRECONDITION([stdoutCopyBuf.nsstream delegate] == nil);
-            [stdoutCopyBuf.nsstream setDelegate:self];
-        }
+        /* TODO: We should set ourselves as the stream's delegate, so that we can respond to NSStreamEventHasSpaceAvailable, etc, and avoid spinning */
+        /* NB: Despite what the documentation says, -[NSCFOutputStream delegate] ininitally returns nil */
         [stdoutCopyBuf.nsstream scheduleInRunLoop:aRunLoop forMode:mode];
     }
     if (stderrCopyBuf.nsstream) {
-        if (!(stderrCopyBuf.streamDelegate)) {
-            OBPRECONDITION([stderrCopyBuf.nsstream delegate] == nil);
-            [stderrCopyBuf.nsstream setDelegate:self];
-        }
+        /* TODO: We should set ourselves as the stream's delegate, so that we can respond to NSStreamEventHasSpaceAvailable, etc, and avoid spinning */
+        /* NB: Despite what the documentation says, -[NSCFOutputStream delegate] ininitally returns nil */
         [stderrCopyBuf.nsstream scheduleInRunLoop:aRunLoop forMode:mode];
     }
     
     /* Make sure to push any pending kevent filter changes to the kernel before we wait for them */
-    [self _handleKevents:-1];
+    [self _handleKevents:keventJustPush];
+    
+    if (kCFCoreFoundationVersionNumber >= 539 && kCFCoreFoundationVersionNumber < 550) {
+        // RADAR 6898524: our kevent file descriptor source might decide not to notify us when it's readable.
+        if (poll_timer == NULL) {
+            CFRunLoopTimerContext ctxt = {
+                        .version = 0,
+                           .info = self,
+                         .retain = NULL,
+                        .release = NULL,
+                .copyDescription = NULL
+            };
+            poll_timer = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent()+0.5, 0.75, 0, 0, pollTimerRunLoopCallback, &ctxt);
+        }
+        CFRunLoopAddTimer(cfLoop, poll_timer, (CFStringRef)mode);
+    }
 }
 
 - (void)removeFromRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode;
 {
+    CFRunLoopRef cfLoop = [aRunLoop getCFRunLoop];
+
+    if (poll_timer) {
+        CFRunLoopRemoveTimer(cfLoop, poll_timer, (CFStringRef)mode);
+    }
+    
     if (kevent_cfrunloop == NULL)
         return;
-    
-    CFRunLoopRef cfLoop = [aRunLoop getCFRunLoop];
     
     CFRunLoopRemoveSource(cfLoop, kevent_cfrunloop, (CFStringRef)mode);
 
@@ -417,6 +447,104 @@ static void OFPipeClose(struct OFPipe *p)
         [stdoutCopyBuf.nsstream removeFromRunLoop:aRunLoop forMode:mode];
     if (stderrCopyBuf.nsstream)
         [stderrCopyBuf.nsstream removeFromRunLoop:aRunLoop forMode:mode];
+}
+
++ (BOOL)runWithParameters:(NSDictionary *)filterParameters inMode:(NSString *)runLoopMode standardOutput:(NSData **)stdoutStreamData standardError:(NSData **)stderrStreamData  error:(NSError **)errorPtr;
+{
+    NSOutputStream *stdoutStream, *stderrStream;
+    
+    if (stdoutStreamData == NULL)
+        stdoutStream = nil;
+    else {
+        stdoutStream = [NSOutputStream outputStreamToMemory];
+        [stdoutStream open];
+    }
+    
+    if (stderrStreamData == NULL)
+        stderrStream = nil;
+    else if (stderrStreamData == stdoutStreamData)
+        stderrStream = stdoutStream;
+    else {
+        stderrStream = [NSOutputStream outputStreamToMemory];
+        [stderrStream open];
+    }
+    
+    OFFilterProcess *proc = [[self alloc] initWithParameters:filterParameters standardOutput:stdoutStream standardError:stderrStream];
+    
+    if ([proc error]) {
+        if (errorPtr)
+            *errorPtr = [proc error];
+        [proc release];
+        return NO;
+    }
+
+    NSException *pendingException = nil;
+    
+    if (runLoopMode == nil) {
+        @try {
+            [proc run];
+        } @catch (NSException *e) {
+            pendingException = [e retain];
+        };
+    } else {
+        NSRunLoop *loop = [NSRunLoop currentRunLoop];
+        
+        [proc scheduleInRunLoop:loop forMode:runLoopMode];
+        
+        @try {
+            while ([proc isRunning]) {
+                [loop acceptInputForMode:runLoopMode beforeDate:[NSDate distantFuture]];
+            }
+        } @catch (NSException *e) {
+            pendingException = [e retain];
+        };
+        
+        [proc removeFromRunLoop:loop forMode:runLoopMode];
+    }
+    
+    if (stdoutStream != nil)
+        [stdoutStream close];
+    if (stderrStream != nil && stderrStream != stdoutStream)
+        [stderrStream close];
+    
+    if (stdoutStreamData != NULL) {
+        NSData *result = [stdoutStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
+        if (result == nil) // RADAR 6160521
+            result = [NSData data];
+        *stdoutStreamData = result;
+    }
+    
+    if (stderrStreamData != NULL && stderrStreamData != stdoutStreamData) {
+        NSData *result = [stderrStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
+        if (result == nil) // RADAR 6160521
+            result = [NSData data];
+        *stderrStreamData = result;
+    }
+    
+    BOOL success;
+    
+    if ([proc error]) {
+        if (errorPtr)
+            *errorPtr = [proc error];
+        success = NO;
+    } else if (stdoutStream && [stdoutStream streamStatus] == NSStreamStatusError) {
+        if (errorPtr)
+            *errorPtr = [stdoutStream streamError];
+        success = NO;
+    } else if (stderrStream && [stderrStream streamStatus] == NSStreamStatusError) {
+        if (errorPtr)
+            *errorPtr = [stderrStream streamError];
+        success = NO;
+    } else {
+        success = YES;
+    }
+    
+    [proc release];
+    
+    if (pendingException)
+        [pendingException raise];
+    
+    return success;
 }
 
 @end
@@ -442,8 +570,10 @@ static void OFPipeClose(struct OFPipe *p)
     [filterSettings release];
     
     if ([filter error]) {
-        if (outError)
+        if (outError) {
             *outError = [filter error];
+            OBError(outError, OFFilterDataCommandReturnedErrorCodeError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command: %@", @"OmniFoundation", OMNI_BUNDLE, @"Error encountered when trying to pass data through a UNIX command - parameter is underlying error text"), [*outError localizedDescription]]));
+        }
         [filter release];
         return nil;
     }
@@ -451,8 +581,10 @@ static void OFPipeClose(struct OFPipe *p)
     [filter run];
     
     if ([filter error]) {
-        if (outError)
+        if (outError) {
             *outError = [filter error];
+            OBError(outError, OFFilterDataCommandReturnedErrorCodeError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command: %@", @"OmniFoundation", OMNI_BUNDLE, @"Error encountered when trying to pass data through a UNIX command - parameter is underlying error text"), [*outError localizedDescription]]));
+        }
         [filter release];
         return nil;
     }
@@ -462,8 +594,10 @@ static void OFPipeClose(struct OFPipe *p)
     [resultStream close];
     
     if ([resultStream streamStatus] == NSStreamStatusError) {
-        if (outError)
+        if (outError) {
             *outError = [resultStream streamError];
+            OBError(outError, OFFilterDataCommandReturnedErrorCodeError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command: %@", @"OmniFoundation", OMNI_BUNDLE, @"Error encountered when trying to pass data through a UNIX command - parameter is underlying error text"), [*outError localizedDescription]]));
+        }
         return nil;
     }
     
@@ -500,7 +634,6 @@ static void init_copyout(struct copy_out_state *into, int fd, NSOutputStream *st
     into->buffer_contents_length = 0;
     into->buffer_size = 0;
     into->filterEnabled = NO;
-    into->streamDelegate = NO;
     into->nsstream = [stream retain];
     if ([stream streamStatus] == NSStreamStatusNotOpen)
         [stream open];
@@ -522,8 +655,7 @@ static void clear_copyout(struct copy_out_state *into)
 static void free_copyout(struct copy_out_state *into)
 {
     if (into->nsstream) {
-        if (into->streamDelegate)
-            [into->nsstream setDelegate:nil];
+        /* TODO: When we handle stream events, remember to un-set ourselves as the stream's delegate here */
         [into->nsstream release];
         into->nsstream = nil;
     }
@@ -542,7 +674,7 @@ static void free_copyout(struct copy_out_state *into)
 - (void)_pushq:(int)ident filter:(short)evfilter flags:(unsigned short)flags
 {
     if (!(num_pending_changes < OFFilterProcess_CHANGE_QUEUE_MAX))
-        [self _handleKevents:-1];
+        [self _handleKevents:keventJustPush];
     
     EV_SET(&(pending_changes[num_pending_changes++]), ident, evfilter, flags, 0, 0, 0);
 }
@@ -552,12 +684,13 @@ static void free_copyout(struct copy_out_state *into)
    timeoutType == 0: process any events, but don't block
    timeoutType > 0:  block indefinitely; return after processing something
  */
-- (void)_handleKevents:(int)timeoutType
+- (int)_handleKevents:(enum handleKeventsHow)timeoutType
 {
 #define KBUFSIZE 5
     struct kevent events[KBUFSIZE];
     int nevents;
-    static const struct timespec zeroTimeout = { 0, 0 };
+    /* RADAR #6618025 / #6460269: on some architectures, kevent() tries to write to its (const *) timeout parameter */
+    /* static const */ struct timespec zeroTimeout = { 0, 0 };
     
     if (stdoutCopyBuf.nsstream)
         copy_to_stream(&stdoutCopyBuf, self);
@@ -566,7 +699,7 @@ static void free_copyout(struct copy_out_state *into)
     
 #if 0
     for(int i = 0; i < num_pending_changes; i++)
-        NSLog(@"+ %@", OFDescribeKevent(&(pending_changes[i])));
+        NSLog(@"+[%d/%d] %@", i, num_pending_changes, OFDescribeKevent(&(pending_changes[i])));
 #endif
     
     if (timeoutType < 0) {
@@ -657,6 +790,8 @@ static void free_copyout(struct copy_out_state *into)
         state = OFFilterProcess_Finished;
         [self didChangeValueForKey:@"isRunning"];
     }
+    
+    return (nevents >= 0)? nevents : 0;
 }
 
 static void copy_from_subprocess(const struct kevent *ev, struct copy_out_state *into, OFFilterProcess *self)
@@ -696,7 +831,7 @@ static void copy_from_subprocess(const struct kevent *ev, struct copy_out_state 
         } else {
             // this is an actual error
             NSError *errorBuf = nil;
-            OFErrorWithErrno(&errorBuf, local_errno, "read", nil, @"Error reading from subprocess");
+            OBErrorWithErrno(&errorBuf, local_errno, "read", nil, @"Error reading from subprocess");
             [self _setError:errorBuf];
             close(into->fd);
             into->fd = -1;
@@ -762,7 +897,7 @@ static void copy_to_stream(struct copy_out_state *into, OFFilterProcess *self)
         unsigned int terminationStatus = WEXITSTATUS(childStatus);
         if (terminationStatus != 0) {
             NSError *errBuf = [self error];
-            OFErrorWithInfo(&errBuf, OFFilterDataCommandReturnedErrorCodeError, OBExceptionPosixErrorNumberKey, [NSNumber numberWithInt:OMNI_ERRNO()], NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command %@: command returned %d", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath, terminationStatus], nil);
+            OBErrorWithInfo(&errBuf, OFFilterDataCommandReturnedErrorCodeError, OFProcessExitStatusErrorKey, [NSNumber numberWithUnsignedInt:terminationStatus],  NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"command '%@' returned %d", @"OmniFoundation", OMNI_BUNDLE, @"error description - a UNIX subprocess exited with a nonzero status"), commandPath, terminationStatus], nil);
             [self _setError:errBuf];
             return NO;
         } else {
@@ -771,7 +906,7 @@ static void copy_to_stream(struct copy_out_state *into, OFFilterProcess *self)
     } else {
         unsigned int terminationSignal = WTERMSIG(childStatus);
         NSError *errBuf = [self error];
-        OFErrorWithInfo(&errBuf, OFFilterDataCommandReturnedErrorCodeError, OBExceptionPosixErrorNumberKey, [NSNumber numberWithInt:OMNI_ERRNO()], NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command %@: command exited due to signal %d", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath, terminationSignal], nil);
+        OBErrorWithInfo(&errBuf, OFFilterDataCommandReturnedErrorCodeError, OFProcessExitSignalErrorKey, [NSNumber numberWithUnsignedInt:terminationSignal], NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"command '%@' exited due to signal %d (%s)", @"OmniFoundation", OMNI_BUNDLE, @"error description - a UNIX subprocess exited due to a signal"), commandPath, terminationSignal, strsignal(terminationSignal)], nil);
         [self _setError:errBuf];
         return NO;
     }
@@ -783,11 +918,27 @@ static void keventRunLoopCallback(CFFileDescriptorRef f, CFOptionFlags callBackT
     
     OBASSERT(CFFileDescriptorGetNativeDescriptor(f) == self->kevent_fd);
     
-    [self _handleKevents:0];
+    [self _handleKevents:keventProcessButDontBlock];
     
     // stupid 1-shot callbacks
     if (self->kevent_fd != -1)
         CFFileDescriptorEnableCallBacks(f, kCFFileDescriptorReadCallBack);
+}
+
+static void pollTimerRunLoopCallback(CFRunLoopTimerRef timer, void *info)
+{
+    OFFilterProcess *self = info;
+    int handled;
+    static BOOL haveNotedBugWorkaround = NO;
+    
+    OBASSERT(timer == self->poll_timer);
+    
+    handled = [self _handleKevents:keventProcessButDontBlock];
+    
+    if (handled && !haveNotedBugWorkaround) {
+        haveNotedBugWorkaround = YES;
+        NSLog(@"Using timer workaround for RADAR 6898524");
+    }
 }
 
 @end
@@ -809,4 +960,191 @@ NSString *OFDescribeKevent(const struct kevent *ev)
             return [NSString stringWithFormat:@"filter=%d ident=%d flags=%04x %04x data=%ld", ev->filter, ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
     }
 }
+
+#pragma mark Environment and path utilities
+
+static char *pathStringIncludingDirectory(const char *currentPath, const char *pathdir, const char *sep)
+{
+    /* Make a copy so we can walk over it with strsep() */
+    const size_t currentPathLen = strlen(currentPath);
+    char *buf = malloc(currentPathLen + strlen(pathdir) + 2);
+    strcpy(buf, currentPath);
+    char *cursor, *ent;
+    cursor = buf;
+    while((ent = strsep(&cursor, sep)) != NULL) {
+        if (strcmp(ent, pathdir) == 0) {
+            /* The supplied path is already in $PATH; do nothing */
+            free(buf);
+            return NULL;
+        }
+    }
+    
+    /* Re-use the buffer to cons up the new value for $PATH */
+    memcpy(buf, currentPath, currentPathLen);
+    buf[currentPathLen] = *sep;
+    strcpy(buf + currentPathLen + 1, pathdir);
+    
+    return buf;
+}
+
+#if 0
+/* Not actually used right now, but might be handy in future */
+BOOL OFIncludeInPathEnvironment(const char *pathdir)
+{
+    if (!pathdir || !*pathdir)
+        return NO;
+    
+    /* Get the current path; if it's empty (?!!) just set it to the provided path and return */
+    const char *currentPath = getenv("PATH");
+    if (!currentPath || !*currentPath) {
+        setenv("PATH", pathdir, 1);
+        return YES;
+    }
+    
+    char *newPath = pathStringIncludingDirectory(currentPath, pathdir, ":");
+    if (newPath) {
+        /* Set the new value */
+        setenv("PATH", newPath, 1);
+        free(newPath);
+        return YES;
+    } else {
+        /* No change */
+        return NO;
+    }
+}
+#endif
+
+static char *makeEnvEntry(id key, size_t *sepindex, id value)
+{
+    if (![value isKindOfClass:[NSData class]]) {
+        if (![value isKindOfClass:[NSString class]]) {
+            [NSException raise:NSInvalidArgumentException format:@"Invalid environment entry value of class %@", NSStringFromClass(value)];
+            return NULL; /* NOTREACHED */
+        }
+        
+        value = [value dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES];
+    }
+    
+    if (![key isKindOfClass:[NSData class]]) {
+        if (![key isKindOfClass:[NSString class]]) {
+            [NSException raise:NSInvalidArgumentException format:@"Invalid environment entry key of class %@", NSStringFromClass(key)];
+            return NULL; /* NOTREACHED */
+        }
+        
+        key = [key dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES];
+    }
+    
+    size_t keyLen = [key length];
+    size_t valueLen = [value length];
+    
+    char *buf = malloc(keyLen + valueLen + 2);
+    memcpy(buf, [key bytes], keyLen);
+    buf[ keyLen ] = '=';
+    memcpy(buf + keyLen + 1, [value bytes], valueLen);
+    buf[ keyLen + 1 + valueLen ] = (char)0;
+    
+    if (sepindex)
+        *sepindex = keyLen;
+    
+    return buf;
+}
+
+static char **computeToolEnvironment(NSDictionary *envp, NSDictionary *setenv, NSString *ensurePath)
+{
+    char **newEnviron;
+    unsigned newEnvironSize, newEnvironCount;
+    BOOL modified;
+    
+    
+    /* If the caller supplied a replacement environment dictionary, convert it into the form used by execve() etc. Otherwise, get our own process environment and make a copy so we can modify it. */
+    if (envp) {
+        newEnvironSize = 1 + [envp count]; /* Add one in case we need to add $PATH */
+        newEnviron = malloc(sizeof(*newEnviron) * (1 + newEnvironSize)); /* Add one for trailing NULL */
+        newEnvironCount = 0;
+        
+        NSEnumerator *e = [envp keyEnumerator];
+        id key;
+        while( (key = [e nextObject]) != nil) {
+            newEnviron[newEnvironCount++] = makeEnvEntry(key, NULL, [envp objectForKey:key]);
+        }
+        
+        modified = YES;
+    } else {
+        if (!setenv && !ensurePath)
+            return NULL;  /* We're not making any changes at all, just allow the child to inherit our environment */
+        
+        char ** oldEnviron = *_NSGetEnviron();
+        for(newEnvironCount = 0; oldEnviron[newEnvironCount] != NULL; newEnvironCount ++)
+            ;
+        
+        newEnvironSize = newEnvironCount + [setenv count] + 1;
+        newEnviron = malloc(sizeof(*newEnviron) * (1 + newEnvironSize)); /* Add one for trailing NULL */
+        
+        for(unsigned envIndex = 0; oldEnviron[envIndex] != NULL; envIndex ++) {
+            newEnviron[envIndex] = strdup(oldEnviron[envIndex]);
+        }
+        
+        modified = NO;
+    }
+    
+    if (setenv && [setenv count]) {
+        NSEnumerator *e = [setenv keyEnumerator];
+        id key;
+        while( (key = [e nextObject]) != nil) {
+            size_t namelen = 0;
+            char *entry = makeEnvEntry(key, &namelen, [setenv objectForKey:key]);
+            
+            for(unsigned envIndex = 0; envIndex < newEnvironCount; envIndex ++) {
+                if (strncmp(newEnviron[envIndex], entry, namelen) == 0) {
+                    free(newEnviron[envIndex]);
+                    newEnviron[envIndex] = entry;
+                    entry = NULL;
+                    break;
+                }
+            }
+            
+            if (entry) {
+                newEnviron[newEnvironCount ++] = entry;
+            }
+        }
+        
+        modified = YES;
+    }
+    
+    if (ensurePath) {
+        const char *newdir = [ensurePath fileSystemRepresentation];
+        for(unsigned envIndex = 0; envIndex < newEnvironCount; envIndex ++) {
+            if (strncmp(newEnviron[envIndex], "PATH=", 5) == 0) {
+                char *newPathStr = pathStringIncludingDirectory(newEnviron[envIndex], newdir, ":");
+                if (newPathStr) {
+                    newEnviron[envIndex] = realloc(newEnviron[envIndex], 6 + strlen(newPathStr));
+                    strcpy(5 + newEnviron[envIndex], newPathStr);
+                    free(newPathStr);
+                    modified = YES;
+                }
+                break;
+            }
+        }
+    }
+    
+    newEnviron[newEnvironCount] = NULL;
+    
+    if (!modified) {
+        /* Just inherit our environment if we didn't make any changes */
+        freeToolEnvironment(newEnviron);
+        return NULL;
+    } else {
+        return newEnviron;
+    }
+}
+
+static void freeToolEnvironment(char **envp)
+{
+    if (!envp)
+        return;
+    for(char **envcursor = envp; *envcursor; envcursor ++)
+        free(*envcursor);
+    free(envp);
+}
+
 

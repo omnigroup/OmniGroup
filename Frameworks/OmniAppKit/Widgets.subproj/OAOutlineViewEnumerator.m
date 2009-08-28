@@ -46,6 +46,7 @@ struct OAOutlineViewEnumeratorState {
     _stateCount++;
 }
 
+#ifdef OMNI_ASSERTIONS_ON
 - (BOOL) _checkState
 {
     unsigned int stateIndex;
@@ -63,6 +64,7 @@ struct OAOutlineViewEnumeratorState {
     
     return YES;
 }
+#endif
 
 - initWithOutlineView: (NSOutlineView *) outlineView
           visibleItem: (id) visibleItem;

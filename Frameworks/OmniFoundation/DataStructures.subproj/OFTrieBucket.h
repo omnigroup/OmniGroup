@@ -18,6 +18,6 @@
     unichar *upperCharacters;
 }
 
-- (void)setRemainingLower:(unichar *)lower upper:(unichar *)upper length:(int)aLength;
+- (void)setRemainingLower:(unichar *)lower upper:(unichar *)upper length:(NSUInteger)aLength;
 
 @end

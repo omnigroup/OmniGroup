@@ -21,10 +21,13 @@ extern NSString * const OSUAvailableUpdateControllerCheckInProgressBinding;
     IBOutlet NSArrayController *_availableItemController;
     IBOutlet NSTextField *_titleTextField;
     IBOutlet NSTextField *_messageTextField;
+    IBOutlet NSProgressIndicator *_spinner;
     IBOutlet NSSplitView *_itemsAndReleaseNotesSplitView;
     IBOutlet NSTableView *_itemTableView;
     IBOutlet WebView *_releaseNotesWebView;
     IBOutlet NSImageView *_appIconImageView;
+    IBOutlet NSButton *_installButton;
+    IBOutlet NSButton *_cancelButton;
 
     // KVC
     NSArray *_itemSortDescriptors;
@@ -36,9 +39,10 @@ extern NSString * const OSUAvailableUpdateControllerCheckInProgressBinding;
     BOOL _checkInProgress;
 }
 
-+ (OSUAvailableUpdateController *)availableUpdateController;
++ (OSUAvailableUpdateController *)availableUpdateController:(BOOL)shouldCreate;
 
 - (IBAction)installSelectedItem:(id)sender;
+- (IBAction)ignoreSelectedItem:(id)sender;
 
 // KVC
 - (OSUItem *)selectedItem;

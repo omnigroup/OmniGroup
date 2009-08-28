@@ -356,7 +356,7 @@ NSString *unpair(NSString *str, NSRange *where, void *dummy)
                 id p = OFCreatePlistFor4CC(fcc);
                 should1(OFGet4CCFromPlist(p, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, fcc]));
                 
-                str = (NSString *)UTCreateStringForOSType(fcc);
+                str = [(NSString *)UTCreateStringForOSType(fcc) autorelease];
                 should1(OFGet4CCFromPlist(str, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x out=%08x", shift, i, fcc, tmp]));
                 should1(UTGetOSTypeFromString((CFStringRef)str) == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, fcc]));
                 should1([str fourCharCodeValue] == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, fcc]));
@@ -365,6 +365,7 @@ NSString *unpair(NSString *str, NSRange *where, void *dummy)
                 should1(OFGet4CCFromPlist(str, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x out=%08x", shift, i, fcc, tmp]));
                 should1(UTGetOSTypeFromString((CFStringRef)str) == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, fcc]));
                 should1([str fourCharCodeValue] == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x out=%08x", shift, i, fcc, [str fourCharCodeValue]]));
+                [p release];
             }
         }
     }

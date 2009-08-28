@@ -108,7 +108,9 @@ NSString * const OFPointToPropertyListTransformerName = @"OFPointToPropertyListT
 
 + (void)didLoad;
 {
-    [NSValueTransformer setValueTransformer:[[self alloc] init] forName:OFPointToPropertyListTransformerName];
+    OFPointToPropertyListTransformer *instance = [[self alloc] init];
+    [NSValueTransformer setValueTransformer:instance forName:OFPointToPropertyListTransformerName];
+    [instance release];
 }
 
 + (Class)transformedValueClass;

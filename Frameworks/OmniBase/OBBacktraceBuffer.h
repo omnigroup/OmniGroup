@@ -16,7 +16,8 @@
 
 enum OBBacktraceBufferType {
     OBBacktraceBuffer_Unused = 0,
-    OBBacktraceBuffer_AssertionFailure = 1
+    OBBacktraceBuffer_Allocated = 1,
+    OBBacktraceBuffer_OBAssertionFailure = 2
 };
 
 struct OBBacktraceBuffer {
@@ -25,7 +26,7 @@ struct OBBacktraceBuffer {
     void *frames[OBBacktraceBufferAddressCount];
 };
 
-#define OBBacktraceBufferInfoVersionMagic  1
+#define OBBacktraceBufferInfoVersionMagic  2
 struct OBBacktraceBufferInfo {
     unsigned char version;
     unsigned char infoSize;

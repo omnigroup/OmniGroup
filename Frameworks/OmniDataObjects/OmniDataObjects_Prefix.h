@@ -16,6 +16,7 @@
 
 #import <OmniDataObjects/Errors.h>
 #import <OmniDataObjects/ODOPredicate.h> // Make sure everyone gets the #defines in here
+#import <OmniDataObjects/ODOFeatures.h>
 
 #import <Foundation/NSArray.h>
 #import <Foundation/NSDictionary.h>
@@ -35,9 +36,3 @@
 
 #import <CoreFoundation/CFNumber.h>
 #import <CoreFoundation/CFSet.h>
-
-#if 0 && defined(DEBUG)
-    #define DEBUG_UNDO(format, ...) NSLog((format), ## __VA_ARGS__)
-#else
-    #define DEBUG_UNDO(format, ...)
-#endif

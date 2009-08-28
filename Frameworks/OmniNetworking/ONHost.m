@@ -692,10 +692,12 @@ static void locked_disconnectFromSysConfig(void)
 
     // And finally, return the result to the caller.
     if (failure) {
+        OBASSERT(portAddresses == nil);
         [failure raise];
+        [portAddresses release]; // make clang happy
         return nil; // pacify the compiler
     } else
-        return portAddresses;
+        return [portAddresses autorelease];
 }
 
 // Debugging
@@ -1173,7 +1175,7 @@ static BOOL validIDNCodeValue(unsigned codepoint)
     }
     if (outputPtr >= outputEnd)
         return aString;
-    *outputPtr++ = 0;
+    *outputPtr = '\0';
 #ifdef DEBUG_toon    
     NSLog(@"Punycode encoded \"%@\" into \"%s\"", aString, outputBuffer);
 #endif    

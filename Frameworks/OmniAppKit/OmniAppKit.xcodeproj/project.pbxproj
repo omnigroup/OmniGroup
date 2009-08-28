@@ -53,7 +53,6 @@
 		4AA1E67F08AA764600E2FF6B /* NSImage-ColorSyncExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CBB57EA0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E68008AA764600E2FF6B /* OAColorProfile.h in Headers */ = {isa = PBXBuildFile; fileRef = F5AC9DBB032D12E201B4A65D /* OAColorProfile.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E68108AA764600E2FF6B /* OACompositeColorProfile.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CBB57E10416D5B800E7FE1C /* OACompositeColorProfile.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E68208AA764600E2FF6B /* FrameworkDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51EFDFE8AB2E911C9CC38 /* FrameworkDefines.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4AA1E69008AA764600E2FF6B /* OAAppKitQueueProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51EFEFE8AB2E911C9CC38 /* OAAppKitQueueProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69108AA764600E2FF6B /* OAApplication.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51EFFFE8AB2E911C9CC38 /* OAApplication.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69208AA764600E2FF6B /* OAColorPalette.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F00FE8AB2E911C9CC38 /* OAColorPalette.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -447,7 +446,6 @@
 		00E51EF8FE8AB2E911C9CC38 /* OAFindController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFindController.m; sourceTree = "<group>"; };
 		00E51EF9FE8AB2E911C9CC38 /* OAFontCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFontCache.m; sourceTree = SOURCE_ROOT; };
 		00E51EFAFE8AB2E911C9CC38 /* OAPasteboardHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPasteboardHelper.m; sourceTree = SOURCE_ROOT; };
-		00E51EFDFE8AB2E911C9CC38 /* FrameworkDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameworkDefines.h; sourceTree = "<group>"; };
 		00E51EFEFE8AB2E911C9CC38 /* OAAppKitQueueProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAppKitQueueProcessor.h; sourceTree = "<group>"; };
 		00E51EFFFE8AB2E911C9CC38 /* OAApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAApplication.h; sourceTree = SOURCE_ROOT; };
 		00E51F00FE8AB2E911C9CC38 /* OAColorPalette.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAColorPalette.h; sourceTree = SOURCE_ROOT; };
@@ -633,7 +631,6 @@
 		349F65E00EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSResponder-OAExtensions.h"; sourceTree = "<group>"; };
 		349F65E10EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSResponder-OAExtensions.m"; sourceTree = "<group>"; };
 		34A1594805642A810097A113 /* OmniAppKit.order */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniAppKit.order; sourceTree = "<group>"; };
-		34AA2A0B058D70900097A113 /* OAScriptMenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAScriptMenu.png; sourceTree = "<group>"; };
 		34AF4BE10C99963F003DEC1B /* OAColorArchivingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorArchivingTests.m; sourceTree = "<group>"; };
 		34B14EEC0572E2820097A113 /* OADataSourceTableColumn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADataSourceTableColumn.h; sourceTree = "<group>"; };
 		34B14EED0572E2820097A113 /* OADataSourceTableColumn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADataSourceTableColumn.m; sourceTree = "<group>"; };
@@ -886,8 +883,6 @@
 		F57089B401FEA73201B4A65B /* OAScriptToolbarHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAScriptToolbarHelper.m; sourceTree = SOURCE_ROOT; };
 		F59B07CF01FE36AE01B4A65D /* OAToolbarWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAToolbarWindowController.h; sourceTree = SOURCE_ROOT; };
 		F59B07D001FE36AE01B4A65D /* OAToolbarWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbarWindowController.m; sourceTree = SOURCE_ROOT; };
-		F5A5A4B4023E8BE501B4A65D /* OAScriptMenuItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAScriptMenuItem.h; sourceTree = SOURCE_ROOT; };
-		F5A5A4B5023E8BE501B4A65D /* OAScriptMenuItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAScriptMenuItem.m; sourceTree = SOURCE_ROOT; };
 		F5AC9DBB032D12E201B4A65D /* OAColorProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAColorProfile.h; sourceTree = "<group>"; };
 		F5AC9DBC032D12E201B4A65D /* OAColorProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorProfile.m; sourceTree = "<group>"; };
 		F5D4DA390222D61401B4A65D /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OAScriptSheet.nib; sourceTree = "<group>"; };
@@ -1101,7 +1096,6 @@
 				00E51EFAFE8AB2E911C9CC38 /* OAPasteboardHelper.m */,
 				13F8BB49FF32715FC697A13D /* OAShrinkingTextDisplayer.h */,
 				13F8BB4AFF32715FC697A13D /* OAShrinkingTextDisplayer.m */,
-				F5A5A4B3023E8BE501B4A65D /* NSMenuItem */,
 			);
 			name = "Obsolete or Deprecated";
 			sourceTree = "<group>";
@@ -1761,7 +1755,6 @@
 				00E51F07FE8AB2E911C9CC38 /* OmniAppKit.h */,
 				4A0277F608959F0400594E5E /* OAUtilities.h */,
 				34DAF8660556CA0D0097A113 /* OAVersion.h */,
-				00E51EFDFE8AB2E911C9CC38 /* FrameworkDefines.h */,
 				34A1594805642A810097A113 /* OmniAppKit.order */,
 				BF94281F062222D400B83989 /* Info.plist */,
 				3FDA413402096AEB0297A14E /* Omni Application Patterns */,
@@ -2067,17 +2060,6 @@
 			name = Text;
 			sourceTree = "<group>";
 		};
-		F5A5A4B3023E8BE501B4A65D /* NSMenuItem */ = {
-			isa = PBXGroup;
-			children = (
-				F5A5A4B4023E8BE501B4A65D /* OAScriptMenuItem.h */,
-				F5A5A4B5023E8BE501B4A65D /* OAScriptMenuItem.m */,
-				34AA2A0B058D70900097A113 /* OAScriptMenu.png */,
-			);
-			name = NSMenuItem;
-			path = Widgets.subproj;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2092,7 +2074,6 @@
 				4AA1E68008AA764600E2FF6B /* OAColorProfile.h in Headers */,
 				4268E9CC0DBE6B03002F30B1 /* OAColorProfile-Deprecated.h in Headers */,
 				4AA1E68108AA764600E2FF6B /* OACompositeColorProfile.h in Headers */,
-				4AA1E68208AA764600E2FF6B /* FrameworkDefines.h in Headers */,
 				4AA1E69008AA764600E2FF6B /* OAAppKitQueueProcessor.h in Headers */,
 				4AA1E69108AA764600E2FF6B /* OAApplication.h in Headers */,
 				4AA1E69208AA764600E2FF6B /* OAColorPalette.h in Headers */,

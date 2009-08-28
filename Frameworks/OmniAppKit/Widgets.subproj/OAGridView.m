@@ -15,20 +15,13 @@ RCS_ID("$Id$");
 
 // This puts views in rows and columns, and makes sure they all have the same size.  You can set the left, right, top and bottom margins, and the interrow and intercolumn spacing.
 
-@interface OAGridView (Private)
-@end
-
 @implementation OAGridView
 
 static NSView *_emptyView = nil;
 
 + (void)initialize;
 {
-    BOOL hasBeenInitialized = NO;
-
-    if (hasBeenInitialized == YES)
-        return;
-    hasBeenInitialized = YES;
+    OBINITIALIZE;
 
     _emptyView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)];
 }

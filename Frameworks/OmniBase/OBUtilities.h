@@ -23,6 +23,15 @@ extern "C" {
 #define NORETURN
 #endif
 
+/* The LLVM clang scan-build support has some attributes for declaring exceptions to the normal CF/Cocoa rules.  These are only valid for clang, not GCC. */
+#if defined(__clang__)
+    #define CLANG_RETURNS_NS_RETAINED __attribute__((ns_returns_retained)) 
+    #define CLANG_RETURNS_CF_RETAINED __attribute__((cf_returns_retained)) 
+#else
+    #define CLANG_RETURNS_NS_RETAINED
+    #define CLANG_RETURNS_CF_RETAINED
+#endif
+
 /*
  * only certain compilers support __attribute__((deprecated))
  * Apple has a similar definition but it's too inclusive
@@ -126,7 +135,8 @@ extern BOOL OBIsRunningUnitTests(void);
 
 extern NSString *OBShortObjectDescription(id anObject);
 
-
+extern CFStringRef const OBBuildByCompilerVersion;
+    
 // This macro ensures that we call [super initialize] in our +initialize (since this behavior is necessary for some classes in Cocoa), but it keeps custom class initialization from executing more than once.
 #define OBINITIALIZE \
     do { \
@@ -137,7 +147,13 @@ extern NSString *OBShortObjectDescription(id anObject);
         hasBeenInitialized = YES;\
     } while (0);
 
-    
+
+// Sometimes a value is computed but not expected to be used and we wish to avoid clang dead store warnings.  For example, when laying out a stack of views, we might keep a running total of the used height and might want to do this for the last item stacked up (in case something is added later).
+#define OB_UNUSED_VALUE(v) do { \
+    void *__ptr __attribute__((unused)) = &v; /* ensure it is actually an l-value */ \
+    typeof(v) __unused_value __attribute__((unused)) = v; \
+} while(0)
+
 #ifdef USING_BUGGY_CPP_PRECOMP
 // Versions of cpp-precomp released before April 2002 have a bug that makes us have to do this
 #define NSSTRINGIFY(name) @ ## '"' ## name ## '"'

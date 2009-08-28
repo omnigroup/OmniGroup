@@ -21,11 +21,8 @@ void _OFWeakRetainRelease(OFWeakRetainIvars *ivars, NSObject <OFWeakRetain> *sel
     lock = &ivars->lock;
     OFSimpleLock(lock);
     NS_DURING {
-        unsigned int retainCount;
-        BOOL hasWeakRetains;
-
-        retainCount = [self retainCount];
-        hasWeakRetains = ivars->count != OF_WEAK_RETAIN_INVALID_COUNT && ivars->count != 0;
+        NSUInteger retainCount = [self retainCount];
+        BOOL hasWeakRetains = ivars->count != OF_WEAK_RETAIN_INVALID_COUNT && ivars->count != 0;
         shouldInvalidate = hasWeakRetains && retainCount - 1 == ivars->count;
 #ifdef DEBUG_WEAK_RETAIN
         NSLog(@"-[%@ release] (retainCount=%d, count=%d, shouldInvalidate=%@)", OBShortObjectDescription(self), retainCount, ivars->count, shouldInvalidate ? @"YES" : @"NO");

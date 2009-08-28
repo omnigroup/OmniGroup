@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/NSResponder-OAExtensions.h>
+#import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$")
 

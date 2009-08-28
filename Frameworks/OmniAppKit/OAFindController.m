@@ -57,6 +57,8 @@ static NSString *OAFindPanelTitle = @"Find";
 - (IBAction)showFindPanel:(id)sender;
 {
     WANT_INTERFACE;
+    if (!findPanel)
+        return;
     [[searchTextForm cellAtIndex:0] setStringValue:[self restoreFindText]];
     [findPanel setFrame:[OAWindowCascade unobscuredWindowFrameFromStartingFrame:[findPanel frame] avoidingWindows:nil] display:YES animate:YES];
     [findPanel makeKeyAndOrderFront:NULL];
@@ -170,8 +172,10 @@ static NSString *OAFindPanelTitle = @"Find";
         break;
     }
 
-    [subview setFrameOrigin:NSMakePoint(floor(([additionalControlsBox frame].size.width - [subview frame].size.width) / 2), 0)];
-    [additionalControlsBox addSubview:subview];
+    if (subview) {
+        [subview setFrameOrigin:NSMakePoint(floor(([additionalControlsBox frame].size.width - [subview frame].size.width) / 2), 0)];
+        [additionalControlsBox addSubview:subview];
+    }
     [replaceTextForm setNextKeyView:nextKeyView];
 }
 

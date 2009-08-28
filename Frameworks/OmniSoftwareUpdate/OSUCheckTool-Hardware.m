@@ -107,7 +107,7 @@ static void setSysctlStringKey(CFMutableDictionaryRef dict, CFStringRef key, int
 static NSDictionary *copySystemProfileForDataType(NSString *dataType)
 {
     NSPipe *pipe = [NSPipe pipe];
-    NSTask *task = [[NSTask alloc] init];
+    NSTask *task = [[[NSTask alloc] init] autorelease];
     [task setLaunchPath:@"/usr/sbin/system_profiler"];
     [task setArguments:[NSArray arrayWithObjects:@"-xml", dataType, @"-detailLevel", @"mini", nil]];
     [task setStandardOutput:pipe];
@@ -132,7 +132,7 @@ static NSDictionary *copySystemProfileForDataType(NSString *dataType)
     }
     if ([plist count] == 0) {
 #ifdef DEBUG    
-	NSLog(@"Unable to query system profile for '%@' -- Got empty array at top level", dataType, NSStringFromClass([plist class]));
+	NSLog(@"Unable to query system profile for '%@' -- Got empty array at top level", dataType);
 #endif	
 	return nil;
     }
@@ -184,6 +184,7 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
     // Run time stats from OSURunTime.
     CFStringRef appapplicationIdentifierString = CFStringCreateWithCString(kCFAllocatorDefault, applicationIdentifier, kCFStringEncodingUTF8);
     OSURunTimeAddStatisticsToInfo((NSString *)appapplicationIdentifierString, (NSMutableDictionary *)info);
+    CFRelease(appapplicationIdentifierString);
     
     if (!collectHardwareInformation)
         // The user has opted out.  We still send along the application name and bundle version.  We may use it someday to filter the result that is returned to just the pertinent info for that app.
@@ -290,7 +291,6 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
     
     // CPU Hz
     {
-        // TODO: It won't be too long before this goes above UINT_MAX!
         int name[] = {CTL_HW, HW_CPU_FREQ};
         setSysctlIntKey(info, CFSTR("cpuhz"), name, 2);
     }
@@ -466,17 +466,37 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
             CGDisplayErr err = CGGetActiveDisplayList(4, displays, &displayCount);
             if (err == CGDisplayNoErr) {
                 for (displayIndex = 0; displayIndex < displayCount; displayIndex++) {
+                    CFNumberRef width, height, refreshRate;
+                    CFStringRef pixelEncoding;
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+                    CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displays[displayIndex]);
+                    if (!mode)
+                        continue;
+                    int32_t size;
+                    
+                    size = CGDisplayModeGetWidth(mode);
+                    width = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &size);
+                    
+                    size = CGDisplayModeGetHeight(mode);
+                    height = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &size);
+                    
+                    double refreshRateDouble = CGDisplayModeGetRefreshRate(mode);
+                    refreshRate = CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &refreshRateDouble);
+                    
+                    pixelEncoding = CGDisplayModeCopyPixelEncoding(mode);
+#else
                     CFDictionaryRef mode = CGDisplayCurrentMode(displays[displayIndex]);
-                    if (mode) {
-                        CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("display%d"), displayIndex);
-			CFStringRef format = reportMode ? CFSTR("%@x%@, %@ bits, %@Hz") : CFSTR("%@,%@,%@,%@");
-			CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, format,
-                                                                     CFDictionaryGetValue(mode, kCGDisplayWidth),
-                                                                     CFDictionaryGetValue(mode, kCGDisplayHeight),
-                                                                     CFDictionaryGetValue(mode, kCGDisplayBitsPerPixel),
-                                                                     CFDictionaryGetValue(mode, kCGDisplayRefreshRate));
-                        CFDictionarySetValue(info, key, value);
-                    }
+                    if (!mode)
+                        continue;
+                    width = CFDictionaryGetValue(mode, kCGDisplayWidth);
+                    height = CFDictionaryGetValue(mode, kCGDisplayHeight);
+                    refreshRate = CFDictionaryGetValue(mode, kCGDisplayRefreshRate);
+                    pixelEncoding = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%@"), CFDictionaryGetValue(mode, kCGDisplayBitsPerPixel));
+#endif
+                    CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("display%d"), displayIndex);
+                    CFStringRef format = reportMode ? CFSTR("%@x%@, %@ bits, %@Hz") : CFSTR("%@,%@,%@,%@");
+                    CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, format, width, height, pixelEncoding, refreshRate);
+                    CFDictionarySetValue(info, key, value);
 		    
 		    {
                         CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("qe%d"), displayIndex);

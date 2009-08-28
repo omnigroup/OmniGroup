@@ -73,19 +73,21 @@ RCS_ID("$Id$")
         } else {
             if (!inspectorPlist) {
                 OBASSERT_NOT_REACHED("No inspector specified for section");
+                [sectionInspectors release];
                 [self release];
                 return nil;
             }
         }
         
-        OIInspector *inspector = [OIInspector createInspectorWithDictionary:inspectorPlist bundle:sourceBundle];
+        OIInspector *inspector = [OIInspector newInspectorWithDictionary:inspectorPlist bundle:sourceBundle];
         if (!inspector)
             // Don't log an error; OIInspector should have already if it is an error (might just be an OS version check)
             continue;
 
         if (![inspector isKindOfClass:[OIInspectorSection class]]) {
             NSLog(@"%@ is not a subclass of OIInspectorSection.", inspector);
-            continue; // could -release, but -dealloc path of inspectors isn't well tested so let's not tempt fate.
+            [inspector release];
+            continue;
         }
         
 	[sectionInspectors addObject:inspector];

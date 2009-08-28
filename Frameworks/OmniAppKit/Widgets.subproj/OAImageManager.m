@@ -75,8 +75,7 @@ static OAImageManager *SharedImageManager = nil;
     
     path = [aBundle pathForImageResource:imageName];
     if (path) {
-        image = [[NSImage alloc] initByReferencingFile:path];
-        // Note that we "leak" the image here, in order to imitate the behavior of +[NSImage imageNamed:].
+        image = [[[NSImage alloc] initByReferencingFile:path] autorelease];
         if (image && [image isValid]) {
             [image setName:imageName];
             return image;

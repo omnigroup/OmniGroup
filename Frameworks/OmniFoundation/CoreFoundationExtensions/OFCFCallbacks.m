@@ -156,12 +156,27 @@ const CFDictionaryKeyCallBacks OFIntegerDictionaryKeyCallbacks = {
     NULL, // equal
     NULL, // hash
 };
+const CFDictionaryKeyCallBacks OFUnsignedIntegerDictionaryKeyCallbacks = {
+    0,    // version
+    NULL, // retain
+    NULL, // release
+    OFUnsignedIntegerCopyDescription,
+    NULL, // equal
+    NULL, // hash
+};
 const CFDictionaryValueCallBacks OFIntegerDictionaryValueCallbacks = {
-    0, // version
-    0, // retain
-    0, // release
+    0,    // version
+    NULL, // retain
+    NULL, // release
     OFIntegerCopyDescription,
-    0, // equal
+    NULL, // equal
+};
+const CFDictionaryValueCallBacks OFUnsignedIntegerDictionaryValueCallbacks = {
+    0,    // version
+    NULL, // retain
+    NULL, // release
+    OFUnsignedIntegerCopyDescription,
+    NULL, // equal
 };
 
 const CFDictionaryKeyCallBacks OFNSObjectDictionaryKeyCallbacks = {

@@ -41,8 +41,15 @@ NSString * const ODOTestCaseMasterDetails = @"details";
 NSString * const ODOTestCaseMasterName = @"name";
 NSString * const ODOTestCaseMasterPk = @"pk";
 
+#ifdef __clang__
+static void DisableAnalysis(void) __attribute__((analyzer_noreturn));
+#endif
+static void DisableAnalysis(void) {}
+
 ODOModel * ODOTestCaseModel(void)
 {
+    DisableAnalysis();
+
     static ODOModel *model = nil;
     if (model) return model;
 

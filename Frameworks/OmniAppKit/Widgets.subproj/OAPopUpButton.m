@@ -78,24 +78,21 @@ RCS_ID("$Id$")
 
 - (void)keyDown:(NSEvent *)theEvent;
 {
-    NSString *characters;
-    unichar firstCharacter;
-    unsigned int modifierFlags;
-
-    characters = [theEvent characters];
-    modifierFlags = [theEvent modifierFlags];
-    firstCharacter = [characters characterAtIndex:0];
-
-    // See if there's an item whose title matches what the user is typing.
-    // This can only be activated, initially, by typing an alphanumeric character.  This means the user can still press space to show the menu.
-    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"DisableTypeAheadSelection"] && ([[NSCharacterSet alphanumericCharacterSet] characterIsMember:firstCharacter] || ([typeAheadHelper isProcessing] && ![[NSCharacterSet controlCharacterSet] characterIsMember:firstCharacter]))) {
-        if (typeAheadHelper == nil) {
-            typeAheadHelper = [[OATypeAheadSelectionHelper alloc] init];
-            [typeAheadHelper setDataSource:self];
-        }
+    NSString *characters = [theEvent characters];
+    if ([characters length] > 0) {
+        unichar firstCharacter = [characters characterAtIndex:0];
         
-        [typeAheadHelper processKeyDownCharacter:firstCharacter];
-        return;
+        // See if there's an item whose title matches what the user is typing.
+        // This can only be activated, initially, by typing an alphanumeric character.  This means the user can still press space to show the menu.
+        if (![[NSUserDefaults standardUserDefaults] boolForKey:@"DisableTypeAheadSelection"] && ([[NSCharacterSet alphanumericCharacterSet] characterIsMember:firstCharacter] || ([typeAheadHelper isProcessing] && ![[NSCharacterSet controlCharacterSet] characterIsMember:firstCharacter]))) {
+            if (typeAheadHelper == nil) {
+                typeAheadHelper = [[OATypeAheadSelectionHelper alloc] init];
+                [typeAheadHelper setDataSource:self];
+            }
+            
+            [typeAheadHelper processKeyDownCharacter:firstCharacter];
+            return;
+        }
     }
     
     [super keyDown:theEvent];

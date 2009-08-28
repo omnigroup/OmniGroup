@@ -15,4 +15,7 @@ GCC_PREPROCESSOR_DEFINITIONS = DEBUG DEBUG_$(USER)
 // Dwarf-2 is now the default; OOM only understands stabs still; so uncomment this when using OOM
 // DEBUG_INFORMATION_FORMAT = stabs
 
+// valgrind likes this.
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+
 ONLY_ACTIVE_ARCH = YES

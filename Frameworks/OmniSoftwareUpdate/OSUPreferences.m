@@ -1,4 +1,4 @@
-// Copyright 2001-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@
 
 #import "OSUController.h"
 #import "OSUChecker.h"
+#import "OSUItem.h"
 
 RCS_ID("$Id$");
 
@@ -25,6 +26,7 @@ typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
 static OFPreference *automaticSoftwareUpdateCheckEnabled = nil;
 static OFPreference *checkInterval = nil;
 static OFPreference *includeHardwareDetails = nil;
+static OFPreference *updatesToIgnore = nil;
 
 @interface OSUPreferences (Private)
 - (void)_systemConfigurationSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;
@@ -39,6 +41,7 @@ static OFPreference *includeHardwareDetails = nil;
     automaticSoftwareUpdateCheckEnabled = [[OFPreference preferenceForKey:@"AutomaticSoftwareUpdateCheckEnabled"] retain];
     checkInterval = [[OFPreference preferenceForKey:@"OSUCheckInterval"] retain];
     includeHardwareDetails = [[OFPreference preferenceForKey:@"OSUIncludeHardwareDetails"] retain];
+    updatesToIgnore = [[OFPreference preferenceForKey:@"OSUIgnoredUpdates"] retain];
 }
 
 + (OFPreference *)automaticSoftwareUpdateCheckEnabled;
@@ -54,6 +57,47 @@ static OFPreference *includeHardwareDetails = nil;
 + (OFPreference *)includeHardwareDetails;
 {
     return includeHardwareDetails;
+}
+
++ (OFPreference *)ignoredUpdates;
+{
+    return updatesToIgnore;
+}
+
++ (void)setItem:(OSUItem *)anItem isIgnored:(BOOL)shouldBeIgnored;
+{
+    NSString *itemRepr = [[anItem buildVersion] cleanVersionString];
+    if (!itemRepr)
+        return;
+    itemRepr = [@"v" stringByAppendingString:itemRepr];
+    
+    OFPreference *currentlyIgnored = [self ignoredUpdates];
+    NSMutableArray *ignorance = [[currentlyIgnored stringArrayValue] mutableCopy];
+    
+    if (shouldBeIgnored && ![ignorance containsObject:itemRepr]) {
+        [ignorance addObject:itemRepr];
+        [ignorance sortUsingSelector:@selector(compare:)];
+        [currentlyIgnored setArrayValue:ignorance];
+        [[NSUserDefaults standardUserDefaults] autoSynchronize];
+    } else if (!shouldBeIgnored && [ignorance containsObject:itemRepr]) {
+        [ignorance removeObject:itemRepr];
+        [currentlyIgnored setArrayValue:ignorance];
+        if (![currentlyIgnored hasNonDefaultValue])
+            [currentlyIgnored restoreDefaultValue];
+        [[NSUserDefaults standardUserDefaults] autoSynchronize];
+    }
+    
+    [ignorance release];
+}
+
+
++ (BOOL)itemIsIgnored:(OSUItem *)anItem;
+{
+    OFVersionNumber *itemRepr = [anItem buildVersion];
+    if (!itemRepr)
+        return NO;
+    
+    return [[[self ignoredUpdates] stringArrayValue] containsObject:[@"v" stringByAppendingString:[itemRepr cleanVersionString]]];
 }
 
 - (void)awakeFromNib;
@@ -134,7 +178,7 @@ static OFPreference *includeHardwareDetails = nil;
         return;
     }
     
-    NSData *htmlData = [[[NSData alloc] initWithContentsOfFile:path] autorelease];
+    NSData *htmlData = [[NSData alloc] initWithContentsOfFile:path];
     if (!htmlData) {
 #ifdef DEBUG    
         NSLog(@"Cannot load HardwareDescription.html");
@@ -144,6 +188,7 @@ static OFPreference *includeHardwareDetails = nil;
 
     // We have to do the variable replacement on the string since the tables in the HTML will get replaced with attachment cells
     NSMutableString *htmlString = [[[NSMutableString alloc] initWithData:htmlData encoding:NSUTF8StringEncoding] autorelease];
+    [htmlData release];
 
     // Get the system configuration report
     OSUChecker *checker = [OSUChecker sharedUpdateChecker];
@@ -173,22 +218,23 @@ static OFPreference *includeHardwareDetails = nil;
             
             NSString *key = [htmlString substringWithRange:keyRange];
 
+            OSUChecker *checker = [OSUChecker sharedUpdateChecker];
+            
             NSString *replacement = [[[report objectForKey:key] retain] autorelease];
             [report removeObjectForKey:key];
             
 	    if ([key isEqualToString:@"OSU_VER"]) {
 		replacement = [[OSUChecker OSUVersionNumber] originalVersionString];
             } else if ([key isEqualToString:@"OSU_APP_ID"]) {
-                replacement = [[NSBundle mainBundle] bundleIdentifier];
+                replacement = [checker applicationIdentifier];
             } else if ([key isEqualToString:@"OSU_APP_VER"]) {
-                NSDictionary *info = [[NSBundle mainBundle] infoDictionary];
-                replacement = [checker targetBuildVersionStringFromBundleInfo:info];
+                replacement = [checker applicationEngineeringVersion];
             } else if ([key isEqualToString:@"OSU_TRACK"]) {
-                replacement = [OSUChecker applicationTrack];
+                replacement = [checker applicationTrack];
             } else if ([key isEqualToString:@"OSU_VISIBLE_TRACKS"]) {
                 // No longer sending this, but don't want to mess up the localizations, so just returning the current track
                 //replacement = [[OSUChecker visibleTracks] componentsJoinedByString:@", "];
-                replacement = [OSUChecker applicationTrack];
+                replacement = [checker applicationTrack];
             } else if ([key isEqualToString:@"APP"]) {
                 replacement = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	    } else if ([key isEqualToString:@"license-type"]) {
@@ -259,9 +305,9 @@ static OFPreference *includeHardwareDetails = nil;
                     NSString *quartzExtremeKey = [NSString stringWithFormat:@"qe%d", displayIndex];
                     NSString *quartzExtreme = [report objectForKey:quartzExtremeKey];
                     if ([@"1" isEqualToString:quartzExtreme])
-                        [displays appendString:NSLocalizedStringFromTableInBundle(@"Quartz Extreme Enabled", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel value")];
+                        [displays appendString:NSLocalizedStringFromTableInBundle(@"Quartz Extreme Enabled", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel value - shown if Quartz Extreme is enabled")];
                     else if ([@"0" isEqualToString:quartzExtreme])
-                        [displays appendString:NSLocalizedStringFromTableInBundle(@"Quartz Extreme Disabled", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel value")];
+                        [displays appendString:NSLocalizedStringFromTableInBundle(@"Quartz Extreme Disabled", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel value - shown if Quartz Extreme is not enabled")];
                     else {
                         OBASSERT(NO);
                     }
@@ -310,13 +356,13 @@ static OFPreference *includeHardwareDetails = nil;
 		    if ([adaptors length])
 			[adaptors appendString:@"<br><br>"];
 		    
-		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"PCI ID", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
+		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"PCI ID", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - PCI bus ID of video card")];
 		    [adaptors appendFormat:@": %@<br>", pci ?: @""];
-		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Driver", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
+		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Driver", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - name of the OpenGL driver")];
 		    [adaptors appendFormat:@": %@<br>", gl ?: @""];
-		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"Hardware Driver", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
+		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"Hardware Driver", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - name of video card driver")];
 		    [adaptors appendFormat:@": %@<br>", ident ?: @""];
-		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"Driver Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
+		    [adaptors appendString:NSLocalizedStringFromTableInBundle(@"Driver Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - version of video card driver")];
 		    [adaptors appendFormat:@": %@", ver ?: @""];
 
 		    [report removeObjectForKey:pciKey];
@@ -330,7 +376,7 @@ static OFPreference *includeHardwareDetails = nil;
 		if (memString) {
 		    [adaptors appendString:@"<br>"];
 		    if (adaptorIndex == 1) {
-			[adaptors appendString:NSLocalizedStringFromTableInBundle(@"Memory", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
+			[adaptors appendString:NSLocalizedStringFromTableInBundle(@"Memory", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - amount of video memory installed")];
 			[adaptors appendString:@": "];
 		    } else
 			[adaptors appendString:@"<br>"];
@@ -388,12 +434,12 @@ static OFPreference *includeHardwareDetails = nil;
                 replacement = glInfo;
             } else if ([key isEqualToString:@"RUNTIME"]) {
                 NSMutableString *runtime = [NSMutableString string];
-                NSString *hoursRunLabel = NSLocalizedStringFromTableInBundle(@"Hours Run", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string");
-                NSString *timesRunLabel = NSLocalizedStringFromTableInBundle(@"# of Launches", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string");
-                NSString *crashRunLabel = NSLocalizedStringFromTableInBundle(@"# of Crashes", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string");
+                NSString *hoursRunLabel = NSLocalizedStringFromTableInBundle(@"Hours Run", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - accumulated number of hours the program has been running");
+                NSString *timesRunLabel = NSLocalizedStringFromTableInBundle(@"# of Launches", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - number of times the program has been launched");
+                NSString *crashRunLabel = NSLocalizedStringFromTableInBundle(@"# of Crashes", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - number of times the program has crashed");
                 
                 [runtime appendString:@"<b>"];
-                [runtime appendString:NSLocalizedStringFromTableInBundle(@"Current Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
+                [runtime appendString:NSLocalizedStringFromTableInBundle(@"Current Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - for the section which lists run/launch/crash info for this particular version")];
                 [runtime appendString:@"</b><br><table>"];
                 [runtime appendFormat:@"<tr><td align=\"right\">%@</td><td>%.1f</td></tr>", hoursRunLabel, [[report objectForKey:@"runmin"] unsignedIntValue]/60.0];
                 [report removeObjectForKey:@"runmin"];
@@ -406,7 +452,7 @@ static OFPreference *includeHardwareDetails = nil;
                 [runtime appendString:@"</table><br><table>"];
 
                 [runtime appendString:@"<b>"];
-                [runtime appendString:NSLocalizedStringFromTableInBundle(@"All Versions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
+                [runtime appendString:NSLocalizedStringFromTableInBundle(@"All Versions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - for the section which lists run/launch/crash info for all versions")];
                 [runtime appendString:@"</b>"];
                 [runtime appendFormat:@"<tr><td align=\"right\">%@</td><td>%.1f</td></tr>", hoursRunLabel, [[report objectForKey:@"trunmin"] unsignedIntValue]/60.0];
                 [report removeObjectForKey:@"trunmin"];

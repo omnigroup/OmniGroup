@@ -14,16 +14,16 @@ RCS_ID("$Id$")
 
 @implementation OFEnumNameTable (OFFlagMask)
 
-- (NSString *)copyStringForMask:(unsigned int)mask withSeparator:(unichar)separator;
+- (NSString *)copyStringForMask:(NSUInteger)mask withSeparator:(unichar)separator;
 {
     if (mask == 0)
 	return [[self nameForEnum:0] copy];
     
     NSMutableString *result = [[NSMutableString alloc] init];
     
-    unsigned int enumIndex, enumCount = [self count];
+    NSUInteger enumIndex, enumCount = [self count];
     for (enumIndex = 0; enumIndex < enumCount; enumIndex++) {
-	unsigned int enumValue = [self enumForIndex:enumIndex];
+	NSInteger enumValue = [self enumForIndex:enumIndex];
 	if (mask & enumValue) { // The 0 entry will fail this trivially so we need not skip it manually
 	    NSString *name = [self nameForEnum:enumValue];
 	    if ([result length])
@@ -36,7 +36,7 @@ RCS_ID("$Id$")
     return result;
 }
 
-- (unsigned int)maskForString:(NSString *)string withSeparator:(unichar)separator;
+- (NSUInteger)maskForString:(NSString *)string withSeparator:(unichar)separator;
 {
     // Avoid passing nil to -[OFStringScanner initWithString:];
     if ([string isEqualToString:[self nameForEnum:0]] || [NSString isEmptyString:string])
@@ -44,7 +44,7 @@ RCS_ID("$Id$")
     
     OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:string];
     NSString *name;
-    unsigned int mask = 0;
+    NSUInteger mask = 0;
     while ((name = [scanner readFullTokenWithDelimiterCharacter:separator])) {
 	mask |= [self enumForName:name];
 	[scanner readCharacter];

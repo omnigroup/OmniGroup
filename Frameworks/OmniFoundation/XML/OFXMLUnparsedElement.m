@@ -43,7 +43,8 @@ RCS_ID("$Id$")
 
 - (BOOL)appendXML:(struct _OFXMLBuffer *)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
 {
-    return OFXMLBufferAppendUTF8Data(xml, (CFDataRef)_data, outError);
+    OFXMLBufferAppendUTF8Data(xml, (CFDataRef)_data);
+    return YES;
 }
 
 - (BOOL)xmlRepresentationCanContainChildren;

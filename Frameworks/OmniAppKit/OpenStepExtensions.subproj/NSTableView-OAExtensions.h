@@ -57,8 +57,6 @@ typedef enum _OATableViewRowVisibility {
 - (BOOL)tableView:(NSTableView *)tableView shouldShowDragImageForRow:(NSInteger)row;
     // If you'd like to support dragging of multiple-row selections, but want to control which of the selected rows is valid for dragging, implement this method in addition to -tableView:writeRows:toPasteboard:. If none of the selected rows are valid, return NO in -tableView:writeRows:toPasteboard:. If some of them are, write the valid ones to the pasteboard and return YES in -tableView:writeRows:toPasteboard:, and implement this method to return NO for the invalid ones. This prevents them from being drawn as part of the drag image, so that the items the user appears to be dragging are in sync with the items she's actually dragging.
 
-- (NSDragOperation)tableView:(NSTableView *)tableView draggingSourceOperationMaskForLocal:(BOOL)isLocal;
-
 // Additional editing actions
 - (void)tableView:(NSTableView *)tableView insertNewline:(id)sender;
     // You may want to edit the currently selected item or insert a new item when Return is pressed.

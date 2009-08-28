@@ -13,31 +13,6 @@
 
 @interface NSMutableData (OFExtensions)
 
-- (void) andWithData: (NSData *) aData;
-/*.doc.
-Sets each byte of the receiver to be the bitwise and of that byte and the corresponding byte in aData.
-
-PRECONDITION(aData);
-PRECONDITION([self length] == [aData length]);
-*/
-
-- (void) orWithData: (NSData *) aData;
-/*.doc.
-Sets each byte of the receiver to be the bitwise and of that byte and the corresponding byte in aData.
-
-PRECONDITION(aData);
-PRECONDITION([self length] == [aData length]);
-*/
-
-
-- (void) xorWithData: (NSData *) aData;
-/*.doc.
-Sets each byte of the receiver to be the bitwise and of that byte and the corresponding byte in aData.
-
-PRECONDITION(aData);
-PRECONDITION([self length] == [aData length]);
-*/
-
 - (void)appendString:(NSString *)aString encoding:(NSStringEncoding)anEncoding;
 
 @end

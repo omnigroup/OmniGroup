@@ -333,15 +333,13 @@ static inline void _nonNilKey(id key)
 
 - (id)copyWithZone:(NSZone *)zone;
 {
-    // Is this ever called?  If so, does the caller expect to get a possibly slow generic-key dictionary back
-    OBRequestConcreteImplementation(self, _cmd);
-    return nil;
+    // Not as fast as it could be; but we can optimize later if this gets called a lot.
+    return [[NSDictionary alloc] initWithDictionary:self];
 }
 - (id)mutableCopyWithZone:(NSZone *)zone;
 {
-    // Is this ever called?  If so, does the caller expect to get a possibly slow generic-key dictionary back
-    OBRequestConcreteImplementation(self, _cmd);
-    return nil;
+    // Not as fast as it could be; but we can optimize later if this gets called a lot.
+    return [[NSMutableDictionary alloc] initWithDictionary:self];
 }
 
 @end

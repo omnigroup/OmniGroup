@@ -8,13 +8,12 @@
 // $Id$
 
 #import <AppKit/NSTextField.h>
+#import <OmniAppKit/NSControl-OAExtensions.h>
 
 @interface NSTextField (OAExtensions)
 - (void)setStringValueAllowingNil: (NSString *) aString;
 - (void)appendString:(NSString *)aString;
 
 - (void)changeColorAsIfEnabledStateWas:(BOOL)newEnabled;
-
-- (void)sizeToFitVertically;
 
 @end

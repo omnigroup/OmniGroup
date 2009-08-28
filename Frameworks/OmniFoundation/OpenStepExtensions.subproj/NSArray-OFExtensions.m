@@ -434,42 +434,6 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return newArray;
 }
 
-- (NSArray *)deepCopyWithReplacementFunction:(id (*)(id, void *))funct context:(void *)context;
-{
-    id *replacementItems = NULL;
-    int itemCount, itemIndex;
-    
-    itemCount = [self count];
-    for(itemIndex = 0; itemIndex < itemCount; itemIndex ++) {
-        id item, copyItem;
-        
-        item = [self objectAtIndex:itemIndex];
-        copyItem = (*funct)(item, context);
-        if (!copyItem) {
-            if ([item respondsToSelector:_cmd])
-                copyItem = [item deepCopyWithReplacementFunction:funct context:context];
-            else
-                copyItem = [[item copy] autorelease];
-        }
-        if(copyItem != item && replacementItems == NULL) {
-            replacementItems = NSZoneMalloc(NULL, sizeof(*replacementItems) * itemCount);
-            if (itemIndex > 0)
-                [self getObjects:replacementItems range:(NSRange){location:0, length:itemIndex}];
-        }
-        if (replacementItems != NULL)
-            replacementItems[itemIndex] = copyItem;
-    }
-    
-    if (replacementItems == NULL) {
-        // TODO: If we're immutable, just return ourselves
-        return [NSArray arrayWithArray:self];
-    } else {
-        NSArray *theCopy = [NSArray arrayWithObjects:replacementItems count:itemCount];
-        NSZoneFree(NULL, replacementItems);
-        return theCopy;
-    }
-}
-
 // Returns YES if the two arrays contain exactly the same pointers in the same order.  That is, this doesn't use -isEqual: on the components
 - (BOOL)isIdenticalToArray:(NSArray *)otherArray;
 {

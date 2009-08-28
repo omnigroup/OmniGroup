@@ -172,48 +172,41 @@ static NSString *_variableSubstitutionInDictionary(NSString *key, void *context)
 - (NSString *)stringByPerformingReplacement:(OFSubstringReplacementFunction)replacer
                                onCharacters:(NSCharacterSet *)replaceMe
                                     context:(void *)context
-                                    options:(unsigned int)options
+                                    options:(NSStringCompareOptions)options
                                       range:(NSRange)touchMe
 {
-    NSMutableString *buffer;
-    NSString *searching;
-    unsigned int searchPosition, searchEndPosition;
+    // Early out, if possible.
+    NSRange foundChar = [self rangeOfCharacterFromSet:replaceMe options:options range:touchMe];
+    if (foundChar.length == 0)
+        return self;
+
+    NSMutableString *buffer = [self mutableCopy];
     
-    searching = self;
-    buffer = nil;
-    searchPosition = touchMe.location;
-    searchEndPosition = touchMe.location + touchMe.length;
+    NSUInteger searchPosition = touchMe.location;
+    NSUInteger searchEndPosition = touchMe.location + touchMe.length;
     
-    while(searchPosition < searchEndPosition) {
-        NSRange searchRange, foundChar;
-        NSString *replacement;
-        
-        searchRange.location = searchPosition;
-        searchRange.length = searchEndPosition - searchPosition;
-        foundChar = [searching rangeOfCharacterFromSet:replaceMe options:0 range:searchRange];
+    while (searchPosition < searchEndPosition) {
+        NSRange searchRange = NSMakeRange(searchPosition, searchEndPosition - searchPosition);
+        foundChar = [buffer rangeOfCharacterFromSet:replaceMe options:options range:searchRange];
         if (foundChar.location == NSNotFound)
             break;
         
-        replacement = (*replacer)(searching, &foundChar, context);
+        NSString *replacement = (*replacer)(buffer, &foundChar, context);
         
         if (replacement != nil) {
-            if (buffer == nil) {
-                buffer = [searching mutableCopy];
-                searching = buffer;
-            }
-            unsigned replacementStringLength = [replacement length];
+            NSUInteger replacementStringLength = [replacement length];
             [buffer replaceCharactersInRange:foundChar withString:replacement];
             searchPosition = foundChar.location + replacementStringLength;
             searchEndPosition = searchEndPosition + replacementStringLength - foundChar.length;
         } else {
-            searchPosition = foundChar.location + foundChar.length;
+            searchPosition = NSMaxRange(foundChar);
         }
     }
     
-    NSString *result = [searching copy];
-    if (buffer)
-        [buffer release];
-    return [result autorelease];
+    // Make the result immutable
+    NSString *result = [[buffer copy] autorelease];
+    [buffer release];
+    return result;
 }
 
 - (NSString *)stringByPerformingReplacement:(OFSubstringReplacementFunction)replacer

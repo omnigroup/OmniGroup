@@ -59,7 +59,7 @@
 
 - (NSComparisonResult)compare:(OAPreferenceClientRecord *)other;
 
-- (OAPreferenceClient *)createClientInstanceInController:(OAPreferenceController *)controller;
+- (OAPreferenceClient *)newClientInstanceInController:(OAPreferenceController *)controller;
 
 
 @end

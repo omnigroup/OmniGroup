@@ -17,7 +17,7 @@
 RCS_ID("$Id$")
 
 
-NSString *OAStackViewDidLayoutSubviews = @"OAStackViewDidLayoutSubviews";
+NSString * const OAStackViewDidLayoutSubviews = @"OAStackViewDidLayoutSubviews";
 
 
 @interface OAStackView (PrivateAPI)
@@ -45,6 +45,7 @@ OAStackView assumes that all of its subviews line up in one direction (only vert
     flags.needsReload = 1;
 
     // This is really a bug.  If we don't do this (not sure if the layout is necessary, but the reload is), then the first window in OmniWeb will not show up (it gets an exception down in the drawing code).  While it seems permissible to ask the data source as soon as we have one, the data source might have some setup of its own left to do.  This way, we force it to be valid immediately which could be bad, but not much we can do with NSView putting the smack down on us.
+    // This is bad because if we're unarchiving self and dataSource and establishing the datasource connection from a nib, it imposes nib ordering requirements.  The datasource may not have its outlets hooked up that it needs for subviewsForStackView:, for example.  <bug://bugs/53121> (-[OAStackView setDataSource:] implementation imposes nib ordering requirements)
     [self _loadSubviews];
     [self _layoutSubviews];
 }
@@ -134,13 +135,16 @@ static NSInteger compareBasedOnArray(id object1, id object2, void *orderedObject
         subviews = [dataSource subviewsForStackView: self];
         
         // Remove any current subviews that aren't in the new list.  We assume that the number of views is small so an O(N*M) loop is OK
-        subviewIndex = [_subviews count];
-        while (subviewIndex--) {
-            NSView *oldSubview;
-            
-            oldSubview = [_subviews objectAtIndex: subviewIndex];
-            if ([subviews indexOfObjectIdenticalTo: oldSubview] == NSNotFound)
-                [oldSubview removeFromSuperview];
+        {
+            NSArray *currentSubviews = [self subviews];
+            subviewIndex = [currentSubviews count];
+            while (subviewIndex--) {
+                NSView *oldSubview;
+                
+                oldSubview = [currentSubviews objectAtIndex: subviewIndex];
+                if ([subviews indexOfObjectIdenticalTo: oldSubview] == NSNotFound)
+                    [oldSubview removeFromSuperview];
+            }
         }
 
         // Find the (currently first) view that is going to stretch vertically.
@@ -208,12 +212,14 @@ Goes through the subviews and finds the first subview that is willing to stretch
     [_window disableFlushWindow];
     
     NS_DURING {
-        viewCount = [_subviews count];
+        NSArray *currentSubviews = [self subviews];
+
+        viewCount = [currentSubviews count];
         
         // Figure out how much space will be taken by the non-stretchy views
         stretchyHeight = spaceLeft.size.height;
         for (viewIndex = 0; viewIndex < viewCount; viewIndex++) {
-            view = [_subviews objectAtIndex: viewIndex];
+            view = [currentSubviews objectAtIndex: viewIndex];
             if (view != nonretained_stretchyView) {
                 subviewFrame = [view frame];
                 stretchyHeight -= subviewFrame.size.height;
@@ -230,7 +236,7 @@ Goes through the subviews and finds the first subview that is willing to stretch
         while (viewIndex--) {
             float viewHeight;
             
-            view = [_subviews objectAtIndex: viewIndex];
+            view = [currentSubviews objectAtIndex: viewIndex];
             
             if (view == nonretained_stretchyView)
                 viewHeight = stretchyHeight;

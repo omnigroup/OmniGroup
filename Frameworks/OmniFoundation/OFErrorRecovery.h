@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,6 +33,7 @@
 
 // Subclass responsibility
 + (NSString *)defaultLocalizedRecoveryOption;
+- (BOOL)isApplicableToError:(NSError *)error;  // Should this option even be displayed?
 - (BOOL)attemptRecoveryFromError:(NSError *)error; // only one of these two need be overrridden
 - (BOOL)attemptRecovery;
 

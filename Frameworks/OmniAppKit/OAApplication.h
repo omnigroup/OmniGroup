@@ -11,7 +11,6 @@
 #import <Foundation/NSDate.h> // For NSTimeInterval
 #import <Foundation/NSPathUtilities.h> // For NSSearchPathDomainMask
 #import <AppKit/NSNibDeclarations.h> // For IBAction
-#import <OmniAppKit/FrameworkDefines.h>
 
 @class NSDate, NSException, NSMutableArray, NSMutableDictionary;
 @class NSPanel;
@@ -22,7 +21,7 @@
     unsigned int exceptionCount;
     NSTimeInterval lastEventTimeInterval;
     unsigned int mouseButtonState;
-    NSMutableDictionary *windowsForSheets;
+    NSMapTable *windowsForSheets;
     NSMutableArray *sheetQueue;
     NSPanel *currentRunExceptionPanel;
 }
@@ -78,5 +77,5 @@
 @end
 
 
-OmniAppKit_EXTERN NSString *OAFlagsChangedNotification; // Posted when we send a modfier-flags-changed event; notification object is the event
-OmniAppKit_EXTERN NSString *OAFlagsChangedQueuedNotification; // Same as OAFlagsChangedNotification, but queued with NSPostWhenIdle
+extern NSString * const OAFlagsChangedNotification; // Posted when we send a modfier-flags-changed event; notification object is the event
+extern NSString * const OAFlagsChangedQueuedNotification; // Same as OAFlagsChangedNotification, but queued with NSPostWhenIdle

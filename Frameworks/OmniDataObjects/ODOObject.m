@@ -9,6 +9,7 @@
 
 #import <OmniDataObjects/ODOObjectID.h>
 #import <OmniDataObjects/ODORelationship.h>
+#import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODOModel.h>
 
 #import "ODOEntity-Internal.h"
@@ -16,7 +17,6 @@
 #import "ODOObject-Internal.h"
 #import "ODOEditingContext-Internal.h"
 #import "ODODatabase-Internal.h"
-#import "ODOAttribute-Internal.h"
 #import "ODOProperty-Internal.h"
 
 RCS_ID("$Id$")
@@ -59,28 +59,49 @@ NSString * const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
     [super dealloc];
 }
 
+// This *mostly* works, but we discovered a problem where the dynamically generated KVO subclasses (NSKVONotifying_*) could get asked to resolve a method (if the getter/setter method had never been invoked before being observed).  In this case, we would correctly add the method on the real class, but the method resolution wouldn't restart and would fail to note our new addition on the superclass and would instead call -doesNotRecognizeSelector:.  See ODOObjectCreateDynamicAccessorsForEntity(), where we force register all @dynamic property methods at model creation time for now.
+#if LAZY_DYNAMIC_ACCESSORS
 // The vastly common case is that a single model is loaded once and never released.  Additionally, we assume that there is a 1-1 mapping between entities and instance classes AND that only 'leaf' classes are instance classes for an entity.  This won't satisfy everyone, but it should be the common case.  I'm not a big fan of making this assumption, but otherwise we're kinda screwed for @dynamic properties here.  I'm not sure which cases CoreData handles...
 + (BOOL)resolveInstanceMethod:(SEL)sel;
 {
-    // TODO: Verify that the property in class_copyPropertyList for each prop has the right attributes.  Should be an object, copy and dynamic.
+    DEBUG_DYNAMIC_METHODS(@"+[%s %s] %s", class_getName(self), sel_getName(_cmd), sel_getName(sel));
+    
     ODOEntity *entity = [ODOModel entityForClass:self];
-    if (entity) {
-        ODOProperty *prop;
-        
-        if ((prop = [entity propertyWithGetter:sel])) {
-            //NSLog(@"Adding -[%@ %@]", NSStringFromClass(self), NSStringFromSelector(sel));
-            class_addMethod(self, sel, (IMP)ODOGetterForSelector(prop), ODOObjectGetterSignature());
-            return YES;
-        }
-        if ((prop = [entity propertyWithSetter:sel])) {
-            //NSLog(@"Adding -[%@ %@]", NSStringFromClass(self), NSStringFromSelector(sel));
-            class_addMethod(self, sel, (IMP)ODOSetterForSelector(prop), ODOObjectSetterSignature());
-            return YES;
-        }
+    if (!entity) {
+        DEBUG_DYNAMIC_METHODS(@"  no entity");
+        goto not_handled;
     }
     
+    if ([entity instanceClass] != self) {
+        DEBUG_DYNAMIC_METHODS(@"  %s isn't the instance class of %s", class_getName(self), class_getName([entity instanceClass])); // Likely we are the NSKVONotifying subclass automatically created.  Call super, which should be the real class.
+        goto not_handled;
+    }
+    
+    // TODO: Verify that the property in class_copyPropertyList for each prop has the right attributes.  Should be an object, copy and dynamic.
+    ODOProperty *prop;
+    
+    if ((prop = [entity propertyWithGetter:sel])) {
+        IMP imp = (IMP)ODOGetterForProperty(prop);
+        const char *signature = ODOObjectGetterSignature();
+        DEBUG_DYNAMIC_METHODS(@"  Adding -[%@ %@] with %p %s", NSStringFromClass(self), NSStringFromSelector(sel), imp, signature);
+        class_addMethod(self, sel, imp, signature);
+        return YES;
+    }
+    if ((prop = [entity propertyWithSetter:sel])) {
+        IMP imp = (IMP)ODOSetterForProperty(prop);
+        const char *signature = ODOObjectSetterSignature();
+        DEBUG_DYNAMIC_METHODS(@"  Adding -[%@ %@] with %p %s", NSStringFromClass(self), NSStringFromSelector(sel), imp, signature);
+        class_addMethod(self, sel, imp, signature);
+        return YES;
+    }
+    
+    DEBUG_DYNAMIC_METHODS(@"  neither a getter nor setter");
+    return NO;
+    
+not_handled:
     return [super resolveInstanceMethod:sel];
 }
+#endif
 
 // Primarily for the benefit of subclasses.  Like CoreData, ODOObject won't guarantee this is called on every key access, but only if the object is a fault.
 - (void)willAccessValueForKey:(NSString *)key;
@@ -252,9 +273,12 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
         if (!flags.relationship) {
             // Model loading code ensures that the primary key attribute doesn't have a default value            
             ODOAttribute *attr = (ODOAttribute *)prop;
+            NSString *key = [attr name];
             
             // Set this even if the default value is nil in case we are re-establishing default values
+            [self willChangeValueForKey:key];
             ODOObjectSetPrimitiveValueForProperty(self, [attr defaultValue], attr); // Bypass this and set the primitive value to avoid and setter.
+            [self didChangeValueForKey:key];
         }
     }
 }
@@ -290,6 +314,12 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     OBPRECONDITION(!_flags.isFault);
     
     // Nothing for us to do, I think; for subclasses
+}
+
+// This is in OmniDataObjects so that model classes can call it on super w/o worring about whether they are the base class.  ODO doesn't itself support unarchiving, but this is a convenient place to put a generic awake method that is agnostic about the unarchiving strategy.  For example, and XML-base archiving might call a more complex method that does something specific to that archiver type and then call this generic method.
+- (void)awakeFromUnarchive;
+{
+    
 }
 
 - (ODOEntity *)entity;
@@ -425,7 +455,8 @@ static void _validateRelatedObjectClass(const void *value, void *context)
                 }
             }
             if (ctx.error) {
-                *outError = ctx.error;
+                if (outError)
+                    *outError = ctx.error;
                 return NO;
             }
         } else {
@@ -744,10 +775,11 @@ static void _validateRelatedObjectClass(const void *value, void *context)
 
     // CoreData's method says it only returns persistent properties.  Also, supposedly an input of nil returns all the properties more efficiently.
     // It isn't clear what is supposed to happen for to-many relationships.  We'll implement this to return a full dictionary in all cases, using a special dictionary class.
-    
+#if 0    
     NSArray *snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
     if (!snapshot)
-        snapshot = [self _createPropertySnapshot];
+        snapshot = _ODOObjectCreatePropertySnapshot(self);
+#endif
     
     OBRequestConcreteImplementation(self, _cmd);
     return nil;

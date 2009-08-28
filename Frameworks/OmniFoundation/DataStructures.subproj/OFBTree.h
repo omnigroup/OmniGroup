@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <objc/objc.h> // For BOOL
+#import <Foundation/NSObjCRuntime.h> // NSUInteger and BOOL
 #import <stddef.h> // For size_t
 
 #ifdef DEBUG
@@ -29,7 +29,7 @@ struct _OFBTree {
     struct _OFBTreeNode *root;
     size_t nodeSize;
     size_t elementSize;
-    unsigned int elementsPerNode;
+    NSUInteger elementsPerNode;
     OFBTreeNodeAllocator nodeAllocator;
     OFBTreeNodeDeallocator nodeDeallocator;
     OFBTreeElementComparator elementCompare;

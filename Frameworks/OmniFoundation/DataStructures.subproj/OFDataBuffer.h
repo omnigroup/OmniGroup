@@ -180,10 +180,10 @@ OFDataBufferAppendCString(OFDataBuffer *dataBuffer, const char *str)
 }
  
 static inline void
-OFDataBufferAppendBytes(OFDataBuffer *dataBuffer, const OFByte *bytes, unsigned int length)
+OFDataBufferAppendBytes(OFDataBuffer *dataBuffer, const OFByte *bytes, size_t length)
 {
     OFByte *ptr;
-    unsigned int byteIndex;
+    size_t byteIndex;
     
     ptr = OFDataBufferGetPointer(dataBuffer, length);
 
@@ -290,11 +290,9 @@ static inline void OFDataBufferAppendCompressedLongLongInt(OFDataBuffer *dataBuf
 }
 
 static inline void
-OFDataBufferAppendHexWithReturnsForBytes(OFDataBuffer *dataBuffer, const OFByte *bytes, unsigned int length)
+OFDataBufferAppendHexWithReturnsForBytes(OFDataBuffer *dataBuffer, const OFByte *bytes, size_t length)
 {
-    unsigned int byteIndex;
-    
-    byteIndex = 0;
+    size_t byteIndex = 0;
     while (byteIndex < length) {
 	OFDataBufferAppendHexForByte(dataBuffer, bytes[byteIndex]);
 	byteIndex++;

@@ -9,8 +9,6 @@
 #import "OAColorProfile.h"
 #import "NSImage-ColorSyncExtensions.h"
 
-#import "OAVersion.h"
-
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 
@@ -22,19 +20,12 @@ static IMP originalPatternImp, originalCalibratedRGBImp, originalCalibratedGrayI
 
 + (void)performPosing;
 {
-    BOOL alphaSupportForPrinting;
-    
-    // Version 663 is the value for a new 10.2 installation without patches (6C115).
-    alphaSupportForPrinting = floor(NSAppKitVersionNumber) >= OAAppKitVersionNumber10_2;
-    
-    if (alphaSupportForPrinting) {	
-        originalPatternImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSPatternColor"), @selector(set), self, @selector(_setPattern));
-        originalCalibratedRGBImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSCalibratedRGBColor"), @selector(set), self, @selector(_setCalibratedRGB));
-        originalCalibratedGrayImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSCalibratedWhiteColor"), @selector(set), self, @selector(_setCalibratedGray));
-        originalDeviceRGBImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceRGBColor"), @selector(set), self, @selector(_setDeviceRGB));
-        originalDeviceGrayImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceWhiteColor"), @selector(set), self, @selector(_setDeviceGray));
-        originalDeviceCMYKImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceCMYKColor"), @selector(set), self, @selector(_setDeviceCMYK));
-    }
+    originalPatternImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSPatternColor"), @selector(set), self, @selector(_setPattern));
+    originalCalibratedRGBImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSCalibratedRGBColor"), @selector(set), self, @selector(_setCalibratedRGB));
+    originalCalibratedGrayImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSCalibratedWhiteColor"), @selector(set), self, @selector(_setCalibratedGray));
+    originalDeviceRGBImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceRGBColor"), @selector(set), self, @selector(_setDeviceRGB));
+    originalDeviceGrayImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceWhiteColor"), @selector(set), self, @selector(_setDeviceGray));
+    originalDeviceCMYKImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceCMYKColor"), @selector(set), self, @selector(_setDeviceCMYK));
 }
 
 - (void)setCoreGraphicsRGBValues;

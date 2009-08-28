@@ -21,6 +21,7 @@ typedef enum {
 @interface OSUCheckOperation : NSObject
 {
     OSUCheckOperationRunType _runType;
+    BOOL _initiatedByUser;
     NSURL *_url;
     NSTask *_task;
     NSPipe *_pipe;
@@ -28,18 +29,20 @@ typedef enum {
     int _terminationStatus;
 }
 
-- initForQuery:(BOOL)doQuery url:(NSURL *)url versionNumber:(OFVersionNumber *)versionNumber licenseType:(NSString *)licenseType;
+- initForQuery:(BOOL)doQuery url:(NSURL *)url licenseType:(NSString *)licenseType;
 
 - (NSURL *)url;
 
 - (void)runAsynchronously;
 - (NSData *)runSynchronously;
-- (OSUCheckOperationRunType)runType;
+
+@property(readonly ) OSUCheckOperationRunType runType;
+@property(readwrite) BOOL initiatedByUser;
 
 - (void)waitUntilExit;
 
 - (NSData *)output;
-- (int)terminationStatus;
+@property(readonly ) int terminationStatus;
 
 @end
 

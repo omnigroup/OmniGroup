@@ -13,7 +13,7 @@
 
 RCS_ID("$Id$")
 
-NSString *OAFavoriteCharsetsDefaultsKey = @"FavoriteCharsets";
+NSString * const OAFavoriteCharsetsDefaultsKey = @"FavoriteCharsets";
 
 @interface OAHierarchicalPopUpController (Private)
 

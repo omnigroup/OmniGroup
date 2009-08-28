@@ -124,15 +124,16 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
     // We leave _objectID; notification observers need to be able to get the entity/pk of deleted objects.
 }
 
-- (NSArray *)_createPropertySnapshot;
+NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self)
 {
-    OBPRECONDITION(_editingContext);
-    OBPRECONDITION(!_flags.invalid);
-    OBPRECONDITION(!_flags.isFault);
+    OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
+    OBPRECONDITION(self->_editingContext);
+    OBPRECONDITION(!self->_flags.invalid);
+    OBPRECONDITION(!self->_flags.isFault);
     
     // Can't just copy the array.  In particular, keeping any mutable sets for to-many relationships would be wasted space and any to-one relationships are to actual ODOObjects.  But, these objects might be deleted, so if we use the snapshot to re-insert, we need to use the objectID, not the object itself.  In fact, what we *really* want is just the primary key of the to-one destination.  This is how we represent lazy to-one faults and thus it means that we can just fill in the object with the foreign key without doing any two-phase remapping of pk to object.
 
-    ODOEntity *entity = [_objectID entity];
+    ODOEntity *entity = [self->_objectID entity];
     NSArray *snapshotProperties = [entity snapshotProperties];
     unsigned int propIndex, propCount = [snapshotProperties count];
     

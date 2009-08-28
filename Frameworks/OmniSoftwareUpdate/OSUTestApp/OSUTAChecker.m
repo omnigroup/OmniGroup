@@ -15,7 +15,6 @@ RCS_ID("$Id$");
 
 
 // Preferences keys
-static NSString *OSUTargetUserVisibleSystemVersionKey = @"targetUserVisibleSystemVersionString";
 static NSString *OSUTargetBundleIdentifierKey = @"targetBundleIdentifier";
 static NSString *OSUTargetMarketingVersionKey = @"targetMarketingVersion";
 static NSString *OSUTargetBuildVersionKey = @"targetBuildVersion";
@@ -25,60 +24,43 @@ static NSString *OSUTargetVisibleTracksStringKey = @"targetVisibleTracksString";
 @implementation OSUTAChecker
 
 #pragma mark --
-#pragma mark API
-
-+ (NSString *)defaultBundleIdentifier;
-{
-    return [[NSBundle mainBundle] bundleIdentifier];
-}
-
-+ (NSString *)defaultBundleBuildVersionString;
-{
-    return @"1";
-}
-
-+ (NSString *)defaultBundleMarketingVersionString;
-{
-    return @"1.0";
-}
-
-+ (NSString *)defaultUserVisibleSystemVersion;
-{
-    return [super userVisibleSystemVersion];
-}
-
-#pragma mark --
 #pragma mark OSUChecker subclass
 
-+ (NSString *)userVisibleSystemVersion;
-{
-    NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:OSUTargetUserVisibleSystemVersionKey];
-    return (![NSString isEmptyString:value]) ? value : [self defaultUserVisibleSystemVersion];
-}
-
-- (NSString *)targetBundleIdentifier;
+- (NSString *)applicationIdentifier;
 {
     NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:OSUTargetBundleIdentifierKey];
-    return (![NSString isEmptyString:value]) ? value : [[self class] defaultBundleIdentifier];
+    return (![NSString isEmptyString:value]) ? value : [super applicationIdentifier];
 }
 
-- (NSString *)targetMarketingVersionStringFromBundleInfo:(NSDictionary *)bundleInfo;
+- (OFVersionNumber *)applicationMarketingVersion
 {
     NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:OSUTargetMarketingVersionKey];
-    return (![NSString isEmptyString:value]) ? value : [[self class] defaultBundleMarketingVersionString];
+    if (![NSString isEmptyString:value]) {
+        return [[[OFVersionNumber alloc] initWithVersionString:value] autorelease];
+    } else {
+        return [super applicationMarketingVersion];
+    }
 }
 
-- (NSString *)targetBuildVersionStringFromBundleInfo:(NSDictionary *)bundleInfo;
+- (NSString *)applicationEngineeringVersion;
 {
     NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:OSUTargetBuildVersionKey];
-    return (![NSString isEmptyString:value]) ? value : [[self class] defaultBundleBuildVersionString];
+    return (![NSString isEmptyString:value]) ? value : [super applicationEngineeringVersion];
 }
 
+- (NSString *)applicationTrack;
+{
+    NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:OSUTargetVisibleTracksStringKey];
+    return (![NSString isEmptyString:value]) ? value : [super applicationTrack];
+}
+
+#if 0
 - (NSArray *)downloadables:(NSArray *)downloadables visibleToTracks:(NSSet *)visibleTracks;
 {
     NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:OSUTargetVisibleTracksStringKey];
     NSArray *tracks = [value componentsSeparatedByString:@"\n"];
     return [super downloadables:downloadables visibleToTracks:([tracks count] > 0) ? [NSSet setWithArray:tracks] : [NSSet setWithObject:@""]];
 }
+#endif
 
 @end

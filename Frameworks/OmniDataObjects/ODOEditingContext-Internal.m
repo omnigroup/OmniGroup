@@ -206,7 +206,7 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     if (!_objectIDToLastProcessedSnapshot)
         _objectIDToLastProcessedSnapshot = [[NSMutableDictionary alloc] init];
 
-    NSArray *snapshot = [object _createPropertySnapshot];
+    NSArray *snapshot = _ODOObjectCreatePropertySnapshot(object);
     [_objectIDToLastProcessedSnapshot setObject:snapshot forKey:objectID];
     [snapshot release];
     
@@ -434,8 +434,10 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
         _ODOObjectCreateNullValues(object);
 
         // Object was previously created as a fault, but hasn't been filled in yet.  Let's do so and mark it cleared.
-        if (!ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(sqlite, statement, object, ctx, outError))
+        if (!ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(sqlite, statement, object, ctx, outError)) {
+            [objectID release];
             return NO; // object will remain a fault but might have some values in it.  they'll get reset if we get fetched again.  might be nice to clean them out, though.
+        }
         [object _setIsFault:NO];
     } else {
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];

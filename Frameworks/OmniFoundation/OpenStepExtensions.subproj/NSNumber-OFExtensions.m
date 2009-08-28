@@ -146,8 +146,8 @@ static struct numericTypeAttributes numericTypeAttributes(NSNumber *n)
             case _C_UINT:    return (struct numericTypeAttributes){ CHAR_BIT * sizeof(unsigned int),       NO,  YES };
             case _C_LNG:     return (struct numericTypeAttributes){ CHAR_BIT * sizeof(long) - 1,           YES, YES };
             case _C_ULNG:    return (struct numericTypeAttributes){ CHAR_BIT * sizeof(unsigned long),      NO,  YES };
-            case 'q':        return (struct numericTypeAttributes){ CHAR_BIT * sizeof(long long) - 1,      YES, YES };
-            case 'Q':        return (struct numericTypeAttributes){ CHAR_BIT * sizeof(unsigned long long), NO,  YES };
+            case _C_LNG_LNG: return (struct numericTypeAttributes){ CHAR_BIT * sizeof(long long) - 1,      YES, YES };
+            case _C_ULNG_LNG: return (struct numericTypeAttributes){ CHAR_BIT * sizeof(unsigned long long), NO,  YES };
                 
             case _C_FLT:     return (struct numericTypeAttributes){ CHAR_BIT * sizeof(float),              YES, NO  };
             case _C_DBL:     return (struct numericTypeAttributes){ CHAR_BIT * sizeof(double),             YES, NO  };

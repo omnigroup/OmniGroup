@@ -278,7 +278,7 @@ NSRect OFLargestRectAvoidingRectAndFitSize(NSRect parentRect, NSRect childRect, 
 
     size = rect.size.height * rect.size.width;
     if (size > bestSize && rect.size.height >= fitSize.height && rect.size.width >= fitSize.width) {
-        bestSize = size;
+        //bestSize = size; // clang warns of redundant store
         bestRect = rect;
     }
 

@@ -150,7 +150,8 @@ static BOOL animateInspectorToggles;
 - (CGFloat)desiredHeightWhenExpanded;
 {
     OBPRECONDITION(headingButton); // That is, -loadInterface must have been called.
-    return NSHeight([[self _inspectorView] frame]) + NSHeight([headingButton frame]);
+    CGFloat headingButtonHeight = headingButton ? NSHeight([headingButton frame]) : 0.0;
+    return NSHeight([[self _inspectorView] frame]) + headingButtonHeight;
 }
 
 - (void)toggleDisplay;
@@ -265,7 +266,8 @@ static BOOL animateInspectorToggles;
 - (void)prepareWindowForDisplay;
 {
     OBPRECONDITION(window);  // -loadInterface should have been called by this point.
-    if (needsToggleBeforeDisplay) {
+    
+    if (needsToggleBeforeDisplay && window) {
         NSRect windowFrame = [window frame];
         [self toggleExpandednessWithNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame)) animate:NO];
         needsToggleBeforeDisplay = NO;
@@ -470,10 +472,6 @@ static BOOL animateInspectorToggles;
     float additionalHeaderHeight;
     
     if (isExpanded) {
-        NSRect viewFrame;
-        float newHeight;
-        NSRect windowFrame;
-        NSRect newContentRect;
 
         if (updateInspector) {
             // If no inspectors were previously visible, the inspector registry's selection set may not be up-to-date, so tell it to update
@@ -483,14 +481,11 @@ static BOOL animateInspectorToggles;
             [self updateInspector]; // call this first because the view could change sizes based on the selection in -updateInspector
         }
             
-        viewFrame = [view frame];
-        newHeight = NSHeight([headingButton frame]) + NSHeight(viewFrame);
-        newContentRect.origin = (NSPoint){ 0, 0 };
-        newContentRect.size = (NSSize){
-            .width = NSWidth(viewFrame),
-            .height = NSHeight([headingButton frame]) + NSHeight(viewFrame)
-        };
-        windowFrame = [window frameRectForContentRect:newContentRect];
+        NSRect viewFrame = [view frame];
+        NSRect newContentRect = NSMakeRect(0, 0,
+                                           NSWidth(viewFrame),
+                                           NSHeight([headingButton frame]) + NSHeight(viewFrame));
+        NSRect windowFrame = [window frameRectForContentRect:newContentRect];
         windowFrame.origin.x = topLeftPoint.x;
         windowFrame.origin.y = topLeftPoint.y - windowFrame.size.height;
         windowFrame = [self windowWillResizeFromFrame:[window frame] toFrame:windowFrame];

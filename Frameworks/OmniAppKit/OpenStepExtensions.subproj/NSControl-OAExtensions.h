@@ -23,4 +23,7 @@
 
 - (CGFloat)cgFloatValue;
 
+- (void)sizeToFitVertically;
+- (NSSize)desiredFrameSize:(unsigned int)autosizingMask;
+
 @end

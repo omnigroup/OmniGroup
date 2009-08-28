@@ -54,9 +54,11 @@ static IMP original_bundleWithIdentifier = NULL;
     }
     bundle = oldBundleForClass(self, _cmd, aClass);
     if (bundle != nil) {
-        NSBundle *cachedBundle;
         [cachedBundlesForClassesLock lock];
-        cachedBundle = [cachedBundlesForClasses objectForKey:className];
+#ifdef OMNI_ASSERTIONS_ON
+        NSBundle *cachedBundle = 
+#endif
+        [cachedBundlesForClasses objectForKey:className];
         OBASSERT(cachedBundle == nil || cachedBundle == bundle);
         [cachedBundlesForClasses setObject:bundle forKey:className];
         [cachedBundlesForClassesLock unlock];

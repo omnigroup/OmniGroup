@@ -263,6 +263,10 @@ BOOL ODOSQLStatementBindDate(struct sqlite3 *sqlite, ODOSQLStatement *statement,
     OBPRECONDITION(date); // use Null otherwise
     OBPRECONDITION([date isKindOfClass:[NSDate class]]);
     
+    // Avoid float-returning message to nil.
+    if (!date)
+        return ODOSQLStatementBindNull(sqlite, statement, bindIndex, outError);
+    
     NSTimeInterval ti = [date timeIntervalSinceReferenceDate];
     
     int rc = sqlite3_bind_double(statement->_statement, bindIndex, ti);
@@ -465,7 +469,10 @@ BOOL ODOSQLStatementRun(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOS
         return NO;
 
     // This does not reset bound variables, just puts the virtual machine back at its starting state.  The return code from sqlite3_reset is just a repeat of the last error from sqlite3_step (or SQLITE_OK if a row/done was last returned);
-    rc = sqlite3_reset(statement->_statement);
+#ifdef OMNI_ASSERTIONS_ON
+    rc = 
+#endif
+    sqlite3_reset(statement->_statement);
     OBASSERT(rc == SQLITE_OK);
     return YES;
 }

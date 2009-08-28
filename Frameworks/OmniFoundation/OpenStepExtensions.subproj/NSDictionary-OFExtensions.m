@@ -363,57 +363,6 @@ static void _makeValuesPerformSelectorApplier(const void *key, const void *value
     return newDictionary;
 }
 
-- (NSDictionary *)deepCopyWithReplacementFunction:(id (*)(id, void *))funct context:(void *)context;
-{
-    NSMutableArray *objects;
-    NSArray *keys;
-    unsigned int pairCount, pairIndex;
-    BOOL changed;
-    NSDictionary *result;
-    
-    keys = [self allKeys];
-    pairCount = [keys count];
-    OBASSERT(pairCount == [self count]);
-    objects = [[NSMutableArray alloc] initWithCapacity:pairCount];
-
-    changed = NO;
-    for(pairIndex = 0; pairIndex < pairCount; pairIndex ++) {
-        NSString *key = [keys objectAtIndex:pairIndex];
-        id object = [self objectForKey:key];
-        id newObject;
-        
-        // Note we don't perform substitution on keys. Maybe we should? What should we do about the key collisions that could result?
-        
-        newObject = [((*funct)(object, context)) retain];
-        if (!newObject) {
-            // The cast, below, is needed to make the compiler shut up, but it's incorrect --- object may be of any class that implements this method.
-            if ([object respondsToSelector:_cmd])
-                newObject = [[(NSDictionary *)object deepCopyWithReplacementFunction:funct context:context] retain];
-            else
-                newObject = [object copy];
-        }
-        if (newObject != object)
-            changed = YES;
-        [objects addObject:newObject];
-        [newObject release];
-    }
-    
-    OBPOSTCONDITION([objects count] == [keys count]);
-    
-    if (changed) {
-        result = [NSDictionary dictionaryWithObjects:objects forKeys:keys];
-    } else {
-        // TODO: optimize the case where we're immutable
-        result = [NSDictionary dictionaryWithDictionary:self];
-    }
-    
-    [objects release];
-    
-    OBPOSTCONDITION([result count] == [self count]);
-    
-    return result;
-}
-
 static id copyDictionaryKeys(CFDictionaryRef self, Class resultClass)
 {
     const void   **keys;

@@ -36,20 +36,6 @@ RCS_ID("$Id$")
     [self setTextColor:newEnabled ? [NSColor controlTextColor] : [NSColor disabledControlTextColor]];
 }
 
-- (void)sizeToFitVertically;
-{
-    NSRect bounds = [self bounds];
-    
-    NSRect tallBounds = bounds;
-    tallBounds.size.height = FLT_MAX;
-    
-    NSSize size = [[self cell] cellSizeForBounds:tallBounds];
-    size.width = bounds.size.width;
-    
-    NSSize frameSize = [self convertSize:size toView:[self superview]];
-    [self setFrameSize:frameSize];
-}
-
 // Subclassed from NSControl-OAExtensions
 
 - (NSMutableDictionary *)attributedStringDictionaryWithCharacterWrapping;

@@ -271,7 +271,7 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
 @end
 
 #import <OmniDataObjects/ODOModel-Creation.h>
-#import "ODOAttribute-Internal.h"
+#import <OmniDataObjects/ODOAttribute.h>
 
 @implementation ODOEntity (Internal)
 

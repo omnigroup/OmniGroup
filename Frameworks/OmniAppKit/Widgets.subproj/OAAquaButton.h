@@ -8,7 +8,6 @@
 // $Id$
 
 #import <AppKit/NSButton.h>
-#import <OmniAppKit/FrameworkDefines.h>
 
 @class NSBundle; // Foundation
 
@@ -25,6 +24,6 @@
 @end
 
 // Legacy symbols. New code should use OAGraphiteImageTintSuffix, etc., defined in NSImage-OAExtensions.h.
-OmniAppKit_EXTERN NSString *OAAquaButtonAquaImageSuffix;	// "Aqua"
-OmniAppKit_EXTERN NSString *OAAquaButtonGraphiteImageSuffix;	// "Graphite"
-OmniAppKit_EXTERN NSString *OAAquaButtonClearImageSuffix;	// "Clear"
+extern NSString * const OAAquaButtonAquaImageSuffix;	// "Aqua"
+extern NSString * const OAAquaButtonGraphiteImageSuffix;	// "Graphite"
+extern NSString * const OAAquaButtonClearImageSuffix;	// "Clear"

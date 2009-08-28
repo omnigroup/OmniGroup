@@ -131,6 +131,18 @@ RCS_ID("$Id$");
     b = [[[OFVersionNumber alloc] initWithVersionString:@"1.1.0"] autorelease];
     should([a compareToVersionNumber:b] == NSOrderedAscending);
     should([b compareToVersionNumber:a] == NSOrderedDescending);
+    
+    //
+    a = [[[OFVersionNumber alloc] initWithVersionString:@"1"] autorelease];
+    b = [[[OFVersionNumber alloc] initWithVersionString:@"1.0.1"] autorelease];
+    should([a compareToVersionNumber:b] == NSOrderedAscending);
+    should([b compareToVersionNumber:a] == NSOrderedDescending);
+    
+    // OBS #35289
+    a = [[[OFVersionNumber alloc] initWithVersionString:@"121"] autorelease];
+    b = [[[OFVersionNumber alloc] initWithVersionString:@"121.1"] autorelease];
+    should([a compareToVersionNumber:b] == NSOrderedAscending);
+    should([b compareToVersionNumber:a] == NSOrderedDescending);
 }
 
 @end

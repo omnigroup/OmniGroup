@@ -15,10 +15,16 @@
 {
     NSDateComponents *_defaultTimeDateComponents;
     BOOL _useEndOfDuration;
+    BOOL _useRelativeDayNames;
+    BOOL _wantsTruncatedTime;
 }
 
 @property(nonatomic,copy) NSDateComponents *defaultTimeDateComponents;
 @property(nonatomic,assign) BOOL useEndOfDuration;
 
+- (void)setUseRelativeDayNames:(BOOL)useRelativeDayNames;
+- (BOOL)useRelativeDayNames;
+- (void)setWantsTruncatedTime:(BOOL)wantsTruncatedTime;
+- (BOOL)wantsTruncatedTime;
 @end
 

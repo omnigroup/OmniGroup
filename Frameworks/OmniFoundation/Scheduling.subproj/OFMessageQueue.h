@@ -41,8 +41,8 @@
 - (void)setSchedulesBasedOnPriority:(BOOL)shouldScheduleBasedOnPriority;
 
 - (BOOL)hasInvocations;
-- (OFInvocation *)nextRetainedInvocation;
-- (OFInvocation *)nextRetainedInvocationWithBlock:(BOOL)shouldBlock;
+- (OFInvocation *)copyNextInvocation;
+- (OFInvocation *)copyNextInvocationWithBlock:(BOOL)shouldBlock;
 
 - (void)addQueueEntry:(OFInvocation *)aQueueEntry;
 

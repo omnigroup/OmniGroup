@@ -63,10 +63,15 @@ module OmniDataObjects
     
     def emitDeclaration(fp)
       # All our properties are dynamic, which is the default.  Emit declarations for them.
+      class_names = Array.new
+      properties.each {|p| p.add_class_names(class_names)}
+      class_names.uniq.sort.each {|c|
+        fp.h << "@class #{c};\n"
+      }
+      
       fp.h << "@interface #{instance_class} (#{category_name})\n"
       begin
         properties.each {|p|
-          next if p.inherited_from
           p.emitInterface(fp.h)
         }
       end

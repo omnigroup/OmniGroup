@@ -31,6 +31,8 @@ RCS_ID("$Id$")
     NSMutableArray *strings;
 
     OBASSERT(resourceHandle != NULL);
+    if (resourceHandle == NULL)
+        return nil;
     
     strings = [NSMutableArray array];
     HLock(resourceHandle);

@@ -181,7 +181,7 @@ RCS_ID("$Id$")
 /*" Prompts the user for a directory (using an open panel), then updates the text field to display it and calls -setValueForSender: specifying that field as the sender. "*/
 - (void)pickDirectoryForTextField:(NSTextField *)textField;
 {
-    NSOpenPanel *openPanel = [NSOpenPanel new];
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
     [openPanel setCanChooseDirectories:YES];
     if ([openPanel runModalForTypes:nil] != NSOKButton)
 	return;

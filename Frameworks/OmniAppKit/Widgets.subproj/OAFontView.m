@@ -165,7 +165,7 @@ RCS_ID("$Id$")
     if (![super becomeFirstResponder]) 
 	return NO;
     
-    [[NSFontManager new] setSelectedFont:font isMultiple:NO];
+    [[NSFontManager sharedFontManager] setSelectedFont:font isMultiple:NO];
     [self setKeyboardFocusRingNeedsDisplayInRect:[self bounds]];
     return YES;
 }

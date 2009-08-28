@@ -51,7 +51,17 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
     [applicationNameTextField setStringValue:appName];
     [applicationNameTextField sizeToFit];
     
-    [fullReleaseNameButton setTitle:[NSString stringWithFormat:@"%@ (v%@)", [infoDictionary objectForKey:@"CFBundleShortVersionString"], [infoDictionary objectForKey:@"CFBundleVersion"]]];
+    NSString *cfBundleVers = [infoDictionary objectForKey:@"CFBundleVersion"];
+    // The current Omni convention is to append the SVN revision number to the version number at build time, so that we don't have to explicitly increment things for nighlies and so on. This is ugly, though, so let's not display it like that.
+    NSRange zeroRange = [cfBundleVers rangeOfString:@".0."];
+    if (zeroRange.length > 0) {
+        NSString *after = [cfBundleVers substringFromIndex:NSMaxRange(zeroRange)];
+        if (![after containsString:@"."] && [after unsignedIntValue] > 1000) {
+            cfBundleVers = [NSString stringWithStrings:[cfBundleVers substringToIndex:zeroRange.location], @" r", after, nil];
+        }
+    }
+    
+    [fullReleaseNameButton setTitle:[NSString stringWithFormat:@"%@ (v%@)", [infoDictionary objectForKey:@"CFBundleShortVersionString"], cfBundleVers]];
     [fullReleaseNameButton sizeToFit];
     
     [creditsTextView setEditable:NO];
@@ -142,6 +152,7 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 		[NSColor whiteColor], NSBackgroundColorAttributeName,
 		nil];
 	    variant = [[NSAttributedString alloc] initWithString:string attributes:attributes];
+            [string release];
 	    [attributes release];
 	} else {
 	    variant = [[NSAttributedString alloc] initWithPath:path documentAttributes:NULL];

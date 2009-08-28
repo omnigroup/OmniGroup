@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<names xmlns:r="http://www.w3.org/1999/xlink" xmlns:blah="tel:+1-206-523-4152">
+  <name xml:lang="en" id="quux">William Smith<blah:seeAlso r:href="#foo"/><blah:hasNothingToDoWith r:href="#bar"/></name>
+  <name xml:lang="fr" id="foo">Guillaume Lef&#xE9;vre</name>
+  <name xml:lang="is" id="bar">Emil Thorsson</name>
+  <name xml:lang="it" id="baz"><blah:seeAlso r:href="#quux"/>Guglielmo Ferrara</name>
+</names>

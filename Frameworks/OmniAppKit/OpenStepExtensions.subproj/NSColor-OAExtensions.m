@@ -17,7 +17,7 @@
 
 RCS_ID("$Id$")
 
-NSString *OAColorXMLAdditionalColorSpace = @"OAColorXMLAdditionalColorSpace";
+NSString * const OAColorXMLAdditionalColorSpace = @"OAColorXMLAdditionalColorSpace";
 
 static NSColorList *classicCrayonsColorList(void)
 {
@@ -751,7 +751,7 @@ static NSData *_xmlNodeAttributeDictionaryDataGetter(void *container, NSString *
 
 // Value transformers
 
-NSString *OAColorToPropertyListTransformerName = @"OAColorToPropertyList";
+NSString * const OAColorToPropertyListTransformerName = @"OAColorToPropertyList";
 
 @interface OAColorToPropertyList : NSValueTransformer
 @end
@@ -790,8 +790,8 @@ NSString *OAColorToPropertyListTransformerName = @"OAColorToPropertyList";
 @end
 
 // Converts a BOOL to either +controlTextColor or +disabledControlTextColor
-NSString *OABooleanToControlColorTransformerName = @"OABooleanToControlColor";
-NSString *OANegateBooleanToControlColorTransformerName = @"OANegateBooleanToControlColor";
+NSString * const OABooleanToControlColorTransformerName = @"OABooleanToControlColor";
+NSString * const OANegateBooleanToControlColorTransformerName = @"OANegateBooleanToControlColor";
 
 @interface OABooleanToControlColor : NSValueTransformer
 {
@@ -805,10 +805,12 @@ NSString *OANegateBooleanToControlColorTransformerName = @"OANegateBooleanToCont
 {
     OABooleanToControlColor *normal = [[self alloc] init];
     [NSValueTransformer setValueTransformer:normal forName:OABooleanToControlColorTransformerName];
+    [normal release];
     
     OABooleanToControlColor *negate = [[self alloc] init];
     negate->_negate = YES;
     [NSValueTransformer setValueTransformer:negate forName:OANegateBooleanToControlColorTransformerName];
+    [negate release];
 }
 
 + (Class)transformedValueClass;

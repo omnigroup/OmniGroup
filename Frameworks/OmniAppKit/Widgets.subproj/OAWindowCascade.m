@@ -281,10 +281,8 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
 + (NSRect)_screen:(NSScreen *)screen closestRectTo:(NSRect)originalRect avoidingWindows:(NSArray *)windows;
 {
     NSRect visibleRect = [screen visibleFrame];
-    NSRect topRect, bottomRect, leftRect, rightRect;
     BOOL needsToMove = NO;
 
-    topRect = bottomRect = leftRect = rightRect = visibleRect;
     int windowIndex = [windows count];
     NSMutableArray *availableRects = [NSMutableArray arrayWithObject:[NSValue valueWithRect:visibleRect]];
     while (windowIndex-- > 0) {

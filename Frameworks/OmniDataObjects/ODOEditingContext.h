@@ -91,11 +91,12 @@
 extern NSString * const ODOEditingContextObjectsWillBeDeletedNotification;
 
 extern NSString * const ODOEditingContextObjectsDidChangeNotification;    
+extern NSString * const ODOEditingContextWillSaveNotification;
 extern NSString * const ODOEditingContextDidSaveNotification;
 extern NSString * const ODOInsertedObjectsKey;
 extern NSString * const ODOUpdatedObjectsKey; // All the updated objects
 extern NSString * const ODOMateriallyUpdatedObjectsKey; // A subset of the updated objects where each object has -changedNonDerivedChangedValue
 extern NSString * const ODODeletedObjectsKey;
 
-extern NSString * const ODOEditingContextWillReset;
-extern NSString * const ODOEditingContextDidReset;
+extern NSString * const ODOEditingContextWillResetNotification;
+extern NSString * const ODOEditingContextDidResetNotification;

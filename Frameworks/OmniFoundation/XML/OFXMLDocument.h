@@ -11,11 +11,12 @@
 
 #import <CoreFoundation/CFURL.h>
 #import <OmniFoundation/OFXMLWhitespaceBehavior.h>
+#import <OmniFoundation/OFXMLParserTarget.h>
 
 @class OFXMLCursor, OFXMLElement, OFXMLWhitespaceBehavior;
 @class NSArray, NSMutableArray, NSDate, NSData, NSURL, NSError;
 
-@interface OFXMLDocument : OFXMLIdentifierRegistry
+@interface OFXMLDocument : OFXMLIdentifierRegistry <OFXMLParserTarget>
 {
     // For the initial XML PI
     NSString *_versionString;
@@ -115,9 +116,15 @@
 - (OFXMLElement *)appendElement:(NSString *)elementName containingDate:(NSDate *)date; // XML Schema / ISO 8601.
 
 // Reading conveniences
-- (OFXMLCursor *) createCursor;
+- (OFXMLCursor *)cursor;
 
-// Hook to allow for unparsed elements.  Everything from the "<foo>...</foo>" will be wrapped up into the unparsed element.
-- (BOOL)shouldLeaveElementAsUnparsedBlock:(const char *)utf8Name;
+// Partial OFXMLParserTarget
+- (void)parser:(OFXMLParser *)parser setSystemID:(NSURL *)systemID publicID:(NSString *)publicID;
+- (void)parser:(OFXMLParser *)parser addProcessingInstructionNamed:(NSString *)piName value:(NSString *)piValue;
+- (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)name attributeQNames:(NSMutableArray *)attributeQNames attributeValues:(NSMutableArray *)attributeValues;
+- (void)parser:(OFXMLParser *)parser addWhitespace:(NSString *)whitespace;
+- (void)parser:(OFXMLParser *)parser addString:(NSString *)string;
+- (void)parserEndElement:(OFXMLParser *)parser;
+- (void)parser:(OFXMLParser *)parser endUnparsedElementWithQName:(OFXMLQName *)name contents:(NSData *)contents;
 
 @end

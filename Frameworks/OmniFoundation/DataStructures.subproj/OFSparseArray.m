@@ -45,12 +45,12 @@ static OFNull *nullValue = nil;
     [super dealloc];
 }
 
-- (unsigned int)count;
+- (NSUInteger)count;
 {
     return valuesLength;
 }
 
-- (id)objectAtIndex:(unsigned int)anIndex;
+- (id)objectAtIndex:(NSUInteger)anIndex;
 {
     id value;
 
@@ -62,7 +62,7 @@ static OFNull *nullValue = nil;
     return value;
 }
 
-static inline void setValuesLength(OFSparseArray *self, unsigned int anIndex)
+static inline void setValuesLength(OFSparseArray *self, NSUInteger anIndex)
 {
     while (self->valuesLength < anIndex) {
 	[self->values addObject:nullValue];
@@ -70,7 +70,7 @@ static inline void setValuesLength(OFSparseArray *self, unsigned int anIndex)
     }
 }
 
-- (void)setObject:(id)anObject atIndex:(unsigned int)anIndex;
+- (void)setObject:(id)anObject atIndex:(NSUInteger)anIndex;
 {
     if (!anObject || anObject == defaultValue)
 	anObject = nullValue;

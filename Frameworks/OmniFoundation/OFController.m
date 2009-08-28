@@ -15,6 +15,7 @@
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSThread-OFExtensions.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
+#import <OmniFoundation/OFVersionNumber.h>
 
 #include <execinfo.h>
 
@@ -38,8 +39,10 @@ static OFController *sharedController = nil;
 #ifdef OMNI_ASSERTIONS_ON
 static void _OFControllerCheckTerminated(void)
 {
+    NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
     // Make sure that applications that use OFController actually call its -willTerminate.
     OBASSERT(!sharedController || sharedController->status == OFControllerTerminatingStatus || sharedController->status == OFControllerNotInitializedStatus);
+    [p release];
 }
 #endif
 
@@ -52,10 +55,7 @@ static void _OFControllerCheckTerminated(void)
         if (OBIsRunningUnitTests()) {
             // There should be exactly one bundle with an extension of either 'otest' (the old extension) or 'octest' (what Xcode 3 uses).
             NSBundle *candidateBundle = nil;
-            NSArray *bundles = [NSBundle allBundles];
-            unsigned int bundleIndex = [bundles count];
-            while (bundleIndex--) {
-                NSBundle *bundle = [bundles objectAtIndex:bundleIndex];
+            for (NSBundle *bundle in [NSBundle allBundles]) {
                 NSString *extension = [[bundle bundlePath] pathExtension];
                 if ([extension isEqualToString:@"otest"] || [extension isEqualToString:@"octest"]) {
                     if (candidateBundle) {
@@ -71,6 +71,22 @@ static void _OFControllerCheckTerminated(void)
 
         if (!controllingBundle)
             controllingBundle = [[NSBundle mainBundle] retain];
+        
+        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.6 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
+#ifdef OMNI_ASSERTIONS_ON
+        {
+            NSString *requiredVersionString = [[controllingBundle infoDictionary] objectForKey:@"LSMinimumSystemVersion"];
+            if (requiredVersionString) {
+                OFVersionNumber *requiredVersion = [[OFVersionNumber alloc] initWithVersionString:requiredVersionString];
+                OBASSERT(requiredVersion);
+                
+                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.6"];
+                OBASSERT([globalRequiredVersion compareToVersionNumber:requiredVersion] != NSOrderedDescending);
+                [requiredVersion release];
+                [globalRequiredVersion release];
+            }
+        }
+#endif
     }
     
     OBPOSTCONDITION(controllingBundle);
@@ -256,19 +272,14 @@ static void _OFControllerCheckTerminated(void)
     OBPRECONDITION(status == OFControllerRunningStatus);
     
     status = OFControllerRequestingTerminateStatus;
-
-    NSArray *observersSnapshot = [self _observersSnapshot];    
-    unsigned int observerCount = [observersSnapshot count];
-    unsigned int observerIndex;
     
-    for (observerIndex = 0; observerIndex < observerCount; observerIndex++) {
-        id anObserver = [observersSnapshot objectAtIndex:observerIndex];
+    for (id anObserver in [self _observersSnapshot]) {
         if ([anObserver respondsToSelector:@selector(controllerRequestsTerminate:)]) {
-            NS_DURING {
+            @try {
                 [anObserver controllerRequestsTerminate:self];
-            } NS_HANDLER {
-                NSLog(@"Ignoring exception raised during %s[%@ controllerRequestsTerminate:]: %@", OBPointerIsClass(anObserver) ? "+" : "-", OBShortObjectDescription(anObserver), [localException reason]);
-            } NS_ENDHANDLER;
+            } @catch (NSException *exc) {
+                NSLog(@"Ignoring exception raised during %s[%@ controllerRequestsTerminate:]: %@", OBPointerIsClass(anObserver) ? "+" : "-", OBShortObjectDescription(anObserver), [exc reason]);
+            }
         }
         
         // Break if the termination was cancelled
@@ -411,15 +422,16 @@ static void _OFControllerCheckTerminated(void)
     NSLog(@"Crashing with report:\n%@", report);
     
     //OCCCrashImmediately();
-    *(unsigned int *)NULL = 0; // Crash immediately
+    unsigned int *bad = (unsigned int *)sizeof(unsigned int);
+    bad[-1] = 0; // Crash immediately; crazy approach is to defeat the clang error about dereferencing NULL, which is the point!
 }
 
 - (void)crashWithException:(NSException *)exception mask:(NSUInteger)mask;
 {
     NSString *numericBacktrace = [[exception userInfo] objectForKey:NSStackTraceKey];
-    NSString *symbolicBacktrace = numericBacktrace ? [self copySymbolicBacktraceForNumericBacktrace:numericBacktrace] : @"No numeric backtrace found";
+    NSString *symbolicBacktrace = numericBacktrace ? [[self copySymbolicBacktraceForNumericBacktrace:numericBacktrace] autorelease] : @"No numeric backtrace found";
     
-    NSString *report = [[NSString alloc] initWithFormat:@"Exception raised:\n---------------------------\nMask: 0x%08x\nName: %@\nReason: %@\nInfo:\n%@\nBacktrace:%@\n---------------------------",
+    NSString *report = [NSString stringWithFormat:@"Exception raised:\n---------------------------\nMask: 0x%08x\nName: %@\nReason: %@\nInfo:\n%@\nBacktrace:%@\n---------------------------",
                         mask, [exception name], [exception reason], [exception userInfo], symbolicBacktrace];
     [self crashWithReport:report];
 }
@@ -472,8 +484,10 @@ static void _OFControllerCheckTerminated(void)
 #endif
     } else {
         NSString *description = [[NSString alloc] initWithFormat:format arguments:args];
-        NSString *report = [[NSString alloc] initWithFormat:@"Assertion Failed:\n---------------------------\nObject: %@\nSelector: %@\nFile: %@\nLine: %d\nDescription: %@\n---------------------------",
+        NSString *report = [NSString stringWithFormat:@"Assertion Failed:\n---------------------------\nObject: %@\nSelector: %@\nFile: %@\nLine: %d\nDescription: %@\n---------------------------",
                             OBShortObjectDescription(object), NSStringFromSelector(selector), fileName, line, description];
+        [description release];
+        
         [self crashWithReport:report];
     }
     
@@ -501,8 +515,9 @@ static void _OFControllerCheckTerminated(void)
 #endif
     } else {
         NSString *description = [[NSString alloc] initWithFormat:format arguments:args];
-        NSString *report = [[NSString alloc] initWithFormat:@"Assertion Failed:\n---------------------------\nFunction: %@\nFile: %@\nLine: %d\nDescription: %@\n---------------------------",
+        NSString *report = [NSString stringWithFormat:@"Assertion Failed:\n---------------------------\nFunction: %@\nFile: %@\nLine: %d\nDescription: %@\n---------------------------",
                             functionName, fileName, line, description];
+        [description release];
         [self crashWithReport:report];
     }
     
@@ -560,19 +575,14 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    NSArray *observersSnapshot = [self _observersSnapshot];
-    unsigned int observerCount = [observersSnapshot count];
-    unsigned int observerIndex;
-    
-    for (observerIndex = 0; observerIndex < observerCount; observerIndex++) {
-        id anObserver = [observersSnapshot objectAtIndex:observerIndex];
+    for (id anObserver in [self _observersSnapshot]) {
         if ([anObserver respondsToSelector:aSelector]) {
             // NSLog(@"Calling %s[%@ %s]", OBPointerIsClass(anObserver) ? "+" : "-", OBShortObjectDescription(anObserver), aSelector);
-            NS_DURING {
+            @try {
                 [anObserver performSelector:aSelector withObject:self];
-            } NS_HANDLER {
-                NSLog(@"Ignoring exception raised during %s[%@ %@]: %@", OBPointerIsClass(anObserver) ? "+" : "-", OBShortObjectDescription(anObserver), NSStringFromSelector(aSelector), [localException reason]);
-            } NS_ENDHANDLER;
+            } @catch (NSException *exc) {
+                NSLog(@"Ignoring exception raised during %s[%@ %@]: %@", OBPointerIsClass(anObserver) ? "+" : "-", OBShortObjectDescription(anObserver), NSStringFromSelector(aSelector), [exc reason]);
+            };
         }
     }
     
@@ -593,10 +603,9 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 - (void)_runQueues
 {
     for(;;) {
-        NSMutableArray *toRun;
+        NSMutableArray *toRun = nil;
         [observerLock lock];
-        toRun = nil;
-        OFForEachObject([queues keyEnumerator], NSNumber *, targetState) {
+        for (NSNumber *targetState in [queues keyEnumerator]) {
             if ([targetState intValue] <= (int)status) {
                 toRun = [[queues objectForKey:targetState] retain];
                 [queues removeObjectForKey:targetState];
@@ -606,13 +615,13 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
         [observerLock unlock];
         
         if (toRun) {
-            OFForEachInArray(toRun, OFInvocation *, anAction, {
-                             @try {
-                                 [anAction invoke];
-                             } @catch (NSException *localException) {
-                                 NSLog(@"Ignoring exception raised during %@: %@", [anAction shortDescription], [localException reason]);
-                             };
-                             });
+            for (OFInvocation *anAction in toRun) {
+                @try {
+                    [anAction invoke];
+                } @catch (NSException *exc) {
+                    NSLog(@"Ignoring exception raised during %@: %@", [anAction shortDescription], [exc reason]);
+                };
+            }
             [toRun release];
         } else
             break;

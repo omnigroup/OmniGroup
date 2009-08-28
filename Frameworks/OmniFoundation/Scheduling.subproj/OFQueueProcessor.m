@@ -82,7 +82,7 @@ static OFQueueProcessor *detachingQueueProcessor;
     if (OFQueueProcessorDebug)
         NSLog(@"%@: processQueueUntilEmpty: %d", [self shortDescription], onlyUntilEmpty);
         
-    while ((retainedInvocation = [messageQueue nextRetainedInvocationWithBlock:waitForMessages])) {
+    while ((retainedInvocation = [messageQueue copyNextInvocationWithBlock:waitForMessages])) {
         [currentInvocationLock lock];
         currentInvocation = retainedInvocation;
         schedulingInfo = [currentInvocation messageQueueSchedulingInfo];

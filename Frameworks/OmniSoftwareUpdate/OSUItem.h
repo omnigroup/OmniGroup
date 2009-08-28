@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,13 +12,14 @@
 @class NSXMLNode;
 @class OFVersionNumber;
 
-NSString * const OSUItemAvailableBinding;
-NSString * const OSUItemSupersededBinding;
+NSString * const OSUItemAvailableBinding;     // Depends on whether the user is running a late enough version of the OS
+NSString * const OSUItemSupersededBinding;    // Depends on whether a more recent item is also available in the list
+NSString * const OSUItemIgnoredBinding;       // Depends on whether the user has manually skipped this update
+
+#define OSUAppcastXMLNamespace (@"http://www.omnigroup.com/namespace/omniappcast/v1")
 
 @interface OSUItem : OFObject
 {
-    NSXMLElement *_element;
-    
     OFVersionNumber *_buildVersion;
     OFVersionNumber *_marketingVersion;
     OFVersionNumber *_minimumSystemVersion;
@@ -32,17 +33,19 @@ NSString * const OSUItemSupersededBinding;
     NSURL *_releaseNotesURL;
     NSURL *_downloadURL;
     off_t _downloadSize;
+    NSDictionary *_checksums;
+    NSString *_notionalItemOrigin;
     
     BOOL _available;
     BOOL _superseded;
+    BOOL _ignored;
 }
 
 + (void)setSupersededFlagForItems:(NSArray *)items;
 + (NSPredicate *)availableAndNotSupersededPredicate;
++ (NSPredicate *)availableAndNotSupersededOrIgnoredPredicate;
 
 - initWithRSSElement:(NSXMLElement *)element error:(NSError **)outError;
-
-- (NSXMLElement *)element; // the original element
 
 - (OFVersionNumber *)buildVersion;
 - (OFVersionNumber *)marketingVersion;
@@ -52,7 +55,9 @@ NSString * const OSUItemSupersededBinding;
 - (NSString *)track;
 - (NSURL *)downloadURL;
 - (NSURL *)releaseNotesURL;
+- (NSString *)sourceLocation;
 
+- (BOOL)isFree;
 - (NSAttributedString *)priceAttributedString;
 
 - (BOOL)available;
@@ -63,5 +68,7 @@ NSString * const OSUItemSupersededBinding;
 - (void)setSuperseded:(BOOL)superseded;
 
 - (BOOL)supersedes:(OSUItem *)peer;
+
+- (NSString *)verifyFile:(NSString *)local;
 
 @end

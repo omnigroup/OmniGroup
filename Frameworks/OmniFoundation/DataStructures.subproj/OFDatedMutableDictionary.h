@@ -16,9 +16,6 @@
     NSMutableDictionary *_dictionary;
 }
 
-- (id)init;
-- (void)dealloc;
-
 - (void)setObject:(id)anObject forKey:(NSString *)aKey;
 - (id)objectForKey:(NSString *)aKey;
 - (void)removeObjectForKey:(NSString *)aKey;
@@ -26,9 +23,5 @@
 
 - (NSArray *)objectsOlderThanDate:(NSDate *)aDate;
 - (void)removeObjectsOlderThanDate:(NSDate *)aDate;
-
-// Debugging
-
-- (NSMutableDictionary *)debugDictionary;
 
 @end

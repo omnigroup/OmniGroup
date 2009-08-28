@@ -413,7 +413,7 @@ RCS_ID("$Id$");
     if (whitespaceBehavior == OFXMLWhitespaceBehaviorTypeAuto)
         whitespaceBehavior = parentBehavior;
 
-    OFXMLBufferAppendASCIICString(xml, "<");
+    OFXMLBufferAppendUTF8CString(xml, "<");
     OFXMLBufferAppendString(xml, (CFStringRef)_name);
     
     if (_attributeOrder) {
@@ -422,16 +422,21 @@ RCS_ID("$Id$");
         unsigned int attributeIndex, attributeCount = [_attributeOrder count];
         for (attributeIndex = 0; attributeIndex < attributeCount; attributeIndex++) {
             NSString *name = [_attributeOrder objectAtIndex:attributeIndex];
-            OFXMLBufferAppendASCIICString(xml, " ");
+            NSString *value = [_attributes objectForKey:name];
+
+            OBASSERT(value); // If we write out <element key>, libxml will hate us. This shouldn't happen, but it has once.
+            if (!value)
+                continue;
+            
+            OFXMLBufferAppendUTF8CString(xml, " ");
             OFXMLBufferAppendString(xml, (CFStringRef)name);
             
-            NSString *value = [_attributes objectForKey:name];
             if (value) {
-                OFXMLBufferAppendASCIICString(xml, "=\"");
+                OFXMLBufferAppendUTF8CString(xml, "=\"");
                 NSString *quotedString = OFXMLCreateStringWithEntityReferencesInCFEncoding(value, OFXMLBasicEntityMask, nil, encoding);
                 OFXMLBufferAppendString(xml, (CFStringRef)quotedString);
                 [quotedString release];
-                OFXMLBufferAppendASCIICString(xml, "\"");
+                OFXMLBufferAppendUTF8CString(xml, "\"");
             }
         }
     }
@@ -454,10 +459,10 @@ RCS_ID("$Id$");
 
         // Close off the parent tag if this is the first child
         if (!hasWrittenChild)
-            OFXMLBufferAppendASCIICString(xml, ">");
+            OFXMLBufferAppendUTF8CString(xml, ">");
         
         if (doIntenting) {
-            OFXMLBufferAppendASCIICString(xml, "\n");
+            OFXMLBufferAppendUTF8CString(xml, "\n");
             OFXMLBufferAppendSpaces(xml, 2*(level + 1));
         }
 
@@ -468,16 +473,16 @@ RCS_ID("$Id$");
     }
 
     if (doIntenting) {
-        OFXMLBufferAppendASCIICString(xml, "\n");
+        OFXMLBufferAppendUTF8CString(xml, "\n");
         OFXMLBufferAppendSpaces(xml, 2*level);
     }
     
     if (hasWrittenChild) {
-        OFXMLBufferAppendASCIICString(xml, "</");
+        OFXMLBufferAppendUTF8CString(xml, "</");
         OFXMLBufferAppendString(xml, (CFStringRef)_name);
-        OFXMLBufferAppendASCIICString(xml, ">");
+        OFXMLBufferAppendUTF8CString(xml, ">");
     } else
-        OFXMLBufferAppendASCIICString(xml, "/>");
+        OFXMLBufferAppendUTF8CString(xml, "/>");
     
     return YES;
 }
@@ -487,7 +492,7 @@ RCS_ID("$Id$");
     return YES;
 }
 
-- (NSObject *)createFrozenElement;
+- (NSObject *)copyFrozenElement;
 {
     // Frozen elements don't have any support for marking referenced
     return [[OFXMLFrozenElement alloc] initWithName:_name children:_children attributes:_attributes attributeOrder:_attributeOrder];
@@ -577,7 +582,7 @@ RCS_ID("$Id$");
     return NO;
 }
 
-- (NSObject *)createFrozenElement;
+- (NSObject *)copyFrozenElement;
 {
     return [self retain];
 }

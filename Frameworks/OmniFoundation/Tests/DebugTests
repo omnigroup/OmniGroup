@@ -1,0 +1,3 @@
+#!/bin/zsh -ef
+
+gdb -arch i386 /Developer/Tools/otest -x Tests/gdb.ini

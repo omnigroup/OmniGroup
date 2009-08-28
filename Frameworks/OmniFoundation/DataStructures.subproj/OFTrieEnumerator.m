@@ -34,6 +34,14 @@ static NSCharacterSet *uppercaseLetters;
     return self;
 }
 
+- (void)dealloc;
+{
+    [trieNodes release];
+    [positions release];
+    
+    [super dealloc];
+}
+
 - (id)nextObject;
 {
     OFTrieNode *node;

@@ -30,10 +30,11 @@
 #import "OSUErrors.h"
 #import "OSUItem.h"
 #import "OSUSendFeedbackErrorRecovery.h"
+#import "OSUAppcastSignature.h"
 
 RCS_ID("$Id$");
 
-#if 1 && defined(DEBUG_bungi)
+#if defined(DEBUG_bungi) || defined(DEBUG_wiml)
 #define OSU_DEBUG
 #endif
 
@@ -49,6 +50,7 @@ static NSString *OSUBundleTrackInfoKey = @"OSUSoftwareUpdateTrack";
 static NSString *OSUNextCheckKey = @"OSUNextScheduledCheck";
 static NSString *OSUCurrentVersionsURLKey = @"OSUCurrentVersionsURL";
 static NSString *OSUNewestVersionNumberLaunchedKey = @"OSUNewestVersionNumberLaunched";
+// static NSString *OSUVisibleTracksKey = @"OSUVisibleTracks";
 
 static OFVersionNumber *OSUVersionNumber = nil;
 static NSURL    *OSUCurrentVersionsURL = nil;
@@ -94,6 +96,8 @@ struct _OSUSoftwareUpdatePostponementState {
     SCDynamicStoreContext callbackContext;
 };
 
+static NSString *OSUBundleVersionForBundle(NSBundle *bundle);
+
 @end
 
 @implementation OSUChecker
@@ -128,7 +132,6 @@ static OSUChecker *sharedChecker = nil;
             checkerClass = self;
         
         sharedChecker = [[checkerClass alloc] init];
-        [sharedChecker setAction:@selector(newVersionsAvailable:)];
     }
     return sharedChecker;
 }
@@ -139,12 +142,12 @@ static OSUChecker *sharedChecker = nil;
     return OSUVersionNumber;
 }
 
-+ (OFVersionNumber *)runningMarketingVersion;
+- (OFVersionNumber *)applicationMarketingVersion
 {
     static OFVersionNumber *version = nil;
     if (!version) {
         NSDictionary *myInfo = [[NSBundle mainBundle] infoDictionary];
-        version = [[OFVersionNumber alloc] initWithVersionString:[[self sharedUpdateChecker] targetMarketingVersionStringFromBundleInfo:myInfo]];
+        version = [[OFVersionNumber alloc] initWithVersionString:[myInfo objectForKey:@"CFBundleShortVersionString"]];
     }
     return version;
 }
@@ -159,7 +162,17 @@ static OSUChecker *sharedChecker = nil;
     return supportedTracks;
 }
 
-+ (NSString *)applicationTrack;
+- (NSString *)applicationIdentifier;
+{
+    return [[NSBundle mainBundle] bundleIdentifier];
+}
+
+- (NSString *)applicationEngineeringVersion;
+{
+    return OSUBundleVersionForBundle([NSBundle mainBundle]);
+}
+
+- (NSString *)applicationTrack;
 {
     NSString *track = [[[NSBundle mainBundle] infoDictionary] objectForKey:OSUBundleTrackInfoKey];
     
@@ -169,7 +182,7 @@ static OSUChecker *sharedChecker = nil;
     return track;
 }
 
-+ (BOOL)applicationOnReleaseTrack;
+- (BOOL)applicationOnReleaseTrack;
 {
     NSString *track = [self applicationTrack];
     return [NSString isEmptyString:track] || [track isEqualToString:@"release"];
@@ -186,23 +199,29 @@ static OSUChecker *sharedChecker = nil;
     _licenseType = [licenseType copy];
     
     // Either neither of these should be set or just one of them
-    OBASSERT(!_initiateCheckOnLicenseTypeChange || !_scheduleNextCheckOnLicenseTypeChange);
+    OBASSERT(!_flags.initiateCheckOnLicenseTypeChange || !_flags.scheduleNextCheckOnLicenseTypeChange);
     
     // If we wanted to do a check at startup, we might have delayed it if the licensing system wasn't done figuring stuff out yet.
-    if (_initiateCheckOnLicenseTypeChange) {
-	_initiateCheckOnLicenseTypeChange = NO;
-	[self _initiateCheck];
+    if (_flags.initiateCheckOnLicenseTypeChange) {
+        _flags.initiateCheckOnLicenseTypeChange = NO;
+        [self _initiateCheck];
     }
 
     // If we wanted to schedule a check, do that
-    if (_scheduleNextCheckOnLicenseTypeChange) {
-	_scheduleNextCheckOnLicenseTypeChange = NO;
-	[self _scheduleNextCheck];
+    if (_flags.scheduleNextCheckOnLicenseTypeChange) {
+        _flags.scheduleNextCheckOnLicenseTypeChange = NO;
+        [self _scheduleNextCheck];
     }
 }
 
 - (void)setTarget:(id)anObject;
 {
+    SEL actionSelector = @selector(newVersionsAvailable:fromCheck:);
+    if (anObject != nil && ![anObject respondsToSelector:actionSelector]) {
+        OBRejectInvalidCall(self, _cmd, @"Target must respond to %@", NSStringFromSelector(actionSelector));
+    }
+    
+    OBPRECONDITION(_checkTarget == nil);
     _checkTarget = [anObject retain];
 
     _flags.shouldCheckAutomatically = [[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue];
@@ -214,21 +233,21 @@ static OSUChecker *sharedChecker = nil;
 	if (_licenseType)
 	    [self _initiateCheck];
 	else
-	    _initiateCheckOnLicenseTypeChange = YES;
+            _flags.initiateCheckOnLicenseTypeChange = YES;
     } else {
 	// As above, only schedule if we have our license type set already.
 	if (_licenseType)
 	    [self _scheduleNextCheck];
 	else
-	    _scheduleNextCheckOnLicenseTypeChange = YES;
+            _flags.scheduleNextCheckOnLicenseTypeChange = YES;
     }
     [OFPreference addObserver:self selector:@selector(softwareUpdatePreferencesChanged:) forPreference:[OSUPreferences automaticSoftwareUpdateCheckEnabled]];
     [OFPreference addObserver:self selector:@selector(softwareUpdatePreferencesChanged:) forPreference:[OSUPreferences checkInterval]];
 }
 
-- (void)setAction:(SEL)aSelector;
+- (BOOL)checkInProgress
 {
-    _checkAction = aSelector;
+    return (_currentCheckOperation != nil)? YES : NO; 
 }
 
 - (void)dealloc;
@@ -246,7 +265,7 @@ static OSUChecker *sharedChecker = nil;
 
 - (void)checkSynchronously;
 {
-    if (_checkTarget == nil || _checkAction == NULL)
+    if (_checkTarget == nil)
         return;
 
     OSUDownloadController *currentDownload = [OSUDownloadController currentDownloadController];
@@ -295,25 +314,8 @@ static inline NSDictionary *dataToPlist(NSData *input)
 
 - (NSDictionary *)generateReport;
 {
-    OSUCheckOperation *check = [[[OSUCheckOperation alloc] initForQuery:NO url:OSUCurrentVersionsURL versionNumber:OSUVersionNumber licenseType:_licenseType] autorelease];
+    OSUCheckOperation *check = [[[OSUCheckOperation alloc] initForQuery:NO url:OSUCurrentVersionsURL licenseType:_licenseType] autorelease];
     return dataToPlist([check runSynchronously]);
-}
-
-// Subclass opportunity
-
-- (NSString *)targetBundleIdentifier;
-{
-    return [[NSBundle mainBundle] bundleIdentifier];
-}
-
-- (NSString *)targetMarketingVersionStringFromBundleInfo:(NSDictionary *)bundleInfo;
-{
-    return [bundleInfo objectForKey:@"CFBundleShortVersionString"];
-}
-
-- (NSString *)targetBuildVersionStringFromBundleInfo:(NSDictionary *)bundleInfo;
-{
-    return [bundleInfo objectForKey:(NSString *)kCFBundleVersionKey];
 }
 
 //
@@ -332,14 +334,16 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 
 static void OSUAtExitHandler(void)
 {
+    NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
     // All we do is check that there is no error in the termination handling logic.  It might not be safe to use NSUserDefaults/CFPreferences at this point and it isn't the end of the world if this doesn't record perfect stats.
     OBASSERT(OSURunTimeHasHandledApplicationTermination() == YES);
+    [p release];
 }
 
 + (void)controllerStartedRunning:(OFController *)controller;
 {
     // Must do this here instead of in +initialize since defaults from the app plist might not be registered yet (preventing site licensees from changing their app bundle to provide a local OSU plist).
-    NSString *urlString = [[[NSUserDefaults standardUserDefaults] stringForKey:OSUCurrentVersionsURLKey] copy];
+    NSString *urlString = [[[[NSUserDefaults standardUserDefaults] stringForKey:OSUCurrentVersionsURLKey] copy] autorelease];
     if ([NSString isEmptyString:urlString])
         urlString = OSUDefaultCurrentVersionsURLString;
 
@@ -365,7 +369,7 @@ static void OSUAtExitHandler(void)
     
     // Warn developers if they are on a funky track ('sneakpeek' and 'sneakypeak' being the most common typos).
 #ifdef DEBUG
-    NSString *runningTrack = [self applicationTrack];
+    NSString *runningTrack = [[self sharedUpdateChecker] applicationTrack];
     if (![[self supportedTracksByPermissiveness] containsObject:runningTrack])
         NSRunAlertPanel(@"Unknown software update track", @"Specified the track '%@' but only know about '%@'.  Typo?", @"OK", nil, nil, runningTrack, [self supportedTracksByPermissiveness]);
 #endif
@@ -405,7 +409,7 @@ static void OSUAtExitHandler(void)
     if (checkAtLaunch == nil || ![checkAtLaunch boolValue])
         return NO;
 
-    OFVersionNumber *currentlyRunningVersionNumber = [[[OFVersionNumber alloc] initWithVersionString:[self targetBuildVersionStringFromBundleInfo:myInfo]] autorelease];
+    OFVersionNumber *currentlyRunningVersionNumber = [[[OFVersionNumber alloc] initWithVersionString:[self applicationEngineeringVersion]] autorelease];
     if (currentlyRunningVersionNumber == nil) {
 #ifdef DEBUG
         NSLog(@"Unable to compute version number of this app");
@@ -440,7 +444,7 @@ static void OSUAtExitHandler(void)
     }
     
     // Determine when we should make the next check
-    NSTimeInterval checkInterval = MAX([[OSUPreferences checkInterval] integerValue] * 60.0 * 60.0, MINIMUM_CHECK_INTERVAL);
+    NSTimeInterval checkInterval = MAX([[OSUPreferences checkInterval] floatValue] * 60.0 * 60.0, MINIMUM_CHECK_INTERVAL);
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSDate *now = [NSDate date];
     NSDate *nextCheckDate = [defaults objectForKey:OSUNextCheckKey];
@@ -486,12 +490,13 @@ static void OSUAtExitHandler(void)
         // This is a hack to avoid a panel saying that there are no updates.  Instead, we should probably have an enum for the status
         return;
     }
-
-    _flags.checkOperationInitiatedByUser = initiatedByUser;
     
     [self _clearCurrentCheckOperation];
     
-    _currentCheckOperation = [[OSUCheckOperation alloc] initForQuery:YES url:OSUCurrentVersionsURL versionNumber:OSUVersionNumber licenseType:_licenseType];
+    [self willChangeValueForKey:OSUCheckerCheckInProgressBinding];
+    _currentCheckOperation = [[OSUCheckOperation alloc] initForQuery:YES url:OSUCurrentVersionsURL licenseType:_licenseType];
+    _currentCheckOperation.initiatedByUser = initiatedByUser;
+    [self didChangeValueForKey:OSUCheckerCheckInProgressBinding];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_checkOperationCompleted:) name:OSUCheckOperationCompletedNotification object:_currentCheckOperation];
     [_currentCheckOperation runAsynchronously];
@@ -499,10 +504,13 @@ static void OSUAtExitHandler(void)
 
 - (void)_clearCurrentCheckOperation;
 {
-    if (_currentCheckOperation)
+    if (_currentCheckOperation) {
+        [self willChangeValueForKey:OSUCheckerCheckInProgressBinding];
         [[NSNotificationCenter defaultCenter] removeObserver:self name:OSUCheckOperationCompletedNotification object:_currentCheckOperation];
-    [_currentCheckOperation release];
-    _currentCheckOperation = nil;
+        [_currentCheckOperation release];
+        _currentCheckOperation = nil;
+        [self didChangeValueForKey:OSUCheckerCheckInProgressBinding];
+    }
 }
 
 - (void)_checkOperationCompleted:(NSNotification *)note;
@@ -516,8 +524,8 @@ static void OSUAtExitHandler(void)
     NSError *error = nil;
     int terminationStatus = [_currentCheckOperation terminationStatus];
     if (terminationStatus != OSUTool_Success) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fetch software update information.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Tool exited with %d", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), terminationStatus];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fetch software update information.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - will be followed by more detailed error reason");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Tool exited with %d", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason - tried to run a helper tool to fetch software update information, but it exited with an error code"), terminationStatus];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
         error = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToFetchSoftwareUpdateInformation userInfo:userInfo];
     }
@@ -540,8 +548,8 @@ static void OSUAtExitHandler(void)
     
     NSData *data = [results objectForKey:OSUTool_ResultsDataKey];
     if (!error && !data) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fetch software update information.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Tool returned no data", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fetch software update information.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - will be followed by more detailed error reason");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Tool returned no data", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason - we ran a helper tool to fetch software update information, but it didn't return any information");
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
         error = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToFetchSoftwareUpdateInformation userInfo:userInfo];
     }
@@ -553,15 +561,17 @@ static void OSUAtExitHandler(void)
 
     if (error) {
         // If we get an error that is due to a server-side misconfiguration, go ahead and report it so that we'll know to fix it and users won't get stranded.  But if we simply can't connect to the server, it's presumably a transient error and shouldn't be reported unless the user is specifically checking for updates.
+#if 0
         BOOL isNetworkError = NO;
         if ([[error domain] isEqualToString:OSUToolErrorDomain]) {
             int code = [error code];
             if (code == OSUToolRemoteNetworkFailure && code == OSUToolLocalNetworkFailure)
                 isNetworkError = YES;
         }
-            
+#endif
+        
         // Disabling the errors from the asynchronous check until the UI is improved.  <bug://bugs/40635> (Warn users if they haven't successfully connected to software update in N days)
-        BOOL shouldReport = _flags.checkOperationInitiatedByUser /*|| !isNetworkError*/;
+        BOOL shouldReport = operation.initiatedByUser /*|| !isNetworkError*/;
         
         if (shouldReport) {
             error = [OFMultipleOptionErrorRecovery errorRecoveryErrorWithError:error object:nil options:[OSUSendFeedbackErrorRecovery class], [OFCancelErrorRecovery class], nil];
@@ -583,15 +593,58 @@ static void OSUAtExitHandler(void)
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:OSUNextCheckKey];
     // Removing the nextCheckKey will cause _scheduleNextCheck to schedule a check in the future
     
-    *outError = nil;
+    if (outError)
+        *outError = nil;
     
-    NSXMLDocument *document = [[NSXMLDocument alloc] initWithData:data options:NSXMLNodeOptionsNone error:outError];
-    if (!document) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to parse response from the software update server.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The data returned from <%@> was not a valid XML document.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description"), [[operation url] absoluteString]];
+    NSString *trust = [OMNI_BUNDLE pathForResource:@"AppcastTrustRoot" ofType:@"pem"];
+    if (trust) {
+#ifdef DEBUG
+        NSLog(@"OSU: Using %@", trust);
+#endif
+        NSArray *verifiedPortions = OSUGetSignedPortionsOfAppcast(data, trust, outError);
+        if (!verifiedPortions || ![verifiedPortions count]) {
+            if (outError) {
+                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to authenticate the response from the software update server.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - we have some update information but it doesn't look authentic");
+                NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObject:description forKey:NSLocalizedDescriptionKey];
+                
+                if (!verifiedPortions) {
+                    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"There was a problem checking the signature.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - the checksum or signature didn't match - more info in underlying error")];
+                    [userInfo setObject:reason forKey:NSLocalizedFailureReasonErrorKey];
+                    [userInfo setObject:*outError forKey:NSUnderlyingErrorKey];
+                } else {
+                    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The update information is not signed.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - the update information wasn't signed at all, but we require it to be signed")];
+                    [userInfo setObject:reason forKey:NSLocalizedFailureReasonErrorKey];
+                }
+                
+                NSURL *serverURL = [operation url];
+                if (serverURL)
+                    [userInfo setObject:[serverURL absoluteString] forKey:NSErrorFailingURLStringKey];
+                
+                *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToParseSoftwareUpdateData userInfo:userInfo];
+            }
+            
+            return NO;
+        }
         
-        NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, *outError, NSUnderlyingErrorKey, nil];
-        *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToParseSoftwareUpdateData userInfo:userInfo];
+        if ([verifiedPortions count] != 1) {
+            NSLog(@"Warning: Update contained %u reference nodes; only using the first.", [verifiedPortions count]);
+        }
+        
+        data = [verifiedPortions objectAtIndex:0];
+    }
+    
+    NSXMLDocument *document = [[[NSXMLDocument alloc] initWithData:data options:NSXMLNodeOptionsNone error:outError] autorelease];
+    if (!document) {
+        if (outError) {
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to parse response from the software update server.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The data returned from <%@> was not a valid XML document.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description"), [[operation url] absoluteString]];
+            
+            NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
+            if (outError && *outError)
+                [userInfo setObject:*outError forKey:NSUnderlyingErrorKey];
+        
+            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToParseSoftwareUpdateData userInfo:userInfo];
+        }
         return NO;
     }
     
@@ -611,34 +664,30 @@ static void OSUAtExitHandler(void)
     unsigned int nodeIndex = [nodes count];
     while (nodeIndex--) {
         NSError *itemError = nil;
-        OSUItem *item = [[OSUItem alloc] initWithRSSElement:[nodes objectAtIndex:nodeIndex] error:&itemError];
+        OSUItem *item = [[[OSUItem alloc] initWithRSSElement:[nodes objectAtIndex:nodeIndex] error:&itemError] autorelease];
         if (!item) {
 #ifdef DEBUG	
             NSLog(@"Unable to interpret node %@ as a software update: %@", [nodes objectAtIndex:nodeIndex], itemError);
 #endif	    
             if (!firstError)
                 firstError = itemError;
-        } else if (showOlderVersions || [currentVersion compareToVersionNumber:[item buildVersion]] == NSOrderedAscending) {
+        } else if (showOlderVersions || [currentVersion compareToVersionNumber:[item buildVersion]] == NSOrderedAscending)
             // Include the item if it is newer than us; the RSS feed might not be filtering this on our behalf.
             [items addObject:item];
-            [item release];
-        }
     }
     
     // If we had some matching nodes, but none were usable, return the error for the first
     if ([nodes count] > 0 && [items count] == 0 && firstError) {
-        *outError = firstError;
+        if (outError)
+            *outError = firstError;
         return NO;
     }
 
     [OSUItem setSupersededFlagForItems:items];
     [items makeObjectsPerformSelector:@selector(setAvailablityBasedOnSystemVersion:) withObject:[OFVersionNumber userVisibleOperatingSystemVersionNumber]];
     
-    // If this is an asynchronous run (not prompted by the user), and there are no items that would be displayed with the default predicate, don't call the target/action.
-    NSArray *filteredItems = [items filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededPredicate]];
-
-    if (_flags.checkOperationInitiatedByUser || [filteredItems count] > 0)
-        [_checkTarget performSelector:_checkAction withObject:items];
+    // Note that we go ahead and pass ignored items to the check target; it will handle the ignored flag
+    [_checkTarget newVersionsAvailable:[items filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededPredicate]] fromCheck:operation];
     
     return YES;
 }
@@ -661,6 +710,11 @@ static void OSUAtExitHandler(void)
         return NO;
     }
 
+    if (_postpone == NULL || _postpone->store == NULL) {
+        OBASSERT_NOT_REACHED("-_scDynamicStoreConnect should have returned NO in this case"); // clang
+        return NO;
+    }
+    
     // TODO: This will fail if the machine has non-IPv4 routes to the outside world. Right now that's not a problem, but if Apple starts supporting IPv6 or whatever in a useful way, we should look at this code again.
     
     CFDictionaryRef ipv4state = SCDynamicStoreCopyValue(_postpone->store, SCKey_GlobalIPv4State);
@@ -695,6 +749,7 @@ static void OSUAtExitHandler(void)
 
     NSString *str = (NSString *)CFPreferencesCopyAppValue(prefKey, prefDomain);
     OFVersionNumber *highestRunVersion = str ? [[[OFVersionNumber alloc] initWithVersionString:str] autorelease] : nil;
+    [str release];
     
     if (highestRunVersion && [highestRunVersion compareToVersionNumber:OSUVersionNumber] != NSOrderedAscending)
         return YES;
@@ -703,6 +758,14 @@ static void OSUAtExitHandler(void)
     CFPreferencesSetAppValue(prefKey, [OSUVersionNumber cleanVersionString], prefDomain);
     CFPreferencesAppSynchronize(prefDomain);
 
+    // Version 2009 actually sends the same info as version 2004, but does so in a different format. No need to re-ask the user about details of transfer encoding.
+    if (highestRunVersion != nil && OSUVersionNumber != nil &&
+        [highestRunVersion componentCount] == 1 && [highestRunVersion componentAtIndex:0] == 2004 &&
+        [OSUVersionNumber componentCount] == 1 && [OSUVersionNumber componentAtIndex:0] == 2009) {
+        // Manufacture some consent.
+        return YES;
+    }
+    
     BOOL hasSeenPreviousVersion = (highestRunVersion != nil);
     
     OSUPrivacyNoticeResult rc = [[OSUController sharedController] runPrivacyNoticePanelHavingSeenPreviousVersion:hasSeenPreviousVersion];

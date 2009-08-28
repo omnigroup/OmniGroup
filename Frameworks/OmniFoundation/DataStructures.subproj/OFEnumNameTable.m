@@ -32,7 +32,7 @@ The implementation does not currently assume anything about the range of the enu
     return nil;
 }
 
-- initWithDefaultEnumValue: (int) defaultEnumValue;
+- initWithDefaultEnumValue:(NSInteger)defaultEnumValue;
 {
     _defaultEnumValue = defaultEnumValue;
 
@@ -58,19 +58,19 @@ The implementation does not currently assume anything about the range of the enu
 
 // API
 
-- (int) defaultEnumValue;
+- (NSInteger)defaultEnumValue;
 {
     return _defaultEnumValue;
 }
 
 // For cases where we don't care about the localized values.
-- (void)setName:(NSString *)enumName forEnumValue:(int)enumValue;
+- (void)setName:(NSString *)enumName forEnumValue:(NSInteger)enumValue;
 {
     [self setName:enumName displayName:enumName forEnumValue:enumValue];
 }
 
 /*" Registers a string name and its corresponding integer enumeration value with the receiver. There must be a one-to-one correspondence between names and values; it is an error for either a name or a value to be duplicated. The order in which name-value pairs are registered determines the ordering used by -nextEnum:. "*/
-- (void)setName:(NSString *)enumName displayName:(NSString *)displayName forEnumValue:(int)enumValue;
+- (void)setName:(NSString *)enumName displayName:(NSString *)displayName forEnumValue:(NSInteger)enumValue;
 {
     OBPRECONDITION(enumName);
     OBPRECONDITION(displayName);
@@ -88,7 +88,7 @@ The implementation does not currently assume anything about the range of the enu
 }
 
 /*" Returns the string name corresponding to the given integer enumeration value. "*/
-- (NSString *) nameForEnum: (int) enumValue_;
+- (NSString *)nameForEnum:(NSInteger)enumValue_;
 {
     NSString *name = nil;
     intptr_t enumValue = enumValue_;
@@ -102,7 +102,7 @@ The implementation does not currently assume anything about the range of the enu
 }
 
 /*" Returns the display name corresponding to the given integer enumeration value. "*/
-- (NSString *)displayNameForEnum:(int)enumValue_;
+- (NSString *)displayNameForEnum:(NSInteger)enumValue_;
 {
     NSString *name = nil;
     intptr_t enumValue = enumValue_;
@@ -116,7 +116,7 @@ The implementation does not currently assume anything about the range of the enu
 }
 
 /*" Returns the integer enumeration value corresponding to the given string. "*/
-- (int) enumForName: (NSString *) name;
+- (NSInteger)enumForName:(NSString *)name;
 {
     intptr_t enumValue;
 
@@ -128,40 +128,43 @@ The implementation does not currently assume anything about the range of the enu
         // some unknown name -- the external representation might have been mucked up somehow
         return _defaultEnumValue;
     }
+    
     return enumValue;
 }
 
 /*" Tests whether the specified enumeration value has been registered with the receiver.  "*/
-- (BOOL) isEnumValue: (int) enumValue;
+- (BOOL)isEnumValue:(NSInteger)enumValue;
 {
     return OFCFDictionaryContainsIntegerKey(_enumToName, enumValue)? YES : NO;
 }
 
 /*" Tests whether the specified enumeration name has been registered with the receiver.  "*/
-- (BOOL) isEnumName: (NSString *) name;
+- (BOOL)isEnumName:(NSString *)name;
 {
     return name != nil && CFDictionaryContainsKey(_nameToEnum, (const void *)name)? YES : NO;
 }
 
-- (unsigned int)count;
+- (NSUInteger)count;
 {
     OBINVARIANT(CFArrayGetCount(_enumOrder) == CFDictionaryGetCount(_enumToName));
     OBINVARIANT(CFArrayGetCount(_enumOrder) == CFDictionaryGetCount(_nameToEnum));
     return CFArrayGetCount(_enumOrder);
 }
 
-- (int)enumForIndex:(CFIndex)enumIndex;
+- (NSInteger)enumForIndex:(NSUInteger)enumIndex;
 {
-    OBASSERT(enumIndex >= 0 && enumIndex < CFArrayGetCount(_enumOrder));
-    return OFCFArrayGetIntegerValueAtIndex(_enumOrder, enumIndex);
+    OBASSERT(enumIndex >= 0 && (NSInteger)enumIndex < CFArrayGetCount(_enumOrder));
+    intptr_t value = OFCFArrayGetIntegerValueAtIndex(_enumOrder, enumIndex);
+    
+    return value;
 }
 
 /*" Returns the 'next' enum value based on the cyclical order defined by the order of name/value definition. "*/
-- (int)nextEnum:(int)enumValue;
+- (NSInteger)nextEnum:(NSInteger)enumValue;
 {
-    CFIndex count = CFArrayGetCount(_enumOrder);
+    NSInteger count = CFArrayGetCount(_enumOrder);
     
-    CFIndex enumIndex = OFCFArrayGetFirstIndexOfIntegerValue(_enumOrder, (CFRange){0, count}, enumValue);
+    NSInteger enumIndex = OFCFArrayGetFirstIndexOfIntegerValue(_enumOrder, (CFRange){0, count}, enumValue);
 
     OBASSERT(enumIndex != kCFNotFound);
     
@@ -183,9 +186,9 @@ The implementation does not currently assume anything about the range of the enu
 // Comparison
 
 /*" Compares the receiver's name/value pairs against another instance of OFEnumNameTable. This implementation does not require that the cyclical ordering of the two enumerations be the same for them to compare equal, but callers should probably not rely on this behavior.  This also doesn't require that the display names are equal -- this is intentional. "*/
-- (BOOL) isEqual: (id)anotherEnumeration_
+- (BOOL)isEqual:(id)anotherEnumeration_
 {
-    unsigned int associationCount, associationIndex;
+    NSUInteger associationCount, associationIndex;
     
     if (anotherEnumeration_ == self)
         return YES;
@@ -203,7 +206,7 @@ The implementation does not currently assume anything about the range of the enu
         return NO;
 
     for (associationIndex = 0; associationIndex < associationCount; associationIndex ++) {
-        int anEnumValue = [self enumForIndex:associationIndex];
+        NSInteger anEnumValue = [self enumForIndex:associationIndex];
         if ([anotherEnumeration enumForName:[self nameForEnum:anEnumValue]] != anEnumValue)
             return NO;
     }
@@ -226,32 +229,37 @@ static int _compareIntptrs(const void *arg1, const void *arg2) {
     return ( int1 > int2 )? 1 : ( (int1 == int2)? 0 : -1 );
 }
 
+static inline int _writableEnumValue(NSInteger value)
+{
+    // Foundation has started doing enum {...}; typedef NSUInteger FooEnum and the like.  We don't expect to get large values; let's assert that.
+    OBASSERT(value >= INT_MIN && value <= INT_MAX);
+    return (int)value;
+}
+
 - (void)appendXML:(OFXMLDocument *)doc;
 {
     [doc pushElement:[isa xmlElementName]];
     {
-        [doc setAttribute:@"default-value" integer:_defaultEnumValue];
+        [doc setAttribute:@"default-value" integer:_writableEnumValue(_defaultEnumValue)];
 
         // Store elements sorted by enum value
-        CFIndex enumIndex, enumCount;
-        const void **values;
-        
-        enumCount = CFDictionaryGetCount(_enumToName);
+        NSInteger enumIndex, enumCount = CFDictionaryGetCount(_enumToName);
         OBASSERT(enumCount == CFDictionaryGetCount(_nameToEnum));
 
-        values = malloc(sizeof(void *) * enumCount);
-        CFDictionaryGetKeysAndValues(_nameToEnum, NULL, values);
+        intptr_t *values = malloc(sizeof(intptr_t) * enumCount);
+        CFDictionaryGetKeysAndValues(_nameToEnum, NULL, (const void **)values);
 
-        qsort(values, enumCount, sizeof(int), _compareIntptrs);
+        qsort(values, enumCount, sizeof(intptr_t), _compareIntptrs);
 
         for (enumIndex = 0; enumIndex < enumCount; enumIndex++) {
             [doc pushElement:@"enum-name-table-element"];
             {
-                intptr_t enumValue = (intptr_t)( values[enumIndex] );
-                [doc setAttribute:@"value" integer:enumValue];
+                intptr_t value = values[enumIndex];
+                
+                [doc setAttribute:@"value" integer:_writableEnumValue(value)];
 
-                NSString *name = [self nameForEnum:enumValue];
-                NSString *displayName = [self displayNameForEnum:enumValue];
+                NSString *name = [self nameForEnum:value];
+                NSString *displayName = [self displayNameForEnum:value];
                 
                 [doc setAttribute:@"name" string:name];
 
@@ -269,8 +277,7 @@ static int _compareIntptrs(const void *arg1, const void *arg2) {
 {
     OBPRECONDITION([[cursor name] isEqualToString:[isa xmlElementName]]);
 
-    intptr_t defaultEnumValue = [[cursor attributeNamed:@"default-value"] intValue];
-    _defaultEnumValue = defaultEnumValue;
+    _defaultEnumValue = [[cursor attributeNamed:@"default-value"] intValue];
 
     if (!(self = [self initWithDefaultEnumValue:_defaultEnumValue]))
         return nil;
@@ -306,7 +313,7 @@ static int _compareIntptrs(const void *arg1, const void *arg2) {
         [self setName:name displayName:displayName forEnumValue:value];
     }
 
-    if (!OFCFDictionaryContainsIntegerKey(_enumToName, defaultEnumValue)) {
+    if (!OFCFDictionaryContainsIntegerKey(_enumToName, _defaultEnumValue)) {
         [self release];
         [NSException raise:NSInvalidArgumentException
                     format:@"Unable to unarchive OFEnumNameTable: %@", @"Missing definition for default enum value"];

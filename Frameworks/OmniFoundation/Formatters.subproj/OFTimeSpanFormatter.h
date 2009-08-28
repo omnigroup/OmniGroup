@@ -1,4 +1,4 @@
-// Copyright 2000-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,8 +30,9 @@
     
     struct {
 	unsigned int returnNumber : 1;
+	unsigned int displayUnmodifiedTimeSpan : 1;
 	unsigned int floatValuesInSeconds : 1;
-	unsigned int displayUnits : 7;
+	unsigned int displayUnits : 7; /* Bits should match UNITS_COUNT */
         unsigned int usesArchiveUnitStrings : 1;
     } _flags;
 }
@@ -65,6 +66,9 @@
 
 - (BOOL)isStandardWorkTime;
 - (BOOL)isStandardCalendarTime;
+
+- (BOOL)displayUnmodifiedTimeSpan; // Overrides all display unit settings
+- (void)setDisplayUnmodifiedTimeSpan:(BOOL)aBool; // Overrides all display unit settings
 
 - (BOOL)displaySeconds;
 - (BOOL)displayMinutes;

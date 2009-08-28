@@ -1,0 +1,12 @@
+// Copyright 2005-2009 Omni Development, Inc.  All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings for Library targets
+#include "Omni-Library-Common.xcconfig"
+
+// Common settings for Release configurations of Library targets
+GCC_DYNAMIC_NO_PIC = YES
+
+// Would like to build dylibs for debug and static for release, but this isn't working yet (we always get static).
+// MACH_O_TYPE = staticlib

@@ -16,7 +16,7 @@ RCS_ID("$Id$")
 
 - (void)insertObjectsFromArray:(NSArray *)anArray atIndex:(NSUInteger)anIndex
 {
-    [self replaceObjectsInRange:(NSRange){ location:anIndex, length:0 } withObjectsFromArray:anArray];
+    [self replaceObjectsInRange:NSMakeRange(anIndex, 0) withObjectsFromArray:anArray];
 }
 
 - (void)removeIdenticalObjectsFromArray:(NSArray *)removeArray;

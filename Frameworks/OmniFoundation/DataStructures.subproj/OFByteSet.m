@@ -57,11 +57,8 @@ RCS_ID("$Id$")
 
 - (void)addBytesFromData:(NSData *)data;
 {
-    unsigned int byteIndex, byteCount;
-    const OFByte *bytes;
-
-    bytes = (const OFByte *)[data bytes];
-    byteCount = [data length];
+    const OFByte *bytes = (const OFByte *)[data bytes];
+    NSUInteger byteIndex, byteCount = [data length];
     for (byteIndex = 0; byteIndex < byteCount; byteIndex++)
 	addByteToByteSet(bytes[byteIndex], self);
 }
@@ -73,11 +70,8 @@ RCS_ID("$Id$")
 
 - (void)removeBytesFromData:(NSData *)data;
 {
-    unsigned int byteIndex, byteCount;
-    const OFByte *bytes;
-
-    bytes = (const OFByte *)[data bytes];
-    byteCount = [data length];
+    const OFByte *bytes = (const OFByte *)[data bytes];
+    NSUInteger byteIndex, byteCount = [data length];
     for (byteIndex = 0; byteIndex < byteCount; byteIndex++)
 	removeByteFromByteSet(bytes[byteIndex], self);
 }

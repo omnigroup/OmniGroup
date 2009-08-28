@@ -57,18 +57,71 @@ static BOOL implementsInstanceMethod(Class cls, SEL aSelector)
     return [isa bundle];
 }
 
+struct reversedApplyContext {
+    NSObject *receiver;
+    SEL sel;
+    IMP impl;
+    NSMutableArray *storage;
+};
+
+static void OFPerformWithObject(const void *arg, void *context)
+{
+    id target = (id)arg;
+    struct reversedApplyContext *c = context;
+    
+    (c->impl)(c->receiver, c->sel, target);
+}
+
+static void OFPerformWithObjectAndStore(const void *arg, void *context)
+{
+    id target = (id)arg;
+    struct reversedApplyContext *c = context;
+    
+    id result = (c->impl)(c->receiver, c->sel, target);
+    
+    [c->storage addObject:result];
+}
+
+static struct reversedApplyContext OFMakeApplyContext(NSObject *rcvr, SEL sel)
+{
+    Class receiverClass = object_getClass(rcvr);
+    
+    IMP impl = class_getMethodImplementation(receiverClass, sel);
+    
+    return (struct reversedApplyContext){ .receiver = rcvr, .sel = sel, .impl = impl, .storage = nil };
+}
+
 - (void)performSelector:(SEL)sel withEachObjectInArray:(NSArray *)array
 {
-    for (id loopItem in array) {
-        [self performSelector:sel withObject:loopItem];
-    }
+    if (!array)
+        return;
+    CFIndex count = CFArrayGetCount((CFArrayRef)array);
+    if (count == 0)
+        return;
+    struct reversedApplyContext ctxt = OFMakeApplyContext(self, sel);
+    CFArrayApplyFunction((CFArrayRef)array, CFRangeMake(0, count), OFPerformWithObject, &ctxt);
+}
+
+- (NSArray *)arrayByPerformingSelector:(SEL)sel withEachObjectInArray:(NSArray *)array;
+{
+    if (!array)
+        return nil;
+    CFIndex count = CFArrayGetCount((CFArrayRef)array);
+    if (count == 0)
+        return [NSArray array];
+    struct reversedApplyContext ctxt = OFMakeApplyContext(self, sel);
+    ctxt.storage = [[NSMutableArray alloc] initWithCapacity:count];
+    [ctxt.storage autorelease]; // In case one of the perform: calls raises an exception
+    CFArrayApplyFunction((CFArrayRef)array, CFRangeMake(0, count), OFPerformWithObjectAndStore, &ctxt);
+    return ctxt.storage;
 }
 
 - (void)performSelector:(SEL)sel withEachObjectInSet:(NSSet *)set
 {
-    for (id loopItem in set) {
-        [self performSelector:sel withObject:loopItem];
-    }
+    if (!set)
+        return;
+    struct reversedApplyContext ctxt = OFMakeApplyContext(self, sel);
+    CFSetApplyFunction((CFSetRef)set, OFPerformWithObject, &ctxt);
 }
 
 typedef char   (*byteImp_t)(id self, SEL _cmd, id arg);

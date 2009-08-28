@@ -101,4 +101,82 @@ RCS_ID("$Id$")
 #endif
 }
 
+// -autorelease to make clang happy.
+#define REJECT(str) should([[[NSDate alloc] initWithXMLString:str] autorelease] == nil)
+
+static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NSTimeInterval expectedFraction)
+{
+    NSDate *date = [[NSDate alloc] initWithXMLString:str];
+    should(date != nil);
+    if (date == nil)
+        return;
+    
+    NSTimeInterval interval = [date timeIntervalSinceReferenceDate];
+    [date release];
+    
+    NSTimeInterval actualFraction = interval - floor(interval);
+
+    NSTimeInterval error = fabs(expectedFraction - actualFraction);
+    should(error < 0.00000001);
+}
+
+- (void)testFractionalSecond;
+{
+    // Decimal point w/o at least one digit should be rejected.
+    REJECT(@"2004-06-07T14:15:34.Z");
+
+    // Should allow variable length fractional second, with 1 to 9 digits.
+#define CHECK_FRACTION(str, frac) _checkFraction(self, _cmd, str, frac)
+    CHECK_FRACTION(@"2004-06-07T14:15:34.1Z", 0.1);
+    CHECK_FRACTION(@"2004-06-07T14:15:34.12Z", 0.12);
+    CHECK_FRACTION(@"2004-06-07T14:15:34.123Z", 0.123);
+    CHECK_FRACTION(@"2004-06-07T14:15:34.1234Z", 0.1234);
+    CHECK_FRACTION(@"2004-06-07T14:15:34.12345Z", 0.12345);
+    CHECK_FRACTION(@"2004-06-07T14:15:34.123456Z", 0.123456);
+    CHECK_FRACTION(@"2004-06-07T14:15:34.1234567Z", 0.1234567);
+    CHECK_FRACTION(@"2004-06-07T14:15:34.12345678Z", 0.12345678);
+    CHECK_FRACTION(@"2004-06-07T14:15:34.123456789Z", 0.123456789);
+#undef CHECK_FRACTION
+    
+    // Too long of a fraction string should be rejected.
+    REJECT(@"2004-06-07T14:15:34.1234567891Z");
+}
+
+- (void)testNil;
+{
+    REJECT(nil);
+}
+
+- (void)testTruncatedDate
+{
+    // Every prefix of this date should be rejected.
+    NSString *dateString = @"2004-06-07T14:15:34.987Z";
+    NSUInteger dateStringIndex = [dateString length];
+    while (dateStringIndex--) {
+        NSString *prefix = [dateString substringToIndex:dateStringIndex];
+        REJECT(prefix);
+    }
+}
+
+#undef REJECT
+
+#define EQUAL_DATES(str1, str2) do { \
+    NSDate *date1 = [[NSDate alloc] initWithXMLString:str1]; \
+    NSDate *date2 = [[NSDate alloc] initWithXMLString:str1]; \
+    shouldBeEqual(date1, date2); \
+    [date1 release]; \
+    [date2 release]; \
+} while(0)
+
+- (void)testNonUTCTimeZone;
+{
+    EQUAL_DATES(@"2004-06-07T14:15:34.987Z", @"2004-06-07T15:15:34.987-01:00");
+    EQUAL_DATES(@"2004-06-07T22:50:00Z", @"2004-06-07T18:50:00-04:00");
+
+    EQUAL_DATES(@"2004-06-07T13:15:34.987Z", @"2004-06-07T15:15:34.987+01:00");
+    EQUAL_DATES(@"2004-06-07T14:50:00Z", @"2004-06-07T18:50:00+04:00");
+}
+
+#undef EQUAL_DATES
+
 @end

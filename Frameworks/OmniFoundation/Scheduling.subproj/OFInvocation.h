@@ -11,7 +11,7 @@
 
 #import <OmniFoundation/OFMessageQueuePriorityProtocol.h>
 
-@interface OFInvocation : OFObject <OFMessageQueuePriority>
+@interface OFInvocation : OFObject <OFMessageQueuePriority, NSCopying>
 
 - (id <NSObject>)object;
 - (SEL)selector;

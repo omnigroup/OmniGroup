@@ -27,24 +27,17 @@ static inline NSRect OFRectFromPoints(NSPoint point1, NSPoint point2)
 /*" Returns a rectangle centered on the specified point, large enough to contain the other point. "*/
 static inline NSRect OFRectFromCenterAndPoint(NSPoint center, NSPoint corner)
 {
-    return (NSRect){
-        origin: {
-            center.x - fabsf( corner.x - center.x ),
-            center.y - fabsf( corner.y - center.y )
-        },
-        size: {
-            2 * fabsf( corner.x - center.x ),
-            2 * fabsf( corner.y - center.y )
-        }
-    };
+    return NSMakeRect(center.x - fabsf( corner.x - center.x ),
+                      center.y - fabsf( corner.y - center.y ),
+                      2 * fabsf( corner.x - center.x ),
+                      2 * fabsf( corner.y - center.y ));
+
 }
 
 /*" Returns a rectangle centered on the specified point, and with the specified size. "*/
 static inline NSRect OFRectFromCenterAndSize(NSPoint center, NSSize size) {
-    return (NSRect){
-              origin: { center.x - (size.width/2), center.y - (size.height/2) },
-              size: size
-    };
+    return NSMakeRect(center.x - (size.width/2), center.y - (size.height/2),
+                      size.width, size.height);
 }
 
 extern float OFSquaredDistanceToFitRectInRect(NSRect sourceRect, NSRect destinationRect);

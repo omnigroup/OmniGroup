@@ -47,6 +47,9 @@ class String
   end
 end
 
+# Base ruby changes
+require 'lib/string_extensions'
+
 # Utilities for writing derived files
 require 'lib/sourcefileset'
 require 'lib/sourcefilepair'

@@ -28,7 +28,7 @@ RCS_ID("$Id$")
 
 + (id)coerceRecord:(NSDictionary *)dictionary toClass:(Class)aClass;
 {
-    id result = [[aClass alloc] init];
+    id result = [[[aClass alloc] init] autorelease];
     
     [result appleScriptTakeAttributesFromRecord:dictionary];
     return result;

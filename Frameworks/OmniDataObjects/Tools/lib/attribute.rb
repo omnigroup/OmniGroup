@@ -54,8 +54,12 @@ module OmniDataObjects
       end
     end
     
+    def add_class_names(names)
+      names << objcValueClass
+    end
     def emitInterface(f)
       # We don't currently make any pretense at being thread-safe (other that the whole stack being used in a thread).  So, use nonatomic.  Also, all attribute values should be copied on assignment.
+      return if self.inherited_from # don't redeclare inherited attributes since they'll have the same definition in the superclass
       f << "@property(nonatomic,copy) #{objcValueClass} *#{name};\n"
     end
     
