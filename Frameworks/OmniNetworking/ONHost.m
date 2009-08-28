@@ -430,7 +430,7 @@ static void locked_disconnectFromSysConfig(void)
         case 0:
             // Success --- we got a hostname for this address. Look up the rest of the information about the host.
             @try {
-                host = [self hostForHostname:[NSString stringWithCString:hostnameBuffer]];
+                host = [self hostForHostname:[NSString stringWithCString:hostnameBuffer encoding:NSASCIIStringEncoding]];
                 // Only accept the host if it actually does refer to the IP address we started with.
                 if ([[host addresses] indexOfObject:anAddress] == NSNotFound)
                     host = nil;
@@ -1179,7 +1179,7 @@ static BOOL validIDNCodeValue(unsigned codepoint)
 #ifdef DEBUG_toon    
     NSLog(@"Punycode encoded \"%@\" into \"%s\"", aString, outputBuffer);
 #endif    
-    return [ACEPrefix stringByAppendingString:[NSString stringWithCString:outputBuffer]];
+    return [ACEPrefix stringByAppendingString:[NSString stringWithCString:outputBuffer encoding:NSASCIIStringEncoding]];
 }
 
 + (NSString *)_punycodeDecode:(NSString *)aString;

@@ -364,7 +364,7 @@ static const struct { ONInterfaceCategory tp; const char *descr; } interfaceName
     while(interfaceNames[interfaceNameIndex].tp != interfaceCategory &&
           interfaceNames[interfaceNameIndex].tp != ONUnknownInterfaceCategory)
         interfaceNameIndex ++;
-    [debugDictionary setObject:[NSString stringWithCString:interfaceNames[interfaceNameIndex].descr] forKey:@"interfaceCategory"];
+    [debugDictionary setObject:[NSString stringWithCString:interfaceNames[interfaceNameIndex].descr encoding:NSASCIIStringEncoding] forKey:@"interfaceCategory"];
 
     [debugDictionary setObject:[NSNumber numberWithInt:interfaceType] forKey:@"interfaceType"];
     

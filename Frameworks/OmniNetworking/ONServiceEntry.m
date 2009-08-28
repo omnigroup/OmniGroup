@@ -75,7 +75,7 @@ static NSMutableDictionary *portHints;
         newServiceEntry = getservbyname(cServiceName, cProtocolName);
         if (newServiceEntry) {
             if (strcmp(newServiceEntry->s_name, cServiceName) != 0)
-                canonicalName = [NSString stringWithCString:newServiceEntry->s_name];
+                canonicalName = [NSString stringWithCString:newServiceEntry->s_name encoding:NSASCIIStringEncoding];
             else
                 canonicalName = aServiceName;
 
@@ -94,7 +94,7 @@ static NSMutableDictionary *portHints;
             if (newServiceEntry->s_aliases) {
                 int aliasIndex = 0;
                 for (aliasIndex = 0; newServiceEntry->s_aliases[aliasIndex] != NULL; aliasIndex ++) {
-                    NSString *serviceNameAlias = [NSString stringWithCString:newServiceEntry->s_aliases[aliasIndex]];
+                    NSString *serviceNameAlias = [NSString stringWithCString:newServiceEntry->s_aliases[aliasIndex] encoding:NSASCIIStringEncoding];
                     if (![protocolDictionary objectForKey:serviceNameAlias])
                         [protocolDictionary setObject:entry forKey:serviceNameAlias];
                 }

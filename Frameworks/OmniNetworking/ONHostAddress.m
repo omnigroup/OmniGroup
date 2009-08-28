@@ -191,7 +191,7 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
 
         // Note: inet_pton() is documented not to handle 1-, 2-, or 3-part dotted IPv4 addresses, which we do want to be able to handle for OmniWeb. Also, it appears to incorrectly handle octal values, which we want to support for consistency with inet(3) and occasional practice. So we've written our own address parsing routine, yet again.
         if (didTrim)
-            addressString = [NSString stringWithCString:asciiBuf];
+            addressString = [NSString stringWithCString:asciiBuf encoding:NSASCIIStringEncoding];
         ipv4host = [ONIPv4HostAddress hostAddressWithNumericString:addressString];
 
         if (ipv4host != nil) {
@@ -215,7 +215,7 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
         ONHostAddress *atalkAddress;
         
         if (didTrim)
-            addressString = [NSString stringWithCString:asciiBuf];
+            addressString = [NSString stringWithCString:asciiBuf encoding:NSASCIIStringEncoding];
         atalkAddress = [ONAppleTalkHostAddress hostAddressWithNumericString:addressString];
         
         if (atalkAddress) {
@@ -293,7 +293,7 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
     bzero(abuf, ADDRSTRLEN+1);
     addrstr = inet_ntop([self addressFamily], [self _internetAddress], abuf, ADDRSTRLEN);
     if (addrstr)
-        return [NSString stringWithCString:addrstr];
+        return [NSString stringWithCString:addrstr encoding:NSASCIIStringEncoding];
     else
         return nil;
 }

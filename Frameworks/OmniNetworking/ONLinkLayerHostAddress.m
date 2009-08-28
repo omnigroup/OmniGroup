@@ -74,7 +74,7 @@ RCS_ID("$Id$");
 - (NSString *)name
 {
     if (linkAddress->sdl_nlen > 0)
-        return [NSString stringWithCString:linkAddress->sdl_data length:linkAddress->sdl_nlen];
+        return [[[NSString alloc] initWithBytes:linkAddress->sdl_data length:linkAddress->sdl_nlen encoding:NSASCIIStringEncoding] autorelease];
     else
         return nil;
 }
