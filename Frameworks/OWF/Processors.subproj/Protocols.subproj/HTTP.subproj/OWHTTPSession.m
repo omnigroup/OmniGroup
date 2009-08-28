@@ -898,8 +898,8 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
             
             if (requestData) {
                 if (OWHTTPDebug)
-                    // TODO: Eliminate dependence on the default C string encoding, which might change to something which cannot express arbitrary sequences of bytes.
-                    NSLog(@"Tx: %@", [NSString stringWithCString:[requestData bytes] length:[requestData length]]);
+                    // TODO: Eliminate dependence on the default string encoding, which might change to something which cannot express arbitrary sequences of bytes.
+                    NSLog(@"Tx: %@", [NSString stringWithData:requestData encoding:NSUTF8StringEncoding]);
                 [socketStream beginBuffering];
                 [socketStream writeString:requestString];
                 [socketStream writeData:requestData];
