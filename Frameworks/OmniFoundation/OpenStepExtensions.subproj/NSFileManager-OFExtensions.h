@@ -57,7 +57,7 @@
 - (NSArray *) directoryContentsAtPath: (NSString *) path havingExtension: (NSString *) extension  error:(NSError **)outError;
 
 - (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
-// - (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError; // Implement if needed.
+- (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError; // Implement if needed.
 
 // File locking
 // Note: these are *not* industrial-strength robust file locks, but will do for occasional use.
