@@ -4,7 +4,7 @@ To checkout, preserving the intended case of the project (which the build script
 
 To build Debug versions of all the Omni frameworks:
 
-	cd OmniGroup
+    cd OmniGroup
     ./Scripts/Build Frameworks
 
 To build Release versions of all the Omni frameworks, instead do:
