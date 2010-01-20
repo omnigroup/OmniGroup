@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,15 +62,6 @@ RCS_ID("$Id$");
     }
 }
 
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-- (BOOL)isEqualToCString:(const char *)cString;
-{
-    if (!cString)
-	return NO;
-    return [self isEqualToString:[NSString stringWithCString:cString]];
-}
-#endif
-
 - (NSUInteger)indexOfCharacterNotRepresentableInCFEncoding:(CFStringEncoding)anEncoding;
 {
     return [self indexOfCharacterNotRepresentableInCFEncoding:anEncoding range:NSMakeRange(0, [self length])];
@@ -102,35 +93,26 @@ RCS_ID("$Id$");
 }
 
 - (NSRange)rangeOfCharactersNotRepresentableInCFEncoding:(CFStringEncoding)anEncoding
-{
-    NSUInteger firstBad;
-    CFIndex thisBad;
-    CFIndex charactersConverted;
-    NSRange testNSRange;
-    CFRange testCFRange;
-    CFIndex bufLen = 1024;
-    CFIndex usedBufLen;
-    int myLength; 
-    
-    myLength = [self length];
-    firstBad = [self indexOfCharacterNotRepresentableInCFEncoding:anEncoding];
+{    
+    NSUInteger myLength = [self length];
+    NSUInteger firstBad = [self indexOfCharacterNotRepresentableInCFEncoding:anEncoding];
     if (firstBad == NSNotFound)
         return NSMakeRange(myLength, 0);
     
+    CFRange testCFRange;
+    NSUInteger thisBad;
     for (thisBad = firstBad; thisBad < myLength; thisBad += testCFRange.length) {
         
         // there's no CoreFoundation function for this, sigh
-        testNSRange = [self rangeOfComposedCharacterSequenceAtIndex:thisBad];
+        NSRange testNSRange = [self rangeOfComposedCharacterSequenceAtIndex:thisBad];
         if (testNSRange.length == 0) {
             // We've reached the end of the string buffer
             break;
         }
         
-        testCFRange.location = thisBad;
-        testCFRange.length = testNSRange.length;
-        
-        usedBufLen = 0;
-        charactersConverted = CFStringGetBytes((CFStringRef)self, testCFRange, anEncoding, 0, FALSE, NULL, bufLen, &usedBufLen);
+        testCFRange = CFRangeMake(thisBad, testNSRange.length);
+        CFIndex usedBufLen = 0;
+        CFIndex charactersConverted = CFStringGetBytes((CFStringRef)self, testCFRange, anEncoding, 0, FALSE, NULL/*buffer*/, 0/*maxBufLen*/, &usedBufLen);
         if (charactersConverted > 0)
             break;
     };

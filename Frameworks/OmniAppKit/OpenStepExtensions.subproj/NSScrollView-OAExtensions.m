@@ -1,4 +1,4 @@
-// Copyright 1997-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,43 +71,43 @@ RCS_ID("$Id$")
     [[self documentView] scrollToEnd];
 }
 
-- (void)scrollDownByPages:(float)pagesToScroll;
+- (void)scrollDownByPages:(CGFloat)pagesToScroll;
 {
     [[self documentView] scrollDownByPages:pagesToScroll];
 }
 
-- (void)scrollDownByLines:(float)linesToScroll;
+- (void)scrollDownByLines:(CGFloat)linesToScroll;
 {
     [[self documentView] scrollDownByLines:linesToScroll];
 }
 
-- (void)scrollDownByPercentage:(float)percentage;
+- (void)scrollDownByPercentage:(CGFloat)percentage;
 {
     [[self documentView] scrollDownByPercentage:percentage];
 }
 
-- (void)scrollDownByAdjustedPixels:(float)pixels;
+- (void)scrollDownByAdjustedPixels:(CGFloat)pixels;
 {
     [[self documentView] scrollDownByAdjustedPixels:pixels];
 }
 
 
-- (void)scrollRightByPages:(float)pagesToScroll;
+- (void)scrollRightByPages:(CGFloat)pagesToScroll;
 {
     [[self documentView] scrollRightByPages:pagesToScroll];
 }
 
-- (void)scrollRightByLines:(float)linesToScroll;
+- (void)scrollRightByLines:(CGFloat)linesToScroll;
 {
     [[self documentView] scrollRightByLines:linesToScroll];
 }
 
-- (void)scrollRightByPercentage:(float)percentage;
+- (void)scrollRightByPercentage:(CGFloat)percentage;
 {
     [[self documentView] scrollRightByPercentage:percentage];
 }
 
-- (void)scrollRightByAdjustedPixels:(float)pixels;
+- (void)scrollRightByAdjustedPixels:(CGFloat)pixels;
 {
     [[self documentView] scrollRightByAdjustedPixels:pixels];
 }
@@ -132,12 +132,12 @@ RCS_ID("$Id$")
     [[self documentView] setScrollPositionAsPercentage:scrollPosition];
 }
 
-- (float)fraction;
+- (CGFloat)fraction;
 {
     return [[self documentView] fraction];
 }
 
-- (void)setFraction:(float)fraction;
+- (void)setFraction:(CGFloat)fraction;
 {
     [[self documentView] setFraction:fraction];
 }

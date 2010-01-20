@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,7 +55,7 @@ Currently the only way to create strings with deferred bytes/characters is using
 + (NSString *)abbreviatedStringForBytes:(unsigned long long)bytes;
 + (NSString *)abbreviatedStringForHertz:(unsigned long long)hz;
 + (NSString *)humanReadableStringForTimeInterval:(NSTimeInterval)timeInterval;
-+ (NSString *)spacesOfLength:(unsigned int)aLength;
++ (NSString *)spacesOfLength:(NSUInteger)aLength;
 + (NSString *)stringWithStrings:(NSString *)first, ... NS_REQUIRES_NIL_TERMINATION;
 
 - (BOOL)isPercentage;
@@ -85,34 +85,30 @@ Currently the only way to create strings with deferred bytes/characters is using
 
 - (NSString *)stringByReplacingOccurancesOfString:(NSString *)targetString withObjectsFromArray:(NSArray *)sourceArray;
 
-- (NSString *)stringBySeparatingSubstringsOfLength:(unsigned int)substringLength withString:(NSString *)separator startingFromBeginning:(BOOL)startFromBeginning;
+- (NSString *)stringBySeparatingSubstringsOfLength:(NSUInteger)substringLength withString:(NSString *)separator startingFromBeginning:(BOOL)startFromBeginning;
 
 - (NSString *)substringStartingWithString:(NSString *)startString;
 - (NSString *)substringStartingAfterString:(NSString *)startString;
-- (NSArray *)componentsSeparatedByString:(NSString *)separator maximum:(unsigned)atMost;
+- (NSArray *)componentsSeparatedByString:(NSString *)separator maximum:(NSUInteger)atMost;
 - (NSArray *)componentsSeparatedByCharactersFromSet:(NSCharacterSet *)delimiterSet;
 
-- (NSString *)stringByIndenting:(int)spaces;
-- (NSString *)stringByWordWrapping:(int)columns;
-- (NSString *)stringByIndenting:(int)spaces andWordWrapping:(int)columns;
-- (NSString *)stringByIndenting:(int)spaces andWordWrapping:(int)columns withFirstLineIndent:(int)firstLineSpaces;
+- (NSString *)stringByIndenting:(NSInteger)spaces;
+- (NSString *)stringByWordWrapping:(NSInteger)columns;
+- (NSString *)stringByIndenting:(NSInteger)spaces andWordWrapping:(NSInteger)columns;
+- (NSString *)stringByIndenting:(NSInteger)spaces andWordWrapping:(NSInteger)columns withFirstLineIndent:(NSInteger)firstLineSpaces;
 
 
-- (NSRange)findString:(NSString *)string selectedRange:(NSRange)selectedRange options:(unsigned int)options wrap:(BOOL)wrap;
+- (NSRange)findString:(NSString *)string selectedRange:(NSRange)selectedRange options:(NSStringCompareOptions)options wrap:(BOOL)wrap;
 
-- (NSRange)rangeOfCharactersAtIndex:(unsigned)pos
+- (NSRange)rangeOfCharactersAtIndex:(NSUInteger)pos
                         delimitedBy:(NSCharacterSet *)delim;
-- (NSRange)rangeOfWordContainingCharacter:(unsigned)pos;
+- (NSRange)rangeOfWordContainingCharacter:(NSUInteger)pos;
 - (NSRange)rangeOfWordsIntersectingRange:(NSRange)range;
 
-// Needs encoding and out error; don't enable until it has them
+// Can we drop this and use something in OFXMLString instead?
 #if 0
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-- (BOOL)writeToFile:(NSString *)path atomically:(BOOL)useAuxiliaryFile createDirectories:(BOOL)shouldCreateDirectories;
-#endif
-#endif
-
 - (NSString *)htmlString;
+#endif
 
 /* Regular expression encoding */
 - (NSString *)regularExpressionForLiteralString;

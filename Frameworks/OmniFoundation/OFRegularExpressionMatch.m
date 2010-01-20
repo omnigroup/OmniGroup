@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,7 +27,7 @@ RCS_ID("$Id$")
     [expression release];
     [scanner release];
     if (subExpressionMatches)
-        NSZoneFree([self zone], subExpressionMatches);
+        free(subExpressionMatches);
     [super dealloc];
 }
 
@@ -38,42 +38,34 @@ RCS_ID("$Id$")
 
 - (NSString *)matchString;
 {
-    NSString *result;
-    unsigned int location;
-
-    location = [scanner scanLocation];
+    NSUInteger location = [scanner scanLocation];
     [scanner setScanLocation:matchRange.location];
-    result = [scanner readCharacterCount:matchRange.length];
+    NSString *result = [scanner readCharacterCount:matchRange.length];
     [scanner setScanLocation:location];
     return result;
 }
 
-- (NSRange)rangeOfSubexpressionAtIndex:(unsigned int)subexpressionIndex;
+- (NSRange)rangeOfSubexpressionAtIndex:(NSUInteger)subexpressionIndex;
 {
     return subExpressionMatches[subexpressionIndex];
 }
 
-- (NSString *)subexpressionAtIndex:(unsigned int)subexpressionIndex;
+- (NSString *)subexpressionAtIndex:(NSUInteger)subexpressionIndex;
 {
-    NSString *result;
     NSRange range = subExpressionMatches[subexpressionIndex];
-    unsigned int location;
-
     if (range.location == INVALID_SUBEXPRESSION_LOCATION || range.length == INVALID_SUBEXPRESSION_LOCATION)
         return nil;
         
-    location = [scanner scanLocation];
+    NSUInteger location = [scanner scanLocation];
     [scanner setScanLocation:range.location];
-    result = [scanner readCharacterCount:range.length];
+    NSString *result = [scanner readCharacterCount:range.length];
     [scanner setScanLocation:location];
     return result;
 }
 
 - (BOOL)findNextMatch;
 {
-    BOOL result;
-    
-    result = [expression findMatch:self withScanner:scanner];
+    BOOL result = [expression findMatch:self withScanner:scanner];
 
     // discard scanner rewind mark from the new match because we already have created an earlier one for ourselves...
     if (result)
@@ -83,9 +75,7 @@ RCS_ID("$Id$")
 
 - (OFRegularExpressionMatch *)nextMatch;
 {
-    OFRegularExpressionMatch *result;
-
-    result = [[OFRegularExpressionMatch allocWithZone:[self zone]] initWithExpression:expression inScanner:scanner];
+    OFRegularExpressionMatch *result = [[OFRegularExpressionMatch allocWithZone:[self zone]] initWithExpression:expression inScanner:scanner];
 
     // discard scanner rewind mark from the new match because we already have created an earlier one for ourselves...
     if (result)
@@ -95,10 +85,9 @@ RCS_ID("$Id$")
 
 - (NSString *)description;
 {
-    NSMutableString *result;
     unsigned int subexpressionIndex, subexpressionCount;
 
-    result = [NSMutableString string];
+    NSMutableString *result = [NSMutableString string];
     subexpressionCount = [expression subexpressionCount];
     [result appendFormat:@"Match:%d-%d%c", matchRange.location, NSMaxRange(matchRange)-1, subexpressionCount ? '(' : ' '];
     for (subexpressionIndex = 0; subexpressionIndex < subexpressionCount; subexpressionIndex++) {
@@ -121,7 +110,7 @@ RCS_ID("$Id$")
     expression = [anExpression retain];
     scanner = [aScanner retain];
     if ((matchCount = [expression subexpressionCount]))
-        subExpressionMatches = NSZoneMalloc([self zone], sizeof(NSRange) * matchCount);
+        subExpressionMatches = NSAllocateCollectable(sizeof(NSRange) * matchCount, 0);
     else
         subExpressionMatches = NULL;
 

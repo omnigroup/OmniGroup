@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,8 +53,8 @@
 @end
 
 @interface OWSGMLProcessor (SubclassesOnly)
-- (BOOL)_hasOpenTagOfTypeIndex:(unsigned int)tagIndex;
-- (void)_openTagOfTypeIndex:(unsigned int)tagIndex;
-- (void)_implicitlyCloseTagAtIndex:(unsigned int)tagIndex;
-- (BOOL)_closeTagAtIndexWasImplicit:(unsigned int)tagIndex;
+- (BOOL)_hasOpenTagOfTypeIndex:(NSUInteger)tagIndex;
+- (void)_openTagOfTypeIndex:(NSUInteger)tagIndex;
+- (void)_implicitlyCloseTagAtIndex:(NSUInteger)tagIndex;
+- (BOOL)_closeTagAtIndexWasImplicit:(NSUInteger)tagIndex;
 @end

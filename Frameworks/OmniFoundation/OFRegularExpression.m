@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -77,7 +77,9 @@ static inline void writeCharacter(CompileStatus *compile, unichar character)
 {
     if (compile->stringPtr) {
         if (!compile->wroteArgument) {
-            compile->writePtr->string = compile->stringPtr - compile->stringPtrBase;
+            NSUInteger length = (compile->stringPtr - compile->stringPtrBase);
+            OBASSERT(length <= UINT32_MAX);
+            compile->writePtr->string = (uint32_t)length;
             compile->writePtr++;
             compile->wroteArgument = YES;
         }
@@ -115,10 +117,14 @@ static inline void setNextPointer(ExpressionState *scan, const ExpressionState *
     while ((temp = nextState(scan)))
         scan = temp;
     
+    ptrdiff_t nextState;
     if (scan->opCode == OpBack)
-        scan->nextState = scan - value;
+        nextState = scan - value;
     else
-        scan->nextState = value - scan;
+        nextState = value - scan;
+    
+    OBASSERT(nextState < (1<<16));
+    scan->nextState = (unsigned)nextState;
 }
 
 static inline void setNextPointerOnArgument(ExpressionState *scan, const ExpressionState *value)
@@ -129,7 +135,7 @@ static inline void setNextPointerOnArgument(ExpressionState *scan, const Express
 }
 
 
-static inline unsigned int unicodeStringLength(unichar *string)
+static inline NSUInteger unicodeStringLength(unichar *string)
 {
     unichar *ptr = string;
 
@@ -151,7 +157,7 @@ static inline unsigned int unicodeStringLength(unichar *string)
 - (BOOL)tryMatch:(OFRegularExpressionMatch *)match withScanner:(OFStringScanner *)scanner atStartOfLine:(BOOL)beginningOfLine;
 - (BOOL)nestedMatch:(OFRegularExpressionMatch *)match inState:(ExpressionState *)state withScanner:(OFStringScanner *)scanner atStartOfLine:(BOOL)beginningOfLine;
 - (BOOL)matchNextCharacterInState:(const ExpressionState *)state withScanner:(OFStringScanner *)scanner;
-- (unsigned int)repeatedlyMatchState:(const ExpressionState *)state withScanner:(OFStringScanner *)scanner;
+- (NSUInteger)repeatedlyMatchState:(const ExpressionState *)state withScanner:(OFStringScanner *)scanner;
 @end
 
 @interface OFRegularExpressionMatch (privateUsedByOFRegularExpression)
@@ -164,7 +170,6 @@ static inline unsigned int unicodeStringLength(unichar *string)
 {
     unsigned int compileFlags;
     CompileStatus status;
-    NSZone *myZone;
 
     [super init];
     if (!characters || !*characters) {
@@ -185,9 +190,8 @@ static inline unsigned int unicodeStringLength(unichar *string)
         return nil;
     }
     status.scanningString = characters;
-    myZone = [self zone];
-    program = NSZoneMalloc(myZone, sizeof(ExpressionState) * status.writeLength);
-    stringBuffer = NSZoneMalloc(myZone, sizeof(unichar) * (status.stringLength+1)); // +1 because we sometimes write an extra then undo
+    program = NSAllocateCollectable(sizeof(ExpressionState) * status.writeLength, 0);
+    stringBuffer = NSAllocateCollectable(sizeof(unichar) * (status.stringLength+1), 0); // +1 because we sometimes write an extra then undo
     subExpressionCount = 0;
     status.writePtr = program;
     status.stringPtr = status.stringPtrBase = stringBuffer;
@@ -201,10 +205,10 @@ static inline unsigned int unicodeStringLength(unichar *string)
 
 - initWithString:(NSString *)string;
 {
-    unsigned int length = [string length];
+    NSUInteger length = [string length];
     unichar *buffer = alloca(sizeof(unichar) * (length+1));
 
-    patternString = [string copyWithZone:[self zone]];
+    patternString = [string copy];
     
     [string getCharacters:buffer];
     buffer[length] = 0;
@@ -213,11 +217,11 @@ static inline unsigned int unicodeStringLength(unichar *string)
 
 - (void)dealloc;
 {
-    NSZone *myZone;
     [patternString release];
-    myZone = [self zone];
-    NSZoneFree(myZone, program);
-    NSZoneFree(myZone, stringBuffer);
+    if (program)
+        free(program);
+    if (stringBuffer)
+        free(stringBuffer);
     [super dealloc];
 }
 
@@ -236,7 +240,7 @@ static inline unsigned int unicodeStringLength(unichar *string)
     OFStringScanner *scanner;
     OFRegularExpressionMatch *result;
 
-    scanner = [[OFStringScanner allocWithZone:[self zone]] initWithString:string];
+    scanner = [[OFStringScanner alloc] initWithString:string];
     if (range.location != 0) {
         [scanner setRewindMark]; // -matchInScanner needs to be able to peek back one character to see if the scanner is at the beginning of the line
         [scanner setScanLocation:range.location];
@@ -254,7 +258,7 @@ static inline unsigned int unicodeStringLength(unichar *string)
 {
     OFRegularExpressionMatch *result;
 
-    result = [[OFRegularExpressionMatch allocWithZone:[self zone]] initWithExpression:self inScanner:scanner];
+    result = [[OFRegularExpressionMatch alloc] initWithExpression:self inScanner:scanner];
     return [result autorelease];
 }
 
@@ -281,17 +285,12 @@ static inline BOOL unicodeSubstring(unichar *substring, unichar *string)
 
 - (BOOL)hasMatchInString:(NSString *)string;
 {
-    unsigned int length;
-    BOOL isLarge;
-    unichar *buffer;
-    OFStringScanner *scanner;
-    BOOL result;
-
     /* get the string characters into a buffer */
-    length = [string length];
-    isLarge = (length > LARGE_STRING_LENGTH);
+    NSUInteger length = [string length];
+    BOOL isLarge = (length > LARGE_STRING_LENGTH);
+    unichar *buffer;
     if (isLarge)
-        buffer = NSZoneMalloc(NULL, sizeof(unichar) * (length+1));
+        buffer = malloc(sizeof(unichar) * (length+1));
     else
         buffer = alloca(sizeof(unichar) * (length+1));
     [string getCharacters:buffer];
@@ -300,14 +299,14 @@ static inline BOOL unicodeSubstring(unichar *substring, unichar *string)
     /* if this expression has a matchString and is small quickly check to see if it is in the buffer */
     if (matchString && !unicodeSubstring(matchString, buffer)) {
         if (isLarge)
-            NSZoneFree(NULL, buffer);
+            free(buffer);
         return NO;
     }
 
     /* make a string scanner and try to do a real match */
-    scanner = [[OFStringScanner alloc] init];
+    OFStringScanner *scanner = [[OFStringScanner alloc] init];
     [scanner fetchMoreDataFromCharacters:buffer length:length offset:0 freeWhenDone:isLarge];
-    result = [self findMatch:nil withScanner:scanner];
+    BOOL result = [self findMatch:nil withScanner:scanner];
     [scanner release];
     return result;
 }
@@ -671,12 +670,12 @@ static inline BOOL unicodeSubstring(unichar *substring, unichar *string)
 
         /* If this is an expensive state machine, it is worth it to find a matchString */
         if (compileFlags & FLAG_STARTSWITHSTAR) {
-            unsigned int matchLength = 0;
+            NSUInteger matchLength = 0;
             
             while (scan) {
                 if (scan->opCode == OpExactlyString) {
                     unichar *string = STRING_PARAMETER(scan);
-                    unsigned int length = unicodeStringLength(string);
+                    NSUInteger length = unicodeStringLength(string);
                     
                     if (length >= matchLength) {
                         matchLength = length;
@@ -729,7 +728,7 @@ static inline BOOL unicodeSubstring(unichar *substring, unichar *string)
         operator = state->opCode;
         if (operator == OpAnyOfString || operator == OpAnyButString || operator == OpExactlyString) {
             unichar *string = STRING_PARAMETER(state);
-            unsigned int length = unicodeStringLength(string);
+            NSUInteger length = unicodeStringLength(string);
             
             [result appendString:[NSString stringWithCharacters:string length:length]];
             state++;
@@ -811,7 +810,6 @@ static inline BOOL characterInUnicodeString(unichar character, unichar *string)
 - (BOOL)tryMatch:(OFRegularExpressionMatch *)match withScanner:(OFStringScanner *)scanner atStartOfLine:(BOOL)beginningOfLine;
 {
     NSRange *start, *end;
-    unsigned int startLocation;
     
     /* initialize match's subexpression ranges */
     if (match) {
@@ -826,7 +824,7 @@ static inline BOOL characterInUnicodeString(unichar character, unichar *string)
     
     /* save current location */
     [scanner setRewindMark];
-    startLocation = scannerScanLocation(scanner);
+    NSUInteger startLocation = scannerScanLocation(scanner);
     
     if ([self nestedMatch:match inState:program withScanner:scanner atStartOfLine:beginningOfLine]) {
         if (match) {
@@ -845,8 +843,8 @@ static inline BOOL characterInUnicodeString(unichar character, unichar *string)
 {
     unichar character, *ptr;
     ExpressionState *next;
-    unsigned int minimumMatches, matchCount;
-    unsigned int currentLocation;
+    NSUInteger minimumMatches, matchCount;
+    NSUInteger currentLocation;
 
     while (state) {
         next = nextState(state);
@@ -1012,9 +1010,9 @@ static inline BOOL characterInUnicodeString(unichar character, unichar *string)
     return NO;
 }
 
-- (unsigned int)repeatedlyMatchState:(const ExpressionState *)state withScanner:(OFStringScanner *)scanner;
+- (NSUInteger)repeatedlyMatchState:(const ExpressionState *)state withScanner:(OFStringScanner *)scanner;
 {
-    unsigned int count = 0;
+    NSUInteger count = 0;
     unichar character;
 
     switch(state->opCode) {

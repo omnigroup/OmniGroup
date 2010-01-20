@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,27 +12,12 @@
 
 RCS_ID("$Id$");
 
-@interface OAShrinkyTextField (Private)
+@interface OAShrinkyTextField (/*Private*/)
 - (void)_resetBounds;
-- (float)_widthOfString;
+- (CGFloat)_widthOfString;
 @end
 
 @implementation OAShrinkyTextField
-
-- (id)initWithFrame:(NSRect)frame;
-{
-    if ([super initWithFrame:frame] == nil)
-        return nil;
-
-    return self;
-}
-
-- (void)dealloc;
-{
-    [super dealloc];
-}
-
-// NSView subclass
 
 - (void)setFrame:(NSRect)frameRect;
 {
@@ -49,6 +34,13 @@ RCS_ID("$Id$");
     [self setNeedsDisplay:YES];
 }
 
+- (void)setObjectValue:(id)newValue;
+{
+    [super setObjectValue:(id)newValue];
+    [self _resetBounds];
+    [self setNeedsDisplay:YES];
+}
+
 - (void)setFont:(NSFont *)font;
 {
     [super setFont:font];
@@ -56,22 +48,12 @@ RCS_ID("$Id$");
     [self setNeedsDisplay:YES];
 }
 
-// NSTextField subclass
-
-
-@end
-
-@implementation OAShrinkyTextField (NotificationsDelegatesDatasources)
-@end
-
-@implementation OAShrinkyTextField (Private)
+#pragma mark Private
 
 - (void)_resetBounds;
 {
     NSRect frame = [self frame];
-    float normalStringWidth;
-
-    normalStringWidth = [self _widthOfString] + 8.0; // Mmm, magic
+    CGFloat normalStringWidth = [self _widthOfString] + 8.0f; // Mmm, magic
 
     if (normalStringWidth > NSWidth(frame))
         [self setBoundsSize:NSMakeSize(normalStringWidth, NSHeight(frame))];
@@ -79,7 +61,7 @@ RCS_ID("$Id$");
         [self setBoundsSize:frame.size];
 }
 
-- (float)_widthOfString;
+- (CGFloat)_widthOfString;
 {
     return [[self attributedStringValue] size].width;
 }

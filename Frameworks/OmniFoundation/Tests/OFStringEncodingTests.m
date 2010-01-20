@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,10 +42,10 @@ RCS_ID("$Id$");
 
 - (void)testRepeatedBytes:(unsigned char)byte results:(NSArray *)results
 {
-    int maxLength = [results count] - 1;
-    int thisLength;
+    NSUInteger maxLength = [results count];
+    NSUInteger thisLength;
 
-    for(thisLength = 0; thisLength <= maxLength; thisLength ++) {
+    for(thisLength = 0; thisLength < maxLength; thisLength ++) {
         NSMutableData *mutable = [[[NSMutableData alloc] initWithLength:thisLength] autorelease];
         if (thisLength > 0)
             memset([mutable mutableBytes], (int)byte, thisLength);
@@ -70,10 +70,10 @@ RCS_ID("$Id$");
 
 - (void)testCountingNybbles
 {
-    int maxLength = [countingNybblesEncodings count] - 1;
-    int thisLength, thisByte;
+    NSUInteger maxLength = [countingNybblesEncodings count];
+    NSUInteger thisLength, thisByte;
 
-    for(thisLength = 0; thisLength <= maxLength; thisLength ++) {
+    for(thisLength = 0; thisLength < maxLength; thisLength ++) {
         NSMutableData *mutable;
         NSData *immutable;
         NSString *encoded;
@@ -104,7 +104,7 @@ RCS_ID("$Id$");
     int trial;
 
     for(trial = 0; trial < 1000; trial ++) {
-        NSData *randomness = [NSData randomDataOfLength:(OFRandomNext() % 1050)];
+        NSData *randomness = [NSData randomDataOfLength:(OFRandomNext32() % 1050)];
         NSString *encoded;
         NSData *decoded;
         
@@ -198,7 +198,7 @@ RCS_ID("$Id$");
     [suite addTest: [self testsForEncode:@selector(ascii26String) decode:@selector(initWithASCII26String:) inf:knownResults]];
 
     [suite retain];
-    [pool release];
+    [pool drain];
     return [suite autorelease];
 }
 

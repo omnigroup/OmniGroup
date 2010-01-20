@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,8 +57,6 @@ RCS_ID("$Id$");
 
 - (void)drawRect:(NSRect)rect;
 {
-    int row, column, rowCount, columnCount;
-
     if ([[self window] firstResponder] == self) {
         [NSGraphicsContext saveGraphicsState];
         NSSetFocusRingStyle(NSFocusRingOnly);
@@ -66,15 +64,12 @@ RCS_ID("$Id$");
         [NSGraphicsContext restoreGraphicsState];
     }
 
-    rowCount = [self numberOfRows];
-    columnCount = [self numberOfColumns];
-    for(row = 0; row < rowCount; row++) {
-        for(column = 0; column < columnCount; column++) {
-            NSRect cellFrame;
-            OASwitcherBarButtonCell *cell;
-            
-            cellFrame = [self cellFrameAtRow:row column:column];
-            cell = [self cellAtRow:row column:column];
+    NSUInteger rowCount = [self numberOfRows];
+    NSUInteger columnCount = [self numberOfColumns];
+    for (NSUInteger row = 0; row < rowCount; row++) {
+        for (NSUInteger column = 0; column < columnCount; column++) {
+            NSRect cellFrame = [self cellFrameAtRow:row column:column];
+            OASwitcherBarButtonCell *cell = [self cellAtRow:row column:column];
             if (column == 0)
                 [cell setCellLocation:OASwitcherBarLeft];
             else if (column == columnCount - 1)

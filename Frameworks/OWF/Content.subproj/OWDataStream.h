@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,8 +21,8 @@
 
 typedef struct _OWDataStreamBufferDescriptor {
     OFByte *buffer;
-    unsigned int bufferSize;
-    volatile unsigned int bufferUsed;
+    size_t bufferSize;
+    volatile size_t bufferUsed;
     struct _OWDataStreamBufferDescriptor * volatile next;
 } OWDataStreamBufferDescriptor;
 
@@ -39,14 +39,14 @@ enum OWStringEncodingProvenance {
 @interface OWDataStream : OWStream
 {
     /* NSConditionLock isn't very convenient in the case where you have multiple readers */
-    /* This mutex applies to readLength, dataLength, lengthChangedInvocations, and flags.endOfData */
+    /* This mutex applies to readLength, OWDataStream.m:299, lengthChangedInvocations, and flags.endOfData */
     pthread_mutex_t lengthMutex;
     /* This condition is signaled when any of readLength, dataLength, or flags.endOfData is changed */
     pthread_cond_t lengthChangedCondition;
     
     OWDataStreamBufferDescriptor *_first, *_last;
-    unsigned int dataLength;      // total number of bytes in stream, if EOF reached or if known ahead of time
-    unsigned int readLength;      // total number of bytes written to stream (available for reading) so far
+    NSUInteger dataLength;      // total number of bytes in stream, if EOF reached or if known ahead of time
+    NSUInteger readLength;      // total number of bytes written to stream (available for reading) so far
 
     // Support for the string-writing convenience methods
     CFStringEncoding writeEncoding;
@@ -69,9 +69,9 @@ enum OWStringEncodingProvenance {
 }
 
 - init;
-- initWithLength:(unsigned int)newLength;
+- initWithLength:(NSUInteger)newLength;
 
-- (id)newCursor;
+- (id)createCursor;
     // Returns a new OWDataStreamCursor.
 
 - (void)setWriteEncoding:(CFStringEncoding)anEncoding;
@@ -87,11 +87,11 @@ enum OWStringEncodingProvenance {
 - (NSData *)bufferedData;
 - (unsigned int)bufferedDataLength;
 
-- (unsigned int)accessUnderlyingBuffer:(void **)returnedBufferPtr startingAtLocation:(unsigned int)dataOffset;
+- (NSUInteger)accessUnderlyingBuffer:(void **)returnedBufferPtr startingAtLocation:(NSUInteger)dataOffset;
     // Returns 0 if there isn't any remaining data, otherwise returns a portion of a _OWDataStreamBuffer
 
 
-- (unsigned int)dataLength;
+- (NSUInteger)dataLength;
     // May block until the stream ends if its length is not known ahead of time
 - (BOOL)knowsDataLength;
 
@@ -101,7 +101,7 @@ enum OWStringEncodingProvenance {
     // Returns nil if there isn't enough data for the range requested
 
 - (BOOL)waitForMoreData;
-- (BOOL)waitForBufferedDataLength:(unsigned int)length;
+- (BOOL)waitForBufferedDataLength:(NSUInteger)length;
     // Returns NO if the stream ends and isn't long enough.
 
 - (void)scheduleInvocationAtEOF:(OFInvocation *)anInvocation inQueue:(OFMessageQueue *)aQueue; // TODO - move this up to OWStream eventually
@@ -127,6 +127,6 @@ enum OWStringEncodingProvenance {
 
 #import <OWF/FrameworkDefines.h>
 
-OWF_EXTERN const unsigned int OWDataStreamUnknownLength;
+OWF_EXTERN const NSUInteger OWDataStreamUnknownLength;
 OWF_EXTERN NSString *OWDataStreamNoLongerValidException;
 

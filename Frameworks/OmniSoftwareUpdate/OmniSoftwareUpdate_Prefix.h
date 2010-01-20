@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 // Prefix header for all source files of the 'OmniSoftwareUpdate' target in the 'OmniSoftwareUpdate' project.
+
+#include <tgmath.h>
 
 #ifdef __OBJC__
     #import <Foundation/Foundation.h>

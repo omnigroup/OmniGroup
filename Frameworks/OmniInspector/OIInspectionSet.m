@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -167,11 +167,6 @@ static void addIfMatchesPredicateFunction(const void *value, const void *sequenc
         [self removeObject:[toRemove objectAtIndex:objectIndex]];
 }
 
-- (void)removeAllObjects;
-{
-    [self removeObjectsInArray:[self allObjects]];
-}
-
 static NSComparisonResult compareSequence(id obj1, id obj2, void *context)
 {
     Boolean exists1, exists2;
@@ -221,7 +216,7 @@ static void describeEnt(const void *k, const void *v, void *d)
     NSMutableDictionary *dict = [super debugDictionary];
 
     CFDictionaryApplyFunction(objects, describeEnt, dict);
-    [dict setIntValue:insertionSequence forKey:@"insertionSequence"];
+    [dict setIntegerValue:insertionSequence forKey:@"insertionSequence"];
     
     return dict;
 }

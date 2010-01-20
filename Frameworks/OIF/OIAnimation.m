@@ -1,4 +1,4 @@
-// Copyright 1998-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,6 +64,8 @@ static NSString *animationContentName = nil;
 
 - (void)addFrame:(OIAnimationFrame *)frame;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
     unsigned int waitingInstanceIndex, waitingInstanceCount;
     NSMutableArray *snapshotOfWaitingInstances;
 
@@ -91,10 +93,13 @@ static NSString *animationContentName = nil;
     for (waitingInstanceIndex = 0; waitingInstanceIndex < waitingInstanceCount; waitingInstanceIndex++)
         [[snapshotOfWaitingInstances objectAtIndex:waitingInstanceIndex] animationReceivedFrame:frame];
     [snapshotOfWaitingInstances release];        
+#endif
 }
 
 - (void)endFrames;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
     unsigned int waitingInstanceIndex, waitingInstanceCount;
     NSMutableArray *snapshotOfWaitingInstances = waitingInstances;
 
@@ -107,10 +112,14 @@ static NSString *animationContentName = nil;
     for (waitingInstanceIndex = 0; waitingInstanceIndex < waitingInstanceCount; waitingInstanceIndex++)
         [[snapshotOfWaitingInstances objectAtIndex:waitingInstanceIndex] animationEnded];
     [snapshotOfWaitingInstances release];
+#endif
 }
 
 - (OIImage *)animationInstance;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+    return nil;
+#if 0    
     BOOL shouldNotAnimate;
     unsigned int frameCount;
     OIImage *result = nil;
@@ -125,6 +134,7 @@ static NSString *animationContentName = nil;
     if (!result)
         result = [[[OIAnimationInstance allocWithZone:[self zone]] initWithAnimation:self] autorelease];
     return result;
+#endif
 }
 
 - (unsigned int)loopCount;
@@ -166,6 +176,9 @@ static NSString *animationContentName = nil;
 
 - (unsigned long int)cacheSize;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+    return 0;
+#if 0    
     unsigned long int total = 0;
     unsigned int index;
 
@@ -174,6 +187,7 @@ static NSString *animationContentName = nil;
         total += [[frames objectAtIndex:index] cacheSize];
 
     return total;
+#endif
 }
 
 - (BOOL)shareable;

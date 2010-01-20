@@ -1,4 +1,4 @@
-// Copyright 1998-2005,2007,2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005,2007,2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -89,7 +89,7 @@ cleanup:
                                      length:(unsigned int)prefixLength
 {
     const OFByte *inputBytes, *inputBytesPtr;
-    unsigned int inputBytesLength, outputBufferLength;
+    NSUInteger inputBytesLength, outputBufferLength;
     unichar *outputBuffer, *outputBufferEnd;
     unichar *outputBufferPtr;
     const char _tohex[] = "0123456789abcdef";
@@ -238,16 +238,12 @@ static inline void encode85(OFDataBuffer *dataBuffer, unsigned long tuple, int c
 
 - (NSString *)ascii85String;
 {
+    uint32_t count = 0, tuple = 0;
     OFDataBuffer dataBuffer;
-    const unsigned char *byte;
-    unsigned int length, count = 0, tuple = 0;
-    NSData *data;
-    NSString *string;
-    
     OFDataBufferInit(&dataBuffer);
     
-    byte = [self bytes];
-    length = [self length];
+    const uint8_t *byte = [self bytes];
+    NSUInteger length = [self length];
     
     // This is based on encode85.c.  The only major difference is that this doesn't put newlines in the file to keep the output line(s) as some maximum width.  Also, this doesn't put the '<~' at the beginning and '
     
@@ -282,8 +278,8 @@ static inline void encode85(OFDataBuffer *dataBuffer, unsigned long tuple, int c
     if (count > 0)
         encode85(&dataBuffer, tuple, count);
     
-    data = OFDataBufferData(&dataBuffer);
-    string = [NSString stringWithData:data encoding:NSASCIIStringEncoding];
+    NSData *data = OFDataBufferData(&dataBuffer);
+    NSString *string = [NSString stringWithData:data encoding:NSASCIIStringEncoding];
     OFDataBufferRelease(&dataBuffer);
     
     return string;
@@ -325,8 +321,6 @@ XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
 - initWithBase64String:(NSString *)base64String;
 {
     NSData *base64Data;
-    const char *bytes;
-    unsigned int length;
     OFDataBuffer dataBuffer, *buffer;
     NSData *decodedData;
     NSData *returnValue;
@@ -341,8 +335,8 @@ XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
     OFDataBufferInit(buffer);
     
     base64Data = [base64String dataUsingEncoding:NSASCIIStringEncoding];
-    bytes = [base64Data bytes];
-    length = [base64Data length];
+    const uint8_t *bytes = [base64Data bytes];
+    NSUInteger length = [base64Data length];
     
     while ((c1 = BASE64_GETC) != (unsigned int)EOF) {
         if (c1 != '=' && CHAR64(c1) == XX)
@@ -417,18 +411,14 @@ static inline void output64chunk(int c1, int c2, int c3, int pads, OFDataBuffer 
 
 - (NSString *)base64String;
 {
-    NSString *string;
-    NSData *data;
-    const OFByte *bytes;
-    unsigned int length;
-    OFDataBuffer dataBuffer, *buffer;
     unsigned int c1, c2, c3;
     
+    OFDataBuffer dataBuffer, *buffer;
     buffer = &dataBuffer;
     OFDataBufferInit(buffer);
     
-    bytes = [self bytes];
-    length = [self length];
+    const uint8_t *bytes = [self bytes];
+    NSUInteger length = [self length];
     
     while ((c1 = BASE64_GETC) != (unsigned int)EOF) {
         c2 = BASE64_GETC;
@@ -444,8 +434,8 @@ static inline void output64chunk(int c1, int c2, int c3, int pads, OFDataBuffer 
         }
     }
     
-    data = OFDataBufferData(&dataBuffer);
-    string = [NSString stringWithData:data encoding:NSASCIIStringEncoding];
+    NSData *data = OFDataBufferData(&dataBuffer);
+    NSString *string = [NSString stringWithData:data encoding:NSASCIIStringEncoding];
     OFDataBufferRelease(&dataBuffer);
     
     return string;
@@ -579,6 +569,11 @@ static inline void encode26(OFDataBuffer *dataBuffer, unsigned long tuple, int c
 {
     int  i, count26;
     char buf[POW4_26_COUNT], *s = buf;
+
+#ifdef __clang__
+    // The clang analyzer emits a spurious warning, in clang+llvm 2.7 (r91303) <http://llvm.org/bugs/show_bug.cgi?id=5780>
+    memset(buf, 0, sizeof(buf));
+#endif
     
     // Compute the number of base 26 digits necessary to represent
     // the number of base 256 digits we've been given.
@@ -599,16 +594,12 @@ static inline void encode26(OFDataBuffer *dataBuffer, unsigned long tuple, int c
 
 - (NSString *) ascii26String;
 {
+    unsigned int count = 0, tuple = 0;
     OFDataBuffer dataBuffer;
-    const unsigned char *byte;
-    unsigned int length, count = 0, tuple = 0;
-    NSData *data;
-    NSString *string;
-    
     OFDataBufferInit(&dataBuffer);
     
-    byte   = [self bytes];
-    length = [self length];
+    const uint8_t *byte   = [self bytes];
+    NSUInteger length = [self length];
     
     while (length--) {
         unsigned int c;
@@ -629,8 +620,8 @@ static inline void encode26(OFDataBuffer *dataBuffer, unsigned long tuple, int c
     if (count)
         encode26(&dataBuffer, tuple, count);
     
-    data = OFDataBufferData(&dataBuffer);
-    string = [NSString stringWithData:data encoding:NSASCIIStringEncoding];
+    NSData *data = OFDataBufferData(&dataBuffer);
+    NSString *string = [NSString stringWithData:data encoding:NSASCIIStringEncoding];
     OFDataBufferRelease(&dataBuffer);
     
     return string;

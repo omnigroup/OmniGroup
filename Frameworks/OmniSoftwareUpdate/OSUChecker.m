@@ -1,4 +1,4 @@
-// Copyright 2001-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,6 @@
 #import "OSUErrors.h"
 #import "OSUItem.h"
 #import "OSUSendFeedbackErrorRecovery.h"
-#import "OSUAppcastSignature.h"
 
 RCS_ID("$Id$");
 
@@ -596,43 +595,6 @@ static void OSUAtExitHandler(void)
     if (outError)
         *outError = nil;
     
-    NSString *trust = [OMNI_BUNDLE pathForResource:@"AppcastTrustRoot" ofType:@"pem"];
-    if (trust) {
-#ifdef DEBUG
-        NSLog(@"OSU: Using %@", trust);
-#endif
-        NSArray *verifiedPortions = OSUGetSignedPortionsOfAppcast(data, trust, outError);
-        if (!verifiedPortions || ![verifiedPortions count]) {
-            if (outError) {
-                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to authenticate the response from the software update server.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - we have some update information but it doesn't look authentic");
-                NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObject:description forKey:NSLocalizedDescriptionKey];
-                
-                if (!verifiedPortions) {
-                    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"There was a problem checking the signature.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - the checksum or signature didn't match - more info in underlying error")];
-                    [userInfo setObject:reason forKey:NSLocalizedFailureReasonErrorKey];
-                    [userInfo setObject:*outError forKey:NSUnderlyingErrorKey];
-                } else {
-                    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The update information is not signed.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - the update information wasn't signed at all, but we require it to be signed")];
-                    [userInfo setObject:reason forKey:NSLocalizedFailureReasonErrorKey];
-                }
-                
-                NSURL *serverURL = [operation url];
-                if (serverURL)
-                    [userInfo setObject:[serverURL absoluteString] forKey:NSErrorFailingURLStringKey];
-                
-                *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToParseSoftwareUpdateData userInfo:userInfo];
-            }
-            
-            return NO;
-        }
-        
-        if ([verifiedPortions count] != 1) {
-            NSLog(@"Warning: Update contained %u reference nodes; only using the first.", [verifiedPortions count]);
-        }
-        
-        data = [verifiedPortions objectAtIndex:0];
-    }
-    
     NSXMLDocument *document = [[[NSXMLDocument alloc] initWithData:data options:NSXMLNodeOptionsNone error:outError] autorelease];
     if (!document) {
         if (outError) {
@@ -661,7 +623,7 @@ static void OSUAtExitHandler(void)
     
     NSError *firstError = nil;
     NSMutableArray *items = [NSMutableArray array];
-    unsigned int nodeIndex = [nodes count];
+    NSUInteger nodeIndex = [nodes count];
     while (nodeIndex--) {
         NSError *itemError = nil;
         OSUItem *item = [[[OSUItem alloc] initWithRSSElement:[nodes objectAtIndex:nodeIndex] error:&itemError] autorelease];

@@ -1,15 +1,19 @@
-// Copyright 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
-// http://www.omnigroup.com/DeveloperResources/OmniSourceLicense.html.
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OFXMLSignature.h"
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
+#import <OmniFoundation/NSData-OFExtensions.h>
+#import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/NSDictionary-OFExtensions.h>
+#import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 
 #include <libxml/tree.h>
 
@@ -397,7 +401,7 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
         if (certs)
             [certBlobs addObjectsFromArray:certs];
         
-        /* The constraints in XML-DSIG [4.4.4] end up meaning that any X509Data node containing keys other than Certificate or CRL nodes must indicate keys to use for validation. It doesn't restrict us from having more than one such --- I suppose it's allowing for the possibility of multiple dictinct certificates all certifying the same key. */
+        /* The constraints in XML-DSIG [4.4.4] end up meaning that any X509Data node containing keys other than Certificate or CRL nodes must indicate keys to use for validation. It doesn't restrict us from having more than one such --- I suppose it's allowing for the possibility of multiple distinct certificates all certifying the same key. */
         
         /* Right now we only do SubjectKeyIdentifier lookups, so that we don't have to get into all the minutia of parsing DNs. */
         if ([parsedNode objectForKey:@"SKI"])
@@ -639,7 +643,7 @@ OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
      The X.509 format here is as described in RFC 2459 [7.3.3]. It boils down to:
         SEQUENCE {                
           SEQUENCE {             -- AlgorithmIdentifier [4.1.1.2]
-            OBJECT IDENTIIER,    -- specifying id-dsa
+            OBJECT IDENTIFIER,    -- specifying id-dsa
             SEQUENCE {           -- parameters
               p, q, g INTEGERs
             }

@@ -23,7 +23,7 @@
 
 RCS_ID("$Id$");
 
-@interface OSUInstaller (Private)
+@interface OSUInstaller (/*Private*/)
 
 // General
 - (NSString *)_findApplicationInDirectory:(NSString *)dir error:(NSError **)outError;
@@ -81,7 +81,8 @@ static id reportStringForCapturedOutputData(NSData *errorStreamData);
 
 - initWithPackagePath:(NSString *)newPackage
 {
-    self = [super init];
+    if (!(self = [super init]))
+        return nil;
     
     // Some default settings
     keepExistingVersion = NO;
@@ -456,9 +457,8 @@ static id reportStringForCapturedOutputData(NSData *errorStreamData);
 }
 
 
-@end
-
-@implementation OSUInstaller (Private)
+#pragma mark -
+#pragma mark Private
 
 /* This is used as the didPresent selector for error presentation / recovery */
 - (void)_retry:(BOOL)recovered context:(void *)p
@@ -474,7 +474,7 @@ static id reportStringForCapturedOutputData(NSData *errorStreamData);
     }
 }
 
-- (NSString *)_findApplicationInDirectory:(NSString *)dir error:(NSError **)outError
+- (NSString *)_findApplicationInDirectory:(NSString *)dir error:(NSError **)outError;
 {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
@@ -533,7 +533,7 @@ static id reportStringForCapturedOutputData(NSData *errorStreamData);
     
     closedir(dirhandle);
     
-    unsigned appCount = [appDirNames count];
+    NSUInteger appCount = [appDirNames count];
     
     if (appCount == 1) {
         /* Good, we found exactly one app. Return it. */
@@ -753,7 +753,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     
     // There can be multiple entries in entities; and the order isn't well defined.
     NSString *mountPoint = nil;
-    unsigned int entityIndex, entityCount = [entities count];
+    NSUInteger entityIndex, entityCount = [entities count];
     for (entityIndex = 0; entityIndex < entityCount; entityIndex++) {
         NSDictionary *entity = [entities objectAtIndex:entityIndex];
         NSString *potentialMountPoint = [entity objectForKey:@"mount-point"];
@@ -942,6 +942,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 #pragma mark -
 #pragma mark Install & Relaunch
 
+#if 0 // No longer used
 static BOOL isInGroupList(gid_t targetGID)
 {
     if (targetGID == getgid())
@@ -960,6 +961,7 @@ static BOOL isInGroupList(gid_t targetGID)
     
     return NO;
 }
+#endif
 
 static BOOL NeedsAuthentication(NSString *installationDirectory, uid_t destinationUID, gid_t destinationGID)
 {
@@ -972,11 +974,14 @@ static BOOL NeedsAuthentication(NSString *installationDirectory, uid_t destinati
         return YES;
     }
 
+#if 0  // Disabling this check: if the UID matches us, but the GID doesn't, we'll silently use our default group.
+    
     // Directories with the sticky bit set, like /Applications, can result in installed applications having one of our supplementary GIDs.
     if (!isInGroupList(destinationGID)) {
-        NSLog(@"Running user has gid %d but we want to install as group id %d.  Will perform authenticated installation.", getgid(), destinationGID);
+        NSLog(@"Running user has gid %d but we want to install as group id %d.  Will perform authenticated installation.", runningGID, path, pathGID);
         return YES;
     }
+#endif
     
     NSFileManager *manager = [NSFileManager defaultManager];
     
@@ -1030,8 +1035,6 @@ static CSIdentityRef copyCSIdentityFromPosixId(id_t posixId, CSIdentityClass ide
     return result;
 }
 
-// Try to guess what uid and gid the user expects the installed version to be owned by.
-// This is all pretty heuristic; what we mostly do is imitate the old version's ownership if it's owned by a system user, but if it's owned by a normal user, just install as us.
 static void checkInstallAsOtherUser(NSString *targetPath, uid_t *as_uid, gid_t *as_gid)
 {
     NSError *error = nil;
@@ -1054,14 +1057,6 @@ static void checkInstallAsOtherUser(NSString *targetPath, uid_t *as_uid, gid_t *
         }
         if (owner)
             CFRelease(owner);
-    } else {
-        // If it's owned by us, but by one of our supplementary group IDs, chown to the same supplementary gid when we install it.
-        // (If it's owned by us but group-ownership is some group we're not in, don't bother elevating privs to install, just install as us)
-        if (destinationUID == getuid()) {
-            if (isInGroupList(destinationGID)) {
-                *as_gid = destinationGID;
-            }
-        }
     }
 }
 
@@ -1186,7 +1181,7 @@ static BOOL PerformAuthenticatedInstall(NSString *installerPath, NSArray *instal
         return AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"Failed to created authorization.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil], nil);
     }
     
-    unsigned int argumentIndex, argumentCount = [installerArguments count];
+    NSUInteger argumentIndex, argumentCount = [installerArguments count];
     char **argumentCStrings = calloc(sizeof(*argumentCStrings), (argumentCount + 1)); // plus one for the terminating null
     for (argumentIndex = 0; argumentIndex < argumentCount; argumentIndex++)
         argumentCStrings[argumentIndex] = (char *)[[installerArguments objectAtIndex:argumentIndex] UTF8String];

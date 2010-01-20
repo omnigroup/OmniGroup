@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,12 @@
 
 RCS_ID("$Id$");
 
+/* Private methods used when converting an NSObjectSpecifier to an NSAppleEventDecriptor (10.2.+ only) */
+@interface NSScriptObjectSpecifier (NSPrivateAPI)
+- (NSAppleEventDescriptor *)_asDescriptor;
+- (BOOL)_putKeyFormAndDataInRecord:(NSAppleEventDescriptor *)aedesc;
+@end
+
 @interface NSSpecifierTest (OFFixes)
 - (NSAppleEventDescriptor *)fixed_asDescriptor;
 @end
@@ -20,12 +26,6 @@ RCS_ID("$Id$");
 
 static id (*originalObjectsByEvaluatingWithContainers)(id self, SEL cmd, id containers) = NULL;
 static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEventDescriptor *aedesc) = NULL;
-
-+ (void)performPosing
-{
-    originalObjectsByEvaluatingWithContainers = (void *)OBReplaceMethodImplementationWithSelector(self,  @selector(objectsByEvaluatingWithContainers:), @selector(replacement_objectsByEvaluatingWithContainers:));
-    originalPutKeyFormAndDataInRecord = (typeof(originalPutKeyFormAndDataInRecord))OBReplaceMethodImplementationWithSelector(self,  @selector(_putKeyFormAndDataInRecord:), @selector(replacement_putKeyFormAndDataInRecord:));
-}
 
 // Apple's code incorrectly returns nil instead of an empty array if there are no matches.
 // This is Apple bug #3935660, BugSnacker bug #19944 and #19364.
@@ -90,12 +90,12 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
     return ok;
 }
 
-@end
++ (void)performPosing
+{
+    originalObjectsByEvaluatingWithContainers = (void *)OBReplaceMethodImplementationWithSelector(self,  @selector(objectsByEvaluatingWithContainers:), @selector(replacement_objectsByEvaluatingWithContainers:));
+    originalPutKeyFormAndDataInRecord = (typeof(originalPutKeyFormAndDataInRecord))OBReplaceMethodImplementationWithSelector(self,  @selector(_putKeyFormAndDataInRecord:), @selector(replacement_putKeyFormAndDataInRecord:));
+}
 
-/* Private methods used when converting an NSObjectSpecifier to an NSAppleEventDecriptor (10.2.+ only) */
-@interface NSScriptObjectSpecifier (NSPrivateAPI)
-- (NSAppleEventDescriptor *)_asDescriptor;
-- (BOOL)_putKeyFormAndDataInRecord:(NSAppleEventDescriptor *)aedesc;
 @end
 
 @interface NSAppleEventDescriptor (JaguarAPI)
@@ -114,8 +114,12 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
     NSAppleEventDescriptor *seld, *testd, *obj2;
     OSType comparisonOp;
 
-
-    switch (_comparisonOperator) {
+    // Radar 6964125: NSSpecifierTest needs accessors
+    NSScriptObjectSpecifier *objectSpecifier = [self valueForKey:@"object1"];
+    id testObject = [self valueForKey:@"object2"];
+    NSTestComparisonOperation comparisonOperator = [[self valueForKey:@"comparisonOperator"] intValue];
+    
+    switch (comparisonOperator) {
         case NSEqualToComparison: comparisonOp = kAEEquals; break;
         case NSLessThanOrEqualToComparison: comparisonOp = kAELessThanEquals; break;
         case NSLessThanComparison: comparisonOp = kAELessThan; break;
@@ -128,19 +132,19 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
             return nil;
     }
 
-    /* Half-assed conversion of _object2 into an AEDesc */
-    if ([_object2 respondsToSelector:@selector(_asDescriptor)])
-        obj2 = [_object2 _asDescriptor];
-    else if ([_object2 isKindOfClass:[NSNumber class]])
-        obj2 = [NSAppleEventDescriptor descriptorWithInt32:[_object2 intValue]];
-    else if ([_object2 isKindOfClass:[NSString class]])
-        obj2 = [NSAppleEventDescriptor descriptorWithString:_object2];
+    /* Half-assed conversion of testObject into an AEDesc */
+    if ([testObject respondsToSelector:@selector(_asDescriptor)])
+        obj2 = [testObject _asDescriptor];
+    else if ([testObject isKindOfClass:[NSNumber class]])
+        obj2 = [NSAppleEventDescriptor descriptorWithInt32:[testObject intValue]];
+    else if ([testObject isKindOfClass:[NSString class]])
+        obj2 = [NSAppleEventDescriptor descriptorWithString:testObject];
     else
         return nil;
-
+    
     testd = [[NSAppleEventDescriptor alloc] initRecordDescriptor];
     [testd setDescriptor:[NSAppleEventDescriptor descriptorWithEnumCode:comparisonOp] forKeyword:keyAECompOperator];
-    [testd setDescriptor:[_object1 _asDescriptor] forKeyword:keyAEObject1];
+    [testd setDescriptor:[objectSpecifier _asDescriptor] forKeyword:keyAEObject1];
     [testd setDescriptor:obj2 forKeyword:keyAEObject2];
 
     seld = [testd coerceToDescriptorType:typeCompDescriptor];

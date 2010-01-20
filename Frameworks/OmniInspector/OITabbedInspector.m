@@ -1,4 +1,4 @@
-// Copyright 2005-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@
 
 RCS_ID("$Id$")
 
-@interface OITabbedInspector (Private)
+@interface OITabbedInspector (/*Private*/)
 - (OIInspectorTabController *)_tabWithIdentifier:(NSString *)identifier;
 - (void)_updateDimmedForTab:(OIInspectorTabController *)tab;
 - (void)_updateSubInspectorObjects;
@@ -121,8 +121,8 @@ RCS_ID("$Id$")
     
     NSString *windowTitle = prefix;
     
-    unsigned int tabIndex, tabCount = [_tabControllers count];
-    for(tabIndex = 0; tabIndex < tabCount; tabIndex++) {
+    NSUInteger tabIndex, tabCount = [_tabControllers count];
+    for (tabIndex = 0; tabIndex < tabCount; tabIndex++) {
 	OITabCell *cell = [cells objectAtIndex:tabIndex];
 	if ([cell state]) {
 	    if ([cell duringMouseDown])
@@ -162,10 +162,9 @@ RCS_ID("$Id$")
     NSMutableAttributedString *windowTitleAttributedstring = [[NSMutableAttributedString alloc] init];
     [windowTitleAttributedstring replaceCharactersInRange:NSMakeRange(0, [[windowTitleAttributedstring string] length]) withString:windowTitle];
     if (duringMouseDown) {
-        int partial = [prefix length];
+        NSUInteger partial = [prefix length];
         [windowTitleAttributedstring setAttributes:textAttributes range:NSMakeRange(0, partial)];
-	// Apparently NSFont's +systemFontOfSize: does not have an italic variant.  So I'm just using Lucida Sans.  +userFontOfSize: is not a good option because the userFont can be changed for other reasons by apps.
-        NSDictionary *italicAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[[NSFontManager sharedFontManager] convertFont:[NSFont systemFontOfSize:[NSFont labelFontSize]] toFamily:@"Helvetica"] toHaveTrait:NSItalicFontMask], NSFontAttributeName, nil];
+        NSDictionary *italicAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[NSFont userFontOfSize:[NSFont labelFontSize]] toHaveTrait:NSItalicFontMask], NSFontAttributeName, nil];
         [windowTitleAttributedstring setAttributes:italicAttributes range:NSMakeRange(partial, [[windowTitleAttributedstring string] length] - partial)];
     } else {
         [windowTitleAttributedstring setAttributes:textAttributes range:NSMakeRange(0, [[windowTitleAttributedstring string] length])];
@@ -180,9 +179,7 @@ RCS_ID("$Id$")
     NSMutableArray *selectedIdentifiers = [NSMutableArray array];
     NSMutableArray *pinnedIdentifiers = [NSMutableArray array];
     
-    unsigned int tabIndex, tabCount = [_tabControllers count];
-    for(tabIndex = 0; tabIndex < tabCount; tabIndex++) {
-        OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
+    for (OIInspectorTabController *tab in _tabControllers) {
         id tabIdentifier = [tab identifier];
         [tab loadConfiguration:[config objectForKey:tabIdentifier]];
         
@@ -200,7 +197,7 @@ RCS_ID("$Id$")
     }
     
     // If we are starting with a fresh configuration, we might not have anything selected in a radio-style inspector.
-    if ([selectedIdentifiers count] == 0 && _singleSelection && tabCount > 0)
+    if ([selectedIdentifiers count] == 0 && _singleSelection && [_tabControllers count] > 0)
         selectedIdentifiers = [NSArray arrayWithObject:[[_tabControllers objectAtIndex:0] identifier]];
     
     [self setSelectedTabIdentifiers:selectedIdentifiers pinnedTabIdentifiers:pinnedIdentifiers];
@@ -221,9 +218,7 @@ RCS_ID("$Id$")
 - (NSDictionary *)configuration;
 {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    unsigned int tabIndex, tabCount = [_tabControllers count];
-    for(tabIndex = 0; tabIndex < tabCount; tabIndex++) {
-	OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
+    for (OIInspectorTabController *tab in _tabControllers) {
 	NSDictionary *config = [tab copyConfiguration];
         [dict setObject:config forKey:[tab identifier]];
 	[config release];
@@ -251,10 +246,7 @@ RCS_ID("$Id$")
     OBASSERT([pinnedIdentifiersSet isSubsetOfSet:selectedIdentifiersSet]);
     
     BOOL needsLayout = NO;
-    unsigned int tabIndex = [_tabControllers count];
-    while (tabIndex--) {
-        OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
-        
+    for (OIInspectorTabController *tab in _tabControllers) {
         id tabIdentifier = [tab identifier];
         OIVisibilityState visibilityState;
         if ([pinnedIdentifiersSet member:tabIdentifier]) {
@@ -301,9 +293,7 @@ RCS_ID("$Id$")
 {
     NSMutableArray *identifiers = [NSMutableArray array];
     
-    unsigned int tabIndex = [_tabControllers count];
-    while(tabIndex--) {
-	OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
+    for (OIInspectorTabController *tab in _tabControllers) {
 	if ([tab isVisible])
 	    [identifiers addObject:[tab identifier]];
     }
@@ -313,9 +303,7 @@ RCS_ID("$Id$")
 - (NSArray *)pinnedTabIdentifiers;
 {
     NSMutableArray *identifiers = [NSMutableArray array];
-    unsigned int tabIndex, tabCount = [_tabControllers count];
-    for (tabIndex = 0; tabIndex < tabCount; tabIndex++) {
-        OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
+    for (OIInspectorTabController *tab in _tabControllers) {
         if ([tab isPinned]) {
             [identifiers addObject:[tab identifier]];
         }
@@ -323,9 +311,9 @@ RCS_ID("$Id$")
     return identifiers;
 }
 
-- (float)additionalHeaderHeight;
+- (CGFloat)additionalHeaderHeight;
 {
-    float extraHeightBecauseTheDividerIsNotThere = 0;
+    CGFloat extraHeightBecauseTheDividerIsNotThere = 0;
 #ifdef OITabbedInspectorUnifiedLookDefaultsKey
     if ([[NSUserDefaults standardUserDefaults] boolForKey:OITabbedInspectorUnifiedLookDefaultsKey]) {
         extraHeightBecauseTheDividerIsNotThere = 1;
@@ -346,13 +334,10 @@ RCS_ID("$Id$")
 {
     NSArray *selectedCells = [sender selectedCells];
     NSSet *pinnedCellsSet = [NSSet setWithArray:[sender pinnedCells]];
-    int count = [selectedCells count];
     NSMutableArray *selectedIdentifiers = [NSMutableArray array];
     NSMutableArray *pinnedIdentifiers = [NSMutableArray array];
 
-    int i;
-    for(i=0;i<count;i++) {
-        NSCell *cell = [selectedCells objectAtIndex:i];
+    for (NSCell *cell in selectedCells) {
         OIInspectorTabController *tab = [cell representedObject];
         [selectedIdentifiers addObject:[tab identifier]];
         if ([pinnedCellsSet member:cell]) {
@@ -401,10 +386,7 @@ RCS_ID("$Id$")
     NSMutableArray *tabControllers = [[NSMutableArray alloc] init];
     
     // Read our sub-inspectors from the plist
-    NSArray *tabPlists = [dict objectForKey:@"tabs"];
-    unsigned int tabIndex, tabCount = [tabPlists count];
-    for (tabIndex = 0; tabIndex < tabCount; tabIndex++) {
-	NSDictionary *tabPlist = [tabPlists objectAtIndex:tabIndex];
+    for (NSDictionary *tabPlist in [dict objectForKey:@"tabs"]) {
 	OIInspectorTabController *tabController = [[OIInspectorTabController alloc] initWithInspectorDictionary:tabPlist containingInspector:self bundle:sourceBundle];
 	if (!tabController)
 	    continue;
@@ -454,9 +436,7 @@ RCS_ID("$Id$")
         [menuItems addObject:headerItem];
     }
     
-    unsigned int tabIndex, tabCount = [_tabControllers count];
-    for (tabIndex = 0; tabIndex < tabCount; tabIndex++) {
-	OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
+    for (OIInspectorTabController *tab in _tabControllers) {
 	NSMenuItem *item = [tab menuItemForTarget:self action:@selector(switchToInspector:)];
 	[item setRepresentedObject:tab];
         if (!hasSingleInspector)
@@ -534,20 +514,14 @@ RCS_ID("$Id$")
     return YES;
 }
 
-@end
-
 #pragma mark -
-
-@implementation OITabbedInspector (Private)
+#pragma mark Private
 
 - (OIInspectorTabController *)_tabWithIdentifier:(NSString *)identifier;
 {
-    unsigned int tabIndex = [_tabControllers count];
-    while (tabIndex--) {
-	OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
+    for (OIInspectorTabController *tab in _tabControllers)
         if (OFISEQUAL(identifier, [[tab inspector] identifier]))
             return tab;
-    }
     return nil;
 }
 
@@ -555,7 +529,7 @@ RCS_ID("$Id$")
 {
     BOOL shouldDim = [tab shouldBeDimmed];
     
-    unsigned int tabIndex = [_tabControllers indexOfObject:tab];
+    NSUInteger tabIndex = [_tabControllers indexOfObject:tab];
     OBASSERT(tabIndex != NSNotFound);
     
     OITabCell *cell = [buttonMatrix cellAtRow:0 column:tabIndex];
@@ -567,9 +541,7 @@ RCS_ID("$Id$")
 
 - (void)_updateSubInspectorObjects;
 {
-    unsigned int tabIndex = [_tabControllers count];
-    while (tabIndex--) {
-	OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
+    for (OIInspectorTabController *tab in _tabControllers) {
 	[tab inspectObjects:_shouldInspectNothing];
 	[self _updateDimmedForTab:tab];
     }
@@ -579,7 +551,7 @@ RCS_ID("$Id$")
 {
     OBPRECONDITION(buttonMatrix);
 
-    unsigned int tabIndex = [_tabControllers count];
+    NSUInteger tabIndex = [_tabControllers count];
     
     [buttonMatrix renewRows:1 columns:tabIndex];
     [buttonMatrix sizeToCells];
@@ -598,27 +570,22 @@ RCS_ID("$Id$")
 
 - (void)_updateTrackingRects;
 {
-    int count = [_trackingRectTags count];
-    while(count--) {
-        [buttonMatrix removeTrackingRect:[[_trackingRectTags objectAtIndex:count] intValue]];
-    }
+    for (NSNumber *rectTag in _trackingRectTags)
+        [buttonMatrix removeTrackingRect:[rectTag integerValue]];
+
     [_trackingRectTags removeAllObjects];
-    count = [_tabControllers count];
-    int i;
-    for(i=0;i<count;i++) {
+    
+    NSUInteger i, count = [_tabControllers count];
+    for (i=0;i<count;i++) {
         NSRect rect = [buttonMatrix cellFrameAtRow:0 column:i];
-        int tag = [buttonMatrix addTrackingRect:rect owner:self userData:nil assumeInside:NO];
-        [_trackingRectTags addObject:[NSNumber numberWithInt:tag]];
+        NSInteger tag = [buttonMatrix addTrackingRect:rect owner:self userData:nil assumeInside:NO];
+        [_trackingRectTags addObject:[NSNumber numberWithInteger:tag]];
     }
 }
 
 - (void)_tabTitleDidChange:(NSNotification *)notification;
 {
-    NSArray *cells = [buttonMatrix cells];
-    int count = [cells count];
-    int i;
-    for(i=0;i<count;i++) {
-        OITabCell *cell = [cells objectAtIndex:i];
+    for (OITabCell *cell in [buttonMatrix cells]) {
         if (cell == [notification object]) {
             [_nonretained_inspectorController updateTitle];
             break;
@@ -633,12 +600,9 @@ RCS_ID("$Id$")
     
     NSSize size = NSMakeSize([contentView frame].size.width, 0);
     
-    unsigned int tabIndex, tabCount = [_tabControllers count];
-    unsigned int selectedTabCount = 0;
-    
-    for (tabIndex = 0; tabIndex < tabCount; tabIndex++) {
-	OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
+    NSUInteger selectedTabCount = 0;
 
+    for (OIInspectorTabController *tab in _tabControllers) {
 	if (![tab isVisible]) {
 	    if ([tab hasLoadedView]) { // hack to avoid asking for the view before it's needed; don't want to load the nib just to hide it
 		[[tab inspectorView] removeFromSuperview];
@@ -665,7 +629,7 @@ RCS_ID("$Id$")
         NSRect viewFrame = [view frame];
 	OBASSERT(viewFrame.size.width <= size.width); // make sure it'll fit
 	
-        viewFrame.origin.x = floor((size.width - viewFrame.size.width) / 2.0);
+        viewFrame.origin.x = (CGFloat)floor((size.width - viewFrame.size.width) / 2.0);
         viewFrame.origin.y = size.height;
         viewFrame.size = [view frame].size;
         [view setFrame:viewFrame];
@@ -706,7 +670,7 @@ RCS_ID("$Id$")
     [buttonMatrix deselectAllCells];
 
     NSArray *matrixCells = [buttonMatrix cells];
-    unsigned int tabIndex, tabCount = [_tabControllers count];
+    NSUInteger tabIndex, tabCount = [_tabControllers count];
     for (tabIndex = 0; tabIndex < tabCount; tabIndex++) {
         OIInspectorTabController *tabController = [_tabControllers objectAtIndex:tabIndex];
 	if ([tabController isVisible])

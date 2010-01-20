@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@
 + (OAInternetConfig *)internetConfig;
 
 // Returns the CFBundleSignature of the main bundle. This method isn't InternetConfig-specific, really...
-+ (unsigned long)applicationSignature;
++ (FourCharCode)applicationSignature;
 
 // Extracts the user's iTools account name from InternetConfig.
 - (NSString *)iToolsAccountName:(NSError **)outError;
@@ -30,15 +30,8 @@
 // Helper applications for URLs
 
 - (NSString *)helperApplicationForScheme:(NSString *)scheme;
-- (BOOL)setApplicationCreatorCode:(long)applicationCreatorCode name:(NSString *)applicationName forScheme:(NSString *)scheme error:(NSError **)outError;
+- (BOOL)setApplicationCreatorCode:(FourCharCode)applicationCreatorCode name:(NSString *)applicationName forScheme:(NSString *)scheme error:(NSError **)outError;
 - (BOOL)launchURL:(NSString *)urlString error:(NSError **)outError;
-
-// Download folder
-
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5  // Uses API deprecated on 10.5
-// You should probably use NSSearchPathForDirectoriesInDomains(...NSDownloadsDirectory...) instead
-- (NSString *)downloadFolderPath:(NSError **)outError OB_DEPRECATED_ATTRIBUTE;
-#endif
 
 // Mappings between type/creator codes and filename extensions
 

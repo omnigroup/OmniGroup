@@ -1,4 +1,4 @@
-// Copyright 1999-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -160,7 +160,7 @@ RCS_ID("$Id$")
     if (!shortDisplayName) {
         NSRange useableRange;
         NSString *implicitSuffix, *implicitPrefix;
-        unsigned int implicitPrefixLength;
+        NSUInteger implicitPrefixLength;
         
         implicitSuffix = NSLocalizedStringFromTableInBundle(@".com", @"OWF", [OWNetLocation bundle], @"netlocation string to remove from addresses when displaying them in short form");
         implicitPrefix = @"www.";

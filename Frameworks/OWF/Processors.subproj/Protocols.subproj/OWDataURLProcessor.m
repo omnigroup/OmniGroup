@@ -1,4 +1,4 @@
-// Copyright 2000-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,6 +38,9 @@ static inline unichar hexDigit(unichar digit)
 
 NSData *decodeURLEscapedBytes(NSString *input)
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSData *result;
     unichar *characters;
     unsigned char *bytes;
@@ -72,12 +75,13 @@ NSData *decodeURLEscapedBytes(NSString *input)
     NSZoneFree(NULL, bytes);
     
     return result;
+#endif
 }
 
 
 + (void)didLoad;
 {
-    [self registerProcessorClass:self fromContentType:[OWURL contentTypeForScheme:@"data"] toContentType:[OWContentType wildcardContentType] cost:1.0 producingSource:YES];
+    [self registerProcessorClass:self fromContentType:[OWURL contentTypeForScheme:@"data"] toContentType:[OWContentType wildcardContentType] cost:1.0f producingSource:YES];
 }
 
 
@@ -88,6 +92,8 @@ NSData *decodeURLEscapedBytes(NSString *input)
 
 - (void)process
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     NSString *dataString = [[sourceAddress url] schemeSpecificPart];
     NSRange comma;
     NSString *headersString;
@@ -104,7 +110,7 @@ NSData *decodeURLEscapedBytes(NSString *input)
     comma = [dataString rangeOfString:@","];
     
     if (comma.length < 1) {
-        [NSException raise:@"MalformedURL" format:NSLocalizedStringFromTableInBundle(@"data: URL does not contain comma", @"OWF", [OWDataURLProcessor bundle], @"data: url error")];
+        [NSException raise:@"MalformedURL" reason:NSLocalizedStringFromTableInBundle(@"data: URL does not contain comma", @"OWF", [OWDataURLProcessor bundle], @"data: url error")];
     }
     
     header = [OWContentType contentTypeForString:@"text/plain"];
@@ -130,7 +136,7 @@ NSData *decodeURLEscapedBytes(NSString *input)
             NSRange equals = [part rangeOfString:@"="];
             NSString *parameter, *value;
             if (equals.length == 0) {
-                [NSException raise:@"MalformedURL" format:NSLocalizedStringFromTableInBundle(@"data: URL parameter has no value", @"OWF", [OWDataURLProcessor bundle], @"data: url error")];
+                [NSException raise:@"MalformedURL" reason:NSLocalizedStringFromTableInBundle(@"data: URL parameter has no value", @"OWF", [OWDataURLProcessor bundle], @"data: url error")];
             }
             parameter = [part substringToIndex:equals.location];
             value = [NSString decodeURLString:[part substringFromIndex:NSMaxRange(equals)]];
@@ -152,6 +158,7 @@ NSData *decodeURLEscapedBytes(NSString *input)
     [content dataEnd];
 
     nContent = [OWContent contentWithDataStream:content isSource:YES];
+    [content release];
     if (fullHeader)
         [nContent setFullContentType:fullHeader];
     else
@@ -161,6 +168,7 @@ NSData *decodeURLEscapedBytes(NSString *input)
     [pipeline addContent:nContent
            fromProcessor:self
                    flags:OWProcessorContentNoDiskCache|OWProcessorContentIsSource|OWProcessorTypeDerived];
+#endif
 }
     
 @end

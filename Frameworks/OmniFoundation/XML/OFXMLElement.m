@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,11 +63,9 @@ RCS_ID("$Id$");
     if (_attributes != nil)
         newElement->_attributes = [_attributes mutableCopy];	// don't need a deep copy because all the attributes are non-mutable strings, but we don need a unique copy of the attributes dictionary
 
-    unsigned int childIndex, childCount = [_children count];
-    for (childIndex = 0; childIndex < childCount; childIndex++) {
+    for (id child in _children) {
         BOOL copied = NO;
 
-        id child = [_children objectAtIndex:childIndex];
         if ([child isKindOfClass:[OFXMLElement class]]) {
             child = [child deepCopy];
             copied = YES;
@@ -90,27 +88,27 @@ RCS_ID("$Id$");
     return _children;
 }
 
-- (unsigned int)childrenCount;
+- (NSUInteger)childrenCount;
 {
     return [_children count];
 }
 
-- (id) childAtIndex: (NSUInteger) childIndex;
+- (id)childAtIndex:(NSUInteger)childIndex;
 {
     return [_children objectAtIndex: childIndex];
 }
 
-- (id) lastChild;
+- (id)lastChild;
 {
     return [_children lastObject];
 }
 
-- (unsigned int)indexOfChildIdenticalTo:(id)child;
+- (NSUInteger)indexOfChildIdenticalTo:(id)child;
 {
     return [_children indexOfObjectIdenticalTo:child];
 }
 
-- (void)insertChild:(id)child atIndex:(unsigned int)childIndex;
+- (void)insertChild:(id)child atIndex:(NSUInteger)childIndex;
 {
     if (!_children) {
         OBASSERT(childIndex == 0); // Else, certain doom
@@ -129,16 +127,16 @@ RCS_ID("$Id$");
     CFArrayAppendValue((CFMutableArrayRef)_children, child);
 }
 
-- (void) removeChild: (id) child;
+- (void)removeChild:(id)child;
 {
-    OBPRECONDITION([child isKindOfClass: [NSString class]] || [child isKindOfClass: [OFXMLElement class]]);
+    OBPRECONDITION([child isKindOfClass:[NSString class]] || [child isKindOfClass:[OFXMLElement class]]);
 
-    [_children removeObjectIdenticalTo: child];
+    [_children removeObjectIdenticalTo:child];
 }
 
-- (void) removeChildAtIndex: (unsigned int) childIndex;
+- (void)removeChildAtIndex:(NSUInteger)childIndex;
 {
-    [_children removeObjectAtIndex: childIndex];
+    [_children removeObjectAtIndex:childIndex];
 }
 
 - (void)removeAllChildren;
@@ -150,9 +148,8 @@ RCS_ID("$Id$");
 {
 #ifdef OMNI_ASSERTIONS_ON
     {
-        unsigned int childIndex = [children count];
-        while (childIndex--)
-            OBPRECONDITION([[children objectAtIndex:childIndex] respondsToSelector:@selector(appendXML:withParentWhiteSpaceBehavior:document:level:error:)]);
+        for (id child in children)
+            OBPRECONDITION([child respondsToSelector:@selector(appendXML:withParentWhiteSpaceBehavior:document:level:error:)]);
     }
 #endif
 
@@ -170,9 +167,7 @@ RCS_ID("$Id$");
 // TODO: Really need a common superclass for OFXMLElement and OFXMLFrozenElement
 - (OFXMLElement *)firstChildNamed:(NSString *)childName;
 {
-    unsigned int childIndex, childCount = [_children count];
-    for (childIndex = 0; childIndex < childCount; childIndex++) {
-        id child = [_children objectAtIndex:childIndex];
+    for (id child in _children) {
         if ([child respondsToSelector:@selector(name)]) {
             NSString *name = [child name];
             if ([name isEqualToString:childName])
@@ -190,11 +185,10 @@ RCS_ID("$Id$");
     
     // Not terribly efficient.  Might use CF later to avoid autoreleases at least.
     NSArray *pathComponents = [path componentsSeparatedByString:@"/"];
-    unsigned int pathIndex, pathCount = [pathComponents count];
 
     OFXMLElement *currentElement = self;
-    for (pathIndex = 0; pathIndex < pathCount; pathIndex++)
-        currentElement = [currentElement firstChildNamed:[pathComponents objectAtIndex:pathIndex]];
+    for (NSString *pathElement in pathComponents)
+        currentElement = [currentElement firstChildNamed:pathElement];
     return currentElement;
 }
 
@@ -204,9 +198,7 @@ RCS_ID("$Id$");
     OBPRECONDITION(attributeName);
     OBPRECONDITION(value); // Can't look for unset attributes for now.
     
-    unsigned int childIndex, childCount = [_children count];
-    for (childIndex = 0; childIndex < childCount; childIndex++) {
-        id child = [_children objectAtIndex:childIndex];
+    for (id child in _children) {
         if ([child respondsToSelector:@selector(attributeNamed:)]) {
             NSString *attributeValue = [child attributeNamed:attributeName];
             if ([value isEqualToString:attributeValue])
@@ -217,17 +209,17 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- (NSArray *) attributeNames;
+- (NSArray *)attributeNames;
 {
     return _attributeOrder;
 }
 
-- (NSString *) attributeNamed: (NSString *) name;
+- (NSString *)attributeNamed:(NSString *)name;
 {
     return [_attributes objectForKey: name];
 }
 
-- (void) setAttribute: (NSString *) name string: (NSString *) value;
+- (void)setAttribute:(NSString *)name string:(NSString *)value;
 {
     if (!_attributeOrder) {
         OBASSERT(!_attributes);
@@ -268,6 +260,18 @@ RCS_ID("$Id$");
 }
 
 - (void) setAttribute: (NSString *) name real: (float) value format: (NSString *) formatString;
+{
+    NSString *str = [[NSString alloc] initWithFormat: formatString, value];
+    [self setAttribute: name string: str];
+    [str release];
+}
+
+- (void)setAttribute: (NSString *) name double: (double) value;  // "%g"
+{
+    [self setAttribute: name double: value format: @"%g"];
+}
+
+- (void)setAttribute: (NSString *) name double: (double) value format: (NSString *) formatString;
 {
     NSString *str = [[NSString alloc] initWithFormat: formatString, value];
     [self setAttribute: name string: str];
@@ -316,6 +320,19 @@ RCS_ID("$Id$");
 }
 
 - (OFXMLElement *)appendElement:(NSString *)elementName containingReal:(float)contents format:(NSString *)formatString;
+{
+    NSString *str = [[NSString alloc] initWithFormat: formatString, contents];
+    OFXMLElement *child = [self appendElement: elementName containingString: str];
+    [str release];
+    return child;
+}
+
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double)contents; // "%g"
+{
+    return [self appendElement: elementName containingDouble: contents format: @"%g"];
+}
+
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents format:(NSString *) formatString;
 {
     NSString *str = [[NSString alloc] initWithFormat: formatString, contents];
     OFXMLElement *child = [self appendElement: elementName containingString: str];
@@ -373,9 +390,7 @@ RCS_ID("$Id$");
     // We are an element
     applier(self, context);
     
-    unsigned int childIndex, childCount = [_children count];
-    for (childIndex = 0; childIndex < childCount; childIndex++) {
-	id child = [_children objectAtIndex:childIndex];
+    for (id child in _children) {
 	if ([child respondsToSelector:_cmd])
 	    [(OFXMLElement *)child applyFunction:applier context:context];
     }
@@ -388,8 +403,9 @@ RCS_ID("$Id$");
     
     NSError *error = nil;
     OFXMLDocument *doc = [[OFXMLDocument alloc] initWithRootElement:self dtdSystemID:NULL dtdPublicID:nil whitespaceBehavior:whitespace stringEncoding:kCFStringEncodingUTF8 error:&error];
-    if (!doc)
+    if (!doc) {
         OBASSERT_NOT_REACHED("We always pass the same input parameters, so this should never error out");
+    }
     
     [whitespace release];
     
@@ -419,9 +435,8 @@ RCS_ID("$Id$");
     if (_attributeOrder) {
         // Quote the attribute values
         CFStringEncoding encoding = [doc stringEncoding];
-        unsigned int attributeIndex, attributeCount = [_attributeOrder count];
-        for (attributeIndex = 0; attributeIndex < attributeCount; attributeIndex++) {
-            NSString *name = [_attributeOrder objectAtIndex:attributeIndex];
+        
+        for (NSString *name in _attributeOrder) {
             NSString *value = [_attributes objectForKey:name];
 
             OBASSERT(value); // If we write out <element key>, libxml will hate us. This shouldn't happen, but it has once.
@@ -445,9 +460,7 @@ RCS_ID("$Id$");
     BOOL doIntenting = NO;
     
     // See if any of our children are non-ignored and use this for isEmpty instead of the plain count
-    unsigned int childIndex, childCount = [_children count];
-    for (childIndex = 0; childIndex < childCount; childIndex++) {
-        id child = [_children objectAtIndex:childIndex];
+    for (id child in _children) {
         if ([child respondsToSelector:@selector(shouldIgnore)] && [child shouldIgnore])
             continue;
         

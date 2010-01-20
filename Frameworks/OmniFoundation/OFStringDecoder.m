@@ -1,4 +1,4 @@
-// Copyright 2000-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,8 +10,6 @@
 #import <CoreFoundation/CFCharacterSet.h>
 
 #include <pthread.h>
-
-//#define OSX_10_1_KLUDGE
 
 RCS_ID("$Id$")
 
@@ -103,7 +101,7 @@ static const unichar cp1252UpperRegionMap[0x20] =
         case kCFStringEncodingMacRomanLatin1: \
         case kCFStringEncodingKOI8_R:
 
-static struct OFCharacterScanResult OFScanUTF8CharactersIntoBuffer(struct OFStringDecoderState state, const unsigned char *in_bytes, unsigned int in_bytes_count, unichar *out_characters, unsigned int out_characters_max)
+static struct OFCharacterScanResult OFScanUTF8CharactersIntoBuffer(struct OFStringDecoderState state, const unsigned char *in_bytes, NSUInteger in_bytes_count, unichar *out_characters, NSUInteger out_characters_max)
 {
     const unsigned char *in_bytes_orig = in_bytes;
     const unsigned char *in_bytes_end = in_bytes + in_bytes_count;
@@ -228,25 +226,25 @@ unsigned int OFByteForDeferredDecodedCharacter(unichar uchar)
 }
 
 
-struct OFCharacterScanResult OFScanCharactersIntoBuffer(struct OFStringDecoderState state, const unsigned char *in_bytes, unsigned int in_bytes_count, unichar *out_characters, unsigned int out_characters_max)
+struct OFCharacterScanResult OFScanCharactersIntoBuffer(struct OFStringDecoderState state, const unsigned char *in_bytes, NSUInteger in_bytes_count, unichar *out_characters, NSUInteger out_characters_max)
 {
     
     /* Optimizations for NSASCIIStringEncoding, NSISOLatin1StringEncoding, and NSWindowsCP1252StringEncoding */
 
 #define SINGLE_BYTE_MAPPING(transform) \
-    {                                                                           \
-        unsigned int toScan = MIN(in_bytes_count, out_characters_max);          \
-        struct OFCharacterScanResult result;                                    \
-        result.state = state;                                                   \
-        result.bytesConsumed = result.charactersProduced = toScan;              \
-        in_bytes += toScan;                                                     \
-        out_characters += toScan;                                               \
-        while (toScan > 0) {                                                    \
-            unsigned char aCharacter = *--in_bytes;                             \
-            toScan --;                                                          \
-            *--out_characters = (transform);                                    \
-        }                                                                       \
-        return result;                                                          \
+    { \
+        NSUInteger toScan = MIN(in_bytes_count, out_characters_max); \
+        struct OFCharacterScanResult result; \
+        result.state = state; \
+        result.bytesConsumed = result.charactersProduced = toScan; \
+        in_bytes += toScan; \
+        out_characters += toScan; \
+        while (toScan > 0) { \
+            unsigned char aCharacter = *--in_bytes; \
+            toScan --; \
+            *--out_characters = (transform); \
+        } \
+        return result; \
     }
     
     
@@ -264,19 +262,15 @@ struct OFCharacterScanResult OFScanCharactersIntoBuffer(struct OFStringDecoderSt
             return OFScanUTF8CharactersIntoBuffer(state, in_bytes, in_bytes_count, out_characters, out_characters_max);
             
         SIMPLE_FOUNDATION_ENCODINGS
-            {   
-                unsigned int toScan;
-                // NSData *byteBuffer;
-                NSString *stringBuffer;
-                
-                toScan = MIN(in_bytes_count, out_characters_max);  
-                // byteBuffer = [[NSData alloc] initWithBytesNoCopy:in_bytes length:toScan];
-                // stringBuffer = [[NSString alloc] initWithData:byteBuffer encoding:state.encoding];
-                stringBuffer = (NSString *)CFStringCreateWithBytes(kCFAllocatorDefault, in_bytes, toScan, state.encoding, TRUE);
+            {                
+                NSUInteger toScan = MIN(in_bytes_count, out_characters_max);  
+                // NSData *byteBuffer = [[NSData alloc] initWithBytesNoCopy:in_bytes length:toScan];
+                // NSString *stringBuffer = [[NSString alloc] initWithData:byteBuffer encoding:state.encoding];
+                CFStringRef stringBuffer = CFStringCreateWithBytes(kCFAllocatorDefault, in_bytes, toScan, state.encoding, TRUE);
                 // [byteBuffer release];
-                OBASSERT([stringBuffer length] == toScan);
-                [stringBuffer getCharacters:out_characters];
-                [stringBuffer release];
+                OBASSERT(CFStringGetLength(stringBuffer) == (CFIndex)toScan);
+                [(NSString *)stringBuffer getCharacters:out_characters];
+                CFRelease(stringBuffer);
                 return (struct OFCharacterScanResult){.state = state, .bytesConsumed = toScan, .charactersProduced = toScan};
             }
     }
@@ -422,18 +416,15 @@ CFDataRef OFCreateDataFromStringWithDeferredEncoding(CFStringRef str, CFRange ra
 
 extern NSString *OFApplyDeferredEncoding(NSString *str, CFStringEncoding newEncoding)
 {
-    CFDataRef octets;
-    CFStringRef result;
-    unsigned int stringLength = [str length];
-
     if (str == nil)
         return str;
 
-    octets = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)str, CFRangeMake(0, stringLength), newEncoding, 0);
+    NSUInteger stringLength = [str length];
+    CFDataRef octets = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)str, CFRangeMake(0, stringLength), newEncoding, 0);
     if (!octets)
         return nil;
 
-    result = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, octets, newEncoding);
+    CFStringRef result = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, octets, newEncoding);
     CFRelease(octets);
 
     return [(NSString *)result autorelease];
@@ -504,14 +495,14 @@ extern NSString *OFMostlyApplyDeferredEncoding(NSString *str, CFStringEncoding n
 
 extern BOOL OFStringContainsDeferredEncodingCharacters(NSString *str)
 {
-    int stringLength;
-    CFRange firstDeferredCharacter;
-
     if (str == nil)
         return NO;
-    stringLength = [str length];
+    
+    NSUInteger stringLength = [str length];
     if (stringLength == 0)
         return NO;
+    
+    CFRange firstDeferredCharacter;
     if (CFStringFindCharacterFromSet((CFStringRef)str, OFDeferredDecodingCharacterSet(),
                                      CFRangeMake(0, stringLength), 0/*options*/,
                                      &firstDeferredCharacter)) {

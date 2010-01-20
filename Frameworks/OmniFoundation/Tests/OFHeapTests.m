@@ -1,4 +1,4 @@
-// Copyright 2002-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,14 +9,12 @@
 #import "OFTestCase.h"
 
 #import <OmniFoundation/OFHeap.h>
+#import <OmniFoundation/NSString-OFConversion.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
 @interface OFHeapTests : OFTestCase
-{
-}
-
 @end
 
 @implementation OFHeapTests
@@ -25,10 +23,7 @@ RCS_ID("$Id$");
 
 - (void)testHeapSingle
 {
-    OFHeap *heap;
-    NSString *str;
-
-    heap = [[OFHeap alloc] initWithCapacity:0 compareSelector:@selector(compare:)];
+    OFHeap *heap = [[OFHeap alloc] init];
     should([heap count] == 0);
 
     [heap addObject:@"one"];
@@ -37,7 +32,7 @@ RCS_ID("$Id$");
     should([heap count] == 1);
     shouldBeEqual([heap peekObject], @"one");
     should([heap count] == 1);
-    str = [heap removeObject];
+    NSString *str = [heap removeObject];
     should([heap count] == 0);
     shouldBeEqual(str, @"one");
     should([heap removeObjectLessThanObject:@"aaa"] == nil);
@@ -47,14 +42,10 @@ RCS_ID("$Id$");
     [heap release];
 }
 
-#if 0
 - (void)testHeapPermutations
-{
-    NSString *str;
-    int group, element, elementCount;
-    
+{    
     /* A set of Galois fields which can conveniently generate integers 1..(N-1) in a pseudorandom order */
-    static const struct { int field, generator; } groups[] = {
+    static const struct { NSUInteger field, generator; } groups[] = {
     { 3, 2 },
     { 5, 2 },
     { 5, 3 },
@@ -68,40 +59,36 @@ RCS_ID("$Id$");
     { 0, 0 }
     };
 
-    for(group = 0; groups[group].field > 0; group ++) {
-        OFHeap *heap;
-        NSAutoreleasePool *pool;
+    for (NSUInteger group = 0; groups[group].field > 0; group ++) {
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-        pool = [[NSAutoreleasePool alloc] init];
-
-        heap = [[OFHeap alloc] initWithCapacity:0 compareSelector:@selector(compare:)];
+        OFHeap *heap = [[OFHeap alloc] init];
         should([heap count] == 0);
 
-        element = groups[group].generator;
-        for(elementCount = 0; elementCount < (groups[group].field-1); elementCount ++) {
+        NSUInteger element = groups[group].generator;
+        for (NSUInteger elementCount = 0; elementCount < (groups[group].field-1); elementCount ++) {
             should([heap count] == elementCount);
             [heap addObject:[NSString stringWithFormat:@"%06d in (%d,%d)", element, groups[group].field, groups[group].generator]];
-            element = ( (unsigned long)element * (unsigned long)groups[group].generator ) % groups[group].field;
+            element = (element * groups[group].generator ) % groups[group].field;
         }
 
-        [pool release];
+        [pool drain];
 
         should([heap count] == (groups[group].field-1));
 
-        for(elementCount = 1; elementCount < (groups[group].field); elementCount ++) {
+        for (NSUInteger elementCount = 1; elementCount < (groups[group].field); elementCount ++) {
             pool = [[NSAutoreleasePool alloc] init];
 
-            str = [heap removeObject];
-            should([str intValue] == elementCount);
+            NSString *str = [heap removeObject];
+            should([str unsignedLongValue] == elementCount);
 
-            [pool release];
+            [pool drain];
             should([heap count] == (groups[group].field - elementCount - 1));
         }
 
         [heap release];
     }
 }
-#endif
 
 @end
 

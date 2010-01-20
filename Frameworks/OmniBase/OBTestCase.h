@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,11 +14,15 @@
 @end
 
 // Assumes a local variable called 'error'.  Clears the error, runs the expression and reports if an error occurs.
+extern void _OBReportUnexpectedError(NSError *error);
 #define OBShouldNotError(expr) \
 do { \
     error = nil; \
-    BOOL __value = (expr); \
-    if (!__value) \
-        NSLog(@"Error: %@", [error toPropertyList]); \
-    STAssertTrue(__value, (id)CFSTR(#expr)); \
+    typeof(expr) __value = (expr); \
+    BOOL hadError = NO; \
+    if (!__value) { \
+        _OBReportUnexpectedError(error); \
+        hadError = YES; \
+    } \
+    STAssertFalse(hadError, (id)CFSTR(#expr)); \
 } while (0);

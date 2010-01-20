@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,14 +13,14 @@
 
 // Compression
 - (BOOL)mightBeCompressed;
-- (NSData *)compressedData;
-- (NSData *)decompressedData;
+- (NSData *)compressedData:(NSError **)outError;
+- (NSData *)decompressedData:(NSError **)outError;
 
 // Specific algorithms
-- (NSData *)compressedBzip2Data;
-- (NSData *)decompressedBzip2Data;
+- (NSData *)compressedBzip2Data:(NSError **)outError;
+- (NSData *)decompressedBzip2Data:(NSError **)outError;
 
-- (NSData *)compressedDataWithGzipHeader:(BOOL)includeHeader compressionLevel:(int)level;
-- (NSData *)decompressedGzipData;
+- (NSData *)compressedDataWithGzipHeader:(BOOL)includeHeader compressionLevel:(int)level error:(NSError **)outError;
+- (NSData *)decompressedGzipData:(NSError **)outError;
 
 @end

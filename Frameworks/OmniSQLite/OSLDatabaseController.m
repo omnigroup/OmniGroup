@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -101,10 +101,10 @@ RCS_ID("$Id$")
     return sqliteDatabase;
 }
 
-#ifdef DEBUG_kc
-#define DebugLog NSLog
+#if 0 && defined(DEBUG)
+    #define DebugLog(format, ...) NSLog(format, ## __VA_ARGS__)
 #else
-#define DebugLog(...) {}
+    #define DebugLog(format, ...) do {} while (0)
 #endif
 
 - (BOOL)_openDatabase:(NSError **)outError;
@@ -148,8 +148,8 @@ RCS_ID("$Id$")
 {
     NSString *journalPath = [databasePath stringByAppendingString:@"-journal"];
     
-    [[NSFileManager defaultManager] removeFileAtPath:databasePath handler:nil];
-    [[NSFileManager defaultManager] removeFileAtPath:journalPath handler:nil];
+    [[NSFileManager defaultManager] removeItemAtPath:databasePath error:NULL];
+    [[NSFileManager defaultManager] removeItemAtPath:journalPath error:NULL];
 }
 
 - (void)_closeDatabase;

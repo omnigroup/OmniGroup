@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,11 +10,12 @@
 #import <Cocoa/Cocoa.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFUtilities.h> // For OFForEachInArray
+#import <OmniAppKit/NSColor-OAExtensions.h>
 
 RCS_ID("$Id$");
 
-#define TEXT_X_INSET 7.0
-#define TEXT_Y_INSET 3.0
+#define TEXT_X_INSET (7.0f)
+#define TEXT_Y_INSET (3.0f)
 
 @interface NSColor (PrivateSystemColors)
 + (NSColor *)toolTipColor;		// tooltip background 
@@ -48,7 +49,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
     
     [backgroundColor release];
     backgroundColor = nil;
-    cornerRadius = 0.0;
+    cornerRadius = 0.0f;
     [_textAttributes release];
     _textAttributes = nil;
     
@@ -56,14 +57,14 @@ static NSParagraphStyle *mousetipParagrphStyle;
     
     switch(style) {
         default:
-        case MouseTip_TooltipStyle:
+        case OAMouseTipTooltipStyle:
             
             if ([NSColor respondsToSelector:@selector(toolTipColor)])
-                backgroundColor = [[[NSColor toolTipColor] colorWithAlphaComponent:0.9] retain];
+                backgroundColor = [[[NSColor toolTipColor] colorWithAlphaComponent:0.9f] retain];
             else
-                backgroundColor = [[NSColor colorWithCalibratedRed:1.0 green:0.98 blue:0.83 alpha:0.9] retain]; // light yellow to match standard tooltip color
+                backgroundColor = [OARGBA(1.0, 0.98, 0.83, 0.9) retain]; // light yellow to match standard tooltip color
             
-            cornerRadius = 0.0;
+            cornerRadius = 0.0f;
             
             if ([NSColor respondsToSelector:@selector(toolTipTextColor)])
                 [newTextAttributes setObject:[NSColor toolTipTextColor] forKey:NSForegroundColorAttributeName];
@@ -73,18 +74,18 @@ static NSParagraphStyle *mousetipParagrphStyle;
             [newTextAttributes setObject:[NSFont toolTipsFontOfSize:[NSFont labelFontSize]] forKey:NSFontAttributeName];
             break;
             
-        case MouseTip_ExposeStyle:
-            backgroundColor = [[NSColor colorWithCalibratedWhite:0.2 alpha:0.85] retain];
-            cornerRadius = 5.0;
+        case OAMouseTipExposeStyle:
+            backgroundColor = [[NSColor colorWithCalibratedWhite:0.2f alpha:0.85f] retain];
+            cornerRadius = 5.0f;
             [newTextAttributes setObject:[NSFont boldSystemFontOfSize:[NSFont labelFontSize]] forKey:NSFontAttributeName];
             [newTextAttributes setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
             [newTextAttributes setObject:mousetipParagrphStyle forKey:NSParagraphStyleAttributeName];
             break;
 
-        case MouseTip_DockStyle:
+        case OAMouseTipDockStyle:
             backgroundColor = nil;
-            cornerRadius = 0.0;
-            [newTextAttributes setObject:[NSFont boldSystemFontOfSize:[NSFont labelFontSize]*1.125] forKey:NSFontAttributeName];
+            cornerRadius = 0.0f;
+            [newTextAttributes setObject:[NSFont boldSystemFontOfSize:[NSFont labelFontSize]*1.125f] forKey:NSFontAttributeName];
             [newTextAttributes setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
             [newTextAttributes setObject:mousetipParagrphStyle forKey:NSParagraphStyleAttributeName];
             NSShadow *dockStyleTextShadow = [[NSShadow alloc] init];
@@ -93,10 +94,10 @@ static NSParagraphStyle *mousetipParagrphStyle;
             [dockStyleTextShadow setShadowColor:[NSColor blackColor]];
             [newTextAttributes setObject:dockStyleTextShadow forKey:NSShadowAttributeName];
             [dockStyleTextShadow release];
-            float strokeWidthPercent = 2.0;
-            [newTextAttributes setObject:[NSNumber numberWithFloat:-strokeWidthPercent] forKey:NSStrokeWidthAttributeName];
+            CGFloat strokeWidthPercent = 2.0f;
+            [newTextAttributes setObject:[NSNumber numberWithCGFloat:-strokeWidthPercent] forKey:NSStrokeWidthAttributeName];
             [newTextAttributes setObject:[NSColor blackColor] forKey:NSStrokeColorAttributeName];
-            [newTextAttributes setObject:[NSNumber numberWithDouble:log1p(strokeWidthPercent * 0.02)] forKey:NSExpansionAttributeName];
+            [newTextAttributes setObject:[NSNumber numberWithDouble:log1p(strokeWidthPercent * 0.02f)] forKey:NSExpansionAttributeName];
             break;
     }
     
@@ -138,7 +139,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
     [titleView setVerticallyResizable:NO];
     [titleView setTextContainerInset:(NSSize){TEXT_X_INSET, TEXT_Y_INSET}];
     NSTextContainer *textContainer = [titleView textContainer];
-    [textContainer setLineFragmentPadding:0.0];
+    [textContainer setLineFragmentPadding:0.0f];
     [textContainer setWidthTracksTextView:NO];
     [textContainer setHeightTracksTextView:NO];
     NSLayoutManager *layoutManager = [titleView layoutManager];
@@ -150,7 +151,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
     
     [self setAutoresizesSubviews:YES];
     
-    style = NSNotFound;
+    style = OAMouseTipUnsetStyle;
     
     return self;
 }
@@ -183,7 +184,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
         [backgroundColor set];
         
         if (cornerRadius > 0.0) {
-            float radius = cornerRadius;
+            CGFloat radius = cornerRadius;
             NSPoint point;
             NSBezierPath *path;
             

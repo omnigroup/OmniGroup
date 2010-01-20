@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,10 +44,10 @@ RCS_ID("$Id$")
     sqlite3_reset(statement);
 }
 
-#ifdef DEBUG_kc
-#define DebugLog NSLog
+#if 0 && defined(DEBUG)
+    #define DebugLog(format, ...) NSLog(format, ## __VA_ARGS__)
 #else
-#define DebugLog(...) {}
+    #define DebugLog(format, ...) do {} while (0)
 #endif
 
 - (NSDictionary *)step;
@@ -100,12 +100,16 @@ RCS_ID("$Id$")
 - (void)bindString:(NSString *)string;
 {
     const char *value = [string UTF8String];
-    sqlite3_bind_text(statement, ++bindIndex, value, strlen(value), SQLITE_TRANSIENT);
+    size_t stringLength = strlen(value);
+    OBASSERT(stringLength <= INT_MAX);
+    sqlite3_bind_text(statement, ++bindIndex, value, (int)stringLength, SQLITE_TRANSIENT);
 }
 
 - (void)bindBlob:(NSData *)data;
 {
-    sqlite3_bind_text(statement, ++bindIndex, [data bytes], [data length], SQLITE_TRANSIENT);
+    NSUInteger dataLength = [data length];
+    OBASSERT(dataLength <= INT_MAX);
+    sqlite3_bind_text(statement, ++bindIndex, [data bytes], (int)dataLength, SQLITE_TRANSIENT);
 }
 
 - (void)bindLongLongInt:(long long)longLong;

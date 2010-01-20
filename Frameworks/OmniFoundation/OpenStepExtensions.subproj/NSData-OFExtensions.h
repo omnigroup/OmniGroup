@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ typedef struct OFQuotedPrintableMapping {
 + dataWithDecodedURLString:(NSString *)urlString;
 
 // This is a generic implementation of quoted-printable-style encodings, used by methods elsewhere in OmniFoundation
-- (NSString *)quotedPrintableStringWithMapping:(const OFQuotedPrintableMapping *)qpMap lengthHint:(unsigned)zeroIfNoHint;
+- (NSString *)quotedPrintableStringWithMapping:(const OFQuotedPrintableMapping *)qpMap lengthHint:(NSUInteger)zeroIfNoHint;
 - (NSUInteger)lengthOfQuotedPrintableStringWithMapping:(const OFQuotedPrintableMapping *)qpMap;
 
 - (NSUInteger)indexOfFirstNonZeroByte;
@@ -62,12 +62,5 @@ typedef struct OFQuotedPrintableMapping {
 
 - propertyList;
     // a cover for the CoreFoundation function call
-
-// UNIX filters
-#if 0 // Supplanted by OFFilterProcess
-- (NSData *)filterDataThroughCommandAtPath:(NSString *)commandPath withArguments:(NSArray *)arguments includeErrorsInOutput:(BOOL)includeErrorsInOutput errorStream:(NSOutputStream *)errorStream error:(NSError **)outError;
-- (NSData *)filterDataThroughCommandAtPath:(NSString *)commandPath withArguments:(NSArray *)arguments includeErrorsInOutput:(BOOL)includeErrorsInOutput;
-- (NSData *)filterDataThroughCommandAtPath:(NSString *)commandPath withArguments:(NSArray *)arguments;
-#endif
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -392,13 +392,8 @@ static void _OFCharacterDataFromElement(id element, NSMutableString *str)
     if ([element isKindOfClass:[NSString class]]) {
         [str appendString: element];
     } else if ([element isKindOfClass:[OFXMLElement class]]) {
-        NSArray *children;
-        unsigned int childIndex, childCount;
-	
-        children = [element children];
-        childCount = [children count];
-        for (childIndex = 0; childIndex < childCount; childIndex++)
-            _OFCharacterDataFromElement([children objectAtIndex: childIndex], str);
+        for (id child in [element children])
+            _OFCharacterDataFromElement(child, str);
     } else if ([element isKindOfClass: [OFXMLString class]]) {
         [str appendString: [element unquotedString]];
     }

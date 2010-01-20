@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -148,21 +148,15 @@ static BOOL OFBundledClassDebug = NO;
 + (void)processImmediateLoadClasses;
 {
     while ([immediateLoadClasses count] > 0) {
-        unsigned int classIndex, classCount;
-        NSArray *immediateLoadClassesCopy;
-
-        immediateLoadClassesCopy = [[NSArray alloc] initWithArray:immediateLoadClasses];
+        NSArray *immediateLoadClassesCopy = [[NSArray alloc] initWithArray:immediateLoadClasses];
         [immediateLoadClasses removeAllObjects];
-        classCount = [immediateLoadClassesCopy count];
-        for (classIndex = 0; classIndex < classCount; classIndex++) {
-            OFBundledClass *immediateLoadClass;
-
-            immediateLoadClass = [immediateLoadClassesCopy objectAtIndex:classIndex];
-            NS_DURING {
+        
+        for (OFBundledClass *immediateLoadClass in immediateLoadClassesCopy) {
+            @try {
                 [immediateLoadClass loadBundledClass];
-            } NS_HANDLER {
-                NSLog(@"+[OFBundledClass processImmediateLoadClasses]: %@", [localException reason]);
-            } NS_ENDHANDLER;
+            } @catch (NSException *exc) {
+                NSLog(@"+[OFBundledClass processImmediateLoadClasses]: %@", [exc reason]);
+            }
         }
         [immediateLoadClassesCopy release];
     }

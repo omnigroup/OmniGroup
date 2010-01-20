@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,14 +15,12 @@
 
 RCS_ID("$Id$");
 
-@interface OASearchField (Private)
+@interface OASearchField (/*Private*/)
 - (NSString *)_searchModeString;
 - (void)_chooseSearchMode:(id)sender;
 @end
 
 @implementation OASearchField
-
-// NSView subclass
 
 - (id)initWithFrame:(NSRect)frame;
 {    
@@ -46,7 +44,8 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-// API
+#pragma mark -
+#pragma mark API
 
 - (id)delegate;
 {
@@ -72,11 +71,8 @@ RCS_ID("$Id$");
 {
     id newSearchMode = nil, firstSearchMode = nil;
 
-    NSArray *items = [aMenu itemArray];
-    unsigned int itemIndex, itemCount = [items count];
-    for (itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-        NSMenuItem *item = [items objectAtIndex:itemIndex];
-        int tag = [item tag];
+    for (NSMenuItem *item in [aMenu itemArray]) {
+        NSInteger tag = [item tag];
         if (tag == DoNotModifyMenuItemTag || tag == NSSearchFieldRecentsTitleMenuItemTag || tag == NSSearchFieldRecentsMenuItemTag || tag == NSSearchFieldClearRecentsMenuItemTag || tag == NSSearchFieldNoRecentsMenuItemTag)
             continue;
         if ([item target] != nil)
@@ -169,9 +165,8 @@ RCS_ID("$Id$");
 }
 
 
-//
-// Validation
-//
+#pragma mark -
+#pragma mark Validation
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 {
@@ -180,11 +175,8 @@ RCS_ID("$Id$");
     return YES;
 }
 
-@end
-
-@implementation OASearchField (NotificationsDelegatesDatasources)
-
-// NSControl delegate
+#pragma mark -
+#pragma mark NSControl delegate
 
 - (void)controlTextDidChange:(NSNotification *)aNotification
 {
@@ -206,16 +198,15 @@ RCS_ID("$Id$");
         return NO;
 }
 
-@end
-
-@implementation OASearchField (Private)
+#pragma mark -
+#pragma mark Private
 
 - (NSString *)_searchModeString;
 {
     NSMenu *menu = [self menu];
     // Get the search mode from the selected menu item if possible
     if (menu != nil && searchMode != nil) {
-        int searchModeIndex = [menu indexOfItemWithRepresentedObject:searchMode];
+        NSInteger searchModeIndex = [menu indexOfItemWithRepresentedObject:searchMode];
         if (searchModeIndex != -1) {
             NSMenuItem *item = [menu itemAtIndex:searchModeIndex];
             [self validateMenuItem:item];	// Make sure the item title is up to date (but don't actually disable the menu item if validation returns NO)

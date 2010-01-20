@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,7 @@ typedef struct _OFMLParserState {
         void (*startElementWithQName)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementQName, NSMutableArray *attributeQNames, NSMutableArray *attributeValues);
         
         void (*endElement)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser);
-        void (*endUnparsedElementWithQName)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementName, NSData *contents);
+        void (*endUnparsedElementWithQName)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementName, NSString *identifier, NSData *contents);
         
         void (*addWhitespace)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, NSString *whitespace);
         void (*addString)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, NSString *string);
@@ -54,6 +54,7 @@ typedef struct _OFMLParserState {
     OFXMLParserElementBehavior unparsedBlockBehavior;
     off_t unparsedBlockStart; // < 0 if we aren't in an unparsed block.
     unsigned int unparsedBlockElementNesting;
+    NSString *unparsedElementID; // The value of the xml:id attribute, if any
 } OFMLParserState;
 
 // CFXML only has one callback for this; not sure why there are two.
@@ -72,10 +73,10 @@ static void _externalSubsetSAXFunc(void *ctx, const xmlChar *name, const xmlChar
     // We pick up the root element name when it is opened (curently assume that it matches the name in the DOCTYPE).
     
     if (state->targetImp.setSystemID) {
-        NSURL *systemID = nil;
+        CFURLRef systemID = NULL;
         if (SystemID) {
             CFStringRef systemIDString = CFStringCreateWithCString(kCFAllocatorDefault, (const char *)SystemID, kCFStringEncodingUTF8);
-            systemID = (NSURL *)CFURLCreateWithString(kCFAllocatorDefault, systemIDString, NULL);
+            systemID = CFURLCreateWithString(kCFAllocatorDefault, systemIDString, NULL);
             CFRelease(systemIDString);
             
             if (!systemID)
@@ -85,9 +86,11 @@ static void _externalSubsetSAXFunc(void *ctx, const xmlChar *name, const xmlChar
         if (ExternalID)
             publicID = (NSString *)CFStringCreateWithCString(kCFAllocatorDefault, (const char *)ExternalID, kCFStringEncodingUTF8);
         
-        state->targetImp.setSystemID(state->target, @selector(parser:setSystemID:publicID:), parser, systemID, publicID);
-        [systemID release];
-        [publicID release];
+        state->targetImp.setSystemID(state->target, @selector(parser:setSystemID:publicID:), parser, (NSURL *)systemID, publicID);
+        if (systemID)
+            CFRelease(systemID);
+        if (publicID)
+            CFRelease(publicID);
     }
 }
 
@@ -186,9 +189,18 @@ static void _startElementNsSAX2Func(void *ctx, const xmlChar *localname, const x
             state->unparsedBlockElementNesting = 0;
             //fprintf(stderr, "unparsed element '%s' starts at offset %qd\n", localname, state->unparsedBlockStart);
             
+            // Store the xml:id of the element, if it has one, so we can pass it to the end hook.  We could pass the entire set of attributes, but I only need the id right now.
+            OBASSERT(state->unparsedElementID == nil);
+
+            OFXMLQName *idQName = OFXMLInternedNameTableGetInternedName(state->nameTable, OFXMLNamespaceXMLCString, "id");
+            NSUInteger idIndex = [attributeQNames indexOfObject:idQName];
+            if (idIndex != NSNotFound) {
+                state->unparsedElementID = [[attributeValues objectAtIndex:idIndex] copy];
+            }
+            
             [attributeQNames release];
             [attributeValues release];
-            
+
             return;
         } else {
             OBASSERT_NOT_REACHED("Didn't find element open.");
@@ -255,13 +267,20 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
                 OBASSERT(p > base);
                 OBASSERT(p[-1] == '>');
                 
-                off_t end = p - base;
+                size_t end = p - base;
                 //fprintf(stderr, "unparsed element '%s' at %qd extended for %qd\n", localname, state->unparsedBlockStart, end - state->unparsedBlockStart);
                 
-                NSData *data = [[NSData alloc] initWithBytes:state->ctxt->input->base + state->unparsedBlockStart length:end - state->unparsedBlockStart];
+                OBASSERT(end > (typeof(end))state->unparsedBlockStart); // signed vs. unsigned, but we checked unparsedBlockStart >= 0 above, so the cast is safe
+                size_t length = (size_t)(end - state->unparsedBlockStart);
+                
+                NSData *data = [[NSData alloc] initWithBytes:state->ctxt->input->base + state->unparsedBlockStart length:length];
                 OFXMLQName *qname = OFXMLInternedNameTableGetInternedName(state->nameTable, (const char *)URI, (const char *)localname);
                 
-                state->targetImp.endUnparsedElementWithQName(state->target, @selector(parser:endUnparsedElementWithQName:contents:), parser, qname, data);
+                state->targetImp.endUnparsedElementWithQName(state->target, @selector(parser:endUnparsedElementWithQName:identifier:contents:), parser, qname, state->unparsedElementID, data);
+
+                [state->unparsedElementID release];
+                state->unparsedElementID = nil;
+                
                 [data release];            
             }
             
@@ -402,9 +421,10 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     state.target = target;
     
     // Assert on deprecated target methods.
-    OBASSERT(![target respondsToSelector:@selector(parser:shouldLeaveElementAsUnparsedBlock:)]); // Takes a OFXMLQName and attribute names/values now.
-    OBASSERT(![target respondsToSelector:@selector(parser:startElementNamed:attributeOrder:attributeValues:)]); // QName aware version now.
-    OBASSERT(![target respondsToSelector:@selector(parser:endUnparsedElementNamed:contents:)]); // QName aware version now.
+    OBASSERT_NOT_IMPLEMENTED(target, parser:shouldLeaveElementAsUnparsedBlock:); // Takes a OFXMLQName and attribute names/values now.
+    OBASSERT_NOT_IMPLEMENTED(target, parser:startElementNamed:attributeOrder:attributeValues:); // QName aware version now.
+    OBASSERT_NOT_IMPLEMENTED(target, parser:endUnparsedElementNamed:contents:); // QName aware version now.
+    OBASSERT_NOT_IMPLEMENTED(target, parser:endUnparsedElementWithQName:contents:); // And we pass the xml:id now.
     
     // -methodForSelector returns _objc_msgForward
 #define GET_IMP(slot, sel) do { \
@@ -416,7 +436,7 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     GET_IMP(behaviorForElementWithQName, @selector(parser:behaviorForElementWithQName:attributeQNames:attributeValues:));
     GET_IMP(startElementWithQName, @selector(parser:startElementWithQName:attributeQNames:attributeValues:));
     GET_IMP(endElement, @selector(parserEndElement:));
-    GET_IMP(endUnparsedElementWithQName, @selector(parser:endUnparsedElementWithQName:contents:));
+    GET_IMP(endUnparsedElementWithQName, @selector(parser:endUnparsedElementWithQName:identifier:contents:));
     GET_IMP(addWhitespace, @selector(parser:addWhitespace:));
     GET_IMP(addString, @selector(parser:addString:));
 #undef GET_IMP
@@ -453,7 +473,10 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     sax.serror = _xmlStructuredErrorFunc;
     
     // xmlSAXUserParseMemory hides the xmlParserCtxtPtr.  But, this means we can't get the source encoding, so we use the push approach.
-    state.ctxt = xmlCreatePushParserCtxt(&sax, &state/*user data*/, [xmlData bytes], [xmlData length], NULL);
+    NSUInteger xmlLength = [xmlData length];
+    OBASSERT(xmlLength < INT_MAX); // Need a different API for super-long XML.
+    
+    state.ctxt = xmlCreatePushParserCtxt(&sax, &state/*user data*/, [xmlData bytes], (int)xmlLength, NULL);
     
     int options = XML_PARSE_NOENT; // Turn entities into content
     options |= XML_PARSE_NONET; // don't allow network access

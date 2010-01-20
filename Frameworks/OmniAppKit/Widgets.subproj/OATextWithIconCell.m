@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,8 +21,8 @@ RCS_ID("$Id$");
 @end
 
 static NSMutableParagraphStyle *OATextWithIconCellParagraphStyle = nil;
-NSString const *OATextWithIconCellStringKey = @"string";
-NSString const *OATextWithIconCellImageKey = @"image";
+NSString * const OATextWithIconCellStringKey = @"string";
+NSString * const OATextWithIconCellImageKey = @"image";
 
 @implementation OATextWithIconCell
 
@@ -70,11 +70,11 @@ NSString const *OATextWithIconCellImageKey = @"image";
 
 // NSCell Subclass
 
-#define TEXT_VERTICAL_OFFSET (-1.0)
-#define FLIP_VERTICAL_OFFSET (-9.0)
-#define BORDER_BETWEEN_EDGE_AND_IMAGE (2.0)
-#define BORDER_BETWEEN_IMAGE_AND_TEXT (3.0)
-#define SIZE_OF_TEXT_FIELD_BORDER (1.0)
+#define TEXT_VERTICAL_OFFSET (-1.0f)
+#define FLIP_VERTICAL_OFFSET (-9.0f)
+#define BORDER_BETWEEN_EDGE_AND_IMAGE (2.0f)
+#define BORDER_BETWEEN_IMAGE_AND_TEXT (3.0f)
+#define SIZE_OF_TEXT_FIELD_BORDER (1.0f)
 
 - (NSColor *)highlightColorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 {
@@ -94,13 +94,13 @@ NSString const *OATextWithIconCellImageKey = @"image";
         return [super textColor];
 }
 
-#define CELL_SIZE_FUDGE_FACTOR 10.0
+#define CELL_SIZE_FUDGE_FACTOR (10.0f)
 
 - (NSSize)cellSize;
 {
     NSSize cellSize = [super cellSize];
     // TODO: WJS 1/31/04 -- I REALLY don't think this next line is accurate. It appears to not be used much, anyways, but still...
-    cellSize.width += [icon size].width + (BORDER_BETWEEN_EDGE_AND_IMAGE * 2.0) + (BORDER_BETWEEN_IMAGE_AND_TEXT * 2.0) + (SIZE_OF_TEXT_FIELD_BORDER * 2.0) + CELL_SIZE_FUDGE_FACTOR;
+    cellSize.width += [icon size].width + (BORDER_BETWEEN_EDGE_AND_IMAGE * 2.0f) + (BORDER_BETWEEN_IMAGE_AND_TEXT * 2.0f) + (SIZE_OF_TEXT_FIELD_BORDER * 2.0f) + CELL_SIZE_FUDGE_FACTOR;
     return cellSize;
 }
 
@@ -129,7 +129,7 @@ NSString const *OATextWithIconCellImageKey = @"image";
     if (imageSize.width > 0) \
         NSDivideRect(textRect, &ignored, &textRect, BORDER_BETWEEN_IMAGE_AND_TEXT, rectEdge); \
     \
-    textRect.origin.y += 1.0;
+    textRect.origin.y += 1.0f;
 
 
 - (void)drawInteriorWithFrame:(NSRect)aRect inView:(NSView *)controlView;
@@ -137,7 +137,7 @@ NSString const *OATextWithIconCellImageKey = @"image";
     _calculateDrawingRectsAndSizes;
     
     NSDivideRect(textRect, &ignored, &textRect, SIZE_OF_TEXT_FIELD_BORDER, NSMinXEdge);
-    textRect = NSInsetRect(textRect, 1.0, 0.0);
+    textRect = NSInsetRect(textRect, 1.0f, 0.0f);
 
     if (![controlView isFlipped])
         textRect.origin.y -= (textRect.size.height + FLIP_VERTICAL_OFFSET);
@@ -161,11 +161,11 @@ NSString const *OATextWithIconCellImageKey = @"image";
     
     // Draw the image
     imageRect.size = imageSize;
-    imageRect.origin.y += ceil((NSHeight(aRect) - imageSize.height) / 2.0);
+    imageRect.origin.y += (CGFloat)ceil((NSHeight(aRect) - imageSize.height) / 2.0f);
     if ([controlView isFlipped])
         [[self icon] drawFlippedInRect:imageRect operation:NSCompositeSourceOver];
     else
-        [[self icon] drawInRect:imageRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
+        [[self icon] drawInRect:imageRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
 }
 
 - (BOOL)trackMouse:(NSEvent *)theEvent inRect:(NSRect)cellFrame ofView:(NSView *)controlView untilMouseUp:(BOOL)flag;
@@ -195,12 +195,12 @@ NSString const *OATextWithIconCellImageKey = @"image";
     _oaFlags.settingUpFieldEditor = NO;
 }
 
-- (void)setObjectValue:(id <NSObject, NSCopying>)obj;
+- (void)setObjectValue:(id <NSCopying>)obj;
 {
-    if ([obj isKindOfClass:[NSString class]] || [obj isKindOfClass:[NSAttributedString class]]) {
+    if ([(id)obj isKindOfClass:[NSString class]] || [(id)obj isKindOfClass:[NSAttributedString class]]) {
         [super setObjectValue:obj];
         return;
-    } else if ([obj isKindOfClass:[NSDictionary class]]) {
+    } else if ([(id)obj isKindOfClass:[NSDictionary class]]) {
         NSDictionary *dictionary = (NSDictionary *)obj;
         
         [super setObjectValue:[dictionary objectForKey:OATextWithIconCellStringKey]];
@@ -229,7 +229,8 @@ NSString const *OATextWithIconCellImageKey = @"image";
 }
 - (void)setImagePosition:(NSCellImagePosition)aPosition;
 {
-    _oaFlags.imagePosition = aPosition;
+    _oaFlags.imagePosition = (unsigned)aPosition;
+    OBASSERT(_oaFlags.imagePosition == aPosition); // make sure it didn't get truncated
 }
 
 

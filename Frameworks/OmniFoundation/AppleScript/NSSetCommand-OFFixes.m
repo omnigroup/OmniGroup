@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,11 +31,6 @@ RCS_ID("$Id$");
 
 static id (*originalPerformDefaultImplementation)(id self, SEL cmd) = NULL;
 
-+ (void)didLoad;
-{
-    originalPerformDefaultImplementation = (void *)OBReplaceMethodImplementationWithSelector(self,  @selector(performDefaultImplementation), @selector(replacement_performDefaultImplementation));
-}
-
 - (id)replacement_performDefaultImplementation;
 {
     do {
@@ -59,6 +54,11 @@ static id (*originalPerformDefaultImplementation)(id self, SEL cmd) = NULL;
     } while (NO);
     
     return originalPerformDefaultImplementation(self, _cmd);
+}
+
++ (void)didLoad;
+{
+    originalPerformDefaultImplementation = (void *)OBReplaceMethodImplementationWithSelector(self,  @selector(performDefaultImplementation), @selector(replacement_performDefaultImplementation));
 }
 
 @end

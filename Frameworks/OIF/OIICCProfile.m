@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -109,7 +109,7 @@ static BOOL compareDataEqual(NSMapTable *table, const void *a, const void *b)
     if (profileLooksValid && profileComponentCount > 0) {
         CGDataProviderRef profileDataProvider;
         int i;
-        float ranges[2 * profileComponentCount];
+        CGFloat ranges[2 * profileComponentCount];
         
         for(i = 0; i < profileComponentCount; i++)
             ranges[2*i] = 0, ranges[2*i + 1] = 1; // NB there is no documentation on what ranges[] should contain, this is a guess
@@ -190,6 +190,9 @@ static unsigned int inline parseUnsignedInt(const unsigned char *buf)
 
 BOOL checkICCProfile(NSData *profile, int *componentCount, unsigned int *dataColorSpace)
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+    return NO;
+#if 0    
     const unsigned char *bytes;
     unsigned int profileLength;
     unsigned int tagIndex, tagCount, iccDataColorSpace;
@@ -272,6 +275,7 @@ BOOL checkICCProfile(NSData *profile, int *componentCount, unsigned int *dataCol
     }
     
     return YES;
+#endif
 }
 
 @end

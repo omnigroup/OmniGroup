@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -99,7 +99,7 @@ typedef struct {
 + (void)reloadExpirationTimeIntervals:(NSNotification *)notification;
 + (void)registerAliasesDictionary:(NSDictionary *)extensionsDictionary;
 + (void)registerExtensionsDictionary:(NSDictionary *)extensionsDictionary;
-+ (unsigned long)osTypeForString:(NSString *)string;
++ (OSType)osTypeForString:(NSString *)string;
 + (void)registerHFSTypesDictionary:(NSDictionary *)hfsTypesDictionary;
 + (void)registerHFSCreatorsDictionary:(NSDictionary *)hfsCreatorsDictionary;
 + (void)registerIconsDictionary:(NSDictionary *)iconsDictionary;
@@ -250,6 +250,7 @@ static NSString *privateSupertypes[] = {
 	[contentTypeDictionary setObject:contentType forKey:aString];
         if ([contentType isEncoding])
             [contentEncodings addObject:contentType];
+        [contentType autorelease];
     }
     [contentTypeLock unlock];
 
@@ -546,23 +547,23 @@ got_path:
     return nil;
 }
 
-- (void)setHFSType:(unsigned long)newHFSType;
+- (void)setHFSType:(OSType)newHFSType;
 {
     hfsType = newHFSType;
 }
 
-- (unsigned long)hfsType;
+- (OSType)hfsType;
 {
     return hfsType;
 }
 
 
-- (void)setHFSCreator:(unsigned long)newHFSCreator;
+- (void)setHFSCreator:(OSType)newHFSCreator;
 {
     hfsCreator = newHFSCreator;
 }
 
-- (unsigned long)hfsCreator;
+- (OSType)hfsCreator;
 {
     return hfsCreator;
 }
@@ -634,7 +635,7 @@ got_path:
 - (void)linkToContentType:(OWContentType *)targetContentType usingProcessorDescription:(OWProcessorDescription *)aProcessorDescription cost:(float)aCost;
 {
     OWContentTypeLink *link;
-    unsigned int linkIndex, linkCount;
+    NSUInteger linkIndex, linkCount;
 
     [contentTypeLock lock];
     
@@ -920,9 +921,9 @@ got_path:
     [contentTypeLock unlock];
 }
 
-+ (unsigned long)osTypeForString:(NSString *)string;
++ (OSType)osTypeForString:(NSString *)string;
 {
-    unsigned long osType = 0x20202020; // all spaces
+    OSType osType = 0x20202020; // all spaces
 
     [[string dataUsingEncoding:NSMacOSRomanStringEncoding] getBytes:(void *)&osType length:4];
     return osType;
@@ -940,7 +941,7 @@ got_path:
     [contentTypeLock lock];
     while ((aContentTypeString = [contentTypeEnumerator nextObject])) {
         OWContentType *contentType;
-        unsigned long anHFSType;
+        OSType anHFSType;
         
         contentType = [self contentTypeForString:aContentTypeString];
         anHFSType = [self osTypeForString:[hfsTypesEnumerator nextObject]];
@@ -1079,7 +1080,6 @@ got_path:
 
 - (OWConversionPathElement *)_locked_computeBestPathForType:(OWContentType *)targetType visitedTypes:(NSMutableSet *)visitedTypes recursionLevel:(unsigned int)recursionLevel;
 {
-    unsigned int linkIndex, linkCount;
     float cost, bestCost = FLT_MAX;
     OWContentTypeLink *bestLink;
     OWConversionPathElement *bestPath;
@@ -1117,16 +1117,11 @@ got_path:
     bestLink = nil;
     bestPath = nil;
     bestCost = FLT_MAX;
-    linkCount = [links count];
     
-    for (linkIndex = 0; linkIndex < linkCount; linkIndex++) {
-        OWContentTypeLink *link;
-        OWContentType *type;
-        OWConversionPathElement *path;
-
-        link = [links objectAtIndex:linkIndex];
-        type = [link targetContentType];
+    for (OWContentTypeLink *link in links) {
+        OWContentType *type = [link targetContentType];
         
+        OWConversionPathElement *path;
         if (type == targetType) {
             // direct link
             path = nil;

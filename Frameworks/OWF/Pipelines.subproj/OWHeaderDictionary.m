@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -106,7 +106,7 @@ static BOOL debugHeaderDictionary = NO;
     return [headerDictionary keyEnumerator];
 }
 
-- (OFMultiValueDictionary *)dictionaryCopy
+- (OFMultiValueDictionary *)dictionarySnapshot
 {
     return [[headerDictionary mutableCopy] autorelease];
 }
@@ -129,7 +129,7 @@ static BOOL debugHeaderDictionary = NO;
 
     while( (aKey = [keyEnumerator nextObject]) != nil) {
         NSArray *values = [source arrayForKey:aKey];
-        unsigned int valueCount, valueIndex;
+        NSUInteger valueCount, valueIndex;
         
         if (!values || !(valueCount = [values count]))
             continue;
@@ -214,7 +214,7 @@ static BOOL debugHeaderDictionary = NO;
 - (NSArray *)formatRFC822HeaderLines
 {
     NSArray *keys = [headerDictionary allKeys];
-    unsigned int keyIndex, keyCount;
+    NSUInteger keyIndex, keyCount;
     NSMutableArray *lines;
     NSString *separatorString = @": ";
     
@@ -224,7 +224,7 @@ static BOOL debugHeaderDictionary = NO;
     for(keyIndex = 0; keyIndex < keyCount; keyIndex ++) {
         NSString *thisKey = [keys objectAtIndex:keyIndex];
         NSArray *values = [headerDictionary arrayForKey:thisKey];
-        unsigned int valueIndex, valueCount;
+        NSUInteger valueIndex, valueCount;
         
         valueCount = [values count];
         for(valueIndex = 0; valueIndex < valueCount; valueIndex ++) {
@@ -282,10 +282,9 @@ static BOOL debugHeaderDictionary = NO;
 - (NSString *)contentDispositionFilename;
 {
     OFMultiValueDictionary *contentDispositionParameters;
-    NSString *contentDispositionDisplayMode;
     
     contentDispositionParameters = [[[OFMultiValueDictionary alloc] init] autorelease];
-    contentDispositionDisplayMode = [isa parseParameterizedHeader:[self lastStringForKey:ContentDispositionHeaderKey] intoDictionary:contentDispositionParameters valueChars:TokenSet];
+    [isa parseParameterizedHeader:[self lastStringForKey:ContentDispositionHeaderKey] intoDictionary:contentDispositionParameters valueChars:TokenSet];
     
     return [contentDispositionParameters lastObjectForKey:@"filename"];
 }
@@ -350,7 +349,7 @@ static BOOL debugHeaderDictionary = NO;
     NSString *result;
         
     if ([value rangeOfCharacterFromSet:NonTokenSet].length > 0 || [value length] == 0) {
-        unsigned int searchIndex;
+        NSUInteger searchIndex;
         NSRange foundRange;
         NSMutableString *escapedValue = [value mutableCopy];
 
@@ -388,7 +387,7 @@ static BOOL debugHeaderDictionary = NO;
         if (onlyLast) {
             [portions addObject:[self formatHeaderParameter:aKey value:[parameters lastObjectForKey:aKey]]];
         } else {
-            unsigned int valueCount, valueIndex;
+            NSUInteger valueCount, valueIndex;
             NSArray *values = [parameters arrayForKey:aKey];
             valueCount = [values count];
             for(valueIndex = 0; valueIndex < valueCount; valueIndex ++) {
@@ -407,7 +406,7 @@ static BOOL debugHeaderDictionary = NO;
 + (NSMutableArray *)splitHeaderValues:(NSArray *)headers
 {
     NSMutableArray *values;
-    int headerIndex, headerCount;
+    NSUInteger headerIndex, headerCount;
     NSCharacterSet *whitespaceAndNewlineCharacterSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
     values = [NSMutableArray array];
@@ -430,7 +429,7 @@ static BOOL debugHeaderDictionary = NO;
             valueRange.location = [scan scanLocation];
 
             for(;;) {
-                unsigned location;
+                NSUInteger location;
                 
                 [scan scanUpToCharactersFromSet:TSpecialsSet intoString:NULL];
 

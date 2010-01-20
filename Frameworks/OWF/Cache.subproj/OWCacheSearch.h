@@ -1,4 +1,4 @@
-// Copyright 2004-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,9 +14,9 @@
 @class /* OmniFoundation */ OFHeap;
 
 /* Parameters often used for searches */
-#define COST_PER_LINK (0.1)		// Fixed overhead of traversing a link
-#define COST_OF_REJECTION (1e6)   	// "cost" of producing content the target doesn't want
-#define COST_OF_UNCERTAINTY (1e4)	// we fear the unknown
+#define COST_PER_LINK (0.1f)		// Fixed overhead of traversing a link
+#define COST_OF_REJECTION (1e6f)   	// "cost" of producing content the target doesn't want
+#define COST_OF_UNCERTAINTY (1e4f)	// we fear the unknown
 
 @interface OWCacheSearch : OFObject
 {

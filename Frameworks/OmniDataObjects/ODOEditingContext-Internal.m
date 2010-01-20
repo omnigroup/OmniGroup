@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -318,7 +318,7 @@ static void _updateResultSetForChanges(NSMutableArray *results, ODOEntity *entit
     memCtx.predicate = predicate;
     memCtx.results = results;
     
-    unsigned int resultIndex, resultCount = [results count];
+    NSUInteger resultIndex, resultCount = [results count];
     
     if (updated) {
         // Remove any objects that were fetched but have since been updated to no longer match the predicate
@@ -415,8 +415,9 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
     OBASSERT(sqlite3_column_count(statement->_statement) == (int)[ctx->schemaProperties count]); // should just be the primary keys we fetched
     
     // Get the primary key first
+    OBASSERT(ctx->primaryKeyColumnIndex <= INT_MAX); // sqlite3 sensisibly only allows a few billion columns.
     id value = nil;
-    if (!ODOSQLStatementCreateValue(sqlite, statement, ctx->primaryKeyColumnIndex, &value, [ctx->primaryKeyAttribute type], outError))
+    if (!ODOSQLStatementCreateValue(sqlite, statement, (int)ctx->primaryKeyColumnIndex, &value, [ctx->primaryKeyAttribute type], [ctx->primaryKeyAttribute valueClass], outError))
         return NO;
     
     // Unique the fetch vs the registered objects.
@@ -526,8 +527,9 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     OBASSERT(sqlite3_column_count(statement->_statement) == (int)[ctx->schemaProperties count]); // should just be the primary keys we fetched
     
     // Get the primary key
+    OBASSERT(ctx->primaryKeyColumnIndex <= INT_MAX); // sqlite3 sensisibly only allows a few billion columns.
     id value = nil;
-    if (!ODOSQLStatementCreateValue(sqlite, statement, ctx->primaryKeyColumnIndex, &value, [ctx->primaryKeyAttribute type], outError))
+    if (!ODOSQLStatementCreateValue(sqlite, statement, (int)ctx->primaryKeyColumnIndex, &value, [ctx->primaryKeyAttribute type], [ctx->primaryKeyAttribute valueClass], outError))
         return NO;
     
     // Unique the fetch vs the registered objects.

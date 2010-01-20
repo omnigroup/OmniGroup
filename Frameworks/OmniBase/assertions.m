@@ -34,8 +34,15 @@ static void OBDefaultAssertionHandler(const char *type, const char *expression, 
         // If we are running unit tests, abort on assertion failure.  We could make assertions throw exceptions, but note that this wouldn't catch cases where you are using 'shouldRaise' and hit an assertion.
 #ifdef DEBUG
         // If we're failing in a debug build, give the developer a little time to connect in gdb before crashing
-        fprintf(stderr, "You have 15 seconds to attach to pid %u in gdb...\n", getpid());
-        [NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:15.0]];
+        NSTimeInterval timeToWait = 15.0;
+        const char *env = getenv("OBASSERT_TIME_TO_WAIT");
+        if (env)
+            timeToWait = strtod(env, NULL);
+        
+        if (timeToWait > 0) {
+            fprintf(stderr, "You have %g seconds to attach to pid %u in gdb...\n", timeToWait, getpid());
+            [NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:timeToWait]];
+        }
 #endif
         abort();
     }
@@ -60,10 +67,16 @@ void OBInvokeAssertionFailureHandler(const char *type, const char *expression, c
 void OBAssertFailed(void)
 {
     // For breakpoints
+#if defined(__clang__)
+    asm(""); // Clang 1.0 incorrectly inlines this call, even when __attribute__((noinline)) is present.  Radar #7169443.
+#endif
 }
 
-void _OBAssertNotImplemented(id self, SEL sel)
+void _OBAssertNotImplemented(id self, const char *selName)
 {
+    OBASSERT(strstr(selName, "@") == NULL); // Make sure @selector(...) wasn't passed to OBASSERT_NOT_IMPLEMENTED
+    
+    SEL sel = sel_getUid(selName);
     if ([self respondsToSelector:sel]) {
         Class impClass = OBClassImplementingMethod([self class], sel);
         NSLog(@"%@ has implementation of %@", NSStringFromClass(impClass), NSStringFromSelector(sel));
@@ -91,11 +104,11 @@ static void _OBAssertionLoad(void)
         fprintf(stderr, "*** Assertions are ON ***\n");
         for(NSString *key in assertionDefaults) {
             fprintf(stderr, "    %s = %s\n",
-                    [key cStringUsingEncoding:NSUTF8StringEncoding],
+                    [key UTF8String],
                     [defaults boolForKey:key]? "YES" : "NO");
         }
     }
-    [pool release];
+    [pool drain];
 #elif DEBUG
     if (getenv("OBASSERT_NO_BANNER") == NULL)
         fprintf(stderr, "*** Assertions are OFF ***\n");

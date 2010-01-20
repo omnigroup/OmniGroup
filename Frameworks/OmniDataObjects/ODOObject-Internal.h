@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,11 @@
 #import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOProperty.h>
 #import <OmniDataObjects/ODOAttribute.h>
+#import <OmniDataObjects/ODOEditingContext.h>
+
+#if ODO_SUPPORT_UNDO
+#import <Foundation/NSUndoManager.h>
+#endif
 
 #import "ODOEntity-Internal.h"
 
@@ -49,7 +54,7 @@ static inline void _ODOObjectCreateNullValues(ODOObject *self)
     OBPRECONDITION(![self isUpdated]);
     OBPRECONDITION(![self isDeleted]);
     
-    unsigned int snapshotPropertyCount = [[[self->_objectID entity] snapshotProperties] count];
+    NSUInteger snapshotPropertyCount = [[[self->_objectID entity] snapshotProperties] count];
     OBASSERT(snapshotPropertyCount > 0);
     
     self->_valueStorage = (id *)calloc(sizeof(id), snapshotPropertyCount);
@@ -62,7 +67,7 @@ static inline void _ODOObjectCreateValuesFromSnapshot(ODOObject *self, CFArrayRe
     OBPRECONDITION(self->_valueStorage == NULL); // but not already envalued
     OBPRECONDITION(_ODOAssertSnapshotIsValidForObject(self, snapshot));
 
-    unsigned int snapshotPropertyCount = [[[self->_objectID entity] snapshotProperties] count];
+    NSUInteger snapshotPropertyCount = [[[self->_objectID entity] snapshotProperties] count];
     OBASSERT((CFIndex)snapshotPropertyCount == CFArrayGetCount(snapshot));
     
     // Not clearing the array via calloc; will fill it w/o releasing the old values here.
@@ -72,7 +77,7 @@ static inline void _ODOObjectCreateValuesFromSnapshot(ODOObject *self, CFArrayRe
     CFArrayGetValues(snapshot, CFRangeMake(0, snapshotPropertyCount), (const void **)self->_valueStorage);
     
     // Now, retain them all.  We expect that the values in the snapshot are already immutable copies.  Otherwise we'd have to do "x = copy(x)" for each slot (which'd be slightly slower).
-    unsigned int propertyIndex = snapshotPropertyCount;
+    NSUInteger propertyIndex = snapshotPropertyCount;
     while (propertyIndex--)
         [self->_valueStorage[propertyIndex] retain];
 }
@@ -88,7 +93,7 @@ static inline void _ODOObjectReleaseValues(ODOObject *self)
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     
     // We don't know the count since this isn't an array any longer.
-    unsigned int valueIndex = [[[self->_objectID entity] snapshotProperties] count];
+    NSUInteger valueIndex = [[[self->_objectID entity] snapshotProperties] count];
     while (valueIndex--)
         [self->_valueStorage[valueIndex] release]; // Not clearing the slot since we are about to...
 
@@ -111,7 +116,7 @@ static inline void _ODOObjectSetValuesToNull(ODOObject *self)
     
     id *valueStorage = self->_valueStorage;
     if (valueStorage) {
-        unsigned int valueIndex = [[[self->_objectID entity] snapshotProperties] count];
+        NSUInteger valueIndex = [[[self->_objectID entity] snapshotProperties] count];
         while (valueIndex--) {
             [valueStorage[valueIndex] release];
             valueStorage[valueIndex] = nil; // could remember the count and memset after the loop
@@ -119,7 +124,7 @@ static inline void _ODOObjectSetValuesToNull(ODOObject *self)
     }
 }
 
-static inline id _ODOObjectValueAtIndex(ODOObject *self, unsigned int snapshotIndex)
+static inline id _ODOObjectValueAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     OBPRECONDITION(snapshotIndex < [[[self->_objectID entity] snapshotProperties] count]);
@@ -128,7 +133,7 @@ static inline id _ODOObjectValueAtIndex(ODOObject *self, unsigned int snapshotIn
     return self->_valueStorage[snapshotIndex];
 }
 
-static inline void _ODOObjectSetValueAtIndex(ODOObject *self, unsigned int snapshotIndex, id value)
+static inline void _ODOObjectSetValueAtIndex(ODOObject *self, NSUInteger snapshotIndex, id value)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     OBPRECONDITION(snapshotIndex < [[[self->_objectID entity] snapshotProperties] count]);
@@ -139,6 +144,12 @@ static inline void _ODOObjectSetValueAtIndex(ODOObject *self, unsigned int snaps
     // Not doing -copy since this might be a mutable to-many set.  Higher level code should copy attribute values?  Maybe we should have a setter that passes in a retained value.
     [self->_valueStorage[snapshotIndex] release];
     self->_valueStorage[snapshotIndex] = [value retain];
+}
+
+static inline BOOL _ODOObjectIsUndeletable(ODOObject *self)
+{
+    OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
+    return self->_flags.undeletable;
 }
 
 @class ODORelationship;

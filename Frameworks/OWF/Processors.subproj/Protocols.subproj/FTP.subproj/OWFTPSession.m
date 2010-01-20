@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,7 +78,7 @@ static NSMutableDictionary *openSessions;
 static NSLock *openSessionsLock;
 static NSTimeInterval timeout;
 static NSString *asciiTransferType = @"A";
-static NSString *imageTransferType = @"I";
+//static NSString *imageTransferType = @"I";
 static NSData *crlf, *aSingleSpace;
 static NSString *defaultPassword = nil;
 
@@ -249,15 +249,16 @@ static NSString *defaultPassword = nil;
 	raisedException = localException;
     } NS_ENDHANDLER;
 
-	if (returnEmptyDataForSuccess) {
-		// Return an empty data stream so caller gets success instead of alternate or failure
-		OWDataStream *outputDataStream = [[OWDataStream alloc] init];
-		OWContent *emptyContent = [OWContent contentWithDataStream:outputDataStream isSource:YES];
-		
-		[outputDataStream dataEnd];
-		[emptyContent markEndOfHeaders];
-		[nonretainedProcessorContext addContent:emptyContent fromProcessor:nonretainedProcessor flags:OWProcessorContentIsSource|OWProcessorTypeRetrieval];
-	}
+    if (returnEmptyDataForSuccess) {
+        // Return an empty data stream so caller gets success instead of alternate or failure
+        OWDataStream *outputDataStream = [[OWDataStream alloc] init];
+        OWContent *emptyContent = [OWContent contentWithDataStream:outputDataStream isSource:YES];
+        
+        [outputDataStream dataEnd];
+        [outputDataStream release];
+        [emptyContent markEndOfHeaders];
+        [nonretainedProcessorContext addContent:emptyContent fromProcessor:nonretainedProcessor flags:OWProcessorContentIsSource|OWProcessorTypeRetrieval];
+    }
 	
     [self cacheSession];
     if (raisedException)
@@ -299,7 +300,7 @@ static NSString *defaultPassword = nil;
     if (contentString) {
         contentStringData = [contentString dataUsingEncoding:NSISOLatin1StringEncoding];
         if (!contentStringData)
-            [NSException raise:@"UnencodableString" format:NSLocalizedStringFromTableInBundle(@"FTP data contains characters which cannot be converted to ISO Latin-1", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
+            [NSException raise:@"UnencodableString" reason:NSLocalizedStringFromTableInBundle(@"FTP data contains characters which cannot be converted to ISO Latin-1", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
 
         /* -dataByAppendingData: handles the contentData==nil case */
         return [contentStringData dataByAppendingData:contentData];
@@ -364,6 +365,9 @@ static NSString *defaultPassword = nil;
 
 - (BOOL)querySystemFeatures
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return NO;
+#if 0
     NSEnumerator *featureEnumerator;
     NSString *feature;
     NSMutableDictionary *receivedFeatures;
@@ -411,6 +415,7 @@ static NSString *defaultPassword = nil;
     [systemFeatures release];
     systemFeatures = [receivedFeatures copy];
     return YES;
+#endif
 }
 
 //
@@ -421,7 +426,7 @@ static NSString *defaultPassword = nil;
     NSMutableString *message = nil;
 
     if (abortOperation)
-	[NSException raise:@"FetchAborted" format:NSLocalizedStringFromTableInBundle(@"Fetch stopped", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
+	[NSException raise:@"FetchAborted" reason:NSLocalizedStringFromTableInBundle(@"Fetch stopped", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
 
     reply = [controlSocketStream readLine];
     if (OWFTPSessionDebug)
@@ -469,7 +474,7 @@ static NSString *defaultPassword = nil;
     argData = [arg dataUsingEncoding:[controlSocketStream stringEncoding] allowLossyConversion:NO];
     if (argData == nil) {
         [NSException raise:NSInvalidArgumentException
-                    format:NSLocalizedStringFromTableInBundle(@"FTP parameter contains invalid characters", @"OWF", [OWFTPSession bundle], "ftpsession error - unexpected or unencodable characters in a command argument")];
+                    reason:NSLocalizedStringFromTableInBundle(@"FTP parameter contains invalid characters", @"OWF", [OWFTPSession bundle], "ftpsession error - unexpected or unencodable characters in a command argument")];
     }
 
     return [self sendCommand:command argument:argData];
@@ -477,10 +482,13 @@ static NSString *defaultPassword = nil;
 
 - (BOOL)sendCommand:(NSString *)command argument:(NSData *)arg;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return NO;
+#if 0
     BOOL plainASCII;
     
     if (abortOperation)
-        [NSException raise:@"FetchAborted" format:NSLocalizedStringFromTableInBundle(@"Fetch stopped", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
+        [NSException raise:@"FetchAborted" reason:NSLocalizedStringFromTableInBundle(@"Fetch stopped", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
 
     plainASCII = YES;
     if (arg != nil) {
@@ -496,7 +504,7 @@ static NSString *defaultPassword = nil;
 
             if (ch < 16) {
                 [NSException raise:NSInvalidArgumentException
-                            format:NSLocalizedStringFromTableInBundle(@"FTP parameter contains invalid characters", @"OWF", [OWFTPSession bundle], "ftpsession error - dangerous metacharacters in a command argument")];
+                            reason:NSLocalizedStringFromTableInBundle(@"FTP parameter contains invalid characters", @"OWF", [OWFTPSession bundle], "ftpsession error - dangerous metacharacters in a command argument")];
             } else if (!isascii(ch) || !isprint(ch)) {
                 plainASCII = NO;
             }
@@ -526,6 +534,7 @@ static NSString *defaultPassword = nil;
     [controlSocketStream writeData:crlf];
     [controlSocketStream endBuffering];
     return [self readResponse];
+#endif
 }
 
 //
@@ -807,6 +816,8 @@ static NSString *defaultPassword = nil;
 
 - (void)getFile:(NSString *)path;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     NSString *file;
     NSData *decodedFileName;
     ONSocketStream *inputSocketStream;
@@ -965,10 +976,13 @@ static NSString *defaultPassword = nil;
     [autoreleasePool release];
     if (![self readResponse]) // "226 Transfer complete"
 	[NSException raise:@"RetrieveStopped" format:NSLocalizedStringFromTableInBundle(@"Retrieve of %@ stopped: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error"), file, lastReply];
+#endif
 }    
 	
 - (void)getDirectory:(NSString *)path;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     ONSocketStream *inputSocketStream;
     OWDataStream *outputDataStream;
     OWContent *directoryContent;
@@ -1018,7 +1032,7 @@ static NSString *defaultPassword = nil;
             [nonretainedProcessor processedBytes:dataBytesRead];
             [outputDataStream writeData:data];
             if (abortOperation)
-                [NSException raise:@"FetchAborted" format:NSLocalizedStringFromTableInBundle(@"Fetch stopped", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
+                [NSException raise:@"FetchAborted" reason:NSLocalizedStringFromTableInBundle(@"Fetch stopped", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
         }
     } NS_HANDLER {
 	abortSocket = nil;
@@ -1031,14 +1045,17 @@ static NSString *defaultPassword = nil;
     [outputDataStream release];
     if (![self readResponse]) // "226 Transfer complete"
 	[NSException raise:@"ListAborted" format:NSLocalizedStringFromTableInBundle(@"List stopped: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error"), lastReply];
+#endif
 }
 
 #define BLOCK_SIZE (4096)
 
 - (void)storeData:(NSData *)storeData atPath:(NSString *)path;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     NSString *file;
-    ONSocketStream *outputSocketStream;
+    ONSocketStream *outputSocketStream = nil;
     unsigned int contentLength;
     NSAutoreleasePool *autoreleasePool = nil;
 
@@ -1097,6 +1114,7 @@ static NSString *defaultPassword = nil;
     [outputSocketStream release];
     if (![self readResponse]) // "226 Transfer complete"
         [NSException raise:@"StoreAborted" format:NSLocalizedStringFromTableInBundle(@"Store of %@ stopped: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error"), file, lastReply];
+#endif
 }    
 
 - (void)removeFileAtPath:(NSString *)path;

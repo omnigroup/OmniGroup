@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,7 +55,7 @@ typedef enum {
     NSMutableSet *followedArcsWithThreads; // Arcs in followedArcs whose state was Running last we checked
     NSMutableArray *givenArcs;        // Arcs provided to us in -init, and considered to be 'free'
     OWCacheSearch *cacheSearch;       // The state of our search for suitable arcs, or nil
-    unsigned firstErrorContent;       // Index of first content that's an error or error-result
+    NSUInteger firstErrorContent;     // Index of first content that's an error or error-result
     NSDictionary *targetAcceptableContentTypes;  // Read-only after -init; no lock required
     
     OWContent *mostRecentAddress;     // Latest content that represents an OWAddress; prot. by contextLock
@@ -83,8 +83,8 @@ typedef enum {
     OFInvocation *continuationEvent;
 
     NSString *targetTypeFormatString;
-    unsigned int maximumWorkToBeDone;
-    unsigned int threadsUsedCount;
+    size_t maximumWorkToBeDone;
+    NSUInteger threadsUsedCount;
 
     NSString *errorNameString;
     NSString *errorReasonString;

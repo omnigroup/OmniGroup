@@ -1,4 +1,4 @@
-// Copyright 1999-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,11 +18,11 @@
 {
     ONSocket *socket;
     void *writeRemainder;
-    unsigned int writeLength;
-    unsigned int writePosition;
+    size_t writeLength;
+    size_t writePosition;
     void *readRemainder;
-    unsigned int readPacketLength;
-    unsigned int readLength;   
+    uint32_t readPacketLength;
+    size_t readLength;   
 }
 
 - initWithTCPSocket:(ONSocket *)aSocket;

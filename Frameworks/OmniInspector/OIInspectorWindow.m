@@ -1,4 +1,4 @@
-// Copyright 2002-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,9 +14,6 @@
 #import "OIInspectorRegistry.h"
 
 RCS_ID("$Id$");
-
-@interface OIInspectorWindow (Private)
-@end
 
 @implementation OIInspectorWindow
 
@@ -69,10 +66,7 @@ RCS_ID("$Id$");
 	[super recalculateKeyViewLoop];
 }
 
-@end
-
-
-@implementation OIInspectorWindow (NotificationsDelegatesDatasources)
+#pragma mark Notifications
 
 - (void)resizerWillBeginResizing:(OIInspectorResizer *)resizer;
 {
@@ -96,8 +90,4 @@ RCS_ID("$Id$");
     _inspectorWindowFlags.isBeingResizedByResizer = NO;
 }
 
-@end
-
-
-@implementation OIInspectorWindow (Private)
 @end

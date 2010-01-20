@@ -1,4 +1,4 @@
-// Copyright 2000-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -99,7 +99,7 @@ static void _addFormatter(NSMutableArray *results, NSString *formatString)
     return [obj stringValue];
 }
 
-- (BOOL)getObjectValue:(id *)obj forString:(NSString *)string errorDescription:(NSString **)error;
+- (BOOL)getObjectValue:(out id *)obj forString:(NSString *)string errorDescription:(out NSString **)error;
 {
     *obj = [NSNumber numberWithInt:[string intValue]];
     return YES;

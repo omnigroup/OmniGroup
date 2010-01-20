@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,7 @@
 #import "ODOObject-Internal.h"
 #import "ODOProperty-Internal.h"
 #import "ODOEditingContext-Internal.h"
+#import "ODOInternal.h"
 
 RCS_ID("$Id$")
 
@@ -74,7 +75,7 @@ void ODOObjectWillAccessValueForKey(ODOObject *self, NSString *key)
 }
 
 // Can pass a relationship if you already know it, or nil if you don't.
-static ODORelationship *_ODOLookupRelationshipBySnapshotIndex(ODOObject *self, unsigned int snapshotIndex, BOOL toMany, ODORelationship *rel)
+static ODORelationship *_ODOLookupRelationshipBySnapshotIndex(ODOObject *self, NSUInteger snapshotIndex, BOOL toMany, ODORelationship *rel)
 {
     OBPRECONDITION(!rel || [rel isKindOfClass:[ODORelationship class]]);
     OBPRECONDITION(!rel || ODOPropertySnapshotIndex(rel) == snapshotIndex);
@@ -92,7 +93,7 @@ static ODORelationship *_ODOLookupRelationshipBySnapshotIndex(ODOObject *self, u
 }
 
 // Can pass a relationship if you already know it, or nil if you don't.
-static inline id _ODOObjectCheckForLazyToOneFaultCreation(ODOObject *self, id value, unsigned int snapshotIndex, ODORelationship *rel)
+static inline id _ODOObjectCheckForLazyToOneFaultCreation(ODOObject *self, id value, NSUInteger snapshotIndex, ODORelationship *rel)
 {
     OBPRECONDITION(!rel || [rel isKindOfClass:[ODORelationship class]]);
     OBASSERT(!rel || [rel isToMany] == NO);
@@ -122,7 +123,7 @@ static inline id _ODOObjectCheckForLazyToOneFaultCreation(ODOObject *self, id va
     return value;
 }
 
-static inline id _ODOObjectCheckForLazyToManyFaultCreation(ODOObject *self, id value, unsigned int snapshotIndex, ODORelationship *rel)
+static inline id _ODOObjectCheckForLazyToManyFaultCreation(ODOObject *self, id value, NSUInteger snapshotIndex, ODORelationship *rel)
 {
     if (ODOObjectValueIsLazyToManyFault(value)) {
         // When asking for the to-many relationship the first time, we fetch it.  We assume that the caller is going to do something useful with it, otherwise they shouldn't even ask.  If you want to conditionally avoid faulting, we could add a -isFaultForKey: or some such.
@@ -140,7 +141,7 @@ id ODOObjectPrimitiveValueForProperty(ODOObject *self, ODOProperty *prop)
     OBPRECONDITION(!self->_flags.isFault || prop == [[self->_objectID entity] primaryKeyAttribute]);
     
     // Could maybe have extra info in this lookup (attr vs. rel, to-one vs. to-many)?
-    unsigned int snapshotIndex = ODOPropertySnapshotIndex(prop);
+    NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
     if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX)
         return [[self objectID] primaryKey];
     
@@ -170,7 +171,7 @@ static id _ODOObjectPrimaryKeyGetter(ODOObject *self, SEL _cmd)
     return [self->_objectID primaryKey];
 }
 
-static id _ODOObjectAttributeGetterAtIndex(ODOObject *self, unsigned int snapshotIndex)
+static id _ODOObjectAttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
 #ifdef OMNI_ASSERTIONS_ON
     {
@@ -188,7 +189,7 @@ static id _ODOObjectAttributeGetterAtIndex(ODOObject *self, unsigned int snapsho
     return _ODOObjectValueAtIndex(self, snapshotIndex);
 }
 
-static id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, unsigned int snapshotIndex)
+static id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
 #ifdef OMNI_ASSERTIONS_ON
     {
@@ -200,11 +201,23 @@ static id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, unsigned int
     }
 #endif
     
+    // Deleted objects clear all their to-one relationships to ensure that KVO unsubscription is accurate across multi-step keyPaths.  So, we can and should return nil here (since the receiver of a did-delete notification can remove observation of a keyPath that will cause lookups of intermediate objects).
+    {
+        // If we are a saved delete or reverted object or our editing context was -reset, we should have cleaned up already and can return nil.
+        if (self->_flags.invalid)
+            return nil;
+        
+        // Ensure that this early-out we are going to use is valid -- deleted objects should be faults.
+        OBASSERT(![self isDeleted] || self->_flags.isFault);
+        if (self->_flags.isFault && [self isDeleted])
+            return nil;
+    }
+    
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
     return _ODOObjectCheckForLazyToOneFaultCreation(self, _ODOObjectValueAtIndex(self, snapshotIndex), snapshotIndex, nil/*relationship == we has it not!*/);
 }
 
-static id _ODOObjectToManyRelationshipGetterAtIndex(ODOObject *self, unsigned int snapshotIndex)
+static id _ODOObjectToManyRelationshipGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
 #ifdef OMNI_ASSERTIONS_ON
     {
@@ -401,7 +414,7 @@ void ODOSetterForUnknownOffset(ODOObject *self, SEL _cmd, id value)
 
 ODOPropertyGetter ODOGetterForProperty(ODOProperty *prop)
 {
-    unsigned int snapshotIndex = ODOPropertySnapshotIndex(prop);
+    NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
     if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX)
         return _ODOObjectPrimaryKeyGetter;
     
@@ -438,7 +451,7 @@ void ODOObjectSetInternalValueForProperty(ODOObject *self, id value, ODOProperty
     OBPRECONDITION(self->_editingContext);
     OBPRECONDITION(self->_objectID);
     
-    unsigned int snapshotIndex = ODOPropertySnapshotIndex(prop);
+    NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
     _ODOObjectSetValueAtIndex(self, snapshotIndex, value);
 }
 

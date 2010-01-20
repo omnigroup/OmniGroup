@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,14 +17,13 @@ RCS_ID("$Id$")
 // This is similar to the above, but replaces contiguous sequences of characters from the pattern set with a single occurrence of the replacement string
 - (void)collapseAllOccurrencesOfCharactersInSet:(NSCharacterSet *)set toString:(NSString *)replaceString;
 {
-    NSRange characterRange, searchRange, replaceRange;
-    unsigned int replaceStringLength, selfLength;
-
-    replaceStringLength = [replaceString length];
-    selfLength = [self length];
-    characterRange = [self rangeOfCharacterFromSet:set options:NSLiteralSearch range:NSMakeRange(0, selfLength)];
+    NSUInteger replaceStringLength = [replaceString length];
+    NSUInteger selfLength = [self length];
+    NSRange characterRange = [self rangeOfCharacterFromSet:set options:NSLiteralSearch range:NSMakeRange(0, selfLength)];
+    
     while (characterRange.length > 0) {
-        replaceRange = characterRange;
+        NSRange replaceRange = characterRange;
+        NSRange searchRange;
         searchRange.location = replaceRange.location + replaceRange.length;
         searchRange.length = selfLength - searchRange.location;
         for (;;) {
@@ -56,8 +55,8 @@ RCS_ID("$Id$")
     }
 
     NSMutableString *replacementString = [[NSMutableString alloc] init];
-    unsigned int matchStringLength = [matchString length];
-    unsigned int lastPosition = 0;
+    NSUInteger matchStringLength = [matchString length];
+    NSUInteger lastPosition = 0;
 
     do {
         NSRange copyRange = NSMakeRange(lastPosition, [scanner scanLocation] - lastPosition);

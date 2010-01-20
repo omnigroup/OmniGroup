@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFObject.h>
 
-@class NSString, NSURL, NSError, NSDictionary, NSMutableDictionary;
+@class NSString, NSURL, NSError, NSDictionary, NSMutableDictionary, NSPredicate;
 @class ODOModel, ODOObjectID, ODOSQLStatement;
 
 extern BOOL ODOLogSQL; // Not set until +[ODODatabase initialize]
@@ -33,20 +33,20 @@ extern BOOL ODOLogSQL; // Not set until +[ODODatabase initialize]
 }
 
 - (id)initWithModel:(ODOModel *)model;
-- (ODOModel *)model;
+@property(readonly) ODOModel *model;
 
-- (NSURL *)connectedURL;
+@property(readonly) NSURL *connectedURL;
 - (BOOL)connectToURL:(NSURL *)fileURL error:(NSError **)outError;
 - (BOOL)disconnect:(NSError **)outError;
 
-- (BOOL)isFreshlyCreated;
+@property(readonly) BOOL isFreshlyCreated;
 - (void)didSave;
 
 // Values can be any plist type.  Setting a NSNull or nil will cause the metadata value to be removed.  Metadata changes are saved with the next normal save.
 - (id)metadataForKey:(NSString *)key;
 - (void)setMetadata:(id)value forKey:(NSString *)key;
 
-- (NSDictionary *)committedMetadata;
+@property(readonly) NSDictionary *committedMetadata;
 
 - (BOOL)fetchCommittedRowCount:(uint64_t *)outRowCount fromEntity:entity matchingPredicate:(NSPredicate *)predicate error:(NSError **)outError;
 

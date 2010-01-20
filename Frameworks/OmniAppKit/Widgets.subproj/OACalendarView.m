@@ -1,4 +1,4 @@
-// Copyright 2001-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,7 @@ RCS_ID("$Id$")
 */
 
 
-@interface OACalendarView (Private)
+@interface OACalendarView (/*Private*/)
 
 - (NSButton *)_createButtonWithFrame:(NSRect)buttonFrame;
 
@@ -42,22 +42,22 @@ RCS_ID("$Id$")
 - (void)_drawSelectionBackground:(NSRect)rect;
 - (void)_drawDaysOfMonthInRect:(NSRect)rect;
 
-- (float)_maximumDayOfWeekWidth;
+- (CGFloat)_maximumDayOfWeekWidth;
 - (NSSize)_maximumDayOfMonthSize;
-- (float)_minimumColumnWidth;
-- (float)_minimumRowHeight;
+- (CGFloat)_minimumColumnWidth;
+- (CGFloat)_minimumRowHeight;
 
-- (NSCalendarDate *)_hitDateWithLocation:(NSPoint)targetPoint;
-- (NSCalendarDate *)_hitWeekdayWithLocation:(NSPoint)targetPoint;
+- (NSDate *)_hitDateWithLocation:(NSPoint)targetPoint;
+- (NSDate *)_hitWeekdayWithLocation:(NSPoint)targetPoint;
 
 @end
 
 
 @implementation OACalendarView
 
-const float OACalendarViewButtonWidth = 15.0;
-const float OACalendarViewButtonHeight = 15.0;
-const float OACalendarViewSpaceBetweenMonthYearAndGrid = 2.0;
+const float OACalendarViewButtonWidth = 15.0f;
+const float OACalendarViewButtonHeight = 15.0f;
+const float OACalendarViewSpaceBetweenMonthYearAndGrid = 2.0f;
 const int OACalendarViewNumDaysPerWeek = 7;
 const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
@@ -114,7 +114,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
     dayOfMonthCell = [[NSTextFieldCell alloc] init];
     [dayOfMonthCell setAlignment:NSCenterTextAlignment];
-    [dayOfMonthCell setFont:[NSFont boldSystemFontOfSize:9.0]];
+    [dayOfMonthCell setFont:[NSFont boldSystemFontOfSize:9.0f]];
 
     buttons = [[NSMutableArray alloc] initWithCapacity:2];
 
@@ -146,8 +146,10 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 //[self sizeToFit];
 //NSLog(@"frame: %@", NSStringFromRect([self frame]));
 
-    NSCalendarDate *aDate = [NSCalendarDate calendarDate];
-    aDate = [NSCalendarDate dateWithYear:[aDate yearOfCommonEra] month:[aDate monthOfYear] day:[aDate dayOfMonth] hour:12 minute:0 second:0 timeZone:[aDate timeZone]];
+    NSDate *aDate = [NSDate date];
+    NSDateComponents *dateComponents =  [calendar components:NSEraCalendarUnit | NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit fromDate:aDate];
+    [dateComponents setHour:12];
+    aDate = [calendar dateFromComponents:dateComponents];
     [self setVisibleMonth:aDate];
     [self setSelectedDay:aDate];
     
@@ -194,13 +196,10 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
 - (void)setEnabled:(BOOL)flag;
 {
-    unsigned int buttonIndex;
-
     [super setEnabled:flag];
-    
-    buttonIndex = [buttons count];
-    while (buttonIndex--)
-        [[buttons objectAtIndex:buttonIndex] setEnabled:flag];
+
+    for (NSButton *button in buttons)
+        [button setEnabled:flag];
 }
 
 - (void)sizeToFit;
@@ -213,7 +212,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
     minimumSize.height = monthAndYearRect.size.height + gridHeaderRect.size.height + ((OACalendarViewMaxNumWeeksIntersectedByMonth * [self _minimumRowHeight]));
     // This should really check the lengths of the months, and include space for the buttons.
-    minimumSize.width = ([self _minimumColumnWidth] * OACalendarViewNumDaysPerWeek) + 1.0;
+    minimumSize.width = ([self _minimumColumnWidth] * OACalendarViewNumDaysPerWeek) + 1.0f;
 
     [self setFrameSize:minimumSize];
     [self setNeedsDisplay:YES];
@@ -271,11 +270,8 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 - (void)mouseDown:(NSEvent *)mouseEvent;
 {
     if ([self isEnabled]) {
-        NSCalendarDate *hitDate;
-        NSPoint location;
-    
-        location = [self convertPoint:[mouseEvent locationInWindow] fromView:nil];
-        hitDate = [self _hitDateWithLocation:location];
+        NSPoint location = [self convertPoint:[mouseEvent locationInWindow] fromView:nil];
+        NSDate *hitDate = [self _hitDateWithLocation:location];
         if (hitDate) {
             id target;
 
@@ -288,9 +284,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
             }
             
         } else if (selectionType == OACalendarViewSelectByWeekday) {
-            NSCalendarDate *hitWeekday;
-            
-            hitWeekday = [self _hitWeekdayWithLocation:location];
+            NSDate *hitWeekday = [self _hitWeekdayWithLocation:location];
             if (hitWeekday) {
                 if (!flags.targetApprovesDateSelection || [[self target] calendarView:self shouldSelectDate:hitWeekday]) {
                     [self setSelectedDay:hitWeekday];
@@ -306,15 +300,23 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 // API
 //
 
-- (NSCalendarDate *)visibleMonth;
+@synthesize calendar;
+
+- (NSDate *)visibleMonth;
 {
     return visibleMonth;
 }
 
-- (void)setVisibleMonth:(NSCalendarDate *)aDate;
+- (void)setVisibleMonth:(NSDate *)aDate;
 {
+    NSDateComponents *components = [calendar components:NSEraCalendarUnit | NSYearCalendarUnit| NSMonthCalendarUnit fromDate:aDate];
+    aDate = [calendar dateFromComponents:components];
+    
+    if ([aDate isEqual:visibleMonth])
+        return;
+    
     [visibleMonth release];
-    visibleMonth = [[aDate firstDayOfMonth] retain];
+    visibleMonth = [aDate retain];
     [monthAndYearTextFieldCell setObjectValue:visibleMonth];
 
     [self updateHighlightMask];
@@ -324,14 +326,14 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
         [[self target] calendarView:self didChangeVisibleMonth:visibleMonth];
 }
 
-- (NSCalendarDate *)selectedDay;
+- (NSDate *)selectedDay;
 {
     return [selectedDays count] ? [selectedDays objectAtIndex:0] : nil;
 }
 
 #define DAY_IN_SECONDS 86400
 
-- (void)setSelectedDay:(NSCalendarDate *)newSelectedDay;
+- (void)setSelectedDay:(NSDate *)newSelectedDay;
 {
     if ([selectedDays containsObject:newSelectedDay])
         return;
@@ -348,11 +350,11 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     }
     
     NSEvent *event = [NSApp currentEvent];
-    unsigned int kflags = [event modifierFlags];
+    NSUInteger kflags = [event modifierFlags];
     BOOL shiftMask = (0 != (kflags & NSShiftKeyMask));
     BOOL commandMask = (0 != (kflags & NSCommandKeyMask));
     
-    NSCalendarDate *startDate = [selectedDays objectAtIndex:0];
+    NSDate *startDate = [selectedDays objectAtIndex:0];
     if (shiftMask) {
 
 	NSTimeInterval start = [startDate timeIntervalSince1970];
@@ -367,7 +369,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 	[selectedDays removeAllObjects];
 	
 	while (start <= end ) {
-	    NSCalendarDate *date = [NSCalendarDate dateWithTimeIntervalSince1970:start];
+	    NSDate *date = [NSDate dateWithTimeIntervalSince1970:start];
 	    [selectedDays addObject:date];
 	    start+= DAY_IN_SECONDS;
 	}
@@ -411,8 +413,9 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
 - (void)setShowsDaysForOtherMonths:(BOOL)value;
 {
-    if (value != flags.showsDaysForOtherMonths) {
-        flags.showsDaysForOtherMonths = value;
+    BOOL showsDaysForOtherMonths = (flags.showsDaysForOtherMonths != 0);
+    if (value != showsDaysForOtherMonths) {
+        flags.showsDaysForOtherMonths = value ? 1 : 0;
 
         [self setNeedsDisplay:YES];
     }
@@ -433,12 +436,12 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     }
 }
 
-- (int)firstDayOfWeek;
+- (NSInteger)firstDayOfWeek;
 {
     return displayFirstDayOfWeek;
 }
 
-- (void)setFirstDayOfWeek:(int)weekDay;
+- (void)setFirstDayOfWeek:(NSInteger)weekDay;
 {
     if (displayFirstDayOfWeek != weekDay) {
         displayFirstDayOfWeek = weekDay;
@@ -451,7 +454,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     if (!selectedDays || [selectedDays count] <= 0 )
         return nil;
 
-    NSCalendarDate *selectedDay = [self selectedDay];
+    NSDate *selectedDay = [self selectedDay];
     
     switch (selectionType) {
         case OACalendarViewSelectByDay:
@@ -461,16 +464,18 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
         case OACalendarViewSelectByWeek:
             {
                 NSMutableArray *days;
-                NSCalendarDate *day;
                 int index;
                 
                 days = [NSMutableArray arrayWithCapacity:OACalendarViewNumDaysPerWeek];
-                day = [selectedDay dateByAddingYears:0 months:0 days:-[selectedDay dayOfWeek] hours:0 minutes:0 seconds:0];
+                NSDateComponents *components = [calendar components:NSWeekdayCalendarUnit fromDate:selectedDay];
+                [components setWeekday:-([components weekday] -1)];
+                NSDate *day = [calendar dateByAddingComponents:components toDate:selectedDay options:NSWrapCalendarComponents];
+                NSDateComponents *selectedMonth = [calendar components:NSMonthCalendarUnit fromDate:selectedDay];
                 for (index = 0; index < OACalendarViewNumDaysPerWeek; index++) {
-                    NSCalendarDate *nextDay;
-
-                    nextDay = [day dateByAddingYears:0 months:0 days:index hours:0 minutes:0 seconds:0];
-                    if (flags.showsDaysForOtherMonths || [nextDay monthOfYear] == [selectedDay monthOfYear])
+                    [components setDay:index];
+                    NSDate *nextDay = [calendar dateByAddingComponents:components toDate:day options:NSWrapCalendarComponents];
+                    NSDateComponents *monthComponent = [calendar components:NSMonthCalendarUnit fromDate:nextDay];
+                    if (flags.showsDaysForOtherMonths || [monthComponent month] == [selectedMonth month])
                         [days addObject:nextDay];                    
                 }
             
@@ -481,16 +486,19 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
         case OACalendarViewSelectByWeekday:
             {
                 NSMutableArray *days;
-                NSCalendarDate *day;
                 int index;
                 
                 days = [NSMutableArray arrayWithCapacity:OACalendarViewMaxNumWeeksIntersectedByMonth];
-                day = [selectedDay dateByAddingYears:0 months:0 days:-(([selectedDay weekOfMonth] - 1) * OACalendarViewNumDaysPerWeek) hours:0 minutes:0 seconds:0];
+                NSDateComponents *components = [calendar components:NSWeekCalendarUnit fromDate:selectedDay];
+                [components setWeek:-([components week] -1)];
+                NSDate *day = [calendar dateByAddingComponents:components toDate:selectedDay options:NSWrapCalendarComponents];
+                [components setWeek:0];
+                NSDateComponents *selectedMonth = [calendar components:NSMonthCalendarUnit fromDate:selectedDay];
                 for (index = 0; index < OACalendarViewMaxNumWeeksIntersectedByMonth; index++) {
-                    NSCalendarDate *nextDay;
-
-                    nextDay = [day dateByAddingYears:0 months:0 days:(index * OACalendarViewNumDaysPerWeek) hours:0 minutes:0 seconds:0];
-                    if (flags.showsDaysForOtherMonths || [nextDay monthOfYear] == [selectedDay monthOfYear])
+                    [components setDay:(index * OACalendarViewNumDaysPerWeek)];
+                    NSDate *nextDay = [calendar dateByAddingComponents:components toDate:day options:NSWrapCalendarComponents];
+                    NSDateComponents *monthComponent = [calendar components:NSMonthCalendarUnit fromDate:nextDay];
+                    if (flags.showsDaysForOtherMonths || [monthComponent month] == [selectedMonth month])
                         [days addObject:nextDay];
                 }
 
@@ -515,7 +523,10 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) != 0)
         return [self previousYear:sender];
     
-    [self setVisibleMonth:[visibleMonth dateByAddingYears:0 months:-1 days:0 hours:0 minutes:0 seconds:0]];
+    NSDateComponents *components = [[NSDateComponents alloc] init];
+    [components setMonth:-1];
+    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:NSWrapCalendarComponents]];
+    [components release];
 }
 
 - (IBAction)nextMonth:(id)sender;
@@ -523,23 +534,30 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) != 0)
         return [self nextYear:sender];
 
-    [self setVisibleMonth:[visibleMonth dateByAddingYears:0 months:1 days:0 hours:0 minutes:0 seconds:0]];
+    NSDateComponents *components = [[NSDateComponents alloc] init];
+    [components setMonth:1];
+    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:NSWrapCalendarComponents]];
+    [components release];
 }
 
 - (IBAction)previousYear:(id)sender;
 {
-    [self setVisibleMonth:[visibleMonth dateByAddingYears:-1 months:0 days:0 hours:0 minutes:0 seconds:0]];
+    NSDateComponents *components = [[NSDateComponents alloc] init];
+    [components setYear:-1];
+    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:NSWrapCalendarComponents]];
+    [components release];
 }
 
 - (IBAction)nextYear:(id)sender;
 {
-    [self setVisibleMonth:[visibleMonth dateByAddingYears:1 months:0 days:0 hours:0 minutes:0 seconds:0]];
+    NSDateComponents *components = [[NSDateComponents alloc] init];
+    [components setYear:+1];
+    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:NSWrapCalendarComponents]];
+    [components release];
 }
 
-@end
-
-
-@implementation OACalendarView (Private)
+#pragma mark -
+#pragma mark Private
 
 - (NSButton *)_createButtonWithFrame:(NSRect)buttonFrame;
 {
@@ -578,37 +596,37 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     viewBounds = [self bounds];
     
     // get the grid cell width (subtract 1.0 from the bounds width to allow for the border)
-    columnWidth = (viewBounds.size.width - 1.0) / OACalendarViewNumDaysPerWeek;
-    viewBounds.size.width = (columnWidth * OACalendarViewNumDaysPerWeek) + 1.0;
+    columnWidth = (viewBounds.size.width - 1.0f) / OACalendarViewNumDaysPerWeek;
+    viewBounds.size.width = (columnWidth * OACalendarViewNumDaysPerWeek) + 1.0f;
     
     // resize the month & year view to be the same width as the grid
     [monthAndYearView setFrameSize:NSMakeSize(viewBounds.size.width, [monthAndYearView frame].size.height)];
 
     // get the rect for the month and year text field cell
     cellSize = [monthAndYearTextFieldCell cellSize];
-    NSDivideRect(viewBounds, &topRect, &gridHeaderAndBodyRect, ceil(cellSize.height + OACalendarViewSpaceBetweenMonthYearAndGrid), NSMinYEdge);
-    NSDivideRect(topRect, &discardRect, &monthAndYearRect, floor((viewBounds.size.width - cellSize.width) / 2), NSMinXEdge);
+    NSDivideRect(viewBounds, &topRect, &gridHeaderAndBodyRect, (CGFloat)ceil(cellSize.height + OACalendarViewSpaceBetweenMonthYearAndGrid), NSMinYEdge);
+    NSDivideRect(topRect, &discardRect, &monthAndYearRect, (CGFloat)floor((viewBounds.size.width - cellSize.width) / 2), NSMinXEdge);
     monthAndYearRect.size.width = cellSize.width;
     
     tempRect = gridHeaderAndBodyRect;
     // leave space for a one-pixel border on each side
-    tempRect.size.width -= 2.0;
-    tempRect.origin.x += 1.0;
+    tempRect.size.width -= 2.0f;
+    tempRect.origin.x += 1.0f;
     // leave space for a one-pixel border at the bottom (the top already looks fine)
-    tempRect.size.height -= 1.0;
+    tempRect.size.height -= 1.0f;
 
     // get the grid header rect
     cellSize = [dayOfWeekCell[0] cellSize];
-    NSDivideRect(tempRect, &gridHeaderRect, &gridBodyRect, ceil(cellSize.height), NSMinYEdge);
+    NSDivideRect(tempRect, &gridHeaderRect, &gridBodyRect, (CGFloat)ceil(cellSize.height), NSMinYEdge);
     
     // get the grid row height (add 1.0 to the body height because while we can't actually draw on that extra pixel, our bottom row doesn't have to draw a bottom grid line as there's a border right below us, so we need to account for that, which we do by pretending that next pixel actually does belong to us)
-    rowHeight = floor((gridBodyRect.size.height + 1.0) / OACalendarViewMaxNumWeeksIntersectedByMonth);
+    rowHeight = (CGFloat)floor((gridBodyRect.size.height + 1.0f) / OACalendarViewMaxNumWeeksIntersectedByMonth);
     
     // get the grid body rect
-    gridBodyRect.size.height = (rowHeight * OACalendarViewMaxNumWeeksIntersectedByMonth) - 1.0;
+    gridBodyRect.size.height = (rowHeight * OACalendarViewMaxNumWeeksIntersectedByMonth) - 1.0f;
     
     // adjust the header and body rect to account for any adjustment made while calculating even row heights
-    gridHeaderAndBodyRect.size.height = NSMaxY(gridBodyRect) - NSMinY(gridHeaderAndBodyRect) + 1.0;
+    gridHeaderAndBodyRect.size.height = NSMaxY(gridBodyRect) - NSMinY(gridHeaderAndBodyRect) + 1.0f;
 }
 
 - (void)_drawSelectionBackground:(NSRect)rect;
@@ -618,22 +636,24 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 	    // UNDONE
 	    break;
 	case OACalendarViewSelectByWeek: {
-	    int selectedWeek = [[self selectedDay] weekOfMonth];
+            NSDateComponents *selectedWeekComponents = [calendar components:NSWeekCalendarUnit | NSWeekdayCalendarUnit fromDate:[self selectedDay]];
+            NSDateComponents *visibleWeekComponents = [calendar components:NSWeekCalendarUnit fromDate:visibleMonth];
+            NSInteger selectedWeek = [selectedWeekComponents week] - [visibleWeekComponents week] + 1;
 	    int weekIndex;
-	    NSRect weekRect;
+	    NSRect weekRect; 
             
-            if (displayFirstDayOfWeek > [visibleMonth dayOfWeek])
+            NSDateComponents *visibleMonthComponents = [calendar components:NSWeekdayCalendarUnit fromDate:visibleMonth];
+            if (displayFirstDayOfWeek > [visibleMonthComponents weekday])
                 selectedWeek++;
-	    if ([[self selectedDay] dayOfWeek] < displayFirstDayOfWeek)
+	    if ([selectedWeekComponents weekday] < displayFirstDayOfWeek)
                 selectedWeek--;
-	    
-	    weekRect.size.height = rowHeight - 1.0;
-	    weekRect.size.width = rect.size.width - 2.0;
-	    weekRect.origin.x = rect.origin.x + 1.0;
+	    weekRect.size.height = rowHeight - 1.0f;
+	    weekRect.size.width = rect.size.width - 2.0f;
+	    weekRect.origin.x = rect.origin.x + 1.0f;
 	    	    
 	    for (weekIndex = 1; weekIndex <= OACalendarViewMaxNumWeeksIntersectedByMonth; weekIndex++) {
-		weekRect.origin.y = rect.origin.x + ((weekIndex+1) * rowHeight) - 2.0;
-		[self drawRoundedRect:NSInsetRect(weekRect, 1.0, 1.0) cornerRadius:7.0 color:(weekIndex == selectedWeek ? [NSColor controlShadowColor] : [NSColor controlHighlightColor])];
+		weekRect.origin.y = rect.origin.x + ((weekIndex+1) * rowHeight) - 2.0f;
+		[self drawRoundedRect:NSInsetRect(weekRect, 1.0f, 1.0f) cornerRadius:7.0f color:(weekIndex == selectedWeek ? [NSColor controlShadowColor] : [NSColor controlHighlightColor])];
 	    }
 	    break;
 	} case OACalendarViewSelectByWeekday:
@@ -645,8 +665,6 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 - (void)_drawDaysOfMonthInRect:(NSRect)rect;
 {
     NSRect cellFrame;
-    int visibleMonthIndex;
-    NSCalendarDate *thisDay;
     int index, row, column;
     NSSize cellSize;
 
@@ -657,13 +675,18 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
     cellSize = [dayOfMonthCell cellSize];
     
-    visibleMonthIndex = [visibleMonth monthOfYear];
+    NSDateComponents *visibleMonthComponents = [calendar components:NSMonthCalendarUnit | NSWeekdayCalendarUnit fromDate:visibleMonth];
+    NSInteger visibleMonthIndex = [visibleMonthComponents month];
 
-    int dayOffset = displayFirstDayOfWeek - [visibleMonth dayOfWeek];
+    NSInteger dayOffset = displayFirstDayOfWeek - ([visibleMonthComponents weekday] - 1);
     if (dayOffset > 0)
         dayOffset -= OACalendarViewNumDaysPerWeek;
-    thisDay = [visibleMonth dateByAddingYears:0 months:0 days:dayOffset hours:0 minutes:0 seconds:0];
 
+    NSDateComponents *dayOffsetComponents = [[NSDateComponents alloc] init];
+    [dayOffsetComponents setDay:dayOffset];
+    NSDate *thisDay = [calendar dateByAddingComponents:dayOffsetComponents toDate:visibleMonth options:0];
+    [dayOffsetComponents setDay:1];
+    
     for (row = column = index = 0; index < OACalendarViewMaxNumWeeksIntersectedByMonth * OACalendarViewNumDaysPerWeek; index++) {
         NSColor *textColor;
         BOOL isVisibleMonth;
@@ -672,13 +695,14 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
         cellFrame.origin.x = rect.origin.x + (column * columnWidth);
         cellFrame.origin.y = rect.origin.y + (row * rowHeight);
 
-        [dayOfMonthCell setIntValue:[thisDay dayOfMonth]];
-        isVisibleMonth = ([thisDay monthOfYear] == visibleMonthIndex);
+        NSDateComponents *thisDayComponents = [calendar components:NSMonthCalendarUnit | NSWeekdayCalendarUnit | NSDayCalendarUnit fromDate:thisDay];
+        [dayOfMonthCell setIntegerValue:[thisDayComponents day]];
+        isVisibleMonth = ([thisDayComponents month] == visibleMonthIndex);
 
         if (flags.showsDaysForOtherMonths || isVisibleMonth) {
 	    
 	    BOOL shouldHighlightThisDay = NO;
-	    NSCalendarDate* selectedDay = [self selectedDay];
+	    NSDate *selectedDay = [self selectedDay];
 	    
 	    if (selectedDay) {
  
@@ -696,9 +720,11 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
                         break;
                         
                     case OACalendarViewSelectByWeekday:
-                        shouldHighlightThisDay = ([selectedDay monthOfYear] == visibleMonthIndex && [selectedDay dayOfWeek] == [thisDay dayOfWeek]);
+                    {
+                        NSDateComponents *selectedDayComponents = [calendar components:NSMonthCalendarUnit | NSWeekdayCalendarUnit fromDate:selectedDay];
+                        shouldHighlightThisDay = ([selectedDayComponents month] == visibleMonthIndex && [selectedDayComponents day] == [thisDayComponents day]);
                         break;
-                        
+                    }  
                     default:
                         [NSException raise:NSInvalidArgumentException format:@"OACalendarView: Unknown selection type: %d", selectionType];
                         break;
@@ -729,7 +755,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 	    }
 
 	    NSRect discardRect, dayOfMonthFrame;
-            NSDivideRect(cellFrame, &discardRect, &dayOfMonthFrame, floor((cellFrame.size.height - cellSize.height) / 2.0), NSMinYEdge);
+            NSDivideRect(cellFrame, &discardRect, &dayOfMonthFrame, (CGFloat)floor((cellFrame.size.height - cellSize.height) / 2.0), NSMinYEdge);
 	    [dayOfMonthCell drawInteriorWithFrame:dayOfMonthFrame inView:self];
 
 	    if (shouldHighlightThisDay && [self isEnabled]) {
@@ -740,18 +766,20 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 	    }
         }
         
-        thisDay = [thisDay dateByAddingYears:0 months:0 days:1 hours:0 minutes:0 seconds:0];
+        thisDay = [calendar dateByAddingComponents:dayOffsetComponents toDate:thisDay options:0];
         column++;
         if (column > OACalendarViewMaxNumWeeksIntersectedByMonth) {
             column = 0;
             row++;
         }
     }
+    
+    [dayOffsetComponents release];
 }
 
-- (float)_maximumDayOfWeekWidth;
+- (CGFloat)_maximumDayOfWeekWidth;
 {
-    float maxWidth;
+    CGFloat maxWidth;
     int index;
 
     maxWidth = 0;
@@ -763,7 +791,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
             maxWidth = cellSize.width;
     }
 
-    return ceil(maxWidth);
+    return (CGFloat)ceil(maxWidth);
 }
 
 - (NSSize)_maximumDayOfMonthSize;
@@ -785,87 +813,98 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
             maxSize.height = cellSize.height;
     }
 
-    maxSize.width = ceil(maxSize.width);
-    maxSize.height = ceil(maxSize.height);
+    maxSize.width = (CGFloat)ceil(maxSize.width);
+    maxSize.height = (CGFloat)ceil(maxSize.height);
 
     return maxSize;
 }
 
-- (float)_minimumColumnWidth;
+- (CGFloat)_minimumColumnWidth;
 {
-    float dayOfWeekWidth;
-    float dayOfMonthWidth;
+    CGFloat dayOfWeekWidth;
+    CGFloat dayOfMonthWidth;
     
     dayOfWeekWidth = [self _maximumDayOfWeekWidth];	// we don't have to add 1.0 because the day of week cell whose width is returned here includes it's own border
-    dayOfMonthWidth = [self _maximumDayOfMonthSize].width + 1.0;	// add 1.0 to allow for the grid. We don't actually draw the vertical grid, but we treat it as if there was one (don't respond to clicks "on" the grid, we have a vertical separator in the header, etc.) 
+    dayOfMonthWidth = [self _maximumDayOfMonthSize].width + 1.0f;	// add 1.0 to allow for the grid. We don't actually draw the vertical grid, but we treat it as if there was one (don't respond to clicks "on" the grid, we have a vertical separator in the header, etc.) 
     return (dayOfMonthWidth > dayOfWeekWidth) ? dayOfMonthWidth : dayOfWeekWidth;
 }
 
-- (float)_minimumRowHeight;
+- (CGFloat)_minimumRowHeight;
 {
-    return [self _maximumDayOfMonthSize].height + 1.0;	// add 1.0 to allow for a bordering grid line
+    return [self _maximumDayOfMonthSize].height + 1.0f;	// add 1.0 to allow for a bordering grid line
 }
 
-- (NSCalendarDate *)_hitDateWithLocation:(NSPoint)targetPoint;
+- (NSDate *)_hitDateWithLocation:(NSPoint)targetPoint;
 {
-    int hitRow, hitColumn;
-    int firstDayOfWeek, targetDayOfMonth;
+    NSInteger hitRow, hitColumn;
+    NSInteger targetDayOfMonth;
     NSPoint offset;
 
     if (NSPointInRect(targetPoint, gridBodyRect) == NO)
         return nil;
 
-    firstDayOfWeek = [[visibleMonth firstDayOfMonth] dayOfWeek] - displayFirstDayOfWeek;
+    NSDateComponents *thisDayComponents = [calendar components:NSWeekdayCalendarUnit fromDate:visibleMonth];
+    NSInteger firstDayOfWeek = ([thisDayComponents weekday] - 1) - displayFirstDayOfWeek;
 
     offset = NSMakePoint(targetPoint.x - gridBodyRect.origin.x, targetPoint.y - gridBodyRect.origin.y);
     // if they exactly hit the grid between days, treat that as a miss
-    if ((selectionType != OACalendarViewSelectByWeekday) && (((int)offset.y % (int)rowHeight) == 0))
+    if ((selectionType != OACalendarViewSelectByWeekday) && (((NSInteger)offset.y % (NSInteger)rowHeight) == 0))
         return nil;
     // if they exactly hit the grid between days, treat that as a miss
-    if ((selectionType != OACalendarViewSelectByWeek) && ((int)offset.x % (int)columnWidth) == 0)
+    if ((selectionType != OACalendarViewSelectByWeek) && ((NSInteger)offset.x % (NSInteger)columnWidth) == 0)
         return nil;
-    hitRow = (int)(offset.y / rowHeight);
-    hitColumn = (int)(offset.x / columnWidth);
+    hitRow = (NSInteger)(offset.y / rowHeight);
+    hitColumn = (NSInteger)(offset.x / columnWidth);
     
-    if ([[visibleMonth firstDayOfMonth] dayOfWeek] < displayFirstDayOfWeek)
+    if ([thisDayComponents weekday] < displayFirstDayOfWeek)
         hitRow--;
 
     targetDayOfMonth = (hitRow * OACalendarViewNumDaysPerWeek) + hitColumn - firstDayOfWeek + 1;
+    NSRange rangeOfDaysInMonth = [calendar rangeOfUnit:NSDayCalendarUnit inUnit:NSMonthCalendarUnit forDate:visibleMonth];
     if (selectionType == OACalendarViewSelectByWeek) {
         if (targetDayOfMonth < 1)
             targetDayOfMonth = 1;
-        else if (targetDayOfMonth > [visibleMonth numberOfDaysInMonth])
-            targetDayOfMonth = [visibleMonth numberOfDaysInMonth];
-    } else if (!flags.showsDaysForOtherMonths && (targetDayOfMonth < 1 || targetDayOfMonth > [visibleMonth numberOfDaysInMonth])) {
+        else if (targetDayOfMonth >= 0 && (NSUInteger)targetDayOfMonth > rangeOfDaysInMonth.length)
+            targetDayOfMonth = rangeOfDaysInMonth.length;
+    } else if (!flags.showsDaysForOtherMonths && (targetDayOfMonth < 1 || (targetDayOfMonth > 0 && (NSUInteger)targetDayOfMonth > rangeOfDaysInMonth.length))) {
         return nil;
     }
 
-    return [visibleMonth dateByAddingYears:0 months:0 days:targetDayOfMonth-1 hours:0 minutes:0 seconds:0];
+    NSDateComponents *targetDayComponent = [[[NSDateComponents alloc] init] autorelease];
+    [targetDayComponent setDay:targetDayOfMonth-1];
+    return [calendar dateByAddingComponents:targetDayComponent toDate:visibleMonth options:NSWrapCalendarComponents];
 }
 
-- (NSCalendarDate *)_hitWeekdayWithLocation:(NSPoint)targetPoint;
+- (NSDate *)_hitWeekdayWithLocation:(NSPoint)targetPoint;
 {
-    int hitDayOfWeek;
-    int firstDayOfWeek, targetDayOfMonth;
-    float offsetX;
+    NSInteger hitDayOfWeek;
+    NSInteger targetDayOfMonth;
+    CGFloat offsetX;
 
     if (NSPointInRect(targetPoint, gridHeaderRect) == NO)
         return nil;
     
     offsetX = targetPoint.x - gridHeaderRect.origin.x;
     // if they exactly hit a border between weekdays, treat that as a miss (besides being neat in general, this avoids the problem where clicking on the righthand border would result in us incorrectly calculating that the _first_ day of the week was hit)
-    if (((int)offsetX % (int)columnWidth) == 0)
+    if (((NSInteger)offsetX % (NSInteger)columnWidth) == 0)
         return nil;
     
-    hitDayOfWeek = ((int)(offsetX / columnWidth) + displayFirstDayOfWeek) % OACalendarViewNumDaysPerWeek;
+    hitDayOfWeek = ((NSInteger)(offsetX / columnWidth) + displayFirstDayOfWeek) % OACalendarViewNumDaysPerWeek;
 
-    firstDayOfWeek = [[visibleMonth firstDayOfMonth] dayOfWeek];
+    NSDateComponents *thisDayComponents = [calendar components:NSDayCalendarUnit fromDate:visibleMonth];
+    [thisDayComponents setDay:-([thisDayComponents day] - 1)];
+    NSDate *firstDayOfMonth = [calendar dateByAddingComponents:thisDayComponents toDate:visibleMonth options:NSWrapCalendarComponents];
+    NSDateComponents *firstDayComponents = [calendar components:NSWeekdayCalendarUnit fromDate:firstDayOfMonth];
+
+    NSInteger firstDayOfWeek = [firstDayComponents weekday];
     if (hitDayOfWeek >= firstDayOfWeek)
         targetDayOfMonth = hitDayOfWeek - firstDayOfWeek + 1;
     else
         targetDayOfMonth = hitDayOfWeek + OACalendarViewNumDaysPerWeek - firstDayOfWeek + 1;
 
-    return [visibleMonth dateByAddingYears:0 months:0 days:targetDayOfMonth-1 hours:0 minutes:0 seconds:0];
+    NSDateComponents *targetDayComponent = [[[NSDateComponents alloc] init] autorelease];
+    [targetDayComponent setDay:targetDayOfMonth-1];
+    return [calendar dateByAddingComponents:targetDayComponent toDate:visibleMonth options:NSWrapCalendarComponents];
 }
 
 @end

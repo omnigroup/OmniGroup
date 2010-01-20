@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,8 +36,12 @@ OAColorPaletteApplyGammaAndNormalize(unsigned int sample, unsigned int maxValue,
         return pow(normalizedSample, gammaValue);
 }
 
+#import <OmniAppKit/NSColor-OAExtensions.h>
 static inline NSColor *
 OAColorPaletteColorWithRGBMaxAndGamma(unsigned int red, unsigned int green, unsigned int blue, unsigned int maxValue, double gammaValue)
 {
-    return [NSColor colorWithCalibratedRed:OAColorPaletteApplyGammaAndNormalize(red, maxValue, gammaValue) green:OAColorPaletteApplyGammaAndNormalize(green, maxValue, gammaValue) blue:OAColorPaletteApplyGammaAndNormalize(blue, maxValue, gammaValue) alpha:1.0];
+    return OARGBA(OAColorPaletteApplyGammaAndNormalize(red, maxValue, gammaValue),
+                  OAColorPaletteApplyGammaAndNormalize(green, maxValue, gammaValue),
+                  OAColorPaletteApplyGammaAndNormalize(blue, maxValue, gammaValue),
+                  1.0);
 }

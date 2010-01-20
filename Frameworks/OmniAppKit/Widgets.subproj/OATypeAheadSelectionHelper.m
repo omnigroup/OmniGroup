@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,11 +73,6 @@ RCS_ID("$Id$");
 
 - (void)processKeyDownCharacter:(unichar)character;
 {
-    OFScheduler *scheduler;
-    NSString *selectedItem;
-    NSUInteger selectedIndex, foundIndex;
-    unsigned int searchStringLength;
-    
     OBPRECONDITION(_dataSource != nil);
     
     // Create the search string the first time around
@@ -88,7 +83,7 @@ RCS_ID("$Id$");
     [typeAheadSearchString appendString:[NSString stringWithCharacter:character]];
 
     // Reset the timer if it hasn't expired yet
-    scheduler = [OFScheduler mainScheduler];
+    OFScheduler *scheduler = [OFScheduler mainScheduler];
     if (typeAheadTimeoutEvent != nil) {
         [scheduler abortEvent:typeAheadTimeoutEvent];
         [typeAheadTimeoutEvent release];
@@ -96,18 +91,15 @@ RCS_ID("$Id$");
     }
     typeAheadTimeoutEvent = [[scheduler scheduleSelector:@selector(_typeAheadSearchTimeout) onObject:self afterTime:0.5] retain];
     
-    selectedItem = [_dataSource currentlySelectedItem];
+    NSString *selectedItem = [_dataSource currentlySelectedItem];
 
-    searchStringLength = [typeAheadSearchString length];
+    NSUInteger searchStringLength = [typeAheadSearchString length];
     if (searchStringLength > 1 && [selectedItem length] >= searchStringLength && [selectedItem compare:typeAheadSearchString options:NSCaseInsensitiveSearch range:NSMakeRange(0, searchStringLength)] == NSOrderedSame)
         return; // Avoid flashing a selection all over the place while you're still typing the thing you have selected
         
-    if (flags.cycleResults && selectedItem)
-        selectedIndex = [typeAheadSearchCache indexOfObject:selectedItem];
-    else
-        selectedIndex = NSNotFound;
-    foundIndex = [self _indexOfItemWithPrefix:typeAheadSearchString afterIndex:selectedIndex];
+    NSUInteger selectedIndex = (flags.cycleResults && selectedItem) ? [typeAheadSearchCache indexOfObject:selectedItem] : NSNotFound;
     
+    NSUInteger foundIndex = [self _indexOfItemWithPrefix:typeAheadSearchString afterIndex:selectedIndex];
     if (foundIndex != NSNotFound)
         [_dataSource typeAheadSelectItemAtIndex:foundIndex];
 }

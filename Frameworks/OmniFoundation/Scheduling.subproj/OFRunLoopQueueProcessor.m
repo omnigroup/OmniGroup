@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,10 +17,7 @@
 
 RCS_ID("$Id$")
 
-@interface OFRunLoopQueueProcessor ()
-#if defined(MAC_OS_X_VERSION_10_6) && MAC_OS_X_VERSION_10_6 >= MAC_OS_X_VERSION_MIN_REQUIRED
-<NSPortDelegate>
-#endif
+@interface OFRunLoopQueueProcessor () <NSPortDelegate>
 - (void)handlePortMessage:(NSPortMessage *)message;
 @end
 
@@ -31,8 +28,6 @@ static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
 + (void)didLoad;
 {
     Class mainThreadRunLoopProcessorClass;
-
-    [NSThread setMainThread];
     
     mainThreadRunLoopProcessorClass = [self mainThreadRunLoopProcessorClass];
     mainThreadProcessor = [[mainThreadRunLoopProcessorClass alloc] initForQueue:[OFMessageQueue mainQueue]];
@@ -98,12 +93,10 @@ static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
 
 - (void)runFromCurrentRunLoopInModes:(NSArray *)modes;
 {
-    unsigned int modeIndex, modeCount;
     NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
 
-    modeCount = [modes count];
-    for (modeIndex = 0; modeIndex < modeCount; modeIndex++)
-        [runLoop addPort:notificationPort forMode:[modes objectAtIndex:modeIndex]];
+    for (NSString *mode in modes)
+        [runLoop addPort:notificationPort forMode:mode];
 
     [self processQueueUntilEmpty];
 }

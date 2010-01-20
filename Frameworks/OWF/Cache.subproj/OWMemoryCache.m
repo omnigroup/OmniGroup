@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -286,7 +286,7 @@ RCS_ID("$Id$");
 
     // Now check for duplicate/superseded arcs while the cache lock is not held. (We will need the global lock though.)
     if (priorArcs != nil && [priorArcs count] > 0) {
-        unsigned arcIndex, arcCount;
+        NSUInteger arcIndex, arcCount;
         arcCount = [priorArcs count];
         [OWPipeline lock];
 
@@ -372,7 +372,7 @@ RCS_ID("$Id$");
 - (BOOL)canStoreArc:(id <OWCacheArc>)anArc;
 {
     NSArray *arcContent;
-    int entIndex, entCount;
+    NSUInteger entIndex, entCount;
 
     arcContent = [anArc entriesWithRelation:OWCacheArcAnyRelation];
     entCount = [arcContent count];
@@ -676,10 +676,11 @@ RCS_ID("$Id$");
 #endif
 
     unsigned rowsTouched, entriesRemoved, rowsEmptied;
-    NSTimeInterval began;
     
     [lock lock];
-    began = [NSDate timeIntervalSinceReferenceDate];
+#if defined(DEBUG_CacheTiming)
+    NSTimeInterval began = [NSDate timeIntervalSinceReferenceDate];
+#endif
 
     rowsTouched = 0;
     rowsEmptied = 0;
@@ -721,7 +722,7 @@ RCS_ID("$Id$");
         [touchedRows removeObject:purgeRow];
     }
 
-#if defined(DEBUG_wiml) || defined(DEBUG_kc0)
+#if defined(DEBUG_CacheTiming)
     NSLog(@"-[%@ %s] took %.3f seconds. Removed %u entries in %u rows, removing %u rows.", [self shortDescription], _cmd, ([NSDate timeIntervalSinceReferenceDate] - began), entriesRemoved, rowsTouched, rowsEmptied);
 #endif
     

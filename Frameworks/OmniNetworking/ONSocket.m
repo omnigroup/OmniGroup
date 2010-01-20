@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,13 +30,13 @@ static unsigned int defaultReadBufferSize = 2048;
     return self;
 }
 
-- (unsigned int)readBytes:(unsigned int)byteCount intoBuffer:(void *)aBuffer;
+- (size_t)readBytes:(size_t)byteCount intoBuffer:(void *)aBuffer;
 {
     OBRequestConcreteImplementation(self, _cmd);
     return 0;
 }
 
-- (unsigned int)writeBytes:(unsigned int)byteCount fromBuffer:(const void *)aBuffer;
+- (size_t)writeBytes:(size_t)byteCount fromBuffer:(const void *)aBuffer;
 {
     OBRequestConcreteImplementation(self, _cmd);
     return 0;
@@ -57,7 +57,7 @@ static unsigned int defaultReadBufferSize = 2048;
 }
 
 // This implementation is overridden by most classes to do gather-writing directly
-- (unsigned int)writeBuffers:(const struct iovec *)buffers count:(unsigned int)num_iov
+- (size_t)writeBuffers:(const struct iovec *)buffers count:(unsigned int)num_iov
 {
     if (num_iov == 0)
         return 0;
@@ -65,8 +65,8 @@ static unsigned int defaultReadBufferSize = 2048;
         return [self writeBytes:buffers[0].iov_len fromBuffer:buffers[0].iov_base];
     else {
         unsigned int iovIndex;
-        unsigned int totalSize;
-        unsigned int bytesWritten;
+        size_t totalSize;
+        size_t bytesWritten;
         char *gatherBuf, *gatherBufPtr;
 
         totalSize = 0;
@@ -109,12 +109,12 @@ static unsigned int defaultReadBufferSize = 2048;
 - (void)writeData:(NSData *)data;
 {
     const void *bytes;
-    unsigned int length;
+    size_t length;
 
     bytes = [data bytes];
     length = [data length];
     while (length) {
-        unsigned int bytesWritten;
+        size_t bytesWritten;
 
         bytesWritten = [self writeBytes:length fromBuffer:bytes];
         if (bytesWritten > 0) {
@@ -146,7 +146,7 @@ static unsigned int defaultReadBufferSize = 2048;
 - (void)readData:(NSMutableData *)data;
 {
     void *dataBytes;
-    unsigned int dataLength, bytesRead;
+    size_t dataLength, bytesRead;
 
     dataLength = [data length];
     dataBytes = [data mutableBytes];

@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,8 +56,9 @@ RCS_ID("$Id$");
 - (BOOL)needsDisplay;
 {
     BOOL shouldDrawFocusRing = [self _shouldDrawFocusRing];
-    if (backgroundImageControlFlags.drawingFocusRing != shouldDrawFocusRing) {
-        backgroundImageControlFlags.drawingFocusRing = shouldDrawFocusRing;
+    BOOL isDrawingFocusRing = (backgroundImageControlFlags.drawingFocusRing != 0);
+    if (isDrawingFocusRing ^ shouldDrawFocusRing) {
+        backgroundImageControlFlags.drawingFocusRing = shouldDrawFocusRing ? 1 : 0;
         [self setKeyboardFocusRingNeedsDisplayInRect:[self bounds]];
 
         return YES;
@@ -112,10 +113,11 @@ RCS_ID("$Id$");
 
 - (void)setDrawsFocusRing:(BOOL)flag;
 {
-    if (flag == backgroundImageControlFlags.shouldDrawFocusRing)
+    BOOL drawsFocusRing = (backgroundImageControlFlags.shouldDrawFocusRing != 0);
+    if (flag == drawsFocusRing)
         return;
         
-    backgroundImageControlFlags.shouldDrawFocusRing = flag;
+    backgroundImageControlFlags.shouldDrawFocusRing = (flag ? 1 : 0);
     
     [self setNeedsDisplay:YES];
 }

@@ -7,8 +7,6 @@
 #include "Omni-Application-Common.xcconfig"
 
 // Common settings for Release configurations of Application targets
-SKIP_INSTALL = NO
-STRIPFLAGS = -urSX
 GCC_DYNAMIC_NO_PIC = YES
-UNSTRIPPED_PRODUCT = YES
-COPY_PHASE_STRIP = NO
+SKIP_INSTALL = NO
+LD_RUNPATH_SEARCH_PATHS = $(value) @loader_path/../Frameworks

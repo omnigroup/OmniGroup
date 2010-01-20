@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,6 +26,13 @@ RCS_ID("$Id$");
     _namespace = [namespace copy];
     _name = [name copy];
     return self;
+}
+
+- (void)dealloc
+{
+    [_namespace release];
+    [_name release];
+    [super dealloc];
 }
 
 @synthesize namespace = _namespace, name = _name;

@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -112,8 +112,8 @@ typedef enum {
 - (BOOL)abortArcTask;  // Called when the user hits the 'stop' button. Returns YES if there was anything to abort; NO otherwise.
 
 - (NSDate *)firstBytesDate;
-- (unsigned int)bytesProcessed;
-- (unsigned int)totalBytes;
+- (NSUInteger)bytesProcessed;
+- (NSUInteger)totalBytes;
 
 - (enum _OWProcessorStatus)status;
 - (NSString *)statusString;

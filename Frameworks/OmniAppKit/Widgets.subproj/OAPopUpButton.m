@@ -1,4 +1,4 @@
-// Copyright 1998-2005,2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005,2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,8 +11,6 @@
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
-
-#import "OATypeAheadSelectionHelper.h"
 
 RCS_ID("$Id$")
 
@@ -38,7 +36,6 @@ RCS_ID("$Id$")
 
 - (void)dealloc;
 {
-    [typeAheadHelper release];
     [super dealloc];
 }
 
@@ -76,28 +73,6 @@ RCS_ID("$Id$")
     [self sendAction:[self action] to:[self target]];
 }
 
-- (void)keyDown:(NSEvent *)theEvent;
-{
-    NSString *characters = [theEvent characters];
-    if ([characters length] > 0) {
-        unichar firstCharacter = [characters characterAtIndex:0];
-        
-        // See if there's an item whose title matches what the user is typing.
-        // This can only be activated, initially, by typing an alphanumeric character.  This means the user can still press space to show the menu.
-        if (![[NSUserDefaults standardUserDefaults] boolForKey:@"DisableTypeAheadSelection"] && ([[NSCharacterSet alphanumericCharacterSet] characterIsMember:firstCharacter] || ([typeAheadHelper isProcessing] && ![[NSCharacterSet controlCharacterSet] characterIsMember:firstCharacter]))) {
-            if (typeAheadHelper == nil) {
-                typeAheadHelper = [[OATypeAheadSelectionHelper alloc] init];
-                [typeAheadHelper setDataSource:self];
-            }
-            
-            [typeAheadHelper processKeyDownCharacter:firstCharacter];
-            return;
-        }
-    }
-    
-    [super keyDown:theEvent];
-}
-
 // NSControl subclass
 
 - (void)setEnabled:(BOOL)isEnabled;
@@ -105,28 +80,6 @@ RCS_ID("$Id$")
     [super setEnabled:isEnabled];
     if (label)
         [self _updateLabel];
-}
-
-@end
-
-@implementation OAPopUpButton (NotificationsDelegatesDataSources)
-
-// OATypeAheadSelectionDataSource (cakewalk)
-
-- (NSArray *)typeAheadSelectionItems;
-{
-    return [self itemTitles];
-}
-
-- (NSString *)currentlySelectedItem;
-{
-    return [self titleOfSelectedItem];
-}
-
-- (void)typeAheadSelectItemAtIndex:(NSUInteger)itemIndex;
-{
-    [self selectItemAtIndex:itemIndex];
-    [self sendAction:[self action] to:[self target]];
 }
 
 @end

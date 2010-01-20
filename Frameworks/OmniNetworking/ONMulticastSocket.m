@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -127,7 +127,7 @@ RCS_ID("$Id$")
 
 // ONSocket subclass
 
-- (unsigned int)writeBytes:(unsigned int)byteCount fromBuffer:(const void *)aBuffer toPortAddress:(ONPortAddress *)aPortAddress;
+- (size_t)writeBytes:(size_t)byteCount fromBuffer:(const void *)aBuffer toPortAddress:(ONPortAddress *)aPortAddress;
 {
     if (![aPortAddress isMulticastAddress])
         [NSException raise:ONMulticastSocketNonMulticastAddress format:@"Cannot send to the address %@ since it is not a multicast address", aPortAddress];

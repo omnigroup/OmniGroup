@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,7 +41,7 @@ static NSFont *smallSystemFont;
 {
     OBINITIALIZE;
 
-    smallSystemFont = [NSFont systemFontOfSize:10.0];
+    smallSystemFont = [[NSFont systemFontOfSize:10.0f] retain];
 }
 
 - initWithFrame:(NSRect)theFrame;
@@ -90,7 +90,7 @@ static NSFont *smallSystemFont;
 - (NSSize)contentSizeForFrameSize:(NSSize)frameSize hasHorizontalScroller:(BOOL)hasHorizontalScroller hasVerticalScroller:(BOOL)hasVerticalScroller;
 {
     NSSize contentSize;
-    float scrollerWidthDifference;
+    CGFloat scrollerWidthDifference;
 
     contentSize = [isa contentSizeForFrameSize:frameSize hasHorizontalScroller:hasHorizontalScroller hasVerticalScroller:hasVerticalScroller borderType:[self borderType]];
 
@@ -117,7 +117,7 @@ static NSFont *smallSystemFont;
     return [self contentSizeForFrameSize:[self frame].size hasHorizontalScroller:hasHorizontalScroller hasVerticalScroller:hasVerticalScroller];
 }
 
-- (void)zoomToScale:(double)newZoomFactor;
+- (void)zoomToScale:(CGFloat)newZoomFactor;
 {
     if (newZoomFactor == zoomFactor)
         return;
@@ -129,17 +129,17 @@ static NSFont *smallSystemFont;
 
 - (void)zoomFromSender:(NSMenuItem *)sender;
 {
-    double newZoomFactor;
+    CGFloat newZoomFactor;
 
     // This hack is needed under 4.2.  Maybe Rhapsody is better.
     if ([sender isKindOfClass:[NSMatrix class]])
         sender = [(NSMatrix *)sender selectedCell];
 
-    newZoomFactor = [sender tag] / 100.0;
+    newZoomFactor = (CGFloat)([sender tag] / 100.0);
     [self zoomToScale:newZoomFactor];
 }
 
-- (float)zoomFactor;
+- (CGFloat)zoomFactor;
 {
     return zoomFactor;
 }
@@ -242,7 +242,7 @@ static NSFont *smallSystemFont;
     [pageNumberTextField setNextResponder:[self documentView]];
 }
 
-- (BOOL)processKeyDownCharacter:(unichar)character modifierFlags:(unsigned int)modifierFlags;
+- (BOOL)processKeyDownCharacter:(unichar)character modifierFlags:(NSUInteger)modifierFlags;
 {
     enum {
         UnicharDeleteKey  = 0x007F,
@@ -253,33 +253,33 @@ static NSFont *smallSystemFont;
     switch (character) {
         case NSUpArrowFunctionKey:
             if (modifierFlags & NSAlternateKeyMask)
-                [self scrollDownByPages:-1.0];
+                [self scrollDownByPages:-1.0f];
             else
-                [self scrollDownByLines:-3.0];
+                [self scrollDownByLines:-3.0f];
             return YES;
         case NSDownArrowFunctionKey:
             if (modifierFlags & NSAlternateKeyMask)
-                [self scrollDownByPages:1.0];
+                [self scrollDownByPages:1.0f];
             else
-                [self scrollDownByLines:3.0];
+                [self scrollDownByLines:3.0f];
             return YES;
         case NSLeftArrowFunctionKey:
             if (modifierFlags & NSAlternateKeyMask)
-                [self scrollRightByPages:-1.0];
+                [self scrollRightByPages:-1.0f];
             else
-                [self scrollRightByLines:-3.0];
+                [self scrollRightByLines:-3.0f];
             return YES;
         case NSRightArrowFunctionKey:
             if (modifierFlags & NSAlternateKeyMask)
-                [self scrollRightByPages:1.0];
+                [self scrollRightByPages:1.0f];
             else
-                [self scrollRightByLines:3.0];
+                [self scrollRightByLines:3.0f];
             return YES;
         case NSPageUpFunctionKey:
-            [self scrollDownByPages:-1.0];
+            [self scrollDownByPages:-1.0f];
             return YES;
         case NSPageDownFunctionKey:
-            [self scrollDownByPages:1.0];
+            [self scrollDownByPages:1.0f];
             return YES;
         case NSHomeFunctionKey:
             if (modifierFlags & NSShiftKeyMask)
@@ -292,19 +292,19 @@ static NSFont *smallSystemFont;
             return YES;
         case UnicharDeleteKey:
         case UnicharNonBreakingSpaceKey: // Alt-Space
-            [self scrollDownByPages:-1.0];
+            [self scrollDownByPages:-1.0f];
             return YES;
         case ' ':
             if (modifierFlags & NSShiftKeyMask)
-                [self scrollDownByPages:-1.0];
+                [self scrollDownByPages:-1.0f];
             else
-                [self scrollDownByPages:1.0];
+                [self scrollDownByPages:1.0f];
             return YES;
         case 'u':
-            [self scrollDownByPages:-0.5];
+            [self scrollDownByPages:-0.5f];
             return YES;
         case 'd':
-            [self scrollDownByPages:0.5];
+            [self scrollDownByPages:0.5f];
             return YES;
         case 'f':
             [self pageDown:nil];
@@ -405,7 +405,7 @@ static NSFont *smallSystemFont;
 - (void)setControlSize:(NSControlSize)newControlSize;
 {
     NSControlSize oldControlSize;
-    float scrollerWidthDifference, contentWidth, contentHeight, documentWidth, documentHeight;
+    CGFloat scrollerWidthDifference, contentWidth, contentHeight, documentWidth, documentHeight;
 
     contentWidth = NSWidth([[self contentView] frame]);
     contentHeight = NSHeight([[self contentView] frame]);
@@ -451,7 +451,7 @@ static NSFont *smallSystemFont;
 	    [scaleCell setAction:@selector(zoomFromSender:)];
 	}
 
-	zoomFactor = 1.0;
+	zoomFactor = 1.0f;
 	[scalePopUpButton selectItemWithTitle:@"100%"];
         [scalePopUpButton setRefusesFirstResponder:YES];
 	[horizontalWidgetsBox addSubview:scalePopUpButton];
@@ -497,26 +497,26 @@ static NSFont *smallSystemFont;
         widgetsAreaRect = NSMakeRect(0, 0, scrollerRect.size.width, scrollerRect.size.height);
 
         if (scalePopUpButton) {
-            NSDivideRect(widgetsAreaRect, &widgetRect, &widgetsAreaRect, 80.0, NSMinXEdge);
-            widgetRect = NSInsetRect(widgetRect, 1.0, -1.0);
+            NSDivideRect(widgetsAreaRect, &widgetRect, &widgetsAreaRect, 80.0f, NSMinXEdge);
+            widgetRect = NSInsetRect(widgetRect, 1.0f, -1.0f);
             [scalePopUpButton setFrame:widgetRect];
         }
 
         if (pagePromptTextField && hasMultiplePages) {
             NSDivideRect(widgetsAreaRect, &widgetRect, &widgetsAreaRect, 39, NSMinXEdge);
-            widgetRect = NSInsetRect(widgetRect, 1.0, 0.0);
-            widgetRect.origin.y -= 1.0;
+            widgetRect = NSInsetRect(widgetRect, 1.0f, 0.0f);
+            widgetRect.origin.y -= 1.0f;
             [pagePromptTextField setFrame:widgetRect];
 
             NSDivideRect(widgetsAreaRect, &widgetRect, &widgetsAreaRect, 37, NSMinXEdge);
-            widgetRect = NSInsetRect(widgetRect, 1.0, 0.0);
-            widgetRect.origin.y -= 1.0;
-            widgetRect.size.height += 2.0;
+            widgetRect = NSInsetRect(widgetRect, 1.0f, 0.0f);
+            widgetRect.origin.y -= 1.0f;
+            widgetRect.size.height += 2.0f;
             [pageNumberTextField setFrame:widgetRect];
 
             NSDivideRect(widgetsAreaRect, &widgetRect, &widgetsAreaRect, 40, NSMinXEdge);
-            widgetRect = NSInsetRect(widgetRect, 1.0, 0.0);
-            widgetRect.origin.y -= 1.0;
+            widgetRect = NSInsetRect(widgetRect, 1.0f, 0.0f);
+            widgetRect.origin.y -= 1.0f;
             [pagesCountTextField setFrame:widgetRect];
         }
 
@@ -546,7 +546,7 @@ static NSFont *smallSystemFont;
         NSSize widgetSize;
         BOOL adjustedScroller;
 
-        widgetSize = NSMakeSize(16.0, 16.0);
+        widgetSize = NSMakeSize(16.0f, 16.0f);
 
         scrollerRect = [[self verticalScroller] frame];
         adjustedScroller = NO;
@@ -555,9 +555,9 @@ static NSFont *smallSystemFont;
         if(hasMultiplePages) {
             if (pageDownButton) {
                 // lop off the size we want, plus a pixel for spacing below
-                NSDivideRect(scrollerRect, &widgetRect, &scrollerRect, widgetSize.height + 1.0, NSMaxYEdge);
+                NSDivideRect(scrollerRect, &widgetRect, &scrollerRect, widgetSize.height + 1.0f, NSMaxYEdge);
                 widgetRect.size = widgetSize;
-                widgetRect = NSOffsetRect(widgetRect, 1.0, 0.0);
+                widgetRect = NSOffsetRect(widgetRect, 1.0f, 0.0f);
                 if (![pageDownButton superview])
                     [self addSubview:pageDownButton];
                 [pageDownButton setFrame:widgetRect];
@@ -565,9 +565,9 @@ static NSFont *smallSystemFont;
             }
 
             if (pageUpButton) {
-                NSDivideRect(scrollerRect, &widgetRect, &scrollerRect, widgetSize.height + 1.0, NSMaxYEdge);
+                NSDivideRect(scrollerRect, &widgetRect, &scrollerRect, widgetSize.height + 1.0f, NSMaxYEdge);
                 widgetRect.size = widgetSize;
-                widgetRect = NSOffsetRect(widgetRect, 1.0, 0.0);
+                widgetRect = NSOffsetRect(widgetRect, 1.0f, 0.0f);
                 if (![pageUpButton superview])
                     [self addSubview:pageUpButton];
                 [pageUpButton setFrame:widgetRect];
@@ -664,23 +664,23 @@ static NSFont *smallSystemFont;
 {
     BOOL drawsBackground = [self drawsBackground];
     CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
-    float border;
+    CGFloat border;
 
     switch ([self borderType]) {
         default:
         case NSNoBorder:
-            border = 0.0;
+            border = 0.0f;
             if (drawsBackground) {
                 [[NSColor controlColor] set];
                 NSRectFill(rect);
             }
             break;
         case NSBezelBorder:
-            border = 2.0;
+            border = 2.0f;
             NSDrawDarkBezel([self bounds], rect);
             break;
         case NSLineBorder:
-            border = 1.0;
+            border = 1.0f;
             if (drawsBackground) {
                 [[NSColor controlColor] set];
                 NSRectFill(rect);
@@ -689,7 +689,7 @@ static NSFont *smallSystemFont;
             NSFrameRect([self bounds]);
             break;
         case NSGrooveBorder:
-            border = 2.0;
+            border = 2.0f;
             NSDrawGroove([self bounds], rect);
             break;
     }
@@ -702,8 +702,8 @@ static NSFont *smallSystemFont;
 	NSRect aRect = [[self horizontalScroller] frame];
 	if (!NSIsEmptyRect(NSIntersectionRect(aRect, rect))) {
 	    somethingToDraw = YES;
-	    CGContextMoveToPoint(context, NSMinX(aRect) + border, NSMinY(aRect) - 1.0);
-	    CGContextAddLineToPoint(context, NSMaxX(aRect) - 2.0 * border, NSMinY(aRect) - 1.0);
+	    CGContextMoveToPoint(context, NSMinX(aRect) + border, NSMinY(aRect) - 1.0f);
+	    CGContextAddLineToPoint(context, NSMaxX(aRect) - 2.0f * border, NSMinY(aRect) - 1.0f);
 	}
     }
     if ([self hasVerticalScroller]) {
@@ -712,8 +712,8 @@ static NSFont *smallSystemFont;
 	    somethingToDraw = YES;
 
             // Scrollers are on the right
-            CGContextMoveToPoint(context, NSMinX(aRect) - 1.0, NSMinY(aRect) + border);
-            CGContextAddLineToPoint(context, NSMinX(aRect) - 1.0, NSMaxY(aRect) - 2.0 * border);
+            CGContextMoveToPoint(context, NSMinX(aRect) - 1.0f, NSMinY(aRect) + border);
+            CGContextAddLineToPoint(context, NSMinX(aRect) - 1.0f, NSMaxY(aRect) - 2.0f * border);
         }
     }
 
@@ -737,16 +737,13 @@ static NSFont *smallSystemFont;
 
 - (void)processKeyDownEvent:(NSEvent *)keyDownEvent;
 {
-    NSString *characters;
-    unsigned int modifierFlags;
-    unsigned int characterIndex, characterCount;
     BOOL processedAtLeastOneCharacter = NO;
 
     [NSCursor setHiddenUntilMouseMoves:YES];
-    characters = [keyDownEvent characters];
-    modifierFlags = [keyDownEvent modifierFlags];
-    characterCount = [characters length];
-    for (characterIndex = 0; characterIndex < characterCount; characterIndex++) {
+    NSString *characters = [keyDownEvent characters];
+    NSUInteger modifierFlags = [keyDownEvent modifierFlags];
+    NSUInteger characterCount = [characters length];
+    for (NSUInteger characterIndex = 0; characterIndex < characterCount; characterIndex++) {
         if ([self processKeyDownCharacter:[characters characterAtIndex:characterIndex] modifierFlags:modifierFlags])
             processedAtLeastOneCharacter = YES;
     }
@@ -759,7 +756,7 @@ static NSFont *smallSystemFont;
     if (flags.delegateIsPageSelectable)
         [nonretained_delegate pageUp];
     else
-        [self scrollDownByPages:-1.0];
+        [self scrollDownByPages:-1.0f];
 }
 
 - (void)pageDown:(id)sender;
@@ -767,7 +764,7 @@ static NSFont *smallSystemFont;
     if (flags.delegateIsPageSelectable)
         [nonretained_delegate pageDown];
     else
-        [self scrollDownByPages:1.0];
+        [self scrollDownByPages:1.0f];
 }
 
 - (void)zoomIn:(id)sender;
@@ -778,9 +775,9 @@ static NSFont *smallSystemFont;
         return;
 
     for (zoomIndex = 0; startingScales[zoomIndex] > 0; zoomIndex++) {
-        if (zoomFactor * 100.0 < startingScales[zoomIndex]) {
+        if (zoomFactor * 100.0f < startingScales[zoomIndex]) {
             [scalePopUpButton selectItemWithTitle:[NSString stringWithFormat:@"%d%%", startingScales[zoomIndex]]];
-            [self zoomToScale:startingScales[zoomIndex] / 100.0];
+            [self zoomToScale:startingScales[zoomIndex] / 100.0f];
             break;
         }
     }
@@ -794,9 +791,9 @@ static NSFont *smallSystemFont;
         return;
 
     for (zoomIndex = 1; startingScales[zoomIndex] > 0; zoomIndex++) {
-        if (zoomFactor * 100.0 <= startingScales[zoomIndex]) {
+        if (zoomFactor * 100.0f <= startingScales[zoomIndex]) {
             [scalePopUpButton selectItemWithTitle:[NSString stringWithFormat:@"%d%%", startingScales[zoomIndex - 1]]];
-            [self zoomToScale:startingScales[zoomIndex - 1] / 100.0];
+            [self zoomToScale:startingScales[zoomIndex - 1] / 100.0f];
             break;
         }
     }

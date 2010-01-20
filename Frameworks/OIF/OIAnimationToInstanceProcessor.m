@@ -1,4 +1,4 @@
-// Copyright 1998-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@ RCS_ID("$Id$")
 
 + (void)didLoad;
 {
-    [self registerProcessorClass:self fromContentTypeString:@"omni/animation" toContentTypeString:@"omni/image" cost:0.1 producingSource:NO];
+    [self registerProcessorClass:self fromContentTypeString:@"omni/animation" toContentTypeString:@"omni/image" cost:0.1f producingSource:NO];
 }
 
 - initWithContent:(OWContent *)initialContent context:(id <OWProcessorContext>)aPipeline;
@@ -46,6 +46,8 @@ RCS_ID("$Id$")
 // Normally, startProcessing invokes -processInThread in a subthread, which calls a couple of status-updating methods and calls -process. There's no need to create a subthread for something this simple, however.
 - (void)startProcessing;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
     OWContent *newContent;
     OIAnimationInstance *animationInstance;
     
@@ -93,6 +95,7 @@ RCS_ID("$Id$")
 
     [self processEnd];
     [self retire];
+#endif
 }
     
 @end

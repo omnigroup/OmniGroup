@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ RCS_ID("$Id$")
 
 static NSImage *ledOnImage = nil;
 static NSImage *ledOffImage = nil;
-const static float horizontalSpaceFromSnuggleView = 2.0;
+const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
 
 + (void)initialize;
 {
@@ -105,9 +105,10 @@ const static float horizontalSpaceFromSnuggleView = 2.0;
 
 - (void)setDisplaysEvenInDefaultState:(BOOL)displays;
 {
-    if (_flags.displaysEvenInDefaultState == displays)
+    BOOL displaysEvenInDefaultState = (_flags.displaysEvenInDefaultState != 0);
+    if (displaysEvenInDefaultState == displays)
         return;
-    _flags.displaysEvenInDefaultState = displays;
+    _flags.displaysEvenInDefaultState = displays ? 1 : 0;
     [self setNeedsDisplay];
 }
 
@@ -157,7 +158,7 @@ const static float horizontalSpaceFromSnuggleView = 2.0;
     
     NSRect controlFrame = [snuggleUpToRightSideOfView frame];
     
-    NSPoint origin = NSMakePoint(rint(NSMaxX(controlFrame) + horizontalSpaceFromSnuggleView), rint(NSMinY(controlFrame) + (NSHeight(controlFrame) - iconSize.height) / 2.0));
+    NSPoint origin = NSMakePoint((CGFloat)rint(NSMaxX(controlFrame) + horizontalSpaceFromSnuggleView), (CGFloat)rint(NSMinY(controlFrame) + (NSHeight(controlFrame) - iconSize.height) / 2.0f));
     
     [self setFrame:(NSRect){origin, iconSize}];
     
@@ -167,6 +168,7 @@ const static float horizontalSpaceFromSnuggleView = 2.0;
 
 - (void)awakeFromNib;
 {
+    [super awakeFromNib];
     [self _setupButton];
     [self repositionWithRespectToSnuggleView];
 }

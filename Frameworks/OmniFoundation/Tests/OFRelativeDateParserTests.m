@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,20 +21,20 @@
 
 RCS_ID("$Id$")
 
-static NSArray *dateFormats;
-static NSArray *timeFormats;
-//static NSDateFormatter *formatter;
-
-static OFRandomState RandomState;
 
 @interface OFRelativeDateParserTests : OFTestCase
 {
     NSCalendar *calendar;
+    OFRandomState *randomState;
+    NSArray *dateFormats;
+    NSArray *timeFormats;
+    //NSDateFormatter *formatter;
+    
 }
 //+ (NSDate *)_dateFromYear:(int)year month:(int)month day:(int)day hour:(int)hour minute:(int)minute second:(int)second;
 @end
 
-static NSDate *_dateFromYear(int year, int month, int day, int hour, int minute, int second, NSCalendar *cal)
+static NSDate *_dateFromYear(NSInteger year, NSInteger month, NSInteger day, NSInteger hour, NSInteger minute, NSInteger second, NSCalendar *cal)
 {
     NSDateComponents *components = [[NSDateComponents alloc] init];
     [components setYear:year];
@@ -48,12 +48,12 @@ static NSDate *_dateFromYear(int year, int month, int day, int hour, int minute,
     return result;
 }
 
-static unsigned int range(unsigned int min, unsigned int max)
+static unsigned int range(OFRandomState *state, unsigned int min, unsigned int max)
 {
-    return min + OFRandomNextState(&RandomState)%(max - min);
+    return min + OFRandomNextState32(state)%(max - min);
 }
 
-static BOOL _testRandomDate(NSString *shortFormat, NSString *mediumFormat, NSString *longFormat, NSString *timeFormat)
+static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSString *mediumFormat, NSString *longFormat, NSString *timeFormat)
 {
     NSCalendar *calendar = [[[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar] autorelease];
     NSString *testDateString = @""; //construct the natural language string
@@ -84,15 +84,15 @@ static BOOL _testRandomDate(NSString *shortFormat, NSString *mediumFormat, NSStr
     datePosition = [parser _dateElementOrderFromFormat:dateFormat];
     NSString *separator = datePosition.separator;
     
-    int month = range(1, 12);
+    int month = range(state, 1, 12);
     int day;
     if (month == 2)
-	day = range(1,28);
+	day = range(state, 1,28);
     else if (month == 10 || month == 4 || month == 6 || month == 11)
-	day = range(1,30);
+	day = range(state, 1,30);
     else
-	day = range(1,31);
-    int year = range(1990,2007);
+	day = range(state, 1,31);
+    int year = range(state, 1990, 2007);
     
     if ([NSString isEmptyString:separator]) {
 	NSString *dayString;
@@ -140,26 +140,26 @@ static BOOL _testRandomDate(NSString *shortFormat, NSString *mediumFormat, NSStr
     [testDateComponents setMonth:month];
     [testDateComponents setYear:year];
     
-    int minute = range(1,60);
+    int minute = range(state, 1,60);
     [testDateComponents setMinute:minute];
     
     BOOL hasSeconds = [timeFormat containsString:@"s"];
     int second = 0;
     if (hasSeconds) {
-	second = range(1,60);
+	second = range(state, 1,60);
 	[testDateComponents setSecond:second];
     }
     
     int hour;
     if ([timeFormat containsString:@"H"] || [timeFormat containsString:@"k"]) {
-	hour = range(0,23);
+	hour = range(state, 0,23);
 	if (hasSeconds) 
 	    testDateString = [testDateString stringByAppendingFormat:@" %d:%d:%d", hour, minute, second];
 	else
 	    testDateString = [testDateString stringByAppendingFormat:@" %d:%d", hour, minute];
     } else { 
-	hour = range(1,12);
-	int am = range(0,1);
+	hour = range(state, 1,12);
+	int am = range(state, 0,1);
 	NSString *meridian = @"PM";
 	if (am)
 	    meridian = @"PM";
@@ -202,27 +202,42 @@ static BOOL _testRandomDate(NSString *shortFormat, NSString *mediumFormat, NSStr
 - (void)setUp;
 {
     const char *env = getenv("DataGeneratorSeed");
-    unsigned int seed = env ? strtoul(env, NULL, 0) : OFRandomGenerateRandomSeed();
-    OFRandomSeed(&RandomState, seed);
+    if (env) {
+        uint32_t seed = (uint32_t)strtoul(env, NULL, 0);
+        randomState = OFRandomStateCreateWithSeed32(&seed, 1);
+    } else
+        randomState = OFRandomStateCreate();
     
     calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
     [NSDateFormatter setDefaultFormatterBehavior:NSDateFormatterBehavior10_4]; 
-    dateFormats = [[[NSArray alloc] initWithObjects:@"MM/dd/yy", @"MM/dd/yyyy", @"dd/MM/yy", @"dd/MM/yyyy", @"yyyy-MM-dd", @"MM.dd.yy", @"dd.MM.yy", @"d-MMM-yy", nil] autorelease];
-    timeFormats = [[[NSArray alloc] initWithObjects:@"hh:mm a", @"hh:mm:ss a", @"HH:mm:ss", @"HH:mm", @"HHmm", @"kk:mm", @"kkmm", nil] autorelease];
+    dateFormats = [[NSArray alloc] initWithObjects:@"MM/dd/yy", @"MM/dd/yyyy", @"dd/MM/yy", @"dd/MM/yyyy", @"yyyy-MM-dd", @"MM.dd.yy", @"dd.MM.yy", @"d-MMM-yy", nil];
+    timeFormats = [[NSArray alloc] initWithObjects:@"hh:mm a", @"hh:mm:ss a", @"HH:mm:ss", @"HH:mm", @"HHmm", @"kk:mm", @"kkmm", nil];
 }
 
 - (void)tearDown;
 {
+    OFRandomStateDestroy(randomState);
+    randomState = NULL;
+    
     [calendar release];
+    calendar = nil;
+    
+    [dateFormats release];
+    dateFormats = nil;
+    
+    [timeFormats release];
+    timeFormats = nil;
+    
+    [super tearDown];
 }
 
 #define parseDate(string, expectedDate, baseDate, dateFormat, timeFormat) \
 do { \
-NSDate *result = nil; \
-[[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate withTimeZone:[NSTimeZone localTimeZone] withCalendarIdentifier:[calendar calendarIdentifier] withShortDateFormat:dateFormat withMediumDateFormat:dateFormat withLongDateFormat:dateFormat withTimeFormat:timeFormat error:nil]; \
-if (expectedDate && ![result isEqualTo:expectedDate]) \
-NSLog( @"FAILURE-> String: %@, locale:%@, result:%@, expected: %@ dateFormat:%@, timeFormat:%@", string, [[[OFRelativeDateParser sharedParser] locale] localeIdentifier], result, expectedDate, dateFormat, timeFormat); \
-shouldBeEqual(result, expectedDate); \
+    NSDate *result = nil; \
+    [[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate withTimeZone:[NSTimeZone localTimeZone] withCalendarIdentifier:[calendar calendarIdentifier] withShortDateFormat:dateFormat withMediumDateFormat:dateFormat withLongDateFormat:dateFormat withTimeFormat:timeFormat error:nil]; \
+    if (expectedDate && ![result isEqualTo:expectedDate]) \
+        NSLog( @"FAILURE-> String: %@, locale:%@, result:%@, expected: %@ dateFormat:%@, timeFormat:%@", string, [[[OFRelativeDateParser sharedParser] locale] localeIdentifier], result, expectedDate, dateFormat, timeFormat); \
+    shouldBeEqual(result, expectedDate); \
 } while(0)
 //NSLog( @"string: %@, expected: %@, result: %@", string, expectedDate, result );
 
@@ -245,9 +260,9 @@ shouldBeEqual(result, expectedDate); \
 - (void)testRelativeDateNames;
 {
     // test our relative date names
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
             NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	    
@@ -279,9 +294,9 @@ shouldBeEqual(result, expectedDate); \
 - (void)testFriNoon;
 {
     //test setting the date with year-month-day even when the date format is d/m/y
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
 	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
@@ -304,16 +319,16 @@ shouldBeEqual(result, expectedDate); \
     calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
     NSString *timeFormat = @"h:mm a";
     NSString *dateFormat = @"d-MMM-yy";
-    should(_testRandomDate(dateFormat, dateFormat, dateFormat, timeFormat));
+    should(_testRandomDate(randomState, dateFormat, dateFormat, dateFormat, timeFormat));
     
 }
 
 - (void)testSweden;
 {
     //test setting the date with year-month-day even when the date format is d/m/y
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
 	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
@@ -353,9 +368,9 @@ shouldBeEqual(result, expectedDate); \
     calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
     NSDate *baseDate = _dateFromYear(2007, 1, 1, 1, 1, 0, calendar);
     NSString *string = @"";
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
 	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
@@ -368,9 +383,9 @@ shouldBeEqual(result, expectedDate); \
 - (void)testDegenerates;
 {
     // test with all different formats
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
             NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	    
@@ -445,9 +460,9 @@ shouldBeEqual(result, expectedDate); \
 - (void)testBugs;
 {
     // test with all different formats
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
 	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
@@ -499,9 +514,9 @@ shouldBeEqual(result, expectedDate); \
 - (void)testSeperatedDates;
 {
     // test with all different formats
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
 	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
@@ -554,9 +569,9 @@ shouldBeEqual(result, expectedDate); \
 - (void)testAt;
 {
     // test with all different formats
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
 	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
@@ -572,9 +587,9 @@ shouldBeEqual(result, expectedDate); \
 - (void)testTwentyFourHourTime;
 {
     // test with all different formats
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
 	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
@@ -591,13 +606,13 @@ shouldBeEqual(result, expectedDate); \
 - (void)testRandomDatesAndRoundTrips;
 {
     // test with all different formats
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
 	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-	    should(_testRandomDate(dateFormat, dateFormat, dateFormat, timeFormat));
+	    should(_testRandomDate(randomState, dateFormat, dateFormat, dateFormat, timeFormat));
 	}
     }
 }
@@ -619,17 +634,17 @@ shouldBeEqual(result, expectedDate); \
 	NSDateComponents *components = [calendar components:NSWeekdayCalendarUnit fromDate:baseDate];
 	
 	// test with all different formats
-	unsigned int dateIndex = [dateFormats count];
+	NSUInteger dateIndex = [dateFormats count];
 	while (dateIndex--) {
-	    unsigned int timeIndex = [timeFormats count];
+	    NSUInteger timeIndex = [timeFormats count];
 	    while (timeIndex--) {
 		NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 		NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
 		
-		unsigned int dayIndex = [weekdays count];
-		unsigned int weekday = [components weekday] - 1; // 1 based
+		NSUInteger dayIndex = [weekdays count];
+		NSInteger weekday = [components weekday] - 1; // 1 based
 		while (dayIndex--) {
-		    int addToWeek = (dayIndex - weekday);
+		    NSInteger addToWeek = (dayIndex - weekday);
 		    if (addToWeek < 0)
 			addToWeek = 7;
 		    else 
@@ -642,7 +657,7 @@ shouldBeEqual(result, expectedDate); \
 		weekdays = [formatter shortWeekdaySymbols];
 		dayIndex = [weekdays count];
 		while (dayIndex--) {
-		    int addToWeek = (dayIndex - weekday);
+		    NSInteger addToWeek = (dayIndex - weekday);
 		    if (addToWeek < 0)
 			addToWeek = 7;
 		    else 
@@ -678,17 +693,17 @@ shouldBeEqual(result, expectedDate); \
 	
 	NSDateComponents *components = [calendar components:NSMonthCalendarUnit fromDate:baseDate];
 	
-	unsigned int dateIndex = [dateFormats count];
+	NSUInteger dateIndex = [dateFormats count];
 	while (dateIndex--) {
-	    unsigned int timeIndex = [timeFormats count];
+	    NSUInteger timeIndex = [timeFormats count];
 	    while (timeIndex--) {
 		NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 		NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
 		
-		unsigned int monthIndex = [months count];
-		unsigned int month = [components month] - 1; // 1 based
+		NSUInteger monthIndex = [months count];
+		NSUInteger month = [components month] - 1; // 1 based
 		while (monthIndex--) {
-		    int addToMonth = (monthIndex - month);
+		    NSInteger addToMonth = (monthIndex - month);
 		    if (addToMonth < 0)
 			addToMonth = 12;
 		    else 
@@ -702,7 +717,7 @@ shouldBeEqual(result, expectedDate); \
 		
 		monthIndex = [months count];
 		while (monthIndex--) {
-		    int addToMonth = (monthIndex - month);
+		    NSInteger addToMonth = (monthIndex - month);
 		    if (addToMonth < 0)
 			addToMonth = 12;
 		    else 
@@ -720,9 +735,9 @@ shouldBeEqual(result, expectedDate); \
 
 - (void)testTimes;
 {
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
 	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
 	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
@@ -745,9 +760,9 @@ shouldBeEqual(result, expectedDate); \
 
 - (void)testCodes;
 {
-    unsigned int dateIndex = [dateFormats count];
+    NSUInteger dateIndex = [dateFormats count];
     while (dateIndex--) {
-	unsigned int timeIndex = [timeFormats count];
+	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
             NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
             

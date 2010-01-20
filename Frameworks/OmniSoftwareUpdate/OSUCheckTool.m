@@ -1,4 +1,4 @@
-// Copyright 2002-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -147,15 +147,10 @@ static void contemplate_reachability(const char *hostname)
     if (!hostname || !*hostname)
         return;
 
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
     SCNetworkReachabilityRef target = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, hostname);
     SCNetworkReachabilityFlags flags = 0;
     Boolean canDetermineReachability = SCNetworkReachabilityGetFlags(target, &flags);
     CFRelease(target);
-#else
-    SCNetworkConnectionFlags flags;
-    Boolean canDetermineReachability = SCNetworkCheckReachabilityByName(hostname, &flags);
-#endif
     
     NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Your Internet connection might not be active, or there might be a problem somewhere along the network.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error text generated when software update is unable to retrieve the list of current software versions");
     if (!canDetermineReachability) {
@@ -166,12 +161,7 @@ static void contemplate_reachability(const char *hostname)
         exit_with_error([NSError errorWithDomain:OSUToolErrorDomain code:OSUToolRemoteNetworkFailure userInfo:userInfo]);
     }
 
-    Boolean reachable;
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
-    reachable = ((flags & kSCNetworkReachabilityFlagsReachable) != 0);
-#else
-    reachable = ((flags & kSCNetworkFlagsReachable) != 0);
-#endif
+    Boolean reachable = ((flags & kSCNetworkReachabilityFlagsReachable) != 0);
     
     if (!reachable) {
         NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%s is not reachable.", @"OmniSoftwareUpdate", OSUFrameworkBundle, @"error description"), hostname];
@@ -285,12 +275,12 @@ static void perform_check(NSURL *url)
     if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
 
-        int statusCode = [httpResponse statusCode];
+        NSInteger statusCode = [httpResponse statusCode];
         
         if ([httpResponse allHeaderFields])
             [resultDict setObject:[httpResponse allHeaderFields] forKey:OSUTool_ResultsHeadersKey];
         
-        [resultDict setObject:[NSNumber numberWithInt:statusCode] forKey:OSUTool_ResultsStatusCodeKey];
+        [resultDict setObject:[NSNumber numberWithInteger:statusCode] forKey:OSUTool_ResultsStatusCodeKey];
         
         if (statusCode >= 400) {
             // While we may have gotten back a result data, it is an error response.

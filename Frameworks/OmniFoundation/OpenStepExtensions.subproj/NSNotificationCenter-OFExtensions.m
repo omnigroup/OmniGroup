@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,20 +15,14 @@ RCS_ID("$Id$")
 
 - (void)addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName objects:(NSArray *)objects;
 {
-    unsigned int objectIndex;
-
-    objectIndex = [objects count];
-    while (objectIndex--)
-        [self addObserver:observer selector:aSelector name:aName object:[objects objectAtIndex:objectIndex]];
+    for (id object in objects)
+        [self addObserver:observer selector:aSelector name:aName object:object];
 }
 
 - (void)removeObserver:(id)observer name:(NSString *)aName objects:(NSArray *)objects;
 {
-    unsigned int objectIndex;
-
-    objectIndex = [objects count];
-    while (objectIndex--)
-        [self removeObserver:observer name:aName object:[objects objectAtIndex:objectIndex]];
+    for (id object in objects)
+        [self removeObserver:observer name:aName object:object];
 }
 
 - (void)mainThreadPostNotificationName:(NSString *)aName object:(id)anObject;

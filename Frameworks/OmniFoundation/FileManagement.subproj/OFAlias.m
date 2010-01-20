@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,7 +42,7 @@ error_out:
     if ([super init] == nil)
         return nil;
 
-    unsigned int length = [data length];
+    Size length = [data length];
     _aliasHandle = (AliasHandle)NewHandle(length);   
     [data getBytes:*_aliasHandle length:length];
       
@@ -92,9 +92,9 @@ error_out:
     result = FSResolveAliasWithMountFlags(NULL, _aliasHandle, &target, &wasChanged, mountFlags);
     if (result == noErr) {
         CFURLRef urlRef = CFURLCreateFromFSRef(kCFAllocatorDefault, &target);
-        NSString *urlString = (NSString *)CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
+        CFStringRef urlString = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
         CFRelease(urlRef);
-        return [urlString autorelease];
+        return [NSMakeCollectable(urlString) autorelease];
     } else {
 	NSLog(@"FSResolveAliasWithMountFlags -> %d", result);
     }

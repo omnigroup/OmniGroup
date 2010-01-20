@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,12 +30,11 @@ static NSMutableCharacterSet *requiresQuotesCharacterSet = nil;
     [requiresQuotesCharacterSet invert];
 }
 
-+ (OWSGMLTag *)retainedTagWithTokenType:(OWSGMLTokenType)aType tagType:(OWSGMLTagType *)aTagType;
++ (OWSGMLTag *)newTagWithTokenType:(OWSGMLTokenType)aType tagType:(OWSGMLTagType *)aTagType;
 {
     OWSGMLTag *result;
-    unsigned int tagTypeAttributeCount;
     
-    tagTypeAttributeCount = [aTagType attributeCount];
+    NSUInteger tagTypeAttributeCount = [aTagType attributeCount];
     result = (id)NSAllocateObject(self, sizeof(NSString *) * tagTypeAttributeCount, NULL);
     result->tokenType = aType;
     result->nonretainedTagType = aTagType;
@@ -46,17 +45,17 @@ static NSMutableCharacterSet *requiresQuotesCharacterSet = nil;
 
 + (OWSGMLTag *)tagWithTokenType:(OWSGMLTokenType)aType tagType:(OWSGMLTagType *)aTagType;
 {
-    return [[self retainedTagWithTokenType:aType tagType:aTagType] autorelease];
+    return [[self newTagWithTokenType:aType tagType:aTagType] autorelease];
 }
 
 + (OWSGMLTag *)startTagOfType:(OWSGMLTagType *)aTagType;
 {
-    return [[self retainedTagWithTokenType:OWSGMLTokenTypeStartTag tagType:aTagType] autorelease];
+    return [[self newTagWithTokenType:OWSGMLTokenTypeStartTag tagType:aTagType] autorelease];
 }
 
 + (OWSGMLTag *)endTagOfType:(OWSGMLTagType *)aTagType;
 {
-    return [[self retainedTagWithTokenType:OWSGMLTokenTypeEndTag tagType:aTagType] autorelease];
+    return [[self newTagWithTokenType:OWSGMLTokenTypeEndTag tagType:aTagType] autorelease];
 }
 
 - (void)dealloc;
@@ -111,7 +110,7 @@ static NSMutableCharacterSet *requiresQuotesCharacterSet = nil;
 
 //
 
-- (void)setValue:(NSString *)value atIndex:(unsigned int)index;
+- (void)setValue:(NSString *)value atIndex:(NSUInteger)index;
 {
     OBPRECONDITION(index < attributeCount);
     // WJS 4/6/98: Netscape 4.0 and IE 4.0 both ignore any but the first value for an attribute, so if we already have a value we just return.
@@ -122,9 +121,7 @@ static NSMutableCharacterSet *requiresQuotesCharacterSet = nil;
 
 - (NSString *)valueForAttribute:(NSString *)attributeName;
 {
-    unsigned int attributeIndex;
-
-    attributeIndex = [nonretainedTagType indexOfAttribute:attributeName];
+    NSUInteger attributeIndex = [nonretainedTagType indexOfAttribute:attributeName];
     if (attributeIndex == NSNotFound)
         return nil;
     return sgmlTagValueForAttributeAtIndex(self, attributeIndex);
@@ -132,7 +129,7 @@ static NSMutableCharacterSet *requiresQuotesCharacterSet = nil;
 
 - (BOOL)attributePresent:(NSString *)attributeName;
 {
-    unsigned int attributeIndex;
+    NSUInteger attributeIndex;
 
     attributeIndex = [nonretainedTagType indexOfAttribute:attributeName];
     return sgmlTagAttributePresentAtIndex(self, attributeIndex);

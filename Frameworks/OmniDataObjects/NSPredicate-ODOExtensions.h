@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 #import <OmniDataObjects/ODOPredicate.h> // Get the #defines for NSPredicate or ODOPredicate and friends
+#import <Foundation/NSComparisonPredicate.h>
+#import <Foundation/NSCompoundPredicate.h>
 
 // iPhone doesn't have NSPredicate and I don't want to re-implement the parsing in the 'format' routines.  Here are some utilities to create the kinds of predicates we need.
 

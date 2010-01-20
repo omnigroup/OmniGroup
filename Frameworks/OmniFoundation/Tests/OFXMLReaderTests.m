@@ -1,4 +1,4 @@
-// Copyright 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,9 @@
 #import <OmniFoundation/OFXMLReader.h>
 #import <OmniFoundation/OFXMLQName.h>
 #import <OmniBase/NSError-OBExtensions.h>
+#import <OmniBase/rcsid.h>
+
+RCS_ID("$Id$")
 
 @interface OFXMLReaderTests : OFTestCase
 @end

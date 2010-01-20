@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,7 @@ typedef enum { YES_SCROLL, NO_SCROLL, VERTICAL_SCROLL, AUTO_SCROLL, MANUAL_SCROL
     NSTextField *pagePromptTextField;
     NSTextField *pageNumberTextField;
     NSTextField *pagesCountTextField;
-    float zoomFactor;
+    CGFloat zoomFactor;
     ScrollingBehavior scrollBehavior;
     id nonretained_delegate;
     struct {
@@ -40,15 +40,15 @@ typedef enum { YES_SCROLL, NO_SCROLL, VERTICAL_SCROLL, AUTO_SCROLL, MANUAL_SCROL
 - (NSSize)contentSizeForFrameSize:(NSSize)fSize;
 - (NSSize)contentSizeForHorizontalScroller:(BOOL)hasHorizontalScroller verticalScroller:(BOOL)hasVerticalScroller;
 
-- (void)zoomToScale:(double)newZoomFactor;
+- (void)zoomToScale:(CGFloat)newZoomFactor;
 - (void)zoomFromSender:(NSMenuItem *)sender;
-- (float)zoomFactor;
+- (CGFloat)zoomFactor;
 - (void)setDelegate:(id)newNonretainedDelegate;
 - (ScrollingBehavior)scrollBehavior;
 - (void)setScrollBehavior:(ScrollingBehavior)behavior;
 - (void)showingPageNumber:(int)pageNumber of:(unsigned int)pagesCount;
 - (void)gotoPage:(id)sender;
-- (BOOL)processKeyDownCharacter:(unichar)character modifierFlags:(unsigned int)modifierFlags;
+- (BOOL)processKeyDownCharacter:(unichar)character modifierFlags:(NSUInteger)modifierFlags;
 
 - (void)setSmoothScrollEnabled:(BOOL)smoothScrollEnabled;
 - (BOOL)smoothScrollEnabled;

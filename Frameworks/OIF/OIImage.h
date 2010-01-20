@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,7 @@ typedef OFByte *OIImageGammaCorrectionTable;
 
 + (OWContentType *)contentType;
 
-+ (CGImageRef)createCGImageFromBitmapData:(const void *)bitmapData width:(unsigned int)imageWidth height:(unsigned int)imageHeight bitsPerSample:(unsigned int)bitsPerSample samplesPerPixel:(unsigned int)samplesPerPixel;
++ (CGImageRef)createCGImageFromBitmapData:(const void *)bitmapData width:(NSUInteger)imageWidth height:(NSUInteger)imageHeight bitsPerSample:(NSUInteger)bitsPerSample samplesPerPixel:(NSUInteger)samplesPerPixel;
 
 // Gamma utility methods
 
@@ -75,7 +75,7 @@ typedef OFByte *OIImageGammaCorrectionTable;
 
 - (NSArray *)observers;
     // Returns a snapshot of the array of observers
-- (unsigned int)observerCount;
+- (NSUInteger)observerCount;
     // Returns the number of observers for this image (more efficient than [[self observers] count])
 
 - (void)addObserver:(id <OIImageObserver, OFWeakRetain>)anObserver;

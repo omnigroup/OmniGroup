@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,11 +56,7 @@ RCS_ID("$Id$")
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     if (NSKeepAllocationStatistics) {
         // Repord our allocation statistics to make OOM and oh happy
-#if defined(MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
         NSRecordAllocationEvent(NSObjectInternalRefIncrementedEvent, self);
-#else
-        NSRecordAllocationEvent(NSObjectInternalRefIncrementedEvent, self, NULL, NULL, NULL);
-#endif
     }
 #endif
     
@@ -72,11 +68,7 @@ RCS_ID("$Id$")
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     if (NSKeepAllocationStatistics) {
         // Report our allocation statistics to make OOM and oh happy
-#if defined(MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
         NSRecordAllocationEvent(NSObjectInternalRefDecrementedEvent, self);
-#else
-        NSRecordAllocationEvent(NSObjectInternalRefDecrementedEvent, self, NULL, NULL, NULL);
-#endif
     }
 #endif
     

@@ -119,7 +119,7 @@ static OFPreference *updatesToIgnore = nil;
 
 - (void)updateUI;
 {
-    int checkFrequencyInDays, itemIndexToSelect;
+    NSInteger checkFrequencyInDays, itemIndexToSelect;
     
     [enableButton setState:[automaticSoftwareUpdateCheckEnabled boolValue]];
     checkFrequencyInDays = [checkInterval integerValue] / 24;
@@ -167,6 +167,24 @@ static OFPreference *updatesToIgnore = nil;
     [OSUController checkSynchronouslyWithUIAttachedToWindow:[controlBox window]];
 }
 
+static NSString *formatAngle(NSString *value, NSString *positive, NSString *negative)
+{
+    double degrees, minutes, seconds;
+    NSString *directional;
+    
+    degrees = [value doubleValue];
+    if (degrees >= 0)
+        directional = positive;
+    else {
+        degrees = -degrees;
+        directional = negative;
+    }
+    minutes = 60 * modf(degrees, &degrees);
+    seconds = 60 * modf(minutes, &minutes);
+    
+    return [NSString stringWithFormat:@"%.0f&#176;&nbsp;%.0f&#8242;&nbsp;%.0f&#8243;&nbsp;%@", degrees, minutes, seconds, directional];
+}
+
 - (IBAction)showSystemConfigurationDetailsSheet:(id)sender;
 {
     NSBundle *bundle = [NSBundle bundleForClass:[isa class]];
@@ -204,7 +222,7 @@ static OFPreference *updatesToIgnore = nil;
     
     // Do variable replacement on the HTML text
     {
-        unsigned int length = [htmlString length];
+        NSUInteger length = [htmlString length];
         NSRange keyRange = (NSRange){0,0};
 
         while (YES) {
@@ -213,7 +231,7 @@ static OFPreference *updatesToIgnore = nil;
                 break;
 
             keyRange.location += 2;
-            unsigned int end = [htmlString rangeOfString:@"}" options:0 range:(NSRange){keyRange.location, length - keyRange.location}].location;
+            NSUInteger end = [htmlString rangeOfString:@"}" options:0 range:(NSRange){keyRange.location, length - keyRange.location}].location;
             keyRange.length = end - keyRange.location;
             
             NSString *key = [htmlString substringWithRange:keyRange];
@@ -240,9 +258,6 @@ static OFPreference *updatesToIgnore = nil;
 	    } else if ([key isEqualToString:@"license-type"]) {
 		// This should be in the *main* bundle
 		replacement = [[NSBundle mainBundle] localizedStringForKey:replacement value:replacement table:@"OZLicenseType"];
-	    } else if ([key isEqualToString:@"KeyColumnWidthPercentage"]) {
-		// Allow localizers to adjust the % space between the key and value columns (since their keys might be wideer).
-		replacement = NSLocalizedStringWithDefaultValue(@"KeyColumnWidthPercentage", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"20", @"Percentage of table to allocate for values");
 	    } else if ([key isEqualToString:@"lang"]) {
 		NSString *localizedName = OFLocalizedNameForISOLanguageCode(replacement);
 		if (localizedName)
@@ -252,11 +267,21 @@ static OFPreference *updatesToIgnore = nil;
 		NSArray *elements = [loc componentsSeparatedByString:@","];
 		if ([elements count] == 2)
 		    replacement = [elements objectAtIndex:0];
+	    } else if ([key isEqualToString:@"LATITUDE-DMS"]) {
+		NSString *loc = [report objectForKey:@"loc"];
+		NSArray *elements = [loc componentsSeparatedByString:@","];
+		if ([elements count] == 2)
+		    replacement = formatAngle([elements objectAtIndex:0], @"N", @"S");
 	    } else if ([key isEqualToString:@"LONGITUDE"]) {
 		NSString *loc = [report objectForKey:@"loc"];
 		NSArray *elements = [loc componentsSeparatedByString:@","];
 		if ([elements count] == 2)
 		    replacement = [elements objectAtIndex:1];
+	    } else if ([key isEqualToString:@"LONGITUDE-DMS"]) {
+		NSString *loc = [report objectForKey:@"loc"];
+		NSArray *elements = [loc componentsSeparatedByString:@","];
+		if ([elements count] == 2)
+		    replacement = formatAngle([elements objectAtIndex:1], @"E", @"W");
 	    } else if ([key isEqualToString:@"cpu"]) {
 		NSArray *elements = [replacement componentsSeparatedByString:@","];
 		if ([elements count] == 2) {
@@ -276,16 +301,6 @@ static OFPreference *updatesToIgnore = nil;
                     NSDecimalNumber *bytes = [NSDecimalNumber decimalNumberWithString:replacement];
                     replacement = [NSString abbreviatedStringForBytes:[bytes unsignedLongLongValue]];
                 }
-	    } else if ([key isEqualToString:@"qt_netspeed"]) {
-		if ([replacement intValue] == INT_MAX)
-		    replacement = NSLocalizedStringFromTableInBundle(@"Internet/LAN", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"network speed");
-		else {
-		    float kbps = [replacement floatValue] / 100.0f; // QT encodes this a 100x not 1000x... dunno why.
-		    if (kbps >= 1000)
-			replacement = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%g Mbps", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"network speed format string for megabits/second"), kbps/1000.0f];
-		    else 
-			replacement = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%g Kbps", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"network speed format string for kilobits/second"), kbps];
-		}
 	    } else if ([key isEqualToString:@"DISPLAYS"]) {
 		NSMutableString *displays = [NSMutableString string];
 
@@ -382,7 +397,7 @@ static OFPreference *updatesToIgnore = nil;
 			[adaptors appendString:@"<br>"];
 		    
 		    NSArray *mems = [memString componentsSeparatedByString:@","];
-		    unsigned int memIndex, memCount = [mems count];
+		    NSUInteger memIndex, memCount = [mems count];
 		    for (memIndex = 0; memIndex < memCount; memIndex++) {
 			if (memIndex)
 			    [adaptors appendString:@", "];
@@ -432,38 +447,86 @@ static OFPreference *updatesToIgnore = nil;
                 }
 
                 replacement = glInfo;
-            } else if ([key isEqualToString:@"RUNTIME"]) {
-                NSMutableString *runtime = [NSMutableString string];
-                NSString *hoursRunLabel = NSLocalizedStringFromTableInBundle(@"Hours Run", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - accumulated number of hours the program has been running");
-                NSString *timesRunLabel = NSLocalizedStringFromTableInBundle(@"# of Launches", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - number of times the program has been launched");
-                NSString *crashRunLabel = NSLocalizedStringFromTableInBundle(@"# of Crashes", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - number of times the program has crashed");
+            } else if ([key isEqualToString:@"OPENCL"]) {
+                NSMutableString *clInfo = [NSMutableString string];
                 
-                [runtime appendString:@"<b>"];
-                [runtime appendString:NSLocalizedStringFromTableInBundle(@"Current Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - for the section which lists run/launch/crash info for this particular version")];
-                [runtime appendString:@"</b><br><table>"];
-                [runtime appendFormat:@"<tr><td align=\"right\">%@</td><td>%.1f</td></tr>", hoursRunLabel, [[report objectForKey:@"runmin"] unsignedIntValue]/60.0];
-                [report removeObjectForKey:@"runmin"];
+                unsigned int clPlatformIndex = 0;
+                for(;;) {
+                    NSString *platInfoKey = [NSString stringWithFormat:@"cl%u", clPlatformIndex];
+                    NSString *platExtKey = [platInfoKey stringByAppendingString:@"_ext"];
+                    NSString *platInfo = [report objectForKey:platInfoKey];
+                    NSString *platExt = [report objectForKey:platExtKey];
+                    
+                    if (!platInfo && !platExt)
+                        break;
+                    
+                    [report removeObjectForKey:platInfoKey];
+                    [report removeObjectForKey:platExtKey];
+                    
+                    [clInfo appendString:@"<tr><td colspan=\"8\">"];
+                    [clInfo appendString:platInfo];
+                    if (![NSString isEmptyString:platExt]) {
+                        NSString *extLabel = NSLocalizedStringFromTableInBundle(@"Extensions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - list of OpenCL platform extensions");
+                        [clInfo appendFormat:@"<br>%@: %@", extLabel, platExt];
+                    }
+                    [clInfo appendString:@"</td></tr>"];
+                    
+                    NSMutableString *clDeviceInfo = [NSMutableString string];
 
-                [runtime appendFormat:@"<tr><td align=\"right\">%@</td><td>%u</td></tr>", timesRunLabel, [[report objectForKey:@"nrun"] unsignedIntValue]];
-                [report removeObjectForKey:@"nrun"];
-                [runtime appendFormat:@"<tr><td align=\"right\">%@</td><td>%u</td></tr>", crashRunLabel, [[report objectForKey:@"ndie"] unsignedIntValue]];
-                [report removeObjectForKey:@"ndie"];
+                    unsigned int clDeviceIndex = 0;
+                    for(;;) {
+                        NSString *devInfoKey = [NSString stringWithFormat:@"cl%u.%u_dev", clPlatformIndex, clDeviceIndex];
+                        NSString *devInfo = [report objectForKey:devInfoKey];
+                        if (!devInfo)
+                            break;
+                        [report removeObjectForKey:devInfoKey];
+                        NSArray *parts = [devInfo componentsSeparatedByString:@" " maximum:5];
+                        
+                        [clDeviceInfo appendFormat:@"<tr><td>%@</td><td>%@</td><td>%@</td>",
+                         [parts objectAtIndex:0],  // Device type
+                         [parts objectAtIndex:1],  // Number of cores
+                         [NSString abbreviatedStringForHertz:1048576*[[parts objectAtIndex:2] unsignedLongLongValue]] // Freq
+                         ];
+                        OFForEachInArray([[parts objectAtIndex:3] componentsSeparatedByString:@"/"], NSString *, mem, {
+                            ([clDeviceInfo appendFormat:@"<td>%@</td>", [NSString abbreviatedStringForBytes:1024*[mem unsignedLongLongValue]]]);
+                        });
+                        [clDeviceInfo appendFormat:@"<td>%@</td></tr>", [parts objectAtIndex:4]];
 
-                [runtime appendString:@"</table><br><table>"];
-
-                [runtime appendString:@"<b>"];
-                [runtime appendString:NSLocalizedStringFromTableInBundle(@"All Versions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - for the section which lists run/launch/crash info for all versions")];
-                [runtime appendString:@"</b>"];
-                [runtime appendFormat:@"<tr><td align=\"right\">%@</td><td>%.1f</td></tr>", hoursRunLabel, [[report objectForKey:@"trunmin"] unsignedIntValue]/60.0];
-                [report removeObjectForKey:@"trunmin"];
-                [runtime appendFormat:@"<tr><td align=\"right\">%@</td><td>%u</td></tr>", timesRunLabel, [[report objectForKey:@"tnrun"] unsignedIntValue]];
-                [report removeObjectForKey:@"tnrun"];
-                [runtime appendFormat:@"<tr><td align=\"right\">%@</td><td>%u</td></tr>", crashRunLabel, [[report objectForKey:@"tndie"] unsignedIntValue]];
-                [report removeObjectForKey:@"tndie"];
+                        clDeviceIndex ++;
+                    }
+                    if (clDeviceIndex != 0) {
+                        NSString *typeHeader = NSLocalizedStringFromTableInBundle(@"Type", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - column header for OpenCL device type");
+                        NSString *unitsHeader = NSLocalizedStringFromTableInBundle(@"Units", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - column header for OpenCL device processing-unit count");
+                        NSString *freqHeader = NSLocalizedStringFromTableInBundle(@"Freq.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - column header for OpenCL device core frequency");
+                        NSString *memHeader = NSLocalizedStringFromTableInBundle(@"Memory", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - column header for OpenCL device memory sizes");
+                        NSString *extHeader = NSLocalizedStringFromTableInBundle(@"Exts", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - column header for OpenCL device extensions");
+                        [clInfo appendFormat:@"<tr><td rowspan=\"%u\">&nbsp;&nbsp;</td><th>%@</th><th>%@</th><th>%@</th><th colspan=\"3\">%@</th><th>%@</th></tr>%@",
+                         1 + clDeviceIndex,
+                         typeHeader, unitsHeader, freqHeader, memHeader, extHeader,
+                         clDeviceInfo];
+                    }
+                    
+                    clPlatformIndex ++;
+                }
                 
-                [runtime appendString:@"</table>"];
-
-                replacement = runtime;
+                [clInfo insertString:@"<table class=\"subtable\">" atIndex:0];
+                [clInfo appendString:@"</table>"];
+                replacement = clInfo;
+            } else if ([key isEqualToString:@"runmin"] || [key isEqualToString:@"trunmin"]) {
+                replacement = [NSString stringWithFormat:@"%.1f", [replacement unsignedIntValue]/60.0];
+            } else if ([key isEqualToString:@"RUNTIME-Hours"]) {
+                replacement = NSLocalizedStringFromTableInBundle(@"Hours Run", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - accumulated number of hours the program has been running");
+            } else if ([key isEqualToString:@"RUNTIME-Launches"]) {
+                replacement = NSLocalizedStringFromTableInBundle(@"# of Launches", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - number of times the program has been launched");
+            } else if ([key isEqualToString:@"RUNTIME-Crashes"]) {
+                replacement = NSLocalizedStringFromTableInBundle(@"# of Crashes", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - number of times the program has crashed");
+            } else if ([key isEqualToString:@"OTHERVARS"]) {
+                NSMutableString *rows = [NSMutableString string];
+                OFForEachObject([report keyEnumerator], NSString *, aVar) {
+                    if (![aVar isEqualToString:@"loc"])
+                        [rows appendFormat:@"<tr><th>%@</th><td>%@</td></tr>", aVar, [report objectForKey:aVar]];
+                }
+                replacement = rows;
             }
             
 	    

@@ -1,4 +1,4 @@
-// Copyright 2002-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,14 +17,17 @@ RCS_ID("$Id$")
 {
 }
 
+#if 0
 - (NSCalendarDate *)parseDate:(NSString *)spec;
 - (void)testRoundingToHHMM:(NSArray *)testCase;
 - (void)testRoundingToDOW:(NSArray *)testCase;
+#endif
 
 @end
 
 @implementation OFDateTestCase
 
+#if 0 // NSCalendarDate is deprecated
 - (NSCalendarDate *)parseDate:(NSString *)spec
 {
     // Parses a date with either a numeric offset time zone, or a symbolic time zone (which may carry DST behavior with it).
@@ -88,6 +91,7 @@ RCS_ID("$Id$")
 {
     return [self dataDrivenTestSuite];
 }
+#endif
 
 @end
 

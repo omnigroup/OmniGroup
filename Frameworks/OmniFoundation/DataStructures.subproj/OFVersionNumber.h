@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,8 +15,8 @@
     NSString *_originalVersionString;
     NSString *_cleanVersionString;
     
-    unsigned int  _componentCount;
-    unsigned int *_components;
+    NSUInteger  _componentCount;
+    NSUInteger *_components;
 }
 
 + (OFVersionNumber *)userVisibleOperatingSystemVersionNumber;
@@ -27,8 +27,8 @@
 - (NSString *)originalVersionString;
 - (NSString *)cleanVersionString;
 
-- (unsigned int)componentCount;
-- (unsigned int)componentAtIndex:(unsigned int)componentIndex;
+- (NSUInteger)componentCount;
+- (NSUInteger)componentAtIndex:(NSUInteger)componentIndex;
 
 - (NSComparisonResult)compareToVersionNumber:(OFVersionNumber *)otherVersion;
 

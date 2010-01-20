@@ -1,13 +1,13 @@
 module OmniDataObjects
   class Attribute < Property
-    attr_reader :type, :default_value, :primary
+    attr_reader :type, :value_class, :default_value, :primary
 
     def initialize(entity, name, type, options = {})
       super(entity, name, options)
       @type = type
+      @value_class = options[:value_class]
       @default_value = options[:default]
       @primary = options[:primary]
-      @value_class = options[:value_class]
     end
 
     def validate
@@ -26,6 +26,9 @@ module OmniDataObjects
     end
 
     def objcValueClass
+      # All this to be forced via value_class; unlikely for most types, but NSData.
+      return value_class if value_class
+      
       case type
       when :boolean, :int16, :int32, :int64, :float32, :float64
         "NSNumber"
@@ -36,7 +39,7 @@ module OmniDataObjects
       when :data
         "NSData"
       when :undefined
-        return @value_class || "NSObject"
+        "NSObject"
       else
         fail "Unknown type name #{type}"
       end
@@ -44,13 +47,19 @@ module OmniDataObjects
 
     def objcDefaultValue
       return "nil" if default_value.nil?
+      
+      # If there is a custom class, default_value can be an atom to send it a class method.
+      if value_class && Symbol === default_value
+        return "[#{value_class} #{default_value.to_s}]"
+      end
+      
       case type
       when :int32
         "[[NSNumber alloc] initWithInt:#{default_value}]"
       when :boolean
         default_value ? "(id)kCFBooleanTrue" : "(id)kCFBooleanFalse"
       else
-        fail "Don't know how to generate a default value for type #{:type}"
+        fail "Don't know how to generate a default value for type #{type}"
       end
     end
     
@@ -58,9 +67,16 @@ module OmniDataObjects
       names << objcValueClass
     end
     def emitInterface(f)
-      # We don't currently make any pretense at being thread-safe (other that the whole stack being used in a thread).  So, use nonatomic.  Also, all attribute values should be copied on assignment.
+      # We don't currently make any pretense at being thread-safe (other that the whole stack being used in a thread).  So, use nonatomic.  Also, all attribute values should be copied on assignment _if_ they are writable.  Calculated properties are declared to be read-only, but their implementations my redefine the property internally to be writable. We have to still use 'copy' in that case, though, else the compiler signals a storage mechanism conflict when redefining.
       return if self.inherited_from # don't redeclare inherited attributes since they'll have the same definition in the superclass
-      f << "@property(nonatomic,copy) #{objcValueClass} *#{name};\n"
+      
+      if calculated
+        read_only = ",readonly"
+      else
+        read_only = ""
+      end
+      
+      f << "@property(nonatomic,copy#{read_only}) #{objcValueClass} *#{name};\n"
     end
     
     def emitCreation(f)

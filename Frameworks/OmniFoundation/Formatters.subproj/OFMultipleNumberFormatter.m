@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ static NSCharacterSet *nonDigitOrSpaceSet;
     return [object componentsJoinedByString:@" "];
 }
 
-- (BOOL)getObjectValue:(id *)anObject forString:(NSString *)string errorDescription:(NSString **)error;
+- (BOOL)getObjectValue:(out id *)anObject forString:(NSString *)string errorDescription:(out NSString **)error;
 {    
     NSEnumerator *enumerator;
     NSMutableArray *result;

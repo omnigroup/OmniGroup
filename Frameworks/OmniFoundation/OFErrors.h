@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,6 +29,9 @@ enum {
     OFXMLReaderCannotCreateXMLInputBuffer,
     OFXMLReaderCannotCreateXMLReader,
     OFXMLReaderUnexpectedNodeType,
+    
+    OFUnableToCompressData,
+    OFUnableToDecompressData,
     
     OFXMLSignatureValidationError,    // Signature information could not be parsed
     OFXMLSignatureValidationFailure,  // Signature information could be parsed, but did not validate

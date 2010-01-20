@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,13 +13,10 @@ RCS_ID("$Id$")
 
 @implementation NSScanner (OFExtensions)
 
-- (BOOL)scanStringOfLength:(unsigned int)length intoString:(NSString **)result;
+- (BOOL)scanStringOfLength:(NSUInteger)length intoString:(NSString **)result;
 {
-    NSString                   *string;
-    unsigned int                scanLocation;
-
-    string = [self string];
-    scanLocation = [self scanLocation];
+    NSString *string = [self string];
+    NSUInteger scanLocation = [self scanLocation];
     if (scanLocation + length > [string length])
 	return NO;
     if (result)
@@ -36,7 +33,7 @@ RCS_ID("$Id$")
     NSMutableString *buffer;
     NSCharacterSet *oldCharactersToBeSkipped;
 #if defined(OMNI_ASSERTIONS_ON)
-    unsigned beganLocation = [self scanLocation];
+    NSUInteger beganLocation = [self scanLocation];
 #endif
 
     OBPRECONDITION(![NSString isEmptyString:escape]);
@@ -117,7 +114,7 @@ RCS_ID("$Id$")
 {
     NSRange scanRange = NSMakeRange([self scanLocation], [[self string] length] - [self scanLocation]);
     
-    unsigned stringIndex, stringCount = [stringArray count];
+    NSUInteger stringIndex, stringCount = [stringArray count];
     for (stringIndex = 0; stringIndex < stringCount; stringIndex++) {
         NSString *stopString = [stringArray objectAtIndex:stringIndex];
         NSRange foundRange = [[self string] rangeOfString:stopString options:0 range:scanRange];

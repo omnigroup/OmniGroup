@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,7 +63,7 @@
 
 - (NSUInteger)scanLocation;
 - (void)setScanLocation:(NSUInteger)aLocation;
-- (void)skipCharacters:(int)anOffset;
+- (void)skipCharacters:(NSUInteger)anOffset;
 
 - (BOOL)hasScannedNonASCII;  // returns YES if scanner has passed any non-ASCII characters
 

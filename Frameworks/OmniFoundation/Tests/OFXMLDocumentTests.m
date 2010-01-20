@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -178,11 +178,12 @@ do { \
     should(doc != nil);
 
     NSData *expectedData = [[NSData alloc] initWithContentsOfFile:inputFile];
-    NSString *expectedString = (NSString *)CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)expectedData, [doc stringEncoding]);
+    CFStringRef expectedString = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)expectedData, [doc stringEncoding]);
     [expectedData release];
     
     should(expectedString != nil);
-    [expectedString release];
+    if (expectedString)
+        CFRelease(expectedString);
     [doc release];
 }
 

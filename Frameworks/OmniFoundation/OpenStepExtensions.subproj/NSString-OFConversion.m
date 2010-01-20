@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,9 +41,14 @@ RCS_ID("$Id$");
     CONVERT_USING(strtoull);
 }
 
-- (unsigned int)unsignedIntValue;
+- (unsigned long)unsignedLongValue;
 {
     CONVERT_USING(strtoul);
+}
+
+- (unsigned int)unsignedIntValue;
+{
+    return (unsigned int)[self unsignedLongValue];
 }
 
 - (intmax_t)maxIntegerValue;
@@ -90,21 +95,18 @@ RCS_ID("$Id$");
 
 static inline unsigned int parseHexString(NSString *hexString, unsigned long long int *parsedHexValue)
 {
-    unsigned int hexLength;
     unichar hexText[MAX_HEX_TEXT_LENGTH];
     unichar hexDigit;
-    unsigned int textIndex;
     unsigned long long int hexValue;
-    unsigned int hexDigitsFound;
     
-    hexLength = [hexString length];
+    NSUInteger hexLength = [hexString length];
     if (hexLength > MAX_HEX_TEXT_LENGTH)
         hexLength = MAX_HEX_TEXT_LENGTH;
     [hexString getCharacters:hexText range:NSMakeRange(0, hexLength)];
     
-    textIndex = 0;
+    NSUInteger textIndex = 0;
     hexValue = 0;
-    hexDigitsFound = 0;
+    unsigned int hexDigitsFound = 0;
     
     while (textIndex < hexLength && isspace(hexText[textIndex])) {
         // Skip leading whitespace
@@ -172,20 +174,14 @@ static inline unsigned int parseHexString(NSString *hexString, unsigned long lon
 
 - (NSData *)dataUsingCFEncoding:(CFStringEncoding)anEncoding;
 {
-    CFDataRef result;
-    
-    result = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, CFRangeMake(0, [self length]), anEncoding, (char)0);
-    
-    return [(NSData *)result autorelease];
+    CFDataRef result = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, CFRangeMake(0, [self length]), anEncoding, (char)0);
+    return [NSMakeCollectable(result) autorelease];
 }
 
 - (NSData *)dataUsingCFEncoding:(CFStringEncoding)anEncoding allowLossyConversion:(BOOL)lossy;
 {
-    CFDataRef result;
-    
-    result = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, CFRangeMake(0, [self length]), anEncoding, lossy?'?':0);
-    
-    return [(NSData *)result autorelease];
+    CFDataRef result = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, CFRangeMake(0, [self length]), anEncoding, lossy?'?':0);
+    return [NSMakeCollectable(result) autorelease];
 }
 
 @end

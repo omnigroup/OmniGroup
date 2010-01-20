@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,5 +73,5 @@ OWF_EXTERN NSString *OWExpireCookiesAtEndOfSessionPreferenceKey;
 @end
 
 
-OWF_EXTERN NSString *OWCookiesChangedNotification;
+OWF_EXTERN NSString * const OWCookiesChangedNotification;
     // Posted when cookie data has changed.

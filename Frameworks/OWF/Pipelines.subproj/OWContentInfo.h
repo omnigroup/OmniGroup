@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -82,11 +82,11 @@
 - (void)removeChildTask:(OWTask *)aTask;
     // Only can be called by -[OWTask setParentContentInfo:].
 - (NSArray *)childTasks;
-- (OWTask *)childTaskAtIndex:(unsigned int)childIndex;
-- (unsigned int)childTasksCount;
+- (OWTask *)childTaskAtIndex:(NSUInteger)childIndex;
+- (NSUInteger)childTasksCount;
 - (int)workDoneByChildTasks;
 - (int)workToBeDoneByChildTasks;
-- (void)calculateDeadPipelines:(unsigned int *)deadPipelines totalPipelines:(unsigned int *)totalPipelines;
+- (void)calculateDeadPipelines:(NSUInteger *)deadPipelines totalPipelines:(NSUInteger *)totalPipelines;
 
 - (void)addChildFossil:(id <NSObject>)childFossil;
     // Hang onto this object until we're released:  this is a way of guaranteeing that a child task sticks around for the inspector
@@ -97,8 +97,8 @@
 - (void)addActiveChildTask:(OWTask *)aTask;
 - (void)removeActiveChildTask:(OWTask *)aTask;
 - (NSArray *)activeChildTasks;
-- (OWTask *)activeChildTaskAtIndex:(unsigned int)childIndex;
-- (unsigned int)activeChildTasksCount;
+- (OWTask *)activeChildTaskAtIndex:(NSUInteger)childIndex;
+- (NSUInteger)activeChildTasksCount;
 - (void)abortActiveChildTasks;
 - (NSTimeInterval)timeSinceTreeActivationIntervalForActiveChildTasks;
 - (NSTimeInterval)estimatedRemainingTreeTimeIntervalForActiveChildTasks;

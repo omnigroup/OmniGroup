@@ -1,4 +1,4 @@
-// Copyright 2004-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -356,7 +356,7 @@ NSString *unpair(NSString *str, NSRange *where, void *dummy)
                 id p = OFCreatePlistFor4CC(fcc);
                 should1(OFGet4CCFromPlist(p, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, fcc]));
                 
-                str = [(NSString *)UTCreateStringForOSType(fcc) autorelease];
+                str = [NSMakeCollectable(UTCreateStringForOSType(fcc)) autorelease];
                 should1(OFGet4CCFromPlist(str, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x out=%08x", shift, i, fcc, tmp]));
                 should1(UTGetOSTypeFromString((CFStringRef)str) == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, fcc]));
                 should1([str fourCharCodeValue] == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, fcc]));

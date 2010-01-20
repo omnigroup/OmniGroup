@@ -39,7 +39,7 @@
 		34B2545B08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2543E08D0DCEE00DD2070 /* OIInspectorResizerAvoidingScrollView.m */; };
 		34B2545C08D0DCEE00DD2070 /* OIInspectorVerticalResizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2543F08D0DCEE00DD2070 /* OIInspectorVerticalResizer.h */; };
 		34B2545D08D0DCEE00DD2070 /* OIInspectorVerticalResizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2544008D0DCEE00DD2070 /* OIInspectorVerticalResizer.m */; };
-		34B2545E08D0DCEE00DD2070 /* OIInspectorWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2544108D0DCEE00DD2070 /* OIInspectorWindow.h */; };
+		34B2545E08D0DCEE00DD2070 /* OIInspectorWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2544108D0DCEE00DD2070 /* OIInspectorWindow.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34B2545F08D0DCEE00DD2070 /* OIInspectorWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2544208D0DCEE00DD2070 /* OIInspectorWindow.m */; };
 		34B2546008D0DCEE00DD2070 /* OmniInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2544308D0DCEE00DD2070 /* OmniInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34B2549708D0DE8900DD2070 /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34B2549408D0DE8900DD2070 /* OmniAppKit.framework */; };

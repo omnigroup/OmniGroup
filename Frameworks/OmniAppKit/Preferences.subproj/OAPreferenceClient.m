@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,17 +52,14 @@ RCS_ID("$Id$")
     title = [newTitle copy];
     preferences = [[NSMutableArray alloc] init];
     
-    unsigned int defaultIndex, defaultCount = [newDefaultsArray count];
-    
     NSString *defaultKeySuffix = [_nonretained_controller defaultKeySuffix];
     NSArray *keys;
     if (![NSString isEmptyString:defaultKeySuffix]) {
         NSMutableArray *clonedKeys = [NSMutableArray array];
-        NSMutableDictionary *clonedDefaultRegistration = [NSMutableDictionary dictionaryWithCapacity:defaultCount];
+        NSMutableDictionary *clonedDefaultRegistration = [NSMutableDictionary dictionary];
         
-        for (defaultIndex = 0; defaultIndex < defaultCount; defaultIndex++) {
+        for (NSString *key in newDefaultsArray) {
             // Register default values for the cloned preferences
-            NSString *key = [newDefaultsArray objectAtIndex: defaultIndex];
             OFPreference *basePreference = [OFPreference preferenceForKey:key];
             id defaultValue = [basePreference defaultObjectValue];
             OBASSERT(defaultValue != nil);
@@ -78,17 +75,14 @@ RCS_ID("$Id$")
         keys = newDefaultsArray;
     }
     
-    for (defaultIndex = 0; defaultIndex < defaultCount; defaultIndex++) {
-        NSString *key = [keys objectAtIndex: defaultIndex];
+    for (NSString *key in keys)
         [self addPreference:[OFPreference preferenceForKey:key]];
-    }
+
     defaults = [[OFPreferenceWrapper sharedPreferenceWrapper] retain];
     
     // Gather the initial values (not in the loop above since subclasses might have done something in -addPreference:)
     NSMutableDictionary *initialValues = [NSMutableDictionary dictionary];
-    unsigned int preferenceIndex = [preferences count];
-    while (preferenceIndex--) {
-	OFPreference *preference = [preferences objectAtIndex:preferenceIndex];
+    for (OFPreference *preference in preferences) {
 	id value = [preference defaultObjectValue];
 	OBASSERT(value); // Avoid raise, but this is really invalid.
 	if (value)
@@ -164,9 +158,7 @@ RCS_ID("$Id$")
 
 - (BOOL)haveAnyDefaultsChanged;
 {
-    unsigned int preferenceIndex = [preferences count];
-    while (preferenceIndex--) {
-        OFPreference *aPreference = [preferences objectAtIndex:preferenceIndex];
+    for (OFPreference *aPreference in preferences) {
         if ([aPreference hasNonDefaultValue]) {
 #ifdef DEBUG_kc0
             NSLog(@"-%s: non-default value: '%@' = '%@'", _cmd, [aPreference key], [aPreference objectValue]);
@@ -183,8 +175,12 @@ RCS_ID("$Id$")
 {
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];
     [openPanel setCanChooseDirectories:YES];
-    if ([openPanel runModalForTypes:nil] != NSOKButton)
+    [openPanel setCanChooseFiles:NO];
+    [openPanel setAllowedFileTypes:nil];
+    if ([openPanel runModal] != NSFileHandlingPanelOKButton)
 	return;
+    
+    /* TODO: Should we rewrite this to be asynchronous and use a completion handler? Must check where it's invoked. */
     
     NSString *directory = [[openPanel filenames] objectAtIndex: 0];
     [textField setStringValue:directory];
@@ -203,7 +199,7 @@ RCS_ID("$Id$")
 {
     OFPreference *preference = [OFPreference preferenceForKey: defaultName];
     [preference restoreDefaultValue];
-    [textField setIntValue:[preference integerValue]];
+    [textField setIntegerValue:[preference integerValue]];
     NSBeep();
 }
 
@@ -257,6 +253,7 @@ RCS_ID("$Id$")
 /*" Be sure to call super if you subclass this "*/
 - (void)awakeFromNib;
 {
+    [super awakeFromNib];
     [controlBox retain];
 }
 

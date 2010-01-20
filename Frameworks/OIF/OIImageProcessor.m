@@ -1,4 +1,4 @@
-// Copyright 1998-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -145,6 +145,8 @@ unsigned int OIImageProcessorCheckTimeEveryNRows = 16;
 
 - (void)processBegin;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
     NSUserDefaults *userDefaults;
 
     [super processBegin];
@@ -157,6 +159,7 @@ unsigned int OIImageProcessorCheckTimeEveryNRows = 16;
 	drawInterval = [userDefaults floatForKey:@"OIImageProcessorDrawInterval"];
     OIImageProcessorCheckTimeEveryNRows = [userDefaults integerForKey:@"OIImageProcessorCheckTimeEveryNRows"];
     lastDrawTimeInterval = [NSDate timeIntervalSinceReferenceDate];
+#endif
 }
 
 - (void)processEnd;

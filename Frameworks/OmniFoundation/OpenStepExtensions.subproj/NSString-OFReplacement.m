@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,9 +15,7 @@ RCS_ID("$Id$");
 
 - (NSString *)stringByRemovingPrefix:(NSString *)prefix;
 {
-    NSRange aRange;
-    
-    aRange = [self rangeOfString:prefix options:NSAnchoredSearch];
+    NSRange aRange = [self rangeOfString:prefix options:NSAnchoredSearch];
     if ((aRange.length == 0) || (aRange.location != 0))
         return [[self retain] autorelease];
     return [self substringFromIndex:aRange.location + aRange.length];
@@ -37,19 +35,17 @@ RCS_ID("$Id$");
 
 - (NSString *)stringByRemovingString:(NSString *)removeString
 {
-    NSArray *lines;
-    NSMutableString *newString;
-    NSString *returnValue;
-    unsigned int lineIndex, lineCount;
-    
     if (![self containsString:removeString])
 	return [[self copy] autorelease];
-    newString = [[NSMutableString alloc] initWithCapacity:[self length]];
-    lines = [self componentsSeparatedByString:removeString];
-    lineCount = [lines count];
+    
+    NSMutableString *newString = [[NSMutableString alloc] initWithCapacity:[self length]];
+    NSArray *lines = [self componentsSeparatedByString:removeString];
+    NSUInteger lineIndex, lineCount = [lines count];
+    
     for (lineIndex = 0; lineIndex < lineCount; lineIndex++)
 	[newString appendString:[lines objectAtIndex:lineIndex]];
-    returnValue = [newString copy];
+    
+    NSString *returnValue = [newString copy];
     [newString release];
     return [returnValue autorelease];
 }
@@ -64,7 +60,7 @@ RCS_ID("$Id$");
         return [[self copy] autorelease];
     
     NSMutableString *copy = [self mutableCopy];
-    unsigned int replacementLength = [replacement length];
+    NSUInteger replacementLength = [replacement length];
     
     while (foundRange.length > 0) {
         [copy replaceCharactersInRange:foundRange withString:replacement];
@@ -226,11 +222,8 @@ static NSString *_variableSubstitutionInDictionary(NSString *key, void *context)
 
 - (void)replaceAllOccurrencesOfCharactersInSet:(NSCharacterSet *)set withString:(NSString *)replaceString;
 {
-    NSRange characterRange, searchRange;
-    unsigned int replaceStringLength;
-    
-    searchRange = NSMakeRange(0, [self length]);
-    replaceStringLength = [replaceString length];
+    NSRange characterRange, searchRange = NSMakeRange(0, [self length]);
+    NSUInteger replaceStringLength = [replaceString length];
     while ((characterRange = [self rangeOfCharacterFromSet:set options:NSLiteralSearch range:searchRange]).length) {
 	[self replaceCharactersInRange:characterRange withString:replaceString];
 	searchRange.location = characterRange.location + replaceStringLength;

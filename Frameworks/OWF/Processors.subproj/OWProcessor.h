@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,7 +42,7 @@ typedef enum {
 // These are used to provide scheduling information to the OFMessageQueue from which processors are dispatched.
 - (OFMessageQueueSchedulingInfo)messageQueueSchedulingInfo;
 
-- (void)processedBytes:(unsigned int)bytes ofBytes:(unsigned int)newTotalBytes;
+- (void)processedBytes:(NSUInteger)bytes ofBytes:(NSUInteger)newTotalBytes;
 - (NSDate *)firstBytesDate;
 - (unsigned int)bytesProcessed;
 - (unsigned int)totalBytes;
@@ -147,9 +147,9 @@ typedef enum {
 - (void)setStatusStringWithClassName:(NSString *)newStatus;
 - (NSString *)statusString;
 
-- (void)processedBytes:(unsigned int)bytes;
+- (void)processedBytes:(NSUInteger)bytes;
     // Use NSNotFound to indicate an unknown amount.
-- (void)processedBytes:(unsigned int)bytes ofBytes:(unsigned int)newTotalBytes;
+- (void)processedBytes:(NSUInteger)bytes ofBytes:(NSUInteger)newTotalBytes;
 - (NSDate *)firstBytesDate;
 - (unsigned int)bytesProcessed;
 - (unsigned int)totalBytes;

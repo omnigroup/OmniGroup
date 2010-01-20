@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ RCS_ID("$Id$")
 - (void)getPasswordFallback:(NSDictionary *)useParameters;
 - (OWAuthorizationCredential *)_credentialForUsername:(NSString *)aName password:(id)aPassword challenge:(NSDictionary *)useParameters;
 
-static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential, NSArray *challenges);
+//static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential, NSArray *challenges);
 
 @end
 
@@ -209,6 +209,9 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
 
 - (BOOL)checkForSatisfaction;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return NO;
+#if 0
     BOOL satisfied = NO;
     
     [requestCondition lock];
@@ -246,8 +249,9 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
                 }
                 if (satisfied) {
                     [results release];
-                    results = mutableResults;
+                    results = [mutableResults retain];
                 }
+                [mutableResults release];
             } else {
                 // If theseDidntWork is nil, then the caller doesn't want to do anything expensive, they're just optimistically querying the cache.  In that case, we're satisfied no matter what -findCachedCredentials returned.
                 
@@ -264,6 +268,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
     [requestCondition unlockWithCondition:satisfied];
     
     return satisfied;
+#endif
 }
 
 - (NSArray *)credentials;
@@ -411,10 +416,10 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
 
 + (NSArray *)findParametersOfType:(enum OWAuthorizationType)authType headers:(OWHeaderDictionary *)httpChallenge
 {
-    NSMutableArray *parmsArray;
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSArray *headers;
-    NSMutableCharacterSet *delimiterSet;
-    unsigned int headerIndex, headerCount;
     
     if (authType == OWAuth_HTTP) {
         headers = [httpChallenge stringArrayForKey:@"WWW-Authenticate"];
@@ -428,23 +433,24 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
         headers = nil;
     }
 
-    delimiterSet = [[NSMutableCharacterSet alloc] init]; // inefficient, TODO
-    [delimiterSet addCharactersInString:@"=\""];
-    [delimiterSet formUnionWithCharacterSet:[NSCharacterSet whitespaceCharacterSet]];
-    [delimiterSet autorelease];
+    static OFCharacterSet *delimiterSet = nil;
+    if (delimiterSet == nil) {
+        delimiterSet = [[OFCharacterSet alloc] init];
+        [delimiterSet addCharactersInString:@"=\","];
+        [delimiterSet addCharactersFromCharacterSet:[NSCharacterSet whitespaceCharacterSet]];
+    }
+    OBASSERT(delimiterSet != nil);
 
-    headerCount = headers != nil ? [headers count] : 0;
-    parmsArray = [[NSMutableArray alloc] initWithCapacity:headerCount];
+    unsigned int headerIndex, headerCount = headers != nil ? [headers count] : 0;
+    NSMutableArray *parmsArray = [[NSMutableArray alloc] initWithCapacity:headerCount];
     for (headerIndex = 0; headerIndex < headerCount; headerIndex++) {
-        NSMutableDictionary *parameters;
-        OFStringScanner *scanner;
-        NSString *token, *value;
-        
-        scanner = [[OFStringScanner alloc] initWithString:[headers objectAtIndex:headerIndex]];
-        token = [scanner readFullTokenWithDelimiters:delimiterSet forceLowercase:YES];
-        if (!token)
+        OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:[headers objectAtIndex:headerIndex]];
+        NSString *token = [scanner readFullTokenWithDelimiterOFCharacterSet:delimiterSet forceLowercase:YES];
+        if (!token) {
+            [scanner release];
             continue;
-        parameters = [[NSMutableDictionary alloc] init];
+        }
+        NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
         [parameters setObject:token forKey:@"scheme"];
         
         for (;;) {
@@ -456,7 +462,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
             if (peeked == OFCharacterScannerEndOfDataCharacter)
                 break;
 
-            token = [scanner readFullTokenWithDelimiters:delimiterSet forceLowercase:YES];
+            token = [scanner readFullTokenWithDelimiterOFCharacterSet:delimiterSet forceLowercase:YES];
             if (token == nil)
                 break;
 
@@ -466,6 +472,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
             while ((peeked = scannerPeekCharacter(scanner)) != OFCharacterScannerEndOfDataCharacter && [delimiterSet characterIsMember:peeked] && (peeked != '"'))
                   scannerSkipPeekedCharacter(scanner);
 
+            NSString *value;
             if (peeked == '"') {
                 // Read a double-quoted string, including backslash-quoting of quotes and backslashes.
                 NSMutableString *fragment;
@@ -484,7 +491,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
                 value = [[fragment copy] autorelease];
                 [fragment release];
             } else {
-                value = [scanner readFullTokenWithDelimiters:delimiterSet forceLowercase:NO];
+                value = [scanner readFullTokenWithDelimiterOFCharacterSet:delimiterSet forceLowercase:NO];
             }
  
             [parameters setObject:value forKey:token];
@@ -502,6 +509,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
         NSLog(@"Auth parameters: %@", parmsArray);
     
     return [parmsArray autorelease];
+#endif
 }
 
 @end
@@ -543,6 +551,9 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
 
 - (NSDictionary *)_bestSupportedScheme:(NSArray *)challenges
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     unsigned int challengeIndex, challengeCount = [challenges count];
     NSDictionary *bestSoFar;
 
@@ -560,6 +571,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
     }
 
     return bestSoFar;
+#endif
 }
 
 - (void)_gatherCredentials;
@@ -642,6 +654,9 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
 
 - (NSArray *)findCachedCredentials;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     if (parsedHostname == nil)
         return [NSArray array];
     
@@ -715,10 +730,15 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
     }
             
     return myCacheLine;
+#endif
 }
 
+#if 0
 static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential, NSArray *challenges)
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return NO;
+#if 0
     unsigned int challengeIndex, challengeCount;
     
     challengeCount = [challenges count];
@@ -731,7 +751,9 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     }
     
     return NO;
+#endif
 }
+#endif
 
 - (OWAuthorizationCredential *)_credentialForUsername:(NSString *)aName password:(id)aPassword challenge:(NSDictionary *)useParameters
 {
@@ -763,6 +785,9 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
 
 - (NSSet *)keychainTags;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSMutableSet *knownKeychainTags;
     
     knownKeychainTags = [[[NSMutableSet alloc] init] autorelease];
@@ -787,6 +812,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     } NS_ENDHANDLER;
     
     return knownKeychainTags;
+#endif
 }
     
 - (BOOL)getPasswordFromKeychain:(NSDictionary *)useParameters;

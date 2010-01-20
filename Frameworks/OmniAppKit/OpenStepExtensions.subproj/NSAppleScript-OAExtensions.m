@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,12 @@ RCS_ID("$Id$");
     error = OSAStore([isa _defaultScriptingComponent], [self _compiledScriptID], typeOSAGenericStorage, kOSAModeNull, &descriptor);
     if (error != noErr)
         return nil;
-    return [[NSAppleEventDescriptor descriptorWithAEDescNoCopy:(&descriptor)] data];
+    
+    NSAppleEventDescriptor *desc = [NSAppleEventDescriptor newDescriptorWithAEDescNoCopy:(&descriptor)];
+    NSData *result = [desc data];
+    [desc release];
+    
+    return result;
 }
 
 + (NSAttributedString *)attributedStringFromScriptResult:(NSAppleEventDescriptor *)descriptor;
@@ -61,7 +66,9 @@ RCS_ID("$Id$");
     err = OSAGetSource([self _defaultScriptingComponent], scriptID, typeStyledText, &sourceTextDesc);
     if (err != noErr)
         return nil;
-    return [self _attributedStringFromDescriptor:[NSAppleEventDescriptor descriptorWithAEDescNoCopy:&sourceTextDesc]];
+    
+    NSAppleEventDescriptor *desc = [[NSAppleEventDescriptor newDescriptorWithAEDescNoCopy:&sourceTextDesc] autorelease];
+    return [self _attributedStringFromDescriptor:desc];
 }
 
 
@@ -105,7 +112,7 @@ RCS_ID("$Id$");
     else
         underlineStyle = NSUnderlineStyleNone;
 
-    myColor = [NSColor colorWithCalibratedRed:(color.red / 65535.0) green:(color.green / 65535.0) blue:(color.blue / 65535.0) alpha:1.0];
+    myColor = OARGBA(color.red / 65535.0, color.green / 65535.0, color.blue / 65535.0, 1.0);
 
     attributes = [NSDictionary dictionaryWithObjectsAndKeys:
         myColor, NSForegroundColorAttributeName,

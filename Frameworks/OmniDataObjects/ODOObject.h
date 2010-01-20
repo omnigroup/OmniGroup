@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,8 +30,11 @@
         unsigned int invalid : 1;
         unsigned int needsAwakeFromFetch : 1;
         unsigned int hasChangedModifyingToManyRelationshipSinceLastSave : 1;
+        unsigned int undeletable : 1;
     } _flags;
 }
+
++ (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;
 
 - (id)initWithEditingContext:(ODOEditingContext *)context entity:(ODOEntity *)entity primaryKey:(id)primaryKey;
 
@@ -47,9 +50,9 @@
 - (void)awakeFromFetch;
 - (void)awakeFromUnarchive; // Never called by the framework; for subclasses and apps that implement archiving
 
-- (ODOEntity *)entity; // do not subclass
-- (ODOEditingContext *)editingContext; // do not subclass
-- (ODOObjectID *)objectID; // do not subclass
+@property(readonly) ODOEntity *entity; // do not subclass
+@property(readonly) ODOEditingContext *editingContext; // do not subclass
+@property(readonly) ODOObjectID *objectID; // do not subclass
 
 - (void)willSave;
 - (void)willInsert; // Just calls -willSave
@@ -76,6 +79,7 @@
 - (BOOL)isUpdated;
 
 - (BOOL)isInvalid;
+- (BOOL)isUndeletable;
 
 - (BOOL)hasChangedKeySinceLastSave:(NSString *)key;
 - (NSDictionary *)changedValues;
@@ -93,7 +97,7 @@
 
 // Helper functions that handle the guts of most common custom property setter/getter methods.
 extern BOOL ODOSetPropertyIfChanged(ODOObject *object, NSString *key, id value, id *outOldValue);
-extern BOOL ODOSetUnsignedIntPropertyIfChanged(ODOObject *object, NSString *key, unsigned int value, unsigned int *outOldValue);
+extern BOOL ODOSetUInt32PropertyIfChanged(ODOObject *object, NSString *key, uint32_t value, uint32_t *outOldValue);
 
 extern id ODOGetPrimitiveProperty(ODOObject *object, NSString *key);
 extern BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, NSString *key, id value, id *outOldValue);

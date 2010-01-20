@@ -1,4 +1,4 @@
-// Copyright 1999-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,11 +24,14 @@ RCS_ID("$Id$")
 
 + (void)didLoad;
 {
-    [self registerForContentTypeString:@"OWFTPDirectory/MacOS-PeterLewis" cost:1.0];
+    [self registerForContentTypeString:@"OWFTPDirectory/MacOS-PeterLewis" cost:1.0f];
 }
 
 - (OWFileInfo *)fileInfoForLine:(NSString *)line;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     OWFileInfo *fileInfo;
     NSScanner *lineScanner;
     NSString *directoryFlag, *permissions = nil;
@@ -96,6 +99,7 @@ RCS_ID("$Id$")
                                     lastChangeDate:changeDate];
 
     return [fileInfo autorelease];
+#endif
 }
 
 @end

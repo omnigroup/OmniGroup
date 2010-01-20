@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,15 +24,18 @@ RCS_ID("$Id$")
 
 + (void)didLoad;
 {
-    [self registerForContentTypeString:@"OWFTPDirectory/UNIX" cost:1.0];
-    [self registerForContentTypeString:@"OWFTPDirectory/RHAPSODY" cost:1.0];
-    [self registerForContentTypeString:@"OWFTPDirectory/unknown" cost:10.0];
-    [self registerForContentTypeString:@"OWFTPDirectory/Windows_NT" cost:3.0];
-    [self registerForContentTypeString:@"OWFTPDirectory/MacOS-MachTen" cost:2.0];
+    [self registerForContentTypeString:@"OWFTPDirectory/UNIX" cost:1.0f];
+    [self registerForContentTypeString:@"OWFTPDirectory/RHAPSODY" cost:1.0f];
+    [self registerForContentTypeString:@"OWFTPDirectory/unknown" cost:10.0f];
+    [self registerForContentTypeString:@"OWFTPDirectory/Windows_NT" cost:3.0f];
+    [self registerForContentTypeString:@"OWFTPDirectory/MacOS-MachTen" cost:2.0f];
 }
 
 - (OWFileInfo *)fileInfoForLine:(NSString *)line;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     OWFileInfo *fileInfo;
     NSScanner *lineScanner;
     NSString *directoryFlag, *permissions = nil;
@@ -92,6 +95,7 @@ RCS_ID("$Id$")
     fileInfo = [[OWFileInfo alloc] initWithAddress:[baseAddress addressForRelativeString:[NSString encodeURLString:name asQuery:NO leaveSlashes:NO leaveColons:NO]] size:[NSNumber numberWithUnsignedLong:size] isDirectory:[directoryFlag isEqualToString:@"d"] isShortcut:[directoryFlag isEqualToString:@"l"] lastChangeDate:changeDate];
 
     return [fileInfo autorelease];
+#endif
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2002-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,7 @@
 
 @protocol OIInspectorHeaderViewDelegateProtocol
 - (BOOL)headerViewShouldDisplayCloseButton:(OIInspectorHeaderView *)view;
-- (float)headerViewDraggingHeight:(OIInspectorHeaderView *)view;
+- (CGFloat)headerViewDraggingHeight:(OIInspectorHeaderView *)view;
 - (void)headerViewDidBeginDragging:(OIInspectorHeaderView *)view;
 - (NSRect)headerView:(OIInspectorHeaderView *)view willDragWindowToFrame:(NSRect)aFrame onScreen:(NSScreen *)aScreen;
 - (void)headerViewDidEndDragging:(OIInspectorHeaderView *)view toFrame:(NSRect)aFrame;

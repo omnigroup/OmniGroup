@@ -1,4 +1,4 @@
-// Copyright 2005-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
+#import <OmniFoundation/OFRandom.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
@@ -113,7 +114,7 @@ RCS_ID("$Id$");
         c = 0;
         NSMutableSet *fillMe = [NSMutableSet set];
         while ([fillMe count] < setsize) {
-            [fillMe addObject:[NSNumber numberWithInt: setbase + (random() % setsize)]];
+            [fillMe addObject:[NSNumber numberWithInteger: setbase + (OFRandomNext32() % setsize)]];
             c ++;
             if (c > 100000) {
                 NSLog(@"*** %s:%d: aborting after %u random numbers", __FILE__, __LINE__, c);

@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -77,7 +77,7 @@ RCS_ID("$Id$");
     while (scannerHasData(scanner)) {
         // TODO: Add a OFCharacterScanner method that allows you specify the maximum uint32 value (and a parameterless version that uses UINT_MAX) and passes back a BOOL indicating success (since any uint32 would be valid).
         NSUInteger location = scannerScanLocation(scanner);
-        unsigned int component = [scanner scanUnsignedIntegerMaximumDigits:10];
+        NSUInteger component = [scanner scanUnsignedIntegerMaximumDigits:10];
 
         if (location == scannerScanLocation(scanner))
             // Failed to scan integer
@@ -135,12 +135,12 @@ RCS_ID("$Id$");
     return _cleanVersionString;
 }
 
-- (unsigned int)componentCount;
+- (NSUInteger)componentCount;
 {
     return _componentCount;
 }
 
-- (unsigned int)componentAtIndex:(unsigned int)componentIndex;
+- (NSUInteger)componentAtIndex:(NSUInteger)componentIndex;
 {
     // This treats the version as a infinite sequence ending in "...0.0.0.0", making comparison easier
     if (componentIndex < _componentCount)
@@ -190,10 +190,10 @@ RCS_ID("$Id$");
     if (!otherVersion)
         return NSOrderedAscending;
 
-    unsigned int componentIndex, componentCount = MAX(_componentCount, [otherVersion componentCount]);
+    NSUInteger componentIndex, componentCount = MAX(_componentCount, [otherVersion componentCount]);
     for (componentIndex = 0; componentIndex < componentCount; componentIndex++) {
-        unsigned int component = [self componentAtIndex:componentIndex];
-        unsigned int otherComponent = [otherVersion componentAtIndex:componentIndex];
+        NSUInteger component = [self componentAtIndex:componentIndex];
+        NSUInteger otherComponent = [otherVersion componentAtIndex:componentIndex];
 
         if (component < otherComponent)
             return NSOrderedAscending;
@@ -215,9 +215,9 @@ RCS_ID("$Id$");
     [dict setObject:_cleanVersionString forKey:@"cleanVersionString"];
 
     NSMutableArray *components = [NSMutableArray array];
-    unsigned int componentIndex;
+    NSUInteger componentIndex;
     for (componentIndex = 0; componentIndex < _componentCount; componentIndex++)
-        [components addObject:[NSNumber numberWithUnsignedInt:_components[componentIndex]]];
+        [components addObject:[NSNumber numberWithUnsignedInteger:_components[componentIndex]]];
     [dict setObject:components forKey:@"components"];
 
     return dict;

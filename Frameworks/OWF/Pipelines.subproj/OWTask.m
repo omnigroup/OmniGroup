@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,29 +30,33 @@ static NSBundle *OWF_Bundle = nil;
 
 + (NSString *)HMSStringFromTimeInterval:(NSTimeInterval)interval;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     unsigned int seconds;
     const unsigned int roundUpSeconds = 20;
 
     ASSERT_IN_MAIN_THREAD(@"NSLocalized... is not threadsafe");
     
-    seconds = rint(interval / 5.0) * 5;
+    seconds = rint(interval / 5.0f) * 5;
     if (seconds < 1)
         return nil;
 
     if (seconds < 60)
         return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d seconds", @"OWF", OWF_Bundle, @"task seconds time interval since start"), seconds];
         
-    seconds = rint(interval / 30.0) * 30;
+    seconds = rint(interval / 30.0f) * 30;
     if (seconds < 2 * 60 - roundUpSeconds)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about a minute", @"OWF", OWF_Bundle, @"task one minute time interval since start")];
+        return NSLocalizedStringFromTableInBundle(@"about a minute", @"OWF", OWF_Bundle, @"task one minute time interval since start");
 
     if (seconds < 3600)
         return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d minutes", @"OWF", OWF_Bundle, @"task minutes time interval since start"), (seconds + roundUpSeconds)/60];
 
     if (seconds < 3600 + 360)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about an hour", @"OWF", OWF_Bundle, @"task one hour time interval since start")];
+        return NSLocalizedStringFromTableInBundle(@"about an hour", @"OWF", OWF_Bundle, @"task one hour time interval since start");
         
     return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %.1f hours", @"OWF", OWF_Bundle, @"task hours time interval since start"), seconds/3600.0];
+#endif
 }
 
 
@@ -226,7 +230,7 @@ static NSBundle *OWF_Bundle = nil;
 
 - (NSString *)compositeTypeString;
 {
-    unsigned int activeChildCount;
+    NSUInteger activeChildCount;
 
     activeChildCount = [[self contentInfo] activeChildTasksCount];
     if (activeChildCount == 0)
@@ -235,7 +239,7 @@ static NSBundle *OWF_Bundle = nil;
         return [NSString stringWithFormat:@"%@ (%d)", compositeTypeString, activeChildCount]; // Display active children count for headers on progress panel
 }
 
-- (void)calculateDeadPipelines:(unsigned int *)deadPipelines totalPipelines:(unsigned int *)totalPipelines;
+- (void)calculateDeadPipelines:(NSUInteger *)deadPipelines totalPipelines:(NSUInteger *)totalPipelines;
 {
     OWPipelineState threadSafeState = state;
     
@@ -247,19 +251,19 @@ static NSBundle *OWF_Bundle = nil;
     [[self contentInfo] calculateDeadPipelines:deadPipelines totalPipelines:totalPipelines];
 }
 
-- (unsigned int)workDone;
+- (size_t)workDone;
 {
     return 0;
 }
 
-- (unsigned int)workToBeDone;
+- (size_t)workToBeDone;
 {
     return 0;
 }
 
-- (unsigned int)workDoneIfNotFinished;
+- (size_t)workDoneIfNotFinished;
 {
-    unsigned int workDone, workToBeDone;
+    size_t workDone, workToBeDone;
 
     workDone = [self workDone];
     workToBeDone = [self workToBeDone] ;
@@ -268,9 +272,9 @@ static NSBundle *OWF_Bundle = nil;
     return workDone;
 }
 
-- (unsigned int)workToBeDoneIfNotFinished;
+- (size_t)workToBeDoneIfNotFinished;
 {
-    unsigned int workDone, workToBeDone;
+    size_t workDone, workToBeDone;
 
     workDone = [self workDone];
     workToBeDone = [self workToBeDone] ;
@@ -279,12 +283,12 @@ static NSBundle *OWF_Bundle = nil;
     return workToBeDone;
 }
 
-- (unsigned int)workDoneIncludingChildren;
+- (size_t)workDoneIncludingChildren;
 {
     return [self workDoneIfNotFinished] + [[self contentInfo] workDoneByChildTasks];
 }
 
-- (unsigned int)workToBeDoneIncludingChildren;
+- (size_t)workToBeDoneIncludingChildren;
 {
     return [self workToBeDoneIfNotFinished] + [[self contentInfo] workToBeDoneByChildTasks];
 }

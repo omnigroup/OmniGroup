@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,16 +23,9 @@
     NSString *_reason;
 }
 
-- (void)setEntity:(ODOEntity *)entity;
-- (ODOEntity *)entity;
-
-- (void)setPredicate:(NSPredicate *)predicate;
-- (NSPredicate *)predicate;
-
-- (void)setSortDescriptors:(NSArray *)sortDescriptors;
-- (NSArray *)sortDescriptors;
-
-- (void)setReason:(NSString *)reason;
-- (NSString *)reason;
+@property(retain) ODOEntity *entity;
+@property(copy) NSPredicate *predicate;
+@property(copy) NSArray *sortDescriptors;
+@property(copy) NSString *reason;
 
 @end

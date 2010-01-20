@@ -1,4 +1,4 @@
-// Copyright 2000-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -87,8 +87,8 @@ static NSCharacterSet *tokenDelimiters;
 
 - (void)discardReadahead
 {
-    unsigned int peekCount = ( stringBuffer ) ? stringBufferValidRange.length : 0;
-    int seekBack;
+    NSUInteger peekCount = ( stringBuffer ) ? stringBufferValidRange.length : 0;
+    NSInteger seekBack;
     
     if (stringEncodingType == se_simple_OF || stringEncodingType == se_complex_OF) {
         if (OFDecoderContainsPartialCharacters(conversionState)) {
@@ -123,7 +123,7 @@ static NSCharacterSet *tokenDelimiters;
     stringBuffer = nil;
 }
 
-- (unsigned int)seekToOffset:(int)offset fromPosition:(OWCursorSeekPosition)position
+- (NSUInteger)seekToOffset:(int)offset fromPosition:(OWCursorSeekPosition)position
 {
     [self discardReadahead];
     
@@ -145,11 +145,11 @@ static NSCharacterSet *tokenDelimiters;
 }
 
 /* May raise an exception. May return 0 before EOF, if we get some bytes but not a full character's worth. Will return OWDataStreamCharacterCursor_EOF at EOF. */
-static inline int _getCharacters(OWDataStreamCharacterCursor *self, unichar *characterBuffer, unsigned int bufferSize, BOOL updateCursorPosition)
+static inline NSUInteger _getCharacters(OWDataStreamCharacterCursor *self, unichar *characterBuffer, NSUInteger bufferSize, BOOL updateCursorPosition)
 {
     struct OFCharacterScanResult decodeResult;
     void *byteBuffer = NULL;
-    unsigned int byteCount;
+    NSUInteger byteCount;
             
     byteCount = [self->byteSource peekUnderlyingBuffer:&byteBuffer];
     if (!byteCount) {
@@ -289,7 +289,7 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
     return allCharacters;
 }
 
-- (unsigned int)readCharactersIntoBuffer:(unichar *)buffer maximum:(unsigned int)bufferSize peek:(BOOL)doNotUpdateCursorPosition
+- (NSUInteger)readCharactersIntoBuffer:(unichar *)buffer maximum:(NSUInteger)bufferSize peek:(BOOL)doNotUpdateCursorPosition
 {
     if (abortException)
         [abortException raise];
@@ -328,7 +328,7 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
         case se_complex_OF:
         case se_simple_Foundation:
         {
-            unsigned int count = _getCharacters(self, buffer, bufferSize, !doNotUpdateCursorPosition);
+            NSUInteger count = _getCharacters(self, buffer, bufferSize, !doNotUpdateCursorPosition);
             if (count == OWDataStreamCharacterCursor_EOF)
                 count = 0;
             return count;
@@ -357,7 +357,7 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
         case se_simple_Foundation:
         {
             unichar *characterBuffer;
-            unsigned int characterCount;
+            NSUInteger characterCount;
             NSZone *localZone = [self zone];
             
             characterBuffer = NSZoneMalloc(localZone, sizeof(unichar) * UNICHAR_BUF_SIZE);
@@ -438,7 +438,7 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
     CFMutableStringRef cfBuffer;
     unichar *unicharBuffer;
     const unsigned int unicharBufferLength = 8192;
-    unsigned int charsRead;
+    NSUInteger charsRead;
     
     if (abortException != nil)
         [abortException raise];

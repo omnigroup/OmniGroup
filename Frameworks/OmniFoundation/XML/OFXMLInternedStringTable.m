@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -199,6 +199,7 @@ OFXMLQName *OFXMLInternedNameTableGetInternedName(OFXMLInternedNameTable table, 
     [nameString release];
     
     CFDictionarySetValue(TABLE, key, interned);
+    [interned release];
     
     //NSLog(@"XML: Interned qname '%@'", [interned shortDescription]);
     

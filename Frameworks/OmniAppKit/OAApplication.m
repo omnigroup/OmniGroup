@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,15 +27,17 @@ RCS_ID("$Id$")
 NSString * const OAFlagsChangedNotification = @"OAFlagsChangedNotification";
 NSString * const OAFlagsChangedQueuedNotification = @"OAFlagsChangedNotification (Queued)";
 
-@interface OAApplication (Private)
-+ (unsigned int)_currentModifierFlags;
+@interface OAApplication (/*Private*/)
++ (void)_setupOmniApplication;
++ (NSUInteger)_currentModifierFlags;
 - (void)processMouseButtonsChangedEvent:(NSEvent *)event;
 + (void)_activateFontsFromAppWrapper;
 - (void)_scheduleModalPanelWithInvocation:(NSInvocation *)modalInvocation;
 - (void)_rescheduleModalPanel:(NSTimer *)timer;
 @end
 
-static unsigned int launchModifierFlags;
+static NSUInteger launchModifierFlags;
+static BOOL OATargetSelection;
 
 @implementation OAApplication
 
@@ -49,15 +51,8 @@ static unsigned int launchModifierFlags;
 static NSImage *HelpIcon = nil;
 static NSImage *CautionIcon = nil;
 
-+ (void)setupOmniApplication;
-{
-    [OBObject self]; // Trigger +[OBPostLoader processClasses]
-    
-    // make these images available to client nibs and whatnot (retaining them so they stick around in cache).
-    // Store them in ivars to avoid clang scan-build warnings.
-    HelpIcon = [[NSImage imageNamed:@"OAHelpIcon" inBundleForClass:[OAApplication class]] retain];
-    CautionIcon = [[NSImage imageNamed:@"OACautionIcon" inBundleForClass:[OAApplication class]] retain];
-}
+#pragma mark -
+#pragma mark NSApplication subclass
 
 + (NSApplication *)sharedApplication;
 {
@@ -67,7 +62,7 @@ static NSImage *CautionIcon = nil;
         return omniApplication;
 
     omniApplication = (id)[super sharedApplication];
-    [self setupOmniApplication];
+    [self _setupOmniApplication];
     return omniApplication;
 }
 
@@ -117,6 +112,15 @@ static NSImage *CautionIcon = nil;
     } while (_appFlags._hasBeenRun);
 }
 
+// This is for the benefit of -miniaturizeWindows: below.
+static NSArray *overrideWindows = nil;
+- (NSArray *)windows;
+{
+    if (overrideWindows)
+        return overrideWindows;
+    return [super windows];
+}
+
 - (void)beginSheet:(NSWindow *)sheet modalForWindow:(NSWindow *)docWindow modalDelegate:(id)modalDelegate didEndSelector:(SEL)didEndSelector contextInfo:(void *)contextInfo;
 {
     if ([NSAllMapTableValues(windowsForSheets) indexOfObjectIdenticalTo:docWindow] != NSNotFound) {
@@ -131,19 +135,16 @@ static NSImage *CautionIcon = nil;
 
 - (void)endSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode;
 {
-    NSWindow *docWindow;
-    OASheetRequest *queuedSheet = nil;
-    unsigned int requestIndex, requestCount;
-
     // Find the document window associated with the sheet we just ended
-    docWindow = [[(NSWindow *)NSMapGet(windowsForSheets, sheet) retain] autorelease];
+    NSWindow *docWindow = [[(NSWindow *)NSMapGet(windowsForSheets, sheet) retain] autorelease];
     NSMapRemove(windowsForSheets, sheet);
     
     // End this sheet
     [super endSheet:sheet returnCode:returnCode]; // Note: This runs the event queue itself until the sheet finishes retracting
 
     // See if we have another sheet queued for this document window
-    requestCount = [sheetQueue count];
+    OASheetRequest *queuedSheet = nil;
+    NSUInteger requestIndex, requestCount = [sheetQueue count];
     for (requestIndex = 0; requestIndex < requestCount; requestIndex++) {
         OASheetRequest *request;
 
@@ -276,7 +277,7 @@ static NSArray *flagsChangedRunLoopModes;
                 break;
             case NSLeftMouseDown:
             {
-                unsigned int modifierFlags = [event modifierFlags];
+                NSUInteger modifierFlags = [event modifierFlags];
                 BOOL justControlDown = (modifierFlags & NSControlKeyMask) && !(modifierFlags & NSShiftKeyMask) && !(modifierFlags & NSCommandKeyMask) && !(modifierFlags & NSAlternateKeyMask);
                 
                 if (justControlDown) {
@@ -306,22 +307,86 @@ static NSArray *flagsChangedRunLoopModes;
     [[OFScheduler mainScheduler] scheduleEvents]; // Ping the scheduler, in case the system clock changed
 }
 
-- (void)handleInitException:(NSException *)anException;
-{
-    id delegate;
+BOOL OADebugTargetSelection = NO;
+#define DEBUG_TARGET_SELECTION(format, ...) do { \
+    if (OADebugTargetSelection) \
+        NSLog((format), ## __VA_ARGS__); \
+} while (0)
 
-    delegate = [self delegate];
-    if ([delegate respondsToSelector:@selector(handleInitException:)]) {
-        [delegate handleInitException:anException];
-    } else {
-        NSLog(@"%@", [anException reason]);
+- (BOOL)sendAction:(SEL)theAction to:(id)theTarget from:(id)sender;
+{
+    if (OATargetSelection) {
+        // The normal NSApplication version, sadly, uses internal target lookup for the nil case. It should really call -targetForAction:to:from:.
+        if (!theTarget)
+            theTarget = [self targetForAction:theAction to:nil from:sender];
     }
+    
+    return [super sendAction:theAction to:theTarget from:sender];
 }
 
-- (void)handleRunException:(NSException *)anException;
+// Just does our portion of the chain.
+- (BOOL)applyToResponderChain:(OAResponderChainApplier)applier;
 {
-    // Redirect exceptions that get raised all the way out to -run back to -reportException:.  AppKit doesn't do this normally.  For example, if cmd-z (to undo) hits an exception, it will get re-raised all the way up to the top level w/o -reportException: getting called.  
-    [self reportException:anException];
+    if (![super applyToResponderChain:applier])
+        return NO;
+    
+    id delegate = (id)self.delegate;
+    if (delegate && ![delegate applyToResponderChain:applier])
+        return NO;
+    
+    return YES;
+}
+
+// Does the full search documented for -targetForAction:to:from:
+static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, id sender, OAResponderChainApplier applier)
+{
+    // Follow the normal set of fallbacks as documented for this method on NSApplication.  Terminate if the applier stops (which might be due to finding a target or might be due to one of the candidates claiming the action but refusing to do it).
+    NSWindow *keyWindow = [self keyWindow];
+    if (keyWindow.firstResponder && ![keyWindow.firstResponder applyToResponderChain:applier])
+        return;
+
+    NSWindow *mainWindow = [self mainWindow];
+    if (keyWindow != mainWindow) {
+        if (mainWindow.firstResponder && ![mainWindow.firstResponder applyToResponderChain:applier])
+            return;
+    }
+
+    // This isn't ideal since this forces an NSDocumentController to be created.  AppKit presumably has some magic to avoid this...  We could avoid this if there are no registered document types, if that becomes an issue.
+    NSDocumentController *documentController = [NSDocumentController sharedDocumentController];
+    if (documentController && ![documentController applyToResponderChain:applier])
+        return;
+    
+    [self applyToResponderChain:applier];
+}
+
+- (id)targetForAction:(SEL)theAction to:(id)theTarget from:(id)sender;
+{
+    if (!OATargetSelection)
+        return [super targetForAction:theAction to:theTarget from:sender];
+    
+    __block id target = nil;
+    
+    DEBUG_TARGET_SELECTION(@"looking for target: %@ to:%@ from:%@ (key1:%@, main1:%@)", NSStringFromSelector(theAction), [theTarget shortDescription], [sender shortDescription], [[[self keyWindow] firstResponder] shortDescription], [[[self mainWindow] firstResponder] shortDescription]);
+
+    OAResponderChainApplier applier = ^(id object){
+        DEBUG_TARGET_SELECTION(@" ... trying %@", [object shortDescription]);
+        id responsible = [object responsibleTargetForAction:theAction sender:sender];
+        if (responsible) {
+            // Someone claimed to be responsible for the action.  The sender will re-validate with any appropriate means and might still get refused, but we should stop iterating.
+            target = responsible;
+            return NO;
+        }
+        return YES;
+    };
+    
+    // The caller had a specific target in mind.  Start there and follow the responder chain.  The documentation states that if the target is non-nil, it is returned (which is silly since why would you call this method then?)
+    if (theTarget)
+        [theTarget applyToResponderChain:applier];
+    else
+        _applyFullSearch(self, theAction, theTarget, sender, applier);
+    
+    DEBUG_TARGET_SELECTION(@" ... using %@", [target shortDescription]);
+    return target;
 }
 
 - (void)reportException:(NSException *)anException;
@@ -353,7 +418,7 @@ static NSArray *flagsChangedRunLoopModes;
             // The documentation for this method says that -endModalSession: must be before the NS_ENDHANDLER.
             NSModalSession modalSession = [self beginModalSessionForWindow:currentRunExceptionPanel];
 
-            int ret = NSAlertErrorReturn;
+            NSInteger ret = NSAlertErrorReturn;
             while (ret != NSAlertDefaultReturn) {
                 NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
                 @try {
@@ -381,6 +446,63 @@ static NSArray *flagsChangedRunLoopModes;
     }
 }
 
+#pragma mark NSResponder subclass
+
+- (void)presentError:(NSError *)error modalForWindow:(NSWindow *)window delegate:(id)delegate didPresentSelector:(SEL)didPresentSelector contextInfo:(void *)contextInfo;
+{
+    OBPRECONDITION(error); // The superclass will call CFRetain and we'll crash if this is nil.
+    
+    // If you want to pass nil/NULL, could call the simpler method above.
+    OBPRECONDITION(delegate);
+    OBPRECONDITION(didPresentSelector);
+    
+    if (!error) {
+        NSLog(@"%s called with a nil error", __PRETTY_FUNCTION__);
+        NSBeep();
+        return;
+    }
+    
+    // nil/NULL here can crash in the superclass crash trying to build an NSInvocation from this goop.  Let's not.
+    if (!delegate) {
+        delegate = self;
+        didPresentSelector = @selector(noop_didPresentErrorWithRecovery:contextInfo:); // From NSResponder(OAExtensions)
+    }
+    
+    // Log all errors so users can report them.
+    if (![error causedByUserCancelling])
+        NSLog(@"Presenting application modal error for window %@: %@", [window title], [error toPropertyList]);
+    [super presentError:error modalForWindow:window delegate:delegate didPresentSelector:didPresentSelector contextInfo:contextInfo];
+}
+
+- (BOOL)presentError:(NSError *)error;
+{
+    // Log all errors so users can report them.
+    if (![error causedByUserCancelling])
+        NSLog(@"Presenting modal error: %@", [error toPropertyList]);
+    return [super presentError:error];
+}
+
+#pragma mark -
+#pragma mark API
+
+- (void)handleInitException:(NSException *)anException;
+{
+    id delegate;
+    
+    delegate = [self delegate];
+    if ([delegate respondsToSelector:@selector(handleInitException:)]) {
+        [delegate handleInitException:anException];
+    } else {
+        NSLog(@"%@", [anException reason]);
+    }
+}
+
+- (void)handleRunException:(NSException *)anException;
+{
+    // Redirect exceptions that get raised all the way out to -run back to -reportException:.  AppKit doesn't do this normally.  For example, if cmd-z (to undo) hits an exception, it will get re-raised all the way up to the top level w/o -reportException: getting called.  
+    [self reportException:anException];
+}
+
 - (NSPanel *)currentRunExceptionPanel;
 {
     return currentRunExceptionPanel;
@@ -388,10 +510,7 @@ static NSArray *flagsChangedRunLoopModes;
 
 - (NSWindow *)frontWindowForMouseLocation;
 {
-    NSArray *windows = [NSWindow windowsInZOrder];
-    unsigned windowIndex, windowCount = [windows count];
-    for (windowIndex = 0; windowIndex <  windowCount; windowIndex++) {
-        NSWindow *window = [windows objectAtIndex:windowIndex];
+    for (NSWindow *window in [NSWindow windowsInZOrder]) {
 	if ([window ignoresMouseEvents])
 	    continue;
 	    
@@ -419,17 +538,17 @@ static NSArray *flagsChangedRunLoopModes;
     return [self mouseButtonIsDownAtIndex:2];
 }
 
-- (unsigned int)currentModifierFlags;
+- (NSUInteger)currentModifierFlags;
 {
     return [isa _currentModifierFlags];
 }
 
-- (BOOL)checkForModifierFlags:(unsigned int)flags;
+- (BOOL)checkForModifierFlags:(NSUInteger)flags;
 {
     return ([self currentModifierFlags] & flags) != 0;
 }
 
-- (unsigned int)launchModifierFlags;
+- (NSUInteger)launchModifierFlags;
 {
     return launchModifierFlags;
 }
@@ -502,7 +621,8 @@ static NSArray *flagsChangedRunLoopModes;
     }
 }
 
-// Application Support directory
+#pragma mark -
+#pragma mark Application Support directory
 
 - (NSString *)applicationSupportDirectoryName;
 {
@@ -536,21 +656,20 @@ static NSArray *flagsChangedRunLoopModes;
 
 - (NSArray *)readableSupportDirectoriesInDomain:(NSSearchPathDomainMask)domains withComponents:(NSString *)subdir, ...;
 {
-    NSArray *paths = [self supportDirectoriesInDomain:domains];
-    unsigned int pathCount = [paths count], pathIndex;
     NSFileManager *filemgr = [NSFileManager defaultManager];
-    NSMutableArray *result = [NSMutableArray arrayWithCapacity:pathCount];
-    for(pathIndex = 0; pathIndex < pathCount; pathIndex ++) {
+    NSMutableArray *result = [NSMutableArray array];
+    
+    for (NSString *path in [self supportDirectoriesInDomain:domains]) {
         va_list varg;
-        BOOL isDir;
         va_start(varg, subdir);
         NSString *component = subdir;
-        NSString *path = [paths objectAtIndex:pathIndex];
-        while(component != nil) {
+        while (component != nil) {
             path = [path stringByAppendingPathComponent:component];
             component = va_arg(varg, NSString *);
         }
         va_end(varg);
+        
+        BOOL isDir;
         if ([filemgr fileExistsAtPath:path isDirectory:&isDir] && isDir)
             [result addObject:path];
     }
@@ -559,15 +678,12 @@ static NSArray *flagsChangedRunLoopModes;
 
 - (NSString *)writableSupportDirectoryInDomain:(NSSearchPathDomainMask)domains withComponents:(NSString *)subdir, ...;
 {
-    NSArray *paths = [self supportDirectoriesInDomain:domains];
-    unsigned int pathIndex, pathCount = [paths count];
     NSFileManager *filemgr = [NSFileManager defaultManager];
     
-    for(pathIndex = 0; pathIndex < pathCount; pathIndex++) {
+    for (NSString *path in [self supportDirectoriesInDomain:domains]) {
         va_list varg;
         va_start(varg, subdir);
         NSString *component = subdir;
-        NSString *path = [paths objectAtIndex:pathIndex];
         while (component != nil) {
             path = [path stringByAppendingPathComponent:component];
             component = va_arg(varg, NSString *);
@@ -587,38 +703,22 @@ static NSArray *flagsChangedRunLoopModes;
     return nil;
 }
 
-// Actions
+#pragma mark -
+#pragma mark Actions
 
 - (IBAction)closeAllMainWindows:(id)sender;
 {
-    NSArray *windows;
-    unsigned int windowIndex, windowCount;
-    
-    windows = [[NSArray alloc] initWithArray:[self orderedWindows]];
-    windowCount = [windows count];
-    for (windowIndex = 0; windowIndex < windowCount; windowIndex++) {
-        NSWindow *window;
-
-        window = [windows objectAtIndex:windowIndex];
+    for (NSWindow *window in [NSArray arrayWithArray:[self orderedWindows]]) {
         if ([window canBecomeMainWindow])
             [window performClose:nil];
     }
-    [windows release];
 }
 
 - (IBAction)cycleToNextMainWindow:(id)sender;
 {
-    NSWindow *mainWindow;
-    NSArray *orderedWindows;
-    unsigned int windowIndex, windowCount;
+    NSWindow *mainWindow = [NSApp mainWindow];
     
-    mainWindow = [NSApp mainWindow];
-    orderedWindows = [NSApp orderedWindows];
-    windowCount = [orderedWindows count];
-    for (windowIndex = 0; windowIndex < windowCount; windowIndex++) {
-        NSWindow *window;
-
-        window = [orderedWindows objectAtIndex:windowIndex];
+    for (NSWindow *window in [NSApp orderedWindows]) {
         if (window != mainWindow && [window canBecomeMainWindow] && ![NSStringFromClass([window class]) isEqualToString:@"NSDrawerWindow"]) {
             [window makeKeyAndOrderFront:nil];
             [mainWindow orderBack:nil];
@@ -631,17 +731,9 @@ static NSArray *flagsChangedRunLoopModes;
 
 - (IBAction)cycleToPreviousMainWindow:(id)sender;
 {
-    NSWindow *mainWindow;
-    NSArray *orderedWindows;
-    unsigned int windowIndex;
+    NSWindow *mainWindow = [NSApp mainWindow];
     
-    mainWindow = [NSApp mainWindow];
-    orderedWindows = [NSApp orderedWindows];
-    windowIndex = [orderedWindows count];
-    while (windowIndex--) {
-        NSWindow *window;
-
-        window = [orderedWindows objectAtIndex:windowIndex];
+    for (NSWindow *window in [[NSApp orderedWindows] reverseObjectEnumerator]) {
         if (window != mainWindow && [window canBecomeMainWindow] && ![NSStringFromClass([window class]) isEqualToString:@"NSDrawerWindow"]) {
             [window makeKeyAndOrderFront:nil];
             return;
@@ -656,15 +748,6 @@ static NSArray *flagsChangedRunLoopModes;
     [[OAPreferenceController sharedPreferenceController] showPreferencesPanel:nil];
 }
 
-static NSArray *overrideWindows = nil;
-
-- (NSArray *)windows;
-{
-    if (overrideWindows)
-        return overrideWindows;
-    return [super windows];
-}
-
 - (void)miniaturizeWindows:(NSArray *)windows;
 {
     overrideWindows = windows;
@@ -675,47 +758,12 @@ static NSArray *overrideWindows = nil;
     }
 }
 
-// OFController observer informal protocol
+#pragma mark -
+#pragma mark OFController observer informal protocol
 
 + (void)controllerStartedRunning:(OFController *)controller;
 {
     [self _activateFontsFromAppWrapper];
-}
-
-#pragma mark NSResponder subclass
-
-- (void)presentError:(NSError *)error modalForWindow:(NSWindow *)window delegate:(id)delegate didPresentSelector:(SEL)didPresentSelector contextInfo:(void *)contextInfo;
-{
-    OBPRECONDITION(error); // The superclass will call CFRetain and we'll crash if this is nil.
-    
-    // If you want to pass nil/NULL, could call the simpler method above.
-    OBPRECONDITION(delegate);
-    OBPRECONDITION(didPresentSelector);
-    
-    if (!error) {
-        NSLog(@"%s called with a nil error", __PRETTY_FUNCTION__);
-        NSBeep();
-        return;
-    }
-    
-    // nil/NULL here can crash in the superclass crash trying to build an NSInvocation from this goop.  Let's not.
-    if (!delegate) {
-        delegate = self;
-        didPresentSelector = @selector(noop_didPresentErrorWithRecovery:contextInfo:); // From NSResponder(OAExtensions)
-    }
-    
-    // Log all errors so users can report them.
-    if (![error causedByUserCancelling])
-        NSLog(@"Presenting application modal error for window %@: %@", [window title], [error toPropertyList]);
-    [super presentError:error modalForWindow:window delegate:delegate didPresentSelector:didPresentSelector contextInfo:contextInfo];
-}
-
-- (BOOL)presentError:(NSError *)error;
-{
-    // Log all errors so users can report them.
-    if (![error causedByUserCancelling])
-        NSLog(@"Presenting modal error: %@", [error toPropertyList]);
-    return [super presentError:error];
 }
 
 #pragma mark AppleScript
@@ -749,13 +797,25 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
     return [OFPreference preferenceForKey:identifier];
 }
 
-@end
+#pragma mark -
+#pragma mark Private
 
-@implementation OAApplication (Private)
-
-+ (unsigned int)_currentModifierFlags;
++ (void)_setupOmniApplication;
 {
-    unsigned int flags = 0;
+    [OBObject self]; // Trigger +[OBPostLoader processClasses]
+    
+    // Wait until defaults are registered with OBPostLoader to look this up.
+    OATargetSelection = [[NSUserDefaults standardUserDefaults] boolForKey:@"OATargetSelection"];
+
+    // make these images available to client nibs and whatnot (retaining them so they stick around in cache).
+    // Store them in ivars to avoid clang scan-build warnings.
+    HelpIcon = [[NSImage imageNamed:@"OAHelpIcon" inBundleForClass:[OAApplication class]] retain];
+    CautionIcon = [[NSImage imageNamed:@"OACautionIcon" inBundleForClass:[OAApplication class]] retain];
+}
+
++ (NSUInteger)_currentModifierFlags;
+{
+    NSUInteger flags = 0;
     UInt32 currentKeyModifiers = GetCurrentKeyModifiers();
     if (currentKeyModifiers & cmdKey)
         flags |= NSCommandKeyMask;
@@ -809,3 +869,98 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
 }
 
 @end
+
+
+@implementation NSObject (OATargetSelection)
+
+- (BOOL)applyToResponderChain:(OAResponderChainApplier)applier;
+{
+    return applier(self);
+}
+
+- (id)responsibleTargetForAction:(SEL)action sender:(id)sender;
+{
+    //NSLog(@"   ... can has %@ handle %@ from %@?", [self shortDescription], NSStringFromSelector(action), [sender shortDescription]);
+    
+    if (![self respondsToSelector:action])
+        return nil;
+    
+    if ([sender isKindOfClass:[NSMenuItem class]]) {
+        if ([self respondsToSelector:@selector(validateMenuItem:)] && ![self validateMenuItem:sender])
+            return nil;
+    } else if ([sender isKindOfClass:[NSToolbarItem class]]) {
+        if ([self respondsToSelector:@selector(validateToolbarItem:)] && ![self validateToolbarItem:sender])
+            return nil;
+    } else if ([sender conformsToProtocol:@protocol(NSValidatedUserInterfaceItem)]) {
+        if ([self respondsToSelector:@selector(validateUserInterfaceItem:)]) {
+            OBASSERT([self conformsToProtocol:@protocol(NSUserInterfaceValidations)]); // or should we check for conformance...
+            if (![(id <NSUserInterfaceValidations>)self validateUserInterfaceItem:sender])
+                return nil;
+        }
+    }
+
+    //NSLog(@"%@ is responsible", [self shortDescription]);
+    
+    return self;
+}
+
+@end
+
+@interface NSResponder (OATargetSelection)
+@end
+@implementation NSResponder (OATargetSelection)
+
+- (BOOL)applyToResponderChain:(OAResponderChainApplier)applier;
+{
+    if (![super applyToResponderChain:applier])
+        return NO;
+    
+    NSResponder *next = self.nextResponder;
+    if (next && ![next applyToResponderChain:applier])
+        return NO;
+
+    return YES;
+}
+
+@end
+
+@interface NSWindow (OATargetSelection)
+@end
+@implementation NSWindow (OATargetSelection)
+
+- (BOOL)applyToResponderChain:(OAResponderChainApplier)applier;
+{
+    if (![super applyToResponderChain:applier])
+        return NO;
+    
+    id delegate = (id)self.delegate;
+    if (delegate && ![delegate applyToResponderChain:applier])
+        return NO;
+    
+    id windowController = self.windowController;
+    if (windowController && windowController != delegate && ![windowController applyToResponderChain:applier])
+        return NO;
+    
+    return YES;
+}
+
+@end
+
+@interface NSWindowController (OATargetSelection)
+@end
+@implementation NSWindowController (OATargetSelection)
+
+- (BOOL)applyToResponderChain:(OAResponderChainApplier)applier;
+{
+    if (![super applyToResponderChain:applier])
+        return NO;
+
+    NSDocument *document = self.document;
+    if (document && ![document applyToResponderChain:applier])
+        return NO;
+    
+    return YES;
+}
+
+@end
+

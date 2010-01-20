@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -225,16 +225,13 @@ static NSString * const OAPreferenceClientRecordIconNameAppPrefix = @"app:"; // 
 
 - (NSComparisonResult)compareOrdering:(OAPreferenceClientRecord *)other;
 {
-    int result;
-    
     if (![other isKindOfClass:[self class]])
 	return NSOrderedAscending;
 
-    result = [[self ordering] compare:[other ordering]];
+    NSComparisonResult result = [[self ordering] compare:[other ordering]];
     
-    if (result == NSOrderedSame) {
+    if (result == NSOrderedSame)
         result = [[self shortTitle] compare:[other shortTitle]];
-    }
     
     return result;
 }

@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,8 @@
 @interface OFAddScriptCommand : NSScriptCommand
 @end
 
-@interface NSObject (OFAddScriptCommand)
+@protocol OFAddScriptCommandContainer
+@optional
 - (void)addObjects:(NSArray *)objects toPropertyWithKey:(NSString *)key;
-- (void)insertObjects:(NSArray *)objects inPropertyWithKey:(NSString *)key atIndex:(int)insertionIndex;
+- (void)insertObjects:(NSArray *)objects inPropertyWithKey:(NSString *)key atIndex:(NSInteger)insertionIndex;
 @end

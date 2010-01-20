@@ -1,4 +1,4 @@
-// Copyright 2005-2006,2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2006,2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -81,9 +81,9 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 	NSRect panelFrame = [panel frame];
 	
 	NSRect totalFrame = NSUnionRect(iconFrame, nameFrame);
-	float minX = floor((NSWidth(panelFrame) - NSWidth(totalFrame))/2.0);
+	CGFloat minX = (CGFloat)floor((NSWidth(panelFrame) - NSWidth(totalFrame))/2.0);
 	
-	float offset = NSMinX(iconFrame) - minX;
+	CGFloat offset = NSMinX(iconFrame) - minX;
 	
 	iconFrame.origin.x -= offset;
 	nameFrame.origin.x -= offset;
@@ -99,21 +99,18 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
     if (!variantFileNames)
 	variantFileNames = [[OMNI_BUNDLE infoDictionary] objectForKey:OAAboutPanelMainBundleContentVariants];
     
-    unsigned int variantIndex, variantCount = [variantFileNames count];
-    for (variantIndex = 0; variantIndex < variantCount; variantIndex++) {
-	NSString *fileName = [variantFileNames objectAtIndex:variantIndex];
+    for (NSString *fileName in variantFileNames)
 	[self addContentVariantFromMainBundleFile:[fileName stringByDeletingPathExtension] ofType:[fileName pathExtension]];
-    }
     
     [self showNextContentVariant:nil];
         
     // Resize the panel so that the default content variant fits exactly (no scroller)
-    if (variantCount) {
+    if ([variantFileNames count]) {
 	NSLayoutManager *layoutManager = [creditsTextView layoutManager];
-	float totalHeight = [layoutManager totalHeightUsed];
+	CGFloat totalHeight = [layoutManager totalHeightUsed];
 	
 	NSRect scrollFrame = [[creditsTextView enclosingScrollView] frame];
-	float delta = totalHeight - NSHeight(scrollFrame);
+	CGFloat delta = totalHeight - NSHeight(scrollFrame);
 	
 	NSRect panelFrame = [panel frame];
 	panelFrame.size.height += (delta);

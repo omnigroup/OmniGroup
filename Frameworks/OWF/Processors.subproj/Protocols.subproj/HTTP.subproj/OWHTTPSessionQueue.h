@@ -1,4 +1,4 @@
-// Copyright 1999-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,7 +35,7 @@
 + (NSString *)cacheKeyForSessionQueueForAddress:(OWAddress *)anAddress;
 + (Class)sessionClass;
 + (OFDatedMutableDictionary *)cache;
-+ (unsigned int)maximumSessionsPerServer;
++ (NSUInteger)maximumSessionsPerServer;
 
 - initWithAddress:(OWAddress *)anAddress;
 - (BOOL)queueProcessor:(OWHTTPProcessor *)aProcessor;
@@ -55,6 +55,6 @@
 - (void)setServerCannotHandlePipelinedRequestsReliably;
 - (BOOL)serverCannotHandlePipelinedRequestsReliably;
 - (BOOL)shouldPipelineRequests;
-- (unsigned int)maximumNumberOfRequestsToPipeline;
+- (NSUInteger)maximumNumberOfRequestsToPipeline;
 
 @end

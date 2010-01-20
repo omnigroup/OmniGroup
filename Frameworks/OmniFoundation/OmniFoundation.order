@@ -36,7 +36,6 @@ NSUndoManager-OFExtensions.o:___rcs_id_hack
 NSUserDefaults-OFExtensions.o:___rcs_id_hack
 OFAddScriptCommand.o:___rcs_id_hack
 OFAlias.o:___rcs_id_hack
-OFAutoreleasedMemory.o:___rcs_id_hack
 OFBTree.o:___rcs_id_hack
 OFBulkBlockPool.o:___rcs_id_hack
 OFBundleRegistry.o:___rcs_id_hack
@@ -58,7 +57,6 @@ OFDateFormatter.o:___rcs_id_hack
 OFDatedMutableDictionary.o:___rcs_id_hack
 OFDedicatedThreadScheduler.o:___rcs_id_hack
 OFDelayedEvent.o:___rcs_id_hack
-OFEnrichedTextReader.o:___rcs_id_hack
 OFEnumNameTable.o:___rcs_id_hack
 OFFastMutableData.o:___rcs_id_hack
 OFGeometry.o:___rcs_id_hack
@@ -89,13 +87,11 @@ OFPoint.o:___rcs_id_hack
 OFPreference.o:___rcs_id_hack
 OFQueue.o:___rcs_id_hack
 OFQueueProcessor.o:___rcs_id_hack
-OFRTFGenerator.o:___rcs_id_hack
 OFRandom.o:___rcs_id_hack
 OFReadWriteLock.o:___rcs_id_hack
 OFRegularExpression.o:___rcs_id_hack
 OFRegularExpressionMatch.o:___rcs_id_hack
 OFRemoveScriptCommand.o:___rcs_id_hack
-OFResource.o:___rcs_id_hack
 OFResourceFork.o:___rcs_id_hack
 OFResultHolder.o:___rcs_id_hack
 OFRetainableObject.o:___rcs_id_hack
@@ -197,7 +193,6 @@ OFCharacterScanner.o:+[OFCharacterScanner initialize]
 OFController.o:+[OFController initialize]
 OFDataCursor.o:+[OFDataCursor initialize]
 OFDedicatedThreadScheduler.o:+[OFDedicatedThreadScheduler initialize]
-OFEnrichedTextReader.o:+[OFEnrichedTextReader initialize]
 OFFastMutableData.o:+[OFFastMutableData initialize]
 OFIObjectNSInvocation.o:+[OFIObjectNSInvocation initialize]
 OFIObjectSelector.o:+[OFIObjectSelector initialize]

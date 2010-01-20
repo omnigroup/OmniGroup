@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -161,15 +161,15 @@ static Class defaultTCPSocketClass = nil;
 
 // ONSocket subclass
 
-- (unsigned int)readBytes:(unsigned int)byteCount intoBuffer:(void *)aBuffer;
+- (size_t)readBytes:(size_t)byteCount intoBuffer:(void *)aBuffer;
 {
-    int bytesRead;
+    ssize_t bytesRead;
     int read_errno;
 
     while (!flags.connected) {
         if (!flags.listening) {
             NSString *localizedErrorMsg = NSLocalizedStringFromTableInBundle(@"Attempted read from a non-connected socket", @"OmniNetworking", THIS_BUNDLE, @"error - socket is unxepectedly closed or not connected");
-	    [NSException raise:ONInternetSocketNotConnectedExceptionName format:localizedErrorMsg];
+	    [[NSException exceptionWithName:ONInternetSocketNotConnectedExceptionName reason:localizedErrorMsg userInfo:nil] raise];
         } else
 	    [self acceptConnection];
     }
@@ -177,11 +177,11 @@ static Class defaultTCPSocketClass = nil;
     switch (bytesRead) {
         case -1:
             if (flags.userAbort)
-                [NSException raise:ONInternetSocketUserAbortExceptionName format:NSLocalizedStringFromTableInBundle(@"Read aborted", @"OmniNetworking", THIS_BUNDLE, @"error: userAbort")];
+                [[NSException exceptionWithName:ONInternetSocketUserAbortExceptionName reason:NSLocalizedStringFromTableInBundle(@"Read aborted", @"OmniNetworking", THIS_BUNDLE, @"error: userAbort") userInfo:nil] raise];
             // Error reading socket
             read_errno = OMNI_ERRNO();
             if (read_errno == EAGAIN)
-                [NSException raise:ONTCPSocketWouldBlockExceptionName format:NSLocalizedStringFromTableInBundle(@"Read aborted", @"OmniNetworking", THIS_BUNDLE, @"error: EAGAIN")];
+                [[NSException exceptionWithName:ONTCPSocketWouldBlockExceptionName reason:NSLocalizedStringFromTableInBundle(@"Read aborted", @"OmniNetworking", THIS_BUNDLE, @"error: EAGAIN") userInfo:nil] raise];
             if (read_errno == EPIPE)
                 goto read_eof;
             [NSException raise:ONInternetSocketReadFailedExceptionName posixErrorNumber:read_errno format:NSLocalizedStringFromTableInBundle(@"Unable to read from socket: %s", @"OmniNetworking", THIS_BUNDLE, @"error"), strerror(OMNI_ERRNO())];
@@ -198,11 +198,11 @@ static Class defaultTCPSocketClass = nil;
             return 0;
         default:
             // Normal successful read
-            return (unsigned int)bytesRead;
+            return bytesRead;
     }
 }
 
-- (unsigned int)writeBytes:(unsigned int)byteCount fromBuffer:(const void *)aBuffer;
+- (size_t)writeBytes:(size_t)byteCount fromBuffer:(const void *)aBuffer;
 {
     struct iovec io_vector;
     
@@ -216,14 +216,14 @@ static Class defaultTCPSocketClass = nil;
 #ifdef MAX_BYTES_PER_WRITE
 #error MAX_BYTES_PER_WRITE not supported any more
 #endif
-- (unsigned int)writeBuffers:(const struct iovec *)buffers count:(unsigned int)num_iov
+- (size_t)writeBuffers:(const struct iovec *)buffers count:(unsigned int)num_iov
 {
-    int bytesWritten;
+    ssize_t bytesWritten;
 
     while (!flags.connected) {
         if (!flags.listening) {
             NSString *localizedErrorMsg = NSLocalizedStringFromTableInBundle(@"Attempted write to a non-connected socket", @"OmniNetworking", THIS_BUNDLE, "error - socket is unxepectedly closed, not connected, or not listening for connections");
-            [NSException raise:ONInternetSocketNotConnectedExceptionName format:localizedErrorMsg];
+            [[NSException exceptionWithName:ONInternetSocketNotConnectedExceptionName reason:localizedErrorMsg userInfo:nil] raise];
         } else
             [self acceptConnection];
     }
@@ -235,15 +235,15 @@ static Class defaultTCPSocketClass = nil;
     else
         bytesWritten = 0;
         
-    if (bytesWritten == -1) {
+    if (bytesWritten < 0) {
         if (flags.userAbort)
-            [NSException raise:ONInternetSocketUserAbortExceptionName format:NSLocalizedStringFromTableInBundle(@"Write aborted", @"OmniNetworking", THIS_BUNDLE, @"error: userAbort")];
+            [[NSException exceptionWithName:ONInternetSocketUserAbortExceptionName reason:NSLocalizedStringFromTableInBundle(@"Write aborted", @"OmniNetworking", THIS_BUNDLE, @"error: userAbort") userInfo:nil] raise];
         if (OMNI_ERRNO() == EAGAIN)
-            [NSException raise:ONTCPSocketWouldBlockExceptionName format:NSLocalizedStringFromTableInBundle(@"Write aborted", @"OmniNetworking", THIS_BUNDLE, @"error: EAGAIN")];
+            [[NSException exceptionWithName:ONTCPSocketWouldBlockExceptionName reason:NSLocalizedStringFromTableInBundle(@"Write aborted", @"OmniNetworking", THIS_BUNDLE, @"error: EAGAIN") userInfo:nil] raise];
         [NSException raise:ONInternetSocketWriteFailedExceptionName posixErrorNumber:OMNI_ERRNO() format:NSLocalizedStringFromTableInBundle(@"Unable to write to socket: %s", @"OmniNetworking", THIS_BUNDLE, @"error"), strerror(OMNI_ERRNO())];
     }
 
-    return (unsigned int)bytesWritten;
+    return bytesWritten;
 }
     
 @end

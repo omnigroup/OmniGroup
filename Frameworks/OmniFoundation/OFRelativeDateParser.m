@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,11 +53,11 @@ typedef enum {
 
 @interface OFRelativeDateParser (Private)
 -(int)_multiplierForModifer:(int)modifier;
-- (unsigned int)_monthIndexForString:(NSString *)token;
-- (unsigned int)_weekdayIndexForString:(NSString *)token;
-- (NSDate *)_modifyDate:(NSDate *)date withWeekday:(unsigned int)requestedWeekday withModifier:(OFRelativeDateParserRelativity)modifier;
+- (NSUInteger)_monthIndexForString:(NSString *)token;
+- (NSUInteger)_weekdayIndexForString:(NSString *)token;
+- (NSDate *)_modifyDate:(NSDate *)date withWeekday:(NSUInteger)requestedWeekday withModifier:(OFRelativeDateParserRelativity)modifier;
 - (void)_addToComponents:(NSDateComponents *)components codeString:(DPCode)dpCode codeInt:(int)codeInt withMultiplier:(int)multiplier;
-- (int)_determineYearForMonth:(unsigned int)month withModifier:(OFRelativeDateParserRelativity)modifier fromCurrentMonth:(unsigned int)currentMonth fromGivenYear:(int)givenYear;
+- (NSInteger)_determineYearForMonth:(NSUInteger)month withModifier:(OFRelativeDateParserRelativity)modifier fromCurrentMonth:(NSUInteger)currentMonth fromGivenYear:(NSInteger)givenYear;
 - (NSDateComponents *)parseTime:(NSString *)timeString withDate:(NSDate *)date withTimeFormat:(NSString *)timeFormat;
 - (NSDate *)parseFormattedDate:(NSString *)dateString withDate:(NSDate *)date withShortDateFormat:(NSString *)shortFormat withMediumDateFormat:(NSString *)mediumFormat withLongDateFormat:(NSString *)longFormat withseparator:(NSString *)separator;
 - (DateSet)_dateSetFromArray:(NSArray *)dateComponents withPositions:(DatePosition)datePosition;
@@ -332,10 +332,10 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	NSLog(@"-----------'%@' starting date:%@", string, startingDate);
 #endif	
 	NSArray *stringComponents = [string componentsSeparatedByString:@" "];
-	unsigned int maxComponentIndex = [stringComponents count] - 1;
+	NSUInteger maxComponentIndex = [stringComponents count] - 1;
 	
 	// test for a time at the end of the string.  This will only match things that are clearly times, ie, has colons, or am/pm
-	int timeMatchIndex = -1;
+	NSInteger timeMatchIndex = -1;
 	if (maxComponentIndex >= 0 && [self _stringMatchesTime:[stringComponents objectAtIndex:maxComponentIndex] optionalSecondString:nil withTimeFormat:timeFormat]) {
 	    //NSLog(@"returned a true for _stringMatchesTime and the previous thing WASN't A MONTH for the end of the string: %@", [stringComponents objectAtIndex:maxComponentIndex]);
 	    timeMatchIndex = maxComponentIndex;
@@ -787,7 +787,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     }
     
     // <bug://bugs/39123> 
-    unsigned int count = [dateComponents count];
+    NSUInteger count = [dateComponents count];
     if (count == 2) {
 #ifdef DEBUG_date
 	NSLog(@"only 2 numbers, one needs to be the day, the other the month, if the month comes before the day, and the month comes before the year, then assign the first number to the month");
@@ -849,7 +849,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     dateSet.month = -1;
     dateSet.year = -1;
     
-    unsigned int count = [dateComponents count];
+    NSUInteger count = [dateComponents count];
 #ifdef DEBUG_date
     NSLog(@"date components: %@, day:%d month:%d, year:%d", dateComponents, datePosition.day, datePosition.month, datePosition.year);
 #endif    
@@ -860,7 +860,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	dateSet.day= [[dateComponents objectAtIndex:datePosition.day-1] intValue];
 	if (dateSet.day == 0) {
 	    // the only way for zero to get set is for intValue to be unable to return an int, which means its probably a month, swap day and month
-	    int position = datePosition.day;
+	    NSInteger position = datePosition.day;
 	    datePosition.day = datePosition.month;
 	    datePosition.month = position;
 	    dateSet.day= [[dateComponents objectAtIndex:datePosition.day-1] intValue];
@@ -879,7 +879,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		dateSet.year = -1;
 	    if (dateSet.year == -1 && !didSwap) {
 		// the only way for zero to get set is for intValue to be unable to return an int, which means its probably a month, swap day and month
-		int position = datePosition.year;
+		NSInteger position = datePosition.year;
 		datePosition.year = datePosition.month;
 		datePosition.month = position;
 		dateSet.year = [[dateComponents objectAtIndex:datePosition.year-1] intValue];
@@ -937,21 +937,21 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 #ifdef DEBUG_date
 		NSLog(@"swap day and year");
 #endif
-		int year = dateSet.year;
+		NSInteger year = dateSet.year;
 		dateSet.year = dateSet.day;
 		dateSet.day = year;
 	    } else if (dateSet.month > 12 ) {
 #ifdef DEBUG_date
 		NSLog(@"swap month and year");
 #endif
-		int year = dateSet.year;
+		NSInteger year = dateSet.year;
 		dateSet.year = dateSet.month;
 		dateSet.month = year;
 	    } else if (dateSet.day > 0 && dateSet.year > 0 && dateSet.month < 0 ) {
 #ifdef DEBUG_date
 		NSLog(@"swap month and day");
 #endif
-		int day = dateSet.day;
+		NSInteger day = dateSet.day;
 		dateSet.day = dateSet.month;
 		dateSet.month = day;
 	    }
@@ -963,21 +963,21 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 #ifdef DEBUG_date
 		NSLog(@"swap day and year");
 #endif
-		int year = dateSet.year;
+		NSInteger year = dateSet.year;
 		dateSet.year = dateSet.day;
 		dateSet.day = year;
 	    } else if (dateSet.month > 12 && dateSet.day <= 31 && dateSet.year <= 12) {
 #ifdef DEBUG_date
 		NSLog(@"swap month and year");
 #endif
-		int year = dateSet.year;
+		NSInteger year = dateSet.year;
 		dateSet.year = dateSet.month;
 		dateSet.month = year;
 	    } else if ( dateSet.day <= 12 && dateSet.month > 12 ) {
 #ifdef DEBUG_date
 		NSLog(@"swap day and month");
 #endif
-		int day = dateSet.day;
+		NSInteger day = dateSet.day;
 		dateSet.day = dateSet.month;
 		dateSet.month = day;
 	    }
@@ -1023,10 +1023,10 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 #endif
     int multiplier = [self _multiplierForModifer:modifier];
     
-    int month = -1;
-    int weekday = -1;
-    int day = -1;
-    int year = -1;
+    NSInteger month = -1;
+    NSInteger weekday = -1;
+    NSInteger day = -1;
+    NSInteger year = -1;
     NSDateComponents *componentsToAdd = [[[NSDateComponents alloc] init] autorelease];
     
     int number = -1;
@@ -1107,15 +1107,15 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 			    [currentComponents setSecond:0];
 			}
 			
-			NSString *day;
+			NSString *dayName;
 			if (useEndOfDuration) 
-			    day = [_weekdays lastObject];
+			    dayName = [_weekdays lastObject];
 			else 
-			    day = [_weekdays objectAtIndex:0];
+			    dayName = [_weekdays objectAtIndex:0];
 			
-			NSString *start_end_of_next_week = [NSString stringWithFormat:@"+ %@", day];
-			NSString *start_end_of_last_week = [NSString stringWithFormat:@"- %@", day];
-			NSString *start_end_of_this_week = [NSString stringWithFormat:@"~ %@", day];
+			NSString *start_end_of_next_week = [NSString stringWithFormat:@"+ %@", dayName];
+			NSString *start_end_of_last_week = [NSString stringWithFormat:@"- %@", dayName];
+			NSString *start_end_of_this_week = [NSString stringWithFormat:@"~ %@", dayName];
 			NSDictionary *keywordDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 							   start_end_of_next_week, @"START_END_OF_NEXT_WEEK",
 							   start_end_of_last_week, @"START_END_OF_LAST_WEEK",
@@ -1438,10 +1438,10 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     return 1;
 }
 
-- (unsigned int)_monthIndexForString:(NSString *)token;
+- (NSUInteger)_monthIndexForString:(NSString *)token;
 {
     // return the the value of the month according to its position on the array, or -1 if nothing matches.
-    unsigned int monthIndex = [_months count];
+    NSUInteger monthIndex = [_months count];
     while (monthIndex--) {
 	if ([token isEqualToString:[[_shortmonths objectAtIndex:monthIndex] lowercaseString]] || [token isEqualToString:[[_months objectAtIndex:monthIndex] lowercaseString]]) {
 	    return monthIndex;
@@ -1450,11 +1450,11 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     return -1;
 }
 
-- (unsigned int)_weekdayIndexForString:(NSString *)token;
+- (NSUInteger)_weekdayIndexForString:(NSString *)token;
 {
     // return the the value of the weekday according to its position on the array, or -1 if nothing matches.
     
-    unsigned int dayIndex = [_weekdays count];
+    NSUInteger dayIndex = [_weekdays count];
     token = [token lowercaseString];
     while (dayIndex--) {
 #ifdef DEBUG_date
@@ -1476,7 +1476,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     return -1;
 }
 
-- (int)_determineYearForMonth:(unsigned int)month withModifier:(OFRelativeDateParserRelativity)modifier fromCurrentMonth:(unsigned int)currentMonth fromGivenYear:(int)givenYear;
+- (NSInteger)_determineYearForMonth:(NSUInteger)month withModifier:(OFRelativeDateParserRelativity)modifier fromCurrentMonth:(NSUInteger)currentMonth fromGivenYear:(NSInteger)givenYear;
 {
     // current month equals the requested month
     if (currentMonth == month) {
@@ -1500,12 +1500,12 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     return givenYear;
 }
 
-- (NSDate *)_modifyDate:(NSDate *)date withWeekday:(unsigned int)requestedWeekday withModifier:(OFRelativeDateParserRelativity)modifier;
+- (NSDate *)_modifyDate:(NSDate *)date withWeekday:(NSUInteger)requestedWeekday withModifier:(OFRelativeDateParserRelativity)modifier;
 {
     requestedWeekday+=1; // add one to the index since weekdays are 1 based, but we detect them zero-based
     NSDateComponents *weekdayComp = [currentCalendar components:NSWeekdayCalendarUnit fromDate:date];
     NSDateComponents *components = [[NSDateComponents alloc] init];
-    unsigned int currentWeekday = [weekdayComp weekday];
+    NSUInteger currentWeekday = [weekdayComp weekday];
     
 #ifdef DEBUG_date    
     NSLog(@"Modifying the date based on weekdays with modifer: %d, Current Weekday: %d, Requested Weekday: %d", modifier, currentWeekday, requestedWeekday);

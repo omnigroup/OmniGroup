@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		34CA5FA30FDEE29C005FF9D0 /* ONFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AFE726C08A02E9D00ED9F2D /* FrameworkDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E96FE8AB1FF11C9CC38 /* FrameworkDefines.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4AFE726D08A02E9D00ED9F2D /* OmniNetworking.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E97FE8AB1FF11C9CC38 /* OmniNetworking.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AFE726E08A02E9D00ED9F2D /* ONHost.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E99FE8AB1FF11C9CC38 /* ONHost.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -142,6 +143,7 @@
 		00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		18EAC01EFFC40E94C697A14E /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniNetworking.strings; sourceTree = "<group>"; };
 		34A1595A056458170097A113 /* OmniNetworking.order */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniNetworking.order; sourceTree = "<group>"; };
+		34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONFeatures.h; sourceTree = "<group>"; };
 		4A3CECEF08B02E15003A2A9D /* OmniNetworking_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniNetworking_Prefix.h; sourceTree = "<group>"; };
 		4AB8F3C108AD260400DBB061 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AB8F3C208AD260400DBB061 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -304,6 +306,7 @@
 			children = (
 				00E51E97FE8AB1FF11C9CC38 /* OmniNetworking.h */,
 				00E51E96FE8AB1FF11C9CC38 /* FrameworkDefines.h */,
+				34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */,
 				18EAC01DFFC40E94C697A14E /* OmniNetworking.strings */,
 				34A1595A056458170097A113 /* OmniNetworking.order */,
 				4A25D9DD05ED21C50097A149 /* DNS */,
@@ -433,6 +436,7 @@
 				4AFE727B08A02E9D00ED9F2D /* ONHost-InternalAPI.h in Headers */,
 				4AFE727C08A02E9D00ED9F2D /* ONHostAddress-Private.h in Headers */,
 				4AFE727D08A02E9D00ED9F2D /* ONLinkLayerHostAddress.h in Headers */,
+				34CA5FA30FDEE29C005FF9D0 /* ONFeatures.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

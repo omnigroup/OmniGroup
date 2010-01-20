@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,24 +73,22 @@ RCS_ID("$Id$")
 
 - (void)setSelectedItems:(NSArray *)items visibility:(OATableViewRowVisibility)visibility;
 {
-    NSHashTable *itemTable;
-    unsigned int itemIndex, itemCount, rowIndex, rowCount;
-    
-    itemCount = [items count];
+    NSUInteger itemCount = [items count];
     if (!itemCount)
         return;
         
     // Build a hash table of the objects to select to avoid a O(N^2) loop.
     // This also uniques the list of objects nicely, should it not already be.
-    itemTable = NSCreateHashTable(NSNonOwnedPointerHashCallBacks, itemCount);
-    itemIndex = itemCount;
-    while (itemIndex--)
-        NSHashInsert(itemTable, [items objectAtIndex:itemIndex]);
+    NSHashTable *itemTable = NSCreateHashTable(NSNonOwnedPointerHashCallBacks, itemCount);
+    
+    for (id item in items)
+        NSHashInsert(itemTable, item);
     
     // Now, do a O(N) search through all of the rows and select any for which we have objects
     NSMutableIndexSet *rowIndices = [[NSMutableIndexSet alloc] init];
-    rowCount = [self numberOfRows];
-    for (rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+
+    NSInteger rowCount = [self numberOfRows];
+    for (NSInteger rowIndex = 0; rowIndex < rowCount; rowIndex++) {
         id item = [self itemAtRow:rowIndex];
         if (NSHashGet(itemTable, item)) {
             // We should be able to always extend the selection, since we deselected everything above. However, as of OS X DP4, if we do that, it sometimes triggers an assertion and NSLog in NSTableView. (Usually that happens after dragging an item.)
@@ -113,24 +111,18 @@ RCS_ID("$Id$")
 
 - (id)firstItem;
 {
-    unsigned int count;
-    
-    count = [_dataSource outlineView: self numberOfChildrenOfItem: nil];
+    NSInteger count = [_dataSource outlineView: self numberOfChildrenOfItem:nil];
     if (!count)
         return nil;
-    return [_dataSource outlineView: self child: 0 ofItem: nil];
+    return [_dataSource outlineView:self child:0 ofItem:nil];
 }
 
-- (void)expandAllItemsAtLevel:(unsigned int)level;
+- (void)expandAllItemsAtLevel:(NSInteger)level;
 {
-    unsigned int rowCount, rowIndex;
-    
-    rowCount = [self numberOfRows];
-    for (rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-        if ((unsigned)[self levelForRow: rowIndex] == level) {
-            id item;
-            
-            item = [self itemAtRow: rowIndex];
+    NSInteger rowCount = [self numberOfRows];
+    for (NSInteger rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+        if ([self levelForRow: rowIndex] == level) {
+            id item = [self itemAtRow: rowIndex];
             if ([self isExpandable: item] && ![self isItemExpanded: item]) {
                 [self expandItem: item];
                 rowCount = [self numberOfRows];
@@ -142,13 +134,11 @@ RCS_ID("$Id$")
 - (void)expandItemAndChildren:(id)item;
 {
     if (item == nil || [_dataSource outlineView:self isItemExpandable:item]) {
-        unsigned int childIndex, childCount;
-
         if (item != nil)
             [self expandItem:item];
     
-        childCount = [_dataSource outlineView:self numberOfChildrenOfItem:item];
-        for (childIndex = 0; childIndex < childCount; childIndex++)
+        NSInteger childCount = [_dataSource outlineView:self numberOfChildrenOfItem:item];
+        for (NSInteger childIndex = 0; childIndex < childCount; childIndex++)
             [self expandItemAndChildren:[_dataSource outlineView:self child:childIndex ofItem:item]];
     }
 }
@@ -156,10 +146,9 @@ RCS_ID("$Id$")
 - (void)collapseItemAndChildren:(id)item;
 {
     if (item == nil || [_dataSource outlineView:self isItemExpandable:item]) {
-        unsigned int childIndex;
 
         // Collapse starting from the bottom.  This makes it feasible to have the smooth scrolling on when doing this (since most of the collapsing then happens off screen and thus doesn't get animated).
-        childIndex = [_dataSource outlineView:self numberOfChildrenOfItem:item];
+        NSInteger childIndex = [_dataSource outlineView:self numberOfChildrenOfItem:item];
         while (childIndex--)
             [self collapseItemAndChildren:[_dataSource outlineView:self child:childIndex ofItem:item]];
             
@@ -188,7 +177,7 @@ RCS_ID("$Id$")
 
 - (BOOL)_processKeyDownCharacter:(unichar)character;
 {
-    unsigned int modifierFlags = [[NSApp currentEvent] modifierFlags];
+    NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
     
     switch (character) {
         case NSLeftArrowFunctionKey:
@@ -216,18 +205,14 @@ RCS_ID("$Id$")
 
 - (IBAction)expandAll:(id)sender;
 {
-    NSArray *selectedItems;
-
-    selectedItems = [self selectedItems];
+    NSArray *selectedItems = [self selectedItems];
     [self expandItemAndChildren:nil];
     [self setSelectedItems:selectedItems];
 }
 
 - (IBAction)contractAll:(id)sender;
 {
-    NSArray *selectedItems;
-
-    selectedItems = [self selectedItems];
+    NSArray *selectedItems = [self selectedItems];
     [self collapseItemAndChildren:nil];
     [self setSelectedItems:selectedItems];
 }
@@ -238,13 +223,9 @@ RCS_ID("$Id$")
 
 - (void)_expandItems:(NSArray *)items andChildren:(BOOL)andChildren;
 {
-    unsigned int itemCount, itemIndex;
-    
-    itemCount = [items count];
-    for (itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-        id selectedItem;
-        
-        selectedItem = [items objectAtIndex:itemIndex];
+    NSInteger itemCount = [items count];
+    for (NSInteger itemIndex = 0; itemIndex < itemCount; itemIndex++) {
+        id selectedItem = [items objectAtIndex:itemIndex];
         if ([_dataSource outlineView:self isItemExpandable:selectedItem]) {
             if (andChildren)
                 [self expandItemAndChildren:selectedItem];
@@ -256,13 +237,9 @@ RCS_ID("$Id$")
 
 - (void)_collapseItems:(NSArray *)items andChildren:(BOOL)andChildren;
 {
-    unsigned int itemCount, itemIndex;
-    
-    itemCount = [items count];
-    for (itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-        id selectedItem;
-        
-        selectedItem = [items objectAtIndex:itemIndex];
+    NSInteger itemCount = [items count];
+    for (NSInteger itemIndex = 0; itemIndex < itemCount; itemIndex++) {
+        id selectedItem = [items objectAtIndex:itemIndex];
         if ([_dataSource outlineView:self isItemExpandable:selectedItem]) {
             if (andChildren)
                 [self collapseItemAndChildren:selectedItem];

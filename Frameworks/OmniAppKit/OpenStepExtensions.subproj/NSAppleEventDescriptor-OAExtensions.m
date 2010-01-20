@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,9 +14,9 @@ RCS_ID("$Id$");
 
 @implementation NSAppleEventDescriptor (OAExtensions)
 
-+ (NSAppleEventDescriptor *)descriptorWithAEDescNoCopy:(const AEDesc *)aeDesc;
++ (NSAppleEventDescriptor *)newDescriptorWithAEDescNoCopy:(const AEDesc *)aeDesc;
 {
-    return [[[self alloc] initWithAEDescNoCopy:aeDesc] autorelease];
+    return [[self alloc] initWithAEDescNoCopy:aeDesc];
 }
 
 @end

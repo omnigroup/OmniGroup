@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ RCS_ID("$Id$")
 {
     NSMutableIndexSet *indexes = nil;
     
-    unsigned int objectIndex = [self count];
+    NSUInteger objectIndex = [self count];
     while (objectIndex--) {
         if ([objects member:[self objectAtIndex:objectIndex]]) {
             if (!indexes)
@@ -48,15 +48,10 @@ RCS_ID("$Id$")
 
 - (NSUInteger)indexOfString:(NSString *)aString options:(unsigned)someOptions range:(NSRange)aRange;
 {
-    NSObject *anObject;
-    Class stringClass;
-    NSUInteger objectIndex;
-    NSUInteger objectCount;
-    
-    stringClass = [NSString class];
-    objectCount = [self count];
-    for (objectIndex = 0; objectIndex < objectCount; objectIndex++) {
-	anObject = [self objectAtIndex:objectIndex];
+    Class stringClass = [NSString class];
+    NSUInteger objectCount = [self count];
+    for (NSUInteger objectIndex = 0; objectIndex < objectCount; objectIndex++) {
+	NSObject *anObject = [self objectAtIndex:objectIndex];
 	if ([anObject isKindOfClass:stringClass] && [aString compare:(NSString *)anObject options:someOptions range:aRange] == NSOrderedSame)
 	    return objectIndex;
     }
@@ -71,25 +66,21 @@ RCS_ID("$Id$")
 
 - (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
 {
-    unsigned int low = 0;
-    unsigned int range = 1;
-    unsigned int test = 0;
-    unsigned int count = [self count];
-    NSComparisonResult result;
-    id compareWith;
-    IMP objectAtIndexImp = [self methodForSelector:@selector(objectAtIndex:)];
+    NSUInteger low = 0;
+    NSUInteger range = 1;
+    NSUInteger count = [self count];
     
     while (count >= range) /* range is the lowest power of 2 > count */
         range <<= 1;
 
     while (range) {
-        test = low + (range >>= 1);
+        NSUInteger test = low + (range >>= 1);
         if (test >= count)
             continue;
-	compareWith = objectAtIndexImp(self, @selector(objectAtIndex:), test);
+	id compareWith = (id)CFArrayGetValueAtIndex((CFArrayRef)self, test);
 	if (compareWith == anObject) 
             return test;
-	result = (NSComparisonResult)comparator(anObject, compareWith, context);
+	NSComparisonResult result = (NSComparisonResult)comparator(anObject, compareWith, context);
 	if (result > 0) /* NSOrderedDescending */
             low = test+1;
 	else if (result == NSOrderedSame) 
@@ -125,9 +116,7 @@ static NSComparisonResult compareWithSortDescriptors(id obj1, id obj2, void *con
 {
     NSArray *sortDescriptors = (NSArray *)context;
 
-    unsigned int sortDescriptorIndex, sortDescriptorCount = [sortDescriptors count];
-    for (sortDescriptorIndex = 0; sortDescriptorIndex < sortDescriptorCount; sortDescriptorIndex++) {
-	NSSortDescriptor *sortDescriptor = [sortDescriptors objectAtIndex:sortDescriptorIndex];
+    for (NSSortDescriptor *sortDescriptor in sortDescriptors) {
 	NSComparisonResult result = [sortDescriptor compareObject:obj1 toObject:obj2];
 	if (result != NSOrderedSame)
 	    return result;
@@ -144,7 +133,6 @@ static NSComparisonResult compareWithSortDescriptors(id obj1, id obj2, void *con
 
 - (NSUInteger)indexOfObject:(id)anObject identical:(BOOL)requireIdentity inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
 {
-    IMP objectAtIndexImp = [self methodForSelector:@selector(objectAtIndex:)];
     NSUInteger objectIndex = [self indexWhereObjectWouldBelong:anObject inArraySortedUsingFunction:comparator context:context];
     NSUInteger count = [self count];
     id compareWith;
@@ -155,7 +143,7 @@ static NSComparisonResult compareWithSortDescriptors(id obj1, id obj2, void *con
     if (requireIdentity) {            
         NSUInteger startingAtIndex = objectIndex;
         do {
-            compareWith = objectAtIndexImp(self, @selector(objectAtIndex:), objectIndex);
+            compareWith = (id)CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex);
             if (compareWith == anObject) 
                 return objectIndex;
             if (comparator(anObject, compareWith, context) != NSOrderedSame)
@@ -164,14 +152,14 @@ static NSComparisonResult compareWithSortDescriptors(id obj1, id obj2, void *con
         
         objectIndex = startingAtIndex;
         while (++objectIndex < count) {
-            compareWith = objectAtIndexImp(self, @selector(objectAtIndex:), objectIndex);
+            compareWith = (id)CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex);
             if (compareWith == anObject)
                 return objectIndex;
             if (comparator(anObject, compareWith, context) != NSOrderedSame)
                 break;
         }
     } else {
-        compareWith = objectAtIndexImp(self, @selector(objectAtIndex:), objectIndex);
+        compareWith = (id)CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex);
         if ((NSComparisonResult)comparator(anObject, compareWith, context) == NSOrderedSame)
             return objectIndex;
     }
@@ -215,51 +203,38 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 
 - (void)makeObjectsPerformSelector:(SEL)selector withObject:(id)arg1 withObject:(id)arg2;
 {
-    unsigned int objectIndex, objectCount;
-    objectCount = CFArrayGetCount((CFArrayRef)self);
-    for (objectIndex = 0; objectIndex < objectCount; objectIndex++) {
-        id object = (id)CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex);
+    for (id object in self)
         objc_msgSend(object, selector, arg1, arg2);
-    }
 }
 
 - (void)makeObjectsPerformSelector:(SEL)aSelector withBool:(BOOL)aBool;
 {
-    unsigned int count = [self count];
-    unsigned int objectIndex;
-
-    for (objectIndex = 0; objectIndex < count; objectIndex++) {
-        id anObject = [self objectAtIndex:objectIndex];
-        objc_msgSend(anObject, aSelector, aBool);
-    }
+    for (id object in self)
+        objc_msgSend(object, aSelector, aBool);
 }
 
 - (NSArray *)numberedArrayDescribedBySelector:(SEL)aSelector;
 {
-    NSArray *result;
-    unsigned int arrayIndex, arrayCount;
-
-    result = [NSArray array];
-    for (arrayIndex = 0, arrayCount = [self count]; arrayIndex < arrayCount; arrayIndex++) {
-        NSString *valueDescription;
-        id value;
-
-        value = [self objectAtIndex:arrayIndex];
-        valueDescription = objc_msgSend(value, aSelector);
-        result = [result arrayByAddingObject:[NSString stringWithFormat:@"%d. %@", arrayIndex, valueDescription]];
+    NSUInteger arrayIndex, arrayCount = [self count];
+    if (arrayCount == 0)
+        return [NSArray array];
+    
+    NSMutableArray *result = [NSMutableArray array];
+    for (arrayIndex = 0; arrayIndex < arrayCount; arrayIndex++) {
+        id value = [self objectAtIndex:arrayIndex];
+        NSString *valueDescription = objc_msgSend(value, aSelector);
+        [result addObject:[NSString stringWithFormat:@"%d. %@", arrayIndex, valueDescription]];
     }
 
     return result;
 }
 
 - (NSArray *)arrayByRemovingObject:(id)anObject;
-{
-    NSMutableArray *filteredArray;
-    
+{    
     if (![self containsObject:anObject])
         return [NSArray arrayWithArray:self];
 
-    filteredArray = [NSMutableArray arrayWithArray:self];
+    NSMutableArray *filteredArray = [NSMutableArray arrayWithArray:self];
     [filteredArray removeObject:anObject];
 
     return [NSArray arrayWithArray:filteredArray];
@@ -267,12 +242,10 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 
 - (NSArray *)arrayByRemovingObjectIdenticalTo:(id)anObject;
 {
-    NSMutableArray *filteredArray;
-    
     if (![self containsObject:anObject])
         return [NSArray arrayWithArray:self];
 
-    filteredArray = [NSMutableArray arrayWithArray:self];
+    NSMutableArray *filteredArray = [NSMutableArray arrayWithArray:self];
     [filteredArray removeObjectIdenticalTo:anObject];
 
     return [NSArray arrayWithArray:filteredArray];
@@ -287,7 +260,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] initWithCapacity:[self count]];
 
-    for(id object in self) {
+    for (id object in self) {
         id key;
         if ((key = [object performSelector:aSelector withObject:argument]))
             [dict setObject:object forKey:key];
@@ -308,11 +281,8 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 {
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:[self count]];
     
-    for(id singleObject in self) {
-        id selectorResult;
-
-        selectorResult = [singleObject performSelector:aSelector withObject:anObject];
-
+    for (id singleObject in self) {
+        id selectorResult = [singleObject performSelector:aSelector withObject:anObject];
         if (selectorResult)
             [result addObject:selectorResult];
     }
@@ -322,15 +292,10 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
 {
-    NSMutableSet *result;
-    id singleResult;
-    
-    singleResult = nil;
-    result = nil;
+    id singleResult = nil;
+    NSMutableSet *result = nil;
     for (id singleObject in self) {
-        id selectorResult;
-        
-        selectorResult = [singleObject performSelector:aSelector /* withObject:anObject */ ];
+        id selectorResult = [singleObject performSelector:aSelector /* withObject:anObject */ ];
         
         if (selectorResult) {
             if (singleResult == selectorResult) {
@@ -356,6 +321,84 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
         return [NSSet set];
 }
 
+#ifdef NS_BLOCKS_AVAILABLE
+
+- (NSArray *)arrayByPerformingBlock:(OFObjectToObjectBlock)blk;
+{
+    NSMutableArray *result = [NSMutableArray arrayWithCapacity:[self count]];
+    
+    for (id singleObject in self) {
+        id selectorResult = blk(singleObject);
+        if (selectorResult)
+            [result addObject:selectorResult];
+    }
+        
+    return result;
+}
+
+- (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)blk;
+{
+    id singleResult = nil;
+    NSMutableSet *result = nil;
+    for (id singleObject in self) {
+        id selectorResult = blk(singleObject);
+        
+        if (selectorResult) {
+            if (singleResult == selectorResult) {
+                /* ok */
+            } else if (result != nil) {
+                [result addObject:selectorResult];
+            } else if (singleResult == nil) {
+                singleResult = selectorResult;
+            } else {
+                result = [NSMutableSet set];
+                [result addObject:singleResult];
+                [result addObject:selectorResult];
+                singleResult = nil;
+            }
+        }
+    }
+    
+    if (result)
+        return result;
+    else if (singleResult)
+        return [NSSet setWithObject:singleResult];
+    else
+        return [NSSet set];
+}
+
+- (NSArray *)select:(OFPredicateBlock)predicate;
+{
+    NSMutableArray *result = [NSMutableArray array];
+    
+    for (id element in self)
+        if (predicate(element))
+            [result addObject:element];
+    
+    return result;
+}
+
+- (NSArray *)reject:(OFPredicateBlock)predicate;
+{
+    NSMutableArray *result = [NSMutableArray array];
+    
+    for (id element in self)
+        if (!predicate(element))
+            [result addObject:element];
+    
+    return result;
+}
+
+- (id)first:(OFPredicateBlock)predicate;
+{
+    for (id element in self)
+        if (predicate(element))
+            return element;
+    return nil;
+}
+
+#endif
+
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector;
 {
     // objc_msgSend won't bother passing the nil argument to the method implementation because of the selector signature.
@@ -365,12 +408,10 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector withObject:(id)anObject;
 {
     NSMutableArray *result = [NSMutableArray array];
-    unsigned int objectIndex, objectCount = [self count];
     
-    for (objectIndex = 0; objectIndex < objectCount; objectIndex++) {
-        id singleObject = [self objectAtIndex:objectIndex];
-        if ([singleObject satisfiesCondition:aSelector withObject:anObject])
-            [result addObject:singleObject];
+    for (id element in self) {
+        if ([element satisfiesCondition:aSelector withObject:anObject])
+            [result addObject:element];
     }
 
     return result;
@@ -383,10 +424,8 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 
 - (BOOL)anyObjectSatisfiesCondition:(SEL)sel withObject:(id)anObject;
 {
-    unsigned int objectIndex = [self count];
-    while (objectIndex--) {
-        NSObject *object = [self objectAtIndex:objectIndex];
-        if ([object satisfiesCondition:sel withObject:anObject])
+    for (id element in self) {
+        if ([element satisfiesCondition:sel withObject:anObject])
             return YES;
     }
     
@@ -395,15 +434,8 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 
 - (NSMutableArray *)deepMutableCopy;
 {
-    NSMutableArray *newArray;
-    unsigned int objectIndex, count;
-
-    count = [self count];
-    newArray = [[NSMutableArray allocWithZone:[self zone]] initWithCapacity:count];
-    for (objectIndex = 0; objectIndex < count; objectIndex++) {
-        id anObject;
-
-        anObject = [self objectAtIndex:objectIndex];
+    NSMutableArray *newArray = [[NSMutableArray alloc] init];
+    for (id anObject in self) {
         if ([anObject respondsToSelector:@selector(deepMutableCopy)]) {
             anObject = [anObject deepMutableCopy];
             [newArray addObject:anObject];
@@ -422,27 +454,30 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 
 - (NSArray *)reversedArray;
 {
-    NSMutableArray *newArray;
-    unsigned int count;
+    NSUInteger objectIndex, objectCount = [self count];
+    if (objectCount < 2)
+        return [[self copy] autorelease];
     
-    count = [self count];
-    newArray = [[[NSMutableArray allocWithZone:[self zone]] initWithCapacity:count] autorelease];
-    while (count--) {
-        [newArray addObject:[self objectAtIndex:count]];
-    }
-
-    return newArray;
+    NSMutableArray *result = [[self mutableCopy] autorelease];
+    for (objectIndex = 0; objectIndex < objectCount / 2; objectIndex++)
+        CFArrayExchangeValuesAtIndices((CFMutableArrayRef)result, objectIndex, objectCount - objectIndex - 1);
+    return result;
 }
 
 // Returns YES if the two arrays contain exactly the same pointers in the same order.  That is, this doesn't use -isEqual: on the components
 - (BOOL)isIdenticalToArray:(NSArray *)otherArray;
 {
-    unsigned int objectIndex = [self count];
-
-    if (objectIndex != [otherArray count])
+    if (!otherArray) {
+        OBASSERT([self count] > 0); // Older versions of this method would compare empty to nil as YES.  Do we want that still?
         return NO;
+    }
+
+    CFIndex objectIndex = CFArrayGetCount((CFArrayRef)self);
+    if (objectIndex != CFArrayGetCount((CFArrayRef)otherArray))
+        return NO;
+    
     while (objectIndex--)
-        if ([self objectAtIndex:objectIndex] != [otherArray objectAtIndex:objectIndex])
+        if (CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex) != CFArrayGetValueAtIndex((CFArrayRef)otherArray, objectIndex))
             return NO;
     return YES;
 }
@@ -450,13 +485,12 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 // -containsObjectsInOrder: moved from TPTrending 6Dec2001 wiml
 - (BOOL)containsObjectsInOrder:(NSArray *)orderedObjects
 {
-    unsigned myCount, objCount, myIndex, objIndex;
     id testItem = nil;
     
-    myCount = [self count];
-    objCount = [orderedObjects count];
+    NSUInteger myCount = [self count];
+    NSUInteger objCount = [orderedObjects count];
     
-    myIndex = objIndex = 0;
+    NSUInteger myIndex = 0, objIndex = 0;
     while (objIndex < objCount) {
         id item;
         

@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,7 +98,7 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
         [self addSubview:_progressIndicator];
     }
 
-    float fontSize;
+    CGFloat fontSize;
     if (controlSize == NSSmallControlSize)
         fontSize = [NSFont smallSystemFontSize];
     else
@@ -132,8 +132,8 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
         // Maybe the title is equal but the document window moved.  Ever think of that, Mr. Smartypants?
         NSRect documentWindowRect = [documentWindow frame];
         NSRect indicatorRect = [[self window] frame];
-        indicatorRect.origin.x = NSMinX(documentWindowRect) + floor((NSWidth(documentWindowRect) - indicatorRect.size.width) / 2.0f);
-        indicatorRect.origin.y = NSMinY(documentWindowRect) + floor((NSHeight(documentWindowRect) - indicatorRect.size.height) / 2.0f);
+        indicatorRect.origin.x = NSMinX(documentWindowRect) + (CGFloat)floor((NSWidth(documentWindowRect) - indicatorRect.size.width) / 2.0f);
+        indicatorRect.origin.y = NSMinY(documentWindowRect) + (CGFloat)floor((NSHeight(documentWindowRect) - indicatorRect.size.height) / 2.0f);
         [[self window] setFrame:indicatorRect display:[[self window] isVisible]];
 
         return;
@@ -147,8 +147,8 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
 
     // Now, resize our window and reposition the progress indicator and window.
     NSSize stringSize = [_attributedTitle size];
-    stringSize.width = ceil(stringSize.width);
-    stringSize.height = ceil(stringSize.height);
+    stringSize.width = (CGFloat)ceil(stringSize.width);
+    stringSize.height = (CGFloat)ceil(stringSize.height);
     
     NSRect indicatorRect;
     NSRect progressIndicatorFrame = _progressIndicator ? [_progressIndicator frame] : NSZeroRect; // Make clang happy; we know it isn't nil.
@@ -157,19 +157,19 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
     if ([_progressIndicator style] == NSProgressIndicatorBarStyle) {
         indicatorRect.size.width  = BORDER_WIDTH + BORDER_GAP + MAX(progressIndicatorFrame.size.width, stringSize.width) + BORDER_GAP + 2*BORDER_GAP + BORDER_WIDTH;
         indicatorRect.size.height = BORDER_WIDTH + BORDER_GAP + progressIndicatorFrame.size.height + BORDER_GAP + stringSize.height + BORDER_GAP + BORDER_WIDTH;
-        indicatorRect.origin.x = NSMinX(documentWindowRect) + floor((NSWidth(documentWindowRect) - indicatorRect.size.width) / 2.0f);
-        indicatorRect.origin.y = NSMinY(documentWindowRect) + floor((NSHeight(documentWindowRect) - indicatorRect.size.height) / 2.0f);
+        indicatorRect.origin.x = NSMinX(documentWindowRect) + (CGFloat)floor((NSWidth(documentWindowRect) - indicatorRect.size.width) / 2.0f);
+        indicatorRect.origin.y = NSMinY(documentWindowRect) + (CGFloat)floor((NSHeight(documentWindowRect) - indicatorRect.size.height) / 2.0f);
 
         _titleLocation.x = NSMinX(progressIndicatorFrame);
         _titleLocation.y = NSMaxY(progressIndicatorFrame) + BORDER_GAP;
     } else {
         indicatorRect.size.width  = BORDER_WIDTH + BORDER_GAP + progressIndicatorFrame.size.width + BORDER_GAP + stringSize.width + 2*BORDER_GAP + BORDER_WIDTH;
         indicatorRect.size.height = BORDER_WIDTH + BORDER_GAP + MAX(progressIndicatorFrame.size.height, stringSize.height) + BORDER_GAP + BORDER_WIDTH;
-        indicatorRect.origin.x = NSMinX(documentWindowRect) + floor((NSWidth(documentWindowRect) - indicatorRect.size.width) / 2.0f);
-        indicatorRect.origin.y = NSMinY(documentWindowRect) + floor((NSHeight(documentWindowRect) - indicatorRect.size.height) / 2.0f);
+        indicatorRect.origin.x = NSMinX(documentWindowRect) + (CGFloat)floor((NSWidth(documentWindowRect) - indicatorRect.size.width) / 2.0f);
+        indicatorRect.origin.y = NSMinY(documentWindowRect) + (CGFloat)floor((NSHeight(documentWindowRect) - indicatorRect.size.height) / 2.0f);
 
         _titleLocation.x = NSMaxX(progressIndicatorFrame) + BORDER_GAP;
-        _titleLocation.y = floor((NSHeight(indicatorRect) - stringSize.height) / 2.0f);
+        _titleLocation.y = (CGFloat)floor((NSHeight(indicatorRect) - stringSize.height) / 2.0f);
     }
           
     [_titleLock unlock]; // Must do this before the call to -setFrame:display: since it will call -drawRect:.  Must also do it before -setFrameSize: below since that can take the AppKit lock, draw, and then cause the title lock to be taken (and we'd hold the locks in th opposite order here resulting in deadlock).
@@ -195,7 +195,7 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
     
     {
         // We are going to stroke aw well as fill.  That means that the rect we are going to stroke needs to be on a pixel center.
-        NSRect rect = NSInsetRect(bounds, 0.5, 0.5);
+        NSRect rect = NSInsetRect(bounds, 0.5f, 0.5f);
         
         CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
 
@@ -215,8 +215,8 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
             CGContextClosePath(ctx);
         }
         
-        [[NSColor colorWithCalibratedWhite:1.0 alpha:0.9] setFill];
-        [[NSColor colorWithCalibratedWhite:0.0 alpha:0.9] setStroke];
+        [[NSColor colorWithCalibratedWhite:1.0f alpha:0.9f] setFill];
+        [[NSColor colorWithCalibratedWhite:0.0f alpha:0.9f] setStroke];
         
         CGContextDrawPath(ctx, kCGPathFillStroke);
     }

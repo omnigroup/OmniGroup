@@ -1,4 +1,4 @@
-// Copyright 2004-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -80,7 +80,7 @@ static NSData *utf8(NSString *str)
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         TEST_STRING(stringOfA);
         [stringOfA appendString:@"a"];
-        [pool release];
+        [pool drain];
     }
 }
 
@@ -96,7 +96,7 @@ static NSData *utf8(NSString *str)
     unsigned int repetitions = 50;
     while (repetitions--) {
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        NSData *data = [NSData randomDataOfLength:OFRandomNext() % maxLength];
+        NSData *data = [NSData randomDataOfLength:OFRandomNext32() % maxLength];
         NS_DURING {
             TEST_DATA(data);
         } NS_HANDLER {
@@ -104,7 +104,7 @@ static NSData *utf8(NSString *str)
             NSLog(@"Failed on random vector (base-64): <%@>", [data base64String]);
             [localException raise];
         } NS_ENDHANDLER;
-        [pool release];
+        [pool drain];
     }
 }
 
@@ -114,8 +114,14 @@ static NSData *utf8(NSString *str)
 
 - (void)doTestWithData:(NSData *)data;
 {
-    NSData *bz2Data = [data compressedData];
-    shouldBeEqual(data, [bz2Data decompressedData]);
+    NSError *error = nil;
+    NSData *bz2Data = [data compressedBzip2Data:&error];
+    OBShouldNotError(bz2Data != nil);
+    
+    NSData *decompressedData = [bz2Data decompressedData:&error];
+    OBShouldNotError(decompressedData != nil);
+    
+    shouldBeEqual(data, decompressedData);
     should([bz2Data mightBeCompressed]);
 }
 
@@ -131,15 +137,18 @@ static NSData *utf8(NSString *str)
     
     unsigned int levelIndex;
     for (levelIndex = 0; levelIndex < (sizeof(levels) / sizeof(*levels)); levelIndex++) {
-        NSData *gzData = [data compressedDataWithGzipHeader:YES compressionLevel:levels[levelIndex]];
-        should(gzData != nil);
+        NSError *error = nil;
+        NSData *gzData = [data compressedDataWithGzipHeader:YES compressionLevel:levels[levelIndex] error:&error];
+        OBShouldNotError(gzData != nil);
 
-        NSError *fail = nil;
-        NSData *gzipDecompressed = [gzData filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObjects:@"--decompress", @"--to-stdout", nil] error:&fail];
+        NSData *gzipDecompressed = [gzData filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObjects:@"--decompress", @"--to-stdout", nil] error:&error];
+        OBShouldNotError(gzipDecompressed != nil);
+
         shouldBeEqual(data, gzipDecompressed);
-        should(fail == nil);
 
-        NSData *decompressed = [gzData decompressedData];
+        NSData *decompressed = [gzData decompressedData:&error];
+        OBShouldNotError(decompressed != nil);
+
         shouldBeEqual(data, decompressed);
     }
 

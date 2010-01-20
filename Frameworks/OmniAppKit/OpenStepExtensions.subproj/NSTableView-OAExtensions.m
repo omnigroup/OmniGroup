@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,15 +14,12 @@
 
 #import "NSOutlineView-OAExtensions.h"
 #import "NSView-OAExtensions.h"
-#import "OATypeAheadSelectionHelper.h"
 
 RCS_ID("$Id$")
 
 @interface NSTableView (OAExtensionsPrivate)
 - (BOOL)_copyToPasteboard:(NSPasteboard *)pasteboard;
 - (void)_pasteFromPasteboard:(NSPasteboard *)pasteboard;
-- (NSString *)_typeAheadLabelForRow:(NSInteger)row;
-- (BOOL)_processKeyDownCharacter:(unichar)character;
 @end
 
 @interface NSTableView (OATableDelegateDataSourceCoverMethods)
@@ -31,80 +28,26 @@ RCS_ID("$Id$")
 - (NSMenu *)_contextMenuForRow:(NSInteger)row column:(NSInteger)column;
 - (BOOL)_shouldShowDragImageForRow:(NSInteger)row;
 - (NSArray *)_columnIdentifiersForDragImage;
-- (NSTableColumn *)_typeAheadSelectionColumn;
 - (BOOL)_shouldEditNextItemWhenEditingEnds;
 @end
 
 @implementation NSTableView (OAExtensions)
 
-static IMP originalKeyDown;
-static IMP originalMouseDown;
 static IMP originalTextDidEndEditing;
 static NSImage *(*originalDragImageForRows)(NSTableView *self, SEL _cmd, NSIndexSet *dragRows, NSArray *tableColumns, NSEvent *dragEvent, NSPointPointer dragImageOffset);
 
 static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 // you'd think this should be instance-specific, but it doesn't have to be -- only one drag can be happening at a time.
 
-static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
-// same here -- you can't be typing in two table views at once.
-
 
 + (void)didLoad;
 {
-    originalKeyDown = OBReplaceMethodImplementationWithSelector(self, @selector(keyDown:), @selector(_replacementKeyDown:));
-    originalMouseDown = OBReplaceMethodImplementationWithSelector(self, @selector(mouseDown:), @selector(_replacementMouseDown:));
     originalTextDidEndEditing = OBReplaceMethodImplementationWithSelector(self, @selector(textDidEndEditing:), @selector(_replacementTextDidEndEditing:));
     originalDragImageForRows = (typeof(originalDragImageForRows))OBReplaceMethodImplementationWithSelector(self, @selector(dragImageForRowsWithIndexes:tableColumns:event:offset:), @selector(_replacement_dragImageForRowsWithIndexes:tableColumns:event:offset:));
 }
 
 
 // NSTableView method replacements
-
-- (void)_replacementKeyDown:(NSEvent *)theEvent;
-{
-    NSString *characters = [theEvent characters];
-    if (![characters length]) {
-	originalKeyDown(self, _cmd, theEvent);
-	return;
-    }
-    
-    OBASSERT([characters length] != 0);
-    unichar firstCharacter = [characters characterAtIndex:0];
-    
-    // See if there's an item whose title matches what the user is typing.
-    // This can only be activated, initially, by typing an alphanumeric character.  This means it's smart enough to know when the user is, say, pressing space emulate a double-click, or pressing space separating two search string words.
-    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"DisableTypeAheadSelection"] &&   
-        [_dataSource respondsToSelector:@selector(tableView:objectValueForTableColumn:row:)]) {
-        NSTableColumn *typeAheadColumn;
-        
-        typeAheadColumn = [self _typeAheadSelectionColumn];
-        if (typeAheadColumn != nil && ([[NSCharacterSet alphanumericCharacterSet] characterIsMember:firstCharacter] || ([TypeAheadHelper isProcessing] && ![[NSCharacterSet controlCharacterSet] characterIsMember:firstCharacter]))) {
-            if (TypeAheadHelper == nil)
-                TypeAheadHelper = [[OATypeAheadSelectionHelper alloc] init];
-            
-            // make sure the helper is cached against us (not some other instance), but don't recache on every keyDown either.
-            if ([TypeAheadHelper dataSource] != self || ![TypeAheadHelper isProcessing])
-                [TypeAheadHelper setDataSource:self];
-            
-            [TypeAheadHelper processKeyDownCharacter:firstCharacter];
-            return;
-        }
-    }
-    
-    if ([self _processKeyDownCharacter:firstCharacter])
-        return;
-    
-    [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
-}
-
-- (void)_replacementMouseDown:(NSEvent *)event;
-{
-    // Workaround for bug where triple-click aborts double-click's edit session instead of selecting all of the text in the column to be edited
-    if ([event clickCount] < 3)         
-        originalMouseDown(self, _cmd, event);
-    else if (_editingCell)
-        [[[self window] firstResponder] selectAll:nil];
-}
 
 - (void)_replacementTextDidEndEditing:(NSNotification *)notification;
 {
@@ -199,29 +142,24 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 
 - (void)scrollSelectedRowsToVisibility: (OATableViewRowVisibility)visibility;
 {
-    NSRect selectionRect;
-    
     if (visibility == OATableViewRowVisibilityLeaveUnchanged)
         return;
     
-    selectionRect = [self rectOfSelectedRows];
+    NSRect selectionRect = [self rectOfSelectedRows];
     if (NSEqualRects(selectionRect, NSZeroRect))
         return;
     
     if (visibility == OATableViewRowVisibilityScrollToVisible)
         [self scrollRectToVisible: selectionRect];
     else if (visibility == OATableViewRowVisibilityScrollToMiddleIfNotVisible) {
-        NSRect visibleRect;
-        float heightDifference;
-
-        visibleRect = [self visibleRect];
+        NSRect visibleRect = [self visibleRect];
         if (NSContainsRect(visibleRect, selectionRect))
             return;
         
-        heightDifference = NSHeight(visibleRect) - NSHeight(selectionRect);
+        CGFloat heightDifference = NSHeight(visibleRect) - NSHeight(selectionRect);
         if (heightDifference > 0) {
             // scroll to a rect equal in height to the visible rect but centered on the selected rect
-            selectionRect = NSInsetRect(selectionRect, 0.0, -(heightDifference / 2.0));
+            selectionRect = NSInsetRect(selectionRect, 0.0f, -(heightDifference / 2.0f));
         } else {
             // force the top of the selectionRect to the top of the view
             selectionRect.size.height = NSHeight(visibleRect);
@@ -232,9 +170,7 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 
 - (NSFont *)font;
 {
-    NSArray *tableColumns;
-    
-    tableColumns = [self tableColumns];
+    NSArray *tableColumns = [self tableColumns];
     if ([tableColumns count] > 0)
         return [[(NSTableColumn *)[tableColumns objectAtIndex:0] dataCell] font];
     else
@@ -399,22 +335,22 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 
 - (void)scrollPageDown:(id)sender
 {
-    [self scrollDownByPages:1.0];
+    [self scrollDownByPages:1.0f];
 }
 
 - (void)scrollPageUp:(id)sender
 {
-    [self scrollDownByPages:-1.0];
+    [self scrollDownByPages:-1.0f];
 }
 
 - (void)scrollLineDown:(id)sender
 {
-    [self scrollDownByLines:1.0];
+    [self scrollDownByLines:1.0f];
 }
 
 - (void)scrollLineUp:(id)sender
 {
-    [self scrollDownByLines:-1.0];
+    [self scrollDownByLines:-1.0f];
 }
 
 - (void)scrollToBeginningOfDocument:(id)sender
@@ -566,38 +502,6 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
     return NO;
 }
 
-
-// OATypeAheadSelectionDataSource
-
-- (NSArray *)typeAheadSelectionItems;
-{
-    NSMutableArray *visibleItemLabels;
-    NSInteger row;
-
-    visibleItemLabels = [NSMutableArray arrayWithCapacity:[self numberOfRows]];
-    for (row = 0; row < [self numberOfRows]; row++) {
-        id typeAheadLabel = [self _typeAheadLabelForRow:row];
-        if (typeAheadLabel)
-            [visibleItemLabels addObject:typeAheadLabel];
-    }
-
-    return [NSArray arrayWithArray:visibleItemLabels] ;
-}
-
-- (NSString *)currentlySelectedItem;
-{
-    if ([self numberOfSelectedRows] != 1)
-        return nil;
-    else
-        return [self _typeAheadLabelForRow:[self selectedRow]];
-}
-
-- (void)typeAheadSelectItemAtIndex:(NSUInteger)itemIndex;
-{
-    [self selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
-    [self scrollRowToVisible:itemIndex];
-}
-
 @end
 
 @implementation NSTableView (OAExtensionsPrivate)
@@ -620,36 +524,6 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
 - (void)_pasteFromPasteboard:(NSPasteboard *)pasteboard;
 {
     [_dataSource tableView:self addItemsFromPasteboard:pasteboard];
-}
-
-- (NSString *)_typeAheadLabelForRow:(NSInteger)row;
-{
-    id cellValue = [_dataSource tableView:self objectValueForTableColumn:[self _typeAheadSelectionColumn] row:row];
-    if ([cellValue isKindOfClass:[NSString class]])
-        return cellValue;
-    else if ([cellValue isKindOfClass:[NSAttributedString class]])
-        return [(NSAttributedString *)cellValue string];
-    else if ([cellValue respondsToSelector:@selector(stringValue)])
-        return [cellValue stringValue];
-    else
-        return @"";
-}
-
-- (BOOL)_processKeyDownCharacter:(unichar)character;
-{
-    switch (character) {
-        case ' ':
-        {
-            SEL doubleAction;
-
-            // Emulate a double-click
-            doubleAction = [self doubleAction];
-            if (doubleAction != NULL && [self sendAction:doubleAction to:[self target]])
-                return YES; // We've performed our action
-            break;
-        }
-    }
-    return NO;
 }
 
 @end
@@ -696,16 +570,6 @@ static OATypeAheadSelectionHelper *TypeAheadHelper = nil;
     }
 
     return nil; 
-}
-
-- (NSTableColumn *)_typeAheadSelectionColumn;
-{
-    if ([_dataSource respondsToSelector:@selector(tableViewTypeAheadSelectionColumn:)])
-        return [_dataSource tableViewTypeAheadSelectionColumn:self];
-    else if ([[self tableColumns] count] == 1)
-        return ([[self tableColumns] objectAtIndex:0]);
-    else
-        return nil;
 }
 
 - (BOOL)_shouldEditNextItemWhenEditingEnds;

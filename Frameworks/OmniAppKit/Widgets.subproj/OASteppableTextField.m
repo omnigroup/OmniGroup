@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -84,22 +84,22 @@ RCS_ID("$Id$");
 
 - (id)stepUpValue:(id)anObjectValue;
 {
-    return [NSNumber numberWithFloat:([anObjectValue floatValue] + 1.0)];
+    return [NSNumber numberWithCGFloat:([anObjectValue cgFloatValue] + 1.0f)];
 }
 
 - (id)largeStepUpValue:(id)anObjectValue;
 {
-    return [NSNumber numberWithFloat:([anObjectValue floatValue] + 10.0)];
+    return [NSNumber numberWithCGFloat:([anObjectValue cgFloatValue] + 10.0f)];
 }
 
 - (id)stepDownValue:(id)anObjectValue;
 {
-    return [NSNumber numberWithFloat:([anObjectValue floatValue] - 1.0)];
+    return [NSNumber numberWithCGFloat:([anObjectValue cgFloatValue] - 1.0f)];
 }
 
 - (id)largeStepDownValue:(id)anObjectValue;
 {
-    return [NSNumber numberWithFloat:([anObjectValue floatValue] - 10.0)];
+    return [NSNumber numberWithCGFloat:([anObjectValue cgFloatValue] - 10.0f)];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,38 +34,27 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
 
 + (void)initialize;
 {
-    NSDictionary *defaultsDictionary;
-    NSArray *defaultKeys;
-    unsigned int keyCount, keyIndex;
-
     OBINITIALIZE;
-    
+
     domainCache = [[NSMutableDictionary alloc] init];
     domainLock = [[NSLock alloc] init];
     
     sitePreferenceNotificationCenter = [[NSNotificationCenter alloc] init];
     
-    defaultsDictionary = [[NSUserDefaults standardUserDefaults] dictionaryRepresentation];
-    defaultKeys = [defaultsDictionary allKeys];
-    keyCount = [defaultKeys count];
-    for (keyIndex = 0; keyIndex < keyCount; keyIndex++) {
-        NSString *key;
-        NSArray *components;
-        unsigned int componentCount;
-        NSString *domain;
-        NSString *defaultKey;
-        
-        key = [defaultKeys objectAtIndex:keyIndex];
-        
+    NSDictionary *defaultsDictionary = [[NSUserDefaults standardUserDefaults] dictionaryRepresentation];
+    
+    for (NSString *key in defaultsDictionary) {
         // The key should be in the format SiteSpecific:www.domain.com:PreferenceKey
-        components = [key componentsSeparatedByString:@":"];
-        componentCount = [components count];
+        NSArray *components = [key componentsSeparatedByString:@":"];
+        NSUInteger componentCount = [components count];
         if (componentCount < 3)
             continue; // Three colon-delimited components is the minimum.  There can be more in the case where the customized page had no domain, and so the full URL was used instead
 
         if (![[components objectAtIndex:0] isEqualToString:@"SiteSpecific"])
             continue;
 
+        NSString *domain;
+        NSString *defaultKey;
         if (componentCount == 3) {
             domain = [components objectAtIndex:1];
             defaultKey = [components objectAtIndex:2];
@@ -148,7 +137,7 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
     NSString *domain;
     NSDictionary *preferenceCache;
     NSArray *allValues;
-    unsigned int valueCount, valueIndex;
+    NSUInteger valueCount, valueIndex;
     
     domain = [self domainForAddress:address];
     if (domain == nil) {
@@ -185,9 +174,11 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
 
 + (void)resetPreferencesForDomain:(NSString *)domain;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     NSDictionary *preferenceCache;
     NSArray *allValues;
-    unsigned int valueCount, valueIndex;
+    NSUInteger valueCount, valueIndex;
 
     if (domain == nil)
         return;
@@ -208,6 +199,7 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
     [domainLock lock];
     [domainCache removeObjectForKey:domain];
     [domainLock unlock];
+#endif
 }
 
 // Init and dealloc
@@ -253,9 +245,9 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
     return [[self _preferenceForReading] objectValue];
 }
 
-- (void)setObjectValue:(id)objectValue;
+- (void)setObjectValue:(id)value;
 {
-    [[self _preferenceForWriting] setObjectValue:objectValue];
+    [[self _preferenceForWriting] setObjectValue:value];
 }
 
 - (NSString *)stringValue;
@@ -263,9 +255,9 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
     return [[self _preferenceForReading] stringValue];
 }
 
-- (void)setStringValue:(NSString *)stringValue;
+- (void)setStringValue:(NSString *)value;
 {
-    [[self _preferenceForWriting] setStringValue:stringValue];
+    [[self _preferenceForWriting] setStringValue:value];
 }
 
 - (BOOL)boolValue;
@@ -273,19 +265,29 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
     return [[self _preferenceForReading] boolValue];
 }
 
-- (void)setBoolValue:(BOOL)boolValue;
+- (void)setBoolValue:(BOOL)value;
 {
-    [[self _preferenceForWriting] setBoolValue:boolValue];
+    [[self _preferenceForWriting] setBoolValue:value];
 }
 
-- (int)integerValue;
+- (int)intValue;
+{
+    return [[self _preferenceForReading] intValue];
+}
+
+- (void)setIntValue:(int)intValue;
+{
+    [[self _preferenceForWriting] setIntValue:intValue];
+}
+
+- (NSInteger)integerValue;
 {
     return [[self _preferenceForReading] integerValue];
 }
 
-- (void)setIntegerValue:(int)integerValue;
+- (void)setIntegerValue:(NSInteger)value;
 {
-    [[self _preferenceForWriting] setIntegerValue:integerValue];
+    [[self _preferenceForWriting] setIntegerValue:value];
 }
 
 - (float)floatValue;
@@ -293,9 +295,19 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
     return [[self _preferenceForReading] floatValue];
 }
 
-- (void)setFloatValue:(float)floatValue;
+- (void)setFloatValue:(float)value;
 {
-    [[self _preferenceForWriting] setFloatValue:floatValue];
+    [[self _preferenceForWriting] setFloatValue:value];
+}
+
+- (double)doubleValue;
+{
+    return [[self _preferenceForReading] doubleValue];
+}
+
+- (void)setDoubleValue:(double)value;
+{
+    [[self _preferenceForWriting] setDoubleValue:value];
 }
 
 @end
@@ -309,7 +321,7 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
 
     preferenceCache = [domainCache objectForKey:domain];
     if (preferenceCache == nil) {
-        preferenceCache = [[NSMutableDictionary alloc] init];
+        preferenceCache = [NSMutableDictionary dictionary];
         [domainCache setObject:preferenceCache forKey:domain];
     }
     

@@ -1,4 +1,4 @@
-// Copyright 1999-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,17 +20,6 @@ static NSMutableDictionary *cachedBundlesForClasses = nil;
 static NSLock *cachedBundlesForClassesLock = nil;
 
 static IMP original_bundleWithIdentifier = NULL;
-
-+ (void) performPosing;
-{
-    cachedBundlesForClasses = [[NSMutableDictionary alloc] init];
-    cachedBundlesForClassesLock = [[NSLock alloc] init];
-    oldBundleForClass = OBReplaceMethodImplementationWithSelector(((Class)self)->isa /* we're replacing a class method */, @selector(bundleForClass:), @selector(replacement_bundleForClass:));
-    OBPOSTCONDITION(oldBundleForClass != NULL);
-    
-    original_bundleWithIdentifier = OBReplaceMethodImplementationWithSelector(((Class)self)->isa /* we're replacing a class method */, @selector(bundleWithIdentifier:), @selector(replacement_bundleWithIdentifier:));
-    OBPOSTCONDITION(original_bundleWithIdentifier != NULL);
-}
 
 // In 10.0.4, +bundleForClass: accesses the filesystem every time you call it, so we're now caching the results
 // TJW: Retested on 10.2.6 and 10.3 7A179 (from WWDC2003).  This is still a problem: It seems they've added a single-entry cache, but if you repeatedly pass classes from different bundles, you'll get repeated stat/access calls for those bundles.
@@ -84,6 +73,17 @@ static IMP original_bundleWithIdentifier = NULL;
 	return mainBundle;
     
     return nil;
+}
+
++ (void) performPosing;
+{
+    cachedBundlesForClasses = [[NSMutableDictionary alloc] init];
+    cachedBundlesForClassesLock = [[NSLock alloc] init];
+    oldBundleForClass = OBReplaceMethodImplementationWithSelector(((Class)self)->isa /* we're replacing a class method */, @selector(bundleForClass:), @selector(replacement_bundleForClass:));
+    OBPOSTCONDITION(oldBundleForClass != NULL);
+    
+    original_bundleWithIdentifier = OBReplaceMethodImplementationWithSelector(((Class)self)->isa /* we're replacing a class method */, @selector(bundleWithIdentifier:), @selector(replacement_bundleWithIdentifier:));
+    OBPOSTCONDITION(original_bundleWithIdentifier != NULL);
 }
 
 @end

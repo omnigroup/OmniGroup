@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,10 +12,11 @@
 
 @class ODOEntity, ODOObject;
 
-#define ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH (28)
+#define ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH (27)
 struct _ODOPropertyFlags {
     unsigned int optional : 1;
     unsigned int transient : 1;
+    unsigned int calculated : 1;
     unsigned int relationship : 1;
     unsigned int toMany : 1;
     unsigned int snapshotIndex : ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH;
@@ -45,26 +46,13 @@ typedef void (*ODOPropertySetter)(ODOObject *self, SEL _cmd, id value);
     struct _ODOPropertyFlags _flags;
 }
 
-- (ODOEntity *)entity;
-- (NSString *)name;
+@property(readonly) ODOEntity *entity;
+@property(readonly) NSString *name;
 
-- (BOOL)isOptional;
-- (BOOL)isTransient;
+@property(readonly) BOOL isOptional;
+@property(readonly) BOOL isTransient;
+@property(readonly) BOOL isCalculated;
 
 - (NSComparisonResult)compareByName:(ODOProperty *)prop;
 
 @end
-
-static inline struct _ODOPropertyFlags ODOPropertyFlags(ODOProperty *property)
-{
-    OBPRECONDITION([property isKindOfClass:[ODOProperty class]]);
-    return property->_flags;
-}
-
-
-static inline NSString *ODOPropertyName(ODOProperty *prop)
-{
-    OBPRECONDITION([prop isKindOfClass:[ODOProperty class]]);
-    return prop->_name;
-}
-

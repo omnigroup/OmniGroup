@@ -24,8 +24,6 @@ static BOOL OSUDebugDownload = NO;
 
 // Preferences not manipulated through the preferences UI
 #define UpgradeShowsOptionsPreferenceKey (@"OSUUpgradeShowsOptions")
-#define UpgradeKeepsExistingVersionPreferenceKey (@"OSUUpgradeArchivesExistingVersion")
-#define UpgradeKeepsPackagePreferenceKey (@"OSUUpgradeKeepsDiskImage")
 
 #define DEBUG_DOWNLOAD(format, ...) \
 do { \
@@ -90,24 +88,6 @@ static OSUDownloadController *CurrentDownloadController = nil;
     _showCautionText = NO;
     
     [self setInstallationDirectory:[OSUInstaller suggestAnotherInstallationDirectory:nil trySelf:YES]];
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if (![[[NSBundle mainBundle] bundlePath] hasPrefix:_installationDirectory] &&
-        ![defaults boolForKey:UpgradeKeepsExistingVersionPreferenceKey]) {
-        
-        // If we can't install over our current location, we probably can't delete the old copy either, so don't try.
-        // We set "archives" to "yes" because "no" means "delete"
-        // We really should have a better name for this flag (or maybe make it multivalued: leave alone, move to trash, move aside, make a zip file)
-        
-        // To avoid setting the preference for future sessions as well, put it in a new volatile domain
-        // Also, it's probably an undesirable side effect that this sets the default for future updates as well as preventing us from trying to delete the old version on this update as well
-        
-        NSDictionary *cmdline = [defaults volatileDomainForName:NSArgumentDomain];
-        cmdline = cmdline? [cmdline dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:UpgradeKeepsExistingVersionPreferenceKey] : [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:UpgradeKeepsExistingVersionPreferenceKey];
-        [defaults setVolatileDomain:cmdline forName:NSArgumentDomain];
-        
-        OBASSERT([defaults boolForKey:UpgradeKeepsExistingVersionPreferenceKey]);
-    }
     
     [self showWindow:nil];
     
@@ -227,8 +207,8 @@ static OSUDownloadController *CurrentDownloadController = nil;
     
     // The code below will eventually call the normal NSApp termination logic (which the app can use to close files and such).
     OSUInstaller *installer = [[OSUInstaller alloc] initWithPackagePath:_destinationFile];
-    installer.archiveExistingVersion = [defaults boolForKey:UpgradeKeepsExistingVersionPreferenceKey];
-    installer.deletePackageOnSuccess = ![defaults boolForKey:UpgradeKeepsPackagePreferenceKey];
+    installer.archiveExistingVersion = [defaults boolForKey:@"OSUUpgradeArchivesExistingVersion"];
+    installer.deletePackageOnSuccess = ![defaults boolForKey:@"OSUUpgradeKeepsDiskImage"];
     [installer setInstalledVersion:[[[NSBundle mainBundle] bundlePath] stringByExpandingTildeInPath]];
     if (_installationDirectory)
         installer.installationDirectory = _installationDirectory;
@@ -531,30 +511,6 @@ static OSUDownloadController *CurrentDownloadController = nil;
     
     [_destinationFile autorelease];
     _destinationFile = [path copy];
-    
-    // Quarantine the file. Later, after we verify its checksum, we can remove the quarantine.
-    NSError *qError = nil;
-    NSFileManager *fm = [NSFileManager defaultManager];
-    if ([fm quarantinePropertiesForItemAtPath:path error:&qError] != nil) {
-        // It already has a quarantine (presumably we're running with LSFileQuarantineEnabled in our Info.plist)
-        // And apparently it's not possible to change the paramneters of an existing quarantine event
-        // So just assume that NSURLDownload did something that was good enough
-    } else {
-        if ( !([[qError domain] isEqualToString:NSOSStatusErrorDomain] && [qError code] == unimpErr) ) {
-            
-            NSMutableDictionary *qua = [NSMutableDictionary dictionary];
-            [qua setObject:(id)kLSQuarantineTypeOtherDownload forKey:(id)kLSQuarantineTypeKey];
-            [qua setObject:[[download request] URL] forKey:(id)kLSQuarantineDataURLKey];
-            NSString *fromWhere = [_item sourceLocation];
-            if (fromWhere) {
-                NSURL *parsed = [NSURL URLWithString:fromWhere];
-                if (parsed)
-                    [qua setObject:parsed forKey:(id)kLSQuarantineOriginURLKey];
-            }
-            
-            [fm setQuarantineProperties:qua forItemAtPath:path error:NULL];
-        }
-    }
 }
 
 - (void)downloadDidFinish:(NSURLDownload *)download;
@@ -691,11 +647,11 @@ static OSUDownloadController *CurrentDownloadController = nil;
         } else {
             [_installWarningView setFrameSize:(NSSize){
                 .width = originalWarningViewSize.width,
-                .height = ceilf(originalWarningViewSize.height + textSize.height - originalWarningTextHeight)
+                .height = ceil(originalWarningViewSize.height + textSize.height - originalWarningTextHeight)
             }];
             textFrame.size.height = textSize.height;
         }
-        textFrame.origin.y = ceilf(NSMaxY([_installWarningView bounds]) - warningTextTopMargin - textFrame.size.height);
+        textFrame.origin.y = ceil(NSMaxY([_installWarningView bounds]) - warningTextTopMargin - textFrame.size.height);
         [_installViewCautionText setFrame:textFrame];
         [_installViewCautionText setNeedsDisplay:YES];
         [_installWarningView setNeedsDisplay:YES];
@@ -737,7 +693,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
     // NSWindow screen coordinates are in a Y-increases-upwards orientation.
     windowFrame.origin.y += ( NSMaxY(oldFrame) - NSMaxY(windowFrame) );
     // If moving horizontally, let's see if keeping a point 1/3 from the left looks good.
-    windowFrame.origin.x = oldFrame.origin.x + (oldFrame.size.width - windowFrame.size.width)/3;
+    windowFrame.origin.x = (CGFloat)(oldFrame.origin.x + (1./3.) * (oldFrame.size.width - windowFrame.size.width));
     
     windowFrame = NSIntegralRect(windowFrame);
     NSScreen *windowScreen = [window screen];

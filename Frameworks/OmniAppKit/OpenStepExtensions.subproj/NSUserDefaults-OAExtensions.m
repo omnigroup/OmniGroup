@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@
 #import <AppKit/NSFontDescriptor.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
+#import <OmniAppKit/NSColor-OAExtensions.h>
 
 #include <inttypes.h>
 
@@ -19,7 +20,7 @@ RCS_ID("$Id$")
 
 static NSColor *nsColorFromRGBAString(NSString *value)
 {
-    CGFloat r = 0.0, g = 0.0, b = 0.0, a = 1.0;
+    CGFloat r = 0.0f, g = 0.0f, b = 0.0f, a = 1.0f;
     
     if ([NSString isEmptyString:value])
         return nil;
@@ -28,7 +29,7 @@ static NSColor *nsColorFromRGBAString(NSString *value)
     if (components != 3 && components != 4)
         return nil;
 
-    return [NSColor colorWithCalibratedRed:r green:g blue:b alpha:a];
+    return OARGBA(r, g, b, a);
 }
 
 static NSString *rgbaStringFromNSColor(NSColor *color)
@@ -52,7 +53,7 @@ static NSString *rgbaStringFromNSColor(NSColor *color)
 
 - (NSColor *)grayForKey:(NSString *)defaultName;
 {
-    return [NSColor colorWithCalibratedWhite:[self floatForKey:defaultName] alpha:1.0];
+    return [NSColor colorWithCalibratedWhite:[self floatForKey:defaultName] alpha:1.0f];
 }
 
 - (void)setColor:(NSColor *)color forKey:(NSString *)defaultName;
@@ -69,7 +70,9 @@ static NSString *rgbaStringFromNSColor(NSColor *color)
     CGFloat grayFloat;
 
     [[gray colorUsingColorSpaceName:NSCalibratedWhiteColorSpace] getWhite:&grayFloat alpha:NULL];
-    [self setFloat:grayFloat forKey:defaultName];
+    NSNumber *grayNumber = [[NSNumber alloc] initWithCGFloat:grayFloat];
+    [self setObject:grayNumber forKey:defaultName];
+    [grayNumber release];
 }
 
 @end
@@ -114,7 +117,7 @@ static NSString *rgbaStringFromNSColor(NSColor *color)
 
 - (NSColor *)grayForKey:(NSString *)defaultName;
 {
-    return [NSColor colorWithCalibratedWhite:[self floatForKey:defaultName] alpha:1.0];
+    return [NSColor colorWithCalibratedWhite:[self floatForKey:defaultName] alpha:1.0f];
 }
 
 - (void)setColor:(NSColor *)color forKey:(NSString *)defaultName;
@@ -131,7 +134,9 @@ static NSString *rgbaStringFromNSColor(NSColor *color)
     CGFloat grayFloat;
 
     [[gray colorUsingColorSpaceName:NSCalibratedWhiteColorSpace] getWhite:&grayFloat alpha:NULL];
-    [self setFloat:grayFloat forKey:defaultName];
+    NSNumber *grayNumber = [[NSNumber alloc] initWithCGFloat:grayFloat];
+    [self setObject:grayNumber forKey:defaultName];
+    [grayNumber release];
 }
 
 @end

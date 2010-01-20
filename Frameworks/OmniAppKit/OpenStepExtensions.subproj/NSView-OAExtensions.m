@@ -1,4 +1,4 @@
-// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,16 +26,16 @@ RCS_ID("$Id$")
 - (NSPoint)floorSnappedPoint:(NSPoint)point;
 {
     point = [self convertPointToBase:point];
-    point.x = floor(point.x);
-    point.y = floor(point.y);
+    point.x = (CGFloat)floor(point.x);
+    point.y = (CGFloat)floor(point.y);
     return [self convertPointFromBase:point];
 }
 
 - (NSSize)floorSnappedSize:(NSSize)size;
 {
     size = [self convertSizeToBase:size];
-    size.width = floor(size.width);
-    size.height = floor(size.height);
+    size.width = (CGFloat)floor(size.width);
+    size.height = (CGFloat)floor(size.height);
     return [self convertSizeFromBase:size];
 }
 
@@ -45,11 +45,11 @@ RCS_ID("$Id$")
     rect = [self convertRectToBase:rect];
     NSPoint extent = NSMakePoint(NSMaxX(rect), NSMaxY(rect));
     
-    rect.origin.x = floor(rect.origin.x);
-    rect.origin.y = floor(rect.origin.y);
+    rect.origin.x = (CGFloat)floor(rect.origin.x);
+    rect.origin.y = (CGFloat)floor(rect.origin.y);
     
-    extent.x = floor(extent.x);
-    extent.y = floor(extent.y);
+    extent.x = (CGFloat)floor(extent.x);
+    extent.y = (CGFloat)floor(extent.y);
     
     rect.size.width = extent.x - rect.origin.x;
     rect.size.height = extent.y - rect.origin.y;
@@ -59,7 +59,7 @@ RCS_ID("$Id$")
 
 // Drawing
 
-+ (void)drawRoundedRect:(NSRect)rect cornerRadius:(float)radius color:(NSColor *)color isFilled:(BOOL)isFilled;
++ (void)drawRoundedRect:(NSRect)rect cornerRadius:(CGFloat)radius color:(NSColor *)color isFilled:(BOOL)isFilled;
 {
     CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
     [color set];
@@ -82,51 +82,33 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)drawRoundedRect:(NSRect)rect cornerRadius:(float)radius color:(NSColor *)color;
+- (void)drawRoundedRect:(NSRect)rect cornerRadius:(CGFloat)radius color:(NSColor *)color;
 {
     [isa drawRoundedRect:rect cornerRadius:radius color:color isFilled:YES];
 }
 
 - (void)drawHorizontalSelectionInRect:(NSRect)rect;
 {
-    double height;
+    CGFloat height;
     
     [[NSColor selectedControlColor] set];
     NSRectFill(rect);
 
     [[NSColor controlShadowColor] set];
     height = NSHeight(rect);
-    rect.size.height = 1.0;
+    rect.size.height = 1.0f;
     NSRectFill(rect);
     rect.origin.y += height;
     NSRectFill(rect);
 }
-
-#if 0  // Obsolete & unused
-- (void) drawSelfAndSubviewsInRect: (NSRect) rect;
-{
-    [self drawRect: rect];
-    for(NSView *subview in [self subviews]) {
-        NSRect subviewRect;
-        
-        subviewRect = [self convertRect: rect toView: subview];
-        subviewRect = NSIntersectionRect(subviewRect, [subview bounds]);
-        if (NSWidth(subviewRect) > 0.0) {
-            [subview lockFocus];
-            [subview drawSelfAndSubviewsInRect: subviewRect];
-            [subview unlockFocus];
-        }
-    }
-}
-#endif
 
 
 // Scrolling
 
 typedef struct {
     NSView *view;
-    float x;
-    float y;
+    CGFloat x;
+    CGFloat y;
 } OADeferredScrollEntry;
 
 static OADeferredScrollEntry *scrollEntries;
@@ -153,13 +135,13 @@ static unsigned int scrollEntriesCount = 0;
     }
     deferredScrollEntry = scrollEntries + scrollEntriesCount;
     deferredScrollEntry->view = [self retain];
-    deferredScrollEntry->x = 0.0;
-    deferredScrollEntry->y = 0.0;
+    deferredScrollEntry->x = 0.0f;
+    deferredScrollEntry->y = 0.0f;
     scrollEntriesCount++;
     return deferredScrollEntry;
 }
 
-- (void)_scrollByAdjustedPixelsDown:(float)downPixels right:(float)rightPixels;
+- (void)_scrollByAdjustedPixelsDown:(CGFloat)downPixels right:(CGFloat)rightPixels;
 {
     NSRect visibleRect;
 
@@ -186,7 +168,7 @@ static unsigned int scrollEntriesCount = 0;
     deferredScrollEntry = scrollEntries + scrollEntriesCount;
     while (deferredScrollEntry-- > scrollEntries) {
         NSView *view;
-        float x, y;
+        CGFloat x, y;
 
         view = deferredScrollEntry->view;
         x = deferredScrollEntry->x;
@@ -198,7 +180,7 @@ static unsigned int scrollEntriesCount = 0;
     scrollEntriesCount = 0;
 }
 
-- (void)scrollDownByAdjustedPixels:(float)pixels;
+- (void)scrollDownByAdjustedPixels:(CGFloat)pixels;
 {
     OADeferredScrollEntry *deferredScrollEntry;
 
@@ -214,7 +196,7 @@ static unsigned int scrollEntriesCount = 0;
     [isa queueSelectorOnce:@selector(performDeferredScrolling)];
 }
 
-- (void)scrollRightByAdjustedPixels:(float)pixels;
+- (void)scrollRightByAdjustedPixels:(CGFloat)pixels;
 {
     OADeferredScrollEntry *deferredScrollEntry;
 
@@ -232,56 +214,50 @@ static unsigned int scrollEntriesCount = 0;
 
 - (void)scrollToTop;
 {
-    [self setFraction:0.0];
+    [self setFraction:0.0f];
 }
 
 - (void)scrollToEnd;
 {
-    [self setFraction:1.0];
+    [self setFraction:1.0f];
 }
 
-- (void)scrollDownByPages:(float)pagesToScroll;
+- (void)scrollDownByPages:(CGFloat)pagesToScroll;
 {
-    float pageScrollAmount;
-    
-    pageScrollAmount = NSHeight([self visibleRect]) - [[self enclosingScrollView] verticalPageScroll];
-    if (pageScrollAmount < 1.0)
-        pageScrollAmount = 1.0;
+    CGFloat pageScrollAmount = NSHeight([self visibleRect]) - [[self enclosingScrollView] verticalPageScroll];
+    if (pageScrollAmount < 1.0f)
+        pageScrollAmount = 1.0f;
     [self scrollDownByAdjustedPixels:pagesToScroll * pageScrollAmount];
 }
 
-- (void)scrollDownByLines:(float)linesToScroll;
+- (void)scrollDownByLines:(CGFloat)linesToScroll;
 {
-    float lineScrollAmount;
-    
-    lineScrollAmount = [[self enclosingScrollView] verticalLineScroll];
+    CGFloat lineScrollAmount = [[self enclosingScrollView] verticalLineScroll];
     [self scrollDownByAdjustedPixels:linesToScroll * lineScrollAmount];
 }
 
-- (void)scrollDownByPercentage:(float)percentage;
+- (void)scrollDownByPercentage:(CGFloat)percentage;
 {
     [self scrollDownByAdjustedPixels:percentage * NSHeight([self visibleRect])];
 }
 
-- (void)scrollRightByPages:(float)pagesToScroll;
+- (void)scrollRightByPages:(CGFloat)pagesToScroll;
 {
-    float pageScrollAmount;
+    CGFloat pageScrollAmount;
     
     pageScrollAmount = NSWidth([self visibleRect]) - [[self enclosingScrollView] horizontalPageScroll];
-    if (pageScrollAmount < 1.0)
-        pageScrollAmount = 1.0;
+    if (pageScrollAmount < 1.0f)
+        pageScrollAmount = 1.0f;
     [self scrollRightByAdjustedPixels:pagesToScroll * pageScrollAmount];
 }
 
-- (void)scrollRightByLines:(float)linesToScroll;
+- (void)scrollRightByLines:(CGFloat)linesToScroll;
 {
-    float lineScrollAmount;
-    
-    lineScrollAmount = [[self enclosingScrollView] horizontalLineScroll];
+    CGFloat lineScrollAmount = [[self enclosingScrollView] horizontalLineScroll];
     [self scrollRightByAdjustedPixels:linesToScroll * lineScrollAmount];
 }
 
-- (void)scrollRightByPercentage:(float)percentage;
+- (void)scrollRightByPercentage:(CGFloat)percentage;
 {
     [self scrollRightByAdjustedPixels:percentage * NSHeight([self visibleRect])];
 }
@@ -342,7 +318,7 @@ static unsigned int scrollEntriesCount = 0;
         scrollPosition.y = MIN(MAX(scrollPosition.y, 0.0f), 1.0f);
         if (![self isFlipped])
             scrollPosition.y = 1.0f - scrollPosition.y;
-        desiredRect.origin.y = rintf(NSMinY(bounds) + scrollPosition.y * (NSHeight(bounds) - NSHeight(desiredRect)));
+        desiredRect.origin.y = (CGFloat)rint(NSMinY(bounds) + scrollPosition.y * (NSHeight(bounds) - NSHeight(desiredRect)));
         if (NSMinY(desiredRect) < NSMinY(bounds))
             desiredRect.origin.y = NSMinY(bounds);
         else if (NSMaxY(desiredRect) > NSMaxY(bounds))
@@ -352,7 +328,7 @@ static unsigned int scrollEntriesCount = 0;
     // Horizontal position
     if (NSWidth(desiredRect) < NSWidth(bounds)) {
         scrollPosition.x = MIN(MAX(scrollPosition.x, 0.0f), 1.0f);
-        desiredRect.origin.x = rintf(NSMinX(bounds) + scrollPosition.x * (NSWidth(bounds) - NSWidth(desiredRect)));
+        desiredRect.origin.x = (CGFloat)rint(NSMinX(bounds) + scrollPosition.x * (NSWidth(bounds) - NSWidth(desiredRect)));
         if (NSMinX(desiredRect) < NSMinX(bounds))
             desiredRect.origin.x = NSMinX(bounds);
         else if (NSMaxX(desiredRect) > NSMaxX(bounds))
@@ -363,33 +339,29 @@ static unsigned int scrollEntriesCount = 0;
 }
 
 
-- (float)fraction;
+- (CGFloat)fraction;
 {
-    NSRect bounds, visibleRect;
-    float fraction;
-
-    bounds = [self bounds];
-    visibleRect = [self visibleRect];
+    NSRect bounds = [self bounds];
+    NSRect visibleRect = [self visibleRect];
     if (NSHeight(visibleRect) >= NSHeight(bounds))
-        return 0.0; // We're completely visible
-    fraction = (NSMinY(visibleRect) - NSMinY(bounds)) / (NSHeight(bounds) - NSHeight(visibleRect));
+        return 0.0f; // We're completely visible
+    
+    CGFloat fraction = (NSMinY(visibleRect) - NSMinY(bounds)) / (NSHeight(bounds) - NSHeight(visibleRect));
     if (![self isFlipped])
-        fraction = 1.0 - fraction;
-    return MIN(MAX(fraction, 0.0), 1.0);
+        fraction = 1.0f - fraction;
+    return MIN(MAX(fraction, 0.0f), 1.0f);
 }
 
-- (void)setFraction:(float)fraction;
+- (void)setFraction:(CGFloat)fraction;
 {
-    NSRect bounds, desiredRect;
-
-    bounds = [self bounds];
-    desiredRect = [self visibleRect];
+    NSRect bounds = [self bounds];
+    NSRect desiredRect = [self visibleRect];
     if (NSHeight(desiredRect) >= NSHeight(bounds))
         return; // We're entirely visible
 
-    fraction = MIN(MAX(fraction, 0.0), 1.0);
+    fraction = MIN(MAX(fraction, 0.0f), 1.0f);
     if (![self isFlipped])
-        fraction = 1.0 - fraction;
+        fraction = 1.0f - fraction;
     desiredRect.origin.y = NSMinY(bounds) + fraction * (NSHeight(bounds) - NSHeight(desiredRect));
     if (NSMinY(desiredRect) < NSMinY(bounds))
         desiredRect.origin.y = NSMinY(bounds);
@@ -405,10 +377,8 @@ static unsigned int scrollEntriesCount = 0;
     if ([self isKindOfClass:cls])
         return self;
     
-    NSArray *subviews = [self subviews];
-    unsigned int subviewIndex = [subviews count];
-    while (subviewIndex--) {
-        NSView *found = [[subviews objectAtIndex:subviewIndex] anyViewOfClass:cls];
+    for (NSView *view in [self subviews]) {
+        NSView *found = [view anyViewOfClass:cls];
         if (found)
             return found;
     }
@@ -445,9 +415,21 @@ static unsigned int scrollEntriesCount = 0;
     }
 }
 
+- (NSView *)subviewContainingView:(NSView *)subSubView;
+{
+    for (;;) {
+        NSView *ssParent = [subSubView superview];
+        if (ssParent == self)
+            return subSubView;
+        if (ssParent == nil)
+            return nil;
+        subSubView = ssParent;
+    }
+}
+
 // Dragging
 
-- (BOOL)shouldStartDragFromMouseDownEvent:(NSEvent *)event dragSlop:(float)dragSlop finalEvent:(NSEvent **)finalEventPointer timeoutDate:(NSDate *)timeoutDate;
+- (BOOL)shouldStartDragFromMouseDownEvent:(NSEvent *)event dragSlop:(CGFloat)dragSlop finalEvent:(NSEvent **)finalEventPointer timeoutDate:(NSDate *)timeoutDate;
 {
     NSEvent *currentEvent;
     NSPoint eventLocation;
@@ -462,7 +444,7 @@ static unsigned int scrollEntriesCount = 0;
     }
 
     eventLocation = [event locationInWindow];
-    slopRect = NSInsetRect(NSMakeRect(eventLocation.x, eventLocation.y, 0.0, 0.0), -dragSlop, -dragSlop);
+    slopRect = NSInsetRect(NSMakeRect(eventLocation.x, eventLocation.y, 0.0f, 0.0f), -dragSlop, -dragSlop);
 
     while (1) {
         NSEvent *nextEvent;
@@ -480,12 +462,12 @@ static unsigned int scrollEntriesCount = 0;
     }
 }
 
-- (BOOL)shouldStartDragFromMouseDownEvent:(NSEvent *)event dragSlop:(float)dragSlop finalEvent:(NSEvent **)finalEventPointer timeoutInterval:(NSTimeInterval)timeoutInterval;
+- (BOOL)shouldStartDragFromMouseDownEvent:(NSEvent *)event dragSlop:(CGFloat)dragSlop finalEvent:(NSEvent **)finalEventPointer timeoutInterval:(NSTimeInterval)timeoutInterval;
 {
     return [self shouldStartDragFromMouseDownEvent:event dragSlop:dragSlop finalEvent:finalEventPointer timeoutDate:[NSDate dateWithTimeIntervalSinceNow:timeoutInterval]];
 }
 
-- (BOOL)shouldStartDragFromMouseDownEvent:(NSEvent *)event dragSlop:(float)dragSlop finalEvent:(NSEvent **)finalEventPointer;
+- (BOOL)shouldStartDragFromMouseDownEvent:(NSEvent *)event dragSlop:(CGFloat)dragSlop finalEvent:(NSEvent **)finalEventPointer;
 {
     return [self shouldStartDragFromMouseDownEvent:event dragSlop:dragSlop finalEvent:finalEventPointer timeoutDate:[NSDate distantFuture]];
 }
@@ -573,7 +555,7 @@ static inline NSAffineTransformStruct computeTransformFromExamples(NSPoint origi
         CGFloat w = [[newContent objectAtIndex:contentIndex] frame].size.width;
         maxWidth = MAX(maxWidth, w);
     }
-    maxWidth = ceil(maxWidth);
+    maxWidth = (CGFloat)ceil(maxWidth);
     
     // Compute locations for all the new content within _bottomView
     // Starting at the top (y=0, since it's flipped) and working downwards
@@ -632,7 +614,7 @@ unsigned int NSViewMaxDebugDepth = 10;
     return debugDictionary;
 }
 
-- (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(unsigned int)level;
+- (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level;
 {
     if (level < NSViewMaxDebugDepth)
         return [[self debugDictionary] descriptionWithLocale:locale indent:level];
@@ -652,18 +634,12 @@ unsigned int NSViewMaxDebugDepth = 10;
 
 - (void)logViewHierarchy:(int)level;
 {
-    NSArray *subviews;
-    int count, index;
-
-    subviews = [self subviews];
-    count = [subviews count];
-
-    NSLog(@"%@<%@: %p> frame: %@, bounds: %@, %d children:",
+    NSLog(@"%@<%@: %p> frame: %@, bounds: %@ children:",
           [NSString spacesOfLength:level * 2], NSStringFromClass([self class]), self,
-          NSStringFromRect([self frame]), NSStringFromRect([self bounds]), count);
+          NSStringFromRect([self frame]), NSStringFromRect([self bounds]));
 
-    for (index = 0; index < count; index++)
-        [(NSView *)[subviews objectAtIndex:index] logViewHierarchy:level + 1];
+    for (NSView *view in [self subviews])
+        [view logViewHierarchy:level + 1];
 }
 
 - (void)logViewHierarchy;

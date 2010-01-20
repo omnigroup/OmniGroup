@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,12 +14,12 @@
 #define OFStringStartLoopThroughCharacters(string, ch)			\
 {									\
     unichar characterBuffer[OF_CHARACTER_BUFFER_SIZE];			\
-    unsigned int charactersProcessed, length;				\
+    NSUInteger charactersProcessed, length;				\
 									\
     charactersProcessed = 0;						\
     length = [string length];						\
     while (charactersProcessed < length) {				\
-        unsigned int charactersInThisBuffer;				\
+        NSUInteger charactersInThisBuffer;				\
         unichar *input;							\
 									\
         charactersInThisBuffer = MIN(length - charactersProcessed, OF_CHARACTER_BUFFER_SIZE); \

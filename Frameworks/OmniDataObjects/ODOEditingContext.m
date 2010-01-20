@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,13 +12,16 @@
 #import <OmniDataObjects/ODOObjectID.h>
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
+#import <OmniDataObjects/ODOModel.h>
 
 #import "ODOProperty-Internal.h"
 #import "ODOEditingContext-Internal.h"
+#import "ODOObject-Accessors.h"
 #import "ODOObject-Internal.h"
 #import "ODODatabase-Internal.h"
 #import "ODOEntity-SQL.h"
 #import "ODOSQLStatement.h"
+#import "ODOInternal.h"
 
 #if TARGET_OS_IPHONE
 #import <objc/message.h>
@@ -27,11 +30,12 @@
 #if ODO_SUPPORT_UNDO
 #import <Foundation/NSUndoManager.h>
 #endif
+#import <Foundation/FoundationErrors.h>
 
 #if 0 && defined(DEBUG)
     #define DEBUG_DELETE(format, ...) NSLog((format), ## __VA_ARGS__)
 #else
-    #define DEBUG_DELETE(format, ...)
+    #define DEBUG_DELETE(format, ...) do {} while (0)
 #endif
 
 #import <sqlite3.h>
@@ -223,8 +227,33 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
 - (void)insertObject:(ODOObject *)object;
 {
     OBINVARIANT([self _checkInvariants]);
-    ODOEditingContextInternalInsertObject(self, object);
-    [object awakeFromInsert];
+    
+    // If we want an undeletable object, we need to make sure it can't be deleted via undo of this insert
+    BOOL undeletable = _ODOObjectIsUndeletable(object);
+    if (undeletable) {
+        // Close out this undo group
+        while ([self hasUnprocessedChanges])
+            [self processPendingChanges];
+        
+        // Disable undo
+        [_undoManager disableUndoRegistration];
+    }
+    
+    @try {
+        ODOEditingContextInternalInsertObject(self, object);
+        [object awakeFromInsert];
+        
+        // If this was to be undeletable, make sure it gets processed while undo is off
+        if (undeletable) {
+            while (_recentlyInsertedObjects || _recentlyUpdatedObjects || _recentlyDeletedObjects)
+                [self processPendingChanges];
+        }
+        
+    } @finally {
+        if (undeletable)
+            [_undoManager enableUndoRegistration];
+    }
+    
     OBINVARIANT([self _checkInvariants]);
 }
 
@@ -276,11 +305,115 @@ typedef struct {
     NSMutableDictionary *denyObjectIDToReferer;
 } TraceForDeletionContext;
 
-static void _traceForDeletion(const void *value, void *context)
+static void _traceForDeletion(ODOObject *object, TraceForDeletionContext *ctx);
+
+static void _traceToManyRelationship(ODOObject *object, ODORelationship *rel, TraceForDeletionContext *ctx)
 {
-    ODOObject *object = (ODOObject *)value;
-    TraceForDeletionContext *ctx = (TraceForDeletionContext *)context;
+    OBPRECONDITION(rel.isToMany);
     
+    // This is what to do to the *destination* of the relationship
+    ODORelationshipDeleteRule rule = [rel deleteRule];
+
+    ODORelationship *inverseRel = [rel inverseRelationship];
+    NSString *forwardKey = [rel name];
+    NSString *inverseKey = [inverseRel name];
+
+    if (rule == ODORelationshipDeleteRuleDeny) {
+        OBASSERT([inverseRel isToMany] == NO); // We don't allow many-to-many relationships in the model loading code
+        OBRequestConcreteImplementation(object, @selector(_traceToManyRelationship)); // Handle once we have a test case
+    }
+
+    BOOL alsoCascade;
+    if (rule == ODORelationshipDeleteRuleNullify) {
+        alsoCascade = NO;
+    } else if (rule == ODORelationshipDeleteRuleCascade) {
+        alsoCascade = YES;
+    } else {
+        OBRequestConcreteImplementation(object, @selector(_traceToManyRelationship)); // unknown delete rule
+    }
+    
+    // Nullify all the inverse to-ones.
+    OBASSERT(inverseRel.isToMany == NO); // We don't allow many-to-many relationships in the model loading code
+    OBASSERT(inverseRel.isCalculated == NO); // since the to-many is effectively calculated from the to-one, this would be silly.
+
+    NSSet *targets = [object valueForKey:forwardKey];
+    OBASSERT([targets isKindOfClass:[NSSet class]]);
+    
+    for (ODOObject *target in targets) {
+        if (!inverseRel.isCalculated)
+            _addNullify(target, inverseKey, ctx->relationshipsToNullifyByObjectID);
+        if (alsoCascade && !_ODOObjectIsUndeletable(target))
+            _traceForDeletion(target, ctx);
+    }
+}
+
+static void _traceToOneRelationship(ODOObject *object, ODORelationship *rel, TraceForDeletionContext *ctx)
+{
+    OBPRECONDITION(!rel.isToMany);
+    
+    // This is what to do to the *destination* of the relationship
+    ODORelationshipDeleteRule rule = [rel deleteRule];
+
+    ODORelationship *inverseRel = [rel inverseRelationship];
+    NSString *forwardKey = [rel name];
+    NSString *inverseKey = [inverseRel name];
+    
+    if (rule == ODORelationshipDeleteRuleNullify) {
+        if ([inverseRel isToMany]) {
+            // We have a to-one and we need to remove ourselves from the inverse to-many.  We do this by clearing *our* to-one after faulting the inverse to-many.  Later it might be worth exploring ways to avoid doing this faulting.  Hopefully we can just clear our to-one and then any future fetches will do the right thing.
+            ODOObject *dest = [object valueForKey:forwardKey];
+            if (dest) {
+#ifdef OMNI_ASSERTIONS_ON
+                NSSet *inverseSet =
+#endif
+                [dest valueForKey:inverseKey]; // clears the fault
+                OBASSERT([inverseSet member:object] == object);
+                
+                _addNullify(object, forwardKey, ctx->relationshipsToNullifyByObjectID);
+            }
+        } else {
+            // one-to-one relationship. one side should be marked as calculated.
+            OBASSERT(rel.isCalculated || inverseRel.isCalculated);
+            
+            ODOObject *dest = [object valueForKey:forwardKey];
+            if (dest) {
+                // nullify the side that isn't calculated.  we could maybe not do the nullify it is is the forward relationship (since the owner is getting entirely deleted).
+                if (!rel.isCalculated)
+                    _addNullify(object, forwardKey, ctx->relationshipsToNullifyByObjectID);
+                if (!inverseRel.isCalculated)
+                    _addNullify(dest, inverseKey, ctx->relationshipsToNullifyByObjectID);
+            }
+        }
+        return;
+    }
+    
+    // We treat cascading a delete onto an undeletable object as a nullify instead.
+    // Also, when cascading will nullify to-one relationships too. This ensures that any KVO registrations can be cleaned up properly.
+    if (rule == ODORelationshipDeleteRuleCascade) {
+        ODOObject *dest = [object valueForKey:forwardKey];
+        if (dest) {
+            if (!rel.isCalculated)
+                _addNullify(object, forwardKey, ctx->relationshipsToNullifyByObjectID);
+            if (!_ODOObjectIsUndeletable(dest))
+                _traceForDeletion(dest, ctx);
+        }
+        return;
+    }
+    
+    if (rule == ODORelationshipDeleteRuleDeny) {
+        ODOObject *dest = [object valueForKey:forwardKey];
+        if (dest)
+            _addDenyNote(object, rel, dest, ctx->denyObjectIDToReferer);
+        return;
+    }
+    
+    OBRequestConcreteImplementation(object, @selector(_traceForDeletion)); // unknown delete rule
+}
+
+static void _traceForDeletion(ODOObject *object, TraceForDeletionContext *ctx)
+{
+    OBPRECONDITION(!_ODOObjectIsUndeletable(object));
+
     // Someone already failed?
     if (ctx->fail)
         return;
@@ -293,82 +426,13 @@ static void _traceForDeletion(const void *value, void *context)
     
     ODOEntity *entity = [object entity];
     NSArray *relationships = [entity relationships];
-    unsigned int relationshipIndex = [relationships count];
-    while (relationshipIndex--) {
-        ODORelationship *rel = [relationships objectAtIndex:relationshipIndex];
-        ODORelationship *inverseRel = [rel inverseRelationship];
-        BOOL toMany = [rel isToMany];
-        NSString *forwardKey = [rel name];
-        NSString *inverseKey = [inverseRel name];
-
-        // This is what to do to the *destination* of the relationship
-        ODORelationshipDeleteRule rule = [rel deleteRule];
-        
-        if (rule == ODORelationshipDeleteRuleNullify) {
-            if (toMany) {
-                // Nullify all the inverse to-ones.
-                OBASSERT([inverseRel isToMany] == NO); // We don't allow many-to-many relationships in the model loading code
-                NSEnumerator *targetEnum = [[object valueForKey:forwardKey] objectEnumerator];
-                ODOObject *target;
-                while ((target = [targetEnum nextObject]))
-                    _addNullify(target, inverseKey, ctx->relationshipsToNullifyByObjectID);
-            } else {
-                if ([inverseRel isToMany]) {
-                    // We have a to-one and we need to remove ourselves from the inverse to-many.  We do this by clearing *our* to-one after faulting the inverse to-many.  Later it might be worth exploring ways to avoid doing this faulting.  Hopefully we can just clear our to-one and then any future fetches will do the right thing.
-                    ODOObject *dest = [object valueForKey:forwardKey];
-                    if (dest) {
-#ifdef OMNI_ASSERTIONS_ON
-                        NSSet *inverseSet =
-#endif
-                        [dest valueForKey:inverseKey]; // clears the fault
-                        OBASSERT([inverseSet member:object] == object);
-                        
-                        _addNullify(object, forwardKey, ctx->relationshipsToNullifyByObjectID);
-                    }
-                } else {
-                    // one-to-one relationship; nullify both sides
-                    ODOObject *dest = [object valueForKey:forwardKey];
-                    if (dest) {
-                        _addNullify(object, forwardKey, ctx->relationshipsToNullifyByObjectID);
-                        _addNullify(dest, inverseKey, ctx->relationshipsToNullifyByObjectID);
-                    }
-                }
-            }
-            continue;
-        }
-        
-        if (rule == ODORelationshipDeleteRuleCascade) {
-            if (toMany) {
-                OBASSERT([inverseRel isToMany] == NO); // We don't allow many-to-many relationships in the model loading code
-                NSSet *targets = [object valueForKey:forwardKey];
-                OBASSERT([targets isKindOfClass:[NSSet class]]);
-                CFSetApplyFunction((CFSetRef)targets, _traceForDeletion, ctx);
-                if (ctx->fail)
-                    return; // no point going on.
-            } else {
-                ODOObject *dest = [object valueForKey:forwardKey];
-                if (dest) {
-                    _traceForDeletion(dest, ctx);
-                    if (ctx->fail)
-                        return; // no point going on.
-                }
-            }
-            continue;
-        }
-
-        if (rule == ODORelationshipDeleteRuleDeny) {
-            if (toMany) {
-                OBASSERT([inverseRel isToMany] == NO); // We don't allow many-to-many relationships in the model loading code
-                OBRequestConcreteImplementation(object, @selector(_traceForDeletion)); // Handle once we have a test case
-            } else {
-                ODOObject *dest = [object valueForKey:forwardKey];
-                if (dest)
-                    _addDenyNote(object, rel, dest, ctx->denyObjectIDToReferer);
-            }
-            continue;
-        }
-        
-        OBRequestConcreteImplementation(object, @selector(_traceForDeletion)); // unknown delete rule
+    for (ODORelationship *rel in relationships) {        
+        if (rel.isToMany)
+            _traceToManyRelationship(object, rel, ctx);
+        else
+            _traceToOneRelationship(object, rel, ctx);
+        if (ctx->fail)
+            return; // no point going on.
     }
 }
 
@@ -396,6 +460,21 @@ static void _snapshotAndClearObjectForDeletionApplier(const void *value, void *c
 {
     ODOObject *object = (ODOObject *)value;
     ODOEditingContext *self = context;
+    
+    // Reject if object is undeletable... should not have gotten this far. This means all undeletable objects must be inserted w/o undo enabled or having undo flushed afterwards.
+    if (_ODOObjectIsUndeletable(object))
+        OBRejectInvalidCall(self, @selector(_snapshotAndClearObjectForDeletionApplier), @"Undeletable objects should not be deleted!");
+    
+#ifdef OMNI_ASSERTIONS_ON
+    // All the to-one relationships must be nil at this point. Otherwise, observation across a keyPath won't trigger due to objects along that keyPath being deleted and we might leak observation info.  Additionally, when a 'did delete' notification goes out and the observer removes its observed keyPath, the crossings of to-one relationships can return nil and be correct w/o asserting about asserting that we aren't doing KVC on deleted objects.
+    {
+        for (ODORelationship *rel in object.entity.toOneRelationships) {
+            struct _ODOPropertyFlags flags = ODOPropertyFlags(rel);
+            ODOObject *destination = _ODOObjectValueAtIndex(object, flags.snapshotIndex);
+            OBASSERT(destination == nil);
+        }
+    }
+#endif
     
     // Might have been snapshotted if we had a recent or processed update.  Otherwise, it shouldn't have been and we need to snapshot it now.
     OBASSERT(([self->_objectIDToCommittedPropertySnapshot objectForKey:[object objectID]] == nil && [self->_objectIDToLastProcessedSnapshot objectForKey:[object objectID]] == nil) == ([self->_recentlyUpdatedObjects member:object] == nil && [self->_processedUpdatedObjects member:object] == nil));
@@ -427,16 +506,24 @@ static void _nullifyRelationships(const void *key, const void *value, void *cont
         return;
         
     // Any objects that were to get relationships nullified don't need to be nullified if they are also getting deleted.
-    // Actually, this is false.  If we have an to-one, we need to nullify it so that the inverse to-many has a KVO cycle.  Otherwise, the to-many holder won't get in the updated set, or advertise its change.
+    // Actually, this is false.  If we have an to-one, we need to nullify it so that the inverse to-many has a KVO cycle.  Otherwise, the to-many holder won't get in the updated set, or advertise its change.  Also, we need to publicize the to-one going to nil so that multi-stage KVO keyPath observations will stop their subpath observing.
+    
     //if ([ctx->toDelete member:object])
     //return;
     
-    unsigned int keyIndex = [toOneKeys count];
-    while (keyIndex--) {
-        NSString *key = [toOneKeys objectAtIndex:keyIndex];
-        OBASSERT([[[object entity] relationshipsByName] objectForKey:key]);
-        OBASSERT([[[[object entity] relationshipsByName] objectForKey:key] isToMany] == NO);
-        [object setValue:nil forKey:key];
+    for (NSString *key in toOneKeys) {
+        ODORelationship *rel = [[[object entity] relationshipsByName] objectForKey:key];
+        OBASSERT(rel);
+        OBASSERT(rel.isToMany == NO);
+        
+        // If we are getting deleted, then use the internal path for clearing the forward relationship instead of calling the setter. But, if we are going to stick around (we are on the fringe of the delete cloud), call the setter.
+        if ([ctx->toDelete member:object]) {
+            [object willChangeValueForKey:key];
+            ODOObjectSetPrimitiveValueForProperty(object, nil, rel);
+            [object didChangeValueForKey:key];
+        } else {
+            [object setValue:nil forKey:key];
+        }
     }
 }
 
@@ -477,6 +564,14 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     if ([object isInvalid] || [object isDeleted]) {
         DEBUG_DELETE(@"DELETE: already invalid:%d deleted:%d -- bailing", [object isInvalid], [object isDeleted]);
         return YES; // maybe return a user-cancelled error?
+    }
+    
+    if (_ODOObjectIsUndeletable(object)) {
+        // Whether this is right is debatable.  Maybe we should do the deletion as normal with propagation nullifying the relationships.  On the down side, that could result in no updates and just nullifications (but we have the problem of -prepareForDeletion doing edits when the deletion is rejected anyway...)
+        // Returning a user-cancelled error here since, unlike the the invalid/deleted case, we return with 'object' still being live.
+        DEBUG_DELETE(@"DELETE: undeletable -- bailing");
+        OBUserCancelledError(outError);
+        return NO;
     }
     
     OBASSERT(![object isInvalid]);
@@ -987,8 +1082,9 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     OBASSERT(sqlite3_column_count(statement->_statement) == (int)[ctx->schemaProperties count]); // should just be the primary keys we fetched
     
     // Get the primary key first
+    OBASSERT(ctx->primaryKeyColumnIndex <= INT_MAX); // sqlite3 sensisibly only allows a few billion columns.    
     id value = nil;
-    if (!ODOSQLStatementCreateValue(sqlite, statement, ctx->primaryKeyColumnIndex, &value, [ctx->primaryKeyAttribute type], outError))
+    if (!ODOSQLStatementCreateValue(sqlite, statement, (int)ctx->primaryKeyColumnIndex, &value, [ctx->primaryKeyAttribute type], [ctx->primaryKeyAttribute valueClass], outError))
         return NO;
     
     // Unique the fetch vs the registered objects.
@@ -1135,8 +1231,25 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     if ([sortDescriptors count] > 0)
         [ctx.results sortUsingDescriptors:sortDescriptors];
     
+#ifdef DEBUG
+    // Help make sure we don't have support for *fetching* a predicate that we'll evaluate differently in memory.
+    // This won't detect the inverse case (SQL doesn't match but in memory doesn't).
+    if (predicate) {
+        for (ODOObject *object in ctx.results)
+            OBPOSTCONDITION([predicate evaluateWithObject:object]);
+    }
+#endif
+    
     OBINVARIANT([self _checkInvariants]);
     return ctx.results;
+}
+
+- insertObjectWithEntityName:(NSString *)entityName;
+{
+    ODOEntity *entity = [self.database.model entityNamed:entityName];
+    ODOObject *object = [[[[entity instanceClass] alloc] initWithEditingContext:self entity:entity primaryKey:nil] autorelease];
+    [self insertObject:object];
+    return object;
 }
 
 - (ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError; // Returns NSNull if the object wasn't found, nil on error.
@@ -1214,7 +1327,7 @@ NSString * const ODOEditingContextDidResetNotification = @"ODOEditingContextDidR
         // Process our changes once before sending -willSave to anything.
         [self processPendingChanges];
         
-        unsigned int tries = 0;
+        NSUInteger tries = 0;
         while (YES) {
             // Notify our processed objects.  If they make changes during this, they'll go into the recent changes.  The objects themselves must not call -processPendingChanges while we are looping.  We might be able to lift this restriction, but if we don't make a copy of the sets being iterated here, then we'd end up with them mutating a set we are enumerating.  On the other hand, if we do make a copy and they mutate the set, we'd lose track of the fact that there were recent changes and those objects wouldn't get a -willSave!  So, we set a flag here and assert that it isn't set in -processPendingChanges.
             _isSendingWillSave = YES;
@@ -1402,7 +1515,7 @@ static NSArray *_copyCollectObjectIDs(NSSet *objects)
         return nil;
     
     // Fixed length array for small savings
-    unsigned int count = CFSetGetCount((CFSetRef)objects);
+    CFIndex count = CFSetGetCount((CFSetRef)objects);
     CFMutableArrayRef objectIDs = CFArrayCreateMutable(kCFAllocatorDefault, count, &OFNSObjectArrayCallbacks);
     CFSetApplyFunction((CFSetRef)objects, _appendObjectID, objectIDs);
     return (NSArray *)objectIDs;
@@ -1488,7 +1601,7 @@ static void _recordChangesToUndoUpdate(const void *value, void *context)
         [ctx.results release];
     }
     
-    DEBUG_UNDO(@"Registering operation during %@:", [_undoManager isUndoing] ? @"redo" : ([_undoManager isRedoing] ? @"undo" : @"'doing'"));
+    DEBUG_UNDO(@"Registering operation during %@:", [_undoManager isUndoing] ? @"undo" : ([_undoManager isRedoing] ? @"redo" : @"'doing'"));
     if (objectIDsAndSnapshotsToInsert) {
         DEBUG_UNDO(@"objectIDsAndSnapshotsToInsert = %@", [(id)CFCopyDescription(objectIDsAndSnapshotsToInsert) autorelease]);
     }
@@ -1506,38 +1619,63 @@ static void _recordChangesToUndoUpdate(const void *value, void *context)
     [objectIDsAndSnapshotsToInsert release];
 }
 
-static void _updateInverseToManyRelationshipsForUndo(ODOObject *object, ODOEntity *entity, BOOL inserting)
+typedef enum {
+    ODOEditingContextUndoRelationshipsForInsertion,
+    ODOEditingContextUndoRelationshipsForDeletion,
+} ODOEditingContextUndoRelationshipsAction;
+
+static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, ODOEditingContextUndoRelationshipsAction action)
 {
     NSArray *toOneRelationships = [entity toOneRelationships];
-    unsigned int relIndex = [toOneRelationships count];
-    while (relIndex--) {
-        ODORelationship *rel = [toOneRelationships objectAtIndex:relIndex];
+    
+    for (ODORelationship *rel in toOneRelationships) {
         ODORelationship *inverseRel = [rel inverseRelationship];
         
-        if (![inverseRel isToMany]) // if this is a one-to-one relationship, then the inverse will get updated with its snapshot
-            continue;
-        
         NSString *forwardKey = [rel name];
+        NSString *invKey = [inverseRel name];
         ODOObject *dest = ODOGetPrimitiveProperty(object, forwardKey);
         if (!dest)
             continue;
         
+        if (![inverseRel isToMany]) {
+            if (action == ODOEditingContextUndoRelationshipsForDeletion) {
+                // one-to-one. nullify the forward key, which should nullify the inverse too.
+                if (dest) {
+                    [object willChangeValueForKey:forwardKey];
+                    ODOObjectSetPrimitiveValueForProperty(object, nil, rel);
+                    [object didChangeValueForKey:forwardKey];
+                    
+                    OBASSERT([dest valueForKey:invKey] == nil);
+                }
+            } else {
+                // The inverse will be restored from the other side's snapshot.
+            }
+            
+            continue;
+        }
+        
         // Avoid creating/clearing the inverse to-many (our primitive getter would do that).
         NSMutableSet *toManySet = ODOObjectToManyRelationshipIfNotFault(dest, inverseRel);
-        NSString *invKey = [inverseRel name];
         
         NSSet *change = [NSSet setWithObject:object];
         
-        if (inserting) {
+        if (action == ODOEditingContextUndoRelationshipsForInsertion) {
             OBASSERT([toManySet member:object] == nil);
             [dest willChangeValueForKey:invKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:change];
             [toManySet addObject:object];
             [dest didChangeValueForKey:invKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:change];
         } else {
-            OBASSERT([toManySet member:object] != nil);
-            [dest willChangeValueForKey:invKey withSetMutation:NSKeyValueMinusSetMutation usingObjects:change];
-            [toManySet removeObject:object];
-            [dest didChangeValueForKey:invKey withSetMutation:NSKeyValueMinusSetMutation usingObjects:change];
+            OBASSERT(action == ODOEditingContextUndoRelationshipsForDeletion);
+            OBASSERT([toManySet member:object] != nil); // the relationship should be fully formed before we act
+            
+            // Need to clear the forward to-ones too, to ensure that on undo/redo, any multi-stage keyPaths get their KVO on sub-paths deregistered. Then, when the outside objects remove observers, our to-one getters can return nil and they can clean up w/o trouble.
+            OBASSERT(dest); // checked above
+            OBASSERT(![object isFault]);
+            [object willChangeValueForKey:forwardKey];
+            ODOObjectSetPrimitiveValueForProperty(object, nil, rel);
+            [object didChangeValueForKey:forwardKey];
+
+            OBASSERT([toManySet member:object] == nil); // ODOObjectSetPrimitiveValueForProperty should have cleaned up and sent KVO for the inverse to-many too.
         }
     }
 }
@@ -1573,7 +1711,7 @@ static void _updateInverseToManyRelationshipsForUndo(ODOObject *object, ODOEntit
     // The exception to this is KVO & maintainence of already-cleared to-many relationships.  Since to-many relationships are not recorded directly in the deltas, we have to update them here (but still going through internal API).
     
     // Do the inserts first; updates that follow might have been due to nullified relationships for the deletes these represent.
-    unsigned int insertIndex, insertCount = [objectIDsAndSnapshotsToInsert count];
+    NSUInteger insertIndex, insertCount = [objectIDsAndSnapshotsToInsert count];
     OBASSERT((insertCount % 2) == 0); // should be objectID/snapshot sets
     for (insertIndex = 0; insertIndex < insertCount; insertIndex += 2) {
         ODOObjectID *objectID = [objectIDsAndSnapshotsToInsert objectAtIndex:insertIndex+0];
@@ -1593,12 +1731,12 @@ static void _updateInverseToManyRelationshipsForUndo(ODOObject *object, ODOEntit
         ODOObject *object = [_registeredObjectByID objectForKey:objectID];
         
         OBASSERT([object isInserted]);
-        _updateInverseToManyRelationshipsForUndo(object, [objectID entity], YES/*inserting*/);
+        _updateRelationshipsForUndo(object, [objectID entity], ODOEditingContextUndoRelationshipsForInsertion);
         DEBUG_UNDO(@"    _recentlyUpdatedObjects now %@", [_recentlyUpdatedObjects setByPerformingSelector:@selector(objectID)]);
     }
 
     // Do the updates
-    unsigned int updateIndex, updateCount = [updates count];
+    NSUInteger updateIndex, updateCount = [updates count];
     for (updateIndex = 0; updateIndex < updateCount; updateIndex++) {
         CFArrayRef update = (CFArrayRef)[updates objectAtIndex:updateIndex];
         
@@ -1621,11 +1759,9 @@ static void _updateInverseToManyRelationshipsForUndo(ODOObject *object, ODOEntit
     }
     
     // Do the deletes
-    unsigned int deleteIndex = [objectIDsToDelete count];
-    if (deleteIndex > 0) {
+    if ([objectIDsToDelete count] > 0) {
         NSMutableSet *toDelete = [NSMutableSet set];
-        while (deleteIndex--) {
-            ODOObjectID *objectID = [objectIDsToDelete objectAtIndex:deleteIndex];
+        for (ODOObjectID *objectID in objectIDsToDelete) {
             ODOObject *object = [self objectRegisteredForID:objectID];
             if (!object) {
                 OBASSERT_NOT_REACHED("Should not be able to delete an object that isn't registered");
@@ -1636,7 +1772,8 @@ static void _updateInverseToManyRelationshipsForUndo(ODOObject *object, ODOEntit
             [toDelete addObject:object];
 
             // Scan each re-deleted object for non-nil to-one relationships.  If the inverse is to-many, then we need to send KVO and (if the fault has been cleared) update the set.
-            _updateInverseToManyRelationshipsForUndo(object, [objectID entity], NO/*inserting*/);
+            // We also need to clear the to-ones to ensure that keyPath observations get dropped and that our to-one accessors can return nil (they'll be called when an observer is removing multi-step keyPath observations).
+            _updateRelationshipsForUndo(object, [objectID entity], ODOEditingContextUndoRelationshipsForDeletion);
         }
         
         OBASSERT([toDelete count] > 0);

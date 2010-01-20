@@ -1,4 +1,4 @@
-// Copyright 2003-2005,2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005,2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -249,21 +249,18 @@ RCS_ID("$Id$");
     return cells[[self _indexOfCell:aCell]].parameter;
 }
 
-- (unsigned)removeCells:(NSArray *)delenda
+- (NSUInteger)removeCells:(NSArray *)delenda
 {
-    unsigned cellCount;
-    unsigned cellsDeleted;
-
-    cellsDeleted = 0;
-    cellCount = [delenda count];
-    for(unsigned cellIndex = 0; cellIndex < cellCount; cellIndex ++) {
+    NSUInteger cellsDeleted = 0;
+    NSUInteger cellCount = [delenda count];
+    for (unsigned cellIndex = 0; cellIndex < cellCount; cellIndex ++) {
         if ([self _removeCell:[delenda objectAtIndex:cellIndex]])
             cellsDeleted ++;
     }
 
     if (cellsDeleted > 0) {
         // Deactivate any animation that was assigned to a deleted cell
-        for(unsigned swoopIndex = 0; swoopIndex < swoopCount; swoopIndex ++)
+        for (unsigned swoopIndex = 0; swoopIndex < swoopCount; swoopIndex ++)
             if (swoop[swoopIndex].flags != 0 &&
                 cells[swoop[swoopIndex].cellIndex].cell == nil) {
                 swoop[swoopIndex].flags = 0;       // mark it idle
@@ -275,7 +272,7 @@ RCS_ID("$Id$");
     return cellsDeleted;
 }
 
-- (unsigned)removeCellsExcept:(NSSet *)keepThese
+- (NSUInteger)removeCellsExcept:(NSSet *)keepThese
 {
     unsigned cellsDeleted, cellsKept;
 
@@ -417,7 +414,7 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
     for(unsigned swoopIndex = 0; swoopIndex < swoopCount; swoopIndex++) {
         struct swoopcell *c = &( cells[swoop[swoopIndex].cellIndex] );
         short swooperFlags = swoop[swoopIndex].flags;  // local copy
-        float tFraction, pFraction;
+        CGFloat tFraction, pFraction;
         NSRect cFrame;
         NSPoint cPoint;
         CGFloat cParameter;
@@ -425,12 +422,12 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
         if (swooperFlags == 0)
             continue;
         else if (swoop[swoopIndex].duration < 1e-6)
-            tFraction = 1.0;
+            tFraction = 1.0f;
         else
-            tFraction = ( tPlus - swoop[swoopIndex].began ) / swoop[swoopIndex].duration;
+            tFraction = (CGFloat)(( tPlus - swoop[swoopIndex].began ) / swoop[swoopIndex].duration);
             
         if (tFraction >= 1.0) {
-            tFraction = 1.0;
+            tFraction = 1.0f;
             pFraction = tFraction;
             swoop[swoopIndex].flags &= ~ SF_Motion;  // we are done moving this cell
             cellsJustFinished ++;
@@ -443,20 +440,20 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
                     pFraction = tFraction;
                     break;
                 case OASwoop_Harmonic:
-                    pFraction = 0.5 * ( 1 - cos(tFraction * M_PI) );
+                    pFraction = (CGFloat)(0.5 * ( 1 - cos(tFraction * M_PI) ));
                     break;
                 case OASwoop_HalfHarmonic:
-                    pFraction = sin(tFraction * (M_PI / 2));
+                    pFraction = (CGFloat)sin(tFraction * (M_PI / 2));
                     break;
                 case OASwoop_Decay:
-                    pFraction = (1 - exp(- tFraction)) / ( 1 - 1 / M_E );
+                    pFraction = (CGFloat)((1 - exp(- tFraction)) / ( 1 - 1 / M_E ));
                     break;
                 case OASwoop_LinDecel:
                     pFraction = 2 * tFraction - ( tFraction * tFraction );
                     break;
                 case OASwoop_Immediate:
                     // This shouldn't occur, but if it does, this is the right way to handle it
-                    pFraction = 1.0;
+                    pFraction = 1.0f;
                     break;
             }
         }

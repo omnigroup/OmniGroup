@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,8 +68,8 @@
 
     OFSimpleLockType displayablesSimpleLock;
     NSDate *firstBytesDate;
-    unsigned int bytesProcessed;
-    unsigned int totalBytes;
+    NSUInteger bytesProcessed;
+    NSUInteger totalBytes;
 
     NSMutableArray *observers;  // Nonretained observers; protected by local lock
 
@@ -80,7 +80,7 @@
 
 - initWithSource:(OWContent *)sourceEntry link:(OWContentTypeLink *)aLink inCache:(OWProcessorCache *)aCache forPipeline:(OWPipeline *)owner;
 
-- (unsigned)hash;
+- (NSUInteger)hash;
 - (BOOL)isEqual:another;
 
 - (OWStaticArc *)addToCache:(id <OWCacheArcProvider,OWCacheContentProvider>)actualCache;

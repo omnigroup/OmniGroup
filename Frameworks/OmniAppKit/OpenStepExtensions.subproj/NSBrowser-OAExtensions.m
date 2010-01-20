@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,29 +18,22 @@ RCS_ID("$Id$")
 
 - (NSString *)pathToCurrentItem;
 {
-    NSBrowserCell              *aCell;
-    
-    aCell = [self selectedCell];
+    NSBrowserCell *aCell = [self selectedCell];
     if (!aCell)
 	return @"";
     
-    return [NSString stringWithFormat:@"%@/%@",
-        [self pathToColumn:[self lastColumn]], [aCell stringValue]];
+    return [NSString stringWithFormat:@"%@/%@", [self pathToColumn:[self lastColumn]], [aCell stringValue]];
 }
 
 - (NSString *)pathToNextItem;
 {
-    int                         column;
-    int                         row;
-    NSMatrix                   *aMatrix;
-    int                         numRows;
-    
-    column = [self selectedColumn];
+    NSInteger column = [self selectedColumn];
     if (column == -1)
 	return @"";
-    aMatrix = [self matrixInColumn:column];
-    numRows = [aMatrix numberOfRows];
-    row = [aMatrix selectedRow] + 1;
+    
+    NSMatrix *aMatrix = [self matrixInColumn:column];
+    NSInteger numRows = [aMatrix numberOfRows];
+    NSInteger row = [aMatrix selectedRow] + 1;
     if (row >= numRows)
 	return nil;
     return [NSString stringWithFormat:@"%@/%@", [self pathToColumn:column],
@@ -49,15 +42,14 @@ RCS_ID("$Id$")
 
 - (NSString *)pathToPreviousItem;
 {
-    NSInteger                   column, row, dummy;
-    NSMatrix                   *aMatrix;
-    NSArray                    *selectedCells;
-    
-    column = [self selectedColumn];
+    NSInteger column = [self selectedColumn];
     if (column == -1)
 	return @"";
-    aMatrix = [self matrixInColumn:column];
-    selectedCells = [self selectedCells];
+    
+    NSMatrix *aMatrix = [self matrixInColumn:column];
+    NSArray *selectedCells = [self selectedCells];
+
+    NSInteger row, dummy;
     if (selectedCells)
 	[aMatrix getRow:&row column:&dummy ofCell:[selectedCells objectAtIndex:0]];
     else  // does not return list if only 1 selected? (or set to allow only 1?)
@@ -71,9 +63,7 @@ RCS_ID("$Id$")
 
 - (NSString *)pathToNextOrPreviousItem;
 {
-    NSString                   *path;
-    
-    path = [self pathToNextItem];
+    NSString *path = [self pathToNextItem];
     if (!path)
 	path = [self pathToPreviousItem];
     if (!path)
@@ -87,26 +77,19 @@ RCS_ID("$Id$")
     return [self pathToColumn:[self lastColumn]];
 }
 
-- (id) cellAtPoint: (NSPoint) point;
+- (id)cellAtPoint:(NSPoint) point;
 {
-    int firstColumn, lastColumn, column;
+    NSInteger firstColumn = [self firstVisibleColumn];
+    NSInteger lastColumn = [self lastVisibleColumn];
     
-    firstColumn = [self firstVisibleColumn];
-    lastColumn = [self lastVisibleColumn];
-    
-    for (column = firstColumn; column <= lastColumn; column++) {
-        NSRect columnFrame;
-        
-        columnFrame = [self frameOfInsideOfColumn: column];
+    for (NSInteger column = firstColumn; column <= lastColumn; column++) {
+        NSRect columnFrame = [self frameOfInsideOfColumn: column];
         if (NSPointInRect(point, columnFrame)) {
-            NSMatrix *matrix;
-            BOOL gotIt;
             NSInteger matrixRow, matrixColumn;
             
-            matrix = [self matrixInColumn: column];
-            point = [matrix convertPoint: point fromView: self];
-            gotIt = [matrix getRow:&matrixRow column:&matrixColumn forPoint: point];
-            if (gotIt)
+            NSMatrix *matrix = [self matrixInColumn: column];
+            NSPoint localPoint = [matrix convertPoint:point fromView:self];
+            if ([matrix getRow:&matrixRow column:&matrixColumn forPoint:localPoint])
                 return [matrix cellAtRow:matrixRow column:matrixColumn];
             return nil;
         }

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,55 +13,62 @@ RCS_ID("$Id$")
 
 - (void)setObject:(id)anObject forKeys:(NSArray *)keys;
 {
-    unsigned int keyCount;
-
-    keyCount = [keys count];
-    while (keyCount--)
-	[self setObject:anObject forKey:[keys objectAtIndex:keyCount]];
+    for (NSString *key in keys)
+	[self setObject:anObject forKey:key];
 }
-
 
 - (void)setFloatValue:(float)value forKey:(NSString *)key;
 {
-    NSNumber *number;
-
-    number = [[NSNumber alloc] initWithFloat:value];
+    NSNumber *number = [[NSNumber alloc] initWithFloat:value];
     [self setObject:number forKey:key];
     [number release];
 }
 
 - (void)setDoubleValue:(double)value forKey:(NSString *)key;
 {
-    NSNumber *number;
-
-    number = [[NSNumber alloc] initWithDouble:value];
+    NSNumber *number = [[NSNumber alloc] initWithDouble:value];
     [self setObject:number forKey:key];
     [number release];
 }
 
 - (void)setIntValue:(int)value forKey:(NSString *)key;
 {
-    NSNumber *number;
-
-    number = [[NSNumber alloc] initWithInt:value];
+    NSNumber *number = [[NSNumber alloc] initWithInt:value];
     [self setObject:number forKey:key];
     [number release];
 }
 
 - (void)setUnsignedIntValue:(unsigned int)value forKey:(NSString *)key;
 {
-    NSNumber *number;
+    NSNumber *number = [[NSNumber alloc] initWithUnsignedInt:value];
+    [self setObject:number forKey:key];
+    [number release];
+}
 
-    number = [[NSNumber alloc] initWithUnsignedInt:value];
+- (void)setIntegerValue:(NSInteger)value forKey:(NSString *)key;
+{
+    NSNumber *number = [[NSNumber alloc] initWithInteger:value];
+    [self setObject:number forKey:key];
+    [number release];
+}
+
+- (void)setUnsignedIntegerValue:(NSUInteger)value forKey:(NSString *)key;
+{
+    NSNumber *number = [[NSNumber alloc] initWithUnsignedInteger:value];
+    [self setObject:number forKey:key];
+    [number release];
+}
+
+- (void)setUnsignedLongLongValue:(unsigned long long)value forKey:(NSString *)key;
+{
+    NSNumber *number = [[NSNumber alloc] initWithUnsignedLongLong:value];
     [self setObject:number forKey:key];
     [number release];
 }
 
 - (void)setBoolValue:(BOOL)value forKey:(NSString *)key;
 {
-    NSNumber *number;
-    
-    number = [[NSNumber alloc] initWithBool:value];
+    NSNumber *number = [[NSNumber alloc] initWithBool:value];
     [self setObject:number forKey:key];
     [number release];
 }
@@ -148,6 +155,36 @@ RCS_ID("$Id$")
     }
 
     [self setUnsignedIntValue:value forKey:key];
+}
+
+- (void)setIntegerValue:(NSInteger)value forKey:(NSString *)key defaultValue:(NSInteger)defaultValue;
+{
+    if (value == defaultValue) {
+        [self removeObjectForKey:key];
+        return;
+    }
+    
+    [self setIntegerValue:value forKey:key];
+}
+
+- (void)setUnsignedIntegerValue:(NSUInteger)value forKey:(NSString *)key defaultValue:(NSUInteger)defaultValue;
+{
+    if (value == defaultValue) {
+        [self removeObjectForKey:key];
+        return;
+    }
+    
+    [self setUnsignedIntegerValue:value forKey:key];
+}
+
+- (void)setUnsignedLongLongValue:(unsigned long long)value forKey:(NSString *)key defaultValue:(unsigned long long)defaultValue;
+{
+    if (value == defaultValue) {
+        [self removeObjectForKey:key];
+        return;
+    }
+    
+    [self setUnsignedLongLongValue:value forKey:key];
 }
 
 - (void)setBoolValue:(BOOL)value forKey:(NSString *)key defaultValue:(BOOL)defaultValue;

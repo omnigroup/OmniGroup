@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,39 +17,30 @@ RCS_ID("$Id$");
 
 - (BOOL)containsProfile;
 {
-    NSArray *representations = [self representations];
-    
-    unsigned int representationIndex = [representations count];
-    while (representationIndex--) {
-        NSBitmapImageRep *bitmap = [representations objectAtIndex:representationIndex];
-        
-        if ([bitmap isKindOfClass:[NSPDFImageRep class]])
+    for (NSImageRep *rep in [self representations]) {
+        if ([rep isKindOfClass:[NSPDFImageRep class]])
             return YES;
             
-        if (![bitmap isKindOfClass:[NSBitmapImageRep class]])
+        if (![rep isKindOfClass:[NSBitmapImageRep class]])
             continue;
-        return [bitmap valueForProperty:NSImageColorSyncProfileData] != nil;
+        return [(NSBitmapImageRep *)rep valueForProperty:NSImageColorSyncProfileData] != nil;
     }
     return NO;
 }
 
 - (void)_convertUsingColorWorld:(CMWorldRef)world;
 {
-    NSArray *representations = [self representations];
-    unsigned int representationIndex = [representations count];
-
-    while (representationIndex--) {
-        NSBitmapImageRep *bitmap = [representations objectAtIndex:representationIndex];
-        CMBitmap cmBitmap;
-        
-        if (![bitmap isKindOfClass:[NSBitmapImageRep class]])
+    for (NSImageRep *rep in [self representations]) {
+        if (![rep isKindOfClass:[NSBitmapImageRep class]])
             continue;
-        
+
+        NSBitmapImageRep *bitmap = (NSBitmapImageRep *)rep;
         if ([bitmap valueForProperty:NSImageColorSyncProfileData] != nil)
             return;
-            
+
         OBASSERT(![bitmap isPlanar]);
         
+        CMBitmap cmBitmap;
         cmBitmap.image = (void *)[bitmap bitmapData];
         cmBitmap.width = [bitmap pixelsWide];
         cmBitmap.height = [bitmap pixelsHigh];

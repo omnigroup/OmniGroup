@@ -1,4 +1,4 @@
-// Copyright 1998-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,7 +42,7 @@ static void _OFControllerCheckTerminated(void)
     NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
     // Make sure that applications that use OFController actually call its -willTerminate.
     OBASSERT(!sharedController || sharedController->status == OFControllerTerminatingStatus || sharedController->status == OFControllerNotInitializedStatus);
-    [p release];
+    [p drain];
 }
 #endif
 
@@ -633,14 +633,14 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 #define MAX_BACKTRACE_DEPTH 128
     void *frames[MAX_BACKTRACE_DEPTH];
     int framecount = backtrace(frames, MAX_BACKTRACE_DEPTH);
-    NSMutableString *backtrace = [[NSMutableString alloc] initWithCapacity:( framecount * ( 2*sizeof(void *) + 2 ) )];
+    NSMutableString *backtraceText = [[NSMutableString alloc] initWithCapacity:( framecount * ( 2*sizeof(void *) + 2 ) )];
     for(int frameindex = skip+1; frameindex < framecount; frameindex++) {
         if (frameindex > 0)
-            [backtrace appendString:@"  "];  // Two spaces, for compatibility with NSStackTraceKey
-        [backtrace appendFormat:@"%p", frames[frameindex]];
+            [backtraceText appendString:@"  "];  // Two spaces, for compatibility with NSStackTraceKey
+        [backtraceText appendFormat:@"%p", frames[frameindex]];
     }
 
-    return backtrace;
+    return backtraceText;
 }
 
 @end

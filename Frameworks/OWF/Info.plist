@@ -186,7 +186,7 @@
 				<key>OWHTTPMaximumNumberOfRequestsToPipeline</key>
 				<integer>1</integer>
 				<key>OWHTTPMaximumSessionsPerServer</key>
-				<integer>4</integer>
+				<integer>1</integer>
 				<key>OWHTTPSessionAcceptLanguageIncludeFallback</key>
 				<false/>
 				<key>OWHTTPSessionSendAcceptLanguageHeader</key>

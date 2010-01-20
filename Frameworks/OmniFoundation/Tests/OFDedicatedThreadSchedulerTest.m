@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -99,8 +99,9 @@ int main(int argc, char *argv[])
     [OBPostLoader processClasses];
     target = [[TestObject alloc] init];
     [NSThread detachNewThreadSelector:@selector(scheduleFireMessages) toTarget:target withObject:nil];
-    [pool release];
+    [pool drain];
 
     [[NSRunLoop currentRunLoop] runUntilDate:[NSDate distantFuture]];
+    [target release];
     return 0;
 }

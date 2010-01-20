@@ -1,4 +1,4 @@
-// Copyright 2004-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,8 @@ static inline OFBindingPoint OFBindingPointMake(id object, NSString *keyPath)
     return p;
 }
 
+extern BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b);
+
 @interface OFBinding : NSObject
 {
 @protected
@@ -49,9 +51,11 @@ static inline OFBindingPoint OFBindingPointMake(id object, NSString *keyPath)
 
 - (void)reset;
 
+- (OFBindingPoint)sourcePoint;
 - (id)sourceObject;
 - (NSString *)sourceKeyPath;
 
+- (OFBindingPoint)destinationPoint;
 - (id)destinationObject;
 - (NSString *)destinationKeyPath;
 

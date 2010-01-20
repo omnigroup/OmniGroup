@@ -1,4 +1,4 @@
-// Copyright 1998-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,6 +28,8 @@ RCS_ID("$Id$")
 
 - (void)setImageRep:(NSBitmapImageRep *)imageRep;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
     NSImage *newImage;
 
     if (resultImageRep == imageRep)
@@ -55,6 +57,7 @@ RCS_ID("$Id$")
     CGImageRef cgImage = [OIImage createCGImageFromBitmapData:[imageRep bitmapData] width:size.width height:size.height bitsPerSample:[imageRep bitsPerPixel] / [imageRep samplesPerPixel] samplesPerPixel:[imageRep samplesPerPixel]];
     [self updateImage:cgImage];
     CGImageRelease(cgImage);
+#endif
 }
 
 - (NSBitmapImageRep *)imageRep;

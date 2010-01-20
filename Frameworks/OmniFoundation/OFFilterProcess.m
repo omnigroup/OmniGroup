@@ -1,4 +1,4 @@
-// Copyright 2005-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ enum handleKeventsHow {
 };
 
 - (BOOL)_waitpid;
-- (void)_pushq:(int)ident filter:(short)evfilter flags:(unsigned short)flags;
+- (void)_pushq:(uintptr_t)ident filter:(short)evfilter flags:(unsigned short)flags;
 - (int)_handleKevents:(enum handleKeventsHow)flag;
 - (void)_setError:(NSError *)err;
 
@@ -42,7 +42,7 @@ static void copy_to_stream(struct copy_out_state *into, OFFilterProcess *self);
 static void keventRunLoopCallback(CFFileDescriptorRef f, CFOptionFlags callBackTypes, void *info);
 static void pollTimerRunLoopCallback(CFRunLoopTimerRef timer, void *info);
 
-static char **computeToolEnvironment(NSDictionary *envp, NSDictionary *setenv, NSString *ensurePath);
+static char ** __strong computeToolEnvironment(NSDictionary *envp, NSDictionary *setenv, NSString *ensurePath);
 static void freeToolEnvironment(char **envp);
 static char *makeEnvEntry(id key, size_t *sepindex, id value);
 static char *pathStringIncludingDirectory(const char *currentPath, const char *pathdir, const char *sep);
@@ -50,6 +50,12 @@ static char *pathStringIncludingDirectory(const char *currentPath, const char *p
 @end
 
 @implementation OFFilterProcess
+
+#if __OBJC_GC__
+#define malloc_scanned(sz) NSAllocateCollectable(sz, NSScannedOption | NSCollectorDisabledOption)
+#else
+#define malloc_scanned(sz) malloc(sz)
+#endif
 
 @synthesize commandPath, arguments, error;
 
@@ -92,7 +98,6 @@ static void OFPipeClose(struct OFPipe *p)
     OFPipeCloseRead(p);
     OFPipeCloseWrite(p);
 }
-
 
 - initWithParameters:(NSDictionary *)filterParameters standardOutput:(NSOutputStream *)stdoutStream standardError:(NSOutputStream *)stderrStream;
 {
@@ -163,8 +168,8 @@ static void OFPipeClose(struct OFPipe *p)
     }
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    
-    /* Since we're vforking, build all our string buffers in the parent process (not sure if this is strictly necessary) */
+
+    // Build up string buffers of the command, arguments and environment
     const char *toolPath = [fileManager fileSystemRepresentationWithPath:commandPath];
     if (access(toolPath, X_OK) != 0) {
         OBErrorWithErrno(&errorBuf, errno, toolPath, nil, nil);
@@ -172,7 +177,7 @@ static void OFPipeClose(struct OFPipe *p)
     }
     const char *chdirPath = workingDirectoryPath? [fileManager fileSystemRepresentationWithPath:workingDirectoryPath] : NULL;
     NSUInteger argumentIndex, argumentCount = [arguments count];
-    const char **toolParameters = malloc(sizeof(const char *) * (argumentCount + 2));
+    const char ** __strong toolParameters = malloc_scanned(sizeof(const char *) * (argumentCount + 2));
     toolParameters[0] = toolPath;
     for (argumentIndex = 0; argumentIndex < argumentCount; argumentIndex++) {
         toolParameters[argumentIndex + 1] = [[arguments objectAtIndex:argumentIndex] cStringUsingEncoding:NSUTF8StringEncoding];
@@ -195,7 +200,7 @@ static void OFPipeClose(struct OFPipe *p)
             
         case 0: { // Child
             
-            // Close our parent's ends of the pipes. (Don't set them to -1, since we still share memory with it.)
+            // Close our parent's ends of the pipes.
             if (input.write != -1) close(input.write);
             if (output.read != -1) close(output.read);
             if (errors.read != -1) close(errors.read);
@@ -313,7 +318,8 @@ static void OFPipeClose(struct OFPipe *p)
     return self;
 }
 
-- (void)dealloc
+// We could wrap the file descriptors in CFFileDescriptorRef with closeOnInvalidate, make the CF references and malloc blocks collectable.  But, that would add a bunch of cruft in the code and these instances are rare enough that having a -finalize here doesn't seem like a large problem.
+- (void)invalidate;
 {
     if (kevent_cfrunloop != NULL) {
         CFRunLoopSourceInvalidate(kevent_cfrunloop);
@@ -347,12 +353,23 @@ static void OFPipeClose(struct OFPipe *p)
     free_copyout(&stderrCopyBuf);
     if (subprocStdinFd >= 0)
         close(subprocStdinFd);
+}
+
+- (void)dealloc
+{
+    [self invalidate];
     [subprocStdinBytes release];
     [commandPath release];
     [arguments release];
     [error autorelease];
     
     [super dealloc];
+}
+
+- (void)finalize;
+{
+    [self invalidate];
+    [super finalize];
 }
 
 - (void)run
@@ -452,6 +469,8 @@ static void OFPipeClose(struct OFPipe *p)
 + (BOOL)runWithParameters:(NSDictionary *)filterParameters inMode:(NSString *)runLoopMode standardOutput:(NSData **)stdoutStreamData standardError:(NSData **)stderrStreamData  error:(NSError **)errorPtr;
 {
     NSOutputStream *stdoutStream, *stderrStream;
+    
+    OBASSERT(![runLoopMode isEqual:NSRunLoopCommonModes]); /* Warn about an error I keep making: you can't run a loop in this pseudo-mode */
     
     if (stdoutStreamData == NULL)
         stdoutStream = nil;
@@ -671,7 +690,7 @@ static void free_copyout(struct copy_out_state *into)
     }
 }
 
-- (void)_pushq:(int)ident filter:(short)evfilter flags:(unsigned short)flags
+- (void)_pushq:(uintptr_t)ident filter:(short)evfilter flags:(unsigned short)flags;
 {
     if (!(num_pending_changes < OFFilterProcess_CHANGE_QUEUE_MAX))
         [self _handleKevents:keventJustPush];
@@ -706,6 +725,7 @@ static void free_copyout(struct copy_out_state *into)
         /* Just send changes, don't ask for any events */
         if (num_pending_changes) {
             nevents = kevent(kevent_fd, pending_changes, num_pending_changes, NULL, 0, &zeroTimeout);
+            assert(nevents <= 0); // since we passed zere length
             num_pending_changes = 0;
         } else
             nevents = 0;
@@ -730,13 +750,13 @@ static void free_copyout(struct copy_out_state *into)
                 deleteThis = YES;
             } else if ((int)ev->ident == subprocStdinFd) {
                 OBASSERT(ev->filter == EVFILT_WRITE);
-                BOOL shutdown = NO;
+                BOOL should_shutdown = NO;
                 
                 if (ev->flags & (EV_EOF|EV_ERROR)) {
                     // Child's input stream has become invalid somehow
                     // That's okay, as long as the child exits with success status
                     // printf("Subproc stdin error state, closing\n");
-                    shutdown = YES;
+                    should_shutdown = YES;
                 } else {
                     NSUInteger totalBytes = [subprocStdinBytes length];
                     if (totalBytes > subprocStdinBytesWritten) {
@@ -749,19 +769,19 @@ static void free_copyout(struct copy_out_state *into)
                             int local_errno = errno;
                             if (local_errno != EINTR && local_errno != EAGAIN) {
                                 perror("OFFilterProcess");
-                                shutdown = YES;
+                                should_shutdown = YES;
                             }
                         }
                     }
                     
                     if (subprocStdinBytesWritten >= totalBytes) {
                         // We're done, close the child's input stream
-                        shutdown = YES;
+                        should_shutdown = YES;
                     }
                 }
                 
                 
-                if (shutdown) {
+                if (should_shutdown) {
                     close(subprocStdinFd);
                     subprocStdinFd = -1;
                     /* Don't need to set deleteThis because EVFILT_READ/WRITE are automatically removed when their fd is closed */
@@ -1049,36 +1069,36 @@ static char *makeEnvEntry(id key, size_t *sepindex, id value)
     return buf;
 }
 
-static char **computeToolEnvironment(NSDictionary *envp, NSDictionary *setenv, NSString *ensurePath)
+static char ** __strong computeToolEnvironment(NSDictionary *replace_env, NSDictionary *augment_env, NSString *ensurePath)
 {
-    char **newEnviron;
-    unsigned newEnvironSize, newEnvironCount;
+    char ** __strong newEnviron;
+    NSUInteger newEnvironSize, newEnvironCount;
     BOOL modified;
     
     
     /* If the caller supplied a replacement environment dictionary, convert it into the form used by execve() etc. Otherwise, get our own process environment and make a copy so we can modify it. */
-    if (envp) {
-        newEnvironSize = 1 + [envp count]; /* Add one in case we need to add $PATH */
-        newEnviron = malloc(sizeof(*newEnviron) * (1 + newEnvironSize)); /* Add one for trailing NULL */
+    if (replace_env) {
+        newEnvironSize = 1 + [replace_env count] + [augment_env count]; /* Add one in case we need to add $PATH */
+        newEnviron = malloc_scanned(sizeof(*newEnviron) * (1 + newEnvironSize)); /* Add one for trailing NULL */
         newEnvironCount = 0;
         
-        NSEnumerator *e = [envp keyEnumerator];
+        NSEnumerator *e = [replace_env keyEnumerator];
         id key;
         while( (key = [e nextObject]) != nil) {
-            newEnviron[newEnvironCount++] = makeEnvEntry(key, NULL, [envp objectForKey:key]);
+            newEnviron[newEnvironCount++] = makeEnvEntry(key, NULL, [replace_env objectForKey:key]);
         }
         
         modified = YES;
     } else {
-        if (!setenv && !ensurePath)
+        if (!augment_env && !ensurePath)
             return NULL;  /* We're not making any changes at all, just allow the child to inherit our environment */
         
         char ** oldEnviron = *_NSGetEnviron();
         for(newEnvironCount = 0; oldEnviron[newEnvironCount] != NULL; newEnvironCount ++)
             ;
         
-        newEnvironSize = newEnvironCount + [setenv count] + 1;
-        newEnviron = malloc(sizeof(*newEnviron) * (1 + newEnvironSize)); /* Add one for trailing NULL */
+        newEnvironSize = newEnvironCount + [augment_env count] + 1;
+        newEnviron = malloc_scanned(sizeof(*newEnviron) * (1 + newEnvironSize)); /* Add one for trailing NULL */
         
         for(unsigned envIndex = 0; oldEnviron[envIndex] != NULL; envIndex ++) {
             newEnviron[envIndex] = strdup(oldEnviron[envIndex]);
@@ -1087,15 +1107,15 @@ static char **computeToolEnvironment(NSDictionary *envp, NSDictionary *setenv, N
         modified = NO;
     }
     
-    if (setenv && [setenv count]) {
-        NSEnumerator *e = [setenv keyEnumerator];
+    if (augment_env && [augment_env count]) {
+        NSEnumerator *e = [augment_env keyEnumerator];
         id key;
         while( (key = [e nextObject]) != nil) {
             size_t namelen = 0;
-            char *entry = makeEnvEntry(key, &namelen, [setenv objectForKey:key]);
+            char *entry = makeEnvEntry(key, &namelen, [augment_env objectForKey:key]);
             
             for(unsigned envIndex = 0; envIndex < newEnvironCount; envIndex ++) {
-                if (strncmp(newEnviron[envIndex], entry, namelen) == 0) {
+                if (strncmp(newEnviron[envIndex], entry, namelen+1) == 0) {
                     free(newEnviron[envIndex]);
                     newEnviron[envIndex] = entry;
                     entry = NULL;
@@ -1115,7 +1135,7 @@ static char **computeToolEnvironment(NSDictionary *envp, NSDictionary *setenv, N
         const char *newdir = [ensurePath fileSystemRepresentation];
         for(unsigned envIndex = 0; envIndex < newEnvironCount; envIndex ++) {
             if (strncmp(newEnviron[envIndex], "PATH=", 5) == 0) {
-                char *newPathStr = pathStringIncludingDirectory(newEnviron[envIndex], newdir, ":");
+                char *newPathStr = pathStringIncludingDirectory(newEnviron[envIndex]+5, newdir, ":");
                 if (newPathStr) {
                     newEnviron[envIndex] = realloc(newEnviron[envIndex], 6 + strlen(newPathStr));
                     strcpy(5 + newEnviron[envIndex], newPathStr);
@@ -1127,6 +1147,7 @@ static char **computeToolEnvironment(NSDictionary *envp, NSDictionary *setenv, N
         }
     }
     
+    OBASSERT(newEnvironCount <= newEnvironSize);
     newEnviron[newEnvironCount] = NULL;
     
     if (!modified) {

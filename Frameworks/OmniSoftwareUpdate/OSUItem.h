@@ -34,7 +34,6 @@ NSString * const OSUItemIgnoredBinding;       // Depends on whether the user has
     NSURL *_downloadURL;
     off_t _downloadSize;
     NSDictionary *_checksums;
-    NSString *_notionalItemOrigin;
     
     BOOL _available;
     BOOL _superseded;
@@ -55,7 +54,6 @@ NSString * const OSUItemIgnoredBinding;       // Depends on whether the user has
 - (NSString *)track;
 - (NSURL *)downloadURL;
 - (NSURL *)releaseNotesURL;
-- (NSString *)sourceLocation;
 
 - (BOOL)isFree;
 - (NSAttributedString *)priceAttributedString;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@ RCS_ID("$Id$")
 
 + (void)didLoad;
 {
-    [self registerProcessorClass:self fromContentType:[OWURL contentTypeForScheme:@"ftp"] toContentType:[OWContentType wildcardContentType] cost:1.0 producingSource:YES];
+    [self registerProcessorClass:self fromContentType:[OWURL contentTypeForScheme:@"ftp"] toContentType:[OWContentType wildcardContentType] cost:1.0f producingSource:YES];
 }
 
 + (BOOL)processorUsesNetwork

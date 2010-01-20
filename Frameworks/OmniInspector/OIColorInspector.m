@@ -1,4 +1,4 @@
-// Copyright 2002-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@ static void (*original_orderFront)(id self, SEL _cmd, id sender) = NULL;
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    int currentMode = [defaults integerForKey:@"NSColorPanelMode"];
+    NSInteger currentMode = [defaults integerForKey:@"NSColorPanelMode"];
     
     if (currentMode >= 1 && currentMode <= 4)
         [defaults setInteger:6 forKey:@"NSColorPanelMode"];

@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 //
 // $Id$
 
+#import <OmniAppKit/NSAlert-OAExtensions.h>
 #import <OmniAppKit/NSAppleScript-OAExtensions.h>
 #import <OmniAppKit/NSApplication-OAExtensions.h>
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
@@ -64,7 +65,6 @@
 #import <OmniAppKit/OADatePickerTextField.h>
 #import <OmniAppKit/OADataSourceTableColumn.h>
 #import <OmniAppKit/OADefaultSettingIndicatorButton.h>
-#import <OmniAppKit/OADockStatusItem.h>
 #import <OmniAppKit/OADocument.h>
 #import <OmniAppKit/OADocumentPositioningView.h>
 #import <OmniAppKit/OADragController.h>
@@ -79,7 +79,6 @@
 #import <OmniAppKit/OAHierarchicalPopUpController.h>
 #import <OmniAppKit/OAInternetConfig.h>
 #import <OmniAppKit/OAMouseTipWindow.h>
-#import <OmniAppKit/OAOSAScript.h>
 #import <OmniAppKit/OAOutlineViewEnumerator.h>
 #import <OmniAppKit/OAPageSelectableDocumentProtocol.h>
 #import <OmniAppKit/OAPasteboardHelper.h>
@@ -112,8 +111,8 @@
 #import <OmniAppKit/OAToolbar.h>
 #import <OmniAppKit/OAToolbarImageView.h>
 #import <OmniAppKit/OAToolbarItem.h>
-#import <OmniAppKit/OATypeAheadSelectionHelper.h>
 #import <OmniAppKit/OAUtilities.h>
 #import <OmniAppKit/OAVersion.h>
 #import <OmniAppKit/OAWindowCascade.h>
 #import <OmniAppKit/OAZoomableViewProtocol.h>
+#import <OmniAppKit/OACloseButtonOverlay.h>

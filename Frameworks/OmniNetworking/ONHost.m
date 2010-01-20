@@ -1,4 +1,4 @@
-// Copyright 1997-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -430,7 +430,7 @@ static void locked_disconnectFromSysConfig(void)
         case 0:
             // Success --- we got a hostname for this address. Look up the rest of the information about the host.
             @try {
-                host = [self hostForHostname:[NSString stringWithCString:hostnameBuffer encoding:NSASCIIStringEncoding]];
+                host = [self hostForHostname:[NSString stringWithUTF8String:hostnameBuffer]];
                 // Only accept the host if it actually does refer to the IP address we started with.
                 if ([[host addresses] indexOfObject:anAddress] == NSNotFound)
                     host = nil;
@@ -480,7 +480,7 @@ static void locked_disconnectFromSysConfig(void)
 
     NSArray *parts = [aHostname componentsSeparatedByString:@"."];
     NSMutableArray *encodedParts = [NSMutableArray array];
-    unsigned int partIndex, partCount = [parts count];
+    NSUInteger partIndex, partCount = [parts count];
 
     for (partIndex = 0; partIndex < partCount; partIndex++)
         [encodedParts addObject:[self _punycodeEncode:[[parts objectAtIndex:partIndex] precomposedStringWithCompatibilityMapping]]];
@@ -491,7 +491,7 @@ static void locked_disconnectFromSysConfig(void)
 {
     NSArray *labels = [anIDNHostname componentsSeparatedByString:@"."];
     NSMutableArray *decodedLabels;
-    int labelIndex, labelCount;
+    NSUInteger labelIndex, labelCount;
     BOOL wasEncoded;
     
     labelCount = [labels count];
@@ -522,7 +522,7 @@ static void locked_disconnectFromSysConfig(void)
 + (void)flushCache;
 {
     NSArray *hostnames;
-    unsigned int hostnameIndex, hostnameCount;
+    NSUInteger hostnameIndex, hostnameCount;
 
     [ONHostLookupLock lock];
     NS_DURING {
@@ -847,6 +847,23 @@ static void locked_disconnectFromSysConfig(void)
 
 // This method invokes the ONGetHostByName tool.  If there is an error looking up the addresses for the hostname, it will be returned in the exit status.  Otherwise, the network addresses for the host will be output as raw bytes in the byte order that they would have been returned to us from gethostbyname().  This allows us to easily parse the ints and stick them in a in_addr struct.
 
+static uint32_t getUint32(NSData *outputData, NSRange *range)
+{
+    NSRange from = *range;
+    if (from.length < 4) {
+        [NSException raise:NSRangeException format:@"Need 4 bytes, only have %u", from.length];
+    }
+    from.length = 4;
+    
+    uint32_t v = ~0;
+    [outputData getBytes:&v range:from];
+    
+    range->location = from.location + 4;
+    range->length -= 4;
+    
+    return ntohl(v);
+}
+
 - (void)_lookupHostInfoByPipe;
 {
     static NSString *ONGetHostByNamePath;
@@ -855,7 +872,7 @@ static void locked_disconnectFromSysConfig(void)
     int addressFamily, addressLength;
     NSData *addressData;
     ONHostAddress **addressIds;
-    unsigned int canonicalHostnameLength, hostnameLength;
+    NSUInteger canonicalHostnameLength, hostnameLength;
     NSRange nextRange;
     NSData *outputData;
 
@@ -868,7 +885,7 @@ static void locked_disconnectFromSysConfig(void)
         ONGetHostByNamePath = [[thisBundle pathForResource:@"ONGetHostEntry" ofType:toolExtension] retain];
         if (!ONGetHostByNamePath) {
             NSString *noONGetHostEntryMsg = NSLocalizedStringFromTableInBundle(@"Cannot find the ONGetHostEntry tool", @"OmniNetworking", thisBundle, @"error - resource is missing from framework bundle");
-            [NSException raise:ONGetHostByNameNotFoundExceptionName format:noONGetHostEntryMsg];
+            [[NSException exceptionWithName:ONGetHostByNameNotFoundExceptionName reason:noONGetHostEntryMsg userInfo:nil] raise];
         }
     }
 
@@ -912,7 +929,7 @@ static void locked_disconnectFromSysConfig(void)
                 break;
         }
 
-        unsigned int offset = 0, capacity = 8192;
+        size_t offset = 0, capacity = 8192;
         int childStatus;
 
         close(pipeWriteDescriptor); // Close the child's half of the pipe
@@ -920,7 +937,7 @@ static void locked_disconnectFromSysConfig(void)
         NSMutableData *readData = [NSMutableData dataWithLength:capacity];
         void *bytes = [readData mutableBytes];
         while (YES) {
-            int length = read(pipeReadDescriptor, bytes + offset, capacity - offset);
+            ssize_t length = read(pipeReadDescriptor, bytes + offset, capacity - offset);
 
             if (length == 0)
                 break;
@@ -954,18 +971,14 @@ static void locked_disconnectFromSysConfig(void)
     }
 
 
-    nextRange = NSMakeRange(0, sizeof(canonicalHostnameLength));
-    [outputData getBytes:&canonicalHostnameLength range:nextRange];
-    hostnameLength = MIN(canonicalHostnameLength, [outputData length] - sizeof(canonicalHostnameLength));
-    nextRange = NSMakeRange(NSMaxRange(nextRange), hostnameLength);
+    nextRange = NSMakeRange(0, [outputData length]);
+    canonicalHostnameLength = getUint32(outputData, &nextRange);
+    hostnameLength = MIN(canonicalHostnameLength, nextRange.length);
+    nextRange.length = hostnameLength;
     canonicalHostname = [[NSString alloc] initWithData:[outputData subdataWithRange:nextRange] encoding:[NSString defaultCStringEncoding]];
     nextRange = NSMakeRange(NSMaxRange(nextRange), [outputData length] - NSMaxRange(nextRange));
-    if (nextRange.length < 2*sizeof(int))
-        [ONHost _raiseExceptionForHostErrorNumber:-1 hostname:hostname];
-    [outputData getBytes:&addressFamily range:NSMakeRange(nextRange.location, sizeof(int))];
-    [outputData getBytes:&addressLength range:NSMakeRange(nextRange.location + sizeof(int), sizeof(int))];
-    nextRange.location += 2*sizeof(int);
-    nextRange.length   -= 2*sizeof(int);
+    addressFamily = getUint32(outputData, &nextRange);
+    addressLength = getUint32(outputData, &nextRange);
     addressData = [outputData subdataWithRange:nextRange];
     addressCount = [addressData length] / addressLength;
     OBASSERT(([addressData length] % addressLength) == 0);
@@ -1093,7 +1106,7 @@ static BOOL validIDNCodeValue(unsigned codepoint)
 {
     // setup buffers
     char outputBuffer[MAX_HOSTNAME_LEN]; 
-    int stringLength = [aString length];
+    size_t stringLength = [aString length];
     unichar *inputBuffer = alloca(stringLength * sizeof(unichar));
     unichar *inputPtr, *inputEnd = inputBuffer + stringLength;
     char *outputEnd = outputBuffer + MAX_HOSTNAME_LEN;
@@ -1111,7 +1124,7 @@ static BOOL validIDNCodeValue(unsigned codepoint)
         if (*inputPtr < 0x80) 
             *outputPtr++ = *inputPtr;            
     }
-    int handled = outputPtr - outputBuffer;
+    unsigned int handled = (unsigned int)(outputPtr - outputBuffer);
     
     if (handled == stringLength)
         return aString;
@@ -1179,7 +1192,7 @@ static BOOL validIDNCodeValue(unsigned codepoint)
 #ifdef DEBUG_toon    
     NSLog(@"Punycode encoded \"%@\" into \"%s\"", aString, outputBuffer);
 #endif    
-    return [ACEPrefix stringByAppendingString:[NSString stringWithCString:outputBuffer encoding:NSASCIIStringEncoding]];
+    return [ACEPrefix stringByAppendingString:[NSString stringWithUTF8String:outputBuffer]];
 }
 
 + (NSString *)_punycodeDecode:(NSString *)aString;
@@ -1188,7 +1201,7 @@ static BOOL validIDNCodeValue(unsigned codepoint)
     NSRange deltas;
     unsigned int *delta;
     unsigned deltaCount, deltaIndex;
-    unsigned labelLength, decodedLabelLength;
+    NSUInteger labelLength;
     const unsigned acePrefixLength = 4;
         
     /* Check that the string has the IDNA ACE prefix. Most strings won't. */
@@ -1221,7 +1234,7 @@ static BOOL validIDNCodeValue(unsigned codepoint)
         return aString;
     }
     
-    decodedLabelLength = [decoded length];
+    unsigned int decodedLabelLength = (unsigned)[decoded length];
     
     /* Convert the variable-length-integers in the deltas section into machine representation */
     {

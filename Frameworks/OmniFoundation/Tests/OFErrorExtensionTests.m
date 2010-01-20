@@ -1,4 +1,4 @@
-// Copyright 2005-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,14 +95,14 @@ enum {
 - (void)testCausedByUserCancelling_Direct;
 {
     NSError *error = nil;
-    OBErrorWithInfo(&error, FooError, OBUserCancelledActionErrorKey, [NSNumber numberWithBool:YES], nil);
+    OBUserCancelledError(&error);
     should([error causedByUserCancelling]);
 }
 
 - (void)testCausedByUserCancelling_Indirect;
 {
     NSError *error = nil;
-    OBErrorWithInfo(&error, FooError, OBUserCancelledActionErrorKey, [NSNumber numberWithBool:YES], nil);
+    OBUserCancelledError(&error);
     OBErrorWithInfo(&error, BarError, nil);
     should([error causedByUserCancelling]);
 }

@@ -1,4 +1,4 @@
-// Copyright 1997-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,13 +31,13 @@ OmniNetworking_PRIVATE_EXTERN BOOL ONSocketStateDebug = NO;
 + (int)ipProtocol;
 {
     OBRequestConcreteImplementation(self, _cmd);
-    return NSNotFound; // Not executed
+    return -1; // Not executed
 }
 
 + (int)socketType;
 {
     OBRequestConcreteImplementation(self, _cmd);
-    return NSNotFound; // Not executed
+    return -1; // Not executed
 }
 
 + (ONInternetSocket *)socket;
@@ -334,7 +334,7 @@ static ONPortAddress *getEndpointAddress(ONInternetSocket *self, int (*getaddr)(
     unsigned int triesRemaining = 2;
     while (triesRemaining--) {
         NSArray *interfaces = [ONInterface getInterfaces:triesRemaining == 0];
-        unsigned int interfaceCount = [interfaces count];
+        NSUInteger interfaceCount = [interfaces count];
         while (interfaceCount--) {
             ONInterface  *interface = [interfaces objectAtIndex:interfaceCount];
 
@@ -360,7 +360,7 @@ static ONPortAddress *getEndpointAddress(ONInternetSocket *self, int (*getaddr)(
 
 - (void)connectToAddressFromArray:(NSArray *)portAddresses
 {
-    int addressCount, addressIndex;
+    NSUInteger addressCount, addressIndex;
     NSException *firstTemporaryException;
 
     firstTemporaryException = nil;
@@ -388,8 +388,7 @@ static ONPortAddress *getEndpointAddress(ONInternetSocket *self, int (*getaddr)(
     if (firstTemporaryException)
         [firstTemporaryException raise];
     else
-        [NSException raise:ONInternetSocketConnectFailedExceptionName
-                    format:NSLocalizedStringFromTableInBundle(@"Unable to connect: no IP addresses to connect to", @"OmniNetworking", [NSBundle bundleForClass:[ONInternetSocket class]], @"error")];
+        [[NSException exceptionWithName:ONInternetSocketConnectFailedExceptionName reason:NSLocalizedStringFromTableInBundle(@"Unable to connect: no IP addresses to connect to", @"OmniNetworking", [NSBundle bundleForClass:[ONInternetSocket class]], @"error") userInfo:nil] raise];
 }
 
 - (void)connectToPortAddress:(ONPortAddress *)portAddress;
@@ -483,7 +482,7 @@ static ONPortAddress *getEndpointAddress(ONInternetSocket *self, int (*getaddr)(
 {
     NSArray *hostAddresses;
     NSMutableArray *portAddresses;
-    unsigned int addressCount, addressIndex;
+    NSUInteger addressCount, addressIndex;
 
     /* Make an array of ONPortAddresses from the host's list of ONHostAddresses. TODO: This logic should really be in ONHost; perhaps by calling -portAddressesForService: with an anonymous numeric service object */
     hostAddresses = [host addresses];
@@ -518,13 +517,16 @@ static ONPortAddress *getEndpointAddress(ONInternetSocket *self, int (*getaddr)(
 
     if (socketFD == -1) {
         NSString *localizedErrorMsg = NSLocalizedStringFromTableInBundle(@"Attempted read from a non-connected socket", @"OmniNetworking", [NSBundle bundleForClass:[ONInternetSocket class]], @"error - socket is unxepectedly closed or not connected");
-        [NSException raise:ONInternetSocketNotConnectedExceptionName format:localizedErrorMsg];
+        [[NSException exceptionWithName:ONInternetSocketNotConnectedExceptionName reason:localizedErrorMsg userInfo:nil] raise];
     }
 
     if (timeout < 0.0)
         timeout = 0.0;
-    selectTimeout.tv_sec = timeout;
-    selectTimeout.tv_usec = 1.0e6 * (timeout - selectTimeout.tv_sec);
+    
+    double usec, isec;
+    usec = modf(timeout, &isec);
+    selectTimeout.tv_sec = (unsigned int)isec;
+    selectTimeout.tv_usec = (unsigned int)floor(1.0e6 * usec);
     FD_ZERO(&readfds);
     FD_SET(socketFD, &readfds);
     returnValue = select(socketFD + 1, &readfds, NULL, NULL, &selectTimeout);

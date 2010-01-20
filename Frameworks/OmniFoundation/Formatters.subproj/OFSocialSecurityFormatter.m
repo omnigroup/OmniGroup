@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@
     return object;
 }
 
-- (BOOL)getObjectValue:(id *)anObject forString:(NSString *)string errorDescription:(NSString **)error;
+- (BOOL)getObjectValue:(out id *)anObject forString:(NSString *)string errorDescription:(out NSString **)error;
 {
     BOOL isValid;
     NSString *newString = nil;
@@ -57,8 +57,7 @@ enum SocialSecurityState {
 
 - (BOOL)isPartialStringValid:(NSString *)partialString newEditingString:(NSString **)newString errorDescription:(NSString **)error;
 {
-    unsigned int length = [partialString length];
-    unsigned int characterIndex;
+    NSUInteger length = [partialString length];
     unsigned int digits = 0;
     enum SocialSecurityState state = ScanFirstPart;
     enum SocialSecurityState previousState = -1;
@@ -68,7 +67,7 @@ enum SocialSecurityState {
     BOOL changed = NO;
     BOOL droppedCharacters = NO;
 
-    for (characterIndex = 0; characterIndex < length; characterIndex++) {
+    for (NSUInteger characterIndex = 0; characterIndex < length; characterIndex++) {
         c = [partialString characterAtIndex:characterIndex];
 
         switch(state) {

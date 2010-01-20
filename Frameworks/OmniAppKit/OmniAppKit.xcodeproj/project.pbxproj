@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		007E767810C8469F00313878 /* OABoxSeparator.h in Headers */ = {isa = PBXBuildFile; fileRef = 007E767610C8469F00313878 /* OABoxSeparator.h */; };
+		007E767910C8469F00313878 /* OABoxSeparator.m in Sources */ = {isa = PBXBuildFile; fileRef = 007E767710C8469F00313878 /* OABoxSeparator.m */; };
 		340DD56109AD38E900E8A437 /* NSFileWrapper-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		340DD56209AD38E900E8A437 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; };
 		3425E49009C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -27,6 +29,8 @@
 		3477D8D50974EF3200DC4FC3 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51FBBFE8AB2E911C9CC38 /* OmniBase.framework */; };
 		349F65E20EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 349F65E00EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		349F65E30EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 349F65E10EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m */; };
+		34A201230FF0454400B699DB /* NSAlert-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2011E0FF0453800B699DB /* NSAlert-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */; };
 		34AF4BE20C99963F003DEC1B /* OAColorArchivingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AF4BE10C99963F003DEC1B /* OAColorArchivingTests.m */; };
 		34E46E9D0CDEB7330066E943 /* OAFlippedView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E46E9B0CDEB7330066E943 /* OAFlippedView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34E46E9E0CDEB7330066E943 /* OAFlippedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E46E9C0CDEB7330066E943 /* OAFlippedView.m */; };
@@ -48,7 +52,6 @@
 		4A785F8B0B040E5500B513F3 /* smallcalendar.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A785F8A0B040E5500B513F3 /* smallcalendar.png */; };
 		4AA05CC70B0414F400EDED39 /* OAPopupDatePicker.nib in Resources */ = {isa = PBXBuildFile; fileRef = 4AA05CC60B0414F400EDED39 /* OAPopupDatePicker.nib */; };
 		4AA1E67C08AA764600E2FF6B /* OAInternetConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 683A0C790033CCD0CD999A52 /* OAInternetConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E67D08AA764600E2FF6B /* OAOSAScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F54F126C0204F4480127B3D4 /* OAOSAScript.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E67E08AA764600E2FF6B /* NSColor-ColorSyncExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CBB57E50416D63300E7FE1C /* NSColor-ColorSyncExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E67F08AA764600E2FF6B /* NSImage-ColorSyncExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CBB57EA0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E68008AA764600E2FF6B /* OAColorProfile.h in Headers */ = {isa = PBXBuildFile; fileRef = F5AC9DBB032D12E201B4A65D /* OAColorProfile.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -123,7 +126,6 @@
 		4AA1E6D808AA764600E2FF6B /* OAContextPopUpButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 345057E106F207DD0097A113 /* OAContextPopUpButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6D908AA764600E2FF6B /* OADataSourceTableColumn.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B14EEC0572E2820097A113 /* OADataSourceTableColumn.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6DA08AA764600E2FF6B /* OADefaultSettingIndicatorButton.h in Headers */ = {isa = PBXBuildFile; fileRef = B584AFE6058A7A2F0097A10E /* OADefaultSettingIndicatorButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6DB08AA764600E2FF6B /* OADockStatusItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 397A06CD000841B57F000001 /* OADockStatusItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6DC08AA764600E2FF6B /* OADocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 345936AE052C7A760097A113 /* OADocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6DD08AA764600E2FF6B /* OADocumentPositioningView.h in Headers */ = {isa = PBXBuildFile; fileRef = 5BEAF23E01FF6D7D0297A15C /* OADocumentPositioningView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6DE08AA764600E2FF6B /* OADottedLine.h in Headers */ = {isa = PBXBuildFile; fileRef = 662681AD00DFECA50097A13D /* OADottedLine.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -159,7 +161,6 @@
 		4AA1E6FF08AA764600E2FF6B /* OAToolbar.h in Headers */ = {isa = PBXBuildFile; fileRef = 34476AE306DF790B0097A113 /* OAToolbar.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E70008AA764600E2FF6B /* OAToolbarImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = 0147B439003E0D307F000001 /* OAToolbarImageView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E70108AA764600E2FF6B /* OAToolbarItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 34001C4A00325FDBC697A13D /* OAToolbarItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E70208AA764600E2FF6B /* OATypeAheadSelectionHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 66525F0701768E3B0097A13E /* OATypeAheadSelectionHelper.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E70308AA764600E2FF6B /* OAVectorCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 348A508B05715F0A0097A113 /* OAVectorCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E70408AA764600E2FF6B /* OAVectorView.h in Headers */ = {isa = PBXBuildFile; fileRef = 348A50790571430C0097A113 /* OAVectorView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E70508AA764600E2FF6B /* OAWindowCascade.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CF02C24FF1319B8C697A12F /* OAWindowCascade.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -168,7 +169,6 @@
 		4AA1E70808AA764600E2FF6B /* OAAutosizingHorizontalRule.h in Headers */ = {isa = PBXBuildFile; fileRef = 3412B1D2089EE7E10046872B /* OAAutosizingHorizontalRule.h */; };
 		4AA1E70B08AA764600E2FF6B /* OmniAppKit.strings in Resources */ = {isa = PBXBuildFile; fileRef = 030CEE2AFFC3FFE7C697A14E /* OmniAppKit.strings */; };
 		4AA1E70C08AA764600E2FF6B /* OAFindPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = 00E51F0AFE8AB2E911C9CC38 /* OAFindPanel.nib */; };
-		4AA1E70D08AA764600E2FF6B /* OAScriptSheet.nib in Resources */ = {isa = PBXBuildFile; fileRef = F5D4DA380222D61401B4A65D /* OAScriptSheet.nib */; };
 		4AA1E70E08AA764600E2FF6B /* OAScriptIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 6644E43C022F9FF70097A138 /* OAScriptIcon.png */; };
 		4AA1E71A08AA764600E2FF6B /* OAAction.png in Resources */ = {isa = PBXBuildFile; fileRef = E20CCE8D058021200097A12E /* OAAction.png */; };
 		4AA1E71B08AA764600E2FF6B /* OABackArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CCB227F004327677F000001 /* OABackArrow.png */; };
@@ -185,9 +185,6 @@
 		4AA1E72A08AA764600E2FF6B /* OAChasingArrows.png in Resources */ = {isa = PBXBuildFile; fileRef = 6389AAF8FFFFE828C697A14E /* OAChasingArrows.png */; };
 		4AA1E72B08AA764600E2FF6B /* OADefaultSettingIndicatorOff.png in Resources */ = {isa = PBXBuildFile; fileRef = B584AFEA058A7A5D0097A10E /* OADefaultSettingIndicatorOff.png */; };
 		4AA1E72C08AA764600E2FF6B /* OADefaultSettingIndicatorOn.png in Resources */ = {isa = PBXBuildFile; fileRef = B584AFEC058A7A5D0097A10E /* OADefaultSettingIndicatorOn.png */; };
-		4AA1E72D08AA764600E2FF6B /* OADockStatusItemCenter.png in Resources */ = {isa = PBXBuildFile; fileRef = 3FDA416102097FFE0297A14E /* OADockStatusItemCenter.png */; };
-		4AA1E72E08AA764600E2FF6B /* OADockStatusItemLeft.png in Resources */ = {isa = PBXBuildFile; fileRef = 3FDA415F02097FFE0297A14E /* OADockStatusItemLeft.png */; };
-		4AA1E72F08AA764600E2FF6B /* OADockStatusItemRight.png in Resources */ = {isa = PBXBuildFile; fileRef = 3FDA416002097FFE0297A14E /* OADockStatusItemRight.png */; };
 		4AA1E73008AA764600E2FF6B /* OALeftArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 312A98BC008EFFB6C697A14B /* OALeftArrow.png */; };
 		4AA1E73108AA764600E2FF6B /* OALeftArrowPressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 312A98BD008EFFB6C697A14B /* OALeftArrowPressed.png */; };
 		4AA1E73208AA764600E2FF6B /* OARightArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 312A98BE008EFFB6C697A14B /* OARightArrow.png */; };
@@ -233,7 +230,6 @@
 		4AA1E76108AA764600E2FF6B /* CharsetCategories.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2D7993406DD0F730097A11C /* CharsetCategories.plist */; };
 		4AA1E76208AA764600E2FF6B /* OAGear.png in Resources */ = {isa = PBXBuildFile; fileRef = 3450579A06F203F40097A113 /* OAGear.png */; };
 		4AA1E76908AA764600E2FF6B /* OAInternetConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 683A0C7A0033CCD0CD999A52 /* OAInternetConfig.m */; };
-		4AA1E76A08AA764600E2FF6B /* OAOSAScript.m in Sources */ = {isa = PBXBuildFile; fileRef = F54F126D0204F4480127B3D4 /* OAOSAScript.m */; };
 		4AA1E76B08AA764600E2FF6B /* NSColor-ColorSyncExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57E60416D63300E7FE1C /* NSColor-ColorSyncExtensions.m */; };
 		4AA1E76C08AA764600E2FF6B /* NSImage-ColorSyncExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57EB0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.m */; };
 		4AA1E76D08AA764600E2FF6B /* OAColorProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = F5AC9DBC032D12E201B4A65D /* OAColorProfile.m */; };
@@ -302,7 +298,6 @@
 		4AA1E7BC08AA764600E2FF6B /* OAContextButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C3F57A050FE63D0097A10E /* OAContextButton.m */; };
 		4AA1E7BD08AA764600E2FF6B /* OADataSourceTableColumn.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B14EED0572E2820097A113 /* OADataSourceTableColumn.m */; };
 		4AA1E7BE08AA764600E2FF6B /* OADefaultSettingIndicatorButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B584AFE7058A7A2F0097A10E /* OADefaultSettingIndicatorButton.m */; };
-		4AA1E7BF08AA764600E2FF6B /* OADockStatusItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 397A06CF0008423B7F000001 /* OADockStatusItem.m */; };
 		4AA1E7C008AA764600E2FF6B /* OADocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 345936AF052C7A760097A113 /* OADocument.m */; };
 		4AA1E7C108AA764600E2FF6B /* OADocumentPositioningView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BEAF23F01FF6D7D0297A15C /* OADocumentPositioningView.m */; };
 		4AA1E7C208AA764600E2FF6B /* OADottedLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 662681AE00DFECA50097A13D /* OADottedLine.m */; };
@@ -336,7 +331,6 @@
 		4AA1E7E108AA764600E2FF6B /* OAToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 34476AE406DF790B0097A113 /* OAToolbar.m */; };
 		4AA1E7E208AA764600E2FF6B /* OAToolbarImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0147B43A003E0D307F000001 /* OAToolbarImageView.m */; };
 		4AA1E7E308AA764600E2FF6B /* OAToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 34001C4B00325FDBC697A13D /* OAToolbarItem.m */; };
-		4AA1E7E408AA764600E2FF6B /* OATypeAheadSelectionHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 66525F0801768E3B0097A13E /* OATypeAheadSelectionHelper.m */; };
 		4AA1E7E508AA764600E2FF6B /* OAVectorCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A508C05715F0A0097A113 /* OAVectorCell.m */; };
 		4AA1E7E608AA764600E2FF6B /* OAVectorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A507A0571430C0097A113 /* OAVectorView.m */; };
 		4AA1E7E708AA764600E2FF6B /* OAWindowCascade.m in Sources */ = {isa = PBXBuildFile; fileRef = 0CF02C25FF1319B8C697A12F /* OAWindowCascade.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
@@ -362,6 +356,8 @@
 		4AA1E82F08AA764700E2FF6B /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */; };
 		50A5C89608C5505500B1C5E4 /* NSEvent-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 50A5C89408C5505500B1C5E4 /* NSEvent-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50A5C89708C5505500B1C5E4 /* NSEvent-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */; };
+		94E1CE0B10D803C5000A01F9 /* OACloseButtonOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		94E1CE0C10D803C5000A01F9 /* OACloseButtonOverlay.m in Sources */ = {isa = PBXBuildFile; fileRef = 94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */; };
 		9FFB676D0C18A44000910EEF /* OADatePicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 9FFB676B0C18A44000910EEF /* OADatePicker.h */; };
 		9FFB676E0C18A44000910EEF /* OADatePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFB676C0C18A44000910EEF /* OADatePicker.m */; };
 		A216D1350AB61E9C00CEC8C0 /* NSBezierPath-OAInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = A216D1330AB61E9C00CEC8C0 /* NSBezierPath-OAInternal.h */; };
@@ -439,6 +435,8 @@
 /* Begin PBXFileReference section */
 		000303DD014E0AC13997A12D /* NSDocumentController-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDocumentController-OAExtensions.h"; sourceTree = "<group>"; };
 		000303DE014E0AC13997A12D /* NSDocumentController-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDocumentController-OAExtensions.m"; sourceTree = "<group>"; };
+		007E767610C8469F00313878 /* OABoxSeparator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OABoxSeparator.h; sourceTree = "<group>"; };
+		007E767710C8469F00313878 /* OABoxSeparator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OABoxSeparator.m; sourceTree = "<group>"; };
 		00E51EF4FE8AB2E911C9CC38 /* OAAppKitQueueProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAppKitQueueProcessor.m; sourceTree = "<group>"; };
 		00E51EF5FE8AB2E911C9CC38 /* OAApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAApplication.m; sourceTree = SOURCE_ROOT; };
 		00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorPalette.m; sourceTree = SOURCE_ROOT; };
@@ -631,6 +629,8 @@
 		349F65E00EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSResponder-OAExtensions.h"; sourceTree = "<group>"; };
 		349F65E10EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSResponder-OAExtensions.m"; sourceTree = "<group>"; };
 		34A1594805642A810097A113 /* OmniAppKit.order */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniAppKit.order; sourceTree = "<group>"; };
+		34A2011E0FF0453800B699DB /* NSAlert-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAlert-OAExtensions.h"; sourceTree = "<group>"; };
+		34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAlert-OAExtensions.m"; sourceTree = "<group>"; };
 		34AF4BE10C99963F003DEC1B /* OAColorArchivingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorArchivingTests.m; sourceTree = "<group>"; };
 		34B14EEC0572E2820097A113 /* OADataSourceTableColumn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADataSourceTableColumn.h; sourceTree = "<group>"; };
 		34B14EED0572E2820097A113 /* OADataSourceTableColumn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADataSourceTableColumn.m; sourceTree = "<group>"; };
@@ -645,15 +645,10 @@
 		34F098FF09322B800001D0D5 /* OAAboutPanelController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAboutPanelController.h; sourceTree = "<group>"; };
 		34F0990009322B800001D0D5 /* OAAboutPanelController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAboutPanelController.m; sourceTree = "<group>"; };
 		34F0995709322EA30001D0D5 /* OAAboutPanel.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = OAAboutPanel.nib; sourceTree = "<group>"; };
-		397A06CD000841B57F000001 /* OADockStatusItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADockStatusItem.h; sourceTree = "<group>"; };
-		397A06CF0008423B7F000001 /* OADockStatusItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADockStatusItem.m; sourceTree = "<group>"; };
 		3F411EA1036D27330297A14E /* NSBezierPath-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBezierPath-OAExtensions.h"; sourceTree = "<group>"; };
 		3F411EA2036D27330297A14E /* NSBezierPath-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBezierPath-OAExtensions.m"; sourceTree = "<group>"; };
 		3F51348101C5B6D40297A14E /* OAShrinkyTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAShrinkyTextField.h; sourceTree = "<group>"; };
 		3F51348201C5B6D40297A14E /* OAShrinkyTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAShrinkyTextField.m; sourceTree = "<group>"; };
-		3FDA415F02097FFE0297A14E /* OADockStatusItemLeft.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OADockStatusItemLeft.png; path = Widgets.subproj/OADockStatusItemLeft.png; sourceTree = SOURCE_ROOT; };
-		3FDA416002097FFE0297A14E /* OADockStatusItemRight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OADockStatusItemRight.png; path = Widgets.subproj/OADockStatusItemRight.png; sourceTree = SOURCE_ROOT; };
-		3FDA416102097FFE0297A14E /* OADockStatusItemCenter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OADockStatusItemCenter.png; path = Widgets.subproj/OADockStatusItemCenter.png; sourceTree = SOURCE_ROOT; };
 		4006B5FCFF2D5911C697A12F /* OAOutlineViewEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAOutlineViewEnumerator.h; sourceTree = "<group>"; };
 		4006B5FDFF2D5911C697A12F /* OAOutlineViewEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAOutlineViewEnumerator.m; sourceTree = "<group>"; };
 		4205721D0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableAttributedString-OAExtensions.h"; sourceTree = "<group>"; };
@@ -678,7 +673,7 @@
 		4A9FDD370655955D0097A149 /* OAController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAController.h; sourceTree = "<group>"; };
 		4A9FDD380655955D0097A149 /* OAController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAController.m; sourceTree = "<group>"; };
 		4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AA1E81108AA764700E2FF6B /* OAUnitTests.otest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAUnitTests.otest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAUnitTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OAMakeImageSizeIntegral; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1E82C08AA764700E2FF6B /* OAPatternColorPicker.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAPatternColorPicker.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1EBCD08AA772700E2FF6B /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
@@ -739,6 +734,8 @@
 		70BA5ED6FF72DDC0C697A146 /* OAHierarchicalPopUpController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAHierarchicalPopUpController.h; sourceTree = "<group>"; };
 		70BA5ED7FF72DDC0C697A146 /* OAHierarchicalPopUpController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAHierarchicalPopUpController.m; sourceTree = "<group>"; };
 		7F54986F041FDCAE0097A14E /* English */ = {isa = PBXFileReference; lastKnownFileType = file; name = English; path = "English.lproj/Classic Crayons.clr"; sourceTree = "<group>"; };
+		94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OACloseButtonOverlay.h; sourceTree = "<group>"; };
+		94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OACloseButtonOverlay.m; sourceTree = "<group>"; };
 		9FFB676B0C18A44000910EEF /* OADatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADatePicker.h; sourceTree = "<group>"; };
 		9FFB676C0C18A44000910EEF /* OADatePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADatePicker.m; sourceTree = "<group>"; };
 		A207C22F0AA3BC7F00C3A5EF /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
@@ -875,8 +872,6 @@
 		F500F43C0204C91901648025 /* NSFileManager-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager-OAExtensions.m"; sourceTree = "<group>"; };
 		F54F12680204F1370127B3D4 /* NSTextStorage-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSTextStorage-OAExtensions.h"; path = "OpenStepExtensions.subproj/NSTextStorage-OAExtensions.h"; sourceTree = "<group>"; };
 		F54F12690204F1370127B3D4 /* NSTextStorage-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSTextStorage-OAExtensions.m"; path = "OpenStepExtensions.subproj/NSTextStorage-OAExtensions.m"; sourceTree = "<group>"; };
-		F54F126C0204F4480127B3D4 /* OAOSAScript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAOSAScript.h; sourceTree = "<group>"; };
-		F54F126D0204F4480127B3D4 /* OAOSAScript.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAOSAScript.m; sourceTree = "<group>"; };
 		F54F12710204F5960127B3D4 /* ExtendedText.scriptSuite */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = ExtendedText.scriptSuite; sourceTree = "<group>"; };
 		F54F12730204F5960127B3D4 /* ExtendedText.scriptTerminology */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = ExtendedText.scriptTerminology; sourceTree = "<group>"; };
 		F57089B301FEA73201B4A65B /* OAScriptToolbarHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAScriptToolbarHelper.h; sourceTree = SOURCE_ROOT; };
@@ -885,7 +880,6 @@
 		F59B07D001FE36AE01B4A65D /* OAToolbarWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbarWindowController.m; sourceTree = SOURCE_ROOT; };
 		F5AC9DBB032D12E201B4A65D /* OAColorProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAColorProfile.h; sourceTree = "<group>"; };
 		F5AC9DBC032D12E201B4A65D /* OAColorProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorProfile.m; sourceTree = "<group>"; };
-		F5D4DA390222D61401B4A65D /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OAScriptSheet.nib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -936,11 +930,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		007E767510C8465D00313878 /* NSBox */ = {
+			isa = PBXGroup;
+			children = (
+				007E767610C8469F00313878 /* OABoxSeparator.h */,
+				007E767710C8469F00313878 /* OABoxSeparator.m */,
+			);
+			name = NSBox;
+			sourceTree = "<group>";
+		};
 		00E24AF3FEBFA1D7C697A14E /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */,
-				4AA1E81108AA764700E2FF6B /* OAUnitTests.otest */,
+				4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */,
 				4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */,
 				4AA1E82C08AA764700E2FF6B /* OAPatternColorPicker.bundle */,
 			);
@@ -972,6 +975,7 @@
 			isa = PBXGroup;
 			children = (
 				3FDA4149020973770297A14E /* Foundation */,
+				34A201260FF0454B00B699DB /* NSAlert */,
 				66D9C71F029F51A90097A138 /* NSAppleScript */,
 				3FDA4143020972AA0297A14E /* NSApplication */,
 				3F411EA0036D27010297A14E /* NSBezierPath */,
@@ -1071,17 +1075,6 @@
 			name = NSDocument;
 			sourceTree = "<group>";
 		};
-		1D4D829B04119FCD0097A138 /* OAOSAScript */ = {
-			isa = PBXGroup;
-			children = (
-				F54F126C0204F4480127B3D4 /* OAOSAScript.h */,
-				F54F126D0204F4480127B3D4 /* OAOSAScript.m */,
-				F5D4DA380222D61401B4A65D /* OAScriptSheet.nib */,
-			);
-			name = OAOSAScript;
-			path = Carbon;
-			sourceTree = SOURCE_ROOT;
-		};
 		1D4D829C0411A15C0097A138 /* Obsolete or Deprecated */ = {
 			isa = PBXGroup;
 			children = (
@@ -1167,6 +1160,15 @@
 			name = NSResponder;
 			sourceTree = "<group>";
 		};
+		34A201260FF0454B00B699DB /* NSAlert */ = {
+			isa = PBXGroup;
+			children = (
+				34A2011E0FF0453800B699DB /* NSAlert-OAExtensions.h */,
+				34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */,
+			);
+			name = NSAlert;
+			sourceTree = "<group>";
+		};
 		34DBC8C105979AB00097A113 /* Tools */ = {
 			isa = PBXGroup;
 			children = (
@@ -1244,7 +1246,6 @@
 				345057E606F209090097A113 /* OAContextControl.m */,
 				345057E106F207DD0097A113 /* OAContextPopUpButton.h */,
 				345057E206F207DD0097A113 /* OAContextPopUpButton.m */,
-				3FDA415D0209771F0297A14E /* Dock Status Item */,
 				662681AD00DFECA50097A13D /* OADottedLine.h */,
 				662681AE00DFECA50097A13D /* OADottedLine.m */,
 				00F1451300106CD07F000001 /* OAFileWell.h */,
@@ -1282,6 +1283,8 @@
 				348A507A0571430C0097A113 /* OAVectorView.m */,
 				348A508B05715F0A0097A113 /* OAVectorCell.h */,
 				348A508C05715F0A0097A113 /* OAVectorCell.m */,
+				94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */,
+				94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */,
 			);
 			name = Widgets;
 			path = Widgets.subproj;
@@ -1353,6 +1356,7 @@
 		3FDA4138020970130297A14E /* NSView */ = {
 			isa = PBXGroup;
 			children = (
+				007E767510C8465D00313878 /* NSBox */,
 				3FDA4139020970130297A14E /* NSControl */,
 				3FDA4141020970CB0297A14E /* NSScrollView */,
 				3FDA41420209714E0297A14E /* NSSplitView */,
@@ -1684,18 +1688,6 @@
 			name = NSToolbar;
 			sourceTree = "<group>";
 		};
-		3FDA415D0209771F0297A14E /* Dock Status Item */ = {
-			isa = PBXGroup;
-			children = (
-				397A06CD000841B57F000001 /* OADockStatusItem.h */,
-				397A06CF0008423B7F000001 /* OADockStatusItem.m */,
-				3FDA415F02097FFE0297A14E /* OADockStatusItemLeft.png */,
-				3FDA416102097FFE0297A14E /* OADockStatusItemCenter.png */,
-				3FDA416002097FFE0297A14E /* OADockStatusItemRight.png */,
-			);
-			name = "Dock Status Item";
-			sourceTree = "<group>";
-		};
 		49AFC65405F01E340097A137 /* NSPasteboard */ = {
 			isa = PBXGroup;
 			children = (
@@ -1859,7 +1851,6 @@
 			children = (
 				683A0C790033CCD0CD999A52 /* OAInternetConfig.h */,
 				683A0C7A0033CCD0CD999A52 /* OAInternetConfig.m */,
-				1D4D829B04119FCD0097A138 /* OAOSAScript */,
 			);
 			path = Carbon;
 			sourceTree = "<group>";
@@ -2068,7 +2059,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AA1E67C08AA764600E2FF6B /* OAInternetConfig.h in Headers */,
-				4AA1E67D08AA764600E2FF6B /* OAOSAScript.h in Headers */,
 				4AA1E67E08AA764600E2FF6B /* NSColor-ColorSyncExtensions.h in Headers */,
 				4AA1E67F08AA764600E2FF6B /* NSImage-ColorSyncExtensions.h in Headers */,
 				4AA1E68008AA764600E2FF6B /* OAColorProfile.h in Headers */,
@@ -2144,7 +2134,6 @@
 				4AA1E6D808AA764600E2FF6B /* OAContextPopUpButton.h in Headers */,
 				4AA1E6D908AA764600E2FF6B /* OADataSourceTableColumn.h in Headers */,
 				4AA1E6DA08AA764600E2FF6B /* OADefaultSettingIndicatorButton.h in Headers */,
-				4AA1E6DB08AA764600E2FF6B /* OADockStatusItem.h in Headers */,
 				4AA1E6DC08AA764600E2FF6B /* OADocument.h in Headers */,
 				4AA1E6DD08AA764600E2FF6B /* OADocumentPositioningView.h in Headers */,
 				4AA1E6DE08AA764600E2FF6B /* OADottedLine.h in Headers */,
@@ -2180,7 +2169,6 @@
 				4AA1E6FF08AA764600E2FF6B /* OAToolbar.h in Headers */,
 				4AA1E70008AA764600E2FF6B /* OAToolbarImageView.h in Headers */,
 				4AA1E70108AA764600E2FF6B /* OAToolbarItem.h in Headers */,
-				4AA1E70208AA764600E2FF6B /* OATypeAheadSelectionHelper.h in Headers */,
 				4AA1E70308AA764600E2FF6B /* OAVectorCell.h in Headers */,
 				4AA1E70408AA764600E2FF6B /* OAVectorView.h in Headers */,
 				4AA1E70508AA764600E2FF6B /* OAWindowCascade.h in Headers */,
@@ -2206,6 +2194,9 @@
 				A27FE4600CAB033300EE72BA /* OASlowLoadingImage.h in Headers */,
 				34E46E9D0CDEB7330066E943 /* OAFlippedView.h in Headers */,
 				349F65E20EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h in Headers */,
+				34A201230FF0454400B699DB /* NSAlert-OAExtensions.h in Headers */,
+				94E1CE0B10D803C5000A01F9 /* OACloseButtonOverlay.h in Headers */,
+				007E767810C8469F00313878 /* OABoxSeparator.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2275,7 +2266,7 @@
 			name = OAUnitTests;
 			productInstallPath = "$(USER_LIBRARY_DIR)/Bundles";
 			productName = OAUnitTests;
-			productReference = 4AA1E81108AA764700E2FF6B /* OAUnitTests.otest */;
+			productReference = 4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */;
 			productType = "com.apple.product-type.bundle";
 		};
 		4AA1E81208AA764700E2FF6B /* OAMakeImageSizeIntegral */ = {
@@ -2344,7 +2335,6 @@
 			files = (
 				4AA1E70B08AA764600E2FF6B /* OmniAppKit.strings in Resources */,
 				4AA1E70C08AA764600E2FF6B /* OAFindPanel.nib in Resources */,
-				4AA1E70D08AA764600E2FF6B /* OAScriptSheet.nib in Resources */,
 				4AA1E70E08AA764600E2FF6B /* OAScriptIcon.png in Resources */,
 				4AA1E71A08AA764600E2FF6B /* OAAction.png in Resources */,
 				4AA1E71B08AA764600E2FF6B /* OABackArrow.png in Resources */,
@@ -2361,9 +2351,6 @@
 				4AA1E72A08AA764600E2FF6B /* OAChasingArrows.png in Resources */,
 				4AA1E72B08AA764600E2FF6B /* OADefaultSettingIndicatorOff.png in Resources */,
 				4AA1E72C08AA764600E2FF6B /* OADefaultSettingIndicatorOn.png in Resources */,
-				4AA1E72D08AA764600E2FF6B /* OADockStatusItemCenter.png in Resources */,
-				4AA1E72E08AA764600E2FF6B /* OADockStatusItemLeft.png in Resources */,
-				4AA1E72F08AA764600E2FF6B /* OADockStatusItemRight.png in Resources */,
 				4AA1E73008AA764600E2FF6B /* OALeftArrow.png in Resources */,
 				4AA1E73108AA764600E2FF6B /* OALeftArrowPressed.png in Resources */,
 				4AA1E73208AA764600E2FF6B /* OARightArrow.png in Resources */,
@@ -2517,7 +2504,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$CONFIGURATION\" = Coverage ]; then\n\t# Execute OmniAppKit's unit tests to collect coverage information.  Later maybe we should run these on all builds?\n\t/Developer/Tools/otest \"$CONFIGURATION_BUILD_DIR/$WRAPPER_NAME\"\n\n\t# Gather up the unit test coverage info\n\t# TODO: This assumes that PROJECT_NAME is the same as the main target that hold the .o files (the $PROJECT_NAME.build part)\npwd\n\tCOVERAGE_OUTPUT_DIR=\"$CONFIGURATION_BUILD_DIR/$PROJECT_NAME\"\n\tset -x\n\tif [ -d \"$COVERAGE_OUTPUT_DIR\" ]; then\n\t\trm -r \"$COVERAGE_OUTPUT_DIR\"\n\tfi\n\t../../Scripts/Coverage/generate --object-directory \"$PROJECT_TEMP_DIR/$CONFIGURATION/OmniAppKit (Framework).build/Objects-normal/$NATIVE_ARCH\" --output-directory \"$COVERAGE_OUTPUT_DIR\"\nfi\n";
+			shellScript = "/usr/omni/bin/Scripts/OmniRunUnitTests\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2527,7 +2514,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AA1E76908AA764600E2FF6B /* OAInternetConfig.m in Sources */,
-				4AA1E76A08AA764600E2FF6B /* OAOSAScript.m in Sources */,
 				4AA1E76B08AA764600E2FF6B /* NSColor-ColorSyncExtensions.m in Sources */,
 				4AA1E76C08AA764600E2FF6B /* NSImage-ColorSyncExtensions.m in Sources */,
 				4AA1E76D08AA764600E2FF6B /* OAColorProfile.m in Sources */,
@@ -2596,7 +2582,6 @@
 				4AA1E7BC08AA764600E2FF6B /* OAContextButton.m in Sources */,
 				4AA1E7BD08AA764600E2FF6B /* OADataSourceTableColumn.m in Sources */,
 				4AA1E7BE08AA764600E2FF6B /* OADefaultSettingIndicatorButton.m in Sources */,
-				4AA1E7BF08AA764600E2FF6B /* OADockStatusItem.m in Sources */,
 				4AA1E7C008AA764600E2FF6B /* OADocument.m in Sources */,
 				4AA1E7C108AA764600E2FF6B /* OADocumentPositioningView.m in Sources */,
 				4AA1E7C208AA764600E2FF6B /* OADottedLine.m in Sources */,
@@ -2630,7 +2615,6 @@
 				4AA1E7E108AA764600E2FF6B /* OAToolbar.m in Sources */,
 				4AA1E7E208AA764600E2FF6B /* OAToolbarImageView.m in Sources */,
 				4AA1E7E308AA764600E2FF6B /* OAToolbarItem.m in Sources */,
-				4AA1E7E408AA764600E2FF6B /* OATypeAheadSelectionHelper.m in Sources */,
 				4AA1E7E508AA764600E2FF6B /* OAVectorCell.m in Sources */,
 				4AA1E7E608AA764600E2FF6B /* OAVectorView.m in Sources */,
 				4AA1E7E708AA764600E2FF6B /* OAWindowCascade.m in Sources */,
@@ -2658,6 +2642,9 @@
 				34E46E9E0CDEB7330066E943 /* OAFlippedView.m in Sources */,
 				4268E9300DBD5319002F30B1 /* OAColorProfile-Deprecated.m in Sources */,
 				349F65E30EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m in Sources */,
+				34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */,
+				94E1CE0C10D803C5000A01F9 /* OACloseButtonOverlay.m in Sources */,
+				007E767910C8469F00313878 /* OABoxSeparator.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2755,14 +2742,6 @@
 			name = CharsetCategories.plist;
 			sourceTree = "<group>";
 		};
-		F5D4DA380222D61401B4A65D /* OAScriptSheet.nib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				F5D4DA390222D61401B4A65D /* English */,
-			);
-			name = OAScriptSheet.nib;
-			sourceTree = SOURCE_ROOT;
-		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
@@ -2847,7 +2826,7 @@
 				INFOPLIST_FILE = "Info-OAUnitTests.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(DEVELOPER_FRAMEWORKS_DIR)";
 				PRODUCT_NAME = OAUnitTests;
-				WRAPPER_EXTENSION = otest;
+				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
 		};
@@ -2863,7 +2842,7 @@
 				INFOPLIST_FILE = "Info-OAUnitTests.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(DEVELOPER_FRAMEWORKS_DIR)";
 				PRODUCT_NAME = OAUnitTests;
-				WRAPPER_EXTENSION = otest;
+				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};
@@ -2879,7 +2858,7 @@
 				INFOPLIST_FILE = "Info-OAUnitTests.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(DEVELOPER_FRAMEWORKS_DIR)";
 				PRODUCT_NAME = OAUnitTests;
-				WRAPPER_EXTENSION = otest;
+				WRAPPER_EXTENSION = octest;
 			};
 			name = Coverage;
 		};

@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,16 +21,16 @@ extern NSRect OFConstrainRect(NSRect rect, NSRect boundary);
 static inline NSRect OFRectFromPoints(NSPoint point1, NSPoint point2)
 {
     return NSMakeRect(MIN(point1.x, point2.x), MIN(point1.y, point2.y),
-                      fabsf(point1.x - point2.x), fabsf(point1.y - point2.y));
+                      (CGFloat)fabs(point1.x - point2.x), (CGFloat)fabs(point1.y - point2.y));
 }
 
 /*" Returns a rectangle centered on the specified point, large enough to contain the other point. "*/
 static inline NSRect OFRectFromCenterAndPoint(NSPoint center, NSPoint corner)
 {
-    return NSMakeRect(center.x - fabsf( corner.x - center.x ),
-                      center.y - fabsf( corner.y - center.y ),
-                      2 * fabsf( corner.x - center.x ),
-                      2 * fabsf( corner.y - center.y ));
+    return NSMakeRect((CGFloat)(center.x - fabs( corner.x - center.x )),
+                      (CGFloat)(center.y - fabs( corner.y - center.y )),
+                      (CGFloat)(2 * fabs( corner.x - center.x )),
+                      (CGFloat)(2 * fabs( corner.y - center.y )));
 
 }
 
@@ -40,7 +40,7 @@ static inline NSRect OFRectFromCenterAndSize(NSPoint center, NSSize size) {
                       size.width, size.height);
 }
 
-extern float OFSquaredDistanceToFitRectInRect(NSRect sourceRect, NSRect destinationRect);
+extern CGFloat OFSquaredDistanceToFitRectInRect(NSRect sourceRect, NSRect destinationRect);
 extern NSRect OFClosestRectToRect(NSRect sourceRect, NSArray *candidateRects);
 extern void OFUpdateRectsToAvoidRectGivenMinimumSize(NSMutableArray *rects, NSRect rectToAvoid, NSSize minimumSize);
 /*" Returns YES if sourceSize is at least as tall and as wide as minimumSize, and that neither the height nor the width of minimumSize is 0. "*/

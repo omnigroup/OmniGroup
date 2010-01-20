@@ -6,6 +6,6 @@
 #include "Omni-Framework-Common.xcconfig"
 
 // Common settings for Release configurations of Framework targets
-OMNI_FRAMEWORK_TARGET_PATH = @executable_path/../Frameworks
+OMNI_FRAMEWORK_TARGET_PATH = @rpath
 DYLIB_INSTALL_NAME_BASE = $(OMNI_FRAMEWORK_TARGET_PATH)
 SKIP_INSTALL = NO

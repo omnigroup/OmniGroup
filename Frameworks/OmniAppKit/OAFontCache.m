@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,7 @@
 
 RCS_ID("$Id$")
 
-@interface OAFontCache (Private)
+@interface OAFontCache (/*Private*/)
 + (NSDictionary *)generateFontFamilyNameDictionary;
 + (NSDictionary *)canonicalFontFamilyNameDictionary;
 
@@ -114,7 +114,7 @@ static NSDictionary *OAFontFamilySubstitutionDictionary = nil;
         if (someAttributes.italic)
             desiredTraits |= NSItalicFontMask;
         NS_DURING {
-            font = [fontManager fontWithFamily:aFamily traits:desiredTraits weight:5.0 size:someAttributes.size];
+            font = [fontManager fontWithFamily:aFamily traits:desiredTraits weight:5.0f size:someAttributes.size];
             if (font != nil && ([fontManager traitsOfFont:font] & desiredTraits) != desiredTraits)
                 font = nil;
         } NS_HANDLER {
@@ -154,36 +154,30 @@ static NSDictionary *OAFontFamilySubstitutionDictionary = nil;
     return [self fontWithFamily:aFamily size:size bold:NO italic:NO];
 }
 
-@end
-
-@implementation OAFontCache (Private)
+#pragma mark -
+#pragma mark Private
 
 + (NSDictionary *)generateFontFamilyNameDictionary;
 {
-    NSDictionary *returnValue;
-    NSMutableDictionary *nameDictionary;
-    NSArray *availableFontFamilies;
-    unsigned int familyIndex, familyCount;
-
-    nameDictionary = [[NSMutableDictionary alloc] init];
-    availableFontFamilies = [[NSFontManager sharedFontManager] availableFontFamilies];
-    familyCount = [availableFontFamilies count];
-    for (familyIndex = 0; familyIndex < familyCount; familyIndex++) {
-        NSString *canonicalName;
-        NSString *alternateName;
-
-        canonicalName = [availableFontFamilies objectAtIndex:familyIndex];
+    NSMutableDictionary *nameDictionary = [[NSMutableDictionary alloc] init];
+    NSArray *availableFontFamilies = [[NSFontManager sharedFontManager] availableFontFamilies];
+    
+    for (NSString *canonicalName in availableFontFamilies) {
         [nameDictionary setObject:canonicalName forKey:canonicalName];
+        
+        NSString *alternateName;
+        
         alternateName = [canonicalName lowercaseString];
         if ([nameDictionary objectForKey:alternateName] == nil)
             [nameDictionary setObject:canonicalName forKey:alternateName];
+        
         alternateName = [alternateName stringByRemovingWhitespace];
         if ([nameDictionary objectForKey:alternateName] == nil)
             [nameDictionary setObject:canonicalName forKey:alternateName];
     }
-    returnValue = [[NSDictionary alloc] initWithDictionary:nameDictionary];
+    NSDictionary *returnValue = [NSDictionary dictionaryWithDictionary:nameDictionary];
     [nameDictionary release];
-    return [returnValue autorelease];
+    return returnValue;
 }
 
 + (NSDictionary *)canonicalFontFamilyNameDictionary;

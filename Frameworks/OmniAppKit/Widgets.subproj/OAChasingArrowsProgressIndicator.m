@@ -1,4 +1,4 @@
-// Copyright 2000-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,17 +46,17 @@ static NSImage *ChasingArrows = nil;
 
 + (NSSize)minSize;
 {
-    return NSMakeSize(16.0, 16.0);
+    return NSMakeSize(16.0f, 16.0f);
 }
 
 + (NSSize)maxSize;
 {
-    return NSMakeSize(16.0, 16.0);
+    return NSMakeSize(16.0f, 16.0f);
 }
 
 + (NSSize)preferredSize;
 {
-    return NSMakeSize(16.0, 16.0);
+    return NSMakeSize(16.0f, 16.0f);
 }
 
 + (NSImage *)staticImage;
@@ -95,38 +95,32 @@ static NSImage *ChasingArrows = nil;
 
 - (void)drawRect:(NSRect)rect;
 {
-    float angle;
-    float opacity;
-    NSGraphicsContext *currentContext;
-    CGContextRef graphicsContext;
-    NSRect bounds;
-    NSImageInterpolation imageInterpolation;
-    
     // If we're not animating and there is no action, don't draw, because clicking will do nothing
     if (!animating && (!action || [[NSUserDefaults standardUserDefaults] boolForKey:@"OAStandardChasingArrowsBehavior"]))
         return;
 
+    CGFloat angle, opacity;
     if (!animating) {
         counter = 0;
         angle = 0;
-        opacity = 0.6;
+        opacity = 0.6f;
     } else {
         counter++;
-        angle = ((counter % FRAMES_PER_CYCLE) / (float)FRAMES_PER_CYCLE)  * (2.0 * M_PI);
-        opacity = 1.0;
+        angle = (CGFloat)(((counter % FRAMES_PER_CYCLE) / (CGFloat)FRAMES_PER_CYCLE)  * (2.0 * M_PI));
+        opacity = 1.0f;
     }
 
-    bounds = [self bounds];
+    NSRect bounds = [self bounds];
 
-    currentContext = [NSGraphicsContext currentContext];
-    graphicsContext = (CGContextRef)[currentContext graphicsPort];
+    NSGraphicsContext *currentContext = [NSGraphicsContext currentContext];
+    CGContextRef graphicsContext = [currentContext graphicsPort];
     if (angle != 0) {
-        CGContextTranslateCTM(graphicsContext, NSWidth(bounds) / 2.0, NSHeight(bounds) / 2.0);
+        CGContextTranslateCTM(graphicsContext, NSWidth(bounds) / 2.0f, NSHeight(bounds) / 2.0f);
         CGContextRotateCTM(graphicsContext, -angle);
-        CGContextTranslateCTM(graphicsContext, -NSWidth(bounds) / 2.0, -NSHeight(bounds) / 2.0);
+        CGContextTranslateCTM(graphicsContext, -NSWidth(bounds) / 2.0f, -NSHeight(bounds) / 2.0f);
     }
 
-    imageInterpolation = [currentContext imageInterpolation];
+    NSImageInterpolation imageInterpolation = [currentContext imageInterpolation];
     [currentContext setImageInterpolation:NSImageInterpolationHigh];
     [ChasingArrows drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:opacity];
     [currentContext setImageInterpolation:imageInterpolation];

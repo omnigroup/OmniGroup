@@ -27,6 +27,14 @@
 		34043BEA0DA3F16700761C40 /* CFData-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34043BDB0DA3EFA500761C40 /* CFData-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34043BEB0DA3F16800761C40 /* CFData-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34043BDC0DA3EFA500761C40 /* CFData-OFExtensions.m */; };
 		340CDBD6098A9E03006270CA /* ExceptionHandling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 340CDBD5098A9E03006270CA /* ExceptionHandling.framework */; };
+		341657550FEB31CD00F4CED4 /* CFData-OFCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		341657560FEB31CD00F4CED4 /* CFData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */; };
+		341657570FEB31CD00F4CED4 /* CFData-OFFileIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657530FEB31CD00F4CED4 /* CFData-OFFileIO.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		341657580FEB31CD00F4CED4 /* CFData-OFFileIO.m in Sources */ = {isa = PBXBuildFile; fileRef = 341657540FEB31CD00F4CED4 /* CFData-OFFileIO.m */; };
+		3416584F0FEB4B7400F4CED4 /* NSData-OFCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 3416584B0FEB4B7400F4CED4 /* NSData-OFCompression.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		341658500FEB4B7400F4CED4 /* NSData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416584C0FEB4B7400F4CED4 /* NSData-OFCompression.m */; };
+		341658510FEB4B7400F4CED4 /* NSData-OFFileIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 3416584D0FEB4B7400F4CED4 /* NSData-OFFileIO.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		341658520FEB4B7400F4CED4 /* NSData-OFFileIO.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416584E0FEB4B7400F4CED4 /* NSData-OFFileIO.m */; };
 		341714FE0F783BB20062895C /* OFXMLReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 341714EE0F78399C0062895C /* OFXMLReaderTests.m */; };
 		341897940B7C01650032C5FA /* NSSetCommand-OFFixes.h in Headers */ = {isa = PBXBuildFile; fileRef = 341897920B7C01650032C5FA /* NSSetCommand-OFFixes.h */; };
 		341897950B7C01650032C5FA /* NSSetCommand-OFFixes.m in Sources */ = {isa = PBXBuildFile; fileRef = 341897930B7C01650032C5FA /* NSSetCommand-OFFixes.m */; };
@@ -49,6 +57,9 @@
 		343302A00D85F52B00C82A0B /* OFCFWeakRetainCallbacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 3433029E0D85F52B00C82A0B /* OFCFWeakRetainCallbacks.m */; };
 		3433031E0D86097E00C82A0B /* NSString-OFConversion.h in Headers */ = {isa = PBXBuildFile; fileRef = 3433031C0D86097E00C82A0B /* NSString-OFConversion.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3433031F0D86097E00C82A0B /* NSString-OFConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 3433031D0D86097E00C82A0B /* NSString-OFConversion.m */; };
+		343B363F1034F6C40006290A /* OFRandomRepeatTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 343B363E1034F6C40006290A /* OFRandomRepeatTest.m */; };
+		343B365F1034F84A0006290A /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A4E075308AA72B10098FF0F /* OmniFoundation.framework */; };
+		343B36621034F8510006290A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51D8DFE8AAEA611C9CC38 /* Foundation.framework */; };
 		343BA6FE0F740AB100329C2F /* OFXMLReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BA6FC0F740AB100329C2F /* OFXMLReader.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		343BA6FF0F740AB100329C2F /* OFXMLReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA6FD0F740AB100329C2F /* OFXMLReader.m */; };
 		343BA7F90F74169D00329C2F /* OFXMLInternedStringTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BA7F70F74169D00329C2F /* OFXMLInternedStringTable.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -57,6 +68,7 @@
 		343BAA040F7440C300329C2F /* OFXMLError.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BAA020F7440C300329C2F /* OFXMLError.m */; };
 		343E5FBB0F77E69500F9982D /* OFXMLQName.h in Headers */ = {isa = PBXBuildFile; fileRef = 343E5FB90F77E69500F9982D /* OFXMLQName.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		343E5FBC0F77E69500F9982D /* OFXMLQName.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E5FBA0F77E69500F9982D /* OFXMLQName.m */; };
+		345886331035C727006E712F /* SFMT-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 343B36CE103514E40006290A /* SFMT-LICENSE.txt */; };
 		345E73E60C6D06630034A811 /* OFErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 345E73E40C6D06630034A811 /* OFErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		345E73E70C6D06630034A811 /* OFErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E73E50C6D06630034A811 /* OFErrorRecovery.m */; };
 		346149F008EB0D2F00F4853E /* OFErrorExtensionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 346149EF08EB0D2F00F4853E /* OFErrorExtensionTests.m */; };
@@ -88,10 +100,8 @@
 		34A2CDF70D865A6100219E36 /* OFEnumNameTable-OFFlagMask.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2CDF50D865A6100219E36 /* OFEnumNameTable-OFFlagMask.m */; };
 		34A2CE8B0D865E9200219E36 /* OFCharacterScanner-OFTrie.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2CE890D865E9200219E36 /* OFCharacterScanner-OFTrie.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A2CE8C0D865E9200219E36 /* OFCharacterScanner-OFTrie.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2CE8A0D865E9200219E36 /* OFCharacterScanner-OFTrie.m */; };
-		34A2CEAF0D865F5000219E36 /* NSData-OFCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2CEAD0D865F5000219E36 /* NSData-OFCompression.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34A2CEB00D865F5000219E36 /* NSData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2CEAE0D865F5000219E36 /* NSData-OFCompression.m */; };
-		34A2CEC10D86600B00219E36 /* NSData-OFFileIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2CEBF0D86600B00219E36 /* NSData-OFFileIO.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34A2CEC20D86600B00219E36 /* NSData-OFFileIO.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2CEC00D86600B00219E36 /* NSData-OFFileIO.m */; };
+		34A8C2AD10532007004244E9 /* OFReadWriteFileBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A8C2AB10532007004244E9 /* OFReadWriteFileBuffer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34A8C2AE10532007004244E9 /* OFReadWriteFileBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A8C2AC10532007004244E9 /* OFReadWriteFileBuffer.m */; };
 		34AD4CB50DF846B8008974EB /* NSFileManager-OFTemporaryPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AD4CB30DF846B8008974EB /* NSFileManager-OFTemporaryPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34AD4CB60DF846B8008974EB /* NSFileManager-OFTemporaryPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AD4CB40DF846B8008974EB /* NSFileManager-OFTemporaryPath.m */; };
 		34AF16CA0C4FE9BE00ADC170 /* OFXMLComment.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AF16C80C4FE9BE00ADC170 /* OFXMLComment.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -113,6 +123,8 @@
 		34E7BCC109A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E7BCBF09A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34E7BCC209A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E7BCC009A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.m */; };
 		34F7C0B90D82354A007E383C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F7C0B80D82354A007E383C /* libxml2.dylib */; };
+		34F8271B107E904600458A71 /* OFExtent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F82719107E904600458A71 /* OFExtent.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34F8271C107E904600458A71 /* OFExtent.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F8271A107E904600458A71 /* OFExtent.m */; };
 		4A45FF630CA489E600752880 /* NSConditionLock-OFFixes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A45FF610CA489E600752880 /* NSConditionLock-OFFixes.m */; };
 		4A4E060008AA72B10098FF0F /* OFAddScriptCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A71C400663D4F40097A113 /* OFAddScriptCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E060108AA72B10098FF0F /* OFRemoveScriptCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A71C420663D4F40097A113 /* OFRemoveScriptCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -123,7 +135,6 @@
 		4A4E060608AA72B10098FF0F /* CFSet-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 18728122FF5E2785C697A12F /* CFSet-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E060708AA72B10098FF0F /* CFString-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 06DB16D5FF5DC915C697A12F /* CFString-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E060808AA72B10098FF0F /* OFCFCallbacks.h in Headers */ = {isa = PBXBuildFile; fileRef = F0109F80023E8CB83897A113 /* OFCFCallbacks.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E060A08AA72B10098FF0F /* OFResource.h in Headers */ = {isa = PBXBuildFile; fileRef = 26484EA1008E5BA6C697A166 /* OFResource.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E060B08AA72B10098FF0F /* OFResourceFork.h in Headers */ = {isa = PBXBuildFile; fileRef = 036D1EDEFFE458657F000001 /* OFResourceFork.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E060C08AA72B10098FF0F /* OFBTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 015BD82600070DC5C697A10E /* OFBTree.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E060E08AA72B10098FF0F /* OFBulkBlockPool.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CA2FE8AAEA611C9CC38 /* OFBulkBlockPool.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -171,18 +182,13 @@
 		4A4E064808AA72B10098FF0F /* OFSimpleLock-pthreads.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D03FE8AAEA611C9CC38 /* OFSimpleLock-pthreads.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E064908AA72B10098FF0F /* OFSimpleLock-sparc.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D04FE8AAEA611C9CC38 /* OFSimpleLock-sparc.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E064A08AA72B10098FF0F /* OFSimpleLock.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D05FE8AAEA611C9CC38 /* OFSimpleLock.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E064B08AA72B10098FF0F /* OFAutoreleasedMemory.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C6EFE8AAEA611C9CC38 /* OFAutoreleasedMemory.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E064C08AA72B10098FF0F /* OFBundleRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C70FE8AAEA611C9CC38 /* OFBundleRegistry.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E064D08AA72B10098FF0F /* OFBundledClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C6FFE8AAEA611C9CC38 /* OFBundledClass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E064F08AA72B10098FF0F /* OFCharacterScanner.h in Headers */ = {isa = PBXBuildFile; fileRef = 3D990C72FF3658F5C697A146 /* OFCharacterScanner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065008AA72B10098FF0F /* OFController.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C72FE8AAEA611C9CC38 /* OFController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E065208AA72B10098FF0F /* OFEnrichedTextReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C74FE8AAEA611C9CC38 /* OFEnrichedTextReader.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065408AA72B10098FF0F /* OFGeometry.h in Headers */ = {isa = PBXBuildFile; fileRef = 3F41140E036614060297A14E /* OFGeometry.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E065508AA72B10098FF0F /* OFMach.h in Headers */ = {isa = PBXBuildFile; fileRef = 011075B9FF708771C697A10E /* OFMach.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065608AA72B10098FF0F /* OFObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C77FE8AAEA611C9CC38 /* OFObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E065708AA72B10098FF0F /* OFPendingMethodList.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C78FE8AAEA611C9CC38 /* OFPendingMethodList.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065808AA72B10098FF0F /* OFPreference.h in Headers */ = {isa = PBXBuildFile; fileRef = 01644BAC003B34EEC697A10E /* OFPreference.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A4E065908AA72B10098FF0F /* OFRTFGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C7CFE8AAEA611C9CC38 /* OFRTFGenerator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065A08AA72B10098FF0F /* OFRegularExpression.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C79FE8AAEA611C9CC38 /* OFRegularExpression.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065B08AA72B10098FF0F /* OFRegularExpressionMatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C7AFE8AAEA611C9CC38 /* OFRegularExpressionMatch.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E065C08AA72B10098FF0F /* OFRetainableObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C7BFE8AAEA611C9CC38 /* OFRetainableObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -269,7 +275,6 @@
 		4A4E06B508AA72B10098FF0F /* CFSet-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 18728123FF5E2785C697A12F /* CFSet-OFExtensions.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06B608AA72B10098FF0F /* CFString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 06DB16D6FF5DC915C697A12F /* CFString-OFExtensions.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06B708AA72B10098FF0F /* OFCFCallbacks.m in Sources */ = {isa = PBXBuildFile; fileRef = F0109F81023E8CB83897A113 /* OFCFCallbacks.m */; };
-		4A4E06B908AA72B10098FF0F /* OFResource.m in Sources */ = {isa = PBXBuildFile; fileRef = 26484EA2008E5BA6C697A166 /* OFResource.m */; };
 		4A4E06BA08AA72B10098FF0F /* OFResourceFork.m in Sources */ = {isa = PBXBuildFile; fileRef = 036D1EDFFFE458657F000001 /* OFResourceFork.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06BB08AA72B10098FF0F /* OFBTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 015BD82700070DC5C697A10E /* OFBTree.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06BD08AA72B10098FF0F /* OFBulkBlockPool.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C89FE8AAEA611C9CC38 /* OFBulkBlockPool.m */; settings = {ATTRIBUTES = (); }; };
@@ -289,7 +294,7 @@
 		4A4E06CC08AA72B10098FF0F /* OFNull.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C93FE8AAEA611C9CC38 /* OFNull.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06CE08AA72B10098FF0F /* OFPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A50870571490C0097A113 /* OFPoint.m */; };
 		4A4E06CF08AA72B10098FF0F /* OFQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C95FE8AAEA611C9CC38 /* OFQueue.m */; settings = {ATTRIBUTES = (); }; };
-		4A4E06D008AA72B10098FF0F /* OFRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CBDFE8AAEA611C9CC38 /* OFRandom.m */; settings = {ATTRIBUTES = (); }; };
+		4A4E06D008AA72B10098FF0F /* OFRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CBDFE8AAEA611C9CC38 /* OFRandom.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-strict-aliasing"; }; };
 		4A4E06D108AA72B10098FF0F /* OFSignature.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C96FE8AAEA611C9CC38 /* OFSignature.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06D308AA72B10098FF0F /* OFSparseArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C98FE8AAEA611C9CC38 /* OFSparseArray.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06D408AA72B10098FF0F /* OFStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C99FE8AAEA611C9CC38 /* OFStack.m */; settings = {ATTRIBUTES = (); }; };
@@ -310,17 +315,13 @@
 		4A4E06EE08AA72B10098FF0F /* OFUppercaseFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CE9FE8AAEA611C9CC38 /* OFUppercaseFormatter.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06EF08AA72B10098FF0F /* OFZipCodeFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CEAFE8AAEA611C9CC38 /* OFZipCodeFormatter.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06F008AA72B10098FF0F /* OFReadWriteLock.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CFBFE8AAEA611C9CC38 /* OFReadWriteLock.m */; settings = {ATTRIBUTES = (); }; };
-		4A4E06F108AA72B10098FF0F /* OFAutoreleasedMemory.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C5EFE8AAEA611C9CC38 /* OFAutoreleasedMemory.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06F208AA72B10098FF0F /* OFBundleRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C60FE8AAEA611C9CC38 /* OFBundleRegistry.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06F308AA72B10098FF0F /* OFBundledClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C5FFE8AAEA611C9CC38 /* OFBundledClass.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06F408AA72B10098FF0F /* OFCharacterScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D990C74FF36598CC697A146 /* OFCharacterScanner.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06F508AA72B10098FF0F /* OFController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C61FE8AAEA611C9CC38 /* OFController.m */; settings = {ATTRIBUTES = (); }; };
-		4A4E06F608AA72B10098FF0F /* OFEnrichedTextReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C62FE8AAEA611C9CC38 /* OFEnrichedTextReader.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06F808AA72B10098FF0F /* OFGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F41140F036614060297A14E /* OFGeometry.m */; };
-		4A4E06F908AA72B10098FF0F /* OFMach.m in Sources */ = {isa = PBXBuildFile; fileRef = 011075BAFF708771C697A10E /* OFMach.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06FA08AA72B10098FF0F /* OFObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C64FE8AAEA611C9CC38 /* OFObject.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06FB08AA72B10098FF0F /* OFPreference.m in Sources */ = {isa = PBXBuildFile; fileRef = 01644BAD003B34EEC697A10E /* OFPreference.m */; };
-		4A4E06FC08AA72B10098FF0F /* OFRTFGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C68FE8AAEA611C9CC38 /* OFRTFGenerator.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06FD08AA72B10098FF0F /* OFRegularExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C65FE8AAEA611C9CC38 /* OFRegularExpression.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06FE08AA72B10098FF0F /* OFRegularExpressionMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C66FE8AAEA611C9CC38 /* OFRegularExpressionMatch.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E06FF08AA72B10098FF0F /* OFRetainableObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C67FE8AAEA611C9CC38 /* OFRetainableObject.m */; settings = {ATTRIBUTES = (); }; };
@@ -462,6 +463,8 @@
 		A24CE92209464D670064A8AF /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A24CE92109464D670064A8AF /* ApplicationServices.framework */; };
 		A25B32540E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = A25B32520E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A25B32550E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = A25B32530E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.m */; };
+		A25B740810B200C200195654 /* OFMetricPrefixFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = A25B740610B200C200195654 /* OFMetricPrefixFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A25B740910B200C200195654 /* OFMetricPrefixFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = A25B740710B200C200195654 /* OFMetricPrefixFormatter.m */; };
 		A25EB13A0F783668006F62B4 /* OFXMLCFXMLTreeSink.h in Headers */ = {isa = PBXBuildFile; fileRef = A25EB1380F783667006F62B4 /* OFXMLCFXMLTreeSink.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A25EB13B0F783668006F62B4 /* OFXMLCFXMLTreeSink.m in Sources */ = {isa = PBXBuildFile; fileRef = A25EB1390F783667006F62B4 /* OFXMLCFXMLTreeSink.m */; };
 		A26BB40E092A42F700ECCDEE /* OFSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A26BB40D092A42F700ECCDEE /* OFSetTests.m */; };
@@ -489,6 +492,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		343B36411034F7170006290A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51C5BFE8AAEA611C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A4E05FE08AA72B10098FF0F;
+			remoteInfo = OmniFoundation;
+		};
 		3475FBD40D747F720050931A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 00E51C5BFE8AAEA611C9CC38 /* Project object */;
@@ -562,28 +572,21 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		00E51C5EFE8AAEA611C9CC38 /* OFAutoreleasedMemory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFAutoreleasedMemory.m; sourceTree = "<group>"; };
 		00E51C5FFE8AAEA611C9CC38 /* OFBundledClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBundledClass.m; sourceTree = "<group>"; };
 		00E51C60FE8AAEA611C9CC38 /* OFBundleRegistry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBundleRegistry.m; sourceTree = "<group>"; };
 		00E51C61FE8AAEA611C9CC38 /* OFController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFController.m; sourceTree = "<group>"; };
-		00E51C62FE8AAEA611C9CC38 /* OFEnrichedTextReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFEnrichedTextReader.m; sourceTree = "<group>"; };
 		00E51C64FE8AAEA611C9CC38 /* OFObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFObject.m; sourceTree = "<group>"; };
 		00E51C65FE8AAEA611C9CC38 /* OFRegularExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRegularExpression.m; sourceTree = "<group>"; };
 		00E51C66FE8AAEA611C9CC38 /* OFRegularExpressionMatch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRegularExpressionMatch.m; sourceTree = "<group>"; };
 		00E51C67FE8AAEA611C9CC38 /* OFRetainableObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRetainableObject.m; sourceTree = "<group>"; };
-		00E51C68FE8AAEA611C9CC38 /* OFRTFGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRTFGenerator.m; sourceTree = "<group>"; };
 		00E51C6AFE8AAEA611C9CC38 /* OFStringScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFStringScanner.m; sourceTree = "<group>"; };
-		00E51C6EFE8AAEA611C9CC38 /* OFAutoreleasedMemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFAutoreleasedMemory.h; sourceTree = "<group>"; };
 		00E51C6FFE8AAEA611C9CC38 /* OFBundledClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFBundledClass.h; sourceTree = "<group>"; };
 		00E51C70FE8AAEA611C9CC38 /* OFBundleRegistry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFBundleRegistry.h; sourceTree = "<group>"; };
 		00E51C72FE8AAEA611C9CC38 /* OFController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFController.h; sourceTree = "<group>"; };
-		00E51C74FE8AAEA611C9CC38 /* OFEnrichedTextReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFEnrichedTextReader.h; sourceTree = "<group>"; };
 		00E51C77FE8AAEA611C9CC38 /* OFObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFObject.h; sourceTree = "<group>"; };
-		00E51C78FE8AAEA611C9CC38 /* OFPendingMethodList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFPendingMethodList.h; sourceTree = "<group>"; };
 		00E51C79FE8AAEA611C9CC38 /* OFRegularExpression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFRegularExpression.h; sourceTree = "<group>"; };
 		00E51C7AFE8AAEA611C9CC38 /* OFRegularExpressionMatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFRegularExpressionMatch.h; sourceTree = "<group>"; };
 		00E51C7BFE8AAEA611C9CC38 /* OFRetainableObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFRetainableObject.h; sourceTree = "<group>"; };
-		00E51C7CFE8AAEA611C9CC38 /* OFRTFGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFRTFGenerator.h; sourceTree = "<group>"; };
 		00E51C7EFE8AAEA611C9CC38 /* OFStringScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFStringScanner.h; sourceTree = "<group>"; };
 		00E51C7FFE8AAEA611C9CC38 /* OFUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFUtilities.h; sourceTree = "<group>"; };
 		00E51C82FE8AAEA611C9CC38 /* OmniFoundation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniFoundation.h; sourceTree = "<group>"; };
@@ -760,8 +763,6 @@
 		00E51D8BFE8AAEA611C9CC38 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E51D8CFE8AAEA611C9CC38 /* System.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = System.framework; path = /System/Library/Frameworks/System.framework; sourceTree = "<absolute>"; };
 		00E51D8DFE8AAEA611C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		011075B9FF708771C697A10E /* OFMach.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFMach.h; sourceTree = "<group>"; };
-		011075BAFF708771C697A10E /* OFMach.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFMach.m; sourceTree = "<group>"; };
 		0153B4BBFF856A08C697A10E /* OFDedicatedThreadSchedulerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDedicatedThreadSchedulerTest.m; sourceTree = "<group>"; };
 		015667E5FF93D6BCC697A10E /* OFNoFreeDebugZone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFNoFreeDebugZone.h; path = DataStructures.subproj/OFNoFreeDebugZone.h; sourceTree = SOURCE_ROOT; };
 		015667E7FF93D731C697A10E /* OFNoFreeDebugZone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFNoFreeDebugZone.m; path = DataStructures.subproj/OFNoFreeDebugZone.m; sourceTree = SOURCE_ROOT; };
@@ -792,13 +793,19 @@
 		1CC8806DFF5DD165C697A146 /* OFRegexpTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRegexpTests.m; sourceTree = "<group>"; };
 		1D3F8FBD03DE7CFA0097A138 /* Language.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = Language.strings; sourceTree = "<group>"; };
 		1D3F8FBE03DE7CFA0097A138 /* EnglishToISO.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = EnglishToISO.strings; sourceTree = "<group>"; };
-		26484EA1008E5BA6C697A166 /* OFResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFResource.h; sourceTree = "<group>"; };
-		26484EA2008E5BA6C697A166 /* OFResource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFResource.m; sourceTree = "<group>"; };
 		28C3E2D1FEF0F1AAC697A12D /* OFTimeSpanFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFTimeSpanFormatter.m; sourceTree = "<group>"; };
 		28C3E2D2FEF0F1AAC697A12D /* OFTimeSpanFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFTimeSpanFormatter.h; sourceTree = "<group>"; };
 		34043BDB0DA3EFA500761C40 /* CFData-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFData-OFExtensions.h"; sourceTree = "<group>"; };
 		34043BDC0DA3EFA500761C40 /* CFData-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFData-OFExtensions.m"; sourceTree = "<group>"; };
 		340CDBD5098A9E03006270CA /* ExceptionHandling.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExceptionHandling.framework; path = /System/Library/Frameworks/ExceptionHandling.framework; sourceTree = "<absolute>"; };
+		341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFData-OFCompression.h"; sourceTree = "<group>"; };
+		341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFData-OFCompression.m"; sourceTree = "<group>"; };
+		341657530FEB31CD00F4CED4 /* CFData-OFFileIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFData-OFFileIO.h"; sourceTree = "<group>"; };
+		341657540FEB31CD00F4CED4 /* CFData-OFFileIO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFData-OFFileIO.m"; sourceTree = "<group>"; };
+		3416584B0FEB4B7400F4CED4 /* NSData-OFCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData-OFCompression.h"; sourceTree = "<group>"; };
+		3416584C0FEB4B7400F4CED4 /* NSData-OFCompression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData-OFCompression.m"; sourceTree = "<group>"; };
+		3416584D0FEB4B7400F4CED4 /* NSData-OFFileIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData-OFFileIO.h"; sourceTree = "<group>"; };
+		3416584E0FEB4B7400F4CED4 /* NSData-OFFileIO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData-OFFileIO.m"; sourceTree = "<group>"; };
 		341714EE0F78399C0062895C /* OFXMLReaderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLReaderTests.m; sourceTree = "<group>"; };
 		34184171050C3E810097A113 /* CFArray-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFArray-OFExtensions.h"; sourceTree = "<group>"; };
 		34184172050C3E810097A113 /* CFArray-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFArray-OFExtensions.m"; sourceTree = "<group>"; };
@@ -827,6 +834,71 @@
 		3433031C0D86097E00C82A0B /* NSString-OFConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString-OFConversion.h"; sourceTree = "<group>"; };
 		3433031D0D86097E00C82A0B /* NSString-OFConversion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString-OFConversion.m"; sourceTree = "<group>"; };
 		3433588F06415A4C00EEBA57 /* OFCompressionTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCompressionTest.m; sourceTree = "<group>"; };
+		343B36341034F68F0006290A /* OFRandomRepeatTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFRandomRepeatTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		343B363E1034F6C40006290A /* OFRandomRepeatTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRandomRepeatTest.m; sourceTree = "<group>"; };
+		343B36B4103514E40006290A /* CHANGE-LOG.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "CHANGE-LOG.txt"; sourceTree = "<group>"; };
+		343B36B5103514E40006290A /* check.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = check.sh; sourceTree = "<group>"; };
+		343B36B6103514E40006290A /* FILES.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = FILES.txt; sourceTree = "<group>"; };
+		343B36B8103514E40006290A /* _s_f_m_t_8c.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = _s_f_m_t_8c.html; sourceTree = "<group>"; };
+		343B36B9103514E40006290A /* _s_f_m_t_8h-source.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "_s_f_m_t_8h-source.html"; sourceTree = "<group>"; };
+		343B36BA103514E40006290A /* _s_f_m_t_8h.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = _s_f_m_t_8h.html; sourceTree = "<group>"; };
+		343B36BB103514E40006290A /* annotated.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = annotated.html; sourceTree = "<group>"; };
+		343B36BC103514E40006290A /* doxygen.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = doxygen.css; sourceTree = "<group>"; };
+		343B36BD103514E40006290A /* doxygen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = doxygen.png; sourceTree = "<group>"; };
+		343B36BE103514E40006290A /* files.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = files.html; sourceTree = "<group>"; };
+		343B36BF103514E40006290A /* functions.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = functions.html; sourceTree = "<group>"; };
+		343B36C0103514E40006290A /* functions_vars.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = functions_vars.html; sourceTree = "<group>"; };
+		343B36C1103514E40006290A /* globals.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = globals.html; sourceTree = "<group>"; };
+		343B36C2103514E40006290A /* globals_defs.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = globals_defs.html; sourceTree = "<group>"; };
+		343B36C3103514E40006290A /* globals_func.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = globals_func.html; sourceTree = "<group>"; };
+		343B36C4103514E40006290A /* globals_type.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = globals_type.html; sourceTree = "<group>"; };
+		343B36C5103514E40006290A /* globals_vars.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = globals_vars.html; sourceTree = "<group>"; };
+		343B36C6103514E40006290A /* howto-compile.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "howto-compile.html"; sourceTree = "<group>"; };
+		343B36C7103514E40006290A /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		343B36C8103514E40006290A /* mainpage_8txt.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = mainpage_8txt.html; sourceTree = "<group>"; };
+		343B36C9103514E40006290A /* struct_w128___t.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "struct_w128___t.html"; sourceTree = "<group>"; };
+		343B36CA103514E40006290A /* tab_b.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = tab_b.gif; sourceTree = "<group>"; };
+		343B36CB103514E40006290A /* tab_l.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = tab_l.gif; sourceTree = "<group>"; };
+		343B36CC103514E40006290A /* tab_r.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = tab_r.gif; sourceTree = "<group>"; };
+		343B36CD103514E40006290A /* tabs.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = tabs.css; sourceTree = "<group>"; };
+		343B36CE103514E40006290A /* SFMT-LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SFMT-LICENSE.txt"; sourceTree = "<group>"; };
+		343B36CF103514E40006290A /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		343B36D1103514E40006290A /* 11213.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = 11213.csv; sourceTree = "<group>"; };
+		343B36D2103514E40006290A /* 1279.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = 1279.csv; sourceTree = "<group>"; };
+		343B36D3103514E40006290A /* 19937.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = 19937.csv; sourceTree = "<group>"; };
+		343B36D4103514E40006290A /* 2281.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = 2281.csv; sourceTree = "<group>"; };
+		343B36D5103514E40006290A /* 4253.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = 4253.csv; sourceTree = "<group>"; };
+		343B36D6103514E40006290A /* 607.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = 607.csv; sourceTree = "<group>"; };
+		343B36D7103514E40006290A /* csv2param.awk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = csv2param.awk; sourceTree = "<group>"; };
+		343B36D8103514E40006290A /* README.en.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.en.txt; sourceTree = "<group>"; };
+		343B36D9103514E40006290A /* README.jp.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.jp.txt; sourceTree = "<group>"; };
+		343B36DA103514E40006290A /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
+		343B36DB103514E40006290A /* SFMT-alti.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-alti.h"; sourceTree = "<group>"; };
+		343B36DC103514E40006290A /* SFMT-params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params.h"; sourceTree = "<group>"; };
+		343B36DD103514E40006290A /* SFMT-params11213.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params11213.h"; sourceTree = "<group>"; };
+		343B36DE103514E40006290A /* SFMT-params1279.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params1279.h"; sourceTree = "<group>"; };
+		343B36DF103514E40006290A /* SFMT-params132049.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params132049.h"; sourceTree = "<group>"; };
+		343B36E0103514E40006290A /* SFMT-params19937.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params19937.h"; sourceTree = "<group>"; };
+		343B36E1103514E40006290A /* SFMT-params216091.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params216091.h"; sourceTree = "<group>"; };
+		343B36E2103514E40006290A /* SFMT-params2281.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params2281.h"; sourceTree = "<group>"; };
+		343B36E3103514E40006290A /* SFMT-params4253.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params4253.h"; sourceTree = "<group>"; };
+		343B36E4103514E40006290A /* SFMT-params44497.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params44497.h"; sourceTree = "<group>"; };
+		343B36E5103514E40006290A /* SFMT-params607.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params607.h"; sourceTree = "<group>"; };
+		343B36E6103514E40006290A /* SFMT-params86243.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-params86243.h"; sourceTree = "<group>"; };
+		343B36E7103514E40006290A /* SFMT-sse2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFMT-sse2.h"; sourceTree = "<group>"; };
+		343B36E8103514E40006290A /* SFMT.11213.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFMT.11213.out.txt; sourceTree = "<group>"; };
+		343B36E9103514E40006290A /* SFMT.1279.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFMT.1279.out.txt; sourceTree = "<group>"; };
+		343B36EA103514E40006290A /* SFMT.132049.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFMT.132049.out.txt; sourceTree = "<group>"; };
+		343B36EB103514E40006290A /* SFMT.19937.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFMT.19937.out.txt; sourceTree = "<group>"; };
+		343B36EC103514E40006290A /* SFMT.216091.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFMT.216091.out.txt; sourceTree = "<group>"; };
+		343B36ED103514E40006290A /* SFMT.2281.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFMT.2281.out.txt; sourceTree = "<group>"; };
+		343B36EE103514E40006290A /* SFMT.4253.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFMT.4253.out.txt; sourceTree = "<group>"; };
+		343B36EF103514E40006290A /* SFMT.44497.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFMT.44497.out.txt; sourceTree = "<group>"; };
+		343B36F0103514E40006290A /* SFMT.607.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFMT.607.out.txt; sourceTree = "<group>"; };
+		343B36F1103514E40006290A /* SFMT.86243.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFMT.86243.out.txt; sourceTree = "<group>"; };
+		343B36F2103514E40006290A /* SFMT.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SFMT.c; sourceTree = "<group>"; };
+		343B36F3103514E40006290A /* SFMT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SFMT.h; sourceTree = "<group>"; };
+		343B36F4103514E40006290A /* test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test.c; sourceTree = "<group>"; };
 		343BA6FC0F740AB100329C2F /* OFXMLReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLReader.h; sourceTree = "<group>"; };
 		343BA6FD0F740AB100329C2F /* OFXMLReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLReader.m; sourceTree = "<group>"; };
 		343BA7F70F74169D00329C2F /* OFXMLInternedStringTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLInternedStringTable.h; sourceTree = "<group>"; };
@@ -881,10 +953,6 @@
 		34A2CDF50D865A6100219E36 /* OFEnumNameTable-OFFlagMask.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFEnumNameTable-OFFlagMask.m"; sourceTree = "<group>"; };
 		34A2CE890D865E9200219E36 /* OFCharacterScanner-OFTrie.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OFCharacterScanner-OFTrie.h"; sourceTree = "<group>"; };
 		34A2CE8A0D865E9200219E36 /* OFCharacterScanner-OFTrie.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFCharacterScanner-OFTrie.m"; sourceTree = "<group>"; };
-		34A2CEAD0D865F5000219E36 /* NSData-OFCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData-OFCompression.h"; sourceTree = "<group>"; };
-		34A2CEAE0D865F5000219E36 /* NSData-OFCompression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData-OFCompression.m"; sourceTree = "<group>"; };
-		34A2CEBF0D86600B00219E36 /* NSData-OFFileIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData-OFFileIO.h"; sourceTree = "<group>"; };
-		34A2CEC00D86600B00219E36 /* NSData-OFFileIO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData-OFFileIO.m"; sourceTree = "<group>"; };
 		34A4978706498FE80097A113 /* OFStringExtensionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFStringExtensionsTest.m; sourceTree = "<group>"; };
 		34A71C3F0663D4F40097A113 /* NSObjectSpecifier-OFFixes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObjectSpecifier-OFFixes.m"; sourceTree = "<group>"; };
 		34A71C400663D4F40097A113 /* OFAddScriptCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFAddScriptCommand.h; sourceTree = "<group>"; };
@@ -894,6 +962,8 @@
 		34A71C440663D4F40097A113 /* OFScriptPlaceholder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFScriptPlaceholder.h; sourceTree = "<group>"; };
 		34A71C450663D4F40097A113 /* OFScriptPlaceholder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFScriptPlaceholder.m; sourceTree = "<group>"; };
 		34A71C460663D4F40097A113 /* OmniFoundation.sdef */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = OmniFoundation.sdef; sourceTree = "<group>"; };
+		34A8C2AB10532007004244E9 /* OFReadWriteFileBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFReadWriteFileBuffer.h; sourceTree = "<group>"; };
+		34A8C2AC10532007004244E9 /* OFReadWriteFileBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFReadWriteFileBuffer.m; sourceTree = "<group>"; };
 		34AD4CB30DF846B8008974EB /* NSFileManager-OFTemporaryPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager-OFTemporaryPath.h"; sourceTree = "<group>"; };
 		34AD4CB40DF846B8008974EB /* NSFileManager-OFTemporaryPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager-OFTemporaryPath.m"; sourceTree = "<group>"; };
 		34AF16C80C4FE9BE00ADC170 /* OFXMLComment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLComment.h; sourceTree = "<group>"; };
@@ -922,6 +992,8 @@
 		34F4C0EC078F062000E8899E /* OFVersionNumber.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OFVersionNumber.m; sourceTree = "<group>"; };
 		34F4C0F1078F065E00E8899E /* OFVersionNumberTests.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OFVersionNumberTests.m; sourceTree = "<group>"; };
 		34F7C0B80D82354A007E383C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = /usr/lib/libxml2.dylib; sourceTree = "<absolute>"; };
+		34F82719107E904600458A71 /* OFExtent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFExtent.h; sourceTree = "<group>"; };
+		34F8271A107E904600458A71 /* OFExtent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFExtent.m; sourceTree = "<group>"; };
 		397A06C7000811187F000001 /* OFBTreeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBTreeTest.m; sourceTree = "<group>"; };
 		3D990C72FF3658F5C697A146 /* OFCharacterScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCharacterScanner.h; sourceTree = "<group>"; };
 		3D990C74FF36598CC697A146 /* OFCharacterScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCharacterScanner.m; sourceTree = "<group>"; };
@@ -936,7 +1008,7 @@
 		4A4E077408AA72B10098FF0F /* OFSimpleLockTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFSimpleLockTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A4E079608AA72B10098FF0F /* OFDedicatedThreadSchedulerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFDedicatedThreadSchedulerTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A4E07A608AA72B10098FF0F /* OFClobberDetectionTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFClobberDetectionTest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4A4E07CF08AA72B10098FF0F /* OFUnitTests.otest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OFUnitTests.otest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A4E07CF08AA72B10098FF0F /* OFUnitTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OFUnitTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A4E07DF08AA72B10098FF0F /* OFMainThreadLockTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFMainThreadLockTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A4E080608AA73400098FF0F /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4A4E080708AA73400098FF0F /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -1003,6 +1075,8 @@
 		A24CE92109464D670064A8AF /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		A25B32520E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSNumber-OFExtensions-CGTypes.h"; sourceTree = "<group>"; };
 		A25B32530E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSNumber-OFExtensions-CGTypes.m"; sourceTree = "<group>"; };
+		A25B740610B200C200195654 /* OFMetricPrefixFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFMetricPrefixFormatter.h; sourceTree = "<group>"; };
+		A25B740710B200C200195654 /* OFMetricPrefixFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFMetricPrefixFormatter.m; sourceTree = "<group>"; };
 		A25EB1380F783667006F62B4 /* OFXMLCFXMLTreeSink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLCFXMLTreeSink.h; sourceTree = "<group>"; };
 		A25EB1390F783667006F62B4 /* OFXMLCFXMLTreeSink.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLCFXMLTreeSink.m; sourceTree = "<group>"; };
 		A26BB40D092A42F700ECCDEE /* OFSetTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSetTests.m; sourceTree = "<group>"; };
@@ -1053,6 +1127,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		343B36321034F68F0006290A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				343B365F1034F84A0006290A /* OmniFoundation.framework in Frameworks */,
+				343B36621034F8510006290A /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3450690F0D747ED4004B40C2 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1173,6 +1256,8 @@
 				F0EB5C24023828FE3897A113 /* OFEnumNameTable.m */,
 				34A2CDF40D865A6100219E36 /* OFEnumNameTable-OFFlagMask.h */,
 				34A2CDF50D865A6100219E36 /* OFEnumNameTable-OFFlagMask.m */,
+				34F82719107E904600458A71 /* OFExtent.h */,
+				34F8271A107E904600458A71 /* OFExtent.m */,
 				00E51CA9FE8AAEA611C9CC38 /* OFHeap.h */,
 				00E51C8EFE8AAEA611C9CC38 /* OFHeap.m */,
 				00E51CAAFE8AAEA611C9CC38 /* OFKnownKeyDictionaryTemplate.h */,
@@ -1195,6 +1280,8 @@
 				00E51CBDFE8AAEA611C9CC38 /* OFRandom.m */,
 				A20055D108F49ACC007E98E2 /* OFRationalNumber.h */,
 				A20055D208F49ACC007E98E2 /* OFRationalNumber.m */,
+				34A8C2AB10532007004244E9 /* OFReadWriteFileBuffer.h */,
+				34A8C2AC10532007004244E9 /* OFReadWriteFileBuffer.m */,
 				00E51CB2FE8AAEA611C9CC38 /* OFSignature.h */,
 				00E51C96FE8AAEA611C9CC38 /* OFSignature.m */,
 				00E51CB4FE8AAEA611C9CC38 /* OFSparseArray.h */,
@@ -1237,6 +1324,7 @@
 				00E51CE9FE8AAEA611C9CC38 /* OFUppercaseFormatter.m */,
 				00E51CEAFE8AAEA611C9CC38 /* OFZipCodeFormatter.m */,
 				F5FBE7A7025BEF9F0100084B /* OFMultipleNumberFormatter.m */,
+				A25B740710B200C200195654 /* OFMetricPrefixFormatter.m */,
 				00E51CECFE8AAEA611C9CC38 /* OFCapitalizeFormatter.h */,
 				00E51CEDFE8AAEA611C9CC38 /* OFDateFormatter.h */,
 				34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */,
@@ -1248,6 +1336,7 @@
 				00E51CF2FE8AAEA611C9CC38 /* OFUppercaseFormatter.h */,
 				00E51CF3FE8AAEA611C9CC38 /* OFZipCodeFormatter.h */,
 				F5FBE7A8025BEF9F0100084B /* OFMultipleNumberFormatter.h */,
+				A25B740610B200C200195654 /* OFMetricPrefixFormatter.h */,
 				A2102A96093BCBBE006D0DFC /* Unit Scale */,
 			);
 			name = Formatters;
@@ -1281,21 +1370,23 @@
 				00E51D0CFE8AAEA611C9CC38 /* NSArray-OFExtensions.m */,
 				00E51D29FE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.h */,
 				00E51D0DFE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.m */,
-				00E51D2AFE8AAEA611C9CC38 /* NSBundle-OFFixes.h */,
-				00E51D0EFE8AAEA611C9CC38 /* NSBundle-OFFixes.m */,
 				342877B108EC788400D89442 /* NSBundle-OFExtensions.h */,
 				342877B208EC788400D89442 /* NSBundle-OFExtensions.m */,
+				00E51D2AFE8AAEA611C9CC38 /* NSBundle-OFFixes.h */,
+				00E51D0EFE8AAEA611C9CC38 /* NSBundle-OFFixes.m */,
 				00E51D2BFE8AAEA611C9CC38 /* NSCalendarDate-OFExtensions.h */,
 				00E51D0FFE8AAEA611C9CC38 /* NSCalendarDate-OFExtensions.m */,
 				342A9EC608C89683006AA532 /* NSComparisonPredicate-OFExtensions.h */,
 				342A9EC708C89683006AA532 /* NSComparisonPredicate-OFExtensions.m */,
 				4A45FF610CA489E600752880 /* NSConditionLock-OFFixes.m */,
-				00E51D2CFE8AAEA611C9CC38 /* NSData-OFExtensions.h */,
-				00E51D10FE8AAEA611C9CC38 /* NSData-OFExtensions.m */,
-				34A2CEAD0D865F5000219E36 /* NSData-OFCompression.h */,
-				34A2CEAE0D865F5000219E36 /* NSData-OFCompression.m */,
+				3416584B0FEB4B7400F4CED4 /* NSData-OFCompression.h */,
+				3416584C0FEB4B7400F4CED4 /* NSData-OFCompression.m */,
 				346DE9E90D861EA7000C9E97 /* NSData-OFEncoding.h */,
 				346DE9EA0D861EA7000C9E97 /* NSData-OFEncoding.m */,
+				00E51D2CFE8AAEA611C9CC38 /* NSData-OFExtensions.h */,
+				00E51D10FE8AAEA611C9CC38 /* NSData-OFExtensions.m */,
+				3416584D0FEB4B7400F4CED4 /* NSData-OFFileIO.h */,
+				3416584E0FEB4B7400F4CED4 /* NSData-OFFileIO.m */,
 				00E51D2DFE8AAEA611C9CC38 /* NSDate-OFExtensions.h */,
 				00E51D11FE8AAEA611C9CC38 /* NSDate-OFExtensions.m */,
 				00E51D42FE8AAEA611C9CC38 /* NSDecimalNumber-OFExtensions.h */,
@@ -1314,8 +1405,6 @@
 				A2C67D820D91A4BB00BD7911 /* NSIndexSet-OFExtensions.m */,
 				00E51D33FE8AAEA611C9CC38 /* NSInvocation-OFExtensions.h */,
 				00E51D16FE8AAEA611C9CC38 /* NSInvocation-OFExtensions.m */,
-				34A2CEBF0D86600B00219E36 /* NSData-OFFileIO.h */,
-				34A2CEC00D86600B00219E36 /* NSData-OFFileIO.m */,
 				00E51D34FE8AAEA611C9CC38 /* NSMutableArray-OFExtensions.h */,
 				00E51D17FE8AAEA611C9CC38 /* NSMutableArray-OFExtensions.m */,
 				34E9110B05FE19A40097A113 /* NSMutableAttributedString-OFExtensions.h */,
@@ -1332,10 +1421,12 @@
 				00E51D1BFE8AAEA611C9CC38 /* NSNotificationCenter-OFExtensions.m */,
 				00E51D39FE8AAEA611C9CC38 /* NSNotificationQueue-OFExtensions.h */,
 				00E51D1CFE8AAEA611C9CC38 /* NSNotificationQueue-OFExtensions.m */,
-				00E51D3AFE8AAEA611C9CC38 /* NSNumber-OFExtensions.h */,
-				00E51D1DFE8AAEA611C9CC38 /* NSNumber-OFExtensions.m */,
 				A25B32520E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.h */,
 				A25B32530E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.m */,
+				00E51D3AFE8AAEA611C9CC38 /* NSNumber-OFExtensions.h */,
+				00E51D1DFE8AAEA611C9CC38 /* NSNumber-OFExtensions.m */,
+				347DB93B0D86509200338653 /* NSObject-OFAppleScriptExtensions.h */,
+				347DB93C0D86509200338653 /* NSObject-OFAppleScriptExtensions.m */,
 				00E51D3BFE8AAEA611C9CC38 /* NSObject-OFExtensions.h */,
 				00E51D1EFE8AAEA611C9CC38 /* NSObject-OFExtensions.m */,
 				00E51D3CFE8AAEA611C9CC38 /* NSProcessInfo-OFExtensions.h */,
@@ -1359,10 +1450,8 @@
 				343301930D85ED6100C82A0B /* NSString-OFUnicodeCharacters.m */,
 				347DB7890D863F3B00338653 /* NSString-OFURLEncoding.h */,
 				347DB78A0D863F3B00338653 /* NSString-OFURLEncoding.m */,
-				347DB93B0D86509200338653 /* NSObject-OFAppleScriptExtensions.h */,
-				347DB93C0D86509200338653 /* NSObject-OFAppleScriptExtensions.m */,
-				00E51D23FE8AAEA611C9CC38 /* NSThread-OFExtensions.m */,
 				00E51D40FE8AAEA611C9CC38 /* NSThread-OFExtensions.h */,
+				00E51D23FE8AAEA611C9CC38 /* NSThread-OFExtensions.m */,
 				467ADC25003CE443C697A14B /* NSUndoManager-OFExtensions.h */,
 				467ADC26003CE443C697A14B /* NSUndoManager-OFExtensions.m */,
 				00E51D43FE8AAEA611C9CC38 /* NSUserDefaults-OFExtensions.h */,
@@ -1425,8 +1514,9 @@
 				4A4E07DF08AA72B10098FF0F /* OFMainThreadLockTest */,
 				4A4E079608AA72B10098FF0F /* OFDedicatedThreadSchedulerTest */,
 				4A4E07A608AA72B10098FF0F /* OFClobberDetectionTest */,
-				4A4E07CF08AA72B10098FF0F /* OFUnitTests.otest */,
+				4A4E07CF08AA72B10098FF0F /* OFUnitTests.octest */,
 				345069110D747ED4004B40C2 /* OFCrashOnExceptionTest */,
+				343B36341034F68F0006290A /* OFRandomRepeatTest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1436,8 +1526,6 @@
 			children = (
 				036D1EDEFFE458657F000001 /* OFResourceFork.h */,
 				036D1EDFFFE458657F000001 /* OFResourceFork.m */,
-				26484EA1008E5BA6C697A166 /* OFResource.h */,
-				26484EA2008E5BA6C697A166 /* OFResource.m */,
 			);
 			name = "CoreServices Extensions";
 			path = CoreServicesExtensions;
@@ -1521,14 +1609,14 @@
 		06DB16D4FF5DC915C697A12F /* CoreFoundation Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				F0109F80023E8CB83897A113 /* OFCFCallbacks.h */,
-				F0109F81023E8CB83897A113 /* OFCFCallbacks.m */,
-				3433029D0D85F52B00C82A0B /* OFCFWeakRetainCallbacks.h */,
-				3433029E0D85F52B00C82A0B /* OFCFWeakRetainCallbacks.m */,
 				34184171050C3E810097A113 /* CFArray-OFExtensions.h */,
 				34184172050C3E810097A113 /* CFArray-OFExtensions.m */,
+				341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */,
+				341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */,
 				34043BDB0DA3EFA500761C40 /* CFData-OFExtensions.h */,
 				34043BDC0DA3EFA500761C40 /* CFData-OFExtensions.m */,
+				341657530FEB31CD00F4CED4 /* CFData-OFFileIO.h */,
+				341657540FEB31CD00F4CED4 /* CFData-OFFileIO.m */,
 				1872811AFF5DF33FC697A12F /* CFDictionary-OFExtensions.h */,
 				1872811BFF5DF33FC697A12F /* CFDictionary-OFExtensions.m */,
 				A2B8C03A0563FD43000AFC06 /* CFPropertyList-OFExtensions.h */,
@@ -1537,6 +1625,10 @@
 				18728123FF5E2785C697A12F /* CFSet-OFExtensions.m */,
 				06DB16D5FF5DC915C697A12F /* CFString-OFExtensions.h */,
 				06DB16D6FF5DC915C697A12F /* CFString-OFExtensions.m */,
+				F0109F80023E8CB83897A113 /* OFCFCallbacks.h */,
+				F0109F81023E8CB83897A113 /* OFCFCallbacks.m */,
+				3433029D0D85F52B00C82A0B /* OFCFWeakRetainCallbacks.h */,
+				3433029E0D85F52B00C82A0B /* OFCFWeakRetainCallbacks.m */,
 			);
 			name = "CoreFoundation Extensions";
 			path = CoreFoundationExtensions;
@@ -1551,8 +1643,6 @@
 				A205BCD60FD72412007F1D66 /* OFCDSAUtilities.m */,
 				34E576C10E245BEB00C1F5FB /* OFRelativeDateParser-Internal.h */,
 				9FE23DFE0AB0EBC600E3D795 /* OFRelativeDateParser.m */,
-				00E51C6EFE8AAEA611C9CC38 /* OFAutoreleasedMemory.h */,
-				00E51C5EFE8AAEA611C9CC38 /* OFAutoreleasedMemory.m */,
 				34850C820A71491100675995 /* OFBinding.h */,
 				34850C830A71491100675995 /* OFBinding.m */,
 				00E51C6FFE8AAEA611C9CC38 /* OFBundledClass.h */,
@@ -1565,13 +1655,10 @@
 				34A2CE8A0D865E9200219E36 /* OFCharacterScanner-OFTrie.m */,
 				00E51C72FE8AAEA611C9CC38 /* OFController.h */,
 				00E51C61FE8AAEA611C9CC38 /* OFController.m */,
-				00E51C74FE8AAEA611C9CC38 /* OFEnrichedTextReader.h */,
-				00E51C62FE8AAEA611C9CC38 /* OFEnrichedTextReader.m */,
 				A2091C180E5A149E007B59A7 /* OFFilterProcess.h */,
 				A2091C190E5A149E007B59A7 /* OFFilterProcess.m */,
 				00E51C77FE8AAEA611C9CC38 /* OFObject.h */,
 				00E51C64FE8AAEA611C9CC38 /* OFObject.m */,
-				00E51C78FE8AAEA611C9CC38 /* OFPendingMethodList.h */,
 				01644BAC003B34EEC697A10E /* OFPreference.h */,
 				01644BAD003B34EEC697A10E /* OFPreference.m */,
 				00E51C79FE8AAEA611C9CC38 /* OFRegularExpression.h */,
@@ -1580,8 +1667,6 @@
 				00E51C66FE8AAEA611C9CC38 /* OFRegularExpressionMatch.m */,
 				00E51C7BFE8AAEA611C9CC38 /* OFRetainableObject.h */,
 				00E51C67FE8AAEA611C9CC38 /* OFRetainableObject.m */,
-				00E51C7CFE8AAEA611C9CC38 /* OFRTFGenerator.h */,
-				00E51C68FE8AAEA611C9CC38 /* OFRTFGenerator.m */,
 				00E51C7EFE8AAEA611C9CC38 /* OFStringScanner.h */,
 				00E51C6AFE8AAEA611C9CC38 /* OFStringScanner.m */,
 				A2102AA1093BCC57006D0DFC /* OFUnit.h */,
@@ -1590,6 +1675,92 @@
 				A2102A9B093BCC0A006D0DFC /* OFUnits.m */,
 			);
 			name = "General Classes";
+			sourceTree = "<group>";
+		};
+		343B36B3103514E40006290A /* SFMT */ = {
+			isa = PBXGroup;
+			children = (
+				343B36B4103514E40006290A /* CHANGE-LOG.txt */,
+				343B36B5103514E40006290A /* check.sh */,
+				343B36B6103514E40006290A /* FILES.txt */,
+				343B36B7103514E40006290A /* html */,
+				343B36CE103514E40006290A /* SFMT-LICENSE.txt */,
+				343B36CF103514E40006290A /* Makefile */,
+				343B36D0103514E40006290A /* params */,
+				343B36DA103514E40006290A /* README.txt */,
+				343B36DB103514E40006290A /* SFMT-alti.h */,
+				343B36DC103514E40006290A /* SFMT-params.h */,
+				343B36DD103514E40006290A /* SFMT-params11213.h */,
+				343B36DE103514E40006290A /* SFMT-params1279.h */,
+				343B36DF103514E40006290A /* SFMT-params132049.h */,
+				343B36E0103514E40006290A /* SFMT-params19937.h */,
+				343B36E1103514E40006290A /* SFMT-params216091.h */,
+				343B36E2103514E40006290A /* SFMT-params2281.h */,
+				343B36E3103514E40006290A /* SFMT-params4253.h */,
+				343B36E4103514E40006290A /* SFMT-params44497.h */,
+				343B36E5103514E40006290A /* SFMT-params607.h */,
+				343B36E6103514E40006290A /* SFMT-params86243.h */,
+				343B36E7103514E40006290A /* SFMT-sse2.h */,
+				343B36E8103514E40006290A /* SFMT.11213.out.txt */,
+				343B36E9103514E40006290A /* SFMT.1279.out.txt */,
+				343B36EA103514E40006290A /* SFMT.132049.out.txt */,
+				343B36EB103514E40006290A /* SFMT.19937.out.txt */,
+				343B36EC103514E40006290A /* SFMT.216091.out.txt */,
+				343B36ED103514E40006290A /* SFMT.2281.out.txt */,
+				343B36EE103514E40006290A /* SFMT.4253.out.txt */,
+				343B36EF103514E40006290A /* SFMT.44497.out.txt */,
+				343B36F0103514E40006290A /* SFMT.607.out.txt */,
+				343B36F1103514E40006290A /* SFMT.86243.out.txt */,
+				343B36F2103514E40006290A /* SFMT.c */,
+				343B36F3103514E40006290A /* SFMT.h */,
+				343B36F4103514E40006290A /* test.c */,
+			);
+			path = SFMT;
+			sourceTree = "<group>";
+		};
+		343B36B7103514E40006290A /* html */ = {
+			isa = PBXGroup;
+			children = (
+				343B36B8103514E40006290A /* _s_f_m_t_8c.html */,
+				343B36B9103514E40006290A /* _s_f_m_t_8h-source.html */,
+				343B36BA103514E40006290A /* _s_f_m_t_8h.html */,
+				343B36BB103514E40006290A /* annotated.html */,
+				343B36BC103514E40006290A /* doxygen.css */,
+				343B36BD103514E40006290A /* doxygen.png */,
+				343B36BE103514E40006290A /* files.html */,
+				343B36BF103514E40006290A /* functions.html */,
+				343B36C0103514E40006290A /* functions_vars.html */,
+				343B36C1103514E40006290A /* globals.html */,
+				343B36C2103514E40006290A /* globals_defs.html */,
+				343B36C3103514E40006290A /* globals_func.html */,
+				343B36C4103514E40006290A /* globals_type.html */,
+				343B36C5103514E40006290A /* globals_vars.html */,
+				343B36C6103514E40006290A /* howto-compile.html */,
+				343B36C7103514E40006290A /* index.html */,
+				343B36C8103514E40006290A /* mainpage_8txt.html */,
+				343B36C9103514E40006290A /* struct_w128___t.html */,
+				343B36CA103514E40006290A /* tab_b.gif */,
+				343B36CB103514E40006290A /* tab_l.gif */,
+				343B36CC103514E40006290A /* tab_r.gif */,
+				343B36CD103514E40006290A /* tabs.css */,
+			);
+			path = html;
+			sourceTree = "<group>";
+		};
+		343B36D0103514E40006290A /* params */ = {
+			isa = PBXGroup;
+			children = (
+				343B36D1103514E40006290A /* 11213.csv */,
+				343B36D2103514E40006290A /* 1279.csv */,
+				343B36D3103514E40006290A /* 19937.csv */,
+				343B36D4103514E40006290A /* 2281.csv */,
+				343B36D5103514E40006290A /* 4253.csv */,
+				343B36D6103514E40006290A /* 607.csv */,
+				343B36D7103514E40006290A /* csv2param.awk */,
+				343B36D8103514E40006290A /* README.en.txt */,
+				343B36D9103514E40006290A /* README.jp.txt */,
+			);
+			path = params;
 			sourceTree = "<group>";
 		};
 		344F2BF4050A91EA0097A113 /* XML */ = {
@@ -1687,8 +1858,6 @@
 			children = (
 				3F41140E036614060297A14E /* OFGeometry.h */,
 				3F41140F036614060297A14E /* OFGeometry.m */,
-				011075B9FF708771C697A10E /* OFMach.h */,
-				011075BAFF708771C697A10E /* OFMach.m */,
 				343302100D85F33300C82A0B /* OFUnicodeUtilities.h */,
 				1952E656FF2502DFC697A146 /* OFStringDecoder.h */,
 				1952E654FF24F0A8C697A146 /* OFStringDecoder.m */,
@@ -1758,6 +1927,7 @@
 				F220577008CF6059004B6007 /* OFTimeSpanFormatterTest.m */,
 				34F4C0F1078F065E00E8899E /* OFVersionNumberTests.m */,
 				3475FBD10D747F550050931A /* OFCrashOnExceptionTest.m */,
+				343B363E1034F6C40006290A /* OFRandomRepeatTest.m */,
 				A2BEE38705AB534E0097A146 /* XML */,
 			);
 			path = Tests;
@@ -1808,6 +1978,7 @@
 				00E51D4BFE8AAEA611C9CC38 /* Scheduling */,
 				71D75BD1FFA3CD8FCD999A53 /* Weak Retains */,
 				344F2BF4050A91EA0097A113 /* XML */,
+				343B36B3103514E40006290A /* SFMT */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -1881,7 +2052,6 @@
 				4A4E060608AA72B10098FF0F /* CFSet-OFExtensions.h in Headers */,
 				4A4E060708AA72B10098FF0F /* CFString-OFExtensions.h in Headers */,
 				4A4E060808AA72B10098FF0F /* OFCFCallbacks.h in Headers */,
-				4A4E060A08AA72B10098FF0F /* OFResource.h in Headers */,
 				4A4E060B08AA72B10098FF0F /* OFResourceFork.h in Headers */,
 				4A4E060C08AA72B10098FF0F /* OFBTree.h in Headers */,
 				4A4E060E08AA72B10098FF0F /* OFBulkBlockPool.h in Headers */,
@@ -1929,18 +2099,13 @@
 				4A4E064808AA72B10098FF0F /* OFSimpleLock-pthreads.h in Headers */,
 				4A4E064908AA72B10098FF0F /* OFSimpleLock-sparc.h in Headers */,
 				4A4E064A08AA72B10098FF0F /* OFSimpleLock.h in Headers */,
-				4A4E064B08AA72B10098FF0F /* OFAutoreleasedMemory.h in Headers */,
 				4A4E064C08AA72B10098FF0F /* OFBundleRegistry.h in Headers */,
 				4A4E064D08AA72B10098FF0F /* OFBundledClass.h in Headers */,
 				4A4E064F08AA72B10098FF0F /* OFCharacterScanner.h in Headers */,
 				4A4E065008AA72B10098FF0F /* OFController.h in Headers */,
-				4A4E065208AA72B10098FF0F /* OFEnrichedTextReader.h in Headers */,
 				4A4E065408AA72B10098FF0F /* OFGeometry.h in Headers */,
-				4A4E065508AA72B10098FF0F /* OFMach.h in Headers */,
 				4A4E065608AA72B10098FF0F /* OFObject.h in Headers */,
-				4A4E065708AA72B10098FF0F /* OFPendingMethodList.h in Headers */,
 				4A4E065808AA72B10098FF0F /* OFPreference.h in Headers */,
-				4A4E065908AA72B10098FF0F /* OFRTFGenerator.h in Headers */,
 				4A4E065A08AA72B10098FF0F /* OFRegularExpression.h in Headers */,
 				4A4E065B08AA72B10098FF0F /* OFRegularExpressionMatch.h in Headers */,
 				4A4E065C08AA72B10098FF0F /* OFRetainableObject.h in Headers */,
@@ -2046,8 +2211,6 @@
 				347DB93D0D86509200338653 /* NSObject-OFAppleScriptExtensions.h in Headers */,
 				34A2CDF60D865A6100219E36 /* OFEnumNameTable-OFFlagMask.h in Headers */,
 				34A2CE8B0D865E9200219E36 /* OFCharacterScanner-OFTrie.h in Headers */,
-				34A2CEAF0D865F5000219E36 /* NSData-OFCompression.h in Headers */,
-				34A2CEC10D86600B00219E36 /* NSData-OFFileIO.h in Headers */,
 				34043BEA0DA3F16700761C40 /* CFData-OFExtensions.h in Headers */,
 				347EFD7C0DD4D7C900D6F347 /* OFXMLUnparsedElement.h in Headers */,
 				34AD4CB50DF846B8008974EB /* NSFileManager-OFTemporaryPath.h in Headers */,
@@ -2064,8 +2227,15 @@
 				A2DF1E3B0F782CAA0093FEFA /* OFXMLMaker.h in Headers */,
 				A25EB13A0F783668006F62B4 /* OFXMLCFXMLTreeSink.h in Headers */,
 				A2AC2E580F783EDD002D9BFB /* OFXMLTextWriterSink.h in Headers */,
+				341657550FEB31CD00F4CED4 /* CFData-OFCompression.h in Headers */,
+				341657570FEB31CD00F4CED4 /* CFData-OFFileIO.h in Headers */,
+				3416584F0FEB4B7400F4CED4 /* NSData-OFCompression.h in Headers */,
+				341658510FEB4B7400F4CED4 /* NSData-OFFileIO.h in Headers */,
+				34A8C2AD10532007004244E9 /* OFReadWriteFileBuffer.h in Headers */,
 				A205BCD70FD72412007F1D66 /* OFCDSAUtilities.h in Headers */,
 				A2CCF0ED1014FE9F0087623E /* OFXMLSignature.h in Headers */,
+				34F8271B107E904600458A71 /* OFExtent.h in Headers */,
+				A25B740810B200C200195654 /* OFMetricPrefixFormatter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2108,6 +2278,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		343B36331034F68F0006290A /* OFRandomRepeatTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 343B363A1034F6940006290A /* Build configuration list for PBXNativeTarget "OFRandomRepeatTest" */;
+			buildPhases = (
+				343B36311034F68F0006290A /* Sources */,
+				343B36321034F68F0006290A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				343B36421034F7170006290A /* PBXTargetDependency */,
+			);
+			name = OFRandomRepeatTest;
+			productName = OFRandomRepeatTest;
+			productReference = 343B36341034F68F0006290A /* OFRandomRepeatTest */;
+			productType = "com.apple.product-type.tool";
+		};
 		345069100D747ED4004B40C2 /* OFCrashOnExceptionTest */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 345069160D747F0B004B40C2 /* Build configuration list for PBXNativeTarget "OFCrashOnExceptionTest" */;
@@ -2151,7 +2338,6 @@
 				4A4E076808AA72B10098FF0F /* Headers */,
 				4A4E076908AA72B10098FF0F /* Sources */,
 				4A4E076B08AA72B10098FF0F /* Frameworks */,
-				4A4E076F08AA72B10098FF0F /* Rez */,
 			);
 			buildRules = (
 			);
@@ -2171,7 +2357,6 @@
 				4A4E078A08AA72B10098FF0F /* Headers */,
 				4A4E078B08AA72B10098FF0F /* Sources */,
 				4A4E078D08AA72B10098FF0F /* Frameworks */,
-				4A4E079108AA72B10098FF0F /* Rez */,
 			);
 			buildRules = (
 			);
@@ -2191,7 +2376,6 @@
 				4A4E079B08AA72B10098FF0F /* Headers */,
 				4A4E079C08AA72B10098FF0F /* Sources */,
 				4A4E079E08AA72B10098FF0F /* Frameworks */,
-				4A4E07A108AA72B10098FF0F /* Rez */,
 			);
 			buildRules = (
 			);
@@ -2212,7 +2396,6 @@
 				4A4E07AC08AA72B10098FF0F /* Resources */,
 				4A4E07B008AA72B10098FF0F /* Sources */,
 				4A4E07C308AA72B10098FF0F /* Frameworks */,
-				4A4E07C908AA72B10098FF0F /* Rez */,
 				340478D408BE626600BE1C39 /* Run Tests */,
 			);
 			buildRules = (
@@ -2223,7 +2406,7 @@
 			name = OFUnitTests;
 			productInstallPath = "$(USER_LIBRARY_DIR)/Bundles";
 			productName = OFUnitTests;
-			productReference = 4A4E07CF08AA72B10098FF0F /* OFUnitTests.otest */;
+			productReference = 4A4E07CF08AA72B10098FF0F /* OFUnitTests.octest */;
 			productType = "com.apple.product-type.bundle";
 		};
 		4A4E07D008AA72B10098FF0F /* OFMainThreadLockTest */ = {
@@ -2233,7 +2416,6 @@
 				4A4E07D308AA72B10098FF0F /* Headers */,
 				4A4E07D408AA72B10098FF0F /* Sources */,
 				4A4E07D608AA72B10098FF0F /* Frameworks */,
-				4A4E07DA08AA72B10098FF0F /* Rez */,
 			);
 			buildRules = (
 			);
@@ -2266,6 +2448,7 @@
 				4A4E079808AA72B10098FF0F /* OFClobberDetectionZoneTest */,
 				4A4E07D008AA72B10098FF0F /* OFMainThreadLockTest */,
 				345069100D747ED4004B40C2 /* OFCrashOnExceptionTest */,
+				343B36331034F68F0006290A /* OFRandomRepeatTest */,
 			);
 		};
 /* End PBXProject section */
@@ -2279,6 +2462,7 @@
 				4A4E06A908AA72B10098FF0F /* Language.strings in Resources */,
 				4A4E06AA08AA72B10098FF0F /* EnglishToISO.strings in Resources */,
 				34920C7D0D58D2A0001CBD3D /* DateProcessing.strings in Resources */,
+				345886331035C727006E712F /* SFMT-LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2300,44 +2484,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXRezBuildPhase section */
-		4A4E076F08AA72B10098FF0F /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4A4E079108AA72B10098FF0F /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4A4E07A108AA72B10098FF0F /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4A4E07C908AA72B10098FF0F /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4A4E07DA08AA72B10098FF0F /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXRezBuildPhase section */
-
 /* Begin PBXShellScriptBuildPhase section */
 		340478D408BE626600BE1C39 /* Run Tests */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2351,11 +2497,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$CONFIGURATION\" = \"Coverage\" ]; then\n\t# Execute OmniFoundation's unit tests to collect coverage information.  Later maybe we should run these on all builds?\n\tOBJC_DISABLE_GC=YES ../../Scripts/Coverage/xcode_generate\nfi\n";
+			shellScript = "/usr/omni/bin/Scripts/OmniRunUnitTests\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		343B36311034F68F0006290A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				343B363F1034F6C40006290A /* OFRandomRepeatTest.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3450690E0D747ED4004B40C2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2378,7 +2532,6 @@
 				4A4E06B508AA72B10098FF0F /* CFSet-OFExtensions.m in Sources */,
 				4A4E06B608AA72B10098FF0F /* CFString-OFExtensions.m in Sources */,
 				4A4E06B708AA72B10098FF0F /* OFCFCallbacks.m in Sources */,
-				4A4E06B908AA72B10098FF0F /* OFResource.m in Sources */,
 				4A4E06BA08AA72B10098FF0F /* OFResourceFork.m in Sources */,
 				4A4E06BB08AA72B10098FF0F /* OFBTree.m in Sources */,
 				4A4E06BD08AA72B10098FF0F /* OFBulkBlockPool.m in Sources */,
@@ -2419,17 +2572,13 @@
 				4A4E06EE08AA72B10098FF0F /* OFUppercaseFormatter.m in Sources */,
 				4A4E06EF08AA72B10098FF0F /* OFZipCodeFormatter.m in Sources */,
 				4A4E06F008AA72B10098FF0F /* OFReadWriteLock.m in Sources */,
-				4A4E06F108AA72B10098FF0F /* OFAutoreleasedMemory.m in Sources */,
 				4A4E06F208AA72B10098FF0F /* OFBundleRegistry.m in Sources */,
 				4A4E06F308AA72B10098FF0F /* OFBundledClass.m in Sources */,
 				4A4E06F408AA72B10098FF0F /* OFCharacterScanner.m in Sources */,
 				4A4E06F508AA72B10098FF0F /* OFController.m in Sources */,
-				4A4E06F608AA72B10098FF0F /* OFEnrichedTextReader.m in Sources */,
 				4A4E06F808AA72B10098FF0F /* OFGeometry.m in Sources */,
-				4A4E06F908AA72B10098FF0F /* OFMach.m in Sources */,
 				4A4E06FA08AA72B10098FF0F /* OFObject.m in Sources */,
 				4A4E06FB08AA72B10098FF0F /* OFPreference.m in Sources */,
-				4A4E06FC08AA72B10098FF0F /* OFRTFGenerator.m in Sources */,
 				4A4E06FD08AA72B10098FF0F /* OFRegularExpression.m in Sources */,
 				4A4E06FE08AA72B10098FF0F /* OFRegularExpressionMatch.m in Sources */,
 				4A4E06FF08AA72B10098FF0F /* OFRetainableObject.m in Sources */,
@@ -2530,8 +2679,6 @@
 				347DB93E0D86509200338653 /* NSObject-OFAppleScriptExtensions.m in Sources */,
 				34A2CDF70D865A6100219E36 /* OFEnumNameTable-OFFlagMask.m in Sources */,
 				34A2CE8C0D865E9200219E36 /* OFCharacterScanner-OFTrie.m in Sources */,
-				34A2CEB00D865F5000219E36 /* NSData-OFCompression.m in Sources */,
-				34A2CEC20D86600B00219E36 /* NSData-OFFileIO.m in Sources */,
 				34043BEB0DA3F16800761C40 /* CFData-OFExtensions.m in Sources */,
 				347EFD7D0DD4D7C900D6F347 /* OFXMLUnparsedElement.m in Sources */,
 				34AD4CB60DF846B8008974EB /* NSFileManager-OFTemporaryPath.m in Sources */,
@@ -2546,9 +2693,16 @@
 				A2DF1E3C0F782CAA0093FEFA /* OFXMLMaker.m in Sources */,
 				A25EB13B0F783668006F62B4 /* OFXMLCFXMLTreeSink.m in Sources */,
 				A2AC2E590F783EDD002D9BFB /* OFXMLTextWriterSink.m in Sources */,
+				341657560FEB31CD00F4CED4 /* CFData-OFCompression.m in Sources */,
+				341657580FEB31CD00F4CED4 /* CFData-OFFileIO.m in Sources */,
+				341658500FEB4B7400F4CED4 /* NSData-OFCompression.m in Sources */,
+				341658520FEB4B7400F4CED4 /* NSData-OFFileIO.m in Sources */,
+				34A8C2AE10532007004244E9 /* OFReadWriteFileBuffer.m in Sources */,
 				A205BCD80FD72412007F1D66 /* OFCDSAUtilities.m in Sources */,
 				A2CCF0EE1014FE9F0087623E /* OFXMLSignature.m in Sources */,
 				A2CCF0EF1014FEA00087623E /* OFXMLSignature-Utilities.m in Sources */,
+				34F8271C107E904600458A71 /* OFExtent.m in Sources */,
+				A25B740910B200C200195654 /* OFMetricPrefixFormatter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2630,6 +2784,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		343B36421034F7170006290A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4A4E05FE08AA72B10098FF0F /* OmniFoundation */;
+			targetProxy = 343B36411034F7170006290A /* PBXContainerItemProxy */;
+		};
 		3475FBD50D747F720050931A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4A4E05FE08AA72B10098FF0F /* OmniFoundation */;
@@ -2702,6 +2861,30 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		343B36361034F6900006290A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OFRandomRepeatTest;
+			};
+			name = Debug;
+		};
+		343B36371034F6900006290A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A4E080E08AA73400098FF0F /* Omni-Tool-Release.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OFRandomRepeatTest;
+			};
+			name = Release;
+		};
+		343B36381034F6900006290A /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OFRandomRepeatTest;
+			};
+			name = Coverage;
+		};
 		345069130D747ED4004B40C2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */;
@@ -2957,7 +3140,7 @@
 					"-W#warnings",
 					"-Wno-trigraphs",
 				);
-				WRAPPER_EXTENSION = otest;
+				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
 		};
@@ -2975,7 +3158,7 @@
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFoundation.UnitTests;
 				OTHER_LDFLAGS = "-lxml2";
 				PRODUCT_NAME = OFUnitTests;
-				WRAPPER_EXTENSION = otest;
+				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};
@@ -2993,7 +3176,7 @@
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFoundation.UnitTests;
 				OTHER_LDFLAGS = "-lxml2";
 				PRODUCT_NAME = OFUnitTests;
-				WRAPPER_EXTENSION = otest;
+				WRAPPER_EXTENSION = octest;
 			};
 			name = Coverage;
 		};
@@ -3025,6 +3208,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AB8F38B08AD0CA100DBB061 /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
+				GCC_ENABLE_OBJC_GC = YES;
 				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 			};
 			name = Debug;
@@ -3041,6 +3225,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AB8F38A08AD0CA100DBB061 /* Omni-Global-Coverage.xcconfig */;
 			buildSettings = {
+				GCC_ENABLE_OBJC_GC = YES;
 				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 			};
 			name = Coverage;
@@ -3048,6 +3233,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		343B363A1034F6940006290A /* Build configuration list for PBXNativeTarget "OFRandomRepeatTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				343B36361034F6900006290A /* Debug */,
+				343B36371034F6900006290A /* Release */,
+				343B36381034F6900006290A /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		345069160D747F0B004B40C2 /* Build configuration list for PBXNativeTarget "OFCrashOnExceptionTest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

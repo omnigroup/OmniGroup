@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,14 +110,20 @@ static int writeHostEntry(struct hostent *hostEntry)
     return NETDB_SUCCESS;
 }
 
+static void writeUint32(uint32_t v)
+{
+    v = htonl(v);
+    fwrite(&v, sizeof(v), 1, stdout);
+}
+
 static void writeCanonicalHostname(const char *hostname)
 {
-    int hostnameLength;
+    size_t hostnameLength;
 
     if (!hostname)
         hostname = "";
     hostnameLength = strlen(hostname);
-    fwrite(&hostnameLength, sizeof(hostnameLength), 1, stdout);
+    writeUint32((uint32_t)hostnameLength);
     fwrite(hostname, hostnameLength, 1, stdout);
 }
 
@@ -125,8 +131,8 @@ static void writeHostAddresses(int family, int length, void **addresses)
 {
     unsigned int entryIndex;
 
-    fwrite(&family, sizeof(int), 1, stdout);
-    fwrite(&length, sizeof(int), 1, stdout);
+    writeUint32(family);
+    writeUint32(length);
     for (entryIndex = 0; addresses[entryIndex]; entryIndex++) {
         fwrite(addresses[entryIndex], length, 1, stdout);
     }

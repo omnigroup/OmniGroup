@@ -1,4 +1,4 @@
-// Copyright 2000-2006, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@
 {
     IBOutlet OAPreferenceController *preferenceController;
 
-    unsigned int pressedIconIndex;
+    NSUInteger pressedIconIndex;
     OAPreferenceClientRecord *selectedClientRecord;
     
     NSArray *preferenceClientRecords;
@@ -35,16 +35,16 @@
 @end
 
 @interface OAPreferencesIconView (Subclasses)
-- (unsigned int)_iconsWide;
-- (unsigned int)_numberOfIcons;
-- (BOOL)_isIconSelectedAtIndex:(unsigned int)index;
-- (BOOL)_column:(unsigned int *)column andRow:(unsigned int *)row forIndex:(unsigned int)index;
-- (NSRect)_boundsForIndex:(unsigned int)index;
-- (BOOL)_iconImage:(NSImage **)image andName:(NSString **)name andIdentifier:(NSString **)identifier forIndex:(unsigned int)index;
-- (void)_drawIconAtIndex:(unsigned int)index drawRect:(NSRect)drawRect;
+- (NSUInteger)_iconsWide;
+- (NSUInteger)_numberOfIcons;
+- (BOOL)_isIconSelectedAtIndex:(NSUInteger)index;
+- (BOOL)_column:(NSUInteger *)column andRow:(NSUInteger *)row forIndex:(NSUInteger)index;
+- (NSRect)_boundsForIndex:(NSUInteger)index;
+- (BOOL)_iconImage:(NSImage **)image andName:(NSString **)name andIdentifier:(NSString **)identifier forIndex:(NSUInteger)index;
+- (void)_drawIconAtIndex:(NSUInteger)index drawRect:(NSRect)drawRect;
 - (void)_drawBackgroundForRect:(NSRect)rect;
 - (void)_sizeToFit;
-- (BOOL)_dragIconIndex:(unsigned int)index event:(NSEvent *)event;
+- (BOOL)_dragIconIndex:(NSUInteger)index event:(NSEvent *)event;
 - (BOOL)_dragIconImage:(NSImage *)iconImage andName:(NSString *)name event:(NSEvent *)event;
 - (BOOL)_dragIconImage:(NSImage *)iconImage andName:(NSString *)name andIdentifier:(NSString *)identifier event:(NSEvent *)event;
 @end

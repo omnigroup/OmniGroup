@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,8 +15,8 @@
 
 RCS_ID("$Id$")
 
-@interface OFMessageQueue (Private)
-- (void)_createProcessorsForQueueSize:(unsigned int)queueCount;
+@interface OFMessageQueue (/*Private*/)
+- (void)_createProcessorsForQueueSize:(NSUInteger)queueCount;
 @end
 
 typedef enum {
@@ -81,7 +81,7 @@ static BOOL OFMessageQueueDebug = NO;
     [queueLock unlock];
 }
 
-- (void)startBackgroundProcessors:(unsigned int)processorCount;
+- (void)startBackgroundProcessors:(NSUInteger)processorCount;
 {
     [queueProcessorsLock lock];
     uncreatedProcessors += processorCount;
@@ -117,7 +117,7 @@ static BOOL OFMessageQueueDebug = NO;
 
 - (OFInvocation *)copyNextInvocationWithBlock:(BOOL)shouldBlock;
 {
-    unsigned int invocationCount;
+    NSUInteger invocationCount;
     OFInvocation *nextRetainedInvocation = nil;
 
     [queueLock lock];
@@ -127,8 +127,8 @@ static BOOL OFMessageQueueDebug = NO;
         [queueLock unlockWithCondition:QUEUE_HAS_NO_SCHEDULABLE_INVOCATIONS];
            
     do {
-        unsigned int invocationIndex;
-        unsigned int queueProcessorIndex, queueProcessorCount;
+        NSUInteger invocationIndex;
+        NSUInteger queueProcessorIndex, queueProcessorCount;
 
         if (shouldBlock) {
             [queueProcessorsLock lock];
@@ -225,7 +225,7 @@ static BOOL OFMessageQueueDebug = NO;
 
 - (void)addQueueEntry:(OFInvocation *)aQueueEntry;
 {
-    unsigned int queueCount, entryIndex;
+    NSUInteger queueCount, entryIndex;
     unsigned int priority;
     NSObject <OFMessageQueueDelegate> *retainedDelegate = nil;
 
@@ -425,11 +425,6 @@ static BOOL OFMessageQueueDebug = NO;
     [queueEntry release];
 }
 
-@end
-
-
-@implementation OFMessageQueue (Private)
-
 // Debugging
 
 + (void)setDebug:(BOOL)shouldDebug;
@@ -440,19 +435,21 @@ static BOOL OFMessageQueueDebug = NO;
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *debugDictionary;
-
+    
     debugDictionary = [super debugDictionary];
     [debugDictionary setObject:queue forKey:@"queue"];
     [debugDictionary setObject:[NSNumber numberWithInt:idleProcessors] forKey:@"idleProcessors"];
-    [debugDictionary setObject:[NSNumber numberWithInt:uncreatedProcessors] forKey:@"uncreatedProcessors"];
+    [debugDictionary setObject:[NSNumber numberWithUnsignedInteger:uncreatedProcessors] forKey:@"uncreatedProcessors"];
     [debugDictionary setObject:flags.schedulesBasedOnPriority ? @"YES" : @"NO" forKey:@"flags.schedulesBasedOnPriority"];
     if (weaklyRetainedDelegate)
 	[debugDictionary setObject:weaklyRetainedDelegate forKey:@"weaklyRetainedDelegate"];
-
+    
     return debugDictionary;
 }
 
-- (void)_createProcessorsForQueueSize:(unsigned int)queueCount;
+#pragma mark Private
+
+- (void)_createProcessorsForQueueSize:(NSUInteger)queueCount;
 {
     unsigned int projectedIdleProcessors;
     

@@ -1,4 +1,4 @@
-// Copyright 1999-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -123,7 +123,8 @@ static OFPreference *directoryIndexFilenamePreference = nil;
     [mutableDefaultShortcuts setObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedStringFromTableInBundle(@"http://www.%@.com/", @"OWF", [OWAddress bundle], "default address format to use in your country when user just types a single word"), @"format", @"GET", @"method", @"www.*.com", @"name", nil] forKey:@"*"];
 
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:mutableDefaultShortcuts forKey:@"OW5AddressShortcuts"]];
-    
+
+    [mutableDefaultShortcuts release];
 }
 
 + (void)reloadShortcutDictionaryFromDefaults;
@@ -144,11 +145,7 @@ static OFPreference *directoryIndexFilenamePreference = nil;
             oldShortcutDictionary = [(NSString *)oldShortcutDictionary propertyList];
         }
         
-        NSArray *allKeys = [oldShortcutDictionary allKeys];
-        unsigned int keyCount, keyIndex;
-        keyCount = [allKeys count];
-        for (keyIndex = 0; keyIndex < keyCount; keyIndex++) {
-            NSString *key = [allKeys objectAtIndex:keyIndex];
+        for (NSString *key in oldShortcutDictionary) {
             if ([mutableShortcutDictionary objectForKey:key] != nil)
                 continue;
             NSString *value = [oldShortcutDictionary objectForKey:key];
@@ -980,7 +977,7 @@ addressForNotSoObviousHostname(NSString *string)
     return [OWAddress addressWithURL:url target:target methodString:methodString methodDictionary:methodDictionary effect:flags.effect forceAlwaysUnique:shouldForceAlwaysUnique contextDictionary:contextDictionary];
 }
 
-- (OWAddress *)newUniqueVersionOfAddress;
+- (OWAddress *)createUniqueVersionOfAddress;
 {
     return [OWAddress addressWithURL:url target:target methodString:methodString methodDictionary:methodDictionary effect:flags.effect forceAlwaysUnique:YES contextDictionary:contextDictionary];
 }
@@ -1056,27 +1053,22 @@ addressForNotSoObviousHostname(NSString *string)
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    OWURL *newURL;
-    NSString *newTarget, *newMethodString;
-    NSDictionary *newMethodDictionary;
-    NSDictionary *newContextDictionary;
-    OWAddress *newAddress;
-
     if (NSShouldRetainWithZone(self, zone))
         return [self retain];
 
-    newURL = [url copyWithZone:zone];
-    newTarget = [target copyWithZone:zone];
-    newMethodString = [methodString copyWithZone:zone];
-    newMethodDictionary = [methodDictionary copyWithZone:zone];
-    newContextDictionary = [contextDictionary copyWithZone:zone];
+    OWURL *newURL = [url copyWithZone:zone];
+    NSString *newTarget = [target copyWithZone:zone];
+    NSString *newMethodString = [methodString copyWithZone:zone];
+    NSDictionary *newMethodDictionary = [methodDictionary copyWithZone:zone];
+    NSDictionary *newContextDictionary = [contextDictionary copyWithZone:zone];
         
-    newAddress = [[isa allocWithZone:zone] initWithURL:newURL target:newTarget methodString:newMethodString methodDictionary:newMethodDictionary effect:flags.effect forceAlwaysUnique:flags.forceAlwaysUnique contextDictionary:newContextDictionary];
+    OWAddress *newAddress = [[isa allocWithZone:zone] initWithURL:newURL target:newTarget methodString:newMethodString methodDictionary:newMethodDictionary effect:flags.effect forceAlwaysUnique:flags.forceAlwaysUnique contextDictionary:newContextDictionary];
 
     [newURL release];
     [newTarget release];
     [newMethodString release];
     [newMethodDictionary release];
+    [newContextDictionary release];
     
     return newAddress;
 }

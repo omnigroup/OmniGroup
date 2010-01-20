@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,9 +9,14 @@
 
 #import "ONInternetSocket.h"
 
+#import "ONFeatures.h"
+
 #include <netinet/in.h>
 #include <sys/un.h>
+
+#if ON_SUPPORT_APPLE_TALK
 #include <netat/appletalk.h>
+#endif
 
 typedef union {
     struct sockaddr generic;           // Generic "abstract superclass" sockaddr
@@ -19,7 +24,10 @@ typedef union {
     struct sockaddr_in6 ipv6;          // IPv6 addresses
     struct sockaddr_un local;          // UNIX-domain socket addresses
     struct sockaddr_storage storage;   // Forces alignment and size
+#if ON_SUPPORT_APPLE_TALK
     struct sockaddr_at atalk;          // AF_APPLETALK addresses [net.work:node/socket]
+#endif
+    
 #if 0
     /* Other sockaddr types we may want someday but don't need right now */
     struct sockaddr_dl link;           // Data-link layer address (e.g. interface+MAC address)

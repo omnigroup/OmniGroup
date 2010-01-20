@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,7 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
     // The snapshot should have no to-manys and all to-ones should be just primary keys.
     // All values shoudl be of the proper class
     NSArray *properties = [[self->_objectID entity] snapshotProperties];
-    unsigned int propertyIndex = [properties count];
+    NSUInteger propertyIndex = [properties count];
     while (propertyIndex--) {
         ODOProperty *property = [properties objectAtIndex:propertyIndex];
         struct _ODOPropertyFlags flags = ODOPropertyFlags(property);
@@ -58,7 +58,8 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
     _editingContext = [context retain];
     _objectID = [objectID copy];
     _flags.isFault = isFault;
-
+    _flags.undeletable = [[self class] objectIDShouldBeUndeletable:objectID];
+    
     // Only create values up front if we aren't a fault
     if (_flags.isFault == NO)
         _ODOObjectCreateNullValues(self);
@@ -77,6 +78,7 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
     _editingContext = [context retain];
     _objectID = [objectID copy];
     _flags.isFault = NO;
+    _flags.undeletable = [[self class] objectIDShouldBeUndeletable:objectID];
 
     _ODOObjectCreateValuesFromSnapshot(self, snapshot);
     
@@ -135,7 +137,7 @@ NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self)
 
     ODOEntity *entity = [self->_objectID entity];
     NSArray *snapshotProperties = [entity snapshotProperties];
-    unsigned int propIndex, propCount = [snapshotProperties count];
+    NSUInteger propIndex, propCount = [snapshotProperties count];
     
     // We do store the full array for snapshots, one slot per snapshot property, even though we don't really need the slots for to-manys.  One optimization would be to pack/unpack them as needed.
     CFMutableArrayRef snapshot = CFArrayCreateMutable(kCFAllocatorDefault, propCount, &OFNSObjectArrayCallbacks);
@@ -234,7 +236,7 @@ static void _validateRelationshipDestination(const void *value, void *context)
         BOOL fault = [self isFault];
 
         NSArray *snapshotProperties = [[self entity] snapshotProperties];
-        unsigned int propertyIndex = [snapshotProperties count];
+        NSUInteger propertyIndex = [snapshotProperties count];
         
         if (fault) {
             OBASSERT(!inserted);
@@ -244,7 +246,7 @@ static void _validateRelationshipDestination(const void *value, void *context)
             OBASSERT(_ODOObjectHasValues(self) == YES); // Real objects have values!
             OBASSERT(deleted == NO); // deleted objects are turned into faults first
             
-            unsigned int mods = 0;
+            NSUInteger mods = 0;
             if (inserted)
                 mods++;
             if (updated)
@@ -334,6 +336,7 @@ void ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(ODOObject *self)
         return;
     
     self->_flags.needsAwakeFromFetch = NO;
+    
     [self awakeFromFetch]; // Could possibly raise, do all our work first
 }
 
@@ -355,7 +358,7 @@ void ODOObjectAwakeSingleObjectFromFetch(ODOObject *object)
 
 void ODOObjectAwakeObjectsFromFetch(NSArray *objects)
 {
-    unsigned int fetchedObjectIndex, fetchedObjectCount = [objects count];
+    NSUInteger fetchedObjectIndex, fetchedObjectCount = [objects count];
     
     // Let all the objects know that they still need awaking.
     for (fetchedObjectIndex = 0; fetchedObjectIndex < fetchedObjectCount; fetchedObjectIndex++)
@@ -378,7 +381,7 @@ BOOL ODOObjectToManyRelationshipIsFault(ODOObject *self, ODORelationship *rel)
     OBPRECONDITION([rel entity] == [self entity]);
     OBPRECONDITION([rel isToMany]);
     
-    unsigned offset = ODOPropertySnapshotIndex(rel);
+    NSUInteger offset = ODOPropertySnapshotIndex(rel);
     id value = _ODOObjectValueAtIndex(self, offset);
     return ODOObjectValueIsLazyToManyFault(value);
 }
@@ -393,7 +396,7 @@ NSMutableSet *ODOObjectToManyRelationshipIfNotFault(ODOObject *self, ODORelation
     if (self->_flags.isFault)
         return nil;
     
-    unsigned offset = ODOPropertySnapshotIndex(rel);
+    NSUInteger offset = ODOPropertySnapshotIndex(rel);
     NSMutableSet *set = _ODOObjectValueAtIndex(self, offset);
 
     if (ODOObjectValueIsLazyToManyFault(set))
@@ -432,7 +435,7 @@ CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, CFArrayR
     NSArray *snapshotProperties = [entity snapshotProperties];
     OBASSERT(CFArrayGetCount(snapshot) == (CFIndex)[snapshotProperties count]);
     
-    unsigned int propertyIndex, propertyCount = [snapshotProperties count];
+    NSUInteger propertyIndex, propertyCount = [snapshotProperties count];
     for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
         ODOProperty *prop = [snapshotProperties objectAtIndex:propertyIndex];
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
@@ -487,7 +490,7 @@ void ODOObjectApplyDifferenceRecord(ODOObject *self, CFArrayRef diff)
     OBPRECONDITION((CFArrayGetCount(diff) % 2) == 1); // should be an even number of kv pairs plus one object ID
     OBPRECONDITION([self->_objectID isEqual:(id)CFArrayGetValueAtIndex(diff, 0)]);
     
-    unsigned int diffIndex, diffCount = CFArrayGetCount(diff);
+    NSUInteger diffIndex, diffCount = CFArrayGetCount(diff);
     for (diffIndex = 1; diffIndex < diffCount; diffIndex += 2) {
         NSString *key = (NSString *)CFArrayGetValueAtIndex(diff, diffIndex+0);
         id value = (id)CFArrayGetValueAtIndex(diff, diffIndex+1);

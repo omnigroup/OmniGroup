@@ -1,17 +1,17 @@
 model "ODOTestCase" do
-  entity "Master", :instance_class => "ODOObject" do
+  entity "Master" do
     attribute "pk", :string, :primary  => true
     attribute "name", :string, :optional => true
     relationship "details", "Detail", "master", :many => true, :delete  => :cascade
   end
 
-  entity "Detail", :instance_class => "ODOObject" do
+  entity "Detail" do
     attribute "pk", :string, :primary  => true
     attribute "name", :string, :optional => true
     relationship "master", "Master", "details", :delete => :nullify
   end
 
-  entity "AllAttributeTypes", :instance_class => "ODOObject" do
+  entity "AllAttributeTypes" do
     attribute "pk", :string, :primary => true
     attribute "int16", :int16
     attribute "int32", :int32
@@ -27,5 +27,28 @@ model "ODOTestCase" do
   entity "DynamicProperty" do
     attribute "pk", :string, :primary => true
     attribute "name", :string, :optional => true
+  end
+  
+  # For one-to-one testing
+  entity "LeftHand" do
+    attribute "pk", :string, :primary => true
+    attribute "name", :string, :optional => true
+    relationship "rightHand", "RightHand", "leftHand", :delete => :nullify
+  end
+  entity "RightHand" do
+    attribute "pk", :string, :primary => true
+    attribute "name", :string, :optional => true
+    relationship "leftHand", "LeftHand", "rightHand", :delete => :nullify, :calculated => true
+  end
+  
+  entity "LeftHandRequired" do
+    attribute "pk", :string, :primary => true
+    attribute "name", :string, :optional => true
+    relationship "rightHand", "RightHandRequired", "leftHand", :delete => :cascade
+  end
+  entity "RightHandRequired" do
+    attribute "pk", :string, :primary => true
+    attribute "name", :string, :optional => true
+    relationship "leftHand", "LeftHandRequired", "rightHand", :delete => :cascade, :calculated => true
   end
 end

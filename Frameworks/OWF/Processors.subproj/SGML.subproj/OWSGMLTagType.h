@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,9 +48,9 @@ typedef enum {
 - (OFTrie *)attributeTrie;
 
 - (void)shareAttributesWithTagType:(OWSGMLTagType *)aTagType;
-- (unsigned int)addAttributeNamed:(NSString *)attributeName;
-- (unsigned int)indexOfAttribute:(NSString *)attributeName;
-- (unsigned int)attributeCount;
+- (NSUInteger)addAttributeNamed:(NSString *)attributeName;
+- (NSUInteger)indexOfAttribute:(NSString *)attributeName;
+- (NSUInteger)attributeCount;
 - (BOOL)hasAttributeNamed:(NSString *)attributeName;
 
 - (void)setContentHandling:(OWSGMLTagContentHandlingType)contentHandling;

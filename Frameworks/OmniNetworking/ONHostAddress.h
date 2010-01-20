@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@
 + (ONHostAddress *)hostAddressWithInternetAddress:(const void *)anInternetAddress family:(unsigned char)addressFamily;
     // Returns an ONHostAddress with the given internet address, which is interpreted in the given address family. The address should be in network byte order. addressFamily can be AF_INET, AF_INET6, or AF_APPLETALK.
     
-+ (ONHostAddress *)addressWithIPv4UnsignedLong:(unsigned long)anAddress;
++ (ONHostAddress *)addressWithIPv4UnsignedLong:(uint32_t)anAddress;
     // Returns an ONHostAddress with the specified IPv4 host address. The address is in host byte order.
 
 + (ONHostAddress *)hostAddressWithSocketAddress:(const struct sockaddr *)newPortAddress;

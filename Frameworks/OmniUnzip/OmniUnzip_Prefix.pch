@@ -1,0 +1,19 @@
+//
+// Prefix header for all source files of the 'OmniUnzip' target in the 'OmniUnzip' project.
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+    #import <OmniBase/OmniBase.h>
+    #import <OmniFoundation/NSString-OFSimpleMatching.h>
+
+#if (defined(MAC_OS_X_VERSION_10_5) && (MAC_OS_X_VERSION_10_5 <= MAC_OS_X_VERSION_MIN_REQUIRED)) || TARGET_OS_IPHONE
+    #define USE_LEOPARD_API 1
+#else
+    #define USE_LEOPARD_API 0
+#endif
+
+#if USE_LEOPARD_API
+    #import <CoreFoundation/CFError.h>
+#endif
+#endif

@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,11 +34,6 @@ extern "C" {
 #import <sys/uio.h>
 #import <sys/file.h>
 #import <fcntl.h>
-
-// <c.h> is no longer present on 10.5
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-#import <c.h> // For MIN(), etc.
-#endif
 
 #import <unistd.h>
 #import <math.h> // For floor(), etc.

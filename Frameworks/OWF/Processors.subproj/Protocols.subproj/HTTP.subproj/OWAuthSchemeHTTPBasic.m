@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,7 @@ RCS_ID("$Id$")
     bytes = [buffer dataUsingEncoding:NSISOLatin1StringEncoding allowLossyConversion:NO];
     [buffer release];
     if (bytes == nil) {
-        [NSException raise:@"Can't Authorize" format:NSLocalizedStringFromTableInBundle(@"Username or password contains characters which cannot be encoded", @"OWF", [OWAuthSchemeHTTPBasic bundle], @"authorization error")];
+        [NSException raise:@"Can't Authorize" reason:NSLocalizedStringFromTableInBundle(@"Username or password contains characters which cannot be encoded", @"OWF", [OWAuthSchemeHTTPBasic bundle], @"authorization error")];
     }
     
     if (type == OWAuth_HTTP)

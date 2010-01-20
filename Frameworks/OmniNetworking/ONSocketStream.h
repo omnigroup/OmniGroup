@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,8 +25,8 @@
 
     // BOOL socketPushDisabled;
     unsigned int writeBufferingCount;   // count of nested -beginBuffering / -endBuffering calls
-    unsigned int totalBufferedBytes;    // number of bytes in writeBuffer
-    unsigned int firstBufferOffset;     // number of bytes from first buffer to ignore (not counted in totalBufferedBytes)
+    size_t totalBufferedBytes;          // number of bytes in writeBuffer
+    size_t firstBufferOffset;           // number of bytes from first buffer to ignore (not counted in totalBufferedBytes)
     NSMutableArray *writeBuffer;        // array of NSDatas to write
 }
 
@@ -37,15 +37,15 @@
 
 - (void)setReadBuffer:(NSMutableData *)aData;
 - (void)clearReadBuffer;
-- (void)advanceReadBufferBy:(unsigned int)advanceAmount;
+- (void)advanceReadBufferBy:(NSUInteger)advanceAmount;
 
 - (NSData *)readData;
-- (NSData *)readDataOfLength:(unsigned int)length;
-- (NSData *)readDataWithMaxLength:(unsigned int)length;
+- (NSData *)readDataOfLength:(NSUInteger)length;
+- (NSData *)readDataWithMaxLength:(NSUInteger)length;
 
-- (unsigned int)readBytesWithMaxLength:(unsigned int)length intoBuffer:(void *)buffer;
-- (void)readBytesOfLength:(unsigned int)length intoBuffer:(void *)buffer;
-- (BOOL)skipBytes:(unsigned int)length;
+- (size_t)readBytesWithMaxLength:(size_t)length intoBuffer:(void *)buffer;
+- (void)readBytesOfLength:(size_t)length intoBuffer:(void *)buffer;
+- (BOOL)skipBytes:(size_t)length;
 
 - (void)writeData:(NSData *)theData;
 
@@ -58,7 +58,7 @@
 - (NSString *)readString;
     // Note:  not currently reliable if the stringEncoding is set to a multibyte encoding, because we  don't know if a character is split across a buffer boundary.
 
-- (unsigned)getLengthOfNextLine:(unsigned int *)eolBytes;
+- (size_t)getLengthOfNextLine:(size_t *)eolBytes;
     // Low-level line parsing routine. This returns the number of bytes in the next line, blocking if necessary to read a full EOL marker. If eolBytes is not NULL, it is filled in with the length of the EOL marker; in any case, the EOL marker is included in the return value of this method. This routine is quite liberal in its interpretation of EOL, and should accept most EOL markers seen in practice. It should work with ASCII, the ISO 8859 character sets, and UTF-8 (but not UTF-16 or EBCDIC). Returns 0 at EOF.
 
 - (NSString *)readLineAndAdvance:(BOOL)shouldAdvance;  // Reads a line and interprets it as a string according to the current string encoding, returning the result. Does not include any trailing EOL characters. Returns nil at EOF.

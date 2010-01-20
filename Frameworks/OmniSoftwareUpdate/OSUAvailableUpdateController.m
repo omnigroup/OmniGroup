@@ -141,7 +141,7 @@ RCS_ID("$Id$");
 - (NSString *)message;
 {
     NSArray *visibleItems = [_availableItemController arrangedObjects];
-    unsigned int count = [visibleItems count];
+    NSUInteger count = [visibleItems count];
     
     NSString *format; // All format strings should take the app name and then the update count.
     switch (count) {
@@ -163,7 +163,7 @@ RCS_ID("$Id$");
     NSDictionary *bundleInfo = [[NSBundle mainBundle] infoDictionary];
     NSString *appName = [bundleInfo objectForKey:(NSString *)kCFBundleNameKey];
 
-    return [NSString stringWithFormat:format, appName, count];
+    return [NSString stringWithFormat:format, appName, (int)count]; // Format string has hard coded 'd'.
 }
 
 + (NSSet *)keyPathsForValuesAffectingDetails;
@@ -426,7 +426,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
         return;
     
     // We have a flipped container view for all these views.  This makes layout easier, but it also means that when we first load the nib, the views will be upside down (since IB archives the view's frames as if the container were not flipped).  So, we have to manually stack the views.
-    float yOffset = 0;
+    CGFloat yOffset = 0;
     
     NSRect oldSplitViewFrame = [_itemsAndReleaseNotesSplitView frame];
     NSRect oldAppIconImageFrame = [_appIconImageView frame];
@@ -440,7 +440,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     NSRect spinnerFrame = [_spinner frame];
     // Put its centerline on the same line as the app icon
     spinnerFrame.origin.y = newAppIconImageFrame.origin.y - (spinnerFrame.size.height - newAppIconImageFrame.size.height)/2;
-    spinnerFrame.origin.x = NSMaxX(containerBounds) - 1.5 * NSWidth(spinnerFrame);
+    spinnerFrame.origin.x = NSMaxX(containerBounds) - 1.5f * NSWidth(spinnerFrame);
     spinnerFrame = [[_spinner superview] centerScanRect:spinnerFrame];
     [_spinner setFrame:spinnerFrame];
     
@@ -479,8 +479,6 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     newSplitViewFrame.size.height = NSMaxY([[_itemsAndReleaseNotesSplitView superview] bounds]) - yOffset;
     [_itemsAndReleaseNotesSplitView setFrame:newSplitViewFrame];
     
-    [[_messageTextField superview] setNeedsDisplay:YES];
-    
     if (resetDividerPosition) {
         // Start with the splitter as tight up against the limit as possible (3 rows currently)
         [self _resizeSplitViewViewsWithTableViewExistingHeight:0.0f];
@@ -494,7 +492,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     OSUItem *item = nil;
     if ([_selectedItemIndexes count] == 1) {
         NSArray *visibleItems = [_availableItemController arrangedObjects];
-        unsigned int selectedIndex = [_selectedItemIndexes firstIndex];
+        NSUInteger selectedIndex = [_selectedItemIndexes firstIndex];
         if (selectedIndex < [visibleItems count])
             item = [visibleItems objectAtIndex:selectedIndex];
     }

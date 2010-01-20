@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007,2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007,2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -124,7 +124,7 @@ RCS_ID("$Id$")
     classDescription = [self getApplicableClassDescription];
     enumerator = [record keyEnumerator];
     while ((eventCode = [enumerator nextObject])) {
-        key = [classDescription keyWithAppleEventCode:[eventCode unsignedLongValue]];
+        key = [classDescription keyWithAppleEventCode:[eventCode unsignedIntValue]];
         if (!key || ![classDescription hasWritablePropertyForKey:key])
             continue;
         
@@ -391,7 +391,7 @@ RCS_ID("$Id$")
         return [NSString stringWithFormat:@"make new %@ at %@ with properties %@\r", [terminology objectForKey:@"Name"], aLocationSpecifier, properties];
 }
 
-- (NSString *)appleScriptMakeCommandAt:(NSString *)aLocationSpecifier withIndent:(int)indent;
+- (NSString *)appleScriptMakeCommandAt:(NSString *)aLocationSpecifier withIndent:(NSInteger)indent;
 {
     if (!indent)
         return [self appleScriptMakeCommandAt:aLocationSpecifier];

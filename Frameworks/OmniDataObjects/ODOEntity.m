@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,6 +37,7 @@ RCS_ID("$Id$")
     [_toOneRelationships release];
     [_toManyRelationships release];
     [_attributesByName release];
+    [_attributes release];
     [_primaryKeyAttribute release];
     [_snapshotProperties release];
     [_schemaProperties release];
@@ -197,6 +198,12 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
     return _toManyRelationships;
 }
 
+- (NSArray *)attributes;
+{
+    OBPRECONDITION(_attributes);
+    return _attributes;
+}
+
 - (NSDictionary *)attributesByName;
 {
     OBPRECONDITION(_attributesByName);
@@ -311,7 +318,14 @@ extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString 
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(objectID)) == [ODOObject class]);
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(primitiveValueForKey:)) == [ODOObject class]);
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(setPrimitiveValue:forKey:)) == [ODOObject class]);
-    
+
+    // ODOObject instances are pointer-unique w/in their editing context and we define -hash and -isEqual: thusly.
+    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(hash)) == [ODOObject class]);
+    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(isEqual:)) == [ODOObject class]);
+
+    // Use the -insertObject:undeletable: instead of subclassing
+    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(isUndeletable)) == [ODOObject class]);
+
     // Methods that used to exist but don't now and shouldn't on ODOObject or subclasses
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(primitiveValueForProperty:)) == Nil);
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(setPrimitiveValue:forProperty:)) == Nil);
@@ -325,6 +339,7 @@ extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString 
     NSMutableDictionary *propertiesByName = [NSMutableDictionary dictionary];
     NSMutableDictionary *attributesByName = [NSMutableDictionary dictionary];
     NSMutableDictionary *relationshipsByName = [NSMutableDictionary dictionary];
+    NSMutableArray *attributes = [NSMutableArray array];
     NSMutableArray *relationships = [NSMutableArray array];
     NSMutableArray *toOneRelationships = [NSMutableArray array];
     NSMutableArray *toManyRelationships = [NSMutableArray array];
@@ -347,6 +362,7 @@ extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString 
         } else {
             ODOAttribute *attr = (ODOAttribute *)prop;
             
+            [attributes addObject:attr];
             [attributesByName setObject:attr forKey:name];
             if ([attr isPrimaryKey]) {
                 OBASSERT(entity->_primaryKeyAttribute == nil);
@@ -361,6 +377,7 @@ extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString 
     OBASSERT([entity->_primaryKeyAttribute type] == ODOAttributeTypeString); // See -[ODODatabase _generatePrimaryKeyForEntity:].
 
     entity->_propertiesByName = [[NSDictionary alloc] initWithDictionary:propertiesByName];
+    entity->_attributes = [[NSArray alloc] initWithArray:attributes];
     entity->_attributesByName = [[NSDictionary alloc] initWithDictionary:attributesByName];
     entity->_relationshipsByName = [[NSDictionary alloc] initWithDictionary:relationshipsByName];
     entity->_relationships = [[NSArray alloc] initWithArray:relationships];
@@ -428,7 +445,7 @@ void ODOEntityBind(ODOEntity *self, ODOModel *model)
     // Sort them by name and assign snapshot indexes
     [snapshotProperties sortUsingSelector:@selector(compareByName:)];
     {
-        unsigned int snapshotIndex = [snapshotProperties count];
+        NSUInteger snapshotIndex = [snapshotProperties count];
         while (snapshotIndex--)
             ODOPropertySnapshotAssignSnapshotIndex([snapshotProperties objectAtIndex:snapshotIndex], snapshotIndex);
     }
@@ -439,19 +456,28 @@ void ODOEntityBind(ODOEntity *self, ODOModel *model)
     // Since we don't support many-to-many relationships, to-manys are totally derived from the inverse to-one.  Let the instance class add more derived properties.
     NSMutableSet *derivedPropertyNameSet = [NSMutableSet set];
     [_instanceClass addDerivedPropertyNames:derivedPropertyNameSet withEntity:self];
-    _derivedPropertyNameSet = [derivedPropertyNameSet copy];
-    
-    // Make sure the to-many relationships got added in ODOObject and not removed by subclasses.
-#ifdef OMNI_ASSERTIONS_ON
-    for (ODORelationship *rel in _toManyRelationships)
-        OBASSERT([_derivedPropertyNameSet member:[rel name]]);
-#endif
     
     // Allow instance classes to filter out properties that don't provoke date modified changes.
     NSMutableSet *nonDateModifyingPropertyNameSet = [NSMutableSet set];
     [_instanceClass computeNonDateModifyingPropertyNameSet:nonDateModifyingPropertyNameSet withEntity:self];
-    _nonDateModifyingPropertyNameSet = [nonDateModifyingPropertyNameSet copy];
     
+#ifdef OMNI_ASSERTIONS_ON
+    // Make sure the to-many relationships and transient or computed properties got added in ODOObject and not removed by subclasses.
+    for (ODOProperty *property in _properties) {
+        struct _ODOPropertyFlags flags = ODOPropertyFlags(property);
+        if (flags.transient) {
+            OBASSERT([derivedPropertyNameSet member:property.name]);
+            OBASSERT([nonDateModifyingPropertyNameSet member:property.name]);
+        }
+    }
+
+    for (ODORelationship *rel in _toManyRelationships)
+        OBASSERT([derivedPropertyNameSet member:rel.name]);
+#endif
+    
+    _derivedPropertyNameSet = [derivedPropertyNameSet copy];
+    _nonDateModifyingPropertyNameSet = [nonDateModifyingPropertyNameSet copy];
+
     // Old API that our instance class shouldn't try to implement any more since we aren't going to use it!
     OBASSERT(OBClassImplementingMethod(_instanceClass, @selector(derivedPropertyNameSet)) == Nil);
     OBASSERT(OBClassImplementingMethod(_instanceClass, @selector(nonDateModifyingPropertyNameSet)) == Nil);
@@ -466,7 +492,7 @@ void ODOEntityBind(ODOEntity *self, ODOModel *model)
     return _snapshotProperties;
 }
 
-- (ODOProperty *)propertyWithSnapshotIndex:(unsigned int)snapshotIndex;
+- (ODOProperty *)propertyWithSnapshotIndex:(NSUInteger)snapshotIndex;
 {
     ODOProperty *prop = [_snapshotProperties objectAtIndex:snapshotIndex];
     OBASSERT(ODOPropertySnapshotIndex(prop) == snapshotIndex);

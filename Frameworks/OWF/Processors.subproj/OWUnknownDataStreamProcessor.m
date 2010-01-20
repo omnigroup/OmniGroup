@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,8 +54,8 @@ static NSMutableArray *guessList;
 
 + (void)didLoad;
 {
-    [self registerProcessorClass:self fromContentType:[OWContentType unknownContentType] toContentType:[OWContentType wildcardContentType] cost:1.0 producingSource:NO];
-    [self registerProcessorClass:self fromContentType:[OWContentType sourceContentType] toContentType:[OWContentType retypedSourceContentType] cost:1.0 producingSource:NO];
+    [self registerProcessorClass:self fromContentType:[OWContentType unknownContentType] toContentType:[OWContentType wildcardContentType] cost:1.0f producingSource:NO];
+    [self registerProcessorClass:self fromContentType:[OWContentType sourceContentType] toContentType:[OWContentType retypedSourceContentType] cost:1.0f producingSource:NO];
 }
 
 + (OWContentType *)unknownContentType;
@@ -155,6 +155,9 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
 
 - (NSDictionary *)contentTypeGuessForBytes:(OWDataStreamCursor *)cursor
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     unsigned guessIndex, guessCount;
     NSData *peekedData = nil;
 
@@ -213,10 +216,14 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
     }
 
     return nil;
+#endif
 }
 
 - (NSDictionary *)contentTypeGuessForCharacters:(OWDataStreamCharacterCursor *)cursor;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     unsigned guessIndex, guessCount;
     NSMutableString *beginning;
 
@@ -255,6 +262,7 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
     }
 
     return nil;
+#endif
 }
 
 - (OWContentType *)contentTypeGuessForXML;
@@ -265,6 +273,9 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
 
 - (OWContentType *)contentTypeGuess;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     unsigned const char *buffer;
     int index;
     int controlCount;
@@ -365,6 +376,7 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
         return [OWContentType contentTypeForString:@"image/x-bmp"];
     else
 	return applicationOctetStreamContentType;
+#endif
 }
 
 - (void)process;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,8 +69,8 @@ RCS_ID("$Id$")
     
         NSDictionary *attributes = [NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
         textSize = [fontDescription sizeWithAttributes:attributes];
-        textSize.height = ceil(textSize.height);
-        textSize.width = ceil(textSize.width);
+        textSize.height = (CGFloat)ceil(textSize.height);
+        textSize.width = (CGFloat)ceil(textSize.width);
     } else
         textSize.height = textSize.width = 0.0f;
     

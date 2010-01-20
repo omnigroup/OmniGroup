@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,13 +10,11 @@
 #import <AppKit/NSSplitView.h>
 
 @interface NSSplitView (OAExtensions)
-- (float)fraction;
-- (void)setFraction:(float)newFract;
-- (int)topPixels;
-- (void)setTopPixels:(int)newTop;
-- (int)bottomPixels;
-- (void)setBottomPixels:(int)newBottom;
+- (CGFloat)fraction;
 
-- (void)animateSubviewResize:(NSView *)resizingSubview startValue:(float)startValue endValue:(float)endValue;
+// setPosition:ofDividerAtIndex: is better API
+- (void)setFraction:(CGFloat)newFract OB_DEPRECATED_ATTRIBUTE;
+
+- (void)animateSubviewResize:(NSView *)resizingSubview startValue:(CGFloat)startValue endValue:(CGFloat)endValue;
 
 @end

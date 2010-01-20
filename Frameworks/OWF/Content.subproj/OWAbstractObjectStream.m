@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,30 +35,30 @@ RCS_ID("$Id$")
 }
 
 
-- (id)objectAtIndex:(unsigned int)index;
+- (id)objectAtIndex:(NSUInteger)index;
 {
     [self doesNotRecognizeSelector:_cmd];
     return nil;
 }
 
-- (id)objectAtIndex:(unsigned int)index withHint:(void **)hint;
+- (id)objectAtIndex:(NSUInteger)index withHint:(void **)hint;
 {
     return [self objectAtIndex:index];
 }
 
-- (unsigned int)objectCount;
+- (NSUInteger)objectCount;
 {
     [self doesNotRecognizeSelector:_cmd];
     return 0;
 }
 
-- (BOOL)isIndexPastEnd:(unsigned int)anIndex;
+- (BOOL)isIndexPastEnd:(NSUInteger)anIndex;
 {
     [self doesNotRecognizeSelector:_cmd];
     return NO;
 }
 
-- (id)newCursor;
+- (id)createCursor;
 {
     OWObjectStreamCursor *newCursor;
     newCursor = [[OWObjectStreamCursor alloc] initForObjectStream:self];

@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,6 @@
 #import <OmniFoundation/OFCFCallbacks.h>
 
 #import <OmniDataObjects/Errors.h>
-#import <OmniDataObjects/ODOPredicate.h> // Make sure everyone gets the #defines in here
 #import <OmniDataObjects/ODOFeatures.h>
 
 #import <Foundation/NSArray.h>
@@ -36,3 +35,5 @@
 
 #import <CoreFoundation/CFNumber.h>
 #import <CoreFoundation/CFSet.h>
+
+#import "ODOInternal.h"

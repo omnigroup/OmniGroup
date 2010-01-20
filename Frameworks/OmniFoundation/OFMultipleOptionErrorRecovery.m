@@ -1,4 +1,4 @@
-// Copyright 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,9 +83,8 @@ RCS_ID("$Id$")
 
 - (id)firstRecoveryOfClass:(Class)cls;
 {
-    unsigned int recoveryIndex, recoveryCount = [_recoveries count];
-    for (recoveryIndex = 0; recoveryIndex < recoveryCount; recoveryIndex++) {
-        id recovery = [[_recoveries objectAtIndex:recoveryIndex] firstRecoveryOfClass:cls];
+    for (OFErrorRecovery *recovery in _recoveries) {
+        recovery = [recovery firstRecoveryOfClass:cls];
         if (recovery)
             return recovery;
     }

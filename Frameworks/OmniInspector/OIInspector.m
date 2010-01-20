@@ -1,4 +1,4 @@
-// Copyright 2005-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -156,7 +156,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     NSString *visibilityString = [dict objectForKey:@"visibilityState"];
     if (visibilityString != nil) {
         OBASSERT([visibilityString isKindOfClass:[NSString class]]);
-        _defaultVisibilityState = [OIVisibilityStateNameTable enumForName:[visibilityString lowercaseString]];
+        _defaultVisibilityState = (OIVisibilityState)[OIVisibilityStateNameTable enumForName:[visibilityString lowercaseString]];
     } else {    // Backward-compatibility with before the Pinned state was introduced
         _defaultVisibilityState = [dict boolForKey:@"visible" defaultValue:NO] ? OIVisibleVisibilityState : OIHiddenVisibilityState;
     }
@@ -212,7 +212,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return _shortcutKey;
 }
 
-- (unsigned int)shortcutModifierFlags;
+- (NSUInteger)shortcutModifierFlags;
 {
     return _shortcutModifierFlags;
 }
@@ -235,12 +235,12 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return _displayName;
 }
 
-- (unsigned int)defaultOrderingWithinGroup;
+- (NSUInteger)defaultOrderingWithinGroup;
 {
     return ( _defaultOrderingWithinGroup != NSNotFound )? _defaultOrderingWithinGroup : 0;
 }
 
-- (void)setDefaultOrderingWithinGroup:(unsigned int)defaultOrderingWithinGroup;
+- (void)setDefaultOrderingWithinGroup:(NSUInteger)defaultOrderingWithinGroup;
 {
     if (_defaultOrderingWithinGroup != NSNotFound)
         _defaultOrderingWithinGroup = defaultOrderingWithinGroup;
@@ -257,9 +257,9 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return 0;
 }
 
-- (float)additionalHeaderHeight;
+- (CGFloat)additionalHeaderHeight;
 {
-    return 0.0;
+    return 0.0f;
 }
 
 - (NSMenuItem *)menuItemForTarget:(id)target action:(SEL)action;
@@ -296,11 +296,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 
 - (void)setControlsEnabled:(BOOL)enabled inView:(NSView *)view;
 {
-    NSArray *subviews = [view subviews];
-    unsigned int subviewIndex = [subviews count];
-    while (subviewIndex--) {
-        id subview = [subviews objectAtIndex:subviewIndex];
-	
+    for (id subview in [view subviews]) {
 	// This messes up scrollers; <bug://bugs/28355>
 	if ([subview isKindOfClass:[NSScrollView class]])
 	    continue;
@@ -328,9 +324,11 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     [dict setObject:[NSNumber numberWithInt:_defaultVisibilityState] forKey:@"defaultVisibilityState"];
     if (_shortcutKey)
 	[dict setObject:_shortcutKey forKey:@"shortcutKey"];
-    if (_shortcutModifierFlags)
-	[dict setObject:[[ModifierMaskNameTable copyStringForMask:_shortcutModifierFlags withSeparator:'|'] autorelease]
+    if (_shortcutModifierFlags) {
+        OBASSERT(_shortcutModifierFlags < UINT32_MAX); // Need to make OFEnumNameTable do NSInteger instead of int?
+	[dict setObject:[[ModifierMaskNameTable copyStringForMask:(uint32_t)_shortcutModifierFlags withSeparator:'|'] autorelease]
 		 forKey:@"shortcutModifierFlags"];
+    }
     if (_imageName) {
 	[dict setObject:_imageName forKey:@"imageName"];
 	if (_image)

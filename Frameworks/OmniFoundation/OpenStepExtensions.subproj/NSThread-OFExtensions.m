@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,6 @@ RCS_ID("$Id$")
 
 @implementation NSThread (OFExtensions)
 
-static NSThread *mainThread;
 static NSConditionLock *mainThreadInterlock;
 static NSLock *threadsWaitingLock;
 static unsigned int threadsWaiting;
@@ -34,19 +33,6 @@ enum {
 
 + (void)didLoad;
 {
-    [self setMainThread];
-}
-
-+ (void)setMainThread;
-{
-    NSThread *currentThread = [NSThread currentThread];
-
-    if (mainThread != nil) {
-        if (currentThread != mainThread) {
-            NSLog(@"+[NSThread setMainThread called multiple times in different threads");
-        }
-    }
-
     if (mainThreadInterlock == nil) {
         mainThreadInterlock = [[NSConditionLock alloc] init];
         [mainThreadInterlock lock];
@@ -54,37 +40,7 @@ enum {
         threadsWaiting = 0;
         recursionCount = 0;
     }
-
-    // Even in the error case above, don't leak an NSThread
-    [mainThread autorelease];
-    mainThread = [currentThread retain];
 }
-
-+ (NSThread *)mainThread;
-{
-    if (mainThread == nil) {
-#ifdef DEBUG
-        NSLog(@"Warning: +[NSThread setMainThread] not called early enough!");
-#endif
-        [self setMainThread];
-    }
-
-    return mainThread;
-}
-
-// Built-in otherwise in 10.5 and on the iPhone
-#if (!defined(MAC_OS_X_VERSION_10_5) || (MAC_OS_X_VERSION_10_5 > MAC_OS_X_VERSION_MIN_REQUIRED)) && (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
-+ (BOOL)isMainThread;
-{
-    if (mainThread == nil) {
-#ifdef DEBUG
-        NSLog(@"Warning: +[NSThread setMainThread] not called early enough!");
-#endif
-        [self setMainThread];
-    }
-    return [self currentThread] == mainThread;
-}
-#endif
 
 + (BOOL)mainThreadOpsOK;
 {
@@ -104,7 +60,7 @@ enum {
     [threadsWaitingLock lock];
     threadsWaiting++;
     [threadsWaitingLock unlock];
-    [[OFMessageQueue mainQueue] queueSelectorOnce:@selector(yieldMainThreadLock) forObject:mainThread];
+    [[OFMessageQueue mainQueue] queueSelectorOnce:@selector(yieldMainThreadLock) forObject:[self mainThread]];
     [mainThreadInterlock lock];
     OBASSERT(substituteMainThread == nil);
     substituteMainThread = [self currentThread];
@@ -139,7 +95,7 @@ enum {
 
 - (BOOL)yieldMainThreadLock;
 {
-    if (self != mainThread)
+    if (![self isMainThread])
         return NO;
 
     BOOL noThreadsWaiting;

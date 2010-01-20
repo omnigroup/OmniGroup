@@ -1,9 +1,9 @@
-// Copyright 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
-// http://www.omnigroup.com/DeveloperResources/OmniSourceLicense.html.
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
 // $Id$
 
@@ -23,6 +23,7 @@ BOOL OFErrorFromCSSMReturn(NSError **outError, CSSM_RETURN errcode, NSString *fu
 NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputFormat_, NSError **outError);
 NSData *OFGetAppleKeyDigest(const CSSM_KEY *pkey, CSSM_CC_HANDLE optionalContext, NSError **outError);
 NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext);
+CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage, CFTypeRef anchors, SecPolicyRef policy, NSError **outError);
 
 @interface OFCDSAModule : NSObject
 {

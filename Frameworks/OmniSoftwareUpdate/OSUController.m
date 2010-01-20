@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -96,7 +96,7 @@ NSString *OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  Do we re
     [enableHardwareCollectionButton setState:[[OSUPreferences includeHardwareDetails] boolValue]];
     
     [privacyNoticePanel center];
-    OSUPrivacyNoticeResult rc = [NSApp runModalForWindow:privacyNoticePanel];
+    OSUPrivacyNoticeResult rc = (OSUPrivacyNoticeResult)[NSApp runModalForWindow:privacyNoticePanel];
     [privacyNoticePanel orderOut:nil];
 
     // Store what they said either way

@@ -1,4 +1,4 @@
-// Copyright 2000-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -336,8 +336,8 @@ static NSView *_emptyView = nil;
     NSDivideRect (boundsRect, &otherRect, &boundsRect, topMargin, NSMinYEdge);
     NSDivideRect (boundsRect, &otherRect, &boundsRect, bottomMargin, NSMaxYEdge);
 
-    viewFrame.size.width = floor(floor(boundsRect.size.width - (columnCount - 1) * interColumnSpace) / columnCount);
-    viewFrame.size.height = floor(floor(boundsRect.size.height - (rowCount - 1) * interRowSpace) / rowCount);
+    viewFrame.size.width = (CGFloat)floor(floor(boundsRect.size.width - (columnCount - 1) * interColumnSpace) / columnCount);
+    viewFrame.size.height = (CGFloat)floor(floor(boundsRect.size.height - (rowCount - 1) * interRowSpace) / rowCount);
 
     for (row = 0; row < rowCount; row++) {
         // It looks better to have the upper edge stable

@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,13 +56,13 @@ RCS_ID("$Id$")
 #pragma mark ODOModel creation
 
 // No validation is done for non-DEBUG builds.  The Ruby generator is expected to have done it.
-ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL transient, SEL get, SEL set,
+ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL calculated, BOOL transient, SEL get, SEL set,
                                  ODOAttributeType type, Class valueClass, NSObject <NSCopying> *defaultValue, BOOL isPrimaryKey)
 {
     OBPRECONDITION(type > ODOAttributeTypeInvalid);
     OBPRECONDITION(type < ODOAttributeTypeCount);
     OBPRECONDITION(valueClass);
-    OBPRECONDITION([valueClass conformsToProtocol:@protocol(NSCopying)]);
+    OBPRECONDITION([valueClass conformsToProtocol:@protocol(NSCopying)] || (valueClass == [NSObject class] && transient)); // Can use NSObject/transient w/o having the class itself require NSCopying.  The values will require it, though.
     
     ODOAttribute *attr = [[ODOAttribute alloc] init];
     attr->_isPrimaryKey = isPrimaryKey;
@@ -75,7 +75,7 @@ ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL transient, 
         // The primary key isn't in the snapshot, but has a special marker for that.
         baseFlags.snapshotIndex = ODO_PRIMARY_KEY_SNAPSHOT_INDEX;
     
-    ODOPropertyInit(attr, name, baseFlags, optional, transient, get, set);
+    ODOPropertyInit(attr, name, baseFlags, optional, calculated, transient, get, set);
 
     attr->_type = type;
     attr->_valueClass = valueClass;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OWF/OWDataStream.h>
 
 #import <Foundation/Foundation.h>
+#import <CommonCrypto/CommonDigest.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/system.h>
@@ -31,9 +32,9 @@ RCS_ID("$Id$")
 
 @implementation OWDataStream
 
-const unsigned int OWDataStreamUnknownLength = NSNotFound;
+const NSUInteger OWDataStreamUnknownLength = NSNotFound;
 
-static unsigned int DataBufferBlockSize;
+static size_t DataBufferBlockSize;
 #define ROUNDED_ALLOCATION_SIZE(x) (DataBufferBlockSize * ( ( (x) + DataBufferBlockSize - 1 ) / DataBufferBlockSize))
 
 // Tunable buffer sizes. See allocateAnotherBuffer() for details.
@@ -61,10 +62,10 @@ static inline void _raiseIfInvalid(OWDataStream *self)
         _raiseNoLongerValidException();
 }
 
-static inline OWDataStreamBufferDescriptor *descriptorForBlockContainingOffset(OWDataStream *self, unsigned int offset, unsigned int *offsetWithinBlock)
+static inline OWDataStreamBufferDescriptor *descriptorForBlockContainingOffset(OWDataStream *self, NSUInteger offset, NSUInteger *offsetWithinBlock)
 {
     OWDataStreamBufferDescriptor *cursor;
-    unsigned int cursorOffset = 0;
+    NSUInteger cursorOffset = 0;
 
     _raiseIfInvalid(self);
     cursor = self->_first;
@@ -83,8 +84,11 @@ static inline OWDataStreamBufferDescriptor *descriptorForBlockContainingOffset(O
     return NULL;
 }
 
-static inline BOOL copyBuffersOut(OWDataStreamBufferDescriptor *dsBuffer, unsigned int offsetIntoBlock, void *outBuffer, unsigned int length)
+static inline BOOL copyBuffersOut(OWDataStreamBufferDescriptor *dsBuffer, NSUInteger offsetIntoBlock, void *outBuffer, NSUInteger length)
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return NO;
+#if 0
     while (length != 0) {
         OWDataStreamBufferDescriptor dsBufferCopy;
         unsigned bytesCopied;
@@ -103,6 +107,7 @@ static inline BOOL copyBuffersOut(OWDataStreamBufferDescriptor *dsBuffer, unsign
     }
     
     return YES;
+#endif
 }
 
 // Allocates another buffer and links it into self's list of buffers. bytesToAllocate is merely a hint; the allocated buffer may be larger or smaller than this for various reasons. In particular:
@@ -110,7 +115,7 @@ static inline BOOL copyBuffersOut(OWDataStreamBufferDescriptor *dsBuffer, unsign
 // Individual buffers have a maximum size (BUFFER_MAXIMUM_SEGMENT_SIZE). This has two benefits:
 //    1. We are less sensitive to address-space fragmentation, which is a real problem for users which are in the habit of downloading gigabyte disk images, etc.
 //    2. If we are streaming to disk (hasIssuedCursor=0, hasThrownAwayData=1, saveFileHandle!=nil) then this allows us to deallocate individual buffers that are no longer needed, rather than forcing the system to swap them out an incidentally tickling a bug in 10.2.x's virtual-memory system. 
-static void allocateAnotherBuffer(OWDataStream *self, unsigned int bytesToAllocate)
+static void allocateAnotherBuffer(OWDataStream *self, size_t bytesToAllocate)
 {
     OWDataStreamBufferDescriptor *newBuffer;
     NSZone *myZone = [self zone];
@@ -156,7 +161,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     }
 }
 
-- initWithLength:(unsigned int)newLength;
+- initWithLength:(NSUInteger)newLength;
 {
     if (![super init])
 	return nil;
@@ -220,7 +225,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     [super dealloc];
 }
 
-- (id)newCursor;
+- (id)createCursor;
 {
     _raiseIfInvalid(self);
     return [[[OWDataStreamConcreteCursor alloc] initForDataStream:self] autorelease];
@@ -254,15 +259,19 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
 - (unsigned int)bufferedDataLength;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return 0;
+#if 0
     _raiseIfInvalid(self);
 
     return readLength;
+#endif
 }
 
-- (unsigned int)accessUnderlyingBuffer:(void **)returnedBufferPtr startingAtLocation:(unsigned int)dataOffset;
+- (NSUInteger)accessUnderlyingBuffer:(void **)returnedBufferPtr startingAtLocation:(NSUInteger)dataOffset;
 {
     OWDataStreamBufferDescriptor *dsBuffer;
-    unsigned int remainingOffset;
+    NSUInteger remainingOffset;
 
     _raiseIfInvalid(self);
     if (readLength <= dataOffset)
@@ -277,7 +286,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     return 0;
 }
 
-- (unsigned int)dataLength;
+- (NSUInteger)dataLength;
 {
     if (![self knowsDataLength]) {
         pthread_mutex_lock(&lengthMutex);
@@ -300,7 +309,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     if (![self waitForBufferedDataLength:NSMaxRange(range)])
         return NO;
 
-    unsigned int offsetIntoBlock = 0;
+    NSUInteger offsetIntoBlock = 0;
     OWDataStreamBufferDescriptor *dsBuffer = descriptorForBlockContainingOffset(self, range.location, &offsetIntoBlock);
     
     return copyBuffersOut(dsBuffer, offsetIntoBlock, buffer, range.length);
@@ -309,7 +318,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 - (NSData *)dataWithRange:(NSRange)range;
 {
     OWDataStreamBufferDescriptor *dsBuffer;
-    unsigned int offsetIntoBlock;
+    NSUInteger offsetIntoBlock;
 
     _raiseIfInvalid(self);
 
@@ -336,6 +345,9 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
 - (BOOL)waitForMoreData;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return NO;
+#if 0
     unsigned int oldReadLength;
 
     _raiseIfInvalid(self);
@@ -351,9 +363,10 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     }
     pthread_mutex_unlock(&lengthMutex);
     return YES;
+#endif
 }
 
-- (BOOL)waitForBufferedDataLength:(unsigned int)desiredLength;
+- (BOOL)waitForBufferedDataLength:(NSUInteger)desiredLength;
 {
     _raiseIfInvalid(self);
 
@@ -369,7 +382,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     return YES;
 }
 
-- (BOOL)_checkForAvailableIndex:(unsigned)position orInvoke:(OFInvocation *)anInvocation;
+- (BOOL)_checkForAvailableIndex:(NSUInteger)position orInvoke:(OFInvocation *)anInvocation;
 {
     BOOL available;
     
@@ -426,13 +439,11 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
 - (void)writeData:(NSData *)newData;
 {
-    NSRange range;
-    unsigned int length, lengthLeft;
-    
-    length = [newData length];
+    NSUInteger length = [newData length];
     if (length == 0)
         return;
-    lengthLeft = length;
+
+    NSRange range;
     range.location = 0;
     range.length = length;
     
@@ -503,6 +514,9 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
 - (unsigned int)appendToUnderlyingBuffer:(void **)returnedBufferPtr;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return 0;
+#if 0
     OWDataStreamBufferDescriptor *targetBuffer = _last;
     
     if (!targetBuffer || !(targetBuffer->bufferUsed < targetBuffer->bufferSize)) {
@@ -511,11 +525,12 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
             allocateAnotherBuffer(self, ROUNDED_ALLOCATION_SIZE(dataLength - readLength));
         else
             allocateAnotherBuffer(self, DataBufferBlockSize);
-        targetBuffer = _last;
+        OBASSERT(_last != NULL); // Postcondition for allocateAnotherBuffer()
     }
         
     *returnedBufferPtr = _last->buffer + _last->bufferUsed;
     return _last->bufferSize - _last->bufferUsed;
+#endif
 }
 
 - (void)wroteBytesToUnderlyingBuffer:(unsigned int)count;    
@@ -628,7 +643,6 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 {
     BOOL fileCreated;
     NSFileHandle *newFileHandle;
-    NSDictionary *temporaryAttributes;
 
     _raiseIfInvalid(self);
     
@@ -638,6 +652,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     OBPRECONDITION(finalFileAttributes == nil);
 
 #ifdef USE_TEMPORARY_ATTRIBUTES
+    NSDictionary *temporaryAttributes;
     if (requestedFileAttributes != nil && !flags.endOfData) {
         NSString *bundleSignature = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleSignature"];
         NSMutableDictionary *someAttributes = [NSMutableDictionary dictionary];
@@ -648,8 +663,6 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     } else {
         temporaryAttributes = nil;
     }
-#else
-    temporaryAttributes = requestedFileAttributes;
 #endif
 
     fileCreated = [[NSFileManager defaultManager] createFileAtPath:aFilename contents:[NSData data] attributes:requestedFileAttributes];
@@ -730,7 +743,11 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
 - (unsigned int)bytesWrittenToFile;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return 0;
+#if 0
     return readLength;
+#endif
 }
 
 - (unsigned long long)startPositionInFile;
@@ -763,7 +780,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
         oldFilename = saveFilename;
         saveFilename = nil;
-        [[NSFileManager defaultManager] removeFileAtPath:oldFilename handler:nil];
+        [[NSFileManager defaultManager] removeItemAtPath:oldFilename error:NULL];
         [oldFilename release];
     }
 }
@@ -792,9 +809,12 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     _raiseIfInvalid(self);
 }
 
+#define MD5_SIGNATURE_LENGTH 16
 - (NSData *)md5Signature;
 {
-    unsigned int location, totalLength;
+    CC_MD5_CTX md5context;
+    unsigned char signature[MD5_SIGNATURE_LENGTH];
+    NSUInteger location, totalLength;
     void *chunkBuffer;
 
     [self waitForDataEnd];
@@ -802,27 +822,25 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     totalLength = [self dataLength];
     location = 0;
 
-    CC_MD5_CTX md5context;
     CC_MD5_Init(&md5context);
-    
     while (location < totalLength) {
-        unsigned int chunkLength = [self accessUnderlyingBuffer:&chunkBuffer startingAtLocation:location];
+        NSUInteger chunkLength = [self accessUnderlyingBuffer:&chunkBuffer startingAtLocation:location];
         OBASSERT(chunkLength != 0);
         if (chunkLength == 0)
             break; // This should never happen (see the above assertion), but if it does we don't want to get stuck in an infinite loop (with our caller potentially holding a global lock).
-        CC_MD5_Update(&md5context, chunkBuffer, chunkLength);
+        CC_MD5_Update(&md5context, chunkBuffer, (CC_LONG)chunkLength);
         location += chunkLength;
     }
-
-    unsigned char signature[CC_MD5_DIGEST_LENGTH];
     CC_MD5_Final(signature, &md5context);
 
     OBPOSTCONDITION(location == totalLength);
-    return [NSData dataWithBytes:signature length:CC_MD5_DIGEST_LENGTH];
+    return [NSData dataWithBytes:signature length:MD5_SIGNATURE_LENGTH];
 }
 
 - (BOOL)isEqualToDataStream:(OWDataStream *)anotherStream
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     OWDataStreamCursor *cursorA, *cursorB;
 
     /* Some quick and easy checks ... */
@@ -835,8 +853,8 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
         return NO;
 
     /* Can't do it the easy way; we'll just have to do it the hard way */
-    cursorA = [self newCursor];
-    cursorB = [anotherStream newCursor];
+    cursorA = [self createCursor];
+    cursorB = [anotherStream createCursor];
 
     for(;;) {
         void *bufferA, *bufferB;
@@ -861,12 +879,16 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
         [cursorA skipBytes:bufferLengthCommon];
         [cursorB skipBytes:bufferLengthCommon];
     }
+#endif
 }
 
 // OBObject subclass (Debugging)
 
 - (NSMutableDictionary *)debugDictionary;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSMutableDictionary *debugDictionary;
 
     debugDictionary = [super debugDictionary];
@@ -874,6 +896,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     [debugDictionary setObject:flags.hasThrownAwayData ? @"YES" : @"NO" forKey:@"flags.hasThrownAwayData"];
     [debugDictionary setObject:[NSNumber numberWithInt:readLength] forKey:@"readLength"];
     return debugDictionary;
+#endif
 }
 
 @end
@@ -883,6 +906,8 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
 - (void)flushContentsToFile;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     // This always happens in writer's thread, or after writer is done.
 
     if (savedBuffer == NULL) {
@@ -942,6 +967,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     } else {
         [_lock unlock];
     }
+#endif
 }
 
 - (void)flushAndCloseSaveFile;
@@ -960,7 +986,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
     if (savedFilename && finalFileAttributes) {
         NSFileManager *manager = [NSFileManager defaultManager];
-        [manager changeFileAttributes:finalFileAttributes atPath:savedFilename];
+        [manager setAttributes:finalFileAttributes ofItemAtPath:savedFilename error:NULL];
         FNNotifyByPath((unsigned char *)[manager fileSystemRepresentationWithPath:[savedFilename stringByDeletingLastPathComponent]],
                        kFNDirectoryModifiedMessage,
                        kNilOptions);
@@ -988,7 +1014,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 // This function seems like a good idea, except that madvise(2) doesn't actually do what its documentation says it does (10.1, apple bug ID #2789078  ---wim)
 - (void)_adviseDataPages:(int)madviseFlags
 {
-    OWDataStreamBufferDescriptor *cursor = _first;
+    OWDataStreamBufferDescriptor *cursor;
 
     for (cursor = _first; cursor != NULL; cursor = cursor->next)
         madvise(cursor->buffer, cursor->bufferSize, madviseFlags);

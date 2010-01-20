@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@ RCS_ID("$Id$")
 
 @implementation OWSGMLAttribute
 
-- initWithOffset:(unsigned int)anOffset;
+- initWithOffset:(NSUInteger)anOffset;
 {
     if (![super init])
         return nil;
@@ -23,7 +23,7 @@ RCS_ID("$Id$")
     return self;
 }
 
-- (unsigned int)offset;
+- (NSUInteger)offset;
 {
     return offset;
 }

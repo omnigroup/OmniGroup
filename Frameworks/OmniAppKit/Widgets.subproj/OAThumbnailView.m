@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,8 +41,8 @@ static NSFont *labelFont = nil;
 
 - initWithFrame:(NSRect)aFrame;
 {
-    aFrame.size.height = 0.0;
-    aFrame.size.width = 0.0;
+    aFrame.size.height = 0;
+    aFrame.size.width = 0;
     if (![super initWithFrame:aFrame])
 	return nil;
 
@@ -79,82 +79,71 @@ static NSFont *labelFont = nil;
     rowCount = [provider thumbnailCount] / columnCount
         + (([provider thumbnailCount] % columnCount) ? 1 : 0);
     rowCount = MAX(1U, rowCount);
-    horizontalMargin = ceil((superBounds.size.width 
-                             - columnCount * cellSize.width)
-                            / (columnCount+1.0));
+    horizontalMargin = (CGFloat)ceil((superBounds.size.width - columnCount * cellSize.width) / (columnCount+1));
 
     [super setFrameSize:NSMakeSize(NSWidth(superBounds), rowCount * cellSize.height)];
 }
 
 - (void)drawRect:(NSRect)rect
 {
-    int startRow, endRow, row;
-    unsigned int thumbnailCount;
-
+    // We calculate the start row/column by dividing and storing into unsigned.
+    OBPRECONDITION(NSMinX(rect) >= 0);
+    OBPRECONDITION(NSMinY(rect) >= 0);
+    
     [[NSColor controlBackgroundColor] set];
     NSRectFill(rect);
 
-    thumbnailCount = [provider thumbnailCount];
+    NSUInteger thumbnailCount = [provider thumbnailCount];
     
-    startRow = NSMinY(rect) / cellSize.height;
-    endRow = MIN(NSMaxY(rect) / cellSize.height, rowCount);
+    NSUInteger startRow = NSMinY(rect) / cellSize.height;
+    NSUInteger endRow = MIN(NSMaxY(rect) / cellSize.height, rowCount);
 
-    for (row = startRow; row <= endRow; row++) {
-        unsigned int column;
-	float	y;
-	
-	y = cellSize.height * row;
-	for (column = 0; column < columnCount; column++) {
-	    unsigned int index;
-	    NSImage *image;
-	    NSSize imageSize;
-	    NSRect imageRect;
-	    NSRect rect;
-	    NSPoint point;
-	    float x;
-            BOOL isSelected;
-    
-	    index = row * columnCount + column;
-            if (index >= thumbnailCount)
+    for (NSUInteger row = startRow; row <= endRow; row++) {
+	CGFloat y = cellSize.height * row;
+	for (NSUInteger column = 0; column < columnCount; column++) {
+	    NSUInteger thumbnailIndex = row * columnCount + column;
+            if (thumbnailIndex >= thumbnailCount)
 		return;
 		
-            imageSize = [provider thumbnailSizeAtIndex: index];
+            NSSize imageSize = [provider thumbnailSizeAtIndex:thumbnailIndex];
     
-	    x = column * (horizontalMargin + cellSize.width) + horizontalMargin;
-	    point.x = ceil(x + padding.width + (maximumThumbnailSize.width - imageSize.width) / 2);
-	    point.y = ceil(y + cellSize.height - (padding.height + (maximumThumbnailSize.height - imageSize.height) / 2));
+	    CGFloat x = column * (horizontalMargin + cellSize.width) + horizontalMargin;
+
+	    NSPoint point;
+	    point.x = (CGFloat)ceil(x + padding.width + (maximumThumbnailSize.width - imageSize.width) / 2);
+	    point.y = (CGFloat)ceil(y + cellSize.height - (padding.height + (maximumThumbnailSize.height - imageSize.height) / 2));
 	    if (thumbnailsAreNumbered) {
 		point.y -= LABEL_FONT_SIZE + LABEL_PADDING - LABEL_OVERLAP_WITH_BOTTOM_PADDING;
 	    }
 
-            imageRect = NSMakeRect(point.x, point.y - imageSize.height, imageSize.width, imageSize.height);
+            NSRect imageRect = NSMakeRect(point.x, point.y - imageSize.height, imageSize.width, imageSize.height);
 
-            isSelected = [provider isThumbnailSelectedAtIndex: index];
+            BOOL isSelected = [provider isThumbnailSelectedAtIndex:thumbnailIndex];
 	    if (isSelected) {
                 rect = NSMakeRect(x, y, cellSize.width, cellSize.height);
                 [self drawRoundedRect:rect cornerRadius:12 color:[NSColor selectedControlColor]];
 	    }
 
-            rect = NSInsetRect(imageRect, -1.0, -1.0);
+            NSRect rect = NSInsetRect(imageRect, -1.0f, -1.0f);
 	    [[NSColor controlColor] set];
-            NSFrameRect(NSOffsetRect(rect, 2.0, 2.0));
+            NSFrameRect(NSOffsetRect(rect, 2.0f, 2.0f));
 	    [[NSColor controlShadowColor] set];
-            NSFrameRect(NSOffsetRect(rect, 1.0, 1.0));
+            NSFrameRect(NSOffsetRect(rect, 1.0f, 1.0f));
 	    [[NSColor controlDarkShadowColor] set];
 	    NSFrameRect(rect);
 	    
 	    if (thumbnailsAreNumbered) {
                 rect = NSMakeRect(x, point.y + LABEL_PADDING + LABEL_OVERLAP_WITH_BOTTOM_PADDING - 3, cellSize.width, LABEL_FONT_SIZE);
 
-		[[NSString stringWithFormat:@"%d", index + 1] drawWithFont:labelFont color:(isSelected ? [NSColor selectedControlTextColor] : [NSColor controlTextColor]) alignment:NSCenterTextAlignment rectangle:rect];
+		[[NSString stringWithFormat:@"%d", thumbnailIndex + 1] drawWithFont:labelFont color:(isSelected ? [NSColor selectedControlTextColor] : [NSColor controlTextColor]) alignment:NSCenterTextAlignment rectangle:rect];
 	    }
 	
-            image = [provider thumbnailImageAtIndex: index];
+            NSImage *image = [provider thumbnailImageAtIndex:thumbnailIndex];
 	    if (image) {
 		[image compositeToPoint:point operation:NSCompositeCopy];
 	    } else {
 		[self drawMissingThumbnailRect:imageRect];
-                [provider missedThumbnailImageInView:self rect:imageRect atIndex: index];
+                [provider missedThumbnailImageInView:self rect:imageRect atIndex:thumbnailIndex];
 	    }
 	}
     }
@@ -175,22 +164,16 @@ static NSFont *labelFont = nil;
 
 - (void)scrollSelectionToVisible;
 {
-    int			row;
-    int			thumbnailIndex, thumbnailCount;
-    NSRect		selectionRect = NSZeroRect;
+    NSRect selectionRect = NSZeroRect;
 
-    thumbnailCount = [provider thumbnailCount];
-    for (thumbnailIndex = 0; thumbnailIndex < thumbnailCount;
-         thumbnailIndex++) {
-        NSRect		newRect, bounds;
-	
+    NSUInteger thumbnailCount = [provider thumbnailCount];
+    for (NSUInteger thumbnailIndex = 0; thumbnailIndex < thumbnailCount; thumbnailIndex++) {
         if (![provider isThumbnailSelectedAtIndex: thumbnailIndex])
             continue;
 	
-        row = thumbnailIndex / columnCount;
-        bounds = [self bounds];
-        newRect = NSMakeRect(bounds.origin.x, row*cellSize.height,
-                             bounds.size.width, cellSize.height);
+        NSUInteger row = thumbnailIndex / columnCount;
+        NSRect bounds = [self bounds];
+        NSRect newRect = NSMakeRect(bounds.origin.x, row*cellSize.height, bounds.size.width, cellSize.height);
         selectionRect = NSUnionRect(newRect, selectionRect);
     }
 
@@ -256,22 +239,16 @@ static NSFont *labelFont = nil;
 
 - (void)getMaximumThumbnailSize;
 {
-    unsigned int index, count;
-
     if (maximumThumbnailSize.width >= 0)
 	return;
 
-    maximumThumbnailSize = NSMakeSize(-1.0, -1.0);
+    maximumThumbnailSize = NSMakeSize(-1.0f, -1.0f);
 
-    count = [provider thumbnailCount];
-    for (index=0; index < count; index++) {
-	NSSize				size;
-	
-        size = [provider thumbnailSizeAtIndex: index];
-	maximumThumbnailSize.width = MAX(maximumThumbnailSize.width,
-	                                 size.width);
-	maximumThumbnailSize.height = MAX(maximumThumbnailSize.height,
-	                                 size.height);
+    NSUInteger thumbnailIndex, thumbnailCount = [provider thumbnailCount];
+    for (thumbnailIndex = 0; thumbnailIndex < thumbnailCount; thumbnailIndex++) {
+        NSSize size = [provider thumbnailSizeAtIndex:thumbnailIndex];
+	maximumThumbnailSize.width = MAX(maximumThumbnailSize.width, size.width);
+	maximumThumbnailSize.height = MAX(maximumThumbnailSize.height, size.height);
     }
 }
 
@@ -284,20 +261,16 @@ static NSFont *labelFont = nil;
 
 - (void)mouseDown:(NSEvent *)event;
 {
-    NSPoint mousePoint;
-    unsigned int row, column, index;
-
-    mousePoint = [self convertPoint:[event locationInWindow] fromView:nil];
-    row = MAX(0, mousePoint.y / cellSize.height);
-    column = (mousePoint.x - horizontalMargin/2)
-                   / (horizontalMargin + cellSize.width);
+    NSPoint mousePoint = [self convertPoint:[event locationInWindow] fromView:nil];
+    NSUInteger row = MAX(0, mousePoint.y / cellSize.height);
+    NSUInteger column = (mousePoint.x - horizontalMargin/2) / (horizontalMargin + cellSize.width);
     column = MIN(MAX(0U, column), columnCount-1);
     
-    index = row * columnCount + column;
-    if (index >= [provider thumbnailCount])
+    NSUInteger thumbnailIndex = row * columnCount + column;
+    if (thumbnailIndex >= [provider thumbnailCount])
 	return;
 
-    [provider thumbnailWasSelected:event atIndex: index];
+    [provider thumbnailWasSelected:event atIndex:thumbnailIndex];
     [self setNeedsDisplay:YES];
 }
 

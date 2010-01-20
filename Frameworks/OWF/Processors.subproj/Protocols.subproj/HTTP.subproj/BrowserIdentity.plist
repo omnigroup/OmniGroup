@@ -13,7 +13,7 @@
 		<key>Platform</key>
 		<string>MacPPC</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.8.1.9) Gecko/20071025 Firefox/2.0.0.9</string>
+		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X Mach-O; en-US; rv:1.8.1.9) Gecko/20071025 Firefox/2.0.0.9</string>
 	</dict>
 	<key>Firefox 2.0.0.9 (Windows)</key>
 	<dict>
@@ -39,7 +39,7 @@
 		<key>Platform</key>
 		<string>MacIntel</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.0.1) Gecko/2008070206 Firefox/3.0.1</string>
+		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X $(OS_VERSION); en-US; rv:1.9.0.1) Gecko/2008070206 Firefox/3.0.1</string>
 	</dict>
 	<key>Firefox 3.0.1 (Windows)</key>
 	<dict>
@@ -78,7 +78,7 @@
 		<key>Platform</key>
 		<string>MacPPC</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/4.0 (compatible; MSIE 5.2; Mac_PowerPC)</string>
+		<string>Mozilla/4.0 (compatible; MSIE 5.2; Mac_$(ARCH))</string>
 	</dict>
 	<key>Internet Explorer 5.5 (Windows)</key>
 	<dict>
@@ -130,7 +130,7 @@
 		<key>Platform</key>
 		<string>MacPPC</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.7.2) Gecko/20040804 Netscape/7.2</string>
+		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X Mach-O; en-US; rv:1.7.2) Gecko/20040804 Netscape/7.2</string>
 	</dict>
 	<key>Netscape 7.2 (Windows)</key>
 	<dict>
@@ -156,7 +156,7 @@
 		<key>Platform</key>
 		<string>MacIntel</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US) AppleWebKit/525.18 (KHTML, like Gecko, Safari/525.20) %@</string>
+		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X $(OS_VERSION); en-US) AppleWebKit/$(WEBKIT_VERSION) (KHTML, like Gecko, Safari/528.16) %@</string>
 	</dict>
 	<key>OmniWeb 4.2</key>
 	<dict>
@@ -169,7 +169,7 @@
 		<key>Platform</key>
 		<string>MacPPC</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/4.5 (compatible; OmniWeb/4.2-v435.5; Mac_PowerPC)</string>
+		<string>Mozilla/4.5 (compatible; OmniWeb/4.2-v435.5; Mac_$(ARCH))</string>
 	</dict>
 	<key>OmniWeb 5.1</key>
 	<dict>
@@ -182,7 +182,7 @@
 		<key>Platform</key>
 		<string>MacPPC</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en-US) AppleWebKit/125.4 (KHTML, like Gecko, Safari) OmniWeb/v563.34</string>
+		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X; en-US) AppleWebKit/125.4 (KHTML, like Gecko, Safari) OmniWeb/v563.34</string>
 	</dict>
 	<key>Safari 1.2.3 (v125.9)</key>
 	<dict>
@@ -195,7 +195,7 @@
 		<key>Platform</key>
 		<string>MacPPC</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/125.4 (KHTML, like Gecko) Safari/125.9</string>
+		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X; en) AppleWebKit/125.4 (KHTML, like Gecko) Safari/125.9</string>
 	</dict>
 	<key>Safari 2.0.4 (v419.3)</key>
 	<dict>
@@ -208,7 +208,7 @@
 		<key>Platform</key>
 		<string>MacPPC</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/418.9 (KHTML, like Gecko) Safari/419.3</string>
+		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X; en) AppleWebKit/418.9 (KHTML, like Gecko) Safari/419.3</string>
 	</dict>
 	<key>Safari 3.1.2 (v525.20.1)</key>
 	<dict>
@@ -221,7 +221,20 @@
 		<key>Platform</key>
 		<string>MacIntel</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_4; en-us) AppleWebKit/525.18 (KHTML, like Gecko) Version/3.1.2 Safari/525.20.1</string>
+		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X $(OS_VERSION); en-us) AppleWebKit/525.18 (KHTML, like Gecko) Version/3.1.2 Safari/525.20.1</string>
+	</dict>
+	<key>Safari 4.0 (528.16)</key>
+	<dict>
+		<key>AppCodeName</key>
+		<string>Mozilla</string>
+		<key>AppName</key>
+		<string>Netscape</string>
+		<key>AppVersion</key>
+		<string>5.0 (Macintosh; U; Intel Mac OS X 10_5_6; en-us) AppleWebKit/528.16 (KHTML, like Gecko) Version/4.0 Safari/528.16</string>
+		<key>Platform</key>
+		<string>MacIntel</string>
+		<key>userAgentHeaderFormat</key>
+		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X $(OS_VERSION); en-us) AppleWebKit/528.16 (KHTML, like Gecko) Version/4.0 Safari/528.16</string>
 	</dict>
 	<key>iPhone Safari 3.1.1 (v525.20)</key>
 	<dict>
@@ -234,7 +247,7 @@
 		<key>Platform</key>
 		<string>iPhone</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/5.0 (iPhone; U; CPU iPhone OS 2_0 like Mac OS X; en-us) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5A345 Safari/525.20</string>
+		<string>Mozilla/5.0 (iPhone; U; CPU iPhone OS 2_2_1 like Mac OS X; en-us) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5H11 Safari/525.20</string>
 	</dict>
 </dict>
 </plist>

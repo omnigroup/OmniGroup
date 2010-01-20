@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -100,20 +100,12 @@ static IMP originalTableColumnWithIdentifier;
 - (NSTableColumn *)_replacementTableColumnWithIdentifier:(id)identifier;
 {
     // We want this method to search both active and inactive columns (OOM depends upon this).  Neither the configuration menu nor the tableColumns array is guaranteed to have all the items (the configuration menu will have all but those that cannot be configured and the tableColumns will have only the active columns).  This is one place where our strategy of not adding an ivar for 'all table columns' is wearing thin.
-    NSArray *items;
-    unsigned int itemIndex;
-    NSMenuItem *item;
-    id column;
-
     if (![self _columnConfigurationEnabled])
         return originalTableColumnWithIdentifier(self, _cmd, identifier);
                 
-    // First check the configuration menu
-    items = [[self columnsMenu] itemArray];
-    itemIndex = [items count];
-    while (itemIndex--) {
-        item = [items objectAtIndex:itemIndex];
-        column = [item representedObject];
+    // First check the configuration menu    
+    for (NSMenuItem *item in [[self columnsMenu] itemArray]) {
+        id column = [item representedObject];
         if (![column isKindOfClass:[NSTableColumn class]])
             continue;
             
@@ -122,10 +114,7 @@ static IMP originalTableColumnWithIdentifier;
     }
 
     // Then check the table view (since it might have unconfigurable columns)
-    items = [self tableColumns];
-    itemIndex = [items count];
-    while (itemIndex--) {
-        column = [items objectAtIndex:itemIndex];
+    for (id column in [self tableColumns]) {
         if ([[column identifier] isEqual:identifier])
             return column;
     }
@@ -145,20 +134,12 @@ static IMP originalTableColumnWithIdentifier;
 
 - (NSArray *)inactiveTableColumns;
 {
-    NSMutableArray *inactiveTableColumns;
-    NSArray        *items;
-    unsigned int    itemIndex;
-    NSMenuItem     *item;
-    NSTableColumn  *column;
-
     OBPRECONDITION([self _columnConfigurationEnabled]);
     
-    inactiveTableColumns = [NSMutableArray array];
-    items = [[self columnsMenu] itemArray];
-    itemIndex = [items count];
-    while (itemIndex--) {
-        item = [items objectAtIndex:itemIndex];
-        column = [item representedObject];
+    NSMutableArray *inactiveTableColumns = [NSMutableArray array];
+    
+    for (NSMenuItem *item in [[self columnsMenu] itemArray]) {
+        NSTableColumn  *column = [item representedObject];
 
         if (column == nil)
             continue;
@@ -239,7 +220,7 @@ static IMP originalTableColumnWithIdentifier;
         
     NSTableHeaderView *headerView = [self headerView];
     NSPoint clickPoint = [headerView convertPoint:[[NSApp currentEvent] locationInWindow] fromView:nil];
-    int clickedColumn = [headerView columnAtPoint:clickPoint];
+    NSInteger clickedColumn = [headerView columnAtPoint:clickPoint];
     if (clickedColumn >= 0)
         [self _autosizeColumn:[[self tableColumns] objectAtIndex:clickedColumn]];
 }
@@ -249,11 +230,8 @@ static IMP originalTableColumnWithIdentifier;
     if (![self _allowsAutoresizing])
         return;
 
-    NSArray *tableColumns = [self tableColumns];
-    unsigned int columnCount = [tableColumns count], columnIndex;
-    for (columnIndex = 0; columnIndex < columnCount; columnIndex++) {
-        [self _autosizeColumn:[tableColumns objectAtIndex:columnIndex]];
-    }
+    for (NSTableColumn *column in [self tableColumns])
+        [self _autosizeColumn:column];
 }
 
 @end
@@ -334,26 +312,15 @@ static IMP originalTableColumnWithIdentifier;
 
 - (NSMenuItem *)_menuItemForTableColumn:(NSTableColumn *) column;
 {
-    NSArray        *items;
-    unsigned int    itemIndex;
-    NSMenuItem     *item;
-    
-    items = [[self columnsMenu] itemArray];
-    itemIndex = [items count];
-    while (itemIndex--) {
-        item = [items objectAtIndex:itemIndex];
+    for (NSMenuItem *item in [[self columnsMenu] itemArray])
         if (column == [item representedObject])
             return item;
-    }
-
     return nil;
 }
 
 - (void)_toggleColumn:(id)sender;
 {
-    NSMenuItem *item;
-    
-    item = (NSMenuItem *)sender;
+    NSMenuItem *item = (NSMenuItem *)sender;
     OBASSERT([item isKindOfClass:[NSMenuItem class]]);
 
     [self toggleTableColumn:[item representedObject]];
@@ -361,33 +328,25 @@ static IMP originalTableColumnWithIdentifier;
 
 - (void)_updateMenuItemState;
 {
-    NSArray *menuItems;
-    unsigned int itemIndex;
-
     if (![self _columnConfigurationEnabled])
         return;
         
-    menuItems = [[self columnsMenu] itemArray];
-    for (itemIndex = 0; itemIndex < [menuItems count]; itemIndex++) {
-        NSMenuItem *item;
-        NSTableColumn *column;
-
-        item = [menuItems objectAtIndex:itemIndex];
-        column = [item representedObject];
+    for (NSMenuItem *item in [[self columnsMenu] itemArray]) {
+        NSTableColumn *column = [item representedObject];
         [[self _menuItemForTableColumn:column] setState:[self isTableColumnActive:column]];
     }
 }
 
 - (void)_autosizeColumn:(NSTableColumn *)tableColumn;
 {
-    BOOL isOutlineView = [self isKindOfClass:[NSOutlineView class]];
-    NSCell *dataCell = [tableColumn dataCell];
-    unsigned int numberOfRows = [self numberOfRows], rowIndex;
-    float largestCellWidth = 0.0;
-    
     if (![self _allowsAutoresizing])
         return;
         
+    BOOL isOutlineView = [self isKindOfClass:[NSOutlineView class]];
+    NSCell *dataCell = [tableColumn dataCell];
+    NSInteger numberOfRows = [self numberOfRows], rowIndex;
+    CGFloat largestCellWidth = 0.0f;
+    
     for (rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
         id objectValue;
         

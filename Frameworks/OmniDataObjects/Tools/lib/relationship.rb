@@ -60,7 +60,12 @@ module OmniDataObjects
           fail "Expect abstract entities to be self joins." unless entity.name == target
           f << "@property(readonly) #{entity.instance_class} *#{name};\n"
         else
-          f << "@property(nonatomic,retain) #{@target.instance_class} *#{name};\n"
+          if calculated
+            read_only = ",readonly"
+          else
+            read_only = ""
+          end
+          f << "@property(nonatomic#{read_only},retain) #{@target.instance_class} *#{name};\n"
        end
       end
     end

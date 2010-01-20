@@ -1,4 +1,4 @@
-// Copyright 2004-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -385,7 +385,7 @@ RCS_ID("$Id$");
     NSMutableArray *copyA = [NSMutableArray arrayWithArray:a];
     NSMutableArray *copyB = [NSMutableArray arrayWithArray:b];
     for(ix = 0; ix < NNUM; ix++) {
-        unsigned c0, c1;
+        NSUInteger c0, c1;
         
         c0 = [a count];
         [a removeObjectIdenticalTo:objs[ix] fromArraySortedUsingSelector:@selector(compare:)];
@@ -415,7 +415,7 @@ RCS_ID("$Id$");
     a = copyA;
     b = copyB;
     for(ix = NNUM-1; ix >= 0; ix--) {
-        unsigned c0, c1;
+        NSUInteger c0, c1;
         
         c0 = [a count];
         [a removeObjectIdenticalTo:objs[ix] fromArraySortedUsingSelector:@selector(compare:)];

@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,8 +17,8 @@
 @interface OFXMLIdentifierRegistry : NSObject
 {
 @private
-    CFMutableDictionaryRef _idToObject;
-    CFMutableDictionaryRef _objectToID;
+    __strong CFMutableDictionaryRef _idToObject;
+    __strong CFMutableDictionaryRef _objectToID;
 }
 
 - (id)initWithRegistry:(OFXMLIdentifierRegistry *)registry;
@@ -30,7 +30,7 @@
 - (void)applyFunction:(CFDictionaryApplierFunction)function context:(void *)context;
 
 - (void)clearRegistrations;
-- (unsigned)registrationCount;
+- (NSUInteger)registrationCount;
 
 - (NSMutableDictionary *)copyIdentifierToObjectMapping;
 

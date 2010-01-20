@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -170,7 +170,7 @@ static void _OSURunTimeAddStatisticsToInfo(NSMutableDictionary *info, NSDictiona
     NSNumber *runTimeNumber = [scope objectForKey:OSUTotalRunTimeKey];
     NSTimeInterval runTime = runTimeNumber ? [runTimeNumber doubleValue] : 0.0;
     
-    unsigned int runMinutes = floor(runTime / 60.0);
+    unsigned int runMinutes = (unsigned int)floor(runTime / 60.0);
     [info setObject:[NSString stringWithFormat:@"%u", runMinutes] forKey:[NSString stringWithFormat:@"%@runmin", prefix]];
 }
 

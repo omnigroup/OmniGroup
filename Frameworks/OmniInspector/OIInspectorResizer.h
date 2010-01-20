@@ -1,4 +1,4 @@
-// Copyright 2002-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <AppKit/NSView.h>
 #import <AppKit/NSWindow.h>
 
-#define OIInspectorResizerWidth (11.0)
+#define OIInspectorResizerWidth (11.0f)
 
 /*"
  This class exists because our inspector windows don't want title bars (instead they have special views, a role handled by OIInspectorHeaderView) but some of them need to be resizable. However, making a window resizable forces it to have a standard title bar. So we instead use this widget to handle resizing for our inspector windows.

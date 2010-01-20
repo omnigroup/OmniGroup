@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@
     int loopSeconds;                    // Total duration the animation should last before stopping
     unsigned int loopCount;             // Maximum number of loops to display
     unsigned int remainingLoops;        // Remaining number of loops to display, initialized from loopCount
-    unsigned int nextFrame;             // Index of animation frame to display
+    NSUInteger nextFrame;             // Index of animation frame to display
     OFScheduledEvent *nextFrameEvent;
     NSLock *nextFrameEventLock;
     NSTimer *expirationTimer;

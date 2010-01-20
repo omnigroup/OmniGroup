@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -200,8 +200,11 @@ static inline int unicharDigitValue(unichar c)
     [self _rewindCharacterSource];
 }
 
-- (void)skipCharacters:(int)anOffset;
+- (void)skipCharacters:(NSUInteger)anOffset;
 {
+    // Used to be int... supposed to allow negative?
+    OBASSERT(anOffset <= LONG_MAX);
+    
     if ( (scanLocation + anOffset < inputBuffer) ||
          (scanLocation + anOffset >= scanEnd) ) {
 	[self setScanLocation:(scanLocation - inputBuffer) + anOffset + inputStringPosition];
@@ -234,28 +237,24 @@ static inline int unicharDigitValue(unichar c)
 
 - (BOOL)scanUpToString:(NSString *)delimiterString;
 {
-    unichar *buffer, *ptr;
-    NSUInteger length;
-    BOOL stringFound;
-    BOOL useMalloc;
-
-    length = [delimiterString length];
+    NSUInteger length = [delimiterString length];
     if (length == 0)
         return YES;
 
-    stringFound = NO;
-    useMalloc = length * sizeof(unichar) >= SAFE_ALLOCA_SIZE;
-    if (useMalloc) {
-        buffer = (unichar *)NSZoneMalloc(NULL, length * sizeof(unichar));
-    } else {
+    BOOL stringFound = NO;
+    
+    unichar *buffer;
+    BOOL useMalloc = length * sizeof(unichar) >= SAFE_ALLOCA_SIZE;
+    if (useMalloc)
+        buffer = (unichar *)malloc(length * sizeof(unichar));
+    else
         buffer = (unichar *)alloca(length * sizeof(unichar));
-    }
+
     [delimiterString getCharacters:buffer];
     while (scannerScanUpToCharacter(self, *buffer)) {
-        int left;
+        NSInteger left = length;
+        unichar *ptr = buffer;
 
-        ptr = buffer;
-        left = length;
         [self setRewindMark];
         while (left--) {
             if (scannerPeekCharacter(self) != *ptr++) {
@@ -273,7 +272,7 @@ static inline int unicharDigitValue(unichar c)
     }
 
     if (useMalloc)
-        NSZoneFree(NULL, buffer);
+        free(buffer);
 
     return stringFound;
 }

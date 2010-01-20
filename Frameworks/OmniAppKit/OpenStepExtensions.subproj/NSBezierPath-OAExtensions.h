@@ -1,4 +1,4 @@
-// Copyright 2000-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 
 @class NSCountedSet, NSDictionary, NSMutableDictionary;
 
-void OACGAddRoundedRect(CGContextRef context, NSRect rect, float topLeft, float topRight, float bottomLeft, float bottomRight);
+void OACGAddRoundedRect(CGContextRef context, NSRect rect, CGFloat topLeft, CGFloat topRight, CGFloat bottomLeft, CGFloat bottomRight);
 
 enum OAIntersectionAspect {
     intersectionEntryLeft = -1,  // Other path crosses from left to right
@@ -22,7 +22,7 @@ enum OAIntersectionAspect {
     intersectionEntryBogus = -2, // Garbage value for unit testing
 };
 
-typedef int NSBezierPathSegmentIndex;  // It would make more sense for this to be unsigned, but NSBezierPath uses int, and so we follow its lead
+typedef NSInteger NSBezierPathSegmentIndex;  // It would make more sense for this to be unsigned, but NSBezierPath uses int, and so we follow its lead
 
 typedef struct OABezierPathPosition {
     NSBezierPathSegmentIndex segment;
@@ -41,17 +41,17 @@ typedef struct {
 } OABezierPathIntersection;
 
 struct OABezierPathIntersectionList {
-    unsigned count;
+    NSUInteger count;
     OABezierPathIntersection *intersections;
 };
 
 // Utility functions used internally, may be of use to other callers as well
-void splitBezierCurveTo(const NSPoint *c, float t, NSPoint *l, NSPoint *r);
+void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r);
 BOOL tightBoundsOfCurveTo(NSRect *r, NSPoint startPoint, NSPoint control1, NSPoint control2, NSPoint endPoint, CGFloat sideClearance);
 
 @interface NSBezierPath (OAExtensions)
 
-- (NSPoint)currentpointForSegment:(int)i;  // Raises an exception if no currentpoint
+- (NSPoint)currentpointForSegment:(NSInteger)i;  // Raises an exception if no currentpoint
 
 - (BOOL)strokesSimilarlyIgnoringEndcapsToPath:(NSBezierPath *)otherPath;
 - (NSCountedSet *)countedSetOfEncodedStrokeSegments;
@@ -65,28 +65,28 @@ BOOL tightBoundsOfCurveTo(NSRect *r, NSPoint startPoint, NSPoint control1, NSPoi
 // Returns a list of all the intersections between the receiver and the specified path. As a special case, if other==self, it does the useful thing and returns only the nontrivial self-intersections.
 - (struct OABezierPathIntersectionList)allIntersectionsWithPath:(NSBezierPath *)other;
 
-- (void)getWinding:(int *)clockwiseWindingCount andHit:(unsigned int *)strokeHitCount forPoint:(NSPoint)point;
+- (void)getWinding:(NSInteger *)clockwiseWindingCount andHit:(NSUInteger *)strokeHitCount forPoint:(NSPoint)point;
 
-- (int)segmentHitByPoint:(NSPoint)point padding:(float)padding;
-- (int)segmentHitByPoint:(NSPoint)point;  // 0 == no hit, padding == 5
-- (BOOL)isStrokeHitByPoint:(NSPoint)point padding:(float)padding;
+- (NSInteger)segmentHitByPoint:(NSPoint)point padding:(CGFloat)padding;
+- (NSInteger)segmentHitByPoint:(NSPoint)point;  // 0 == no hit, padding == 5
+- (BOOL)isStrokeHitByPoint:(NSPoint)point padding:(CGFloat)padding;
 - (BOOL)isStrokeHitByPoint:(NSPoint)point; // padding == 5
 
 //
-- (void)appendBezierPathWithRoundedRectangle:(NSRect)aRect withRadius:(float)radius;
-- (void)appendBezierPathWithLeftRoundedRectangle:(NSRect)aRect withRadius:(float)radius;
-- (void)appendBezierPathWithRightRoundedRectangle:(NSRect)aRect withRadius:(float)radius;
+- (void)appendBezierPathWithRoundedRectangle:(NSRect)aRect withRadius:(CGFloat)radius;
+- (void)appendBezierPathWithLeftRoundedRectangle:(NSRect)aRect withRadius:(CGFloat)radius;
+- (void)appendBezierPathWithRightRoundedRectangle:(NSRect)aRect withRadius:(CGFloat)radius;
 
 // The "position" manipulated by these methods divides the range 0..1 equally into segments corresponding to the Bezier's segments, and position within each segment is proportional to the t-parameter (not proportional to linear distance).
-- (NSPoint)getPointForPosition:(float)position andOffset:(float)offset;
-- (float)getPositionForPoint:(NSPoint)point;
-- (float)getNormalForPosition:(float)position;
+- (NSPoint)getPointForPosition:(CGFloat)position andOffset:(CGFloat)offset;
+- (CGFloat)getPositionForPoint:(NSPoint)point;
+- (CGFloat)getNormalForPosition:(CGFloat)position;
 
 // "Length" is the actual length along the curve
-- (double)lengthToSegment:(int)seg parameter:(double)parameter totalLength:(double *)totalLengthOut;
+- (double)lengthToSegment:(NSInteger)seg parameter:(double)parameter totalLength:(double *)totalLengthOut;
 
 // Returns the segment and parameter corresponding to the point a certain distance along the curve. 'outParameter' may be NULL, which can save a small amount of computation if the parameter isn't needed.
-- (int)segmentAndParameter:(double *)outParameter afterLength:(double)lengthFromStart fractional:(BOOL)lengthIsFractionOfTotal;
+- (NSInteger)segmentAndParameter:(double *)outParameter afterLength:(double)lengthFromStart fractional:(BOOL)lengthIsFractionOfTotal;
 
 // Returns the location of a point specifed as a (segment,parameter) pair.
 - (NSPoint)getPointForPosition:(OABezierPathPosition)pos;
@@ -99,6 +99,6 @@ BOOL tightBoundsOfCurveTo(NSRect *r, NSPoint startPoint, NSPoint control1, NSPoi
 
 // NSObject overrides
 - (BOOL)isEqual:(NSBezierPath *)otherBezierPath;
-- (unsigned int)hash;
+- (NSUInteger)hash;
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,32 +18,21 @@ RCS_ID("$Id$")
 
 - (void)selectItemWithRepresentedObject:(id)object;
 {
-    NSArray *array = [self itemArray];
-    unsigned int elementIndex = [array count];
-    while (elementIndex--) {
-        if (OFISEQUAL([[array objectAtIndex:elementIndex] representedObject], object)) {
-            [self selectItemAtIndex:elementIndex];
-            return;
-        }
-    }
+    NSInteger elementIndex = [self indexOfItemWithRepresentedObject:object];
+    if (elementIndex != -1)
+        [self selectItemAtIndex:elementIndex];
 }
 
-- (NSMenuItem *)itemWithTag:(int)tag
+- (NSMenuItem *)itemWithTag:(NSInteger)tag
 {
     return [[self menu] itemWithTag:tag];
 }
 
 - (void)addRepresentedObjects:(NSArray *)objects titleSelector:(SEL)titleSelector;
 {
-    // Don't bother doing anything on nil or empty arrays
-    if ([objects count] == 0)
-        return;
-        
     NSMenu *menu = [self menu];
 
-    unsigned int objectIndex, objectCount;
-    for (objectIndex = 0, objectCount = [objects count]; objectIndex < objectCount; objectIndex++) {
-        id object = [objects objectAtIndex:objectIndex];
+    for (id object in objects) {
         NSString *title = [object performSelector:titleSelector];
         
         NSMenuItem *newItem = [[NSMenuItem alloc] initWithTitle:title action:NULL keyEquivalent:@""];
@@ -55,15 +44,9 @@ RCS_ID("$Id$")
 
 - (void)addRepresentedObjects:(NSArray *)objects titleKeyPath:(NSString *)keyPath;
 {
-    // Don't bother doing anything on nil or empty arrays
-    if ([objects count] == 0)
-        return;
-        
     NSMenu *menu = [self menu];
 
-    unsigned int objectIndex, objectCount;
-    for (objectIndex = 0, objectCount = [objects count]; objectIndex < objectCount; objectIndex++) {
-        id object = [objects objectAtIndex:objectIndex];
+    for (id object in objects) {
         NSString *title = [object valueForKeyPath:keyPath];
         
         NSMenuItem *newItem = [[NSMenuItem alloc] initWithTitle:title action:NULL keyEquivalent:@""];

@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,8 +27,8 @@ struct OFStringDecoderState {
 struct OFCharacterScanResult {
     struct OFStringDecoderState state;
         
-    unsigned int bytesConsumed;
-    unsigned int charactersProduced;
+    NSUInteger bytesConsumed;
+    NSUInteger charactersProduced;
 };
 
 /* Information about encodings */
@@ -37,7 +37,7 @@ extern BOOL OFEncodingIsSimple(CFStringEncoding anEncoding);
 
 /* Functions for decoding a string */
 extern struct OFStringDecoderState OFInitialStateForEncoding(CFStringEncoding anEncoding);
-extern struct OFCharacterScanResult OFScanCharactersIntoBuffer(struct OFStringDecoderState state,  const unsigned char *in_bytes, unsigned int in_bytes_count, unichar *out_characters, unsigned int out_characters_max);
+extern struct OFCharacterScanResult OFScanCharactersIntoBuffer(struct OFStringDecoderState state,  const unsigned char *in_bytes, NSUInteger in_bytes_count, unichar *out_characters, NSUInteger out_characters_max);
 extern BOOL OFDecoderContainsPartialCharacters(struct OFStringDecoderState state);
 
 /* An exception which can be raised by the above functions */

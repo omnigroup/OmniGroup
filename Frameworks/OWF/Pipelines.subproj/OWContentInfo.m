@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,7 @@ RCS_ID("$Id$")
 @interface OWContentInfo (Private)
 - (void)_treeActiveStatusMayHaveChanged;
 - (OWTask *)_taskWithLowestPriority;
-- (unsigned int)_indexOfTaskWithLowestPriority;
+- (NSUInteger)_indexOfTaskWithLowestPriority;
 @end
 
 @implementation OWContentInfo
@@ -254,7 +254,7 @@ static NSLock *allActiveTasksLock = nil;
 
 - (void)removeTask:(OWTask *)aTask;
 {
-    unsigned int index;
+    NSUInteger index;
 
     [tasksLock lock];
     index = [tasks indexOfObjectIdenticalTo:aTask];
@@ -277,7 +277,7 @@ static NSLock *allActiveTasksLock = nil;
 
 - (void)removeChildTask:(OWTask *)aTask;
 {
-    unsigned int index;
+    NSUInteger index;
 
     [childTasksLock lock];
     index = [childTasks indexOfObjectIdenticalTo:aTask];
@@ -297,7 +297,7 @@ static NSLock *allActiveTasksLock = nil;
     return copiedArray;
 }
 
-- (OWTask *)childTaskAtIndex:(unsigned int)childIndex;
+- (OWTask *)childTaskAtIndex:(NSUInteger)childIndex;
 {
     OWTask *childTask = nil;
 
@@ -308,9 +308,9 @@ static NSLock *allActiveTasksLock = nil;
     return [childTask autorelease];
 }
 
-- (unsigned int)childTasksCount;
+- (NSUInteger)childTasksCount;
 {
-    unsigned int childTasksCount;
+    NSUInteger childTasksCount;
 
     [childTasksLock lock];
     childTasksCount = [childTasks count];
@@ -320,6 +320,9 @@ static NSLock *allActiveTasksLock = nil;
 
 - (int)workDoneByChildTasks;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return 0;
+#if 0
     int work;
     
     if (flags.wasActiveOnLastCheck) {
@@ -339,10 +342,14 @@ static NSLock *allActiveTasksLock = nil;
         work = 0;
 
     return work;
+#endif
 }
 
 - (int)workToBeDoneByChildTasks;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return 0;
+#if 0
     int work;
     
     if (flags.wasActiveOnLastCheck) {
@@ -363,12 +370,13 @@ static NSLock *allActiveTasksLock = nil;
         work = 0;
 
     return work;
+#endif
 }
 
-- (void)calculateDeadPipelines:(unsigned int *)deadPipelines totalPipelines:(unsigned int *)totalPipelines;
+- (void)calculateDeadPipelines:(NSUInteger *)deadPipelines totalPipelines:(NSUInteger *)totalPipelines;
 {
     NSArray *childrenCopy;
-    unsigned int taskIndex;
+    NSUInteger taskIndex;
 
     [childTasksLock lock];
     childrenCopy = [[NSArray alloc] initWithArray:childTasks];
@@ -424,7 +432,7 @@ static NSLock *allActiveTasksLock = nil;
 - (void)removeActiveChildTask:(OWTask *)aTask;
 {
     BOOL treeActiveStatusMayHaveChanged;
-    unsigned int index;
+    NSUInteger index;
 
     [activeChildTasksLock lock];
     
@@ -460,7 +468,7 @@ static NSLock *allActiveTasksLock = nil;
     return [childrenCopy autorelease];
 }
 
-- (OWTask *)activeChildTaskAtIndex:(unsigned int)childIndex;
+- (OWTask *)activeChildTaskAtIndex:(NSUInteger)childIndex;
 {
     OWTask *activeChildTask = nil;
 
@@ -471,9 +479,9 @@ static NSLock *allActiveTasksLock = nil;
     return [activeChildTask autorelease];
 }
 
-- (unsigned int)activeChildTasksCount;
+- (NSUInteger)activeChildTasksCount;
 {
-    unsigned int activeChildTasksCount;
+    NSUInteger activeChildTasksCount;
 
     [activeChildTasksLock lock];
     activeChildTasksCount = [activeChildTasks count];
@@ -495,6 +503,9 @@ static NSLock *allActiveTasksLock = nil;
 
 - (NSTimeInterval)timeSinceTreeActivationIntervalForActiveChildTasks;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return 0;
+#if 0
     NSTimeInterval maxTimeInterval = 0.0;
 
     if (flags.wasActiveOnLastCheck) {
@@ -511,10 +522,14 @@ static NSLock *allActiveTasksLock = nil;
         [childrenCopy release];
     }
     return maxTimeInterval;
+#endif
 }
 
 - (NSTimeInterval)estimatedRemainingTreeTimeIntervalForActiveChildTasks;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return 0;
+#if 0
     NSTimeInterval maxTimeInterval = 0.0;
 
     if (flags.wasActiveOnLastCheck) {
@@ -531,6 +546,7 @@ static NSLock *allActiveTasksLock = nil;
         [childrenCopy release];
     }
     return maxTimeInterval;
+#endif
 }
 
 
@@ -609,7 +625,7 @@ static NSLock *allActiveTasksLock = nil;
 
 - (OWTask *)_taskWithLowestPriority;
 {
-    unsigned int taskCount;
+    NSUInteger taskCount;
     OWTask *taskWithLowestPriority;
 
     [tasksLock lock];
@@ -629,12 +645,12 @@ static NSLock *allActiveTasksLock = nil;
     return taskWithLowestPriority;
 }
 
-- (unsigned int)_indexOfTaskWithLowestPriority;
+- (NSUInteger)_indexOfTaskWithLowestPriority;
     // Tasks MUST be locked before entering this routine.
 {
-    unsigned int lowestPriority;
-    unsigned int lowestPriorityTaskIndex;
-    unsigned int taskIndex;
+    NSUInteger lowestPriority;
+    NSUInteger lowestPriorityTaskIndex;
+    NSUInteger taskIndex;
 
     OBPRECONDITION(!flags.isHeader);
 

@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,17 +71,15 @@ RCS_ID("$Id$");
     // We want to know whether the result might be "source" content. This is ugly --- we should probably put a flag on OWContentTypeLink to indicate source-ness.
     NSArray *parallelLinks = [[link sourceContentType] directTargetContentTypes];
     flags.possiblyProducesSource = NO;
-    unsigned linkIndex, linkCount = [parallelLinks count];
-    for(linkIndex = 0; linkIndex < linkCount; linkIndex ++) {
-        OWContentTypeLink *parallelLink = [parallelLinks objectAtIndex:linkIndex];
-
+    
+    for (OWContentTypeLink *parallelLink in parallelLinks) {
         if ([parallelLink processorDescription] == [link processorDescription] &&
             [parallelLink targetContentType] == [OWContentType sourceContentType]) {
             flags.possiblyProducesSource = YES;
             break;
         }
     }
-
+    
     return self;
 }
 
@@ -128,7 +126,7 @@ RCS_ID("$Id$");
 
 OFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
-- (unsigned)hash
+- (NSUInteger)hash
 {
     // NB: The pipeline lock is not necesarily held at this point.
 
@@ -181,13 +179,13 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
         case OWProcessorStarting:
         case OWProcessorQueued:
         default:
-            return [link cost] * (15./16.);
+            return [link cost] * (15.f/16.f);
         case OWProcessorRunning:
-            return [link cost] * 0.5;
+            return [link cost] * 0.5f;
         case OWProcessorAborting:
-            return 1e6;
+            return 1e6f;
         case OWProcessorRetired:
-            return [link cost] * (1./16.);
+            return [link cost] * (1.f/16.f);
     }
 }
 
@@ -227,9 +225,9 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
             // If we were started by another pipeline, but this pipeline is trying to reload/revalidate, we might not be applicable.
 #warning not actually the right test to use here I think
 #define EPSILON (0.1)
-            NSTimeInterval deltaT;
+//            NSTimeInterval deltaT;
             if (processStarted != nil &&
-                ( deltaT = [[pipeline fetchDate] timeIntervalSinceDate:processStarted] ) > EPSILON) {
+                (/* deltaT = */[[pipeline fetchDate] timeIntervalSinceDate:processStarted] ) > EPSILON) {
                 //                    NSLog(@"%@ suckage? dT=%.2f owner=%@ caller=%@", OBShortObjectDescription(self), deltaT, OBShortObjectDescription(context), OBShortObjectDescription(pipeline));
                 invalidity |= OWCacheArcStale;
             }
@@ -457,8 +455,10 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
     return [cachedTaskInfo messageQueueSchedulingInfo];
 }
 
-- (void)processedBytes:(unsigned int)bytes ofBytes:(unsigned int)newTotalBytes;
+- (void)processedBytes:(NSUInteger)bytes ofBytes:(NSUInteger)newTotalBytes;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     BOOL alreadyRetired;
 
     [lock lock];
@@ -488,6 +488,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
     if ((oldBytesProcessed == 0 && bytesProcessed > 0) || (oldTotalBytes < 10 && totalBytes >= 10) || (bytesProcessed == totalBytes))
         [self processorStatusChanged:processor];
+#endif
 }
 
 - (NSDate *)firstBytesDate;
@@ -500,12 +501,12 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
     return aDate;
 }
 
-- (unsigned int)bytesProcessed;
+- (NSUInteger)bytesProcessed;
 {
     return bytesProcessed;
 }
 
-- (unsigned int)totalBytes;
+- (NSUInteger)totalBytes;
 {
     return totalBytes;
 }
@@ -965,9 +966,9 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
     // Figure out when to expire (or revalidate) this arc
     if (cacheControl->maxAge) {
         // RFC2616 14.9.3 para 2: max-age takes precedence over Expire
-        arcProperties.freshUntil = [arcProperties.creationDate addTimeInterval:[cacheControl->maxAge floatValue]];
+        arcProperties.freshUntil = [arcProperties.creationDate dateByAddingTimeInterval:[cacheControl->maxAge floatValue]];
     } else if (cacheControl->explicitExpire) {
-        arcProperties.freshUntil = [cacheControl->explicitExpire addTimeInterval:clockSkew];
+        arcProperties.freshUntil = [cacheControl->explicitExpire dateByAddingTimeInterval:clockSkew];
     } else
         arcProperties.freshUntil = nil;
 
@@ -986,7 +987,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
     /* If we're not representing an error result, then create arcs for any auxiliary content that was produced as well. */
     /* Also: Don't create aux. arcs if we're not reusable, since nobody would ever be able to make use of them. */
     if (!flags.objectIsError && !arcProperties.nonReusable) {
-        int auxArcCount, auxArcIndex;
+        NSUInteger auxArcCount, auxArcIndex;
 
         auxArcCount = [auxiliaryContent count];
         for(auxArcIndex = 0; auxArcIndex < auxArcCount; auxArcIndex ++) {
@@ -1066,27 +1067,27 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
     // WARNING/TODO: This debugDictionary method is not completely threadsafe.
 
     debugDictionary = [super debugDictionary];
-    [debugDictionary takeValue:[link processorDescription] forKey:@"link"];
-    [debugDictionary takeValue:source forKey:@"source"];
+    [debugDictionary setValue:[link processorDescription] forKey:@"link"];
+    [debugDictionary setValue:source forKey:@"source"];
     if (didLock)
-        [debugDictionary takeValue:[processor shortDescription] forKey:@"processor"];
+        [debugDictionary setValue:[processor shortDescription] forKey:@"processor"];
     else
-        [debugDictionary takeValue:OBShortObjectDescription(processor) forKey:@"processor"];
+        [debugDictionary setValue:OBShortObjectDescription(processor) forKey:@"processor"];
     if (didLock || 1)
-        [debugDictionary takeValue:[[dependentContext allKeys] description] forKey:@"dependentContext"];
+        [debugDictionary setValue:[[dependentContext allKeys] description] forKey:@"dependentContext"];
     else
-        [debugDictionary takeValue:OBShortObjectDescription(dependentContext) forKey:@"dependentContext"];
+        [debugDictionary setValue:OBShortObjectDescription(dependentContext) forKey:@"dependentContext"];
     if (didLock)
-        [debugDictionary takeValue:object forKey:@"object"];
+        [debugDictionary setValue:object forKey:@"object"];
     else
-        [debugDictionary takeValue:OBShortObjectDescription(object) forKey:@"object"];
+        [debugDictionary setValue:OBShortObjectDescription(object) forKey:@"object"];
     [debugDictionary setIntValue:flags.state forKey:@"flags.state"];
-    [debugDictionary takeValue:flags.objectIsSource ? @"YES" : @"NO" forKey:@"flags.objectIsSource"];
-    [debugDictionary takeValue:flags.objectIsError ? @"YES" : @"NO" forKey:@"flags.objectIsError"];
-    [debugDictionary takeValue:flags.arcShouldNotBeCachedOnDisk ? @"YES" : @"NO" forKey:@"flags.arcShouldNotBeCachedOnDisk"];
-    [debugDictionary takeValue:flags.possiblyProducesSource ? @"YES" : @"NO" forKey:@"flags.possiblyProducesSource"];
-    [debugDictionary takeValue:flags.traversalIsAction ? @"YES" : @"NO" forKey:@"flags.traversalIsAction"];
-    [debugDictionary takeValue:flags.havePassedOn ? @"YES" : @"NO" forKey:@"flags.havePassedOn"];
+    [debugDictionary setValue:flags.objectIsSource ? @"YES" : @"NO" forKey:@"flags.objectIsSource"];
+    [debugDictionary setValue:flags.objectIsError ? @"YES" : @"NO" forKey:@"flags.objectIsError"];
+    [debugDictionary setValue:flags.arcShouldNotBeCachedOnDisk ? @"YES" : @"NO" forKey:@"flags.arcShouldNotBeCachedOnDisk"];
+    [debugDictionary setValue:flags.possiblyProducesSource ? @"YES" : @"NO" forKey:@"flags.possiblyProducesSource"];
+    [debugDictionary setValue:flags.traversalIsAction ? @"YES" : @"NO" forKey:@"flags.traversalIsAction"];
+    [debugDictionary setValue:flags.havePassedOn ? @"YES" : @"NO" forKey:@"flags.havePassedOn"];
     
     if (didLock)
         [lock unlock];
@@ -1329,29 +1330,28 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
     NSDate *thisDate;
     NSTimeInterval thisClockSkew;
 
-    thisDate = nil;
-    thisClockSkew = 0;
-
     // Use the server's Date: header, but sanity-check it
     if (cacheControl->serverDate) {
-        NSDate *service = [cacheControl->serverDate addTimeInterval:clockSkew];
+        NSDate *service = [cacheControl->serverDate dateByAddingTimeInterval:clockSkew];
         if (processStarted)
             service = [service laterDate:processStarted];
         if (processGotResponse)
             service = [service earlierDate:processGotResponse];
         thisClockSkew = [service timeIntervalSinceDate:cacheControl->serverDate];
-        thisDate = [service retain];
+        thisDate = service;
     } else {
         if (processStarted && processGotResponse) {
             // Heuristic: it probably took us longer to resolve and contact the server than it did for the server to start responding once it found the content, hence the 0.8
-            thisDate = [processStarted addTimeInterval:(0.8 * [processGotResponse timeIntervalSinceDate:processStarted])];
+            thisDate = [processStarted dateByAddingTimeInterval:(0.8 * [processGotResponse timeIntervalSinceDate:processStarted])];
         } else if (processGotResponse) {
             thisDate = processGotResponse;
+        } else {
+            thisDate = nil;
         }
         thisClockSkew = 0;
     }
     if (cacheControl->ageAtFetch != nil) {
-        thisDate = [thisDate addTimeInterval: - [cacheControl->ageAtFetch floatValue]];
+        thisDate = [thisDate dateByAddingTimeInterval: - [cacheControl->ageAtFetch floatValue]];
     }
 
     if (thisDate) {

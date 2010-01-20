@@ -1,4 +1,4 @@
-// Copyright 2002-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,9 +15,6 @@
 
 RCS_ID("$Id$");
 
-@interface OIDynamicInspectorMenuItem (Private)
-@end
-
 @implementation OIDynamicInspectorMenuItem
 
 - (void)awakeFromNib;
@@ -26,7 +23,4 @@ RCS_ID("$Id$");
     [[OIInspectorRegistry sharedInspector] dynamicMenuPlaceholderSet];
 }
 
-@end
-
-@implementation OIDynamicInspectorMenuItem (Private)
 @end

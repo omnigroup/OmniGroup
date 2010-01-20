@@ -1,4 +1,4 @@
-// Copyright 2002-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,8 @@
 RCS_ID("$Id$");
 
 
-@interface OADocumentPositioningView (Private)
+@interface OADocumentPositioningView (/*Private*/)
+- (void)_documentViewFrameChangedNotification:(NSNotification *)notification;
 - (void)_positionDocumentView;
 - (BOOL)_setDocumentView:(NSView *)value;
 @end
@@ -62,7 +63,8 @@ RCS_ID("$Id$");
     [self _positionDocumentView];
 }
 
-// NSView subclass
+#pragma mark -
+#pragma mark NSView subclass
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldFrameSize;
 {
@@ -70,21 +72,15 @@ RCS_ID("$Id$");
     [self _positionDocumentView];
 }
 
-@end
 
-
-@implementation OADocumentPositioningView (NotificationsDelegatesDatasources)
+#pragma mark -
+#pragma mark Private
 
 - (void)_documentViewFrameChangedNotification:(NSNotification *)notification;
 {
     [self _positionDocumentView];
     [self setNeedsDisplay:YES];	// we don't know what the old frame was, so we hav to be pessimistic about how much of us needs redisplay
 }
-
-@end
-
-
-@implementation OADocumentPositioningView (Private)
 
 - (void)_positionDocumentView;
 {
@@ -122,17 +118,17 @@ RCS_ID("$Id$");
         // calculate our desired frame, given the document view alignment setting
         switch (documentViewAlignment) {
             case NSImageAlignCenter:
-                newDocumentFrame.origin.x = (newFrame.size.width - newDocumentFrame.size.width) / 2.0;
-                newDocumentFrame.origin.y = (newFrame.size.height - newDocumentFrame.size.height) / 2.0;
+                newDocumentFrame.origin.x = (newFrame.size.width - newDocumentFrame.size.width) / 2.0f;
+                newDocumentFrame.origin.y = (newFrame.size.height - newDocumentFrame.size.height) / 2.0f;
                 break;
             
             case NSImageAlignTop:
-                newDocumentFrame.origin.x = (newFrame.size.width - newDocumentFrame.size.width) / 2.0;
+                newDocumentFrame.origin.x = (newFrame.size.width - newDocumentFrame.size.width) / 2.0f;
                 newDocumentFrame.origin.y = (newFrame.size.height - newDocumentFrame.size.height);
                 break;
             
             case NSImageAlignTopLeft:
-                newDocumentFrame.origin.x = 0.0;
+                newDocumentFrame.origin.x = 0.0f;
                 newDocumentFrame.origin.y = (newFrame.size.height - newDocumentFrame.size.height);
                 break;
             
@@ -142,28 +138,28 @@ RCS_ID("$Id$");
                 break;
             
             case NSImageAlignLeft:
-                newDocumentFrame.origin.x = 0.0;
-                newDocumentFrame.origin.y = (newFrame.size.height - newDocumentFrame.size.height) / 2.0;
+                newDocumentFrame.origin.x = 0.0f;
+                newDocumentFrame.origin.y = (newFrame.size.height - newDocumentFrame.size.height) / 2.0f;
                 break;
             
             case NSImageAlignBottom:
-                newDocumentFrame.origin.x = (newFrame.size.width - newDocumentFrame.size.width) / 2.0;
-                newDocumentFrame.origin.y = 0.0;
+                newDocumentFrame.origin.x = (newFrame.size.width - newDocumentFrame.size.width) / 2.0f;
+                newDocumentFrame.origin.y = 0.0f;
                 break;
             
             case NSImageAlignBottomLeft:
-                newDocumentFrame.origin.x = 0.0;
-                newDocumentFrame.origin.y = 0.0;
+                newDocumentFrame.origin.x = 0.0f;
+                newDocumentFrame.origin.y = 0.0f;
                 break;
             
             case NSImageAlignBottomRight:
                 newDocumentFrame.origin.x = (newFrame.size.width - newDocumentFrame.size.width);
-                newDocumentFrame.origin.y = 0.0;
+                newDocumentFrame.origin.y = 0.0f;
                 break;
             
             case NSImageAlignRight:
                 newDocumentFrame.origin.x = (newFrame.size.width - newDocumentFrame.size.width);
-                newDocumentFrame.origin.y = (newFrame.size.height - newDocumentFrame.size.height) / 2.0;
+                newDocumentFrame.origin.y = (newFrame.size.height - newDocumentFrame.size.height) / 2.0f;
                 break;
                 
             default:
@@ -172,8 +168,8 @@ RCS_ID("$Id$");
         }
         
         // keep the frame on integral boundaries
-        newDocumentFrame.origin.x = floor(newDocumentFrame.origin.x);
-        newDocumentFrame.origin.y = floor(newDocumentFrame.origin.y);
+        newDocumentFrame.origin.x = (CGFloat)floor(newDocumentFrame.origin.x);
+        newDocumentFrame.origin.y = (CGFloat)floor(newDocumentFrame.origin.y);
         
         // if the frame has actually changed, set the new frame and mark the appropriate area as needing to be displayed
         if (!NSEqualPoints(newDocumentFrame.origin, oldDocumentFrame.origin)) {

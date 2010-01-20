@@ -1,4 +1,4 @@
-// Copyright 2004-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,8 +22,9 @@ RCS_ID("$Id$");
 
 @interface OWCacheSearch (Private)
 
-static NSComparisonResult compareByCacheCost(OFHeap *heap, void *userInfo, id a, id b);
-static NSComparisonResult compareByCostAndDate(OFHeap *heap, void *userInfo, id a, id b);
+- (NSComparisonResult)compareByCacheCost:(id)a to:(id)b;
+- (NSComparisonResult)compareByCostAndDate:(id)a to:(id)b;
+- (NSComparisonResult)compareByCost:(id) a to:(id) b;
 
 - (void)_queryOneCache;
 
@@ -46,8 +47,8 @@ static NSComparisonResult compareByCostAndDate(OFHeap *heap, void *userInfo, id 
 #endif
     weaklyRetainedPipeline = [context weakRetain];
 
-    cachesToSearch = [[OFHeap alloc] initWithCapacity:0 compareFunction:compareByCacheCost userInfo:nil];
-    arcsToConsider = [[OFHeap alloc] initWithCapacity:0 compareFunction:compareByCostAndDate userInfo:self];
+    cachesToSearch = [[OFHeap alloc] initWithComparator:^NSComparisonResult (id a, id b) { return [self compareByCacheCost:a to:b]; }];
+    arcsToConsider = [[OFHeap alloc] initWithComparator:^NSComparisonResult (id a, id b) { return [self compareByCostAndDate:a to:b]; }];
 
     rejectedArcs = nil;
     unacceptableCost = FLT_MAX;
@@ -221,7 +222,7 @@ static NSComparisonResult compareByCostAndDate(OFHeap *heap, void *userInfo, id 
     }
 
     if ([freeArcs containsObject:anArc])
-        arcCost = 0.0;
+        arcCost = 0.0f;
     else
         arcCost = [anArc expectedCost];
 
@@ -255,14 +256,14 @@ static NSComparisonResult compareByCostAndDate(OFHeap *heap, void *userInfo, id 
 
 @implementation OWCacheSearch (Private)
 
-static NSComparisonResult compareByCacheCost(OFHeap *heap, void *userInfo, id a, id b)
+- (NSComparisonResult)compareByCacheCost:(id)a to:(id)b;
 {
     id <OWCacheArcProvider> cacheA = a, cacheB = b;
     float costA, costB;
-
+    
     costA = [cacheA cost];
     costB = [cacheB cost];
-
+    
     if (costA < costB)
         return NSOrderedAscending;
     if (costA == costB)
@@ -270,14 +271,13 @@ static NSComparisonResult compareByCacheCost(OFHeap *heap, void *userInfo, id a,
     return NSOrderedDescending;
 }
 
-static inline NSComparisonResult compareByCost(OFHeap *heap, void *userInfo, id a, id b)
+- (NSComparisonResult)compareByCost:(id) a to:(id) b;
 {
-    OWCacheSearch *costEstimator = userInfo;
     id <OWCacheArc> arcA = a, arcB = b;
     float costA, costB;
 
-    costA = [costEstimator estimateCostForArc:arcA];
-    costB = [costEstimator estimateCostForArc:arcB];
+    costA = [self estimateCostForArc:arcA];
+    costB = [self estimateCostForArc:arcB];
 
     if (costA < costB)
         return NSOrderedAscending;
@@ -286,14 +286,15 @@ static inline NSComparisonResult compareByCost(OFHeap *heap, void *userInfo, id 
     return NSOrderedDescending;
 }
 
-static NSComparisonResult compareByCostAndDate(OFHeap *heap, void *userInfo, id a, id b)
-{
-    NSComparisonResult result = compareByCost(heap, userInfo, a, b);
 
+- (NSComparisonResult)compareByCostAndDate:(id)a to:(id)b;
+{
+    NSComparisonResult result = [self compareByCost:a to:b];
+    
     if (result == NSOrderedSame) {
         id <OWCacheArc> arcA = a, arcB = b;
         NSDate *dateA = [arcA creationDate], *dateB = [arcB creationDate];
-
+        
         if (dateA && dateB) {
             // This -compare: is reversed because we want to sort smaller costs to the front, but also later dates
             result = [dateB compare:dateA];
@@ -305,7 +306,7 @@ static NSComparisonResult compareByCostAndDate(OFHeap *heap, void *userInfo, id 
                 return NSOrderedDescending; // Arc B has a date, but arc A doesn't
         }
     }
-
+    
     return result;
 }
 

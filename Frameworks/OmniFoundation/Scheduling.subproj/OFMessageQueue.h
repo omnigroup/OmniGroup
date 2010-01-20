@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,7 @@
 
     NSLock *queueProcessorsLock;
     unsigned int idleProcessors;
-    unsigned int uncreatedProcessors;
+    NSUInteger uncreatedProcessors;
     NSMutableArray *queueProcessors;
 
     struct {
@@ -37,7 +37,7 @@
 // Configuration
 
 - (void)setDelegate:(id <OFMessageQueueDelegate>)aDelegate;
-- (void)startBackgroundProcessors:(unsigned int)processorCount;
+- (void)startBackgroundProcessors:(NSUInteger)processorCount;
 - (void)setSchedulesBasedOnPriority:(BOOL)shouldScheduleBasedOnPriority;
 
 - (BOOL)hasInvocations;

@@ -37,7 +37,6 @@ IMP OBReplaceMethodImplementation(Class aClass, SEL oldSelector, IMP newImp)
 {
     Method localMethod, superMethod;
     IMP oldImp = NULL;
-    extern void _objc_flush_caches(Class);
 
     if ((localMethod = class_getInstanceMethod(aClass, oldSelector))) {
 	oldImp = method_getImplementation(localMethod);
@@ -95,7 +94,6 @@ IMP OBReplaceMethodImplementationFromMethod(Class aClass, SEL oldSelector, Metho
     Method localMethod, superMethod;
     IMP oldImp = NULL;
     IMP newImp = method_getImplementation(newMethod);
-    extern void _objc_flush_caches(Class);
     
     if ((localMethod = class_getInstanceMethod(aClass, oldSelector))) {
 #ifdef OMNI_ASSERTIONS_ON
@@ -139,11 +137,6 @@ IMP OBReplaceMethodImplementationFromMethod(Class aClass, SEL oldSelector, Metho
             method_setImplementation(localMethod, newImp);
             OBASSERT(oldImp == previous); // method_setImplementation is supposed to return the old implementation, but we already grabbed it.
 	}
-	
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-	// Flush the method cache
-	_objc_flush_caches(aClass);
-#endif
     }
     
     return oldImp;
@@ -215,10 +208,10 @@ CFStringRef const OBBuildByCompilerVersion = CFSTR("OBBuildByCompilerVersion: " 
 
 void _OBRequestConcreteImplementation(id self, SEL _cmd, const char *file, unsigned int line)
 {
-    OBASSERT_NOT_REACHED("Concrete implementation needed");
-
     NSString *reason = [NSString stringWithFormat:@"%@ needs a concrete implementation of %c%s at %s:%d", [self class], OBPointerIsClass(self) ? '+' : '-', sel_getName(_cmd), file, line];
     NSLog(@"%@", reason);
+    
+    OBASSERT_NOT_REACHED("Concrete implementation needed");
     
     [[NSException exceptionWithName:OBAbstractImplementation reason:reason userInfo:nil] raise];
     
@@ -257,6 +250,12 @@ void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned int line
     [complaint release];
     [[NSException exceptionWithName:NSInvalidArgumentException reason:reasonString userInfo:nil] raise];
     exit(1);  // notreached, but needed to pacify the compiler
+}
+
+void _OBFinishPorting(const char *function, const char *file, unsigned int line)
+{
+    NSLog(@"Finish porting %s at %s:%d", function, file, line);
+    abort();
 }
 
 DEFINE_NSSTRING(OBAbstractImplementation);

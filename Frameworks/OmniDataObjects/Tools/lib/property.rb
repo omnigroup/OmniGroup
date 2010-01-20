@@ -1,6 +1,6 @@
 module OmniDataObjects
   class Property < Base
-    attr_reader :entity, :name, :optional, :transient, :inherited_from
+    attr_reader :entity, :name, :optional, :transient, :inherited_from, :calculated
 
     def initialize(entity, name, options = {})
       @entity = entity
@@ -8,6 +8,7 @@ module OmniDataObjects
       @optional = options[:optional]
       @transient = options[:transient]
       @inherited_from = options[:inherited_from]
+      @calculated = options[:calculated]
       fail "inherited_from must be an entity" if inherited_from && !(Entity === inherited_from)
     end
 
@@ -42,7 +43,7 @@ module OmniDataObjects
     end
     
     def property_init_args
-      "#{keyName}, #{objcBool(optional)}/*optional*/, #{objcBool(transient)}/*transient*/, #{objcGetSel}, #{objcSetSel}"
+      "#{keyName}, #{objcBool(optional)}/*optional*/, #{objcBool(calculated)}/*calculated*/, #{objcBool(transient)}/*transient*/, #{objcGetSel}, #{objcSetSel}"
     end
   end
 end

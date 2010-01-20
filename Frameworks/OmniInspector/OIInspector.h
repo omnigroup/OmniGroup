@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,11 +29,11 @@ typedef enum {
     NSString *_displayName;
     OIVisibilityState _defaultVisibilityState;
     NSString *_shortcutKey;
-    unsigned int _shortcutModifierFlags;
+    NSUInteger _shortcutModifierFlags;
     NSBundle *resourceBundle;
     NSString *_imageName, *tabImageName;
     NSImage  *_image;
-    unsigned int _defaultOrderingWithinGroup;
+    NSUInteger _defaultOrderingWithinGroup;
 }
 
 + (OFEnumNameTable *)visibilityStateNameTable;
@@ -45,16 +45,16 @@ typedef enum {
 - (NSString *)identifier;
 - (OIVisibilityState)defaultVisibilityState;
 - (NSString *)shortcutKey;
-- (unsigned int)shortcutModifierFlags;
+- (NSUInteger)shortcutModifierFlags;
 - (NSImage *)image;
 - (NSImage *)tabImage;
 - (NSBundle *)resourceBundle;
 
 - (NSString *)displayName;
-- (float)additionalHeaderHeight;
+- (CGFloat)additionalHeaderHeight;
 
-- (unsigned int)defaultOrderingWithinGroup;
-- (void)setDefaultOrderingWithinGroup:(unsigned int)defaultOrderingWithinGroup;
+- (NSUInteger)defaultOrderingWithinGroup;
+- (void)setDefaultOrderingWithinGroup:(NSUInteger)defaultOrderingWithinGroup;
 
 // TODO: Get rid of this
 - (unsigned int)deprecatedDefaultDisplayGroupNumber;
@@ -95,8 +95,8 @@ typedef enum {
 @interface NSObject (OIInspectorOptionalMethods)
 - (void)setInspectorController:(OIInspectorController *)aController;
     // If the inspector has any need to know its controller, it can implement this method
-- (float)inspectorWillResizeToHeight:(float)height; // height of window content rect, excluding header button view
-- (float)inspectorMinimumHeight; // returns minimum height of window content rect
+- (CGFloat)inspectorWillResizeToHeight:(CGFloat)height; // height of window content rect, excluding header button view
+- (CGFloat)inspectorMinimumHeight; // returns minimum height of window content rect
 - (id)windowTitle; 
     // If implemented, this will be used instead of -inspectorName, to let the window title be dynamic. NSAttributedString or NSString are ok.
 

@@ -1,4 +1,4 @@
-// Copyright 2000-2006, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -235,26 +235,20 @@ key, if non-nil, indicates that the recent selections should be stored in the de
 /*" A convenience routine for producing a menuStructure array from a dictionary of title/value pairs. Values may be dictionaries, indicating a submenu. Items are sorted according to the strings in subcatStrings, and are alphabetized within each category. "*/
 + (NSArray *)menuStructureFromDictionaries:(NSDictionary *)topDictionary subcategories:(NSArray *)subcatStrings
 {
-    NSMutableArray **subcategories;
-    int subcategoryCount;
-    int categoryIndex;
-    NSString *itemTitle;
-    NSEnumerator *itemEnumerator;
-    NSMutableArray *result;
-    
     if (!subcatStrings)
         subcatStrings = [NSArray array];
-    subcategoryCount = [subcatStrings count];
-    subcategories = alloca( sizeof(*subcategories) * (subcategoryCount+1) );
+    NSUInteger categoryIndex, subcategoryCount = [subcatStrings count];
+    NSMutableArray **subcategories = alloca( sizeof(*subcategories) * (subcategoryCount+1) );
     
-    for(categoryIndex = 0; categoryIndex <= subcategoryCount; categoryIndex ++)
+    for (categoryIndex = 0; categoryIndex <= subcategoryCount; categoryIndex ++)
         subcategories[categoryIndex] = nil;
     
-    itemEnumerator = [topDictionary keyEnumerator];
+    NSString *itemTitle;
+    NSEnumerator *itemEnumerator = [topDictionary keyEnumerator];
     while ((itemTitle = [itemEnumerator nextObject]) != nil) {
         NSArray *tuple;
         id tupleValue;
-        for(categoryIndex = 0; categoryIndex < subcategoryCount; categoryIndex ++)
+        for (categoryIndex = 0; categoryIndex < subcategoryCount; categoryIndex ++)
             if([itemTitle rangeOfString:[subcatStrings objectAtIndex:categoryIndex]].length > 0)
                 break;
         if (subcategories[categoryIndex] == nil)
@@ -267,7 +261,7 @@ key, if non-nil, indicates that the recent selections should be stored in the de
         [tuple release];
     }
     
-    result = [[NSMutableArray alloc] init];
+    NSMutableArray *result = [[NSMutableArray alloc] init];
     for(categoryIndex = 0; categoryIndex <= subcategoryCount; categoryIndex ++)
     {
         if (subcategories[categoryIndex] == nil)
@@ -417,9 +411,7 @@ static NSComparisonResult menuTupleComparison(id left_, id right_, void *userDat
 
 - (void)_buildMenusForStructure:(NSArray *)menuStructure into:(NSMenu *)menu copyToplevelItems:(NSMutableArray *)toplevelItems toplevel:(BOOL)atTopLevel
 {
-    int itemCount, itemIndex;
-        
-    itemCount = [menuStructure count];
+    NSUInteger itemIndex, itemCount = [menuStructure count];
 
     for(itemIndex = 0; itemIndex < itemCount; itemIndex ++) {
         NSMenuItem *menuItem;

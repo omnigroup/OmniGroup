@@ -1,4 +1,4 @@
-// Copyright 1997-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,6 @@ static NSMutableDictionary *portHints;
 + serviceEntryNamed:(NSString *)aServiceName protocolName:(NSString *)aProtocolName;
 {
     ONServiceEntry *entry = nil;
-    unsigned int serviceNameLength, protocolNameLength;
     struct servent *newServiceEntry;
     NSMutableDictionary *protocolDictionary;
 
@@ -61,21 +60,16 @@ static NSMutableDictionary *portHints;
     }
     entry = [protocolDictionary objectForKey:aServiceName];
     if (!entry) {
-        char *cServiceName, *cProtocolName;
+        const char *cServiceName, *cProtocolName;
         NSString *canonicalName;
 
-        serviceNameLength = [aServiceName length];
-        protocolNameLength = [aProtocolName length];
-        cServiceName = (char *)alloca(serviceNameLength + 1);
-        cProtocolName = (char *)alloca(protocolNameLength + 1);
-
-        [aServiceName getCString:cServiceName maxLength:serviceNameLength encoding:NSASCIIStringEncoding];
-        [aProtocolName getCString:cProtocolName maxLength:protocolNameLength encoding:NSASCIIStringEncoding];
+        cServiceName = [aServiceName cStringUsingEncoding:NSASCIIStringEncoding];
+        cProtocolName = [aProtocolName cStringUsingEncoding:NSASCIIStringEncoding];
 
         newServiceEntry = getservbyname(cServiceName, cProtocolName);
         if (newServiceEntry) {
             if (strcmp(newServiceEntry->s_name, cServiceName) != 0)
-                canonicalName = [NSString stringWithCString:newServiceEntry->s_name encoding:NSASCIIStringEncoding];
+                canonicalName = [NSString stringWithUTF8String:newServiceEntry->s_name];
             else
                 canonicalName = aServiceName;
 
@@ -94,7 +88,7 @@ static NSMutableDictionary *portHints;
             if (newServiceEntry->s_aliases) {
                 int aliasIndex = 0;
                 for (aliasIndex = 0; newServiceEntry->s_aliases[aliasIndex] != NULL; aliasIndex ++) {
-                    NSString *serviceNameAlias = [NSString stringWithCString:newServiceEntry->s_aliases[aliasIndex] encoding:NSASCIIStringEncoding];
+                    NSString *serviceNameAlias = [NSString stringWithUTF8String:newServiceEntry->s_aliases[aliasIndex]];
                     if (![protocolDictionary objectForKey:serviceNameAlias])
                         [protocolDictionary setObject:entry forKey:serviceNameAlias];
                 }

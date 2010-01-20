@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,16 +36,16 @@ typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);
 - (id)deepCopy;
 - (OFXMLElement *)deepCopyWithName:(NSString *)name;
 
-- (NSString *) name;
-- (NSArray *) children;
-- (unsigned int)childrenCount;
-- (id) childAtIndex: (NSUInteger) childIndex;
-- (id) lastChild;
-- (unsigned int)indexOfChildIdenticalTo:(id)child;
-- (void)insertChild:(id)child atIndex:(unsigned int)childIndex;
-- (void) appendChild: (id) child;  // Either a OFXMLElement or an NSString
-- (void) removeChild: (id) child;
-- (void) removeChildAtIndex: (unsigned int) childIndex;
+- (NSString *)name;
+- (NSArray *)children;
+- (NSUInteger)childrenCount;
+- (id)childAtIndex:(NSUInteger)childIndex;
+- (id)lastChild;
+- (NSUInteger)indexOfChildIdenticalTo:(id)child;
+- (void)insertChild:(id)child atIndex:(NSUInteger)childIndex;
+- (void)appendChild:(id) child;  // Either a OFXMLElement or an NSString
+- (void)removeChild:(id) child;
+- (void)removeChildAtIndex:(NSUInteger)childIndex;
 - (void)removeAllChildren;
 - (void)setChildren:(NSArray *)children;
 - (void)sortChildrenUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
@@ -66,6 +66,8 @@ typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);
 - (void) setAttribute: (NSString *) name integer: (int) value;
 - (void) setAttribute: (NSString *) name real: (float) value;  // "%g"
 - (void) setAttribute: (NSString *) name real: (float) value format: (NSString *) formatString;
+- (void) setAttribute: (NSString *) name double: (double) value;  // "%g"
+- (void) setAttribute: (NSString *) name double: (double) value format: (NSString *) formatString;
 
 - (NSString *)stringValueForAttributeNamed:(NSString *)name defaultValue:(NSString *)defaultValue;
 - (int)integerValueForAttributeNamed:(NSString *)name defaultValue:(int)defaultValue;
@@ -75,6 +77,8 @@ typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);
 - (OFXMLElement *)appendElement:(NSString *)elementName containingInteger:(int)contents;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingReal:(float)contents; // "%g"
 - (OFXMLElement *)appendElement:(NSString *)elementName containingReal:(float)contents format:(NSString *)formatString;
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double)contents; // "%g"
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents format:(NSString *) formatString;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingDate:(NSDate *)date;
 - (void) removeAttributeNamed: (NSString *) name;
 - (void)sortAttributesUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;

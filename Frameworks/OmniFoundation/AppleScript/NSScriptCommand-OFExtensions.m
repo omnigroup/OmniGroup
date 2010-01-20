@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,8 +26,12 @@ RCS_ID("$Id$");
 #if 1 && defined(DEBUG)
     NSLog(@"Script command %@ resulted in error %@", self, [error toPropertyList]);
 #endif
+
+    // NSError returns NSUInteger, but AppleScript wants int.
+    NSUInteger code = [error code];
+    OBASSERT(code <= INT_MAX);
     
-    [self setScriptErrorNumber:[error code]];
+    [self setScriptErrorNumber:(int)code];
     [self setScriptErrorString:[error localizedDescription]];
 }
 
@@ -62,7 +66,7 @@ static BOOL _checkObjectClass(NSScriptCommand *self, id object, Class cls)
     
     // Collect the flattened list of objects to operate on.  The input specifiers can be things like 'every row' which will return an array when evaluated.
     NSMutableArray *collectedObjects = [NSMutableArray array];
-    unsigned int argumentIndex, argumentCount = [arguments count];
+    NSUInteger argumentIndex, argumentCount = [arguments count];
     for (argumentIndex = 0; argumentIndex < argumentCount; argumentIndex++) {
         id argument = [arguments objectAtIndex:argumentIndex];
 
@@ -116,7 +120,7 @@ static BOOL _checkObjectClass(NSScriptCommand *self, id object, Class cls)
 	
         if ([argument isKindOfClass:[NSArray class]]) {
             arraySpecified = YES;
-	    unsigned int elementIndex = [argument count];
+	    NSUInteger elementIndex = [argument count];
 	    while (elementIndex--) {
 		if (!_checkObjectClass(self, [argument objectAtIndex:elementIndex], cls))
                     return nil;

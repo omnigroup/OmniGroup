@@ -1,4 +1,4 @@
-// Copyright 2000-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,9 +15,9 @@
 RCS_ID("$Id$")
 
 
-@interface OAShrinkingTextDisplayer (Private)
+@interface OAShrinkingTextDisplayer (/*Private*/)
 - (void)_resetBounds;
-- (float)_widthOfString;
+- (CGFloat)_widthOfString;
 @end
 
 @implementation OAShrinkingTextDisplayer
@@ -28,7 +28,7 @@ static NSFont *defaultFont;
 {
     OBINITIALIZE;
 
-    defaultFont = [NSFont messageFontOfSize:11.0];
+    defaultFont = [[NSFont messageFontOfSize:11.0f] retain];
 }
 
 
@@ -74,7 +74,7 @@ static NSFont *defaultFont;
 {
     NSRect bounds = [self bounds];
 
-    [string drawAtPoint:NSMakePoint((NSWidth(bounds) - [self _widthOfString]) / 2.0, 0) withAttributes:[NSDictionary dictionaryWithObjectsAndKeys:baseFont ? baseFont : defaultFont, NSFontAttributeName, [NSColor controlTextColor], NSForegroundColorAttributeName, nil]];
+    [string drawAtPoint:NSMakePoint((NSWidth(bounds) - [self _widthOfString]) / 2.0f, 0) withAttributes:[NSDictionary dictionaryWithObjectsAndKeys:baseFont ? baseFont : defaultFont, NSFontAttributeName, [NSColor controlTextColor], NSForegroundColorAttributeName, nil]];
 }
 
 - (BOOL)isFlipped;
@@ -88,16 +88,13 @@ static NSFont *defaultFont;
     [self _resetBounds];
 }
 
-@end
-
-@implementation OAShrinkingTextDisplayer (Private)
+#pragma mark -
+#pragma mark Private
 
 - (void)_resetBounds;
 {
     NSRect frame = [self frame];
-    float normalStringWidth;
-
-    normalStringWidth = [self _widthOfString];
+    CGFloat normalStringWidth = [self _widthOfString];
 
     if (normalStringWidth > NSWidth(frame))
         [self setBoundsSize:NSMakeSize(normalStringWidth, NSHeight(frame))];
@@ -105,7 +102,7 @@ static NSFont *defaultFont;
         [self setBoundsSize:frame.size];
 }
 
-- (float)_widthOfString;
+- (CGFloat)_widthOfString;
 {
     return [string sizeWithAttributes:[NSDictionary dictionaryWithObjectsAndKeys:baseFont ? baseFont : defaultFont, NSFontAttributeName, nil]].width;
 }

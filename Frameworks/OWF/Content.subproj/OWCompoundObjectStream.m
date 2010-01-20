@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,9 @@ RCS_ID("$Id$")
 
 + (OWObjectStreamCursor *)cursorAtCursor:(OWObjectStreamCursor *)aCursor beforeStream:(OWAbstractObjectStream *)interjectMe;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     OWCompoundObjectStream *newStream;
     OWAbstractObjectStream *frame, *interject;
     OWObjectStreamCursor *newCursor;
@@ -31,7 +34,7 @@ RCS_ID("$Id$")
 
     newStream = [[self alloc] initWithStream:frame interjectingStream:interject atIndex:interjectWhere];
 
-    newCursor = [newStream newCursor];
+    newCursor = [newStream createCursor];
 
 
     if (interjectWhere > 0)
@@ -44,6 +47,7 @@ RCS_ID("$Id$")
     [newStream release];
 
     return newCursor;
+#endif
 }
 
 - initWithStream:(OWAbstractObjectStream *)aStream interjectingStream:(OWAbstractObjectStream *)anotherStream atIndex:(unsigned int)index;
@@ -63,7 +67,7 @@ RCS_ID("$Id$")
     [super dealloc];
 }
 
-- (id)objectAtIndex:(unsigned int)index;
+- (id)objectAtIndex:(NSUInteger)index;
 {
     id anItem;
     
@@ -78,9 +82,9 @@ RCS_ID("$Id$")
     return [framingStream objectAtIndex:(index - [interjectedStream objectCount])];
 }
 
-- (unsigned int)objectCount;
+- (NSUInteger)objectCount;
 {
-    unsigned int count = [framingStream objectCount];
+    NSUInteger count = [framingStream objectCount];
 
     if (count >= interjectedAtIndex)
         count += [interjectedStream objectCount];
@@ -88,8 +92,11 @@ RCS_ID("$Id$")
     return count;
 }
 
-- (unsigned int)translateIndex:(unsigned int)index fromStream:(OWAbstractObjectStream *)aStream;
+- (NSUInteger)translateIndex:(NSUInteger)index fromStream:(OWAbstractObjectStream *)aStream;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return 0;
+#if 0
     if (aStream == self)
         return index;
 
@@ -131,8 +138,9 @@ RCS_ID("$Id$")
     }
 
     // This is only a real internal error if we don't catch it. In the places compound streams are used right now, I don't think this will ever get raised in the first place.
-    [NSException raise:@"UnknownStream" format:@"Internal error: unknown stream in -[OWCompoundObjectStream translateIndex:fromStream:]"];
+    [NSException raise:@"UnknownStream" reason:@"Internal error: unknown stream in -[OWCompoundObjectStream translateIndex:fromStream:]"];
     return NSNotFound; // make the compiler happy
+#endif
 }
 
 - (void)waitForDataEnd;

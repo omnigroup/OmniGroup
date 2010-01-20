@@ -66,9 +66,15 @@ static NSString *_requiredStringNode(NSXMLElement *base, NSString *namespace, NS
 
     // This XQuery will return an empty array if for "<foo></foo>", but lets just ensure that this will never return an empty string.
     NSString *result = [stringNode stringValue];
-    if (!allowEmpty && [NSString isEmptyString:result]) {
-        NSString *description = [NSString stringWithFormat:@"Element <%@> contains no text.", tag];
-        OSUError(outError, OSUUnableToParseSoftwareUpdateItem, description, nil);
+    if ([NSString isEmptyString:result]) {
+        /* result is nil, or zero-length */
+        if (!allowEmpty) {
+            NSString *description = [NSString stringWithFormat:@"Element <%@> contains no text.", tag];
+            OSUError(outError, OSUUnableToParseSoftwareUpdateItem, description, nil);
+            return nil;
+        } else {
+            return @"";
+        }
     }
     return result;
 }
@@ -125,7 +131,7 @@ static NSFont *ignoredFont = nil;
     NSFont *boldFont = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSBoldFontMask];
     if (!boldFont)
         boldFont = font;
-    NSColor *paidColor = [NSColor colorWithCalibratedRed:0/255.0 green:128/255.0 blue:0.0 alpha:1.0];
+    NSColor *paidColor = [NSColor colorWithCalibratedRed:0/255.0f green:128/255.0f blue:0.0f alpha:1.0f];
     PaidAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:boldFont, NSFontAttributeName, paidColor, NSForegroundColorAttributeName, nil];
     
     ignoredFont = [italicFont retain];
@@ -134,7 +140,7 @@ static NSFont *ignoredFont = nil;
 + (void)setSupersededFlagForItems:(NSArray *)items;
 {
     // O(n^2) loop; we could maybe bucket these into groups to make this faster, but realistically the number of updates in the feed should be small anyway.  Optimize later if necessary.
-    unsigned int itemIndex, itemCount = [items count];
+    NSUInteger itemIndex, itemCount = [items count];
     for (itemIndex = 0; itemIndex < itemCount; itemIndex++) {
         OSUItem *item = [items objectAtIndex:itemIndex];
         DEBUG_FLAGS(@"Item %@:", [item shortDescription]);
@@ -266,7 +272,7 @@ static NSFont *ignoredFont = nil;
         NSXMLElement *bestEnclosureNode = nil;
         NSUInteger bestEnclosurePrecedence = [packageExtensions count];
         
-        unsigned int nodeIndex = [enclosureNodes count];
+        NSUInteger nodeIndex = [enclosureNodes count];
         while (nodeIndex--) {
             NSXMLElement *node = [enclosureNodes objectAtIndex:nodeIndex];
             
@@ -320,7 +326,7 @@ static NSFont *ignoredFont = nil;
         _downloadSize = [NSString isEmptyString:downloadSizeString] ? 0 : [downloadSizeString unsignedLongLongValue];
         
         NSMutableDictionary *sums = [NSMutableDictionary dictionary];
-        for(NSString *hashAlgo in [NSArray arrayWithObjects:@"md5", @"sha1", @"sha256", nil]) {
+        for(NSString *hashAlgo in [NSArray arrayWithObjects:@"md5", @"sha1", @"sha256", @"ripemd160", nil]) {
             NSXMLNode *hashAttribute = [bestEnclosureNode attributeForLocalName:hashAlgo URI:OSUAppcastXMLNamespace];
             if (hashAttribute)
                 [sums setObject:[hashAttribute stringValue] forKey:hashAlgo];
@@ -343,12 +349,6 @@ static NSFont *ignoredFont = nil;
         }
     }
     
-    // Get the associated link for this item; failing that, get the link for the feed as a whole
-    NSString *linkText = _optionalStringNode(element, @"link", nil);
-    if (!linkText)
-        linkText = _optionalStringNode((NSXMLElement *)[element parent], @"link", nil);
-    _notionalItemOrigin = [linkText copy]; // May be nil
-    
     [OFPreference addObserver:self selector:@selector(_updateIgnoredState:) forPreference:[OSUPreferences ignoredUpdates]];
     [self _updateIgnoredState:nil];
     
@@ -367,7 +367,6 @@ static NSFont *ignoredFont = nil;
     [_currencyCode release];
     [_releaseNotesURL release];
     [_downloadURL release];
-    [_notionalItemOrigin release];
     [_checksums release];
     [super dealloc];
 }
@@ -448,11 +447,6 @@ static NSFont *ignoredFont = nil;
 - (NSURL *)downloadURL;
 {
     return _downloadURL;
-}
-
-- (NSString *)sourceLocation;
-{
-    return _notionalItemOrigin;
 }
 
 - (NSURL *)releaseNotesURL;
@@ -565,13 +559,10 @@ static NSFont *ignoredFont = nil;
 
 - (NSString *)verifyFile:(NSString *)path
 {
-    BOOL didVerify = NO;
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
     // _downloadSize of 0 indicates we don't know the size.
     if (_downloadSize != 0) {
         NSError *err = nil;
-        NSDictionary *attrs = [fm attributesOfItemAtPath:path error:&err];
+        NSDictionary *attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:&err];
         if (!attrs) {
             NSLog(@"Can't check file: %@", err);
             return [err localizedDescription];
@@ -605,7 +596,6 @@ static NSFont *ignoredFont = nil;
                     expected = [NSData dataWithHexString:expectedString error:NULL];
                 if (![hash isEqualToData:expected])
                     [badSums addObject:algo];
-                didVerify = YES;
             } else {
                 NSLog(@"%@: (%@): Unknown hash algorithm \"%@\"", [self class], _title, algo);
             }
@@ -616,11 +606,6 @@ static NSFont *ignoredFont = nil;
         if ([badSums count]) {
             return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The file's checksum does not match (%@). It might be corrupted.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"caution text - we downloaded a file, but its checksum is not correct - warn that it might be damaged or even maliciously replaced. Parameter is name(s) of hash algorithms (md5, sha1, etc)"), [badSums componentsJoinedByComma]];
         }
-    }
-    
-    // If we're returning success, and we actually did anything that might be called verification, remove the quarantine on the file.
-    if (didVerify) {
-        [fm setQuarantineProperties:nil forItemAtPath:path error:NULL];
     }
     
     return nil;  // indicate no warnings
@@ -649,7 +634,7 @@ static NSFont *ignoredFont = nil;
     if (_releaseNotesURL)
         [dict setObject:_releaseNotesURL forKey:@"releaseNotesURL"];
     [dict setObject:_downloadURL forKey:@"downloadURL"];
-    [dict setUnsignedIntValue:_downloadSize forKey:@"downloadSize" defaultValue:0];
+    [dict setUnsignedLongLongValue:_downloadSize forKey:@"downloadSize" defaultValue:0];
     if (_checksums)
         [dict setObject:_checksums forKey:@"checksums"];
     

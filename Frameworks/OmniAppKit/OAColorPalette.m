@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,14 +31,13 @@ static NSDictionary *namedColorsDictionary = nil;
 
 static inline unsigned int parseHexString(NSString *hexString, unsigned long long int *parsedHexValue)
 {
-    unsigned int hexLength;
     unichar hexText[MAX_HEX_TEXT_LENGTH];
     unichar hexDigit;
     unsigned int textIndex;
     unsigned long long int hexValue;
     unsigned int hexDigitsFound;
 
-    hexLength = [hexString length];
+    NSUInteger hexLength = [hexString length];
     if (hexLength > MAX_HEX_TEXT_LENGTH)
         hexLength = MAX_HEX_TEXT_LENGTH;
     [hexString getCharacters:hexText range:NSMakeRange(0, hexLength)];
@@ -151,12 +150,12 @@ static inline NSColor *colorForNamedColorString(NSString *colorString, double ga
 
 + (NSColor *)colorForString:(NSString *)colorString;
 {
-    return [self colorForString:colorString gamma:1.0];
+    return [self colorForString:colorString gamma:1.0f];
 }
 
 + (NSString *)stringForColor:(NSColor *)color gamma:(double)gammaValue;
 {
-    CGFloat red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
+    CGFloat red = 0.0f, green = 0.0f, blue = 0.0f, alpha = 0.0f;
 
     if (color == nil)
         return nil;
@@ -164,17 +163,17 @@ static inline NSColor *colorForNamedColorString(NSString *colorString, double ga
     // Note: alpha is ignored
     // Note that colorUsingColorSpaceName: may fail, leaving the values at zero.
     [[color colorUsingColorSpaceName:NSCalibratedRGBColorSpace] getRed:&red green:&green blue:&blue alpha:&alpha];
-    if (gammaValue != 1.0) {
-        red = pow(red, 1.0 / gammaValue);
-        green = pow(green, 1.0 / gammaValue);
-        blue = pow(blue, 1.0 / gammaValue);
+    if (gammaValue != 1.0f) {
+        red = (CGFloat)pow(red, 1.0 / gammaValue);
+        green = (CGFloat)pow(green, 1.0 / gammaValue);
+        blue = (CGFloat)pow(blue, 1.0 / gammaValue);
     }
-    return [NSString stringWithFormat:@"#%02x%02x%02x", ((int)rint(red * 255.0)),  ((int)rint(green * 255.0)), ((int)rint(blue * 255.0))];
+    return [NSString stringWithFormat:@"#%02x%02x%02x", ((int)rint(red * 255.0f)),  ((int)rint(green * 255.0f)), ((int)rint(blue * 255.0f))];
 }
 
 + (NSString *)stringForColor:(NSColor *)color;
 {
-    return [self stringForColor:color gamma:1.0];
+    return [self stringForColor:color gamma:1.0f];
 }
 
 @end

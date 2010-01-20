@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,7 +38,7 @@ static NSTimeInterval distantPastInterval;
 static id classDelegate;
 
 static NSString *OW5CookieFileName = @"Cookies.xml";
-NSString *OWCookiesChangedNotification = @"OWCookiesChangedNotification";
+NSString * const OWCookiesChangedNotification = @"OWCookiesChangedNotification";
 
 NSString *OWAcceptCookiePreferenceKey = @"OWAcceptCookies";
 NSString *OWRejectThirdPartyCookiesPreferenceKey = @"OWRejectThirdPartyCookies";
@@ -167,6 +167,8 @@ static inline void _locked_checkCookiesLoaded()
 
 + (void)registerCookiesFromURL:(OWURL *)url outerContentInfos:(NSArray *)outerContentInfos headerValue:(NSString *)headerValue;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     NSString *defaultDomain, *defaultPath;
     OWCookie *cookie;
     OWCookieDomain *domain;
@@ -189,7 +191,7 @@ static inline void _locked_checkCookiesLoaded()
 
     NSString *cookieSite = [OWURL domainForHostname:[cookie domain]];
     
-    unsigned int contentInfoIndex = [outerContentInfos count];
+    NSUInteger contentInfoIndex = [outerContentInfos count];
     if (contentInfoIndex > 0) {
         
         while (contentInfoIndex-- > 0) {
@@ -248,12 +250,15 @@ static inline void _locked_checkCookiesLoaded()
         
     if (OWCookiesDebug)
         NSLog(@"COOKIES: Notify target of new cookie %@", cookie);
+#endif
 }
 
 + (void)registerCookiesFromURL:(OWURL *)url context:(id <OWProcessorContext>)procContext headerDictionary:(OWHeaderDictionary *)headerDictionary;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     NSArray *valueArray;
-    unsigned int valueIndex, valueCount;
+    NSUInteger valueIndex, valueCount;
 
     valueArray = [headerDictionary stringArrayForKey:OWSetCookieHeader];
     if (valueArray == nil)
@@ -267,10 +272,14 @@ static inline void _locked_checkCookiesLoaded()
     for (valueIndex = 0; valueIndex < valueCount; valueIndex++) {
         [self registerCookiesFromURL:url outerContentInfos:[procContext outerContentInfos] headerValue:[valueArray objectAtIndex:valueIndex]];
     }
+#endif
 }
 
 + (NSArray *)cookiesForURL:(OWURL *)url;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSString *path = [url path];
     if (path == nil)
         path = @"";
@@ -287,7 +296,7 @@ static inline void _locked_checkCookiesLoaded()
     [domainLock lock];
     _locked_checkCookiesLoaded();
     
-    unsigned int domainIndex, domainCount = [searchDomains count];
+    NSUInteger domainIndex, domainCount = [searchDomains count];
     for (domainIndex = 0; domainIndex < domainCount; domainIndex++) {
         NSString *searchDomain = [searchDomains objectAtIndex:domainIndex];
         OWCookieDomain *domain = [domainsByName objectForKey:searchDomain];
@@ -300,17 +309,21 @@ static inline void _locked_checkCookiesLoaded()
         NSLog(@"COOKIES: -cookiesForURL:%@ --> %@", [url shortDescription], [cookies description]);
 
     return cookies;
+#endif
 }
 
 + (NSString *)cookieHeaderStringForURL:(OWURL *)url;
 {    
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSArray *cookies = [self cookiesForURL:url];
     if (cookies == nil)
         return nil;
 
     NSMutableString *cookieString = nil;
-    unsigned int cookieCount = [cookies count];
-    unsigned int cookieIndex;
+    NSUInteger cookieCount = [cookies count];
+    NSUInteger cookieIndex;
     
     for (cookieIndex = 0; cookieIndex < cookieCount; cookieIndex++) {
         OWCookie *cookie = [cookies objectAtIndex:cookieIndex];
@@ -329,6 +342,7 @@ static inline void _locked_checkCookiesLoaded()
     }
     
     return cookieString;
+#endif
 }
 
 + (BOOL)hasCookiesForSiteDomain:(NSString *)site;
@@ -336,43 +350,50 @@ static inline void _locked_checkCookiesLoaded()
     site = [site lowercaseString];
     NSString *dottedSite = [@"." stringByAppendingString:site];
     
-    NSArray *allDomains = [self allDomains];
-    unsigned int domainCount = [allDomains count];
-    unsigned int domainIndex;
-    
-    for (domainIndex = 0; domainIndex < domainCount; domainIndex++) {
-        OWCookieDomain *domain = [allDomains objectAtIndex:domainIndex];
-        NSArray *cookies = [domain cookies];
-        unsigned int cookieCount = [cookies count];
-        unsigned int cookieIndex;
+    [domainLock lock];
+    @try {
+        NSArray *allDomains = [self allDomains];
+        NSUInteger domainCount = [allDomains count];
+        NSUInteger domainIndex;
         
-        for (cookieIndex = 0; cookieIndex < cookieCount; cookieIndex++) {
-            OWCookie *cookie = [cookies objectAtIndex:cookieIndex];
+        for (domainIndex = 0; domainIndex < domainCount; domainIndex++) {
+            OWCookieDomain *domain = [allDomains objectAtIndex:domainIndex];
+            NSArray *cookies = [domain cookies];
+            NSUInteger cookieCount = [cookies count];
+            NSUInteger cookieIndex;
             
-            if ([[cookie domain] hasSuffix:dottedSite] || [[cookie domain] isEqual:site] || [[cookie siteDomain] isEqual:site])
-                return YES;
+            for (cookieIndex = 0; cookieIndex < cookieCount; cookieIndex++) {
+                OWCookie *cookie = [cookies objectAtIndex:cookieIndex];
+                
+                if ([[cookie domain] hasSuffix:dottedSite] || [[cookie domain] isEqual:site] || [[cookie siteDomain] isEqual:site])
+                    return YES;
+            }
         }
+    } @finally {
+        [domainLock unlock];
     }
-    
     return NO;
 }
 
 + (NSArray *)cookiesForSiteDomain:(NSString *)site;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     site = [site lowercaseString];
     NSString *dottedSite = [@"." stringByAppendingString:site];
     BOOL emptySiteDomain = [NSString isEmptyString:site];
     
     NSMutableArray *cookiesForSite = [NSMutableArray array];
     NSArray *allDomains = [self sortedDomains];
-    unsigned int domainCount = [allDomains count];
-    unsigned int domainIndex;
+    NSUInteger domainCount = [allDomains count];
+    NSUInteger domainIndex;
     
     for (domainIndex = 0; domainIndex < domainCount; domainIndex++) {
         OWCookieDomain *domain = [allDomains objectAtIndex:domainIndex];
         NSArray *cookies = [domain cookies];
-        unsigned int cookieCount = [cookies count];
-        unsigned int cookieIndex;
+        NSUInteger cookieCount = [cookies count];
+        NSUInteger cookieIndex;
         
         if (emptySiteDomain)
             [cookiesForSite addObjectsFromArray:cookies];
@@ -387,6 +408,7 @@ static inline void _locked_checkCookiesLoaded()
     }
     
     return cookiesForSite;
+#endif
 }
 
 + (void)didChange;
@@ -403,7 +425,7 @@ static inline void _locked_checkCookiesLoaded()
     [domainLock lock];
     _locked_checkCookiesLoaded();
     
-    domains = [domainsByName allValues];
+    domains = [NSArray arrayWithArray:[domainsByName allValues]];
     
     [domainLock unlock];
     
@@ -551,8 +573,11 @@ static inline void _locked_checkCookiesLoaded()
 
 - (NSArray *)cookies;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSMutableArray *cookies;
-    unsigned int pathIndex, pathCount;
+    NSUInteger pathIndex, pathCount;
     
     cookies = [NSMutableArray array];
     [domainLock lock];
@@ -562,6 +587,7 @@ static inline void _locked_checkCookiesLoaded()
     [domainLock unlock];
     
     return cookies;
+#endif
 }
 
 - (NSComparisonResult)compare:(id)otherObject;
@@ -620,10 +646,12 @@ static inline void _locked_checkCookiesLoaded()
 
 + (void)saveCookies;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     NSString *cookieFilename;
     NSArray *domains;
     OFDataBuffer xmlBuffer;
-    unsigned int domainIndex, domainCount;
+    NSUInteger domainIndex, domainCount;
     NSDictionary *attributes;
     
     // This must get executed in the main thread so that the notification gets posted in the main thread (since that is where the cookie preferences panel is listening).
@@ -672,6 +700,7 @@ static inline void _locked_checkCookiesLoaded()
     OFDataBufferRelease(&xmlBuffer);
     
     [domainLock unlock];
+#endif
 }
 
 + (NSString *)cookiePath:(NSString *)fileName;
@@ -745,7 +774,10 @@ static inline void _locked_checkCookiesLoaded()
 
 - (OWCookiePath *)locked_pathNamed:(NSString *)pathName shouldCreate:(BOOL)shouldCreate;
 {
-    unsigned int pathIndex;
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
+    NSUInteger pathIndex;
     OWCookiePath *path;
     
     [domainLock lock];
@@ -769,14 +801,18 @@ found:
     [domainLock unlock];
     
     return [path autorelease];
+#endif
 }
 
 + (NSArray *)searchDomainsForDomain:(NSString *)aDomain;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSMutableArray *searchDomains;
     NSMutableArray *domainComponents;
-    unsigned int domainComponentCount;
-    unsigned int minimumDomainComponents;
+    NSUInteger domainComponentCount;
+    NSUInteger minimumDomainComponents;
 
     if (aDomain == nil)
         return nil;
@@ -803,10 +839,14 @@ found:
     }
     [domainComponents release];
     return searchDomains;
+#endif
 }
 
 + (OWCookie *)cookieFromHeaderValue:(NSString *)headerValue defaultDomain:(NSString *)defaultDomain defaultPath:(NSString *)defaultPath;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSString *aName, *aValue;
     NSDate *aDate = nil;
     NSString *aDomain = defaultDomain, *aPath = defaultPath;
@@ -823,7 +863,7 @@ found:
 
     // Scan the value if possible
     if ([scanner scanUpToCharactersFromSet:endNameValueSet intoString:&aValue]) {
-        unsigned int valueLength;
+        NSUInteger valueLength;
         // Remove trailing whitespace
         // This could be more efficient.  (Actually, this whole method could be more efficient:  we should rewrite it using OFStringScanner.)
 
@@ -866,7 +906,7 @@ found:
             [scanner scanUpToCharactersFromSet:endValueSet intoString:&aDomain];
             if (aDomain != nil) {
                 NSArray *domainComponents;
-                unsigned int domainComponentCount;
+                NSUInteger domainComponentCount;
                 
                 //if the domain and the default domain are not identical(nytimes.com vs www.nytimes.com), there needs to be a '.' at the beginning
                 if(defaultDomain != nil && ![aDomain isEqualToString:defaultDomain] && ![aDomain hasPrefix:@"."])
@@ -899,11 +939,14 @@ found:
     }
         
     return [[[OWCookie alloc] initWithDomain:aDomain path:aPath name:aName value:aValue expirationDate:aDate secure:isSecure] autorelease];
+#endif
 }
 
 - (void)locked_addApplicableCookies:(NSMutableArray *)cookies forPath:(NSString *)aPath urlIsSecure:(BOOL)secure includeRejected:(BOOL)includeRejected;
 {
-    unsigned int pathIndex;
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
+    NSUInteger pathIndex;
     OWCookiePath *path;
     
     pathIndex = [_cookiePaths count];
@@ -914,6 +957,7 @@ found:
         
         [path addNonExpiredCookiesToArray:cookies usageIsSecure:secure includeRejected:includeRejected];
     }
+#endif
 }
 
 //
@@ -930,20 +974,13 @@ static NSString *OWCookiesElementName = @"OmniWebCookies";
     if (filename == nil)
         return NO;
         
-    OFXMLWhitespaceBehavior *whitespaceBehavior = [[OFXMLWhitespaceBehavior alloc] init];
-    [whitespaceBehavior setBehavior:OFXMLWhitespaceBehaviorTypeIgnore forElementName:OWCookiesElementName];
-    
     NSData *cookieData = [NSData dataWithContentsOfFile:filename];
     if (cookieData == nil || [cookieData length] == 0)
         return NO;
         
-    NSError *error = nil;
-    OFXMLDocument *document = [[OFXMLDocument alloc] initWithData:cookieData whitespaceBehavior:whitespaceBehavior error:&error];
-    if (!document) {
-        NSLog(@"Unable to read cookie data: %@", [error toPropertyList]);
-        return NO;
-    }
-        
+    OFXMLWhitespaceBehavior *whitespaceBehavior = [[OFXMLWhitespaceBehavior alloc] init];
+    [whitespaceBehavior setBehavior:OFXMLWhitespaceBehaviorTypeIgnore forElementName:OWCookiesElementName];
+    OFXMLDocument *document = [[OFXMLDocument alloc] initWithData:cookieData whitespaceBehavior:whitespaceBehavior error:NULL];
     [whitespaceBehavior release];
 
     // Read domains
@@ -962,8 +999,8 @@ static NSString *OWCookiesElementName = @"OmniWebCookies";
         
         // Read children
         NSArray *children = [domainElement children];
-        unsigned int childCount = [children count];
-        unsigned int childIndex;
+        NSUInteger childCount = [children count];
+        NSUInteger childIndex;
         
         for (childIndex = 0; childIndex < childCount; childIndex++) {
             OFXMLElement *cookieElement = [children objectAtIndex:childIndex];

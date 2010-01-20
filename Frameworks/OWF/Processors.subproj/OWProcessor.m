@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -87,10 +87,10 @@ unlockAndReturn:
     static OFMessageQueue *processorQueue = nil;
 
     if (processorQueue == nil) {
-        unsigned int threadCount;
+        NSInteger threadCount;
 
         threadCount = [[NSUserDefaults standardUserDefaults] integerForKey:@"OWProcessorThreadCount"];
-        if (threadCount == 0)
+        if (threadCount <= 0)
             threadCount = 12;
 #if defined(DEBUG_kc) || defined(DEBUG_wiml)
         NSLog(@"OWProcessor: Using %d threads", threadCount);
@@ -253,12 +253,12 @@ unlockAndReturn:
     return aStatus;
 }
 
-- (void)processedBytes:(unsigned int)bytes;
+- (void)processedBytes:(NSUInteger)bytes;
 {
     [self processedBytes:bytes ofBytes:NSNotFound];
 }
 
-- (void)processedBytes:(unsigned int)bytes ofBytes:(unsigned int)newTotalBytes;
+- (void)processedBytes:(NSUInteger)bytes ofBytes:(NSUInteger)newTotalBytes;
 {
     [pipeline processedBytes:bytes ofBytes:newTotalBytes];
 }
@@ -285,7 +285,7 @@ unlockAndReturn:
     if (pipeline != nil) {
         return [pipeline messageQueueSchedulingInfo];
     } else {
-        return (OFMessageQueueSchedulingInfo){priority:OFLowPriority, group:[OWProcessor class], maximumSimultaneousThreadsInGroup:1};
+        return (OFMessageQueueSchedulingInfo){.priority = OFLowPriority, .group = [OWProcessor class], .maximumSimultaneousThreadsInGroup = 1};
     }
 }
 

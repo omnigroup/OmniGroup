@@ -1,4 +1,4 @@
-// Copyright 2005-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,7 @@ static NSString *parts(struct OFRationalNumberStruct r)
     return [NSString stringWithFormat:@"%c%c%lu/%lu", r.lop?'~':' ', r.negative?'-':'+', r.numerator, r.denominator];    
 }
 
-static short lsign(long l)
+static unsigned short lsign(long l)
 {
     return (l < 0)? 1 : 0;
 }
@@ -69,6 +69,28 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
     should(OFRationalToDouble(RAT(-17,64)) == -0.265625);
     should(OFRationalToDouble(RAT(32767,65536)) == 0.4999847412109375);
     should(OFRationalToDouble(RAT(0,1)) == 0);
+}
+
+- (void)testConvertMinSig
+{
+    /* We're using floats here because OFRational has enough precision to accurately represent any float, but not any double. */
+    float f = 1;
+    
+    for(int i = 0; i < 1000; i ++) {
+        struct OFRationalNumberStruct rat = OFRationalFromDouble(f);
+        // NSLog(@" %3d  %.16Lf -> %@", i, (long double)f, OFRationalToStringForStorage(rat));
+        should(OFRationalToDouble(rat) == f);
+        f = nextafterf(f, 1000);
+    }
+    
+    f = -0.125f;
+    
+    for(int i = 0; i < 1000; i ++) {
+        struct OFRationalNumberStruct rat = OFRationalFromDouble(f);
+        // NSLog(@" %3d  %.16Lf -> %@", i, (long double)f, OFRationalToStringForStorage(rat));
+        should(OFRationalToDouble(rat) == f);
+        f = nextafterf(f, 1000);
+    }
 }
 
 - (void)testScan

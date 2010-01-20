@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,9 +12,17 @@
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOEntity.h>
 
+#import <Foundation/NSCompoundPredicate.h>
+#import <Foundation/NSComparisonPredicate.h>
+
 RCS_ID("$Id$")
 
-@implementation NSPredicate (SQL)
+#define ODO_STARTS_WITH "ODOStartsWith"
+const char * const ODOComparisonPredicateStartsWithFunctionName = ODO_STARTS_WITH;
+#define ODO_CONTAINS "ODOContains"
+const char * const ODOComparisonPredicateContainsFunctionName = ODO_CONTAINS;
+
+@implementation NSPredicate (ODO_SQL)
 - (BOOL)_appendSQL:(NSMutableString *)sql entity:(ODOEntity *)entity constants:(NSMutableArray *)constants error:(NSError **)outError;
 {
     // Suck private classes.  We use Foundation's private classes on the Mac and ours on the phone.
@@ -45,18 +53,17 @@ RCS_ID("$Id$")
 }
 @end
 
-@interface NSCompoundPredicate (SQL)
+@interface NSCompoundPredicate (ODO_SQL)
 @end
-@implementation NSCompoundPredicate (SQL)
+@implementation NSCompoundPredicate (ODO_SQL)
 
-static BOOL _appendCompound(NSCompoundPredicate *self, NSString *conj, NSMutableString *sql, ODOEntity *entity, NSMutableArray *constants, NSError **outError)
+static BOOL _appendCompound(NSArray *predicates, NSString *conj, NSMutableString *sql, ODOEntity *entity, NSMutableArray *constants, NSError **outError)
 {
-    NSArray *predicates = [self subpredicates];
-    unsigned int predicateIndex, predicateCount = [predicates count];
-    for (predicateIndex = 0; predicateIndex < predicateCount; predicateIndex++) {
-        NSPredicate *predicate = [predicates objectAtIndex:predicateIndex];
-        if (predicateIndex != 0)
+    BOOL first = YES;
+    for (NSPredicate *predicate in predicates) {
+        if (!first)
             [sql appendString:conj];
+        first = NO;
         if (![predicate _appendSQL:sql entity:entity constants:constants error:outError])
             return NO;
     }
@@ -65,21 +72,29 @@ static BOOL _appendCompound(NSCompoundPredicate *self, NSString *conj, NSMutable
 
 - (BOOL)_appendSQL:(NSMutableString *)sql entity:(ODOEntity *)entity constants:(NSMutableArray *)constants error:(NSError **)outError;
 {
-    [sql appendString:@"("];
+    // NSCompoundPredicate is documented to return TRUE when there are zero subpredicates.
+    NSArray *subpredicates = [self subpredicates];
+    if ([subpredicates count] == 0) {
+        [sql appendString:@"1=1"];
+        return YES;
+    }
+    
     switch ([self compoundPredicateType]) {
         case NSNotPredicateType: {
-            OBASSERT([[self subpredicates] count] == 1);
-            [sql appendString:@"NOT "];
-            if (![[[self subpredicates] lastObject] _appendSQL:sql entity:entity constants:constants error:outError])
+            // TODO: The behavior of mulitple NOT subpredicates isn't documented. Treating it as 'not any'.
+            [sql appendString:@"NOT ("];
+            if (!_appendCompound(subpredicates, @" AND ", sql, entity, constants, outError))
                 return NO;
             break;
         }
         case NSAndPredicateType:
-            if (!_appendCompound(self, @" AND ", sql, entity, constants, outError))
+            [sql appendString:@"("];
+            if (!_appendCompound(subpredicates, @" AND ", sql, entity, constants, outError))
                 return NO;
             break;
         case NSOrPredicateType:
-            if (!_appendCompound(self, @" OR ", sql, entity, constants, outError))
+            [sql appendString:@"("];
+            if (!_appendCompound(subpredicates, @" OR ", sql, entity, constants, outError))
                 return NO;
             break;
     }
@@ -89,9 +104,9 @@ static BOOL _appendCompound(NSCompoundPredicate *self, NSString *conj, NSMutable
 
 @end
 
-@interface NSComparisonPredicate (SQL)
+@interface NSComparisonPredicate (ODO_SQL)
 @end
-@implementation NSComparisonPredicate (SQL)
+@implementation NSComparisonPredicate (ODO_SQL)
 
 static NSString * const ODOEqualOp = @" = ";
 static NSString * const ODONotEqualOp = @" != ";
@@ -140,7 +155,9 @@ static void _appendInExpressionValue(const void *value, void *context)
     
     if ([object isKindOfClass:[ODOObject class]])
         object = [[object objectID] primaryKey];
-    if (OFISNULL(object))
+    else if ([object isKindOfClass:[ODOObjectID class]])
+        object = [object primaryKey];
+    else if (OFISNULL(object))
         object = [NSNull null];
     [ctx->constants addObject:object];
     
@@ -149,6 +166,24 @@ static void _appendInExpressionValue(const void *value, void *context)
         [ctx->sql appendString:@"?"];
     } else
         [ctx->sql appendString:@", ?"];
+}
+
+static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableString *sql, ODOEntity *entity, NSString *functionName, NSMutableArray *constants, NSError **outError)
+{
+    NSExpression *lhs = [self leftExpression];
+    NSExpression *rhs = [self rightExpression];
+    
+    [sql appendString:functionName];
+    [sql appendString:@"("];
+    if (![lhs _appendSQL:sql entity:entity constants:constants error:outError])
+        return NO;
+    [sql appendString:@", "];
+    
+    if (![rhs _appendSQL:sql entity:entity constants:constants error:outError])
+        return NO;
+    
+    [sql appendFormat:@", %d)", [self options]];
+    return YES;
 }
 
 - (BOOL)_appendSQL:(NSMutableString *)sql entity:(ODOEntity *)entity constants:(NSMutableArray *)constants error:(NSError **)outError;
@@ -204,6 +239,10 @@ static void _appendInExpressionValue(const void *value, void *context)
             [sql appendString:@")"];
             return YES;
         }
+        case NSBeginsWithPredicateOperatorType:
+            return _appendStringCompareFunction(self, sql, entity, (id)CFSTR(ODO_STARTS_WITH), constants, outError);
+        case NSContainsPredicateOperatorType:
+            return _appendStringCompareFunction(self, sql, entity, (id)CFSTR(ODO_CONTAINS), constants, outError);
         default: {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert predicate of type %d (%@).", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), opType, self];
@@ -219,7 +258,7 @@ static void _appendInExpressionValue(const void *value, void *context)
 
 @end
 
-@implementation NSExpression (SQL)
+@implementation NSExpression (ODO_SQL)
 
 - (BOOL)_appendSQL:(NSMutableString *)sql entity:(ODOEntity *)entity constants:(NSMutableArray *)constants error:(NSError **)outError;
 {

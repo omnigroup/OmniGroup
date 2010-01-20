@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,14 +15,13 @@ RCS_ID("$Id$")
 
 + (NSNumber *)numberWithCGFloat:(CGFloat)value
 {
-    NSNumber *s = (NSNumber *)CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &value);
-    return [s autorelease];
+    return [NSMakeCollectable(CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &value)) autorelease];
 }
 
 - (id)initWithCGFloat:(CGFloat)value;
 {
     [self release];
-    return (id)CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &value);
+    return NSMakeCollectable(CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &value));
 }
 
 - (CGFloat)cgFloatValue
@@ -36,9 +35,9 @@ RCS_ID("$Id$")
     
     // Rely on compile-time optimization of the call, and implicit conversion of the retrieved float type to our return type
     if (sizeof(CGFloat) > sizeof(float)) {
-        return [self doubleValue];
+        return (CGFloat)[self doubleValue];
     } else {
-        return [self floatValue];
+        return (CGFloat)[self floatValue];
     }
 }
 
@@ -50,9 +49,9 @@ RCS_ID("$Id$")
 {
     // Rely on compile-time optimization of the call, and implicit conversion of the retrieved float type to our return type
     if (sizeof(CGFloat) > sizeof(float)) {
-        return [self doubleValue];
+        return (CGFloat)[self doubleValue];
     } else {
-        return [self floatValue];
+        return (CGFloat)[self floatValue];
     }
 }
 

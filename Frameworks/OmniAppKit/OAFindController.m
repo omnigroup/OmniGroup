@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -173,7 +173,7 @@ static NSString *OAFindPanelTitle = @"Find";
     }
 
     if (subview) {
-        [subview setFrameOrigin:NSMakePoint(floor(([additionalControlsBox frame].size.width - [subview frame].size.width) / 2), 0)];
+        [subview setFrameOrigin:NSMakePoint((CGFloat)floor(([additionalControlsBox frame].size.width - [subview frame].size.width) / 2), 0)];
         [additionalControlsBox addSubview:subview];
     }
     [replaceTextForm setNextKeyView:nextKeyView];
@@ -184,16 +184,16 @@ static NSString *OAFindPanelTitle = @"Find";
 - (void)controlTextDidEndEditing:(NSNotification *)aNotification
 {
     OFRegularExpression *expression;
-    int subexpressionCount, numberOfItems;
     NSString *subexpressionFormatString;
     
     subexpressionFormatString = NSLocalizedStringFromTableInBundle(@"Subexpression #%d", @"OmniAppKit", [OAFindController bundle], "Contents of popup in regular expression find options");
     
     expression = [[OFRegularExpression alloc] initWithString:[[searchTextForm cellAtIndex:0] stringValue]];
     if (expression) {
-        subexpressionCount = [expression subexpressionCount];
+        unsigned int subexpressionCount = [expression subexpressionCount];
         [expression release];
-        numberOfItems = [subexpressionPopUp numberOfItems] - 1;
+        
+        NSUInteger numberOfItems = [subexpressionPopUp numberOfItems] - 1;
         
         while (numberOfItems > subexpressionCount)
             [subexpressionPopUp removeItemAtIndex:numberOfItems--];
@@ -281,11 +281,9 @@ static NSString *OAFindPanelTitle = @"Find";
     }
 }
 
-- (unsigned int)enterSelectionStringLength;
+- (NSUInteger)enterSelectionStringLength;
 {
-    id enterSelectionTarget;
-
-    enterSelectionTarget = [self enterSelectionTarget];
+    id enterSelectionTarget = [self enterSelectionTarget];
     if (!enterSelectionTarget)
         return 0;
 
@@ -365,10 +363,8 @@ static NSString *OAFindPanelTitle = @"Find";
     if ([[findTypeMatrix selectedCell] tag] == 0) {
         pattern = [[OAFindPattern alloc] initWithString:findString ignoreCase:[ignoreCaseButton state] wholeWord:[wholeWordButton state] backwards:backwardsFlag];
     } else {
-        int subexpression;
-        
         [self controlTextDidEndEditing:nil]; // make sure the subexpressionPopUp is set correctly
-        subexpression = [subexpressionPopUp indexOfSelectedItem] - 1;
+        NSInteger subexpression = [subexpressionPopUp indexOfSelectedItem] - 1;
         pattern = [[OARegExFindPattern alloc] initWithString:findString selectedSubexpression:subexpression backwards:backwardsFlag];
     }
     

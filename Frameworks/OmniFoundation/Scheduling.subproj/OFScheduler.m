@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -263,7 +263,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 {
     NSMutableArray *eventsToInvokeNow = [[NSMutableArray alloc] init];
     [scheduleLock lock];
-    unsigned int remainingEventCount = [scheduleQueue count];
+    NSUInteger remainingEventCount = [scheduleQueue count];
     while (remainingEventCount--) {
         OFScheduledEvent *event = [scheduleQueue objectAtIndex:0];
         if ([[event date] timeIntervalSinceNow] > 0.0) {
@@ -302,38 +302,31 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (void)invokeEvents:(NSArray *)events;
 {
-    unsigned int eventIndex, eventCount;
-
-    eventCount = [events count];
+    NSUInteger eventIndex, eventCount = [events count];
     for (eventIndex = 0; eventIndex < eventCount; eventIndex++) {
-        OFScheduledEvent *event;
-
-        event = [events objectAtIndex:eventIndex];
-        NS_DURING {
+        OFScheduledEvent *event = [events objectAtIndex:eventIndex];
+        @try {
             OMNI_POOL_START {
                 if (OFSchedulerDebug)
                     NSLog(@"%@: invoking %@", [self shortDescription], [event shortDescription]);
                 [event invoke];
             } OMNI_POOL_END;
-        } NS_HANDLER {
-            NSLog(@"%@: exception raised in %@: %@", [self shortDescription], [event shortDescription], [localException reason]);
-        } NS_ENDHANDLER;
+        } @catch (NSException *exc) {
+            NSLog(@"%@: exception raised in %@: %@", [self shortDescription], [event shortDescription], [exc reason]);
+        }
     }
 }
 
 - (void)controllerWillTerminate:(OFController *)controller;
 {
-    unsigned int remainingEventCount;
-    NSMutableArray *terminationEvents;
-        
     terminationSignaled = YES;
 
     if (OFSchedulerDebug)
         NSLog(@"%@: Processing termination events", [self shortDescription]);
 
-    terminationEvents = [[NSMutableArray alloc] init];
+    NSMutableArray *terminationEvents = [[NSMutableArray alloc] init];
     [scheduleLock lock];
-    remainingEventCount = [scheduleQueue count];
+    NSUInteger remainingEventCount = [scheduleQueue count];
     while (remainingEventCount--) {
         OFScheduledEvent *event;
 

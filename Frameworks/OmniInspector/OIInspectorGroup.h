@@ -1,4 +1,4 @@
-// Copyright 2002-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,7 +78,7 @@
 - (BOOL)isBelowOverlappingGroup;
 - (BOOL)isSettingExpansion;
 
-- (float)singlePaneExpandedMaxHeight;
+- (CGFloat)singlePaneExpandedMaxHeight;
 - (BOOL)ignoreResizing;
 - (BOOL)canBeginResizingOperation;
 

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,15 +48,17 @@ static NSError *_errorToUse(OFXMLReader *self)
 static int _readFromInput(void * context, char * buffer, int len)
 {
     OBPRECONDITION(len >= 0);
-    
+
     OFXMLReader *self = context;
 
     if (len <= 0)
         return 0; // -read:maxLength: takes NSUInteger.
     
     NSInteger bytesRead = [self->_inputStream read:(uint8_t *)buffer maxLength:len];
-    if (bytesRead > 0)
-        return bytesRead;
+    if (bytesRead > 0) {
+        OBASSERT(bytesRead <= INT_MAX); // len is an int, so this should be true.  But -read:maxLength: takes/returns longs. Our API requires int, so we assert and cast here.
+        return (int)bytesRead;
+    }
     
     if (bytesRead == 0 && [self->_inputStream streamStatus] == NSStreamStatusAtEnd) {
         return 0;
@@ -154,7 +156,9 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
     
     LIBXML_TEST_VERSION
 
-    _inputStream = [inputStream retain];
+    // Hold a strong reference to this in GC so that it cannot be in the same -finalize cycle as us.
+    _inputStream = (id)CFRetain(inputStream);
+    
     _errors = [[NSMutableArray alloc] init];
     
     //_inputStream.delegate = self;
@@ -253,39 +257,50 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
     return [self initWithURL:url startingInternedNames:nil error:outError];
 }
 
-- (void)dealloc;
+static void _finalize(OFXMLReader *self)
 {
-    [_url release];
-    
-    if (_reader) {
-        xmlFreeTextReader(_reader);
-        _reader = NULL;
-    }
-    if (_inputBuffer) {
-        xmlFreeParserInputBuffer(_inputBuffer);
-        _inputBuffer = NULL;
+    if (self->_reader) {
+        xmlFreeTextReader(self->_reader);
+        self->_reader = NULL;
     }
     
-    // This will likely get closed by destroying the reader.
-    //_inputStream.delegate = nil;
-    switch ([_inputStream streamStatus]) {
+    if (self->_inputBuffer) {
+        xmlFreeParserInputBuffer(self->_inputBuffer);
+        self->_inputBuffer = NULL;
+    }
+    
+    // Since we have a strong reference to _inputStream, we can be sure it isn't collected here and we can have freed up _inputBuffer before it gets collected.
+    switch ([self->_inputStream streamStatus]) {
         case NSStreamStatusNotOpen:
         case NSStreamStatusClosed:
             break;
         default:
-            [_inputStream close];
+            [self->_inputStream close];
             OBASSERT([self->_inputStream streamStatus] == NSStreamStatusClosed);
             break;
     }
-    [_errors release];
-    [_inputStream release];
     
-    if (_nameTable) {
-        OFXMLInternedNameTableFree(_nameTable);
-        _nameTable = NULL;
+    // Now, make the input stream collectable.
+    CFRelease(self->_inputStream);
+    
+    if (self->_nameTable) {
+        OFXMLInternedNameTableFree(self->_nameTable);
+        self->_nameTable = NULL;
     }
-        
+}
+
+- (void)dealloc;
+{
+    _finalize(self);
+    [_url release];
+    [_errors release];
     [super dealloc];
+}
+
+- (void)finalize;
+{
+    _finalize(self);
+    [super finalize];
 }
 
 @synthesize url = _url;

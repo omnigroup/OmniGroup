@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,12 +22,12 @@ RCS_ID("$Id$")
 
 @implementation OAPreferencesIconView
 
-static const NSSize buttonSize = {82.0, 74.0};
-static const NSSize iconSize = {32.0, 32.0};
+static const NSSize buttonSize = {82.0f, 74.0f};
+static const NSSize iconSize = {32.0f, 32.0f};
 static const CGFloat titleCellHeight = 35;
 static const CGFloat iconBaseline = 36;
 
-#define IconIndexNone (~(unsigned int)0)
+#define IconNotFound ((NSInteger)(~(NSUInteger)0))
 
 // Init and dealloc
 
@@ -36,14 +36,14 @@ static const CGFloat iconBaseline = 36;
     if (![super initWithFrame:rect])
         return nil;
     
-    [self setBoundsOrigin:NSMakePoint(-4.0, 0.0)]; //This matches Apples 4px margin in System Preferences on 10.4
+    [self setBoundsOrigin:NSMakePoint(-4.0f, 0.0f)]; //This matches Apples 4px margin in System Preferences on 10.4
 
-    pressedIconIndex = IconIndexNone;
+    pressedIconIndex = IconNotFound;
     selectedClientRecord = nil;
     
     preferenceTitleCell = [[NSTextFieldCell alloc] init];
     [preferenceTitleCell setAlignment:NSCenterTextAlignment];
-    [preferenceTitleCell setFont:[NSFont toolTipsFontOfSize:11.0]];
+    [preferenceTitleCell setFont:[NSFont toolTipsFontOfSize:11.0f]];
     
     return self;
 }
@@ -83,15 +83,14 @@ static const CGFloat iconBaseline = 36;
 {
     NSPoint eventLocation;
     NSRect slopRect;
-    const CGFloat dragSlop = 4.0;
-    unsigned int index;
+    const CGFloat dragSlop = 4.0f;
     NSRect buttonRect;
     BOOL mouseInBounds = NO;
     
     eventLocation = [self convertPoint:[event locationInWindow] fromView:nil];
-    slopRect = NSInsetRect(NSMakeRect(eventLocation.x, eventLocation.y, 1.0, 1.0), -dragSlop, -dragSlop);
+    slopRect = NSInsetRect(NSMakeRect(eventLocation.x, eventLocation.y, 1.0f, 1.0f), -dragSlop, -dragSlop);
 
-    index = floor(eventLocation.x / buttonSize.width) + floor(eventLocation.y / buttonSize.height) * [self _iconsWide];
+    NSInteger index = (NSInteger)(floor(eventLocation.x / buttonSize.width) + floor(eventLocation.y / buttonSize.height) * [self _iconsWide]);
     buttonRect = [self _boundsForIndex:index];
     if (NSWidth(buttonRect) == 0)
         return;
@@ -102,13 +101,13 @@ static const CGFloat iconBaseline = 36;
     while (1) {
         NSEvent *nextEvent;
         NSPoint nextEventLocation;
-        unsigned int newPressedIconIndex;
+        NSUInteger newPressedIconIndex;
 
         nextEvent = [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
 
         nextEventLocation = [self convertPoint:[nextEvent locationInWindow] fromView:nil];
         mouseInBounds = NSMouseInRect(nextEventLocation, buttonRect, [self isFlipped]);
-        newPressedIconIndex = mouseInBounds ? index : IconIndexNone;
+        newPressedIconIndex = mouseInBounds ? index : IconNotFound;
         if (newPressedIconIndex != pressedIconIndex) {
             pressedIconIndex = newPressedIconIndex;
             [self setNeedsDisplay:YES];
@@ -124,7 +123,7 @@ static const CGFloat iconBaseline = 36;
         }
     }
     
-    pressedIconIndex = IconIndexNone;
+    pressedIconIndex = IconNotFound;
     [self setNeedsDisplay:YES];
     
     if (mouseInBounds)
@@ -136,8 +135,8 @@ static const CGFloat iconBaseline = 36;
 
 - (void)drawRect:(NSRect)rect;
 {
-    unsigned int clientRecordCount = [self _numberOfIcons];
-    for (unsigned int clientRecordIndex = 0; clientRecordIndex < clientRecordCount; clientRecordIndex++)
+    NSUInteger clientRecordCount = [self _numberOfIcons];
+    for (NSUInteger clientRecordIndex = 0; clientRecordIndex < clientRecordCount; clientRecordIndex++)
         [self _drawIconAtIndex:clientRecordIndex drawRect:rect];
 }
 
@@ -179,36 +178,36 @@ static const CGFloat iconBaseline = 36;
 
 @implementation OAPreferencesIconView (Subclasses)
 
-- (unsigned int)_iconsWide;
+- (NSUInteger)_iconsWide;
 {
     return NSMaxX([self bounds]) / buttonSize.width;
 }
 
-- (unsigned int)_numberOfIcons;
+- (NSUInteger)_numberOfIcons;
 {
     return (unsigned int)[[self preferenceClientRecords] count];
 }
 
-- (BOOL)_isIconSelectedAtIndex:(unsigned int)index;
+- (BOOL)_isIconSelectedAtIndex:(NSUInteger)index;
 {
     return [[self preferenceClientRecords] objectAtIndex:index] == selectedClientRecord;
 }
 
-- (BOOL)_column:(unsigned int *)column andRow:(unsigned int *)row forIndex:(unsigned int)index;
+- (BOOL)_column:(NSUInteger *)column andRow:(NSUInteger *)row forIndex:(NSUInteger)index;
 {
     if (index >= [self _numberOfIcons])
         return NO;
 
-    unsigned int numberOfColumns = [self _iconsWide];
+    NSUInteger numberOfColumns = [self _iconsWide];
     *column = index / numberOfColumns;
     *row = index % numberOfColumns;
     
     return YES;
 }
 
-- (NSRect)_boundsForIndex:(unsigned int)index;
+- (NSRect)_boundsForIndex:(NSUInteger)index;
 {
-    unsigned int row, column;
+    NSUInteger row, column;
 
     if (![self _column:&column andRow:&row forIndex:index])
         return NSZeroRect;
@@ -216,7 +215,7 @@ static const CGFloat iconBaseline = 36;
     return NSMakeRect(row * buttonSize.width, column * buttonSize.height, buttonSize.width, buttonSize.height);
 }
 
-- (BOOL)_iconImage:(NSImage **)image andName:(NSString **)name andIdentifier:(NSString **)identifier forIndex:(unsigned int)index;
+- (BOOL)_iconImage:(NSImage **)image andName:(NSString **)name andIdentifier:(NSString **)identifier forIndex:(NSUInteger)index;
 {
     OAPreferenceClientRecord *clientRecord;
     
@@ -236,11 +235,11 @@ static const CGFloat iconBaseline = 36;
     return YES;
 }
 
-- (void)_drawIconAtIndex:(unsigned int)index drawRect:(NSRect)drawRect;
+- (void)_drawIconAtIndex:(NSUInteger)index drawRect:(NSRect)drawRect;
 {
     NSImage *image;
     NSString *name;
-    unsigned int row, column;
+    NSUInteger row, column;
     NSRect buttonRect, destinationRect;
     
     buttonRect = [self _boundsForIndex:index];
@@ -255,15 +254,15 @@ static const CGFloat iconBaseline = 36;
 
     // Draw dark gray rectangle around currently selected icon (for MultipleIconView)
     if ([self _isIconSelectedAtIndex:index]) {
-        [[NSColor colorWithCalibratedWhite:0.8 alpha:0.75] set];
+        [[NSColor colorWithCalibratedWhite:0.8f alpha:0.75f] set];
         NSRectFillUsingOperation(buttonRect, NSCompositeSourceOver);
     }
 
     // Draw icon, dark if it is currently being pressed
-    destinationRect = NSIntegralRect(NSMakeRect(NSMidX(buttonRect) - iconSize.width / 2.0, NSMaxY(buttonRect) - iconBaseline - iconSize.height, iconSize.width, iconSize.height));
+    destinationRect = NSIntegralRect(NSMakeRect(NSMidX(buttonRect) - iconSize.width / 2.0f, NSMaxY(buttonRect) - iconBaseline - iconSize.height, iconSize.width, iconSize.height));
     destinationRect.size = iconSize;
     if (index != pressedIconIndex)
-        [image drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:1.0];
+        [image drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:1.0f];
     else {
         NSImage *darkImage;
         NSSize darkImageSize;
@@ -275,8 +274,8 @@ static const CGFloat iconBaseline = 36;
         NSRectFillUsingOperation(NSMakeRect(0, 0, darkImageSize.width, darkImageSize.height), NSCompositeSourceIn);
         [darkImage unlockFocus];
         
-        [darkImage drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:1.0];
-        [image drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:0.6666];
+        [darkImage drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:1.0f];
+        [image drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:0.6666f];
         [darkImage release];
     }
     
@@ -290,8 +289,8 @@ static const CGFloat iconBaseline = 36;
     [[NSColor controlLightHighlightColor] set];
     NSRectFill(rect);
     [[NSColor windowFrameColor] set];
-    NSRectFill(NSMakeRect(NSMinX(_bounds), NSMinY(_bounds), NSWidth(_bounds), 1.0));
-    NSRectFill(NSMakeRect(NSMinX(_bounds), NSMaxY(_bounds)-1, NSWidth(_bounds), 1.0));
+    NSRectFill(NSMakeRect(NSMinX(_bounds), NSMinY(_bounds), NSWidth(_bounds), 1.0f));
+    NSRectFill(NSMakeRect(NSMinX(_bounds), NSMaxY(_bounds)-1, NSWidth(_bounds), 1.0f));
 }
 
 - (void)_sizeToFit;
@@ -302,7 +301,7 @@ static const CGFloat iconBaseline = 36;
     [self setFrameSize:NSMakeSize(NSWidth(_bounds), NSMaxY([self _boundsForIndex:[self _numberOfIcons]-1]))];
 }
 
-- (BOOL)_dragIconIndex:(unsigned int)index event:(NSEvent *)event;
+- (BOOL)_dragIconIndex:(NSUInteger)index event:(NSEvent *)event;
 {
     NSImage *iconImage;
     NSString *name;
@@ -327,7 +326,7 @@ static const CGFloat iconBaseline = 36;
 
     dragImage = [[NSImage alloc] initWithSize:buttonSize];
     [dragImage lockFocus]; {
-        [iconImage drawInRect:NSMakeRect(buttonSize.width / 2.0 - iconSize.width / 2.0, iconBaseline, iconSize.width, iconSize.height) fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
+        [iconImage drawInRect:NSMakeRect(buttonSize.width / 2.0f - iconSize.width / 2.0f, iconBaseline, iconSize.width, iconSize.height) fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
         
         [preferenceTitleCell setStringValue:name];
         [preferenceTitleCell drawWithFrame:NSMakeRect(0, 0, buttonSize.width, titleCellHeight) inView:self];
@@ -339,7 +338,7 @@ static const CGFloat iconBaseline = 36;
     [pasteboard setString:identifier forType:@"NSToolbarItemIdentiferPboardType"]; // Apple misspelled this type in 10.1
     
     dragPoint = [self convertPoint:[event locationInWindow] fromView:nil];
-    startPoint = NSMakePoint(dragPoint.x - buttonSize.width / 2.0, dragPoint.y + buttonSize.height / 2.0);
+    startPoint = NSMakePoint(dragPoint.x - buttonSize.width / 2.0f, dragPoint.y + buttonSize.height / 2.0f);
     [self dragImage:dragImage at:startPoint offset:NSZeroSize event:event pasteboard:pasteboard source:self slideBack:NO];
     
     return YES;

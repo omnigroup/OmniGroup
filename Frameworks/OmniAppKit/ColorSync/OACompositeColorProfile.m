@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,14 +57,18 @@ RCS_ID("$Id$");
 - (CMWorldRef)_colorWorldForOutput:(OAColorProfile *)aProfile componentSelector:(SEL)componentSelector;
 {
     CMWorldRef result;
-    unsigned int profileIndex, profileCount = [profiles count];
+    NSUInteger profileIndex, profileCount = [profiles count];
     NCMConcatProfileSet *profileSet = alloca(sizeof(NCMConcatProfileSet) + sizeof(NCMConcatProfileSpec) * (profileCount + 1));
     bzero(profileSet, sizeof(NCMConcatProfileSet) + sizeof(NCMConcatProfileSpec) * (profileCount + 1));
     
     profileSet->cmm = 0; // Use default CMM
     profileSet->flags = 0;
     profileSet->flagsMask = 0;
-    profileSet->profileCount = profileCount + 1;
+    
+    OBASSERT(strcmp(@encode(typeof(profileSet->profileCount)), @encode(UInt32)) == 0);
+    OBASSERT(profileCount < UINT_MAX);
+    profileSet->profileCount = (UInt32)profileCount + 1;
+    
     for (profileIndex = 0; profileIndex <= profileCount; profileIndex++) {
         OAColorProfile *profile = ( profileIndex < profileCount ) ? [profiles objectAtIndex:profileIndex] : aProfile;
         profileSet->profileSpecs[profileIndex].renderingIntent = kUseProfileIntent;

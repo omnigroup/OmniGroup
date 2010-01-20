@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -105,13 +105,13 @@ RCS_ID("$Id$")
 {
     float result = [self floatValueInSeconds];
     if (![createdByFormatter floatValuesInSeconds])
-	result /= 3600.0;
+	result /= 3600.0f;
     return result;
 }
 
 - (float)floatValueInSeconds;
 {
-    return (_components.years * (float)[createdByFormatter hoursPerYear] + _components.months * (float)[createdByFormatter hoursPerMonth] + _components.weeks * (float)[createdByFormatter hoursPerWeek] + _components.days * (float)[createdByFormatter hoursPerDay] + _components.hours) * 3600.0 + _components.minutes*60.0 + _components.seconds;
+    return (_components.years * (float)[createdByFormatter hoursPerYear] + _components.months * (float)[createdByFormatter hoursPerMonth] + _components.weeks * (float)[createdByFormatter hoursPerWeek] + _components.days * (float)[createdByFormatter hoursPerDay] + _components.hours) * 3600.0f + _components.minutes*60.0f + _components.seconds;
 }
 
 - (BOOL)isZero;

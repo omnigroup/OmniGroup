@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,13 +63,7 @@ static NSString *OWProxiesFTPPassiveModeKey = @"PassiveFTP";
     // Is this host listed in the proxy exception list?
     proxyExceptions = [proxySettingsDictionary objectForKey:OWProxiesExceptionsListKey];
     if (proxyExceptions != nil && [proxyExceptions count] != 0) {
-        unsigned int proxyExceptionIndex, proxyExceptionCount;
-
-        proxyExceptionCount = [proxyExceptions count];
-        for (proxyExceptionIndex = 0; proxyExceptionIndex < proxyExceptionCount; proxyExceptionIndex++) {
-            NSString *proxyException;
-
-            proxyException = [proxyExceptions objectAtIndex:proxyExceptionIndex];
+        for (NSString *proxyException in proxyExceptions) {
             if ([urlHostname hasSuffix:proxyException])
                 return aURL; // The hostname matches the proxy exception list, so don't proxy it
         }
@@ -116,6 +110,7 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
 #endif
     if (runLoopSource != NULL && currentRunLoop != NULL)
         CFRunLoopAddSource(currentRunLoop, runLoopSource, kCFRunLoopDefaultMode);
+    CFRelease(runLoopSource);
 }
 
 + (void)_updateProxySettingsFromDictionary:(NSDictionary *)dictionary;
@@ -190,6 +185,8 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
 
 static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRef changedKeys, void *info)
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
 #ifdef DEBUG_kc
     NSLog(@"OWProxyServerDynamicStoreCallBack(): changedKeys=%@", [(NSArray *)changedKeys description]);
 #endif
@@ -204,6 +201,7 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
     CFRelease(proxiesKey);
     [OWProxyServer _updateProxySettingsFromDictionary:proxySettingsDictionary];
     [proxySettingsDictionary release];
+#endif
 }
 
 @end

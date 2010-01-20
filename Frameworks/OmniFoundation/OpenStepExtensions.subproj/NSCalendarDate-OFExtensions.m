@@ -1,3 +1,7 @@
+// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// NSCalendarDate is deprecated.  Leaving this here for a while so we can refer to it as we convert any remaining uses to NSCalendar/NSDateComponents/NSDate/NSLocale
+#if 0
+
 // Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
@@ -180,3 +184,5 @@ Returns the nearest calendar date with the specified hour and minute. The second
 }
     
 @end
+
+#endif

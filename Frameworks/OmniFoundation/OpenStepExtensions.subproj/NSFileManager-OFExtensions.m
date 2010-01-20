@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,7 +70,7 @@ static int permissionsMask = 0022;
         [NSException raise:NSInvalidArgumentException format:@"Unable to create URL to desktop directory"];
 
     NSString *path = [[[(NSURL *)url path] copy] autorelease];
-    [(id)url release];
+    CFRelease(url);
 
     return path;
 }
@@ -92,7 +92,7 @@ static int permissionsMask = 0022;
         [NSException raise:NSInvalidArgumentException format:@"Unable to create URL to document directory"];
 
     NSString *path = [[[(NSURL *)url path] copy] autorelease];
-    [(id)url release];
+    CFRelease(url);
 
     return path;
 }
@@ -227,11 +227,8 @@ static int permissionsMask = 0022;
 - (BOOL)createPathToFile:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
     // Creates any directories needed to be able to create a file at the specified path.  Returns NO on failure.
 {
-    NSArray *pathComponents;
-    unsigned int componentCount;
-    
-    pathComponents = [path pathComponents];
-    componentCount = [pathComponents count];
+    NSArray *pathComponents = [path pathComponents];
+    NSUInteger componentCount = [pathComponents count];
     if (componentCount <= 1)
         return YES;
     
@@ -240,25 +237,19 @@ static int permissionsMask = 0022;
 
 - (BOOL)createPathComponents:(NSArray *)components attributes:(NSDictionary *)attributes error:(NSError **)outError
 {
-    unsigned int dirCount;
-    unsigned int trimCount;
-    NSError *error = nil;
-    
     if ([attributes count] == 0)
         attributes = nil;
     
-    dirCount = [components count];
-    
+    NSUInteger dirCount = [components count];
     NSMutableArray *trimmedPaths = [[NSMutableArray alloc] initWithCapacity:dirCount];
-    NSMutableArray *trim;
     
     [trimmedPaths autorelease];
     
     NSString *finalPath = [NSString pathWithComponents:components];
     
-    trim = [[NSMutableArray alloc] initWithArray:components];
-    error = nil;
-    for(trimCount = 0; trimCount < dirCount && !error; trimCount ++) {
+    NSMutableArray *trim = [[NSMutableArray alloc] initWithArray:components];
+    NSError *error = nil;
+    for (NSUInteger trimCount = 0; trimCount < dirCount && !error; trimCount ++) {
         struct stat statbuf;
         
         OBINVARIANT([trim count] == (dirCount - trimCount));
@@ -322,18 +313,13 @@ static int permissionsMask = 0022;
 
 - (NSString *)existingPortionOfPath:(NSString *)path;
 {
-    NSArray *pathComponents;
-    unsigned int goodComponentsCount, componentCount;
-    unsigned int startingIndex;
-
-    pathComponents = [path pathComponents];
-    componentCount = [pathComponents count];
-    startingIndex  = 0;
+    NSArray *pathComponents = [path pathComponents];
+    NSUInteger componentCount = [pathComponents count];
+    NSUInteger startingIndex  = 0;
     
+    NSUInteger goodComponentsCount;
     for (goodComponentsCount = startingIndex; goodComponentsCount < componentCount; goodComponentsCount++) {
-        NSString *testPath;
-
-        testPath = [NSString pathWithComponents:[pathComponents subarrayWithRange:NSMakeRange(0, goodComponentsCount + 1)]];
+        NSString *testPath = [NSString pathWithComponents:[pathComponents subarrayWithRange:NSMakeRange(0, goodComponentsCount + 1)]];
         if (goodComponentsCount < componentCount - 1) {
             // For the leading components, test to see if a directory exists at that path
             if (![self directoryExistsAtPath:testPath traverseLink:YES])
@@ -364,11 +350,8 @@ static int permissionsMask = 0022;
 // leaving turds in the filesystem.
 - (BOOL)atomicallyCreateFileAtPath:(NSString *)path contents:(NSData *)data attributes:(NSDictionary *)attr;
 {
-    NSString *tmpPath;
-    int rc;
-    
     // Create a temporary file in the same directory
-    tmpPath = [self tempFilenameFromHashesTemplate: [NSString stringWithFormat: @"%@-tmp-######", path]];
+    NSString *tmpPath = [self tempFilenameFromHashesTemplate: [NSString stringWithFormat: @"%@-tmp-######", path]];
     
     if (![self createFileAtPath: tmpPath contents: data attributes: attr])
         return NO;
@@ -376,17 +359,14 @@ static int permissionsMask = 0022;
     // -movePath:toPath:handler: is documented to copy the original file rather than renaming it.
     // It is also documented to fail if the destination exists.  So, we will use our trusty Unix
     // APIs.
-    rc = rename([tmpPath UTF8String], [path UTF8String]);
+    int rc = rename([tmpPath UTF8String], [path UTF8String]);
     return rc == 0;
 }
 
 - (NSArray *) directoryContentsAtPath: (NSString *) path havingExtension: (NSString *) extension  error:(NSError **)outError;
 {
     NSArray *children;
-    NSMutableArray *filteredChildren;
-    NSError *error;
-    
-    error = nil;
+    NSError *error = nil;
     if (!(children = [self contentsOfDirectoryAtPath:path error:&error])) {
         if (outError)
             *outError = error;
@@ -394,7 +374,7 @@ static int permissionsMask = 0022;
         return nil;
     }
     
-    filteredChildren = [NSMutableArray array];
+    NSMutableArray *filteredChildren = [NSMutableArray array];
     for (NSString *child in children) {
         if ([[child pathExtension] isEqualToString: extension])
             [filteredChildren addObject: child];
@@ -874,11 +854,9 @@ static int permissionsMask = 0022;
 
 - (BOOL)path:(NSString *)otherPath isAncestorOfPath:(NSString *)thisPath relativePath:(NSString **)relativeResult
 {
-    NSArray *commonComponents, *myContinuation, *parentContinuation;
-    
-    myContinuation = nil;
-    parentContinuation = nil;
-    commonComponents = OFCommonRootPathComponents(thisPath, otherPath, &myContinuation, &parentContinuation);
+    NSArray *myContinuation = nil;
+    NSArray *parentContinuation = nil;
+    NSArray *commonComponents = OFCommonRootPathComponents(thisPath, otherPath, &myContinuation, &parentContinuation);
     
     if (commonComponents != nil && [parentContinuation count] == 0) {
         if (relativeResult)
@@ -889,10 +867,10 @@ static int permissionsMask = 0022;
     NSString *lastParentComponent = [otherPath lastPathComponent];
     NSDictionary *lastParentComponentStat = nil;
     NSArray *myComponents = [thisPath pathComponents];
-    unsigned componentIndex, componentCount = [myComponents count];
+    NSUInteger componentIndex, componentCount = [myComponents count];
     
     componentIndex = componentCount;
-    while(componentIndex--) {
+    while (componentIndex--) {
         if ([lastParentComponent caseInsensitiveCompare:[myComponents objectAtIndex:componentIndex]] == NSOrderedSame) {
             if (lastParentComponentStat == nil) {
                 lastParentComponentStat = [self attributesOfItemAtPath:otherPath traverseLink:YES error:NULL];

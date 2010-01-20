@@ -1,9 +1,9 @@
-// Copyright 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
-// http://www.omnigroup.com/DeveloperResources/OmniSourceLicense.html.
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 
 #import "OFTestCase.h"
@@ -11,6 +11,10 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFXMLSignature.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
+#import <OmniFoundation/OFUtilities.h>
+#import <OmniFoundation/NSString-OFSimpleMatching.h>
+#import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 #import <Security/Security.h>
 
 RCS_ID("$Id$");
@@ -209,7 +213,7 @@ static SecKeyRef copyKey(SecKeychainRef keychain, CSSM_ALGORITHMS keytype, SecIt
     keyHeader.KeyClass = CSSM_KEYCLASS_SESSION_KEY;
     keyHeader.KeyAttr = CSSM_KEYATTR_SENSITIVE;
     keyHeader.KeyUsage = CSSM_KEYUSE_VERIFY | CSSM_KEYUSE_SIGN;
-    keyHeader.LogicalKeySizeInBits = 8 * [keyData length];
+    keyHeader.LogicalKeySizeInBits = 8 * (uint32)[keyData length];
     
     [key setKeyHeader:&keyHeader data:keyData];
     
@@ -262,7 +266,8 @@ static SecKeyRef copyKey(SecKeychainRef keychain, CSSM_ALGORITHMS keytype, SecIt
     
 //     NSLog(@"Retrieved %u bytes from %@", (unsigned int)[remoteData length], refURL);
     
-    int xmlOk = xmlOutputBufferWrite(stream, [remoteData length], [remoteData bytes]);
+    OBASSERT([remoteData length] < INT_MAX);
+    int xmlOk = xmlOutputBufferWrite(stream, (int)[remoteData length], [remoteData bytes]);
     
     if (xmlOk < 0) {
         if (outError)
@@ -816,7 +821,7 @@ after the signature value was computed.  Verification should FAIL.
                      OBShouldNotError([sig processSignatureElement:&error]);
                      [self checkReferences:sig];);
     
-    [p release];
+    [p drain];
 }
 
 /*

@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,15 +37,12 @@
 - (BOOL)hasNonDefaultValue;
 - (void)restoreDefaultValue;
 
-- (id)objectValue;
-- (void)setObjectValue:(id)objectValue;
-- (NSString *)stringValue;
-- (void)setStringValue:(NSString *)stringValue;
-- (BOOL)boolValue;
-- (void)setBoolValue:(BOOL)boolValue;
-- (int)integerValue;
-- (void)setIntegerValue:(int)integerValue;
-- (float)floatValue;
-- (void)setFloatValue:(float)floatValue;
+@property(nonatomic,retain) id objectValue;
+@property(nonatomic,copy) NSString *stringValue;
+@property(nonatomic,assign) BOOL boolValue;
+@property(nonatomic,assign) int intValue;
+@property(nonatomic,assign) NSInteger integerValue;
+@property(nonatomic,assign) float floatValue;
+@property(nonatomic,assign) double doubleValue;
 
 @end

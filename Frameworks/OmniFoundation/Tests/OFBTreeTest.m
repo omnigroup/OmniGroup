@@ -1,4 +1,4 @@
-// Copyright 2000-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 #import "OFTestCase.h"
 
 #import <OmniFoundation/OFBTree.h>
+#import <OmniFoundation/OFRandom.h>
 #import <stdio.h>
 #import <mach/mach.h>
 #import <mach/mach_error.h>
@@ -56,13 +57,13 @@ int testComparator(OFBTree *btree, const void *a, const void *b)
     return avalue - bvalue;
 }
 
-void permute(unsigned int *numbers, unsigned int count)
+void permute(NSUInteger *numbers, NSUInteger count)
 {
-    unsigned int i, j, tmp;
+    NSUInteger i, j, tmp;
     
     // loop through the vector spwaping each element with another random element
     for (i = 0; i < count; i++) {
-        j = random() % count;
+        j = OFRandomNext32() % count;
         tmp = numbers[i];
         numbers[i] = numbers[j];
         numbers[j] = tmp;
@@ -170,7 +171,7 @@ void checkEnumerator(OFBTree *tree, void *element, void *arg)
 - (void)testBTreeLarge
 {
     OFBTree btree;
-    unsigned int *numbers, i, seed;
+    NSUInteger *numbers, i, seed;
 
     if (![[self class] shouldRunSlowUnitTests]) {
         NSLog(@"*** SKIPPING slow test [%@ %s]", [self class], _cmd);
@@ -180,7 +181,7 @@ void checkEnumerator(OFBTree *tree, void *element, void *arg)
 #define INSERT_COUNT 1000000
 
     seed = time(NULL);
-    srandom(seed);
+    srandom((unsigned)seed);
     numbers = malloc(sizeof(*numbers) * INSERT_COUNT);
 
     OFBTreeInit(&btree, vm_page_size, sizeof(int), pageAllocator, pageDeallocator, testComparator);

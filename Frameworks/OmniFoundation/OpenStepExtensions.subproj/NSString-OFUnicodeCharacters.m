@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@ RCS_ID("$Id$");
 
 @implementation NSString (OFUnicodeCharacters)
 
-+ (NSString *)stringWithCharacter:(unsigned int)aCharacter;
++ (NSString *)stringWithCharacter:(UnicodeScalarValue)aCharacter;
 {
     unichar utf16[2];
     NSString *result;

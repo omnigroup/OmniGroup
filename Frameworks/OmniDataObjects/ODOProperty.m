@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,6 +51,11 @@ RCS_ID("$Id$")
     return _flags.transient;
 }
 
+- (BOOL)isCalculated;
+{
+    return _flags.calculated;
+}
+
 - (NSComparisonResult)compareByName:(ODOProperty *)prop;
 {
     return [_name compare:prop->_name];
@@ -78,7 +83,7 @@ RCS_ID("$Id$")
 }
 #endif
 
-void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags flags, BOOL optional, BOOL transient, SEL get, SEL set)
+void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags flags, BOOL optional, BOOL calculated, BOOL transient, SEL get, SEL set)
 {
     OBPRECONDITION([self isKindOfClass:[ODOProperty class]]);
     OBPRECONDITION([name length] > 0);
@@ -90,6 +95,7 @@ void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags
     self->_flags = flags; // We'll override the property-specific bits of this.
     self->_flags.optional = optional;
     self->_flags.transient = transient;
+    self->_flags.calculated = calculated;
     self->_sel.get = get;
     self->_sel.set = set;
 }
@@ -180,10 +186,11 @@ BOOL ODOPropertyHasIdenticalName(ODOProperty *property, NSString *name)
     return property->_name == name;
 }
 
-void ODOPropertySnapshotAssignSnapshotIndex(ODOProperty *property, unsigned int snapshotIndex)
+void ODOPropertySnapshotAssignSnapshotIndex(ODOProperty *property, NSUInteger snapshotIndex)
 {
     OBPRECONDITION(property->_flags.snapshotIndex == ODO_NON_SNAPSHOT_PROPERTY_INDEX); // shouldn't have been assigned yet.
-    property->_flags.snapshotIndex = snapshotIndex;
+    property->_flags.snapshotIndex = (unsigned)snapshotIndex;
+    OBASSERT(property->_flags.snapshotIndex == snapshotIndex); // make sure it didn't get truncated.
 }
 
 @end

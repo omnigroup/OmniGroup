@@ -1,4 +1,4 @@
-// Copyright 2003-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ RCS_ID("$Id$");
     }
 
     addrlen = MAX(dlAddress->sdl_len,
-                  ( (unsigned char *)(dlAddress->sdl_data) - (unsigned char *)dlAddress ) +
+                  (int)( (unsigned char *)(dlAddress->sdl_data) - (unsigned char *)dlAddress ) +
                   dlAddress->sdl_nlen + dlAddress->sdl_alen + dlAddress->sdl_slen);
     linkAddress = malloc(addrlen);
     bcopy(dlAddress, linkAddress, addrlen);

@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -166,11 +166,11 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
         return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ ago", @"OmniFoundation", [OFObject bundle], @"humanReadableStringForTimeInterval"), intervalString];
 }
 
-+ (NSString *)spacesOfLength:(unsigned int)aLength;
++ (NSString *)spacesOfLength:(NSUInteger)aLength;
 {
     static NSMutableString *spaces = nil;
     static NSLock *spacesLock;
-    static unsigned int spacesLength;
+    static NSUInteger spacesLength;
 
     if (!spaces) {
 	spaces = [@"                " mutableCopy];
@@ -211,13 +211,10 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 }
 
 - (BOOL)isPercentage;
-{
-    unsigned int characterIndex, characterCount;
-    unichar c;
-    
-    characterCount = [self length];
+{    
+    NSUInteger characterIndex, characterCount = [self length];
     for (characterIndex = 0; characterIndex < characterCount; characterIndex++) {
-        c = [self characterAtIndex:characterIndex];
+        unichar c = [self characterAtIndex:characterIndex];
         if (c == '%')
             return YES;
         else if ((c >= '0' && c <= '9') || c == '.')
@@ -256,9 +253,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 - (NSString *)stringByUppercasingAndUnderscoringCaseChanges;
 {
     static OFCharacterSet *lowercaseOFCharacterSet, *uppercaseOFCharacterSet, *numberOFCharacterSet, *currentOFCharacterSet;
-    NSMutableArray *words;
-    OFStringScanner *scanner;
-    unsigned int wordStartIndex = 0;
+    NSUInteger wordStartIndex = 0;
     static BOOL hasInitialized = NO;
 
     if (![self length])
@@ -273,13 +268,11 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
         hasInitialized = YES;
     }
 
-    words = [NSMutableArray array];
-    scanner = [[[OFStringScanner alloc] initWithString:self] autorelease];
+    NSMutableArray *words = [NSMutableArray array];
+    OFStringScanner *scanner = [[[OFStringScanner alloc] initWithString:self] autorelease];
     
     while (scannerHasData(scanner)) {
-        unichar peekedChar;
-
-        peekedChar = scannerPeekCharacter(scanner);
+        unichar peekedChar = scannerPeekCharacter(scanner);
         if ([lowercaseOFCharacterSet characterIsMember:peekedChar])
             currentOFCharacterSet = lowercaseOFCharacterSet;
         else if ([uppercaseOFCharacterSet characterIsMember:peekedChar])
@@ -291,9 +284,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
         }
 
         if (scannerScanUpToCharacterNotInOFCharacterSet(scanner, currentOFCharacterSet)) {
-            unsigned int scanLocation;
-
-            scanLocation = scannerScanLocation(scanner);
+            NSUInteger scanLocation = scannerScanLocation(scanner);
             if (currentOFCharacterSet == lowercaseOFCharacterSet || currentOFCharacterSet == numberOFCharacterSet) {
                 [words addObject:[self substringWithRange:NSMakeRange(wordStartIndex, scanLocation - wordStartIndex)]];
                 wordStartIndex = scanLocation;
@@ -322,20 +313,14 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 - (NSString *)stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace;
 {
-    OFCharacterSet *whitespaceOFCharacterSet;
-    OFStringScanner *stringScanner;
-    NSMutableString *collapsedString;
-    BOOL firstSubstring;
-    unsigned int length;
-
-    whitespaceOFCharacterSet = [OFCharacterSet whitespaceOFCharacterSet];
-    length = [self length];
+    NSUInteger length = [self length];
     if (length == 0)
         return @""; // Trivial optimization
 
-    stringScanner = [[OFStringScanner alloc] initWithString:self];
-    collapsedString = [[NSMutableString alloc] initWithCapacity:length];
-    firstSubstring = YES;
+    OFCharacterSet *whitespaceOFCharacterSet = [OFCharacterSet whitespaceOFCharacterSet];
+    OFStringScanner *stringScanner = [[OFStringScanner alloc] initWithString:self];
+    NSMutableString *collapsedString = [[NSMutableString alloc] initWithCapacity:length];
+    BOOL firstSubstring = YES;
     while (scannerScanUpToCharacterNotInOFCharacterSet(stringScanner, whitespaceOFCharacterSet)) {
         NSString *nonWhitespaceSubstring;
 
@@ -360,16 +345,12 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 - (NSString *)stringByRemovingCharactersInOFCharacterSet:(OFCharacterSet *)removeSet;
 {
-    OFStringScanner *stringScanner;
-    NSMutableString *strippedString;
-    unsigned int length;
-
-    length = [self length];
+    NSUInteger length = [self length];
     if (length == 0)
         return @""; // Trivial optimization
 
-    stringScanner = [[OFStringScanner alloc] initWithString:self];
-    strippedString = [[NSMutableString alloc] initWithCapacity:length];
+    OFStringScanner *stringScanner = [[OFStringScanner alloc] initWithString:self];
+    NSMutableString *strippedString = [[NSMutableString alloc] initWithCapacity:length];
     while (scannerScanUpToCharacterNotInOFCharacterSet(stringScanner, removeSet)) {
         NSString *nonWhitespaceSubstring;
 
@@ -400,11 +381,9 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     return [[self stringByRemovingString:[match matchString]] stringByRemovingRegularExpression:regularExpression];
 }
 
-- (NSString *)stringByPaddingToLength:(unsigned int)aLength;
+- (NSString *)stringByPaddingToLength:(NSUInteger)aLength;
 {
-    unsigned int currentLength;
-
-    currentLength = [self length];
+    NSUInteger currentLength = [self length];
 
     if (currentLength == aLength)
 	return [[self retain] autorelease];
@@ -415,24 +394,19 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 - (NSString *)stringByNormalizingPath;
 {
-    NSArray *pathElements;
-    NSMutableArray *newPathElements;
-    unsigned int preserveCount;
-    unsigned int elementIndex, elementCount;
-
     // Split on slashes and chop out '.' and '..' correctly.
-
-    pathElements = [self componentsSeparatedByString:@"/"];
-    elementCount = [pathElements count];
-    newPathElements = [NSMutableArray arrayWithCapacity:elementCount];
+    NSArray *pathElements = [self componentsSeparatedByString:@"/"];
+    NSUInteger elementIndex, elementCount = [pathElements count];
+    NSUInteger preserveCount;
     if (elementCount > 0 && [[pathElements objectAtIndex:0] isEqualToString:@""])
 	preserveCount = 1;
     else
         preserveCount = 0;
-    for (elementIndex = 0; elementIndex < elementCount; elementIndex++) {
-	NSString *pathElement;
+    
+    NSMutableArray *newPathElements = [NSMutableArray arrayWithCapacity:elementCount];
 
-	pathElement = [pathElements objectAtIndex:elementIndex];
+    for (elementIndex = 0; elementIndex < elementCount; elementIndex++) {
+	NSString *pathElement = [pathElements objectAtIndex:elementIndex];
 	if ([pathElement isEqualToString:@".."]) {
 	    if ([pathElements count] > preserveCount)
 		[newPathElements removeLastObject];
@@ -451,9 +425,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 - (unichar)lastCharacter;
 {
-    unsigned int length;
-
-    length = [self length];
+    NSUInteger length = [self length];
     if (length == 0)
         return '\0';
     return [self characterAtIndex:length - 1];
@@ -491,13 +463,13 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     }
 
     NSMutableString *replacementString = [NSMutableString string];
-    unsigned int lastPosition = 0, noProgressCount = 0;
+    NSUInteger lastPosition = 0, noProgressCount = 0;
     do {
         NSRange nextMatchRange = [match matchRange];
         NSRange copyRange = NSMakeRange(lastPosition, nextMatchRange.location - lastPosition);
         [replacementString appendString:[self substringWithRange:copyRange]];
         [replacementString appendString:newString];
-        unsigned int newPosition = NSMaxRange(nextMatchRange);
+        NSUInteger newPosition = NSMaxRange(nextMatchRange);
         if (newPosition == lastPosition)
             noProgressCount++;
         else
@@ -514,26 +486,18 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 - (NSString *)stringByReplacingOccurancesOfString:(NSString *)targetString withObjectsFromArray:(NSArray *)sourceArray;
 {
-    NSMutableString *resultString;
-    OFStringScanner *replacementScanner;
-    unsigned int occurranceIndex = 0;
-    unsigned int lastAppendedIndex = 0;
-    unsigned int sourceCount;
-    unsigned int targetStringLength;
+    NSUInteger occurranceIndex = 0;
+    NSUInteger lastAppendedIndex = 0;
 
-    replacementScanner = [[[OFStringScanner alloc] initWithString:self] autorelease];
-    resultString = [NSMutableString string];
+    OFStringScanner *replacementScanner = [[[OFStringScanner alloc] initWithString:self] autorelease];
+    NSMutableString *resultString = [NSMutableString string];
 
-    targetStringLength = [targetString length];
-    sourceCount = [sourceArray count];
+    NSUInteger targetStringLength = [targetString length];
+    NSUInteger sourceCount = [sourceArray count];
     
     while ([replacementScanner scanUpToString:targetString]) {
-        NSRange beforeMatchRange;
-        NSString *itemDescription;
-        unsigned int scanLocation;
-
-        scanLocation = [replacementScanner scanLocation];
-        beforeMatchRange = NSMakeRange(lastAppendedIndex, scanLocation - lastAppendedIndex);
+        NSUInteger scanLocation = [replacementScanner scanLocation];
+        NSRange beforeMatchRange = NSMakeRange(lastAppendedIndex, scanLocation - lastAppendedIndex);
         if (beforeMatchRange.length > 0)
             [resultString appendString:[self substringWithRange:beforeMatchRange]];
 
@@ -541,7 +505,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
             [NSException raise:NSInvalidArgumentException format:@"The string being scanned has more occurrances of the target string than the source array has items (scannedString = %@, targetString = %@, sourceArray = %@)."];
         }
         
-        itemDescription = [[sourceArray objectAtIndex:occurranceIndex] description];
+        NSString *itemDescription = [[sourceArray objectAtIndex:occurranceIndex] description];
         [resultString appendString:itemDescription];
 
         occurranceIndex++;
@@ -555,45 +519,37 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     return [[resultString copy] autorelease];
 }
 
-- (NSString *) stringBySeparatingSubstringsOfLength:(unsigned int)substringLength                                          withString:(NSString *)separator startingFromBeginning:(BOOL)startFromBeginning;
+- (NSString *) stringBySeparatingSubstringsOfLength:(NSUInteger)substringLength                                          withString:(NSString *)separator startingFromBeginning:(BOOL)startFromBeginning;
 {
-    unsigned int     lengthLeft, offset = 0;
-    NSMutableString *result;
-
-    lengthLeft = [self length];
+    NSUInteger lengthLeft = [self length];
     if (lengthLeft <= substringLength)
         // Use <= since you have to have more than one group to need a separator.
         return [[self retain] autorelease];
 
     if (!substringLength)
-        [NSException raise: NSInvalidArgumentException
-                    format: @"-[%@ %@], substringLength must be non-zero.",
-            NSStringFromClass(isa), NSStringFromSelector(_cmd), substringLength];
+        [NSException raise:NSInvalidArgumentException format:@"-[%@ %@], substringLength must be non-zero.", NSStringFromClass(isa), NSStringFromSelector(_cmd), substringLength];
     
-    result = [NSMutableString string];
+    NSUInteger offset = 0;
+    NSMutableString *result = [NSMutableString string];
     if (!startFromBeginning) {
-        unsigned int mod;
-        
         // We'll still really start from the beginning, but first we'll trim off
         // whatever the extra count is that would have gone on the end.  This
         // produces the same effect.
 
-        mod = lengthLeft % substringLength;
+        NSUInteger mod = lengthLeft % substringLength;
         if (mod) {
             [result appendString: [self substringWithRange: NSMakeRange(offset, mod)]];
             [result appendString: separator];
-            offset     += mod;
+            offset += mod;
             lengthLeft -= mod;
         }
     }
 
     while (lengthLeft) {
-        unsigned int lengthToCopy;
-
-        lengthToCopy = MIN(lengthLeft, substringLength);
+        NSUInteger lengthToCopy = MIN(lengthLeft, substringLength);
         [result appendString: [self substringWithRange: NSMakeRange(offset, lengthToCopy)]];
         lengthLeft -= lengthToCopy;
-        offset     += lengthToCopy;
+        offset += lengthToCopy;
 
         if (lengthLeft)
             [result appendString: separator];
@@ -604,9 +560,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 - (NSString *)substringStartingWithString:(NSString *)startString;
 {
-    NSRange startRange;
-
-    startRange = [self rangeOfString:startString];
+    NSRange startRange = [self rangeOfString:startString];
     if (startRange.length == 0)
         return nil;
     return [self substringFromIndex:startRange.location];
@@ -614,39 +568,29 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 - (NSString *)substringStartingAfterString:(NSString *)aString;
 {
-    NSRange aRange;
-
-    aRange = [self rangeOfString:aString];
+    NSRange aRange = [self rangeOfString:aString];
     if (aRange.length == 0)
         return nil;
     return [self substringFromIndex:aRange.location + aRange.length];
 }
 
-- (NSArray *)componentsSeparatedByString:(NSString *)separator maximum:(unsigned)atMost;
+- (NSArray *)componentsSeparatedByString:(NSString *)separator maximum:(NSUInteger)atMost;
 {
-    NSRange tailRange;
-    NSMutableArray *components;
-    NSArray *result;
+    NSRange tailRange = NSMakeRange(0, [self length]);
+    NSMutableArray *components = [[NSMutableArray alloc] initWithCapacity:atMost];
 
-    tailRange.location = 0;
-    tailRange.length = [self length];
-
-    components = [[NSMutableArray alloc] initWithCapacity:atMost];
-
-    for(;;) {
-        NSRange separatorRange;
-        NSRange componentRange;
-        
+    for (;;) {
         if (atMost < 2)
             break;
 
         if (tailRange.length == 0)
             break;
 
-        separatorRange = [self rangeOfString:separator options:0 range:tailRange];
+        NSRange separatorRange = [self rangeOfString:separator options:0 range:tailRange];
         if (separatorRange.location == NSNotFound)
             break;
 
+        NSRange componentRange;
         componentRange.location = tailRange.location;
         componentRange.length = ( separatorRange.location - tailRange.location );
         [components addObject:[self substringWithRange:componentRange]];
@@ -655,12 +599,11 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
         atMost --;
     }
     
+    NSArray *result;
     if ([components count] == 0) {
-        NSString *immutable;
-
         // Short-circuit.
         [components release];
-        immutable = [self copy];
+        NSString *immutable = [self copy];
         result = [NSArray arrayWithObject:immutable];
         [immutable release];
     } else {
@@ -715,22 +658,22 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     return result;
 }
 
-- (NSString *)stringByIndenting:(int)spaces;
+- (NSString *)stringByIndenting:(NSInteger)spaces;
 {
-    return [self stringByIndenting:spaces andWordWrapping:999999 withFirstLineIndent:spaces];
+    return [self stringByIndenting:spaces andWordWrapping:NSIntegerMax withFirstLineIndent:spaces];
 }
 
-- (NSString *)stringByWordWrapping:(int)columns;
+- (NSString *)stringByWordWrapping:(NSInteger)columns;
 {
     return [self stringByIndenting:0 andWordWrapping:columns withFirstLineIndent:0];
 }
 
-- (NSString *)stringByIndenting:(int)spaces andWordWrapping:(int)columns;
+- (NSString *)stringByIndenting:(NSInteger)spaces andWordWrapping:(NSInteger)columns;
 {
     return [self stringByIndenting:spaces andWordWrapping:columns withFirstLineIndent:spaces];
 }
 
-- (NSString *)stringByIndenting:(int)spaces andWordWrapping:(int)columns withFirstLineIndent:(int)firstLineSpaces;
+- (NSString *)stringByIndenting:(NSInteger)spaces andWordWrapping:(NSInteger)columns withFirstLineIndent:(NSInteger)firstLineSpaces;
 {
     NSMutableString *result;
     NSString *indent;
@@ -785,14 +728,12 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     return result;
 }
 
-- (NSRange)findString:(NSString *)string selectedRange:(NSRange)selectedRange options:(unsigned int)options wrap:(BOOL)wrap;
+- (NSRange)findString:(NSString *)string selectedRange:(NSRange)selectedRange options:(NSStringCompareOptions)options wrap:(BOOL)wrap;
 {
-    BOOL forwards;
-    unsigned int length;
     NSRange searchRange, range;
 
-    length = [self length];
-    forwards = (options & NSBackwardsSearch) == 0;
+    NSUInteger length = [self length];
+    BOOL forwards = (options & NSBackwardsSearch) == 0;
     if (forwards) {
 	searchRange.location = NSMaxRange(selectedRange);
 	searchRange.length = length - searchRange.location;
@@ -816,16 +757,13 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     return range;
 }        
 
-- (NSRange)rangeOfCharactersAtIndex:(unsigned)pos delimitedBy:(NSCharacterSet *)delim;
+- (NSRange)rangeOfCharactersAtIndex:(NSUInteger)pos delimitedBy:(NSCharacterSet *)delim;
 {
-    unsigned int myLength;
-    NSRange searchRange, foundRange;
-    unsigned int first, after;
+    NSUInteger myLength = [self length];
+    NSRange searchRange = NSMakeRange(0, pos);
+    NSRange foundRange = [self rangeOfCharacterFromSet:delim options:NSBackwardsSearch range:searchRange];
 
-    myLength = [self length];
-    searchRange.location = 0;
-    searchRange.length = pos;
-    foundRange = [self rangeOfCharacterFromSet:delim options:NSBackwardsSearch range:searchRange];
+    NSUInteger first;
     if (foundRange.length > 0)
       first = foundRange.location + foundRange.length;
     else
@@ -834,6 +772,8 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     searchRange.location = pos;
     searchRange.length = myLength - pos;
     foundRange = [self rangeOfCharacterFromSet:delim options:0 range:searchRange];
+
+    NSUInteger after;
     if (foundRange.length > 0)
       after = foundRange.location;
     else
@@ -844,7 +784,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     return foundRange;
 }
 
-- (NSRange)rangeOfWordContainingCharacter:(unsigned int)pos;
+- (NSRange)rangeOfWordContainingCharacter:(NSUInteger)pos;
 {
     NSCharacterSet *wordSep;
     unichar ch;
@@ -860,41 +800,23 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 - (NSRange)rangeOfWordsIntersectingRange:(NSRange)range;
 {
-    unsigned int first, last;
-    NSRange firstRange, lastRange;
-
     if (range.length == 0)
-        return NSMakeRange(0, 0);
+        return NSMakeRange(0, 0); // NSMakeRange(NSNotFound, 0)?
 
-    first = range.location;
-    last = NSMaxRange(range) - 1;
-    firstRange = [self rangeOfWordContainingCharacter:first];
-    lastRange = [self rangeOfWordContainingCharacter:last];
+    NSUInteger first = range.location;
+    NSUInteger last = NSMaxRange(range) - 1;
+    NSRange firstRange = [self rangeOfWordContainingCharacter:first];
+    NSRange lastRange = [self rangeOfWordContainingCharacter:last];
     return NSMakeRange(firstRange.location, NSMaxRange(lastRange) - firstRange.location);
 }
 
-// Needs encoding and out error; don't enable until it has them
+// Can we drop this and use something in OFXMLString instead?
 #if 0
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-- (BOOL)writeToFile:(NSString *)path atomically:(BOOL)useAuxiliaryFile createDirectories:(BOOL)shouldCreateDirectories;
-    // Will raise an exception if it can't create the required directories.
-{
-    if (shouldCreateDirectories) {
-        // TODO: We ought to make the attributes configurable
-        [[NSFileManager defaultManager] createPathToFile:path attributes:nil];
-    }
-
-    return [self writeToFile:path atomically:useAuxiliaryFile];
-}
-#endif
-#endif
-
 - (NSString *)htmlString;
 {
     unichar *ptr, *begin, *end;
     NSMutableString *result;
     NSString *string;
-    int length;
     
 #define APPEND_PREVIOUS() \
     string = [[NSString alloc] initWithCharacters:begin length:(ptr - begin)]; \
@@ -902,7 +824,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     [string release]; \
     begin = ptr + 1;
     
-    length = [self length];
+    NSUInteger length = [self length];
     ptr = alloca(length * sizeof(unichar));
     end = ptr + length;
     [self getCharacters:ptr];
@@ -934,7 +856,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     APPEND_PREVIOUS();
     return result;
 }
-
+#endif
 
 // Regular expression encoding
 
@@ -985,9 +907,9 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
         /* We don't contain any characters that aren't "nonCTLChars", so we can be represented as a quoted-string. */
         NSMutableString *buffer = [self mutableCopy];
         NSString *result;
-        unsigned int chIndex = [buffer length];
+        NSUInteger chIndex = [buffer length];
 
-        while(chIndex > 0) {
+        while (chIndex > 0) {
             unichar ch = [buffer characterAtIndex:(-- chIndex)];
             OBASSERT( !( ch < 32 || ch >= 127 ) ); // guaranteed by definition of nonNonCTLChars
             if (ch == '"' || ch == '\\' /* || ch < 32 || ch >= 127 */) {
@@ -1072,28 +994,21 @@ static inline unichar hex(int i)
 /* TODO: RFC2047 requires us to break up encoded-words so that each one is no longer than 75 characters. We don't do that, which means it's possible for us to produce non-conforming tokens if called on a long string. */
 - (NSString *)asRFC2047EncodedWord
 {
-    CFStringEncoding fastestEncoding, bestEncoding;
-    int encodingIndex, byteIndex, byteCount, qpSize, b64Size;
     CFStringRef cfSelf = (CFStringRef)self;
-    CFDataRef convertedBytes;
-    const UInt8 *bytePtr;
-    NSString *encodedWord;
 
-    bestEncoding = kCFStringEncodingInvalidId;
-    convertedBytes = NULL;
-
-    fastestEncoding = CFStringGetFastestEncoding(cfSelf);
-    for(encodingIndex = 0; preferredEncodings[encodingIndex] != kCFStringEncodingInvalidId; encodingIndex ++) {
+    CFStringEncoding bestEncoding = kCFStringEncodingInvalidId, fastestEncoding = CFStringGetFastestEncoding(cfSelf);
+    for (unsigned encodingIndex = 0; preferredEncodings[encodingIndex] != kCFStringEncodingInvalidId; encodingIndex ++) {
         if (fastestEncoding == preferredEncodings[encodingIndex]) {
             bestEncoding = fastestEncoding;
             break;
         }
     }
 
+    CFDataRef convertedBytes = NULL;
     if (bestEncoding == kCFStringEncodingInvalidId) {
         // The fastest encoding is not in the preferred encodings list. Check whether any of the preferred encodings are possible at all.
 
-        for(encodingIndex = 0; preferredEncodings[encodingIndex] != kCFStringEncodingInvalidId; encodingIndex ++) {
+        for (unsigned encodingIndex = 0; preferredEncodings[encodingIndex] != kCFStringEncodingInvalidId; encodingIndex ++) {
             convertedBytes = CFStringCreateExternalRepresentation(kCFAllocatorDefault, cfSelf, preferredEncodings[encodingIndex], 0);
             if (convertedBytes != NULL) {
                 bestEncoding = preferredEncodings[encodingIndex];
@@ -1115,7 +1030,7 @@ static inline unichar hex(int i)
         CFStringEncoding betterEncoding = kCFStringEncodingInvalidId;
         CFDataRef betterBytes = NULL;
         
-        for(encodingIndex = 0; desirableEncodings[encodingIndex] != kCFStringEncodingInvalidId; encodingIndex ++) {
+        for (unsigned encodingIndex = 0; desirableEncodings[encodingIndex] != kCFStringEncodingInvalidId; encodingIndex ++) {
             CFDataRef alternateBytes;
             CFStringEncoding trialEncoding;
             if (desirableEncodings[encodingIndex] == bestEncoding)
@@ -1177,20 +1092,21 @@ static inline unichar hex(int i)
         }
     }
 
-    byteCount = CFDataGetLength(convertedBytes);
-    bytePtr = CFDataGetBytePtr(convertedBytes);
+    NSUInteger byteCount = CFDataGetLength(convertedBytes);
+    const UInt8 *bytePtr = CFDataGetBytePtr(convertedBytes);
     
     // Now decide whether to use quoted-printable or base64 encoding. Again, we choose the smallest size.
-    qpSize = 0;
-    for(byteIndex = 0; byteIndex < byteCount; byteIndex ++) {
+    NSUInteger qpSize = 0;
+    for (NSUInteger byteIndex = 0; byteIndex < byteCount; byteIndex ++) {
         if (bytePtr[byteIndex] < 128 && qpNonSpecials[bytePtr[byteIndex]])
             qpSize += 1;
         else
             qpSize += 3;
     }
 
-    b64Size = (( byteCount + 2 ) / 3) * 4;
+    NSUInteger b64Size = (( byteCount + 2 ) / 3) * 4;
 
+    NSString *encodedWord;
     if (b64Size < qpSize) {
         // Base64 is smallest. Use it.
         encodedWord = [NSString stringWithFormat:@"=?%@?B?%@?=", charsetName, [(NSData *)convertedBytes base64String]];
@@ -1199,7 +1115,7 @@ static inline unichar hex(int i)
         // Quoted-Printable is smallest (or, at least, not larger than Base64).
         // (Ties go to QP because it's more readable.)
         encodedContent = [[NSMutableString alloc] initWithCapacity:qpSize];
-        for(byteIndex = 0; byteIndex < byteCount; byteIndex ++) {
+        for (NSUInteger byteIndex = 0; byteIndex < byteCount; byteIndex ++) {
             UInt8 byte = bytePtr[byteIndex];
             if (byte < 128 && qpNonSpecials[byte]) {
                 if (byte == 0x20) /* RFC2047 4.2(2) */
@@ -1279,12 +1195,12 @@ char *OFASCIIDecimalStringFromDouble(double value)
         
         decptr = strchr(digptr, '.');
         if (decptr != NULL) {
-            int tail = (expptr - decptr) - 1;
+            size_t tail = (expptr - decptr) - 1;
             exponent -= tail;
             memmove(decptr, decptr+1, expptr - decptr); // this memmove() includes the NUL
         }
         
-        int curlen = strlen(buf);
+        size_t curlen = strlen(buf);
         /* Four possibilities: we might need to append zeroes, prepend zeroes, do nothing, or reinsert the decimal point. */
         if (exponent > 0) {
             /* Append zeroes */
@@ -1297,8 +1213,8 @@ char *OFASCIIDecimalStringFromDouble(double value)
             result = buf;
         } else {
             // Must insert a decimal point
-            int prepend = - exponent - strlen(digptr);
-            int pfxlen = digptr - buf;
+            size_t prepend = - exponent - strlen(digptr);
+            size_t pfxlen = digptr - buf;
             char *trail;
             if (prepend >= 0) {
                 result = realloc(buf, curlen + prepend + 3);
@@ -1361,7 +1277,7 @@ char *OFShortASCIIDecimalStringFromDouble(double value, double eDigits, BOOL all
     decimalMantissaU = (unsigned long)floor(mantissa + 0.5 * mAcceptableSlop);
     
     /* Any mantissa in the range [decimalMantissaL ... decimalMantissaU] inclusive will produce an acceptable result. Check to see if one of them has a shorter representation than the others. */
-    unsigned int lastDigit = decimalMantissaL % 10;
+    unsigned long lastDigit = decimalMantissaL % 10;
     if (lastDigit == 0) {
         decimalMantissaV = decimalMantissaL;
     } else if ( (10 - lastDigit) <= (unsigned int)(decimalMantissaU - decimalMantissaL) ) {
@@ -1441,7 +1357,7 @@ char *OFShortASCIIDecimalStringFromDouble(double value, double eDigits, BOOL all
     
     if (negative) {
         // Prepend a minus sign
-        int poslen = strlen(result);
+        size_t poslen = strlen(result);
         result = realloc(result, poslen+2);
         memmove(result+1, result, poslen+1);
         result[0] = '-';

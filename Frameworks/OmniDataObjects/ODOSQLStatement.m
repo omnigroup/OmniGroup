@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@
 #if 0 && defined(DEBUG)
     #define TRACK_INSTANCES(format, ...) NSLog((format), ## __VA_ARGS__)
 #else
-    #define TRACK_INSTANCES(format, ...)
+    #define TRACK_INSTANCES(format, ...) do {} while (0)
 #endif
 
 RCS_ID("$Id$")
@@ -70,7 +70,7 @@ RCS_ID("$Id$")
     // TODO: Map ODOObject constants to their primary keys (but allow raw primary key values too).
     
     // This will usually either be just the pk for the root entity or all the schema attributes of the root entity.
-    unsigned int propertyIndex, propertyCount = [properties count];
+    NSUInteger propertyIndex, propertyCount = [properties count];
     for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
         ODOProperty *prop = [properties objectAtIndex:propertyIndex];
 #ifdef OMNI_ASSERTIONS_ON
@@ -143,11 +143,13 @@ RCS_ID("$Id$")
     if (constants) {
         // Bind the constants we found.  We only know their manifest type here.  We *could* try to enforce type safety when we are doing key/comp/value.
         sqlite3 *sqlite = [database _sqlite];
-        unsigned int constIndex, constCount = [constants count];
+        
+        NSUInteger constIndex, constCount = [constants count];
         for (constIndex = 0; constIndex < constCount; constIndex++) {
             id constant = [constants objectAtIndex:constIndex];
-            unsigned int bindIndex = constIndex + 1; // one-based.
-            if (!ODOSQLStatementBindConstant(self, sqlite, constant, bindIndex, outError)) {
+            NSUInteger bindIndex = constIndex + 1; // one-based.
+            OBASSERT(bindIndex < INT_MAX);
+            if (!ODOSQLStatementBindConstant(self, sqlite, constant, (int)bindIndex, outError)) {
                 [self release];
                 return nil;
             }
@@ -193,7 +195,11 @@ BOOL ODOSQLStatementBindString(struct sqlite3 *sqlite, ODOSQLStatement *statemen
 BOOL ODOSQLStatementBindData(struct sqlite3 *sqlite, ODOSQLStatement *statement, int bindIndex, NSData *data, NSError **outError)
 {
     // TODO: Performance; SQLITE_TRANSIENT causes SQLite to make a copy.  But, we should typically be binding and then executing immediately.  To be sure, we could always clear values after executing.
-    int rc = sqlite3_bind_blob(statement->_statement, bindIndex, [data bytes], [data length], SQLITE_TRANSIENT);
+
+    size_t dataLength = [data length];
+    OBASSERT(dataLength < INT_MAX); // Not handling >4GB blobs
+    
+    int rc = sqlite3_bind_blob(statement->_statement, bindIndex, [data bytes], (int)dataLength, SQLITE_TRANSIENT);
     if (rc == SQLITE_OK)
         return YES;
     
@@ -294,7 +300,7 @@ BOOL ODOSQLStatementBindFloat64(struct sqlite3 *sqlite, ODOSQLStatement *stateme
     return NO;
 }
 
-BOOL ODOSQLStatementBindConstant(ODOSQLStatement *self, struct sqlite3 *sqlite, id constant, unsigned int bindIndex, NSError **outError)
+BOOL ODOSQLStatementBindConstant(ODOSQLStatement *self, struct sqlite3 *sqlite, id constant, int bindIndex, NSError **outError)
 {
     if (OFISNULL(constant)) {
         if (!ODOSQLStatementBindNull(sqlite, self, bindIndex, outError))
@@ -336,9 +342,11 @@ BOOL ODOSQLStatementBindConstant(ODOSQLStatement *self, struct sqlite3 *sqlite, 
     return YES;
 }
 
-// Returns a retained object via 'value' on success.  Unlike binding, the columnIndex is zero-based
-BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *statement, int columnIndex, id *value, ODOAttributeType type, NSError **outError)
+// Returns a retained object via 'value' on success.  Unlike binding, the columnIndex is zero-based.
+BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *statement, int columnIndex, id *value, ODOAttributeType type, Class valueClass, NSError **outError)
 {
+    OBPRECONDITION(valueClass);
+    
     // Check for NULL before any of the types below (since we can't tell for scalar types).
     if (sqlite3_column_type(statement->_statement, columnIndex) == SQLITE_NULL) {
         *value = nil;
@@ -351,16 +359,16 @@ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
         {
             // Could fetch as int64 and check the range.  Maybe in DEBUG builds?
             int intValue = sqlite3_column_int(statement->_statement, columnIndex);
-            *value = [[NSNumber alloc] initWithInt:intValue];
+            *value = [[valueClass alloc] initWithInt:intValue];
             return YES;
         }
         case ODOAttributeTypeInt64: {
             int64_t intValue = sqlite3_column_int64(statement->_statement, columnIndex);
-            *value = [[NSNumber alloc] initWithLongLong:intValue];
+            *value = [[valueClass alloc] initWithLongLong:intValue];
             return YES;
         }
         case ODOAttributeTypeString: {
-            const unsigned char *utf8 = sqlite3_column_text(statement->_statement, columnIndex);
+            const uint8_t *utf8 = sqlite3_column_text(statement->_statement, columnIndex);
             if (!utf8) {
                 OBASSERT_NOT_REACHED("Should have been caught by the SQLITE_NULL check");
                 *value = nil;
@@ -369,24 +377,24 @@ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
                 
             int byteCount = sqlite3_column_bytes(statement->_statement, columnIndex); // sqlite3.h says this includes the NUL, but it doesn't seem to.
             OBASSERT(utf8[byteCount] == 0); // Check that the null is where we expected, since there is some confusion
-            *value = [[NSString alloc] initWithBytes:utf8 length:byteCount encoding:NSUTF8StringEncoding];
+            *value = [[valueClass alloc] initWithBytes:utf8 length:byteCount encoding:NSUTF8StringEncoding];
             return YES;
         }
         case ODOAttributeTypeBoolean: {
             int intValue = sqlite3_column_int(statement->_statement, columnIndex);
             OBASSERT(intValue == 0 || intValue == 1);
-            *value = [[NSNumber alloc] initWithBool:intValue ? YES : NO];
+            *value = [[valueClass alloc] initWithBool:intValue ? YES : NO];
             return YES;
         }
         case ODOAttributeTypeDate: {
             NSTimeInterval ti = sqlite3_column_double(statement->_statement, columnIndex);
-            *value = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:ti];
+            *value = [[valueClass alloc] initWithTimeIntervalSinceReferenceDate:ti];
             return YES;
         }
         case ODOAttributeTypeFloat32: // No independent float32 value in sqlite3
         case ODOAttributeTypeFloat64: {
             double f = sqlite3_column_double(statement->_statement, columnIndex);
-            *value = [[NSNumber alloc] initWithDouble:f];
+            *value = [[valueClass alloc] initWithDouble:f];
             return YES;
         }
         case ODOAttributeTypeData: {
@@ -396,9 +404,12 @@ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
                 *value = nil;
                 return YES;
             }
-            
+
+            if (!valueClass)
+                valueClass = [NSData class];
+
             int byteCount = sqlite3_column_bytes(statement->_statement, columnIndex);
-            *value = [[NSData alloc] initWithBytes:bytes length:byteCount];
+            *value = [[valueClass alloc] initWithBytes:bytes length:byteCount];
             return YES;
         }
         default: {
@@ -433,7 +444,7 @@ void ODOSQLStatementLogSQL(NSString *format, ...)
 BOOL ODOSQLStatementRun(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOSQLStatementCallbacks callbacks, void *context, NSError **outError)
 {
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    unsigned int rowCount = 0;
+    NSUInteger rowCount = 0;
     if (ODOLogSQL)
         ODOSQLStatementLogSQL(@"%@;\n", statement->_sql); // ';' not included when we build the SQL.  Of course, this will still have bind '?' placeholders
     
@@ -508,7 +519,7 @@ BOOL ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(struct sqlite3 *sq
     ODOObjectSetChangeProcessingEnabled(object, NO);
     @try {
         NSArray *schemaProperties = ctx->schemaProperties;
-        unsigned int propertyIndex = [schemaProperties count];
+        NSUInteger propertyIndex = [schemaProperties count];
         while (propertyIndex--) {
             if (propertyIndex == ctx->primaryKeyColumnIndex)
                 continue;
@@ -528,7 +539,8 @@ BOOL ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(struct sqlite3 *sq
                 attr = [[rel destinationEntity] primaryKeyAttribute];
             }
             
-            if (!ODOSQLStatementCreateValue(sqlite, statement, propertyIndex, &value, [attr type], outError))
+            OBASSERT(propertyIndex <= INT_MAX);
+            if (!ODOSQLStatementCreateValue(sqlite, statement, (int)propertyIndex, &value, [attr type], [attr valueClass], outError))
                 return NO;
             
             // DO NOT use -willChangeValueForKey: and -didChangeValueForKey: here.  We don't want KVO and we don't want changes to get logged since we aren't "changing" the object.

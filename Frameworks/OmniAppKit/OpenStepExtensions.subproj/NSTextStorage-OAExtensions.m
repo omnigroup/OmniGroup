@@ -1,4 +1,4 @@
-// Copyright 2002-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -87,8 +87,8 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
 - (NSUndoManager *)undoManager;
 {
     NSUndoManager *undoManager = nil;
-    NSArray       *layoutManagers;
-    unsigned int   layoutManagerIndex;
+    NSArray *layoutManagers;
+    NSUInteger layoutManagerIndex;
 
     layoutManagers = [self layoutManagers];
     layoutManagerIndex = [layoutManagers count];
@@ -100,7 +100,7 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
             continue;
 
         NSArray *textContainers = [layoutManager textContainers];
-        unsigned int textContainerIndex = [textContainers count];
+        NSUInteger textContainerIndex = [textContainers count];
         while (textContainerIndex--) {
             NSTextContainer *textContainer = [textContainers objectAtIndex:textContainerIndex];
             NSTextView *textView = [textContainer textView];
@@ -292,8 +292,8 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
 
 - (void)convertFontsToHaveTrait:(NSFontTraitMask)trait;
 {
-    unsigned int position  = 0;
-    unsigned int length    = [self length];
+    NSUInteger position = 0;
+    NSUInteger length = [self length];
     NSFontManager *manager = [NSFontManager sharedFontManager];
     
     [self beginEditing];
@@ -431,13 +431,10 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
 {
     NSTextStorage *result = [[[NSTextStorage alloc] init] autorelease];
     NSScriptCoercionHandler *coercer = [NSScriptCoercionHandler sharedCoercionHandler];
-    int index, count;
-    
-    count = [array count];
-    
+        
     [result beginEditing];
-    for (index = 0; index < count; index++)
-        [result appendAttributedString:[coercer coerceValue:[array objectAtIndex:index] toClass:self]];
+    for (id value in array)
+        [result appendAttributedString:[coercer coerceValue:value toClass:self]];
     [result endEditing];
     
     return result;
@@ -465,22 +462,20 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
     else {
         NSMutableString *result = [NSMutableString stringWithString:@"{"];
         BOOL useComma = NO;
-        int index, count;
         
-        count = [parts count];
-        for (index = 0; index < count; index++) {
+        for (NSString *part in parts) {
             if (useComma)
                 [result appendString:@", "];
             else
                 useComma = YES;
-            [result appendString:[[parts objectAtIndex:index] appleScriptMakeProperties]];
+            [result appendString:[part appleScriptMakeProperties]];
         }
         [result appendString:@"}"];
         return result;
     }
 }
 
-- (id)attachmentAtCharacterIndex:(unsigned int)characterIndex;
+- (id)attachmentAtCharacterIndex:(NSUInteger)characterIndex;
 {
     return [self attribute:NSAttachmentAttributeName atIndex:characterIndex effectiveRange:NULL];
 }

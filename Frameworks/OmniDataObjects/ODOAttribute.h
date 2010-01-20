@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,9 +35,9 @@ typedef enum {
     Class _valueClass;
 }
 
-- (ODOAttributeType)type;
-- (NSObject <NSCopying> *)defaultValue;
-- (Class)valueClass;
+@property(readonly) ODOAttributeType type;
+@property(readonly) NSObject <NSCopying> *defaultValue;
+@property(readonly) Class valueClass;
 
 @property(readonly) BOOL isPrimaryKey;
 

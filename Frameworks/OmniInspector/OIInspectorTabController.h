@@ -1,4 +1,4 @@
-// Copyright 2006-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,7 +51,7 @@
 - (NSString *)identifier;
 - (NSString *)displayName;
 - (NSString *)shortcutKey;
-- (unsigned int)shortcutModifierFlags;
+- (NSUInteger)shortcutModifierFlags;
 - (NSMenuItem *)menuItemForTarget:(id)target action:(SEL)action;
 
 @end

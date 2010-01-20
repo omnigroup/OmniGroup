@@ -1,4 +1,4 @@
-// Copyright 2003-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,6 +61,8 @@ RCS_ID("$Id$");
 
 - (void)awakeFromNib
 {
+    [super awakeFromNib];
+    
     NSImage *image = [self image];
     if (image == nil) {
         if ([[self cell] controlSize] == NSSmallControlSize)
@@ -142,7 +144,7 @@ RCS_ID("$Id$");
     if ([event type] == NSLeftMouseDown) {
         simulatedEvent = [NSEvent mouseEventWithType:NSLeftMouseDown location:eventLocation modifierFlags:[event modifierFlags] timestamp:[event timestamp] windowNumber:[event windowNumber] context:[event context] eventNumber:[event eventNumber] clickCount:[event clickCount] pressure:[event pressure]];
     } else 
-        simulatedEvent = [NSEvent mouseEventWithType:NSLeftMouseDown location:eventLocation modifierFlags:[event modifierFlags] timestamp:[event timestamp] windowNumber:[event windowNumber] context:[event context] eventNumber:0 clickCount:1 pressure:1.0];
+        simulatedEvent = [NSEvent mouseEventWithType:NSLeftMouseDown location:eventLocation modifierFlags:[event modifierFlags] timestamp:[event timestamp] windowNumber:[event windowNumber] context:[event context] eventNumber:0 clickCount:1 pressure:1.0f];
     
     NSFont *font = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:[[self cell] controlSize]]];
 

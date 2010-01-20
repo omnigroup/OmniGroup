@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,7 @@
 
 RCS_ID("$Id$")
 
-@implementation ODOEntity (SQL)
+@implementation ODOEntity (ODO_SQL)
 
 // Builds the subset of properties in the order they are used in the actual schema.
 - (void)_buildSchemaProperties;
@@ -31,10 +31,7 @@ RCS_ID("$Id$")
     [schemaProperties addObject:_primaryKeyAttribute];
     
     // Append all the other relevant attributes and to-one relationships (where we store the destination's primary key in our foreign key column).
-    unsigned int propertyIndex, propertyCount = [_properties count];
-    for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
-        ODOProperty *prop = [_properties objectAtIndex:propertyIndex];
-        
+    for (ODOProperty *prop in _properties) {
         if ([prop isKindOfClass:[ODOAttribute class]]) {
             ODOAttribute *attr = (ODOAttribute *)prop;
             if (attr == _primaryKeyAttribute)
@@ -135,7 +132,7 @@ static BOOL _appendColumnForToOneRelationship(NSMutableString *str, ODORelations
     NSMutableString *sql = [NSMutableString stringWithFormat:@"create table %@ (", _name];
 
     // Only consider the schema properties.
-    unsigned int propertyIndex, propertyCount = [_schemaProperties count];
+    NSUInteger propertyIndex, propertyCount = [_schemaProperties count];
     for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
         if (propertyIndex > 0)
             [sql appendString:@", "];
@@ -161,9 +158,7 @@ static BOOL _appendColumnForToOneRelationship(NSMutableString *str, ODORelations
 // The 'PRIMARY KEY' column spec creates the main index implicitly.  We create indexes for each of the foreign keys so that to-many fault clearing it fast.
 - (BOOL)_createIndexesInDatabase:(ODODatabase *)database error:(NSError **)outError;
 {
-    unsigned int propertyIndex = [_schemaProperties count];
-    while (propertyIndex--) {
-        ODOProperty *prop = [_schemaProperties objectAtIndex:propertyIndex];
+    for (ODOProperty *prop in _schemaProperties) {
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
 
         if (!flags.relationship || flags.toMany)
@@ -179,11 +174,12 @@ static BOOL _appendColumnForToOneRelationship(NSMutableString *str, ODORelations
     return YES;
 }
 
-static BOOL _bindAttributeValue(struct sqlite3 *sqlite, ODOSQLStatement *statement, unsigned int zeroBasedPropertyIndex, ODOAttributeType type, id value, NSError **outError)
+static BOOL _bindAttributeValue(struct sqlite3 *sqlite, ODOSQLStatement *statement, NSUInteger zeroBasedPropertyIndex, ODOAttributeType type, id value, NSError **outError)
 {
     OBPRECONDITION(statement);
 
-    unsigned int oneBasedPropertyIndex = zeroBasedPropertyIndex + 1;
+    OBASSERT(zeroBasedPropertyIndex < INT_MAX);
+    int oneBasedPropertyIndex = (int)zeroBasedPropertyIndex + 1;
     
     if (OFISNULL(value))
         return ODOSQLStatementBindNull(sqlite, statement, oneBasedPropertyIndex, outError);
@@ -224,7 +220,7 @@ static BOOL _bindAttributeValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
     return YES;
 }
 
-static BOOL _bindRelationshipForeignKey(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, unsigned int zeroBasedPropertyIndex, ODORelationship *rel, NSError **outError)
+static BOOL _bindRelationshipForeignKey(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, NSUInteger zeroBasedPropertyIndex, ODORelationship *rel, NSError **outError)
 {
     ODOAttribute *attr = [[rel destinationEntity] primaryKeyAttribute];
     ODOAttributeType type = [attr type];
@@ -240,7 +236,7 @@ static BOOL _bindRelationshipForeignKey(struct sqlite3 *sqlite, ODOSQLStatement 
     return _bindAttributeValue(sqlite, statement, zeroBasedPropertyIndex, type, foreignKey, outError);
 }
 
-static BOOL _bindPlainAttribute(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, unsigned int zeroBasedPropertyIndex, ODOAttribute *attr, NSError **outError)
+static BOOL _bindPlainAttribute(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, NSUInteger zeroBasedPropertyIndex, ODOAttribute *attr, NSError **outError)
 {
     ODOAttributeType type = [attr type];
     id value = ODOObjectPrimitiveValueForProperty(object, attr);
@@ -250,7 +246,7 @@ static BOOL _bindPlainAttribute(struct sqlite3 *sqlite, ODOSQLStatement *stateme
     return _bindAttributeValue(sqlite, statement, zeroBasedPropertyIndex, type, value, outError);
 }
 
-static BOOL _bindSchemaProperty(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, unsigned int zeroBasedPropertyIndex, ODOProperty *prop, NSError **outError)
+static BOOL _bindSchemaProperty(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, NSUInteger zeroBasedPropertyIndex, ODOProperty *prop, NSError **outError)
 {
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
     if (flags.relationship)
@@ -261,7 +257,7 @@ static BOOL _bindSchemaProperty(struct sqlite3 *sqlite, ODOSQLStatement *stateme
 
 static BOOL _bindInsertSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, NSArray *schemaProperties, NSError **outError)
 {
-    unsigned int propertyIndex = [schemaProperties count];
+    NSUInteger propertyIndex = [schemaProperties count];
     while (propertyIndex--) {
         ODOProperty *prop = [schemaProperties objectAtIndex:propertyIndex];
         if (!_bindSchemaProperty(sqlite, statement, object, propertyIndex, prop, outError))
@@ -280,7 +276,7 @@ static BOOL _bindInsertSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
     ODOSQLStatement *insertStatement = [database _cachedStatementForKey:_insertStatementKey];
     if (!insertStatement) {
         NSMutableString *sql = [[NSMutableString alloc] initWithFormat:@"INSERT INTO %@ VALUES (", _name];
-        unsigned int propertyIndex, propertyCount = [_schemaProperties count];
+        NSUInteger propertyIndex, propertyCount = [_schemaProperties count];
         for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
             if (propertyIndex == 0)
                 [sql appendString:@"?"];
@@ -315,8 +311,8 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
     OBPRECONDITION([primaryKeyAttribute isPrimaryKey]);
     OBPRECONDITION([schemaProperties containsObject:primaryKeyAttribute]);
     
-    unsigned int bindIndex = 0;
-    unsigned int propertyIndex, propertyCount = [schemaProperties count];
+    NSUInteger bindIndex = 0;
+    NSUInteger propertyIndex, propertyCount = [schemaProperties count];
     
     for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
         ODOProperty *prop = [schemaProperties objectAtIndex:propertyIndex];
@@ -342,7 +338,7 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
     ODOSQLStatement *updateStatement = [database _cachedStatementForKey:_updateStatementKey];
     if (!updateStatement) {
         NSMutableString *sql = [[NSMutableString alloc] initWithFormat:@"UPDATE %@ SET ", _name];
-        unsigned int propertyIndex, propertyCount = [_schemaProperties count];
+        NSUInteger propertyIndex, propertyCount = [_schemaProperties count];
         BOOL firstProp = YES;
         for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
             ODOProperty *prop = [_schemaProperties objectAtIndex:propertyIndex];

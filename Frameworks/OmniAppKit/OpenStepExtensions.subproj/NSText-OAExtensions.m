@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,7 @@ RCS_ID("$Id$")
     [self scrollRangeToVisible:[self selectedRange]];
 }
 
-- (unsigned int)textLength;
+- (NSUInteger)textLength;
 {
     return [[self string] length];
 }
@@ -165,7 +165,7 @@ RCS_ID("$Id$")
 {
     // TODO: I'd really like to just move all these methods to NSTextView-OAExtensions.m and not pretend that someone else subclasses NSText.
     NSTextStorage *textStorage = [(NSTextView *)self textStorage];
-    unsigned int length = [textStorage length];
+    NSUInteger length = [textStorage length];
     if (!length)
         return NO;
     
@@ -195,7 +195,7 @@ RCS_ID("$Id$")
 
 @implementation NSTextView (OAExtensions)
 
-- (unsigned int)textLength;
+- (NSUInteger)textLength;
 {
     return [[self textStorage] length];
 }

@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ RCS_ID("$Id$");
 
 void *feedData(void *arg)
 {
-    unsigned int bytesWritten, totalBytes;
+    NSUInteger bytesWritten, totalBytes;
     NSData *buf = ((ONSocketStreamTests *)arg)->writerBuf;
     int fd = ((ONSocketStreamTests *)arg)->socket_fd;
     BOOL delays = ((ONSocketStreamTests *)arg)->withDelays;
@@ -42,14 +42,14 @@ void *feedData(void *arg)
     bytesWritten = 0;
 
     while (bytesWritten < totalBytes) {
-        int bytesThisCall, result;
+        size_t bytesThisCall;
 
         if (delays)
             bytesThisCall = 1;
         else
             bytesThisCall = totalBytes - bytesWritten;
 
-        result = write(fd, [buf bytes] + bytesWritten, bytesThisCall);
+        ssize_t result = write(fd, [buf bytes] + bytesWritten, bytesThisCall);
         if (result < 1) {
             ((ONSocketStreamTests *)arg)->writerError = errno;
             return NULL;

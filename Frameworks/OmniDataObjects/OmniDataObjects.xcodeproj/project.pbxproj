@@ -47,6 +47,8 @@
 		340DD2ED0D89A3090049D65E /* ODOObjectID.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD2EB0D89A3090049D65E /* ODOObjectID.m */; };
 		341646DB0E970192006BF255 /* ODOAttributeTypeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 341646D70E97015D006BF255 /* ODOAttributeTypeTests.m */; };
 		341647620E971390006BF255 /* ODODynamicPropertyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 341647610E971390006BF255 /* ODODynamicPropertyTests.m */; };
+		341FC8180FDF203E0097EA13 /* ODOStringCompareFunctionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 341FC8170FDF203E0097EA13 /* ODOStringCompareFunctionTest.m */; };
+		344E7E871042FD6700C55C19 /* ODOInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 344E7E861042FD6700C55C19 /* ODOInternal.h */; };
 		344FB1B00D89973500AA63FE /* ODOAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1A70D89973500AA63FE /* ODOAttribute.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		344FB1B10D89973500AA63FE /* ODOEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1A80D89973500AA63FE /* ODOEntity.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		344FB1B20D89973500AA63FE /* ODOFetchRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1A90D89973500AA63FE /* ODOFetchRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -168,6 +170,12 @@
 		340DD2EB0D89A3090049D65E /* ODOObjectID.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOObjectID.m; sourceTree = "<group>"; };
 		341646D70E97015D006BF255 /* ODOAttributeTypeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOAttributeTypeTests.m; sourceTree = "<group>"; };
 		341647610E971390006BF255 /* ODODynamicPropertyTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODODynamicPropertyTests.m; sourceTree = "<group>"; };
+		341FC8170FDF203E0097EA13 /* ODOStringCompareFunctionTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOStringCompareFunctionTest.m; sourceTree = "<group>"; };
+		342B69A21101055300ABCE65 /* ODOTestCaseLeftHand-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOTestCaseLeftHand-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
+		342B69A31101055300ABCE65 /* ODOTestCaseLeftHandRequired-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOTestCaseLeftHandRequired-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
+		342B69A41101055300ABCE65 /* ODOTestCaseRightHand-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOTestCaseRightHand-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
+		342B69A51101055300ABCE65 /* ODOTestCaseRightHandRequired-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOTestCaseRightHandRequired-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
+		344E7E861042FD6700C55C19 /* ODOInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOInternal.h; sourceTree = "<group>"; };
 		344FB1A70D89973500AA63FE /* ODOAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOAttribute.h; sourceTree = "<group>"; };
 		344FB1A80D89973500AA63FE /* ODOEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOEntity.h; sourceTree = "<group>"; };
 		344FB1A90D89973500AA63FE /* ODOFetchRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOFetchRequest.h; sourceTree = "<group>"; };
@@ -214,6 +222,9 @@
 		3475A0820DE2357400FB73CC /* OBTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OBTestCase.h; path = ../../OmniBase/OBTestCase.h; sourceTree = "<group>"; };
 		3475A0830DE2357400FB73CC /* OBTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OBTestCase.m; path = ../../OmniBase/OBTestCase.m; sourceTree = "<group>"; };
 		3477F3DB0DA29343001CF280 /* ODOFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOFeatures.h; sourceTree = "<group>"; };
+		347C2A5010B1D647004EB6BE /* ODOTestCaseAllAttributeTypes-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOTestCaseAllAttributeTypes-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
+		347C2A5110B1D647004EB6BE /* ODOTestCaseDetail-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOTestCaseDetail-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
+		347C2A5210B1D647004EB6BE /* ODOTestCaseMaster-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOTestCaseMaster-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
 		3481A9B30D899C210050FC54 /* OmniDataObjects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDataObjects.h; sourceTree = "<group>"; };
 		348409510D89F5EF00E74C9D /* ODOVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOVersion.h; sourceTree = "<group>"; };
 		348409520D89F5EF00E74C9D /* ODOVersion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOVersion.m; sourceTree = "<group>"; };
@@ -262,7 +273,6 @@
 		34C25F7F0EAE61C300F5FC90 /* ODOObject-Accessors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOObject-Accessors.m"; sourceTree = "<group>"; };
 		34D5FB1B0E9F20890055E958 /* ODOModel-Creation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOModel-Creation.h"; sourceTree = "<group>"; };
 		34D5FB8F0EA06D910055E958 /* ODOTestCase.odomodel */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; fileEncoding = 4; path = ODOTestCase.odomodel; sourceTree = "<group>"; };
-		34F4CD2C0EA926870075D4B2 /* ODOObject-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOObject-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
 		34F4CD2D0EA926870075D4B2 /* ODOTestCaseDynamicProperty-ODOTestCaseProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOTestCaseDynamicProperty-ODOTestCaseProperties.h"; sourceTree = "<group>"; };
 		34F4CD2E0EA926870075D4B2 /* ODOTestCaseModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOTestCaseModel.h; sourceTree = "<group>"; };
 		34F4CD2F0EA926870075D4B2 /* ODOTestCaseModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOTestCaseModel.m; sourceTree = "<group>"; };
@@ -385,6 +395,7 @@
 				3465D9F60D89C13B00D0B1D9 /* Errors.h */,
 				34B9CCF20D8B065C001A5AB1 /* Errors.m */,
 				3477F3DB0DA29343001CF280 /* ODOFeatures.h */,
+				344E7E861042FD6700C55C19 /* ODOInternal.h */,
 				348409510D89F5EF00E74C9D /* ODOVersion.h */,
 				348409520D89F5EF00E74C9D /* ODOVersion.m */,
 				3481A9B30D899C210050FC54 /* OmniDataObjects.h */,
@@ -439,6 +450,7 @@
 				3472C2D10DAFD8A800AAD622 /* ODODeleteTests.m */,
 				341646D70E97015D006BF255 /* ODOAttributeTypeTests.m */,
 				341647610E971390006BF255 /* ODODynamicPropertyTests.m */,
+				341FC8170FDF203E0097EA13 /* ODOStringCompareFunctionTest.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -579,8 +591,14 @@
 		34F4CD2B0EA926870075D4B2 /* Generated */ = {
 			isa = PBXGroup;
 			children = (
-				34F4CD2C0EA926870075D4B2 /* ODOObject-ODOTestCaseProperties.h */,
+				347C2A5010B1D647004EB6BE /* ODOTestCaseAllAttributeTypes-ODOTestCaseProperties.h */,
+				347C2A5110B1D647004EB6BE /* ODOTestCaseDetail-ODOTestCaseProperties.h */,
 				34F4CD2D0EA926870075D4B2 /* ODOTestCaseDynamicProperty-ODOTestCaseProperties.h */,
+				342B69A21101055300ABCE65 /* ODOTestCaseLeftHand-ODOTestCaseProperties.h */,
+				342B69A31101055300ABCE65 /* ODOTestCaseLeftHandRequired-ODOTestCaseProperties.h */,
+				347C2A5210B1D647004EB6BE /* ODOTestCaseMaster-ODOTestCaseProperties.h */,
+				342B69A41101055300ABCE65 /* ODOTestCaseRightHand-ODOTestCaseProperties.h */,
+				342B69A51101055300ABCE65 /* ODOTestCaseRightHandRequired-ODOTestCaseProperties.h */,
 				34F4CD2E0EA926870075D4B2 /* ODOTestCaseModel.h */,
 				34F4CD2F0EA926870075D4B2 /* ODOTestCaseModel.m */,
 			);
@@ -614,6 +632,7 @@
 				3477F3DC0DA29344001CF280 /* ODOFeatures.h in Headers */,
 				34043DF90DA4086400761C40 /* NSPredicate-ODOExtensions.h in Headers */,
 				34D5FB1C0E9F20890055E958 /* ODOModel-Creation.h in Headers */,
+				344E7E871042FD6700C55C19 /* ODOInternal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -766,7 +785,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+			shellScript = "/usr/omni/bin/Scripts/OmniRunUnitTests\n";
 		};
 		3484096A0D89F9CD00E74C9D /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -840,6 +859,7 @@
 				341646DB0E970192006BF255 /* ODOAttributeTypeTests.m in Sources */,
 				341647620E971390006BF255 /* ODODynamicPropertyTests.m in Sources */,
 				34F4CD300EA926870075D4B2 /* ODOTestCaseModel.m in Sources */,
+				341FC8180FDF203E0097EA13 /* ODOStringCompareFunctionTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

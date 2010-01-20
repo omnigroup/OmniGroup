@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -75,7 +75,7 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark Creation
 
-ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL transient, SEL get, SEL set,
+ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL calculated, BOOL transient, SEL get, SEL set,
                                        BOOL toMany, ODORelationshipDeleteRule deleteRule)
 {
     OBPRECONDITION(deleteRule > ODORelationshipDeleteRuleInvalid);
@@ -91,7 +91,7 @@ ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL trans
     baseFlags.relationship = YES;
     baseFlags.toMany = toMany;
     
-    ODOPropertyInit(rel, name, baseFlags, optional, transient, get, set);
+    ODOPropertyInit(rel, name, baseFlags, optional, calculated, transient, get, set);
     
     rel->_deleteRule = deleteRule;
     
@@ -103,6 +103,25 @@ void ODORelationshipBind(ODORelationship *self, ODOEntity *sourceEntity, ODOEnti
     OBPRECONDITION([self isKindOfClass:[ODORelationship class]]);
     OBPRECONDITION(destinationEntity);
     OBPRECONDITION(inverse);
+    
+    // We don't support many-to-many
+    OBPRECONDITION(!self.isToMany || !inverse.isToMany);
+    
+    // Both sides can't be calculated; one would (presumably) have to be computed from the other.
+    OBPRECONDITION(!self.isCalculated || !inverse.isCalculated);
+
+    // In a one-to-one, one side must be calculated.
+#ifdef OMNI_ASSERTIONS_ON
+    if (!self.isToMany && !inverse.isToMany) {
+        OBPRECONDITION(self.isCalculated || inverse.isCalculated);
+    }
+    
+    // The to-one side of a one-to-many can't be calculated since presumably the to-many side is the calculated side.
+    if (self.isToMany)
+        OBPRECONDITION(!inverse.isCalculated);
+    else if (inverse.isToMany)
+        OBPRECONDITION(!self.isCalculated);
+#endif
     
     ODOPropertyBind(self, sourceEntity);
     

@@ -1,4 +1,4 @@
-// Copyright 2000-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -123,7 +123,7 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
         // otherwise, fallback -- might be a rgb color in the plist too.
     }
     
-    CGFloat alpha = 1.0;
+    CGFloat alpha = 1.0f;
     getters.component(container, @"a", &alpha);
 
     CGFloat v0;
@@ -146,7 +146,7 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
         CGFloat v1 = 0.0f, v2 = 0.0f;
         getters.component(container, @"g", &v1);
         getters.component(container, @"b", &v2);
-        return [NSColor colorWithCalibratedRed:v0 green:v1 blue:v2 alpha:alpha];
+        return OARGBA(v0, v1, v2, alpha);
     }
     
     if (getters.component(container, @"c", &v0)) {
@@ -207,12 +207,12 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
 
 
 typedef struct {
-    void (*component)(id container, NSString *key, float component);
+    void (*component)(id container, NSString *key, double component);
     void (*string)(id container, NSString *key, NSString *string);
     void (*data)(id container, NSString *key, NSData *data);
 } OAColorAdders;
 
-static void _dictionaryStringComponentAdder(id container, NSString *key, float component)
+static void _dictionaryStringComponentAdder(id container, NSString *key, double component)
 {
     OBPRECONDITION([container isKindOfClass:[NSMutableDictionary class]]);
     NSString *str = [[NSString alloc] initWithFormat:@"%g", component];
@@ -220,10 +220,10 @@ static void _dictionaryStringComponentAdder(id container, NSString *key, float c
     [str release];
 }
 
-static void _dictionaryNumberComponentAdder(id container, NSString *key, float component)
+static void _dictionaryNumberComponentAdder(id container, NSString *key, double component)
 {
     OBPRECONDITION([container isKindOfClass:[NSMutableDictionary class]]);
-    NSNumber *num = [[NSNumber alloc] initWithFloat:component];
+    NSNumber *num = [[NSNumber alloc] initWithDouble:component];
     [container setObject:num forKey:key];
     [num release];
 }
@@ -287,7 +287,7 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
         return;
     }
     if (hasAlpha) {
-        float alpha = [self alphaComponent];
+        double alpha = [self alphaComponent];
         if (alpha != 1.0 || !omittingDefaultValues)
             adders.component(container, @"a", alpha);
     }
@@ -355,6 +355,39 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     return NO;
 }
 
+- (BOOL)isPatternSimilarToColorPattern:(NSColor *)color;
+{
+    NSImage *patternImage = [self patternImage];  
+    if (!patternImage)
+        return NO;
+    
+    [patternImage lockFocus];
+    NSBitmapImageRep *firstPatternBitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:NSMakeRect(0, 0,  [patternImage size].width, [patternImage size].height)] autorelease];
+    [patternImage unlockFocus];
+    
+    patternImage = [color patternImage];
+    if (!patternImage)
+        return NO;
+    
+    [patternImage lockFocus];
+    NSBitmapImageRep *secondPatternBitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:NSMakeRect(0, 0,  [patternImage size].width, [patternImage size].height)] autorelease];
+    [patternImage unlockFocus];
+    
+    if ([firstPatternBitmapImageRep pixelsWide] != [secondPatternBitmapImageRep pixelsWide] || [firstPatternBitmapImageRep pixelsHigh] != [secondPatternBitmapImageRep pixelsHigh])
+        return NO;
+    
+    for (NSInteger widthIndex = 0; widthIndex < [firstPatternBitmapImageRep pixelsWide]; widthIndex++) {
+        for (NSInteger heightIndex = 0; heightIndex < [firstPatternBitmapImageRep pixelsHigh]; heightIndex++) {
+            NSColor *firstPatternColor = [firstPatternBitmapImageRep colorAtX:widthIndex y:heightIndex];
+            NSColor *secondPatternColor = [secondPatternBitmapImageRep colorAtX:widthIndex y:heightIndex];
+            
+            if (![firstPatternColor isSimilarToColor:secondPatternColor])
+                return NO;
+        }
+    }  
+    
+    return YES;
+}
 
 - (NSData *)patternImagePNGData;
 {
@@ -372,13 +405,13 @@ typedef struct {
     NSColor  *color; // in the original color space
 } OANamedColorEntry;
 
-static OANamedColorEntry *_addColorsFromList(OANamedColorEntry *colorEntries, unsigned int *entryCount, NSColorList *colorList)
+static OANamedColorEntry *_addColorsFromList(OANamedColorEntry *colorEntries, NSUInteger *entryCount, NSColorList *colorList)
 {
     if (colorList == nil)
 	return colorEntries;
 
     NSArray *allColorKeys = [colorList allKeys];
-    unsigned int colorIndex, colorCount = [allColorKeys count];
+    NSUInteger colorIndex, colorCount = [allColorKeys count];
     
     // Make room for the extra entries
     colorEntries = (OANamedColorEntry *)realloc(colorEntries, sizeof(*colorEntries)*(*entryCount + colorCount));
@@ -402,10 +435,12 @@ static OANamedColorEntry *_addColorsFromList(OANamedColorEntry *colorEntries, un
     return colorEntries;
 }
 
-static const OANamedColorEntry *_combinedColorEntries(unsigned int *outEntryCount)
+static const OANamedColorEntry *_combinedColorEntries(NSUInteger *outEntryCount)
 {
+    OBPRECONDITION([NSThread isMainThread]); // static variables
+    
     static OANamedColorEntry *entries = NULL;
-    static unsigned int entryCount = 0;
+    static NSUInteger entryCount = 0;
     
     if (entries == NULL) {
 	// Two built-in color lists that should get localized
@@ -420,27 +455,27 @@ static const OANamedColorEntry *_combinedColorEntries(unsigned int *outEntryCoun
     return entries;
 }
 
-static float _nearnessWithWrap(float a, float b)
+static CGFloat _nearnessWithWrap(CGFloat a, CGFloat b)
 {
-    float value1 = 1.0 - a + b;
-    float value2 = 1.0 - b + a;
-    float value3 = a - b;
+    CGFloat value1 = 1.0f - a + b;
+    CGFloat value2 = 1.0f - b + a;
+    CGFloat value3 = a - b;
     return MIN(ABS(value1), MIN(ABS(value2), ABS(value3)));
 }
 
-static float _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEntry *e2)
+static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEntry *e2)
 {
     // As saturation goes to zero, hue becomes irrelevant.  For example, black has h=0, but that doesn't mean it is "like" red.  So, we do the distance in RGB space.  But the modifier words in HSV.
-    float sdiff = ABS(e1->s - e2->s);
+    CGFloat sdiff = ABS(e1->s - e2->s);
     if (sdiff < 0.1 && e1->s < 0.1) {
-	float rd = e1->r - e2->r;
-	float gd = e1->g - e2->g;
-	float bd = e1->B - e2->B;
+	CGFloat rd = e1->r - e2->r;
+	CGFloat gd = e1->g - e2->g;
+	CGFloat bd = e1->B - e2->B;
 	
-	return sqrt(rd*rd + gd*gd + bd*bd);
+	return (CGFloat)sqrt(rd*rd + gd*gd + bd*bd);
     } else {
 	// We weight the hue stronger than the saturation or brightness, since it's easier to talk about 'dark yellow' than it is 'yellow except for with a little red in it'
-	return 3.0 * _nearnessWithWrap(e1->h, e2->h) + sdiff + ABS(e1->v - e2->v);
+	return (CGFloat)(3.0 * _nearnessWithWrap(e1->h, e2->h) + sdiff + ABS(e1->v - e2->v));
     }
 }
         
@@ -453,7 +488,7 @@ static float _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEntr
     else if ([[self colorSpaceName] isEqualToString:NSCustomColorSpace])
         return NSLocalizedStringFromTableInBundle(@"Custom", @"OmniAppKit", [OAColorProfile bundle], "generic color name for custom colors");
 
-    unsigned int entryCount;
+    NSUInteger entryCount;
     const OANamedColorEntry *entries = _combinedColorEntries(&entryCount);
     
     if (entryCount == 0) {
@@ -469,20 +504,20 @@ static float _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEntr
     [rgbColor getRed:&colorEntry.r green:&colorEntry.g blue:&colorEntry.B alpha:&colorEntry.a];
 
     const OANamedColorEntry *closestEntry = &entries[0];
-    float closestEntryDistance = 1e9;
+    CGFloat closestEntryDistance = CGFLOAT_MAX;
 
     // Entries at the end of the array have higher precedence; loop backwards
-    unsigned int entryIndex = entryCount;
+    NSUInteger entryIndex = entryCount;
     while (entryIndex--) {
 	const OANamedColorEntry *entry = &entries[entryIndex];
-	float distance = _colorCloseness(&colorEntry, entry);
+	CGFloat distance = _colorCloseness(&colorEntry, entry);
 	if (distance < closestEntryDistance) {
 	    closestEntryDistance = distance;
 	    closestEntry = entry;
 	}
     }
 
-    float brightnessDifference = colorEntry.v - closestEntry->v;
+    CGFloat brightnessDifference = colorEntry.v - closestEntry->v;
     NSString *brightnessString = nil;
     if (brightnessDifference < -.1 && colorEntry.v < .1)
         brightnessString =  NSLocalizedStringFromTableInBundle(@"Near-black", @"OmniAppKit", [OAColorProfile bundle], "word comparing color brightnesss");
@@ -500,7 +535,7 @@ static float _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEntr
     // Input saturation less than some value means that the saturation is irrelevant.
     NSString *saturationString = nil;
     if (colorEntry.s > 0.01) {
-	float saturationDifference = colorEntry.s - closestEntry->s;
+	CGFloat saturationDifference = colorEntry.s - closestEntry->s;
 	if (saturationDifference < -0.3)
 	    saturationString =  NSLocalizedStringFromTableInBundle(@"Washed-out", @"OmniAppKit", [OAColorProfile bundle], "word comparing color saturations");
 	else if (saturationDifference < -.2)
@@ -543,29 +578,29 @@ static float _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEntr
     [[aColor colorUsingColorSpaceName:NSCalibratedRGBColorSpace] getHue:&hue saturation:&saturation brightness:&brightness alpha:&alpha];
 
     if ([adjective isEqualToString:@"Near-black"]) {
-        brightness = MIN(brightness, 0.05);
+        brightness = MIN(brightness, 0.05f);
     } else if ([adjective isEqualToString:@"Dark"]) {
-        brightness = MAX(0.0, brightness - 0.25);
+        brightness = MAX(0.0f, brightness - 0.25f);
     } else if ([adjective isEqualToString:@"Smokey"]) {
-        brightness = MAX(0.0, brightness - 0.15);
+        brightness = MAX(0.0f, brightness - 0.15f);
     } else if ([adjective isEqualToString:@"Off-white"]) {
-        brightness = MAX(brightness, 0.95);
+        brightness = MAX(brightness, 0.95f);
     } else if ([adjective isEqualToString:@"Bright"]) {
-        brightness = MIN(1.0, brightness + 0.25);
+        brightness = MIN(1.0f, brightness + 0.25f);
     } else if ([adjective isEqualToString:@"Light"]) {
-        brightness = MIN(1.0, brightness + 0.15);
+        brightness = MIN(1.0f, brightness + 0.15f);
     } else if ([adjective isEqualToString:@"Washed-out"]) {
-        saturation = MAX(0.0, saturation - 0.35);
+        saturation = MAX(0.0f, saturation - 0.35f);
     } else if ([adjective isEqualToString:@"Faded"]) {
-        saturation = MAX(0.0, saturation - 0.25);
+        saturation = MAX(0.0f, saturation - 0.25f);
     } else if ([adjective isEqualToString:@"Mild"]) {
-        saturation = MAX(0.0, saturation - 0.15);
+        saturation = MAX(0.0f, saturation - 0.15f);
     } else if ([adjective isEqualToString:@"Rich"]) {
-        saturation = MIN(1.0, saturation + 0.15);
+        saturation = MIN(1.0f, saturation + 0.15f);
     } else if ([adjective isEqualToString:@"Deep"]) {
-        saturation = MIN(1.0, saturation + 0.25);
+        saturation = MIN(1.0f, saturation + 0.25f);
     } else if ([adjective isEqualToString:@"Intense"]) {
-        saturation = MIN(1.0, saturation + 0.35);
+        saturation = MIN(1.0f, saturation + 0.35f);
     }
     return [NSColor colorWithCalibratedHue:hue saturation:saturation brightness:brightness alpha:alpha];
 }
@@ -576,7 +611,7 @@ static float _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEntr
     if ([aName isEqualToString:@"Clear"] || [aName isEqualToString:NSLocalizedStringFromTableInBundle(@"Clear", @"OmniAppKit", [OAColorProfile bundle], "name of completely transparent color")])
         return [NSColor clearColor];
     
-    unsigned int entryCount;
+    NSUInteger entryCount;
     const OANamedColorEntry *entries = _combinedColorEntries(&entryCount);
     
     if (entryCount == 0) {
@@ -586,16 +621,16 @@ static float _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEntr
     }
 
     // Entries at the end of the array have higher precedence; loop backwards
-    unsigned int entryIndex = entryCount;
+    NSUInteger entryIndex = entryCount;
 
     NSColor *baseColor = nil;
-    unsigned int longestMatch = 0;
+    NSUInteger longestMatch = 0;
     
     // find base color
     while (entryIndex--) {
 	const OANamedColorEntry *entry = &entries[entryIndex];
         NSString *colorKey = entry->name;
-        unsigned int length;
+        NSUInteger length;
         
         if ([aName hasSuffix:colorKey] && (length = [colorKey length]) > longestMatch) {
             baseColor = entry->color;
@@ -611,7 +646,7 @@ static float _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEntr
     // get alpha percentage
     NSRange percentRange = [aName rangeOfString:@"%"];
     if (percentRange.length == 1) {
-        baseColor = [baseColor colorWithAlphaComponent:([aName cgFloatValue] / 100.0)];
+        baseColor = [baseColor colorWithAlphaComponent:([aName cgFloatValue] / 100.0f)];
         if (NSMaxRange(percentRange) + 1 >= [aName length])
             return baseColor;
         aName = [aName substringFromIndex:NSMaxRange(percentRange) + 1];
@@ -626,6 +661,20 @@ static float _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEntr
     return [self _adjustColor:baseColor withAdjective:aName];
 }
 
+- (CGColorRef)newCGColor;
+{
+    NSColorSpace *genericNSSpace = [NSColorSpace genericRGBColorSpace];
+    NSColor *genericColor = [self colorUsingColorSpace:genericNSSpace];
+    CGColorSpaceRef genericCGSpace = [genericNSSpace CGColorSpace];
+    NSInteger numberOfComponents = [genericColor numberOfComponents];
+    CGFloat *components = malloc(numberOfComponents * sizeof(CGFloat));
+    [genericColor getComponents:components];
+    
+    CGColorRef cgColor = CGColorCreate(genericCGSpace, components);
+    free(components);
+    return cgColor;
+}
+
 #pragma mark -
 #pragma mark XML Archiving
 
@@ -636,10 +685,11 @@ static NSString *XMLElementName = @"color";
     return XMLElementName;
 }
 
-static void _xmlComponentAdder(id container, NSString *key, float component)
+static void _xmlComponentAdder(id container, NSString *key, double component)
 {
     OBPRECONDITION([container isKindOfClass:[OFXMLDocument class]]);
-    [container setAttribute:key real:component];
+    // No double-taking XML archiver right now.
+    [container setAttribute:key real:(float)component];
 }
 
 static void _xmlStringAdder(id container, NSString *key, NSString *string)
@@ -760,7 +810,9 @@ NSString * const OAColorToPropertyListTransformerName = @"OAColorToPropertyList"
 
 + (void)didLoad;
 {
-    [NSValueTransformer setValueTransformer:[[self alloc] init] forName:OAColorToPropertyListTransformerName];
+    OAColorToPropertyList *instance = [[self alloc] init];
+    [NSValueTransformer setValueTransformer:instance forName:OAColorToPropertyListTransformerName];
+    [instance release];
 }
 
 + (Class)transformedValueClass;

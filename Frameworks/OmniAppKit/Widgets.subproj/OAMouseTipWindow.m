@@ -1,4 +1,4 @@
-// Copyright 2002-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,41 +15,51 @@
 RCS_ID("$Id$");
 
 #define FADE_OUT_INTERVAL (0.1f)
-#define OFFSET_FROM_MOUSE_LOCATION 10.0
-#define TEXT_X_INSET 7.0
-#define TEXT_Y_INSET 3.0
-#define DISTANCE_FROM_ACTIVE_RECT 1.0
+#define OFFSET_FROM_MOUSE_LOCATION (10.0f)
+#define TEXT_X_INSET (7.0f)
+#define TEXT_Y_INSET (3.0f)
+#define DISTANCE_FROM_ACTIVE_RECT (1.0f)
 
-@interface OAMouseTipWindow (Private)
+@interface OAMouseTipWindow (/*Private*/)
 
 - (void)_preferenceChanged:(NSNotification *)note;
 
 - (NSDictionary *)textAttributes;
 
 - (void)setStyle:(OAMouseTipStyle)aStyle;
-- (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle springPoint:(NSPoint)fromPoint hotSpot:(NSPoint)hotSpot maxWidth:(float)maxWidth delay:(float)delay;
+- (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle springPoint:(NSPoint)fromPoint hotSpot:(NSPoint)hotSpot maxWidth:(CGFloat)maxWidth delay:(CGFloat)delay;
 
 - (void)_reallyOrderOutIfOwnerUnchanged:(NSTimer *)timer;
-- (void)_hideAfterDelay:(float)delay;
+- (void)_hideAfterDelay:(CGFloat)delay;
 
 @end
 
 @implementation OAMouseTipWindow
 
-static OAMouseTipWindow *mouseTipInstance;
 static OFPreference *enablingPreference;
+
+static OAMouseTipWindow *sharedMouseTipInstance(void)
+{
+    static OAMouseTipWindow *instance = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        instance = [[OAMouseTipWindow alloc] init];
+    });
+    return instance;
+}
 
 + (void)initialize;
 {
     OBINITIALIZE;
     
-    mouseTipInstance = [[self alloc] init];
     enablingPreference = [[OFPreference preferenceForKey:OAMouseTipsEnabledPreferenceKey] retain];
 }
 
 - (id)init;
 {
-    [super initWithContentRect:NSMakeRect(0.0, 0.0, 100.0, 20.0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+    if (!(self = [super initWithContentRect:NSMakeRect(0.0f, 0.0f, 100.0f, 20.0f) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO]))
+        return nil;
+    
     [self useOptimizedDrawing:YES];
     [self setFloatingPanel:YES];
     [self setIgnoresMouseEvents:YES];
@@ -60,7 +70,7 @@ static OFPreference *enablingPreference;
     [OFPreference addObserver:self selector:@selector(_preferenceChanged:) forPreference:enablingPreference];
     
     [self setLevel:NSPopUpMenuWindowLevel];
-    [self setStyle:MouseTip_TooltipStyle];
+    [self setStyle:OAMouseTipTooltipStyle];
 
     return self;
 }
@@ -69,19 +79,14 @@ static OFPreference *enablingPreference;
 {
     NSArray *screens = [NSScreen screens];
     NSScreen *screen = nil;
-    float screenDistance = FLT_MAX;
-    unsigned int screenCount = [screens count], screenIndex;
-    for(screenIndex = 0; screenIndex < screenCount; screenIndex++) {
-        float thisDistance;
-        NSScreen *thisScreen;
-        NSRect screenRect;
-        
-        thisScreen = [screens objectAtIndex:screenIndex];
-        screenRect = [thisScreen frame];
-        if (NSPointInRect(midPoint, screenRect)) {
+    CGFloat screenDistance = CGFLOAT_MAX;
+    
+    for (NSScreen *thisScreen in screens) {
+        NSRect screenRect = [thisScreen frame];
+        if (NSPointInRect(midPoint, screenRect))
             return thisScreen;
-        }
-        thisDistance = OFSquaredDistanceToFitRectInRect((NSRect){midPoint, {1,1}}, screenRect);
+
+        CGFloat thisDistance = OFSquaredDistanceToFitRectInRect((NSRect){midPoint, {1,1}}, screenRect);
         if (thisDistance < screenDistance) {
             screenDistance = thisDistance;
             screen = thisScreen;
@@ -102,16 +107,16 @@ static OFPreference *enablingPreference;
     screenRect = NSInsetRect(screenRect, 20, 0);
 
     if (NSHeight(aFrame) > NSHeight(screenRect))
-        aFrame.origin.y = floor(NSMaxY(screenRect) - NSHeight(aFrame));
+        aFrame.origin.y = (CGFloat)floor(NSMaxY(screenRect) - NSHeight(aFrame));
     else if (NSMaxY(aFrame) > NSMaxY(screenRect))
-        aFrame.origin.y = floor(NSMaxY(screenRect) - NSHeight(aFrame));
+        aFrame.origin.y = (CGFloat)floor(NSMaxY(screenRect) - NSHeight(aFrame));
     else if (NSMinY(aFrame) < NSMinY(screenRect))
-        aFrame.origin.y = ceil(NSMinY(screenRect));
+        aFrame.origin.y = (CGFloat)ceil(NSMinY(screenRect));
     
     if (NSMaxX(aFrame) > NSMaxX(screenRect))
-        aFrame.origin.x = floor(NSMaxX(screenRect) - NSWidth(aFrame));
+        aFrame.origin.x = (CGFloat)floor(NSMaxX(screenRect) - NSWidth(aFrame));
     if (NSMinX(aFrame) < NSMinX(screenRect))
-        aFrame.origin.x = ceil(NSMinX(screenRect));
+        aFrame.origin.x = (CGFloat)ceil(NSMinX(screenRect));
     if (aFrame.size.width > screenRect.size.width)
         aFrame.size.width = screenRect.size.width;
     
@@ -128,19 +133,21 @@ static OFPreference *enablingPreference;
     springPoint.x += OFFSET_FROM_MOUSE_LOCATION + TEXT_X_INSET;
     springPoint.y += OFFSET_FROM_MOUSE_LOCATION + TEXT_Y_INSET;
     
-    NSAttributedString *attributedTitle = [[NSAttributedString alloc] initWithString:aTitle attributes:[mouseTipInstance textAttributes]];
-    [mouseTipInstance showMouseTipWithAttributedTitle:attributedTitle springPoint:springPoint hotSpot:(NSPoint){0,0} maxWidth:0 delay:0];
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+    NSAttributedString *attributedTitle = [[NSAttributedString alloc] initWithString:aTitle attributes:[instance textAttributes]];
+    [instance showMouseTipWithAttributedTitle:attributedTitle springPoint:springPoint hotSpot:(NSPoint){0,0} maxWidth:0 delay:0];
     [attributedTitle release];
 }
 
-+ (void)showMouseTipWithTitle:(NSString *)aTitle activeRect:(NSRect)activeRect edge:(NSRectEdge)onEdge delay:(float)delay;
++ (void)showMouseTipWithTitle:(NSString *)aTitle activeRect:(NSRect)activeRect edge:(NSRectEdge)onEdge delay:(CGFloat)delay;
 {
-    NSAttributedString *title = [[NSAttributedString alloc] initWithString:aTitle attributes:[mouseTipInstance textAttributes]];
-    [self showMouseTipWithAttributedTitle:title activeRect:activeRect maxWidth:0.0 edge:onEdge delay:delay];
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+    NSAttributedString *title = [[NSAttributedString alloc] initWithString:aTitle attributes:[instance textAttributes]];
+    [self showMouseTipWithAttributedTitle:title activeRect:activeRect maxWidth:0.0f edge:onEdge delay:delay];
     [title release];
 }
 
-+ (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle activeRect:(NSRect)activeRect maxWidth:(float)maxWidth edge:(NSRectEdge)onEdge delay:(float)delay;
++ (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle activeRect:(NSRect)activeRect maxWidth:(CGFloat)maxWidth edge:(NSRectEdge)onEdge delay:(CGFloat)delay;
 {
     NSPoint hotSpot = NSZeroPoint;
     NSPoint springFrom = activeRect.origin;
@@ -148,30 +155,31 @@ static OFPreference *enablingPreference;
         case NSMinXEdge:
             springFrom.x = NSMinX(activeRect) - TEXT_X_INSET - DISTANCE_FROM_ACTIVE_RECT;
             springFrom.y = NSMidY(activeRect);
-            hotSpot.x = 1.0;
-            hotSpot.y = 0.5;
+            hotSpot.x = 1.0f;
+            hotSpot.y = 0.5f;
             break;
         case NSMinYEdge:
             springFrom.x = NSMidX(activeRect);
             springFrom.y = NSMinY(activeRect) - DISTANCE_FROM_ACTIVE_RECT - TEXT_Y_INSET;
-            hotSpot.x = 0.5;
-            hotSpot.y = 1.0;
+            hotSpot.x = 0.5f;
+            hotSpot.y = 1.0f;
             break;
         case NSMaxXEdge:
             springFrom.x = NSMaxX(activeRect) + TEXT_X_INSET + DISTANCE_FROM_ACTIVE_RECT;
             springFrom.y = NSMidY(activeRect);
-            hotSpot.x = 0.0;
-            hotSpot.y = 0.5;
+            hotSpot.x = 0.0f;
+            hotSpot.y = 0.5f;
             break;
         case NSMaxYEdge:
             springFrom.x = NSMidX(activeRect);
             springFrom.y = NSMaxY(activeRect) + DISTANCE_FROM_ACTIVE_RECT + TEXT_Y_INSET;
-            hotSpot.x = 0.5;
-            hotSpot.y = 0.0;
+            hotSpot.x = 0.5f;
+            hotSpot.y = 0.0f;
             break;
     }
     
-    [mouseTipInstance showMouseTipWithAttributedTitle:aTitle springPoint:springFrom hotSpot:hotSpot maxWidth:maxWidth delay:delay];
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+    [instance showMouseTipWithAttributedTitle:aTitle springPoint:springFrom hotSpot:hotSpot maxWidth:maxWidth delay:delay];
 }
 
 - (void)_appHide:(NSNotification *)notification;
@@ -181,36 +189,42 @@ static OFPreference *enablingPreference;
 
 + (void)hideMouseTip;
 {
-    [mouseTipInstance _hideAfterDelay:0];
+    [sharedMouseTipInstance() _hideAfterDelay:0];
 }
 
 + (void)setOwner:(id)owner;
 {
-    if (mouseTipInstance != nil)
-        mouseTipInstance->nonretainedOwner = owner;
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+    instance->nonretainedOwner = owner;
 }
 
 + (void)hideMouseTipForOwner:(id)owner;
 {
-    if (mouseTipInstance != nil && mouseTipInstance->nonretainedOwner == owner) 
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+
+    if (instance->nonretainedOwner == owner) 
         [self hideMouseTip];
 }
 
 + (void)setStyle:(OAMouseTipStyle)aStyle
 {
-    [mouseTipInstance setStyle:aStyle];
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+    [instance setStyle:aStyle];
 }
 
 + (NSDictionary *)textAttributesForCurrentStyle;
 {
-    return [mouseTipInstance textAttributes];
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+    return [instance textAttributes];
 }
 
 + (void)setLevel:(int)windowLevel
 {
-    [mouseTipInstance setLevel:windowLevel];
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+    [instance setLevel:windowLevel];
 }
 
+#pragma mark -
 #pragma mark NSCopying
 
 - (id)copyWithZone:(NSZone *)zone;
@@ -219,15 +233,14 @@ static OFPreference *enablingPreference;
     return [self retain];
 }
 
-@end
-
-@implementation OAMouseTipWindow (Private)
+#pragma mark -
+#pragma mark Private
 
 - (void)setStyle:(OAMouseTipStyle)aStyle;
 {
     currentStyle = aStyle;
     [mouseTipView setStyle:aStyle];
-    [self setHasShadow:(currentStyle != MouseTip_DockStyle)]; // DockStyle's shadow is handled by the text view
+    [self setHasShadow:(currentStyle != OAMouseTipDockStyle)]; // DockStyle's shadow is handled by the text view
 }
 
 - (void)_preferenceChanged:(NSNotification *)note
@@ -244,8 +257,8 @@ static OFPreference *enablingPreference;
 - (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle
                             springPoint:(NSPoint)fromPoint
                                 hotSpot:(NSPoint)hotSpot
-                               maxWidth:(float)maxWidth
-                                  delay:(float)delay;
+                               maxWidth:(CGFloat)maxWidth
+                                  delay:(CGFloat)delay;
 {
     NSRect rect;
 
@@ -303,8 +316,9 @@ static OFPreference *enablingPreference;
 {
     //    NSLog(@"timer fired: %@", nonretainedOwner);
     waitTimer = nil;
-    [mouseTipInstance orderFront:self];
-    // [mouseTipInstance setLevel:NSScreenSaverWindowLevel - 1];
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+    [instance orderFront:self];
+    // [instance setLevel:NSScreenSaverWindowLevel - 1];
 }
 
 - (void)_reallyOrderOutIfOwnerUnchanged:(NSTimer *)timer;
@@ -314,27 +328,28 @@ static OFPreference *enablingPreference;
     if ([timer userInfo] != nil && [[timer userInfo] nonretainedObjectValue] != nonretainedOwner)
         return;
     
-    float startAlpha = [mouseTipInstance alphaValue];
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+    CGFloat startAlpha = [instance alphaValue];
     NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
     
     // Fade the tooltip out.  TODO: It might be better to move this to a timer so that the event loop can still run while we're fading out.  This would make the client app more responsive, and it would also allow the user to change her mind and show the tooltip again while it is fading out.
     while (1) {
         NSTimeInterval currentTime = [NSDate timeIntervalSinceReferenceDate];
         NSTimeInterval delta = (currentTime - startTime) / FADE_OUT_INTERVAL;
-        float alpha = startAlpha - delta * startAlpha;
+        CGFloat alpha = (CGFloat)(startAlpha - delta * startAlpha);
         
-        [mouseTipInstance setAlphaValue:alpha];
-        [mouseTipInstance displayIfNeeded];
+        [instance setAlphaValue:alpha];
+        [instance displayIfNeeded];
         if (delta >= 1.0)
             break;
     }
     
-    [mouseTipInstance orderOut:self];
-    [mouseTipInstance setAlphaValue:startAlpha];
+    [instance orderOut:self];
+    [instance setAlphaValue:startAlpha];
     nonretainedOwner = nil;
 }
 
-- (void)_hideAfterDelay:(float)delay
+- (void)_hideAfterDelay:(CGFloat)delay
 {
     if (waitTimer != nil) {
         [waitTimer invalidate];
@@ -344,7 +359,8 @@ static OFPreference *enablingPreference;
     if (delay > 0 && [self isVisible]) {
         waitTimer = [NSTimer scheduledTimerWithTimeInterval:delay target:self selector:@selector(_reallyOrderOutIfOwnerUnchanged:) userInfo:[NSValue valueWithNonretainedObject:nonretainedOwner] repeats:NO]; 
     } else {
-        [mouseTipInstance orderOut:self];
+        OAMouseTipWindow *instance = sharedMouseTipInstance();
+        [instance orderOut:self];
         nonretainedOwner = nil;
     }
 }

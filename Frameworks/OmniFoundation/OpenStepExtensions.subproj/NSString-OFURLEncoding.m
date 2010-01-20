@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -161,17 +161,16 @@ static NSString *hexPairInserter(NSString *string, NSRange *defRange, void *cont
 
 - (NSData *)dataUsingCFEncoding:(CFStringEncoding)anEncoding allowLossyConversion:(BOOL)lossy hexEscapes:(NSString *)escapePrefix;
 {
-    unsigned int stringLength = [self length];
+    NSUInteger stringLength = [self length];
     if (stringLength == 0)
         return [NSData data];
     
     NSMutableData *buffer = nil;
     NSRange remaining = NSMakeRange(0, stringLength);
     while (remaining.length > 0) {
-        NSRange prefix;
         CFRange escapelessRange;
-        CFDataRef appendage;
         
+        NSRange prefix;
         if (1) {
             prefix = [self rangeOfString:escapePrefix options:0 range:remaining];
         } else {
@@ -188,14 +187,16 @@ static NSString *hexPairInserter(NSString *string, NSRange *defRange, void *cont
         remaining.location += escapelessRange.length;
         
         if (escapelessRange.length > 0) {
-            appendage = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, escapelessRange, anEncoding, lossy?'?':0);
+            NSData *appendage = NSMakeCollectable(OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, escapelessRange, anEncoding, lossy?'?':0));
             if (buffer == nil && remaining.length == 0)
-                return [(NSData *)appendage autorelease];
-            else if (buffer == nil)
-                buffer = [[(NSData *)appendage mutableCopy] autorelease];
-            else
-                [buffer appendData:(NSData *)appendage];
-            CFRelease(appendage);
+                return [appendage autorelease];
+            else if (buffer == nil) {
+                buffer = [[appendage mutableCopy] autorelease];
+                [appendage release];
+            } else {
+                [buffer appendData:appendage];
+                [appendage release];
+            }
         } else if (buffer == nil) {
             buffer = [NSMutableData data];
         }
@@ -293,13 +294,13 @@ static const OFQuotedPrintableMapping urlCodingVariants[8] = {
 #else
     
     unsigned const char *sourceBuffer = [sourceData bytes];
-    int sourceLength = [sourceData length];
+    NSUInteger sourceLength = [sourceData length];
     
-    int destinationBufferSize = sourceLength + (sourceLength >> 2) + 12;
+    NSUInteger destinationBufferSize = sourceLength + (sourceLength >> 2) + 12;
     unichar *destinationBuffer = NSZoneMalloc(NULL, (destinationBufferSize) * sizeof(unichar));
-    int destinationIndex = 0;
+    NSUInteger destinationIndex = 0;
     
-    int sourceIndex;
+    NSUInteger sourceIndex;
     for (sourceIndex = 0; sourceIndex < sourceLength; sourceIndex++) {
 	unsigned char ch;
 	
@@ -336,11 +337,10 @@ static const OFQuotedPrintableMapping urlCodingVariants[8] = {
 - (NSString *)fullyEncodeAsIURI;
 {
     NSData *utf8BytesData;
-    NSString *resultString;
-    const unsigned char *sourceBuffer;
-    unsigned char *destinationBuffer;
-    int destinationBufferUsed, destinationBufferSize;
-    int sourceBufferIndex, sourceBufferSize;
+    const uint8_t *sourceBuffer;
+    uint8_t *destinationBuffer;
+    NSUInteger destinationBufferUsed, destinationBufferSize;
+    NSUInteger sourceBufferIndex, sourceBufferSize;
     
     if (![self containsCharacterInOFCharacterSet:SafeCharacterSet()])
         return [[self copy] autorelease];
@@ -355,16 +355,16 @@ static const OFQuotedPrintableMapping urlCodingVariants[8] = {
     else
         destinationBufferSize += ( destinationBufferSize >> 1 );
     
-    destinationBuffer = NSZoneMalloc(NULL, destinationBufferSize);
+    destinationBuffer = malloc(destinationBufferSize);
     destinationBufferUsed = 0;
     
     for (sourceBufferIndex = 0; sourceBufferIndex < sourceBufferSize; sourceBufferIndex++) {
-        unsigned char ch = sourceBuffer[sourceBufferIndex];
+        uint8_t ch = sourceBuffer[sourceBufferIndex];
         
         // Headroom: we may insert up to three bytes into destinationBuffer.
         if (destinationBufferUsed + 3 >= destinationBufferSize) {
-            int newSize = destinationBufferSize + ( destinationBufferSize >> 1 );
-            destinationBuffer = NSZoneRealloc(NULL, destinationBuffer, newSize);
+            NSUInteger newSize = destinationBufferSize + ( destinationBufferSize >> 1 );
+            destinationBuffer = realloc(destinationBuffer, newSize);
             destinationBufferSize = newSize;
         }
         
@@ -377,10 +377,10 @@ static const OFQuotedPrintableMapping urlCodingVariants[8] = {
         }
     }
     
-    resultString = (NSString *)CFStringCreateWithBytes(kCFAllocatorDefault, destinationBuffer, destinationBufferUsed, kCFStringEncodingASCII, FALSE);
-    NSZoneFree(NULL, destinationBuffer);
+    CFStringRef resultString = CFStringCreateWithBytes(kCFAllocatorDefault, destinationBuffer, destinationBufferUsed, kCFStringEncodingASCII, FALSE);
+    free(destinationBuffer);
     
-    return [resultString autorelease];
+    return [NSMakeCollectable(resultString) autorelease];
 }
 
 - (NSString *)fullyEncodeAsIURIReference;

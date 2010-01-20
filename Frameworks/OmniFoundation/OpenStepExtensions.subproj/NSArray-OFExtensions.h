@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <Foundation/NSArray.h>
 
 #import <CoreFoundation/CFSet.h>
+#import <OmniFoundation/OFUtilities.h>
 
 @class NSDecimalNumber, NSSet;
 @class OFMultiValueDictionary;
@@ -50,6 +51,19 @@
 - (NSArray *)arrayByPerformingSelector:(SEL)aSelector;
 - (NSArray *)arrayByPerformingSelector:(SEL)aSelector withObject:(id)anObject;
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
+
+#ifdef NS_BLOCKS_AVAILABLE
+typedef id (^OFObjectToObjectBlock)(id anObject);
+
+- (NSArray *)arrayByPerformingBlock:(OFObjectToObjectBlock)blk;
+- (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)blk;
+#endif
+
+#ifdef NS_BLOCKS_AVAILABLE
+- (NSArray *)select:(OFPredicateBlock)predicate;
+- (NSArray *)reject:(OFPredicateBlock)predicate;
+- (id)first:(OFPredicateBlock)predicate;
+#endif
 
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector;
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector withObject:(id)anObject;

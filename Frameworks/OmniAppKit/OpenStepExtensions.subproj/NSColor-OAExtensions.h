@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,10 +21,13 @@
 - (NSMutableDictionary *)propertyListRepresentation; // deprecated
 
 - (BOOL)isSimilarToColor:(NSColor *)color;
+- (BOOL)isPatternSimilarToColorPattern:(NSColor *)color;
 - (NSData *)patternImagePNGData;
 
 - (NSString *)similarColorNameFromColorLists;
 + (NSColor *)colorWithSimilarName:(NSString *)aName;
+
+- (CGColorRef)newCGColor;
 
 // XML Archiving
 + (NSString *)xmlElementName;
@@ -41,3 +44,9 @@ extern NSString * const OAColorXMLAdditionalColorSpace;
 extern NSString * const OAColorToPropertyListTransformerName;
 extern NSString * const OABooleanToControlColorTransformerName;
 extern NSString * const OANegateBooleanToControlColorTransformerName;
+
+// Takes rgba in 0..1.  Doubles so that we don't get warnings when using constants about 64->32 implicit casts.
+static inline NSColor *OARGBA(double r, double g, double b, double a)
+{
+    return [NSColor colorWithCalibratedRed:(CGFloat)r green:(CGFloat)g blue:(CGFloat)b alpha:(CGFloat)a];
+}

@@ -1,4 +1,4 @@
-// Copyright 2000-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,9 +46,10 @@ RCS_ID("$Id$");
         //
         NSPropertySpecifier *propertySpec = (NSPropertySpecifier *)containerSpec;
         NSString *key = [propertySpec key];
-        id container = [[propertySpec containerSpecifier] objectsByEvaluatingSpecifier];
-        if (![container respondsToSelector:@selector(addObjects:toPropertyWithKey:)]) {
-            NSLog(@"Container doesn't respond to -addObjects:toPropertyWithKey: -- container = %@", OBShortObjectDescription(container));
+        NSObject <OFAddScriptCommandContainer> *container = [[propertySpec containerSpecifier] objectsByEvaluatingSpecifier];
+        if (![container conformsToProtocol:@protocol(OFAddScriptCommandContainer)] ||
+            ![container respondsToSelector:@selector(addObjects:toPropertyWithKey:)]) {
+            NSLog(@"Container doesn't conform to OFAddScriptCommandContainer -- container = %@", OBShortObjectDescription(container));
             [self setScriptErrorNumber:NSReceiversCantHandleCommandScriptError];
             [self setScriptErrorString:NSLocalizedStringFromTableInBundle(@"Specified container doesn't handle the add command.", @"OmniFoundation", [OFAddScriptCommand bundle], @"script exception format")];
             return nil;
@@ -61,7 +62,15 @@ RCS_ID("$Id$");
         //
         NSPositionalSpecifier *positionalSpec = (NSPositionalSpecifier *)containerSpec;
 
-        id insertionContainer = [positionalSpec insertionContainer];
+        NSObject <OFAddScriptCommandContainer> *insertionContainer = [positionalSpec insertionContainer];
+        if (![insertionContainer conformsToProtocol:@protocol(OFAddScriptCommandContainer)] ||
+            ![insertionContainer respondsToSelector:@selector(insertObjects:inPropertyWithKey:atIndex:)]) {
+            NSLog(@"Container doesn't conform to OFAddScriptCommandContainer -- container = %@", OBShortObjectDescription(insertionContainer));
+            [self setScriptErrorNumber:NSReceiversCantHandleCommandScriptError];
+            [self setScriptErrorString:NSLocalizedStringFromTableInBundle(@"Specified container doesn't handle the add command.", @"OmniFoundation", [OFAddScriptCommand bundle], @"script exception format")];
+            return nil;
+        }
+
         if (!insertionContainer) {
             NSLog(@"Unable to resolve insertion container in specifier %@", positionalSpec);
             [self setScriptErrorNumber:NSArgumentEvaluationScriptError];
@@ -77,7 +86,7 @@ RCS_ID("$Id$");
             return nil;
         }
         
-        int insertionIndex = [positionalSpec insertionIndex];
+        NSInteger insertionIndex = [positionalSpec insertionIndex];
         if (insertionIndex < 0) {
             NSLog(@"Unable to resolve insertion index in specifier %@", positionalSpec);
             [self setScriptErrorNumber:NSArgumentEvaluationScriptError];
@@ -85,13 +94,6 @@ RCS_ID("$Id$");
             return nil;
         }
         
-        if (![insertionContainer respondsToSelector:@selector(insertObjects:inPropertyWithKey:atIndex:)]) {
-            NSLog(@"Container doesn't respond to -addObjects:toPropertyWithKey:atIndex: -- container = %@", OBShortObjectDescription(insertionContainer));
-            [self setScriptErrorNumber:NSReceiversCantHandleCommandScriptError];
-            [self setScriptErrorString:NSLocalizedStringFromTableInBundle(@"Specified container doesn't handle the add command.", @"OmniFoundation", [OFAddScriptCommand bundle], @"script exception format")];
-            return nil;
-        }
-
         [insertionContainer insertObjects:evaluatedParameters inPropertyWithKey:insertionKey atIndex:insertionIndex];
     } else {
         NSLog(@"Command's 'ToContainer' is not a NSPropertySpecifier or NSPositionalSpecifier -- %@", containerSpec);

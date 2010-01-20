@@ -1,4 +1,4 @@
-// Copyright 2005-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniFoundation/OFObject.h>
 #include <sys/event.h>
 
-@class NSArray, NSData, NSDictionary, NSError, NSInputStream, NSOutputStream, NSStream;
+@class NSArray, NSData, NSDictionary, NSError, NSInputStream, NSOutputStream, NSStream, NSRunLoop;
 
 @interface OFFilterProcess : OFObject
 {
@@ -34,6 +34,7 @@
     pid_t child;
     
     int kevent_fd;
+    // We keep a CFRetain on these rather than making them collectable and using __strong here
     CFFileDescriptorRef kevent_cf; // Lazily created
     CFRunLoopSourceRef kevent_cfrunloop;
     CFRunLoopTimerRef poll_timer; // Workaround for RADAR 6898524
@@ -65,6 +66,9 @@
 
 /* Init actually creates and starts the task */
 - initWithParameters:(NSDictionary *)filterParameters standardOutput:(NSOutputStream *)stdoutStream standardError:(NSOutputStream *)stderrStream;
+
+// Can be used to free up operating system resources as early as possible. Automatically called when the object is deallocated/finalized.
+- (void)invalidate;
 
 @property (readonly) NSString *commandPath;    // Constant
 @property (readonly) NSArray  *arguments;      // Constant

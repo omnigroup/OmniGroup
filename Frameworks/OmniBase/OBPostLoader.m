@@ -13,26 +13,36 @@
 #import <Foundation/Foundation.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/objc.h>
+#import <OmniBase/macros.h>
 
 #import <dlfcn.h>
 
 RCS_ID("$Id$")
+
+#if 0 && defined(DEBUG)
+    #define POSTLOADER_DEBUG(format, ...) fprintf(stderr, format, ## __VA_ARGS__)
+#else
+    #define POSTLOADER_DEBUG(format, ...) do {} while (0)
+#endif
+
+// As promised, do this once here to make sure the hack works. This can also serve as a template for copying to make your own deperecation protocol.
+#ifdef OMNI_ASSERTIONS_ON
+OBDEPRECATED_METHODS(OBPostLoaderTestHack)
+@end
+#endif
 
 static NSRecursiveLock *lock = nil;
 static NSHashTable *calledImplementations = NULL;
 static BOOL isMultiThreaded = NO;
 static BOOL isSendingBecomingMultiThreaded = NO;
 
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-extern void _objc_resolve_categories_for_class(struct objc_class *cls);
-#endif
-
 // This can produce lots of false positivies, but provides a way to start looking for some potential problem cases.
 #if 0 && defined(DEBUG)
 #define OB_CHECK_COPY_WITH_ZONE
 #endif
 
-@interface OBPostLoader (PrivateAPI)
+@interface OBPostLoader (/*Private*/)
++ (void)_bundleDidLoad:(NSNotification *)note;
 + (BOOL)_processSelector:(SEL)selectorToCall inClass:(Class)aClass initialize:(BOOL)shouldInitialize;
 + (void)_becomingMultiThreaded:(NSNotification *)note;
 #ifdef OMNI_ASSERTIONS_ON
@@ -43,8 +53,6 @@ extern void _objc_resolve_categories_for_class(struct objc_class *cls);
 + (void)_checkCopyWithZoneImplementations;
 #endif
 @end
-
-//#define POSTLOADER_DEBUG
 
 @implementation OBPostLoader
 /*"
@@ -66,7 +74,7 @@ OBPostLoader also listens for NSBecomingMultiThreaded and will invoke every impl
     calledImplementations = NSCreateHashTable(NSNonOwnedPointerHashCallBacks, 0);
 
     // If any other bundles get loaded, make sure that we process them too.
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(bundleDidLoad:) name:NSBundleDidLoadNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_bundleDidLoad:) name:NSBundleDidLoadNotification object:nil];
 
     // Register for the multi-threadedness here so that most classes won't have to
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_becomingMultiThreaded:) name:NSWillBecomeMultiThreadedNotification object:nil];
@@ -129,11 +137,6 @@ This method does the work of looping over the runtime searching for implementati
             for (classIndex = 0; classIndex < classCount; classIndex++) {
                 Class aClass = classes[classIndex];
 
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-                // TJW: After some investiation, I tracked down the ObjC runtime bug that Steve was running up against in OmniOutliner when he needed to add this (I also hit it in OmniGraffle when trying to get rid of this line).  The bug is essentially that categories don't get registered when you pose before +initialize.  Logged as Radar #3319132.
-                _objc_resolve_categories_for_class(aClass);
-#endif
-                
                 if ([self _processSelector:selectorToCall inClass:aClass initialize:shouldInitialize])
                     didInvokeSomething = YES;
             }
@@ -146,9 +149,23 @@ This method does the work of looping over the runtime searching for implementati
     [lock unlock];
 }
 
-+ (void) bundleDidLoad: (NSNotification *) notification;
+// When octest loads a unit test bundle, we get a whole slew of notifications for each dependent framework. We'll keep track of the last set of bundles that were around when this method got called and only +processClasses if it changes.
++ (void)_bundleDidLoad:(NSNotification *)notification;
 {
-    [self processClasses];
+    OBPRECONDITION([NSThread isMainThread]); // Not making this static variable thread-safe for now.
+    
+    static NSSet *PreviouslySeenBundles = nil;
+    
+    NSMutableSet *LoadedBundles = [[NSMutableSet alloc] init];
+    [LoadedBundles addObjectsFromArray:[NSBundle allBundles]];
+    [LoadedBundles addObjectsFromArray:[NSBundle allFrameworks]];
+    
+    if (![PreviouslySeenBundles isEqualToSet:LoadedBundles]) {
+        [PreviouslySeenBundles release];
+        PreviouslySeenBundles = [LoadedBundles copy];
+        [self processClasses];
+    }
+    [LoadedBundles release];
 }
 
 /*"
@@ -159,11 +176,8 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
     return isMultiThreaded;
 }
 
-@end
-
-
-
-@implementation OBPostLoader (PrivateAPI)
+#pragma mark -
+#pragma mark Private
 
 + (BOOL)_processSelector:(SEL) selectorToCall inClass:(Class)aClass initialize:(BOOL)shouldInitialize;
 {
@@ -172,11 +186,9 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
     unsigned int impSize = 256;
     unsigned int impIndex, impCount = 0;
     IMP *imps = NSZoneMalloc(NULL, sizeof(IMP) * impSize);
-    
 
-#if defined(POSTLOADER_DEBUG)
-    //fprintf(stderr, "Checking for implementations of +[%s %s]\n", class_getName(aClass), sel_getName(selectorToCall));
-#endif
+    //POSTLOADER_DEBUG("Checking for implementations of +[%s %s]\n", class_getName(aClass), sel_getName(selectorToCall));
+
     // Gather all the method implementations of interest on this class before invoking any of them.  This is necessary since they might modify the ObjC runtime.
     unsigned int methodIndex, methodCount;
     Method *methodList = class_copyMethodList(metaClass, &methodCount);
@@ -197,9 +209,7 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
                 impCount++;
                 NSHashInsertKnownAbsent(calledImplementations, imp);
                 
-#if defined(POSTLOADER_DEBUG)
-                fprintf(stderr, "Recording +[%s %s] (%p)\n", class_getName(aClass), sel_getName(selectorToCall), (void *)imp);
-#endif
+                POSTLOADER_DEBUG("Recording +[%s %s] (%p)\n", class_getName(aClass), sel_getName(selectorToCall), (void *)imp);
             }
         }
     }
@@ -209,9 +219,9 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
     if (impCount) {
         if (shouldInitialize) {
             NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-#if defined(POSTLOADER_DEBUG)
-            fprintf(stderr, "Initializing %s\n", class_getName(aClass));
-#endif
+
+            POSTLOADER_DEBUG("Initializing %s\n", class_getName(aClass));
+
             // try to make sure +initialize gets called
             if (class_getClassMethod(aClass, @selector(class)))
                 [aClass class];
@@ -223,9 +233,9 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
 
         for (impIndex = 0; impIndex < impCount; impIndex++) {
             NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-#if defined(POSTLOADER_DEBUG)
-            fprintf(stderr, "Calling (%p) ... ", (void *)imps[impIndex]);
-#endif
+
+            POSTLOADER_DEBUG("Calling (%p) ... ", (void *)imps[impIndex]);
+
             // We now call this within an exception handler because twice now we've released versions of OmniWeb where something would raise within +didLoad on certain configurations (not configurations we had available for testing) and weren't getting caught, resulting in an application that won't launch on those configurations.  We could insist that everyone do their own exception handling in +didLoad, but if we're going to potentially crash because a +didLoad failed I'd rather crash later than now.  (Especially since the exceptions in question were perfectly harmless.)
             @try {
                 // We discovered that we'll crash if we use aClass after it has posed as another class.  So, we go look up the imposter class that resulted from the +poseAs: and use it instead.
@@ -237,9 +247,7 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
             } @catch (NSException *exc) {
                 fprintf(stderr, "Exception raised by +[%s %s]: %s\n", class_getName(aClass), sel_getName(selectorToCall), [[exc reason] UTF8String]);
             }
-#if defined(POSTLOADER_DEBUG)
-            fprintf(stderr, "done\n");
-#endif
+            POSTLOADER_DEBUG("done\n");
             [pool release];
         }
     }
@@ -269,6 +277,9 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
 
 #ifdef OMNI_ASSERTIONS_ON
 
+// Avoid unknown selector warnings from -Wundeclared-selector.  The selectors we are checking are often in other frameworks.
+#define FIND_SEL(x) sel_getUid(#x)
+
 static unsigned MethodSignatureConflictCount = 0;
 static unsigned SuppressedConflictCount = 0;
 static unsigned MethodMultipleImplementationCount = 0;
@@ -287,22 +298,32 @@ static char *_copyNormalizeMethodSignature(const char *sig)
     char *src = copy, *dst = copy, c;
     do {
         c = *src;
-	
-	// Strip out any 'bycopy' markers (no #define for this either)
+        
+        // Strip out any 'bycopy' markers (no #define for this either)
         if (c == 'O' && src[1] == '@') {  // O@ means 'bycopy'; just want to copy the '@'.  Can't strip every 'O' since it might be part of a struct name (but only objects can be bycopy).
             *dst = '@';
-	    dst += 1;
-	    src += 2;
-	    continue;
+            dst += 1;
+            src += 2;
+            continue;
         }
-	
-	// Strip out 'inout' markers 'N' (no #define for this either)
-	if (c == 'N' && src[1] == '^') {
+        
+        // Strip out 'inout' markers 'N' (no #define for this either)
+        if (c == 'N' && src[1] == '^') {
             *dst = '^';
-	    dst += 1;
-	    src += 2;
-	    continue;
-	}
+            dst += 1;
+            src += 2;
+            continue;
+        }
+        
+        // Under 32-bit, if we define NS_BUILD_32_LIKE_64, NS{U,}Integer gets set to long-based types instead of int.  But these are the same on 32-bit and we don't care so much.  Normalize long/unsigned long to int/unsigned int.
+        // Radar 6982665: -[NSObject(NSObject) hash] has wrong method signature in CoreFoundation (actually, most of the NSObject subclasses do too).
+#if !defined(__LP64__) || !__LP64__
+        // This isn't currently avoiding this transform while in the midst of a struct/union name.
+        if (c == _C_LNG)
+            c = _C_INT;
+        else if (c == _C_ULNG)
+            c = _C_UINT;
+#endif            
 	
 	// Default, just copy it.
 	*dst = c;
@@ -315,7 +336,12 @@ static char *_copyNormalizeMethodSignature(const char *sig)
     return copy;
 }
 
-static BOOL _methodSignaturesCompatible(SEL sel, const char *sig1, const char *sig2)
+static BOOL _signaturesMatch(const char *sig1, const char *sig2, const char *option1, const char *option2)
+{
+    return ((strcmp(sig1, option1) == 0) && (strcmp(sig2, option2) == 0)) || ((strcmp(sig1, option2) == 0) && (strcmp(sig2, option1) == 0));
+}
+
+static BOOL _methodSignaturesCompatible(Class cls, SEL sel, const char *sig1, const char *sig2)
 {
     /* In the vast majority of cases (99.7% of the time in my test with Dazzle) the two pointers passed to this routine are actually the same pointer. */
     if (sig1 == sig2)
@@ -334,24 +360,27 @@ static BOOL _methodSignaturesCompatible(SEL sel, const char *sig1, const char *s
     free(norm2);
 
     if (!compatible) {
-        // A couple cases in QuartzCore where somehow one version has the offset info and the other doesn't.
-        if (((strcmp(sig1, "v@:d") == 0) || (strcmp(sig2, "v@:d") == 0)) &&
-            ((strcmp(sig1, "v16@0:4d8") == 0) || (strcmp(sig2, "v16@0:4d8") == 0)))
+#if __LP64__
+        // Radar 6964439: -[NSProtocol hash] returns a 32-bit value in 64-bit ABI
+        if (sel == @selector(hash) && cls == objc_getClass("Protocol") &&
+            _signaturesMatch(sig1, sig2, "I16@0:8", "Q16@0:8"))
             return YES;
-        if (((strcmp(sig1, "v@:@") == 0) || (strcmp(sig2, "v@:@") == 0)) &&
-            ((strcmp(sig1, "v12@0:4@8") == 0) || (strcmp(sig2, "v12@0:4@8") == 0)))
+#endif
+        
+        // A couple cases in QuartzCore where somehow one version has the offset info and the other doesn't.
+        if (_signaturesMatch(sig1, sig2, "v@:d", "v16@0:4d8"))
+            return YES;
+        if (_signaturesMatch(sig1, sig2, "v@:d", "v12@0:4@8"))
             return YES;
         
         // Radar 6529241: Incorrect dragging source method declarations in AppKit.
         // NSControl and NSTableView have mismatching signatures for these methods (32/64 bit issue).
-        if (sel == @selector(draggingSourceOperationMaskForLocal:) &&
-            ((strcmp(sig1, "I12@0:4c8") == 0 && strcmp(sig2, "L12@0:4c8") == 0) ||
-             (strcmp(sig1, "L12@0:4c8") == 0 && strcmp(sig2, "I12@0:4c8") == 0)))
+        if (sel == FIND_SEL(draggingSourceOperationMaskForLocal:) &&
+            _signaturesMatch(sig1, sig2, "I12@0:4c8", "L12@0:4c8"))
             return YES;
         
-        if (sel == @selector(draggedImage:endedAt:operation:) &&
-            ((strcmp(sig1, "v24@0:4@8{CGPoint=ff}12I20") == 0 && strcmp(sig2, "v24@0:4@8{CGPoint=ff}12L20") == 0) ||
-             (strcmp(sig1, "v24@0:4@8{CGPoint=ff}12L20") == 0 && strcmp(sig2, "v24@0:4@8{CGPoint=ff}12I20") == 0)))
+        if (sel == FIND_SEL(draggedImage:endedAt:operation:) &&
+            _signaturesMatch(sig1, sig2, "v24@0:4@8{CGPoint=ff}12I20", "v24@0:4@8{CGPoint=ff}12L20"))
             return YES;
         
     }
@@ -368,7 +397,7 @@ static NSString *describeMethod(Method m, BOOL *nonSystem)
                             dli.dli_sname? dli.dli_sname : "(unknown)",
                             i];
     
-    if (i != dli.dli_saddr)
+    if (i != (IMP)dli.dli_saddr)
         [buf appendFormat:@"/%p", dli.dli_saddr];
     
     if (dli.dli_fname) {
@@ -468,7 +497,7 @@ static void _checkSignaturesVsSuperclass(Class cls, Method *methods, unsigned in
             freeSignatures = YES;
 #endif
             
-            if (!_methodSignaturesCompatible(sel, types, superTypes)) {
+            if (!_methodSignaturesCompatible(cls, sel, types, superTypes)) {
                 BOOL nonSystem = NO;
                 NSString *methodInfo = describeMethod(method, &nonSystem);
                 NSString *superMethodInfo = describeMethod(superMethod, &nonSystem);
@@ -500,9 +529,14 @@ static void _checkMethodInClassVsMethodInProtocol(Class cls, Protocol *protocol,
     SEL sel = method_getName(m);
 
     // Skip a couple Apple selectors that are known to be bad. Radar 6333710.
-    if (sel == @selector(invokeServiceIn:msg:pb:userData:error:) ||
-	sel == @selector(invokeServiceIn:msg:pb:userData:menu:remoteServices:))
+    if (sel == FIND_SEL(invokeServiceIn:msg:pb:userData:error:) ||
+	sel == FIND_SEL(invokeServiceIn:msg:pb:userData:menu:remoteServices:))
 	return;
+    
+    // 7251769 -numberOfRowsInTableView: returning int instead of NSInteger
+    if (strcmp(class_getName(cls), "SCTSearchManager") == 0 &&
+        sel == FIND_SEL(numberOfRowsInTableView:))
+        return;
     
     struct objc_method_description desc = protocol_getMethodDescription(protocol, sel, isRequiredMethod, isInstanceMethod);
     if (desc.name == NULL)
@@ -510,7 +544,7 @@ static void _checkMethodInClassVsMethodInProtocol(Class cls, Protocol *protocol,
         return;
     
     const char *types = method_getTypeEncoding(m);
-    if (!_methodSignaturesCompatible(sel, types, desc.types)) {
+    if (!_methodSignaturesCompatible(cls, sel, types, desc.types)) {
         NSLog(@"Method %s has type signatures conflicting with adopted protocol\n\tnormalized %s original %s(%s)\n\tnormalized %s original %s(%s)!",
 	      sel_getName(sel),
 	      _copyNormalizeMethodSignature(types), types, class_getName(cls),
@@ -609,7 +643,7 @@ static void _checkSignaturesVsProtocols(Class cls)
     OBASSERT(MethodSignatureConflictCount == 0);
     OBASSERT(MethodMultipleImplementationCount == 0);
     
-    if (SuppressedConflictCount)
+    if (SuppressedConflictCount && getenv("OB_SUPPRESS_SUPPRESSED_CONFLICT_COUNT") == NULL)
         NSLog(@"Warning: Suppressed %u messages about problems in system frameworks", SuppressedConflictCount);
     
     free(classes);

@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,7 +43,7 @@ RCS_ID("$Id$");
     if (!sentAction && [theEvent type] == NSLeftMouseDown && [theEvent clickCount] > 1) {
         [[self window] resignKeyWindow];
     }
-    
+
     _clicked = YES;
     sentAction = NO;
 }
@@ -54,6 +54,12 @@ RCS_ID("$Id$");
 	return _lastDate;
     }
     return [super dateValue];
+}
+
+- (void)setDateValue:(NSDate *)newStartDate;
+{
+    [super setDateValue:newStartDate];
+    _clicked = YES;
 }
 
 - (void)setClicked:(BOOL)clicked;

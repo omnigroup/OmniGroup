@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,13 +78,13 @@ typedef enum {
 - (NSString *)errorReasonString;
 
 - (NSString *)compositeTypeString;  // localized string to present to user
-- (void)calculateDeadPipelines:(unsigned int *)deadPipelines totalPipelines:(unsigned int *)totalPipelines;
-- (unsigned int)workDone;
-- (unsigned int)workToBeDone;
-- (unsigned int)workDoneIfNotFinished;
-- (unsigned int)workToBeDoneIfNotFinished;
-- (unsigned int)workDoneIncludingChildren;
-- (unsigned int)workToBeDoneIncludingChildren;
+- (void)calculateDeadPipelines:(NSUInteger *)deadPipelines totalPipelines:(NSUInteger *)totalPipelines;
+- (size_t)workDone;
+- (size_t)workToBeDone;
+- (size_t)workDoneIfNotFinished;
+- (size_t)workToBeDoneIfNotFinished;
+- (size_t)workDoneIncludingChildren;
+- (size_t)workToBeDoneIncludingChildren;
 - (NSString *)statusString;
 
 // Network activity panel / inspector helper methods

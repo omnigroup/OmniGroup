@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -66,7 +66,7 @@ static NSLock *pathLock = nil;
 
 - (void)removeCookie:(OWCookie *)cookie;
 {
-    unsigned int index;
+    NSUInteger index;
     
     [pathLock lock];
     index = [_cookies indexOfObjectIdenticalTo:cookie];
@@ -91,6 +91,9 @@ static NSLock *pathLock = nil;
 
 - (OWCookie *)cookieNamed:(NSString *)name;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     unsigned int cookieIndex;
     OWCookie *cookie = nil;
     BOOL found = NO;
@@ -112,11 +115,14 @@ static NSLock *pathLock = nil;
     if (found)
         return cookie;
     return nil;
+#endif
 }
 
 // For use by OWCookieDomain
 - (void)addCookie:(OWCookie *)cookie andNotify:(BOOL)shouldNotify;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     unsigned int cookieIndex;
     OWCookie *oldCookie;
     BOOL needsAdding = YES;
@@ -179,10 +185,13 @@ static NSLock *pathLock = nil;
 #warning deal with cache validation of cookie state
 //        [OWContentCache flushCachedContentMatchingCookie:cookie];
     }
+#endif
 }
 
 - (void)addNonExpiredCookiesToArray:(NSMutableArray *)array usageIsSecure:(BOOL)secure includeRejected:(BOOL)includeRejected;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     unsigned int cookieIndex, cookieCount;
     OWCookie *cookie;
     
@@ -201,10 +210,13 @@ static NSLock *pathLock = nil;
     }
     
     [pathLock unlock];
+#endif
 }
 
 - (void)addCookiesToSaveToArray:(NSMutableArray *)array;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     unsigned int cookieIndex, cookieCount;
     OWCookie *cookie;
 
@@ -221,6 +233,7 @@ static NSLock *pathLock = nil;
     }
 
     [pathLock unlock];
+#endif
 }
 
 - (NSComparisonResult)compare:(id)otherObject;

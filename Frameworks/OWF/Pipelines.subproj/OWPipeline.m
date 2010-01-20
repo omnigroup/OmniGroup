@@ -1,4 +1,4 @@
-// Copyright 1997-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,7 +55,7 @@ static NSNumber *OWZeroNumber = nil;
 - (void)_cleanupPipelineIfDead;
 
 - (BOOL)_incorporateOneEntry:(NSArray *)newlyFoundContent fromArc:(id <OWCacheArc>)producer;
-- (void)_spawnCloneThroughArc:(unsigned)arcIndex addingContent:(OWContent *)newContent beforeSelf:(BOOL)precedes;
+- (void)_spawnCloneThroughArc:(NSUInteger)arcIndex addingContent:(OWContent *)newContent beforeSelf:(BOOL)precedes;
 - (void)_arcFinished:(id <OWCacheArc, NSObject>)anArc;
 - (void)_migrateArc:(id <OWCacheArc>)anArc;
 - (void)_removeActiveArc:(id <OWCacheArc>)anArc;
@@ -112,7 +112,7 @@ static NSTimer *activeStatusUpdateTimer;
 static pthread_mutex_t globalCacheLock;
 static pthread_cond_t globalCacheLockCondition;
 static pthread_t globalCacheLockThread;
-static unsigned int globalCacheLockRecursionCount;
+static NSUInteger globalCacheLockRecursionCount;
 static NSMutableArray *pendingCacheNotifications;
 
 #define DEFAULT_SIMULTANEOUS_TARGET_CAPACITY (128)
@@ -190,7 +190,7 @@ static void OWPipelineSetState(OWPipeline *self, OWPipelineState newState)
 
     OMNI_POOL_START {
         while ((pipelines = [self pipelinesForTarget:aTarget])) {
-            unsigned int pipelineIndex, pipelineCount;
+            NSUInteger pipelineIndex, pipelineCount;
 
             pipelineCount = [pipelines count];
             for (pipelineIndex = 0; pipelineIndex < pipelineCount; pipelineIndex++) {
@@ -206,7 +206,7 @@ static void OWPipelineSetState(OWPipeline *self, OWPipelineState newState)
 
     pipelines = [self pipelinesForTarget:aTarget];
     if (pipelines) {
-        unsigned int pipelineIndex, pipelineCount;
+        NSUInteger pipelineIndex, pipelineCount;
 
         pipelineCount = [pipelines count];
         for (pipelineIndex = 0; pipelineIndex < pipelineCount; pipelineIndex++) {
@@ -221,7 +221,7 @@ static void OWPipelineSetState(OWPipeline *self, OWPipelineState newState)
 
     pipelines = [self pipelinesForTarget:aTarget];
     if (pipelines) {
-        unsigned int pipelineIndex, pipelineCount;
+        NSUInteger pipelineIndex, pipelineCount;
 
         pipelineCount = [pipelines count];
         for (pipelineIndex = 0; pipelineIndex < pipelineCount; pipelineIndex++) {
@@ -257,7 +257,7 @@ static void OWPipelineSetState(OWPipeline *self, OWPipelineState newState)
 + (OWPipeline *)firstActivePipelineForTarget:(id <OWTarget>)aTarget;
 {
     NSArray *pipelines;
-    unsigned int pipelineIndex, pipelineCount;
+    NSUInteger pipelineIndex, pipelineCount;
 
     pipelines = [self pipelinesForTarget:aTarget];
     if (pipelines == nil)
@@ -277,7 +277,7 @@ static void OWPipelineSetState(OWPipeline *self, OWPipelineState newState)
 + (OWPipeline *)lastActivePipelineForTarget:(id <OWTarget>)aTarget;
 {
     NSArray *pipelines;
-    unsigned int pipelineIndex;
+    NSUInteger pipelineIndex;
 
     pipelines = [self pipelinesForTarget:aTarget];
     if (!pipelines)
@@ -395,7 +395,7 @@ static void acquireLockMutexAlreadyHeld(BOOL localMutexHeld, BOOL deliverPending
 
 static void lockedPostNotificationsAndRelease(NSArray *notesToSend)
 {
-    unsigned int noteIndex, noteCount;
+    NSUInteger noteIndex, noteCount;
 
     noteCount = [notesToSend count];
     noteIndex = 0;
@@ -417,9 +417,9 @@ static void lockedPostNotificationsAndRelease(NSArray *notesToSend)
     [notesToSend release];
 }
 
-static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, unsigned targetCount, SEL selector, NSObject *arg)
+static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, NSUInteger targetCount, SEL selector, NSObject *arg)
 {
-    unsigned targetIndex;
+    NSUInteger targetIndex;
 
     for (targetIndex = 0; targetIndex < targetCount; targetIndex++) {
         OWPipeline *aPipeline;
@@ -440,7 +440,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
 + (void)postSelector:(SEL)aSelector toPipelines:(NSArray *)pipelines withObject:(NSObject *)arg;
 {
-    unsigned targetIndex, targetCount;
+    NSUInteger targetIndex, targetCount;
     BOOL acquiredLockLocally;
     
     if (aSelector == NULL || pipelines == nil)
@@ -589,7 +589,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     firstErrorContent = NSNotFound;
     mostRecentAddress = nil;
     
-    unsigned int contentCount = [someContent count];
+    NSUInteger contentCount = [someContent count];
     
     // Check to see that we're being initialized with content (that's the point of this initializer!)
     OBASSERT(someContent != nil && contentCount > 0);
@@ -602,7 +602,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     [followedContent addObject:[someContent objectAtIndex:0]];
     
     // Find most recent address (for -lastAddress)
-    unsigned int contentIndex = contentCount;
+    NSUInteger contentIndex = contentCount;
     while (contentIndex--) {
         OWContent *content = [someContent objectAtIndex:contentIndex];
         if ([content isAddress]) {
@@ -625,8 +625,8 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         caches = [[OWContentCacheGroup defaultCacheGroup] retain];
 
     if (someArcs) {
-        unsigned int arcIndex;
-        unsigned int arcCount = [someArcs count];
+        NSUInteger arcIndex;
+        NSUInteger arcCount = [someArcs count];
 
         givenArcs = [[NSMutableArray alloc] init];
         
@@ -807,7 +807,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
     [OWPipeline lock];
     NS_DURING {
-        unsigned int arcIndex;
+        NSUInteger arcIndex;
         BOOL aborted = NO;
 
         OWPipelineSetState(self, OWPipelineAborting);
@@ -873,8 +873,8 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         return 0.0;
 
     NSDate *firstBytesDate = [sourceArc firstBytesDate];
-    unsigned int workDone = [sourceArc bytesProcessed];
-    unsigned int workToBeDone = [sourceArc totalBytes];
+    size_t workDone = [sourceArc bytesProcessed];
+    size_t workToBeDone = [sourceArc totalBytes];
 
     if (firstBytesDate == nil || workDone == 0 || workToBeDone == 0 || workDone >= workToBeDone)
         return 0.0;
@@ -930,20 +930,20 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     return string;
 }
 
-- (unsigned int)workDone;
+- (size_t)workDone;
 {
     id <OWCacheArc> sourceArc = [self _mostRecentArcProducingSource];
-    unsigned int result = [sourceArc bytesProcessed];
+    size_t result = [sourceArc bytesProcessed];
     if (result == 0)
         result = maximumWorkToBeDone;
         
     return result;
 }
 
-- (unsigned int)workToBeDone;
+- (size_t)workToBeDone;
 {
     id <OWCacheArc> sourceArc = [self _mostRecentArcProducingSource];
-    unsigned int result = [sourceArc totalBytes];
+    size_t result = [sourceArc totalBytes];
     if (result == 0)
         result = maximumWorkToBeDone;
     else if (result > maximumWorkToBeDone)
@@ -1110,8 +1110,6 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         return targetAcceptableContentTypes;
     }
     if ([key isEqualToString:OWCacheArcSourceAddressKey]) {
-        unsigned arcIndex, sourceContentIndex;
-
         if (arc == nil)
             return nil;
         
@@ -1120,7 +1118,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         if ([[arc source] isAddress])
             return [[arc source] address];
             
-        arcIndex = [followedArcs indexOfObjectIdenticalTo:arc];
+        NSUInteger arcIndex = [followedArcs indexOfObjectIdenticalTo:arc];
         OBASSERT(arcIndex != NSNotFound);
         if (arcIndex == NSNotFound)
             return nil;
@@ -1128,7 +1126,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         if (arcIndex >= [followedContent count])
             return nil;
         OBASSERT([[arc source] isEqual:[followedContent objectAtIndex:arcIndex]]);
-        for (sourceContentIndex = arcIndex;;) {
+        for (NSUInteger sourceContentIndex = arcIndex;;) {
             OWContent *previousContent = [followedContent objectAtIndex:sourceContentIndex];
             if ([previousContent isAddress])
                 return [previousContent address];
@@ -1377,7 +1375,6 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 {
     id <OWCacheArc, NSObject> thisArc;
     NSString *errorName;
-    unsigned thisArcIndex;
     BOOL thisArcHasThread;
 
 #ifdef DEBUG_kc0
@@ -1399,7 +1396,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
     thisArc = [info objectForKey:@"arc"];
     OBASSERT(thisArc != nil);
-    thisArcIndex = [followedArcs indexOfObjectIdenticalTo:thisArc];
+    NSUInteger thisArcIndex = [followedArcs indexOfObjectIdenticalTo:thisArc];
     if (thisArcIndex == NSNotFound)
         return;
 
@@ -1558,16 +1555,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 + (void)_updateStatusMonitors:(NSTimer *)timer;
 {
-    NSArray *activeChildrenCopy;
-    int pipelineIndex, pipelineCount;
-
-    activeChildrenCopy = [OWContentInfo allActiveTasks];
-
-    pipelineCount = [activeChildrenCopy count];
-    for (pipelineIndex = 0; pipelineIndex < pipelineCount; pipelineIndex++) {
-        OWPipeline *pipeline;
-
-        pipeline = [activeChildrenCopy objectAtIndex:pipelineIndex];
+    for (OWPipeline *pipeline in [OWContentInfo allActiveTasks]) {
         if ([pipeline isKindOfClass:[OWPipeline class]])
             [pipeline updateStatusOnTarget];
     }
@@ -1619,7 +1607,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
         OBASSERT([pipelines containsObjectIdenticalTo:aPipeline]);
         [pipelines removeObjectIdenticalTo:aPipeline];
 
-        unsigned int parentPipelineIndex = [pipelines indexOfObjectIdenticalTo:parentPipeline];
+        NSUInteger parentPipelineIndex = [pipelines indexOfObjectIdenticalTo:parentPipeline];
         OBASSERT(parentPipelineIndex != NSNotFound);
 
         if (shouldPlaceBefore)
@@ -1652,7 +1640,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 + (void)_target:(id <OWTarget>)aTarget acceptedContentFromPipeline:(OWPipeline *)acceptedPipeline;
 {
     NSArray *pipelines;
-    unsigned int pipelineIndex, pipelineCount;
+    NSUInteger pipelineIndex, pipelineCount;
 
     // Nullify the targets of all pipelines that were created BEFORE this one with the same target, because we don't want them returning content later and overwriting our content.  Pipelines created AFTER us are left alone, so if they ever return valid content they'll steal our target as their own.
     pipelines = [self pipelinesForTarget:aTarget];
@@ -1831,7 +1819,6 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (OWCacheArcTraversalResult)_traverseArcFromSearch:(id <OWCacheArc>)possibleArc
 {
-    OWCacheArcTraversalResult progress;
     NSArray *newlyFoundContent;
     BOOL given;
     unsigned invalidity;
@@ -1844,7 +1831,6 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     ASSERT_OWPipeline_Locked();
 
     newlyFoundContent = nil;
-    progress = OWCacheArcTraversal_Failed;
 
     [followedArcs addObject:possibleArc];
     if ([possibleArc status] == OWProcessorRunning)
@@ -1882,7 +1868,8 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
     if (OWPipelineDebug || flags.debug)
         NSLog(@"%@: traversing %@", [self shortDescription], OBShortObjectDescription(possibleArc));
-    progress = [possibleArc traverseInPipeline:self];
+
+    OWCacheArcTraversalResult progress = [possibleArc traverseInPipeline:self];
 
     OBASSERT(possibleArc == [followedArcs lastObject]);
     OBASSERT(flags.traversingLastArc);
@@ -1969,7 +1956,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     if (invalidity & (OWCacheArcInvalidContext|OWCacheArcStale))
         return NO;
 
-    unsigned int newlyFoundContentIndex = [newlyFoundContent count];
+    NSUInteger newlyFoundContentIndex = [newlyFoundContent count];
     while (newlyFoundContentIndex--) {
         OWContent *newlyFoundContentEntry = [newlyFoundContent objectAtIndex:newlyFoundContentIndex];
 
@@ -2008,7 +1995,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
                 OBASSERT([followedContent count] == [followedArcs count]+1);
                 return YES;
             } else {
-                unsigned arcIndex = [followedArcs indexOfObjectIdenticalTo:producer];
+                NSUInteger arcIndex = [followedArcs indexOfObjectIdenticalTo:producer];
 
                 if (arcIndex == NSNotFound) {
                     OBASSERT_NOT_REACHED("Incorporating content from unexpected arc");
@@ -2035,7 +2022,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     return NO;
 }
 
-- (void)_spawnCloneThroughArc:(unsigned)arcIndex addingContent:(OWContent *)newContent beforeSelf:(BOOL)precedes
+- (void)_spawnCloneThroughArc:(NSUInteger)arcIndex addingContent:(OWContent *)newContent beforeSelf:(BOOL)precedes
 {
     NSRange laterContent, reusedArcs;
     NSMutableArray *newPipelineContent;
@@ -2109,7 +2096,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (void)_migrateArc:(id <OWCacheArc>)anArc;
 {
-    unsigned replacementArcIndex;
+    NSUInteger replacementArcIndex;
     id <OWCacheArc> replacementArc;
     id <OWCacheArcProvider, OWCacheContentProvider> destinationCache;
 
@@ -2175,11 +2162,9 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (void)_forgetArc:(id <OWCacheArc>)anArc;
 {
-    unsigned arcIndex;
-
     [self _removeActiveArc:anArc];
 
-    arcIndex = [followedArcs indexOfObjectIdenticalTo:anArc];
+    NSUInteger arcIndex = [followedArcs indexOfObjectIdenticalTo:anArc];
     OBASSERT(arcIndex != NSNotFound);
     // OBASSERT(arcIndex + 1 == [followedArcs count]); // Otherwise, a future arc is derived from the one we're forgetting (and we ought to forget it too?).  TODO: This assertion fails when loading <http://www.WorldofWarcraft.com>, where we end up with two OWHTTPProcessor arcs.
     if (OWPipelineDebug || flags.debug)

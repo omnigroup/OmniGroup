@@ -1,4 +1,4 @@
-// Copyright 2005-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
 #import <OmniBase/OBUtilities.h>
+
+#import <Foundation/NSUserDefaults.h>
 
 RCS_ID("$Id$");
 
@@ -26,18 +28,10 @@ RCS_ID("$Id$");
     static NSString * const OBBacktraceNamesErrorKey = @"com.omnigroup.framework.OmniBase.ErrorDomain.Backtrace";
 #endif
 
-NSString * const OBUserCancelledActionErrorKey = @"com.omnigroup.framework.OmniBase.ErrorDomain.ErrorDueToUserCancel";
-
 static id (*original_initWithDomainCodeUserInfo)(NSError *self, SEL _cmd, NSString *domain, NSInteger code, NSDictionary *dict) = NULL;
 
 @implementation NSError (OBExtensions)
 
-+ (void)performPosing;
-{
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"OBLogErrorCreations"]) {
-        original_initWithDomainCodeUserInfo = (typeof(original_initWithDomainCodeUserInfo))OBReplaceMethodImplementationWithSelector(self, @selector(initWithDomain:code:userInfo:), @selector(logging_initWithDomain:code:userInfo:));
-    }
-}
 - (id)logging_initWithDomain:(NSString *)domain code:(NSInteger)code userInfo:(NSDictionary *)dict;
 {
     self = original_initWithDomainCodeUserInfo(self, _cmd, domain, code, dict);
@@ -46,39 +40,45 @@ static id (*original_initWithDomainCodeUserInfo)(NSError *self, SEL _cmd, NSStri
     return self;
 }
 
++ (void)performPosing;
+{
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"OBLogErrorCreations"]) {
+        original_initWithDomainCodeUserInfo = (typeof(original_initWithDomainCodeUserInfo))OBReplaceMethodImplementationWithSelector(self, @selector(initWithDomain:code:userInfo:), @selector(logging_initWithDomain:code:userInfo:));
+    }
+}
 
-// Returns YES if the error or any of its underlying errors has the indicated domain and code.
-- (BOOL)hasUnderlyingErrorDomain:(NSString *)domain code:(int)code;
+- (NSError *)underlyingErrorWithDomain:(NSString *)domain;
+{
+    NSError *error = self;
+    while (error) {
+	if ([[error domain] isEqualToString:domain])
+	    return error;
+	error = [[error userInfo] objectForKey:NSUnderlyingErrorKey];
+    }
+    return nil;
+}
+
+- (NSError *)underlyingErrorWithDomain:(NSString *)domain code:(NSInteger)code;
 {
     NSError *error = self;
     while (error) {
 	if ([[error domain] isEqualToString:domain] && [error code] == code)
-	    return YES;
+	    return error;
 	error = [[error userInfo] objectForKey:NSUnderlyingErrorKey];
     }
-    return NO;
+    return nil;
 }
 
-/*" Returns YES if the receiver or any of its underlying errors has a user info key of OBUserCancelledActionErrorKey with a boolean value of YES.  Under 10.4 and higher, this also returns YES if the receiver or any of its underlying errors has the domain NSCocoaErrorDomain and code NSUserCancelledError (see NSResponder.h). "*/
+// Returns YES if the error or any of its underlying errors has the indicated domain and code.
+- (BOOL)hasUnderlyingErrorDomain:(NSString *)domain code:(NSInteger)code;
+{
+    return ([self underlyingErrorWithDomain:domain code:code] != nil);
+}
+
 - (BOOL)causedByUserCancelling;
 {    
-    NSError *error = self;
-    while (error) {
-	NSDictionary *userInfo = [error userInfo];
-	if ([[userInfo objectForKey:OBUserCancelledActionErrorKey] boolValue])
-	    return YES;
-	
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
-	// TJW: There is also NSUserCancelledError in 10.4.  See NSResponder.h -- it says NSApplication will bail on presenting the error if the domain is NSCocoaErrorDomain and code is NSUserCancelledError.  It's unclear if NSApplication checks the whole chain (question open on cocoa-dev as of 2005/09/29).
-	if ([[error domain] isEqualToString:NSCocoaErrorDomain] && [error code] == NSUserCancelledError)
-	    return YES;
-#endif
-	
-	error = [userInfo objectForKey:NSUnderlyingErrorKey];
-    }
-    return NO;
+    return [self hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSUserCancelledError];
 }
-
 
 static void _mapPlistValueToUserInfoEntry(const void *key, const void *value, void *context)
 {
@@ -200,7 +200,7 @@ static void _addMapppedUserInfoValueToDictionary(const void *key, const void *va
     NSMutableDictionary *plist = [NSMutableDictionary dictionary];
     
     [plist setObject:[self domain] forKey:@"domain"];
-    [plist setObject:[NSNumber numberWithInt:[self code]] forKey:@"code"];
+    [plist setObject:[NSNumber numberWithInteger:[self code]] forKey:@"code"];
     
     NSDictionary *userInfo = [self userInfo];
     if (userInfo)
@@ -210,3 +210,4 @@ static void _addMapppedUserInfoValueToDictionary(const void *key, const void *va
 }
 
 @end
+

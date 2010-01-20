@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,15 +21,15 @@
 }
 
 // These are the primitive methods which must be implemented by subclasses
-- (unsigned int)readBytes:(unsigned int)byteCount intoBuffer:(void *)aBuffer;
-- (unsigned int)writeBytes:(unsigned int)byteCount fromBuffer:(const void *)aBuffer;
+- (size_t)readBytes:(size_t)byteCount intoBuffer:(void *)aBuffer;
+- (size_t)writeBytes:(size_t)byteCount fromBuffer:(const void *)aBuffer;
 - (void)abortSocket;
 
 - (BOOL)isReadable;
 - (BOOL)isWritable;
 
 // This is implemented in terms of -writeBytes:fromBuffer:, but overridden in subclasses which support 'gather' writing directly.
-- (unsigned int)writeBuffers:(const struct iovec *)buffers count:(unsigned int)num_iov;
+- (size_t)writeBuffers:(const struct iovec *)buffers count:(unsigned int)num_iov;
 
 @end
 

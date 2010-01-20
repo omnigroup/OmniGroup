@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,10 +22,10 @@ RCS_ID("$Id$")
 
 @implementation ONUDPSocket
 
-- (unsigned int)writeBytes:(unsigned int)byteCount fromBuffer:(const void *)aBuffer toPortAddress:(ONPortAddress *)aPortAddress;
+- (size_t)writeBytes:(size_t)byteCount fromBuffer:(const void *)aBuffer toPortAddress:(ONPortAddress *)aPortAddress;
 {
     // Note, you can be connected and still do a sendto()
-    int bytesWritten;
+    ssize_t bytesWritten;
     const struct sockaddr *portAddress;
 
     [self ensureSocketFD:[aPortAddress addressFamily]];
@@ -34,17 +34,17 @@ RCS_ID("$Id$")
 
     bytesWritten = sendto(socketFD, (char *)aBuffer, byteCount, 0, portAddress, portAddress->sa_len);
 
-    if (bytesWritten == -1)
+    if (bytesWritten < 0)
 	[NSException raise:ONInternetSocketWriteFailedExceptionName posixErrorNumber:OMNI_ERRNO() format:NSLocalizedStringFromTableInBundle(@"Unable to write to socket: %s", @"OmniNetworking", THIS_BUNDLE, @"error"), strerror(OMNI_ERRNO())];
-    return (unsigned int)bytesWritten;
+    return bytesWritten;
 }
 
 
 // ONSocket subclass
 
-- (unsigned int)readBytes:(unsigned int)byteCount intoBuffer:(void *)aBuffer;
+- (size_t)readBytes:(size_t)byteCount intoBuffer:(void *)aBuffer;
 {
-    ONSocketAddressLength bytesRead;
+    ssize_t bytesRead;
 
     if (flags.connected)
 	bytesRead = recv(socketFD, aBuffer, byteCount, 0);
@@ -52,12 +52,13 @@ RCS_ID("$Id$")
         ONSocketAddressLength senderAddressLength;
         ONSockaddrAny senderAddress;
         
+        bzero(&senderAddress, sizeof(senderAddress));
         senderAddressLength = sizeof(senderAddress);
 
 	bytesRead = recvfrom(socketFD, aBuffer, byteCount, 0, &(senderAddress.generic), &senderAddressLength);
-        OBASSERT(bytesRead == (ONSocketAddressLength)-1 || senderAddressLength == 0 || senderAddressLength == senderAddress.generic.sa_len);
+        OBASSERT(bytesRead < 0 || senderAddressLength == 0 || senderAddressLength == senderAddress.generic.sa_len);
         
-        if (bytesRead == (ONSocketAddressLength)-1 || senderAddressLength == 0 ||
+        if (bytesRead < 0 || senderAddressLength == 0 ||
             !remoteAddress || ![remoteAddress isEqualToSocketAddress:&(senderAddress.generic)]) {
 
             // Either we didn't receive anything, or we didn't have a cached remoteAddress, or the old remoteAddress was different from the one we just got. In each of these cases, we want to null out the old remoteAddress, and possibly create a new one.
@@ -77,28 +78,28 @@ RCS_ID("$Id$")
     }
 
     if (flags.userAbort)
-        [NSException raise:ONInternetSocketUserAbortExceptionName format:NSLocalizedStringFromTableInBundle(@"Read aborted", @"OmniNetworking", THIS_BUNDLE, @"error")];
+        [[NSException exceptionWithName:ONInternetSocketUserAbortExceptionName reason:NSLocalizedStringFromTableInBundle(@"Read aborted", @"OmniNetworking", THIS_BUNDLE, @"error") userInfo:nil] raise];
 
-    if (bytesRead == (ONSocketAddressLength)-1)
+    if (bytesRead < 0)
 	[NSException raise:ONInternetSocketReadFailedExceptionName posixErrorNumber:OMNI_ERRNO() format:NSLocalizedStringFromTableInBundle(@"Unable to read from socket: %s", @"OmniNetworking", THIS_BUNDLE, @"error"), strerror(OMNI_ERRNO())];
-    return (unsigned int)bytesRead;
+    return bytesRead;
 }
 
-- (unsigned int)writeBytes:(unsigned int)byteCount fromBuffer:(const void *)aBuffer;
+- (size_t)writeBytes:(size_t)byteCount fromBuffer:(const void *)aBuffer;
 {
-    int bytesWritten;
+    ssize_t bytesWritten;
 
     if (!flags.connected) {
         NSString *localizedErrorMsg = NSLocalizedStringFromTableInBundle(@"Attempted write to a non-connected socket", @"OmniNetworking", THIS_BUNDLE, @"error - socket is not connected");
-	[NSException raise:ONInternetSocketNotConnectedExceptionName format:localizedErrorMsg];
+	[[NSException exceptionWithName:ONInternetSocketNotConnectedExceptionName reason:localizedErrorMsg userInfo:nil] raise];
     }
 
     OBASSERT(socketFD != -1);  // if we're connected, we should have a valid socket fd
     
     bytesWritten = send(socketFD, (char *)aBuffer, byteCount, 0);
-    if (bytesWritten == -1)
+    if (bytesWritten < 0)
 	[NSException raise:ONInternetSocketWriteFailedExceptionName posixErrorNumber:OMNI_ERRNO() format:NSLocalizedStringFromTableInBundle(@"Unable to write to socket: %s", @"OmniNetworking", THIS_BUNDLE, @"error"), strerror(OMNI_ERRNO())];
-    return (unsigned int)bytesWritten;
+    return bytesWritten;
 }
 
 

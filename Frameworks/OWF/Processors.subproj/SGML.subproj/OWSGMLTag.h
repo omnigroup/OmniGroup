@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@
     NSString *attributes[0];
 }
 
-+ (OWSGMLTag *)retainedTagWithTokenType:(OWSGMLTokenType)aType tagType:(OWSGMLTagType *)aTagType;
++ (OWSGMLTag *)newTagWithTokenType:(OWSGMLTokenType)aType tagType:(OWSGMLTagType *)aTagType;
 + (OWSGMLTag *)tagWithTokenType:(OWSGMLTokenType)aType tagType:(OWSGMLTagType *)aTagType;
 + (OWSGMLTag *)startTagOfType:(OWSGMLTagType *)aTagType;
 + (OWSGMLTag *)endTagOfType:(OWSGMLTagType *)aTagType;
@@ -33,7 +33,7 @@
 
 - (BOOL)isNamed:(NSString *)aName;
 
-- (void)setValue:(NSString *)value atIndex:(unsigned int)index;
+- (void)setValue:(NSString *)value atIndex:(NSUInteger)index;
 - (NSString *)valueForAttribute:(NSString *)attributeName;
 - (BOOL)attributePresent:(NSString *)attributeName;
 
@@ -65,7 +65,7 @@ static inline OWSGMLTokenType sgmlTagTokenType(OWSGMLTag *tag)
     return tag->tokenType;
 }
 
-static inline BOOL sgmlTagAttributePresentAtIndex(OWSGMLTag *tag, unsigned int index)
+static inline BOOL sgmlTagAttributePresentAtIndex(OWSGMLTag *tag, NSUInteger index)
 {
     OBPRECONDITION(index < [tag->nonretainedTagType attributeCount]);
     if (index >= tag->attributeCount)
@@ -73,7 +73,7 @@ static inline BOOL sgmlTagAttributePresentAtIndex(OWSGMLTag *tag, unsigned int i
     return tag->attributes[index] != nil;
 }
 
-static inline NSString *sgmlTagValueForAttributeAtIndex(OWSGMLTag *tag, unsigned int index)
+static inline NSString *sgmlTagValueForAttributeAtIndex(OWSGMLTag *tag, NSUInteger index)
 {
     NSString *value;
 

@@ -1,4 +1,4 @@
-// Copyright 2002-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -268,6 +268,63 @@ static OSType finderSignatureBytes = 'MACS';
     }
     
     return filteredChildren;
+}
+
+- (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
+{
+    FSRef carbonRef;
+    OSStatus err;
+    
+    bzero(&carbonRef, sizeof(carbonRef));
+    err = FSPathMakeRef((void *)[self fileSystemRepresentationWithPath:path], &carbonRef, NULL);
+    if (err != noErr)
+        goto errorReturn;
+
+    err = LSSetItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, quarantineDictionary);
+    if (err != noErr)
+        goto errorReturn;
+    
+    return YES;
+    
+errorReturn:
+        if (outError) {
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, quarantineDictionary, kLSItemQuarantineProperties, nil]];
+        }
+    return NO;
+}
+
+- (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError;
+{
+    FSRef carbonRef;
+    OSStatus err;
+    
+    bzero(&carbonRef, sizeof(carbonRef));
+    err = FSPathMakeRef((void *)[self fileSystemRepresentationWithPath:path], &carbonRef, NULL);
+    if (err != noErr)
+        goto errorReturn;
+    
+    CFTypeRef quarantineDictionary = NULL;
+    err = LSCopyItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, &quarantineDictionary);
+    if (err != noErr)
+        goto errorReturn;
+    if (!quarantineDictionary) {
+        // This doesn't appear to happen in practice (we get kLSAttributeNotFoundErr instead), but just to be safe...
+        err = -10662;
+        goto errorReturn;
+    }
+    if (CFGetTypeID(quarantineDictionary) != CFDictionaryGetTypeID()) {
+        CFRelease(quarantineDictionary);
+        err = kLSUnknownErr;
+        goto errorReturn;
+    }
+    
+    return [(id)quarantineDictionary autorelease];
+    
+errorReturn:
+        if (outError) {
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, nil]];
+        }
+    return nil;
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -125,6 +125,8 @@ RCS_ID("$Id$")
 
 - (void)shareAttributesWithTagType:(OWSGMLTagType *)aTagType;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     unsigned int attributeIndex, attributeCount;
 
     aTagType = [aTagType masterAttributesTagType];
@@ -142,11 +144,12 @@ RCS_ID("$Id$")
     [attributeTrie release];
     attributeNames = nil;
     attributeTrie = nil;
+#endif
 }
 
-- (unsigned int)addAttributeNamed:(NSString *)attributeName;
+- (NSUInteger)addAttributeNamed:(NSString *)attributeName;
 {
-    unsigned int newAttributeIndex;
+    NSUInteger newAttributeIndex;
     OWSGMLAttribute *attribute;
 
     if (masterAttributesTagType)
@@ -163,7 +166,7 @@ RCS_ID("$Id$")
     return newAttributeIndex;
 }
 
-- (unsigned int)indexOfAttribute:(NSString *)attributeName;
+- (NSUInteger)indexOfAttribute:(NSString *)attributeName;
 {
     if (masterAttributesTagType)
         return [masterAttributesTagType addAttributeNamed:attributeName];
@@ -171,7 +174,7 @@ RCS_ID("$Id$")
     return [attributeNames indexOfObject:attributeName];
 }
 
-- (unsigned int)attributeCount;
+- (NSUInteger)attributeCount;
 {
     if (masterAttributesTagType)
         return [masterAttributesTagType attributeCount];
@@ -200,14 +203,14 @@ RCS_ID("$Id$")
 - (OWSGMLTag *)attributelessStartTag;
 {
     if (!attributelessStartTag)
-        attributelessStartTag = [OWSGMLTag retainedTagWithTokenType:OWSGMLTokenTypeStartTag tagType:self];
+        attributelessStartTag = [OWSGMLTag newTagWithTokenType:OWSGMLTokenTypeStartTag tagType:self];
     return attributelessStartTag;
 }
 
 - (OWSGMLTag *)attributelessEndTag;
 {   
     if (!attributelessEndTag)
-        attributelessEndTag = [OWSGMLTag retainedTagWithTokenType:OWSGMLTokenTypeEndTag tagType:self];
+        attributelessEndTag = [OWSGMLTag newTagWithTokenType:OWSGMLTokenTypeEndTag tagType:self];
     return attributelessEndTag;
 }
 

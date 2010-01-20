@@ -1,4 +1,4 @@
-// Copyright 2006, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <AppKit/AppKit.h>
+#import <OmniAppKit/NSColor-OAExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -25,16 +26,16 @@ RCS_ID("$Id$");
 {
     NSRect bounds = [self bounds];
     
-    [[NSColor colorWithCalibratedRed:1.0 green:0.0 blue:1.0 alpha:0.5] set];
+    [OARGBA(1.0, 0.0, 1.0, 0.5) set];
     
-    const float stripeWidth = 10.0f;
-    float height = bounds.size.height;
+    const CGFloat stripeWidth = 10.0f;
+    CGFloat height = bounds.size.height;
     
     CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
     CGContextSaveGState(ctx);
     {
 	CGContextSetBlendMode(ctx, kCGBlendModeDarken);
-	CGContextSetAlpha(ctx, 0.075);
+	CGContextSetAlpha(ctx, 0.075f);
 	CGContextBeginTransparencyLayer(ctx, NULL);
 	{
 	    [[NSColor blackColor] setFill];

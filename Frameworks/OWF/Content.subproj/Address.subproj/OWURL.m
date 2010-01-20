@@ -1,4 +1,4 @@
-// Copyright 1997-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -178,7 +178,7 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 {
     NSUserDefaults *userDefaults;
     NSArray *fakeRootURLStrings;
-    unsigned int fakeRootCount;
+    NSUInteger fakeRootCount;
 
     userDefaults = [NSUserDefaults standardUserDefaults];
     [shortTopLevelDomains release];
@@ -198,7 +198,7 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     fakeRootURLStrings = [userDefaults arrayForKey:@"OWURLFakeRootURLs"];
     fakeRootCount = [fakeRootURLStrings count];
     if (fakeRootCount > 0) {
-        unsigned int fakeRootIndex;
+        NSUInteger fakeRootIndex;
         NSMutableArray *newFakeRootURLs;
 
         newFakeRootURLs = [[NSMutableArray alloc] initWithCapacity:fakeRootCount];
@@ -462,7 +462,7 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 + (NSString *)lastPathComponentForPath:(NSString *)aPath;
 {
     NSRange lastSlashRange;
-    unsigned int originalLength, lengthMinusTrailingSlash;
+    NSUInteger originalLength, lengthMinusTrailingSlash;
     
     if (aPath == nil)
         return nil;
@@ -505,9 +505,9 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     return [aPath substringToIndex:lastSlashRange.location];
 }
 
-+ (unsigned int)minimumDomainComponentsForDomainComponents:(NSArray *)domainComponents;
++ (NSUInteger)minimumDomainComponentsForDomainComponents:(NSArray *)domainComponents;
 {
-    unsigned int componentCount = [domainComponents count];
+    NSUInteger componentCount = [domainComponents count];
 
     if (componentCount < 2)
         return componentCount;
@@ -532,8 +532,8 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 {
     NSString *domain;
     NSArray *domainComponents;
-    unsigned int domainComponentCount;
-    unsigned int minimumDomainComponents;
+    NSUInteger domainComponentCount;
+    NSUInteger minimumDomainComponents;
     ONHostAddress *numericAddress;
 
     if (hostname == nil)
@@ -584,10 +584,10 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
         //fix my %'s here
         NSCharacterSet *hexDigits = [NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefABCDEF"];
         NSRange percentRange = [compositeString rangeOfString:@"%" options:NSLiteralSearch];
-        unsigned int stringLength = [compositeString length];
+        NSUInteger stringLength = [compositeString length];
 
         while (percentRange.location != NSNotFound) {
-            unsigned int lastPosition = NSMaxRange(percentRange);
+            NSUInteger lastPosition = NSMaxRange(percentRange);
             if (stringLength < lastPosition + 2 || ![hexDigits characterIsMember:[compositeString characterAtIndex:lastPosition]] || ![hexDigits characterIsMember:[compositeString characterAtIndex:lastPosition + 1]]) { 
                 // fix bad %
                 [compositeString insertString:@"25" atIndex:lastPosition];
@@ -696,9 +696,7 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 // This is possibly not the best name or this method.  Basically this is just the code from -compositeString except we don't append the path, params, query or fragment.  This is used in OmniWeb in the address completion code.
 - (NSString *)stringToNetLocation;
 {
-    NSMutableString *string;
-
-    string = [[NSMutableString alloc] initWithString:scheme];
+    NSMutableString *string = [NSMutableString stringWithString:scheme];
     [string appendString:@":"];
 
     if (!schemeSpecificPart) {
@@ -872,7 +870,7 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     const char *urlBytes = [[self compositeString] UTF8String];
     return adler32(adler32(0L, Z_NULL, 0), urlBytes, strlen(urlBytes));
 #elif 0
-    unsigned int hash = 0;
+    NSUInteger hash = 0;
     
     NSString *compositeString = [self compositeString];
     OFStringStartLoopThroughCharacters(compositeString, character) {
@@ -1008,9 +1006,9 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     } else if (scannerHasData(scanner) && !OFCharacterSetHasMember(PathDelimiterOFCharacterSet, scannerPeekCharacter(scanner))) {
         // Scan relative path
 	NSMutableArray *pathElements;
-	unsigned int preserveCount = 0, pathElementCount;
+	NSUInteger preserveCount = 0, pathElementCount;
 	NSArray *relativePathArray;
-	unsigned int relativePathIndex, relativePathCount;
+	NSUInteger relativePathIndex, relativePathCount;
 	BOOL lastElementWasDirectory = NO;
 
         aPath = [scanner readFullTokenWithDelimiterOFCharacterSet:PathDelimiterOFCharacterSet forceLowercase:NO];
@@ -1293,7 +1291,7 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 - (OWURL *)fakeRootURL;
 {
     OWURL *fakeRootURL;
-    unsigned int fakeRootIndex, fakeRootCount;
+    NSUInteger fakeRootIndex, fakeRootCount;
 
     if (fakeRootURLs == nil)
         return nil;

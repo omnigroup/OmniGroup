@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -88,6 +88,16 @@ static inline Boolean OFCFDictionaryContainsIntegerKey(CFDictionaryRef theDict, 
 static inline Boolean OFCFDictionaryContainsUIntegerKey(CFDictionaryRef theDict, uintptr_t key)
 {
     return CFDictionaryContainsKey(theDict, (const void *)key);
+}
+
+static inline void OFCFDictionaryAddValueForInteger(CFMutableDictionaryRef theDict, intptr_t key, const void *value)
+{
+    CFDictionaryAddValue(theDict, (const void *)key, value);
+}
+
+static inline void OFCFDictionaryAddValueForUInteger(CFMutableDictionaryRef theDict, uintptr_t key, const void *value)
+{
+    CFDictionaryAddValue(theDict, (const void *)key, value);
 }
 
 static inline void OFCFDictionarySetValueForInteger(CFMutableDictionaryRef theDict, intptr_t key, const void *value)

@@ -65,6 +65,12 @@
 		343019610E98414D00739436 /* OBUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 343019600E98414D00739436 /* OBUtilities.m */; };
 		3430196D0E9842B000739436 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3430196C0E9842B000739436 /* libsqlite3.dylib */; };
 		343019740E9842CB00739436 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 343019710E9842CB00739436 /* libxml2.dylib */; };
+		34A4D81811077EAB004CFF9D /* NSError-OBUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A4D81711077EAB004CFF9D /* NSError-OBUtilities.m */; };
+		34A4D81B11077EC1004CFF9D /* NSError-OBUtilities.h in Copy OmniBase Headers */ = {isa = PBXBuildFile; fileRef = 34A4D81611077EAB004CFF9D /* NSError-OBUtilities.h */; };
+		34A4D83011077F4B004CFF9D /* OFRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A4D82F11077F4B004CFF9D /* OFRandom.m */; };
+		34A4D83111077F4D004CFF9D /* OFRandom.h in Copy OmniFoundation Headers */ = {isa = PBXBuildFile; fileRef = 34A4D82E11077F4B004CFF9D /* OFRandom.h */; };
+		34A4D8571107801C004CFF9D /* OBBacktraceBuffer.h in Copy OmniBase Headers */ = {isa = PBXBuildFile; fileRef = 34A4D85611078018004CFF9D /* OBBacktraceBuffer.h */; };
+		34A4D85D1107807A004CFF9D /* OBBacktraceBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A4D85C1107807A004CFF9D /* OBBacktraceBuffer.m */; };
 		34C2606A0EAE816500F5FC90 /* ODOObject-Accessors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C260690EAE816500F5FC90 /* ODOObject-Accessors.m */; };
 		34C260720EAE81B600F5FC90 /* OFObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C260710EAE81B600F5FC90 /* OFObject.m */; };
 		34C260730EAE81BE00F5FC90 /* OFObject.h in Copy OmniFoundation Headers */ = {isa = PBXBuildFile; fileRef = 34C260700EAE81B600F5FC90 /* OFObject.h */; };
@@ -86,8 +92,10 @@
 			dstPath = $DERIVED_SOURCES_DIR/FrameworkHeaders/OmniBase;
 			dstSubfolderSpec = 0;
 			files = (
+				34A4D8571107801C004CFF9D /* OBBacktraceBuffer.h in Copy OmniBase Headers */,
 				343017D20E98391C00739436 /* macros.h in Copy OmniBase Headers */,
 				343018840E983D1E00739436 /* system.h in Copy OmniBase Headers */,
+				34A4D81B11077EC1004CFF9D /* NSError-OBUtilities.h in Copy OmniBase Headers */,
 				343017D30E98391C00739436 /* NSError-OBExtensions.h in Copy OmniBase Headers */,
 				3430174B0E98372500739436 /* objc.h in Copy OmniBase Headers */,
 				3430174C0E98372500739436 /* OBUtilities.h in Copy OmniBase Headers */,
@@ -104,6 +112,7 @@
 			dstPath = $DERIVED_SOURCES_DIR/FrameworkHeaders/OmniFoundation;
 			dstSubfolderSpec = 0;
 			files = (
+				34A4D83111077F4D004CFF9D /* OFRandom.h in Copy OmniFoundation Headers */,
 				34C261050EAE88B300F5FC90 /* CFArray-OFExtensions.h in Copy OmniFoundation Headers */,
 				34C260A50EAE835E00F5FC90 /* OFCFCallbacks.h in Copy OmniFoundation Headers */,
 				34C260800EAE823400F5FC90 /* OFXMLIdentifier.h in Copy OmniFoundation Headers */,
@@ -221,6 +230,12 @@
 		343019600E98414D00739436 /* OBUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBUtilities.m; sourceTree = "<group>"; };
 		3430196C0E9842B000739436 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = ../../../../../../usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		343019710E9842CB00739436 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = ../../../../../../usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
+		34A4D81611077EAB004CFF9D /* NSError-OBUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSError-OBUtilities.h"; sourceTree = "<group>"; };
+		34A4D81711077EAB004CFF9D /* NSError-OBUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError-OBUtilities.m"; sourceTree = "<group>"; };
+		34A4D82E11077F4B004CFF9D /* OFRandom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFRandom.h; path = DataStructures.subproj/OFRandom.h; sourceTree = "<group>"; };
+		34A4D82F11077F4B004CFF9D /* OFRandom.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFRandom.m; path = DataStructures.subproj/OFRandom.m; sourceTree = "<group>"; };
+		34A4D85611078018004CFF9D /* OBBacktraceBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBBacktraceBuffer.h; sourceTree = "<group>"; };
+		34A4D85C1107807A004CFF9D /* OBBacktraceBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBBacktraceBuffer.m; sourceTree = "<group>"; };
 		34C260670EAE816500F5FC90 /* ODOModel-Creation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOModel-Creation.h"; sourceTree = "<group>"; };
 		34C260680EAE816500F5FC90 /* ODOObject-Accessors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOObject-Accessors.h"; sourceTree = "<group>"; };
 		34C260690EAE816500F5FC90 /* ODOObject-Accessors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOObject-Accessors.m"; sourceTree = "<group>"; };
@@ -344,11 +359,15 @@
 		343016E50E9835ED00739436 /* OmniBase */ = {
 			isa = PBXGroup;
 			children = (
+				34A4D85611078018004CFF9D /* OBBacktraceBuffer.h */,
+				34A4D85C1107807A004CFF9D /* OBBacktraceBuffer.m */,
 				3430173F0E9836FF00739436 /* assertions.h */,
 				343017400E9836FF00739436 /* assertions.m */,
 				343017CB0E98391700739436 /* macros.h */,
 				343017CC0E98391700739436 /* NSError-OBExtensions.h */,
 				343017CD0E98391700739436 /* NSError-OBExtensions.m */,
+				34A4D81611077EAB004CFF9D /* NSError-OBUtilities.h */,
+				34A4D81711077EAB004CFF9D /* NSError-OBUtilities.m */,
 				343017480E98371F00739436 /* objc.h */,
 				343017410E9836FF00739436 /* OBObject.h */,
 				343017420E9836FF00739436 /* OBObject.m */,
@@ -364,6 +383,8 @@
 		343016E60E9835F300739436 /* OmniFoundation */ = {
 			isa = PBXGroup;
 			children = (
+				34A4D82E11077F4B004CFF9D /* OFRandom.h */,
+				34A4D82F11077F4B004CFF9D /* OFRandom.m */,
 				34C261020EAE88AE00F5FC90 /* CFArray-OFExtensions.h */,
 				34C261030EAE88AE00F5FC90 /* CFArray-OFExtensions.m */,
 				34C260A20EAE835800F5FC90 /* OFCFCallbacks.h */,
@@ -568,6 +589,9 @@
 				34C2607F0EAE822C00F5FC90 /* OFXMLIdentifier.m in Sources */,
 				34C260A40EAE835800F5FC90 /* OFCFCallbacks.m in Sources */,
 				34C261040EAE88AE00F5FC90 /* CFArray-OFExtensions.m in Sources */,
+				34A4D81811077EAB004CFF9D /* NSError-OBUtilities.m in Sources */,
+				34A4D83011077F4B004CFF9D /* OFRandom.m in Sources */,
+				34A4D85D1107807A004CFF9D /* OBBacktraceBuffer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -592,7 +616,7 @@
 				);
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniDataObjects.iPhoneSampleApp;
 				PRODUCT_NAME = SampleApp;
-				SDKROOT = iphoneos2.1;
+				SDKROOT = iphoneos3.1;
 			};
 			name = Debug;
 		};
@@ -614,7 +638,7 @@
 				);
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniDataObjects.iPhoneSampleApp;
 				PRODUCT_NAME = SampleApp;
-				SDKROOT = iphoneos2.1;
+				SDKROOT = iphoneos3.1;
 			};
 			name = Release;
 		};
@@ -625,7 +649,7 @@
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos2.1;
+				SDKROOT = iphoneos3.1;
 			};
 			name = Debug;
 		};
@@ -635,7 +659,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				SDKROOT = iphoneos2.1;
+				SDKROOT = iphoneos3.1;
 			};
 			name = Release;
 		};

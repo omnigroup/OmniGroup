@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,14 +19,14 @@
     OFRegularExpression *expression;
     OFStringScanner *scanner;
 @public    
-    NSRange *subExpressionMatches;
+    __strong NSRange *subExpressionMatches;
     NSRange matchRange;
 }
 
 - (NSRange)matchRange;
 - (NSString *)matchString;
-- (NSRange)rangeOfSubexpressionAtIndex:(unsigned int)subexpressionIndex;
-- (NSString *)subexpressionAtIndex:(unsigned int)subexpressionIndex;
+- (NSRange)rangeOfSubexpressionAtIndex:(NSUInteger)subexpressionIndex;
+- (NSString *)subexpressionAtIndex:(NSUInteger)subexpressionIndex;
 
 - (BOOL)findNextMatch;
 - (OFRegularExpressionMatch *)nextMatch;

@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@
 
 RCS_ID("$Id$")
 
-@interface OASplitView (Private)
+@interface OASplitView (/*Private*/)
 - (void)didResizeSubviews:(NSNotification *)notification;
 - (void)observeSubviewResizeNotifications;
 @end
@@ -79,13 +79,9 @@ RCS_ID("$Id$")
 {
     NSArray *subviewFrameStrings;
     if ((subviewFrameStrings = [[NSUserDefaults standardUserDefaults] arrayForKey:[self positionAutosaveName]]) != nil) {
-        NSArray *subviews;
-        unsigned int frameStringsCount;
-        unsigned int subviewIndex, subviewCount;
-    
-        frameStringsCount = [subviewFrameStrings count];
-        subviews = [self subviews];
-        subviewCount = [subviews count];
+        NSUInteger frameStringsCount = [subviewFrameStrings count];
+        NSArray *subviews = [self subviews];
+        NSUInteger subviewIndex, subviewCount = [subviews count];
 
         // Walk through our subviews re-applying frames so we don't explode in the event that the archived frame strings become out of sync with our subview count
         for (subviewIndex = 0; subviewIndex < subviewCount && subviewIndex < frameStringsCount; subviewIndex++) {
@@ -97,30 +93,18 @@ RCS_ID("$Id$")
     }
 }
 
-@end
-
-@implementation OASplitView (Private)
+#pragma mark Private
 
 - (void)didResizeSubviews:(NSNotification *)notification;
 {
-    NSArray *subviews;
-    NSMutableArray *subviewFrameStrings;
-    unsigned int subviewIndex, subviewCount;
-    NSUserDefaults *defaults;
-
     if ([NSString isEmptyString:positionAutosaveName])
         return;
 
-    subviewFrameStrings = [NSMutableArray array];
-    subviews = [self subviews];
-    for (subviewIndex = 0, subviewCount = [subviews count]; subviewIndex < subviewCount; subviewIndex++) {
-        NSView *subview;
-        
-        subview = [subviews objectAtIndex:subviewIndex];
+    NSMutableArray *subviewFrameStrings = [NSMutableArray array];
+    for (NSView *subview in [self subviews])
         [subviewFrameStrings addObject:NSStringFromRect([subview frame])];
-    }
     
-    defaults = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:subviewFrameStrings forKey:positionAutosaveName];
     [defaults autoSynchronize];
 }

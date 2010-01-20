@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -106,9 +106,9 @@ static NSImage *DividerRightImage[7];
     fillImageFrame = NSMakeRect(NSMinX(cellFrame) + leftImageFrame.size.width, NSMinY(cellFrame),
                                 NSWidth(cellFrame) - (NSWidth(leftImageFrame) + NSWidth(rightImageFrame)), NSHeight(cellFrame));
 
-    [leftImage drawFlippedInRect:leftImageFrame operation:NSCompositeSourceOver fraction:1.0];
-    [fillImage drawFlippedInRect:fillImageFrame operation:NSCompositeSourceOver fraction:1.0];
-    [rightImage drawFlippedInRect:rightImageFrame operation:NSCompositeSourceOver fraction:1.0];
+    [leftImage drawFlippedInRect:leftImageFrame operation:NSCompositeSourceOver fraction:1.0f];
+    [fillImage drawFlippedInRect:fillImageFrame operation:NSCompositeSourceOver fraction:1.0f];
+    [rightImage drawFlippedInRect:rightImageFrame operation:NSCompositeSourceOver fraction:1.0f];
     
     [self drawInteriorWithFrame:cellFrame inView:controlView];
 }

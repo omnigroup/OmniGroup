@@ -1,4 +1,4 @@
-// Copyright 2005-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,44 +9,13 @@
 
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 
-#ifdef __ppc__
-
-// Vanilla PPC code, but since PPC has a reciprocal square root estimate instruction,
-// runs *much* faster than calling sqrt().  We'll use one Newton-Raphson
-// refinement step to get bunch more precision in the 1/sqrt() value for very little cost.
-// it returns fairly accurate results (error below 1.0e-5 up to 100000.0 in 0.1 increments).
-
-// added -force_cpusubtype_ALL to get this to compile
-static inline float OAFastReciprocalSquareRoot(float x)
-{
-    const float half = 0.5;
-    const float one  = 1.0;
-    float B, est_y0, est_y1;
-    
-    // This'll NaN if it hits frsqrte.  Handle both +0.0 and -0.0
-    if (fabsf(x) == 0.0)
-        return x;
-        
-    B = x;
-    asm("frsqrte %0,%1" : "=f" (est_y0) : "f" (B));
-
-    /* First refinement step */
-    est_y1 = est_y0 + half*est_y0*(one - B*est_y0*est_y0);
-
-    return est_y1;
-}
-
-#else
-
 #import <math.h>
+#include <tgmath.h>
 
-static inline float OAFastReciprocalSquareRoot(float x)
+static inline CGFloat OAFastReciprocalSquareRoot(CGFloat x)
 {
-    return 1.0f / sqrtf(x);
+    return 1.0f / sqrt(x);
 }
-
-#endif
-
 
 #if defined(__COREGRAPHICS__) && !defined(__cplusplus)
 

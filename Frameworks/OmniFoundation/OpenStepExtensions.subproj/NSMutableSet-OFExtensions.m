@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,16 +11,13 @@ RCS_ID("$Id$");
 
 @implementation NSMutableSet (OFExtensions)
 
-- (void) removeObjectsFromArray: (NSArray *) objects;
+- (void)removeObjectsFromArray:(NSArray *)objects;
 {
-    unsigned int objectIndex;
-    
-    objectIndex = [objects count];
-    while (objectIndex--)
-        [self removeObject: [objects objectAtIndex: objectIndex]];
+    for (id object in objects)
+        [self removeObject:object];
 }
 
-- (void) exclusiveDisjoinSet: (NSSet *) otherSet;
+- (void)exclusiveDisjoinSet:(NSSet *)otherSet;
 {
     /* special case: avoid modifying set while enumerating over it */
     if (otherSet == self) {

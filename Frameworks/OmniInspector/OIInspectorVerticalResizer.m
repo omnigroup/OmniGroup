@@ -1,4 +1,4 @@
-// Copyright 2002-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,21 +40,18 @@ RCS_ID("$Id$")
 {
     NSWindow *window = [self window];
     NSRect windowFrame = [window frame];
-    float startingWindowTop = NSMaxY(windowFrame);
-    float startingWindowHeight = NSHeight(windowFrame);
-    float startingMouseY = [window convertBaseToScreen:[event locationInWindow]].y;
-    float verticalSpaceTakenNotBySuperview = startingWindowHeight - NSHeight([[self superview] frame]);
+    CGFloat startingWindowTop = NSMaxY(windowFrame);
+    CGFloat startingWindowHeight = NSHeight(windowFrame);
+    CGFloat startingMouseY = [window convertBaseToScreen:[event locationInWindow]].y;
+    CGFloat verticalSpaceTakenNotBySuperview = startingWindowHeight - NSHeight([[self superview] frame]);
     
     while (1) {
-        float change;
-        
         event = [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:NO];
-
         if ([event type] == NSLeftMouseUp)
             break;
            
         [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
-        change = startingMouseY - [window convertBaseToScreen:[event locationInWindow]].y;
+        CGFloat change = startingMouseY - [window convertBaseToScreen:[event locationInWindow]].y;
         windowFrame.size.height = MAX(minimumSuperviewHeight + verticalSpaceTakenNotBySuperview, startingWindowHeight + change);
         windowFrame.origin.y = startingWindowTop - windowFrame.size.height;
         [window setFrame:windowFrame display:YES animate:NO];

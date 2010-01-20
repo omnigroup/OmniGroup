@@ -14,8 +14,8 @@
 #import <pthread.h>
 #import <QuartzCore/QuartzCore.h>
 
-
 #import "OAImageManager.h"
+#import "OAVersion.h"
 
 RCS_ID("$Id$")
 
@@ -219,39 +219,39 @@ static NSDictionary *titleFontAttributes;
         return image;
 
     if (image == nil) 
-        imageSize = NSMakeSize(-X_SPACE_BETWEEN_ICON_AND_TEXT_BOX, 0.0);
+        imageSize = NSMakeSize(-X_SPACE_BETWEEN_ICON_AND_TEXT_BOX, 0.0f);
     else
         imageSize = [image size];
 
     if (!titleFontAttributes)
-        titleFontAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:[NSFont systemFontOfSize:12.0], NSFontAttributeName, [NSColor textColor], NSForegroundColorAttributeName, nil];
+        titleFontAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:[NSFont systemFontOfSize:12.0f], NSFontAttributeName, [NSColor textColor], NSForegroundColorAttributeName, nil];
     
     if ([title length] > 0) {
         NSSize titleSize = [title sizeWithAttributes:titleFontAttributes];
-        titleBoxSize = NSMakeSize(titleSize.width + 2.0 * X_TEXT_BOX_BORDER, titleSize.height + Y_TEXT_BOX_BORDER);
+        titleBoxSize = NSMakeSize(titleSize.width + 2.0f * X_TEXT_BOX_BORDER, titleSize.height + Y_TEXT_BOX_BORDER);
     } else {
-        titleBoxSize = NSMakeSize(8.0, 8.0); // a random empty box size
+        titleBoxSize = NSMakeSize(8.0f, 8.0f); // a random empty box size
     }
 
-    totalSize.width = ceil(imageSize.width + X_SPACE_BETWEEN_ICON_AND_TEXT_BOX + titleBoxSize.width);
-    totalSize.height = ceil(MAX(imageSize.height, titleBoxSize.height));
+    totalSize.width = (CGFloat)ceil(imageSize.width + X_SPACE_BETWEEN_ICON_AND_TEXT_BOX + titleBoxSize.width);
+    totalSize.height = (CGFloat)ceil(MAX(imageSize.height, titleBoxSize.height));
 
     drawImage = [[NSImage alloc] initWithSize:totalSize];
 
     [drawImage lockFocus];
 
     // Draw transparent background
-    [[NSColor colorWithDeviceWhite:1.0 alpha:0.0] set];
+    [[NSColor colorWithDeviceWhite:1.0f alpha:0.0f] set];
     NSRectFill(NSMakeRect(0, 0, totalSize.width, totalSize.height));
 
     // Draw icon
-    [image compositeToPoint:NSMakePoint(0.0, totalSize.height - rint(totalSize.height / 2.0 + imageSize.height / 2.0)) operation:NSCompositeSourceOver];
+    [image compositeToPoint:NSMakePoint(0.0f, totalSize.height - (CGFloat)rint(totalSize.height / 2.0f + imageSize.height / 2.0f)) operation:NSCompositeSourceOver];
     
     // Draw box around title
     titleBox.origin.x = imageSize.width + X_SPACE_BETWEEN_ICON_AND_TEXT_BOX;
-    titleBox.origin.y = floor( (totalSize.height - titleBoxSize.height)/2.0 );
+    titleBox.origin.y = (CGFloat)floor( (totalSize.height - titleBoxSize.height)/2.0f );
     titleBox.size = titleBoxSize;
-    [[[NSColor selectedTextBackgroundColor] colorWithAlphaComponent:0.5] set];
+    [[[NSColor selectedTextBackgroundColor] colorWithAlphaComponent:0.5f] set];
     NSRectFill(titleBox);
 
     // Draw title
@@ -266,7 +266,7 @@ static NSDictionary *titleFontAttributes;
 
 //
 
-- (void)drawFlippedInRect:(NSRect)rect fromRect:(NSRect)sourceRect operation:(NSCompositingOperation)op fraction:(float)delta;
+- (void)drawFlippedInRect:(NSRect)rect fromRect:(NSRect)sourceRect operation:(NSCompositingOperation)op fraction:(CGFloat)delta;
 {
     CGContextRef context;
 
@@ -283,14 +283,17 @@ static NSDictionary *titleFontAttributes;
             sourceRect.size = [self size];
         CGContextScaleCTM(context,rect.size.width/sourceRect.size.width, -1 * ( rect.size.height/sourceRect.size.height ));
         
-        // <bug://bugs/43240> (10.5/Leopard: Placed EPS and PDF images corrupted when opacity changed in Image Inspector), <bug://bugs/44518> (Copied and pasted PDFs rasterize when their opacity is changed) and RADAR 5586059 / 4766375 all involve PDF caching problems. The following seems to fix it even though I do not know why...
-        OFForEachInArray([self representations], NSImageRep *, rep, {
-            if ([rep isKindOfClass:[NSPDFImageRep class]] || [rep isKindOfClass:[NSEPSImageRep class]]) {
-              CGContextSetAlpha(context, delta);
-              delta = 1.0;
-              break;
-            }
-        });
+        if (NSAppKitVersionNumber <= OAAppKitVersionNumber10_5_3) {
+            // <bug://bugs/43240> (10.5/Leopard: Placed EPS and PDF images corrupted when opacity changed in Image Inspector), <bug://bugs/44518> (Copied and pasted PDFs rasterize when their opacity is changed) and RADAR 5586059 / 4766375 all involve PDF caching problems. The following seems to fix it even though I do not know why...
+            // fixed in 10.6 so do not do this anymore; in fact, it caused <bug://bugs/55452> (10.6: Opacity doesn't effect PDFs)
+            OFForEachInArray([self representations], NSImageRep *, rep, {
+                if ([rep isKindOfClass:[NSPDFImageRep class]] || [rep isKindOfClass:[NSEPSImageRep class]]) {
+                  CGContextSetAlpha(context, delta);
+                  delta = 1.0f;
+                  break;
+                }
+            });
+        }
         
         rect.origin.x = rect.origin.y = 0; // We've translated ourselves so it's zero
         rect.size = sourceRect.size;  // We've scaled ourselves to match
@@ -318,17 +321,17 @@ static NSDictionary *titleFontAttributes;
 
 - (void)drawFlippedInRect:(NSRect)rect fromRect:(NSRect)sourceRect operation:(NSCompositingOperation)op;
 {
-    [self drawFlippedInRect:rect fromRect:sourceRect operation:op fraction:1.0];
+    [self drawFlippedInRect:rect fromRect:sourceRect operation:op fraction:1.0f];
 }
 
-- (void)drawFlippedInRect:(NSRect)rect operation:(NSCompositingOperation)op fraction:(float)delta;
+- (void)drawFlippedInRect:(NSRect)rect operation:(NSCompositingOperation)op fraction:(CGFloat)delta;
 {
     [self drawFlippedInRect:rect fromRect:NSZeroRect operation:op fraction:delta];
 }
 
 - (void)drawFlippedInRect:(NSRect)rect operation:(NSCompositingOperation)op;
 {
-    [self drawFlippedInRect:rect operation:op fraction:1.0];
+    [self drawFlippedInRect:rect operation:op fraction:1.0f];
 }
 
 - (int)addDataToPasteboard:(NSPasteboard *)aPasteboard exceptTypes:(NSMutableSet *)notThese
@@ -347,18 +350,6 @@ static NSDictionary *titleFontAttributes;
         if ([rep respondsToSelector:@selector(PDFRepresentation)]) {
             ADD_CHEAP_DATA(NSPDFPboardType, [(NSPDFImageRep *)rep PDFRepresentation]);
         }
-
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
-        // -PICTRepresentation is deprecated on 10.6
-#else
-        if ([rep respondsToSelector:@selector(PICTRepresentation)]) {
-            ADD_CHEAP_DATA(NSPICTPboardType, [(NSPICTImageRep *)rep PICTRepresentation]);
-        }
-
-        if ([rep respondsToSelector:@selector(EPSRepresentation)]) {
-            ADD_CHEAP_DATA(NSPostScriptPboardType, [(NSEPSImageRep *)rep EPSRepresentation]);
-        }
-#endif
     }
     
     /* Always offer to convert to TIFF. Do this lazily, though, since we probably have to extract it from a bitmap image rep. */
@@ -380,27 +371,17 @@ static NSDictionary *titleFontAttributes;
 
 - (NSImageRep *)imageRepOfClass:(Class)imageRepClass;
 {
-    NSArray *representations = [self representations];
-    unsigned int representationIndex, representationCount = [representations count];
-    for (representationIndex = 0; representationIndex < representationCount; representationIndex++) {
-        NSImageRep *rep = [representations objectAtIndex:representationIndex];
-        if ([rep isKindOfClass:imageRepClass]) {
+    for (NSImageRep *rep in [self representations])
+        if ([rep isKindOfClass:imageRepClass])
             return rep;
-        }
-    }
     return nil;
 }
 
 - (NSImageRep *)imageRepOfSize:(NSSize)aSize;
 {
-    NSArray *representations = [self representations];
-    unsigned int representationIndex, representationCount = [representations count];
-    for (representationIndex = 0; representationIndex < representationCount; representationIndex++) {
-        NSImageRep *rep = [representations objectAtIndex:representationIndex];
-        if (NSEqualSizes([rep size], aSize)) {
+    for (NSImageRep *rep in [self representations])
+        if (NSEqualSizes([rep size], aSize))
             return rep;
-        }
-    }
     return nil;
     
 }
@@ -412,7 +393,7 @@ static NSDictionary *titleFontAttributes;
     NSGraphicsContext *currentContext = [NSGraphicsContext currentContext];
     NSImageInterpolation savedInterpolation = [currentContext imageInterpolation];
     [currentContext setImageInterpolation:NSImageInterpolationHigh];
-    [self drawInRect:NSMakeRect(0.0, 0.0, aSize.width, aSize.height) fromRect:(NSRect){ { 0, 0 }, [self size] } operation:NSCompositeSourceOver fraction:1.0];
+    [self drawInRect:NSMakeRect(0.0f, 0.0f, aSize.width, aSize.height) fromRect:(NSRect){ { 0, 0 }, [self size] } operation:NSCompositeSourceOver fraction:1.0f];
     [currentContext setImageInterpolation:savedInterpolation];
     [scaledImage unlockFocus];
     return scaledImage;
@@ -488,16 +469,20 @@ static NSDictionary *titleFontAttributes;
         [newImage lockFocus]; {
             [backgroundColor ? backgroundColor : [NSColor clearColor] set];
             NSRectFill(imageBounds);
-            [self drawInRect:imageBounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
+            [self drawInRect:imageBounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
             bitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:imageBounds] autorelease];
         } [newImage unlockFocus];
         [newImage release];
     }
 
-    uint32 width = [bitmapImageRep pixelsWide];
-    uint32 height= [bitmapImageRep pixelsHigh];
+    // Can't export huge images; these are NSInteger
+    OBASSERT([bitmapImageRep pixelsWide] < INT32_MAX);
+    OBASSERT([bitmapImageRep pixelsHigh] < INT32_MAX);
+    
+    uint32 width = (uint32)[bitmapImageRep pixelsWide];
+    uint32 height = (uint32)[bitmapImageRep pixelsHigh];
     unsigned char *image = [bitmapImageRep bitmapData];
-    unsigned int samplesPerPixel = [bitmapImageRep samplesPerPixel];
+    uint32 samplesPerPixel = (uint32)[bitmapImageRep samplesPerPixel];
 
     /*
      This function writes out a 24-bit Windows bitmap file that is readable by Microsoft Paint.
@@ -591,9 +576,9 @@ static NSDictionary *titleFontAttributes;
     return [self documentIconWithTemplate:templateImage content:contentImage contentMask:contentMask];
 }
 
-#define ICON_SIZE_LARGE NSMakeSize(128.0, 128.0)
-#define ICON_SIZE_SMALL NSMakeSize(32.0, 32.0)
-#define ICON_SIZE_TINY NSMakeSize(16.0, 16.0)
+#define ICON_SIZE_LARGE NSMakeSize(128.0f, 128.0f)
+#define ICON_SIZE_SMALL NSMakeSize(32.0f, 32.0f)
+#define ICON_SIZE_TINY NSMakeSize(16.0f, 16.0f)
 
 + (NSImage *)documentIconWithTemplate:(NSImage *)templateImage content:(NSImage *)contentImage contentMask:(NSImage *)contentMask;
 {
@@ -606,8 +591,8 @@ static NSDictionary *titleFontAttributes;
     [largeImage lockFocus];
     {
         [[contentImage imageRepOfSize:ICON_SIZE_LARGE] drawInRect:bounds];
-        [contentMask drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationIn fraction:1.0];
-        [templateImage drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationAtop fraction:1.0];
+        [contentMask drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationIn fraction:1.0f];
+        [templateImage drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationAtop fraction:1.0f];
     }
     [largeImage unlockFocus];
 
@@ -616,8 +601,8 @@ static NSDictionary *titleFontAttributes;
     [smallImage lockFocus];
     {
         [[contentImage imageRepOfSize:ICON_SIZE_SMALL] drawInRect:bounds];
-        [contentMask drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationIn fraction:1.0];
-        [templateImage drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationAtop fraction:1.0];
+        [contentMask drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationIn fraction:1.0f];
+        [templateImage drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationAtop fraction:1.0f];
     }
     [smallImage unlockFocus];
 
@@ -626,8 +611,8 @@ static NSDictionary *titleFontAttributes;
     [tinyImage lockFocus];
     {
         [[contentImage imageRepOfSize:ICON_SIZE_TINY] drawInRect:bounds];
-        [contentMask drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationIn fraction:1.0];
-        [templateImage drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationAtop fraction:1.0];
+        [contentMask drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationIn fraction:1.0f];
+        [templateImage drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeDestinationAtop fraction:1.0f];
     }
     [tinyImage unlockFocus];
 
@@ -722,13 +707,8 @@ static void setupTintTable(void)
 
 - (CIImage *)ciImageForContext:(CIContext *)ctxt;
 {
-    NSArray *reps = [self representations];
-    unsigned repIndex, repCount = [reps count];
-    
     /* Check to see if we have an image rep that's easily converted to a CIImage. */
-    
-    for(repIndex = 0; repIndex < repCount; repIndex ++) {
-        NSImageRep *rep = [reps objectAtIndex:repIndex];
+    for (NSImageRep *rep in [self representations]) {
         if ([rep isKindOfClass:[NSCIImageRep class]])
             return [(NSCIImageRep *)rep CIImage];
         if ([rep isKindOfClass:[NSBitmapImageRep class]]) {
@@ -748,7 +728,7 @@ static void setupTintTable(void)
     [self drawAtPoint:(NSPoint){0, 0}
              fromRect:(NSRect){{0, 0}, mySize}
             operation:NSCompositeCopy
-             fraction:1.0];
+             fraction:1.0f];
     [NSGraphicsContext restoreGraphicsState];
     
     CIImage *result = [CIImage imageWithCGLayer:imageLayer];

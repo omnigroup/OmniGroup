@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@ RCS_ID("$Id$")
     // See rfc2616 [3.3.1].  For example: "Mon, 01 Jan 2001 00:00:00 GMT"
     static NSDateFormatter *dateFormatter = nil;
     if (dateFormatter == nil) {
-        dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+        dateFormatter = [[NSDateFormatter alloc] init];
         [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
         [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss 'GMT'"];
     }
@@ -278,7 +278,7 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
         OBASSERT(cachedCalendar);
     }
     
-    unsigned length = [xmlString length];
+    NSUInteger length = [xmlString length];
     if (length != OFXMLDateStringLength) {
         OBASSERT(length == 0);
         BAD_INIT;

@@ -1,4 +1,4 @@
-// Copyright 2003-2005,2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005,2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -111,9 +111,10 @@ NSString * const OAColorWellWillActivate = @"OAColorWellWillActivate";
     [openPanel setAllowsMultipleSelection:NO];
     [openPanel setCanChooseDirectories:NO];
     [openPanel setCanChooseFiles:YES];
+    [openPanel setAllowedFileTypes:[NSImage imageTypes]];
 
     // Not using a sheet since this will typically be run from an inspector.  If you want to convert this to a sheet, make sure to check whether you are in an inspector (probably easiest to add a new action and factor the method guts out into a private method).
-    if ([openPanel runModalForTypes:[NSImage imageFileTypes]]) {
+    if ([openPanel runModal] == NSFileHandlingPanelOKButton) {
         NSURL *url = [openPanel URL];
         NSImage *image = [[[NSImage alloc] initWithContentsOfURL:url] autorelease];
         if (!image) {

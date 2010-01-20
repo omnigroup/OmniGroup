@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,9 +16,7 @@
 @class OAPreferencesMultipleIconView;
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
 #import <AppKit/NSToolbar.h>
-#endif
 
 typedef enum OAPreferencesViewStyle {
         OAPreferencesViewSingle = 0, // one client, so no navigation bar
@@ -26,10 +24,7 @@ typedef enum OAPreferencesViewStyle {
         OAPreferencesViewCustomizable = 2 // many clients in one or more categories, presented a la System Prefs. 
 } OAPreferencesViewStyle;
 
-@interface OAPreferenceController : OFObject
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
-<NSToolbarDelegate>
-#endif
+@interface OAPreferenceController : OFObject <NSToolbarDelegate>
 {
     IBOutlet OAPreferencesWindow *window;
     IBOutlet NSBox *preferenceBox;
@@ -55,7 +50,7 @@ typedef enum OAPreferencesViewStyle {
 
     OAPreferenceClientRecord *nonretained_currentClientRecord;
     OAPreferenceClient *nonretained_currentClient;
-    float idealWidth;
+    CGFloat idealWidth;
 }
 
 + (OAPreferenceController *)sharedPreferenceController;
@@ -83,7 +78,7 @@ typedef enum OAPreferencesViewStyle {
 - (OAPreferenceClient *)clientWithShortTitle:(NSString *)shortTitle;
 - (OAPreferenceClient *)clientWithIdentifier:(NSString *)identifier;
 - (OAPreferenceClient *)currentClient;
-- (void)iconView:(OAPreferencesIconView *)iconView buttonHitAtIndex:(unsigned int)index;
+- (void)iconView:(OAPreferencesIconView *)iconView buttonHitAtIndex:(NSUInteger)index;
 - (void)validateRestoreDefaultsButton;
 
 // Actions

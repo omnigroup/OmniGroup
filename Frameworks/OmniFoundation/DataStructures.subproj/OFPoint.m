@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,8 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/OFPoint.h>
-
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
+#import <Foundation/NSValueTransformer.h>
 
 RCS_ID("$Id$");
 
@@ -60,6 +60,8 @@ RCS_ID("$Id$");
     return [self retain];
 }
 
+// If we do support coding, we need to handle 64-bit difference in CGFloat
+#if 0
 //
 // NSCoding
 //
@@ -74,6 +76,7 @@ RCS_ID("$Id$");
     [aCoder decodeValueOfObjCType:@encode(typeof(_value)) at:&_value];
     return self;
 }
+#endif
 
 #pragma mark -
 #pragma mark Property list support
@@ -82,16 +85,16 @@ RCS_ID("$Id$");
 - (NSMutableDictionary *)propertyListRepresentation;
 {
     return [NSMutableDictionary dictionaryWithObjectsAndKeys:
-        [NSNumber numberWithFloat:_value.x], @"x", 
-        [NSNumber numberWithFloat:_value.y], @"y", 
+        [NSNumber numberWithDouble:_value.x], @"x", 
+        [NSNumber numberWithDouble:_value.y], @"y", 
         nil];
 }
 
 + (OFPoint *)pointFromPropertyListRepresentation:(NSDictionary *)dict;
 {
     NSPoint point;
-    point.x = [dict floatForKey:@"x" defaultValue:0.0];
-    point.y = [dict floatForKey:@"y" defaultValue:0.0];
+    point.x = (CGFloat)[dict doubleForKey:@"x" defaultValue:0.0];
+    point.y = (CGFloat)[dict doubleForKey:@"y" defaultValue:0.0];
     return [OFPoint pointWithPoint:point];
 }
 

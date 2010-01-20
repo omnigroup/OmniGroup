@@ -1,3 +1,12 @@
 #!/bin/zsh -ef
 
-gdb -arch i386 /Developer/Tools/otest -x Tests/gdb.ini
+# gdb has no environment variable expansion.  Sad.
+INI_FILE=/tmp/$0:t.gdb.$$
+echo INI_FILE=$INI_FILE
+:>$INI_FILE
+echo set env OBJC_DISABLE_GC=YES >> $INI_FILE
+echo set args $* /Users/Shared/$USER/Source/PROJ/Products/Debug/ODOTests.octest >> $INI_FILE
+echo future-break failWithException: >> $INI_FILE
+
+gdb /Developer/Tools/otest -x $INI_FILE
+rm -f $INI_FILE

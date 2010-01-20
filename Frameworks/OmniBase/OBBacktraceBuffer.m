@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,12 +12,18 @@
 
 RCS_ID("$Id$")
 
-#if defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__ ) >= 401)
-#define BUILTIN_ATOMICS  /* GCC 4.1.x has some builtins for atomic operations */ 
-#else
-#import <libkern/OSAtomic.h>
+// Radar 6964106: clang doesn't have __sync_synchronize builtin (but it claims to be GCC)
+#if !defined(__clang__) && defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__ ) >= 401)
+    #define BUILTIN_ATOMICS  /* GCC 4.1.x has some builtins for atomic operations */
 #endif
 
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    #undef BUILTIN_ATOMICS // not available on iPhone, though.
+#endif
+
+#if !defined(BUILTIN_ATOMICS)
+    #import <libkern/OSAtomic.h>
+#endif
 
 static struct OBBacktraceBuffer backtraces[OBBacktraceBufferTraceCount];
 static int next_available_backtrace;

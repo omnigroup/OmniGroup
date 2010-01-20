@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,9 +16,9 @@
 - (void)writeObject:(id)anObject;
 - (void)writeFormat:(NSString *)formatString, ...;
 
-- (id)objectAtIndex:(unsigned int)index;
-- (id)objectAtIndex:(unsigned int)index withHint:(void **)hint;
-- (unsigned int)objectCount;
-- (BOOL)isIndexPastEnd:(unsigned int)index;
+- (id)objectAtIndex:(NSUInteger)index;
+- (id)objectAtIndex:(NSUInteger)index withHint:(void **)hint;
+- (NSUInteger)objectCount;
+- (BOOL)isIndexPastEnd:(NSUInteger)index;
 
 @end

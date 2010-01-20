@@ -1,0 +1,32 @@
+# $Header: $
+#
+# When something from OmniGroup/Scripts is run, it might differ between the trunk
+# version (the one in /usr/omni/bin/Scripts) and the one on the product branch
+# being built.
+#
+# Source this script at the top of your script inside OmniGroup/Scripts and it will
+# look at PWD and reexec if it detects that you are inside an OmniGroup directory.
+#
+# Example:
+#
+#   OMNI_SCRIPT_EXEC_ORIGINAL=$0 . $0:h/OmniScriptsReexec
+#
+
+# Do nothing if we've been run before
+if [ "${OMNI_SCRIPT_REEXECED-unset}" = "unset" ]; then
+	export OMNI_SCRIPT_REEXECED=1
+
+	# $0 is reset when sourcing this and so far as I can see, you can't get back to the original script until we return.  True?
+	if [ "${OMNI_SCRIPT_EXEC_ORIGINAL-unset}" = "unset" ]; then
+		echo OMNI_SCRIPT_EXEC_ORIGINAL not defined!
+		exit 1
+	fi
+
+	# Assume that the last component of OMNI_SCRIPT_EXEC_ORIGINAL is what we want
+	omni_script_reexec_name="$OMNI_SCRIPT_EXEC_ORIGINAL:t"
+	#echo omni_script_reexec_name=$omni_script_reexec_name
+	omni_script_reexec_dir=`printenv PWD | sed 's/\/OmniGroup\/.*/\/OmniGroup\/Scripts/'`
+	omni_script_reexec_path="$omni_script_reexec_dir/$omni_script_reexec_name"
+	#echo "Re-execing $omni_script_reexec_path"
+	exec "$omni_script_reexec_path" $*
+fi

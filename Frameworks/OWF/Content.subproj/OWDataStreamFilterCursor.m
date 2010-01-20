@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -81,6 +81,9 @@ static NSException *OWDataStreamCursor_SeekException;
 
 - (BOOL)enlargeBuffer
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return NO;
+#if 0
     unsigned int atLeast;
     unsigned int oldValidLength;
 
@@ -102,10 +105,13 @@ static NSException *OWDataStreamCursor_SeekException;
     } while (canFillMoreBuffer && bufferedDataValidLength == oldValidLength);
 
     return (bufferedDataValidLength != oldValidLength);
+#endif
 }
 
-- (void)bufferBytes:(unsigned int)count
+- (void)bufferBytes:(NSUInteger)count
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     if (bufferedDataStart + bufferedDataValidLength >= dataOffset + count)
         return;
 
@@ -137,6 +143,7 @@ static NSException *OWDataStreamCursor_SeekException;
             [OWDataStreamCursor_UnderflowException raise];
         [self fillBuffer:nil length:[bufferedData length] filledToIndex:&bufferedDataValidLength];
     }
+#endif
 }
 
 - (BOOL)haveBufferedBytes:(unsigned int)count
@@ -144,9 +151,9 @@ static NSException *OWDataStreamCursor_SeekException;
     return (bufferedDataStart + bufferedDataValidLength >= dataOffset + count);
 }
 
-- (unsigned int)copyBytesToBuffer:(void *)buffer minimumBytes:(unsigned int)maximum maximumBytes:(unsigned int)minimum advance:(BOOL)shouldAdvance
+- (NSUInteger)copyBytesToBuffer:(void *)buffer minimumBytes:(unsigned int)maximum maximumBytes:(unsigned int)minimum advance:(BOOL)shouldAdvance
 {
-    unsigned int bytesPeeked;
+    NSUInteger bytesPeeked;
 
     if (minimum > 0)
         [self bufferBytes:minimum];
@@ -175,9 +182,9 @@ static NSException *OWDataStreamCursor_SeekException;
     [bufferedData getBytes:buffer range:(NSRange){ ( dataOffset - bufferedDataStart ), count }];
 }
 
-- (unsigned int)peekUnderlyingBuffer:(void **)returnedBufferPtr
+- (NSUInteger)peekUnderlyingBuffer:(void **)returnedBufferPtr
 {
-    unsigned int availableUnreadBytes;
+    NSUInteger availableUnreadBytes;
     
     if ([self isAtEOF])
         return 0;
@@ -190,7 +197,7 @@ static NSException *OWDataStreamCursor_SeekException;
     return availableUnreadBytes;
 }
 
-- (unsigned int)dataLength
+- (NSUInteger)dataLength
 {
     while ([self enlargeBuffer])
         ;
@@ -226,6 +233,8 @@ static NSException *OWDataStreamCursor_SeekException;
 
 - (NSData *)peekBytesOrUntilEOF:(unsigned int)count
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     unsigned availableUnreadBytes;
     NSRange peekRange;
     
@@ -238,10 +247,13 @@ static NSException *OWDataStreamCursor_SeekException;
     peekRange.location = bufferedDataStart - dataOffset;
     peekRange.length = MIN(count, availableUnreadBytes);
     return [bufferedData subdataWithRange:peekRange];
+#endif
 }
 
 - (NSData *)readAllData
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     NSData *result;
     unsigned int oldBytesInBuffer;
 
@@ -273,6 +285,7 @@ static NSException *OWDataStreamCursor_SeekException;
     dataOffset = bufferedDataStart;
     
     return result;
+#endif
 }
 
 - (void)fillBuffer:(void *)buffer length:(unsigned)bufferLength filledToIndex:(unsigned *)bufferFullp

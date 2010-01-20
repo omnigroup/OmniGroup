@@ -1,4 +1,4 @@
-// Copyright 2003-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,7 +78,6 @@ const char *s4 = "Would you like another packet? It is WAFFER THIN!";
 - (void)testUDPLoopback
 {
     ONPortAddress *addrD, *addrDLoop;
-    unsigned len;
     NSData *rd;
     
     shouldnt([dewie isConnected]);
@@ -91,7 +90,7 @@ const char *s4 = "Would you like another packet? It is WAFFER THIN!";
     shouldnt([dewie isConnected]);
     should([dewie remoteAddress] == nil);
 
-    len = [dewie writeBytes:strlen(s4) fromBuffer:s4 toPortAddress:addrD];
+    size_t len = [dewie writeBytes:strlen(s4) fromBuffer:s4 toPortAddress:addrD];
     should(len == strlen(s4));
 
     shouldnt([dewie isConnected]);
@@ -113,7 +112,7 @@ const char *s4 = "Would you like another packet? It is WAFFER THIN!";
 - (void)testConnectedUDP
 {
     ONPortAddress *addrH, *addrL;
-    unsigned int len, res;
+    size_t len, res;
     NSData *rd;
 
     should(huey != nil);

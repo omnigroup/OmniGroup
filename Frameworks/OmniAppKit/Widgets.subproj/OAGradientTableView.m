@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,10 +28,10 @@ static void linearColorBlendFunction(void *info, const CGFloat *in, CGFloat *out
 {
     _twoColorsType *twoColors = info;
     
-    out[0] = (1.0 - *in) * twoColors->red1 + *in * twoColors->red2;
-    out[1] = (1.0 - *in) * twoColors->green1 + *in * twoColors->green2;
-    out[2] = (1.0 - *in) * twoColors->blue1 + *in * twoColors->blue2;
-    out[3] = (1.0 - *in) * twoColors->alpha1 + *in * twoColors->alpha2;
+    out[0] = (1.0f - *in) * twoColors->red1 + *in * twoColors->red2;
+    out[1] = (1.0f - *in) * twoColors->green1 + *in * twoColors->green2;
+    out[2] = (1.0f - *in) * twoColors->blue1 + *in * twoColors->blue2;
+    out[3] = (1.0f - *in) * twoColors->alpha1 + *in * twoColors->alpha2;
 }
 
 static void linearColorReleaseInfoFunction(void *info)
@@ -80,8 +80,8 @@ static const CGFunctionCallbacks linearFunctionCallbacks = {0, &linearColorBlend
 
     // Create synthetic darker and lighter versions
     // NSColor *lighterColor = [NSColor colorWithDeviceHue:hue - (1.0/120.0) saturation:MAX(0.0, saturation-0.12) brightness:MIN(1.0, brightness+0.045) alpha:alpha];
-    NSColor *lighterColor = [NSColor colorWithDeviceHue:hue saturation:MAX(0.0, saturation-.12) brightness:MIN(1.0, brightness+0.30) alpha:alpha];
-    NSColor *darkerColor = [NSColor colorWithDeviceHue:hue saturation:MIN(1.0, (saturation > .04) ? saturation+0.12 : 0.0) brightness:MAX(0.0, brightness-0.045) alpha:alpha];
+    NSColor *lighterColor = [NSColor colorWithDeviceHue:hue saturation:MAX(0.0f, saturation-.12f) brightness:MIN(1.0f, brightness+0.30f) alpha:alpha];
+    NSColor *darkerColor = [NSColor colorWithDeviceHue:hue saturation:MIN(1.0f, (saturation > .04f) ? saturation+0.12f : 0.0f) brightness:MAX(0.0f, brightness-0.045f) alpha:alpha];
     
     // If this view isn't key, use the gray version of the dark color. Note that this varies from the standard gray version that NSCell returns as its highlightColorWithFrame: when the cell is not in a key view, in that this is a lot darker. Mike and I think this is justified for this kind of view -- if you're using the dark selection color to show the selected status, it makes sense to leave it dark.
     if ([[self window] firstResponder] != self || ![[self window] isKeyWindow]) {
@@ -95,14 +95,14 @@ static const CGFunctionCallbacks linearFunctionCallbacks = {0, &linearColorBlend
     _twoColorsType *twoColors = malloc(sizeof(_twoColorsType)); // We malloc() the helper data because we may draw this wash during printing, in which case it won't necessarily be evaluated immediately. We need for all the data the shading function needs to draw to potentially outlive us.
     [lighterColor getRed:&twoColors->red1 green:&twoColors->green1 blue:&twoColors->blue1 alpha:&twoColors->alpha1];
     [darkerColor getRed:&twoColors->red2 green:&twoColors->green2 blue:&twoColors->blue2 alpha:&twoColors->alpha2];
-    static const CGFloat domainAndRange[8] = {0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+    static const CGFloat domainAndRange[8] = {0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f};
     CGFunctionRef linearBlendFunctionRef = CGFunctionCreate(twoColors, 1, domainAndRange, 4, domainAndRange, &linearFunctionCallbacks);
     
     NSIndexSet *selectedRowIndexes = [self selectedRowIndexes];
     NSUInteger rowIndex = [selectedRowIndexes firstIndex];
 
     while (rowIndex != NSNotFound) {
-        unsigned int endOfCurrentRunRowIndex, newRowIndex = rowIndex;
+        NSUInteger endOfCurrentRunRowIndex, newRowIndex = rowIndex;
         do {
             endOfCurrentRunRowIndex = newRowIndex;
             newRowIndex = [selectedRowIndexes indexGreaterThanIndex:endOfCurrentRunRowIndex];
@@ -111,7 +111,7 @@ static const CGFunctionCallbacks linearFunctionCallbacks = {0, &linearColorBlend
         NSRect rowRect = NSUnionRect([self rectOfRow:rowIndex], [self rectOfRow:endOfCurrentRunRowIndex]);
         
         NSRect topBar, washRect;
-        NSDivideRect(rowRect, &topBar, &washRect, 1.0, NSMinYEdge);
+        NSDivideRect(rowRect, &topBar, &washRect, 1.0f, NSMinYEdge);
         
         // Draw the top line of pixels of the selected row in the alternateSelectedControlColor
         [alternateSelectedControlColor set];

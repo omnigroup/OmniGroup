@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,8 +69,15 @@ static NSLock *tempFilenameLock = nil;
     // Only one filesystem.
     return NSTemporaryDirectory();
 #else
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    // Allow for a *specific* temporary items directory, no matter what volume was proposed.
+    NSString *stringValue = [defaults stringForKey:@"OFTemporaryDirectory"];
+    if (![NSString isEmptyString:stringValue])
+        return [stringValue stringByStandardizingPath];
+    
     // If an alternate temporary volume has been specified, use the 'Temporary Items' folder on that volume rather than on the same volume as the specified file
-    NSString *stringValue = [[NSUserDefaults standardUserDefaults] stringForKey:@"OFTemporaryVolumeOverride"];
+    stringValue = [defaults stringForKey:@"OFTemporaryVolumeOverride"];
     if (![NSString isEmptyString:stringValue])
         path = [stringValue stringByStandardizingPath];
     
@@ -120,10 +127,8 @@ static NSLock *tempFilenameLock = nil;
         OBError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to create URL to temporary items directory for '%@'", attempt]));
         return nil;
     }
-    
-    NSURL *resultURL = (NSURL *)temporaryItemsURL; // Toll-free bridged
-    
-    return [resultURL autorelease];
+
+    return [NSMakeCollectable(temporaryItemsURL) autorelease];
 }
 #endif
 

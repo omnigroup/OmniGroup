@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,7 +72,7 @@ RCS_ID("$Id$");
 
 - (NSArray *)arcsWithRelation:(OWCacheArcRelationship)relation toEntry:(OWContent *)anEntry inPipeline:(OWPipeline *)pipe
 {
-    unsigned int linkCount, linkIndex, processorIndex, preexistingProcessorCount;
+    NSUInteger linkCount, linkIndex, processorIndex, preexistingProcessorCount;
     NSMutableArray *result;
     NSMutableArray *delayedRelease;
     NSArray *possibleLinks;
@@ -187,13 +187,12 @@ RCS_ID("$Id$");
 
 - (void)removeArc:(OWProcessorCacheArc *)anArc
 {
-    unsigned arrayIndex;
     BOOL removed;
 
     [anArc retain]; // Avoid weak-retain-release shenanigans inside the lock.
     OFLockRegion_Begin(lock);
 
-    arrayIndex = [otherProcessors indexOfObjectIdenticalTo:anArc];
+    NSUInteger arrayIndex = [otherProcessors indexOfObjectIdenticalTo:anArc];
     if (arrayIndex != NSNotFound) {
         [otherProcessors removeObjectAtIndex:arrayIndex];
         removed = YES;

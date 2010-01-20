@@ -120,26 +120,35 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
             OBInvokeAssertionFailureHandler("OBASSERT_NOTNULL", #pointer, __FILE__, __LINE__); \
         } \
     } while(NO);
-    
+
     #ifdef __OBJC__
+        // Useful if you are subclassing a parent class that conforms to a protcocol with @optional methods; can assert that they *still* don't have the superclass method.
+        // +instanceMethodForSelector: returns objc_msgForward now.
+        #define OBASSERT_NO_SUPER do { \
+            Class super__ = [[self class] superclass]; \
+            Method method__ = class_getInstanceMethod(super__, _cmd); \
+            if (method__) \
+                OBInvokeAssertionFailureHandler("OBASSERT_NO_SUPER", __PRETTY_FUNCTION__, __FILE__, __LINE__); \
+        } while (NO)
+    
         #import <Foundation/NSObject.h>
-        // Useful when you are changing subclass or delegate API and you want to ensure there aren't lingering implementations of API that will no longer get called.
-        extern void _OBAssertNotImplemented(id self, SEL sel);
-        #define OBASSERT_NOT_IMPLEMENTED(obj, sel) _OBAssertNotImplemented(obj, sel)
+        // Useful when you are changing subclass or delegate API and you want to ensure there aren't lingering implementations of API that will no longer get called.  Uses 'const char *' to avoid warnings from -Wundeclared-selector.
+        extern void _OBAssertNotImplemented(id self, const char *selName);
+        #define OBASSERT_NOT_IMPLEMENTED(obj, selName) _OBAssertNotImplemented(obj, #selName)
     #endif
     
 #else	// else insert blank lines into the code
 
-    #define OBPRECONDITION(expression)
-    #define OBPOSTCONDITION(expression)
-    #define OBINVARIANT(expression)
-    #define OBASSERT(expression)
-    #define OBASSERT_NOT_REACHED(reason)
+    #define OBPRECONDITION(expression) do {} while(0)
+    #define OBPOSTCONDITION(expression) do {} while(0)
+    #define OBINVARIANT(expression) do {} while(0)
+    #define OBASSERT(expression) do {} while(0)
+    #define OBASSERT_NOT_REACHED(reason) do {} while(0)
 
-    #define OBPRECONDITION_EXPENSIVE(expression)
-    #define OBPOSTCONDITION_EXPENSIVE(expression)
-    #define OBINVARIANT_EXPENSIVE(expression)
-    #define OBASSERT_EXPENSIVE(expression)
+    #define OBPRECONDITION_EXPENSIVE(expression) do {} while(0)
+    #define OBPOSTCONDITION_EXPENSIVE(expression) do {} while(0)
+    #define OBINVARIANT_EXPENSIVE(expression) do {} while(0)
+    #define OBASSERT_EXPENSIVE(expression) do {} while(0)
 
     // Pointer checks to satisfy clang scan-build in non-assertion builds too.
     static inline void _OBAnalyzerNoReturn(void) CLANG_ANALYZER_NORETURN;
@@ -158,7 +167,10 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
         } \
     } while(NO);
     
-    #define OBASSERT_NOT_IMPLEMENTED(obj, sel)
+    #ifdef __OBJC__
+        #define OBASSERT_NO_SUPER
+        #define OBASSERT_NOT_IMPLEMENTED(obj, sel)
+    #endif
 #endif
 #if defined(__cplusplus)
 } // extern "C"

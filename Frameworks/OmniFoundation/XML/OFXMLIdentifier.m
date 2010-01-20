@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ static NSCharacterSet *_InvalidNameChar(void)
 
 BOOL OFXMLIsValidID(NSString *identifier)
 {
-    unsigned int length = [identifier length];
+    NSUInteger length = [identifier length];
     if (length == 0)
         return NO;
     
@@ -56,18 +56,7 @@ BOOL OFXMLIsValidID(NSString *identifier)
 
 NSString *OFXMLCreateID(void)
 {
-    static OFRandomState State;
-    static BOOL initialized = NO;
-    
-    if (!initialized) {
-        initialized = YES;
-        OFRandomSeed(&State, OFRandomGenerateRandomSeed());
-    }
-    
-    uint32_t low  = OFRandomNextState(&State);
-    uint32_t high = OFRandomNextState(&State);
-    uint64_t value = (((uint64_t)high) << 32) | low;
-    
+    uint64_t value = OFRandomNext64();
     
     // ':' is allowed in all positions, and '.' after the first position.  But as these have meaning on some filesystems, let's not use it in case our ids are used in file names.  This, also means our choice of characters is 64 options.
     static const char chars[64] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";

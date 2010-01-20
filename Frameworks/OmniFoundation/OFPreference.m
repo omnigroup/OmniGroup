@@ -1,4 +1,4 @@
-// Copyright 2001-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -395,7 +395,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return _objectValue(self, &_value, _key, @"NSData");
 }
 
-- (int) integerValue;
+- (int) intValue;
 {
     id number;
     int result;
@@ -404,6 +404,25 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     OBASSERT(!number || [number isKindOfClass: [NSNumber class]] || [number isKindOfClass: [NSString class]]);
     if (number)
         result = [number intValue];
+    else
+        result = 0;
+    [number release];
+#ifdef DEBUG_PREFERENCES
+    NSLog(@"OFPreference(0x%08x:%@) %s -> %d", self, _key, _cmd, result);
+#endif
+    
+    return result;
+}
+
+- (NSInteger) integerValue;
+{
+    id number;
+    NSInteger result;
+    
+    number = _retainedObjectValue(self, &_value, _key);
+    OBASSERT(!number || [number isKindOfClass: [NSNumber class]] || [number isKindOfClass: [NSString class]]);
+    if (number)
+        result = [number integerValue];
     else
         result = 0;
     [number release];
@@ -433,6 +452,25 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return result;
 }
 
+- (NSUInteger) unsignedIntegerValue;
+{
+    id number;
+    NSUInteger result;
+    
+    number = _retainedObjectValue(self, &_value, _key);
+    OBASSERT(!number || [number isKindOfClass: [NSNumber class]] || [number isKindOfClass: [NSString class]]);
+    if (number)
+        result = [number unsignedIntegerValue];
+    else
+        result = 0;
+    [number release];
+#ifdef DEBUG_PREFERENCES
+    NSLog(@"OFPreference(0x%08x:%@) %s -> %d", self, _key, _cmd, result);
+#endif
+    
+    return result;
+}
+
 - (float) floatValue;
 {
     id number;
@@ -449,6 +487,25 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     NSLog(@"OFPreference(0x%08x:%@) %s -> %f", self, _key, _cmd, result);
 #endif
 
+    return result;
+}
+
+- (double) doubleValue;
+{
+    id number;
+    double result;
+    
+    number = _retainedObjectValue(self, &_value, _key);
+    OBASSERT(!number || [number isKindOfClass: [NSNumber class]] || [number isKindOfClass: [NSString class]]);
+    if (number)
+        result = [number doubleValue];
+    else
+        result = 0.0f;
+    [number release];
+#ifdef DEBUG_PREFERENCES
+    NSLog(@"OFPreference(0x%08x:%@) %s -> %f", self, _key, _cmd, result);
+#endif
+    
     return result;
 }
 
@@ -476,7 +533,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return [self arrayValue];
 }
 
-- (int) enumeratedValue
+- (NSInteger) enumeratedValue
 {
     [NSException raise:NSInvalidArgumentException format:@"-%s called on non-enumerated %@ (%@)", _cmd, [self shortDescription], _key];
     return INT_MIN; // unreached; and unlikely to be a valid enumeration value
@@ -511,16 +568,30 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     _setValue(self, &_value, _key, value);
 }
 
-- (void) setIntegerValue: (int) value;
+- (void) setIntValue: (int) value;
 {
     NSNumber *number = [[NSNumber alloc] initWithInt: value];
     _setValue(self, &_value, _key, number);
     [number release];
 }
 
-- (void) setUnsignedIntegerValue: (int) value;
+- (void) setIntegerValue: (NSInteger) value;
+{
+    NSNumber *number = [[NSNumber alloc] initWithInteger: value];
+    _setValue(self, &_value, _key, number);
+    [number release];
+}
+
+- (void) setUnsignedIntValue: (unsigned int) value;
 {
     NSNumber *number = [[NSNumber alloc] initWithUnsignedInt: value];
+    _setValue(self, &_value, _key, number);
+    [number release];
+}
+
+- (void) setUnsignedIntegerValue: (NSUInteger) value;
+{
+    NSNumber *number = [[NSNumber alloc] initWithUnsignedInteger: value];
     _setValue(self, &_value, _key, number);
     [number release];
 }
@@ -532,6 +603,14 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     [number release];
 }
 
+- (void) setDoubleValue: (double) value;
+{
+    NSNumber *number = [[NSNumber alloc] initWithDouble: value];
+    _setValue(self, &_value, _key, number);
+    [number release];
+}
+
+
 - (void) setBoolValue: (BOOL) value;
 {
     NSNumber *number = [[NSNumber alloc] initWithBool: value];
@@ -539,7 +618,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     [number release];
 }
 
-- (void) setEnumeratedValue: (int) value;
+- (void)setEnumeratedValue:(NSInteger)value;
 {
     [NSException raise:NSInvalidArgumentException format:@"-%s called on non-enumerated %@ (%@)", _cmd, [self shortDescription], _key];
 }
@@ -651,35 +730,27 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
         return defaultValue;
 }
 
-- (int) defaultEnumeratedValue
-{
-    id defaultValue = [super defaultObjectValue];
-    if (defaultValue == nil)
-        return [names defaultEnumValue];
-    else
-        return [names enumForName:defaultValue];
-}
-
 #define BAD_TYPE_IMPL(x) { [NSException raise:NSInvalidArgumentException format:@"-%s called on enumerated %@ (%@)", _cmd, [self shortDescription], _key]; x; }
 
-- (NSString *) stringValue;            BAD_TYPE_IMPL(return nil)
-- (NSArray *) arrayValue;              BAD_TYPE_IMPL(return nil)
-- (NSDictionary *) dictionaryValue;    BAD_TYPE_IMPL(return nil)
-- (NSData *) dataValue;                BAD_TYPE_IMPL(return nil)
-- (int) integerValue;                  BAD_TYPE_IMPL(return 0)
-- (unsigned int) unsignedIntValue;     BAD_TYPE_IMPL(return 0)
-- (float) floatValue;                  BAD_TYPE_IMPL(return 0)
-- (BOOL) boolValue;                    BAD_TYPE_IMPL(return NO)
+- (NSString *)stringValue;            BAD_TYPE_IMPL(return nil)
+- (NSArray *)arrayValue;              BAD_TYPE_IMPL(return nil)
+- (NSDictionary *)dictionaryValue;    BAD_TYPE_IMPL(return nil)
+- (NSData *)dataValue;                BAD_TYPE_IMPL(return nil)
+- (int)intValue;                      BAD_TYPE_IMPL(return 0)
+- (NSInteger)integerValue             BAD_TYPE_IMPL(return 0)
+- (unsigned int)unsignedIntValue;     BAD_TYPE_IMPL(return 0)
+- (NSUInteger)unsignedIntegerValue    BAD_TYPE_IMPL(return 0)
+- (float)floatValue;                  BAD_TYPE_IMPL(return 0)
+- (double)doubleValue;                BAD_TYPE_IMPL(return 0)
+- (BOOL)boolValue;                    BAD_TYPE_IMPL(return NO)
 
-- (int) enumeratedValue;
+- (NSInteger)enumeratedValue;
 {
-    id value;
-    int result;
+    id value = _retainedObjectValue(self, &_value, _key);
     
-    value = _retainedObjectValue(self, &_value, _key);
-    
+    NSInteger result;
     if ([value isKindOfClass:[NSNumber class]]) {
-        result = [value intValue];
+        result = [(NSNumber *)value integerValue];
         [value release];
     } else if ([value isKindOfClass:[NSString class]]) {
         [value autorelease];
@@ -693,15 +764,17 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return result;
 }
 
-- (void) setStringValue: (NSString *) value;            BAD_TYPE_IMPL(;)
-- (void) setArrayValue: (NSArray *) value;              BAD_TYPE_IMPL(;)
-- (void) setDictionaryValue: (NSDictionary *) value;    BAD_TYPE_IMPL(;)
-- (void) setDataValue: (NSData *) value;                BAD_TYPE_IMPL(;)
-- (void) setIntegerValue: (int) value;                  BAD_TYPE_IMPL(;)
-- (void) setFloatValue: (float) value;                  BAD_TYPE_IMPL(;)
-- (void) setBoolValue: (BOOL) value;                    BAD_TYPE_IMPL(;)
+- (void)setStringValue:(NSString *)value;            BAD_TYPE_IMPL(;)
+- (void)setArrayValue:(NSArray *)value;              BAD_TYPE_IMPL(;)
+- (void)setDictionaryValue:(NSDictionary *)value;    BAD_TYPE_IMPL(;)
+- (void)setDataValue:(NSData *)value;                BAD_TYPE_IMPL(;)
+- (void)setIntValue:(int)value;                      BAD_TYPE_IMPL(;)
+- (void)setIntegerValue:(NSInteger)value;            BAD_TYPE_IMPL(;)
+- (void)setFloatValue:(float)value;                  BAD_TYPE_IMPL(;)
+- (void)setDoubleValue:(double)value;                BAD_TYPE_IMPL(;)
+- (void)setBoolValue:(BOOL)value;                    BAD_TYPE_IMPL(;)
 
-- (void) setEnumeratedValue: (int) value;
+- (void)setEnumeratedValue:(NSInteger)value;
 {
     [self setObjectValue:[names nameForEnum:value]];
 }
@@ -796,12 +869,22 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return [[OFPreference preferenceForKey: defaultName] stringArrayValue];
 }
 
-- (int)integerForKey:(NSString *)defaultName;
+- (int)intForKey:(NSString *)defaultName;
 {
-    return [[OFPreference preferenceForKey: defaultName] integerValue];
+    return [[OFPreference preferenceForKey: defaultName] intValue];
+}
+
+- (NSInteger)integerForKey:(NSString *)defaultName;
+{
+    return [[OFPreference preferenceForKey: defaultName] intValue];
 }
 
 - (float)floatForKey:(NSString *)defaultName; 
+{
+    return [[OFPreference preferenceForKey: defaultName] floatValue];
+}
+
+- (double)doubleForKey:(NSString *)defaultName; 
 {
     return [[OFPreference preferenceForKey: defaultName] floatValue];
 }
@@ -811,7 +894,12 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return [[OFPreference preferenceForKey: defaultName] boolValue];
 }
 
-- (void)setInteger:(int)value forKey:(NSString *)defaultName;
+- (void)setInt:(int)value forKey:(NSString *)defaultName;
+{
+    [[OFPreference preferenceForKey: defaultName] setIntValue: value];
+}
+
+- (void)setInteger:(NSInteger)value forKey:(NSString *)defaultName;
 {
     [[OFPreference preferenceForKey: defaultName] setIntegerValue: value];
 }
@@ -819,6 +907,11 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 - (void)setFloat:(float)value forKey:(NSString *)defaultName;
 {
     [[OFPreference preferenceForKey: defaultName] setFloatValue: value];
+}
+
+- (void)setDouble:(double)value forKey:(NSString *)defaultName;
+{
+    [[OFPreference preferenceForKey: defaultName] setDoubleValue: value];
 }
 
 - (void)setBool:(BOOL)value forKey:(NSString *)defaultName;

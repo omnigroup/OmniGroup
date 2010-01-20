@@ -4,6 +4,9 @@
 
 // Common settings
 
+// Don't build ppc variants
+VALID_ARCHS = x86_64 i386
+
 FRAMEWORK_SEARCH_PATHS = $(value) /Library/Frameworks
 BZ2_LDFLAGS = -lbz2
 
@@ -23,6 +26,7 @@ LEX_SUPPRESS_DEFAULT_RULE = YES
 WARNING_CFLAGS = -Wall -Wno-#warnings -Wno-trigraphs -Winit-self
 GCC_OPTIMIZATION_LEVEL = 2
 GCC_MODEL_TUNING = G5
+GCC_FAST_OBJC_DISPATCH = YES
 GCC_GENERATE_DEBUGGING_SYMBOLS = YES
 GCC_C_LANGUAGE_STANDARD = gnu99
 GCC_TREAT_WARNINGS_AS_ERRORS = YES
@@ -43,6 +47,12 @@ GCC_WARN_SHADOW = NO
 GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO
 GCC_WARN_SIGN_COMPARE = YES
 GCC_WARN_ABOUT_MISSING_NEWLINE = YES
+GCC_WARN_64_TO_32_BIT_CONVERSION = YES
+// GCC_WARN_PROTOTYPE_CONVERSION = YES // This fails a lot on strip-omni, at least
+// GCC_WARN_SHADOW = YES
+
+// Other warning flags that don't have Xcode names.
+OTHER_MFLAGS = $(value) -Wselector -Wstrict-selector-match -Wundeclared-selector
 
 ZERO_LINK = NO
 INSTALL_MODE_FLAG = a+rX
@@ -55,4 +65,4 @@ INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -traditional-cpp -C -I$PROJECT_DERIVED_FILE
 // Xcode 3.1 converts .strings files to UTF-16 by default, which breaks our localization process.
 STRINGS_FILE_OUTPUT_ENCODING = UTF-8
 
-#include "Omni-Global-Common-10.5.xcconfig"
+#include "Omni-Global-Common-10.6.xcconfig"

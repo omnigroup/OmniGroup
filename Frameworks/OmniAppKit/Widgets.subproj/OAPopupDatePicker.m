@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,11 +25,14 @@ RCS_ID("$Id$");
 @interface OADatePickerButton : NSButton 
 @end
 
+@interface OAPopupDatePicker (Private)
+- (void)_firstDayOfTheWeekDidChange:(NSNotification *)notification;
+@end
+
 @implementation OAPopupDatePicker
 
 static NSImage *calendarImage;
 static NSSize calendarImageSize;
-static int defaultFirstWeekday = 0;
 
 + (void)initialize;
 {
@@ -74,8 +77,8 @@ static int defaultFirstWeekday = 0;
 
 + (NSRect)calendarRectForFrame:(NSRect)cellFrame;
 {
-    float verticalEdgeGap = floor((NSHeight(cellFrame) - calendarImageSize.height) / 2.0f);
-    const float horizontalEdgeGap = 2.0f;
+    CGFloat verticalEdgeGap = (CGFloat)floor((NSHeight(cellFrame) - calendarImageSize.height) / 2.0f);
+    const CGFloat horizontalEdgeGap = 2.0f;
     
     NSRect imageRect;
     imageRect.origin.x = NSMaxX(cellFrame) - calendarImageSize.width - horizontalEdgeGap;
@@ -93,11 +96,16 @@ static int defaultFirstWeekday = 0;
     NSWindow *window = [self window];
     if ([window respondsToSelector:@selector(setCollectionBehavior:)])
 	[window setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];   
+
+    [OFPreference addObserver:self selector:@selector(_firstDayOfTheWeekDidChange:) forPreference:[OFPreference preferenceForKey:@"FirstDayOfTheWeek"]];
+    [self _firstDayOfTheWeekDidChange:nil];
+    
     return self;
 }
 
 - (void)dealloc;
 {
+    [OFPreference removeObserver:self forPreference:[OFPreference preferenceForKey:@"FirstDayOfTheWeek"]];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     [_datePickerObjectValue release];
@@ -106,9 +114,16 @@ static int defaultFirstWeekday = 0;
     [_control release];
     [_controlFormatter release];  
     [_datePickerOriginalValue release];
+    [timePicker release];
+    
     [super dealloc];
 }
 
+- (void)awakeFromNib;
+{
+    // This might get removedFromSuperview.
+    [timePicker retain];
+}
 
 - (void)setCalendar:(NSCalendar *)calendar;
 {
@@ -138,18 +153,23 @@ static int defaultFirstWeekday = 0;
     _controlFormatter = [controlFormatter retain];
     _stringUpdateSelector = stringUpdateSelector;
     
-    int firstDayOfWeek = [[OFPreference preferenceForKey:@"FirstDayOfTheWeek"] integerValue];
-    NSCalendar *cal = [NSCalendar currentCalendar];
-    if (defaultFirstWeekday == 0)
-	defaultFirstWeekday = [cal firstWeekday];
-    if (firstDayOfWeek == 0) 
-	firstDayOfWeek = defaultFirstWeekday;
-    [cal setFirstWeekday:firstDayOfWeek];
-    [datePicker setCalendar:cal];
-    
     NSWindow *emergeFromWindow = [emergeFromView window];
     NSWindow *popupWindow = [self window];    
 
+    if ([_controlFormatter isKindOfClass:[NSDateFormatter class]] && [(NSDateFormatter *)_controlFormatter timeStyle] == kCFDateFormatterNoStyle) { 
+        if ([timePicker superview]) {
+            NSRect frame = popupWindow.frame;
+            frame.size.height -= NSHeight([timePicker frame]);
+            [timePicker removeFromSuperview];
+            [popupWindow setFrame:frame display:YES];
+        }
+    } else if (![timePicker superview]) {
+        [[popupWindow contentView] addSubview:timePicker];
+        NSRect frame = popupWindow.frame;
+        frame.size.height += NSHeight([timePicker frame]);
+        [popupWindow setFrame:frame display:YES];
+    }
+    
     // set the default date picker value to the bound value
     [_datePickerObjectValue release];
     _datePickerObjectValue = nil;
@@ -182,7 +202,7 @@ static int defaultFirstWeekday = 0;
     NSRect targetWindowRect = [emergeFromView convertRect:viewRect toView:nil];
     NSPoint viewRectCenter = [emergeFromWindow convertBaseToScreen:NSMakePoint(NSMidX(targetWindowRect), NSMidY(targetWindowRect))];
     NSPoint windowOrigin = [emergeFromWindow convertBaseToScreen:NSMakePoint(NSMidX(targetWindowRect), NSMinY(targetWindowRect))];
-    windowOrigin.x -= floor(NSWidth(popupWindowFrame) / 2.0);
+    windowOrigin.x -= (CGFloat)floor(NSWidth(popupWindowFrame) / 2.0f);
     windowOrigin.y -= 2.0f;
     
     NSScreen *screen = [OAWindowCascade screenForPoint:viewRectCenter];
@@ -190,7 +210,7 @@ static int defaultFirstWeekday = 0;
     if (windowOrigin.x < visibleFrame.origin.x)
 	windowOrigin.x = visibleFrame.origin.x;
     else {
-	float maxX = NSMaxX(visibleFrame) - NSWidth(popupWindowFrame);
+	CGFloat maxX = NSMaxX(visibleFrame) - NSWidth(popupWindowFrame);
 	if (windowOrigin.x > maxX)
 	    windowOrigin.x = maxX;
     }
@@ -198,7 +218,7 @@ static int defaultFirstWeekday = 0;
     if (windowOrigin.y > NSMaxY(visibleFrame))
 	windowOrigin.y = NSMaxY(visibleFrame);
     else {
-	float minY = NSMinY(visibleFrame) + NSHeight(popupWindowFrame);
+	CGFloat minY = NSMinY(visibleFrame) + NSHeight(popupWindowFrame);
 	if (windowOrigin.y < minY)
 	    windowOrigin.y = minY;
     }
@@ -380,6 +400,37 @@ static int defaultFirstWeekday = 0;
     [super resignKeyWindow];
     [[self parentWindow] removeChildWindow:self];
     [self close];
+}
+
+@end
+
+
+@implementation OAPopupDatePicker (Private)
+
+- (void)_firstDayOfTheWeekDidChange:(NSNotification *)notification;
+{
+    NSCalendar *currentCalendar = [NSCalendar currentCalendar];
+    NSCalendar *cal = [datePicker calendar];
+    if (!cal)
+        cal = currentCalendar;
+        
+        [datePicker setCalendar:cal];
+    
+    NSUInteger firstDayOfWeek = [[OFPreference preferenceForKey:@"FirstDayOfTheWeek"] unsignedIntegerValue];
+    
+    if (firstDayOfWeek != 0) 
+        firstDayOfWeek = [currentCalendar firstWeekday];
+        
+        if (firstDayOfWeek != [cal firstWeekday]) {
+            // if this calendar is not currentCalendar, other people might be referring to it.  Leave it alone and use a copy.
+            if (cal != currentCalendar) {
+                cal = [cal copy];
+                [datePicker setCalendar:cal];
+                [cal release];
+            }
+            
+            [cal setFirstWeekday:firstDayOfWeek];
+        }
 }
 
 @end

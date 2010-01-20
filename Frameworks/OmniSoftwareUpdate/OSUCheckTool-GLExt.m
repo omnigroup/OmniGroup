@@ -1,9 +1,9 @@
-// Copyright 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
-// http://www.omnigroup.com/DeveloperResources/OmniSourceLicense.html.
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OSUCheckTool.h"
 
@@ -166,10 +166,33 @@ static void append(const void *value, void *context)
     CFStringAppend(buf, value);
 }
 
+#ifdef DEBUG
+void logTestGLExtensionCompressionTestVector(void)
+{
+    srandom((unsigned)time(NULL));
+    NSMutableArray *extensions = [NSMutableArray array];
+    unsigned extIndex;
+    for (extIndex = 0; extIndex < COMPACT_GL_EXTENSIONS_BITMAP_1_SIZE; extIndex++) {
+        if ((arc4random() % 8) == 0)
+            [extensions addObject:(id)glExtensionsBitmap1[extIndex]];
+    }
+    
+    NSString *extensionsString = [extensions componentsJoinedByString:@" "];
+    CFStringRef compressed = copyCompactedGLExtensionsList((CFStringRef)extensionsString);
+    NSLog(@"extensionString %@", extensionsString);
+    NSLog(@"compressed %@", compressed);
+    CFRelease(compressed);
+}
+
+#endif
+
 CFStringRef copyCompactedGLExtensionsList(CFStringRef extList)
 {
-    if (!extList || CFStringGetLength(extList) < 10)
-        return extList;
+    if (!extList)
+        return NULL;
+    if (CFStringGetLength(extList) < 10) {
+        return CFStringCreateCopy(kCFAllocatorDefault, extList);
+    }
     
     CFMutableSetRef extensions;
     
@@ -195,14 +218,6 @@ CFStringRef copyCompactedGLExtensionsList(CFStringRef extList)
             bitsSet ++;
             CFSetRemoveValue(extensions, extName);
         }
-    }
-    
-    if (bitsSet*60 < 8+firstUnusedIndex) {
-        // Rough heuristic: we didn't remove enough entries from extensions to possibly be worth recoding it into compact form.
-        free(bits);
-        CFRelease(extensions);
-        CFRetain(extList);
-        return extList;
     }
     
     CFMutableStringRef buf = CFStringCreateMutable(kCFAllocatorDefault, 0);
@@ -246,8 +261,7 @@ CFStringRef copyCompactedGLExtensionsList(CFStringRef extList)
         return buf;
     } else {
         CFRelease(buf);
-        CFRetain(extList);
-        return extList;
+        return CFStringCreateCopy(kCFAllocatorDefault, extList);
     }
 }
 
@@ -261,7 +275,7 @@ static void unpackExtensionBitmap(CFMutableSetRef extensions, CFStringRef packed
         UniChar ch = CFStringGetCharacterAtIndex(packed, firstNybble+nybbleIndex);
         unsigned int value;
         for(value = 0; value < 16; value ++) {
-            if (ch == "0123456789ABCDEF"[value])
+            if (ch == (UniChar)("0123456789ABCDEF"[value]))
                 break;
         }
         if (value >= 16) {

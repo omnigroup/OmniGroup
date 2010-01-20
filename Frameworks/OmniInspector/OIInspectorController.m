@@ -1,4 +1,4 @@
-// Copyright 2002-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,7 @@
 
 RCS_ID("$Id$");
 
-@interface OIInspectorController (Private) <OIInspectorHeaderViewDelegateProtocol, OIInspectorWindowDelegate>
+@interface OIInspectorController (/*Private*/) <OIInspectorHeaderViewDelegateProtocol>
 - (void)toggleVisibleAction:sender;
 - (void)_buildHeadingView;
 - (void)_buildWindow;
@@ -37,8 +37,8 @@ RCS_ID("$Id$");
 
 NSComparisonResult sortByDefaultDisplayOrderInGroup(OIInspectorController *a, OIInspectorController *b, void *context)
 {
-    int aOrder = [[a inspector] defaultOrderingWithinGroup];
-    int bOrder = [[b inspector] defaultOrderingWithinGroup];
+    NSUInteger aOrder = [[a inspector] defaultOrderingWithinGroup];
+    NSUInteger bOrder = [[b inspector] defaultOrderingWithinGroup];
     
     if (aOrder < bOrder)
         return NSOrderedAscending;
@@ -150,7 +150,7 @@ static BOOL animateInspectorToggles;
 - (CGFloat)desiredHeightWhenExpanded;
 {
     OBPRECONDITION(headingButton); // That is, -loadInterface must have been called.
-    CGFloat headingButtonHeight = headingButton ? NSHeight([headingButton frame]) : 0.0;
+    CGFloat headingButtonHeight = headingButton ? NSHeight([headingButton frame]) : 0.0f;
     return NSHeight([[self _inspectorView] frame]) + headingButtonHeight;
 }
 
@@ -201,7 +201,7 @@ static BOOL animateInspectorToggles;
         NSRect windowFrame = [window frame];
         NSRect headingFrame;
         
-        headingFrame.origin = NSMakePoint(0, isBottommostInGroup ? 0.0 : OIInspectorSpaceBetweenButtons);
+        headingFrame.origin = NSMakePoint(0, isBottommostInGroup ? 0.0f : OIInspectorSpaceBetweenButtons);
         headingFrame.size = [headingButton frame].size;
         [window setFrame:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - NSMaxY(headingFrame), NSWidth(headingFrame), NSMaxY(headingFrame)) display:YES animate:NO];
     }
@@ -230,7 +230,7 @@ static BOOL animateInspectorToggles;
     collapseOnTakeNewPosition = yn;
 }
 
-- (float)heightAfterTakeNewPosition;  // Returns the frame height (not the content view height)
+- (CGFloat)heightAfterTakeNewPosition;  // Returns the frame height (not the content view height)
 {
     if (collapseOnTakeNewPosition) {
         NSRect eventualContentRect = (NSRect){ { 0, 0 }, { OIInspectorStartingHeaderButtonWidth, OIInspectorStartingHeaderButtonHeight } };
@@ -241,7 +241,7 @@ static BOOL animateInspectorToggles;
         return NSHeight([window frame]);
 }
 
-- (void)takeNewPositionWithWidth:(float)aWidth;  // aWidth is the frame width (not the content width)
+- (void)takeNewPositionWithWidth:(CGFloat)aWidth;  // aWidth is the frame width (not the content width)
 {
     if (collapseOnTakeNewPosition) {
         [self toggleExpandednessWithNewTopLeftPoint:newPosition animate:NO];
@@ -360,9 +360,8 @@ static BOOL animateInspectorToggles;
     return result;
 }
 
-@end
-
-@implementation OIInspectorController (Private)
+#pragma mark -
+#pragma mark Private
 
 - (void)toggleVisibleAction:sender;
 {
@@ -389,7 +388,7 @@ static BOOL animateInspectorToggles;
 {
     OBPRECONDITION(headingButton == nil);
     
-    headingButton = [[OIInspectorHeaderView alloc] initWithFrame:NSMakeRect(0.0, OIInspectorSpaceBetweenButtons,
+    headingButton = [[OIInspectorHeaderView alloc] initWithFrame:NSMakeRect(0.0f, OIInspectorSpaceBetweenButtons,
                                                                             [[OIInspectorRegistry sharedInspector] inspectorWidth],
                                                                             OIInspectorStartingHeaderButtonHeight)];
     [headingButton setTitle:[inspector displayName]];
@@ -400,7 +399,7 @@ static BOOL animateInspectorToggles;
 
     NSString *keyEquivalent = [inspector shortcutKey];
     if ([keyEquivalent length]) {
-        unsigned int mask = [inspector shortcutModifierFlags];
+        NSUInteger mask = [inspector shortcutModifierFlags];
         NSString *fullString = [NSString stringForKeyEquivalent:keyEquivalent andModifierMask:mask];
         [headingButton setKeyEquivalent:fullString];
     }
@@ -411,7 +410,7 @@ static BOOL animateInspectorToggles;
 - (void)_buildWindow;
 {
     [self _buildHeadingView];
-    window = [[OIInspectorWindow alloc] initWithContentRect:NSMakeRect(500.0, 300.0, NSWidth([headingButton frame]), OIInspectorStartingHeaderButtonHeight + OIInspectorSpaceBetweenButtons) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+    window = [[OIInspectorWindow alloc] initWithContentRect:NSMakeRect(500.0f, 300.0f, NSWidth([headingButton frame]), OIInspectorStartingHeaderButtonHeight + OIInspectorSpaceBetweenButtons) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
     [window setDelegate:self];
     [window setBecomesKeyOnlyIfNeeded:YES];
     [[window contentView] addSubview:headingButton];
@@ -469,7 +468,7 @@ static BOOL animateInspectorToggles;
     [group setScreenChangesEnabled:NO];
     [headingButton setExpanded:isExpanded];
 
-    float additionalHeaderHeight;
+    CGFloat additionalHeaderHeight;
     
     if (isExpanded) {
 
@@ -493,7 +492,7 @@ static BOOL animateInspectorToggles;
         if (forceResizeWidget) {
             viewFrame = NSMakeRect(0, 0, NSWidth(newContentRect), NSHeight(viewFrame));
         } else {
-            viewFrame.origin.x = floor((NSWidth(newContentRect) - NSWidth(viewFrame)) / 2.0);
+            viewFrame.origin.x = (CGFloat)floor((NSWidth(newContentRect) - NSWidth(viewFrame)) / 2.0);
             viewFrame.origin.y = 0;
         }
 
@@ -520,7 +519,7 @@ static BOOL animateInspectorToggles;
         [view setAutoresizingMask:NSViewNotSizable];
 	
         NSRect headingFrame;
-        headingFrame.origin = NSMakePoint(0, isBottommostInGroup ? 0.0 : OIInspectorSpaceBetweenButtons);
+        headingFrame.origin = NSMakePoint(0, isBottommostInGroup ? 0.0f : OIInspectorSpaceBetweenButtons);
         if (group == nil)
             headingFrame.size = [headingButton frame].size;
         else
@@ -561,7 +560,7 @@ static BOOL animateInspectorToggles;
     OIInspectorRegistry *registry = [OIInspectorRegistry sharedInspector];
     NSSize size = [[self _inspectorView] frame].size;
 
-    [[registry workspaceDefaults] setObject:[NSNumber numberWithFloat:size.height] forKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
+    [[registry workspaceDefaults] setObject:[NSNumber numberWithCGFloat:size.height] forKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
     [registry defaultsDidChange];
 }
 
@@ -673,13 +672,13 @@ static BOOL animateInspectorToggles;
     return [group isHeadOfGroup:self];
 }
 
-- (float)headerViewDraggingHeight:(OIInspectorHeaderView *)view;
+- (CGFloat)headerViewDraggingHeight:(OIInspectorHeaderView *)view;
 {
     NSRect myGroupFrame;
     
     if (!window || ![group getGroupFrame:&myGroupFrame]) {
         OBASSERT_NOT_REACHED("Can't calculate headerViewDraggingHeight");
-        return 1.0;
+        return 1.0f;
     }
     
     return NSMaxY([window frame]) - myGroupFrame.origin.y;

@@ -25,6 +25,7 @@ RCS_ID("$Id$")
 
 @implementation NSAttributedString (OAExtensions)
 
+#if 0
 static NSDictionary *keywordDictionary = nil;
 static NSFontTraitMask mask = NO;
 static BOOL underlineFlag = NO;
@@ -45,6 +46,7 @@ static NSString *blackColorString;
         nil] retain];
     blackColorString = [[OAColorPalette stringForColor:[NSColor blackColor]] retain];
 }
+#endif
 
 + (NSString *)attachmentString;
 {
@@ -68,6 +70,8 @@ static NSString *blackColorString;
     return result;
 }
 
+// Use -initWithHTML:options:documentAttributes:?
+#if 0
 - (void)resetAttributes;
 {
     mask = 0;
@@ -231,8 +235,10 @@ static NSString *blackColorString;
 
     return [self initWithAttributedString:attributedString];
 }
+#endif
 
-
+// Use -dataFromRange:documentAttributes:error: with  NSDocumentTypeDocumentAttribute = NSHTMLTextDocumentType?
+#if 0
 // Generating HTML
 static NSMutableDictionary *cachedAttributes = nil;
 static NSMutableArray *fontDirectiveStack = nil;
@@ -399,6 +405,7 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
     [storeString appendString:[self closeTags]];
     return storeString;
 }
+#endif
 
 - (NSData *)rtf;
 {
@@ -430,8 +437,8 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
         substringWithEllipsisLayoutManager = [[NSLayoutManager alloc] init];
         [substringWithEllipsisTextStorage addLayoutManager:substringWithEllipsisLayoutManager];
 
-        substringWithEllipsisTextContainer = [[NSTextContainer alloc] initWithContainerSize:NSMakeSize(1.0e7, 1.0e7)];
-        [substringWithEllipsisTextContainer setLineFragmentPadding:0.0];
+        substringWithEllipsisTextContainer = [[NSTextContainer alloc] initWithContainerSize:NSMakeSize(1.0e7f, 1.0e7f)];
+        [substringWithEllipsisTextContainer setLineFragmentPadding:0.0f];
         [substringWithEllipsisLayoutManager addTextContainer:substringWithEllipsisTextContainer];
     }
     
@@ -458,13 +465,13 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 
     NSPoint glyphLocation;
     glyphLocation.x = (isRightToLeft) ? ellipsisSize.width : width - ellipsisSize.width;
-    glyphLocation.y = 0.5 * lineSize.height;
+    glyphLocation.y = 0.5f * lineSize.height;
     drawGlyphRange.length = [substringWithEllipsisLayoutManager glyphIndexForPoint:glyphLocation inTextContainer:substringWithEllipsisTextContainer];
 
     if (drawGlyphRange.length == 0) {
 	// We couldn't fit any characters with the ellipsis, so try drawing some without it (rather than drawing nothing)
 	requiresEllipsis = NO;
-	glyphLocation.x = (isRightToLeft) ? 0.0 : width;
+	glyphLocation.x = (isRightToLeft) ? 0.0f : width;
 	drawGlyphRange.length = [substringWithEllipsisLayoutManager glyphIndexForPoint:glyphLocation inTextContainer:substringWithEllipsisTextContainer];
     }
     
@@ -481,6 +488,8 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 - (void)drawInRectangle:(NSRect)rectangle alignment:(int)alignment verticallyCentered:(BOOL)verticallyCenter;
     // ASSUMPTION: This is for one line
 {
+    OBPRECONDITION([NSThread isMainThread]); // statics make this not thread-safe
+    
     static NSTextStorage *showStringTextStorage = nil;
     static NSLayoutManager *showStringLayoutManager = nil;
     static NSTextContainer *showStringTextContainer = nil;
@@ -505,8 +514,8 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
         showStringLayoutManager = [[NSLayoutManager alloc] init];
         [showStringTextStorage addLayoutManager:showStringLayoutManager];
 
-        showStringTextContainer = [[NSTextContainer alloc] initWithContainerSize:NSMakeSize(1.0e7, 1.0e7)];
-        [showStringTextContainer setLineFragmentPadding:0.0];
+        showStringTextContainer = [[NSTextContainer alloc] initWithContainerSize:NSMakeSize(1.0e7f, 1.0e7f)];
+        [showStringTextContainer setLineFragmentPadding:0.0f];
         [showStringLayoutManager addTextContainer:showStringTextContainer];
     }
     
@@ -519,7 +528,7 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
     requiresEllipsis = lineTooLong || NSMaxRange(lineCharacterRange) < [self length];
     
     if (requiresEllipsis) {
-        unsigned int ellipsisAttributeCharacterIndex;
+        NSUInteger ellipsisAttributeCharacterIndex;
 
         isRightToLeft = ([showStringLayoutManager intAttribute:NSGlyphAttributeBidiLevel forGlyphAtIndex:[showStringLayoutManager numberOfGlyphs] - 1] != 0);        
 
@@ -534,13 +543,13 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
         if (lineTooLong || lineSize.width + ellipsisSize.width > NSWidth(rectangle)) {
             NSPoint glyphLocation;
             glyphLocation.x = (isRightToLeft) ? ellipsisSize.width : NSWidth(rectangle) - ellipsisSize.width;
-            glyphLocation.y = 0.5 * lineSize.height;
+            glyphLocation.y = 0.5f * lineSize.height;
             drawGlyphRange.length = [showStringLayoutManager glyphIndexForPoint:glyphLocation inTextContainer:showStringTextContainer];
 
             if (drawGlyphRange.length == 0) {
                 // We couldn't fit any characters with the ellipsis, so try drawing some without it (rather than drawing nothing)
                 requiresEllipsis = NO;
-                glyphLocation.x = (isRightToLeft) ? 0.0 : NSWidth(rectangle);
+                glyphLocation.x = (isRightToLeft) ? 0.0f : NSWidth(rectangle);
                 drawGlyphRange.length = [showStringLayoutManager glyphIndexForPoint:glyphLocation inTextContainer:showStringTextContainer];
             }
             lineSize.width = [showStringLayoutManager locationForGlyphAtIndex:NSMaxRange(drawGlyphRange)].x;
@@ -567,7 +576,7 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
                 drawPoint.x = NSMinX(rectangle);
                 break;
             case NSCenterTextAlignment:
-                drawPoint.x = NSMidX(rectangle) - lineSize.width / 2.0;
+                drawPoint.x = NSMidX(rectangle) - lineSize.width / 2.0f;
                 break;
             case NSRightTextAlignment:
                 drawPoint.x = NSMaxX(rectangle) - lineSize.width;
@@ -575,7 +584,7 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
         }
         
         if (verticallyCenter)
-            drawPoint.y = NSMidY(rectangle) - lineSize.height / 2.0;
+            drawPoint.y = NSMidY(rectangle) - lineSize.height / 2.0f;
 
         [showStringLayoutManager drawGlyphsForGlyphRange:drawGlyphRange atPoint:drawPoint];
         if (requiresEllipsis) {
@@ -589,9 +598,9 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 - (void)drawCenteredShrinkingToFitInRect:(NSRect)rect;
 {
     NSSize size = [self size];
-    float scale = MIN(NSWidth(rect) / size.width, NSHeight(rect) / size.height);
+    CGFloat scale = MIN(NSWidth(rect) / size.width, NSHeight(rect) / size.height);
     if (scale >= 1.0) {
-	rect.origin.y += (NSHeight(rect) - size.height) / 2.0;
+	rect.origin.y += (NSHeight(rect) - size.height) / 2.0f;
 	[self drawInRect:rect];
 	return;
     }

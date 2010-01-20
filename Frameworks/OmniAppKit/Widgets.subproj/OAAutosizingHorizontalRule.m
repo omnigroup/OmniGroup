@@ -1,4 +1,4 @@
-// Copyright 2005-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,7 @@ RCS_ID("$Id$");
     OBASSERT(labelFrame.origin.x < ruleFrame.origin.x);
     
     // keep the right edge where it is.  Move the left edge to near the right edge of the
-    float rightX = NSMaxX(ruleFrame);
+    CGFloat rightX = NSMaxX(ruleFrame);
     ruleFrame.origin.x = NSMaxX(labelFrame);
     ruleFrame.size.width = rightX - ruleFrame.origin.x;
 

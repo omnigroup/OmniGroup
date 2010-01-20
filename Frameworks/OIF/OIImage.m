@@ -1,4 +1,4 @@
-// Copyright 1998-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,14 +34,17 @@ static BOOL colorSyncEnabled;
     return contentType;
 }
 
-+ (CGImageRef)createCGImageFromBitmapData:(const void *)bitmapData width:(unsigned int)imageWidth height:(unsigned int)imageHeight bitsPerSample:(unsigned int)bitsPerSample samplesPerPixel:(unsigned int)samplesPerPixel;
++ (CGImageRef)createCGImageFromBitmapData:(const void *)bitmapData width:(NSUInteger)imageWidth height:(NSUInteger)imageHeight bitsPerSample:(NSUInteger)bitsPerSample samplesPerPixel:(NSUInteger)samplesPerPixel;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+    return NULL;
+#if 0    
     OBPRECONDITION(bitmapData != NULL);
     
 //    NSLog(@"%s, bitmapData=%p, imageWidth=%d, imageHeight=%d, bitsPerSample=%d, samplesPerPixel=%d", _cmd, bitmapData, imageWidth, imageHeight, bitsPerSample, samplesPerPixel);
     
     // Create CGImageRef
-    unsigned int bytesPerRow = imageWidth * bitsPerSample * samplesPerPixel / 8;
+    NSUInteger bytesPerRow = imageWidth * bitsPerSample * samplesPerPixel / 8;
 	
 	CGColorSpaceRef colorspace;
 	if (samplesPerPixel < 3)
@@ -49,7 +52,7 @@ static BOOL colorSyncEnabled;
 	else
 		colorspace = CGColorSpaceCreateDeviceRGB();
     CGDataProviderRef provider = CGDataProviderCreateWithData(self, bitmapData, bytesPerRow * imageHeight, NULL);
-    float decode[8] = { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 };
+    CGFloat decode[8] = { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 };
     
     CGImageRef image = CGImageCreate(imageWidth, imageHeight, bitsPerSample, bitsPerSample * samplesPerPixel, bytesPerRow, colorspace, (samplesPerPixel == 4 ? kCGImageAlphaPremultipliedLast : kCGImageAlphaNone), provider, decode, NO, kCGRenderingIntentDefault);
     if (image == NULL)
@@ -59,6 +62,7 @@ static BOOL colorSyncEnabled;
     CGDataProviderRelease(provider);
     
     return image;
+#endif
 }
 
 // Gamma
@@ -83,7 +87,7 @@ static BOOL colorSyncEnabled;
 
 + (void)fillGammaCorrectionTable:(OIImageGammaCorrectionTable)gammaCorrectionTable withSamplesOfGamma:(double)gamma;
 {
-    unsigned int index;
+    NSUInteger index;
 
     index = 256;
     if (gamma == 1.0) {
@@ -132,7 +136,9 @@ static BOOL colorSyncEnabled;
 
 - (void)dealloc;
 {
-    unsigned int observerIndex, observerCount;
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
+    NSUInteger observerIndex, observerCount;
 
     // Thread safety?
     if (cgImage != NULL)
@@ -150,6 +156,7 @@ static BOOL colorSyncEnabled;
     [observersLock release];
     [_pixelData release];
     [_sourceContent release];
+#endif
     [super dealloc];
 }
 
@@ -173,8 +180,10 @@ static BOOL colorSyncEnabled;
 
 - (void)setSize:(NSSize)newSize;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
     NSArray *observers;
-    unsigned int observerIndex, observerCount;
+    NSUInteger observerIndex, observerCount;
     
     haveSize = YES;
     imageSize = newSize;
@@ -187,6 +196,7 @@ static BOOL colorSyncEnabled;
         observer = [observers objectAtIndex:observerIndex];
         [observer imageDidSize:self];
     }
+#endif
 }
 
 - (CGImageRef)retainedCGImage;
@@ -228,20 +238,25 @@ static BOOL colorSyncEnabled;
 
 - (void)notifyImageChanged;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
     NSArray *observers = [self observers];
-    unsigned int observerCount = [observers count];
-    unsigned int observerIndex;
+    NSUInteger observerCount = [observers count];
+    NSUInteger observerIndex;
     
     for (observerIndex = 0; observerIndex < observerCount; observerIndex++) {
         OFObject <OIImageObserver> *observer = [observers objectAtIndex:observerIndex];
 	[observer imageDidUpdate:self];
     }
+#endif
 }
 
 - (void)abortImage;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
     NSArray *observers;
-    unsigned int observerIndex, observerCount;
+    NSUInteger observerIndex, observerCount;
     
     haveSize = YES; // Well, as much as we ever will...
 
@@ -253,6 +268,7 @@ static BOOL colorSyncEnabled;
         observer = [observers objectAtIndex:observerIndex];
 	[observer imageDidAbort:self];
     }
+#endif
 }
 
 - (void)startAnimation;
@@ -278,6 +294,8 @@ static inline CGRect _nsRectToCGRect(NSRect aRect)
 
 - (void)drawFlippedInRect:(NSRect)rect;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
     CGContextRef cgContext = [[NSGraphicsContext currentContext] graphicsPort];
     CGContextSaveGState(cgContext); {
         CGContextTranslateCTM(cgContext, 0.0, NSMaxY(rect));
@@ -286,6 +304,7 @@ static inline CGRect _nsRectToCGRect(NSRect aRect)
         rect.origin.y = 0.0; // We've translated ourselves so it's zero
         [self drawInRect:rect];
     } CGContextRestoreGState(cgContext);
+#endif
 }
 
 - (NSArray *)observers;
@@ -299,15 +318,18 @@ static inline CGRect _nsRectToCGRect(NSRect aRect)
     return [observers autorelease];
 }
 
-- (unsigned int)observerCount;
+- (NSUInteger)observerCount;
     // Returns the number of observers for this image (more efficient than [[self observers] count])
 {
-    unsigned int observerCount;
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
+    NSUInteger observerCount;
 
     [observersLock lock];
     observerCount = [_observers count];
     [observersLock unlock];
     return observerCount;
+#endif
 }
 
 - (void)addObserver:(id <OIImageObserver, OFWeakRetain>)anObserver;

@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,10 +67,7 @@ RCS_ID("$Id$")
             // 10.5 9A410; the default policy guy has a zombie reference that gets hit sometimes.  Radar 5229858.  Setting our own policy doesn't help either.
             [defaults synchronize]; // in case WebKit is crashy, let's only crash once.
             
-            // Don't show the message of the day on first launch, unless specified in the defaults (the idea being to not clutter up the first-time user experience).
-            if (seenSignature || [[NSUserDefaults standardUserDefaults] boolForKey:@"OSUShowMessageOfTheDayOnFirstLaunch"]) {
-                [self showMessageOfTheDay:nil];
-            }
+	    [self showMessageOfTheDay:nil];
 	}
     }
 }
@@ -170,7 +167,7 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
     else {
         //otherwise search my children
         NSArray *children = [frame childFrames];
-        unsigned int childIndex, childCount = [children count];
+        NSUInteger childIndex, childCount = [children count];
         if (children != nil && childCount > 0) {
             NSString *foundString = nil;
             for (childIndex = 0; childIndex < childCount; childIndex++) {

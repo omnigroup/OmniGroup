@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,55 +19,10 @@ RCS_ID("$Id$")
     [super dealloc];
 }
 
-- (void)setEntity:(ODOEntity *)entity;
-{
-    if (entity == _entity)
-        return;
-    [_entity release];
-    _entity = [entity retain];
-}
-
-- (ODOEntity *)entity;
-{
-    return _entity;
-}
-
-- (void)setPredicate:(NSPredicate *)predicate;
-{
-    if (predicate == _predicate)
-        return;
-    [_predicate release];
-    _predicate = [predicate retain];
-}
-
-- (NSPredicate *)predicate;
-{
-    return _predicate;
-}
-
-- (void)setSortDescriptors:(NSArray *)sortDescriptors;
-{
-    if (sortDescriptors == _sortDescriptors)
-        return;
-    [_sortDescriptors release];
-    _sortDescriptors = [sortDescriptors retain];
-}
-
-- (NSArray *)sortDescriptors;
-{
-    return _sortDescriptors;
-}
-
-- (void)setReason:(NSString *)reason;
-{
-    [_reason autorelease];
-    _reason = [reason copy];
-}
-
-- (NSString *)reason;
-{
-    return _reason;
-}
+@synthesize entity = _entity;
+@synthesize predicate = _predicate;
+@synthesize sortDescriptors = _sortDescriptors;
+@synthesize reason = _reason;
 
 @end
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -215,17 +215,9 @@ static BOOL OFBundleRegistryDebug = NO;
     // Search for the config path array in defaults, then in the app wrapper's configuration dictionary.  (In gdb, we set the search path on the command line where it will appear in the NSArgumentDomain, overriding the app wrapper's configuration.)
     if ((configPathArray = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryConfigSearchPaths]) ||
         (configPathArray = [configDictionary objectForKey:OFBundleRegistryConfigSearchPaths])) {
-        unsigned int pathIndex, pathCount;
-        NSMutableArray *newPath;
 
-        pathCount = [configPathArray count];
-
-        // The capacity of the newPath array is pathCount + 1 because AppWrapper expands to two entries.
-        newPath = [[NSMutableArray alloc] initWithCapacity:pathCount + 1];
-        for (pathIndex = 0; pathIndex < pathCount; pathIndex++) {
-            NSString *path;
-
-            path = [configPathArray objectAtIndex:pathIndex];
+        NSMutableArray *newPath = [[NSMutableArray alloc] init];
+        for (NSString *path in configPathArray) {
             if ([path isEqualToString:OFBundleRegistryConfigAppWrapperPath]) {
                 [newPath addObject:mainBundleResourcesPath];
                 [newPath addObject:mainBundlePath];
@@ -294,40 +286,31 @@ static BOOL OFBundleRegistryDebug = NO;
 // Returns an NSArray of bundle descriptions
 + (NSArray *)newBundlesFromStandardPath;
 {
-    NSMutableArray *bundlesFromStandardPath;
-    NSArray *standardPath;
-    NSMutableSet *seenPaths;
-    unsigned int pathIndex, pathCount;
-
     // Make a note of paths we've already examined so we can skip them this time
-    pathCount = [knownBundles count];
-    seenPaths = [[NSMutableSet alloc] initWithCapacity:pathCount];
-    for(pathIndex = 0; pathIndex < pathCount; pathIndex ++) {
+    NSMutableSet *seenPaths = [[NSMutableSet alloc] init];
+    
+    for (NSDictionary *bundleDict in knownBundles) {
         NSString *aPath;
         
-        aPath = [[knownBundles objectAtIndex:pathIndex] objectForKey:@"path"];
+        aPath = [bundleDict objectForKey:@"path"];
         if (aPath)
             [seenPaths addObject:aPath];
-        aPath = [[[knownBundles objectAtIndex:pathIndex] objectForKey:@"path"] bundlePath];
+        aPath = [[bundleDict objectForKey:@"path"] bundlePath];
         if (aPath)
             [seenPaths addObject:aPath];
     }
 
     NSDictionary *environmentDictionary = [[NSProcessInfo processInfo] environment];
-    bundlesFromStandardPath = [[NSMutableArray alloc] init];
+    NSMutableArray *bundlesFromStandardPath = [[NSMutableArray alloc] init];
 
     // Now find all the bundles from the standard paths
-    standardPath = [self standardPath];
-    pathCount = [standardPath count];
-    for (pathIndex = 0; pathIndex < pathCount; pathIndex++) {
-        NSString *pathElement;
-
-        pathElement = [[standardPath objectAtIndex:pathIndex] stringByReplacingKeysInDictionary:environmentDictionary startingDelimiter:@"$(" endingDelimiter:@")"];
-        NS_DURING {
+    for (NSString *pathElement in [self standardPath])  {
+        pathElement = [pathElement stringByReplacingKeysInDictionary:environmentDictionary startingDelimiter:@"$(" endingDelimiter:@")"];
+        @try {
             [bundlesFromStandardPath addObjectsFromArray:[self bundlesInDirectory:pathElement ignoringPaths:seenPaths]];
-        } NS_HANDLER {
-            NSLog(@"+[OFBundleRegistry bundlesFromStandardPath]: %@", [localException reason]);
-        } NS_ENDHANDLER;
+        } @catch (NSException *exc) {
+            NSLog(@"+[OFBundleRegistry bundlesFromStandardPath]: %@", [exc reason]);
+        }
     }
 
     [seenPaths release];
@@ -338,20 +321,14 @@ static BOOL OFBundleRegistryDebug = NO;
 // Invoked whenever NSBundle loads something
 + (void)recordBundleLoading:(NSNotification *)note
 {
-    int knownBundlesCount, knownBundlesIndex;
     NSBundle *theBundle = [note object];
-    NSMutableDictionary *newlyLoadedBundleDescription;
 #warning thread-safety ?
 //    NSLog(@"Loded %@, info: %@", theBundle, [[note userInfo] description]);
 
-    newlyLoadedBundleDescription = nil;
+    NSMutableDictionary *newlyLoadedBundleDescription = nil;
 
-    knownBundlesCount = [knownBundles count];
-    for(knownBundlesIndex = 0; knownBundlesIndex < knownBundlesCount; knownBundlesIndex ++) {
-        NSMutableDictionary *aBundleDict;
-        NSBundle *aBundle;
-        aBundleDict = [knownBundles objectAtIndex:knownBundlesIndex];
-        aBundle = [aBundleDict objectForKey:@"bundle"];
+    for (NSMutableDictionary *aBundleDict in knownBundles) {
+        NSBundle *aBundle = [aBundleDict objectForKey:@"bundle"];
         if (aBundle == theBundle) {
             newlyLoadedBundleDescription = aBundleDict;
             break;
@@ -373,19 +350,14 @@ static BOOL OFBundleRegistryDebug = NO;
 // The only reason we watch this is to update our disabled bundles list, so we don't need to do it if we don't have dynamically loaded bundles.
 + (void)_defaultsDidChange:(NSNotification *)note
 {
-    BOOL changedAnything;
-    NSMutableSet *changedNames;
-    NSArray *allBundles, *newDisabledBundleNames;
-    unsigned bundleIndex, bundleCount;
-
-    newDisabledBundleNames = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey];
+    NSArray *newDisabledBundleNames = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey];
 
     /* quick equality test */
     if ([oldDisabledBundleNames isEqualToArray:newDisabledBundleNames])
         return;
 
     /* compute differences */
-    changedNames = [NSMutableSet setWithArray:oldDisabledBundleNames];
+    NSMutableSet *changedNames = [NSMutableSet setWithArray:oldDisabledBundleNames];
     [changedNames exclusiveDisjoinSet:[NSSet setWithArray:newDisabledBundleNames]];
 
     [oldDisabledBundleNames release];
@@ -396,11 +368,9 @@ static BOOL OFBundleRegistryDebug = NO;
         return;
 
     /* Mark all bundles affected by this change as needing a restart before changes will take effect. */
-    changedAnything = NO;
-    allBundles = [self knownBundles];
-    bundleCount = [allBundles count];
-    for(bundleIndex = 0; bundleIndex < bundleCount; bundleIndex ++) {
-        NSMutableDictionary *bundleDescription = [allBundles objectAtIndex:bundleIndex];
+    BOOL changedAnything = NO;
+    
+    for (NSMutableDictionary *bundleDescription in [self knownBundles]) {
         NSString *thisBundlePath;
         NSString *thisBundleName;
 
@@ -429,47 +399,34 @@ static BOOL OFBundleRegistryDebug = NO;
 // Returns an array of bundle descriptions (currently NSMutableDictionaries)
 + (NSArray *)bundlesInDirectory:(NSString *)directoryPath ignoringPaths:(NSSet *)pathsToIgnore;
 {
-    NSString *expandedDirectoryPath;
-    NSArray *bundleExtensions, *disabledBundleNamesArray;
-    NSSet *disabledBundleNames;
-    NSMutableArray *bundles;
-    NSArray *candidates;
-    unsigned int candidateIndex, candidateCount;
-    NSFileManager *fileManager;
-    
-    expandedDirectoryPath = [directoryPath stringByExpandingTildeInPath];
-    fileManager = [NSFileManager defaultManager];
-    candidates = [[fileManager contentsOfDirectoryAtPath:expandedDirectoryPath error:NULL] sortedArrayUsingSelector:@selector(compare:)];
+    NSString *expandedDirectoryPath = [directoryPath stringByExpandingTildeInPath];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSArray *candidates = [[fileManager contentsOfDirectoryAtPath:expandedDirectoryPath error:NULL] sortedArrayUsingSelector:@selector(compare:)];
     if (!candidates)
         return nil;
     
+    NSArray *bundleExtensions;
     if (!(bundleExtensions = [configDictionary objectForKey:OFBundleRegistryConfigBundleExtensions]))
         bundleExtensions = [NSArray arrayWithObjects:@"omni", nil];
 
-    disabledBundleNamesArray = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey]; 
+    NSSet *disabledBundleNames;
+    NSArray *disabledBundleNamesArray = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey]; 
     if (disabledBundleNamesArray)
         disabledBundleNames = [NSSet setWithArray:disabledBundleNamesArray];
     else
         disabledBundleNames = [NSSet set];
     
-    bundles = [NSMutableArray array];
-    candidateCount = [candidates count];
-    for (candidateIndex = 0; candidateIndex < candidateCount; candidateIndex++) {
-        NSString *candidateName;
-        NSString *bundlePath;
-        NSBundle *bundle;
-        NSMutableDictionary *description;
-
-        candidateName = [candidates objectAtIndex:candidateIndex];
+    NSMutableArray *bundles = [NSMutableArray array];
+    for (NSString *candidateName in candidates) {
         if (![bundleExtensions containsObject:[candidateName pathExtension]])
             continue;
 
-        bundlePath = [expandedDirectoryPath stringByAppendingPathComponent:candidateName];
+        NSString *bundlePath = [expandedDirectoryPath stringByAppendingPathComponent:candidateName];
         
         if ([pathsToIgnore containsObject:bundlePath])
             continue;
 
-        description = [NSMutableDictionary dictionary];
+        NSMutableDictionary *description = [NSMutableDictionary dictionary];
         [description setObject:bundlePath forKey:@"path"];
         [bundles addObject:description];
 
@@ -480,7 +437,7 @@ static BOOL OFBundleRegistryDebug = NO;
             continue;
         }
         
-        bundle = [NSBundle bundleWithPath:bundlePath];
+        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
         if (!bundle) {
             // bundle might be nil if the candidate is not a directory or is a symbolic link to a path that doesn't exist or doesn't contain a valid bundle.
             [description setObject:NSLocalizedStringFromTableInBundle(@"Not a valid bundle", @"OmniFoundation", [OFBundleRegistry bundle], @"invalid bundle reason") forKey:@"invalid"];

@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,7 +44,7 @@ RCS_ID("$Id$")
         return nil;
     
     NSMutableDictionary *result = [NSMutableDictionary dictionary];
-    int itemIndex, itemCount = [descriptor numberOfItems];
+    NSInteger itemIndex, itemCount = [descriptor numberOfItems];
     
     for (itemIndex = 1; itemIndex <= itemCount; itemIndex += 2) {
         NSString *key = [[descriptor descriptorAtIndex:itemIndex] stringValue];

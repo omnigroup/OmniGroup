@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ RCS_ID("$Id$");
 - (void)appendString:(NSString *)string;
 {
     NSDictionary *attributes = nil;
-    unsigned int  length = [self length];
+    NSUInteger length = [self length];
 
     if (length)
         attributes = [self attributesAtIndex:length-1 effectiveRange:NULL];
@@ -34,12 +34,12 @@ RCS_ID("$Id$");
 /*" Iterates over the receiver allowing the mutator function to provide replacements for ranges.  If 'matchString' is nil, then the mutator is called once for each contiguous range of identical attributes in the receiver.  If 'matchString' is non-nil, then only ranges with the given string are passed to the mutator.  Note that in the non-nil 'matchString' case, the 'matchRange' will be the range of the found string while the 'effectiveAttributeRange' will be the effective range of the attributes <b>clipped</b> to the match range.  In the nil 'matchString' case, both ranges will be equal.  The mutator function can return nil to indicate no action or it can return an new (retained!) attributed string to be replaced in the receiver for the match range.  The mutator function can also modify attributes on the source text storage and return nil to indicate that no replacement need be done.  In this case, the mutator is responsible for calling -beginEditing and setting *isEditing (only if it is not already set).  If a replacement is done, the replacement itself will not be scanned (that is, the mutator will not be called for any range that it produced).  This method will call -beginEditing and -endEditing if necessary, so the caller need not do that.  Returns YES if any edits were made. "*/
 - (BOOL)mutateRanges:(OFMutableAttributedStringMutator)mutator inRange:(NSRange)sourceRange matchingString:(NSString *)matchString context:(void *)context;
 {
-    NSString     *string = [self string];
-    BOOL          didBeginEditing = NO;
+    NSString *string = [self string];
+    BOOL didBeginEditing = NO;
 
     // NOTE: Past this location 'sourceRange' can be invalid; if we replace a string in the source range, we'll only update location/end but not sourceRange!
-    unsigned int  location = sourceRange.location;
-    unsigned int  end      = sourceRange.location + sourceRange.length;
+    NSUInteger location = sourceRange.location;
+    NSUInteger  end      = sourceRange.location + sourceRange.length;
 #define sourceRange doNotUseMe
     
     while (location < end) {
@@ -79,14 +79,14 @@ RCS_ID("$Id$");
                 [self beginEditing];
             }
 
-            unsigned int oldLength = [[self string] length];
+            NSUInteger oldLength = [[self string] length];
             
             [self replaceCharactersInRange:matchRange withAttributedString:replacement];
 
             string   = [self string]; // Don't know if this is mandatory, but it seems like a really good idea
 
             // 'end' might be the end of the 'sourceRange', NOT of the entire string!
-            unsigned int newLength = [string length];
+            NSUInteger newLength = [string length];
 
             if (oldLength > newLength) // Avoid signed/unsigned issues
                 end -= (oldLength - newLength);

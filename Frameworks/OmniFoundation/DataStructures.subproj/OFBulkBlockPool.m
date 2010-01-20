@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,7 +41,7 @@ void _OFBulkBlockPoolGetPage(OFBulkBlockPool *pool)
     // See if we have another page that has some free blocks
     if (pool->pages) {
         // We could start from the currentPage and loop around, but that would be more error prone.  This will cause full pages to get swapped in when they might not otherwise.
-        unsigned int pageIndex;
+        size_t pageIndex;
 
         for (pageIndex = 0; pageIndex < pool->pageCount; pageIndex++) {
             if (pool->pages[pageIndex]->freeList) {
@@ -108,7 +108,7 @@ void OFBulkBlockPoolDeallocateAllBlocks(OFBulkBlockPool *pool)
 {
     // Later, when we support user-defined allocation events, we'll need to do something cooler here
     if (pool->pages) {
-        unsigned int pageIndex;
+        size_t pageIndex;
         
         OBASSERT(pool->pageCount);
         OBASSERT(pool->currentPage);
@@ -132,8 +132,8 @@ void OFBulkBlockPoolDeallocateAllBlocks(OFBulkBlockPool *pool)
 
 void OFBulkBlockPoolReportStatistics(OFBulkBlockPool *pool)
 {
-    NSUInteger pageIndex;
-    NSUInteger blocksPerPage;
+    size_t pageIndex;
+    size_t blocksPerPage;
 
     blocksPerPage = (NSPageSize() - sizeof(OFBulkBlockPage)) / pool->allocationSize;
     
@@ -145,7 +145,7 @@ void OFBulkBlockPoolReportStatistics(OFBulkBlockPool *pool)
 
     for (pageIndex = 0; pageIndex < pool->pageCount; pageIndex++) {
         OFBulkBlockPage *page;
-        NSUInteger freeCount;
+        size_t freeCount;
         void *freeBlock;
         
         page = pool->pages[pageIndex];

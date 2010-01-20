@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,29 +13,26 @@
 
 
 @protocol OAThumbnailProvider
-- (unsigned int) thumbnailCount;
+- (NSUInteger) thumbnailCount;
 
-- (NSImage *)thumbnailImageAtIndex: (unsigned int) thumbnailIndex;
-- (void)missedThumbnailImageInView: (OAThumbnailView *)view
-                              rect: (NSRect)rect
-                           atIndex: (unsigned int) thumbnailIndex;
-- (NSSize)thumbnailSizeAtIndex: (unsigned int) thumbnailIndex;
-- (void)thumbnailWasSelected:(NSEvent *)event
-                     atIndex: (unsigned int) thumbnailIndex;
-- (BOOL)isThumbnailSelectedAtIndex: (unsigned int) thumbnailIndex;
+- (NSImage *)thumbnailImageAtIndex:(NSUInteger)thumbnailIndex;
+- (void)missedThumbnailImageInView:(OAThumbnailView *)view rect:(NSRect)rect atIndex:(NSUInteger)thumbnailIndex;
+- (NSSize)thumbnailSizeAtIndex: (NSUInteger) thumbnailIndex;
+- (void)thumbnailWasSelected:(NSEvent *)event atIndex:(NSUInteger) thumbnailIndex;
+- (BOOL)isThumbnailSelectedAtIndex:(NSUInteger)thumbnailIndex;
 @end
 
 @interface OAThumbnailView : NSView
 {
     NSObject <OAThumbnailProvider> *provider;
 
-    NSSize	 maximumThumbnailSize;
-    NSSize	 padding;
-    unsigned int columnCount, rowCount;
-    NSSize	 cellSize;
-    float	 horizontalMargin;
+    NSSize maximumThumbnailSize;
+    NSSize padding;
+    NSUInteger columnCount, rowCount;
+    NSSize cellSize;
+    CGFloat horizontalMargin;
     
-    BOOL	 thumbnailsAreNumbered;
+    BOOL thumbnailsAreNumbered;
 }
 
 - (void)scrollSelectionToVisible;

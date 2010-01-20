@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -255,8 +255,8 @@ RCS_ID("$Id$");
     if (err) NSLog(@"error: %@", err);
     STAssertNil(err, nil);
     NSString *outStr = [NSString stringWithData:outBuf encoding:NSASCIIStringEncoding];
-    STAssertTrue([outStr containsString:@"BAR=bar"], @"process environment contains string");
-    STAssertTrue([outStr containsString:@"TICK=spoon"], @"process environment contains string generated from NSData");
+    STAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"BAR=bar"], @"process environment contains string");
+    STAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"TICK=spoon"], @"process environment contains string generated from NSData");
     
     /* Invoke printenv via the shell, with a $PATH that doesn't include printenv: case 1, replace entire environment */
     outBuf = nil;
@@ -297,7 +297,7 @@ RCS_ID("$Id$");
     STAssertNil(err, nil);
     STAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
     outStr = [NSString stringWithData:outBuf encoding:NSASCIIStringEncoding];
-    STAssertTrue([outStr containsString:@"PATH=/tmp:/:/usr/bin"], @"process environment $PATH value");
+    STAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"PATH=/tmp:/:/usr/bin"], @"process environment $PATH value");
     
     /* Invoke printenv via the shell, with a $PATH that doesn't include printenv: case 2, just override $PATH */
     outBuf = nil;
@@ -332,7 +332,7 @@ RCS_ID("$Id$");
     STAssertNil(err, nil);
     STAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
     outStr = [NSString stringWithData:outBuf encoding:NSASCIIStringEncoding];
-    STAssertTrue([outStr containsString:@"PATH=/tmp:/:/usr/bin"], @"process environment $PATH value");
+    STAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"PATH=/tmp:/:/usr/bin"], @"process environment $PATH value");
     
     /* Make sure that a redundant OFFilterProcessAdditionalPathEntryKey doesn't screw anything up */
     outBuf = nil;
@@ -351,7 +351,7 @@ RCS_ID("$Id$");
     STAssertNil(err, nil);
     STAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
     outStr = [NSString stringWithData:outBuf encoding:NSASCIIStringEncoding];
-    STAssertTrue([outStr containsString:@"PATH=/usr/bin:/bin:/tmp:/sbin:/usr/local/bin\n"], @"process environment $PATH value");
+    STAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"PATH=/usr/bin:/bin:/tmp:/sbin:/usr/local/bin"], @"process environment $PATH value");
 }
 
 - (void)testMergingStdoutAndStderr;

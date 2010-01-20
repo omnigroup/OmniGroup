@@ -1,11 +1,13 @@
-// Copyright 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
-// http://www.omnigroup.com/DeveloperResources/OmniSourceLicense.html.
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+//
+// $Id$
 
-#import <OmniFoundation/OmniFoundation.h>
+#import <OmniFoundation/OFObject.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
 
 #include <libxml/tree.h>
@@ -84,7 +86,7 @@ enum OFXMLSignatureOperation {
 - (BOOL)isLocalReferenceAtIndex:(NSUInteger)nodeIndex;
 
 /* Subclass opportunuties */
-- (id <OFCSSMDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError;
+- (id <OFCSSMDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError NS_RETURNS_RETAINED;
 - (id <OFCSSMDigestionContext, NSObject>)newDigestContextForMethod:(xmlNode *)digestMethodNode error:(NSError **)outError;
 - (NSData *)signatureForStoredValue:(NSData *)raw algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError;
 - (NSData *)storedValueForSignature:(NSData *)signatureValue algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError;

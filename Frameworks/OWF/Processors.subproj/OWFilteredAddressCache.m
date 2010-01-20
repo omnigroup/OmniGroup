@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -167,12 +167,12 @@ static OWContent *filteredAddressResult = nil;
     return nil;
 }
 
-- (unsigned int)bytesProcessed;
+- (NSUInteger)bytesProcessed;
 {
     return 0;
 }
 
-- (unsigned int)totalBytes;
+- (NSUInteger)totalBytes;
 {
     return 0;
 }

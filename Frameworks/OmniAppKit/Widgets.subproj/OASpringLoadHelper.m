@@ -44,7 +44,7 @@ RCS_ID("$Id$");
 {
     NSPoint startPoint = [NSEvent mouseLocation];
 
-    slopRect = NSMakeRect(startPoint.x - 2.0, startPoint.y - 2.0, 4.0, 4.0);
+    slopRect = NSMakeRect(startPoint.x - 2.0f, startPoint.y - 2.0f, 4.0f, 4.0f);
 
     [self _startSpringTimer];
 }

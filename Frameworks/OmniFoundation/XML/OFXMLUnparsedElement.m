@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,29 +16,28 @@ RCS_ID("$Id$")
 @implementation OFXMLUnparsedElement
 
 // The data is always UTF-8 right now.
-- initWithName:(NSString *)name data:(NSData *)data; 
+- initWithQName:(OFXMLQName *)qname identifier:(NSString *)identifier data:(NSData *)data; 
 {
-    _name = [name copy];
+    _qname = [qname copy];
+    _identifier = [identifier copy];
     _data = [data copy];
     return self;
 }
 
 - (void)dealloc;
 {
-    [_name release];
+    [_qname release];
+    [_identifier release];
     [_data release];
     [super dealloc];
 }
 
+@synthesize qname = _qname, identifier = _identifier, data = _data;
+
 // Needed for -[OFXMLElement firstChildNamed:]
 - (NSString *)name;
 {
-    return _name;
-}
-
-- (NSData *)data;
-{
-    return _data;
+    return [_qname name];
 }
 
 - (BOOL)appendXML:(struct _OFXMLBuffer *)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
@@ -64,7 +63,7 @@ RCS_ID("$Id$")
     
     OFXMLUnparsedElement *otherElement = otherObject;
 
-    return OFISEQUAL(_name, otherElement->_name) && OFISEQUAL(_data, otherElement->_data);
+    return OFISEQUAL(_qname, otherElement->_qname) && OFISEQUAL(_identifier, otherElement->_identifier) && OFISEQUAL(_data, otherElement->_data); // data contains the qname and id too, but the id can be an early out.
 }
 
 @end

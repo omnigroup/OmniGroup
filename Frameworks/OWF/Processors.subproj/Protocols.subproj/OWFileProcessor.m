@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,7 +41,7 @@ static OFPreference *fileRefreshIntervalPreference = nil;
 
 + (void)didLoad;
 {
-    [self registerProcessorClass:self fromContentType:[OWURL contentTypeForScheme:@"file"] toContentType:[OWContentType wildcardContentType] cost:1.0 producingSource:YES];
+    [self registerProcessorClass:self fromContentType:[OWURL contentTypeForScheme:@"file"] toContentType:[OWContentType wildcardContentType] cost:1.0f producingSource:YES];
     directoryIndexFilenamePreference = [OFPreference preferenceForKey:@"OWDirectoryIndexFilename"];
     fileRefreshIntervalPreference = [OFPreference preferenceForKey:@"OWFileRefreshInterval"];
 }
@@ -50,7 +50,7 @@ static OFPreference *fileRefreshIntervalPreference = nil;
 {
     OFMultiValueDictionary *otherHeaders = [[OFMultiValueDictionary alloc] init];
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSDictionary *attributes = [fileManager fileAttributesAtPath:filename traverseLink:YES];
+    NSDictionary *attributes = [fileManager attributesOfItemAtPath:filename error:NULL];
     
     // File size
     NSNumber *fileSize = [attributes objectForKey:NSFileSize];
@@ -76,7 +76,7 @@ static OFPreference *fileRefreshIntervalPreference = nil;
     OWAddress *referringAddress = [pipeline contextObjectForKey:OWCacheArcReferringAddressKey];
 
     NSArray *tasks = [pipeline tasks];
-    unsigned int taskIndex = [tasks count];
+    NSUInteger taskIndex = [tasks count];
     while (taskIndex-- > 0) {
         OWTask *task = [tasks objectAtIndex:taskIndex];
         OWContentInfo *contentInfo = [task parentContentInfo];
@@ -171,6 +171,8 @@ static OFPreference *fileRefreshIntervalPreference = nil;
 
 - (void)_fetchDirectoryWithPath:(NSString *)directoryPath;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     [self setStatusString:NSLocalizedStringFromTableInBundle(@"Reading directory", @"OWF", [OWFileProcessor bundle], @"fileprocessor status")];
 
     NSError *error = nil;
@@ -211,6 +213,7 @@ static OFPreference *fileRefreshIntervalPreference = nil;
     }
     [objectStream dataEnd];
     [objectStream release];
+#endif
 }
 
 - (void)_fetchRegularFileWithPath:(NSString *)filePath;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -164,7 +164,7 @@ size_t remainingStackSize(void)
 - (void)processContentForTag:(OWSGMLTag *)tag;
 {
     OWSGMLTagType *tagType;
-    unsigned int tagIndex;
+    NSUInteger tagIndex;
     id <OWSGMLToken> sgmlToken;
 
     // Require a certain amount of stack space before recursively processing tags so that deeply nested tags do not cause us to crash.
@@ -288,16 +288,16 @@ static OWSGMLTagType *metaTagType;
 static OWSGMLTagType *titleTagType;
 static OWSGMLTagType *styleTagType;
 
-static unsigned int anchorEffectAttributeIndex;
-static unsigned int anchorHrefAttributeIndex;
-static unsigned int anchorTargetAttributeIndex;
-static unsigned int anchorTitleAttributeIndex;
-static unsigned int baseHrefAttributeIndex;
-static unsigned int baseTargetAttributeIndex;
-static unsigned int metaNameAttributeIndex;
-static unsigned int metaContentAttributeIndex;
-static unsigned int metaHTTPEquivAttributeIndex;
-static unsigned int metaCharSetAttributeIndex;
+static NSUInteger anchorEffectAttributeIndex;
+static NSUInteger anchorHrefAttributeIndex;
+static NSUInteger anchorTargetAttributeIndex;
+static NSUInteger anchorTitleAttributeIndex;
+static NSUInteger baseHrefAttributeIndex;
+static NSUInteger baseTargetAttributeIndex;
+static NSUInteger metaNameAttributeIndex;
+static NSUInteger metaContentAttributeIndex;
+static NSUInteger metaHTTPEquivAttributeIndex;
+static NSUInteger metaCharSetAttributeIndex;
 
 + (void)didLoad;
 {
@@ -468,24 +468,24 @@ exitAndCacheTitle:
 
 @implementation OWSGMLProcessor (SubclassesOnly)
 
-- (BOOL)_hasOpenTagOfTypeIndex:(unsigned int)tagIndex;
+- (BOOL)_hasOpenTagOfTypeIndex:(NSUInteger)tagIndex;
 {
     return openTags[tagIndex] > 0;
 }
 
-- (void)_openTagOfTypeIndex:(unsigned int)tagIndex;
+- (void)_openTagOfTypeIndex:(NSUInteger)tagIndex;
 {
     openTags[tagIndex]++;
     implicitlyClosedTags[tagIndex] = 0;
 }
 
-- (void)_implicitlyCloseTagAtIndex:(unsigned int)tagIndex;
+- (void)_implicitlyCloseTagAtIndex:(NSUInteger)tagIndex;
 {
     implicitlyClosedTags[tagIndex]++;
     openTags[tagIndex]--;
 }
 
-- (BOOL)_closeTagAtIndexWasImplicit:(unsigned int)tagIndex;
+- (BOOL)_closeTagAtIndexWasImplicit:(NSUInteger)tagIndex;
 {
     BOOL result;
     

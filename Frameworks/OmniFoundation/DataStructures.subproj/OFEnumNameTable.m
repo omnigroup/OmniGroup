@@ -1,4 +1,4 @@
-// Copyright 2002-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,11 +37,11 @@ The implementation does not currently assume anything about the range of the enu
     _defaultEnumValue = defaultEnumValue;
 
     // Typically the default value will be first, but not always, so we don't set its order here.
-    _enumOrder = CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFIntegerArrayCallbacks);
+    _enumOrder = OBCFMakeCollectable(CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFIntegerArrayCallbacks));
 
-    _enumToName = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFIntegerDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks);
-    _enumToDisplayName = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFIntegerDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks);
-    _nameToEnum = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFIntegerDictionaryValueCallbacks);
+    _enumToName = OBCFMakeCollectable(CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFIntegerDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks));
+    _enumToDisplayName = OBCFMakeCollectable(CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFIntegerDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks));
+    _nameToEnum = OBCFMakeCollectable(CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFIntegerDictionaryValueCallbacks));
     
     return self;
 }

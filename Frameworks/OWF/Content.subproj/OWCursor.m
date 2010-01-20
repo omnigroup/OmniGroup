@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,14 +35,14 @@ RCS_ID("$Id$")
     [super dealloc];
 }
 
-- (id)newCursor;
+- (id)createCursor;
 {
     return [[[[self class] alloc] initFromCursor:self] autorelease];
 }
 
 //
 
-- (unsigned int)seekToOffset:(int)offset fromPosition:(OWCursorSeekPosition)position;
+- (NSUInteger)seekToOffset:(NSInteger)offset fromPosition:(OWCursorSeekPosition)position;
 {
     return 0;
 }

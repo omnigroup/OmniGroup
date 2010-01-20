@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -366,6 +366,8 @@ static void appendAuthParameter(NSMutableString *buf, NSString *name, NSString *
 
 - (void)authorizationSucceeded:(BOOL)success response:(OWHeaderDictionary *)response;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     /* If we've failed, but we succeeded some time in the past, check to see if we can just try again with a new nonce instead of prompting the user again. */
     if (!success && lastSucceededTimeInterval > OWAuthDistantPast) {
         NSArray *challenges = [OWAuthorizationRequest findParametersOfType:type headers:response];
@@ -393,6 +395,7 @@ static void appendAuthParameter(NSMutableString *buf, NSString *name, NSString *
     // TODO: Parse the Authentication-Info header for greater efficiency & protection
     
     [super authorizationSucceeded:success response:response];
+#endif
 }
 
 - (NSMutableDictionary *)debugDictionary;

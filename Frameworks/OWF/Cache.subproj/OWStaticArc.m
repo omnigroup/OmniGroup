@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,6 +83,8 @@ static const unsigned char Serialization_Magic_2[4] = { 'S', 'a' | 0x80, 'M', 0 
 
 static void appendDate(NSMutableData *buf, NSDate *date)
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     UInt32 timet;
 
     if (date == nil)
@@ -98,6 +100,7 @@ static void appendDate(NSMutableData *buf, NSDate *date)
 
     assert(sizeof(timet) == 4);
     [buf appendBytes:&timet length:4];
+#endif
 }
 
 static NSDate *extractDate(void *from)
@@ -354,6 +357,8 @@ static NSDate *extractDate(void *from)
 
 - (unsigned)invalidInPipeline:(OWPipeline *)pipeline;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     unsigned invalidity = 0;
 
     NSString *cacheBehavior = [pipeline contextObjectForKey:OWCacheArcCacheBehaviorKey];
@@ -491,10 +496,11 @@ static NSDate *extractDate(void *from)
         else
             logDescription = [source shortDescription];
 
-        NSLog(@"-[%@ %s]: arc<%@> invalidity=%@, created %g ago", OBShortObjectDescription(self), _cmd, logDescription, [isa stringFromInvalidityFlags:invalidity], [pipelineFetchDate timeIntervalSinceDate:creationDate]);
+        NSLog(@"-[%@ %s]: arc<%@> invalidity=%@, created %g ago", OBShortObjectDescription(self), _cmd, logDescription, [isa stringFromInvalidityFlags:invalidity], pipelineFetchDate != nil ? [pipelineFetchDate timeIntervalSinceDate:creationDate] : 0.0);
     }
 #endif
     return invalidity;
+#endif // OBFinishPorting
 }
 
 - (OWCacheArcTraversalResult)traverseInPipeline:(OWPipeline *)context
@@ -525,12 +531,12 @@ static NSDate *extractDate(void *from)
     return nil;
 }
 
-- (unsigned int)bytesProcessed;
+- (NSUInteger)bytesProcessed;
 {
     return [self totalBytes];
 }
 
-- (unsigned int)totalBytes;
+- (NSUInteger)totalBytes;
 {
     if ([object isDataStream]) {
         OWDataStream *dataStream = [object objectValue];
@@ -629,16 +635,16 @@ static NSDate *extractDate(void *from)
     debugDictionary = [super debugDictionary];
     [debugDictionary setIntValue:arcType forKey:@"arcType"];
     if (source != nil && source != subject)
-        [debugDictionary takeValue:source forKey:@"source"];
-    [debugDictionary takeValue:subject forKey:@"subject"];
-    [debugDictionary takeValue:object forKey:@"object"];
-    [debugDictionary takeValue:contextDependencies forKey:@"contextDependencies"];
-    [debugDictionary takeValue:creationDate forKey:@"creationDate"];
-    [debugDictionary takeValue:freshUntil forKey:@"freshUntil"];
-    [debugDictionary setObject:resultIsSource ? @"YES" : @"NO" forKey:@"resultIsSource"];
-    [debugDictionary setObject:resultIsError ? @"YES" : @"NO" forKey:@"resultIsError"];
-    [debugDictionary setObject:shouldNotBeCachedOnDisk ? @"YES" : @"NO" forKey:@"shouldNotBeCachedOnDisk"];
-    [debugDictionary setObject:invalidated ? @"YES" : @"NO" forKey:@"invalidated"];
+        [debugDictionary setValue:source forKey:@"source"];
+    [debugDictionary setValue:subject forKey:@"subject"];
+    [debugDictionary setValue:object forKey:@"object"];
+    [debugDictionary setValue:contextDependencies forKey:@"contextDependencies"];
+    [debugDictionary setValue:creationDate forKey:@"creationDate"];
+    [debugDictionary setValue:freshUntil forKey:@"freshUntil"];
+    [debugDictionary setValue:resultIsSource ? @"YES" : @"NO" forKey:@"resultIsSource"];
+    [debugDictionary setValue:resultIsError ? @"YES" : @"NO" forKey:@"resultIsError"];
+    [debugDictionary setValue:shouldNotBeCachedOnDisk ? @"YES" : @"NO" forKey:@"shouldNotBeCachedOnDisk"];
+    [debugDictionary setValue:invalidated ? @"YES" : @"NO" forKey:@"invalidated"];
 
     return debugDictionary;
 }

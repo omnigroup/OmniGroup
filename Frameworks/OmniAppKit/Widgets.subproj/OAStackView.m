@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -102,12 +102,10 @@ OAStackView assumes that all of its subviews line up in one direction (only vert
 
 @implementation OAStackView (PrivateAPI)
 
-static NSInteger compareBasedOnArray(id object1, id object2, void *orderedObjects)
+static NSComparisonResult compareBasedOnArray(id object1, id object2, void *orderedObjects)
 {
-    int index1, index2;
-
-    index1 = [(NSArray *)orderedObjects indexOfObjectIdenticalTo:object1];
-    index2 = [(NSArray *)orderedObjects indexOfObjectIdenticalTo:object2];
+    NSUInteger index1 = [(NSArray *)orderedObjects indexOfObjectIdenticalTo:object1];
+    NSUInteger index2 = [(NSArray *)orderedObjects indexOfObjectIdenticalTo:object2];
     if (index1 == index2)
         return NSOrderedSame;
     else if (index1 < index2)
@@ -116,28 +114,23 @@ static NSInteger compareBasedOnArray(id object1, id object2, void *orderedObject
         return NSOrderedDescending;
 }
 
-- (void) _loadSubviews;
+- (void)_loadSubviews;
 {
-    NSArray *subviews;
-    unsigned int subviewIndex, subviewCount;
-    BOOL oldAutodisplay;
-    
-    
     nonretained_stretchyView = nil;
     flags.needsReload = 0;
     flags.needsLayout = 1;
     
-    oldAutodisplay = [_window isAutodisplay];
+    BOOL oldAutodisplay = [_window isAutodisplay];
     [_window setAutodisplay: NO];
     [_window disableFlushWindow];
     
     NS_DURING {
-        subviews = [dataSource subviewsForStackView: self];
+        NSArray *subviews = [dataSource subviewsForStackView: self];
         
         // Remove any current subviews that aren't in the new list.  We assume that the number of views is small so an O(N*M) loop is OK
         {
             NSArray *currentSubviews = [self subviews];
-            subviewIndex = [currentSubviews count];
+            NSUInteger subviewIndex = [currentSubviews count];
             while (subviewIndex--) {
                 NSView *oldSubview;
                 
@@ -149,14 +142,11 @@ static NSInteger compareBasedOnArray(id object1, id object2, void *orderedObject
 
         // Find the (currently first) view that is going to stretch vertically.
         // Set the autosizing flags such that we will layout correctly due to normal NSView resizing logic (once we have layed out once correctly).
-        subviewCount = [subviews count];
-        for (subviewIndex = 0; subviewIndex < subviewCount; subviewIndex++) {
-            NSView *view;
-            unsigned int mask;
-            
+        NSUInteger subviewCount = [subviews count];
+        for (NSUInteger subviewIndex = 0; subviewIndex < subviewCount; subviewIndex++) {
             // Get the view and set the autosizing flags correctly.  This will mean that the layout will be correct when we get resized due to the normal NSView resizing logic
-            view = [subviews objectAtIndex: subviewIndex];
-            mask = [view autoresizingMask];
+            NSView *view = [subviews objectAtIndex: subviewIndex];
+            NSUInteger mask = [view autoresizingMask];
             if (mask & NSViewHeightSizable && !nonretained_stretchyView) {
                 nonretained_stretchyView = view;
                 [view setAutoresizingMask: NSViewWidthSizable | NSViewHeightSizable];
@@ -192,34 +182,29 @@ Goes through the subviews and finds the first subview that is willing to stretch
 "*/
 - (void) _layoutSubviews;
 {
-    unsigned int viewIndex, viewCount;
-    NSView *view;
-    NSRect spaceLeft;
     NSRect subviewFrame;
-    BOOL oldAutodisplay;
-    float stretchyHeight;
 
     if (flags.layoutDisabled)
         return;
         
     flags.needsLayout = 0;
 
-    spaceLeft = [self bounds];
+    NSRect spaceLeft = [self bounds];
     //NSLog(@"total bounds = %@", NSStringFromRect(spaceLeft));
     
-    oldAutodisplay = [_window isAutodisplay];
+    BOOL oldAutodisplay = [_window isAutodisplay];
     [_window setAutodisplay: NO];
     [_window disableFlushWindow];
     
     NS_DURING {
         NSArray *currentSubviews = [self subviews];
 
-        viewCount = [currentSubviews count];
+        NSUInteger viewCount = [currentSubviews count];
         
         // Figure out how much space will be taken by the non-stretchy views
-        stretchyHeight = spaceLeft.size.height;
-        for (viewIndex = 0; viewIndex < viewCount; viewIndex++) {
-            view = [currentSubviews objectAtIndex: viewIndex];
+        CGFloat stretchyHeight = spaceLeft.size.height;
+        for (NSUInteger viewIndex = 0; viewIndex < viewCount; viewIndex++) {
+            NSView *view = [currentSubviews objectAtIndex: viewIndex];
             if (view != nonretained_stretchyView) {
                 subviewFrame = [view frame];
                 stretchyHeight -= subviewFrame.size.height;
@@ -229,14 +214,14 @@ Goes through the subviews and finds the first subview that is willing to stretch
         //NSLog(@"stretchyHeight = %f", stretchyHeight);
         
         if (stretchyHeight < 0.0)
-            stretchyHeight = 0.0;
+            stretchyHeight = 0.0f;
         
         // Now set the frame of each of the rectangles
-        viewIndex = viewCount;
+        NSUInteger viewIndex = viewCount;
         while (viewIndex--) {
-            float viewHeight;
+            CGFloat viewHeight;
             
-            view = [currentSubviews objectAtIndex: viewIndex];
+            NSView *view = [currentSubviews objectAtIndex: viewIndex];
             
             if (view == nonretained_stretchyView)
                 viewHeight = stretchyHeight;

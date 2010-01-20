@@ -1,4 +1,4 @@
-// Copyright 2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -129,8 +129,7 @@ RCS_ID("$Id$");
     
     // AMfs - This is a list of files to send to the workflow
     NSAppleEventDescriptor *fileList = [NSAppleEventDescriptor listDescriptor];
-    unsigned int fileCount, fileIndex;
-    fileCount = [filePaths count];
+    NSUInteger fileIndex, fileCount = [filePaths count];
     for (fileIndex = 0; fileIndex < fileCount; fileIndex++) {
         NSString *path = [filePaths objectAtIndex:fileIndex];
         FSRef fileRef;

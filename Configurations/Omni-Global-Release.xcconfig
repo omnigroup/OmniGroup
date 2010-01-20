@@ -1,4 +1,4 @@
-// Copyright 2005-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2009 Omni Development, Inc.  All rights reserved.
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 // $Id$
 
@@ -7,9 +7,14 @@
 
 // Common settings for Release configurations
 PREBINDING = YES
-COPY_PHASE_STRIP = YES
 DEPLOYMENT_LOCATION = YES
 DSTROOT = /
 INSTALL_PATH = $(OMNI_INSTALLED_PRODUCTS)
 OTHER_LDFLAGS = $(OMNI_PREBIND_FLAGS)
-ARCHS = ppc i386
+ARCHS = i386 x86_64
+
+// We don't strip in Xcode for release.  We have a custom version of strip and do it during packaing so that we can keep an unstripped copy of the app.
+SKIP_INSTALL = NO
+//STRIPFLAGS = -urSX
+UNSTRIPPED_PRODUCT = YES
+COPY_PHASE_STRIP = NO

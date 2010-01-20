@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,11 +54,10 @@ RCS_ID("$Id$")
 - (void)_scanNonSGMLContent:(OWSGMLTag *)nonSGMLTag;
 - (void)_metaCharsetTagHack:(OWSGMLTag *)tag;
 - (void)_updateCharacterSetEncoding:(CFStringEncoding)newEncoding;
+@end
 
 static NSString *OWHTMLToSGMLObjectsCharacterEncodingResetExceptionName = @"OWHTMLToSGMLObjects character encoding reset";
 static NSString *OWHTMLToSGMLObjectsCharacterEncodingResetExceptionKey = @"OWHTMLToSGMLObjects character encoding to use";
-
-@end
 
 @implementation OWHTMLToSGMLObjects
 
@@ -120,7 +119,7 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
     // made up
 
     NSCharacterSet *CommentEndSet;
-    NSCharacterSet *ContentEndSet;
+    // NSCharacterSet *ContentEndSet;
     NSCharacterSet *EndQuotedValueSet;
     NSCharacterSet *EndSingleQuotedValueSet;
     NSMutableCharacterSet *EndValueSet;
@@ -198,7 +197,7 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
 // made up
 
     CommentEndSet = [NSCharacterSet characterSetWithCharactersInString:@"-"];
-    ContentEndSet = [NSCharacterSet characterSetWithCharactersInString:@"<&"];
+    // ContentEndSet = [NSCharacterSet characterSetWithCharactersInString:@"<&"];
     EndQuotedValueSet = [NSCharacterSet characterSetWithCharactersInString:@"&\"\r\n"];
     EndSingleQuotedValueSet = [NSCharacterSet characterSetWithCharactersInString:@"&'\r\n"];
 
@@ -500,6 +499,7 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 {
     OWSGMLTagType *tagType;
     OWSGMLTag *tag = nil;
+    OWSGMLTag *retainedTag = nil;
     OFTrie *attributeTrie;
     OWSGMLAttribute *attribute;
 
@@ -558,8 +558,10 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
         }
         
         if (attribute || (extraAttributeName && value)) {
-            if (!tag)
-                tag = [OWSGMLTag retainedTagWithTokenType:OWSGMLTokenTypeStartTag tagType:tagType];
+            if (!tag) {
+                retainedTag = [OWSGMLTag newTagWithTokenType:OWSGMLTokenTypeStartTag tagType:tagType];
+                tag = retainedTag;
+            }
             
             if (attribute)
                 [tag setValue:value atIndex:[attribute offset]];
@@ -571,39 +573,31 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
     if (!tag)
         tag = [tagType attributelessStartTag];
         
-    NS_DURING;    
-    
-    [objectStream writeObject:tag];
+    @try {
+        
+        [objectStream writeObject:tag];
 #ifdef DEBUG
-    if (OWHTMLToSGMLObjectsDebug)
-	NSLog(@"Tag: %@", tag);
+        if (OWHTMLToSGMLObjectsDebug)
+            NSLog(@"Tag: %@", tag);
 #endif
 
-    // Ugly hack to support non-SGML tags such as <SCRIPT> and stylesheets
-    if ([tagType contentHandling] != OWSGMLTagContentHandlingNormal)
-        [self _scanNonSGMLContent:tag];
-        
-    // Ugly hack to support changing charsets in mid-stream
-    if (tagType == metaCharsetHackTagType) {
-        [self _metaCharsetTagHack:tag];
-    } else if (tagType == endMetaCharsetHackTagType) {
-        metaCharsetHackTagType = nil;
-        endMetaCharsetHackTagType = nil;
-        [self _objectStreamIsValid];
-    }
-
-    if (tag != [tagType attributelessStartTag]) {
-        [tag release];
-        tag = nil;
-    }
-    
-    NS_HANDLER {
-        if (tag != [tagType attributelessStartTag]) {
-            [tag release];
-            tag = nil;
+        // Ugly hack to support non-SGML tags such as <SCRIPT> and stylesheets
+        if ([tagType contentHandling] != OWSGMLTagContentHandlingNormal)
+            [self _scanNonSGMLContent:tag];
+            
+        // Ugly hack to support changing charsets in mid-stream
+        if (tagType == metaCharsetHackTagType) {
+            [self _metaCharsetTagHack:tag];
+        } else if (tagType == endMetaCharsetHackTagType) {
+            metaCharsetHackTagType = nil;
+            endMetaCharsetHackTagType = nil;
+            [self _objectStreamIsValid];
         }
-        [localException raise];
-    } NS_ENDHANDLER;
+        
+    } @finally {
+        if (retainedTag != nil)
+            [retainedTag release];
+    }
         
 }
 
@@ -859,7 +853,7 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
                 scannerSkipPeekedCharacter(scanner);
                 if (scannerPeekCharacter(scanner) == ';') {
                     // Found our terminator
-                    unsigned int terminatorScanLocation;
+                    NSUInteger terminatorScanLocation;
                     NSString *javaScriptCode;
 
                     terminatorScanLocation = [scanner scanLocation];
@@ -922,7 +916,7 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 - (id <OWSGMLToken>)_readEntityReference;
 {
     NSString *name, *value;
-    unsigned int nameLength;
+    NSUInteger nameLength;
     unichar terminatingCharacter;
 
     name = [scanner readFullTokenWithDelimiterOFCharacterSet:InvertedNameOFCharacterSet forceLowercase:NO];
@@ -941,7 +935,7 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
         return value;
     } else {
 	if (flags.netscapeCompatibleNonterminatedEntities) {
-	    unsigned int tryLength;
+	    NSUInteger tryLength;
 
 	    for (tryLength = nameLength - 1; tryLength > 0; tryLength--) {
 		value = [basicStringEntityDictionary objectForKey:[name substringToIndex:tryLength]];

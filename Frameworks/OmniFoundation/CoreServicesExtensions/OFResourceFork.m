@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,6 @@
 #import <Carbon/Carbon.h>
 #import <CoreFoundation/CoreFoundation.h>
 
-#import <OmniFoundation/OFResource.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 
 RCS_ID("$Id$")
@@ -285,95 +284,6 @@ delete_failed:
     
     UpdateResFile(refNum);
     UseResFile(oldCurRsrcMap);
-}
-
-- (NSArray *)resourceTypes;
-{
-    SInt16 oldCurRsrcMap;
-    NSMutableArray *types;
-    short numTypes, typeIndex;
-    ResType aType;
-    NSString *typeString;
-    
-    types = [[[NSMutableArray alloc] init] autorelease];
-
-    oldCurRsrcMap = CurResFile();
-    UseResFile(refNum);
-    
-    numTypes = Count1Types();
-    if (ResError() != noErr || numTypes < 0) {
-        types = nil;
-    } else {
-        for (typeIndex = 1; typeIndex <= numTypes; typeIndex++) {
-            Get1IndType(&aType, typeIndex);
-            typeString = [NSString stringWithFourCharCode:aType];
-            [types addObject:typeString];
-        }
-    }
-
-    UseResFile(oldCurRsrcMap);
-    
-    return types;
-}
-
-- (short)numberOfResourcesOfType:(NSString *)resourceType;
-{
-    SInt16 resourcesCount;
-    SInt16 oldCurRsrcMap;
-    ResType resourceTypeCode;
-
-    OBASSERT(resourceType != nil);
-    OBASSERT([resourceType length] >= 4);
-    resourceTypeCode = [resourceType fourCharCodeValue];
-
-    oldCurRsrcMap = CurResFile();
-    UseResFile(refNum);
-    resourcesCount = Count1Resources(resourceTypeCode);
-    UseResFile(oldCurRsrcMap);
-
-    return resourcesCount;
-}
-
-- (NSArray *)resourcesOfType:(NSString *)resourceType;
-{
-    SInt16 oldCurRsrcMap;
-    NSMutableArray *resources;
-    short numResources, resourceIndex;
-    ResType resourceTypeCode;
-    
-    OBASSERT(resourceType != nil);
-    OBASSERT([resourceType length] >= 4);
-    resourceTypeCode = [resourceType fourCharCodeValue];
-    
-    resources = [[[NSMutableArray alloc] init] autorelease];
-
-    oldCurRsrcMap = CurResFile();
-    UseResFile(refNum);
-
-    NS_DURING;
-    
-    numResources = Count1Resources(resourceTypeCode);
-    for (resourceIndex = 1; resourceIndex <= numResources; resourceIndex++) {
-        Handle aResource;
-        OFResource *resource;
-        
-        aResource = Get1IndResource(resourceTypeCode, resourceIndex);
-        if (!aResource)
-            continue;
-        
-        resource = [[OFResource alloc] initInResourceFork:self withHandle:aResource];
-        [resources addObject:resource];
-        [resource release];
-    }
-
-    NS_HANDLER {
-        UseResFile(oldCurRsrcMap);
-        [localException raise];
-    } NS_ENDHANDLER;
-
-    UseResFile(oldCurRsrcMap);
-    
-    return resources;
 }
 
 @end

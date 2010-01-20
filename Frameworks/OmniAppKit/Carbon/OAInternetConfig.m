@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,8 +13,6 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <Carbon/Carbon.h>
 #import <OmniBase/OmniBase.h>
-
-#import "OAOSAScript.h"
 
 RCS_ID("$Id$")
 
@@ -53,7 +51,7 @@ static NSString *helperKeyPrefix = nil;
     return [[[self alloc] init] autorelease];
 }
 
-+ (unsigned long)applicationSignature;
++ (FourCharCode)applicationSignature;
 {
     NSString *bundleSignature;
     NSData *signatureBytes;
@@ -151,7 +149,7 @@ static NSString *helperKeyPrefix = nil;
     }
 }
 
-- (BOOL)setApplicationCreatorCode:(long)applicationCreatorCode name:(NSString *)applicationName forScheme:(NSString *)scheme error:(NSError **)outError;
+- (BOOL)setApplicationCreatorCode:(FourCharCode)applicationCreatorCode name:(NSString *)applicationName forScheme:(NSString *)scheme error:(NSError **)outError;
 {
     Str255 helperKeyPascalString;
     NSString *helperKeyString = [self _helperKeyNameForScheme:scheme];
@@ -201,73 +199,6 @@ static NSString *helperKeyPrefix = nil;
 
     return NO;
 }
-
-// Download folder
-
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5  // Uses API deprecated on 10.5
-- (NSString *)downloadFolderPath:(NSError **)outError;
-{
-    NSData *icPrefData;
-    const struct ICFileSpec *downloadFolderICFileSpecPtr;
-    OSStatus error;
-    const char *errorFunc;
-    FSRef downloadFolderFSRef;
-    Boolean didSearch;
-    UInt8 path[PATH_MAX + 1];
-
-    icPrefData = [self dataForPreferenceKey:@"DownloadFolder" error:outError];
-    
-    if (icPrefData == nil || [icPrefData length] < kICFileSpecHeaderSize)
-        return nil;
-
-    downloadFolderICFileSpecPtr = [icPrefData bytes];
-
-    bzero(&downloadFolderFSRef, sizeof(downloadFolderFSRef));
-    error = FSpMakeFSRef(&(downloadFolderICFileSpecPtr->fss), &downloadFolderFSRef);
-    errorFunc = "FSpMakeFSRef";
-
-    if ([icPrefData length] > kICFileSpecHeaderSize) {
-        const FSRef *inRef;
-        const AliasRecord * const aliasPointer = &(downloadFolderICFileSpecPtr->alias);
-        Size aliasSize = GetAliasSizeFromPtr(aliasPointer);
-
-        // this must be a real handle, or FSResolveAlias returns -50
-
-        Handle aliasHandle = NewHandle(aliasSize);
-        HLock(aliasHandle);
-        memcpy(*aliasHandle, aliasPointer, aliasSize);
-        HUnlock(aliasHandle);
-
-        // Resolve the alias record.
-        
-        if (error == noErr) {
-            // We have an FSRef available to us, so pass it to ResolveAlias
-            inRef = &downloadFolderFSRef;
-        } else {
-            inRef = NULL;
-        }
-
-        error = FSResolveAlias(inRef, (AliasHandle)aliasHandle, &downloadFolderFSRef, &didSearch);
-        
-        DisposeHandle(aliasHandle);
-        errorFunc = "FSResolveAlias";
-    }
-    
-    if (error != noErr) {
-        NSLog(@"-[OAInternetConfig downloadFolderPath]: Error resolving download path: %s() failed: %@", errorFunc, OANameForInternetConfigErrorCode(error));
-        return nil;
-    }
-    
-    error = FSRefMakePath(&downloadFolderFSRef, path, sizeof(path));
-    if (error != noErr) {
-        NSLog(@"-[OAInternetConfig downloadFolderPath]: Error converting FSRef to Path: FSRefMakePath() failed: %@", OANameForInternetConfigErrorCode(error));
-        return nil;
-    }
-    
-    // FSRefMakePath() is documented to return a UTF8 string (in Files.h and in Apple TN2078). It's not clear whether this is just because it returns a filesystem representation and filesystem representations are UTF8, or whether it would continue to return UTF8 strings even if NSFileManager's fileSystemRepresentation were to change.
-    return [NSString stringWithUTF8String:(char *)path];
-}
-#endif
 
 // Mappings between type/creator codes and filename extensions
 
@@ -461,7 +392,7 @@ static BOOL _executeScript(NSString *source)
 - (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body attachments:(NSArray *)attachmentFilenames;
 {
     NSMutableString *script = nil;
-    unsigned int attachmentIndex, attachmentCount = [attachmentFilenames count];
+    NSUInteger attachmentIndex, attachmentCount = [attachmentFilenames count];
     
     NSString *mailApp = [self helperApplicationForScheme:@"mailto"];
 
@@ -690,7 +621,7 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string)
 #define APPLE_SCRIPT_MAX_STRING_LENGTH (unsigned)(16*1024)
 
     NSMutableString *fragmentedString;
-    unsigned int stringLength, stringIndex;
+    NSUInteger stringLength, stringIndex;
     BOOL firstTime;
 
     string = [string stringByReplacingCharactersInSet:[NSCharacterSet characterSetWithRange:NSMakeRange('\\', 1)] withString:@"\\\\"];
@@ -702,12 +633,8 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string)
     firstTime = YES;
     
     while (stringIndex < stringLength) {
-        NSString *fragment;
-        unsigned int fragmentLength;
-
-        fragmentLength = MIN(stringLength - stringIndex, APPLE_SCRIPT_MAX_STRING_LENGTH);
-
-        fragment = [string substringWithRange:NSMakeRange(stringIndex, fragmentLength)];
+        NSUInteger fragmentLength = MIN(stringLength - stringIndex, APPLE_SCRIPT_MAX_STRING_LENGTH);
+        NSString *fragment = [string substringWithRange:NSMakeRange(stringIndex, fragmentLength)];
         if (firstTime)
             [fragmentedString appendFormat:@"\"%@\" ", fragment];
         else

@@ -1,4 +1,4 @@
-// Copyright 2004-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,12 @@
 //#define DEBUG_KVO 1
 
 RCS_ID("$Id$");
+
+BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b)
+{
+    // Requires identical objects, not -isEqual:!
+    return a.object == b.object && [a.keyPath isEqualToString:b.keyPath];
+}
 
 @interface OFBinding (Private)
 - (void)_register;
@@ -119,6 +125,11 @@ RCS_ID("$Id$");
     [_sourceObject reset];
 }
 
+- (OFBindingPoint)sourcePoint;
+{
+    return OFBindingPointMake(_sourceObject, _sourceKeyPath);
+}
+
 - (id)sourceObject;
 {
     return _sourceObject;
@@ -127,6 +138,11 @@ RCS_ID("$Id$");
 - (NSString *)sourceKeyPath;
 {
     return _sourceKeyPath;
+}
+
+- (OFBindingPoint)destinationPoint;
+{
+    return OFBindingPointMake(_nonretained_destinationObject, _destinationKeyPath);
 }
 
 - (id)destinationObject;

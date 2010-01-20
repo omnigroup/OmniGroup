@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,9 +42,9 @@ __private_extern__ BOOL ODOSQLStatementBindBoolean(struct sqlite3 *sqlite, ODOSQ
 __private_extern__ BOOL ODOSQLStatementBindDate(struct sqlite3 *sqlite, ODOSQLStatement *statement, int bindIndex, NSDate *date, NSError **outError);
 __private_extern__ BOOL ODOSQLStatementBindFloat64(struct sqlite3 *sqlite, ODOSQLStatement *statement, int bindIndex, double value, NSError **outError);
 
-__private_extern__ BOOL ODOSQLStatementBindConstant(ODOSQLStatement *self, struct sqlite3 *sqlite, id constant, unsigned int bindIndex, NSError **outError);
+__private_extern__ BOOL ODOSQLStatementBindConstant(ODOSQLStatement *self, struct sqlite3 *sqlite, id constant, int bindIndex, NSError **outError);
 
-__private_extern__ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *statement, int bindIndex, id *value, ODOAttributeType type, NSError **outError);
+__private_extern__ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *statement, int bindIndex, id *value, ODOAttributeType type, Class valueClass, NSError **outError);
 
 __private_extern__ void ODOSQLStatementLogSQL(NSString *format, ...);
 
@@ -69,7 +69,7 @@ typedef struct {
     Class instanceClass;
     NSArray *schemaProperties;
     ODOAttribute *primaryKeyAttribute;
-    unsigned int primaryKeyColumnIndex;
+    NSUInteger primaryKeyColumnIndex;
     ODOEditingContext *editingContext;
     NSMutableArray *results; // objects that resulted from the fetch.  some might have been previously fetched
     NSMutableArray *fetched; // objects included in the results that are newly fetched and need -awakeFromFetch

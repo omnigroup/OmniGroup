@@ -1,4 +1,4 @@
-// Copyright 1997-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,6 +33,8 @@
 #import "OWSitePreference.h"
 #import "OWUnknownDataStreamProcessor.h"
 #import "OWURL.h"
+
+#import <mach-o/arch.h>
 
 #define DEBUG_TRANSACTIONS
 
@@ -88,7 +90,7 @@ NSString *OWCustomIdentityKey = @"__OWCustomIdent__";
 NSString *OWBrowserIdentity = @"OWBrowserIdentity";
 
 static BOOL OWHTTPDebug = NO;
-static BOOL OWHTTPCredentialsDebug = NO;
+//static BOOL OWHTTPCredentialsDebug = NO;
 static OFPreference *OWHTTPTrustServerContentType;
 static NSArray *OWHTTPWorkarounds;
 static NSString *preferredDateFormat;
@@ -108,7 +110,7 @@ static OWContentType *applicationOctetStreamContentType;
 static OWContentType *wildcardContentType;
 static NSDictionary *browserIdentDict = nil;
 static NSMutableDictionary *encodingPriorityDictionary = nil;
-static const float encodingPriorityDictionaryDefaultValue = 0.1;
+static const float encodingPriorityDictionaryDefaultValue = 0.1f;
 
 #define OWHTTPTrustServerContentTypePreferenceKey (@"OWHTTPTrustServerContentType")
 #define OWHTTPFakeAcceptHeaderPreferenceKey (@"OWHTTPFakeAcceptHeader")
@@ -117,7 +119,6 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
 + (void)initialize;
 {
     NSMutableCharacterSet *tokenCharacterSet;
-    OWContentType *gzipContentType;
     
     OBINITIALIZE;
 
@@ -132,7 +133,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
     wildcardContentType = [OWContentType contentTypeForString:@"*/*"];
     
     // Ensure that even if there isn't a processor for this encoding, we still know about it so that -acceptHeadersStringForTarget: can give it a quality factor
-    gzipContentType = [OWContentType contentTypeForString:@"encoding/gzip"];
+    [OWContentType contentTypeForString:@"encoding/gzip"];
     
     // This is the character set allowed for tokens, [RFC2068 section 2.2]
     tokenCharacterSet = [[NSMutableCharacterSet alloc] init];
@@ -147,12 +148,12 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
     browserIdentDict = [[NSDictionary alloc] initWithContentsOfFile:[[OWHTTPSession bundle] pathForResource:@"BrowserIdentity" ofType:@"plist"]];
 
     encodingPriorityDictionary = [[NSMutableDictionary alloc] init];
-    [encodingPriorityDictionary setFloatValue:1.2 forKey:@"bzip2" defaultValue:encodingPriorityDictionaryDefaultValue];
-    [encodingPriorityDictionary setFloatValue:1.0 forKey:@"gzip" defaultValue:encodingPriorityDictionaryDefaultValue];
-    [encodingPriorityDictionary setFloatValue:0.5 forKey:@"deflate" defaultValue:encodingPriorityDictionaryDefaultValue];
-    [encodingPriorityDictionary setFloatValue:0.2 forKey:@"compress" defaultValue:encodingPriorityDictionaryDefaultValue];
-    [encodingPriorityDictionary setFloatValue:0.1 forKey:@"identity" defaultValue:encodingPriorityDictionaryDefaultValue];
-    [encodingPriorityDictionary setFloatValue:0.0 forKey:@"*" defaultValue:encodingPriorityDictionaryDefaultValue];
+    [encodingPriorityDictionary setFloatValue:1.2f forKey:@"bzip2" defaultValue:encodingPriorityDictionaryDefaultValue];
+    [encodingPriorityDictionary setFloatValue:1.0f forKey:@"gzip" defaultValue:encodingPriorityDictionaryDefaultValue];
+    [encodingPriorityDictionary setFloatValue:0.5f forKey:@"deflate" defaultValue:encodingPriorityDictionaryDefaultValue];
+    [encodingPriorityDictionary setFloatValue:0.2f forKey:@"compress" defaultValue:encodingPriorityDictionaryDefaultValue];
+    [encodingPriorityDictionary setFloatValue:0.1f forKey:@"identity" defaultValue:encodingPriorityDictionaryDefaultValue];
+    [encodingPriorityDictionary setFloatValue:0.0f forKey:@"*" defaultValue:encodingPriorityDictionaryDefaultValue];
 }
 
 // OFBundleRegistryTarget informal protocol
@@ -222,11 +223,9 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
 
 + (NSString *)userAgentInfoForAddress:(OWAddress *)anAddress forceRevealIdentity:(BOOL)forceReveal;
 {
-    NSString *userAgentHeaderFormatString;
-    BOOL hideTrueIdentity;
-    
-    userAgentHeaderFormatString = [self userAgentHeaderFormatStringForAddress:anAddress];
-    hideTrueIdentity = [[OWSitePreference preferenceForKey:@"OWHideOmniWebUserAgentInfo" address:anAddress] boolValue];
+    NSString *userAgentHeaderFormatString = [self userAgentHeaderFormatStringForAddress:anAddress];
+    BOOL hideTrueIdentity = [[OWSitePreference preferenceForKey:@"OWHideOmniWebUserAgentInfo" address:anAddress] boolValue];
+    NSString *userAgentString;
     if ([userAgentHeaderFormatString containsString:@"%@"]) {
         // The user agent string has a spot for us to insert our true identity
         NSString *trueIdentityString;
@@ -236,16 +235,46 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
         else
             trueIdentityString = _primaryUserAgentInfo;
         
-        return [NSString stringWithFormat:userAgentHeaderFormatString, trueIdentityString];
+        userAgentString = [NSString stringWithFormat:userAgentHeaderFormatString, trueIdentityString];
     } else {
 
         if (forceReveal && !hideTrueIdentity) {
             // Our true identity wasn't included, so we'll just add it to the very end (as Netscape 6.1 does)
-            userAgentHeaderFormatString = [NSString stringWithFormat:@"%@ %@", userAgentHeaderFormatString, _primaryUserAgentInfo];
+            userAgentString = [NSString stringWithFormat:@"%@ %@", userAgentHeaderFormatString, _primaryUserAgentInfo];
+        } else {
+            userAgentString = userAgentHeaderFormatString;
         }
-
-        return userAgentHeaderFormatString;
     }
+
+    static NSDictionary *architectureSubstitutionDictionary = nil;
+    if (architectureSubstitutionDictionary == nil) {
+        // Webkit Version
+        NSString *webkitVersion = [[NSBundle bundleForClass:NSClassFromString(@"WebView")] objectForInfoDictionaryKey:@"CFBundleVersion"];
+        
+        // OS Version
+        OFVersionNumber *version = [OFVersionNumber userVisibleOperatingSystemVersionNumber];
+        NSMutableString *versionString = [NSMutableString stringWithFormat:@"%u", [version componentAtIndex:0]];
+        NSUInteger countIndex;
+        if ([version componentCount] > 1) {
+            for (countIndex = 1; countIndex < [version componentCount]; countIndex++)
+                [versionString appendFormat:@"_%u", [version componentAtIndex:countIndex]];
+        }
+        
+        //architecture
+        NSString *archString = @"";
+        const NXArchInfo *archInfo = NXGetLocalArchInfo();
+        if (archInfo) {
+            archString = [NSString stringWithCString:archInfo->description encoding:NSUTF8StringEncoding];
+        }
+        
+        NSRange space = [archString rangeOfString:@" "];
+        if (space.length > 0)
+            archString = [archString substringToIndex:space.location+1]; // keep the space, for some reason the string by replacing method eats it.
+        
+        architectureSubstitutionDictionary = [[NSDictionary alloc] initWithObjectsAndKeys:archString, @"ARCH", versionString, @"OS_VERSION", webkitVersion, @"WEBKIT_VERSION", nil];
+    }
+    userAgentString = [userAgentString stringByReplacingKeysInDictionary:architectureSubstitutionDictionary startingDelimiter:@"$(" endingDelimiter:@")"];
+    return userAgentString;
 }
 
 + (void)readDefaults;
@@ -335,7 +364,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
 
         OMNI_POOL_START {
             NS_DURING {
-                BOOL continueSession;
+                BOOL continueSession = NO;
 
                 do {
                     OMNI_POOL_START {
@@ -354,7 +383,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
                             if (continueSession) {
                                 OBASSERT([aProcessor status] != OWProcessorRunning);
                                 [processorQueueLock lock];
-                                unsigned finishedProcessorIndex = [processorQueue indexOfObjectIdenticalTo:aProcessor];
+                                NSUInteger finishedProcessorIndex = [processorQueue indexOfObjectIdenticalTo:aProcessor];
                                 if (finishedProcessorIndex != NSNotFound)
                                     [processorQueue removeObjectAtIndex:finishedProcessorIndex];
                                 [processorQueueLock unlock];
@@ -403,6 +432,8 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
 
 - (void)abortProcessingForProcessor:(OWProcessor *)aProcessor;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     OBPRECONDITION([aProcessor status] != OWProcessorRunning);
 
     [processorQueueLock lock];
@@ -420,6 +451,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
     } else {
         // Do nothing. When the processor reaches the head of the queue, we will notice that its state is OWProcessorAborting and drop the connection. Meanwhile, we can continue to read responses for still-valid requests.
     }
+#endif
 }
 
 - (void)setStatusString:(NSString *)newStatus;
@@ -501,7 +533,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
 
 - (void)disconnectAndRequeueProcessors;
 {
-    unsigned int index, count;
+    NSUInteger index, count;
 
     // Take a snapshot of our processor queue and clear it out
     [processorQueueLock lock];
@@ -600,6 +632,8 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
 
 - (void)setKludgesForProcessor:(OWHTTPProcessor *)aProcessor address:(OWAddress *)thisAddress;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     int workaroundCount, workaroundIndex;
     NSString *hostString;
     id <OWProcessorContext> context;
@@ -644,10 +678,14 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
             // More kludges as needed.
         }
     }
+#endif
 }
 
 - (NSString *)requestStringForProcessor:(OWHTTPProcessor *)aProcessor;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSMutableString *requestString;
     NSString *requestMethod;
     NSString *tempString;
@@ -682,7 +720,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
     {
         NSArray *additionalHeaders = [[anAddress methodDictionary] objectForKey: OWAddressContentAdditionalHeadersMethodKey];
         if (additionalHeaders != nil) {
-            unsigned int headerIndex, headerCount;
+            NSUInteger headerIndex, headerCount;
             headerCount = [additionalHeaders count];
             for(headerIndex = 0; headerIndex < headerCount; headerIndex ++) {
                 [requestString appendString:[additionalHeaders objectAtIndex:headerIndex]];
@@ -708,10 +746,14 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
         [requestString appendString:endOfLineString];
     }
     return requestString;
+#endif
 }
 
 - (NSString *)authorizationStringForAddress:(OWAddress *)anAddress processor:(OWHTTPProcessor *)aProcessor;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSMutableArray *credentialsToSend;
     OWAuthorizationRequest *serverAuthorization, *proxyAuthorization;
     NSMutableString *buffer;
@@ -775,6 +817,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
     [credentialsToSend release];
     
     return buffer;
+#endif // OBFinishPorting
 }
 
 - (NSString *)userAgentHeaderStringForAddress:(OWAddress *)anAddress;
@@ -825,12 +868,15 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
 
 - (BOOL)sendRequests;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return NO;
+#if 0
     NSData *requestData;
     NSString *requestString;
     OWAddress *anAddress;
-    unsigned int queueCount;
+    NSUInteger queueCount;
     BOOL shouldPipelineRequests;
-    unsigned int maximumNumberOfRequestsToSend;
+    NSUInteger maximumNumberOfRequestsToSend;
 
     // figure out how many requests to send
     shouldPipelineRequests = [queue shouldPipelineRequests];
@@ -878,7 +924,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
     [processorQueueLock unlock];
 
     // Send requests for each new processor in the queue
-    unsigned int newRequestIndex, newRequestCount;
+    NSUInteger newRequestIndex, newRequestCount;
     for (newRequestIndex = 0, newRequestCount = [newRequests count]; newRequestIndex < newRequestCount; newRequestIndex++) {
         OWHTTPProcessor *aProcessor;
 
@@ -898,8 +944,8 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
             
             if (requestData) {
                 if (OWHTTPDebug)
-                    // TODO: Eliminate dependence on the default string encoding, which might change to something which cannot express arbitrary sequences of bytes.
-                    NSLog(@"Tx: %@", [NSString stringWithData:requestData encoding:NSUTF8StringEncoding]);
+                    // TODO: Eliminate dependence on the default C string encoding, which might change to something which cannot express arbitrary sequences of bytes.
+                    NSLog(@"Tx: %@", [NSString stringWithCString:[requestData bytes] encoding:NSASCIIStringEncoding]);
                 [socketStream beginBuffering];
                 [socketStream writeString:requestString];
                 [socketStream writeData:requestData];
@@ -915,6 +961,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
     }
 
     return queueCount != 0;
+#endif
 }
 
 @end
@@ -925,7 +972,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
 {
     NSUserDefaults *defaults;
     NSArray *systemLanguages;
-    unsigned int systemLanguageIndex, systemLanguageCount;
+    NSUInteger systemLanguageIndex, systemLanguageCount;
     NSString *acceptLanguageHeaderOverride;
 
     defaults = [NSUserDefaults standardUserDefaults];
@@ -984,7 +1031,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
     } else if (systemLanguageCount > 0) {
         NSMutableArray *acceptLanguages;
         NSString *qualityFormatString;
-        float acceptLanguageCount;
+        double acceptLanguageCount;
 
         if (systemLanguageCount < 10) {
             qualityFormatString = @"%@;q=%0.1f";
@@ -1003,7 +1050,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
             if (systemLanguageIndex == 0) {
                 [acceptLanguages addObject:language]; // q=1.0 is redundant
             } else {
-                float quality;
+                double quality;
 
                 quality = (acceptLanguageCount - systemLanguageIndex) / acceptLanguageCount;
                 [acceptLanguages addObject:[NSString stringWithFormat:qualityFormatString, language, quality]];
@@ -1033,6 +1080,9 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1;
     primaryAgentName = [mainBundleInfoDictionary objectForKey:@"CFBundleName"];
     primaryAgentVersion = [mainBundleInfoDictionary objectForKey:@"CFBundleShortVersionString"];
     primaryAgentBuild = [mainBundleInfoDictionary objectForKey:@"CFBundleVersion"];
+    NSRange lastDot = [primaryAgentBuild rangeOfString:@"." options:NSBackwardsSearch]; // chopping off the last .x
+    primaryAgentBuild = [primaryAgentBuild substringToIndex:lastDot.location];
+    
     if (![NSString isEmptyString:primaryAgentBuild])
         primaryAgentBuild = [@"v" stringByAppendingString:primaryAgentBuild]; // 319 -> v319
     hidePrimaryAgentVersionValue = [mainBundleInfoDictionary objectForKey:@"OWFHidePrimaryAgentVersion"];
@@ -1460,10 +1510,14 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
 
 - (NSString *)contentLengthHeaderStringForAddress:(OWAddress *)anAddress;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSDictionary *addressMethodDictionary;
 
     addressMethodDictionary = [anAddress methodDictionary];
     return [isa stringForHeader:@"Content-Length" value:[NSNumber numberWithInt:[[addressMethodDictionary objectForKey:OWAddressContentStringMethodKey] length] + [[addressMethodDictionary objectForKey:OWAddressContentDataMethodKey] length]]];
+#endif
 }
 
 - (NSString *)contentStringForAddress:(OWAddress *)anAddress;
@@ -1482,7 +1536,9 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
 
 static void notifyCredentials(NSArray *credentials, BOOL success, OWHeaderDictionary *response)
 {
-    unsigned int credentialIndex, credentialCount;
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
+    NSUInteger credentialIndex, credentialCount;
     
     if (credentials == nil)
         return;
@@ -1494,6 +1550,7 @@ static void notifyCredentials(NSArray *credentials, BOOL success, OWHeaderDictio
         credential = [credentials objectAtIndex:credentialIndex];
         [credential authorizationSucceeded:success response:response];
     }
+#endif
 }
 
 - (BOOL)readResponseForProcessor:(OWHTTPProcessor *)processor;
@@ -1519,7 +1576,7 @@ beginReadResponse:
     }
     
     if (line == nil) {
-        [NSException raise:@"No response" format:NSLocalizedStringFromTableInBundle(@"The web server closed the connection without sending any response", @"OWF", [OWHTTPSession bundle], @"httpsession error - no response")];
+        [NSException raise:@"No response" reason:NSLocalizedStringFromTableInBundle(@"The web server closed the connection without sending any response", @"OWF", [OWHTTPSession bundle], @"httpsession error - no response")];
     }
     
     if (OWHTTPDebug)
@@ -1613,7 +1670,7 @@ processStatus:
                 [self readHeadersForProcessor:processor];
                 newLocationString = [headerDictionary lastStringForKey:@"location"];
                 if (newLocationString == nil)
-                    [NSException raise:@"Redirect failure" format:NSLocalizedStringFromTableInBundle(@"Location header missing on redirect", @"OWF", [OWHTTPSession bundle], @"httpsession error - required header missing in response")];
+                    [NSException raise:@"Redirect failure" reason:NSLocalizedStringFromTableInBundle(@"Location header missing on redirect", @"OWF", [OWHTTPSession bundle], @"httpsession error - required header missing in response")];
                 newLocation = [fetchAddress addressForRelativeString:newLocationString];
                 [processor setStatusFormat:NSLocalizedStringFromTableInBundle(@"Redirected to %@", @"OWF", [OWHTTPSession bundle], @"httpsession status"), newLocationString];
 
@@ -1751,10 +1808,12 @@ processStatus:
 
 - (void)readBodyForProcessor:(OWHTTPProcessor *)processor ignore:(BOOL)ignoreThis;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     OWParameterizedContentType *parameterizedContentType;
     OWContent *resultContent;
-    unsigned int totalLength;
-    unsigned int precedingSkipLength, followingSkipLength;
+    NSUInteger totalLength;
+    NSUInteger precedingSkipLength, followingSkipLength;
     long long startPosition = 0LL;
 
     NSString *receivedRangeString = [headerDictionary lastStringForKey:@"content-range"];
@@ -1852,6 +1911,7 @@ processStatus:
     // NSLog(@"%@: ending data stream %@", OBShortObjectDescription(self), OBShortObjectDescription(interruptedDataStream));
     [interruptedDataStream dataEnd];
     // NSLog(@"%@: ended data stream %@", OBShortObjectDescription(self), OBShortObjectDescription(interruptedDataStream));
+#endif
 }
 
 #warning TODO [wiml nov2003] - verify that whoever makes HEAD requests can understand the results we produce here
@@ -1941,7 +2001,7 @@ processStatus:
                 [self readHeadersForProcessor:processor];
                 newLocationString = [headerDictionary lastStringForKey:@"location"];
                 if (newLocationString == nil)
-                    [NSException raise:@"Redirect failure" format:NSLocalizedStringFromTableInBundle(@"Location header missing on redirect", @"OWF", [OWHTTPSession bundle], @"httpsession error - required header missing in response")];
+                    [NSException raise:@"Redirect failure" reason:NSLocalizedStringFromTableInBundle(@"Location header missing on redirect", @"OWF", [OWHTTPSession bundle], @"httpsession error - required header missing in response")];
                 newLocation = [fetchAddress addressForRelativeString:newLocationString];
                 [processor setStatusFormat:NSLocalizedStringFromTableInBundle(@"Redirected to %@", @"OWF", [OWHTTPSession bundle], @"httpsession status"), newLocationString];
                 redirectionFlags = 0;
@@ -1952,7 +2012,7 @@ processStatus:
                     redirectionFlags |= OWProcessorRedirectIsSame;
                 newContent = [[OWContent alloc] initWithName:@"Redirect" content:newLocation];
                 [newContent addHeader:OWContentRedirectionTypeMetadataKey value:[NSNumber numberWithUnsignedInt:redirectionFlags]];
-                [newContent addHeaders:[headerDictionary dictionaryCopy]];
+                [newContent addHeaders:[headerDictionary dictionarySnapshot]];
                 [newContent markEndOfHeaders];
                 [context addContent:newContent fromProcessor:processor flags:OWProcessorTypeRetrieval];
                 [newContent release];
@@ -2040,7 +2100,7 @@ processStatus:
 
     resultContent = [[OWContent alloc] initWithContent:result];
     [result release];
-    [resultContent addHeaders:[headerDictionary dictionaryCopy]];
+    [resultContent addHeaders:[headerDictionary dictionarySnapshot]];
     [resultContent markEndOfHeaders];
 
     [context addContent:resultContent fromProcessor:processor flags: (successResponse? 0 : OWProcessorContentIsError)|OWProcessorTypeRetrieval];
@@ -2059,20 +2119,19 @@ processStatus:
 
     [OWCookieDomain registerCookiesFromURL:[[processor sourceAddress] url] context:[processor pipeline] headerDictionary:headerDictionary];
 
-    // Look for possible validators and add best one as the validator key
-    NSString *headerString;
-
 	// Prefer Last-Modified before ETag, because Apache's WebDAV support has a huge bug with If-Match (ETag), but works fine with If-Unmodified-Since
 	// It is Apache bug #16593: <http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16593>
 
-    if ((headerString = [headerDictionary lastStringForKey:OWEntityLastModifiedHeaderString]))
+    if (([headerDictionary lastStringForKey:OWEntityLastModifiedHeaderString]))
         [headerDictionary addString:OWEntityLastModifiedHeaderString forKey:OWContentValidatorMetadataKey];
-    else if ((headerString = [headerDictionary lastStringForKey:OWEntityTagHeaderString]))
+    else if (([headerDictionary lastStringForKey:OWEntityTagHeaderString]))
         [headerDictionary addString:OWEntityTagHeaderString forKey:OWContentValidatorMetadataKey];
 }
 
 - (unsigned int)intValueFromHexString:(NSString *)aString;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     unsigned int addition, result = 0;
     unsigned int index, length = [aString length];
     unichar c;
@@ -2091,18 +2150,21 @@ processStatus:
         result += addition;
     }
     return result;
+#endif
 }
 
 - (void)readChunkedBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(unsigned)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     OWHeaderDictionary *trailingHeaderDictionary;
-    unsigned int totalByteCount = 0, totalLength = 0;
+    NSUInteger totalByteCount = 0, totalLength = 0;
     
     while ([processor status] == OWProcessorRunning) {
         NSAutoreleasePool *autoreleasePool = nil;
         NSString *contentLengthString;
-        unsigned int bytesLeft;
-        unsigned int bytesInThisPool;
+        NSUInteger bytesLeft;
+        NSUInteger bytesInThisPool;
 
         autoreleasePool = [[NSAutoreleasePool alloc] init];
         contentLengthString = [socketStream peekLine];
@@ -2138,7 +2200,7 @@ processStatus:
         }
 
         while ([processor status] == OWProcessorRunning && bytesLeft != 0) {
-            unsigned int dataStreamBytesAvailable, socketBytesWritten;
+            NSUInteger dataStreamBytesAvailable, socketBytesWritten;
             void *dataStreamBuffer;
 
             OBASSERT(dataStream != nil);
@@ -2178,13 +2240,16 @@ processStatus:
     NSLog(@"Rx: %@\nRead trailing headers: %@", [fetchAddress addressString], trailingHeaderDictionary);
 #endif
     [processor markEndOfHeaders];
+#endif
 }
 
 - (void)readStandardBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(unsigned)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     NSAutoreleasePool *autoreleasePool = nil;
-    unsigned int contentLength, bytesLeft;
-    unsigned int byteCount, bytesInThisPool;
+    NSUInteger contentLength, bytesLeft;
+    NSUInteger byteCount, bytesInThisPool;
 
     [processor markEndOfHeaders];
 
@@ -2203,13 +2268,13 @@ processStatus:
         int skipBytes = MIN(precedingSkipLength, bytesLeft);
         
         [socketStream skipBytes:skipBytes];
-        precedingSkipLength -= skipBytes;
+ //       precedingSkipLength -= skipBytes;
         bytesLeft -= skipBytes;
     }
 
     while ([processor status] == OWProcessorRunning && bytesLeft != 0) {
         void *dataStreamBuffer;
-        unsigned int dataStreamBytesAvailable, socketBytesWritten;
+        NSUInteger dataStreamBytesAvailable, socketBytesWritten;
 
         OBASSERT(dataStream != nil);
         dataStreamBytesAvailable = MIN([dataStream appendToUnderlyingBuffer:&dataStreamBuffer], bytesLeft);
@@ -2232,13 +2297,16 @@ processStatus:
     }
     [autoreleasePool release];
     // We might be done, or we might be in the OWProcessorAborting state; the caller will check.
+#endif
 }
 
 - (void)readClosingBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(unsigned)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     NSAutoreleasePool *autoreleasePool = nil;
     void *dataStreamBuffer;
-    unsigned int byteCount, bytesInThisPool;
+    NSUInteger byteCount, bytesInThisPool;
 
     [processor markEndOfHeaders];
 
@@ -2261,7 +2329,7 @@ processStatus:
         }
 
         while ([processor status] == OWProcessorRunning) {
-            unsigned int dataStreamBytesAvailable, socketBytesWritten;
+            NSUInteger dataStreamBytesAvailable, socketBytesWritten;
 
             OBASSERT(dataStream != nil);
             dataStreamBytesAvailable = [dataStream appendToUnderlyingBuffer:&dataStreamBuffer];
@@ -2286,6 +2354,7 @@ processStatus:
     } NS_ENDHANDLER;
 
     [autoreleasePool release];
+#endif
 }
 
 // Closing

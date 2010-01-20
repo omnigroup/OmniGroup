@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,7 @@ RCS_ID("$Id$")
     Class trieNodeClass;
     OFTrieBucket *lastFoundBucket = nil;
     unichar currentCharacter;
-    unsigned int endOfTheLastBucketScanLocation = 0;
+    NSUInteger endOfTheLastBucketScanLocation = 0;
     
     node = [trie headNode];
     if (node->childCount == 0)

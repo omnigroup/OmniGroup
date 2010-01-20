@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,7 @@
     NSMutableSet *reverseLinks;
     NSMutableDictionary *bestPathByType;
     NSArray *extensions;
-    unsigned long hfsType, hfsCreator;
+    OSType hfsType, hfsCreator;
     NSTimeInterval expirationTimeInterval;
 
     NSString *imageName;
@@ -62,10 +62,10 @@
 - (NSArray *)extensions;
 - (NSString *)primaryExtension;
 
-- (void)setHFSType:(unsigned long)newHFSType;
-- (unsigned long)hfsType;
-- (void)setHFSCreator:(unsigned long)newHFSCreator;
-- (unsigned long)hfsCreator;
+- (void)setHFSType:(OSType)newHFSType;
+- (OSType)hfsType;
+- (void)setHFSCreator:(OSType)newHFSCreator;
+- (OSType)hfsCreator;
 
 - (void)setImageName:(NSString *)newImageName;
 - (NSString *)imageName;

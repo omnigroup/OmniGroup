@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,6 +54,8 @@ static const struct { int ift; ONInterfaceCategory cat; } interfaceClassificatio
     { -1,          ONUnknownInterfaceCategory }
     
 };
+
+#define ONUnknownMTU (~(unsigned int)0)
 
 - (id)_initFromIfaddrs:(struct ifaddrs *)info
 {
@@ -262,7 +264,7 @@ static const struct { int ift; ONInterfaceCategory cat; } interfaceClassificatio
             [NSException raise:NSGenericException posixErrorNumber:OMNI_ERRNO() format:@"-[%@ %@]: socket(PF_INET): %s", OBShortObjectDescription(self), NSStringFromSelector(_cmd), strerror(OMNI_ERRNO())];
         if (ioctl(fd, SIOCGIFMTU, &ifr) < 0) {
             // Signal that we tried to retrieve this and failed. See below for our fallback numbers.
-            maximumTransmissionUnit = NSNotFound;
+            maximumTransmissionUnit = ONUnknownMTU;
             NSLog(@"%@: Cannot get MTU of %@: SIOCGIFMTU: %s", isa, name, strerror(OMNI_ERRNO()));
         } else {
             maximumTransmissionUnit = ifr.ifr_mtu;
@@ -271,7 +273,7 @@ static const struct { int ift; ONInterfaceCategory cat; } interfaceClassificatio
         close(fd);
     }
 
-    if (maximumTransmissionUnit == NSNotFound) {
+    if (maximumTransmissionUnit == ONUnknownMTU) {
         // Fallback to hardcoded MTUs.
         switch(interfaceCategory) {
 #ifdef ETHERMTU
@@ -364,11 +366,11 @@ static const struct { ONInterfaceCategory tp; const char *descr; } interfaceName
     while(interfaceNames[interfaceNameIndex].tp != interfaceCategory &&
           interfaceNames[interfaceNameIndex].tp != ONUnknownInterfaceCategory)
         interfaceNameIndex ++;
-    [debugDictionary setObject:[NSString stringWithCString:interfaceNames[interfaceNameIndex].descr encoding:NSASCIIStringEncoding] forKey:@"interfaceCategory"];
+    [debugDictionary setObject:[NSString stringWithUTF8String:interfaceNames[interfaceNameIndex].descr] forKey:@"interfaceCategory"];
 
     [debugDictionary setObject:[NSNumber numberWithInt:interfaceType] forKey:@"interfaceType"];
     
-    if (maximumTransmissionUnit == NSNotFound)
+    if (maximumTransmissionUnit == ONUnknownMTU)
         [debugDictionary setObject:@"(unknown)" forKey:@"maximumTransmissionUnit"];
     else if (maximumTransmissionUnit == 0)
         [debugDictionary setObject:@"(not retrieved)" forKey:@"maximumTransmissionUnit"];
@@ -401,7 +403,7 @@ static const struct { ONInterfaceCategory tp; const char *descr; } interfaceName
 
 static ONHostAddress *firstAddressOfFamily(NSArray *addresses, int desiredFamily)
 {
-    int addressCount, addressIndex;
+    NSUInteger addressCount, addressIndex;
 
     addressCount = [addresses count];
     for(addressIndex = 0; addressIndex < addressCount; addressIndex ++) {

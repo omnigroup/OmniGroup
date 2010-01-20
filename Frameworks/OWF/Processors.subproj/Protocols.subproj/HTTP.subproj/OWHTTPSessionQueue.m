@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -99,7 +99,7 @@ static NSTimeInterval timeout;
     return queues;
 }
 
-+ (unsigned int)maximumSessionsPerServer;
++ (NSUInteger)maximumSessionsPerServer;
 {
     return [[NSUserDefaults standardUserDefaults] integerForKey:@"OWHTTPMaximumSessionsPerServer"];
 }
@@ -136,7 +136,7 @@ static NSTimeInterval timeout;
 - (BOOL)queueProcessor:(OWHTTPProcessor *)aProcessor;
 {
     BOOL result;
-    int runningSessions;
+    NSInteger runningSessions;
     
     [lock lock];
     if ([abortedProcessors member:aProcessor]) {
@@ -145,7 +145,7 @@ static NSTimeInterval timeout;
     } else {
         [queuedProcessors addObject:aProcessor];
         runningSessions = [sessions count] - [idleSessions count];
-        result = (runningSessions < (int)[isa maximumSessionsPerServer]);        
+        result = (runningSessions < (NSInteger)[isa maximumSessionsPerServer]);        
     }
     [lock unlock];
 
@@ -175,7 +175,7 @@ static NSTimeInterval timeout;
 
 - (void)abortProcessingForProcessor:(OWHTTPProcessor *)aProcessor;
 {
-    unsigned int index;
+    NSUInteger index;
     NSArray *temporaryArray;
     
     [lock lock];
@@ -281,7 +281,7 @@ static NSTimeInterval timeout;
     return flags.serverUnderstandsPipelinedRequests && !flags.serverCannotHandlePipelinedRequestsReliably && [[NSUserDefaults standardUserDefaults] boolForKey:@"OWHTTPEnablePipelinedRequests"];
 }
 
-- (unsigned int)maximumNumberOfRequestsToPipeline;
+- (NSUInteger)maximumNumberOfRequestsToPipeline;
 {
     return [[NSUserDefaults standardUserDefaults] integerForKey:@"OWHTTPMaximumNumberOfRequestsToPipeline"];
 }

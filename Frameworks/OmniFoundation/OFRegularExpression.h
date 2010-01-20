@@ -1,4 +1,4 @@
-// Copyright 1997-2005,2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005,2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,7 @@ typedef union __attribute__((packed)) {
         unsigned int     argumentNumber  : 11;
         unsigned int     nextState       : 16;
     };
-    unsigned int         string          : 32;
+    uint32_t string : 32;
 } ExpressionState;
 
 @class OFStringScanner, OFRegularExpressionMatch;
@@ -30,10 +30,10 @@ typedef union __attribute__((packed)) {
     NSString *patternString;
     unichar startCharacter;
     BOOL matchStartsLine;
-    unichar *matchString;
+    __strong unichar *matchString;
     unsigned int subExpressionCount;
-    ExpressionState *program;
-    unichar *stringBuffer;
+    __strong ExpressionState *program;
+    __strong unichar *stringBuffer;
 }
 
 - initWithString:(NSString *)string;

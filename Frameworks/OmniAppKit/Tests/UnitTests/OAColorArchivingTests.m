@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,44 +110,23 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
 
 - (void)testRGB;
 {
-    CHECK([NSColor colorWithCalibratedRed:0.125 green:0.25 blue:0.5 alpha:1.0]);
+    CHECK([NSColor colorWithCalibratedRed:0.125f green:0.25f blue:0.5f alpha:1.0f]);
 }
 
 - (void)testRGBA;
 {
-    CHECK([NSColor colorWithCalibratedRed:0.125 green:0.25 blue:0.5 alpha:0.75]);
+    CHECK([NSColor colorWithCalibratedRed:0.125f green:0.25f blue:0.5f alpha:0.75f]);
 }
 
 - (void)testWhite;
 {
-    CHECK([NSColor colorWithCalibratedWhite:0.5 alpha:1.0]);
+    CHECK([NSColor colorWithCalibratedWhite:0.5f alpha:1.0f]);
 }
 
 - (void)testWhiteAlpha;
 {
-    CHECK([NSColor colorWithCalibratedWhite:0.5 alpha:0.75]);
+    CHECK([NSColor colorWithCalibratedWhite:0.5f alpha:0.75f]);
 }
-
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
-    // In fact, NSCalibratedBlackColorSpace is deprecated on 10.6.
-#else
-- (void)testBlack;
-{
-    // There seems to be no way to *get* a color in NSCalibratedBlackColorSpace.  Let's verify that that is still true.
-    NSColor *white = [NSColor colorWithCalibratedWhite:0.5 alpha:1.0];
-    NSColor *whiteToBlack = [white colorUsingColorSpaceName:NSCalibratedBlackColorSpace];
-    STAssertNil(whiteToBlack, @"converting white->black expected to produce nil");
-
-    const CGFloat components[2] = {0.25, 1.0};     
-    NSColor *gray = [NSColor colorWithColorSpace:[NSColorSpace genericGrayColorSpace] components:components count:2];
-    NSColor *grayToBlack = [gray colorUsingColorSpaceName:NSCalibratedBlackColorSpace];
-    STAssertNil(grayToBlack, @"converting grey->black expected to produce nil");
-    
-    NSColor *rgb = [NSColor colorWithCalibratedRed:0.0f green:0.0f blue:0.0f alpha:1.0f];
-    NSColor *rgbToBlack = [rgb colorUsingColorSpaceName:NSCalibratedBlackColorSpace];
-    STAssertNil(rgbToBlack, @"converting rgb->black expected to produce nil");
-}
-#endif
 
 - (void)testCatalog;
 {
@@ -156,23 +135,23 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
 
 - (void)testHSV;
 {
-    CHECK([NSColor colorWithCalibratedHue:0.75 saturation:0.5 brightness:0.25 alpha:1.0]);
+    CHECK([NSColor colorWithCalibratedHue:0.75f saturation:0.5f brightness:0.25f alpha:1.0f]);
 }
 
 - (void)testHSVA;
 {
-    CHECK([NSColor colorWithCalibratedHue:0.75 saturation:0.5 brightness:0.25 alpha:0.75]);
+    CHECK([NSColor colorWithCalibratedHue:0.75f saturation:0.5f brightness:0.25f alpha:0.75f]);
 }
 
 - (void)testCMYK;
 {
-    const CGFloat components[5] = {0.125, 0.25, 0.5, 0.625, 1.0};
+    const CGFloat components[5] = {0.125f, 0.25f, 0.5f, 0.625f, 1.0f};
     CHECK([NSColor colorWithColorSpace:[NSColorSpace genericCMYKColorSpace] components:components count:5]);
 }
 
 - (void)testCMYKA;
 {
-    const CGFloat components[5] = {0.125, 0.25, 0.5, 0.625, 0.75};
+    const CGFloat components[5] = {0.125f, 0.25f, 0.5f, 0.625f, 0.75f};
     CHECK([NSColor colorWithColorSpace:[NSColorSpace genericCMYKColorSpace] components:components count:5]);
 }
 

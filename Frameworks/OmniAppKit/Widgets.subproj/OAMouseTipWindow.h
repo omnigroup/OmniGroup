@@ -1,4 +1,4 @@
-// Copyright 2002-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,10 @@
 @class OAMouseTipView;
 
 typedef enum {
-    MouseTip_TooltipStyle, MouseTip_ExposeStyle, MouseTip_DockStyle
+    OAMouseTipUnsetStyle = -1,
+    OAMouseTipTooltipStyle,
+    OAMouseTipExposeStyle,
+    OAMouseTipDockStyle,
 } OAMouseTipStyle;
 
 #define OAMouseTipsEnabledPreferenceKey (@"DisplayMouseTips")
@@ -35,8 +38,8 @@ typedef enum {
 + (void)setLevel:(int)windowLevel;
 
 + (void)showMouseTipWithTitle:(NSString *)aTitle;
-+ (void)showMouseTipWithTitle:(NSString *)aTitle activeRect:(NSRect)activeRect edge:(NSRectEdge)onEdge delay:(float)delay;
-+ (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle activeRect:(NSRect)activeRect maxWidth:(float)maxWidth edge:(NSRectEdge)onEdge delay:(float)delay;
++ (void)showMouseTipWithTitle:(NSString *)aTitle activeRect:(NSRect)activeRect edge:(NSRectEdge)onEdge delay:(CGFloat)delay;
++ (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle activeRect:(NSRect)activeRect maxWidth:(CGFloat)maxWidth edge:(NSRectEdge)onEdge delay:(CGFloat)delay;
 + (void)hideMouseTip;
 
 // A way to keep objects from hiding the tip if it is now being used by someone else 

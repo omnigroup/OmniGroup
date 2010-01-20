@@ -18,8 +18,8 @@
 
 + (NSAttributedString *)attributedStringWithImage:(NSImage *)anImage;
 
-- (NSAttributedString *)initWithHTML:(NSString *)htmlString;
-- (NSString *)htmlString;
+//- (NSAttributedString *)initWithHTML:(NSString *)htmlString;
+//- (NSString *)htmlString;
 - (NSData *)rtf;
 
 - (NSAttributedString *)substringWithEllipsisToWidth:(CGFloat)width;

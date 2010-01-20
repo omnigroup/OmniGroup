@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,11 +6,15 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "ONHostAddress.h"
+#import "ONFeatures.h"
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniBase/system.h>
+
+#if ON_SUPPORT_APPLE_TALK
 #import <netat/appletalk.h>
+#endif
 
 #import "ONHostAddress-Private.h"
 #import "ONInterface.h"
@@ -51,6 +55,7 @@ typedef unsigned NSStringEncodingConversionOptions;
 
 @end
 
+#if ON_SUPPORT_APPLE_TALK
 @interface ONAppleTalkHostAddress : ONHostAddress
 {
     struct at_addr appletalkAddress;
@@ -59,6 +64,7 @@ typedef unsigned NSStringEncodingConversionOptions;
 - initWithInternetAddress:(const struct at_addr *)anAppletalkAddress;
 
 @end
+#endif
 
 @implementation ONHostAddress
 
@@ -70,8 +76,10 @@ typedef unsigned NSStringEncodingConversionOptions;
             return [[(ONIPv4HostAddress *)[ONIPv4HostAddress alloc] initWithInternetAddress:anInternetAddress] autorelease];
         case AF_INET6:
             return [[(ONIPv6HostAddress *)[ONIPv6HostAddress alloc] initWithInternetAddress:anInternetAddress] autorelease];
+#if ON_SUPPORT_APPLE_TALK
         case AF_APPLETALK:
             return [[(ONAppleTalkHostAddress *)[ONAppleTalkHostAddress alloc] initWithInternetAddress:anInternetAddress] autorelease];
+#endif
         case AF_UNSPEC:
             return nil;
         default:
@@ -82,7 +90,7 @@ typedef unsigned NSStringEncodingConversionOptions;
     }
 }
 
-+ (ONHostAddress *)addressWithIPv4UnsignedLong:(unsigned long)anAddress;
++ (ONHostAddress *)addressWithIPv4UnsignedLong:(uint32_t)anAddress;
 {
     struct in_addr address;
 
@@ -102,7 +110,9 @@ typedef unsigned NSStringEncodingConversionOptions;
         default:           hostPortion = &(portAddress->sa_data); break;
         case AF_INET:      hostPortion = &(((struct sockaddr_in *)portAddress)->sin_addr); break;
         case AF_INET6:     hostPortion = &(((struct sockaddr_in6 *)portAddress)->sin6_addr); break;
+#if ON_SUPPORT_APPLE_TALK
         case AF_APPLETALK: hostPortion = &(((struct sockaddr_at *)portAddress)->sat_addr); break;
+#endif
         case AF_LINK:
         {
             ONLinkLayerHostAddress *address = [[ONLinkLayerHostAddress alloc] initWithLinkLayerAddress:(const struct sockaddr_dl *)portAddress];
@@ -191,7 +201,7 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
 
         // Note: inet_pton() is documented not to handle 1-, 2-, or 3-part dotted IPv4 addresses, which we do want to be able to handle for OmniWeb. Also, it appears to incorrectly handle octal values, which we want to support for consistency with inet(3) and occasional practice. So we've written our own address parsing routine, yet again.
         if (didTrim)
-            addressString = [NSString stringWithCString:asciiBuf encoding:NSASCIIStringEncoding];
+            addressString = [NSString stringWithUTF8String:asciiBuf];
         ipv4host = [ONIPv4HostAddress hostAddressWithNumericString:addressString];
 
         if (ipv4host != nil) {
@@ -210,12 +220,13 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
         }
     }
 
+#if ON_SUPPORT_APPLE_TALK
     // Attempt to parse the string as an AppleTalk node address.
     if (colonCount == 1 && (dotCount == 0 || dotCount == 1)) {
         ONHostAddress *atalkAddress;
         
         if (didTrim)
-            addressString = [NSString stringWithCString:asciiBuf encoding:NSASCIIStringEncoding];
+            addressString = [NSString stringWithCString:asciiBuf encoding: NSASCIIStringEncoding];
         atalkAddress = [ONAppleTalkHostAddress hostAddressWithNumericString:addressString];
         
         if (atalkAddress) {
@@ -223,7 +234,8 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
             return atalkAddress;
         }
     }
-
+#endif
+    
     // We haven't been able to parse this address.
     free(asciiBuf);
     return nil;
@@ -271,7 +283,7 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
 - (BOOL)isLocalInterfaceAddress;
 {
     NSArray *interfaces = [ONInterface interfaces];
-    unsigned int interfaceIndex = [interfaces count];
+    NSUInteger interfaceIndex = [interfaces count];
     while (interfaceIndex--) {
         ONInterface *interface = [interfaces objectAtIndex:interfaceIndex];
 
@@ -293,7 +305,7 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
     bzero(abuf, ADDRSTRLEN+1);
     addrstr = inet_ntop([self addressFamily], [self _internetAddress], abuf, ADDRSTRLEN);
     if (addrstr)
-        return [NSString stringWithCString:addrstr encoding:NSASCIIStringEncoding];
+        return [NSString stringWithUTF8String:addrstr];
     else
         return nil;
 }
@@ -325,7 +337,7 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
 static u_int32_t parseIpaddrPart(NSString *str, int *ok)
 {
     unichar ch;
-    unsigned strLength;
+    NSUInteger strLength;
     int strBase;
     const char *buf, *endp;
     unsigned long parsedPart;
@@ -368,14 +380,20 @@ static u_int32_t parseIpaddrPart(NSString *str, int *ok)
         *ok = 0;
         return 0;
     }
+    
+    if (parsedPart > 0xFFFFFFFFUL) {
+        /* Number simply isn't plausible --- reject it. */
+        *ok = 0;
+        return 0;
+    }
 
-    return parsedPart;
+    return (u_int32_t)parsedPart;
 }
 
 + (ONHostAddress *)hostAddressWithNumericString:(NSString *)addressString;
 {
     NSArray *parts;
-    unsigned partsCount, partIndex;
+    NSUInteger partsCount, partIndex;
     u_int32_t ipaddr;
     int isOK;
 
@@ -526,6 +544,7 @@ static u_int32_t parseIpaddrPart(NSString *str, int *ok)
 
 @end
 
+#if ON_SUPPORT_APPLE_TALK
 @implementation ONAppleTalkHostAddress
 
 + (ONHostAddress *)hostAddressWithNumericString:(NSString *)addressString
@@ -631,3 +650,4 @@ scanFailure:
 }
 
 @end
+#endif // ON_SUPPORT_APPLE_TALK

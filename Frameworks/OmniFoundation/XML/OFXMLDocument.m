@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -237,9 +237,7 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
         // Add processing instructions.
         {
             NSCharacterSet *nonWhitespaceCharacterSet = [[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet];
-            unsigned int piIndex, piCount = [_processingInstructions count];
-            for (piIndex = 0; piIndex < piCount; piIndex++) {
-                NSArray *processingInstruction = [_processingInstructions objectAtIndex:piIndex];
+            for (NSArray *processingInstruction in _processingInstructions) {
                 NSString *name = [processingInstruction objectAtIndex:0];
                 NSString *value = [processingInstruction objectAtIndex:1];
                 
@@ -272,14 +270,12 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
     }
     
     // Add elements
-    unsigned int elementIndex, elementCount;
-    elementCount = [elements count];
-    for (elementIndex = 0; elementIndex < elementCount; elementIndex++) {
+    for (id element in elements) {
         // TJW: Should try to unify this with the copy of this logic for children in OFXMLElement
-        if (![[elements objectAtIndex: elementIndex] appendXML:xml withParentWhiteSpaceBehavior:defaultWhiteSpaceBehavior document:self level:level error:outError]) {
+        if (![element appendXML:xml withParentWhiteSpaceBehavior:defaultWhiteSpaceBehavior document:self level:level error:outError]) {
             if (outError)
                 [*outError retain]; // in the pool
-            [pool release];
+            [pool drain];
             if (outError)
                 [*outError autorelease];
             return nil;
@@ -289,11 +285,11 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
     if (!asFragment)
         OFXMLBufferAppendUTF8CString(xml, "\n");
 
-    NSData *data = (NSData *)OFXMLBufferCopyData(xml, _stringEncoding);
+    CFDataRef data = OFXMLBufferCopyData(xml, _stringEncoding);
     OFXMLBufferDestroy(xml);
     
-    [pool release];
-    return [data autorelease];
+    [pool drain];
+    return [NSMakeCollectable(data) autorelease];
 }
 
 - (BOOL)writeToFile:(NSString *)path error:(NSError **)outError;
@@ -305,17 +301,17 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
     return [data writeToFile:path options:NSAtomicWrite error:outError];
 }
 
-- (unsigned int)processingInstructionCount;
+- (NSUInteger)processingInstructionCount;
 {
     return [_processingInstructions count];
 }
 
-- (NSString *)processingInstructionNameAtIndex:(unsigned int)piIndex;
+- (NSString *)processingInstructionNameAtIndex:(NSUInteger)piIndex;
 {
     return [[_processingInstructions objectAtIndex:piIndex] objectAtIndex:0];
 }
 
-- (NSString *)processingInstructionValueAtIndex:(unsigned int)piIndex;
+- (NSString *)processingInstructionValueAtIndex:(NSUInteger)piIndex;
 {
     return [[_processingInstructions objectAtIndex:piIndex] objectAtIndex:1];
 }
@@ -451,6 +447,16 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
     return [[self topElement] appendElement:elementName containingReal:contents format:formatString];
 }
 
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents; // "%g"
+{
+    return [[self topElement] appendElement:elementName containingDouble:contents];
+}
+
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents format:(NSString *) formatString;
+{
+    return [[self topElement] appendElement:elementName containingDouble:contents format:formatString];
+}
+
 - (OFXMLElement *)appendElement:(NSString *)elementName containingDate:(NSDate *)date;
 {
     return [[self topElement] appendElement:elementName containingDate:date];
@@ -494,13 +500,13 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
         attributeDictionary = [[NSMutableDictionary alloc] init];
         NSUInteger attributeIndex, attributeCount = [attributeQNames count];
         for (attributeIndex = 0; attributeIndex < attributeCount; attributeIndex++) {
-            OFXMLQName *qname = [attributeQNames objectAtIndex:attributeIndex];
+            OFXMLQName *attributeQname = [attributeQNames objectAtIndex:attributeIndex];
             NSString *value = [attributeValues objectAtIndex:attributeIndex];
             
             // Keep the xmlns prefix for namespace attributes so we can avoid losing it on round-trips
-            NSString *key = qname.name;
+            NSString *key = attributeQname.name;
             
-            if (OFISEQUAL(qname.namespace, OFXMLNamespaceXMLNS)) {
+            if (OFISEQUAL(attributeQname.namespace, OFXMLNamespaceXMLNS)) {
                 NSString *localName = key;
                 if ([NSString isEmptyString:localName]) // Default namespace
                     key = @"xmlns";
@@ -575,11 +581,11 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
     OBPOSTCONDITION([_elementStack count] == parser.elementDepth);
 }
 
-- (void)parser:(OFXMLParser *)parser endUnparsedElementWithQName:(OFXMLQName *)qname contents:(NSData *)contents;
+- (void)parser:(OFXMLParser *)parser endUnparsedElementWithQName:(OFXMLQName *)qname identifier:(NSString *)identifier contents:(NSData *)contents;
 {
     OBPRECONDITION(_rootElement);
     
-    OFXMLUnparsedElement *element = [[OFXMLUnparsedElement alloc] initWithName:qname.name data:contents];
+    OFXMLUnparsedElement *element = [[OFXMLUnparsedElement alloc] initWithQName:qname identifier:identifier data:contents];
     [self.topElement appendChild:element];
     [element release];
     
@@ -620,7 +626,7 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
 
 - (void) _preInit;
 {
-    OBPRECONDITION(![self respondsToSelector:@selector(shouldLeaveElementAsUnparsedBlock:)]); // Deprecated for -parser:shouldLeaveElementAsUnparsedBlock:
+    OBASSERT_NOT_IMPLEMENTED(self, shouldLeaveElementAsUnparsedBlock:); // Deprecated for -parser:shouldLeaveElementAsUnparsedBlock:
     
     _elementStack = [[NSMutableArray alloc] init];
     _processingInstructions = [[NSMutableArray alloc] init];

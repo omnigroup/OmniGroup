@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <OmniBase/OBUtilities.h>
 #import <OmniBase/NSError-OBExtensions.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
+#import <OmniFoundation/NSString-OFSimpleMatching.h>
 
 #import "ODOTestCaseModel.h"
 
@@ -78,4 +79,38 @@ RCS_ID("$Id$")
     should([_undoManager groupingLevel] == 0);
 }
 
+- (BOOL)save:(NSError **)outError;
+{
+    [self closeUndoGroup];
+    return [_editingContext saveWithDate:[NSDate date] error:outError];
+}
+
 @end
+
+@implementation ODOTestCaseObject
+
++ (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;
+{
+    NSString *primaryKey = objectID.primaryKey;
+    OBASSERT(![NSString isEmptyString:primaryKey]);
+    
+    return [primaryKey containsString:@"undeletable"];
+}
+
+@end
+
+@implementation ODOTestCaseMaster
+@end
+@implementation ODOTestCaseDetail
+@end
+@implementation ODOTestCaseAllAttributeTypes
+@end
+@implementation ODOTestCaseLeftHand
+@end
+@implementation ODOTestCaseRightHand
+@end
+@implementation ODOTestCaseLeftHandRequired
+@end
+@implementation ODOTestCaseRightHandRequired
+@end
+

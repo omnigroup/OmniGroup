@@ -1,4 +1,4 @@
-// Copyright 1998-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -227,6 +227,9 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (NSMutableDictionary *)debugDictionary;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+    return nil;
+#if 0    
     NSMutableDictionary *debugDictionary;
 
     debugDictionary = [super debugDictionary];
@@ -234,6 +237,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     [debugDictionary setObject:[NSNumber numberWithInt:nextFrame] forKey:@"nextFrame"];
 
     return debugDictionary;
+#endif
 }
 
 @end
@@ -242,10 +246,13 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (void)_displayNextFrame;
 {
+    OBFinishPorting; // 64->32 warnings; if we even keep this class/framework
+#if 0    
     if (nextFrame == NSNotFound)
         return;
 
     [animation animationInstance:self wantsFrame:nextFrame];
+#endif
 }
 
 - (void)_scheduledDisplayNextFrame;

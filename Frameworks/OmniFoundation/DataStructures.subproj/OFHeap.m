@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,37 +9,29 @@
 
 RCS_ID("$Id$")
 
-// In this case, the userInfo is the selector
-static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, __strong void *userInfo, id object1, id object2)
-{
-    return (NSComparisonResult)objc_msgSend(object1, (SEL)userInfo, object2);
-}
-                                                  
 @implementation OFHeap
 
-- initWithCapacity:(NSUInteger)newCapacity compareFunction:(OFHeapComparisonFunction)comparisonFunction userInfo:(__strong void *)userInfo;
+- init;
+{
+    return [self initWithComparator:^(id objectA, id objectB) {
+        return [objectA compare:objectB];
+    }];
+}
+
+- initWithComparator:(NSComparator)comparator;
 {
     if (!(self == [super init]))
         return nil;
 
-    _capacity = newCapacity ? newCapacity : 4;
-    _count = 0;
-    _objects = (__strong id *)NSAllocateCollectable(sizeof(_objects) * _capacity, NSScannedOption);
-    
-    _comparisonFunction = comparisonFunction;
-    _userInfo = userInfo;
+    _comparator = [comparator copy];
     
     return self;
-}
-
-- initWithCapacity:(NSUInteger)newCapacity compareSelector:(SEL) comparisonSelector;
-{
-    return [self initWithCapacity:newCapacity compareFunction:OFHeapCompareBySelector userInfo:comparisonSelector];
 }
 
 - (void) dealloc;
 {
     [self removeAllObjects];
+    [_comparator release];
     if (_objects)
         free(_objects);
     [super dealloc];
@@ -50,7 +42,7 @@ static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, __strong void *u
     return _count;
 }
 
-#define LESSTHAN(a, b)  (_comparisonFunction(self, _userInfo, _objects[a], _objects[b]) == NSOrderedAscending)
+#define LESSTHAN(a, b)  (_comparator(_objects[a], _objects[b]) == NSOrderedAscending)
 
 #define PARENT(a)     ((a - 1) >> 1)
 #define LEFTCHILD(a)  ((a << 1) + 1)
@@ -61,8 +53,8 @@ static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, __strong void *u
     NSUInteger upFrom, upTo;
 
     if (_count == _capacity) {
-        _capacity <<= 1;
-        _objects = (__strong id *)NSReallocateCollectable(_objects, sizeof(*_objects) * _capacity, NSScannedOption);
+        _capacity = 2 * (_capacity + 1); // might be zero
+        _objects = NSReallocateCollectable(_objects, sizeof(*_objects) * _capacity, NSScannedOption);
     }
 
     _objects[_count] = [anObject retain];
@@ -110,7 +102,7 @@ static NSComparisonResult OFHeapCompareBySelector(OFHeap *heap, __strong void *u
 
 - (id)removeObjectLessThanObject:(id)object;
 {
-    if (_comparisonFunction(self, _userInfo, _objects[0], object) == NSOrderedAscending)
+    if (_comparator(_objects[0], object) == NSOrderedAscending)
 	return [self removeObject];
     else
 	return nil;

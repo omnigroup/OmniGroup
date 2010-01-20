@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,233 +12,98 @@
 
 RCS_ID("$Id$")
 
+/*
+ 
+ OFRandom is now a wrapper around the "SIMD-oriented Fast Mersenne Twister" from <http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/index.html>
+ 
+ When building it with 'make sse2' we get:
+ 
+ gcc -O3 -finline-functions -fomit-frame-pointer -DNDEBUG -fno-strict-aliasing --param max-inline-insns-single=1800  -Wmissing-prototypes -Wall  -std=c99 -DMEXP=19937 -o test-std-M19937 test.c
 
-/* This is an nonlinear congruential generator, see
-   http://random.mat.sbg.ac.at/ftp/pub/publications/weinga/diplom/
-   for a complete discussion of these.  Presumably, this one would
-   be termed an inverse nonlinear congruential generator since it
-   uses inverses modulo M.
+ most of this is for speed, but we'll turn on the defines here and add -fno-strict-aliasing as a per-file compile option.
+ 
+ Note that we do not export the float/batch generators. There are some comments in SFMT that you have to re-seed when switching generation methods and in fact we hit assertions if we might 32 and 64 generation.  So, we always generate 64 here and truncate to 32 if that's all the caller wanted.
+ */
+#ifndef DEBUG
+    #define NDEBUG
+#endif
+#define MEXP 19937
 
-   Discussion of the choices of the constants can be seen at 
-   http://random.mat.sbg.ac.at/ftp/pub/publications/peter/imp/
-*/
+// We also added this to make all the functions that would normally be extern be static.
+#define OF_EMBEDDED
 
-#define MERSENNE_PRIME_31 (2147483647)  /* 2^31 - 1 */
+#include "../SFMT/SFMT.c"
 
-/* These are the 13th set of constants from pg 19 of the IMP paper above */
-#define IMP_A             (16643900)
-#define IMP_B             (480227068)
-
-/* Uses Euclids algorithm to find x such that ax = 1 mod p where p is prime */
-static inline uint32_t _invert(uint32_t a, uint32_t p)
+/*
+ Gathers several sources of random state, including some from /dev/urandom. If the entropy pool is low, though, that may not be great, so we gather some from the time.
+ */
+OFRandomState *OFRandomStateCreate(void)
 {
-    uint32_t q, d;
-    int32_t u, v, inv, t;
-
-    OBPRECONDITION(a != 0 && a != 1);
-
-    d = p;
-    inv = 0;
-    v = 1;
-    u = a;
-
-    do {
-	q = d / u;
-	t = d % u;
-	d = u;
-	u = t;
-	t = inv - q * v;
-	inv = v;
-	v = t;
-    } while (u != 0);
-
-    if (inv < 0)
-	inv += p;
-
-    if (d != 1) {
-	/* This should never happen, really */
-	fprintf(stderr, "Cannot invert %"PRIu8" mod p", a);
-    }
-
-    OBPOSTCONDITION(inv != 0 && inv != 1);
-    return (inv);
-}
-
-/* Modular Multiplication: Decomposition method (from L'Ecuyer & Cote) */
-static inline uint32_t _mult_mod(uint32_t a, uint32_t s, uint32_t m)
-{
-    uint32_t                        H, a0, a1, q, qh, rh, k, p;
-
-
-    H = 32768;			/* 2 ^ 15  for 32 bit basetypes. */
-
-    if (a < H) {
-	a0 = a;
-	p = 0;
-    } else {
-	a1 = a / H;
-	a0 = a - H * a1;
-	qh = m / H;
-	rh = m - H * qh;
-	if (a1 >= H) {
-	    a1 = a1 - H;
-	    k = s / qh;
-	    p = H * (s - k * qh) - k * rh;
-	    while (p < 0)
-		p += m;
-	} else
-	    p = 0;
-
-	if (a1 != 0) {
-	    q = m / a1;
-	    k = s / q;
-	    p = p - k * (m - a1 * q);
-	    if (p > 0)
-		p -= m;
-	    p = p + a1 * (s - k * q);
-	    while (p < 0)
-		p += m;
-	}
-	k = p / qh;
-	p = H * (p - k * qh) - k * rh;
-	while (p < 0)
-	    p += m;
-    }
-    if (a0 != 0) {
-	q = m / a0;
-	k = s / q;
-	p = p - k * (m - a0 * q);
-	if (p > 0)
-	    p -= m;
-	p = p + a0 * (s - k * q);
-	while (p < 0)
-	    p += m;
-    }
-    return (p);
-}
-
-
-float OFRandomMax = (float)INT_MAX;
-static const uint32_t nRand = 4;
-static float gaussAdd, gaussFac;
-static BOOL  gaussInitialized = NO;
-
-void OFRandomSeed(OFRandomState *state, uint32_t y)
-{
-    if (!gaussInitialized) {
-        float aRand;
-
-        // Set up values for gaussian random number generation
-        aRand = powf(2, 31) - 1;
-        gaussAdd = sqrtf(3 * nRand);
-        gaussFac = 2 * gaussAdd / (nRand * aRand);
-        gaussInitialized = YES;
-    }
+    uint32_t seed[4];
     
-    state->y = y;
-    OBPOSTCONDITION(state->y >= 2);
-}
-
-/*"
-Generates a random seed value appropriate for supplying to OFRandomSeed. Attempts to use /dev/urandom for (presumably) the best randomness for the seed (doesn't use /dev/random as that can block and we wish not to block). If we can't use /dev/urandom for some reason, we fall back to generating a seed value using the clock.
- "*/
-uint32_t OFRandomGenerateRandomSeed(void)
-{
-    uint32_t seed;
-    BOOL haveSeed  = NO;
-    FILE *urandomDevice;
-
-    urandomDevice = fopen("/dev/urandom", "r");	// use /dev/urandom instead of /dev/random because the latter can block
+    FILE *urandomDevice = fopen("/dev/urandom", "r");	// use /dev/urandom instead of /dev/random because the latter can block
     if (urandomDevice != NULL) {
-        size_t readSize;
-
-        readSize = fread(&seed, sizeof(seed), 1, urandomDevice);
-        haveSeed = (readSize == 1);
+        // 64-bits from urandom, to whatever extent it can provide it.
+        fread(seed, sizeof(uint32_t), 2, urandomDevice);
         fclose(urandomDevice);
     }
 
-    if (!haveSeed) {
-        NSTimeInterval interval;
-        char *seedp, *intervalp;
-        uint32_t seedSize, intervalSize;
-
-        seedp = (char *)&seed;
-        seedSize = sizeof(seed);
-        while (seedSize--) {
-            *seedp = 0;
-
-            interval = [NSDate timeIntervalSinceReferenceDate];
-            intervalp = (char *)&interval;
-            intervalSize = sizeof(interval);
-            while (intervalSize--) {
-                *seedp ^= *intervalp;
-                intervalp++;
-            }
-            seedp++;
-        }
-    }
-
-    // Make sure the returned seed meets the needs of the implementation (>= 2 and < MERSENNE_PRIME_31).
-    while (seed >= MERSENNE_PRIME_31)
-        seed -= MERSENNE_PRIME_31;
-    if (seed >= 2)
-        return seed;
-    return OFRandomGenerateRandomSeed(); // try again.
-}
-
-/*"
-Returns an unsigned number between 0 and OF_RANDOM_MAX.  Note that the function does NOT return a number up to UINT_MAX (0xffffffff).
-"*/
-uint32_t OFRandomNextState(OFRandomState *state)
-{
-    OBPRECONDITION(state->y >= 2);
-
-    if (state->y < 2) {
-        OBASSERT_NOT_REACHED("Degenerate state?");
-        OFRandomSeed(state, OFRandomGenerateRandomSeed());
-        OBASSERT(state->y >= 2);
-    }
+    // 64-bits from the current time.
+    CFAbsoluteTime ti = CFAbsoluteTimeGetCurrent();
+    OBASSERT(sizeof(ti) == 2*sizeof(uint32_t));
+    memcpy(&seed[2], &ti, sizeof(ti));
     
-    // We need to find IMP_A * invY + IMP_B mod M
-
-    uint32_t old = state->y;
-    uint32_t invY = _invert(old, MERSENNE_PRIME_31);
-
-    uint32_t tmp = _mult_mod(IMP_A, invY, MERSENNE_PRIME_31);
-
-    state->y = tmp + IMP_B;
-
-    if (state->y >= MERSENNE_PRIME_31)
-	state->y -= MERSENNE_PRIME_31;
-
-    OBPOSTCONDITION(state->y >= 2);
-    OBPOSTCONDITION(old <= OF_RANDOM_MAX);
-
-    return (old);
+    return OFRandomStateCreateWithSeed32(seed, 4);
 }
 
-uint32_t OFRandomNext(void)
+OFRandomState *OFRandomStateCreateWithSeed32(const uint32_t *seed, uint32_t count)
 {
-    static OFRandomState defaultRandomState;
-    static BOOL firstTime  = YES;
-
-    if (firstTime) {
-        // seed the default random state
-        OFRandomSeed(&defaultRandomState, OFRandomGenerateRandomSeed());
-        firstTime = NO;
-    }
-    return OFRandomNextState(&defaultRandomState);
+    SFMTState *state = SFMTStateCreate();
+    init_by_array(state, seed, count);
+    return (OFRandomState *)state;
 }
 
-float OFRandomGaussState(OFRandomState *state)
+void OFRandomStateDestroy(OFRandomState *state)
 {
-    uint32_t i;
-    float sum;
+    SFMTStateDestroy((SFMTState *)state);
+}
+
+uint32_t OFRandomNextState32(OFRandomState *state)
+{    
+    // See the comment above; we only generate 64-bit values and truncate if only 32 were wanted.
+    return (uint32_t)gen_rand64((SFMTState *)state);
+}
+
+uint64_t OFRandomNextState64(OFRandomState *state)
+{
+    return gen_rand64((SFMTState *)state);
+}
+
+// [0,1) with 53-bits resolution
+double OFRandomNextStateDouble(OFRandomState *state)
+{
+    return to_res53(OFRandomNextState64(state)); // same as genrand_res53, but tries to pretend we have state
+}
+
+static OFRandomState *_OFDefaultRandomState(void)
+{
+    static OFRandomState *defaultRandomState = NULL;
+
+    // seed the default random state
+    if (!defaultRandomState)
+        defaultRandomState = OFRandomStateCreate();
     
-    i = nRand;
-    sum = 0.0f;
-    while (i--)
-        sum += OFRandomNextState(state);
+    return defaultRandomState;
+}
 
-    return gaussFac * sum - gaussAdd;
+
+// Shared state; not thread-safe!
+uint32_t OFRandomNext32(void)
+{
+    return OFRandomNextState32(_OFDefaultRandomState());
+}
+
+uint64_t OFRandomNext64(void)
+{
+    return OFRandomNextState64(_OFDefaultRandomState());
 }

@@ -1,4 +1,4 @@
-// Copyright 1997-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -121,7 +121,7 @@ typedef enum {
 - (OWAddress *)addressWithTarget:(NSString *)aTarget;
 - (OWAddress *)addressWithEffect:(OWAddressEffect)newEffect;
 - (OWAddress *)addressWithForceAlwaysUnique:(BOOL)shouldForceAlwaysUnique;
-- (OWAddress *)newUniqueVersionOfAddress;
+- (OWAddress *)createUniqueVersionOfAddress;
 - (OWAddress *)addressWithoutFragment;
 
 - (OWAddress *)addressWithContextDictionary:(NSDictionary *)newContextDictionary;

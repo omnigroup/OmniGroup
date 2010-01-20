@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,7 @@ typedef long OFByteOrder;
 {
     OFByteOrder byteOrder;
 
-    unsigned int dataOffset;
+    NSUInteger dataOffset;
     OFByte partialByte;
     unsigned int bitsLeft;
 }
@@ -35,17 +35,17 @@ typedef long OFByteOrder;
 
 - (void)setByteOrder:(OFByteOrder)newByteOrder;
 
-- (void)skipBytes:(unsigned int)byteCount;
+- (void)skipBytes:(NSUInteger)byteCount;
 
-- (unsigned int)currentOffset;
-- (unsigned int)dataLength; // may block
+- (NSUInteger)currentOffset;
+- (NSUInteger)dataLength; // may block
 - (BOOL)isAtEOF; // Blocks when no more data is available and -dataLength is not yet known
 - (BOOL)haveFinishedReadingData; // Never blocks, can return NO at EOF if -dataLength is not yet known (in which case the next -readData will return nil)
 
 - (void)readBytes:(unsigned int)byteCount intoBuffer:(void *)buffer;
 - (void)peekBytes:(unsigned int)byteCount intoBuffer:(void *)buffer;
 
-- (void)bufferBytes:(unsigned int)count;
+- (void)bufferBytes:(NSUInteger)count;
     // Ensures that 'count' bytes are buffered.
 - (BOOL)haveBufferedBytes:(unsigned int)count;
 
@@ -53,14 +53,14 @@ typedef long OFByteOrder;
     // Reads up to 'maximum' bytes into 'buffer', returns the number of bytes actually read.
 - (unsigned int)peekMaximumBytes:(unsigned int)maximum intoBuffer:(void *)buffer;
     // Peeks up to 'maximum' bytes into 'buffer', returns the number of bytes actually read.
-- (unsigned int)copyBytesToBuffer:(void *)buffer minimumBytes:(unsigned int)maximum maximumBytes:(unsigned int)minimum advance:(BOOL)shouldAdvance;
+- (NSUInteger)copyBytesToBuffer:(void *)buffer minimumBytes:(unsigned int)maximum maximumBytes:(unsigned int)minimum advance:(BOOL)shouldAdvance;
     // Peeks at least 'minimum' and up to 'maximum' bytes into 'buffer', returns the number of bytes actually read; advances cursor if shouldAdvance is true
 - (NSData *)readData;
     // Reads the buffered bytes.
 - (NSData *)peekData;
     // Peeks at the buffered bytes.
 
-- (unsigned int)peekUnderlyingBuffer:(void **)returnedBufferPtr;
+- (NSUInteger)peekUnderlyingBuffer:(void **)returnedBufferPtr;
 - (unsigned int)readUnderlyingBuffer:(void **)returnedBufferPtr;    
 
 - (NSData *)readAllData;

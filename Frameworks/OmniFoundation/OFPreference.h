@@ -1,4 +1,4 @@
-// Copyright 2001-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,28 +46,34 @@
 - (BOOL) hasNonDefaultValue;
 - (void) restoreDefaultValue;
 
-- (id) objectValue;
-- (NSString *) stringValue;
-- (NSArray *) arrayValue;
-- (NSDictionary *) dictionaryValue;
-- (NSData *) dataValue;
-- (int) integerValue;
-- (unsigned int) unsignedIntValue;
-- (float) floatValue;
-- (BOOL) boolValue;
-- (NSArray *) stringArrayValue;
-- (int) enumeratedValue;
+- (id)objectValue;
+- (NSString *)stringValue;
+- (NSArray *)arrayValue;
+- (NSDictionary *)dictionaryValue;
+- (NSData *)dataValue;
+- (int)intValue;
+- (NSInteger)integerValue;
+- (unsigned int)unsignedIntValue;
+- (NSUInteger)unsignedIntegerValue;
+- (float)floatValue;
+- (double)doubleValue;
+- (BOOL)boolValue;
+- (NSArray *)stringArrayValue;
+- (NSInteger)enumeratedValue;
 
-- (void) setObjectValue: (id) value;
-- (void) setStringValue: (NSString *) value;
-- (void) setArrayValue: (NSArray *) value;
-- (void) setDictionaryValue: (NSDictionary *) value;
-- (void) setDataValue: (NSData *) value;
-- (void) setIntegerValue: (int) value;
-- (void) setUnsignedIntegerValue: (int) value;
-- (void) setFloatValue: (float) value;
-- (void) setBoolValue: (BOOL) value;
-- (void) setEnumeratedValue: (int) value;
+- (void)setObjectValue:(id)value;
+- (void)setStringValue:(NSString *)value;
+- (void)setArrayValue:(NSArray *)value;
+- (void)setDictionaryValue:(NSDictionary *)value;
+- (void)setDataValue:(NSData *)value;
+- (void)setIntValue:(int)value;
+- (void)setIntegerValue:(NSInteger)value;
+- (void)setUnsignedIntValue:(unsigned int)value;
+- (void)setUnsignedIntegerValue:(NSUInteger)value;
+- (void)setFloatValue:(float)value;
+- (void)setDoubleValue:(double)value;
+- (void)setBoolValue:(BOOL)value;
+- (void)setEnumeratedValue:(NSInteger)value;
 
 @end
 
@@ -85,11 +91,14 @@
 - (NSDictionary *)dictionaryForKey:(NSString *)defaultName;
 - (NSData *)dataForKey:(NSString *)defaultName;
 - (NSArray *)stringArrayForKey:(NSString *)defaultName;
-- (int)integerForKey:(NSString *)defaultName; 
+- (int)intForKey:(NSString *)defaultName;
+- (NSInteger)integerForKey:(NSString *)defaultName;
 - (float)floatForKey:(NSString *)defaultName; 
 - (BOOL)boolForKey:(NSString *)defaultName;  
-- (void)setInteger:(int)value forKey:(NSString *)defaultName;
+- (void)setInt:(int)value forKey:(NSString *)defaultName;
+- (void)setInteger:(NSInteger)value forKey:(NSString *)defaultName;
 - (void)setFloat:(float)value forKey:(NSString *)defaultName;
+- (void)setDouble:(double)value forKey:(NSString *)defaultName;
 - (void)setBool:(BOOL)value forKey:(NSString *)defaultName;
 
 - (BOOL)synchronize;

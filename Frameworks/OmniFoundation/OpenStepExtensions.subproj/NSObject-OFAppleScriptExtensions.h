@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,7 @@
 - (NSArray *)appleScriptExtraAttributeKeys; // implement to add extra keys for -appleScriptMakeProperties
 - (NSString *)appleScriptMakeProperties;
 - (NSString *)appleScriptMakeCommandAt:(NSString *)aLocationSpecifier;
-- (NSString *)appleScriptMakeCommandAt:(NSString *)aLocationSpecifier withIndent:(int)indent;
+- (NSString *)appleScriptMakeCommandAt:(NSString *)aLocationSpecifier withIndent:(NSInteger)indent;
 
 - (NSScriptObjectSpecifier *)objectSpecifierByProperty:(NSString *)propertyKey inRelation:(NSString *)myLocation toContainer:(NSObject *)myContainer;
 

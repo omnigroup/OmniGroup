@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,7 +49,7 @@ struct OAOutlineViewEnumeratorState {
 #ifdef OMNI_ASSERTIONS_ON
 - (BOOL) _checkState
 {
-    unsigned int stateIndex;
+    NSUInteger stateIndex;
     id parentItem;
     struct OAOutlineViewEnumeratorState *state;
     
@@ -147,7 +147,7 @@ struct OAOutlineViewEnumeratorState {
     
     // Grab the current item, describe by the state path
     if (_stateCount) {
-        unsigned int pathIndex;
+        NSUInteger pathIndex;
         
         path = [NSMutableArray arrayWithCapacity: _stateCount];
         for (pathIndex = 0; pathIndex < _stateCount; pathIndex++)
@@ -213,7 +213,7 @@ struct OAOutlineViewEnumeratorState {
     OBPRECONDITION([self _checkState]);
 
     if (_stateCount) {
-        unsigned int pathIndex;
+        NSUInteger pathIndex;
         
         path = [NSMutableArray arrayWithCapacity: _stateCount];
         for (pathIndex = 0; pathIndex < _stateCount; pathIndex++)
@@ -319,23 +319,18 @@ struct OAOutlineViewEnumeratorState {
 
 - (NSMutableDictionary *) debugDictionary;
 {
-    NSMutableDictionary *dict;
-    NSMutableArray *stateArray;
-    unsigned int index;
-    struct OAOutlineViewEnumeratorState *state;
-    
-    dict = [super debugDictionary];
-    stateArray = [[NSMutableArray alloc] initWithCapacity: _stateCount];
+    NSMutableDictionary *dict = [super debugDictionary];
+
+    NSMutableArray *stateArray = [[NSMutableArray alloc] initWithCapacity: _stateCount];
     [dict setObject: stateArray forKey: @"state"];
     [stateArray release];
     
-    state = _state;
-    for (index = 0; index < _stateCount; index++, state++) {
-        NSMutableDictionary *entry;
+    for (NSUInteger stateIndex = 0; stateIndex < _stateCount; stateIndex++) {
+        struct OAOutlineViewEnumeratorState *state = &_state[stateIndex];
         
-        entry = [[NSMutableDictionary alloc] init];
-        [entry setObject: [NSNumber numberWithInt: state->index] forKey: @"index"];
-        [entry setObject: [NSNumber numberWithInt: state->count] forKey: @"count"];
+        NSMutableDictionary *entry = [[NSMutableDictionary alloc] init];
+        [entry setObject: [NSNumber numberWithInteger: state->index] forKey: @"index"];
+        [entry setObject: [NSNumber numberWithInteger: state->count] forKey: @"count"];
         [entry setObject: state->item forKey: @"item"];
         
         [stateArray addObject: entry];

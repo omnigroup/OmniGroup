@@ -1,4 +1,4 @@
-// Copyright 1997-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -82,27 +82,15 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
 // We want this method to search both active and inactive columns (OOM depends upon this).  Neither the configuration menu nor the tableColumns array is guaranteed to have all the items (the configuration menu will have all but those that cannot be configured and the tableColumns will have only the active columns).  This is on place where our strategy of not adding an ivar for 'all table columsn' is wearing thin.
 - (NSTableColumn *)tableColumnWithIdentifier:(id)identifier;
 {
-    NSArray        *items;
-    unsigned int    itemIndex;
-    NSMenuItem     *item;
-    NSTableColumn  *column;
-    
     // First check the configuration menu
-    items = [configurationMenu itemArray];
-    itemIndex = [items count];
-    while (itemIndex--) {
-        item = [items objectAtIndex: itemIndex];
-        column = [item representedObject];
-
+    for (NSMenuItem *item in [configurationMenu itemArray]) {
+        NSTableColumn  *column = [item representedObject];
         if ([[column identifier] isEqual: identifier])
             return column;
     }
 
     // Then check the table view (since it might have unconfigurable columns)
-    items = [self tableColumns];
-    itemIndex = [items count];
-    while (itemIndex--) {
-        column = [items objectAtIndex: itemIndex];
+    for (NSTableColumn *column in [self tableColumns]) {
         if ([[column identifier] isEqual: identifier])
             return column;
     }
@@ -115,7 +103,7 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
     [super setDataSource: dataSource];
     
     confDataSourceFlags.menuString     = [dataSource respondsToSelector: @selector(configurableColumnTableView:menuStringForColumn:)];
-    confDataSourceFlags.addSeparator     = [dataSource respondsToSelector: @selector(configurableColumnTableView:shouldAddSeparatorAfterColumn:)];
+    confDataSourceFlags.addSeparator   = [dataSource respondsToSelector: @selector(configurableColumnTableView:shouldAddSeparatorAfterColumn:)];
     confDataSourceFlags.allowToggle    = [dataSource respondsToSelector: @selector(configurableColumnTableView:shouldAllowTogglingColumn:)];
     confDataSourceFlags.willActivate   = [dataSource respondsToSelector: @selector(configurableColumnTableView:willActivateColumn:)];
     confDataSourceFlags.didActivate    = [dataSource respondsToSelector: @selector(configurableColumnTableView:didActivateColumn:)];
@@ -137,18 +125,10 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
 
 - (NSArray *)inactiveTableColumns;
 {
-    NSMutableArray *inactiveTableColumns;
-    NSArray        *items;
-    unsigned int    itemIndex;
-    NSMenuItem     *item;
-    NSTableColumn  *column;
+    NSMutableArray *inactiveTableColumns = [NSMutableArray array];
     
-    inactiveTableColumns = [NSMutableArray array];
-    items = [configurationMenu itemArray];
-    itemIndex = [items count];
-    while (itemIndex--) {
-        item = [items objectAtIndex: itemIndex];
-        column = [item representedObject];
+    for (NSMenuItem *item in [configurationMenu itemArray]) {
+        NSTableColumn *column = [item representedObject];
 
         if (![self isTableColumnActive: column])
             [inactiveTableColumns addObject: column];
@@ -159,8 +139,6 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
 
 - (void)activateTableColumn:(NSTableColumn *)column;
 {
-    NSMenuItem *item;
-    
     if ([[self tableColumns] indexOfObjectIdenticalTo:column] != NSNotFound)
         // Already active
         return;
@@ -168,8 +146,8 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
     if (confDataSourceFlags.willActivate)
         [(id)[self dataSource] configurableColumnTableView: self willActivateColumn: column];
         
-    item = [self _itemForTableColumn: column];
-    [item setState: YES];
+    NSMenuItem *item = [self _itemForTableColumn: column];
+    [item setState:YES];
     
     [self addTableColumn:column];
     
@@ -187,8 +165,6 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
 
 - (void)deactivateTableColumn:(NSTableColumn *)column;
 {
-    NSMenuItem *item;
-    
     if ([[self tableColumns] indexOfObjectIdenticalTo:column] == NSNotFound)
         // Already inactive
         return;
@@ -196,8 +172,8 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
     if (confDataSourceFlags.willDeactivate)
         [(id)[self dataSource] configurableColumnTableView: self willDeactivateColumn: column];
         
-    item = [self _itemForTableColumn: column];
-    [item setState: NO];
+    NSMenuItem *item = [self _itemForTableColumn: column];
+    [item setState:NO];
     
     [self removeTableColumn:column];
 
@@ -234,18 +210,10 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
 
 - (void)reloadData;
 {
-    NSArray *menuItems;
-    unsigned int itemIndex;
-    
     [super reloadData];
     
-    menuItems = [configurationMenu itemArray];
-    for (itemIndex = 0; itemIndex < [menuItems count]; itemIndex++) {
-        NSMenuItem *item;
-        NSTableColumn *column;
-        
-        item = [menuItems objectAtIndex:itemIndex];
-        column = [item representedObject];
+    for (NSMenuItem *item in [configurationMenu itemArray]) {
+        NSTableColumn *column = [item representedObject];
         [[self _itemForTableColumn:column] setState:[self isTableColumnActive:column]];
     }
 }
@@ -262,40 +230,33 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
 
 - (void)_buildConfigurationMenu;
 {
-    NSEnumerator  *tableColumnEnum;
-    NSTableColumn *tableColumn;
-    id dataSource;
-
-    
     [configurationMenu release];
     configurationMenu = nil;
-    dataSource = [self dataSource];
+    
+    id dataSource = [self dataSource];
     if (!dataSource)
         return;
 
     configurationMenu = [[NSMenu alloc] initWithTitle: @"Configure Columns"];
         
     // Add items for all the columns.  For columsn that aren't currently displayed, this will be where we store the pointer to the column.
-    tableColumnEnum = [[self tableColumns] objectEnumerator];
-    while ((tableColumn = [tableColumnEnum nextObject]))
-        [self _addItemWithTableColumn:tableColumn dataSource: dataSource];
+    for (NSTableColumn *column in [self tableColumns])
+        [self _addItemWithTableColumn:column dataSource:dataSource];
 }
 
 - (void)_addItemWithTableColumn:(NSTableColumn *)column dataSource: (id) dataSource;
 {
-    NSMenuItem *item;
-    NSString *title = nil;
-    
     // If we don't allow configuration, don't add the item to the menu
     if (confDataSourceFlags.allowToggle && ![dataSource configurableColumnTableView:self shouldAllowTogglingColumn:column])
         return;
     
+    NSString *title = nil;
     if (confDataSourceFlags.menuString)
         title = [dataSource configurableColumnTableView:self menuStringForColumn:column];
     if (!title)
         title = [[column headerCell] stringValue];
         
-    item = [[NSMenuItem alloc] initWithTitle:title action:@selector(_toggleColumn:) keyEquivalent: @""];
+    NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:title action:@selector(_toggleColumn:) keyEquivalent: @""];
     [item setState:[self isTableColumnActive:column]];
     [item setRepresentedObject:column];
     [configurationMenu addItem: item];
@@ -305,31 +266,20 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
         [configurationMenu addItem: [NSMenuItem separatorItem]];
 }
 
-- (NSMenuItem *)_itemForTableColumn: (NSTableColumn *) column;
+- (NSMenuItem *)_itemForTableColumn:(NSTableColumn *)column;
 {
-    NSArray        *items;
-    unsigned int    itemIndex;
-    NSMenuItem     *item;
-    
-    items = [configurationMenu itemArray];
-    itemIndex = [items count];
-    while (itemIndex--) {
-        item = [items objectAtIndex: itemIndex];
+    for (NSMenuItem *item in [configurationMenu itemArray])
         if (column == [item representedObject])
             return item;
-    }
-
     return nil;
 }
 
 - (void)_toggleColumn:(id)sender;
 {
-    NSMenuItem *item;
-    
-    item = (NSMenuItem *)sender;
+    NSMenuItem *item = (NSMenuItem *)sender;
     OBASSERT([item isKindOfClass: [NSMenuItem class]]);
 
-    [self toggleTableColumn: [item representedObject]];
+    [self toggleTableColumn:[item representedObject]];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,8 +42,6 @@ typedef enum _OATableViewRowVisibility {
 // Searching
 - (BOOL)tableView:(NSTableView *)tableView itemAtRow:(NSInteger)row matchesPattern:(id <OAFindPattern>)pattern;
     // Implement this if you want find support.
-- (NSTableColumn *)tableViewTypeAheadSelectionColumn:(NSTableView *)tableView;
-    // Return non-nil to enable type-ahead selection. Needs a column whose values are strings (or respond to -stringValue)... presumably the names of your rows' represented objects. If your table has only one column, we'll choose it by default unless you implement this method to return nil.
 
 // Content editing actions
 - (BOOL)tableView:(NSTableView *)tableView addItemsFromPasteboard:(NSPasteboard *)pasteboard;
@@ -72,4 +70,6 @@ typedef enum _OATableViewRowVisibility {
 OBDEPRECATED_METHODS(NSTableViewOAExtendedDataSource)
 - (void)tableView:(NSTableView *)tableView deleteRows:(NSArray *)rows; // Use -tableView:deleteRowsAtIndexes:
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard; // deprecated by the OS, but let's warn if anyone implements it.  Use the indexes version.
+- (NSTableColumn *)tableViewTypeAheadSelectionColumn:(NSTableView *)tableView;  // NSTableView automagically has this is 10.5 and later (see any number of type select delegate methods in the NSTableView header)
+
 @end

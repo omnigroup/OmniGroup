@@ -1,4 +1,4 @@
-// Copyright 1999-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,14 +37,12 @@ RCS_ID("$Id$")
 
 NSArray *OFCommonRootPathComponents(NSString *filename, NSString *otherFilename, NSArray **componentsLeft, NSArray **componentsRight)
 {
-    int minLength, i;
-    NSArray *filenameArray, *otherArray;
-    NSMutableArray *resultArray;
+    NSUInteger i;
 
-    filenameArray = [filename pathComponents];
-    otherArray = [[otherFilename stringByStandardizingPath] pathComponents];
-    minLength = MIN([filenameArray count], [otherArray count]);
-    resultArray = [NSMutableArray arrayWithCapacity:minLength];
+    NSArray *filenameArray = [filename pathComponents];
+    NSArray *otherArray = [[otherFilename stringByStandardizingPath] pathComponents];
+    NSUInteger minLength = MIN([filenameArray count], [otherArray count]);
+    NSMutableArray *resultArray = [NSMutableArray arrayWithCapacity:minLength];
 
     for (i = 0; i < minLength; i++) {
         if ([[filenameArray objectAtIndex:i] isEqualToString:[otherArray objectAtIndex:i]])
@@ -73,7 +71,7 @@ NSArray *OFCommonRootPathComponents(NSString *filename, NSString *otherFilename,
 - (NSString *)relativePathToFilename:(NSString *)otherFilename;
 {
     NSArray *commonRoot, *myUniquePart, *otherUniquePart;
-    int numberOfStepsUp, i;
+    NSUInteger numberOfStepsUp, i;
 
     otherFilename = [otherFilename stringByStandardizingPath];
     commonRoot = OFCommonRootPathComponents([self stringByStandardizingPath], otherFilename, &myUniquePart, &otherUniquePart);
@@ -115,13 +113,10 @@ NSArray *OFCommonRootPathComponents(NSString *filename, NSString *otherFilename,
 
     if (NULL != url) {
         hfsPath = CFURLCopyFileSystemPath(url, kCFURLHFSPathStyle);
-        if (hfsPath) 
-            [(NSString *)hfsPath autorelease];
-        
         CFRelease(url);
     }
     
-    return (NSString *)hfsPath;
+    return [NSMakeCollectable(hfsPath) autorelease];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 1998-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,8 +38,8 @@ RCS_ID("$Id$")
         return;
     imageSize = [image size];
 
-    imagePoint.x = _bounds.origin.x + (_bounds.size.width - imageSize.width) / 2.0;
-    imagePoint.y = _bounds.origin.y + (_bounds.size.height - imageSize.height) / 2.0;
+    imagePoint.x = _bounds.origin.x + (_bounds.size.width - imageSize.width) / 2.0f;
+    imagePoint.y = _bounds.origin.y + (_bounds.size.height - imageSize.height) / 2.0f;
     [image compositeToPoint:imagePoint operation:NSCompositeSourceOver];
 }
 
@@ -69,12 +69,11 @@ RCS_ID("$Id$")
 {
     OAPasteboardHelper *helper;
     NSImage *dragImage;
-    NSPoint where, zero;
+    NSPoint where;
 
     if (!(dragImage = [self imageForFiles]))
         return;
 
-    zero = NSMakePoint(0.0, 0.0);
     if ([event clickCount] > 1) {
         NSWorkspace *workspace;
         NSEnumerator *enumerator;
@@ -83,13 +82,13 @@ RCS_ID("$Id$")
         workspace = [NSWorkspace sharedWorkspace];
         enumerator = [files objectEnumerator];
         while((path = [enumerator nextObject]))
-            [workspace openFile:path fromImage:dragImage at:zero inView:self];
+            [workspace openFile:path fromImage:dragImage at:NSZeroPoint inView:self];
     }
 
     where = [self convertPoint:[event locationInWindow] fromView:nil];
     helper = [OAPasteboardHelper helperWithPasteboardNamed:NSDragPboard];
     [helper declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:self];
-    [[OADragController sharedDragController] startDragFromView:self image:dragImage atPoint:where offset:zero event:event slideBack:NO pasteboardHelper:helper delegate:nil];
+    [[OADragController sharedDragController] startDragFromView:self image:dragImage atPoint:where offset:NSZeroPoint event:event slideBack:NO pasteboardHelper:helper delegate:nil];
 }
 
 - (void)pasteboard:(NSPasteboard *)pasteboard provideDataForType:(NSString *)type;

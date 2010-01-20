@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,12 +18,18 @@
 #import "ODOEditingContext-Internal.h"
 #import "ODODatabase-Internal.h"
 #import "ODOProperty-Internal.h"
+#import "ODOInternal.h"
 
 RCS_ID("$Id$")
 
 NSString * const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
 
 @implementation ODOObject
+
++ (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;
+{
+    return NO;
+}
 
 - (id)initWithEditingContext:(ODOEditingContext *)context entity:(ODOEntity *)entity primaryKey:(id)primaryKey;
 {
@@ -38,6 +44,9 @@ NSString * const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
     ODOObjectID *objectID = [[ODOObjectID alloc] initWithEntity:entity primaryKey:primaryKey];
     self = [self initWithEditingContext:context objectID:objectID isFault:NO];
     [objectID release];
+    
+    // Record whether this should be undeletable. This only gets called
+    self->_flags.undeletable = [[self class] objectIDShouldBeUndeletable:objectID];
     
     return self;
 }
@@ -247,6 +256,11 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
         return;
     }
 
+    // We only prevent write access via the generic KVC method for now.  The issue is that we want to allow a class to redefined a property as writable internally if it wants, so it should be able to use 'self.foo = value' (going through the dynamic or any self-defined method). But subclasses could still -setValue:forKey: and get away with it w/o a warning. This does prevent the class itself from using generic KVC, but hopefully that is rare enough for this to be a good tradeoff.
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+    if (flags.calculated)
+        OBRejectInvalidCall(self, _cmd, @"Attempt to -setValue:forKey: on the calculated key '%@'.", key);
+    
     ODOPropertySetter setter = ODOPropertySetterImpl(prop);
     SEL sel = ODOPropertySetterSelector(prop);
     if (!setter) {
@@ -265,10 +279,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 - (void)setDefaultAttributeValues;
 {
     ODOEntity *entity = [self entity];
-    NSArray *properties = [entity snapshotProperties];
-    unsigned int propertyIndex = [properties count];
-    while (propertyIndex--) {
-        ODOProperty *prop = [properties objectAtIndex:propertyIndex];
+    for (ODOProperty *prop in entity.snapshotProperties) {
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         if (!flags.relationship) {
             // Model loading code ensures that the primary key attribute doesn't have a default value            
@@ -289,12 +300,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     [self setDefaultAttributeValues]; // Subclasses might override this
     
     // On insert, we also set the default relastionship values
-    ODOEntity *entity = [self entity];
-    NSArray *properties = [entity snapshotProperties];
-    unsigned int propertyIndex = [properties count];
-    while (propertyIndex--) {
-        ODOProperty *prop = [properties objectAtIndex:propertyIndex];
-        
+    for (ODOProperty *prop in self.entity.snapshotProperties) {
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         
         if (flags.relationship && flags.toMany) {
@@ -409,12 +415,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
 
 - (BOOL)validateForSave:(NSError **)outError;
 {
-    ODOEntity *entity = [self entity];
-    NSArray *snapshotProperties = [entity snapshotProperties];
-    unsigned int propertyIndex = [snapshotProperties count];
-    
-    while (propertyIndex--) {
-        ODOProperty *prop = [snapshotProperties objectAtIndex:propertyIndex];
+    for (ODOProperty *prop in self.entity.snapshotProperties) {
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         
         // Directly accessing the values rather than going through the will/did lookup.  We aren't "accessing" the values.
@@ -599,6 +600,11 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return _flags.invalid;
 }
 
+- (BOOL)isUndeletable;
+{
+    return _ODOObjectIsUndeletable(self);
+}
+
 // Possibly faster alternative to -changedValues (for small numbers of keys).  Returns NO if the object is inserted, YES if deleted (though a previously nil property might be "nil" after deletion in some sense, it is a whole new level of nil).  The deleted case probably shouldn't happen anyway.
 - (BOOL)hasChangedKeySinceLastSave:(NSString *)key;
 {
@@ -619,7 +625,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     }
 
     ODOProperty *prop = [[_objectID entity] propertyNamed:key];
-    unsigned snapshotIndex = ODOPropertySnapshotIndex(prop);
+    NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
     if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX)
         return NO; // can't change
     
@@ -673,7 +679,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     
     NSMutableDictionary *changes = [NSMutableDictionary dictionary];
     NSArray *snapshotProperties = [[_objectID entity] snapshotProperties];
-    unsigned int propIndex = [snapshotProperties count];
+    NSUInteger propIndex = [snapshotProperties count];
     while (propIndex--) {
         ODOProperty *prop = [snapshotProperties objectAtIndex:propIndex];
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
@@ -788,7 +794,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
 #if 0 && defined(DEBUG)
     #define DEBUG_CHANGE_SET(format, ...) NSLog((format), ## __VA_ARGS__)
 #else
-    #define DEBUG_CHANGE_SET(format, ...)
+    #define DEBUG_CHANGE_SET(format, ...) do {} while (0)
 #endif
 
 typedef struct {
@@ -824,11 +830,15 @@ static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet,
     return ctx.hasChanged;
 }
 
-// Should add the names of properties that are totally derived from other state, but are cached in the database for performance. Since we don't support many-to-many relationships, to-manys are totally derived from the inverse to-one.
 + (void)addDerivedPropertyNames:(NSMutableSet *)set withEntity:(ODOEntity *)entity;
 {
+    // Should add the names of properties that are totally derived from other state, but are cached in the database for performance. Since we don't support many-to-many relationships, to-manys are totally derived from the inverse to-one.
     for (ODORelationship *rel in entity.toManyRelationships)
-        [set addObject:[rel name]];
+        [set addObject:rel.name];
+    
+    for (ODOProperty *prop in entity.properties)
+        if (prop.isTransient || prop.isCalculated)
+            [set addObject:prop.name];
 }
 
 // Checks if there are any entries in the changed values that are not in the derived properties.
@@ -856,6 +866,22 @@ static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet,
 }
 
 #pragma mark -
+#pragma mark Comparison
+
+// Objects are uniqued w/in their editing context, so really we should be pointer equal. This presumes that we don't want the same object in two different editing contexts to be considered -isEqual:, which I think we don't.  The superclass should give us pointer equality anyway, but we'll make it official here as well as having assertions that these aren't subclassed in ODOEntity.
+
+- (NSUInteger)hash;
+{
+    return [_objectID hash];
+}
+
+- (BOOL)isEqual:(id)object;
+{
+    // It is tempting to try to check that the other object is of the right class here, but we put ODOObjects into heterogeneous sets fairly often (recent/processed edits in ODOEditingContext, children-of-node in OmniFocus -- which can contain things that aren't even ODOObjects).
+    return (self == object);
+}
+
+#pragma mark -
 #pragma mark Debugging
 
 - (NSString *)shortDescription;
@@ -880,11 +906,8 @@ static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet,
         [valueDict release];
         
         NSArray *props = [[_objectID entity] snapshotProperties];
-        unsigned int propIndex = [props count];
-        while (propIndex--) {
-            ODOProperty *prop = [props objectAtIndex:propIndex];
-            
-            unsigned snapshotIndex = ODOPropertySnapshotIndex(prop);
+        for (ODOProperty *prop in props) {
+            NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
             id value = _ODOObjectValueAtIndex(self, snapshotIndex);
             if (!value)
                 value = [NSNull null];
@@ -915,7 +938,7 @@ BOOL ODOSetPropertyIfChanged(ODOObject *object, NSString *key, id value, id *out
 }
 
 // Will never set nil.  Considers nil different from zero (i.e., setting zero on something that has nil will set a zero number)
-BOOL ODOSetUnsignedIntPropertyIfChanged(ODOObject *object, NSString *key, unsigned int value, unsigned int *outOldValue)
+BOOL ODOSetUInt32PropertyIfChanged(ODOObject *object, NSString *key, uint32_t value, uint32_t *outOldValue)
 {
     NSNumber *oldNumber = [object valueForKey:key];
     

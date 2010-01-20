@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,7 @@ RCS_ID("$Id$")
     buffer = (unichar *)NSZoneMalloc([self zone], bufferSize * sizeof(unichar));
     bufferLength = 0;
     bufferOffset = 0;
-
+    
     return self;
 }
 
@@ -54,8 +54,8 @@ RCS_ID("$Id$")
 
 - (BOOL)fetchMoreData;
 {
-    unsigned int desiredOffset = inputStringPosition + (scanLocation - inputBuffer);
-    unsigned int retainedCharacters, newBufferSize, charactersToRead, totalCharactersRead;
+    NSUInteger desiredOffset = inputStringPosition + (scanLocation - inputBuffer);
+    NSUInteger retainedCharacters, newBufferSize, charactersToRead, totalCharactersRead;
         
     if (desiredOffset < bufferOffset) {
         [NSException raise:OFCharacterConversionExceptionName format:@"Attempted backwards seek past rewind mark"];
@@ -75,7 +75,7 @@ RCS_ID("$Id$")
         retainedCharacters = 0;
 
     if (retainedCharacters > 0) {
-        unsigned int discardedCharacters = bufferLength - retainedCharacters;
+        NSUInteger discardedCharacters = bufferLength - retainedCharacters;
         
         OBASSERT(retainedCharacters <= bufferLength);
         if (discardedCharacters != 0) {
@@ -102,7 +102,7 @@ RCS_ID("$Id$")
     
     totalCharactersRead = 0;
     do {
-        unsigned int charactersRead;
+        NSUInteger charactersRead;
 
         charactersRead = [streamCursor readCharactersIntoBuffer:(buffer + bufferLength) maximum:(bufferSize - bufferLength) peek:NO];
         totalCharactersRead += charactersRead;
@@ -122,6 +122,8 @@ RCS_ID("$Id$")
 // NB: Arguably, some of this functionality should be in the superclass. The superclass' definition could call _rewindCharacterSource and most of this method's functionality could be moved into an overridden version of that one. However, _rewindCharacterSource's semantics would have to be thought out a little more, since right now it's also used for actual seeks (which always fail). The tricky part would be making sure that an unseekable dataStream raises an exception early enough that the scanner is left in a consistent state.
 - (void)discardReadahead;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+#if 0
     // NB: It's important that any exceptions raised in this method leave the scanner in a consistent state, with the scan location unchanged!
 
     // first, remove any prefetched data from our buffer
@@ -143,6 +145,7 @@ RCS_ID("$Id$")
     
     if (firstNonASCIIOffset >= (inputStringPosition + (scanEnd - inputBuffer)))
         firstNonASCIIOffset = NSNotFound;
+#endif
 }
 
 // OBObject subclass

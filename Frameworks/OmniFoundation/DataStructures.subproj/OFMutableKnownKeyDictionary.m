@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,7 +44,7 @@ RCS_ID("$Id$")
     _objects = objects;
     _objectCount = count;
     
-    [_owner retain]; // this should keep _conditions or _objects from becoming invalid
+    [_owner retain]; // this should keep _conditions or _objects from becoming invalid in ref counted mode
 
     return self;
 }
@@ -126,15 +126,10 @@ static inline void _nonNilKey(id key)
 
 @implementation OFMutableKnownKeyDictionary
 
-+ (OFMutableKnownKeyDictionary *)newWithTemplate:(OFKnownKeyDictionaryTemplate *)template zone:(NSZone *)zone;
-{
-    OFMutableKnownKeyDictionary *dict = NSAllocateObject(self, template->_keyCount * sizeof(id), zone);
-    return [dict _initWithTemplate: template];
-}
-
 + (OFMutableKnownKeyDictionary *)newWithTemplate:(OFKnownKeyDictionaryTemplate *)template;
 {
-    return [self newWithTemplate:template zone:NULL];
+    OFMutableKnownKeyDictionary *dict = NSAllocateObject(self, template->_keyCount * sizeof(id), NULL);
+    return [dict _initWithTemplate: template];
 }
 
 - (void)dealloc;
@@ -142,7 +137,7 @@ static inline void _nonNilKey(id key)
     // _template is not retained since it lives forever
     
     NSUInteger valueCount = _template->_keyCount;
-    NSObject **values = &_values[0];
+    NSObject **values = object_getIndexedIvars(self);
     while (valueCount--) {
         [*values release];
         values++;
@@ -159,8 +154,9 @@ static inline void _nonNilKey(id key)
 {
     // Count the non-nil slots
     NSUInteger fullCount = 0;
+    NSObject **values = object_getIndexedIvars(self);
     for (NSUInteger objectIndex = 0; objectIndex < _template->_keyCount; objectIndex++) {
-        if (_values[objectIndex])
+        if (values[objectIndex])
             fullCount++;
     }
 
@@ -170,7 +166,8 @@ static inline void _nonNilKey(id key)
 - (NSEnumerator *)keyEnumerator;
 {
     // enumerate over keys with non-nil values
-    return [[[_OFMutableKnownKeyDictionaryEnumerator alloc] initWithConditionList:&_values[0]
+    NSObject **values = object_getIndexedIvars(self);
+    return [[[_OFMutableKnownKeyDictionaryEnumerator alloc] initWithConditionList:&values[0]
                                                                        objectList:&_template->_keys[0]
                                                                             count:_template->_keyCount
                                                                             owner:self] autorelease];
@@ -182,7 +179,8 @@ static inline void _nonNilKey(id key)
     NSUInteger keyIndex = _offsetForKeyAllowNotFound(aKey, &_template->_keys[0], _template->_keyCount);
     if (keyIndex == ~(NSUInteger)0)
         return nil;
-    return _values[keyIndex];
+    NSObject **values = object_getIndexedIvars(self);
+    return values[keyIndex];
 }
 
 - (NSArray *)allKeys;
@@ -200,8 +198,9 @@ static inline void _nonNilKey(id key)
 
     // Count the non-nil slots
     NSUInteger fullCount = 0;
+    NSObject **values = object_getIndexedIvars(self);
     for (NSUInteger objectIndex = 0; objectIndex < _template->_keyCount; objectIndex++) {
-        if (_values[objectIndex]) {
+        if (values[objectIndex]) {
             // store the *key* for this non-nil value
             keys[fullCount] = _template->_keys[objectIndex];
             fullCount++;
@@ -218,28 +217,30 @@ static inline void _nonNilKey(id key)
 
 - (NSArray *)allValues;
 {
-    // Collect the non-nil keys in here
-    id *values = alloca(sizeof(id) * _template->_keyCount);
+    // Collect the values for the non-nil keys in here
+    id *filledValues = alloca(sizeof(id) * _template->_keyCount);
 
     // Count the non-nil slots
     NSUInteger fullCount = 0;
+    NSObject **values = object_getIndexedIvars(self);
     for (NSUInteger objectIndex = 0; objectIndex < _template->_keyCount; objectIndex++) {
-        if (_values[objectIndex]) {
+        if (values[objectIndex]) {
             // store the non-nil value
-            values[fullCount] = _values[objectIndex];
+            filledValues[fullCount] = values[objectIndex];
             fullCount++;
         }
     }
 
     // return a new array formed from the non-nil values
-    return [[[NSArray alloc] initWithObjects:values count:fullCount] autorelease];
+    return [[[NSArray alloc] initWithObjects:filledValues count:fullCount] autorelease];
 }
 
 - (NSEnumerator *)objectEnumerator;
 {
     // enumerate over non-nil values (the values themselves are the condition)
-    return [[[_OFMutableKnownKeyDictionaryEnumerator alloc] initWithConditionList:&_values[0]
-                                                                       objectList:&_values[0]
+    NSObject **values = object_getIndexedIvars(self);
+    return [[[_OFMutableKnownKeyDictionaryEnumerator alloc] initWithConditionList:&values[0]
+                                                                       objectList:&values[0]
                                                                             count:_template->_keyCount
                                                                             owner:self] autorelease];
 }
@@ -252,17 +253,19 @@ static inline void _nonNilKey(id key)
 {
     _nonNilKey(aKey);
     NSUInteger keyIndex = _offsetForKey(aKey, &_template->_keys[0], _template->_keyCount);
-    [_values[keyIndex] release];
-    _values[keyIndex] = nil;
+    NSObject **values = object_getIndexedIvars(self);
+    [values[keyIndex] release];
+    values[keyIndex] = nil;
 }
 
 - (void)setObject:(id)anObject forKey:(id)aKey;
 {
     _nonNilKey(aKey);
     NSUInteger keyIndex = _offsetForKey(aKey, &_template->_keys[0], _template->_keyCount);
-    if (_values[keyIndex] != anObject) {
-        [_values[keyIndex] release];
-        _values[keyIndex] = [anObject retain];
+    NSObject **values = object_getIndexedIvars(self);
+    if (values[keyIndex] != anObject) {
+        [values[keyIndex] release];
+        values[keyIndex] = [anObject retain];
     }
 }
 
@@ -276,8 +279,8 @@ static inline void _nonNilKey(id key)
     copy->_template = _template;
     NSUInteger valueCount = _template->_keyCount;
     
-    NSObject **source = &_values[0];
-    NSObject **dest = &copy->_values[0];
+    NSObject **source = object_getIndexedIvars(self);
+    NSObject **dest = object_getIndexedIvars(copy);
     while (valueCount--) {
         *dest = [*source retain];
         dest++;
@@ -294,12 +297,15 @@ static inline void _nonNilKey(id key)
 
     NSUInteger valueIndex = _template->_keyCount;
 
+    NSObject **values = object_getIndexedIvars(self);
+    NSObject **fromValues = object_getIndexedIvars(fromDictionary);
+
     while (valueIndex--) {
-        if (_values[valueIndex])
+        if (values[valueIndex])
             continue;
-        id value = fromDictionary->_values[valueIndex];
-        if (value)
-            _values[valueIndex] = [value retain];
+        id fromValue = fromValues[valueIndex];
+        if (fromValue)
+            values[valueIndex] = [fromValue retain];
     }
 }
 
@@ -307,9 +313,10 @@ static inline void _nonNilKey(id key)
 /*" Calls the function for each key/value pair with non-nil value.  Much faster than using a keyEnumerator.  The function may modify the value for the key being processed, but should not modify values for other keys. "*/
 {
     NSUInteger valueIndex = _template->_keyCount;
+    NSObject **values = object_getIndexedIvars(self);
 
     while (valueIndex--) {
-        id value = _values[valueIndex];
+        id value = values[valueIndex];
         if (value)
             function(_template->_keys[valueIndex], value, context);
     }
@@ -321,9 +328,11 @@ static inline void _nonNilKey(id key)
     OBPRECONDITION(_template == pairDictionary->_template);
 
     NSUInteger valueIndex = _template->_keyCount;
+    NSObject **values = object_getIndexedIvars(self);
+    NSObject **pairValues = object_getIndexedIvars(pairDictionary);
     while (valueIndex--) {
-        id value1 = _values[valueIndex];
-        id value2 = pairDictionary->_values[valueIndex];
+        id value1 = values[valueIndex];
+        id value2 = pairValues[valueIndex];
         if (value1 || value2)
             function(_template->_keys[valueIndex], value1, value2, context);
     }

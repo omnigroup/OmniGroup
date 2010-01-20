@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,19 +17,15 @@ NSString * const OmniDictionaryElementNameKey = @"__omniDictionaryElementNameKey
 
 - (id)anyObject;
 {
-    return [[self allValues] anyObject];
+    for (NSString *key in self)
+        return [self objectForKey:key];
+    return nil;
 }
 
 /*" Returns an object which is a shallow copy of the receiver except that the given key now maps to anObj. anObj may be nil in order to remove the given key from the dictionary. "*/
 - (NSDictionary *)dictionaryWithObject:(id)anObj forKey:(NSString *)key;
 {
-    unsigned int keyCount;
-    NSMutableArray *newKeys, *newValues;
-    NSEnumerator *keyEnumerator;
-    NSDictionary *result;
-    id aKey;
-
-    keyCount = [self count];
+    NSUInteger keyCount = [self count];
     
     if (keyCount == 0 || (keyCount == 1 && [self objectForKey:key] != nil))
         return anObj ? [NSDictionary dictionaryWithObject:anObj forKey:key] : [NSDictionary dictionary];
@@ -37,10 +33,10 @@ NSString * const OmniDictionaryElementNameKey = @"__omniDictionaryElementNameKey
     if ([self objectForKey:key] == anObj)
         return [NSDictionary dictionaryWithDictionary:self];
 
-    newKeys = [[NSMutableArray alloc] initWithCapacity:keyCount+1];
-    newValues = [[NSMutableArray alloc] initWithCapacity:keyCount+1];
-    keyEnumerator = [self keyEnumerator];
-    while ( (aKey = [keyEnumerator nextObject]) != nil ) {
+    NSMutableArray *newKeys = [[NSMutableArray alloc] initWithCapacity:keyCount+1];
+    NSMutableArray *newValues = [[NSMutableArray alloc] initWithCapacity:keyCount+1];
+    
+    for (NSString *aKey in self) {
         if (![aKey isEqual:key]) {
             [newKeys addObject:aKey];
             [newValues addObject:[self objectForKey:aKey]];
@@ -52,7 +48,7 @@ NSString * const OmniDictionaryElementNameKey = @"__omniDictionaryElementNameKey
         [newValues addObject:anObj];
     }
 
-    result = [NSDictionary dictionaryWithObjects:newValues forKeys:newKeys];
+    NSDictionary *result = [NSDictionary dictionaryWithObjects:newValues forKeys:newKeys];
     [newKeys release];
     [newValues release];
     
@@ -64,7 +60,7 @@ NSString * const OmniDictionaryElementNameKey = @"__omniDictionaryElementNameKey
 struct dictByAddingContext {
     id *keys;
     id *values;
-    unsigned kvPairsUsed;
+    NSUInteger kvPairsUsed;
     BOOL differs;
     CFDictionaryRef older, newer;
 };
@@ -72,7 +68,7 @@ struct dictByAddingContext {
 static void copyWithOverride(const void *aKey, const void *aValue, void *_context)
 {
     struct dictByAddingContext *context = _context;
-    unsigned used = context->kvPairsUsed;
+    NSUInteger used = context->kvPairsUsed;
     
     const void *otherValue = CFDictionaryGetValue(context->newer, aKey);
     if (otherValue && otherValue != aValue) {
@@ -92,7 +88,7 @@ static void copyNewItems(const void *aKey, const void *aValue, void *_context)
     if(CFDictionaryContainsKey(context->older, aKey)) {
         // Value will already have been chaecked by copyWithOverride().
     } else {
-        unsigned used = context->kvPairsUsed;
+        NSUInteger used = context->kvPairsUsed;
         context->keys[used] = (id)aKey;
         context->values[used] = (id)aValue;
         context->differs = YES;
@@ -102,14 +98,13 @@ static void copyNewItems(const void *aKey, const void *aValue, void *_context)
 
 - (NSDictionary *)dictionaryByAddingObjectsFromDictionary:(NSDictionary *)otherDictionary;
 {
-    unsigned int myKeyCount, otherKeyCount;
     struct dictByAddingContext context;
 
     if (!otherDictionary)
         goto nochange_noalloc;
     
-    myKeyCount = [self count];
-    otherKeyCount = [otherDictionary count];
+    NSUInteger myKeyCount = [self count];
+    NSUInteger otherKeyCount = [otherDictionary count];
     
     if (!otherKeyCount)
         goto nochange_noalloc;
@@ -140,21 +135,15 @@ nochange_noalloc:
 
 - (NSString *)keyForObjectEqualTo:(id)anObject;
 {
-    NSEnumerator *keyEnumerator;
-    NSString *aKey;
-
-    keyEnumerator = [self keyEnumerator];
-    while ((aKey = [keyEnumerator nextObject]))
-        if ([[self objectForKey:aKey] isEqual:anObject])
-	    return aKey;
+    for (NSString *key in self)
+        if ([[self objectForKey:key] isEqual:anObject])
+	    return key;
     return nil;
 }
 
 - (float)floatForKey:(NSString *)key defaultValue:(float)defaultValue;
 {
-    id value;
-
-    value = [self objectForKey:key];
+    id value = [self objectForKey:key];
     if (value)
         return [value floatValue];
     return defaultValue;
@@ -167,9 +156,7 @@ nochange_noalloc:
 
 - (double)doubleForKey:(NSString *)key defaultValue:(double)defaultValue;
 {
-    id value;
-
-    value = [self objectForKey:key];
+    id value = [self objectForKey:key];
     if (value)
         return [value doubleValue];
     return defaultValue;
@@ -248,9 +235,7 @@ nochange_noalloc:
 
 - (int)intForKey:(NSString *)key defaultValue:(int)defaultValue;
 {
-    id value;
-
-    value = [self objectForKey:key];
+    id value = [self objectForKey:key];
     if (!value)
         return defaultValue;
     return [value intValue];
@@ -263,9 +248,7 @@ nochange_noalloc:
 
 - (unsigned int)unsignedIntForKey:(NSString *)key defaultValue:(unsigned int)defaultValue;
 {
-    id value;
-
-    value = [self objectForKey:key];
+    id value = [self objectForKey:key];
     if (value == nil)
         return defaultValue;
     return [value unsignedIntValue];
@@ -278,9 +261,7 @@ nochange_noalloc:
 
 - (unsigned long long int)unsignedLongLongForKey:(NSString *)key defaultValue:(unsigned long long int)defaultValue;
 {
-    id value;
-
-    value = [self objectForKey:key];
+    id value = [self objectForKey:key];
     if (value == nil)
         return defaultValue;
     return [value unsignedLongLongValue];
@@ -293,9 +274,7 @@ nochange_noalloc:
 
 - (NSInteger)integerForKey:(NSString *)key defaultValue:(NSInteger)defaultValue;
 {
-    id value;
-    
-    value = [self objectForKey:key];
+    id value = [self objectForKey:key];
     if (!value)
         return defaultValue;
     return [value integerValue];
@@ -330,9 +309,7 @@ static void _makeValuesPerformSelectorApplier(const void *key, const void *value
 
 - (id)objectForKey:(NSString *)key defaultObject:(id)defaultObject;
 {
-    id value;
-
-    value = [self objectForKey:key];
+    id value = [self objectForKey:key];
     if (value)
         return value;
     return defaultObject;
@@ -340,14 +317,10 @@ static void _makeValuesPerformSelectorApplier(const void *key, const void *value
 
 - (id)deepMutableCopy;
 {
-    NSMutableDictionary *newDictionary;
-    id anObject;
-    id aKey;
-
-    newDictionary = [self mutableCopy];
+    NSMutableDictionary *newDictionary = [self mutableCopy];
     // Run through the new dictionary and replace any objects that respond to -deepMutableCopy or -mutableCopy with copies.
-    for (aKey in self) {
-	anObject = [newDictionary objectForKey:aKey];
+    for (id aKey in self) {
+	id anObject = [newDictionary objectForKey:aKey];
         if ([anObject respondsToSelector:@selector(deepMutableCopy)]) {
             anObject = [anObject deepMutableCopy];
             [newDictionary setObject:anObject forKey:aKey];
@@ -365,14 +338,11 @@ static void _makeValuesPerformSelectorApplier(const void *key, const void *value
 
 static id copyDictionaryKeys(CFDictionaryRef self, Class resultClass)
 {
-    const void   **keys;
-    unsigned int   keyCount, byteCount;
-    BOOL           useMalloc;
+    NSUInteger keyCount = CFDictionaryGetCount(self);
     
-    keyCount = CFDictionaryGetCount(self);
-    
-    byteCount = sizeof(*keys) * keyCount;
-    useMalloc = byteCount >= SAFE_ALLOCA_SIZE;
+    const void **keys;
+    size_t byteCount = sizeof(*keys) * keyCount;
+    BOOL useMalloc = byteCount >= SAFE_ALLOCA_SIZE;
     keys = useMalloc ? malloc(byteCount) : alloca(byteCount);
     
     CFDictionaryGetKeysAndValues((CFDictionaryRef)self, keys, NULL);

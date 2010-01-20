@@ -1,4 +1,4 @@
-// Copyright 2006, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,7 @@ RCS_ID("$Id$");
 
 @implementation NSLayoutManager (OAExtensions)
 
-- (NSTextContainer *)textContainerForCharacterIndex:(unsigned int)characterIndex;
+- (NSTextContainer *)textContainerForCharacterIndex:(NSUInteger)characterIndex;
 {
     OBPRECONDITION(characterIndex < [[self textStorage] length]);
     
@@ -29,7 +29,7 @@ RCS_ID("$Id$");
     return container;
 }
 
-- (NSRect)attachmentFrameAtGlyphIndex:(unsigned int)glyphIndex;
+- (NSRect)attachmentFrameAtGlyphIndex:(NSUInteger)glyphIndex;
 {
     // "Glyph locations are relative the their line fragment bounding rect's origin"
     NSRect lineFragmentRect = [self lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:NULL];
@@ -45,13 +45,13 @@ RCS_ID("$Id$");
     return attachmentRect;
 }
 
-- (NSRect)attachmentFrameAtCharacterIndex:(unsigned int)charIndex;
+- (NSRect)attachmentFrameAtCharacterIndex:(NSUInteger)charIndex;
 {
     NSRange glyphRange = [self glyphRangeForCharacterRange:(NSRange){charIndex, 1} actualCharacterRange:NULL];
     return [self attachmentFrameAtGlyphIndex:glyphRange.location];
 }
 
-- (NSRect)attachmentRectForAttachmentAtCharacterIndex:(unsigned int)characterIndex inFrame:(NSRect)layoutFrame;
+- (NSRect)attachmentRectForAttachmentAtCharacterIndex:(NSUInteger)characterIndex inFrame:(NSRect)layoutFrame;
 {
     NSRect attachmentRect = [self attachmentFrameAtCharacterIndex:characterIndex];
     attachmentRect.origin.x += layoutFrame.origin.x;
@@ -62,7 +62,7 @@ RCS_ID("$Id$");
 - (NSTextAttachment *)attachmentAtPoint:(NSPoint)point inTextContainer:(NSTextContainer *)container;
 {
     // Point is in the text containers coordinate system.  Also, this returns the *nearest* glyph.
-    unsigned int glyphIndex = [self glyphIndexForPoint:point inTextContainer:container];
+    NSUInteger glyphIndex = [self glyphIndexForPoint:point inTextContainer:container];
     
     if (glyphIndex >= [self numberOfGlyphs])
         // This most likely hits when -numberOfGlyphs == 0
@@ -72,12 +72,12 @@ RCS_ID("$Id$");
     if (!NSPointInRect(point, attachmentRect))
         return nil;
     
-    unsigned int charIndex = [self characterIndexForGlyphAtIndex:glyphIndex];
+    NSUInteger charIndex = [self characterIndexForGlyphAtIndex:glyphIndex];
     return [[self textStorage] attachmentAtCharacterIndex:charIndex];
 }
 
 // Returns the actual height used.  This is formed by computing the sum over the N-1 containers and the used rect of the Nth container.
-- (float)totalHeightUsed;
+- (CGFloat)totalHeightUsed;
 {
     // Make sure all layout has happened.  It won't if we get called during the middle of editing due to the field editor using our layout manager:
     /*
@@ -90,15 +90,15 @@ RCS_ID("$Id$");
 #5  0x000d2b84 in -[OOOutlineView windowWillDisplayIfNeeded:] (self=0x6301050, _cmd=0x32d9e0, aNotification=0x5ce01c0) at OOOutlineView.m:2155
 #6  0x97dfab40 in _nsNotificationCenterCallBack ()
      */
-    unsigned int glyphCount = [self numberOfGlyphs];
+    NSUInteger glyphCount = [self numberOfGlyphs];
     if (glyphCount == 0)
         return 0.0f;
     [self lineFragmentRectForGlyphAtIndex:glyphCount-1 effectiveRange:NULL];
     
     NSTextContainer *textContainer;
-    float totalHeight = 0;
+    CGFloat totalHeight = 0;
     NSArray *textContainers = [self textContainers];
-    unsigned int tcIndex, tcCount = [textContainers count];
+    NSUInteger tcIndex, tcCount = [textContainers count];
     for (tcIndex = 0; tcIndex < tcCount - 1; tcIndex++) {
         textContainer = [textContainers objectAtIndex:tcIndex];
         NSSize containerSize = [textContainer containerSize];
@@ -112,10 +112,10 @@ RCS_ID("$Id$");
     return totalHeight;
 }
 
-- (float)widthOfLongestLine;
+- (CGFloat)widthOfLongestLine;
 {
     NSTextStorage *textStorage = [self textStorage];
-    unsigned int characterCount = [textStorage length];
+    NSUInteger characterCount = [textStorage length];
     if (!characterCount)
         return 0.0f;
     
@@ -123,10 +123,10 @@ RCS_ID("$Id$");
     if (glyphRange.length == 0)
         return 0.0f;
     
-    unsigned int glyphLocation = glyphRange.location;
-    unsigned int glyphEnd = glyphRange.location + glyphRange.length;
+    NSUInteger glyphLocation = glyphRange.location;
+    NSUInteger glyphEnd = glyphRange.location + glyphRange.length;
     
-    float maximumLineLength = 0.0f;
+    CGFloat maximumLineLength = 0.0f;
     while (glyphLocation < glyphEnd) {
         // The line fragment rect isn't what we want (if text is right aligned, it will span the width of the line from the left edge of the text container).  We want the glyph bounds...
         NSRange lineGlyphRange;

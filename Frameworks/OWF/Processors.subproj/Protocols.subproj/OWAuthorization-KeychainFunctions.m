@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,6 +64,7 @@ static NSString *stringForAttributeTag(FourCharCode aTag)
     return [NSString stringWithFormat:@"0x%08X", (unsigned int)aTag];
 }
 
+#if 0
 /* This'll be big enough for practically everything. On the off chance it's too small, we try again. */
 /* NOTE: KCGetAttribute() will do invisible silent *format conversions* on some attributes if you say you have an 8-byte buffer! What was Apple smoking? */
 #define INITIAL_TRY_LENGTH 128  /* change to 9 or so for debug */
@@ -109,6 +110,8 @@ OWF_PRIVATE_EXTERN NSData *OWKCGetItemAttribute(SecKeychainItemRef item, SecItem
     
     return nil;  // appease the dread compiler warning gods
 }
+
+#endif
 
 OWF_PRIVATE_EXTERN OSStatus OWKCExtractKeyData(SecKeychainItemRef item, NSData **password)
 {
@@ -301,6 +304,7 @@ static OSStatus extractSomeItemAttributes(SecKeychainItemRef itemRef, FourCharCo
     return osErr;
 }
 
+#if 0
 static NSData *formatKeychain4CC(id value)
 {
     // catch NSStrings containing decimal numbers (bleah)
@@ -330,9 +334,13 @@ static NSData *formatKeychainInteger(id value)
     int4 = [value intValue];
     return [NSData dataWithBytes:&int4 length:sizeof(int4)];
 }
+#endif
 
 static SecKeychainAttribute *KeychainAttributesFromDictionary(NSDictionary *params, UInt32 *returnAttributeCount, FourCharCode *returnItemClass)
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return NULL;
+#if 0
     SecKeychainAttribute *attributes;
     unsigned attributeCount, attributeIndex;
     NSEnumerator *paramNameEnumerator;
@@ -393,6 +401,7 @@ static SecKeychainAttribute *KeychainAttributesFromDictionary(NSDictionary *para
     }
     *returnAttributeCount = attributeIndex;
     return attributes;
+#endif
 }
 
 OWF_PRIVATE_EXTERN OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictionary *params, SecKeychainSearchRef *grepstate)
@@ -416,6 +425,9 @@ OWF_PRIVATE_EXTERN OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictiona
 
 OWF_PRIVATE_EXTERN OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSString *realm, NSString *username, int portNumber, OSType protocol, OSType authType, NSData *passwordData)
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return noErr;
+#if 0
     NSMutableDictionary *attributesDictionary;
     SecKeychainAttributeList attributeList;
     OSStatus keychainStatus;
@@ -457,4 +469,5 @@ done:
         CFRelease(item);
     free(attributeList.attr);
     return keychainStatus;
+#endif
 }

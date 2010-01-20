@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,9 +15,9 @@
 RCS_ID("$Id$")
 
 // #define DEBUG_CASCADE
-#define WINDOW_TILE_STEP (20.0)
-#define AVOID_INSET (8.0)
-#define MAXIMUM_TRIES (200.0)
+#define WINDOW_TILE_STEP (20.0f)
+#define AVOID_INSET (8.0f)
+#define MAXIMUM_TRIES (200)
 
 @interface OAWindowCascade (Private)
 + (NSRect)_adjustWindowRect:(NSRect)windowRect forScreenRect:(NSRect)screenRect;
@@ -110,17 +110,17 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
     // Initialize the result so that if the two rects are equal, we'll
     // return a zero rect.
     NSRect bestRect = NSZeroRect;
-    float  bestMargin = 0.0;
+    CGFloat  bestMargin = 0.0f;
     unsigned int rectIndex;
     
     for (rectIndex = 0; rectIndex < 4; rectIndex++) {
 	NSRect rect = rects[rectIndex];
 	
 	// Either of these might be negative
-	float heightMargin = rect.size.height - fitSize.height;
-	float widthMargin = rect.size.width - fitSize.width;
+	CGFloat heightMargin = rect.size.height - fitSize.height;
+	CGFloat widthMargin = rect.size.width - fitSize.width;
 
-	float minMargin = MIN(heightMargin, widthMargin);
+	CGFloat minMargin = MIN(heightMargin, widthMargin);
 	if (minMargin > bestMargin) {
 	    bestMargin = minMargin;
 	    bestRect = rect;
@@ -137,8 +137,6 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
     NSRect screenRect;
     NSRect firstFrame, nextWindowFrame;
     NSRect avoidRect, availableRect;
-    unsigned int windowIndex;
-    NSWindow *window;
     BOOL restartedAlready = NO;
     unsigned int triesRemaining = MAXIMUM_TRIES; // Let's just be absolutely certain we can't loop forever
 
@@ -164,12 +162,10 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
 
     // Trim the available rect down based on the windows to avoid
     availableRect = screenRect;
-    windowIndex = [windowsToAvoid count];
 #ifdef DEBUG_CASCADE
-    NSLog(@"Avoiding %d windows; starting frame %@", windowIndex, NSStringFromRect(startingFrame));
+    NSLog(@"Avoiding %d windows; starting frame %@", [windowsToAvoid count], NSStringFromRect(startingFrame));
 #endif
-    while (windowIndex--) {
-        window = [windowsToAvoid objectAtIndex:windowIndex];
+    for (NSWindow *window in windowsToAvoid) {
         if (![window isVisible] || [window screen] != screen)
             continue;
         avoidRect = [window frame];
@@ -283,10 +279,8 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
     NSRect visibleRect = [screen visibleFrame];
     BOOL needsToMove = NO;
 
-    int windowIndex = [windows count];
     NSMutableArray *availableRects = [NSMutableArray arrayWithObject:[NSValue valueWithRect:visibleRect]];
-    while (windowIndex-- > 0) {
-        NSWindow *window = [windows objectAtIndex:windowIndex];
+    for (NSWindow *window in windows) {
         if (![window isVisible] || [window screen] != screen)
             continue;
         NSRect rectToAvoid = NSInsetRect([window frame], -AVOID_INSET, -AVOID_INSET);
@@ -301,15 +295,7 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
 
 + (NSScreen *)_screenForPoint:(NSPoint)aPoint;
 {
-    NSArray *screens;
-    unsigned int screenIndex, screenCount;
-
-    screens = [NSScreen screens];
-    screenCount = [screens count];
-    for (screenIndex = 0; screenIndex < screenCount; screenIndex++) {
-        NSScreen *screen;
-
-        screen = [screens objectAtIndex:screenIndex];
+    for (NSScreen *screen in [NSScreen screens]) {
         if (NSPointInRect(aPoint, [screen frame]))
             return screen;
     }
@@ -319,13 +305,12 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
 + (NSArray *)_windowsToAvoidIncluding:(NSArray *)additionalWindows;
 {
     NSMutableArray *windows = [NSMutableArray array];
-    if (additionalWindows != nil) {
+    if (additionalWindows != nil)
         [windows addObjectsFromArray:additionalWindows];
-    }
-    int dataSourceIndex = [dataSources count];
-    while (dataSourceIndex-- > 0) {
-        [windows addObjectsFromArray:[[dataSources objectAtIndex:dataSourceIndex] windowsThatShouldBeAvoided]];
-    }
+    
+    for (NSObject <OAWindowCascadeDataSource> *dataSource in dataSources)
+        [windows addObjectsFromArray:[dataSource windowsThatShouldBeAvoided]];
+
     if (avoidColorPanel && [NSColorPanel sharedColorPanelExists] && [[NSColorPanel sharedColorPanel] isVisible])
         [windows addObject:[NSColorPanel sharedColorPanel]];
     if (avoidFontPanel && [NSFontPanel sharedFontPanelExists] && [[NSFontPanel sharedFontPanel] isVisible])

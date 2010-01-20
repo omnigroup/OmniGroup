@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -82,9 +82,9 @@ NSRect OFConstrainRect(NSRect rect, NSRect boundary)
 }
 
 /*" Returns the squared distance from the origin of sourceRect to the closest point in destinationRect. Assumes (and asserts) that destinationRect is large enough to fit sourceRect inside. The reason for returning the squared distance rather than the actual distance is one of optimization - this relieves us of having to take the square root of the product of the squares of the horizontal and vertical distances. The return value is of direct use in comparing against other squared distances, and the square root can be taken if the caller needs the actual distance rather than to simply compare for a variety of potential destination rects. "*/
-extern float OFSquaredDistanceToFitRectInRect(NSRect sourceRect, NSRect destinationRect)
+extern CGFloat OFSquaredDistanceToFitRectInRect(NSRect sourceRect, NSRect destinationRect)
 {
-    float xDistance, yDistance;
+    CGFloat xDistance, yDistance;
 
     OBASSERT((NSWidth(sourceRect) <= NSWidth(destinationRect)) && (NSHeight(sourceRect) <= NSHeight(destinationRect)));
 
@@ -113,7 +113,7 @@ extern float OFSquaredDistanceToFitRectInRect(NSRect sourceRect, NSRect destinat
 /*" This function returns the candidateRect that is closest to sourceRect. The distance used is the distance required to move sourceRect into the candidateRect, rather than simply having the closest approach. "*/
 extern NSRect OFClosestRectToRect(NSRect sourceRect, NSArray *candidateRects)
 {
-    int rectIndex = [candidateRects count];
+    NSUInteger rectIndex = [candidateRects count];
     NSRect closestRect = NSZeroRect;
 #if DEBUG_GEOMETRY
     NSLog(@"Finding closest rect to %@", NSStringFromRect(sourceRect));
@@ -121,12 +121,12 @@ extern NSRect OFClosestRectToRect(NSRect sourceRect, NSArray *candidateRects)
     if (rectIndex > 0) {
         rectIndex--;
         NSRect rect = [(NSValue *)[candidateRects objectAtIndex:rectIndex] rectValue];
-        float shortestDistance = OFSquaredDistanceToFitRectInRect(sourceRect, rect);
+        CGFloat shortestDistance = OFSquaredDistanceToFitRectInRect(sourceRect, rect);
         closestRect = rect;
 
         while (rectIndex-- > 0) {
             NSRect iteratedRect = [(NSValue *)[candidateRects objectAtIndex:rectIndex] rectValue];
-            float distance = OFSquaredDistanceToFitRectInRect(sourceRect, iteratedRect);
+            CGFloat distance = OFSquaredDistanceToFitRectInRect(sourceRect, iteratedRect);
 #if DEBUG_GEOMETRY
             NSLog(@"%d - distance is %f for %@", rectIndex, distance, NSStringFromRect(iteratedRect));
 #endif
@@ -146,10 +146,10 @@ extern NSRect OFClosestRectToRect(NSRect sourceRect, NSArray *candidateRects)
 extern void OFUpdateRectsToAvoidRectGivenMinimumSize(NSMutableArray *rects, NSRect rectToAvoid, NSSize minimumSize)
 {
     OBPRECONDITION(rects != nil);
-    int rectIndex = [rects count];
+    NSUInteger rectIndex = [rects count];
 
     // Very important to iterate over the constraining rects _backwards_, as we will be appending to the constraining rects array and also removing some constraining rects as we iterate over them
-    while (rectIndex-- > 0) {
+    while (rectIndex--) {
         NSRect iteratedRect = [[rects objectAtIndex:rectIndex] rectValue];
 
 #if DEBUG_GEOMETRY
@@ -221,9 +221,6 @@ extern void OFUpdateRectsToAvoidRectGivenMinimumSize(NSMutableArray *rects, NSRe
 /*" This returns the largest of the rects lying to the left, right, top or bottom of the child rect inside the parent rect.  If the two rects do not intersect, parentRect is returned.  If they are the same (or childRect actually contains parentRect), NSZeroRect is returned.  Note that if you which to avoid multiple rects, repeated use of this algorithm is not guaranteed to return the largest non-intersecting rect). "*/
 NSRect OFLargestRectAvoidingRectAndFitSize(NSRect parentRect, NSRect childRect, NSSize fitSize)
 {
-    NSRect rect, bestRect;
-    float size, bestSize;
-
     childRect = NSIntersectionRect(parentRect, childRect);
     if (NSIsEmptyRect(childRect)) {
         // If the child rect doesn't intersect the parent rect, then all of the
@@ -233,8 +230,8 @@ NSRect OFLargestRectAvoidingRectAndFitSize(NSRect parentRect, NSRect childRect, 
 
     // Initialize the result so that if the two rects are equal, we'll
     // return a zero rect.
-    bestRect = NSZeroRect;
-    bestSize = 0.0f;
+    NSRect rect, bestRect = NSZeroRect;
+    CGFloat size, bestSize = (CGFloat)0.0;
 
     // Test the left rect
     rect.origin = parentRect.origin;

@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -167,25 +167,27 @@ RCS_ID("$Id$");
             // For some reason, images in JPEGs have state==kCGImageStatusUnknownType even when they're fully loaded.
             if (partialStat == kCGImageStatusUnknownType || partialStat == kCGImageStatusIncomplete || partialStat == kCGImageStatusComplete) {
                 CFDictionaryRef props = CGImageSourceCopyPropertiesAtIndex(imageParser, 0, NULL);
-                CFNumberRef width  = CFDictionaryGetValue(props, kCGImagePropertyPixelWidth);
-                CFNumberRef height = CFDictionaryGetValue(props, kCGImagePropertyPixelHeight);
-                CFNumberRef xdpi = CFDictionaryGetValue(props, kCGImagePropertyDPIWidth);
-                CFNumberRef ydpi = CFDictionaryGetValue(props, kCGImagePropertyDPIHeight);
-                
-                float imageWidth, imageHeight;
-                
-                if (width && CFNumberGetValue(width, kCFNumberFloatType, &imageWidth) &&
-                    height && CFNumberGetValue(height, kCFNumberFloatType, &imageHeight)) {
-                    newSize.width = imageWidth;
-                    newSize.height = imageHeight;
+                if (props != NULL) {
+                    CFNumberRef width  = CFDictionaryGetValue(props, kCGImagePropertyPixelWidth);
+                    CFNumberRef height = CFDictionaryGetValue(props, kCGImagePropertyPixelHeight);
+                    CFNumberRef xdpi = CFDictionaryGetValue(props, kCGImagePropertyDPIWidth);
+                    CFNumberRef ydpi = CFDictionaryGetValue(props, kCGImagePropertyDPIHeight);
                     
-                    if (xdpi && CFNumberGetValue(xdpi, kCFNumberFloatType, &imageWidth) &&
-                        ydpi && CFNumberGetValue(ydpi, kCFNumberFloatType, &imageHeight)) {
-                        newSize.width = newSize.width * imageWidth / 72.0;
-                        newSize.height = newSize.height * imageHeight / 72.0;
+                    float imageWidth, imageHeight;
+                    
+                    if (width && CFNumberGetValue(width, kCFNumberFloatType, &imageWidth) &&
+                        height && CFNumberGetValue(height, kCFNumberFloatType, &imageHeight)) {
+                        newSize.width = imageWidth;
+                        newSize.height = imageHeight;
+                        
+                        if (xdpi && CFNumberGetValue(xdpi, kCFNumberFloatType, &imageWidth) &&
+                            ydpi && CFNumberGetValue(ydpi, kCFNumberFloatType, &imageHeight)) {
+                            newSize.width = newSize.width * imageWidth / 72.0f;
+                            newSize.height = newSize.height * imageHeight / 72.0f;
+                        }
                     }
-                }
-                CFRelease(props);
+                    CFRelease(props);
+                } 
                 
                 newImageRef = CGImageSourceCreateImageAtIndex(imageParser, 0, NULL);
             }
@@ -238,11 +240,14 @@ RCS_ID("$Id$");
         CFRelease(imageParser);
         imageParser = NULL;
     }
+
+    // Under 32-bit we are doomed if this is large.  Error out now?
+    int64_t expectedContentLength = [response expectedContentLength];
     
     if (dataBuffer)
         [dataBuffer release];
-    if ([response expectedContentLength] > 0)
-        dataBuffer = [[NSMutableData alloc] initWithCapacity:[response expectedContentLength]];
+    if (expectedContentLength > 0)
+        dataBuffer = [[NSMutableData alloc] initWithCapacity:(size_t)expectedContentLength];
     else
         dataBuffer = [[NSMutableData alloc] init];
     

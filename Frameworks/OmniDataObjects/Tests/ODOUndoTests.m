@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,26 +18,19 @@ RCS_ID("$Id$")
 {
     NSError *error = nil;
     
-    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Master"] primaryKey:@"master"];
-    [_editingContext insertObject:master];
-    [master release];
+    MASTER(master);
 
-    [self closeUndoGroup];
-    should([_editingContext saveWithDate:[NSDate date] error:&error]);
+    OBShouldNotError([self save:&error]);
     
-    ODOObject *detail = [[[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Detail"] primaryKey:@"detail"] autorelease];
-    [_editingContext insertObject:detail];
+    DETAIL(detail, master);
     
-    [detail setValue:master forKey:@"master"];
-    
-    [self closeUndoGroup];
-    should([_editingContext saveWithDate:[NSDate date] error:&error]);
+    OBShouldNotError([self save:&error]);
     
     // Should undo the insertion of the detail and relationship between it and the master
     [_undoManager undo];
     should([_undoManager groupingLevel] == 0);
 
-    should([[master valueForKey:@"details"] count] == 0);
+    should([master.details count] == 0);
 }
 
 // These ends up checking that the snapshots recorded in the undo manager don't end up resurrecting deleted objects when we undo a delete by doing an 'insert with snapshot'
@@ -45,28 +38,20 @@ RCS_ID("$Id$")
 {
     NSError *error = nil;
     
-    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Master"] primaryKey:@"master"];
+    MASTER(master);
     ODOObjectID *masterID = [[[master objectID] copy] autorelease];
-    [_editingContext insertObject:master];
-    [master release];
 
-    ODOObject *detail = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Detail"] primaryKey:@"detail"];
+    DETAIL(detail, master);
     ODOObjectID *detailID = [[[detail objectID] copy] autorelease];
-    [_editingContext insertObject:detail];
-    [detail release];
 
-    [detail setValue:master forKey:@"master"];
-
-    [self closeUndoGroup];
-    OBShouldNotError([_editingContext saveWithDate:[NSDate date] error:&error]);
+    OBShouldNotError([self save:&error]);
     
     // Now, delete the master, which should cascade to the detail
     OBShouldNotError([_editingContext deleteObject:master error:&error]);
     should([detail isDeleted]);
     
     // Close the group and finalize the deletion by saving, making the objects invalidated
-    [self closeUndoGroup];
-    should([_editingContext saveWithDate:[NSDate date] error:&error]);
+    OBShouldNotError([self save:&error]);
     
     // Undo the delete; there should now be two objects registered with the right object IDs.
     [_undoManager undo];
@@ -79,10 +64,8 @@ RCS_ID("$Id$")
 
 - (void)testClearingEmptyToManyAfterRedo_unconnected;
 {    
-    ODOObject *master = [[ODOObject alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"Master"] primaryKey:@"master"];
+    MASTER(master);
     ODOObjectID *masterID = [[master objectID] copy];
-    [_editingContext insertObject:master];
-    [master release];
 
     [self closeUndoGroup];
     [_undoManager undo];
@@ -90,15 +73,14 @@ RCS_ID("$Id$")
     [_undoManager redo];
     
     // Re-find master after it got deleted and reinserted
-    master = [_editingContext objectRegisteredForID:masterID];
+    master = (ODOTestCaseMaster *)[_editingContext objectRegisteredForID:masterID];
     [masterID release];
     should(master != nil);
     
     // Crashed prior to the fix
-    NSSet *details = [master valueForKey:@"details"];
     should([master isInserted]);
-    should(details != nil);
-    should([details count] == 0);
+    should(master.details != nil);
+    should([master.details count] == 0);
 }
 
 @end

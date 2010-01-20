@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,10 +41,6 @@ extern NSString *OFDescriptionForObject(id object, NSDictionary *locale, unsigne
 
 extern SEL OFRegisterSelectorIfAbsent(const char *selName);
 
-// OFNameForPointer() returns a pointer to a string that can be used to uniquely identify an object, be it an instance or a class.  We define that this function only works for classes that have names shorter than OF_MAX_CLASS_NAME_LEN.  This pointer passed to this function must contain at least this much space.
-#define OF_MAX_CLASS_NAME_LEN (256)
-extern char *OFNameForPointer(id object, char *pointerName);
-
 #define OFStackAllocatedNameForPointer(object) \
 	OFNameForPointer(object, alloca(OF_MAX_CLASS_NAME_LEN))
 
@@ -53,9 +49,9 @@ extern char *OFNameForPointer(id object, char *pointerName);
 
 #define OFForEachObject(enumExpression, valueType, valueVar) NSEnumerator * valueVar ## _enumerator = (enumExpression); valueType valueVar; while( (valueVar = [ valueVar ## _enumerator nextObject]) != nil)
 
-#define OFForEachInArray(arrayExpression, valueType, valueVar, loopBody) { NSArray * valueVar ## _array = (arrayExpression); unsigned int valueVar ## _count , valueVar ## _index; valueVar ## _count = [( valueVar ## _array ) count]; for( valueVar ## _index = 0; valueVar ## _index < valueVar ## _count ; valueVar ## _index ++ ) { valueType valueVar = [( valueVar ## _array ) objectAtIndex:( valueVar ## _index )]; loopBody ; } }
+#define OFForEachInArray(arrayExpression, valueType, valueVar, loopBody) { NSArray * valueVar ## _array = (arrayExpression); NSUInteger valueVar ## _count , valueVar ## _index; valueVar ## _count = [( valueVar ## _array ) count]; for( valueVar ## _index = 0; valueVar ## _index < valueVar ## _count ; valueVar ## _index ++ ) { valueType valueVar = [( valueVar ## _array ) objectAtIndex:( valueVar ## _index )]; loopBody ; } }
 
-extern unsigned int OFLocalIPv4Address(void);
+extern uint32_t OFLocalIPv4Address(void);
 
 // A string which uniquely identifies this computer. Currently, it's the MAC address for the built-in ethernet port, but that or the underlying implementation could change.
 extern NSString *OFUniqueMachineIdentifier(void);
@@ -99,10 +95,12 @@ static inline NSUInteger OFHashUIntptr(uintptr_t v)
     }
 }
 
+extern NSString *OFKeyPathForKeys(NSString *firstKey, ...) NS_REQUIRES_NIL_TERMINATION;
+
+#ifdef NS_BLOCKS_AVAILABLE
+typedef BOOL (^OFPredicateBlock)(id object);
+#endif
+
 /* NSFoundationVersionNumber values for various OS releases (since Apple only ever includes past releases in the headers, and we often want to know the current or even a "future" (from this SDK's viewpoint) version number) */
-#define OFFoundationVersionNumber10_4_11 NSFoundationVersionNumber10_4_11
-#define OFFoundationVersionNumber10_5    677
-#define OFFoundationVersionNumber10_5_7  677.24
-#define OFFoundationVersionNumber10_5_8  677.26
 #define OFFoundationVersionNumber10_6    747
 

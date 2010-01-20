@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005,2009 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,5 +23,8 @@
     // This method is dependent on NSWorkspace, which is an AppKit class
 
 - (BOOL)deleteFileUsingFinder:(NSString *)path;
+
+- (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
+- (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError;
 
 @end

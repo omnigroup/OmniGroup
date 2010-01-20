@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,8 @@
     NSArray *_relationships;
     NSArray *_toOneRelationships;
     NSArray *_toManyRelationships;
-    
+
+    NSArray *_attributes;
     NSDictionary *_attributesByName;
     ODOAttribute *_primaryKeyAttribute;
 
@@ -49,29 +50,30 @@
     NSSet *_nonDateModifyingPropertyNameSet;
 }
 
-- (ODOModel *)model;
-- (NSString *)name;
+@property(readonly) ODOModel *model;
+@property(readonly) NSString *name;
 
-- (NSString *)instanceClassName;
-- (Class)instanceClass;
+@property(readonly) NSString *instanceClassName;
+@property(readonly) Class instanceClass;
 
-- (NSArray *)properties;
-- (NSDictionary *)propertiesByName;
+@property(readonly) NSArray *properties;
+@property(readonly) NSDictionary *propertiesByName;
 - (ODOProperty *)propertyNamed:(NSString *)name;
 - (ODOProperty *)propertyWithGetter:(SEL)getter;
 - (ODOProperty *)propertyWithSetter:(SEL)setter;
 
-- (NSDictionary *)relationshipsByName;
-- (NSArray *)relationships;
-- (NSArray *)toOneRelationships;
-- (NSArray *)toManyRelationships;
+@property(readonly) NSDictionary *relationshipsByName;
+@property(readonly) NSArray *relationships;
+@property(readonly) NSArray *toOneRelationships;
+@property(readonly) NSArray *toManyRelationships;
 
-- (NSDictionary *)attributesByName;
+@property(readonly) NSArray *attributes;
+@property(readonly) NSDictionary *attributesByName;
 
-- (ODOAttribute *)primaryKeyAttribute;
+@property(readonly) ODOAttribute *primaryKeyAttribute;
 
-- (NSSet *)derivedPropertyNameSet;
-- (NSSet *)nonDateModifyingPropertyNameSet;
+@property(readonly) NSSet *derivedPropertyNameSet;
+@property(readonly) NSSet *nonDateModifyingPropertyNameSet;
 
 + (id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context primaryKey:(id)primaryKey;
 + (id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context;

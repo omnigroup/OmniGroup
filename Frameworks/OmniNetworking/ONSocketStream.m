@@ -1,4 +1,4 @@
-// Copyright 1997-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -75,7 +75,7 @@ RCS_ID("$Id$")
     readBuffer = [[NSMutableData alloc] init];
 }
 
-- (void)advanceReadBufferBy:(unsigned int)advanceAmount;
+- (void)advanceReadBufferBy:(NSUInteger)advanceAmount;
 {
     NSData *oldReadBuffer;
 
@@ -99,10 +99,10 @@ RCS_ID("$Id$")
 }
 
 
-- (unsigned)getLengthOfNextLine:(unsigned int *)eolBytes;
+- (size_t)getLengthOfNextLine:(size_t *)eolBytes;
 {
     const char *bytes;
-    unsigned bytesCount, byteIndex, firstEOLByte;
+    size_t bytesCount, byteIndex, firstEOLByte;
     enum {
         seenNothing, 
         seenCR,
@@ -113,7 +113,7 @@ RCS_ID("$Id$")
     
     // Search for the first NL or CR character in the buffer.
     byteIndex = 0;
-    firstEOLByte = NSNotFound;
+    firstEOLByte = ~0u; // Never read; guarded by searchState==seenNothing
     searchState = seenNothing;
 
     bytes = [readBuffer bytes];
@@ -124,7 +124,7 @@ RCS_ID("$Id$")
             if (readBufferContainsEOF || ![self readSocket]) {
                 // We've reached EOF without finding an EOL that we're satisfied with. Return what we have.
                 if (eolBytes != NULL)
-                    *eolBytes = ( firstEOLByte == NSNotFound ) ? 0 : byteIndex - firstEOLByte;
+                    *eolBytes = (searchState == seenNothing) ? 0 : byteIndex - firstEOLByte;
                 return [readBuffer length];
             }
             
@@ -133,7 +133,7 @@ RCS_ID("$Id$")
             bytesCount = [readBuffer length];
         }
 
-        OBINVARIANT( (searchState == seenNothing) ? firstEOLByte == NSNotFound : firstEOLByte != NSNotFound );
+        OBINVARIANT( (searchState == seenNothing) ? firstEOLByte == ~0u : firstEOLByte != ~0u );
 
         switch (searchState) {
             case seenNothing:
@@ -187,7 +187,6 @@ RCS_ID("$Id$")
         byteIndex ++;
     } while (searchState != seenEOL);
 
-    OBASSERT(firstEOLByte != NSNotFound);
     OBASSERT(firstEOLByte <= byteIndex);
     
     if (eolBytes != NULL)
@@ -198,7 +197,7 @@ RCS_ID("$Id$")
 
 - (NSString *)readLineAndAdvance:(BOOL)shouldAdvance;
 {
-    unsigned lineLength, eolLength;
+    size_t lineLength, eolLength;
     NSString *resultString;
     CFStringRef cfString;
     CFStringEncoding cfEncoding;
@@ -255,7 +254,7 @@ RCS_ID("$Id$")
     return data;
 }
 
-- (NSData *)readDataWithMaxLength:(unsigned int)length;
+- (NSData *)readDataWithMaxLength:(NSUInteger)length;
 {
     NSData *result;
 
@@ -276,10 +275,10 @@ RCS_ID("$Id$")
     }
 }
 
-- (NSData *)readDataOfLength:(unsigned int)length;
+- (NSData *)readDataOfLength:(NSUInteger)length;
 {
     NSData *result;
-    unsigned int readBufferLength;
+    NSUInteger readBufferLength;
 
     readBufferLength = [readBuffer length];
     if (readBufferLength == length) {
@@ -293,8 +292,7 @@ RCS_ID("$Id$")
     } else {
         NSMutableData *mutableBuffer;
         unsigned char *mutableBytes;
-        unsigned int remainingByteCount;
-        unsigned int lengthRead;
+        size_t remainingByteCount;
 
         mutableBuffer = [[NSMutableData alloc] initWithCapacity:length];
         [mutableBuffer appendData:readBuffer];
@@ -305,7 +303,7 @@ RCS_ID("$Id$")
         mutableBytes = [mutableBuffer mutableBytes] + readBufferLength;
         remainingByteCount = length - readBufferLength;
         while (remainingByteCount != 0) {
-            lengthRead = [socket readBytes:remainingByteCount intoBuffer:mutableBytes];
+            size_t lengthRead = [socket readBytes:remainingByteCount intoBuffer:mutableBytes];
             remainingByteCount -= lengthRead;
             mutableBytes += lengthRead;
         }
@@ -313,11 +311,11 @@ RCS_ID("$Id$")
     }
 }
 
-- (unsigned int)readBytesWithMaxLength:(unsigned int)length intoBuffer:(void *)buffer;
+- (size_t)readBytesWithMaxLength:(size_t)length intoBuffer:(void *)buffer;
 {
-    unsigned int readBufferLength;
+    size_t readBufferLength;
     
-    if ((readBufferLength = [readBuffer length])) {
+    if ((readBufferLength = [readBuffer length]) != 0) {
         length = MIN(readBufferLength, length);
         [readBuffer getBytes:buffer length:length];
         if (readBufferLength == length)
@@ -330,22 +328,20 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)readBytesOfLength:(unsigned int)length intoBuffer:(void *)buffer;
+- (void)readBytesOfLength:(size_t)length intoBuffer:(void *)buffer;
 {
-    int read;
-    
     while(length) {
-        read = [self readBytesWithMaxLength:length intoBuffer:buffer];
+        size_t read = [self readBytesWithMaxLength:length intoBuffer:buffer];
         length -= read;
         buffer += read;
     }
 }
 
-- (BOOL)skipBytes:(unsigned int)length;
+- (BOOL)skipBytes:(size_t)length;
 {
-    unsigned int readBufferLength;
+    NSUInteger readBufferLength;
     
-    if ((readBufferLength = [readBuffer length])) {
+    if ((readBufferLength = [readBuffer length]) != 0) {
         if (length > readBufferLength) {
             [self clearReadBuffer];
             length -= readBufferLength;
@@ -357,7 +353,7 @@ RCS_ID("$Id$")
     
     char worthlessBuffer[1024];
     while (length > 0) {
-        int read = [socket readBytes:MIN(1024U, length) intoBuffer:worthlessBuffer];
+        size_t read = [socket readBytes:MIN(1024U, length) intoBuffer:worthlessBuffer];
         if (read == 0)
             return NO;
         length -= read;
@@ -481,11 +477,11 @@ RCS_ID("$Id$")
 {
     struct iovec *vectors;
     unsigned int bufferCount, bufferIndex;
-    unsigned int bytesWritten;
+    size_t bytesWritten;
 
     OBASSERT(writeBuffer != nil);
     
-    bufferCount = [writeBuffer count];
+    bufferCount = (unsigned int)[writeBuffer count];
     if (bufferCount == 0)
         return;
 
@@ -527,7 +523,7 @@ RCS_ID("$Id$")
     // Slow path (partial write)
     bufferIndex = 0;
     while (firstBufferOffset > 0) {
-        unsigned int thisBufferLength = [[writeBuffer objectAtIndex:bufferIndex] count];
+        NSUInteger thisBufferLength = [[writeBuffer objectAtIndex:bufferIndex] length];
         if (firstBufferOffset >= thisBufferLength) {
             firstBufferOffset -= thisBufferLength;
             totalBufferedBytes -= thisBufferLength;

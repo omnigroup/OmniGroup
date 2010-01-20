@@ -1,4 +1,4 @@
-// Copyright 2006-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -199,7 +199,7 @@ RCS_ID("$Id$");
     if (config) {
         NSString *visibilityString = [[config objectForKey:@"_visibility"] lowercaseString];
         if (visibilityString != nil) {
-            _visibilityState = [[OIInspector visibilityStateNameTable] enumForName:[[config objectForKey:@"_visibility"] lowercaseString]];
+            _visibilityState = (OIVisibilityState)[[OIInspector visibilityStateNameTable] enumForName:[[config objectForKey:@"_visibility"] lowercaseString]];
         } else {    // Backwards compatibility with configurations that predate inspector pinning
             _visibilityState = [config boolForKey:@"_selected"] ? OIVisibleVisibilityState : OIHiddenVisibilityState;
         }
@@ -231,7 +231,7 @@ RCS_ID("$Id$");
     return [_inspector shortcutKey];
 }
 
-- (unsigned int)shortcutModifierFlags;
+- (NSUInteger)shortcutModifierFlags;
 {
     return [_inspector shortcutModifierFlags];
 }

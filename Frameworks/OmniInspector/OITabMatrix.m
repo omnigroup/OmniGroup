@@ -1,4 +1,4 @@
-// Copyright 2005-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,8 @@ static void initializeDepressionImages(void)
     
     plasticDepression = [[NSImage imageNamed:@"OITabDepressionBackground" inBundle:OMNI_BUNDLE] retain];
     NSSize sizes = [plasticDepression size];
-    int pix = sizes.width;
+    
+    NSInteger pix = (NSInteger)sizes.width;
     if (pix%2 == 1) {
         depressionLeftMargin = depressionRightMargin = ( pix - 1 ) / 2;
     } else {
@@ -58,16 +59,12 @@ static void initializeDepressionImages(void)
 
 - (NSArray *)pinnedCells;
 {
-    NSArray *allCells = [self cells];
     NSMutableArray *pinnedCells = [NSMutableArray array];
-    int cellCount = [allCells count];
-    int cellIndex;
-    for (cellIndex = 0; cellIndex < cellCount; cellIndex++) {
-        OITabCell *cell = [allCells objectAtIndex:cellIndex];
-        if ([cell isPinned]) {
+    
+    for (OITabCell *cell in [self cells])
+        if ([cell isPinned])
             [pinnedCells addObject:cell];
-        }
-    }
+    
     return pinnedCells;
 }
 
@@ -75,15 +72,10 @@ static void initializeDepressionImages(void)
 {
     // NSMatrix doesn't know about pinned cells, and thus the matrix's idea of what cells are selected doesn't necessarily include the pinned cells. Overriding -selectedCells to make sure the result includes the pinned cells.
     NSMutableArray *selectedCells = [NSMutableArray arrayWithArray:[super selectedCells]];
-    NSArray *allCells = [self cells];
-    int cellCount = [allCells count];
-    int cellIndex;
-    for (cellIndex = 0; cellIndex < cellCount; cellIndex++) {
-        OITabCell *cell = [allCells objectAtIndex:cellIndex];
-        if ([cell isPinned] && ([selectedCells indexOfObjectIdenticalTo:cell] == NSNotFound)) {
+    for (OITabCell *cell in [self cells])
+        if ([cell isPinned] && ([selectedCells indexOfObjectIdenticalTo:cell] == NSNotFound))
             [selectedCells addObject:cell];
-        }
-    }
+
     return selectedCells;
 }
 
@@ -95,19 +87,15 @@ static void initializeDepressionImages(void)
 
         NSMutableArray *oldUnpinnedSelection = [NSMutableArray array];
         NSMutableArray *newUnpinnedSelection = [NSMutableArray array];
-        int count, i;
-        count = [oldSelection count];
-        for(i=0;i<count;i++) {
-            OITabCell *cell = [oldSelection objectAtIndex:i];
+        
+        for (OITabCell *cell in oldSelection)
             if (![cell isPinned])
                 [oldUnpinnedSelection addObject:cell];
-        }
-        count = [newSelection count];
-        for(i=0;i<count;i++) {
-            OITabCell *cell = [newSelection objectAtIndex:i];
+
+        for (OITabCell *cell in newSelection)
             if (![cell isPinned])
                 [newUnpinnedSelection addObject:cell];
-        }
+
         if ([oldUnpinnedSelection count] == 1 && [newUnpinnedSelection count] == 1) {
             if ([oldUnpinnedSelection objectAtIndex:0] == [newUnpinnedSelection objectAtIndex:0]) {
                 [self deselectAllCells];
@@ -132,9 +120,9 @@ static void initializeDepressionImages(void)
     
     if ([event clickCount] == 1) {
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        float doubleClickTime = 0.25;
+        float doubleClickTime = 0.25f;
         id object = [defaults objectForKey: @"com.apple.mouse.doubleClickThreshold"];
-        if (object && [object floatValue] < 0.25)
+        if (object && [object floatValue] < 0.25f)
             doubleClickTime = [object floatValue];
         NSEvent *nextEvent = [[self window] nextEventMatchingMask:NSLeftMouseDownMask untilDate:[NSDate dateWithTimeIntervalSinceNow:doubleClickTime] inMode:NSEventTrackingRunLoopMode dequeue:YES];
         if (nextEvent)
@@ -159,11 +147,11 @@ static void initializeDepressionImages(void)
 - (void)drawRect:(NSRect)rect;
 {
     NSArray *tabCells = [self cells];
-    unsigned cellCount = [tabCells count];
+    NSUInteger cellCount = [tabCells count];
     
     if (highlightStyle == OITabMatrixDepressionHighlightStyle) {
-        unsigned cellIndex;
-        for(cellIndex=0; cellIndex<cellCount; cellIndex++) {
+        NSUInteger cellIndex;
+        for (cellIndex=0; cellIndex<cellCount; cellIndex++) {
             if (![[tabCells objectAtIndex:cellIndex] drawState])
                 continue;
             
@@ -179,7 +167,7 @@ static void initializeDepressionImages(void)
             NSSize imageSize = [plasticDepression size];
             stretchRect.origin.x += depressionLeftMargin;
             stretchRect.size.width -= depressionLeftMargin + depressionRightMargin;
-            float fraction = 0.7;
+            CGFloat fraction = 0.7f;
             [plasticDepression drawFlippedInRect:stretchRect
                                         fromRect:(NSRect){{depressionLeftMargin, 0}, {imageSize.width-depressionLeftMargin-depressionRightMargin, imageSize.height}}
                                        operation:NSCompositePlusDarker
@@ -195,8 +183,8 @@ static void initializeDepressionImages(void)
         }
     } else {
         // Used to be done by OITabCell; now we draw all the backgrounds first before drawing any cells, and all the foregrounds after drawing all cells
-        unsigned cellIndex;
-        [[NSColor colorWithCalibratedWhite:.85 alpha:1.0] set];
+        NSUInteger cellIndex;
+        [[NSColor colorWithCalibratedWhite:.85f alpha:1.0f] set];
         for(cellIndex=0; cellIndex<cellCount; cellIndex++) {
             if ([[tabCells objectAtIndex:cellIndex] drawState]) {
                 NSRectFill([self cellFrameAtRow:0 column:cellIndex]);
@@ -208,7 +196,7 @@ static void initializeDepressionImages(void)
     
     if (highlightStyle == OITabMatrixCellsHighlightStyle) {
         /* Simply draw a frame around each selected cell */
-        unsigned cellIndex;
+        NSUInteger cellIndex;
         for(cellIndex=0; cellIndex<cellCount; cellIndex++) {
             if ([[tabCells objectAtIndex:cellIndex] drawState]) {
                 NSRect cellFrame = [self cellFrameAtRow:0 column:cellIndex];

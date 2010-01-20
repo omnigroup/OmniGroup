@@ -1,4 +1,4 @@
-// Copyright 2002-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -91,8 +91,8 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 
     omitTextAndStateWhenCollapsed = [[NSUserDefaults standardUserDefaults] boolForKey:@"OmitTextAndStateWhenCollapsed"];
     
-    unifiedGradientKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.77 alpha:1.0] endingColor:[NSColor colorWithCalibratedWhite:.59 alpha:1.0]];
-    unifiedGradientNonKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.91 alpha:1.0] endingColor:[NSColor colorWithCalibratedWhite:.81 alpha:1.0]];
+    unifiedGradientKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.77f alpha:1.0f] endingColor:[NSColor colorWithCalibratedWhite:.59f alpha:1.0f]];
+    unifiedGradientNonKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.91f alpha:1.0f] endingColor:[NSColor colorWithCalibratedWhite:.81f alpha:1.0f]];
     
 }
 
@@ -105,7 +105,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     }
 }
 
-#define IMAGE_SIZE (13.0)
+#define IMAGE_SIZE (13.0f)
 
 - (void)setImage:(NSImage *)anImage;
 {
@@ -157,7 +157,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 - (void)resetCursorRects;
 {
     if ([delegate headerViewShouldDisplayCloseButton:self]) {
-        NSRect closeRect = NSMakeRect(NSMinX(_bounds) + 6.0, NSMaxY(_bounds)-1.0 - 14.0, 14.0, 14.0);    
+        NSRect closeRect = NSMakeRect(NSMinX(_bounds) + 6.0f, NSMaxY(_bounds)-1.0f - 14.0f, 14.0f, 14.0f);    
         [self addTrackingRect:closeRect owner:self userData:NULL assumeInside:NO];
     }
 }
@@ -193,9 +193,9 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         NSGradient *blend = keyStatus? unifiedGradientKey : unifiedGradientNonKey;
         [blend drawInRect:gradient angle:90];
         
-        [[NSColor colorWithCalibratedWhite:(keyStatus) ? 0.86 : 0.91 alpha:1.0] set];
+        [[NSColor colorWithCalibratedWhite:(keyStatus) ? 0.86f : 0.91f alpha:1.0f] set];
         NSRectFill(NSMakeRect(0,0, backgroundBounds.size.width, 1));
-        [[NSColor colorWithCalibratedWhite:(keyStatus) ? .25 : .53  alpha:1.0] set];
+        [[NSColor colorWithCalibratedWhite:(keyStatus) ? .25f : .53f  alpha:1.0f] set];
         NSRectFill(NSMakeRect(0,backgroundBounds.size.height-1, backgroundBounds.size.width, 1));
         return;
     }
@@ -207,8 +207,8 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     NSSize gradientSize = [backgroundImage size];
     if (gradientSize.height < backgroundBounds.size.height) {
         NSRect gradient, hairline, hairline2;
-        NSDivideRect(backgroundBounds, &hairline, &gradient, 1.0, NSMinYEdge);
-        NSDivideRect(gradient, &hairline2, &gradient, 1.0, NSMaxYEdge);
+        NSDivideRect(backgroundBounds, &hairline, &gradient, 1.0f, NSMinYEdge);
+        NSDivideRect(gradient, &hairline2, &gradient, 1.0f, NSMaxYEdge);
         [backgroundImage drawFlippedInRect:gradient fromRect:(NSRect){{0,1},{gradientSize.width,gradientSize.height-2}} operation:NSCompositeCopy];
         if (NSIntersectsRect(hairline, dirtyRect))
             [backgroundImage drawFlippedInRect:hairline fromRect:(NSRect){{0,gradientSize.height-1},{gradientSize.width,1}} operation:NSCompositeCopy];
@@ -225,21 +225,21 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     OIInspectorHeaderImageTint imageTint = ([NSColor currentControlTint] == NSBlueControlTint) ? OIInspectorHeaderImageTintBlue : OIInspectorHeaderImageTintGraphite;
     
     if ([delegate headerViewShouldDisplayCloseButton:self]) {
-        NSPoint closeImagePoint = NSMakePoint(NSMinX(_bounds) + 6.0, NSMaxY(_bounds)-1.0);
+        NSPoint closeImagePoint = NSMakePoint(NSMinX(_bounds) + 6.0f, NSMaxY(_bounds)-1.0f);
         NSImage *closeImage = _closeButtonImages[imageTint][clickingClose ? OIInspectorCloseButtonStatePressed : (overClose ? OIInspectorCloseButtonStateRollover : OIInspectorCloseButtonStateNormal)];
         
         [closeImage compositeToPoint:closeImagePoint operation:NSCompositeSourceOver];
     }
     
-    float nextElementX = NSMinX(_bounds) + 26.0f;
+    CGFloat nextElementX = NSMinX(_bounds) + 26.0f;
     if (drawAll) {
         NSImage *disclosureImage = isExpanded ? _expandedImage : _collapsedImage;
-        NSPoint disclosureImagePoint = NSMakePoint(nextElementX, NSMaxY(_bounds)-2.0);
+        NSPoint disclosureImagePoint = NSMakePoint(nextElementX, NSMaxY(_bounds)-2.0f);
 
         [disclosureImage compositeToPoint:disclosureImagePoint operation:NSCompositeSourceOver];
 
         if (isClicking && !overClose && !isDragging) // our triangle images are 100% black, but about 50% opaque, so we just draw it again over itself
-            [disclosureImage compositeToPoint:disclosureImagePoint operation:NSCompositeSourceOver fraction:0.6666];
+            [disclosureImage compositeToPoint:disclosureImagePoint operation:NSCompositeSourceOver fraction:0.6666f];
 
         nextElementX += 20.0f;
     }
@@ -249,17 +249,17 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         CGContextRef cgContext = [currentContext graphicsPort];
 
         CGContextSaveGState(cgContext);
-        CGContextTranslateCTM(cgContext, nextElementX, NSMaxY(_bounds)-2.0);
-        CGContextScaleCTM(cgContext, 1.0, -1.0);
-        [image drawAtPoint:NSZeroPoint fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
+        CGContextTranslateCTM(cgContext, nextElementX, NSMaxY(_bounds)-2.0f);
+        CGContextScaleCTM(cgContext, 1.0f, -1.0f);
+        [image drawAtPoint:NSZeroPoint fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
         CGContextRestoreGState(cgContext);
         
         nextElementX += 20.0f;
     }
     
-    float keyEquivalentWidth;
+    CGFloat keyEquivalentWidth;
     if ([NSString isEmptyString:keyEquivalent])
-        keyEquivalentWidth = 0.0;
+        keyEquivalentWidth = 0.0f;
     else
         keyEquivalentWidth = [keyEquivalent sizeWithAttributes:_keyEquivalentAttributes].width + 5.0f;
     
@@ -274,7 +274,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         }
     }
 
-    [keyEquivalent drawAtPoint:NSMakePoint(NSMaxX(_bounds) - keyEquivalentWidth, NSMinY(_bounds) + 1.0) withAttributes:_keyEquivalentAttributes];
+    [keyEquivalent drawAtPoint:NSMakePoint(NSMaxX(_bounds) - keyEquivalentWidth, NSMinY(_bounds) + 1.0f) withAttributes:_keyEquivalentAttributes];
 }
 
 - (void)mouseDown:(NSEvent *)theEvent;
@@ -283,10 +283,10 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     NSWindow *window = [self window];
     NSRect windowFrame = [window frame];
     NSSize windowOriginOffset = NSMakeSize(click.x - windowFrame.origin.x, click.y - windowFrame.origin.y);
-    NSRect hysterisisRect = NSMakeRect(click.x - 3.0, click.y - 3.0, 6.0, 6.0);
-    NSRect closeRect = NSMakeRect(NSMinX(_bounds) + 6.0, NSMaxY(_bounds)-1.0 - 14.0, 14.0, 14.0);
+    NSRect hysterisisRect = NSMakeRect(click.x - 3.0f, click.y - 3.0f, 6.0f, 6.0f);
+    NSRect closeRect = NSMakeRect(NSMinX(_bounds) + 6.0f, NSMaxY(_bounds)-1.0f - 14.0f, 14.0f, 14.0f);
     NSPoint newTopLeft = NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame));
-    float dragWindowHeight = 0.0;
+    CGFloat dragWindowHeight = 0.0f;
     BOOL isInOriginalFrame = NSPointInRect([theEvent locationInWindow], [self frame]);  // don't collapse if the mousedown is not within the header frame (as when this is called from tab area)
     
     click = [self convertPoint:[theEvent locationInWindow] fromView:nil];
@@ -322,15 +322,12 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         
         if (isDragging) {
             NSPoint newPoint = NSMakePoint(click.x - windowOriginOffset.width, click.y - windowOriginOffset.height);
-            NSArray *screens = [NSScreen screens];
-            int screenIndex = [screens count];
-            NSScreen *screen = nil;
             NSRect resultRect;
             
-            newTopLeft = NSMakePoint(round(newPoint.x), round(newPoint.y + [window frame].size.height));
+            newTopLeft = NSMakePoint((CGFloat)round(newPoint.x), (CGFloat)round(newPoint.y + [window frame].size.height));
             
-            while (screenIndex--) {
-                NSScreen *testScreen = [screens objectAtIndex:screenIndex];
+            NSScreen *screen = nil;
+            for (NSScreen *testScreen in [NSScreen screens]) {
                 if (NSPointInRect(click, [testScreen visibleFrame]))
                     screen = testScreen;
             }

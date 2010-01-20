@@ -1,4 +1,4 @@
-// Copyright 1998-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,17 +20,12 @@ This subclass of NSMutableDictionary should be used when the set of possible key
 */
 {
     OFKnownKeyDictionaryTemplate *_template;
-    NSObject *_values[0];
+    // ... indexed ivars for values
 }
-
-+ (OFMutableKnownKeyDictionary *) newWithTemplate: (OFKnownKeyDictionaryTemplate *)aTemplate zone: (NSZone *) zone;
-/*.doc.
-Returns a new, retained, empty instance.
-*/
 
 + (OFMutableKnownKeyDictionary *) newWithTemplate: (OFKnownKeyDictionaryTemplate *)aTemplate;
 /*.doc.
-Calls +newWithTemplate:zone: using the default zone.
+ Returns a new, retained, empty instance.
 */
 
 - (OFMutableKnownKeyDictionary *) mutableKnownKeyCopyWithZone: (NSZone *) zone;

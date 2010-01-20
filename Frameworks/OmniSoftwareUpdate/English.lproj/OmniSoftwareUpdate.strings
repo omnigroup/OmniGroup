@@ -10,20 +10,11 @@
 /* Download window title - text is name of the running application */
 "%@ Update" = "%@ Update";
 
-/* network speed format string for kilobits/second */
-"%g Kbps" = "%g Kbps";
-
-/* network speed format string for megabits/second */
-"%g Mbps" = "%g Mbps";
-
 /* error description */
 "%s is not reachable." = "%s is not reachable.";
 
 /* error description when trying to start a download when one is already in progress */
 "A download is already in progress." = "A download is already in progress.";
-
-/* details panel string - for the section which lists run/launch/crash info for all versions */
-"All Versions" = "All Versions";
 
 /* error reason - OSUInstaller.sh is missing */
 "Cannot find the installer script." = "Cannot find the installer script.";
@@ -55,9 +46,6 @@
 /* error message - we downloaded and unpacked an update, but now we can't read it */
 "Could not read directory" = "Could not read directory";
 
-/* details panel string - for the section which lists run/launch/crash info for this particular version */
-"Current Version" = "Current Version";
-
 /* status description */
 "Decompressing\\U2026" = "Decompressing…";
 
@@ -79,11 +67,17 @@
 /* error reason */
 "Exception raised: %@" = "Exception raised: %@";
 
+/* details panel string - list of OpenCL platform extensions */
+"Extensions" = "Extensions";
+
 /* error reason */
 "Extract script failed." = "Extract script failed.";
 
 /* status message - copying application from disk image to target filesystem */
 "Extracting updated application\\U2026" = "Extracting updated application…";
+
+/* details panel string - column header for OpenCL device extensions */
+"Exts" = "Exts";
 
 /* relaunch error message */
 "Failed to create child pipe: %s" = "Failed to create child pipe: %s";
@@ -99,6 +93,9 @@
 
 /* free upgrade price string - displayed in price column */
 "free!" = "free!";
+
+/* details panel string - column header for OpenCL device core frequency */
+"Freq." = "Freq.";
 
 /* details panel string - name of video card driver */
 "Hardware Driver" = "Hardware Driver";
@@ -121,13 +118,8 @@
 /* status description */
 "Installing\\U2026" = "Installing…";
 
-/* network speed */
-"Internet/LAN" = "Internet/LAN";
-
-/* Percentage of table to allocate for values */
-"KeyColumnWidthPercentage" = "20";
-
-/* details panel string - amount of video memory installed */
+/* details panel string - amount of video memory installed
+   details panel string - column header for OpenCL device memory sizes */
 "Memory" = "Memory";
 
 /* error reason - we downloaded an update, and it has more than one application in it */
@@ -217,9 +209,6 @@
 /* caution text - we downloaded a file, but its checksum is not correct - warn that it might be damaged or even maliciously replaced. Parameter is name(s) of hash algorithms (md5, sha1, etc) */
 "The file's checksum does not match (%@). It might be corrupted." = "The file's checksum does not match (%@). It might be corrupted.";
 
-/* error description - the update information wasn't signed at all, but we require it to be signed */
-"The update information is not signed." = "The update information is not signed.";
-
 /* Install dialog message - small note indicating that app will be installed in a system or network directory - @ is replaced with name of directory, eg Applications */
 "The update will be installed in the @ folder." = "The update will be installed in the @ folder.";
 
@@ -235,9 +224,6 @@
 /* title of new versions available dialog, when one update is available - text is name of application */
 "There is an update available for %1$@." = "There is an update available for %1$@.";
 
-/* error description - the checksum or signature didn't match - more info in underlying error */
-"There was a problem checking the signature." = "There was a problem checking the signature.";
-
 /* error message - unable to download URL - extra text if it looks like a transitory network problem */
 "This may be a temporary network problem." = "This may be a temporary network problem.";
 
@@ -250,8 +236,8 @@
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "Tool returned no data";
 
-/* error description - we have some update information but it doesn't look authentic */
-"Unable to authenticate the response from the software update server." = "Unable to authenticate the response from the software update server.";
+/* details panel string - column header for OpenCL device type */
+"Type" = "Type";
 
 /* error message - unable to download URL to LOCALFILENAME - will often be followed by more detailed explanation */
 "Unable to download %@ to %@." = "Unable to download %1$@ to %2$@.";
@@ -262,12 +248,12 @@
 /* error description - will be followed by more detailed error reason */
 "Unable to fetch software update information." = "Unable to fetch software update information.";
 
-/* error description - could not move application into place during install
-   error description - we downloaded an update, but it doesn't seem to be valid
-   error description - we downloaded an update, but there seems to be something wrong with the application it contained
+/* error description
    error description - could not copy from disk image to destination filesystem
+   error description - could not move application into place during install
    error description - could not process .tar.bz2 file
-   error description */
+   error description - we downloaded an update, but it doesn't seem to be valid
+   error description - we downloaded an update, but there seems to be something wrong with the application it contained */
 "Unable to install update" = "Unable to install update";
 
 /* error description */
@@ -281,6 +267,9 @@
 
 /* relaunch error title */
 "Unable to relaunch" = "Unable to relaunch";
+
+/* details panel string - column header for OpenCL device processing-unit count */
+"Units" = "Units";
 
 /* error reason - downloaded upgrade package was not in a format we recognize */
 "Unknown package type." = "Unknown package type.";

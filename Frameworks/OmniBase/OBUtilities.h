@@ -23,24 +23,10 @@ extern "C" {
 #define NORETURN
 #endif
 
-/* The LLVM clang scan-build support has some attributes for declaring exceptions to the normal CF/Cocoa rules.  These are only valid for clang, not GCC. */
-#if defined(__clang__)
-    #define CLANG_RETURNS_NS_RETAINED __attribute__((ns_returns_retained)) 
-    #define CLANG_RETURNS_CF_RETAINED __attribute__((cf_returns_retained)) 
-#else
-    #define CLANG_RETURNS_NS_RETAINED
-    #define CLANG_RETURNS_CF_RETAINED
-#endif
-
-/*
- * only certain compilers support __attribute__((deprecated))
- * Apple has a similar definition but it's too inclusive
- */
-#if defined(MAC_OS_X_VERSION_10_5) && defined(MAC_OS_X_VERSION_MIN_REQUIRED) && defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1))) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
 #define OB_DEPRECATED_ATTRIBUTE __attribute__((deprecated))
-#else
-#define OB_DEPRECATED_ATTRIBUTE
-#endif
+
+// CFMakeCollectable loses the type of the argument, casting it to a CFTypeRef, causing warnings.
+#define OBCFMakeCollectable(x) ((typeof(x))CFMakeCollectable(x))
     
 // This uses the OMNI_BUNDLE_IDENTIFIER compiler define set by the OmniGroup/Configurations/*Global*.xcconfig to look up the bundle for the calling code.
 #define OMNI_BUNDLE _OBBundleWithIdentifier(OMNI_BUNDLE_IDENTIFIER)
@@ -60,6 +46,10 @@ extern void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned i
 #define OBRejectUnusedImplementation(self, sel) _OBRejectUnusedImplementation((self), (sel), __FILE__, __LINE__)
 #define OBRejectInvalidCall(self, sel, format, ...) _OBRejectInvalidCall((self), (sel), __FILE__, __LINE__, (format), ## __VA_ARGS__)
 
+// A common pattern when refactoring or updating code is to #if 0 out portions that haven't been updated and leave a marker there.  This function serves as the 'to do' marker and allows you to demand-port the remaining code after working out the general structure.
+extern void _OBFinishPorting(const char *function, const char *file, unsigned int line) NORETURN;
+#define OBFinishPorting _OBFinishPorting(__PRETTY_FUNCTION__, __FILE__, __LINE__)
+    
 extern NSString * const OBAbstractImplementation;
 extern NSString * const OBUnusedImplementation;
 

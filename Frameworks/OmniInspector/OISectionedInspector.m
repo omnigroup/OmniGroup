@@ -1,4 +1,4 @@
-// Copyright 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@
 
 RCS_ID("$Id$")
 
-@interface OISectionedInspector (Private)
+@interface OISectionedInspector (/*Private*/)
 - (void)_layoutSections;
 @end
 
@@ -61,11 +61,7 @@ RCS_ID("$Id$")
     NSMutableArray *sectionInspectors = [[NSMutableArray alloc] init];
     
     // Read our sub-inspectors from the plist
-    NSArray *sectionPlists = [dict objectForKey:@"sections"];
-    unsigned int sectionIndex, sectionCount = [sectionPlists count];
-    for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-	NSDictionary *sectionPlist = [sectionPlists objectAtIndex:sectionIndex];
-        
+    for (NSDictionary *sectionPlist in [dict objectForKey:@"sections"]) {
         NSDictionary *inspectorPlist = [sectionPlist objectForKey:@"inspector"];
         
         if (!inspectorPlist && [sectionPlist objectForKey:@"class"]) {
@@ -125,11 +121,8 @@ RCS_ID("$Id$")
 
 - (void)inspectObjects:(NSArray *)list 
 {
-    unsigned int inspectorIndex = [_sectionInspectors count];
-    while (inspectorIndex--) {
-        OIInspector *inspector = [_sectionInspectors objectAtIndex:inspectorIndex];
+    for (OIInspector *inspector in _sectionInspectors)
         [inspector inspectObjects:[list filteredArrayUsingPredicate:[inspector inspectedObjectsPredicate]]];
-    }
 }
 
 #pragma mark -
@@ -157,11 +150,8 @@ RCS_ID("$Id$")
     return YES;
 }
 
-@end
-
 #pragma mark -
-
-@implementation OISectionedInspector (Private)
+#pragma mark Private
 
 - (void)_layoutSections;
 {
@@ -170,7 +160,7 @@ RCS_ID("$Id$")
     
     NSSize size = NSMakeSize([inspectionView frame].size.width, 0);
     
-    unsigned int sectionIndex, sectionCount = [_sectionInspectors count];
+    NSUInteger sectionIndex, sectionCount = [_sectionInspectors count];
     
     NSView *veryFirstKeyView = nil;
     NSView *previousLastKeyView = nil;
@@ -197,7 +187,7 @@ RCS_ID("$Id$")
         NSRect viewFrame = [view frame];
 	OBASSERT(viewFrame.size.width <= size.width); // make sure it'll fit
 	
-        viewFrame.origin.x = floor((size.width - viewFrame.size.width) / 2.0);
+        viewFrame.origin.x = (CGFloat)floor((size.width - viewFrame.size.width) / 2.0);
         viewFrame.origin.y = size.height;
         viewFrame.size = [view frame].size;
         [view setFrame:viewFrame];

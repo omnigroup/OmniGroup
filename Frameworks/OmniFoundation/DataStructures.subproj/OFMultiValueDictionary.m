@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,50 +54,13 @@ RCS_ID("$Id$")
     return self;
 }
 
-- initWithCoder:(NSCoder *)coder
-{
-    short flags;
-    unsigned int keyCount;
-    unsigned *valueCounts;
-    unsigned keyIndex, valueIndex;
-
-    [coder decodeValuesOfObjCTypes:"si", &flags, &keyCount];
-
-    if ((flags & 0xFE) != 0)
-        [NSException raise:NSGenericException format:@"Serialized %@ is of unknown kind", [(id)isa name]];
-
-    if (![self initWithCaseInsensitiveKeys: (flags&1)? YES : NO])
-        return nil;
-
-    if (keyCount == 0)
-        return self;
-
-    valueCounts = malloc(sizeof(*valueCounts) * keyCount);
-    [coder decodeArrayOfObjCType:@encode(unsigned int) count:keyCount at:valueCounts];
-    for (keyIndex = 0; keyIndex < keyCount; keyIndex ++) {
-        NSMutableArray *values;
-        NSString *key;
-
-        key = [coder decodeObject];
-        values = [[NSMutableArray alloc] initWithCapacity:valueCounts[keyIndex]];
-        for (valueIndex = 0; valueIndex < valueCounts[keyIndex]; valueIndex ++) {
-            [values addObject:[coder decodeObject]];
-        }
-        CFDictionaryAddValue(dictionary, key, values);
-        [values release];
-    }
-    free(valueCounts);
-
-    return self;
-}
-
 - (void)dealloc;
 {
     CFRelease(dictionary);
     [super dealloc];
 }
 
-- (NSMutableArray *)_arrayForKey:(id)aKey alloc:(unsigned)allocCapacity;
+- (NSMutableArray *)_arrayForKey:(id)aKey alloc:(NSUInteger)allocCapacity;
 {
     NSMutableArray *value;
 
@@ -142,7 +105,7 @@ RCS_ID("$Id$")
 - (void)addObjects:(NSArray *)moreObjects forKey:(id)aKey;
 {
     NSMutableArray *valueArray;
-    unsigned objectCount = [moreObjects count];
+    NSUInteger objectCount = [moreObjects count];
 
     if (objectCount == 0)
         return;
@@ -312,6 +275,49 @@ static void duplicateFunction(const void *key, const void *value, void *context)
     return CFEqual(dictionary, otherDictionary)? YES : NO;
 }
 
+// If we do need to support NSCoding, we'll need to handle 64-bit key counts or at least avoid accidentally updating the archiving to an incompatible format.
+#if 0
+
+#pragma mark -
+#pragma mark NSCoding
+
+- initWithCoder:(NSCoder *)coder
+{
+    short flags;
+    unsigned int keyCount;
+    unsigned *valueCounts;
+    unsigned keyIndex, valueIndex;
+    
+    [coder decodeValuesOfObjCTypes:"si", &flags, &keyCount];
+    
+    if ((flags & 0xFE) != 0)
+        [NSException raise:NSGenericException format:@"Serialized %@ is of unknown kind", [(id)isa name]];
+    
+    if (![self initWithCaseInsensitiveKeys: (flags&1)? YES : NO])
+        return nil;
+    
+    if (keyCount == 0)
+        return self;
+    
+    valueCounts = malloc(sizeof(*valueCounts) * keyCount);
+    [coder decodeArrayOfObjCType:@encode(unsigned int) count:keyCount at:valueCounts];
+    for (keyIndex = 0; keyIndex < keyCount; keyIndex ++) {
+        NSMutableArray *values;
+        NSString *key;
+        
+        key = [coder decodeObject];
+        values = [[NSMutableArray alloc] initWithCapacity:valueCounts[keyIndex]];
+        for (valueIndex = 0; valueIndex < valueCounts[keyIndex]; valueIndex ++) {
+            [values addObject:[coder decodeObject]];
+        }
+        CFDictionaryAddValue(dictionary, key, values);
+        [values release];
+    }
+    free(valueCounts);
+    
+    return self;
+}
+
 - (void)encodeWithCoder:(NSCoder *)coder
 {
     short flags;
@@ -356,6 +362,7 @@ static void duplicateFunction(const void *key, const void *value, void *context)
     free(valueCounts);
     free(values);
 }
+#endif
 
 // Debugging
 
@@ -374,15 +381,11 @@ static void duplicateFunction(const void *key, const void *value, void *context)
 
 - (OFMultiValueDictionary *)groupBySelector:(SEL)aSelector;
 {
-    int objectIndex, count;
-    id currentObject;
-    OFMultiValueDictionary *dictionary;
-    
-    dictionary = [[[OFMultiValueDictionary alloc] init] autorelease];
-    count = [self count];
+    OFMultiValueDictionary *dictionary = [[[OFMultiValueDictionary alloc] init] autorelease];
+    NSUInteger objectIndex, count = [self count];
     
     for (objectIndex = 0; objectIndex < count; objectIndex++) {
-        currentObject = [self objectAtIndex:objectIndex];
+        id currentObject = [self objectAtIndex:objectIndex];
         [dictionary addObject:currentObject forKey:[currentObject performSelector:aSelector]];
     }
     return dictionary;
@@ -390,15 +393,11 @@ static void duplicateFunction(const void *key, const void *value, void *context)
 
 - (OFMultiValueDictionary *)groupBySelector:(SEL)aSelector withObject:(id)anObject;
 {
-    int objectIndex, count;
-    id currentObject;
-    OFMultiValueDictionary *dictionary;
-    
-    dictionary = [[[OFMultiValueDictionary alloc] init] autorelease];
-    count = [self count];
+    OFMultiValueDictionary *dictionary = [[[OFMultiValueDictionary alloc] init] autorelease];
+    NSUInteger objectIndex, count = [self count];
     
     for (objectIndex = 0; objectIndex < count; objectIndex++) {
-        currentObject = [self objectAtIndex:objectIndex];
+        id currentObject = [self objectAtIndex:objectIndex];
         [dictionary addObject:currentObject forKey:[currentObject performSelector:aSelector withObject:anObject]];
     }
     return dictionary;

@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,7 +39,7 @@ RCS_ID("$Id$");
 
 
 // API
-- (id)objectAtIndex:(unsigned int)objectIndex;
+- (id)objectAtIndex:(NSUInteger)objectIndex;
 {
     if (objectIndex >= [objects count])
         return nil;
@@ -47,7 +47,7 @@ RCS_ID("$Id$");
         return [objects objectAtIndex:objectIndex];
 }
 
-- (id)objectAtIndex:(unsigned int)objectIndex withHint:(void **)hint;
+- (id)objectAtIndex:(NSUInteger)objectIndex withHint:(void **)hint;
 {
     if (objectIndex >= [objects count])
         return nil;
@@ -55,12 +55,12 @@ RCS_ID("$Id$");
         return [objects objectAtIndex:objectIndex];
 }
 
-- (unsigned int)objectCount
+- (NSUInteger)objectCount
 {
     return [objects count];
 }
 
-- (BOOL)isIndexPastEnd:(unsigned int)objectIndex
+- (BOOL)isIndexPastEnd:(NSUInteger)objectIndex
 {
     return ( objectIndex >= [objects count] );
 }

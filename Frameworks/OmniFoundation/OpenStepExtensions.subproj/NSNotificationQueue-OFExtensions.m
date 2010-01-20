@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,21 +13,21 @@ RCS_ID("$Id$")
 
 @implementation NSNotificationQueue (OFExtensions)
 
-+ (void)enqueueNotificationInMainThread:(NSNotification *)aNote postingStyle:(NSPostingStyle)aStyle
-{
-    NSArray *arguments = [[NSArray alloc] initWithObjects:aNote, [NSNumber numberWithInt:aStyle], nil];
-    [[OFMessageQueue mainQueue] queueSelector:@selector(_mainThreadEnqueue:) forObject:self withObject:arguments];
-    [arguments release];
-}
-
 + (void)_mainThreadEnqueue:(NSArray *)parameters
 {
     NSNotification *aNote = [parameters objectAtIndex:0];
     NSPostingStyle aStyle = [[parameters objectAtIndex:1] intValue];
-
+    
     [[NSNotificationQueue defaultQueue] enqueueNotification:aNote postingStyle:aStyle];
 }
 
+
++ (void)enqueueNotificationInMainThread:(NSNotification *)aNote postingStyle:(NSPostingStyle)aStyle
+{
+    NSArray *arguments = [[NSArray alloc] initWithObjects:aNote, [NSNumber numberWithInteger:aStyle], nil];
+    [[OFMessageQueue mainQueue] queueSelector:@selector(_mainThreadEnqueue:) forObject:self withObject:arguments];
+    [arguments release];
+}
 
 - (void) enqueueNotificationName: (NSString *) name
                           object: (id) object

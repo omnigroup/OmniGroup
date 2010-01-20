@@ -1,4 +1,4 @@
-// Copyright 2002-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -201,6 +201,7 @@ static NSString *_displayName(NSBundle *bundle, NSString *stringsFileName, NSStr
     
     key = displayKey;
     value = [itemInfo objectForKey:key]; // Grab the unlocalized display name out of the item dictionary
+    
     OBASSERT(value == nil); // This assertion succeeds when a display key doesn't exist at all; it fails when its name is unlocalized
     return value;
 }

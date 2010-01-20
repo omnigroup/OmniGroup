@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,7 @@ enum OASwoopStyle {
         short flags;            // Flags; will be 0 if swooper is idle
         NSPoint begins;         // Cell position at t=0
         NSPoint slideVector;    // Slide vector
-        float duration;         // Time to take to slide; may validly be 0
+        NSTimeInterval duration; // Time to take to slide; may validly be 0
         NSTimeInterval began;   // Time the motion began; assumed to be in past
         enum OASwoopStyle kine; // Cell kinematic style
     } *swoop;                   // may be NULL if swoopCount is 0
@@ -58,8 +58,8 @@ enum OASwoopStyle {
 // Adding and removing cells
 - (BOOL)addCellIfAbsent:(NSCell *)newCell frame:(NSRect)newCellFrame parameter:(CGFloat)newParameter;
 - (BOOL)addCellIfAbsent:(NSCell *)newCell frame:(NSRect)newCellFrame;
-- (unsigned)removeCells:(NSArray *)delenda;
-- (unsigned)removeCellsExcept:(NSSet *)keepThese;  // keepThese may be nil to remove all cells
+- (NSUInteger)removeCells:(NSArray *)delenda;
+- (NSUInteger)removeCellsExcept:(NSSet *)keepThese;  // keepThese may be nil to remove all cells
 
 // Inquiring about the view's contents
 - (NSArray *)cells;

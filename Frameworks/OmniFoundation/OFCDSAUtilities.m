@@ -1,4 +1,4 @@
-// Copyright 2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,7 +49,7 @@ NSString *OFStringFromCSSMReturn(CSSM_RETURN code)
     if (errorString == nil && SecCopyErrorMessageString != NULL) {
         CFStringRef errString = SecCopyErrorMessageString(code, NULL);
         if (errString)
-            errorString = [(NSString *)errString autorelease];
+            errorString = [NSMakeCollectable(errString) autorelease];
     }
     
     if (errorString == nil)
@@ -698,5 +698,125 @@ NSData *OFGetAppleKeyDigest(const CSSM_KEY *pkey, CSSM_CC_HANDLE ccontext, NSErr
     if (freeContext)
         CSSM_DeleteContext(ccontext);
 
+    return result;
+}
+
+CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage, CFTypeRef anchors, SecPolicyRef policy, NSError **outError)
+{
+    OSStatus err;
+    
+    // If no policy is specified, use the basic X.509 policy
+    if (!policy)
+        policy = SecPolicyCreateBasicX509();
+    else
+        CFRetain(policy);
+    
+    // Allow a single anchor cert instead of an array
+    if (CFGetTypeID(anchors) != CFArrayGetTypeID())
+        anchors = CFArrayCreate(kCFAllocatorDefault, &anchors, 1, &kCFTypeArrayCallBacks);
+    else
+        CFRetain(anchors);
+    
+    CFMutableArrayRef result = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+    
+    SecIdentitySearchRef searchHandle;
+    err = SecIdentitySearchCreate(keychains, usage, &searchHandle);
+    if (err != noErr) {
+    errOut:
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil];
+        CFRelease(result);
+        CFRelease(policy);
+        CFRelease(anchors);
+        return NULL;
+    }
+    
+    for (;;) {
+        SecIdentityRef identity;
+        err = SecIdentitySearchCopyNext(searchHandle, &identity);
+        if (err == errSecItemNotFound) {
+            break;
+        } else if (err != noErr && CFArrayGetCount(result) == 0) {
+            CFRelease(searchHandle);
+            goto errOut;
+        } else if (err != noErr) {
+            // Partial success?
+            break;
+        }
+        
+        SecCertificateRef identityCert;
+        err = SecIdentityCopyCertificate(identity, &identityCert);
+        if (err != noErr) {
+            CFRelease(identity);
+            continue;
+        }
+        
+        SecTrustRef trustContext;
+        CFArrayRef thisCert = CFArrayCreate(kCFAllocatorDefault, (const void **)&identityCert, 1, &kCFTypeArrayCallBacks);
+        err = SecTrustCreateWithCertificates(thisCert, policy, &trustContext);
+        CFRelease(thisCert);
+        
+        if (err != noErr) {
+            CFRelease(identity);
+            CFRelease(identityCert);
+            continue;
+        }
+        
+        err = SecTrustSetAnchorCertificates(trustContext, anchors);
+        if (err != noErr) {
+        errOut2:
+            CFRelease(trustContext);
+            CFRelease(identity);
+            CFRelease(identityCert);
+            CFRelease(searchHandle);
+            goto errOut;
+        }
+        SecTrustSetAnchorCertificatesOnly(trustContext, TRUE);
+        
+        err = SecTrustSetKeychains(trustContext, keychains);
+        if (err != noErr) {
+            goto errOut2;
+        }
+        
+        SecTrustResultType trustResult = kSecTrustResultOtherError;
+        err = SecTrustEvaluate(trustContext, &trustResult);
+        if (err == noErr && (trustResult == kSecTrustResultProceed ||
+                             trustResult == kSecTrustResultConfirm ||
+                             trustResult == kSecTrustResultUnspecified ||
+                             trustResult == kSecTrustResultRecoverableTrustFailure)) {
+            CFArrayRef certChain;
+            CSSM_TP_APPLE_EVIDENCE_INFO *dummy;
+            err = SecTrustGetResult(trustContext, &trustResult, &certChain, &dummy);
+            if (err != noErr) {
+                goto errOut2;
+            }
+            
+            CFIndex chainLength = CFArrayGetCount(certChain);
+            const void **chain = alloca(sizeof(SecCertificateRef) * chainLength);
+            CFArrayGetValues(certChain, (CFRange){ 0, chainLength }, chain);
+            
+            /* Untrusted anchor certs count as a "recoverable trust failure", along with other things. We want to return anything whose trust root is in the anchor set, regardless of whether it's expired or whatever. */
+            if(chainLength >= 1) {
+                if (CFArrayContainsValue(anchors, (CFRange){ 0, CFArrayGetCount(anchors) }, chain[chainLength-1])) {
+                    chain[0] = identity;
+                    
+                    CFArrayRef retChain = CFArrayCreate(kCFAllocatorDefault, chain, chainLength, &kCFTypeArrayCallBacks);
+                    CFArrayAppendValue(result, retChain);
+                    CFRelease(retChain);
+                }
+            }
+            
+            CFRelease(certChain);
+        }
+        
+        CFRelease(trustContext);
+        CFRelease(identity);
+        CFRelease(identityCert);
+    }
+    
+    CFRelease(searchHandle);
+    CFRelease(policy);
+    CFRelease(anchors);
+    
     return result;
 }

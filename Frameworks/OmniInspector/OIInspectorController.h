@@ -1,4 +1,4 @@
-// Copyright 2002-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,19 +9,21 @@
 
 #import <Foundation/NSObject.h>
 
+#import <OmniInspector/OIInspectorWindow.h>
+
 @class NSArray;
 @class NSWindow, NSView, NSMenuItem;
 @class OIInspector, OIInspectorWindow, OIInspectorHeaderView, OIInspectorResizer, OIInspectorGroup, OIInspectorHeaderBackground;
 
 #import <Foundation/NSGeometry.h> // for NSSize, NSPoint
 
-#define OIInspectorStartingHeaderButtonWidth (256.0)
-#define OIInspectorStartingHeaderButtonHeight (16.0)
-#define OIInspectorSpaceBetweenButtons (0.0)
+#define OIInspectorStartingHeaderButtonWidth (256.0f)
+#define OIInspectorStartingHeaderButtonHeight (16.0f)
+#define OIInspectorSpaceBetweenButtons (0.0f)
 
-#define OIInspectorColumnSpacing (1.0)
+#define OIInspectorColumnSpacing (1.0f)
 
-@interface OIInspectorController : NSObject
+@interface OIInspectorController : NSObject <OIInspectorWindowDelegate>
 {
     NSArray *currentlyInspectedObjects;
     OIInspector *inspector;
@@ -65,8 +67,8 @@
 
 - (void)setNewPosition:(NSPoint)aPosition;
 - (void)setCollapseOnTakeNewPosition:(BOOL)yn;
-- (float)heightAfterTakeNewPosition;
-- (void)takeNewPositionWithWidth:(float)aWidth;
+- (CGFloat)heightAfterTakeNewPosition;
+- (void)takeNewPositionWithWidth:(CGFloat)aWidth;
 
 - (void)loadInterface;
 - (void)updateInspector;

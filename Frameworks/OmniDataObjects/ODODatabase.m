@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,7 @@
 #import "ODOEntity-Internal.h"
 #import "ODOModel-SQL.h"
 #import "ODOSQLStatement.h"
+#import "ODOPredicate-SQL.h"
 
 #import <sqlite3.h>
 #import <Foundation/NSFileManager.h>
@@ -29,6 +30,86 @@ RCS_ID("$Id$")
 NSString * const ODODatabaseMetadataTableName = @"ODOMetadata";
 NSString * const ODODatabaseMetadataKeyColumnName = @"key";
 NSString * const ODODatabaseMetadataPlistColumnName = @"value";
+
+static BOOL isPlainASCII(const unsigned char *str)
+{
+    char c;
+    while ((c = *str)) {
+        if (c & 0x80)
+            return NO;
+        str++;
+    }
+    return YES;
+}
+
+typedef enum {
+    ODOComparisonPredicateContainsStartLocation,
+    ODOComparisonPredicateContainsAnywhereLocation,
+} ODOComparisonPredicateContainsLocation;
+
+static void ODOComparisonPredicateContainsStringGeneric(sqlite3_context *ctx, int nArgs, sqlite3_value **values, ODOComparisonPredicateContainsLocation location)
+{
+    if (nArgs != 3) {
+        sqlite3_result_error(ctx, "Required 3 arguments.", SQLITE_ERROR);
+        return;
+    }
+    
+    const unsigned char *lhs = sqlite3_value_text(values[0]);
+    const unsigned char *rhs = sqlite3_value_text(values[1]);
+    int options = sqlite3_value_int(values[2]);
+    
+    // If the inputs are plain ASCII or we want to do an exact match, we can do this in terms of byte matching.
+    if (options == 0 || (isPlainASCII(lhs) && isPlainASCII(rhs))) {
+        const char *foundPointer = strcasestr((const char *)lhs, (const char *)rhs); // LHS starts-with/contains RHS
+        if (foundPointer == NULL) {
+            sqlite3_result_int(ctx, false);
+            return;
+        }
+        
+        if (location == ODOComparisonPredicateContainsAnywhereLocation) {
+            sqlite3_result_int(ctx, true);
+            return;
+        } else {
+            OBASSERT(location == ODOComparisonPredicateContainsStartLocation);
+            sqlite3_result_int(ctx, (const char *)foundPointer == (const char *)lhs);
+            return;
+        }
+    }
+    
+    // Need to do the hard case.
+    CFStringRef lhsString = CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, (const char *)lhs, kCFStringEncodingUTF8, kCFAllocatorNull);
+    CFStringRef rhsString = CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, (const char *)rhs, kCFStringEncodingUTF8, kCFAllocatorNull);
+    
+    // Diacritic insensitivity is only on 10.5 or the iPhone, so this won't work on the Mac under 10.4.
+    CFOptionFlags cfOptions = 0;
+    if (options & NSCaseInsensitivePredicateOption)
+        cfOptions |= kCFCompareCaseInsensitive;
+#if (defined(MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+    if (options & NSDiacriticInsensitivePredicateOption)
+        cfOptions |= kCFCompareDiacriticInsensitive;
+#endif
+    OBASSERT((options & (NSCaseInsensitivePredicateOption|NSDiacriticInsensitivePredicateOption)) == options); // should be the only flags
+    
+    if (location == ODOComparisonPredicateContainsStartLocation)
+        cfOptions |= kCFCompareAnchored;
+    else
+        OBASSERT(location == ODOComparisonPredicateContainsAnywhereLocation);
+
+    CFRange foundRange = CFStringFind(lhsString, rhsString, cfOptions);
+    CFRelease(lhsString);
+    CFRelease(rhsString);
+
+    sqlite3_result_int(ctx, foundRange.length > 0);
+}
+
+static void ODOComparisonPredicateStartsWithFunction(sqlite3_context *ctx, int nArgs, sqlite3_value **values)
+{
+    ODOComparisonPredicateContainsStringGeneric(ctx, nArgs, values, ODOComparisonPredicateContainsStartLocation);
+}
+static void ODOComparisonPredicateContainsFunction(sqlite3_context *ctx, int nArgs, sqlite3_value **values)
+{
+    ODOComparisonPredicateContainsStringGeneric(ctx, nArgs, values, ODOComparisonPredicateContainsAnywhereLocation);
+}
 
 BOOL ODOLogSQL = NO;
 static BOOL ODOAsynchronousWrites = NO;
@@ -158,6 +239,28 @@ static BOOL ODOVacuumOnDisconnect = NO;
     if (![self executeSQLWithoutResults:@"PRAGMA auto_vacuum = none" error:outError]) // According to the sqlite documentation: "Auto-vacuum does not defragment the database nor repack individual database pages the way that the VACUUM command does. In fact, because it moves pages around within the file, auto-vacuum can actually make fragmentation worse."
         return NO;
 
+    // string compare functions
+    rc = sqlite3_create_function(_sqlite, ODOComparisonPredicateStartsWithFunctionName, 
+                                 3/*nArg*/,
+                                 SQLITE_UTF8, NULL/*data*/,
+                                 ODOComparisonPredicateStartsWithFunction,
+                                 NULL /*step*/,
+                                 NULL /*final*/);
+    if (rc != SQLITE_OK) {
+        ODOSQLiteError(outError, rc, _sqlite); // stack the underlying error
+        return NO;
+    }
+    rc = sqlite3_create_function(_sqlite, ODOComparisonPredicateContainsFunctionName, 
+                                 3/*nArg*/,
+                                 SQLITE_UTF8, NULL/*data*/,
+                                 ODOComparisonPredicateContainsFunction,
+                                 NULL /*step*/,
+                                 NULL /*final*/);
+    if (rc != SQLITE_OK) {
+        ODOSQLiteError(outError, rc, _sqlite); // stack the underlying error
+        return NO;
+    }
+    
     if (!existed) {
         if (![self _setupNewDatabase:outError]) {
             // Not so much with the working.  Disconnect (tossing any error that might happen) to clear out the optimistic connection state.
@@ -310,7 +413,7 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     
     OBASSERT(sqlite3_column_count(statement->_statement) == 2);
     
-    const unsigned char *keyString = sqlite3_column_text(statement->_statement, 0);
+    const uint8_t *keyString = sqlite3_column_text(statement->_statement, 0);
     if (!keyString) {
         OBASSERT(keyString);
         return YES;

@@ -1,0 +1,148 @@
+// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+
+#import <OmniUnzip/OUZipArchive.h>
+
+#import <OmniUnzip/OUErrors.h>
+#import "zip.h"
+
+RCS_ID("$Id$");
+
+@implementation OUZipArchive
+
+- initWithPath:(NSString *)path error:(NSError **)outError;
+{
+    OBPRECONDITION(![NSString isEmptyString:path]);
+    
+    _path = [path copy];
+    _zip = zipOpen([[NSFileManager defaultManager] fileSystemRepresentationWithPath:path], 0/*append*/);
+    if (!_zip) {
+        NSString *reason = @"zipOpen returned NULL.";
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create zip file.", @"OmniUnzip", OMNI_BUNDLE, @"error reason");
+        OmniUnzipError(outError, OmniUnzipUnableToCreateZipFile, description, reason);
+        return nil;
+    }
+    
+    return self;
+}
+
+- (void)dealloc;
+{
+    OBPRECONDITION(_zip == NULL); // Owner should have closed it, even if there is an error appending.
+    
+    if (_zip) {
+        NSError *error = nil;
+        if (![self close:&error])
+            NSLog(@"Error closing zip file: %@", [error toPropertyList]);
+    }
+    [_path release];
+    
+    [super dealloc];
+}
+
+static BOOL _zipError(id self, const char *func, int err, NSError **outError)
+{
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to write zip file.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The zip library function %s returned %d", @"OmniUnzip", OMNI_BUNDLE, @"error reason"),  func, err];
+    OmniUnzipError(outError, OmniUnzipUnableToCreateZipFile, description, reason);
+    
+    NSLog(@"%s returned %d", func, err);
+    return NO;
+}
+#define ZIP_ERROR(f) _zipError(self, #f, err, outError)
+
+- (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents raw:(BOOL)raw compressionMethod:(unsigned long)comparessionMethod uncompressedSize:(size_t)uncompressedSize crc:(unsigned long)crc date:(NSDate *)date error:(NSError **)outError;
+{
+    if (date == nil)
+        date = [NSDate date];
+
+    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSSecondCalendarUnit fromDate:date];
+    
+    zip_fileinfo info;
+    memset(&info, 0, sizeof(info));
+    
+    OBASSERT([components month] >= 1); // We expect this to have 1-based
+
+    unsigned short fileMode;
+    if ([fileType isEqualToString:NSFileTypeDirectory])
+        fileMode = S_IFDIR | 0755;
+    else if ([fileType isEqualToString:NSFileTypeSymbolicLink])
+        fileMode = S_IFLNK | 0644;
+    else
+        fileMode = S_IFREG | 0644;
+    info.external_fa = fileMode << 16; // UNIX mode is stored in the upper word.  (The lowest byte is for DOS attributes.)
+    info.tmz_date.tm_year = (uInt)[components year];
+    info.tmz_date.tm_mon = (uInt)([components month] - 1); // Wants 0-based
+    info.tmz_date.tm_mday = (uInt)[components day];
+    info.tmz_date.tm_hour = (uInt)[components hour];
+    info.tmz_date.tm_min = (uInt)[components minute];
+    info.tmz_date.tm_sec = (uInt)[components second];
+
+    int err = zipOpenNewFileInZip3(_zip, [[NSFileManager defaultManager] fileSystemRepresentationWithPath:name],
+                                   &info,
+                                   NULL, 0, // extra field ptr and length
+                                   NULL, 0, // global extra field ptr and length
+                                   NULL, // comment
+                                   (unsigned)comparessionMethod,
+                                   Z_DEFAULT_COMPRESSION,
+                                   raw ? 1 : 0,
+                                   -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY,
+                                   NULL, 0); // Password/crypt crc
+    if (err != ZIP_OK)
+        return ZIP_ERROR(zipOpenNewFileInZip3);
+    
+    // Not going to handle large files this way.  Unclear if zip even handles them at all.
+    OBASSERT([contents length] < UINT_MAX);
+
+    err = zipWriteInFileInZip(_zip, [contents bytes], (unsigned)[contents length]);
+    if (err != ZIP_OK)
+        return ZIP_ERROR(zipWriteInFileInZip);
+    
+    if (raw) {
+        err = zipCloseFileInZipRaw(_zip, uncompressedSize, crc);
+        if (err != ZIP_OK)
+            return ZIP_ERROR(zipCloseFileInZipRaw);
+    } else {
+        err = zipCloseFileInZip(_zip);
+        if (err != ZIP_OK)
+            return ZIP_ERROR(zipCloseFileInZip);
+    }
+    
+    return YES;
+}
+
+- (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents date:(NSDate *)date error:(NSError **)outError;
+{
+    // This forces everything to be compressed, even if doing so would make it bigger or yield little gain...
+    return [self appendEntryNamed:name fileType:fileType contents:contents raw:NO compressionMethod:Z_DEFLATED uncompressedSize:0 crc:0 date:date error:outError];
+}
+
+- (BOOL)close:(NSError **)outError;
+{
+    OBPRECONDITION(_zip);
+    
+    if (!_zip) {
+        NSString *reason = @"Zip file already closed.";
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to close zip file.", @"OmniUnzip", OMNI_BUNDLE, @"error reason");
+        OmniUnzipError(outError, OmniUnzipUnableToCreateZipFile, description, reason);
+        return NO;
+    }
+
+    int err = zipClose(_zip, NULL/*global comment*/);
+    _zip = NULL;
+    
+    if (err != ZIP_OK) {
+        NSString *reason = [NSString stringWithFormat:@"zipClose returned %d.", err];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to close zip data.", @"OmniUnzip", OMNI_BUNDLE, @"error reason");
+        OmniUnzipError(outError, OmniUnzipUnableToCreateZipFile, description, reason);
+        return NO;
+    }
+    
+    return YES;
+}
+
+@end

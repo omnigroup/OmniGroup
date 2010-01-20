@@ -1,9 +1,9 @@
-// Copyright 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
-// http://www.omnigroup.com/DeveloperResources/OmniSourceLicense.html.
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/OFXMLTextWriterSink.h>
 
@@ -136,7 +136,7 @@ static void writeString(xmlTextWriter *writer, NSString *str);
     xmlTextWriterStartElement(writer, tagName);
     if(buf) free(buf);
         
-    unsigned attributeCount = [attributes count], attributeIndex;
+    NSUInteger attributeCount = [attributes count], attributeIndex;
     if (attributeCount > 0) {
         for(attributeIndex = 0; attributeIndex < attributeCount; attributeIndex ++) {
             const xmlChar *attributeName = getTerminatedStringBuf([attributes objectAtIndex:attributeIndex], &buf);
@@ -233,7 +233,7 @@ static void writeString(xmlTextWriter *writer, NSString *str)
     
     /* The complicated case */
 #define CONV_BUF_SIZE 10 /* 2048 */
-    UInt8 buf[CONV_BUF_SIZE];
+    UInt8 buf[CONV_BUF_SIZE+1];
     CFStringRef cfString = (CFStringRef)str;
     CFIndex sourceStringLength = CFStringGetLength(cfString);
     CFIndex conversionLocation = 0;

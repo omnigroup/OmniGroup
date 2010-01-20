@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,21 +25,21 @@ RCS_ID("$Id$");
     _name = [name copy];
 
     // Create with a fixed capacity
-    unsigned int childIndex, childCount = [children count];
+    NSUInteger childCount = [children count];
     if (childCount) {
-        NSMutableArray *frozenChildren = (NSMutableArray *)CFArrayCreateMutable(kCFAllocatorDefault, childCount, &OFNSObjectArrayCallbacks);
-        for (childIndex = 0; childIndex < childCount; childIndex++) {
-            id child = [[children objectAtIndex:childIndex] copyFrozenElement];
-            [frozenChildren addObject:child];
-            [child release];
+        CFMutableArrayRef frozenChildren = CFArrayCreateMutable(kCFAllocatorDefault, childCount, &OFNSObjectArrayCallbacks);
+        for (id child in children) {
+            id copy = [child copyFrozenElement];
+            CFArrayAppendValue(frozenChildren, copy);
+            [copy release];
         }
 
-        _children = [[NSArray alloc] initWithArray:frozenChildren];
-        [frozenChildren release];
+        _children = [[NSArray alloc] initWithArray:(NSArray *)frozenChildren];
+        CFRelease(frozenChildren);
     }
 
     if (attributeOrder) {
-        unsigned int attributeIndex, attributeCount = [attributeOrder count];
+        NSUInteger attributeIndex, attributeCount = [attributeOrder count];
 
 	// Should only be a few attributes in the vastly common case
 	size_t bufferSize = 2*attributeCount*sizeof(id);
@@ -97,7 +97,7 @@ RCS_ID("$Id$");
     if (_attributeNamesAndValues) {
         // Quote the attribute values
         CFStringEncoding encoding = [doc stringEncoding];
-        unsigned int attributeIndex, attributeCount = [_attributeNamesAndValues count] / 2;
+        NSUInteger attributeIndex, attributeCount = [_attributeNamesAndValues count] / 2;
         for (attributeIndex = 0; attributeIndex < attributeCount; attributeIndex++) {
             NSString *name  = [_attributeNamesAndValues objectAtIndex:2*attributeIndex+0];
             NSString *value = [_attributeNamesAndValues objectAtIndex:2*attributeIndex+1];
@@ -117,10 +117,7 @@ RCS_ID("$Id$");
     BOOL doIntenting = NO;
 
     // See if any of our children are non-ignored and use this for isEmpty instead of the plain count
-    unsigned int childIndex, childCount = [_children count];
-    for (childIndex = 0; childIndex < childCount; childIndex++) {
-        id child = [_children objectAtIndex:childIndex];
-
+    for (id child in _children) {
         // If we have actual element children and whitespace isn't important for this node, do some formatting.
         // We will produce output that is a little strange for something like '<x>foo<y/></x>' or any other mix of string and element children, but usually whitespace is important in this case and it won't be an issue.
         if (whitespaceBehavior == OFXMLWhitespaceBehaviorTypeIgnore)  {

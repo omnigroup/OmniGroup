@@ -1,0 +1,5 @@
+#!/bin/zsh -f
+
+while true; do
+	/Users/Shared/bungi/Source/PROJ/Products/Debug/OFRandomRepeatTest 100000 | sort | uniq -c | grep -vw 1
+done

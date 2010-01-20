@@ -1,9 +1,9 @@
-// Copyright 2004-2005, 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
-// http://www.omnigroup.com/DeveloperResources/OmniSourceLicense.html.
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/OFXMLCFXMLTreeSink.h>
 
@@ -34,16 +34,16 @@ static NSCharacterSet *attributeDangerChars, *textDangerChars;
 
 - initWithCFXMLTree:(CFXMLTreeRef)toplevel
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
     
     if (toplevel == NULL) {
         CFXMLNodeRef rootNodeInfo = CFXMLNodeCreate(kCFAllocatorDefault, kCFXMLNodeTypeDocumentFragment, NULL, NULL, kCFXMLNodeCurrentVersion);
-        topNode = CFXMLTreeCreateWithNode(kCFAllocatorDefault, rootNodeInfo);
+        topNode = OBCFMakeCollectable(CFXMLTreeCreateWithNode(kCFAllocatorDefault, rootNodeInfo));
         CFRelease(rootNodeInfo);
     } else {
-        topNode = toplevel;
-        CFRetain(topNode);
+        CFRetain(toplevel);
+        topNode = OBCFMakeCollectable(toplevel);
     }
     
     currentEltTree = topNode;
@@ -85,9 +85,8 @@ static NSCharacterSet *attributeDangerChars, *textDangerChars;
 
 - (NSData *)xmlData
 {
-    NSData *outData = (NSData *)CFXMLTreeCreateXMLData(kCFAllocatorDefault, topNode);
-    [outData autorelease];
-    return outData;
+    CFDataRef outData = CFXMLTreeCreateXMLData(kCFAllocatorDefault, topNode);
+    return [NSMakeCollectable(outData) autorelease];
 }
 
 - (void)addCFXMLNode:(CFXMLNodeRef)newNode
@@ -198,11 +197,11 @@ static NSCharacterSet *attributeDangerChars, *textDangerChars;
     
     CFXMLElementInfo nodeInfo = { .attributes = NULL, .attributeOrder = NULL, .isEmpty = isEmpty };
     
-    unsigned attributeCount = [attributes count], attributeIndex;
+    NSUInteger attributeCount = [attributes count], attributeIndex;
     if (attributeCount > 0) {
         NSMutableArray *fixedAttributeValues = [attributeValues mutableCopy];
         // Note: This isn't abstracted out because the particular quoting we're doing depends on the (undocumented, sigh) behavior of the CoreFoundation XML writer.
-        for(attributeIndex = 0; attributeIndex < attributeCount; attributeIndex ++) {
+        for (attributeIndex = 0; attributeIndex < attributeCount; attributeIndex ++) {
             NSString *unquotedValue = [fixedAttributeValues objectAtIndex:attributeIndex];
             if ([unquotedValue rangeOfCharacterFromSet:attributeDangerChars].location == NSNotFound)
                 continue;

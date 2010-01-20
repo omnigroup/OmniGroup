@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,6 @@
 + (NSArray *)windowsInZOrder;
 
 - (NSPoint)frameTopLeftPoint;
-- (void)morphToFrame:(NSRect)newFrame overTimeInterval:(NSTimeInterval)morphInterval;
 
 - (BOOL)isBecomingKey;
 - (BOOL)shouldDrawAsKey;

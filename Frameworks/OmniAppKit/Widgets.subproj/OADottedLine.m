@@ -1,4 +1,4 @@
-// Copyright 2001-2005,2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005,2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,18 +16,18 @@ RCS_ID("$Id$");
 
 - (void)drawRect:(NSRect)rect {
     NSBezierPath *dottedLinePath;
-    const CGFloat lineDash[2] = {1.0, 2.0};
+    const CGFloat lineDash[2] = {1.0f, 2.0f};
 
     [[NSColor grayColor] set];
     dottedLinePath = [NSBezierPath bezierPath];
     if ([self bounds].size.width <= [self bounds].size.height) {
-        [dottedLinePath moveToPoint:NSMakePoint(NSMinX(_bounds) + 0.5, NSMinY(_bounds) + 3.0)];
-        [dottedLinePath lineToPoint:NSMakePoint(NSMinX(_bounds) + 0.5, NSMaxY(_bounds) - 3.0)];
+        [dottedLinePath moveToPoint:NSMakePoint(NSMinX(_bounds) + 0.5f, NSMinY(_bounds) + 3.0f)];
+        [dottedLinePath lineToPoint:NSMakePoint(NSMinX(_bounds) + 0.5f, NSMaxY(_bounds) - 3.0f)];
     } else {
-        [dottedLinePath moveToPoint:NSMakePoint(NSMinX(_bounds) + 3.0, NSMinY(_bounds) + 0.5)];
-        [dottedLinePath lineToPoint:NSMakePoint(NSMaxX(_bounds) - 3.0, NSMinY(_bounds) + 0.5)];
+        [dottedLinePath moveToPoint:NSMakePoint(NSMinX(_bounds) + 3.0f, NSMinY(_bounds) + 0.5f)];
+        [dottedLinePath lineToPoint:NSMakePoint(NSMaxX(_bounds) - 3.0f, NSMinY(_bounds) + 0.5f)];
     }
-    [dottedLinePath setLineWidth:1.0];
+    [dottedLinePath setLineWidth:1.0f];
     [dottedLinePath setLineDash:lineDash count:2 phase:0];
     [dottedLinePath stroke];
 }

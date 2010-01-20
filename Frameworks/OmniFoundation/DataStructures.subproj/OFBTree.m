@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,7 @@ RCS_ID("$Id$")
 Each node in the btree has some non-zero number of elements (depending upon whether it is the root node or not different constraints apply).  If there are N elements, there are always N+1 pointers to children nodes.
 "*/
 typedef struct _OFBTreeNode {
-    NSUInteger elementCount;
+    size_t elementCount;
     struct _OFBTreeNode *childZero;
     uint8_t contents[0];
 } OFBTreeNode;
@@ -463,7 +463,7 @@ static void OFBTreeDumpNodes(FILE *fp, OFBTree *btree, OFBTreeNode *node)
 
 void OFBTreeDump(FILE *fp, OFBTree *tree)
 {
-    fprintf(fp, "OFBTree at %p: elt size = %d, elts per node = %d, root = %p\n", tree, (int)tree->elementSize, (int)tree->elementsPerNode, tree->root);
+    fprintf(fp, "OFBTree at %p: elt size = %"PRIdPTR", elts per node = %"PRIdPTR", root = %p\n", tree, tree->elementSize, tree->elementsPerNode, tree->root);
     OFBTreeDumpNodes(fp, tree, tree->root);
     fprintf(fp, "==============================\n\n");
 }

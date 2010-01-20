@@ -1,4 +1,4 @@
-// Copyright 1997-2005,2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005,2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,13 +59,12 @@ RCS_ID("$Id$")
 
 - (NSSet *)valuesOfAttribute:(NSString *)attributeName inRange:(NSRange)range;
 {
-    unsigned int textIndex;
     NSRange effectiveRange;
     
     id singleValue = nil;
     NSMutableSet *manyValues = nil;
     
-    for(textIndex = range.location; textIndex < NSMaxRange(range); textIndex = NSMaxRange(effectiveRange)) {
+    for (NSUInteger textIndex = range.location; textIndex < NSMaxRange(range); textIndex = NSMaxRange(effectiveRange)) {
         id spanValue = [self attribute:attributeName atIndex:textIndex effectiveRange:&effectiveRange];
         if (spanValue == nil)
             spanValue = [NSNull null];

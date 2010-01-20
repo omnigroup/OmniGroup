@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -113,18 +113,15 @@ static NSZone *OWContentZone = NULL;
 
 + (id)contentWithData:(NSData *)someData headers:(OFMultiValueDictionary *)someMetadata;
 {
-    OWDataStream *dataStream;
-    OWContent *result;
+    OWDataStream *dataStream = nil;
 
-    if (someData == nil)
-        dataStream = nil;
-    else {
+    if (someData != nil) {
         dataStream = [[OWDataStream alloc] initWithLength:[someData length]];
         [dataStream writeData:someData];
         [dataStream dataEnd];
     }
 
-    result = [self contentWithDataStream:dataStream isSource:NO];
+    OWContent *result = [self contentWithDataStream:dataStream isSource:NO];
 
     [dataStream release];
     
@@ -321,7 +318,7 @@ static void Thingy(id mememe, SEL wheee)
 - (BOOL)checkForAvailability:(BOOL)loadNow
 {
     NSArray *codings;
-    unsigned codingIndex, codingCount;
+    NSUInteger codingIndex, codingCount;
 
     // Check whether we have any content-encodings whose filters aren't loaded
     codings = [self contentEncodings];
@@ -478,7 +475,7 @@ static void Thingy(id mememe, SEL wheee)
 {
     OWDataStreamCursor *cursor;
     NSArray *encodings;
-    unsigned encodingIndex, encodingCount;
+    NSUInteger encodingIndex, encodingCount;
     
     if (smallConcreteType != ConcreteType_DataStream)
         return [self _invalidContentType:_cmd];
@@ -487,7 +484,7 @@ static void Thingy(id mememe, SEL wheee)
     OWDataStream *thisDataStream = (OWDataStream *)concreteContent;
     OFSimpleUnlock(&lock);
     NS_DURING {
-        cursor = [thisDataStream newCursor];
+        cursor = [thisDataStream createCursor];
         if ([thisDataStream endOfData]) {
             BOOL contentIsValid = [thisDataStream contentIsValid];
             OFSimpleLock(&lock);
@@ -521,7 +518,7 @@ static void Thingy(id mememe, SEL wheee)
 - (OWObjectStreamCursor *)objectCursor;
 {
     if (smallConcreteType == ConcreteType_ObjectStream)
-        return [(OWAbstractObjectStream *)concreteContent newCursor];
+        return [(OWAbstractObjectStream *)concreteContent createCursor];
     else
         return [self _invalidContentType:_cmd];
 }
@@ -703,7 +700,7 @@ static void Thingy(id mememe, SEL wheee)
     NSNotification *note;
     NSArray *newHeaders;
     NSString *headerName;
-    unsigned int newHeaderIndex, newHeaderCount;
+    NSUInteger newHeaderIndex, newHeaderCount;
     
     note = nil;
 
@@ -714,11 +711,10 @@ static void Thingy(id mememe, SEL wheee)
     newHeaders = [headers allKeys];
     newHeaderCount = [newHeaders count];
     for(newHeaderIndex = 0; newHeaderIndex < newHeaderCount; newHeaderIndex ++) {
-        BOOL changed;
         headerName = [newHeaders objectAtIndex:newHeaderIndex];
 
-        changed = [self _locked_addHeader:headerName
-                                   values:[headers arrayForKey:headerName] value:nil];
+        [self _locked_addHeader:headerName values:[headers arrayForKey:headerName] value:nil];
+//        BOOL changed = [self _locked_addHeader:headerName values:[headers arrayForKey:headerName] value:nil];
 /*        
         if (changed && !note) {
             note = [NSNotification notificationWithName:OWContentHasNewMetadataNotificationName object:self];
@@ -793,10 +789,8 @@ static void Thingy(id mememe, SEL wheee)
 
 - (void)markEndOfHeaders;
 {
-    BOOL wasEnded;
-    
     OFSimpleLock(&lock);
-    wasEnded = metadataComplete;
+//    BOOL wasEnded = metadataComplete;
     metadataComplete = YES;
     if (metadataCompleteCondition) {
         [metadataCompleteCondition lock];
@@ -906,7 +900,6 @@ static void Thingy(id mememe, SEL wheee)
 
 - (NSDictionary *)suggestedFileAttributesWithAddress:(OWAddress *)originAddress;
 {
-    NSString *contentDisposition;
     OFMultiValueDictionary *contentDispositionParameters;
     NSString *filename;
     OWContentType *mimeType;
@@ -920,7 +913,7 @@ static void Thingy(id mememe, SEL wheee)
     mimeType = [self contentType];
 
     contentDispositionParameters = [[OFMultiValueDictionary alloc] init];
-    contentDisposition = [OWHeaderDictionary parseParameterizedHeader:[self lastObjectForKey:OWContentDispositionHeaderString] intoDictionary:contentDispositionParameters valueChars:nil];
+    [OWHeaderDictionary parseParameterizedHeader:[self lastObjectForKey:OWContentDispositionHeaderString] intoDictionary:contentDispositionParameters valueChars:nil];
     
     // Extract and sanitize the filename parameter
     filename = [contentDispositionParameters lastObjectForKey:@"filename"];
@@ -1032,8 +1025,8 @@ static void Thingy(id mememe, SEL wheee)
         OFSimpleUnlock(&lock);
     
         handleMatch = NO;
-        unsigned int keyCount = [cacheKeys count];
-        unsigned int keyIndex;
+        NSUInteger keyCount = [cacheKeys count];
+        NSUInteger keyIndex;
         
         for (keyIndex = 0; keyIndex < keyCount; keyIndex++) {
             id <OWCacheContentProvider> aCache = (id)CFArrayGetValueAtIndex((CFArrayRef)cacheKeys, keyIndex);
@@ -1170,7 +1163,7 @@ static void Thingy(id mememe, SEL wheee)
         } else if ([valueToHash respondsToSelector:@selector(md5Signature)]) {
             NSData *md5 = [valueToHash md5Signature];
             OBASSERT([md5 length] >= sizeof(NSUInteger));
-            myContentHash = CFSwapInt32BigToHost(*(NSUInteger *)[md5 bytes]);
+            myContentHash = (NSUInteger)CFSwapInt64BigToHost(*(NSUInteger *)[md5 bytes]); // Will truncate to 32 bits under 32-bit ABI.
         } else {
             myContentHash = [valueToHash hash];
         }

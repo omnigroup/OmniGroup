@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@
 - (void)dataAbort;
 
 // Readers call these.
-- (id)newCursor;
+- (id)createCursor;
 
 - (BOOL)endOfData;
 - (void)waitForDataEnd;
@@ -42,5 +42,5 @@
 @interface OWStream (Private)
 // Private methods called by concrete OWCursor subclasses
 - (void)_adjustCursorCount:(int)one;
-- (BOOL)_checkForAvailableIndex:(unsigned)position orInvoke:(OFInvocation *)anInvocation;
+- (BOOL)_checkForAvailableIndex:(NSUInteger)position orInvoke:(OFInvocation *)anInvocation;
 @end

@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -329,7 +329,12 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         CMProfileLocation profileLocation;
         profileLocation.locType = cmBufferBasedProfile;
         profileLocation.u.bufferLoc.buffer = (void *)[data bytes];
-        profileLocation.u.bufferLoc.size = [data length];
+        
+        // Buffer limited to UInt32.
+        OBASSERT(strcmp(@encode(typeof(profileLocation.u.bufferLoc.size)), @encode(UInt32)) == 0);
+        OBASSERT([data length] <= UINT_MAX);
+        profileLocation.u.bufferLoc.size = (UInt32)[data length];
+        
         CMError err = CMOpenProfile(&profile, &profileLocation);
         if (err == noErr) {
             if (*cmProfilePointer)

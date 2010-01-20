@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ RCS_ID("$Id$");
 
 + (void)didLoad;
 {
-    [self registerForContentTypeString:@"OWFTPDirectory/MLST" cost:1.0];
+    [self registerForContentTypeString:@"OWFTPDirectory/MLST" cost:1.0f];
 }
 
 // Init and dealloc
@@ -55,6 +55,9 @@ RCS_ID("$Id$");
 
 + (NSCalendarDate *)parseDate:(NSString *)date
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSString *fixed, *variable;
     NSCalendarDate *parsed;
     NSRange dotRange;
@@ -80,14 +83,18 @@ RCS_ID("$Id$");
     if (parsed != nil && variable != nil) {
         int decimalPlaces = [variable length];
 
-        parsed = [parsed addTimeInterval:(NSTimeInterval)(pow(10., - decimalPlaces) * [variable doubleValue])];
+        parsed = [parsed dateByAddingTimeInterval:(NSTimeInterval)(pow(10., - decimalPlaces) * [variable doubleValue])];
     }
 
     return parsed;
+#endif
 }
 
 - (OWFileInfo *)fileInfoForLine:(NSString *)line;
 {
+    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    return nil;
+#if 0
     NSArray *facts;
     unsigned int factCount, factIndex;
     NSString *filename;
@@ -95,8 +102,8 @@ RCS_ID("$Id$");
     NSRange separator;
     BOOL isDir, isLink;
     NSNumber *fileSize;
-    NSCalendarDate *modDate, *createDate;
-    NSString *fileTypeName, *mediaType, *nameCharset;
+    NSCalendarDate *modDate;
+    NSString *fileTypeName, *nameCharset;
     CFStringEncoding nameEncoding;
     NSString *unicodeFilename, *urlCodedFilename;
 
@@ -104,7 +111,7 @@ RCS_ID("$Id$");
 
     separator = [line rangeOfString:@" "];
     if (separator.length == 0) {
-        [NSException raise:@"ListAborted" format:NSLocalizedStringFromTableInBundle(@"Incorrect response to MLST command", @"OWF", [OWMLSTFTPProcessor bundle], @"ftpsession error - MLST (directory listing) command returned invalid data")];
+        [NSException raise:@"ListAborted" reason:NSLocalizedStringFromTableInBundle(@"Incorrect response to MLST command", @"OWF", [OWMLSTFTPProcessor bundle], @"ftpsession error - MLST (directory listing) command returned invalid data")];
     }
     facts = [[line substringToIndex:separator.location] componentsSeparatedByString:@";"];
     filename = [line substringFromIndex:NSMaxRange(separator)];
@@ -116,8 +123,6 @@ RCS_ID("$Id$");
     fileTypeName = @"file";
     fileSize = nil;
     modDate = nil;
-    createDate = nil;
-    mediaType = nil;
     nameCharset = nil;
     isDir = NO;
     isLink = NO;
@@ -140,13 +145,9 @@ RCS_ID("$Id$");
             fileTypeName = factValue;
         } else if ([factName caseInsensitiveCompare:@"size"] == NSOrderedSame &&
                    ![NSString isEmptyString:factValue]) {
-            fileSize = [NSNumber numberWithLongLong:[factValue longLongValue]];
+            fileSize = [NSNumber numberWithLongLong:factValue != nil ? [factValue longLongValue] : 0LL];
         } else if ([factName caseInsensitiveCompare:@"modify"] == NSOrderedSame) {
             modDate = [isa parseDate:factValue];
-        } else if ([factName caseInsensitiveCompare:@"create"] == NSOrderedSame) {
-            createDate = [isa parseDate:factValue];
-        } else if ([factName caseInsensitiveCompare:@"media-type"] == NSOrderedSame) {
-            mediaType = factValue;
         } else if ([factName caseInsensitiveCompare:@"charset"] == NSOrderedSame) {
             nameCharset = factValue;
         }
@@ -199,6 +200,7 @@ RCS_ID("$Id$");
     [fileInfo setName:unicodeFilename];
 
     return [fileInfo autorelease];
+#endif
 }
 
 @end

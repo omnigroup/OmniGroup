@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 
 RCS_ID("$Id$");
 
-static inline float _scaling(NSRect frame)
+static inline CGFloat _scaling(NSRect frame)
 {
     return frame.size.width/84;
 }
@@ -42,11 +42,11 @@ static inline float _scaling(NSRect frame)
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 {
-    float inset = 8 * _scaling(cellFrame);
+    CGFloat inset = 8 * _scaling(cellFrame);
 
     cellFrame = NSInsetRect(cellFrame, inset, inset);
     //        cursorWidth = (bounds.size.width - 20) * scaling;
-    int cursorWidth = inset * 2;
+    CGFloat cursorWidth = inset * 2;
 
     OFPoint *pointValue = [self objectValue];
     NSPoint point = pointValue ? [pointValue point] : NSZeroPoint;
@@ -61,8 +61,8 @@ static inline float _scaling(NSRect frame)
         NSRect verticalLine = NSMakeRect(center.x, center.y - cursorWidth/2, 1, cursorWidth);
 
         [[NSColor grayColor] set];
-        NSRectFill(NSInsetRect(horizontalLine, -0.5, -0.5)); // draw it fuzzy so it looks like a real shadow
-        NSRectFill(NSInsetRect(verticalLine, -0.5, -0.5));
+        NSRectFill(NSInsetRect(horizontalLine, -0.5f, -0.5f)); // draw it fuzzy so it looks like a real shadow
+        NSRectFill(NSInsetRect(verticalLine, -0.5f, -0.5f));
 
         NSRectFill(horizontalLine);
         NSRectFill(verticalLine);
@@ -84,12 +84,12 @@ static inline float _scaling(NSRect frame)
     if (![self isEnabled])
         return NO;
 
-    float   inset     = _scaling(cellFrame) * 8;
-    NSRect  bounds    = NSInsetRect(cellFrame, inset , inset);
-    NSPoint center    = (NSPoint){NSMidX(bounds), NSMidY(bounds)};
+    CGFloat inset = _scaling(cellFrame) * 8;
+    NSRect bounds = NSInsetRect(cellFrame, inset , inset);
+    NSPoint center = (NSPoint){NSMidX(bounds), NSMidY(bounds)};
 
     OFPoint *pointValue = [self objectValue];
-    NSPoint  point      = pointValue ? [pointValue point] : NSZeroPoint;
+    NSPoint point = pointValue ? [pointValue point] : NSZeroPoint;
 
     NSPoint lastPoint = point;
     do {

@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,44 +23,35 @@ static NSString *OAContextMenuLayoutDefaultKey = @"OAContextMenuLayout";
 
 @implementation NSMenu (OAExtensions)
 
-+ (OAContextMenuLayout) contextMenuLayoutDefaultValue;
++ (OAContextMenuLayout)contextMenuLayoutDefaultValue;
 {
-    OAContextMenuLayout layout;
-    
-    layout = [[NSUserDefaults standardUserDefaults] integerForKey: OAContextMenuLayoutDefaultKey];
+    OAContextMenuLayout layout = (OAContextMenuLayout)[[NSUserDefaults standardUserDefaults] integerForKey: OAContextMenuLayoutDefaultKey];
     if (layout > OAContextMenuLayoutCount)
         layout = OAAutodetectContextMenuLayout;
         
     return layout;
 }
 
-+ (void) setContextMenuLayoutDefaultValue: (OAContextMenuLayout) newValue;
++ (void)setContextMenuLayoutDefaultValue:(OAContextMenuLayout)newValue;
 {
     if (newValue > OAContextMenuLayoutCount)
         newValue = OAAutodetectContextMenuLayout;
-    [[NSUserDefaults standardUserDefaults] setInteger: newValue forKey: OAContextMenuLayoutDefaultKey];
+    [[NSUserDefaults standardUserDefaults] setInteger:newValue forKey:OAContextMenuLayoutDefaultKey];
 }
 
 + (OAContextMenuLayout) contextMenuLayoutForScreen: (NSScreen *) screen;
 {
-    OAContextMenuLayout layout;
+    OAContextMenuLayout layout = [self contextMenuLayoutDefaultValue];
     
-    layout = [self contextMenuLayoutDefaultValue];
     if (layout == OAAutodetectContextMenuLayout) {
-        NSRect frame;
-        NSArray *screens;
-        unsigned int screenIndex, screenCount;;
-        
+        NSArray *screens;        
         if (screen)
             screens = [NSArray arrayWithObject: screen];
         else
             screens = [NSScreen screens];
 
-        screenCount = [screens count];
-        for (screenIndex = 0; screenIndex < screenCount; screenIndex++) {
-            screen = [screens objectAtIndex: screenIndex];
-            frame = [screen visibleFrame];
-
+        for (NSScreen *screen in screens) {
+            NSRect frame = [screen visibleFrame];
             if (NSWidth(frame) <= MIN_SCREEN_WIDTH)
                 return OASmallContextMenuLayout;
         }
@@ -71,7 +62,7 @@ static NSString *OAContextMenuLayoutDefaultKey = @"OAContextMenuLayout";
     return layout;
 }
 
-+ (NSString *) lengthAdjustedContextMenuLabel: (NSString *) label layout: (OAContextMenuLayout) layout;
++ (NSString *)lengthAdjustedContextMenuLabel:(NSString *)label layout:(OAContextMenuLayout)layout;
 {    
     if (layout == OAWideContextMenuLayout && [label length] > 60)
         return [[label substringToIndex: 60] stringByAppendingString: [NSString horizontalEllipsisString]];
@@ -80,7 +71,7 @@ static NSString *OAContextMenuLayoutDefaultKey = @"OAContextMenuLayout";
     return label;
 }
 
-- (void) removeAllItems;
+- (void)removeAllItems;
 {
     while ([self numberOfItems])
         [self removeItemAtIndex: 0];
@@ -88,12 +79,9 @@ static NSString *OAContextMenuLayoutDefaultKey = @"OAContextMenuLayout";
 
 - (NSMenuItem *)itemWithAction:(SEL)action;
 {
-    unsigned int itemIndex = [self numberOfItems];
-    while (itemIndex--) {
-        NSMenuItem *item = [self itemAtIndex:itemIndex];
+    for (NSMenuItem *item in [self itemArray])
         if ([item action] == action)
             return item;
-    }
     return nil;
 }
 

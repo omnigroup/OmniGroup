@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,10 +15,7 @@
 @class /* AppKit         */ NSButton, NSDatePicker, NSImage;
 @class /* OmniAppKit     */ OADatePicker;
 
-@interface OAPopupDatePicker : NSWindowController
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
-<NSWindowDelegate>
-#endif
+@interface OAPopupDatePicker : NSWindowController <NSWindowDelegate>
 {
     id _datePickerObjectValue;
     id _datePickerOriginalValue;

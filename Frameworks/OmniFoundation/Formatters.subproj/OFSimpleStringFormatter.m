@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,7 +51,7 @@ RCS_ID("$Id$")
     return ([partialString length] <= maxLength);
 }
 
-- (BOOL)getObjectValue:(id *)obj forString:(NSString *)string errorDescription:(NSString **)error;
+- (BOOL)getObjectValue:(out id *)obj forString:(NSString *)string errorDescription:(out NSString **)error;
 {
     if (maxLength != 0 && [string length] > maxLength)
         return NO;
@@ -73,10 +73,10 @@ RCS_ID("$Id$")
 
 - initWithCoder:(NSCoder *)coder;
 {
-    unsigned int version;
+    if (!(self = [super initWithCoder:coder]))
+        return nil;
     
-    self = [super initWithCoder:coder];
-    version = [coder versionForClassName:NSStringFromClass([self class])];
+    NSInteger version = [coder versionForClassName:NSStringFromClass([self class])];
     switch (version) {
         case 0:
             [coder decodeValueOfObjCType:@encode(unsigned int) at:&maxLength];

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -92,99 +92,6 @@ NSObject *OFGetIvar(NSObject *object, NSString *ivarName)
 }
 #endif
 
-// Port later if needed
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-static const char *hexTable = "0123456789abcdef";
-
-char *OFNameForPointer(id object, char *pointerName)
-{
-    char firstChar, *p = pointerName;
-    const char *className;
-    unsigned long pointer;
-
-    if (!object) {
-	*pointerName++ = '*';
-	*pointerName++ = 'N';
-	*pointerName++ = 'I';
-	*pointerName++ = 'L';
-	*pointerName++ = '*';
-	*pointerName++ = '\0';
-	return p;
-    }
-
-    if (OBPointerIsClass(object)) {
-	firstChar = '+';
-        pointer = (unsigned long)object;
-    } else {
-	firstChar = '-';
-	pointer = (unsigned long)object->isa;
-    }
-
-    // Rather than calling sprintf, we'll just format the string by hand.  This is much faster.
-
-    // Mark whether it is an instance or not
-    *pointerName++ = firstChar;
-
-    // Write the class name
-    // BUG: We don't actually enforce the name length limit
-    if (!(className = ((Class)pointer)->name))
-	className = "Bogus name!";
-
-    while ((*pointerName++ = *className++))
-	;
-
-    // Back up over the trailing null
-    pointerName--;
-    *pointerName++ = ' ';
-    *pointerName++ = '(';
-
-    // Write the pointer as hex
-    *pointerName++ = '0';
-    *pointerName++ = 'x';
-
-    pointer = (unsigned long) object;
-    pointerName += 7;
-
-    // 8
-    *pointerName-- = hexTable[pointer & 0xf];
-    pointer >>= 4;
-
-    // 7
-    *pointerName-- = hexTable[pointer & 0xf];
-    pointer >>= 4;
-
-    // 6
-    *pointerName-- = hexTable[pointer & 0xf];
-    pointer >>= 4;
-
-    // 5
-    *pointerName-- = hexTable[pointer & 0xf];
-    pointer >>= 4;
-
-    // 4
-    *pointerName-- = hexTable[pointer & 0xf];
-    pointer >>= 4;
-
-    // 3
-    *pointerName-- = hexTable[pointer & 0xf];
-    pointer >>= 4;
-
-    // 2
-    *pointerName-- = hexTable[pointer & 0xf];
-    pointer >>= 4;
-
-    // 1
-    *pointerName-- = hexTable[pointer & 0xf];
-
-    pointerName += 9;
-
-    *pointerName++ = ')';
-    *pointerName++ = '\0';
-
-    return p;
-}
-#endif
-
 BOOL OFInstanceIsKindOfClass(id instance, Class aClass)
 {
     Class sourceClass = object_getClass(instance);
@@ -221,15 +128,9 @@ SEL OFRegisterSelectorIfAbsent(const char *selName)
     SEL sel;
 
     if (!(sel = sel_getUid(selName))) {
-        unsigned int                len;
-        char                       *newSel;
-
-        // On NS4.0 and later, sel_registerName copies the selector name.  But
-        // we won't assume that is the case -- we'll make a temporary copy
-        // and get the assertion rather than crashing the runtime (in case they
-        // change this in the future).
-        len = strlen(selName);
-        newSel = (char *)NSZoneMalloc(NULL, len + 1);
+        // The documentation isn't clear on whether the input string is copied or not. We won't assume, but will assert that the copy did happen.
+        size_t len = strlen(selName);
+        char *newSel = (char *)malloc(len + 1);
         strcpy(newSel, selName);
         OBASSERT(newSel[len] == '\0');
         sel = sel_registerName(newSel);
@@ -238,7 +139,7 @@ SEL OFRegisterSelectorIfAbsent(const char *selName)
         OBASSERT((void *)sel_getUid(selName) != (void *)newSel);
         OBASSERT((void *)sel != (void *)newSel);
 
-        NSZoneFree(NULL, newSel);
+        free(newSel);
     }
 
     return sel;
@@ -251,29 +152,20 @@ SEL OFRegisterSelectorIfAbsent(const char *selName)
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-unsigned int OFLocalIPv4Address(void)
+// uint32_t since we are explicitly looking for IPv4 and so we don't require in_addr_t in the header
+uint32_t OFLocalIPv4Address(void)
 {
-    SCDynamicStoreRef store;
-    CFStringRef interfacesKey;
-    NSDictionary *interfacesDictionary;
-    NSArray *interfaces;
-    unsigned int interfaceIndex, interfaceCount;
-
-    store = SCDynamicStoreCreate(NULL, (CFStringRef)[[NSProcessInfo processInfo] processName], NULL, NULL);
-    interfacesKey = SCDynamicStoreKeyCreateNetworkInterface(NULL, kSCDynamicStoreDomainState);
-    interfacesDictionary = (NSDictionary *)SCDynamicStoreCopyValue(store, interfacesKey);
+    SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, (CFStringRef)[[NSProcessInfo processInfo] processName], NULL, NULL);
+    
+    CFStringRef interfacesKey = SCDynamicStoreKeyCreateNetworkInterface(NULL, kSCDynamicStoreDomainState);
+    NSDictionary *interfacesDictionary = (NSDictionary *)SCDynamicStoreCopyValue(store, interfacesKey);
     CFRelease(interfacesKey);
-    interfaces = [interfacesDictionary objectForKey:(NSString *)kSCDynamicStorePropNetInterfaces];
-    interfaceCount = [interfaces count];
-    for (interfaceIndex = 0; interfaceIndex < interfaceCount; interfaceIndex++) {
-        CFStringRef interfaceName = (CFStringRef)[interfaces objectAtIndex:interfaceIndex];
-        
+    
+    NSArray *interfaces = [interfacesDictionary objectForKey:(NSString *)kSCDynamicStorePropNetInterfaces];
+    for (NSString *interfaceName in interfaces) {
         {
-            CFStringRef linkKey;
-            CFDictionaryRef linkDictionary;
-            
-            linkKey = SCDynamicStoreKeyCreateNetworkInterfaceEntity(NULL, kSCDynamicStoreDomainState, interfaceName, kSCEntNetLink);
-            linkDictionary = SCDynamicStoreCopyValue(store, linkKey);
+            CFStringRef linkKey = SCDynamicStoreKeyCreateNetworkInterfaceEntity(NULL, kSCDynamicStoreDomainState, (CFStringRef)interfaceName, kSCEntNetLink);
+            CFDictionaryRef linkDictionary = SCDynamicStoreCopyValue(store, linkKey);
             CFRelease(linkKey);
             
             if (!linkDictionary)
@@ -288,11 +180,8 @@ unsigned int OFLocalIPv4Address(void)
 
         CFArrayRef ipAddresses;
         {
-            CFStringRef ipv4Key;
-            CFDictionaryRef ipv4Dictionary;
-            
-            ipv4Key = SCDynamicStoreKeyCreateNetworkInterfaceEntity(NULL, kSCDynamicStoreDomainState, interfaceName, kSCEntNetIPv4);
-            ipv4Dictionary = SCDynamicStoreCopyValue(store, ipv4Key);
+            CFStringRef ipv4Key = SCDynamicStoreKeyCreateNetworkInterfaceEntity(NULL, kSCDynamicStoreDomainState, (CFStringRef)interfaceName, kSCEntNetIPv4);
+            CFDictionaryRef ipv4Dictionary = SCDynamicStoreCopyValue(store, ipv4Key);
             ipAddresses = CFDictionaryGetValue(ipv4Dictionary, kSCPropNetIPv4Addresses);
             if (ipAddresses)
                 CFRetain(ipAddresses);
@@ -301,23 +190,24 @@ unsigned int OFLocalIPv4Address(void)
         }
 
         if (ipAddresses != NULL && CFArrayGetCount(ipAddresses) != 0) {
-            NSString *ipAddressString;
-            unsigned long int address;
-                
-            ipAddressString = [(NSArray *)ipAddresses objectAtIndex:0];
-            address = inet_addr([ipAddressString UTF8String]);
+            NSString *ipAddressString = [(NSArray *)ipAddresses objectAtIndex:0];
+            in_addr_t address = inet_addr([ipAddressString UTF8String]);
             if (address != (unsigned int)-1) {
                 CFRelease(ipAddresses);
-                [interfacesDictionary release];
+                CFRelease(interfacesDictionary);
                 CFRelease(store);
-                return address;
+                
+                OBASSERT(address <= UINT32_MAX);
+                return (uint32_t)address;
             }
         }
-        CFRelease(ipAddresses);
+        if (ipAddresses)
+            CFRelease(ipAddresses);
     }
-    [interfacesDictionary release];
+    if (interfacesDictionary)
+        CFRelease(interfacesDictionary);
     CFRelease(store);
-    return (unsigned int)INADDR_LOOPBACK; // Localhost (127.0.0.1)
+    return (in_addr_t)INADDR_LOOPBACK; // Localhost (127.0.0.1)
 }
 #endif
 
@@ -424,9 +314,7 @@ NSString *_OFCalculateUniqueMachineIdentifier(void)
     
     // If there is no such interface (it can get renamed, for one thing -- see RT ticket 191290>), look for another.  Sort the interface names so we don't suffer changes based on 
     NSArray *names = [[interfaces allKeys] sortedArrayUsingSelector:@selector(compare:)];
-    unsigned int nameIndex, nameCount = [names count];
-    for (nameIndex = 0; nameIndex < nameCount; nameIndex++) {
-        NSString *name = [names objectAtIndex:nameIndex];
+    for (NSString *name in names) {
         identifier = [interfaces objectForKey:name];
         if (![NSString isEmptyString:identifier])
             return identifier;
@@ -630,5 +518,27 @@ const char *OFObjCTypeForCFNumberType(CFNumberType cfType)
     // This should never happen, unless Apple adds more types to CoreFoundation and we don't add them to the array.
     OBASSERT_NOT_REACHED("CFNumber type with no corresponding ObjC type");
     return NULL;
+}
+
+NSString *OFKeyPathForKeys(NSString *firstKey, ...)
+{
+    OBPRECONDITION(firstKey);
+    
+    if (firstKey == nil)
+        return nil;
+    
+    NSMutableString *keyPath = [NSMutableString stringWithString:firstKey];
+    
+    NSString *nextKey;
+    va_list argList;
+    
+    va_start(argList, firstKey);
+    while ((nextKey = va_arg(argList, id)) != nil) {
+        [keyPath appendString:@"."];
+        [keyPath appendString:nextKey];
+    }
+    va_end(argList);
+    
+    return keyPath;
 }
 

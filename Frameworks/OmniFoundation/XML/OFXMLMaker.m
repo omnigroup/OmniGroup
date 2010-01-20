@@ -1,9 +1,9 @@
-// Copyright 2004-2005,2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005,2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
-// http://www.omnigroup.com/DeveloperResources/OmniSourceLicense.html.
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/OFXMLMaker.h>
 
@@ -132,7 +132,10 @@ RCS_ID("$Id$");
     }
 
     [self _maybeFinishOpening:NO];
-    [[self target] addString:cdata of:self asComment:NO];
+    if (cdata) {
+        OBASSERT([cdata isKindOfClass:[NSString class]]);
+        [[self target] addString:cdata of:self asComment:NO];
+    }
     return self;
 }
 
@@ -150,13 +153,17 @@ RCS_ID("$Id$");
     }
     
     [self _maybeFinishOpening:NO];
-    [[self target] addString:cdata of:self asComment:YES];
+    if (cdata) {
+        OBASSERT([cdata isKindOfClass:[NSString class]]);
+        [[self target] addString:cdata of:self asComment:YES];
+    }
     return self;
 }
 
 - (OFXMLMaker *)addBase64Data:(NSData *)bytes;
 {
     OBPRECONDITION(openChild == nil);
+    OBASSERT([bytes isKindOfClass:[NSData class]]);
     
     if (openChild != nil) {
         [NSException raise:NSGenericException format:@"Attempting to add content to %@ while child <%@> is open", self, [openChild name]];

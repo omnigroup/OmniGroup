@@ -1,4 +1,4 @@
-// Copyright 1997-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,16 +28,14 @@ RCS_ID("$Id$")
 static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, NSString *key, NSString *value)
 {
     OBPRECONDITION(value != nil);
-    unsigned int clientRecordIndex = [records count];
-    while (clientRecordIndex--) {
-	OAPreferenceClientRecord *clientRecord = [records objectAtIndex:clientRecordIndex];
+    
+    for (OAPreferenceClientRecord *clientRecord in records)
 	if ([[clientRecord valueForKey:key] isEqualToString:value])
 	    return clientRecord;
-    }
     return nil;											\
 }
 
-@interface OAPreferenceController (Private)
+@interface OAPreferenceController (/*Private*/)
 - (void)_loadInterface;
 - (void)_createShowAllItemsView;
 - (void)_setupMultipleToolbar;
@@ -176,9 +174,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     _defaultKeySuffix = [defaultKeySuffix copy];
     preferencesIconViews = [[NSMutableArray alloc] init];
     
-    unsigned int recordIndex, recordCount = [_clientRecords count];
-    for (recordIndex = 0; recordIndex < recordCount; recordIndex++) {
-	OAPreferenceClientRecord *record = [_clientRecords objectAtIndex:recordIndex];
+    for (OAPreferenceClientRecord *record in _clientRecords) {
 	NSString *categoryName = [record categoryName];
 	
 	NSMutableArray *categoryClientRecords = [categoryNamesToClientRecordsArrays objectForKey:categoryName];
@@ -245,13 +241,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (void)setCurrentClientByClassName:(NSString *)name;
 {
-    unsigned int clientRecordIndex;
-    
-    clientRecordIndex = [_clientRecords count];
-    while (clientRecordIndex--) {
-        OAPreferenceClientRecord *clientRecord;
-
-        clientRecord = [_clientRecords objectAtIndex:clientRecordIndex];
+    for (OAPreferenceClientRecord *clientRecord in _clientRecords) {
         if ([[clientRecord className] isEqualToString:name]) {
             [self setCurrentClientRecord:clientRecord];
             return;
@@ -260,12 +250,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 }
 
 - (void)setCurrentClientRecord:(OAPreferenceClientRecord *)clientRecord
-{
-    NSView *contentView, *controlBox;
-    unsigned int newWindowHeight;
-    NSRect controlBoxFrame, windowFrame, newWindowFrame;
-    NSView *oldView;
-    
+{    
     if (nonretained_currentClientRecord == clientRecord)
         return;
     
@@ -283,8 +268,8 @@ static NSString *windowFrameSaveName = @"Preferences";
     [self _resetWindowTitle];
     
     // Remove old client box
-    contentView = [preferenceBox contentView];
-    oldView = [[contentView subviews] lastObject];
+    NSView *contentView = [preferenceBox contentView];
+    NSView *oldView = [[contentView subviews] lastObject];
     [oldView removeFromSuperview];
     
     // Only do this when we are on screen to avoid sending become/resign twice.  If we are off screen, the client got resigned when it went off and the new one will get a become when it goes on screen.
@@ -294,18 +279,18 @@ static NSString *windowFrameSaveName = @"Preferences";
         [nonretained_currentClient willBecomeCurrentPreferenceClient];
 
     // Resize window for the new client box, after letting the client know that it's about to become current
-    controlBox = [nonretained_currentClient controlBox];
+    NSView *controlBox = [nonretained_currentClient controlBox];
     // It's an error for controlBox to be nil, but it's pretty unfriendly to resize our window to be infinitely high when that happens.
-    controlBoxFrame = controlBox != nil ? [controlBox frame] : NSZeroRect;
+    NSRect controlBoxFrame = controlBox != nil ? [controlBox frame] : NSZeroRect;
     
     // Resize the window
     // We don't just tell the window to resize, because that tends to move the upper left corner (which will confuse the user)
-    windowFrame = [NSWindow contentRectForFrameRect:[window frame] styleMask:[window styleMask]];
-    newWindowHeight = NSHeight(controlBoxFrame) + NSHeight([globalControlsView frame]);    
+    NSRect windowFrame = [NSWindow contentRectForFrameRect:[window frame] styleMask:[window styleMask]];
+    CGFloat newWindowHeight = NSHeight(controlBoxFrame) + NSHeight([globalControlsView frame]);    
     if ([toolbar isVisible])
         newWindowHeight += NSHeight([[toolbar _toolbarView] frame]); 
     
-    newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, MAX(idealWidth, NSWidth(controlBoxFrame)), newWindowHeight) styleMask:[window styleMask]];
+    NSRect newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, MAX(idealWidth, NSWidth(controlBoxFrame)), newWindowHeight) styleMask:[window styleMask]];
     [window setFrame:newWindowFrame display:YES animate:[window isVisible]];
     
     // Do this before putting the view in the view hierarchy to avoid flashiness in the controls.
@@ -320,7 +305,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     [contentView addSubview:globalControlsView];
     
     // Add the new client box to the view hierarchy
-    [controlBox setFrameOrigin:NSMakePoint(floor((NSWidth([contentView frame]) - NSWidth(controlBoxFrame)) / 2.0), NSHeight([globalControlsView frame]))];
+    [controlBox setFrameOrigin:NSMakePoint((CGFloat)floor((NSWidth([contentView frame]) - NSWidth(controlBoxFrame)) / 2.0), NSHeight([globalControlsView frame]))];
     [contentView addSubview:controlBox];
     
     // Highlight the initial first responder, and also tell the window what it should be because I think there is some voodoo with nextKeyView not working unless the window has an initial first responder.
@@ -378,7 +363,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     return nonretained_currentClient;
 }
 
-- (void)iconView:(OAPreferencesIconView *)iconView buttonHitAtIndex:(unsigned int)index;
+- (void)iconView:(OAPreferencesIconView *)iconView buttonHitAtIndex:(NSUInteger)index;
 {
     [self setCurrentClientRecord:[[iconView preferenceClientRecords] objectAtIndex:index]];
 }
@@ -550,35 +535,32 @@ static NSString *windowFrameSaveName = @"Preferences";
     return allowedToolbarItems;
 }
 
-// NSToolbar validation
+#pragma mark -
+#pragma mark NSToolbar validation
+
 - (BOOL)validateToolbarItem:(NSToolbarItem *)theItem;
 {
-    NSString *itemIdentifier;
-    
-    itemIdentifier = [theItem itemIdentifier];
+    NSString *itemIdentifier = [theItem itemIdentifier];
     if ([itemIdentifier isEqualToString:@"OAPreferencesPrevious"] || [itemIdentifier isEqualToString:@"OAPreferencesNext"])
         return (nonretained_currentClientRecord != nil);
     
     return YES;
 }
 
-// NSMenuItemValidation informal protocol
+#pragma mark -
+#pragma mark NSMenuItemValidation
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 {
-    SEL action;
-    
-    action = [item action];
+    SEL action = [item action];
     if (action == @selector(runToolbarCustomizationPalette:))
         return NO;
         
     return YES;
 }
 
-@end
-
-
-@implementation OAPreferenceController (Private)
+#pragma mark -
+#pragma mark Private
 
 - (void)_loadInterface;
 {
@@ -589,7 +571,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 
     // These don't seem to get set by the nib.  We want autosizing on so that clients can resize the window by a delta (though it'd be nicer for us to have API for that).
     [preferenceBox setAutoresizesSubviews:YES];
-    [[preferenceBox contentView] setAutoresizingMask:[preferenceBox autoresizingMask]];
+    [(NSView *)[preferenceBox contentView] setAutoresizingMask:[preferenceBox autoresizingMask]];
     [[preferenceBox contentView] setAutoresizesSubviews:YES];
     
     // TJW: Is this really necessary -- it's a top level nib object.
@@ -645,15 +627,13 @@ static NSString *windowFrameSaveName = @"Preferences";
 - (void)_createShowAllItemsView;
 {
     const unsigned int verticalSpaceBelowTextField = 4, verticalSpaceAboveTextField = 7, sideMargin = 12;
-    unsigned int boxHeight = 12;
-    NSArray *categoryNames;
-    unsigned int categoryIndex;
+    CGFloat boxHeight = 12.0f;
 
     showAllIconsView = [[NSView alloc] initWithFrame:NSZeroRect];
 
     // This is lame.  We should really think up some way to specify the ordering of preferences in the plists.  But this is difficult since preferences can come from many places.
-    categoryNames = [self _categoryNames];
-    categoryIndex = [categoryNames count];
+    NSArray *categoryNames = [self _categoryNames];
+    NSUInteger categoryIndex = [categoryNames count];
     while (categoryIndex--) {
         NSString *categoryName;
         NSArray *categoryClientRecords;
@@ -792,9 +772,6 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (void)_showAllIcons:(id)sender;
 {
-    NSRect windowFrame, newWindowFrame;
-    unsigned int newWindowHeight;
-
     // Are we already showing?
     if ([[[preferenceBox contentView] subviews] lastObject] == showAllIconsView)
         return;
@@ -810,11 +787,11 @@ static NSString *windowFrameSaveName = @"Preferences";
     [self _resetWindowTitle];
         
     // Resize window
-    windowFrame = [NSWindow contentRectForFrameRect:[window frame] styleMask:[window styleMask]];
-    newWindowHeight = NSHeight([showAllIconsView frame]);
+    NSRect windowFrame = [NSWindow contentRectForFrameRect:[window frame] styleMask:[window styleMask]];
+    CGFloat newWindowHeight = NSHeight([showAllIconsView frame]);
     if ([toolbar isVisible])
         newWindowHeight += NSHeight([[toolbar _toolbarView] frame]);
-    newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, idealWidth, newWindowHeight) styleMask:[window styleMask]];
+    NSRect newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, idealWidth, newWindowHeight) styleMask:[window styleMask]];
     [window setFrame:newWindowFrame display:YES animate:[window isVisible]];
 
     // Add new icons view
@@ -922,7 +899,7 @@ static NSComparisonResult OAPreferenceControllerCompareCategoryNames(id name1, i
     if (priority != nil)
         return [priority floatValue];
     else
-        return 0.0;
+        return 0.0f;
 }
 
 + (void)_registerClassName:(NSString *)className inCategoryNamed:(NSString *)categoryName description:(NSDictionary *)description;

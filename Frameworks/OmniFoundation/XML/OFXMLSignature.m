@@ -1,14 +1,17 @@
-// Copyright 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
-// http://www.omnigroup.com/DeveloperResources/OmniSourceLicense.html.
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OFXMLSignature.h"
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniFoundation/NSData-OFExtensions.h>
+#import <OmniFoundation/NSData-OFEncoding.h>
+#import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
 
 #include <libxml/tree.h>
@@ -760,7 +763,7 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
 }
 
 /*" Creates and returns a verification context for a given cryptographic algorithm. This method is also in charge of retrieving the key, if any. This is available for subclassing, but this implementation handles DSS-SHA1, HMAC-SHA1/MD5, and RSA-SHA1. "*/
-- (id <OFCSSMDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError CLANG_RETURNS_NS_RETAINED
+- (id <OFCSSMDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError;
 {
     CSSM_ALGORITHMS pk_keytype = CSSM_ALGID_NONE;
     CSSM_ALGORITHMS pk_signature_alg = CSSM_ALGID_NONE;
@@ -770,6 +773,12 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
     } else if (xmlStrcmp(signatureAlgorithm, XMLPKSignaturePKCS1_v1_5) == 0) { /* RSA+SHA1 */
         pk_keytype = CSSM_ALGID_RSA;
         pk_signature_alg = CSSM_ALGID_SHA1WithRSA;
+    } else if (xmlStrcmp(signatureAlgorithm, XMLPKSignatureRSA_SHA256) == 0) { /* RSA+SHA256 */
+        pk_keytype = CSSM_ALGID_RSA;
+        pk_signature_alg = CSSM_ALGID_SHA256WithRSA; /* Apple extension */
+    } else if (xmlStrcmp(signatureAlgorithm, XMLPKSignatureRSA_SHA512) == 0) { /* RSA+SHA512 */
+        pk_keytype = CSSM_ALGID_RSA;
+        pk_signature_alg = CSSM_ALGID_SHA512WithRSA; /* Apple extension */
     }
     
     if (pk_keytype != CSSM_ALGID_NONE) {

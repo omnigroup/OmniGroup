@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 
 #import <OmniNetworking/ONHostAddress.h>
+#import <OmniNetworking/ONFeatures.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
@@ -14,7 +15,9 @@
 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#if ON_SUPPORT_APPLE_TALK
 #include <netat/appletalk.h>
+#endif
 
 RCS_ID("$Id$");
 
@@ -148,6 +151,7 @@ RCS_ID("$Id$");
     shouldBeEqual(nil, [ONHostAddress hostAddressWithNumericString:@"2002.d827.893a.101.0..50.ba08.d61"]);
 }
 
+#if ON_SUPPORT_APPLE_TALK
 - (void)testAtalkParsing
 {
     ONHostAddress *atalk1, *atalk2, *atalk3;
@@ -183,7 +187,7 @@ RCS_ID("$Id$");
 
     shouldBeEqual(nil, [ONHostAddress hostAddressWithNumericString:@"65328:256"]); /* node numbers are limited to 8 bits also */
 }
-
+#endif
 
 @end
 

@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,14 +53,13 @@ RCS_ID("$Id$")
 
 - (BOOL)findInRange:(NSRange)range ofString:(NSString *)aString foundRange:(NSRangePointer)rangePtr;
 {
-    NSCharacterSet *wordSet;
-    unsigned int stringLength;
-    NSRange foundRange;
 
     if (aString == nil)
         return NO; // Patterns never match nil input strings
-    wordSet = [NSCharacterSet letterCharacterSet];
-    stringLength = [aString length];
+    
+    NSRange foundRange;
+    NSCharacterSet *wordSet = [NSCharacterSet letterCharacterSet];
+    NSUInteger stringLength = [aString length];
     
     while (1) {
         foundRange = [aString rangeOfString:pattern options:optionsMask range:range];

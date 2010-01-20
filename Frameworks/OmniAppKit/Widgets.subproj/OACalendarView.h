@@ -1,3 +1,5 @@
+// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// This should be updated to not use NSCalendarDate (or removed) as it is deprecated.
 // Copyright 2001-2005, 2007 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
@@ -9,17 +11,17 @@
 
 #import <AppKit/NSControl.h>
 
-@class NSCalendarDate, NSMutableArray;
+@class NSMutableArray;
 @class NSTableHeaderCell, NSTextFieldCell;
 @class OACalendarView;
 
 #import <AppKit/NSNibDeclarations.h>
 
 @interface NSObject (OACalendarViewDelegate)
-- (int)calendarView:(OACalendarView *)aCalendarView highlightMaskForVisibleMonth:(NSCalendarDate *)visibleMonth;
-- (void)calendarView:(OACalendarView *)aCalendarView willDisplayCell:(id)aCell forDate:(NSCalendarDate *)aDate;	// implement this on the target if you want to be able to set up the date cell. The cell is only used for drawing (and is reused for every date), so you can not, for instance, enable/disable dates by enabling or disabling the cell.
-- (BOOL)calendarView:(OACalendarView *)aCalendarView shouldSelectDate:(NSCalendarDate *)aDate;	// implement this on the target if you need to prevent certain dates from being selected. The target is responsible for taking into account the selection type
-- (void)calendarView:(OACalendarView *)aCalendarView didChangeVisibleMonth:(NSCalendarDate *)aDate;	// implement this on the target if you want to know when the visible month changes
+- (int)calendarView:(OACalendarView *)aCalendarView highlightMaskForVisibleMonth:(NSDate *)visibleMonth;
+- (void)calendarView:(OACalendarView *)aCalendarView willDisplayCell:(id)aCell forDate:(NSDate *)aDate;	// implement this on the target if you want to be able to set up the date cell. The cell is only used for drawing (and is reused for every date), so you can not, for instance, enable/disable dates by enabling or disabling the cell.
+- (BOOL)calendarView:(OACalendarView *)aCalendarView shouldSelectDate:(NSDate *)aDate;	// implement this on the target if you need to prevent certain dates from being selected. The target is responsible for taking into account the selection type
+- (void)calendarView:(OACalendarView *)aCalendarView didChangeVisibleMonth:(NSDate *)aDate;	// implement this on the target if you want to know when the visible month changes
 @end
 
 
@@ -31,7 +33,8 @@ typedef enum _OACalendarViewSelectionType {
 
 @interface OACalendarView : NSControl
 {
-    NSCalendarDate *visibleMonth;
+    NSCalendar *calendar;
+    NSDate *visibleMonth;
     NSMutableArray *selectedDays;
 
     NSView *monthAndYearView;
@@ -40,12 +43,12 @@ typedef enum _OACalendarViewSelectionType {
     NSTextFieldCell *dayOfMonthCell;
     NSMutableArray *buttons;
 
-    int dayHighlightMask;
+    uint32_t dayHighlightMask;
     OACalendarViewSelectionType selectionType;
-    int displayFirstDayOfWeek;
+    NSInteger displayFirstDayOfWeek;
     
-    float columnWidth;
-    float rowHeight;
+    CGFloat columnWidth;
+    CGFloat rowHeight;
     NSRect monthAndYearRect;
     NSRect gridHeaderAndBodyRect;
     NSRect gridHeaderRect;
@@ -60,11 +63,13 @@ typedef enum _OACalendarViewSelectionType {
     } flags;
 }
 
-- (NSCalendarDate *)visibleMonth;
-- (void)setVisibleMonth:(NSCalendarDate *)aDate;
+@property(readwrite,retain) NSCalendar *calendar;
 
-- (NSCalendarDate *)selectedDay;
-- (void)setSelectedDay:(NSCalendarDate *)newSelectedDay;
+- (NSDate *)visibleMonth;
+- (void)setVisibleMonth:(NSDate *)aDate;
+
+- (NSDate *)selectedDay;
+- (void)setSelectedDay:(NSDate *)newSelectedDay;
 
 - (int)dayHighlightMask;
 - (void)setDayHighlightMask:(int)newMask;
@@ -76,8 +81,8 @@ typedef enum _OACalendarViewSelectionType {
 - (OACalendarViewSelectionType)selectionType;
 - (void)setSelectionType:(OACalendarViewSelectionType)value;
 
-- (int)firstDayOfWeek;
-- (void)setFirstDayOfWeek:(int)weekDay;
+- (NSInteger)firstDayOfWeek;
+- (void)setFirstDayOfWeek:(NSInteger)weekDay;
 
 - (NSArray *)selectedDays;
 

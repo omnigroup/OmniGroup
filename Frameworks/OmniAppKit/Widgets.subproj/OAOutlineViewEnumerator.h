@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,20 +16,19 @@
 @interface OAOutlineViewEnumerator : OFObject
 {
     NSOutlineView *_outlineView;
-    id             _dataSource;
+    id _dataSource;
     
     struct OAOutlineViewEnumeratorState *_state;
-    unsigned int _stateCount;
-    unsigned int _stateCapacity;
+    NSUInteger _stateCount;
+    NSUInteger _stateCapacity;
 }
 
-- initWithOutlineView: (NSOutlineView *) outlineView
-          visibleItem: (id) visibleItem;
+- initWithOutlineView:(NSOutlineView *)outlineView visibleItem:(id) visibleItem;
 
-- (NSArray *) nextPath;
-- (NSArray *) previousPath;
+- (NSArray *)nextPath;
+- (NSArray *)previousPath;
 
-- (void) resetToBeginning;
-- (void) resetToEnd;
+- (void)resetToBeginning;
+- (void)resetToEnd;
 
 @end

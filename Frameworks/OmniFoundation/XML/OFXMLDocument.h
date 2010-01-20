@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,8 +27,8 @@
     NSMutableArray         *_processingInstructions;
     
     // DTD declaration
-    CFURLRef                _dtdSystemID;
-    NSString               *_dtdPublicID;
+    __strong CFURLRef _dtdSystemID;
+    NSString *_dtdPublicID;
     
     // Main document content
     OFXMLElement *_rootElement;
@@ -86,9 +86,9 @@
 
 - (BOOL)writeToFile:(NSString *)path error:(NSError **)outError;
 
-- (unsigned int)processingInstructionCount;
-- (NSString *)processingInstructionNameAtIndex:(unsigned int)piIndex;
-- (NSString *)processingInstructionValueAtIndex:(unsigned int)piIndex;
+- (NSUInteger)processingInstructionCount;
+- (NSString *)processingInstructionNameAtIndex:(NSUInteger)piIndex;
+- (NSString *)processingInstructionValueAtIndex:(NSUInteger)piIndex;
 - (void)addProcessingInstructionNamed:(NSString *)piName value:(NSString *)piValue;
 
 - (OFXMLElement *) rootElement;
@@ -113,6 +113,8 @@
 - (OFXMLElement *)appendElement:(NSString *)elementName containingInteger:(int) contents;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingReal:(float) contents; // "%g"
 - (OFXMLElement *)appendElement:(NSString *)elementName containingReal:(float) contents format:(NSString *)formatString;
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents; // "%g"
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents format:(NSString *) formatString;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingDate:(NSDate *)date; // XML Schema / ISO 8601.
 
 // Reading conveniences
@@ -125,6 +127,6 @@
 - (void)parser:(OFXMLParser *)parser addWhitespace:(NSString *)whitespace;
 - (void)parser:(OFXMLParser *)parser addString:(NSString *)string;
 - (void)parserEndElement:(OFXMLParser *)parser;
-- (void)parser:(OFXMLParser *)parser endUnparsedElementWithQName:(OFXMLQName *)name contents:(NSData *)contents;
+- (void)parser:(OFXMLParser *)parser endUnparsedElementWithQName:(OFXMLQName *)qname identifier:(NSString *)identifier contents:(NSData *)contents;
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2005-2006, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,31 +16,25 @@ RCS_ID("$Id$");
 @interface OFAttributedStringExtensionsTest : OFTestCase
 @end
 
-static void __attribute__((sentinel)) _testSeparate(id self, NSString *string, NSString *separator, ...)
+static void _testSeparate(id self, NSString *string, NSString *separator, NSArray *expectedStrings)
 {
     NSAttributedString *sourceString = [[[NSAttributedString alloc] initWithString:string attributes:nil] autorelease];
     NSArray *components = [sourceString componentsSeparatedByString:separator];
-    NSMutableArray *array = [NSMutableArray array];
-    va_list argList;
-    va_start(argList, separator);
-    id obj;
-    while ((obj = va_arg(argList, id))) {
-        obj = [[NSAttributedString alloc] initWithString:obj attributes:nil];
-        [array addObject:obj];
-        [obj release];
-    }
-    va_end(argList);
     
-    shouldBeEqual(components, array);
+    NSMutableArray *expectedAttributedStrings = [NSMutableArray array];
+    for (NSString *s in expectedStrings)
+        [expectedAttributedStrings addObject:[[[NSAttributedString alloc] initWithString:s attributes:nil] autorelease]];
+    
+    shouldBeEqual(components, expectedAttributedStrings);
 }
 
 @implementation OFAttributedStringExtensionsTest
 
 - (void)testComponentsSeparatedByString;
 {
-    _testSeparate(self, @"bab", @"a", @"b", @"b", nil);
-    _testSeparate(self, @"ba", @"a", @"b", @"", nil);
-    _testSeparate(self, @"aaa", @"a", @"", @"", @"", @"", nil);
+    _testSeparate(self, @"bab", @"a", [NSArray arrayWithObjects:@"b", @"b", nil]);
+    _testSeparate(self, @"ba", @"a", [NSArray arrayWithObjects:@"b", @"", nil]);
+    _testSeparate(self, @"aaa", @"a", [NSArray arrayWithObjects:@"", @"", @"", @"", nil]);
 }
 
 @end

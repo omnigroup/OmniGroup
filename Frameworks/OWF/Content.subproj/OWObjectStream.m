@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,7 +86,7 @@ enum {
 
 //
 
-- (id)objectAtIndex:(unsigned int)index withHint:(void **)hint;
+- (id)objectAtIndex:(NSUInteger)index withHint:(void **)hint;
 {
     OWObjectStreamBuffer *buffer;
     
@@ -112,20 +112,20 @@ enum {
     return buffer->objects[index - (buffer->nextIndex - OWObjectStreamBuffer_BufferedObjectsLength)];
 }
 
-- (id)objectAtIndex:(unsigned int)index;
+- (id)objectAtIndex:(NSUInteger)index;
 {
     void *ignored = NULL;
 
     return [self objectAtIndex:index withHint:&ignored];
 }
 
-- (unsigned int)objectCount;
+- (NSUInteger)objectCount;
 {
     [self waitForDataEnd];
     return count;
 }
 
-- (BOOL)isIndexPastEnd:(unsigned int)anIndex
+- (BOOL)isIndexPastEnd:(NSUInteger)anIndex
 {
     if (anIndex >= count && !endOfObjects) {
         [objectsLock lock];

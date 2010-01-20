@@ -1,4 +1,4 @@
-// Copyright 2000-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,10 +48,10 @@
 - (CFStringEncoding)stringEncoding;
 // - (void)setEncoding:(NSStringEncoding)newEncoding; /* "deprecated", heh */
 
-- (unsigned int)seekToOffset:(int)offset fromPosition:(OWCursorSeekPosition)position;  /* calls -discardReadahead and then seeks the underlying stream; may raise if using a multibyte encoding; may not behave correctly if seeking across changes in character encodings */
+- (NSUInteger)seekToOffset:(int)offset fromPosition:(OWCursorSeekPosition)position;  /* calls -discardReadahead and then seeks the underlying stream; may raise if using a multibyte encoding; may not behave correctly if seeking across changes in character encodings */
 
 /* Reading characters and strings. Both of these can return 0 characters before EOF due to multibyte encoding wackiness. */
-- (unsigned int)readCharactersIntoBuffer:(unichar *)buffer maximum:(unsigned int)bufferSize peek:(BOOL)updateCursorPosition; /* fast; returns 0 at eof; use -isAtEOF to distinguish */
+- (NSUInteger)readCharactersIntoBuffer:(unichar *)buffer maximum:(NSUInteger)bufferSize peek:(BOOL)updateCursorPosition; /* fast; returns 0 at eof; use -isAtEOF to distinguish */
 - (NSString *)readString;  /* reads what's available; returns nil at eof */
 - (NSString *)readAllAsString;  /* reads until EOF, blocking if necessary */
 - (BOOL)isAtEOF;

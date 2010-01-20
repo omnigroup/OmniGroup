@@ -1,4 +1,4 @@
-// Copyright 2005-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@ RCS_ID("$Id$");
 NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
 
 #ifdef USE_CORE_IMAGE
-@interface OITabCell (Private)
+@interface OITabCell (/*Private*/)
 - (void)_deriveImages;
 @end
 #endif
@@ -163,20 +163,20 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
     
     NSRect imageRect;
     imageRect.size = NSMakeSize(24,24);
-    imageRect.origin.x = cellFrame.origin.x + floor((cellFrame.size.width - imageRect.size.width)/2);
-    imageRect.origin.y = cellFrame.origin.y + floor((cellFrame.size.height - imageRect.size.height)/2);
+    imageRect.origin.x = (CGFloat)(cellFrame.origin.x + floor((cellFrame.size.width - imageRect.size.width)/2));
+    imageRect.origin.y = (CGFloat)(cellFrame.origin.y + floor((cellFrame.size.height - imageRect.size.height)/2));
 
     if (duringMouseDown && [self isHighlighted]) {
         [[self dimmedImage] drawFlippedInRect:imageRect operation:NSCompositeSourceOver];
     } else if (!dimmed) {
         [[self image] drawFlippedInRect:imageRect operation:NSCompositeSourceOver];
     } else {
-        [[self grayscaleImage] drawFlippedInRect:imageRect operation:NSCompositeSourceOver fraction:1.0];        
+        [[self grayscaleImage] drawFlippedInRect:imageRect operation:NSCompositeSourceOver fraction:1.0f];        
     }
 
     if (isPinned) {
         NSImage *image = [NSImage imageNamed:@"OITabLock.pdf" inBundle:OMNI_BUNDLE];
-        NSPoint point = NSMakePoint(NSMaxX(cellFrame) - [image size].width - 3.0, NSMaxY(cellFrame) - 2.0);
+        NSPoint point = NSMakePoint(NSMaxX(cellFrame) - [image size].width - 3.0f, NSMaxY(cellFrame) - 2.0f);
         [image compositeToPoint:point operation:NSCompositeSourceOver];
     }
     
@@ -192,11 +192,11 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
     return nil;
 }
 
-@end
-
 #ifdef USE_CORE_IMAGE
 
-@implementation OITabCell (Private)
+
+#pragma mark -
+#pragma mark Private
 
 // This should only be called when we're lockFocused on our view, so that we'll get an appropriate CIContext for our window.
 - (void)_deriveImages;
@@ -207,9 +207,9 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
     
     CIFilter *grayedFilter = [CIFilter filterWithName:@"CIColorControls"
                                         keysAndValues:
-                              kCIInputBrightnessKey, [NSNumber numberWithFloat:0.0],
-                              kCIInputContrastKey, [NSNumber numberWithFloat:0.85],
-                              kCIInputSaturationKey, [NSNumber numberWithFloat:0.0],
+                              kCIInputBrightnessKey, [NSNumber numberWithFloat:0.0f],
+                              kCIInputContrastKey, [NSNumber numberWithFloat:0.85f],
+                              kCIInputSaturationKey, [NSNumber numberWithFloat:0.0f],
                               kCIInputImageKey, sourceImage,
                               nil];
     
@@ -219,11 +219,11 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
     [grayscaleImage addRepresentation:filteredImageRep];
     [filteredImageRep release];
     
-    static const CGFloat redVector[4]   = { 0.8, 0.0, 0.0, 0.0 };
-    static const CGFloat greenVector[4] = { 0.0, 0.8, 0.0, 0.0 };
-    static const CGFloat blueVector[4]  = { 0.0, 0.0, 0.8, 0.0 };
-    static const CGFloat alphaVector[4] = { 0.0, 0.0, 0.0, 1.0 };
-    static const CGFloat biasVector[4]  = { 0.2, 0.2, 0.2, 0.0 };
+    static const CGFloat redVector[4]   = { 0.8f, 0.0f, 0.0f, 0.0f };
+    static const CGFloat greenVector[4] = { 0.0f, 0.8f, 0.0f, 0.0f };
+    static const CGFloat blueVector[4]  = { 0.0f, 0.0f, 0.8f, 0.0f };
+    static const CGFloat alphaVector[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    static const CGFloat biasVector[4]  = { 0.2f, 0.2f, 0.2f, 0.0f };
     
     CIFilter *dimmedFilter = [CIFilter filterWithName:@"CIColorMatrix"
                                         keysAndValues:

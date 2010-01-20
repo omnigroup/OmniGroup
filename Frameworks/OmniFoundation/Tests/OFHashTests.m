@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -230,7 +230,7 @@ NSString *md5string(NSString *input)
         return;
     }
     
-    NSMutableData *fourGigabits = [[NSMutableData alloc] initWithLength: ( 0x100000000ULL / 8)];
+    NSMutableData *fourGigabits = [[NSMutableData alloc] initWithLength: (NSUInteger)( 0x100000000ULL / 8)];
     
     /* A long buffer of 'a' (random value found on the net, test vector used by some open source implementations) */
     memset([fourGigabits mutableBytes], 'a', [fourGigabits length]);
