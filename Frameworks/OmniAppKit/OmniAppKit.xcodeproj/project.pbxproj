@@ -2504,7 +2504,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$PROJECT_DIR/../../Scripts/OmniRunUnitTests\n\n";
+			shellScript = "$PROJECT_DIR/../../Scripts/OmniRunUnitTests\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
