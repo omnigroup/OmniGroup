@@ -15,6 +15,8 @@
 
 @interface NSView (OAExtensions)
 
+- (BOOL)isOrContainsFirstResponder;
+
 // Snapping to base coordinates.
 - (NSPoint)floorSnappedPoint:(NSPoint)point;
 - (NSSize)floorSnappedSize:(NSSize)size;

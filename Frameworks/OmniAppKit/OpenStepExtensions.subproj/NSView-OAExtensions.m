@@ -20,6 +20,14 @@ RCS_ID("$Id$")
 
 @implementation NSView (OAExtensions)
 
+- (BOOL)isOrContainsFirstResponder;
+{
+    NSResponder *firstResponder = [[self window] firstResponder];
+    if (![firstResponder isKindOfClass:[NSView class]])
+        return NO;
+    return (self == (NSView *)firstResponder || [(NSView *)firstResponder isDescendantOf:self]);
+}
+
 #pragma mark Snapping to base coordinates.
 
 // Might want floor, truncate, or rint, but at least we say what we are doing.
