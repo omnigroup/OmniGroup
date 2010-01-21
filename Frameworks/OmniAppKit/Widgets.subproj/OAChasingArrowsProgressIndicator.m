@@ -106,7 +106,7 @@ static NSImage *ChasingArrows = nil;
         opacity = 0.6f;
     } else {
         counter++;
-        angle = (CGFloat)(((counter % FRAMES_PER_CYCLE) / (CGFloat)FRAMES_PER_CYCLE)  * (2.0 * M_PI));
+        angle = (CGFloat)(counter % FRAMES_PER_CYCLE) * (CGFloat)((2.0 * M_PI) / FRAMES_PER_CYCLE);
         opacity = 1.0f;
     }
 
@@ -115,9 +115,9 @@ static NSImage *ChasingArrows = nil;
     NSGraphicsContext *currentContext = [NSGraphicsContext currentContext];
     CGContextRef graphicsContext = [currentContext graphicsPort];
     if (angle != 0) {
-        CGContextTranslateCTM(graphicsContext, NSWidth(bounds) / 2.0f, NSHeight(bounds) / 2.0f);
+        CGContextTranslateCTM(graphicsContext, NSWidth(bounds) / 2, NSHeight(bounds) / 2);
         CGContextRotateCTM(graphicsContext, -angle);
-        CGContextTranslateCTM(graphicsContext, -NSWidth(bounds) / 2.0f, -NSHeight(bounds) / 2.0f);
+        CGContextTranslateCTM(graphicsContext, -NSWidth(bounds) / 2, -NSHeight(bounds) / 2);
     }
 
     NSImageInterpolation imageInterpolation = [currentContext imageInterpolation];
