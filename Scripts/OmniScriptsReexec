@@ -1,4 +1,4 @@
-# $Header: $
+# $Id$
 #
 # When something from OmniGroup/Scripts is run, it might differ between the trunk
 # version (the one in /usr/omni/bin/Scripts) and the one on the product branch
