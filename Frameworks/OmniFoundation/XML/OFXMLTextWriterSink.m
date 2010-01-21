@@ -16,6 +16,11 @@ RCS_ID("$Id$");
 static const xmlChar *getTerminatedStringBuf(NSString *nsstring, void **freeThis);
 static void writeString(xmlTextWriter *writer, NSString *str);
 
+static inline const xmlChar * __attribute__((const,always_inline)) castXmlChar(const char *s) 
+{
+    return (const xmlChar *)s;
+}
+
 @implementation OFXMLTextWriterSink
 
 // Init and dealloc
@@ -56,7 +61,7 @@ static void writeString(xmlTextWriter *writer, NSString *str);
 
 - (OFXMLMaker *)addEOL
 {
-    xmlTextWriterWriteString(writer, BAD_CAST "\n");
+    xmlTextWriterWriteString(writer, castXmlChar("\n"));
     return self;
 }
 
@@ -71,8 +76,8 @@ static void writeString(xmlTextWriter *writer, NSString *str);
     xmlTextWriterEndDocument(writer);
     if (flags.freeWhenDone) {
         xmlFreeTextWriter(writer);
-        writer = nil;
     }
+    writer = nil;
 }
 
 /* XMLSink API */
@@ -94,22 +99,22 @@ static void writeString(xmlTextWriter *writer, NSString *str);
 
 - (void)addDoctype:(NSString *)rootElement identifiers:(NSString *)publicIdentifier :(NSString *)systemIdentifier;
 {
-    const xmlChar *rootElementBuf = BAD_CAST [rootElement cStringUsingEncoding:NSUTF8StringEncoding];
-    const xmlChar *publicIdentifierBuf = BAD_CAST [publicIdentifier cStringUsingEncoding:NSUTF8StringEncoding];
-    const xmlChar *systemIdentifierBuf = BAD_CAST [systemIdentifier cStringUsingEncoding:NSUTF8StringEncoding];
+    const xmlChar *rootElementBuf = castXmlChar([rootElement cStringUsingEncoding:NSUTF8StringEncoding]);
+    const xmlChar *publicIdentifierBuf = castXmlChar([publicIdentifier cStringUsingEncoding:NSUTF8StringEncoding]);
+    const xmlChar *systemIdentifierBuf = castXmlChar([systemIdentifier cStringUsingEncoding:NSUTF8StringEncoding]);
     
 #if 0
     // Libxml versions before version 2.6.23 emit unparsable XML if you call xmlTextWriterWriteDTD().
     // Leopard is still using 2.6.16, released in 2004 (!) (see RADAR #6717520).
     xmlTextWriterWriteDTD(writer, rootElementBuf, publicIdentifierBuf, systemIdentifierBuf, NULL);
 #else
-    xmlTextWriterWriteRaw(writer, BAD_CAST "<!DOCTYPE ");
+    xmlTextWriterWriteRaw(writer, castXmlChar("<!DOCTYPE "));
     xmlTextWriterWriteRaw(writer, rootElementBuf);
-    xmlTextWriterWriteRaw(writer, BAD_CAST " PUBLIC \"");
+    xmlTextWriterWriteRaw(writer, castXmlChar(" PUBLIC \""));
     xmlTextWriterWriteRaw(writer, publicIdentifierBuf);
-    xmlTextWriterWriteRaw(writer, BAD_CAST "\" \"");
+    xmlTextWriterWriteRaw(writer, castXmlChar("\" \""));
     xmlTextWriterWriteRaw(writer, systemIdentifierBuf);
-    xmlTextWriterWriteRaw(writer, BAD_CAST "\">");
+    xmlTextWriterWriteRaw(writer, castXmlChar("\">"));
 #endif
 
     [self addEOL];
@@ -192,7 +197,7 @@ static const xmlChar *getTerminatedStringBuf(NSString *nsstring, void **freeThis
     /* Most of the time, we're passing simple string literals into libxml for use in tag names and such, and this call will cheaply return the underlying cstring-like buffer. */
     const char *simple = CFStringGetCStringPtr((CFStringRef)(nsstring), kCFStringEncodingUTF8);
     if (simple) {
-        return BAD_CAST simple;
+        return castXmlChar(simple);
     }
     
     /* Otherwise, we need to copy it out into a NUL-terminated buffer. */
@@ -225,14 +230,14 @@ static void writeString(xmlTextWriter *writer, NSString *str)
     /* The simple case */
     const char *simple = CFStringGetCStringPtr((CFStringRef)(str), kCFStringEncodingUTF8);
     if (simple) {
-        xmlTextWriterWriteString(writer, BAD_CAST simple);
+        xmlTextWriterWriteString(writer, castXmlChar(simple));
         return;
     }
     
-    /* TODO: This can't handle NULs in the wring being written. There's no "with length" variant of xmlTextWriterWriteString(), so the only way to do that would be to handle all the entity encoding ourselves, and I'd rather not. */
+    /* TODO: This can't handle NULs in the string being written. There's no "with length" variant of xmlTextWriterWriteString(), so the only way to do that would be to handle all the entity encoding ourselves, and I'd rather not. */
     
     /* The complicated case */
-#define CONV_BUF_SIZE 10 /* 2048 */
+#define CONV_BUF_SIZE 2048
     UInt8 buf[CONV_BUF_SIZE+1];
     CFStringRef cfString = (CFStringRef)str;
     CFIndex sourceStringLength = CFStringGetLength(cfString);
