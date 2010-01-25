@@ -7,13 +7,14 @@
 
 #import "OASteppableTextField.h"
 
+#import "OAUtilities.h"
 #import <AppKit/NSKeyValueBinding.h>
 #import <AppKit/NSApplication.h>
 #import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$");
 
-@interface OASteppableTextField (Private)
+@interface OASteppableTextField (/*Private*/)
 - (BOOL)_stepWithFormatterSelector:(SEL)formatterSelector;
 @end
 
@@ -55,9 +56,8 @@ RCS_ID("$Id$");
     return YES;
 }
 
-@end
-
-@implementation OASteppableTextField (Private)
+#pragma mark -
+#pragma mark Private
 
 - (BOOL)_stepWithFormatterSelector:(SEL)formatterSelector;
 {
@@ -72,9 +72,8 @@ RCS_ID("$Id$");
     [self setObjectValue:objectValue];
     [NSApp sendAction:[self action] to:[self target] from:self];
     
-    NSDictionary *bindingInfo = [self infoForBinding:@"value"];
-    if (bindingInfo)
-        [[bindingInfo objectForKey:NSObservedObjectKey] setValue:objectValue forKeyPath:[bindingInfo objectForKey:NSObservedKeyPathKey]];
+    OAPushValueThroughBinding(self, objectValue, NSValueBinding);
+    
     return YES;
 }
 

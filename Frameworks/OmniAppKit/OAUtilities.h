@@ -49,3 +49,5 @@ static inline NSAffineTransformStruct NSAffineTransformFromCG(CGAffineTransform 
 
 #endif
 
+extern BOOL OAPushValueThroughBinding(id self, id objectValue, NSString *binding);
+

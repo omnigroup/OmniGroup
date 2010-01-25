@@ -32,6 +32,7 @@
 		34A201230FF0454400B699DB /* NSAlert-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2011E0FF0453800B699DB /* NSAlert-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */; };
 		34AF4BE20C99963F003DEC1B /* OAColorArchivingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AF4BE10C99963F003DEC1B /* OAColorArchivingTests.m */; };
+		34D04A39110E0270007399B9 /* OAUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D04A38110E0270007399B9 /* OAUtilities.m */; };
 		34E46E9D0CDEB7330066E943 /* OAFlippedView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E46E9B0CDEB7330066E943 /* OAFlippedView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34E46E9E0CDEB7330066E943 /* OAFlippedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E46E9C0CDEB7330066E943 /* OAFlippedView.m */; };
 		34F0990109322B800001D0D5 /* OAAboutPanelController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F098FF09322B800001D0D5 /* OAAboutPanelController.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -637,6 +638,7 @@
 		34B14EF40573A3FF0097A113 /* OAColorWell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAColorWell.h; sourceTree = "<group>"; };
 		34B14EF50573A3FF0097A113 /* OAColorWell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorWell.m; sourceTree = "<group>"; };
 		34BB25C80611078B00572E53 /* OAPatternColorPicker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAPatternColorPicker.png; sourceTree = "<group>"; };
+		34D04A38110E0270007399B9 /* OAUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAUtilities.m; sourceTree = "<group>"; };
 		34DAF8660556CA0D0097A113 /* OAVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAVersion.h; sourceTree = "<group>"; };
 		34DBC8C205979AE60097A113 /* OAMakeImageSizeIntegral.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAMakeImageSizeIntegral.m; sourceTree = "<group>"; };
 		34E46E9B0CDEB7330066E943 /* OAFlippedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFlippedView.h; sourceTree = "<group>"; };
@@ -1746,6 +1748,7 @@
 				34EC89C904F6E8160097A113 /* OmniAppKit_Prefix.h */,
 				00E51F07FE8AB2E911C9CC38 /* OmniAppKit.h */,
 				4A0277F608959F0400594E5E /* OAUtilities.h */,
+				34D04A38110E0270007399B9 /* OAUtilities.m */,
 				34DAF8660556CA0D0097A113 /* OAVersion.h */,
 				34A1594805642A810097A113 /* OmniAppKit.order */,
 				BF94281F062222D400B83989 /* Info.plist */,
@@ -2645,6 +2648,7 @@
 				34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */,
 				94E1CE0C10D803C5000A01F9 /* OACloseButtonOverlay.m in Sources */,
 				007E767910C8469F00313878 /* OABoxSeparator.m in Sources */,
+				34D04A39110E0270007399B9 /* OAUtilities.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
