@@ -7,7 +7,7 @@
 
 #import <OmniAppKit/OAUtilities.h>
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Frameworks/OmniAppKit/OAUtilities.m 124296 2010-01-25 16:51:27Z bungi $");
+RCS_ID("$Id$");
 
 BOOL OAPushValueThroughBinding(id self, id objectValue, NSString *binding)
 {
