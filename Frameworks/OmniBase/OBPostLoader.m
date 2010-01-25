@@ -1,4 +1,4 @@
-// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,7 @@ static BOOL isMultiThreaded = NO;
 static BOOL isSendingBecomingMultiThreaded = NO;
 
 // This can produce lots of false positivies, but provides a way to start looking for some potential problem cases.
-#if 0 && defined(DEBUG)
+#if 0 && defined(OMNI_ASSERTIONS_ON)
 #define OB_CHECK_COPY_WITH_ZONE
 #endif
 
@@ -48,9 +48,9 @@ static BOOL isSendingBecomingMultiThreaded = NO;
 #ifdef OMNI_ASSERTIONS_ON
 + (void)_validateMethodSignatures;
 + (void)_checkForMethodsInDeprecatedProtocols;
-#endif
 #ifdef OB_CHECK_COPY_WITH_ZONE
 + (void)_checkCopyWithZoneImplementations;
+#endif
 #endif
 @end
 
@@ -95,11 +95,15 @@ This method makes several passes, each time invoking a different selector.  On t
         [self _becomingMultiThreaded:nil];
     
 #ifdef OMNI_ASSERTIONS_ON
-    [self _validateMethodSignatures];
-    [self _checkForMethodsInDeprecatedProtocols];
-#endif
+    NSString *executableName = [[[NSBundle mainBundle] executablePath] lastPathComponent];
+    BOOL shouldCheck = ![@"ibtool" isEqualToString:executableName] && ![@"Interface Builder" isEqualToString:executableName] && ![@"IBCocoaSimulator" isEqualToString:executableName];
+    if (shouldCheck) {
+        [self _validateMethodSignatures];
+        [self _checkForMethodsInDeprecatedProtocols];
 #ifdef OB_CHECK_COPY_WITH_ZONE
-    [self _checkCopyWithZoneImplementations];
+        [self _checkCopyWithZoneImplementations];
+#endif
+    }
 #endif
 }
 
