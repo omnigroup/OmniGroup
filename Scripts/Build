@@ -58,8 +58,6 @@ echo BUILD_ACTION=$BUILD_ACTION
 
 if [ "$BUILD_ACTION" = "install" ]; then
     BUILD_CONFIGURATION=Release
-    export LD_SEG_ADDR_TABLE="$PWD/OmniGroup/Scripts/SegAddrTable.txt"
-    export LD_PREBIND="YES"
     if [ -z "$OMNI_INSTALLED_PRODUCTS" ]; then
         OMNI_INSTALLED_PRODUCTS=`dirname $productDirectory`/InstalledProducts
     fi
