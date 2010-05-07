@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFXMLMaker.h>
 
-/* OFLibXML2Sink is a concrete subclass of XMLSink which writes its nodes into a libxml2 'xmlTextWriter'. */
+/* OFXMLTextWriterSink is a concrete subclass of XMLSink which writes its nodes into a libxml2 'xmlTextWriter'. */
 @interface OFXMLTextWriterSink : OFXMLSink
 {
     struct _xmlTextWriter *writer;

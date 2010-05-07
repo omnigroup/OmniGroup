@@ -14,7 +14,9 @@
 #import <OmniBase/rcsid.h>
 
 #import <OmniBase/OBObject.h>
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniBase/OBPostLoader.h>
+#endif
 #import <OmniBase/OBUtilities.h>
 
 #import <OmniBase/NSException-OBExtensions.h>

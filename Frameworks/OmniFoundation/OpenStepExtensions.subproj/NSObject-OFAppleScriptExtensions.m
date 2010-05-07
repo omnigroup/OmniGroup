@@ -104,11 +104,12 @@ RCS_ID("$Id$")
         if ([self ignoreAppleScriptValueForKey:key])
             continue;
         
-        NS_DURING {
+        @try {
             value = [self valueForKey:key];
-        } NS_HANDLER {
+        } @catch (NSException *exc) {
+            OB_UNUSED_VALUE(exc);
             value = nil;
-        } NS_ENDHANDLER;
+        }
         [record setObject:value forKey:[NSNumber numberWithUnsignedLong:[classDescription appleEventCodeForKey:key]]];        
     }
     return record;
@@ -253,13 +254,15 @@ RCS_ID("$Id$")
         while ((key = [enumerator nextObject])) {
             if (![classDescription hasWritablePropertyForKey:key])
                 continue;
-            NS_DURING {
+            
+            @try {
                 value = [blankObject valueForKey:key];
-            } NS_HANDLER {
+            } @catch (NSException *exc) {
+                OB_UNUSED_VALUE(exc);
                 value = nil; // in case the script suite is inaccurate and we don't actually respond to that key 
                 // This is needed because the Outliner guys put 'scriptStyle' on NSTextStorage into OmniAppKit, but it is defined in OmniStyle,
                 // so any app which uses scripting but doesn't include the OmniStyle framework breaks here.
-            } NS_ENDHANDLER;
+            }
             if (value)
                 [result setObject:value forKey:key];
         }
@@ -354,7 +357,8 @@ RCS_ID("$Id$")
         id value;
         @try {
             value = [self valueForKey:key];
-        } @catch (NSException *exception) {
+        } @catch (NSException *exc) {
+            OB_UNUSED_VALUE(exc);
             value = nil;
         }
         if (!value || [[defaultValues objectForKey:key] isEqual:value])

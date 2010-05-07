@@ -70,7 +70,7 @@ static BOOL compareDataEqual(NSMapTable *table, const void *a, const void *b)
     
     profile = NSMapGet(sharedProfiles, newProfileData);
     if (!profile) {
-        NSLog(@"Creating profile object for profile data (%d bytes)", [newProfileData length]);
+        NSLog(@"Creating profile object for profile data (%ld bytes)", [newProfileData length]);
         newProfileData = [newProfileData copy];
         profile = [[self alloc] initWithData:newProfileData];
         if ([profile isValid]) {
@@ -83,7 +83,7 @@ static BOOL compareDataEqual(NSMapTable *table, const void *a, const void *b)
         }
         [newProfileData release];
     } else {
-        NSLog(@"Re-using profile object (profile data is %d bytes)", [newProfileData length]);
+        NSLog(@"Re-using profile object (profile data is %ld bytes)", [newProfileData length]);
     }
     
     [sharedProfileLock unlock];

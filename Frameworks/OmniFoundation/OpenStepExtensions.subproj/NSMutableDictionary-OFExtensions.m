@@ -6,8 +6,27 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
+#import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
+
+#import <Foundation/Foundation.h>
 
 RCS_ID("$Id$")
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    #define CGPointValue pointValue
+    #define CGRectValue rectValue
+    #define CGSizeValue sizeValue
+
+//    #define CGPointEqualToPoint NSEqualPoints
+//    #define CGSizeEqualToSize NSEqualSizes
+    #define CGRectEqualToRect NSEqualRects
+#else
+    #define NSStringFromPoint NSStringFromCGPoint
+    #define NSStringFromRect NSStringFromCGRect
+    #define NSStringFromSize NSStringFromCGSize
+    #import <UIKit/UIGeometry.h>
+#endif
 
 @implementation NSMutableDictionary (OFExtensions)
 
@@ -73,37 +92,20 @@ RCS_ID("$Id$")
     [number release];
 }
 
-// We don't use NSValueGeometryExtensions because we use these methods to create property lists (which don't support those geometry types as of 10.3).
-// #define USE_NSValueGeometryExtensions
-
-#ifdef OmniFoundation_NSDictionary_NSGeometry_Extensions
-- (void)setPointValue:(NSPoint)value forKey:(NSString *)key;
+- (void)setPointValue:(CGPoint)value forKey:(NSString *)key;
 {
-#ifdef USE_NSValueGeometryExtensions
-    [self setObject:[NSValue valueWithPoint:value] forKey:key];
-#else
     [self setObject:NSStringFromPoint(value) forKey:key];
-#endif
 }
 
-- (void)setSizeValue:(NSSize)value forKey:(NSString *)key;
+- (void)setSizeValue:(CGSize)value forKey:(NSString *)key;
 {
-#ifdef USE_NSValueGeometryExtensions
-    [self setObject:[NSValue valueWithSize:value] forKey:key];
-#else
     [self setObject:NSStringFromSize(value) forKey:key];
-#endif
 }
 
-- (void)setRectValue:(NSRect)value forKey:(NSString *)key;
+- (void)setRectValue:(CGRect)value forKey:(NSString *)key;
 {
-#ifdef USE_NSValueGeometryExtensions
-    [self setObject:[NSValue valueWithRect:value] forKey:key];
-#else
     [self setObject:NSStringFromRect(value) forKey:key];
-#endif
 }
-#endif
 
 // Set values with defaults
 
@@ -197,10 +199,9 @@ RCS_ID("$Id$")
     [self setBoolValue:value forKey:key];
 }
 
-#ifdef OmniFoundation_NSDictionary_NSGeometry_Extensions
-- (void)setPointValue:(NSPoint)value forKey:(NSString *)key defaultValue:(NSPoint)defaultValue;
+- (void)setPointValue:(CGPoint)value forKey:(NSString *)key defaultValue:(CGPoint)defaultValue;
 {
-    if (NSEqualPoints(value, defaultValue)) {
+    if (CGPointEqualToPoint(value, defaultValue)) {
         [self removeObjectForKey:key];
         return;
     }
@@ -208,9 +209,9 @@ RCS_ID("$Id$")
     [self setPointValue:value forKey:key];
 }
 
-- (void)setSizeValue:(NSSize)value forKey:(NSString *)key defaultValue:(NSSize)defaultValue;
+- (void)setSizeValue:(CGSize)value forKey:(NSString *)key defaultValue:(CGSize)defaultValue;
 {
-    if (NSEqualSizes(value, defaultValue)) {
+    if (CGSizeEqualToSize(value, defaultValue)) {
         [self removeObjectForKey:key];
         return;
     }
@@ -218,15 +219,14 @@ RCS_ID("$Id$")
     [self setSizeValue:value forKey:key];
 }
 
-- (void)setRectValue:(NSRect)value forKey:(NSString *)key defaultValue:(NSRect)defaultValue;
+- (void)setRectValue:(CGRect)value forKey:(NSString *)key defaultValue:(CGRect)defaultValue;
 {
-    if (NSEqualRects(value, defaultValue)) {
+    if (CGRectEqualToRect(value, defaultValue)) {
         [self removeObjectForKey:key];
         return;
     }
     
     [self setRectValue:value forKey:key];
 }
-#endif
 
 @end

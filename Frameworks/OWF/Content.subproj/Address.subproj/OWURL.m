@@ -171,7 +171,7 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:self];
+    [[OFController sharedController] addObserver:(id)self];
 }
 
 + (void)readDefaults;

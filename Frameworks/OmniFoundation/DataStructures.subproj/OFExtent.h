@@ -8,7 +8,14 @@
 // $Id$
 
 #import <tgmath.h>
-#import <Foundation/NSGeometry.h>  // This seems to be the most parsimonious way to include CGBase.h for the CGFloat typedef
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#import <Foundation/NSGeometry.h>
+#else
+#import <CoreGraphics/CGGeometry.h>
+#endif
+
+#import <OmniBase/assertions.h>
 
 // Like NSRange, but for CGFloats. For now we are assuming that length is non-negative; in the future it might be useful to have a right-aligned extents (max is the location not location + length).
 typedef struct _OFExtent {
@@ -61,6 +68,12 @@ static inline OFExtent OFExtentFromLocations(CGFloat p1, CGFloat p2)
     return OFExtentMake(min, max-min);
 }
 
+// Inclusive
+static inline BOOL OFExtentContainsValue(OFExtent extent, CGFloat value)
+{
+    return (OFExtentMin(extent) <= value) && (value <= OFExtentMax(extent));
+}
+
 // If you pass in two negative extents; this will return a positive one right now (i.e., location on the left)
 static inline OFExtent OFExtentUnion(OFExtent a, OFExtent b)
 {
@@ -96,14 +109,19 @@ static inline OFExtent OFExtentAdjustMax(OFExtent a, CGFloat delta)
     return OFExtentMake(min, max-min);
 }
 
-// NSRect to OFExtent
-static inline OFExtent OFExtentFromRectXRange(NSRect r)
+// CGRect to OFExtent
+static inline OFExtent OFExtentFromRectXRange(CGRect r)
 {
-    return OFExtentMake(NSMinX(r), NSWidth(r));
+    return OFExtentMake(CGRectGetMinX(r), CGRectGetWidth(r));
 }
-static inline OFExtent OFExtentFromRectYRange(NSRect r)
+static inline OFExtent OFExtentFromRectYRange(CGRect r)
 {
-    return OFExtentMake(NSMinY(r), NSHeight(r));
+    return OFExtentMake(CGRectGetMinY(r), CGRectGetHeight(r));
+}
+static inline CGRect OFExtentsToRect(OFExtent xExtent, OFExtent yExtent)
+{
+    return CGRectMake(OFExtentMin(xExtent), OFExtentMin(yExtent),
+                      OFExtentLength(xExtent), OFExtentLength(yExtent));
 }
 
 // Snaps the the smallest integral range that contains the extent.

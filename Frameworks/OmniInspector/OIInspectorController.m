@@ -337,12 +337,13 @@ static BOOL animateInspectorToggles;
 
 - (void)inspectNothing;
 {
-    NS_DURING {
+    @try {
 	[currentlyInspectedObjects release];
 	currentlyInspectedObjects = nil;
         [inspector inspectObjects:nil];
-    } NS_HANDLER {
-    } NS_ENDHANDLER;
+    } @catch (NSException *exc) {
+        OB_UNUSED_VALUE(exc);
+    }
 }
 
 - (NSMutableDictionary *)debugDictionary;

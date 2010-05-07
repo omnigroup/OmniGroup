@@ -99,7 +99,7 @@ static NSString *defaultPassword = nil;
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:self];
+    [[OFController sharedController] addObserver:(id)self];
 }
 
 + (void)controllerDidInitialize:(OFController *)controller;
@@ -550,11 +550,12 @@ static NSString *defaultPassword = nil;
     if (controlSocketStream) {
 	BOOL connectionStillValid;
 
-	NS_DURING {
+	@try {
 	    connectionStillValid = [self sendCommand:@"NOOP"];
-	} NS_HANDLER {
+        } @catch (NSException *exc) {
+            OB_UNUSED_VALUE(exc);
 	    connectionStillValid = NO;
-	} NS_ENDHANDLER;
+	}
 	if (connectionStillValid)
 	    return;
 	[controlSocketStream release];
@@ -662,11 +663,12 @@ static NSString *defaultPassword = nil;
 {
     if (!controlSocketStream)
 	return;
-    NS_DURING {
+    @try {
 	[self sendCommand:@"QUIT"];
-    } NS_HANDLER {
+    } @catch (NSException *exc) {
+        OB_UNUSED_VALUE(exc);
         // Well, we're closing the connection anyway...
-    } NS_ENDHANDLER;
+    }
     [controlSocketStream release];
     controlSocketStream = nil;
 }

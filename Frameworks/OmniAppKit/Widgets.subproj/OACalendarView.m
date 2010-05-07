@@ -41,6 +41,7 @@ RCS_ID("$Id$")
 - (void)_calculateSizes;
 - (void)_drawSelectionBackground:(NSRect)rect;
 - (void)_drawDaysOfMonthInRect:(NSRect)rect;
+- (void)_drawGridInRect:(NSRect)rect;
 
 - (CGFloat)_maximumDayOfWeekWidth;
 - (NSSize)_maximumDayOfMonthSize;
@@ -55,9 +56,7 @@ RCS_ID("$Id$")
 
 @implementation OACalendarView
 
-const float OACalendarViewButtonWidth = 15.0f;
-const float OACalendarViewButtonHeight = 15.0f;
-const float OACalendarViewSpaceBetweenMonthYearAndGrid = 2.0f;
+const float OACalendarViewSpaceBetweenMonthYearAndGrid = 4.0f;
 const int OACalendarViewNumDaysPerWeek = 7;
 const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
@@ -90,6 +89,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     
     thisBundle = [OACalendarView bundle];
     monthAndYearTextFieldCell = [[NSTextFieldCell alloc] init];
+    [monthAndYearTextFieldCell setFont:[NSFont boldSystemFontOfSize:12.0f]];
     monthAndYearFormatter = [[NSDateFormatter alloc] initWithDateFormat:@"%B %Y" allowNaturalLanguage:NO];
     [monthAndYearTextFieldCell setFormatter:monthAndYearFormatter];
     [monthAndYearFormatter release];
@@ -114,25 +114,27 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
     dayOfMonthCell = [[NSTextFieldCell alloc] init];
     [dayOfMonthCell setAlignment:NSCenterTextAlignment];
-    [dayOfMonthCell setFont:[NSFont boldSystemFontOfSize:9.0f]];
+    [dayOfMonthCell setFont:[NSFont systemFontOfSize:12.0f]];
 
     buttons = [[NSMutableArray alloc] initWithCapacity:2];
+    NSImage *leftImage = [NSImage imageNamed:@"OALeftArrow" inBundle:thisBundle];
+    NSSize imageSize = [leftImage size];
 
-    NSRect _monthAndYearViewRect = NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width, OACalendarViewButtonHeight);
+    NSRect _monthAndYearViewRect = NSMakeRect(frameRect.origin.x, frameRect.origin.y + 1.0f, frameRect.size.width, imageSize.height);
     monthAndYearView = [[NSView alloc] initWithFrame:_monthAndYearViewRect];
     [monthAndYearView setAutoresizingMask:NSViewWidthSizable];
 
     // Add left/right buttons
 
-    buttonFrame = NSMakeRect(_monthAndYearViewRect.origin.x, _monthAndYearViewRect.origin.y, OACalendarViewButtonWidth, OACalendarViewButtonHeight);
+    buttonFrame = NSMakeRect(_monthAndYearViewRect.origin.x + 1.0f, _monthAndYearViewRect.origin.y, imageSize.width, imageSize.height);
     button = [self _createButtonWithFrame:buttonFrame];
-    [button setImage:[NSImage imageNamed:@"OALeftArrow" inBundle:thisBundle]];
+    [button setImage:leftImage];
     [button setAlternateImage:[NSImage imageNamed:@"OALeftArrowPressed" inBundle:thisBundle]];
     [button setAction:@selector(previousMonth:)];
     [button setAutoresizingMask:NSViewMaxXMargin];
     [monthAndYearView addSubview:button];
 
-    buttonFrame = NSMakeRect(_monthAndYearViewRect.origin.x + _monthAndYearViewRect.size.width - OACalendarViewButtonWidth, _monthAndYearViewRect.origin.y, OACalendarViewButtonWidth, OACalendarViewButtonHeight);
+    buttonFrame = NSMakeRect(NSMaxX(_monthAndYearViewRect) - 1.0f - imageSize.width, _monthAndYearViewRect.origin.y, imageSize.width, imageSize.height);
     button = [self _createButtonWithFrame:buttonFrame];
     [button setImage:[NSImage imageNamed:@"OARightArrow" inBundle:thisBundle]];
     [button setAlternateImage:[NSImage imageNamed:@"OARightArrowPressed" inBundle:thisBundle]];
@@ -258,8 +260,11 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     
     // draw the weeks and selection
     [self _drawSelectionBackground:gridBodyRect];
+    
+    // draw the grid
+    [self _drawGridInRect:gridBodyRect];
 
-    // fill in the grid
+    // fill in the days in the grid
     [self _drawDaysOfMonthInRect:gridBodyRect];
     
     // draw a border around the whole thing. This ends up drawing over the top and right side borders of the header, but that's ok because we don't want their border, we want ours. Also, it ends up covering any overdraw from selected sundays and saturdays, since the selected day covers the bordering area where vertical grid lines would be (an aesthetic decision because we don't draw vertical grid lines, another aesthetic decision).
@@ -525,7 +530,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     
     NSDateComponents *components = [[NSDateComponents alloc] init];
     [components setMonth:-1];
-    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:NSWrapCalendarComponents]];
+    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:0]];
     [components release];
 }
 
@@ -536,7 +541,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
     NSDateComponents *components = [[NSDateComponents alloc] init];
     [components setMonth:1];
-    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:NSWrapCalendarComponents]];
+    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:0]];
     [components release];
 }
 
@@ -544,7 +549,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 {
     NSDateComponents *components = [[NSDateComponents alloc] init];
     [components setYear:-1];
-    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:NSWrapCalendarComponents]];
+    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:0]];
     [components release];
 }
 
@@ -552,7 +557,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 {
     NSDateComponents *components = [[NSDateComponents alloc] init];
     [components setYear:+1];
-    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:NSWrapCalendarComponents]];
+    [self setVisibleMonth:[calendar dateByAddingComponents:components toDate:visibleMonth options:0]];
     [components release];
 }
 
@@ -639,7 +644,6 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
             NSDateComponents *selectedWeekComponents = [calendar components:NSWeekCalendarUnit | NSWeekdayCalendarUnit fromDate:[self selectedDay]];
             NSDateComponents *visibleWeekComponents = [calendar components:NSWeekCalendarUnit fromDate:visibleMonth];
             NSInteger selectedWeek = [selectedWeekComponents week] - [visibleWeekComponents week] + 1;
-	    int weekIndex;
 	    NSRect weekRect; 
             
             NSDateComponents *visibleMonthComponents = [calendar components:NSWeekdayCalendarUnit fromDate:visibleMonth];
@@ -647,18 +651,38 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
                 selectedWeek++;
 	    if ([selectedWeekComponents weekday] < displayFirstDayOfWeek)
                 selectedWeek--;
-	    weekRect.size.height = rowHeight - 1.0f;
-	    weekRect.size.width = rect.size.width - 2.0f;
-	    weekRect.origin.x = rect.origin.x + 1.0f;
-	    	    
-	    for (weekIndex = 1; weekIndex <= OACalendarViewMaxNumWeeksIntersectedByMonth; weekIndex++) {
-		weekRect.origin.y = rect.origin.x + ((weekIndex+1) * rowHeight) - 2.0f;
-		[self drawRoundedRect:NSInsetRect(weekRect, 1.0f, 1.0f) cornerRadius:7.0f color:(weekIndex == selectedWeek ? [NSColor controlShadowColor] : [NSColor controlHighlightColor])];
-	    }
+	    weekRect.size.height = rowHeight;
+	    weekRect.size.width = rect.size.width;
+	    weekRect.origin.x = rect.origin.x;
+	    weekRect.origin.y = rect.origin.x + ((selectedWeek+1) * rowHeight);
+	    
+	    [[NSColor selectedTextBackgroundColor] set];
+	    [NSBezierPath fillRect:weekRect];
 	    break;
 	} case OACalendarViewSelectByWeekday:
 	    // UNDONE
 	    break;
+    }
+}
+
+- (void)_drawGridInRect:(NSRect)rect;
+{
+    NSRect drawRect = rect;
+    int lineIndex;
+    
+    [[[NSColor gridColor] colorWithAlphaComponent:0.5f] set];
+    
+    drawRect.size.width = 1.0f;
+    for (lineIndex = 1; lineIndex < (OACalendarViewNumDaysPerWeek); lineIndex++) {
+	drawRect.origin.x = floor(drawRect.origin.x + columnWidth);
+	[NSBezierPath fillRect:drawRect];
+    }
+    
+    drawRect = rect;
+    drawRect.size.height = 1.0f;
+    for (lineIndex = 0; lineIndex < OACalendarViewMaxNumWeeksIntersectedByMonth+1; lineIndex++) {
+	[NSBezierPath fillRect:drawRect];
+	drawRect.origin.y = floor(drawRect.origin.y + rowHeight);
     }
 }
 
@@ -691,9 +715,8 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
         NSColor *textColor;
         BOOL isVisibleMonth;
 
-        // subtract 1.0 from the origin because we're including the area where vertical grid lines would be were we drawing them
         cellFrame.origin.x = rect.origin.x + (column * columnWidth);
-        cellFrame.origin.y = rect.origin.y + (row * rowHeight);
+        cellFrame.origin.y = rect.origin.y + (row * rowHeight) + 1.0f;
 
         NSDateComponents *thisDayComponents = [calendar components:NSMonthCalendarUnit | NSWeekdayCalendarUnit | NSDayCalendarUnit fromDate:thisDay];
         [dayOfMonthCell setIntegerValue:[thisDayComponents day]];
@@ -743,11 +766,6 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
                 [dayOfMonthCell setTextColor:textColor];
             }
 	    
-	    if (selectionType != OACalendarViewSelectByWeek) {
-		[[NSColor controlHighlightColor] set];
-		[NSBezierPath strokeRect:cellFrame];
-	    }
-
 	    if ([dayOfMonthCell drawsBackground]) {
 		[[dayOfMonthCell backgroundColor] set];
 		[NSBezierPath fillRect:cellFrame];

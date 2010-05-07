@@ -12,8 +12,6 @@
 #import <CoreFoundation/CFDictionary.h>
 #import <CoreFoundation/CFArray.h>
 
-@class OFXMLCursor, OFXMLDocument;
-
 @interface OFEnumNameTable : NSObject
 {
 @private
@@ -45,10 +43,5 @@
 - (BOOL)isEqual:(id)anotherEnumeration;
 
 // Masks
-
-// Archving (primarily for OAEnumStyleAttribute)
-+ (NSString *)xmlElementName;
-- (void)appendXML:(OFXMLDocument *)doc;
-- initFromXML:(OFXMLCursor *)cursor;
 
 @end

@@ -8,8 +8,8 @@
 // $Id$
 
 #import <Foundation/NSException.h>
+#import <OmniBase/NSException-OBExtensions.h>
 
 @interface NSException (OFExtensions)
-+ (void)raise:(NSString *)name reason:(NSString *)reason;
 - (NSString *)displayName;
 @end

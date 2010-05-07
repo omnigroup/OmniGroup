@@ -447,4 +447,92 @@ RCS_ID("$Id$");
 
 @end
 
+#ifdef NS_BLOCKS_AVAILABLE
+
+static NSString * const kA = @"a";
+static NSString * const kB = @"b";
+static NSString * const kC = @"c";
+static NSString * const kX = @"x";
+
+@interface OFArrayBlockPredicateTests : OFTestCase
+{
+    NSArray *a, *ab, *abc;
+}
+@end
+@implementation OFArrayBlockPredicateTests
+
+- (void)setUp;
+{
+    [super setUp];
+    a = [[NSArray alloc] initWithObjects:kA, nil];
+    ab = [[NSArray alloc] initWithObjects:kA, kB, nil];
+    abc = [[NSArray alloc] initWithObjects:kA, kB, kC, nil];
+}
+- (void)tearDown;
+{
+    [a release];
+    a = nil;
+    [ab release];
+    ab = nil;
+    [abc release];
+    abc = nil;
+    [super tearDown];
+}
+
+static OFPredicateBlock truePredicate = ^BOOL(id obj) {
+    return YES;
+};
+static OFPredicateBlock ifEquals(id value) {
+    return [[^BOOL(id obj) {
+        return [obj isEqual:value];
+    } copy] autorelease];
+}
+//static OFPredicateBlock ifIn(NSArray *array) {
+//    return [[^BOOL(id obj) {
+//        return [array containsObject:obj];
+//    } copy] autorelease];
+//}
+
+- (void)testSimpleFirst;
+{
+    id notFound = nil;
+    
+    STAssertEqualObjects([[NSArray array] first:truePredicate], notFound, nil);
+    
+    STAssertEqualObjects([a first:ifEquals(kA)], kA, nil);
+    STAssertEqualObjects([a first:ifEquals(kB)], notFound, nil);
+
+    STAssertEqualObjects([ab first:ifEquals(kA)], kA, nil);
+    STAssertEqualObjects([ab first:ifEquals(kB)], kB, nil);
+    STAssertEqualObjects([ab first:ifEquals(kC)], notFound, nil);
+    
+    STAssertEqualObjects([abc first:ifEquals(kA)], kA, nil);
+    STAssertEqualObjects([abc first:ifEquals(kB)], kB, nil);
+    STAssertEqualObjects([abc first:ifEquals(kC)], kC, nil);
+    STAssertEqualObjects([abc first:ifEquals(kX)], notFound, nil);
+}
+
+- (void)testSimpleLast;
+{
+    id notFound = nil;
+    
+    STAssertEqualObjects([[NSArray array] first:truePredicate], notFound, nil);
+    
+    STAssertEqualObjects([a last:ifEquals(kA)], kA, nil);
+    STAssertEqualObjects([a last:ifEquals(kB)], notFound, nil);
+    
+    STAssertEqualObjects([ab last:ifEquals(kA)], kA, nil);
+    STAssertEqualObjects([ab last:ifEquals(kB)], kB, nil);
+    STAssertEqualObjects([ab last:ifEquals(kC)], notFound, nil);
+    
+    STAssertEqualObjects([abc last:ifEquals(kA)], kA, nil);
+    STAssertEqualObjects([abc last:ifEquals(kB)], kB, nil);
+    STAssertEqualObjects([abc last:ifEquals(kC)], kC, nil);
+    STAssertEqualObjects([abc last:ifEquals(kX)], notFound, nil);
+}
+
+@end
+
+#endif
+
 

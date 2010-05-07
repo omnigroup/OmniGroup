@@ -168,14 +168,14 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
     
     _inputBuffer = xmlParserInputBufferCreateIO(_readFromInput, _closeInput, self, XML_CHAR_ENCODING_NONE/* no encoding detected */);
     if (!_inputBuffer) {
-        OBError(outError, OFXMLReaderCannotCreateXMLInputBuffer, @"Unable to create XML input buffer.");
+        OFError(outError, OFXMLReaderCannotCreateXMLInputBuffer, @"Unable to create XML input buffer.", nil);
         [self release];
         return nil;
     }
     
     _reader = xmlNewTextReader(_inputBuffer, [[_url absoluteString] UTF8String]);
     if (!_reader) {
-        OBError(outError, OFXMLReaderCannotCreateXMLReader, @"Unable to create XML reader.");
+        OFError(outError, OFXMLReaderCannotCreateXMLReader, @"Unable to create XML reader.", nil);
         [self release];
         return nil;
     }
@@ -198,7 +198,7 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
             _fillUnderlyingError(self, outError);
         else {
             OBASSERT_NOT_REACHED("Really should have an error from the stream or libxml2.");
-            OBError(outError, OFXMLReaderCannotCreateXMLReader, @"Missing top level element.");
+            OFError(outError, OFXMLReaderCannotCreateXMLReader, @"Missing top level element.", nil);
         }
         [self release];
         return nil;
@@ -245,7 +245,7 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
     if ([_url isFileURL]) {
         inputStream = [NSInputStream inputStreamWithFileAtPath:[_url path]];
     } else {
-        OBError(outError, OFXMLReaderCannotCreateInputStream, @"Only supporting files right now.");
+        OFError(outError, OFXMLReaderCannotCreateInputStream, @"Only supporting files right now.", nil);
         [self release];
         return nil;
     }
@@ -454,7 +454,7 @@ static void _finalize(OFXMLReader *self)
                 break;
             }
             default:
-                OBError(outError, OFXMLReaderUnexpectedNodeType, ([NSString stringWithFormat:@"Hit node type %d while reading string.", _currentNodeType]));
+                OFError(outError, OFXMLReaderUnexpectedNodeType, ([NSString stringWithFormat:@"Hit node type %d while reading string.", _currentNodeType]), nil);
                 OBASSERT_NOT_REACHED("Handle this node type");
                 [str release];
                 return NO;

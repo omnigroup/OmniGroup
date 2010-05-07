@@ -57,6 +57,7 @@
     // Deprecated:  Use -setScrollPositionAsPercentage:
 
 // Finding views
+- (id)enclosingViewOfClass:(Class)cls;
 - anyViewOfClass:(Class)cls;
 - (NSView *)lastChildKeyView;
 - (NSView *)subviewContainingView:(NSView *)subSubView;

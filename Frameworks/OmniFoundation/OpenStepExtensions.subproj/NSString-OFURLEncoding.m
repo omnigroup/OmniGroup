@@ -9,6 +9,7 @@
 
 #import <OmniFoundation/OFCharacterSet.h>
 #import <OmniFoundation/OFStringDecoder.h>
+#import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniFoundation/NSString-OFUnicodeCharacters.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
@@ -240,12 +241,12 @@ static inline unichar hex(int i)
     return [self encodeURLString:unencodedString encoding:urlEncoding asQuery:asQuery leaveSlashes:leaveSlashes leaveColons:leaveColons];
 }
 
-#define USE_GENERIC_QP_DECODER 0
+#define USE_GENERIC_QP_DECODER 1
 
 #if USE_GENERIC_QP_DECODER
 
-#define EIGHT_OF(x) x,x,x,x,x,x,x,x
-#define ONE_HUNDRED_TWENTY_EIGHT_OF(x)  EIGHT_OF(EIGHT_OF(x,x)) 
+#define FOUR_OF(x)  x, x, x, x
+#define ONE_HUNDRED_TWENTY_EIGHT_OF(x)  FOUR_OF(FOUR_OF(FOUR_OF(x))), FOUR_OF(FOUR_OF(FOUR_OF(x)))
 
 #define TEMPLATE(S,C,V) {	\
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,       /* 0x control characters	*/ \

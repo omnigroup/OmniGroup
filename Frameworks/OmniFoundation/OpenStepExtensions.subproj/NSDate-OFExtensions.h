@@ -33,4 +33,25 @@
 - initWithXMLCString:(const char *)cString;
 - (NSString *)xmlString;
 
+// date formatted according to iCal
+- initWithICSDateOnlyString:(NSString *)aString;
+- (NSString *)icsDateOnlyString;
+
+// datetime formatter according to iCal
+- initWithICSDateString:(NSString *)aString;
+- (NSString *)icsDateString;
+
+
 @end
+
+#import <OmniBase/assertions.h>
+
+// For old versions of Foundation w/o -dateByAddingTimeInterval:.
+static inline NSDate *OFDateByAddingTimeInterval(NSDate *date, NSTimeInterval interval)
+{
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    return [date addTimeInterval:interval];
+#else
+    return [date dateByAddingTimeInterval:interval];
+#endif
+}

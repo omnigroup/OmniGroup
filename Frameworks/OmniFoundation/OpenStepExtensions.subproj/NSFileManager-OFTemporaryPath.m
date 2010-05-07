@@ -107,7 +107,7 @@ static NSLock *tempFilenameLock = nil;
     if (err != noErr) {
         if (outError)
             *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]; // underlying error
-        OBError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to get catalog info for '%@' (for '%@')", attempt, path]));
+        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to get catalog info for '%@' (for '%@')", attempt, path]), nil);
         return nil;
     }
     
@@ -117,14 +117,14 @@ static NSLock *tempFilenameLock = nil;
     if (err != noErr) {
         if (outError)
             *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]; // underlying error
-        OBError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to find temporary items directory for '%@'", attempt]));
+        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to find temporary items directory for '%@'", attempt]), nil);
         return nil;
     }
     
     CFURLRef temporaryItemsURL;
     temporaryItemsURL = CFURLCreateFromFSRef(kCFAllocatorDefault, &folderRef);
     if (!temporaryItemsURL) {
-        OBError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to create URL to temporary items directory for '%@'", attempt]));
+        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to create URL to temporary items directory for '%@'", attempt]), nil);
         return nil;
     }
 
@@ -219,7 +219,7 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
         // Probably EACCES, we aren't going to recover.
         if (outError)
             *outError = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]; // underlying error
-        OBError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to create unique file from %@.", candidate]));
+        OFError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to create unique file from %@.", candidate]), nil);
         return NO;
     } else {
         // We can use the original if it doesn't exist in this case.  We do _not_ want to probe whether we can create this here since the caller is just trying to determine a name to try to create.  They'll get the creation failure; we don't want to get it.  We do want to know if we can't even determine if the file exists (directory unreadable, etc).
@@ -235,7 +235,7 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
         // Don't know how to recover from any other errors.  Most likely this is EACCES and we don't have permissions to even check if the file exists.
         if (outError)
             *outError = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]; // underlying error
-        OBError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to check for existence of %@.", candidate]));
+        OFError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to check for existence of %@.", candidate]), nil);
         return NO;
     }
 }
@@ -279,7 +279,7 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
         }
     }
     
-    OBError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to find a variant of %@ that didn't already exist.", filename]));
+    OFError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to find a variant of %@ that didn't already exist.", filename]), nil);
     return nil;
 }
 

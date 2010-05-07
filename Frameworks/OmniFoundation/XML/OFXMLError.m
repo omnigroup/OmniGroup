@@ -40,7 +40,7 @@ NSError *OFXMLCreateError(xmlErrorPtr error)
     if (error->int2)
         [userInfo setObject:[NSNumber numberWithInt:error->int2] forKey:@"libxml_int2"];
     
-    NSError *errorObject = [[NSError alloc] initWithDomain:OMNI_BUNDLE_IDENTIFIER code:OFXMLLibraryError userInfo:userInfo];
+    NSError *errorObject = [[NSError alloc] initWithDomain:OFErrorDomain code:OFXMLLibraryError userInfo:userInfo];
     [userInfo release];
     
     return errorObject;

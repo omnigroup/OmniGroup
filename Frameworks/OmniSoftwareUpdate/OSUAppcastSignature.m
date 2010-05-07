@@ -8,6 +8,8 @@
 #import "OSUAppcastSignature.h"
 
 #import <OmniFoundation/OFCDSAUtilities.h>
+#import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/OFXMLSignature.h>
 #import <Foundation/Foundation.h>
 #import <OmniBase/rcsid.h>
@@ -208,7 +210,14 @@ NSArray *OSUGetSignedPortionsOfAppcast(NSData *xmlData, NSString *pemFile, NSErr
     if (!trusts)
         return nil;
     
-    xmlDoc *untrustedDoc = xmlParseMemory([xmlData bytes], [xmlData length]);
+    NSUInteger xmlDataLength = [xmlData length];
+    if (xmlDataLength >= INT_MAX) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileReadTooLargeError userInfo:nil];
+        return nil;
+    }
+    
+    xmlDoc *untrustedDoc = xmlParseMemory([xmlData bytes], (int)xmlDataLength);
     if (!untrustedDoc) {
         if (outError)
             *outError = [NSError errorWithDomain:OFXMLSignatureErrorDomain code:OFXMLSignatureValidationError userInfo:nil];

@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,11 @@
 RCS_ID("$Id$");
 
 @implementation NSException (OBExtensions)
+
++ (void)raise:(NSString *)name reason:(NSString *)reason;
+{
+    [[self exceptionWithName:name reason:reason userInfo:nil] raise];
+}
 
 + (void)raise:(NSString *)exceptionName posixErrorNumber:(int)posixErrorNumber format:(NSString *)format, ...;
 {

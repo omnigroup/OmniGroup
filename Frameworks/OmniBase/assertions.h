@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,6 +40,27 @@
 #else
     #define CLANG_ANALYZER_NORETURN
 #endif
+
+// Clang extensions -- Compatibility with non-clang compilers.
+#ifndef __has_feature
+    #define __has_feature(x) 0
+#endif
+#if __has_feature(attribute_overloadable)
+    // Avoid warning about comparison to zero for unsigned arguments
+    static inline BOOL __attribute__((overloadable)) _OBIsNegative(double x) { return x < 0.0; }
+    static inline BOOL __attribute__((overloadable)) _OBIsNegative(float x) { return x < 0.0; }
+    static inline BOOL __attribute__((overloadable)) _OBIsNegative(char x) { return x < 0; }
+    static inline BOOL __attribute__((overloadable)) _OBIsNegative(short x) { return x < 0; }
+    static inline BOOL __attribute__((overloadable)) _OBIsNegative(int x) { return x < 0; }
+    static inline BOOL __attribute__((overloadable)) _OBIsNegative(long x) { return x < 0; }
+    static inline BOOL __attribute__((overloadable)) _OBIsNegative(unsigned char x) { return NO; }
+    static inline BOOL __attribute__((overloadable)) _OBIsNegative(unsigned short x) { return NO; }
+    static inline BOOL __attribute__((overloadable)) _OBIsNegative(unsigned int x) { return NO; }
+    static inline BOOL __attribute__((overloadable)) _OBIsNegative(unsigned long x) { return NO; }
+#else
+    #define _OBIsNegative(x) ((x) < 0)
+#endif
+
 
 #if defined(__cplusplus)
 extern "C" {
@@ -121,6 +142,13 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
         } \
     } while(NO);
 
+    // Useful for cases where we *currently* have unsigned values that we want to assert are non-negative but that might later become signed. For exmaple, array indexes -- if we switch between NSUInteger and CFIndex.
+    #define OBASSERT_NONNEGATIVE(x) do { \
+        if (_OBIsNegative(x)) { \
+            OBInvokeAssertionFailureHandler("OBASSERT_NONNEGATIVE", #x, __FILE__, __LINE__); \
+        } \
+    } while (NO);
+    
     #ifdef __OBJC__
         // Useful if you are subclassing a parent class that conforms to a protcocol with @optional methods; can assert that they *still* don't have the superclass method.
         // +instanceMethodForSelector: returns objc_msgForward now.
@@ -166,7 +194,9 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
             _OBAnalyzerNoReturn(); \
         } \
     } while(NO);
-    
+
+    #define OBASSERT_NONNEGATIVE(x) do {} while (0)
+
     #ifdef __OBJC__
         #define OBASSERT_NO_SUPER
         #define OBASSERT_NOT_IMPLEMENTED(obj, sel)

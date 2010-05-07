@@ -558,7 +558,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     handlingException = YES;
     {
 	NSString *symbolicTrace = [self copySymbolicBacktraceForNumericBacktrace:numericTrace];
-	NSLog(@"Exception raised:\n---------------------------\nMask: 0x%08x\nName: %@\nReason: %@\nStack Trace:\n%@\n---------------------------",
+	NSLog(@"Exception raised:\n---------------------------\nMask: 0x%lx\nName: %@\nReason: %@\nStack Trace:\n%@\n---------------------------",
 	      aMask, [exception name], [exception reason], symbolicTrace);
 	[symbolicTrace release];
     }

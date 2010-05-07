@@ -296,10 +296,9 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
     unsigned month = _parse2Digits(buf, 5);
     unsigned day = _parse2Digits(buf, 8);
     
-    // NOTE: This API doesn't deal with floating seconds.  Avoid some rounding error by passing in zero seconds and converting adding on the seconds an milliseconds to the result together.
     CFAbsoluteTime absoluteTime;
     const char *components = "yMd";
-    if (!CFCalendarComposeAbsoluteTime((CFCalendarRef)cachedCalendar, &absoluteTime, components, year, month, day,  0))
+    if (!CFCalendarComposeAbsoluteTime((CFCalendarRef)cachedCalendar, &absoluteTime, components, year, month, day))
         BAD_INIT;
 
     DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
@@ -311,7 +310,7 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
     return result;
 }
 
-static NSString *xmlDateStringIncludingTime(NSDate *self, SEL _cmd, BOOL includeTime)
+static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString *formatString)
 {
     DEBUG_XML_STRING(@"%s: input: %@ %f", __PRETTY_FUNCTION__, self, [self timeIntervalSinceReferenceDate]);
     
@@ -343,29 +342,117 @@ static NSString *xmlDateStringIncludingTime(NSDate *self, SEL _cmd, BOOL include
         }
     }
     
-    NSString *result;
-    
-    if (includeTime)
-        result = [NSString stringWithFormat:@"%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", year, month, day, hour, minute, second, milliseconds];
-    else
-        result = [NSString stringWithFormat:@"%04d-%02d-%02d", year, month, day];
-    
+    NSString *result = [NSString stringWithFormat:formatString, year, month, day, hour, minute, second, milliseconds];
     DEBUG_XML_STRING(@"result: %@", result);
-    
     return result;
 }
 
 // date
 - (NSString *)xmlDateString;
 {
-    return xmlDateStringIncludingTime(self, _cmd, NO);
+    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d-%02d-%02d");
 }
 
 // dateTime
 - (NSString *)xmlString;
 {
-    return xmlDateStringIncludingTime(self, _cmd, YES);
+    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d-%02d-%02dT%02d:%02d:%02d.%03dZ");
 }
+
+// Expects a string in the ICS format: YYYYMMdd.  This doesn't attempt to be very forgiving in parsing; the goal should be to feed in either nil/empty or a conforming string.
+- initWithICSDateOnlyString:(NSString *)aString;
+{
+    // We expect exactly the length above, or an empty string.
+    static const unsigned OFDateStringLength = 8;
+    static NSCalendar *cachedCalendar = nil;
+    if (!cachedCalendar) {
+        cachedCalendar = [[NSCalendar currentCalendar] retain];
+        OBASSERT(cachedCalendar);
+    }
+    
+    NSUInteger length = [aString length];
+    if (length != OFDateStringLength) {
+        OBASSERT(length == 0);
+        BAD_INIT;
+    }
+    
+    char buf[OFDateStringLength+1];
+    if (![aString getCString:buf maxLength:sizeof(buf) encoding:NSASCIIStringEncoding]) {
+        OBASSERT_NOT_REACHED("Unexpected encoding in ICS date");
+	BAD_INIT;
+    }
+    
+    unsigned year = _parse4Digits(buf, 0);
+    unsigned month = _parse2Digits(buf, 4);
+    unsigned day = _parse2Digits(buf, 6);
+    CFAbsoluteTime absoluteTime;
+    const char *components = "yMd";
+    if (!CFCalendarComposeAbsoluteTime((CFCalendarRef)cachedCalendar, &absoluteTime, components, year, month, day,  0))
+        BAD_INIT;
+
+    DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
+    
+    NSDate *result = [self initWithTimeIntervalSinceReferenceDate:absoluteTime];
+    DEBUG_XML_STRING(@"result: %@ %f", result, [result timeIntervalSinceReferenceDate]);
+    
+    OBPOSTCONDITION_EXPENSIVE(OFISEQUAL([result icsDateOnlyString], aString));
+    return result;
+}
+
+- (NSString *)icsDateOnlyString;
+{
+    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02d");
+}
+
+// Expects a string in the ICS format: YYYYMMddTHHmmssZ.  This doesn't attempt to be very forgiving in parsing; the goal should be to feed in either nil/empty or a conforming string.
+- initWithICSDateString:(NSString *)aString;
+{
+    // We expect exactly the length above, or an empty string.
+    static const unsigned OFDateStringLength = 16;
+    static NSCalendar *cachedCalendar = nil;
+    if (!cachedCalendar) {
+        cachedCalendar = [[NSCalendar currentCalendar] retain];
+        OBASSERT(cachedCalendar);
+    }
+    
+    NSUInteger length = [aString length];
+    if (length != OFDateStringLength) {
+        OBASSERT(length == 0);
+        BAD_INIT;
+    }
+    
+    char buf[OFDateStringLength+1];
+    if (![aString getCString:buf maxLength:sizeof(buf) encoding:NSASCIIStringEncoding]) {
+        OBASSERT_NOT_REACHED("Unexpected encoding in ICS date");
+	BAD_INIT;
+    }
+    
+    unsigned year = _parse4Digits(buf, 0);
+    unsigned month = _parse2Digits(buf, 4);
+    unsigned day = _parse2Digits(buf, 6);
+    unsigned hour = _parse2Digits(buf, 9);
+    unsigned minute = _parse2Digits(buf, 11);
+    unsigned second = _parse2Digits(buf, 13);
+    CFAbsoluteTime absoluteTime;
+    const char *components = "yMdHms";
+    if (!CFCalendarComposeAbsoluteTime((CFCalendarRef)cachedCalendar, &absoluteTime, components, year, month, day, hour, minute, second))
+        BAD_INIT;
+
+    DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
+    
+    NSDate *result = [self initWithTimeIntervalSinceReferenceDate:absoluteTime];
+    DEBUG_XML_STRING(@"result: %@ %f", result, [result timeIntervalSinceReferenceDate]);
+    
+    OBPOSTCONDITION_EXPENSIVE(OFISEQUAL([result icsDateString], aString));
+    return result;
+}
+
+- (NSString *)icsDateString;
+{
+    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02dT%02d%02d%02dZ");
+}
+
+
 
 @end
 

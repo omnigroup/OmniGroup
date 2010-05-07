@@ -252,7 +252,7 @@ static /* inline */ NSString *OWCreateStringFromData(NSData *data, CFStringEncod
             case kTextMalformedInputErr:
             case kTECUnmappableElementErr:
 #ifdef DEBUG
-                NSLog(@"Skipping byte at offset %d, value %d ('%c'): ConvertFromTextToUnicode() returned %s (encoding=%@)", input - sourceBytes, (unsigned int)*input, *input, NameForTECStatus(status), CFStringConvertEncodingToIANACharSetName(stringEncoding));
+                NSLog(@"Skipping byte at offset %ld, value %d ('%c'): ConvertFromTextToUnicode() returned %s (encoding=%@)", (long)(input - sourceBytes), (unsigned int)*input, *input, NameForTECStatus(status), CFStringConvertEncodingToIANACharSetName(stringEncoding));
 #endif
                 input++;
 #ifdef MARK_MALFORMED_INPUT

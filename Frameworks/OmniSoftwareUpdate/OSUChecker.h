@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008,2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,8 @@
 
 extern NSString *OSUSoftwareUpdateExceptionName;
 
+extern NSString *OSUVisibleTracksKey;
+
 // 
 extern NSString * const OSULicenseTypeUnset;
 extern NSString * const OSULicenseTypeNone;
@@ -25,6 +27,7 @@ extern NSString * const OSULicenseTypeTrial;
 extern NSString * const OSULicenseTypeExpiring;
 
 #define OSUCheckerCheckInProgressBinding (@"checkInProgress")
+#define OSUCheckerLicenseTypeBinding (@"licenseType")
 
 @interface OSUChecker : OFObject
 {
@@ -43,12 +46,15 @@ extern NSString * const OSULicenseTypeExpiring;
     struct _OSUSoftwareUpdatePostponementState *_postpone;
     
     OSUCheckOperation *_currentCheckOperation;
+    
+    // Track info updates
+    NSURLConnection *_refreshingTrackInfo;
+    NSMutableData *_refreshingTrackData;    
 }
 
 + (OSUChecker *)sharedUpdateChecker;
 
 + (OFVersionNumber *)OSUVersionNumber;          // of the framework itself, not the main app
-+ (NSArray *)supportedTracksByPermissiveness;   
 
 - (NSString *)licenseType;
 - (void)setLicenseType:(NSString *)licenseType;
@@ -69,7 +75,7 @@ extern NSString * const OSULicenseTypeExpiring;
 - (OFVersionNumber *)applicationMarketingVersion;    // User-readable version number
 - (NSString *)applicationIdentifier;                 // Unique identifier for this application (Apple bundle identifier string)
 - (NSString *)applicationEngineeringVersion;         // Reliable, easy-to-compare version number
-- (NSString *)applicationTrack;                      // Release/update tracks we're on (beta, final, etc.)
+- (NSString *)applicationTrack;                      // Release/update track of the current application (beta, final, etc.)
 - (BOOL)applicationOnReleaseTrack;
 
 @end

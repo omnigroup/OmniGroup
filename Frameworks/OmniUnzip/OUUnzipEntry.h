@@ -9,6 +9,8 @@
 
 #import <OmniFoundation/OFObject.h>
 
+@class NSDate;
+
 @interface OUUnzipEntry : OFObject
 {
     NSString *_name;

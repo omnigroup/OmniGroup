@@ -121,7 +121,7 @@ RCS_ID("$Id$");
                     
                     CFStringRef str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)_resultData, encoding);
                     if (!str) {
-                        NSLog(@"Error content cannot be turned into string using encoding '%@' (%d)", encodingName, encoding);
+                        NSLog(@"Error content cannot be turned into string using encoding '%@' (%ld)", encodingName, (long)encoding);
                         break;
                     }
                     
@@ -185,7 +185,7 @@ RCS_ID("$Id$");
     
     if (OFSFileManagerDebug > 2) {
         NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
-        NSLog(@"protection space %@ realm:%@ secure:%d proxy:%d host:%@ port:%d proxyType:%@ protocol:%@ method:%@",
+        NSLog(@"protection space %@ realm:%@ secure:%d proxy:%d host:%@ port:%ld proxyType:%@ protocol:%@ method:%@",
               protectionSpace,
               [protectionSpace realm],
               [protectionSpace receivesCredentialSecurely],
@@ -197,7 +197,7 @@ RCS_ID("$Id$");
               [protectionSpace authenticationMethod]);
         
         NSLog(@"proposed credential %@", [challenge proposedCredential]);
-        NSLog(@"previous failure count %d", [challenge previousFailureCount]);
+        NSLog(@"previous failure count %ld", [challenge previousFailureCount]);
         NSLog(@"failure response %@", [challenge failureResponse]);
         NSLog(@"error %@", [[challenge error] toPropertyList]);
     }
@@ -255,7 +255,7 @@ RCS_ID("$Id$");
         NSLog(@"  expectedContentLength: %qd", [_response expectedContentLength]);
         NSLog(@"  textEncodingName: %@", [_response textEncodingName]);
         NSLog(@"  suggestedFilename: %@", [_response suggestedFilename]);
-        NSLog(@"  statusCode: %d", [_response statusCode]);
+        NSLog(@"  statusCode: %ld", [_response statusCode]);
         NSLog(@"  allHeaderFields: %@", [_response allHeaderFields]);
     }
     
@@ -272,7 +272,7 @@ RCS_ID("$Id$");
     OBPRECONDITION([_response statusCode] != 204); // "No Content"
     
     if (OFSFileManagerDebug > 2)
-        NSLog(@"%@: did receive data of length %d", [self shortDescription], [data length]);
+        NSLog(@"%@: did receive data of length %ld", [self shortDescription], [data length]);
     
     if (_target)
         [_target fileManager:_nonretained_fileManager didReceiveData:data];

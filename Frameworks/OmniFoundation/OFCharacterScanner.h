@@ -10,6 +10,7 @@
 #import <Foundation/NSObject.h>
 
 #import <Foundation/NSString.h> // For unichar
+#import <OmniBase/OBObject.h> // For -debugDictionary
 #import <OmniFoundation/CFString-OFExtensions.h>
 #import <OmniFoundation/OFCharacterSet.h>
 

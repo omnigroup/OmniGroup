@@ -474,7 +474,7 @@ static BOOL _executeScript(NSString *source)
                         [zipTask waitUntilExit];
                         int status = [zipTask terminationStatus];
                         if (status != 0)
-                            NSLog(@"[%@ %s] - Failed to zip directory file %@ with status (%d) for attachment to Entourage mail message.  File will not be attached", [self class], _cmd, filename, status);
+                            NSLog(@"[%@ %@] - Failed to zip directory file %@ with status (%d) for attachment to Entourage mail message.  File will not be attached", [self class], NSStringFromSelector(_cmd), filename, status);
                         else 
                             [attachmentPaths addObject:OAFragmentedAppleScriptStringForString([NSString stringWithFormat:@"%@", [outfile hfsPathFromPOSIXPath]])]; 
                         
@@ -482,7 +482,7 @@ static BOOL _executeScript(NSString *source)
                     } else
                         [attachmentPaths addObject:OAFragmentedAppleScriptStringForString([filename hfsPathFromPOSIXPath])]; 
                 } else
-                    NSLog(@"[%@ %s] - File %@ does not exist and will not be attached", [self class], _cmd, filename);
+                    NSLog(@"[%@ %@] - File %@ does not exist and will not be attached", [self class], NSStringFromSelector(_cmd), filename);
             }
             
             if ([attachmentPaths count])

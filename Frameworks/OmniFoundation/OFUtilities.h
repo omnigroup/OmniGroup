@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,10 @@
 
 #import <OmniBase/objc.h>
 #import <stddef.h> // For size_t
+#import <Foundation/NSString.h>
+#import <CoreFoundation/CFNumber.h>
 
-@class NSObject, NSString, NSDictionary;
+@class NSDictionary;
 
 extern void OFLog(NSString *messageFormat, ...);
 extern NSString *OFGetInput(NSStringEncoding encoding, NSString *promptFormat, ...);
@@ -95,12 +97,15 @@ static inline NSUInteger OFHashUIntptr(uintptr_t v)
     }
 }
 
-extern NSString *OFKeyPathForKeys(NSString *firstKey, ...) NS_REQUIRES_NIL_TERMINATION;
-
 #ifdef NS_BLOCKS_AVAILABLE
 typedef BOOL (^OFPredicateBlock)(id object);
+typedef id (^OFObjectToObjectBlock)(id anObject);
 #endif
 
 /* NSFoundationVersionNumber values for various OS releases (since Apple only ever includes past releases in the headers, and we often want to know the current or even a "future" (from this SDK's viewpoint) version number) */
+#define OFFoundationVersionNumber10_4_11 NSFoundationVersionNumber10_4_11
+#define OFFoundationVersionNumber10_5    677
+#define OFFoundationVersionNumber10_5_7  677.24
+#define OFFoundationVersionNumber10_5_8  677.26
 #define OFFoundationVersionNumber10_6    747
 

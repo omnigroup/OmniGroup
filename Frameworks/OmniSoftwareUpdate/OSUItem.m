@@ -1,4 +1,4 @@
-// Copyright 2001-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,9 @@
 #import "OSUChecker.h"
 #import "OSUPreferences.h"
 
+#import <AppKit/AppKit.h>
 #import <OmniFoundation/OmniFoundation.h>
+#import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
@@ -64,7 +66,7 @@ static NSString *_requiredStringNode(NSXMLElement *base, NSString *namespace, NS
     
     NSXMLNode *stringNode = [stringNodes lastObject];
 
-    // This XQuery will return an empty array if for "<foo></foo>", but lets just ensure that this will never return an empty string.
+    // This XQuery will return an empty array for "<foo></foo>", but lets just ensure that this will never return an empty string.
     NSString *result = [stringNode stringValue];
     if ([NSString isEmptyString:result]) {
         /* result is nil, or zero-length */
@@ -76,6 +78,7 @@ static NSString *_requiredStringNode(NSXMLElement *base, NSString *namespace, NS
             return @"";
         }
     }
+
     return result;
 }
 
@@ -109,7 +112,7 @@ static NSString *_optionalStringNode(NSXMLElement *elt, NSString *tag, NSString 
 
 static NSDictionary *FreeAttributes = nil;
 static NSDictionary *PaidAttributes = nil;
-static NSFont *ignoredFont = nil;
+static NSFont *itemFont = nil, *ignoredFont = nil;
 
 @implementation OSUItem
 
@@ -120,7 +123,7 @@ static NSFont *ignoredFont = nil;
     // Turns on debug logs about RSS items read/ignored.
     OSUItemDebug = [[NSUserDefaults standardUserDefaults] boolForKey:@"OSUItemDebug"];
     
-    NSFont *font = [NSFont userFontOfSize:[NSFont systemFontSize]];
+    NSFont *font = [NSFont controlContentFontOfSize:[NSFont systemFontSize]];
     
     NSFont *italicFont = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSItalicFontMask];
     if (!italicFont)
@@ -134,6 +137,7 @@ static NSFont *ignoredFont = nil;
     NSColor *paidColor = [NSColor colorWithCalibratedRed:0/255.0f green:128/255.0f blue:0.0f alpha:1.0f];
     PaidAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:boldFont, NSFontAttributeName, paidColor, NSForegroundColorAttributeName, nil];
     
+    itemFont = [font retain];
     ignoredFont = [italicFont retain];
 }
 
@@ -152,7 +156,7 @@ static NSFont *ignoredFont = nil;
             if (item == peer)
                 continue;
             
-            if ([peer supersedes:item]) {
+            if ([peer available] && [peer supersedes:item]) {
                 DEBUG_FLAGS(@"\t...is superseded by %@", [peer shortDescription]);
                 [item setSuperseded:YES];
                 break;
@@ -208,6 +212,7 @@ static NSFont *ignoredFont = nil;
     AssignRequiredString(versionString, OSUAppcastXMLNamespace, @"minimumSystemVersion");
     _minimumSystemVersion = [[OFVersionNumber alloc] initWithVersionString:versionString];
     [versionString release];
+    _available = YES; // Assume until told otherwise
     
     AssignRequiredString(_title, nil, @"title");
     
@@ -349,7 +354,14 @@ static NSFont *ignoredFont = nil;
         }
     }
     
+    // Get the associated link for this item; failing that, get the link for the feed as a whole
+    NSString *linkText = _optionalStringNode(element, @"link", nil);
+    if (!linkText)
+        linkText = _optionalStringNode((NSXMLElement *)[element parent], @"link", nil);
+    _notionalItemOrigin = [linkText copy]; // May be nil
+    
     [OFPreference addObserver:self selector:@selector(_updateIgnoredState:) forPreference:[OSUPreferences ignoredUpdates]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_updateIgnoredState:) name:OSUTrackVisibilityChangedNotification object:nil];
     [self _updateIgnoredState:nil];
     
     return self;
@@ -358,6 +370,7 @@ static NSFont *ignoredFont = nil;
 - (void)dealloc;
 {
     [OFPreference removeObserver:self forPreference:[OSUPreferences ignoredUpdates]];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OSUTrackVisibilityChangedNotification object:nil];
     [_buildVersion release];
     [_marketingVersion release];
     [_minimumSystemVersion release];
@@ -367,6 +380,7 @@ static NSFont *ignoredFont = nil;
     [_currencyCode release];
     [_releaseNotesURL release];
     [_downloadURL release];
+    [_notionalItemOrigin release];
     [_checksums release];
     [super dealloc];
 }
@@ -390,6 +404,8 @@ static NSFont *ignoredFont = nil;
     else
         return [super keyPathsForValuesAffectingValueForKey:aKey];
 }
+
+#pragma mark Item attributes
 
 - (OFVersionNumber *)buildVersion;
 {
@@ -433,7 +449,7 @@ static NSFont *ignoredFont = nil;
     if (_ignored || !_available)
         return ignoredFont;
     else
-        return nil;
+        return itemFont;
 }
 
 - (NSColor *)displayColor
@@ -447,6 +463,11 @@ static NSFont *ignoredFont = nil;
 - (NSURL *)downloadURL;
 {
     return _downloadURL;
+}
+
+- (NSString *)sourceLocation;
+{
+    return _notionalItemOrigin;
 }
 
 - (NSURL *)releaseNotesURL;
@@ -498,6 +519,8 @@ static NSFont *ignoredFont = nil;
 {
     return [NSString abbreviatedStringForBytes:_downloadSize];
 }
+
+#pragma mark Item state
 
 - (BOOL)available;
 {
@@ -559,10 +582,13 @@ static NSFont *ignoredFont = nil;
 
 - (NSString *)verifyFile:(NSString *)path
 {
+    BOOL didVerify = NO;
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
     // _downloadSize of 0 indicates we don't know the size.
     if (_downloadSize != 0) {
         NSError *err = nil;
-        NSDictionary *attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:&err];
+        NSDictionary *attrs = [fm attributesOfItemAtPath:path error:&err];
         if (!attrs) {
             NSLog(@"Can't check file: %@", err);
             return [err localizedDescription];
@@ -596,6 +622,7 @@ static NSFont *ignoredFont = nil;
                     expected = [NSData dataWithHexString:expectedString error:NULL];
                 if (![hash isEqualToData:expected])
                     [badSums addObject:algo];
+                didVerify = YES;
             } else {
                 NSLog(@"%@: (%@): Unknown hash algorithm \"%@\"", [self class], _title, algo);
             }
@@ -608,7 +635,311 @@ static NSFont *ignoredFont = nil;
         }
     }
     
+    // If we're returning success, and we actually did anything that might be called verification, remove the quarantine on the file.
+    if (didVerify) {
+        [fm setQuarantineProperties:nil forItemAtPath:path error:NULL];
+    }
+    
     return nil;  // indicate no warnings
+}
+
+#pragma mark Track ordering
+
+#ifndef DEBUG
+#define STATIC_FOR_RELEASE static
+#else
+#define STATIC_FOR_RELEASE
+#endif
+
+STATIC_FOR_RELEASE BOOL trackOrderingsAreCurrent = NO;
+STATIC_FOR_RELEASE NSDictionary *knownTrackOrderings = nil;
+NSDictionary *trackLocalizedStrings = nil;
+
+static void loadFallbackTrackInfoIfNeeded()
+{
+    if (!knownTrackOrderings) {
+        // Fallback track orderings. Normally we'll have gotten an up-to-date ordering graph from our OSU query.
+        NSString *names[4] = { @"sneakypeek", @"alpha", @"beta", @"rc" };
+        id sets[4];
+        sets[0] = [NSSet setWithObjects:@"beta", @"rc", nil];
+        sets[1] = sets[0];
+        sets[2] = [NSSet setWithObject:@"rc"];
+        sets[3] = [NSSet set];
+        knownTrackOrderings = [[NSDictionary alloc] initWithObjects:sets forKeys:names count:4];
+        trackOrderingsAreCurrent = NO;
+    }
+}
+
++ (enum OSUTrackComparison)compareTrack:(NSString *)aTrack toTrack:(NSString *)otherTrack;
+{
+    OBASSERT(aTrack != nil);
+    OBASSERT(otherTrack != nil);
+    
+    if ([aTrack isEqualToString:otherTrack])
+        return OSUTrackOrderedSame;
+    
+    /* The final track is more stable than any other track, even if the other track is unknown */
+    if ([NSString isEmptyString:aTrack])
+        return OSUTrackMoreStable;
+    if ([NSString isEmptyString:otherTrack])
+        return OSUTrackLessStable;
+    
+    loadFallbackTrackInfoIfNeeded();
+    
+    NSSet *supers = [knownTrackOrderings objectForKey:aTrack];
+    if (!supers) {
+        // aTrack is unknown.
+        return OSUTrackNotOrdered;
+    } else if ([supers containsObject:otherTrack]) {
+        // otherTrack is more stable than aTrack, therefore aTrack is less stable than otherTrack.
+        return OSUTrackLessStable;
+    }
+    
+    supers = [knownTrackOrderings objectForKey:otherTrack];
+    if (!supers) {
+        // aTrack is unknown.
+        return OSUTrackNotOrdered;
+    } else if ([supers containsObject:aTrack]) {
+        // aTrack is more stable than otherTrack
+        return OSUTrackMoreStable;
+    }
+    
+    // Both tracks are known, but they have no particular ordering.
+    return OSUTrackNotOrdered;
+}
+
+/*
+ This returns an ordered, culled copy of the tracks in someTracks (which can be any enumerable collection of strings).
+ 
+ - Tracks which are implied by other tracks are removed (eg, "rc" won't be included if "beta" is).
+ - Tracks which are known are shuffled to the front.
+ 
+ */
++ (NSArray *)dominantTracks:(id)someTracks;
+{
+    NSMutableArray *result = [NSMutableArray array];
+    
+    /* Copy the track names to 'result', keeping only the dominant ones */
+    OFForEachObject([someTracks objectEnumerator], NSString *, track) {
+        if ([NSString isEmptyString:track])
+            continue;
+        
+        NSUInteger ix = [result count];
+        while(ix-- > 0) {
+            NSString *otherTrack = [result objectAtIndex:ix];
+            enum OSUTrackComparison order = [self compareTrack:track toTrack:otherTrack];
+            
+            switch(order) {
+                case OSUTrackLessStable:
+                    [result removeObjectAtIndex:ix];
+                    break;
+                case OSUTrackOrderedSame:
+                case OSUTrackMoreStable:
+                    goto doNotAddToResult;
+                default:
+                    break;
+            }
+        }
+        [result addObject:track];
+    doNotAddToResult:
+        ;
+    }
+    
+    /* Shuffle any unknown tracks to the end of the array */
+    if (trackOrderingsAreCurrent && knownTrackOrderings) {
+        NSUInteger ix = [result count];
+        NSUInteger unknownInsertion = ix;
+        while(ix-- > 0) {
+            NSString *aTrack = [result objectAtIndex:ix];
+            if (![knownTrackOrderings objectForKey:aTrack]) {
+                [aTrack retain];
+                [result removeObjectAtIndex:ix];
+                unknownInsertion --;
+                [result insertObject:aTrack atIndex:unknownInsertion];
+                [aTrack release];
+            }
+        }
+    }
+    
+    return result;
+}
+
++ (NSArray *)elaboratedTracks:(id)someTracks;
+{
+    NSMutableArray *result = [NSMutableArray array];
+
+    loadFallbackTrackInfoIfNeeded();
+    
+    OFForEachObject([someTracks objectEnumerator], NSString *, aTrack) {
+        [result addObjectIfAbsent:aTrack];
+        NSSet *more = [knownTrackOrderings objectForKey:aTrack];
+        if (more) {
+            OFForEachObject([more objectEnumerator], NSString *, anotherTrack) {
+                [result addObjectIfAbsent:anotherTrack];
+            }
+        }
+    }
+    
+    return result;
+}
+
++ (BOOL)isTrack:(NSString *)aTrack includedIn:(NSArray *)someTracks;
+{
+    if ([NSString isEmptyString:aTrack])
+        return YES;
+    
+    if ([someTracks containsObject:aTrack])
+        return YES;
+    
+    OFForEachInArray(someTracks, NSString *, selectedTrack, {
+        enum OSUTrackComparison order = [self compareTrack:aTrack toTrack:selectedTrack];
+        if (order == OSUTrackMoreStable || order == OSUTrackOrderedSame)
+            return YES;
+    });
+    
+    return NO;
+}
+
+/* Returns the human language of a node by searching for xml:lang attributes. */
+static NSString *nodeLanguage(NSXMLElement *elt)
+{
+    for(;;) {
+        NSXMLNode *langAtt = [elt attributeForName:@"xml:lang"];
+        if (langAtt)
+            return [langAtt stringValue];
+        
+        NSXMLNode *parent = [elt parent];
+        
+        if (parent == nil || [parent kind] != NSXMLElementKind)
+            return nil;
+        
+        elt = (NSXMLElement *)parent;
+    }
+}
+
+static void collectText(NSMutableDictionary *into, NSXMLElement *trackinfo, NSString *nodename)
+{
+    NSArray *kids = [trackinfo elementsForLocalName:nodename URI:OSUAppcastTrackInfoNamespace];
+    if (!kids || ![kids count])
+        return;
+    
+    NSMutableDictionary *byLanguage = [[NSMutableDictionary alloc] init];
+    OFForEachInArray(kids, NSXMLElement *, textfoNode, {
+        NSString *lang = nodeLanguage(textfoNode);
+        if (!lang)
+            continue;
+        [byLanguage setObject:[textfoNode stringValue] forKey:lang];
+    });
+    
+    [into setObject:byLanguage forKey:nodename];
+    [byLanguage release];
+}
+
+/* This does what -attributeForLocalName:URI: *should* do. */
+static NSXMLNode *_attr(NSXMLElement *elt, NSString *localName, NSString *URI)
+{
+    NSXMLNode *attribute = [elt attributeForLocalName:localName URI:URI];
+    if (attribute)
+        return attribute;
+    
+    attribute = [elt attributeForName:localName];
+    if (attribute) {
+        NSString *uri = [attribute URI];
+        if (uri == nil)
+            uri = [elt URI];
+        if (uri) {
+            if ([URI isEqualToString:uri])
+                return attribute;
+            else
+                return nil;
+        }
+    }
+    
+    return nil;
+}
+
++ (void)processTrackInformation:(NSXMLDocument *)allTracks;
+{
+    NSArray *trackDecls = [allTracks objectsForXQuery:@"declare namespace t = \"http://www.omnigroup.com/namespace/omniappcast/trackinfo-v1\"; /t:tracks//t:track" error:NULL];
+    if (!trackDecls || ![trackDecls count]) {
+        NSLog(@"Can't parse track text (root element is <%@>)", [[allTracks rootElement] name]);
+        return;
+    }
+    
+    NSMutableDictionary *strings = [NSMutableDictionary dictionary];
+    NSMutableDictionary *ordering = [NSMutableDictionary dictionary];
+    
+    OFForEachInArray(trackDecls, NSXMLElement *, trackNode, {
+        NSXMLNode *trackNameAtt = _attr(trackNode, @"name", OSUAppcastTrackInfoNamespace);
+        NSXMLNode *trackParentsAtt = _attr(trackNode, @"stabler", OSUAppcastTrackInfoNamespace);
+        
+        if (!trackNameAtt || !trackParentsAtt) {
+            OBASSERT_NOT_REACHED("Track element is missing attributes");
+            continue;
+        }
+        
+        NSString *trackName = [trackNameAtt stringValue];
+        NSArray *trackParents = [[[trackParentsAtt stringValue] stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace] componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        
+        [ordering setObject:[NSSet setWithArray:trackParents] forKey:trackName];
+        NSMutableDictionary *info = [NSMutableDictionary dictionary];
+        collectText(info, trackNode, @"warning");
+        collectText(info, trackNode, @"name");
+        [strings setObject:info forKey:trackName];
+    });
+    
+    BOOL didChange = NO;
+    
+    if (!knownTrackOrderings || ![ordering isEqual:knownTrackOrderings]) {
+        [knownTrackOrderings autorelease];
+        knownTrackOrderings = [ordering copy];
+        trackOrderingsAreCurrent = YES;
+        didChange = YES;
+    }
+    
+    if (!trackLocalizedStrings || ![strings isEqual:trackLocalizedStrings]) {
+        [trackLocalizedStrings autorelease];
+        trackLocalizedStrings = [strings copy];
+        didChange = YES;
+    }
+    
+    if (didChange)
+        [[NSNotificationCenter defaultCenter] postNotificationName:OSUTrackInformationChangedNotification object:self userInfo:nil];
+}
+
++ (NSDictionary *)informationForTrack:(NSString *)trackName;
+{
+    if (!trackName)
+        return nil;
+    
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
+    
+    NSMutableDictionary *trackStrings = [trackLocalizedStrings objectForKey:trackName];
+    if (trackStrings) {
+        
+        [result setBoolValue:YES forKey:@"isKnown"];
+        
+        OFForEachObject([trackStrings keyEnumerator], NSString *, stringKey) {
+            NSDictionary *values = [trackStrings objectForKey:stringKey];
+            /* Note that +preferredLocalizationsFromArray:forPreferences:nil does a very different thing from +preferredLocalizationsFromArray:. The latter method looks at the main bundle to get localization possibilities (it calls CFBundleCopyPreferredLocalizationsFromArray()), instead of just consulting the user's preferences (CFBundleCopyLocalizationsForPreferences()). (The Foundation docs are rather unclear on this point.) */
+            NSArray *lang = [NSBundle preferredLocalizationsFromArray:[values allKeys] forPreferences:nil];
+            NSString *localizedString;
+            if (lang && [lang count])
+                localizedString = [values objectForKey:[lang objectAtIndex:0]];
+            else
+                localizedString = [values objectForKey:@""];
+
+            if (localizedString)
+                [result setObject:localizedString forKey:stringKey];
+        }
+    }
+    
+    loadFallbackTrackInfoIfNeeded();
+    BOOL isKnown = ([knownTrackOrderings objectForKey:trackName])? YES : NO;
+    [result setBoolValue:isKnown forKey:@"isKnown" defaultValue:NO];
+    [result setBoolValue:(isKnown && trackOrderingsAreCurrent) forKey:@"isCurrent"];
+    
+    return result;
 }
 
 #pragma mark -

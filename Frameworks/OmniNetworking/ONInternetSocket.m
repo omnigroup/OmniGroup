@@ -468,7 +468,7 @@ static ONPortAddress *getEndpointAddress(ONInternetSocket *self, int (*getaddr)(
         
         pthread_mutex_unlock(&socketLock);
         if (ONSocketStateDebug)
-            NSLog(@"%@ %s: raising %@", [self shortDescription], _cmd, [pendingException name]);
+            NSLog(@"%@ %@: raising %@", [self shortDescription], NSStringFromSelector(_cmd), [pendingException name]);
         [pendingException raise];
     }
 }

@@ -159,7 +159,7 @@ static NSString *PartFormatString = nil;
 	return;
     if (![self readDelimiter])
 	return;
-    NS_DURING {
+    @try {
 	while (YES) {
 	    OWHeaderDictionary *headerDictionary;
 	    NSString *durationHeader;
@@ -183,9 +183,10 @@ static NSString *PartFormatString = nil;
 	    [self setStatusString:[NSString stringWithFormat:PartFormatString, ++index]];
 	    [self processContentWithHeaders:headerDictionary];
 	}
-    } NS_HANDLER {
+    } @catch (NSException *exc) {
+        OB_UNUSED_VALUE(exc);
         [nextDisplayDate release];
-    } NS_ENDHANDLER;
+    }
     [autoreleasePool release];
 }
 

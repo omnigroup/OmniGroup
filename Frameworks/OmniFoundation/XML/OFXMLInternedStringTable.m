@@ -9,8 +9,11 @@
 
 #import <OmniFoundation/OFCFCallbacks.h>
 #import <OmniFoundation/OFXMLQName.h>
-#import <libxml/xmlstring.h>
+#import <OmniBase/rcsid.h>
+#import <OmniBase/OBUtilities.h>
 
+#import <Foundation/Foundation.h>
+#include <libxml/xmlstring.h>
 
 RCS_ID("$Id$");
 

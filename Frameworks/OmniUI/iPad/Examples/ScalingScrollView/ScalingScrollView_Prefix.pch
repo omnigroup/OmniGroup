@@ -1,0 +1,15 @@
+//
+// Prefix header for all source files of the 'ScalingScrollView' target in the 'ScalingScrollView' project
+//
+
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+#import <OmniBase/OmniBase.h>
+#import <OmniBase/system.h>
+
+#import <OmniFoundation/NSString-OFSimpleMatching.h>
+#import <OmniFoundation/OFNull.h>
+#import <OmniFoundation/NSArray-OFExtensions.h>
+
+#import <QuartzCore/QuartzCore.h>

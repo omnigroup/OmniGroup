@@ -7,15 +7,20 @@
 
 #import <OmniFoundation/OFXMLElement.h>
 
+#import <Foundation/Foundation.h>
+
 #import <OmniFoundation/OFXMLDocument.h>
 #import <OmniFoundation/OFXMLString.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSString-OFConversion.h>
 #import <OmniFoundation/CFArray-OFExtensions.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
+#import <OmniFoundation/OFNull.h>
 
 #import <OmniFoundation/OFXMLBuffer.h>
 #import <OmniFoundation/OFXMLFrozenElement.h>
+
+#import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 

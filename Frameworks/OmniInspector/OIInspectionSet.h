@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,7 @@ typedef BOOL (*OIInspectionSetPredicateFunction)(id anObject, void *context);
 - (void)addObjectsFromArray:(NSArray *)objects;
 - (void)removeObject:(id)object;
 - (void)removeObjectsInArray:(NSArray *)toRemove;
+- (void)removeAllObjects;
 
 - (BOOL)containsObject:(id)object;
 - (NSUInteger)count;

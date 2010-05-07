@@ -9,5 +9,9 @@
 OTHER_CFLAGS = -fprofile-arcs -ftest-coverage $(value)
 OTHER_LDFLAGS = -lgcov
 GCC_PREPROCESSOR_DEFINITIONS = COVERAGE
+
+// If you are doing coverage for link-order optimization, you'd want optimization to match that of the release build.  Otherwise, you might want unoptimized to be able to see the basic blocks in more detail.
 GCC_OPTIMIZATION_LEVEL = 0
 GCC_WARN_UNINITIALIZED_AUTOS = NO
+//GCC_OPTIMIZATION_LEVEL = 2
+//GCC_WARN_UNINITIALIZED_AUTOS = YES

@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <Foundation/NSException.h>
 
 @interface NSException (OBExtensions)
++ (void)raise:(NSString *)name reason:(NSString *)reason;
 + (void)raise:(NSString *)exceptionName posixErrorNumber:(int)posixErrorNumber format:(NSString *)format, ...;
 + (NSException *)exceptionWithName:(NSString *)exceptionName posixErrorNumber:(int)posixErrorNumber format:(NSString *)format, ...;
 - (int)posixErrorNumber;

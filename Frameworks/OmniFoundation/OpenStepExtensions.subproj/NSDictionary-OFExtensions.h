@@ -11,7 +11,8 @@
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Foundation/NSGeometry.h> // For NSPoint, NSSize, and NSRect
-#define OmniFoundation_NSDictionary_NSGeometry_Extensions
+#else
+#import <CoreGraphics/CGGeometry.h>
 #endif
 
 @class NSMutableArray;
@@ -30,14 +31,12 @@
 - (double)doubleForKey:(NSString *)key defaultValue:(double)defaultValue;
 - (double)doubleForKey:(NSString *)key;
 
-#ifdef OmniFoundation_NSDictionary_NSGeometry_Extensions
-- (NSPoint)pointForKey:(NSString *)key defaultValue:(NSPoint)defaultValue;
-- (NSPoint)pointForKey:(NSString *)key;
-- (NSSize)sizeForKey:(NSString *)key defaultValue:(NSSize)defaultValue;
-- (NSSize)sizeForKey:(NSString *)key;
-- (NSRect)rectForKey:(NSString *)key defaultValue:(NSRect)defaultValue;
-- (NSRect)rectForKey:(NSString *)key;
-#endif
+- (CGPoint)pointForKey:(NSString *)key defaultValue:(CGPoint)defaultValue;
+- (CGPoint)pointForKey:(NSString *)key;
+- (CGSize)sizeForKey:(NSString *)key defaultValue:(CGSize)defaultValue;
+- (CGSize)sizeForKey:(NSString *)key;
+- (CGRect)rectForKey:(NSString *)key defaultValue:(CGRect)defaultValue;
+- (CGRect)rectForKey:(NSString *)key;
 
 // Returns YES iff the value is YES, Y, yes, y, or 1.
 - (BOOL)boolForKey:(NSString *)key defaultValue:(BOOL)defaultValue;

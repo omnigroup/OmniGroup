@@ -13,6 +13,7 @@
 
 // Split out other extensions
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
+#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 
 // For FSVolumeRefNum
 #import <CoreServices/CoreServices.h>
@@ -30,25 +31,7 @@
 - (NSString *)scratchFilenameNamed:(NSString *)aName error:(NSError **)outError;
 - (void)removeScratchDirectory;
 
-// Changing file access/update timestamps.
-
-- (void)touchFile:(NSString *)filePath;
-
-// Following symlinks
-
-- (NSDictionary *)attributesOfItemAtPath:(NSString *)filePath traverseLink:(BOOL)traverseLink error:(NSError **)outError;
-
 // Directory manipulations
-
-- (BOOL)directoryExistsAtPath:(NSString *)path;
-- (BOOL)directoryExistsAtPath:(NSString *)path traverseLink:(BOOL)traverseLink;
-
-- (BOOL)createPathToFile:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
-    // Creates any directories needed to be able to create a file at the specified path.
-- (BOOL)createPath:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError OB_DEPRECATED_ATTRIBUTE; /* Replace with createDirectoryAtPath:withIntermediateDirectories:attributes:error: */
-
-    // Creates any directories needed to be able to create a file at the specified path.  Returns NO on failure.
-- (BOOL)createPathComponents:(NSArray *)components attributes:(NSDictionary *)attributes error:(NSError **)outError;
 
 - (NSString *)existingPortionOfPath:(NSString *)path;
 

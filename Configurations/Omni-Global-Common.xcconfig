@@ -4,13 +4,8 @@
 
 // Common settings
 
-// Don't build ppc variants
-VALID_ARCHS = x86_64 i386
+// Make CG and NS geometry types be the same. Mostly doesn't matter on iPhone, but this also makes NSInteger types be defined based on 'long' consistently, which avoids conflicting warnings from clang + llvm 2.7 about printf format checking
 
-FRAMEWORK_SEARCH_PATHS = $(value) /Library/Frameworks
-BZ2_LDFLAGS = -lbz2
-
-// Make CG and NS geometry types be the same.
 OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64
 	
 // Keep precomps in the build dir so that switching branches/products doesn't confuse the precomp builds
@@ -23,9 +18,8 @@ YACC = /usr/bin/bison
 YACCFLAGS = -y
 LEX_SUPPRESS_DEFAULT_RULE = YES
 
-WARNING_CFLAGS = -Wall -Wno-#warnings -Wno-trigraphs -Winit-self
+WARNING_CFLAGS = $(value) -Wall -Wno-#warnings -Wno-trigraphs -Winit-self
 GCC_OPTIMIZATION_LEVEL = 2
-GCC_MODEL_TUNING = G5
 GCC_FAST_OBJC_DISPATCH = YES
 GCC_GENERATE_DEBUGGING_SYMBOLS = YES
 GCC_C_LANGUAGE_STANDARD = gnu99
@@ -47,7 +41,6 @@ GCC_WARN_SHADOW = NO
 GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO
 GCC_WARN_SIGN_COMPARE = YES
 GCC_WARN_ABOUT_MISSING_NEWLINE = YES
-GCC_WARN_64_TO_32_BIT_CONVERSION = YES
 // GCC_WARN_PROTOTYPE_CONVERSION = YES // This fails a lot on strip-omni, at least
 // GCC_WARN_SHADOW = YES
 
@@ -61,8 +54,18 @@ COPY_PHASE_STRIP = NO
 
 // When preprocessing the Info.plist file, don't filter out comments or process trigraphs.  (We don't want "http://www.omnigroup.com/" to become "http://", nor do we want "????" to be interpreted as a trigraph.)
 INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -traditional-cpp -C -I$PROJECT_DERIVED_FILE_DIR
+INFOPLIST_PREPROCESS = YES
 
 // Xcode 3.1 converts .strings files to UTF-16 by default, which breaks our localization process.
 STRINGS_FILE_OUTPUT_ENCODING = UTF-8
 
-#include "Omni-Global-Common-10.6.xcconfig"
+// Don't strip nibs/xibs:  it makes life difficult for our localizers
+IBC_STRIP_NIBS = NO;
+IBC_FLATTEN_NIBS = NO;
+
+// Run with gcc by default.  clang has several warts that make it harder to use in development (so we also build with branched configs for things like clang-sa)
+GCC_VERSION = 4.2
+//GCC_VERSION = com.apple.compilers.llvm.clang.1_0
+//CC=/Volumes/Space/Users/bungi/Source/LLVM/llvm/Release/bin/clang
+
+RUN_CLANG_STATIC_ANALYZER = YES

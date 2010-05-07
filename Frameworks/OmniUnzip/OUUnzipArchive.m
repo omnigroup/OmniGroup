@@ -9,7 +9,7 @@
 
 #import <OmniUnzip/OUUnzipEntry.h>
 #import <OmniUnzip/OUErrors.h>
-
+#import <OmniBase/system.h> // S_IFMT, etc
 #import "unzip.h"
 
 #if 0 && defined(DEBUG)

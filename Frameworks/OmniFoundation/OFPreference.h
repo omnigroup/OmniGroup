@@ -35,6 +35,8 @@
 + (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference *)aPreference;
 + (void)removeObserver:(id)anObserver forPreference:(OFPreference *)aPreference;
 
++ (id)coerceStringValue:(NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue;
+
 - (NSString *) key;
 - (OFEnumNameTable *) enumeration;
 

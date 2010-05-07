@@ -18,6 +18,7 @@
 
 #include <sys/pipe.h>
 #include <crt_externs.h>
+#include <spawn.h>
 
 RCS_ID("$Id$")
 
@@ -50,12 +51,6 @@ static char *pathStringIncludingDirectory(const char *currentPath, const char *p
 @end
 
 @implementation OFFilterProcess
-
-#if __OBJC_GC__
-#define malloc_scanned(sz) NSAllocateCollectable(sz, NSScannedOption | NSCollectorDisabledOption)
-#else
-#define malloc_scanned(sz) malloc(sz)
-#endif
 
 @synthesize commandPath, arguments, error;
 
@@ -98,6 +93,32 @@ static void OFPipeClose(struct OFPipe *p)
     OFPipeCloseRead(p);
     OFPipeCloseWrite(p);
 }
+
+#if 0
+/* This was useful for tracking down some improper fd manipulations */
+static void logdescriptors(const char *where)
+{
+    int dtable = getdtablesize();
+    int fd;
+    
+    char buf[64];
+    sprintf(buf, "In %s:\n", where);
+    write(2, buf, strlen(buf));
+    
+    for(fd = 0; fd < dtable; fd++) {
+        int fl = fcntl(fd, F_GETFL, 0);
+        if (fl < 0 && errno == EBADF)
+            continue;
+        
+        if (fl < 0) {
+            sprintf(buf, "%4d: error %s\n", fd, strerror(errno));
+        } else {
+            sprintf(buf, "%4d: open, fl=0%o\n", fd, fl);
+        }
+        write(2, buf, strlen(buf));
+    }
+}
+#endif
 
 - initWithParameters:(NSDictionary *)filterParameters standardOutput:(NSOutputStream *)stdoutStream standardError:(NSOutputStream *)stderrStream;
 {
@@ -167,6 +188,13 @@ static void OFPipeClose(struct OFPipe *p)
         return self;
     }
     
+#if 0
+    printf("pipes: stdin %d->%d  stdout %d->%d  stderr %d->%d\n",
+           input.write, input.read,
+           output.write, output.read,
+           errors.write, errors.read);
+#endif
+    
     NSFileManager *fileManager = [NSFileManager defaultManager];
 
     // Build up string buffers of the command, arguments and environment
@@ -177,29 +205,91 @@ static void OFPipeClose(struct OFPipe *p)
     }
     const char *chdirPath = workingDirectoryPath? [fileManager fileSystemRepresentationWithPath:workingDirectoryPath] : NULL;
     NSUInteger argumentIndex, argumentCount = [arguments count];
-    const char ** __strong toolParameters = malloc_scanned(sizeof(const char *) * (argumentCount + 2));
+    const char ** __strong toolParameters = OBAllocateScanned(sizeof(const char *) * (argumentCount + 2));
     toolParameters[0] = toolPath;
     for (argumentIndex = 0; argumentIndex < argumentCount; argumentIndex++) {
         toolParameters[argumentIndex + 1] = [[arguments objectAtIndex:argumentIndex] cStringUsingEncoding:NSUTF8StringEncoding];
     }
     toolParameters[argumentIndex + 1] = NULL;
     
-    char **toolEnvironment = computeToolEnvironment(replacementEnvironment, additionalEnvironment, ensurePathDirectory);
+    char ** __strong toolEnvironment = computeToolEnvironment(replacementEnvironment, additionalEnvironment, ensurePathDirectory);
     
-    /* Fork off a child process */
+    BOOL canUsePosixSpawn = YES;
+    if (chdirPath != NULL)
+        canUsePosixSpawn = NO;  /* posix_spawn has no chdir-on-spawn functionality */
+    if (detachFromTTY && !newProcessGroup)
+        canUsePosixSpawn = NO;  /* posix_spawn has no TIOCNOTTY, although setpgrp does it as a side effect */
     
-    child = fork();
-    switch (child) {
-        case -1: // Error
-            ;
-            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not fork '%@'", @"OmniFoundation", OMNI_BUNDLE, @"error description"), commandPath];
+    if (canUsePosixSpawn) {
+        /* Use posix_spawn() to fork/dup/exec in one shot */
+        
+        posix_spawn_file_actions_t fileActions;
+        posix_spawnattr_t spawnAttributes, *attrs;
+        
+        posix_spawnattr_init(&spawnAttributes);
+        posix_spawn_file_actions_init(&fileActions);
+        attrs = NULL;
+
+        if (newProcessGroup) {
+            posix_spawnattr_setflags(&spawnAttributes, POSIX_SPAWN_SETPGROUP);
+            attrs = &spawnAttributes;
+        }
+        
+        // Open /dev/null if requested; share fd between stderr and stdout if requested
+
+        /* Set up stdin */
+        if (input.read == -1)
+            posix_spawn_file_actions_addopen(&fileActions, STDIN_FILENO, "/dev/null", O_RDONLY, 0);
+        else {
+            posix_spawn_file_actions_adddup2(&fileActions, input.read, STDIN_FILENO);
+            posix_spawn_file_actions_addclose(&fileActions, input.read);
+        }
+        
+        /* Set up stdout */
+        if (output.write != -1)
+            posix_spawn_file_actions_adddup2(&fileActions, output.write, STDOUT_FILENO);
+        else if (stdoutStream != nil && [stdoutStream isNull])
+            posix_spawn_file_actions_addopen(&fileActions, STDOUT_FILENO, "/dev/null", O_WRONLY, 0);
+        
+        /* Set up stderr (which may want to be the same fd as stdout) */
+        if (errors.write != -1)
+            posix_spawn_file_actions_adddup2(&fileActions, errors.write, STDERR_FILENO);
+        else if (output.write != -1 && stderrStream != nil && stderrStream == stdoutStream)
+            posix_spawn_file_actions_adddup2(&fileActions, output.write, STDERR_FILENO);
+        else if (stderrStream != nil && [stderrStream isNull])
+            posix_spawn_file_actions_addopen(&fileActions, STDERR_FILENO, "/dev/null", O_WRONLY, 0);
+        
+        if (output.write != -1)
+            posix_spawn_file_actions_addclose(&fileActions, output.write);
+        if (errors.write != -1)
+            posix_spawn_file_actions_addclose(&fileActions, errors.write);
+        
+        int spawned;
+        
+        spawned = posix_spawn(&child, toolPath, &fileActions, attrs, (char * const *)toolParameters, toolEnvironment? toolEnvironment : *_NSGetEnviron());
+        if (spawned != 0) {
+            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not fork '%@'", @"OmniFoundation", OMNI_BUNDLE, @"error description - unable to start a child process using the spawn syscall"), commandPath];
+            OBErrorWithErrno(&errorBuf, OMNI_ERRNO(), "posix_spawn()", nil, description);
+            
+            child = -1; // imitate fork()'s error return behavior
+        }
+    } else {
+        /* Fork off a child process in the traditional way */
+        child = fork();
+        
+        if (child < 0) {
+            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not fork '%@'", @"OmniFoundation", OMNI_BUNDLE, @"error description - unable to start a child process using the fork syscall"), commandPath];
             OBErrorWithErrno(&errorBuf, OMNI_ERRNO(), "fork()", nil, description);
-            free(toolParameters);
+        }
+    }
+    switch (child) {
+        case -1: // Error cleanup
+            OBFreeScanned(toolParameters);
             freeToolEnvironment(toolEnvironment);
             goto fail_early;
             
         case 0: { // Child
-            
+
             // Close our parent's ends of the pipes.
             if (input.write != -1) close(input.write);
             if (output.read != -1) close(output.read);
@@ -275,7 +365,8 @@ static void OFPipeClose(struct OFPipe *p)
             OFPipeCloseRead(&input);
             OFPipeCloseWrite(&output);
             OFPipeCloseWrite(&errors);
-            free(toolParameters);
+
+            OBFreeScanned(toolParameters);
             freeToolEnvironment(toolEnvironment);
             break;
     }
@@ -353,6 +444,7 @@ static void OFPipeClose(struct OFPipe *p)
     free_copyout(&stderrCopyBuf);
     if (subprocStdinFd >= 0)
         close(subprocStdinFd);
+
 }
 
 - (void)dealloc
@@ -591,7 +683,7 @@ static void OFPipeClose(struct OFPipe *p)
     if ([filter error]) {
         if (outError) {
             *outError = [filter error];
-            OBError(outError, OFFilterDataCommandReturnedErrorCodeError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command: %@", @"OmniFoundation", OMNI_BUNDLE, @"Error encountered when trying to pass data through a UNIX command - parameter is underlying error text"), [*outError localizedDescription]]));
+            OFError(outError, OFFilterDataCommandReturnedErrorCodeError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command: %@", @"OmniFoundation", OMNI_BUNDLE, @"Error encountered when trying to pass data through a UNIX command - parameter is underlying error text"), [*outError localizedDescription]]), nil);
         }
         [filter release];
         return nil;
@@ -602,7 +694,7 @@ static void OFPipeClose(struct OFPipe *p)
     if ([filter error]) {
         if (outError) {
             *outError = [filter error];
-            OBError(outError, OFFilterDataCommandReturnedErrorCodeError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command: %@", @"OmniFoundation", OMNI_BUNDLE, @"Error encountered when trying to pass data through a UNIX command - parameter is underlying error text"), [*outError localizedDescription]]));
+            OFError(outError, OFFilterDataCommandReturnedErrorCodeError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command: %@", @"OmniFoundation", OMNI_BUNDLE, @"Error encountered when trying to pass data through a UNIX command - parameter is underlying error text"), [*outError localizedDescription]]), nil);
         }
         [filter release];
         return nil;
@@ -615,7 +707,7 @@ static void OFPipeClose(struct OFPipe *p)
     if ([resultStream streamStatus] == NSStreamStatusError) {
         if (outError) {
             *outError = [resultStream streamError];
-            OBError(outError, OFFilterDataCommandReturnedErrorCodeError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command: %@", @"OmniFoundation", OMNI_BUNDLE, @"Error encountered when trying to pass data through a UNIX command - parameter is underlying error text"), [*outError localizedDescription]]));
+            OFError(outError, OFFilterDataCommandReturnedErrorCodeError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error filtering data through UNIX command: %@", @"OmniFoundation", OMNI_BUNDLE, @"Error encountered when trying to pass data through a UNIX command - parameter is underlying error text"), [*outError localizedDescription]]), nil);
         }
         return nil;
     }
@@ -917,7 +1009,9 @@ static void copy_to_stream(struct copy_out_state *into, OFFilterProcess *self)
         unsigned int terminationStatus = WEXITSTATUS(childStatus);
         if (terminationStatus != 0) {
             NSError *errBuf = [self error];
-            OBErrorWithInfo(&errBuf, OFFilterDataCommandReturnedErrorCodeError, OFProcessExitStatusErrorKey, [NSNumber numberWithUnsignedInt:terminationStatus],  NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"command '%@' returned %d", @"OmniFoundation", OMNI_BUNDLE, @"error description - a UNIX subprocess exited with a nonzero status"), commandPath, terminationStatus], nil);
+            
+            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"command '%@' returned %d", @"OmniFoundation", OMNI_BUNDLE, @"error description - a UNIX subprocess exited with a nonzero status"), commandPath, terminationStatus];
+            OFErrorWithInfo(&errBuf, OFFilterDataCommandReturnedErrorCodeError, description, nil/*suggestion*/, OFProcessExitStatusErrorKey, [NSNumber numberWithUnsignedInt:terminationStatus], nil);
             [self _setError:errBuf];
             return NO;
         } else {
@@ -926,7 +1020,8 @@ static void copy_to_stream(struct copy_out_state *into, OFFilterProcess *self)
     } else {
         unsigned int terminationSignal = WTERMSIG(childStatus);
         NSError *errBuf = [self error];
-        OBErrorWithInfo(&errBuf, OFFilterDataCommandReturnedErrorCodeError, OFProcessExitSignalErrorKey, [NSNumber numberWithUnsignedInt:terminationSignal], NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"command '%@' exited due to signal %d (%s)", @"OmniFoundation", OMNI_BUNDLE, @"error description - a UNIX subprocess exited due to a signal"), commandPath, terminationSignal, strsignal(terminationSignal)], nil);
+        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"command '%@' exited due to signal %d (%s)", @"OmniFoundation", OMNI_BUNDLE, @"error description - a UNIX subprocess exited due to a signal"), commandPath, terminationSignal, strsignal(terminationSignal)];
+        OFErrorWithInfo(&errBuf, OFFilterDataCommandReturnedErrorCodeError, description, nil/*suggestion*/, OFProcessExitSignalErrorKey, [NSNumber numberWithUnsignedInt:terminationSignal], nil);
         [self _setError:errBuf];
         return NO;
     }
@@ -1079,7 +1174,7 @@ static char ** __strong computeToolEnvironment(NSDictionary *replace_env, NSDict
     /* If the caller supplied a replacement environment dictionary, convert it into the form used by execve() etc. Otherwise, get our own process environment and make a copy so we can modify it. */
     if (replace_env) {
         newEnvironSize = 1 + [replace_env count] + [augment_env count]; /* Add one in case we need to add $PATH */
-        newEnviron = malloc_scanned(sizeof(*newEnviron) * (1 + newEnvironSize)); /* Add one for trailing NULL */
+        newEnviron = OBAllocateScanned(sizeof(*newEnviron) * (1 + newEnvironSize)); /* Add one for trailing NULL */
         newEnvironCount = 0;
         
         NSEnumerator *e = [replace_env keyEnumerator];
@@ -1098,7 +1193,7 @@ static char ** __strong computeToolEnvironment(NSDictionary *replace_env, NSDict
             ;
         
         newEnvironSize = newEnvironCount + [augment_env count] + 1;
-        newEnviron = malloc_scanned(sizeof(*newEnviron) * (1 + newEnvironSize)); /* Add one for trailing NULL */
+        newEnviron = OBAllocateScanned(sizeof(*newEnviron) * (1 + newEnvironSize)); /* Add one for trailing NULL */
         
         for(unsigned envIndex = 0; oldEnviron[envIndex] != NULL; envIndex ++) {
             newEnviron[envIndex] = strdup(oldEnviron[envIndex]);
@@ -1165,7 +1260,7 @@ static void freeToolEnvironment(char **envp)
         return;
     for(char **envcursor = envp; *envcursor; envcursor ++)
         free(*envcursor);
-    free(envp);
+    OBFreeScanned(envp);
 }
 
 

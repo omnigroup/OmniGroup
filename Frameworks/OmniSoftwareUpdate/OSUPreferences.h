@@ -1,4 +1,4 @@
-// Copyright 2001-2006,2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2006,2009-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,9 @@
 @class OSUItem;
 @class NSButton, NSPopUpButton, NSTextField, NSTextView;
 @class WebView;
+
+/* Some of our preference keys aren't accessible through NSUserDefaults */
+#define OSUSharedPreferencesDomain CFSTR("com.omnigroup.OmniSoftwareUpdate")
 
 @interface OSUPreferences : OAPreferenceClient
 {
@@ -31,6 +34,9 @@
 
 + (void)setItem:(OSUItem *)anItem isIgnored:(BOOL)shouldBeIgnored;
 + (BOOL)itemIsIgnored:(OSUItem *)anItem;
+
++ (NSArray *)visibleTracks;
++ (void)setVisibleTracks:(NSArray *)orderedTrackList;
 
 - (IBAction)checkNow:(id)sender;
 - (IBAction)showSystemConfigurationDetailsSheet:(id)sender;

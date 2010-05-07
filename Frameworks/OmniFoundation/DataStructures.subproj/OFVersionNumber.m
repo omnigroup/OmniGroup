@@ -7,6 +7,7 @@
 
 #import <OmniFoundation/OFVersionNumber.h>
 
+#import <OmniBase/OBObject.h> // For -debugDictionary
 #import <OmniFoundation/OFStringScanner.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -133,6 +134,23 @@ RCS_ID("$Id$");
 - (NSString *)cleanVersionString;
 {
     return _cleanVersionString;
+}
+
+- (NSString *)prettyVersionString; // NB: This version string can't be parsed back into an OFVersionNumber. For display only!
+{
+    // The current Omni convention is to append the SVN revision number to the version number at build time, so that we don't have to explicitly increment things for nightlies and so on. This is ugly, though, so let's not display it like that.
+    if (_componentCount >= 3 && _components[_componentCount-2] == 0 && _components[_componentCount-1] > 100) {
+        NSMutableString *buf = [NSMutableString string];
+        for(NSUInteger component = 0; component < (_componentCount-2); component ++) {
+            if (component > 0)
+                [buf appendString:@"."];
+            [buf appendFormat:@"%u", (unsigned int)_components[component]];
+        }
+        [buf appendFormat:@" r%u", (unsigned int)_components[_componentCount-1]];
+        return buf;
+    } else {
+        return [self cleanVersionString];
+    }
 }
 
 - (NSUInteger)componentCount;

@@ -412,8 +412,8 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 
 #ifdef DEBUG
     if (OWHTMLToSGMLObjectsDebug)
-        NSLog(@"%@ - creating object stream, restart=%@, resetEncoding=%d",
-              [self shortDescription], restarting?@"YES":@"NO", resetSourceEncoding);
+        NSLog(@"%@ - creating object stream, restart=%@, resetEncoding=%ld",
+              [self shortDescription], restarting?@"YES":@"NO", (long)resetSourceEncoding);
 #endif
     
     if (restarting) {

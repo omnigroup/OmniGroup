@@ -43,7 +43,7 @@
 		4A40EBEE08AB009A00E1769D /* OSUController.h in Headers */ = {isa = PBXBuildFile; fileRef = BF3171DE062F410E0097A147 /* OSUController.h */; };
 		4A40EBEF08AB009A00E1769D /* OSUPreferences.h in Headers */ = {isa = PBXBuildFile; fileRef = BF3171E0062F410E0097A147 /* OSUPreferences.h */; };
 		4A40EBF008AB009A00E1769D /* OSUChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 34821EFE0634074F0097A113 /* OSUChecker.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A40EBF108AB009A00E1769D /* NSApplication-OSUSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 34821F3D06340B750097A113 /* NSApplication-OSUSupport.h */; };
+		4A40EBF108AB009A00E1769D /* NSApplication-OSUSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 34821F3D06340B750097A113 /* NSApplication-OSUSupport.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A40EBF308AB009A00E1769D /* OSUPreferences.png in Resources */ = {isa = PBXBuildFile; fileRef = BF3171E6062F41550097A147 /* OSUPreferences.png */; };
 		4A40EBF508AB009A00E1769D /* OSUPreferences.nib in Resources */ = {isa = PBXBuildFile; fileRef = BF3171EA062F41740097A147 /* OSUPreferences.nib */; };
 		4A40EBF608AB009A00E1769D /* Preferences.strings in Resources */ = {isa = PBXBuildFile; fileRef = BF3171EC062F41740097A147 /* Preferences.strings */; };
@@ -87,6 +87,8 @@
 		A28CF96B0F953213002F72C6 /* OSUChooseLocationErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = A28CF9690F953213002F72C6 /* OSUChooseLocationErrorRecovery.h */; };
 		A28CF96C0F953213002F72C6 /* OSUChooseLocationErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = A28CF96A0F953213002F72C6 /* OSUChooseLocationErrorRecovery.m */; };
 		A28D5D6B107AD82100BB6865 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A28D5D6A107AD82100BB6865 /* OpenCL.framework */; };
+		A2D3F52C0FF9841A001AB2C5 /* OSUAppcastSignature.m in Sources */ = {isa = PBXBuildFile; fileRef = A2D3F52A0FF9841A001AB2C5 /* OSUAppcastSignature.m */; };
+		A2D3F57C0FF98D92001AB2C5 /* OSUAppcastSignature.h in Headers */ = {isa = PBXBuildFile; fileRef = A2D3F5290FF9841A001AB2C5 /* OSUAppcastSignature.h */; };
 		A2E26F170FD5D887008F0B93 /* OSUTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = A2E26F150FD5D887008F0B93 /* OSUTextField.h */; };
 		A2E26F180FD5D887008F0B93 /* OSUTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = A2E26F160FD5D887008F0B93 /* OSUTextField.m */; };
 		A2E323351027ADDE00FE04CC /* OSUCheckTool-GLExt.m in Sources */ = {isa = PBXBuildFile; fileRef = A2E31DE510279DEA00FE04CC /* OSUCheckTool-GLExt.m */; };
@@ -205,13 +207,11 @@
 		6ACC21350C67DC7B001633C1 /* OSUAvailableUpdateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUAvailableUpdateController.h; sourceTree = "<group>"; };
 		6ACC21360C67DC7B001633C1 /* OSUAvailableUpdateController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUAvailableUpdateController.m; sourceTree = "<group>"; };
 		6ACC21410C67DCC0001633C1 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OSUAvailableUpdateController.nib; sourceTree = "<group>"; };
+		A21752F910278B0A0017D6D6 /* OmniPrivateCA.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniPrivateCA.pem; sourceTree = "<group>"; };
 		A234D4FF0E366FA800691906 /* OBBacktraceBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBBacktraceBuffer.m; sourceTree = "<group>"; };
-		A23667F3100E6DCF0076D2D8 /* OFXMLSignature-Utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFXMLSignature-Utilities.m"; sourceTree = "<group>"; };
 		A28CF9690F953213002F72C6 /* OSUChooseLocationErrorRecovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUChooseLocationErrorRecovery.h; sourceTree = "<group>"; };
 		A28CF96A0F953213002F72C6 /* OSUChooseLocationErrorRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUChooseLocationErrorRecovery.m; sourceTree = "<group>"; };
 		A28D5D6A107AD82100BB6865 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = /System/Library/Frameworks/OpenCL.framework; sourceTree = "<absolute>"; };
-		A2A0D6A30FE9CBFE00F55E7C /* OFXMLSignature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLSignature.h; sourceTree = "<group>"; };
-		A2A0D6A40FE9CBFE00F55E7C /* OFXMLSignature.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLSignature.m; sourceTree = "<group>"; };
 		A2D3F5290FF9841A001AB2C5 /* OSUAppcastSignature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUAppcastSignature.h; sourceTree = "<group>"; };
 		A2D3F52A0FF9841A001AB2C5 /* OSUAppcastSignature.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUAppcastSignature.m; sourceTree = "<group>"; };
 		A2E26F150FD5D887008F0B93 /* OSUTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUTextField.h; sourceTree = "<group>"; };
@@ -318,6 +318,7 @@
 				BF3171EC062F41740097A147 /* Preferences.strings */,
 				6A9332C70C6146C5002DC78C /* OSUDownloadController.nib */,
 				6ACC21400C67DCC0001633C1 /* OSUAvailableUpdateController.nib */,
+				A21752F910278B0A0017D6D6 /* OmniPrivateCA.pem */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -402,9 +403,6 @@
 				6A950E4E0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m */,
 				A28CF9690F953213002F72C6 /* OSUChooseLocationErrorRecovery.h */,
 				A28CF96A0F953213002F72C6 /* OSUChooseLocationErrorRecovery.m */,
-				A2A0D6A30FE9CBFE00F55E7C /* OFXMLSignature.h */,
-				A2A0D6A40FE9CBFE00F55E7C /* OFXMLSignature.m */,
-				A23667F3100E6DCF0076D2D8 /* OFXMLSignature-Utilities.m */,
 				A2D3F5290FF9841A001AB2C5 /* OSUAppcastSignature.h */,
 				A2D3F52A0FF9841A001AB2C5 /* OSUAppcastSignature.m */,
 			);
@@ -532,6 +530,7 @@
 				4A6474D30CE50D0C00F6EE03 /* OAController-OSUExtensions.h in Headers */,
 				A28CF96B0F953213002F72C6 /* OSUChooseLocationErrorRecovery.h in Headers */,
 				A2E26F170FD5D887008F0B93 /* OSUTextField.h in Headers */,
+				A2D3F57C0FF98D92001AB2C5 /* OSUAppcastSignature.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -685,6 +684,7 @@
 				4A6474D40CE50D0C00F6EE03 /* OAController-OSUExtensions.m in Sources */,
 				A28CF96C0F953213002F72C6 /* OSUChooseLocationErrorRecovery.m in Sources */,
 				A2E26F180FD5D887008F0B93 /* OSUTextField.m in Sources */,
+				A2D3F52C0FF9841A001AB2C5 /* OSUAppcastSignature.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -831,6 +831,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AB8F42D08AD27BF00DBB061 /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 			};
 			name = Debug;
 		};
@@ -838,6 +839,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AB8F42E08AD27BF00DBB061 /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 			};
 			name = Release;
 		};
@@ -845,6 +847,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AB8F42C08AD27BF00DBB061 /* Omni-Global-Coverage.xcconfig */;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 			};
 			name = Coverage;
 		};

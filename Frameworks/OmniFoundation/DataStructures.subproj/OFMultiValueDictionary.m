@@ -405,3 +405,56 @@ static void duplicateFunction(const void *key, const void *value, void *context)
 
 @end
 
+#import <OmniFoundation/OFCharacterSet.h>
+#import <OmniFoundation/OFStringScanner.h>
+
+@implementation NSString (OFMultiValueDictionary)
+
+static OFCharacterSet *_nameDelimiterOFCharacterSet(void)
+{
+    static OFCharacterSet *NameDelimiterSet = nil;
+    if (NameDelimiterSet == nil) {
+        NameDelimiterSet = [[OFCharacterSet alloc] initWithString:@"&="];
+    }
+    OBPOSTCONDITION(NameDelimiterSet != nil);
+    return NameDelimiterSet;
+}
+
+static OFCharacterSet *_valueDelimiterOFCharacterSet(void)
+{
+    static OFCharacterSet *ValueDelimiterSet = nil;
+    if (ValueDelimiterSet == nil) {
+        ValueDelimiterSet = [[OFCharacterSet alloc] initWithString:@"&"];
+    }
+    OBPOSTCONDITION(ValueDelimiterSet != nil);
+    return ValueDelimiterSet;
+}
+
+- (OFMultiValueDictionary *)parametersFromQueryString;
+{
+    OFCharacterSet *nameDelimiterSet = _nameDelimiterOFCharacterSet();
+    OFCharacterSet *valueDelimiterSet = _valueDelimiterOFCharacterSet();
+    OFMultiValueDictionary *parameters = [[[OFMultiValueDictionary alloc] init] autorelease];
+    OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:self];
+    while (scannerHasData(scanner)) {
+        NSString *encodedName = [scanner readFullTokenWithDelimiterOFCharacterSet:nameDelimiterSet forceLowercase:NO];
+        if (scannerPeekCharacter(scanner) == '=')
+            scannerSkipPeekedCharacter(scanner); // Skip '=' between name and value
+        NSString *encodedValue = [scanner readFullTokenWithDelimiterOFCharacterSet:valueDelimiterSet forceLowercase:NO];
+        if (scannerPeekCharacter(scanner) == '&')
+            scannerSkipPeekedCharacter(scanner); // Skip '&' between value pairs
+        NSString *decodedName = [NSMakeCollectable(CFURLCreateStringByReplacingPercentEscapes(kCFAllocatorDefault, (CFStringRef)encodedName, CFSTR(""))) autorelease];
+        NSString *decodedValue = [NSMakeCollectable(CFURLCreateStringByReplacingPercentEscapes(kCFAllocatorDefault, (CFStringRef)encodedValue, CFSTR(""))) autorelease];
+        if (decodedName == nil)
+            decodedName = encodedName;
+        if (decodedValue == nil)
+            decodedValue = encodedValue;
+        if (decodedValue == nil)
+            decodedValue = (id)[NSNull null];
+        [parameters addObject:decodedValue forKey:decodedName];
+    }
+    [scanner release];
+    return parameters;
+}
+
+@end

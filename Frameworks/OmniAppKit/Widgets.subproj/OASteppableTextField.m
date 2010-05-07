@@ -41,7 +41,7 @@ RCS_ID("$Id$");
 - (void)stepperAction:(id)sender;
 {    
     SEL formatterSelector;
-    int value = [sender intValue];
+    double value = [sender doubleValue];
     if (value > stepperTracking)
 	formatterSelector = @selector(stepUpValue:);
     else 

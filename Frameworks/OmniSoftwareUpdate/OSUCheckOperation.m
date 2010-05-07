@@ -9,6 +9,7 @@
 
 #import <OmniFoundation/NSBundle-OFExtensions.h>
 #import <OmniFoundation/OFVersionNumber.h>
+#import <OmniBase/OmniBase.h>
 
 #import "OSUPreferences.h"
 #import "OSUChecker.h"
@@ -73,8 +74,9 @@ RCS_ID("$Id$");
     
     OSUChecker *checker = [OSUChecker sharedUpdateChecker];
     
-    // Send the current track to the server so it can make decisions about what we'll see.  In particular, this means that we will no longer perform client side track subsumption _and_ if you switch to a final build, you'll no longer see beta/sneakypeak builds until the next time you run one of those.
-    NSString *track = [checker applicationTrack];
+    // Send the current track to the server so it can make decisions about what we'll see.
+    NSArray *tracks = [OSUPreferences visibleTracks];
+    NSString *track = (tracks && [tracks count])? [tracks objectAtIndex:0] : [checker applicationTrack];
     
     NSArray *arguments = [NSArray arrayWithObjects:host, [url absoluteString],
                           [checker applicationIdentifier],
@@ -86,7 +88,9 @@ RCS_ID("$Id$");
                           [versionNumber cleanVersionString],
                           nil];
     [_task setArguments:arguments];
-    //NSLog(@"Running %@ with arguments %@", helperPath, arguments);
+#ifdef DEBUG_wiml0
+    NSLog(@"Running %@ with arguments %@", helperPath, arguments);
+#endif
     
     return self;
 }

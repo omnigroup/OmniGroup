@@ -8,19 +8,27 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Foundation/NSGeometry.h>
+#else
+#import <CoreGraphics/CGGeometry.h>
+#endif
+
+@class NSMutableDictionary, NSDictionary;
 
 @interface OFPoint : NSObject <NSCopying /*, NSCoding*/>
 {
-    NSPoint _value;
+@private
+    CGPoint _value;
 }
 
-+ (OFPoint *)pointWithPoint:(NSPoint)point;
++ (OFPoint *)pointWithPoint:(CGPoint)point;
 
-- initWithPoint:(NSPoint)point;
+- initWithPoint:(CGPoint)point;
 - initWithString:(NSString *)string;
 
-- (NSPoint)point;
+- (CGPoint)point;
 
 - (NSMutableDictionary *)propertyListRepresentation;
 + (OFPoint *)pointFromPropertyListRepresentation:(NSDictionary *)dict;

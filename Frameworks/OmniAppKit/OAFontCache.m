@@ -38,19 +38,18 @@ static NSDictionary *OAFontFamilySubstitutionDictionary = nil;
 
 + (void)initialize;
 {
-    NSMapTableKeyCallBacks keyCallBacks;
-    
     OBINITIALIZE;
 
+    NSMapTableKeyCallBacks keyCallBacks;
+    memset(&keyCallBacks, 0, sizeof(keyCallBacks));
+    
     keyCallBacks.hash = OAFontCacheKeyHash;
     keyCallBacks.isEqual = OAFontCacheKeyIsEqual;
-    keyCallBacks.retain = NULL;
-    keyCallBacks.release = NULL;
-    keyCallBacks.describe = NULL;
+
     fontMapTable = NSCreateMapTable(keyCallBacks, NSObjectMapValueCallBacks, 32);
     fontMapTableLock = [[NSLock alloc] init];
     fontManager = [[NSFontManager sharedFontManager] retain];
-    [[OFController sharedController] addObserver:self];
+    [[OFController sharedController] addObserver:(id)self];
 }
 
 + (void)controllerDidInitialize:(OFController *)controller;

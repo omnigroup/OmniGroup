@@ -586,14 +586,15 @@ static void Thingy(id mememe, SEL wheee)
                 return NO;
             // FALLTHROUGH
         case Data_EndedMaybeInvalid:
-            NS_DURING {
+            @try {
                 [self contentHash];
-            } NS_HANDLER {
+            } @catch (NSException *exc) {
+                OB_UNUSED_VALUE(exc);
                 OFSimpleLock(&lock);
                 dataComplete = Data_Invalid;
                 OFSimpleUnlock(&lock);
                 return NO;
-            } NS_ENDHANDLER;
+            }
             OFSimpleLock(&lock);
             dataComplete = Data_EndedAndValid;
             OFSimpleUnlock(&lock);
@@ -994,20 +995,20 @@ static void Thingy(id mememe, SEL wheee)
 
     other = anotherObject;
 
-    NS_DURING;
+    @try {
+        if (![self isHashable] || ![other isHashable])
+            return NO;
 
-    if (![self isHashable] || ![other isHashable])
-        NS_VALUERETURN(NO, BOOL);
+        if ([self hash] != [other hash])
+            return NO;
 
-    if ([self hash] != [other hash])
-        NS_VALUERETURN(NO, BOOL);
-    
-    NS_HANDLER {
+    } @catch (NSException *exc) {
+        OB_UNUSED_VALUE(exc);
         return NO;
-    } NS_ENDHANDLER;
+    }
 
     locked = NO;
-    NS_DURING {
+    @try {
 
         otherHeaders = [other headers];
     
@@ -1016,7 +1017,7 @@ static void Thingy(id mememe, SEL wheee)
     
         if (![metaData isEqual:otherHeaders]) {
             OFSimpleUnlock(&lock);
-            NS_VALUERETURN(NO, BOOL);
+            return NO;
         }
     
         NSArray *cacheKeys = [containingCaches allKeys];
@@ -1037,7 +1038,7 @@ static void Thingy(id mememe, SEL wheee)
             if (otherHandle == nil)
                 continue;
             if (![otherHandle isEqual:[self handleForCache:aCache]])
-                NS_VALUERETURN(NO, BOOL);
+                return NO;
             else {
                 handleMatch = YES;
                 break;
@@ -1057,7 +1058,7 @@ static void Thingy(id mememe, SEL wheee)
                 contentMatch = [concreteContent isEqual:other->concreteContent];
     
             if (!contentMatch)
-                NS_VALUERETURN(NO, BOOL);
+                return NO;
         }
     
         // If we reach this point, we've decided we're equivalent to the other content (all our values are equal). Share any cache handles with the other content for efficiency's sake.
@@ -1067,13 +1068,13 @@ static void Thingy(id mememe, SEL wheee)
         locked = NO;
         OFSimpleUnlock(&lock);
     
-    } NS_HANDLER {
+    } @catch (NSException *exc) {
         if (locked)
             OFSimpleUnlock(&lock);
-        if ([localException name] != OWDataStreamNoLongerValidException)
-            NSLog(@"-[%@ %s]: %@", OBShortObjectDescription(self), _cmd, [localException description]);
+        if ([exc name] != OWDataStreamNoLongerValidException)
+            NSLog(@"-[%@ %@]: %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [exc description]);
         return NO;
-    } NS_ENDHANDLER;
+    }
 
 
     return YES;

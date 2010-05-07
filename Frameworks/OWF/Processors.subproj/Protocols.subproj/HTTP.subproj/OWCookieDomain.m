@@ -98,7 +98,7 @@ static inline void _locked_checkCookiesLoaded()
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:self];    
+    [[OFController sharedController] addObserver:(id)self];    
 }
 
  + (void)readDefaults;

@@ -1,16 +1,13 @@
-// Copyright 2002-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "rcsid.h"
-
-RCS_ID("$Id$");
-
 #import "OSUCheckTool.h"
 #import "OSURunTime.h"
+#import <OmniBase/rcsid.h>
 
 #import <AppKit/NSOpenGL.h>
 #import <IOKit/IOCFBundle.h>
@@ -26,6 +23,8 @@ RCS_ID("$Id$");
 #if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
 #import <OpenCL/opencl.h>
 #endif
+
+RCS_ID("$Id$");
 
 // CFCopyDescription on a CFDataRef yields "<CFData 0x67d10 [0xa01303fc]>{length = 4, capacity = 4, bytes = 0x00001002}" when we'd like "0x00001002"
 static CFStringRef data_desc(CFDataRef data)
@@ -502,50 +501,55 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
                 CFRelease(rendererMem);
             }
             
-            // Display mode and QuartzExtreme boolean for up to 4 displays
-            {
-                for (displayIndex = 0; displayIndex < displayCount; displayIndex++) {
-                    CFNumberRef width, height, refreshRate;
-
-                    CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displays[displayIndex]);
-                    if (!mode)
-                        continue;
-                    int32_t size;
-                    
-                    size = (int32_t)CGDisplayModeGetWidth(mode); // returns size_t; If we have a display that big someday... whoa </neo>.
-                    width = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &size);
-                    
-                    size = (int32_t)CGDisplayModeGetHeight(mode);
-                    height = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &size);
-                    
-                    double refreshRateDouble = CGDisplayModeGetRefreshRate(mode);
-                    refreshRate = CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &refreshRateDouble);
-                    
-                    CFStringRef pixelEncoding = CGDisplayModeCopyPixelEncoding(mode);
-
-                    CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("display%d"), displayIndex);
-                    CFStringRef format = reportMode ? CFSTR("%@x%@, %@ bits, %@Hz") : CFSTR("%@,%@,%@,%@");
-                    CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, format, width, height, pixelEncoding, refreshRate);
-                    CFDictionarySetValue(info, key, value);
-                    CFRelease(key);
-                    CFRelease(value);
-            
-                    {
-                        CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("qe%d"), displayIndex);
-                        CFStringRef value = CGDisplayUsesOpenGLAcceleration(displays[displayIndex]) ? CFSTR("1") : CFSTR("0");
-                        CFDictionarySetValue(info, key, value);
-                        CFRelease(key);
-                        CFRelease(value);
-                    }
-                    
-                    CFRelease(pixelEncoding);
-                    CFRelease(height);
-                    CFRelease(width);
-                    CFRelease(refreshRate);
-                    CGDisplayModeRelease(mode);
-                }
+            // Display mode and QuartzExtreme boolean for up to 4 displays            
+            for (displayIndex = 0; displayIndex < displayCount; displayIndex++) {
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+                CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displays[displayIndex]);
+                if (!mode)
+                    continue;
+                size_t width, height;
+                double refreshRate;
+                CFStringRef pixelEncoding;
+                
+                width = CGDisplayModeGetWidth(mode);
+                height = CGDisplayModeGetHeight(mode);
+                refreshRate = CGDisplayModeGetRefreshRate(mode);
+                pixelEncoding = CGDisplayModeCopyPixelEncoding(mode);
+                
+                CFStringRef format = reportMode ? CFSTR("%ldx%ld, %@, %gHz") : CFSTR("%ld,%ld,%@,%g");
+                CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, format, (long)width, (long)height, pixelEncoding, refreshRate);
+                
+                CFRelease(mode);
+                CFRelease(pixelEncoding);
+#else
+                CFDictionaryRef mode = CGDisplayCurrentMode(displays[displayIndex]);
+                if (!mode)
+                    continue;
+                CFNumberRef width, height, refreshRate;
+                CFTypeRef pixelEncoding;
+                
+                width = CFDictionaryGetValue(mode, kCGDisplayWidth);
+                height = CFDictionaryGetValue(mode, kCGDisplayHeight);
+                refreshRate = CFDictionaryGetValue(mode, kCGDisplayRefreshRate);
+                pixelEncoding = CFDictionaryGetValue(mode, kCGDisplayBitsPerPixel);
+                
+                CFStringRef format = reportMode ? CFSTR("%@x%@, %@ bits, %@Hz") : CFSTR("%@,%@,%@,%@");
+                CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, format, width, height, pixelEncoding, refreshRate);
+                
+                CFRelease(mode);
+                CFRelease(pixelEncoding);
+#endif
+                CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("display%d"), displayIndex);
+                CFDictionarySetValue(info, key, value);
+                CFRelease(key);
+                CFRelease(value);
+                
+                CFStringRef qe_key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("qe%d"), displayIndex);
+                CFStringRef qe_value = CGDisplayUsesOpenGLAcceleration(displays[displayIndex]) ? CFSTR("1") : CFSTR("0");
+                CFDictionarySetValue(info, qe_key, qe_value);
+                CFRelease(qe_key);
+                CFRelease(qe_value);
             }
-            
         }
     }
     

@@ -7,7 +7,8 @@
 
 #import <OmniFoundation/OFXMLDocument.h>
 
-#import <OmniBase/NSError-OBExtensions.h>
+#import <Foundation/Foundation.h>
+
 #import <OmniFoundation/OFXMLParser.h>
 #import <OmniFoundation/OFXMLCursor.h>
 #import <OmniFoundation/OFXMLElement.h>
@@ -15,7 +16,13 @@
 #import <OmniFoundation/OFXMLBuffer.h>
 #import <OmniFoundation/OFXMLUnparsedElement.h>
 #import <OmniFoundation/OFXMLQName.h>
+
 #import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/OFNull.h>
+#import <OmniFoundation/NSString-OFSimpleMatching.h>
+
+#import <OmniBase/rcsid.h>
+#import <OmniBase/OBUtilities.h>
 
 RCS_ID("$Id$");
 
@@ -635,7 +642,7 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
 - (id)_initCommonSuffix:(NSError **)outError;
 {
     if (!_rootElement) {
-        OBError(outError, OFXMLDocumentNoRootElementError, NSLocalizedStringFromTableInBundle(@"No root element was found", @"OmniFoundation", OMNI_BUNDLE, @"error reason"));
+        OFError(outError, OFXMLDocumentNoRootElementError, NSLocalizedStringFromTableInBundle(@"No root element was found", @"OmniFoundation", OMNI_BUNDLE, @"error reason"), nil);
         [self release];
         return nil;
     }

@@ -9,20 +9,27 @@
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <Foundation/NSValueTransformer.h>
 
+#import <OmniBase/OmniBase.h>
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import <UIKit/UIGeometry.h>
+#endif
+
+
 RCS_ID("$Id$");
 
 /*
- A smarter wrapper for NSPoint than NSValue.  Used in OmniStyle's OSVectorStyleAttribute.  This also has some AppleScript hooks usable as a <record-type>.
+ A smarter wrapper for CGPoint than NSValue.  Used in OmniStyle's OSVectorStyleAttribute.  This also has some AppleScript hooks usable as a <record-type>.
 */
 
 @implementation OFPoint
 
-+ (OFPoint *)pointWithPoint:(NSPoint)point;
++ (OFPoint *)pointWithPoint:(CGPoint)point;
 {
     return [[[self alloc] initWithPoint:point] autorelease];
 }
 
-- initWithPoint:(NSPoint)point;
+- initWithPoint:(CGPoint)point;
 {
     _value = point;
     return self;
@@ -30,11 +37,15 @@ RCS_ID("$Id$");
 
 - initWithString:(NSString *)string;
 {
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     _value = NSPointFromString(string);
+#else
+    _value = CGPointFromString(string);
+#endif
     return self;
 }
 
-- (NSPoint)point;
+- (CGPoint)point;
 {
     return _value;
 }
@@ -43,12 +54,16 @@ RCS_ID("$Id$");
 {
     if (![otherObject isKindOfClass:[OFPoint class]])
         return NO;
-    return NSEqualPoints(_value, ((OFPoint *)otherObject)->_value);
+    return CGPointEqualToPoint(_value, ((OFPoint *)otherObject)->_value);
 }
 
 - (NSString *)description;
 {
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     return NSStringFromPoint(_value);
+#else
+    return NSStringFromCGPoint(_value);
+#endif
 }
 
 //
@@ -92,7 +107,7 @@ RCS_ID("$Id$");
 
 + (OFPoint *)pointFromPropertyListRepresentation:(NSDictionary *)dict;
 {
-    NSPoint point;
+    CGPoint point;
     point.x = (CGFloat)[dict doubleForKey:@"x" defaultValue:0.0];
     point.y = (CGFloat)[dict doubleForKey:@"y" defaultValue:0.0];
     return [OFPoint pointWithPoint:point];

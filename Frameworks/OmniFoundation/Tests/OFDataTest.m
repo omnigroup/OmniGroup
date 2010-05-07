@@ -68,7 +68,7 @@ RCS_ID("$Id$");
 - (void)testPipeLarge
 {
     if (![[self class] shouldRunSlowUnitTests]) {
-        NSLog(@"*** SKIPPING slow test [%@ %s]", [self class], _cmd);
+        NSLog(@"*** SKIPPING slow test [%@ %@]", [self class], NSStringFromSelector(_cmd));
         return;
     }
     
@@ -273,7 +273,7 @@ RCS_ID("$Id$");
     // if (err) NSLog(@"error: %@", err);
     STAssertNotNil(err, @"should have returned an error to us");
     if(err) {
-        STAssertEqualObjects([err domain], @"com.omnigroup.framework.OmniFoundation", nil);
+        STAssertEqualObjects([err domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain", nil);
         STAssertEquals([err code], (NSInteger)OFFilterDataCommandReturnedErrorCodeError, nil);
         STAssertTrue([[[err userInfo] objectForKey:OFProcessExitStatusErrorKey] intValue] > 0, @"should indicate process had nonzero exit");
     }

@@ -35,6 +35,7 @@ RCS_ID("$Id$")
     return result;
 }
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSData *)compressedBzip2Data:(NSError **)outError;
 {
     NSData *result = [NSMakeCollectable(OFDataCreateCompressedBzip2Data((CFDataRef)self, (CFErrorRef *)outError)) autorelease];
@@ -50,6 +51,7 @@ RCS_ID("$Id$")
         [NSMakeCollectable(*(CFErrorRef *)outError) autorelease];
     return result;
 }
+#endif
 
 - (NSData *)compressedDataWithGzipHeader:(BOOL)includeHeader compressionLevel:(int)level error:(NSError **)outError;
 {

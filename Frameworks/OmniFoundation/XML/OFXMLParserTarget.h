@@ -10,6 +10,7 @@
 #import <OmniFoundation/OFXMLInternedStringTable.h>
 
 @class OFXMLParser, OFXMLQName;
+@class NSData, NSMutableArray, NSURL;
 
 typedef enum {
     OFXMLParserElementBehaviorParse, // Descend into this element as normal

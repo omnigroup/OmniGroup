@@ -9,6 +9,10 @@
 
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/CFDictionary-OFExtensions.h>
+#import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
+
+#include <Foundation/Foundation.h>
 
 RCS_ID("$Id$")
 

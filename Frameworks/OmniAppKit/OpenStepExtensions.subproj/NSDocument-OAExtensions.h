@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,16 +11,6 @@
 
 @interface NSDocument (OAExtensions)
 
-- (NSFileWrapper *)fileWrapperOfType:(NSString *)typeName saveOperation:(NSSaveOperationType)saveOperationType error:(NSError **)outError;
-
-// TODO: Eliminate remaining use of resource-fork backups, then delete these methods.
-- (void)writeToBackupInResourceFork;
-- (NSFileWrapper *)fileWrapperFromBackupInResourceFork;
-- (BOOL)readFromBackupInResourceFork;
-- (BOOL)hasBackupInResourceFork;
-- (void)deleteAllBackupsInResourceFork;
-- (void)deleteAllBackupsButMostRecentInResourceFork;
-
 - (NSArray *)orderedWindowControllers;
 - (NSWindowController *)frontWindowController;
 
@@ -30,3 +20,12 @@
 - (void)finishedLongOperation;
 
 @end
+
+#import <OmniFoundation/OFSaveType.h>
+#import <OmniBase/assertions.h>
+
+static inline OFSaveType OFSaveTypeForSaveOperationType(NSSaveOperationType operation)
+{
+    OBPRECONDITION(operation <= NSAutosaveOperation);
+    return (OFSaveType)operation;
+}

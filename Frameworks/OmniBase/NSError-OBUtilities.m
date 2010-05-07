@@ -1,4 +1,4 @@
-// Copyright 2005-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,11 +14,7 @@
 
 RCS_ID("$Id$");
 
-// If this is built as part of a tool (like the OSU check tool), we won't get a bundle identifier defined.
-#ifndef OMNI_BUNDLE_IDENTIFIER
-    #define OMNI_BUNDLE_IDENTIFIER @"com.omnigroup.framework.OmniBase"
-#endif
-NSString * const OBErrorDomain = OMNI_BUNDLE_IDENTIFIER;
+NSString * const OBErrorDomain = @"com.omnigroup.framework.OmniBase.ErrorDomain";
 NSString * const OBFileNameAndNumberErrorKey = @"com.omnigroup.framework.OmniBase.ErrorDomain.FileLineAndNumber";
 
 static NSMutableDictionary *_createUserInfo(NSString *firstKey, va_list args)

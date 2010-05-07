@@ -7,7 +7,9 @@
 //
 // $Id$
 
+
 // const char * -> NSString
+@class NSString, NSSet;
 typedef struct _OFXMLInteredStringTable *OFXMLInternedStringTable;
 extern OFXMLInternedStringTable OFXMLInternedStringTableCreate(NSSet *startingStrings);
 extern void OFXMLInternedStringTableFree(OFXMLInternedStringTable table);

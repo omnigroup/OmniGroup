@@ -22,3 +22,4 @@ extern double OFRandomNextStateDouble(OFRandomState *state);
 // Version that use a global shared state. Not thread-safe.
 extern uint32_t OFRandomNext32(void);
 extern uint64_t OFRandomNext64(void);
+extern double OFRandomNextDouble(void);

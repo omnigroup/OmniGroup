@@ -6,8 +6,10 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/CFData-OFExtensions.h>
+#import <OmniBase/rcsid.h>
 
 #import <CommonCrypto/CommonDigest.h>
+#import <Foundation/NSObjCRuntime.h> // For MIN()
 
 RCS_ID("$Id$")
 
@@ -17,7 +19,7 @@ CFDataRef OFDataCreate ## ALG ## Digest(CFAllocatorRef allocator, CFDataRef data
     CC_ ## ALG ## _CTX context; \
     CC_ ## ALG ## _Init(&context); \
     const uint8_t *bytes = CFDataGetBytePtr(data); \
-    NSUInteger bytesLeft = CFDataGetLength(data); \
+    CFIndex bytesLeft = CFDataGetLength(data); \
     while (bytesLeft > 0) { \
         CC_LONG currentLengthToProcess = MIN((CC_LONG)bytesLeft, 16384u); \
         CC_ ## ALG ## _Update(&context, bytes, currentLengthToProcess); \

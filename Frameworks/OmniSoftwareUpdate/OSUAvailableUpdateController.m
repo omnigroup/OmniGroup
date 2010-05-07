@@ -1,4 +1,4 @@
-// Copyright 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,13 +11,19 @@
 #import "OSUItem.h"
 #import "OSUController.h"
 #import "OSUPreferences.h"
+#import "OSUFlippedView.h"
+#import "OSUThinBorderView.h"
 
-#import <OmniFoundation/NSBundle-OFExtensions.h>
-#import <OmniFoundation/NSDictionary-OFExtensions.h>
-#import <OmniFoundation/OFNull.h> // OFISEQUAL
+#import <OmniFoundation/OmniFoundation.h>
+#import <OmniAppKit/NSPopUpButton-OAExtensions.h>
 #import <OmniAppKit/NSTextField-OAExtensions.h>
+#import <OmniAppKit/NSView-OAExtensions.h>
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniAppKit/OAPreferenceClientRecord.h>
+#import <OmniAppKit/OAVersion.h>
+#import <OmniBase/OmniBase.h>
+
+#import <AppKit/AppKit.h>
 #import <WebKit/WebDataSource.h>
 #import <WebKit/WebFrame.h>
 #import <WebKit/WebPolicyDelegate.h>
@@ -36,7 +42,7 @@ RCS_ID("$Id$");
 
 @interface OSUAvailableUpdateController (Private)
 - (void)_resizeInterface:(BOOL)resetDividerPosition;
-- (void)_refreshSelectedItem;
+- (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
 - (void)_refreshDefaultAction;
 - (void)_loadReleaseNotes;
 @end
@@ -101,6 +107,15 @@ RCS_ID("$Id$");
 {
     [super windowDidLoad];
     
+    // If running on 10.6+, use the "pane splitter" style instead of the "thick divider" style (they're *almost* identical...)
+    if (NSAppKitVersionNumber >= OAAppKitVersionNumber10_6) {
+#if defined(MAX_OS_X_VERSION_10_6) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAX_OS_X_VERSION_10_6
+        [_itemsAndReleaseNotesSplitView setDividerStyle:NSSplitViewDividerStylePaneSplitter];
+#else
+        [_itemsAndReleaseNotesSplitView setDividerStyle:3 /* NSSplitViewDividerStylePaneSplitter */ ];
+#endif
+    }
+    
     // Allow @media {...} in the release notes to display differently when we are showing the content
     [_releaseNotesWebView setMediaStyle:@"osu-available-updates"];
     
@@ -118,6 +133,7 @@ RCS_ID("$Id$");
 
     [self _resizeInterface:YES];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_adjustViewLayout:) name:NSViewFrameDidChangeNotification object:[_messageTextField superview]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_refreshSelectedItem:) name:OSUTrackInformationChangedNotification object:nil];
     [self _refreshDefaultAction];
     [self _loadReleaseNotes];
 }
@@ -237,7 +253,7 @@ RCS_ID("$Id$");
             [_availableItemController setSelectedObjects:nonIgnoredItems];
     }
     
-    [self _refreshSelectedItem];
+    [self _refreshSelectedItem:nil];
 }
 
 - (void)setCheckInProgress:(BOOL)yn
@@ -261,12 +277,14 @@ RCS_ID("$Id$");
     [_selectedItemIndexes release];
     _selectedItemIndexes = [indexes copy];
     [self didChangeValueForKey:OSUAvailableUpdateControllerSelectedItemIndexesBinding];
-    [self _refreshSelectedItem];
+    [self _refreshSelectedItem:nil];
 }
 
 - (IBAction)ignoreSelectedItem:(id)sender;
 {
     OSUItem *anItem = [self selectedItem];
+    if (!anItem)
+        return;  // Shouldn't happen; button should be disabled.
     BOOL shouldIgnore = ![OSUPreferences itemIsIgnored:anItem];
     [OSUPreferences setItem:anItem isIgnored:shouldIgnore];
     
@@ -281,9 +299,79 @@ RCS_ID("$Id$");
     }
 }
 
+#define itemAlertPane_IgnoreOneTrackTag  2
+#define itemAlertPane_IgnoreAllTracksTag 3
+
+- (IBAction)ignoreCertainTracks:(id)sender;
+{
+    NSInteger tag = [sender tag];
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSArray *newValue = nil;
+    
+    if (tag == itemAlertPane_IgnoreOneTrackTag) {
+        NSString *track = [[self selectedItem] track];
+        if (![NSString isEmptyString:track]) {
+            NSMutableSet *newTracks = [NSMutableSet set];
+            OFForEachInArray([OSUItem elaboratedTracks:[defaults arrayForKey:OSUVisibleTracksKey]], NSString *, aTrack, {
+                if ([NSString isEmptyString:aTrack])
+                    continue;
+                enum OSUTrackComparison order = [OSUItem compareTrack:aTrack toTrack:track];
+                if (!(order == OSUTrackOrderedSame || order == OSUTrackLessStable))
+                    [newTracks addObject:aTrack];
+                else
+                    NSLog(@"dropping track \"%@\" <= \"%@\"", aTrack, track);
+            });
+            newValue = [OSUItem dominantTracks:newTracks];
+        }
+    } else if (tag == itemAlertPane_IgnoreAllTracksTag) {
+        newValue = [NSArray array];
+    }
+    
+    if (!newValue) {
+        // Shouldn't happen.
+        OBASSERT_NOT_REACHED("unexpected tag or state");
+        return;
+    }
+    
+    [OSUPreferences setVisibleTracks:newValue];
+    
+    // Deselect ignored items
+    OSUItem *curSelection = [self selectedItem];
+    if (curSelection && [curSelection isIgnored])
+        [_availableItemController removeSelectedObjects:[NSArray arrayWithObject:curSelection]];
+    
+    // If the user just ignored the last non-ignored item, then assume they're not interested in upgrading and close the window
+    if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededOrIgnoredPredicate]] count] == 0) {
+        [[self window] performClose:nil];
+    }
+}
+
 - (OSUItem *)selectedItem;
 {
     return _selectedItem;
+}
+
++ (NSSet *)keyPathsForValuesAffectingIgnoreTrackItemTitle;
+{
+    return [NSSet setWithObject:OSUAvailableUpdateControllerSelectedItemBinding];
+}
+
+- (NSString *)ignoreTrackItemTitle
+{
+    OSUItem *it = [self selectedItem];
+    if (!it)
+        return nil;
+    NSString *track = [it track];
+    if ([NSString isEmptyString:track])
+        return nil;
+    
+    NSDictionary *localizations = [OSUItem informationForTrack:track];
+    NSString *trackDisplayName = [localizations objectForKey:@"name"];
+    if (!trackDisplayName)
+        trackDisplayName = [track capitalizedString];
+    
+    return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Ignore \\U201C%@\\U201D Releases", @"OmniSoftwareUpdate", OMNI_BUNDLE, "button title to allow user to stop being notified of releases on a particular track (eg, 'rc', 'beta', 'sneakypeek') - used in stability downgrade warning pane"), trackDisplayName];
 }
 
 #pragma mark -
@@ -331,7 +419,6 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
     [sender presentError:error];
 }
 
-#pragma mark -
 #pragma mark OSUTextField / NSTextView delegates
 
 - (BOOL)textView:(NSTextView *)aView clickedOnLink:(id)aLink atIndex:(NSUInteger)idx
@@ -346,14 +433,18 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
     return YES;
 }
 
-#pragma mark -
 #pragma mark NSSplitView delegates
 
 static CGFloat minHeightOfItemTableView(NSTableView *itemTableView)
 {
     // TODO: This is returning bounds coordinates but the caller is using it as frame coordinates.  Unlikely this will be scaled relative to its superview, but still...
+    NSInteger rowsHigh = [itemTableView numberOfRows];
     // We want at least 3 rows shown so that the scroller doesn't get smooshed.
-    return 3 * ([itemTableView rowHeight] + [itemTableView intercellSpacing].height);
+    if (rowsHigh > 3)
+        rowsHigh = 3;
+    if (rowsHigh < 1)
+        rowsHigh = 3;
+    return rowsHigh * ([itemTableView rowHeight] + [itemTableView intercellSpacing].height);
 }
 
 static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
@@ -367,7 +458,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     return frame.height;
 }
 
-- (void)_resizeSplitViewViewsWithTableViewExistingHeight:(CGFloat)height;
+- (void)_resizeSplitViewViewsWithTablePaneExistingHeight:(CGFloat)height;
 {
     // Give/take all the side on the web view side, leaving the item list the same height as it was.  Also, constrain the release list height to a minimum value.
     NSRect bounds = [_itemsAndReleaseNotesSplitView bounds];
@@ -375,7 +466,12 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     CGFloat dividerHeight = [_itemsAndReleaseNotesSplitView dividerThickness];
     
     NSScrollView *scrollView = [_itemTableView enclosingScrollView];
-    NSView *borderView = [_releaseNotesWebView superview];
+    NSView *borderView = [_itemsAndReleaseNotesSplitView subviewContainingView:_releaseNotesWebView];
+    if (!borderView) {
+        // We're in the middle of rejiggering subviews. Punt.
+        [_itemsAndReleaseNotesSplitView adjustSubviews];
+        return;
+    }
     
     NSRect scrollViewFrame = [scrollView frame];
     NSRect borderViewFrame = [borderView frame];
@@ -395,26 +491,43 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
 
 - (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMinimumPosition ofSubviewAt:(NSInteger)dividerIndex;
 {
+    CGFloat myMinimum = proposedMinimumPosition;
     if (dividerIndex == 0)
-        return MAX(proposedMinimumPosition, minHeightOfItemTableScrollView(_itemTableView));
-    return proposedMinimumPosition;
+        myMinimum = minHeightOfItemTableScrollView(_itemTableView);
+    return MAX(myMinimum, proposedMinimumPosition);
 }
 
+- (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMaximumPosition ofSubviewAt:(NSInteger)dividerIndex;
+{
+    if (dividerIndex == 0) {
+        CGFloat minimumHeight = 5; // Don't let them completely hide the release-notes pane
+        if (_displayingWarningPane)
+            minimumHeight += NSHeight([_itemAlertPane frame]);
+        return proposedMaximumPosition - minimumHeight;
+    }
+    
+    return proposedMaximumPosition;
+}
+
+
+/*
 - (CGFloat)splitView:(NSSplitView *)splitView constrainSplitPosition:(CGFloat)proposedPosition ofSubviewAt:(NSInteger)dividerIndex;
 {
     if (dividerIndex == 0)
         return MAX(proposedPosition, minHeightOfItemTableScrollView(_itemTableView));
-    
     return proposedPosition;
 }
+ */
 
 - (void)splitView:(NSSplitView *)splitView resizeSubviewsWithOldSize:(NSSize)oldSize;
 {
-    CGFloat tableViewHeight = NSHeight([_itemTableView frame]);
-    [self _resizeSplitViewViewsWithTableViewExistingHeight:tableViewHeight];
+    CGFloat tableViewHeight = NSHeight([[_itemTableView enclosingScrollView] frame]);
+    [self _resizeSplitViewViewsWithTablePaneExistingHeight:tableViewHeight];
 }
 
 @end
+
+#pragma mark -
 
 @implementation OSUAvailableUpdateController (Private)
 
@@ -440,7 +553,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     NSRect spinnerFrame = [_spinner frame];
     // Put its centerline on the same line as the app icon
     spinnerFrame.origin.y = newAppIconImageFrame.origin.y - (spinnerFrame.size.height - newAppIconImageFrame.size.height)/2;
-    spinnerFrame.origin.x = NSMaxX(containerBounds) - 1.5f * NSWidth(spinnerFrame);
+    spinnerFrame.origin.x = NSMaxX(containerBounds) - (CGFloat)1.5 * NSWidth(spinnerFrame);
     spinnerFrame = [[_spinner superview] centerScanRect:spinnerFrame];
     [_spinner setFrame:spinnerFrame];
     
@@ -479,15 +592,60 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     newSplitViewFrame.size.height = NSMaxY([[_itemsAndReleaseNotesSplitView superview] bounds]) - yOffset;
     [_itemsAndReleaseNotesSplitView setFrame:newSplitViewFrame];
     
+    [[_messageTextField superview] setNeedsDisplay:YES];
+    
+    if (!_selectedItem)
+        _displayingWarningPane = NO;
+    if (_displayingWarningPane) {
+        NSView *interView = [_itemsAndReleaseNotesSplitView subviewContainingView:_itemAlertPane];
+        NSView *borderView = [interView subviewContainingView:_releaseNotesWebView];
+        
+        if (!interView || !borderView) {
+            NSLog(@"Can't find child of splitview.");
+            return;
+        }
+        
+        NSRect alertFrame = [_itemAlertPane frame];
+        NSRect notesFrame = [borderView frame];
+        NSRect boundary = [interView bounds];
+        alertFrame.origin = boundary.origin;
+        alertFrame.size.width = boundary.size.width;
+        notesFrame.origin.x = boundary.origin.x;
+        notesFrame.origin.y = NSMaxY(alertFrame);
+        notesFrame.size.width = boundary.size.width;
+        notesFrame.size.height = NSMaxY(boundary) - notesFrame.origin.y;
+        
+        [_itemAlertPane setFrame:alertFrame];
+        [borderView setFrame:notesFrame];
+        [_itemAlertPane setHidden:NO];
+        
+        NSButton *ignoreSelectedTrack = [_itemAlertPane viewWithTag:itemAlertPane_IgnoreOneTrackTag];
+        if (ignoreSelectedTrack) {
+            NSRect oldFrame = [ignoreSelectedTrack frame];
+            [ignoreSelectedTrack sizeToFit];
+            NSRect newFrame = [ignoreSelectedTrack frame];
+            if (fabs(NSMaxX(oldFrame) - NSMaxX(newFrame)) > 0.1) {
+                newFrame.origin.x = NSMaxX(oldFrame) - newFrame.size.width;
+                [[ignoreSelectedTrack superview] centerScanRect:newFrame];
+                [ignoreSelectedTrack setFrame:newFrame];
+            }
+        }
+    } else {
+        [_itemAlertPane setHidden:YES];
+        NSView *interView = [_releaseNotesWebView ancestorSharedWithView:_itemAlertPane];
+        NSView *borderView = [interView subviewContainingView:_releaseNotesWebView];
+        [borderView setFrame:[interView bounds]];
+    }
+    
     if (resetDividerPosition) {
         // Start with the splitter as tight up against the limit as possible (3 rows currently)
-        [self _resizeSplitViewViewsWithTableViewExistingHeight:0.0f];
+        [self _resizeSplitViewViewsWithTablePaneExistingHeight:0.0f];
     } else {
-        [self _resizeSplitViewViewsWithTableViewExistingHeight:oldTablePaneHeight];
+        [self _resizeSplitViewViewsWithTablePaneExistingHeight:oldTablePaneHeight];
     }
 }
 
-- (void)_refreshSelectedItem;
+- (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
 {
     OSUItem *item = nil;
     if ([_selectedItemIndexes count] == 1) {
@@ -498,6 +656,34 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     }
     
     [self setValue:item forKey:OSUAvailableUpdateControllerSelectedItemBinding];
+    
+    BOOL shouldDisplayStabilityWarning;
+    if (!item)
+        shouldDisplayStabilityWarning = NO;
+    else {
+        enum OSUTrackComparison c = [OSUItem compareTrack:[item track] toTrack:[[OSUChecker sharedUpdateChecker] applicationTrack]];
+        if (c == OSUTrackLessStable || c == OSUTrackNotOrdered)
+            shouldDisplayStabilityWarning = YES;
+        else
+            shouldDisplayStabilityWarning = NO;
+    }
+    
+    if (shouldDisplayStabilityWarning) {
+        NSDictionary *msgs = [OSUItem informationForTrack:[[self selectedItem] track]];
+        NSString *msgText = [msgs objectForKey:@"warning"];
+        if (!msgText)
+            msgText = NSLocalizedStringWithDefaultValue(@"Stability downgrade warning",
+                                                        @"OmniSoftwareUpdate", OMNI_BUNDLE,
+                                                        @"The version you have selected may be less stable than the version you are running.",
+                                                        "title of new versions available dialog, when in the process of checking for updates - text is name of application - only used if this downgrade does not have a more specific warning message available");
+        [_itemAlertMessage setStringValue:msgText];
+    }
+    
+    if (shouldDisplayStabilityWarning != _displayingWarningPane) {
+        _displayingWarningPane = shouldDisplayStabilityWarning;
+        [self _resizeInterface:NO];
+    }
+                                        
     [self _refreshDefaultAction];
     [self _loadReleaseNotes];
 }
@@ -511,6 +697,8 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
 
     if ([visibleItems count] == 0 && !_checkInProgress) {
         [[self window] setDefaultButtonCell:[_cancelButton cell]];
+    } else if (_displayingWarningPane) {
+        [[self window] setDefaultButtonCell:nil];
     } else {
         [[self window] setDefaultButtonCell:[_installButton cell]];
     }

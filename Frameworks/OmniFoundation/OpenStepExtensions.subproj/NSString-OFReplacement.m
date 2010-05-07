@@ -7,7 +7,11 @@
 
 #import <OmniFoundation/NSString-OFReplacement.h>
 
+#import <Foundation/Foundation.h>
+
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
+
+#import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$");
 
@@ -170,6 +174,27 @@ static NSString *_variableSubstitutionInDictionary(NSString *key, void *context)
                                     context:(void *)context
                                     options:(NSStringCompareOptions)options
                                       range:(NSRange)touchMe
+#if NS_BLOCKS_AVAILABLE
+{
+    return [self stringByPerformingReplacement:^(NSString *s, NSRange *r){ return (*replacer)(s, r, context); }
+                                  onCharacters:replaceMe 
+                                       options:options
+                                         range:touchMe];
+}
+
+
+- (NSString *)stringByPerformingReplacement:(OFSubstringReplacementBlock)replacer
+                               onCharacters:(NSCharacterSet *)replaceMe
+                                    options:(NSStringCompareOptions)options
+                                      range:(NSRange)touchMe;
+
+#define CALL_REPLACER(buf, rangevar)  (replacer)(buffer, &foundChar)
+
+#else
+
+#define CALL_REPLACER(buf, rangevar)  (*replacer)(buffer, &foundChar, context)
+
+#endif
 {
     // Early out, if possible.
     NSRange foundChar = [self rangeOfCharacterFromSet:replaceMe options:options range:touchMe];
@@ -187,7 +212,7 @@ static NSString *_variableSubstitutionInDictionary(NSString *key, void *context)
         if (foundChar.location == NSNotFound)
             break;
         
-        NSString *replacement = (*replacer)(buffer, &foundChar, context);
+        NSString *replacement = CALL_REPLACER(buffer, &foundChar);
         
         if (replacement != nil) {
             NSUInteger replacementStringLength = [replacement length];
@@ -208,11 +233,18 @@ static NSString *_variableSubstitutionInDictionary(NSString *key, void *context)
 - (NSString *)stringByPerformingReplacement:(OFSubstringReplacementFunction)replacer
                                onCharacters:(NSCharacterSet *)replaceMe;
 {
+#if NS_BLOCKS_AVAILABLE
+    return [self stringByPerformingReplacement: ^(NSString *s, NSRange *r){ return (*replacer)(s, r, NULL); }
+                                  onCharacters: replaceMe
+                                       options: 0
+                                         range: (NSRange){0, [self length]}];
+#else
     return [self stringByPerformingReplacement: replacer
                                   onCharacters: replaceMe
                                        context: NULL
                                        options: 0
                                          range: (NSRange){0, [self length]}];
+#endif
 }
 
 

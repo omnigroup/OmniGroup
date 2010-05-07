@@ -7,13 +7,15 @@
 
 #import <OmniUnzip/OUUnzipEntry.h>
 
+#import <OmniFoundation/NSString-OFSimpleMatching.h>
+
 RCS_ID("$Id$");
 
 @implementation OUUnzipEntry
 
 - initWithName:(NSString *)name fileType:(NSString *)fileType date:(NSDate *)date positionInFile:(unsigned long)positionInFile fileNumber:(unsigned long)fileNumber compressionMethod:(unsigned long)compressionMethod compressedSize:(size_t)compressedSize uncompressedSize:(size_t)uncompressedSize crc:(unsigned long)crc;
 {
-    OBPRECONDITION(![NSString isEmptyString:name]);
+    OBPRECONDITION([name length] > 0);
     OBPRECONDITION(positionInFile > 0); // would be the zip header...
     
     _name = [name copy];

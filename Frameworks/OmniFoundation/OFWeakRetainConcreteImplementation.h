@@ -1,4 +1,4 @@
-// Copyright 2000-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -82,6 +82,7 @@ static inline void _OFWeakRetainDecrement(OFWeakRetainIvars *ivars, NSObject <OF
     OFSimpleUnlock(&ivars->lock);
 }
 
+static inline NSObject <OFWeakRetain> *_OFStrongRetainIncrement(OFWeakRetainIvars *ivars, NSObject <OFWeakRetain> *self) NS_RETURNS_RETAINED;
 static inline NSObject <OFWeakRetain> *_OFStrongRetainIncrement(OFWeakRetainIvars *ivars, NSObject <OFWeakRetain> *self)
 {
     NSObject <OFWeakRetain> *result;

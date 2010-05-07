@@ -507,7 +507,6 @@ RCS_ID("$Id$")
     NS_ENDHANDLER;
 
     free(vectors);
-    OBASSERT(bytesWritten >= 0);
     OBASSERT(bytesWritten <= totalBufferedBytes);
 
     firstBufferOffset += bytesWritten;

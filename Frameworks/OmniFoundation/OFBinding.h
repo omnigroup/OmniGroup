@@ -97,5 +97,7 @@ OBDEPRECATED_METHODS(OFBindingSourceObject)
 - (NSMutableSet *)mutableValue;
 @end
 
+extern NSString *OFKeyPathForKeys(NSString *firstKey, ...) NS_REQUIRES_NIL_TERMINATION;
+
 extern void OFSetMutableSet(id self, NSString *key, NSMutableSet **ivar, NSSet *set);
 extern void OFSetMutableSetByProxy(id self, NSString *key, NSSet *ivar, NSSet *set);

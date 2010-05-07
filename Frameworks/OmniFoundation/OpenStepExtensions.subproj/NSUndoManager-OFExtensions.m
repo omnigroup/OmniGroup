@@ -7,8 +7,16 @@
 
 #import <OmniFoundation/NSUndoManager-OFExtensions.h>
 
-#import <Foundation/NSGeometry.h>
-#import <Foundation/NSMapTable.h>
+#import <Foundation/Foundation.h>
+#import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
+#import <OmniFoundation/CFDictionary-OFExtensions.h>
+#import <OmniBase/OmniBase.h>     // for 'shortDescription'
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#import <Foundation/NSGeometry.h>  // This seems to be the most parsimonious way to include CGBase.h for the CGFloat typedef
+#else
+#import <CoreGraphics/CGGeometry.h>
+#endif
 
 RCS_ID("$Id$");
 
@@ -212,8 +220,12 @@ static OFUndoManagerLoggingState *_log(NSUndoManager *self, BOOL indent, NSStrin
     if (OFUndoManagerLoggingOptions & OFUndoManagerLogToBuffer) {
         if (state->buffer == nil)
             state->buffer = [[NSMutableArray alloc] init];
-        if (indent)
-            [state->buffer addObject:[NSString spacesOfLength:2*state->indentLevel]];
+        if (indent) {
+            
+            unsigned int i;
+            for (i = 0; i < state->indentLevel; i++)
+                [state->buffer addObject:@"  "];
+        }
         [state->buffer addObject:string];
     }
     
@@ -276,7 +288,8 @@ void _OFUndoManagerPopCallSite(NSUndoManager *undoManager)
     }
 }
 
-static NSMapTable *ProxyForwardInvocationClassToOriginalImp = nil;
+// No NSMapTable on the iPhone as of yet.
+static CFMutableDictionaryRef ProxyForwardInvocationClassToOriginalImp = nil;
 
 static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvocation *anInvocation)
 {
@@ -288,7 +301,7 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
     id target = self ? [object_getIvar(self, targetIvar) retain] : nil;
 
     // Do this before logging so that the 'BEGIN' log happens first (probably in auto-group creation mode)
-    IMP original = (IMP)NSMapGet(ProxyForwardInvocationClassToOriginalImp, object_getClass(proxy));
+    IMP original = (IMP)CFDictionaryGetValue(ProxyForwardInvocationClassToOriginalImp, object_getClass(proxy));
     original(proxy, _cmd, anInvocation);
 
     // bail if we failed to lookup the undo manager.
@@ -341,16 +354,16 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
                 NSRange range;
                 [anInvocation getArgument:&range atIndex:argIndex];
                 _log(self, NO, @"%@", NSStringFromRange(range));
-            } else if (strcmp(type, @encode(NSPoint)) == 0) {
-                NSPoint pt;
+            } else if (strcmp(type, @encode(CGPoint)) == 0) {
+                CGPoint pt;
                 [anInvocation getArgument:&pt atIndex:argIndex];
                 _log(self, NO, @"<Point %g,%g>", pt.x, pt.y);
-            } else if (strcmp(type, @encode(NSRect)) == 0) {
-                NSRect rect;
+            } else if (strcmp(type, @encode(CGRect)) == 0) {
+                CGRect rect;
                 [anInvocation getArgument:&rect atIndex:argIndex];
                 _log(self, NO, @"<Rect %gx%g at %g,%g>", rect.size.width, rect.size.height, rect.origin.x, rect.origin.y);
-            } else if (strcmp(type, @encode(NSSize)) == 0) {
-                NSSize size;
+            } else if (strcmp(type, @encode(CGSize)) == 0) {
+                CGSize size;
                 [anInvocation getArgument:&size atIndex:argIndex];
                 _log(self, NO, @"<Size %gx%g>", size.width, size.height);
             } else {
@@ -383,14 +396,13 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
         OBASSERT([NSThread isMainThread]); // Not worrying too much about undo managers in background threads at the moment.
         
         if (!ProxyForwardInvocationClassToOriginalImp)
-            ProxyForwardInvocationClassToOriginalImp = [[NSMapTable alloc] initWithKeyOptions:NSMapTableObjectPointerPersonality|NSPointerFunctionsOpaqueMemory
-                                                                                 valueOptions:NSMapTableObjectPointerPersonality|NSPointerFunctionsOpaqueMemory capacity:0];
+            ProxyForwardInvocationClassToOriginalImp = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNonOwnedPointerDictionaryKeyCallbacks, &OFNonOwnedPointerDictionaryValueCallbacks);
         
         // Do a replace, which returns the old IMP (in multi-threading we'll want to re-check the IMP returned).
         Method proxyMethod = class_getInstanceMethod(proxyClass, @selector(forwardInvocation:));
         proxyImp = class_replaceMethod(proxyClass, @selector(forwardInvocation:), (IMP)logging_replacement_proxyFowardInvocation, method_getTypeEncoding(proxyMethod));
         if (proxyImp != (IMP)logging_replacement_proxyFowardInvocation)
-            NSMapInsert(ProxyForwardInvocationClassToOriginalImp, proxyClass, proxyImp);
+            CFDictionarySetValue(ProxyForwardInvocationClassToOriginalImp, proxyClass, proxyImp);
     }
     
     return proxy;

@@ -116,6 +116,7 @@ RCS_ID("$Id$")
     @try {
         result = [[self string] substringWithRange:aRange];
     } @catch (NSException *exc) {
+        OB_UNUSED_VALUE(exc);
 	result = @"";
     }
     return result;

@@ -216,30 +216,29 @@ static NSString *OAFindPanelTitle = @"Find";
 
 - (void)saveFindText:(NSString *)string;
 {
-    NSPasteboard *findPasteboard;
-
     if ([string length] == 0)
 	return;
-    NS_DURING {
-	findPasteboard = [NSPasteboard pasteboardWithName:NSFindPboard];
+    
+    @try {
+	NSPasteboard *findPasteboard = [NSPasteboard pasteboardWithName:NSFindPboard];
 	[findPasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
 	[findPasteboard setString:string forType:NSStringPboardType];
-    } NS_HANDLER {
-    } NS_ENDHANDLER;
+    } @catch (NSException *exc) {
+        OB_UNUSED_VALUE(exc);
+    }
 }
 
 - (NSString *)restoreFindText;
 {
     NSString *findText = nil;
     
-    NS_DURING {
-	NSPasteboard *findPasteboard;
-
-	findPasteboard = [NSPasteboard pasteboardWithName:NSFindPboard];
+    @try {
+	NSPasteboard *findPasteboard = [NSPasteboard pasteboardWithName:NSFindPboard];
 	if ([findPasteboard availableTypeFromArray:[NSArray arrayWithObject:NSStringPboardType]])
 	    findText = [findPasteboard stringForType:NSStringPboardType];
-    } NS_HANDLER {
-    } NS_ENDHANDLER;
+    } @catch (NSException *exc) {
+        OB_UNUSED_VALUE(exc);
+    }
     return findText ? findText : @"";
 }
 

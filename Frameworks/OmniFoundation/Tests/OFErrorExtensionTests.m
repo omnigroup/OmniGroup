@@ -8,6 +8,7 @@
 #define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
+#import <OmniFoundation/OFErrors.h>
 #import <OmniBase/NSError-OBExtensions.h>
 #import <OmniBase/OmniBase.h>
 
@@ -28,9 +29,9 @@ enum {
 {
     NSError *error = nil;
     
-    OBError(&error, FooError, @"some reason");
+    OFError(&error, FooError, @"some reason", nil);
     should(error != nil);
-    shouldBeEqual([error domain], @"com.omnigroup.framework.OmniFoundation.UnitTests");
+    shouldBeEqual([error domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain");
     should([error code] == FooError);
     shouldBeEqual([error localizedDescription], @"some reason");
 }
@@ -39,11 +40,11 @@ enum {
 {
     NSError *error = nil;
     
-    OBErrorWithInfo(&error, FooError, nil);
-    OBErrorWithInfo(&error, BarError, nil);
+    OFErrorWithInfo(&error, FooError, nil, nil, nil);
+    OFErrorWithInfo(&error, BarError, nil, nil, nil);
     
     should(error != nil);
-    shouldBeEqual([error domain], @"com.omnigroup.framework.OmniFoundation.UnitTests");
+    shouldBeEqual([error domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain");
     should([error code] == BarError);
 
     should([error userInfo] != nil);
@@ -52,7 +53,7 @@ enum {
     
     NSError *underlyingError = [[error userInfo] valueForKey:NSUnderlyingErrorKey];
     should(underlyingError != nil);
-    shouldBeEqual([underlyingError domain], @"com.omnigroup.framework.OmniFoundation.UnitTests");
+    shouldBeEqual([underlyingError domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain");
     should([underlyingError code] == FooError);
 }
 
@@ -60,7 +61,7 @@ enum {
 - (void)testSingleKeyValue;
 {
     NSError *error = nil;
-    OBErrorWithInfo(&error, FooError, @"MyKey", @"MyValue", nil);
+    OFErrorWithInfo(&error, FooError, nil/*description*/, nil/*suggestion*/, @"MyKey", @"MyValue", nil);
     should([[error userInfo] count] == 2);
     should([[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] != nil);
     should([[[error userInfo] valueForKey:@"MyKey"] isEqual:@"MyValue"]);
@@ -69,7 +70,7 @@ enum {
 - (void)testMultipleKeyValue;
 {
     NSError *error = nil;
-    OBErrorWithInfo(&error, FooError, @"MyKey1", @"MyValue1", @"MyKey2", @"MyValue2", nil);
+    OFErrorWithInfo(&error, FooError, nil/*description*/, nil/*suggestion*/, @"MyKey1", @"MyValue1", @"MyKey2", @"MyValue2", nil);
     should([[error userInfo] count] == 3);
     should([[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] != nil);
     should([[[error userInfo] valueForKey:@"MyKey1"] isEqual:@"MyValue1"]);
@@ -79,7 +80,7 @@ enum {
 - (void)testFileAndLineNumber;
 {
     NSError *error = nil;
-    OBErrorWithInfo(&error, FooError, nil);
+    OFErrorWithInfo(&error, FooError, nil, nil, nil);
     NSString *expectedFileAndLineNumber = [NSString stringWithFormat:@"%s:%d", __FILE__, __LINE__-1];
     
     should([[[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] isEqual:expectedFileAndLineNumber]);
@@ -88,7 +89,7 @@ enum {
 - (void)testCausedByUserCancelling_Not;
 {
     NSError *error = nil;
-    OBErrorWithInfo(&error, FooError, nil);
+    OFErrorWithInfo(&error, FooError, nil, nil, nil);
     shouldnt([error causedByUserCancelling]);
 }
 
@@ -103,7 +104,7 @@ enum {
 {
     NSError *error = nil;
     OBUserCancelledError(&error);
-    OBErrorWithInfo(&error, BarError, nil);
+    OFErrorWithInfo(&error, BarError, nil, nil, nil);
     should([error causedByUserCancelling]);
 }
 

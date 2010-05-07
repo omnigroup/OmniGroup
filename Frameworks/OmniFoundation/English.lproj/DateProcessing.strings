@@ -7,7 +7,7 @@
 /* modifier */
 "~" = "~";
 
-/* days */
+/* the first letter of \"day\" */
 "d" = "d";
 
 /* days */
@@ -16,7 +16,7 @@
 /* days */
 "days" = "days";
 
-/* hours */
+/* the first letter of \"hour\" */
 "h" = "h";
 
 /* hours */
@@ -37,16 +37,16 @@
 /* last year */
 "last year" = "last year";
 
-/* weeks */
+/* the first letter of \"month\" */
 "m" = "m";
 
-/* weeks */
+/* month */
 "month" = "month";
 
-/* weeks */
+/* months */
 "months" = "months";
 
-/* modifier */
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\" */
 "next" = "next";
 
 /* next month */
@@ -64,7 +64,7 @@
 /* now */
 "now" = "now";
 
-/* modifier */
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\" */
 "this" = "this";
 
 /* this month */
@@ -76,17 +76,23 @@
 /* this year */
 "this year" = "this year";
 
-/* tod */
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language */
 "tod" = "tod";
 
 /* today */
 "today" = "today";
 
-/* tom */
+/* Today */
+"Today" = "Today";
+
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language */
 "tom" = "tom";
 
 /* tomorrow */
 "tomorrow" = "tomorrow";
+
+/* Tomorrow */
+"Tomorrow" = "Tomorrow";
 
 /* tonight */
 "tonight" = "tonight";
@@ -100,18 +106,21 @@
 /* weeks */
 "weeks" = "weeks";
 
-/* 365 day periods */
+/* the first letter of \"year\" */
 "y" = "y";
 
-/* 365 day periods */
+/* years */
 "year" = "year";
 
-/* 365 day periods */
+/* years */
 "years" = "years";
 
-/* the first theee letters of yesterday */
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language */
 "yes" = "yes";
 
 /* yesterday */
 "yesterday" = "yesterday";
+
+/* Yesterday */
+"Yesterday" = "Yesterday";
 

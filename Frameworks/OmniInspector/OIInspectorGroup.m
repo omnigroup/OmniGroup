@@ -179,11 +179,29 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
             freeVerticalSpace = NSHeight(mainScreenVisibleRect);
         }
     }
-
-    float inspectorWidth = [[OIInspectorRegistry sharedInspector] inspectorWidth];
-    NSPoint topLeft = NSMakePoint(NSMaxX(mainScreenVisibleRect) - screenScaleFactor * (inspectorWidth + INSPECTOR_PADDING),
-                                  NSMaxY(mainScreenVisibleRect) - screenScaleFactor * MIN(INSPECTOR_PADDING, minFreeHeight));
     
+    // Determine the default inspector position
+    NSPoint topLeft;
+    float inspectorWidth = [[OIInspectorRegistry sharedInspector] inspectorWidth];
+    NSString *defaultPositionString = [[OFPreferenceWrapper sharedPreferenceWrapper] objectForKey:@"OIInspectorDefaultTopLeftPosition"];
+    // If a default position has been specified, use it
+    if (defaultPositionString) {
+        topLeft = NSPointFromString(defaultPositionString);
+        // interpret y as a distance from the top of the screen, not from the bottom
+        topLeft.y = NSMaxY(mainScreenVisibleRect) - topLeft.y;
+    }
+    // Otherwise, calculate the default inspector position based on the screen size
+    else {
+        NSString *defaultPlacementString = [[OFPreferenceWrapper sharedPreferenceWrapper] objectForKey:@"OIInspectorSideOfScreen"];
+        if ([defaultPlacementString isEqualToString:@"left"]) {
+            // position on the left side of the screen
+            topLeft.x = screenScaleFactor * INSPECTOR_PADDING;
+        } else {
+            // position on the right side of the screen
+            topLeft.x = NSMaxX(mainScreenVisibleRect) - screenScaleFactor * (inspectorWidth + INSPECTOR_PADDING);
+        }
+        topLeft.y = NSMaxY(mainScreenVisibleRect) - screenScaleFactor * MIN(INSPECTOR_PADDING, minFreeHeight);
+    }
     topLeft = [[OIInspectorRegistry sharedInspector] adjustTopLeftDefaultPositioningPoint:topLeft];
     
     for (NSArray *groupsInColumn in inspectorColumns) {

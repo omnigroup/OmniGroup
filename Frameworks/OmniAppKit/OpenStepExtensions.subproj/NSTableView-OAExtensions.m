@@ -216,10 +216,13 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
         firstSelectedRow--;
     }
 
-    if ([self delegate] && [[self delegate] respondsToSelector:@selector(tableView:shouldSelectRow:)])
-        while (![[self delegate] tableView:self shouldSelectRow:firstSelectedRow])
-            if (--firstSelectedRow < 0)
+    id delegate = [self delegate];
+    if (delegate && [delegate respondsToSelector:@selector(tableView:shouldSelectRow:)])
+        while (![delegate tableView:self shouldSelectRow:firstSelectedRow]) {
+            if (firstSelectedRow == 0)
                 return;	// If we never find a selectable row, don't do anything
+            firstSelectedRow--;
+        }
     
     // If the first row was selected, select only the first row.  This is consistent with the behavior of many Apple apps.
     [self selectRowIndexes:[NSIndexSet indexSetWithIndex:firstSelectedRow] byExtendingSelection:NO];
@@ -240,8 +243,9 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
         ++lastSelectedRow;
     }
     
-    if ([self delegate] && [[self delegate] respondsToSelector:@selector(tableView:shouldSelectRow:)])
-        while (![[self delegate] tableView:self shouldSelectRow:lastSelectedRow])
+    id delegate = [self delegate];
+    if (delegate && [delegate respondsToSelector:@selector(tableView:shouldSelectRow:)])
+        while (![delegate tableView:self shouldSelectRow:lastSelectedRow])
             if (++lastSelectedRow > numberOfRows - 1)
                 return;	// If we never find a selectable row, don't do anything
         

@@ -11,6 +11,9 @@
 #import <OmniBase/assertions.h>
 #import <Foundation/NSData.h>
 
+#include <stdlib.h>
+#include <errno.h>
+
 RCS_ID("$Id$")
 
 /*" Creates a stdio FILE pointer for reading from the receiver via the funopen() BSD facility.  The receiver is automatically retained until the returned FILE is closed. "*/
@@ -61,7 +64,7 @@ static fpos_t _CFData_seekfn(void *_ctx, off_t offset, int whence)
     //fprintf(stderr, " seek(ctx:%p off:%qd whence:%d)\n", _ctx, offset, whence);
     CFDataFileContext *ctx = (CFDataFileContext *)_ctx;
     
-    size_t reference;
+    off_t reference;
     if (whence == SEEK_SET)
         reference = 0;
     else if (whence == SEEK_CUR)
@@ -71,7 +74,7 @@ static fpos_t _CFData_seekfn(void *_ctx, off_t offset, int whence)
     else
         return -1;
     
-    if (reference + offset >= 0 && reference + offset <= ctx->length) {
+    if (reference + offset >= 0 && reference + offset <= (off_t)ctx->length) {
         // position is a size_t (i.e., memory/vm sized) while the reference and offset are off_t (file system positioned).
         // since we are refering to an CFData, this must be OK (and we checked 'reference + offset' vs. our length above).
         ctx->position = (size_t)(reference + offset);

@@ -67,7 +67,7 @@ static NSData *utf8(NSString *str)
 {
     unsigned int incrementAmount = 5;
     if (![[self class] shouldRunSlowUnitTests]) {
-        NSLog(@"*** ABBREVIATING slow test [%@ %s]", [self class], _cmd);
+        NSLog(@"*** ABBREVIATING slow test [%@ %@]", [self class], NSStringFromSelector(_cmd));
         incrementAmount *= 100;
     }
     
@@ -88,7 +88,7 @@ static NSData *utf8(NSString *str)
 {
     unsigned int maxLength = 128*1024;
     if (![[self class] shouldRunSlowUnitTests]) {
-        NSLog(@"*** ABBREVIATING slow test [%@ %s]", [self class], _cmd);
+        NSLog(@"*** ABBREVIATING slow test [%@ %@]", [self class], NSStringFromSelector(_cmd));
 	maxLength /= 10;
     }
 

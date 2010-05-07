@@ -116,6 +116,7 @@ NSMutableData *OFASN1CreateForTag(uint8_t tag, NSUInteger byteCount);
 NSMutableData *OFASN1CreateForSequence(NSData *item, ...)  __attribute__((sentinel));
 NSUInteger OFASN1UnwrapSequence(NSData *seq, NSError **outError);
 NSData *OFASN1UnwrapUnsignedInteger(NSData *buf, NSUInteger *inOutWhere, NSError **outError);
+NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len); // Textual description for debugging
 
 /* Routines for extracting key information from an XML signature */
 NSDictionary *OFXMLSigParseX509DataNode(xmlNode *x509Data);

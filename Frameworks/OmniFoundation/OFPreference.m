@@ -7,14 +7,20 @@
 
 #import <OmniFoundation/OFPreference.h>
 
+#import <OmniBase/OBObject.h> // For -shortDescription
 #import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniFoundation/OFNull.h>
+#import <OmniFoundation/NSDate-OFExtensions.h> // For -initWithXMLString:
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniFoundation/NSUserDefaults-OFExtensions.h>
 #import <Foundation/NSScriptCommand.h>
 #import <Foundation/NSScriptObjectSpecifiers.h>
 #endif
+
+#import <Foundation/Foundation.h>
+
+#import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
@@ -28,7 +34,7 @@ static NSObject *unset = nil;
 static volatile unsigned registrationGeneration = 1;
 static NSNotificationCenter *preferenceNotificationCenter = nil;
 
-NSString *OFPreferenceDidChangeNotification = @"OFPreferenceDidChangeNotification";
+NSString * const OFPreferenceDidChangeNotification = @"OFPreferenceDidChangeNotification";
 
 @interface OFPreference (Private)
 - (id) _initWithKey: (NSString * ) key;
@@ -201,6 +207,36 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 + (void)removeObserver:(id)anObserver forPreference:(OFPreference *)aPreference;
 {
     [preferenceNotificationCenter removeObserver:anObserver name:OFPreferenceDidChangeNotification object:aPreference];
+}
+
++ (id)coerceStringValue:(NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue;
+{
+    if (stringValue == nil || [stringValue isNull]) { // null
+        return [NSNull null];
+    } else if ([propertyListValue isKindOfClass:[NSString class]]) { // <string>
+        return stringValue;
+    } else if ([propertyListValue isKindOfClass:[NSNumber class]]) { // <real> or <integer> or <true/> or <false/>
+        const char *objCType = [(NSNumber *)propertyListValue objCType];
+        if (strcmp(objCType, @encode(int)) == 0) // <integer>
+            return [NSNumber numberWithInt:[stringValue intValue]];
+        else if (strcmp(objCType, @encode(double)) == 0) // <real>
+            return [NSNumber numberWithDouble:[stringValue doubleValue]];
+        else if (strcmp(objCType, @encode(char)) == 0) // <true/> or <false/>
+            return [NSNumber numberWithBool:[stringValue boolValue]];
+        else {
+            OBASSERT((strcmp(objCType, @encode(double)) == 0)); // ??? What is this new property list type?
+            return [NSNumber numberWithDouble:[stringValue doubleValue]];
+        }
+    } else if ([propertyListValue isKindOfClass:[NSDate class]]) { // <date>
+        return [[[NSDate alloc] initWithXMLString:stringValue] autorelease];
+    } else if ([propertyListValue isKindOfClass:[NSData class]]) { // <data> (not yet implemented)
+        OBASSERT(![propertyListValue isKindOfClass:[NSData class]]);
+        NSLog(@"+[OFPreference coerceStringValue:toTypeOfPropertyListValue: unimplemented conversion to NSData");
+        return nil;
+    } else if ([propertyListValue isKindOfClass:[NSArray class]] || [propertyListValue isKindOfClass:[NSDictionary class]]) { // <array> or <dict>
+        return [stringValue propertyList];
+    }
+    return nil;
 }
 
 /*

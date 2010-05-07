@@ -11,6 +11,11 @@
 #import <OmniFoundation/NSString-OFConversion.h>
 #import <OmniFoundation/OFErrors.h>
 
+#import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
+
+#include <stdlib.h>
+
 RCS_ID("$Id$")
 
 @implementation NSData (OFEncoding)
@@ -57,7 +62,7 @@ static inline uint8_t _fromhex(unichar hexDigit)
     v = _fromhex(c); \
     if (v == 0xff) { \
         if (outError) \
-	    OBError(outError, OFInvalidHexDigit, ([NSString stringWithFormat:@"The character '%C' (0x%x) is not a valid hexadecimal digit.", c, c])); \
+	    OFError(outError, OFInvalidHexDigit, ([NSString stringWithFormat:@"The character '%C' (0x%x) is not a valid hexadecimal digit.", c, c]), nil); \
         goto cleanup; \
     } \
 } while(0)
@@ -290,7 +295,7 @@ static inline void encode85(OFDataBuffer *dataBuffer, unsigned long tuple, int c
 //
 
 #define XX 127
-static char index_64[256] = {
+static const char index_64[256] = {
 XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
 XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
 XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,62, XX,XX,XX,63,
@@ -390,7 +395,7 @@ XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
     return returnValue;
 }
 
-static char basis_64[] =
+static const char basis_64[] =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static inline void output64chunk(int c1, int c2, int c3, int pads, OFDataBuffer *buffer)
@@ -459,14 +464,14 @@ static inline void output64chunk(int c1, int c2, int c3, int pads, OFDataBuffer 
 #define POW2_26_COUNT (4)   // Two base 256 digits take 4 base 26 digits
 #define POW1_26_COUNT (2)   // One base 256 digit taks 2 base 26 digits
 
-static unsigned int log256_26[] = {
+static const unsigned int log256_26[] = {
 POW1_26_COUNT,
 POW2_26_COUNT,
 POW3_26_COUNT,
 POW4_26_COUNT
 };
 
-static unsigned int log26_256[] = {
+static const unsigned int log26_256[] = {
 0, // invalid
 1, // two base 26 digits gives one base 256 digit
 0, // invalid
@@ -626,5 +631,81 @@ static inline void encode26(OFDataBuffer *dataBuffer, unsigned long tuple, int c
     
     return string;
 }
+
+static inline unichar hex(int i)
+{
+    static const char hexDigits[16] = {
+        '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
+    
+    return (unichar)hexDigits[i];
+}
+
+- (NSUInteger)lengthOfQuotedPrintableStringWithMapping:(const OFQuotedPrintableMapping *)qpMap
+{
+    const uint8_t *sourceBuffer;
+    NSUInteger sourceLength, sourceIndex, quotedPairs;
+    
+    sourceLength = [self length];
+    if (sourceLength == 0)
+        return 0;
+    sourceBuffer = [self bytes];
+    
+    quotedPairs = 0;
+    
+    for (sourceIndex = 0; sourceIndex < sourceLength; sourceIndex++) {
+        uint8_t ch = sourceBuffer[sourceIndex];
+        if (qpMap->map[ch] == 1)
+            quotedPairs ++;
+    }
+    
+    return sourceLength + ( 2 * quotedPairs );
+}
+
+- (NSString *)quotedPrintableStringWithMapping:(const OFQuotedPrintableMapping *)qpMap lengthHint:(NSUInteger)outputLengthHint
+{
+    NSUInteger sourceLength = [self length];
+    if (sourceLength == 0)
+        return [NSString string];
+    
+    const uint8_t *sourceBuffer = [self bytes];
+    
+    NSUInteger destinationBufferSize;
+    if (outputLengthHint > 0)
+        destinationBufferSize = outputLengthHint;
+    else
+        destinationBufferSize = sourceLength + (sourceLength >> 2) + 12;
+    uint8_t *destinationBuffer = malloc((destinationBufferSize) * sizeof(*destinationBuffer));
+    NSUInteger destinationIndex = 0;
+    
+    for (NSUInteger sourceIndex = 0; sourceIndex < sourceLength; sourceIndex++) {
+        uint8_t ch;
+        uint8_t chtype;
+        
+        ch = sourceBuffer[sourceIndex];
+        
+        if (destinationIndex >= destinationBufferSize - 3) {
+            destinationBufferSize += destinationBufferSize >> 2;
+            destinationBuffer = realloc(destinationBuffer, (destinationBufferSize) * sizeof(*destinationBuffer));
+        }
+        
+        chtype = qpMap->map[ ch ];
+        if (!chtype) {
+            destinationBuffer[destinationIndex++] = ch;
+        } else {
+            destinationBuffer[destinationIndex++] = qpMap->translations[chtype-1];
+            if (chtype == 1) {
+                // "1" indicates a quoted-printable rather than a translation
+                destinationBuffer[destinationIndex++] = hex((ch & 0xF0) >> 4);
+                destinationBuffer[destinationIndex++] = hex(ch & 0x0F);
+            }
+        }
+    }
+    
+    CFStringRef resultString = CFStringCreateWithBytesNoCopy(kCFAllocatorDefault, destinationBuffer, destinationIndex, kCFStringEncodingISOLatin1, FALSE, kCFAllocatorMalloc);
+    return [NSMakeCollectable(resultString) autorelease];
+}
+
 
 @end

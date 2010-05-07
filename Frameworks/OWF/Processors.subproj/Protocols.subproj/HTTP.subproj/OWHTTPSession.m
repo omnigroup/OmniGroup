@@ -166,7 +166,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:self];
+    [[OFController sharedController] addObserver:(id)self];
 }
 
 + (void)controllerDidInitialize:(OFController *)controller;

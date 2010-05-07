@@ -219,7 +219,7 @@ static BOOL OFMessageQueueDebug = NO;
     } while (nextRetainedInvocation == nil);
     
     if (OFMessageQueueDebug)
-        NSLog(@"[%@ nextRetainedInvocation] = %@, group = %d, priority = %d, maxThreads = %d", [self shortDescription], [nextRetainedInvocation shortDescription], [nextRetainedInvocation messageQueueSchedulingInfo].group, [nextRetainedInvocation messageQueueSchedulingInfo].priority, [nextRetainedInvocation messageQueueSchedulingInfo].maximumSimultaneousThreadsInGroup);
+        NSLog(@"[%@ nextRetainedInvocation] = %@, group = %p, priority = %d, maxThreads = %d", [self shortDescription], [nextRetainedInvocation shortDescription], [nextRetainedInvocation messageQueueSchedulingInfo].group, [nextRetainedInvocation messageQueueSchedulingInfo].priority, [nextRetainedInvocation messageQueueSchedulingInfo].maximumSimultaneousThreadsInGroup);
     return nextRetainedInvocation;
 }
 

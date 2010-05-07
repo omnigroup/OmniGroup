@@ -9,6 +9,7 @@
 
 #import <OmniFoundation/OFObject.h>
 
+@class NSArray, NSData, NSError;
 @class OUUnzipEntry;
 
 @interface OUUnzipArchive : OFObject

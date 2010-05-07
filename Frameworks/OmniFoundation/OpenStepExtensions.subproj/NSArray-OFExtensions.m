@@ -1,4 +1,4 @@
-// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,10 @@
 #import <OmniFoundation/CFArray-OFExtensions.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/OFNull.h>
+#import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
+
+#import <Foundation/Foundation.h>
 
 RCS_ID("$Id$")
 
@@ -271,6 +275,23 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
+#ifdef NS_BLOCKS_AVAILABLE
+- (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
+{
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] initWithCapacity:[self count]];
+    
+    for (id object in self) {
+        id key;
+        if ((key = blk(object)) != nil)
+            [dict setObject:object forKey:key];
+    }
+    
+    NSDictionary *result = [NSDictionary dictionaryWithDictionary:dict];
+    [dict release];
+    return result;
+}
+#endif
+
 - (NSArray *)arrayByPerformingSelector:(SEL)aSelector;
 {
     // objc_msgSend won't bother passing the nil argument to the method implementation because of the selector signature.
@@ -391,9 +412,45 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 
 - (id)first:(OFPredicateBlock)predicate;
 {
-    for (id element in self)
-        if (predicate(element))
-            return element;
+    for (id object in self)
+        if (predicate(object))
+            return object;
+    return nil;
+}
+
+- (id)firstInRange:(NSRange)range that:(OFPredicateBlock)predicate;
+{
+    // If performance ever matters, could try using the NSFastEnumeration protocol, or even just doing getObjects:range: for batches.
+    NSUInteger objectIndex;
+    for (objectIndex = range.location; objectIndex < NSMaxRange(range); objectIndex++) {
+        id object = (id)CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex);
+        if (predicate(object))
+            return object;
+    }
+    return nil;
+}
+
+- (id)last:(OFPredicateBlock)predicate;
+{
+    // If performance ever matters, could try using the NSFastEnumeration protocol, or even just doing getObjects:range: for batches.
+    for (id object in [self reverseObjectEnumerator])
+        if (predicate(object))
+            return object;
+    return nil;
+}
+
+- (id)lastInRange:(NSRange)range that:(OFPredicateBlock)predicate;
+{
+    // If performance ever matters, could try using the NSFastEnumeration protocol, or even just doing getObjects:range: for batches.
+    if (range.length > 0) {
+        NSUInteger objectIndex = NSMaxRange(range);
+        do {
+            objectIndex--;
+            id object = (id)CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex);
+            if (predicate(object))
+                return object;
+        } while (objectIndex > range.location);
+    }
     return nil;
 }
 

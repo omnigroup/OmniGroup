@@ -140,7 +140,7 @@ static NSString *privateSupertypes[] = {
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:self];
+    [[OFController sharedController] addObserver:(id)self];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadExpirationTimeIntervals:) name:OWContentTypeReloadExpirationTimeIntervalsNotificationName object:nil];
 }
 

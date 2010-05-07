@@ -9,16 +9,20 @@
 
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniAppKit/OAController.h>
-#import <OmniFoundation/OFScheduler.h>
-#import <OmniFoundation/OFScheduledEvent.h>
-#import <OmniFoundation/OFVersionNumber.h>
-#import <OmniFoundation/OFInvocation.h>
-#import <OmniFoundation/NSString-OFExtensions.h>
-#import <OmniFoundation/NSBundle-OFExtensions.h>
-#import <OmniFoundation/NSUserDefaults-OFExtensions.h>
-#import <OmniFoundation/OFMultipleOptionErrorRecovery.h>
 #import <OmniFoundation/OFCancelErrorRecovery.h>
+#import <OmniFoundation/OFInvocation.h>
+#import <OmniFoundation/OFMultipleOptionErrorRecovery.h>
+#import <OmniFoundation/OFScheduledEvent.h>
+#import <OmniFoundation/OFScheduler.h>
+#import <OmniFoundation/OFUtilities.h>
+#import <OmniFoundation/OFVersionNumber.h>
+#import <OmniFoundation/NSBundle-OFExtensions.h>
+#import <OmniFoundation/NSDictionary-OFExtensions.h>
+#import <OmniFoundation/NSString-OFExtensions.h>
+#import <OmniFoundation/NSUserDefaults-OFExtensions.h>
 
+#import <AppKit/NSApplication.h>
+#import <AppKit/NSPanel.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 
 #import "OSUCheckTool.h"
@@ -30,6 +34,7 @@
 #import "OSUErrors.h"
 #import "OSUItem.h"
 #import "OSUSendFeedbackErrorRecovery.h"
+#import "OSUAppcastSignature.h"
 
 RCS_ID("$Id$");
 
@@ -49,7 +54,7 @@ static NSString *OSUBundleTrackInfoKey = @"OSUSoftwareUpdateTrack";
 static NSString *OSUNextCheckKey = @"OSUNextScheduledCheck";
 static NSString *OSUCurrentVersionsURLKey = @"OSUCurrentVersionsURL";
 static NSString *OSUNewestVersionNumberLaunchedKey = @"OSUNewestVersionNumberLaunched";
-// static NSString *OSUVisibleTracksKey = @"OSUVisibleTracks";
+       NSString *OSUVisibleTracksKey = @"OSUVisibleTracks";
 
 static OFVersionNumber *OSUVersionNumber = nil;
 static NSURL    *OSUCurrentVersionsURL = nil;
@@ -113,7 +118,7 @@ static inline void cancelScheduledEvent(OSUChecker *self)
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:self];
+    [[OFController sharedController] addObserver:(id)self];
 }
 
 static OSUChecker *sharedChecker = nil;
@@ -151,16 +156,6 @@ static OSUChecker *sharedChecker = nil;
     return version;
 }
 
-// Try to give developers some warning if they have a bogus track selected.
-+ (NSArray *)supportedTracksByPermissiveness;
-{
-    // These are listed in order of permissiveness for the benefit of +mostPermissiveTrackSeen.  Do not reorder.
-    static NSArray *supportedTracks = nil;
-    if (!supportedTracks)
-        supportedTracks = [[NSArray alloc] initWithObjects:@"", @"rc", @"beta", @"sneakypeek", nil];
-    return supportedTracks;
-}
-
 - (NSString *)applicationIdentifier;
 {
     return [[NSBundle mainBundle] bundleIdentifier];
@@ -194,6 +189,8 @@ static OSUChecker *sharedChecker = nil;
 
 - (void)setLicenseType:(NSString *)licenseType;
 {
+    [self willChangeValueForKey:OSUCheckerLicenseTypeBinding];
+    
     [_licenseType autorelease];
     _licenseType = [licenseType copy];
     
@@ -211,6 +208,8 @@ static OSUChecker *sharedChecker = nil;
         _flags.scheduleNextCheckOnLicenseTypeChange = NO;
         [self _scheduleNextCheck];
     }
+
+    [self didChangeValueForKey:OSUCheckerLicenseTypeBinding];
 }
 
 - (void)setTarget:(id)anObject;
@@ -351,7 +350,24 @@ static void OSUAtExitHandler(void)
 
     OSUCurrentVersionsURL = [[NSURL URLWithString:urlString] retain];
 
-    [[self sharedUpdateChecker] setTarget:[OSUController class]];
+    OSUChecker *checker = [self sharedUpdateChecker];
+    [checker setTarget:[OSUController class]];
+    
+    {
+        /* Add our release track to the list of release tracks the user might be interested in seeing (unless it's already there, which is the common case of course) */
+        NSString *runningTrack = [checker applicationTrack];
+        NSArray *stickyTracks = [OSUPreferences visibleTracks];
+        
+        if (![NSString isEmptyString:runningTrack]) {
+            if (!stickyTracks || ![stickyTracks containsObject:runningTrack]) {
+                NSMutableArray *concat = [NSMutableArray array];
+                [concat addObject:runningTrack];
+                if (stickyTracks)
+                    [concat addObjectsFromArray:stickyTracks];
+                [OSUPreferences setVisibleTracks:[OSUItem dominantTracks:concat]];
+            }
+        }
+    }
     
     OSURunTimeApplicationStarted();
     atexit(OSUAtExitHandler);
@@ -366,11 +382,19 @@ static void OSUAtExitHandler(void)
         }
     }
     
-    // Warn developers if they are on a funky track ('sneakpeek' and 'sneakypeak' being the most common typos).
 #ifdef DEBUG
-    NSString *runningTrack = [[self sharedUpdateChecker] applicationTrack];
-    if (![[self supportedTracksByPermissiveness] containsObject:runningTrack])
-        NSRunAlertPanel(@"Unknown software update track", @"Specified the track '%@' but only know about '%@'.  Typo?", @"OK", nil, nil, runningTrack, [self supportedTracksByPermissiveness]);
+    {
+        // Warn developers if they are on a funky track ('sneakpeek' and 'sneakypeak' being the most common typos).
+        NSString *runningTrack = [checker applicationTrack];
+        
+        if (![NSString isEmptyString:runningTrack]) {
+            NSDictionary *info = [OSUItem informationForTrack:runningTrack];
+            
+            if (!info || ![info boolForKey:@"isKnown"]) {
+                NSRunAlertPanel(@"Unknown software update track", @"Specified the track '%@' but that isn't a track we know about.  Typo?", @"OK", nil, nil, runningTrack);
+            }
+        }
+    }
 #endif
 }
 
@@ -388,6 +412,69 @@ static void OSUAtExitHandler(void)
 {
     _flags.shouldCheckAutomatically = [[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue];
     [self _scheduleNextCheck];
+}
+
+#pragma mark NSURLConnection delegates
+
+/* Zero or more connection:didReceiveResponse: messages will be sent to the delegate before receiving a connection:didReceiveData: message. */
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+    if (connection == _refreshingTrackInfo) {
+        BOOL satisfactory;
+        if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+            satisfactory = ( [(NSHTTPURLResponse *)response statusCode] <= 399 ) &&
+            ( [[response MIMEType] containsString:@"xml"] ) ;
+        } else {
+            // No way to distinguish successful from unsuccessful responses for non-HTTP protocols? Presumably we'll just get -didFailWithError: for other protocols.
+            satisfactory = YES;
+        }
+        
+        [_refreshingTrackData release];
+        _refreshingTrackData = nil;
+        if (satisfactory)
+            _refreshingTrackData = [[NSMutableData alloc] init];
+    }
+}
+
+/* Zero or more connection:didReceiveData: messages will be sent */
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+    /* It's a pity that Apple has no easy to use push- or stream- parser interface */
+    if (connection == _refreshingTrackInfo && nil != _refreshingTrackData)
+        [_refreshingTrackData appendData:data];
+}
+
+/* Unless a NSURLConnection receives a cancel message, the delegate will receive one and only one of connectionDidFinishLoading:, or connection:didFailWithError: message, but never both. */
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    if (connection == _refreshingTrackInfo) {
+        [_refreshingTrackInfo autorelease];
+        _refreshingTrackInfo = nil;
+        [_refreshingTrackData release];
+        _refreshingTrackData = nil;
+        
+        NSLog(@"Couldn't fetch track text: %@", [error description]);
+    }
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+{
+    if (connection == _refreshingTrackInfo) {
+        [_refreshingTrackInfo autorelease];
+        _refreshingTrackInfo = nil;
+        
+        NSError *xmlError = nil;
+        NSXMLDocument *document = [[[NSXMLDocument alloc] initWithData:_refreshingTrackData options:NSXMLNodeOptionsNone error:&xmlError] autorelease];
+        [_refreshingTrackData release];
+        _refreshingTrackData = nil;
+        
+        if (!document) {
+            NSLog(@"Can't parse track text: %@", [xmlError description]);
+        } else {
+            [OSUItem processTrackInformation:document];
+        }
+    }
 }
 
 @end
@@ -595,6 +682,43 @@ static void OSUAtExitHandler(void)
     if (outError)
         *outError = nil;
     
+    NSString *trust = [OMNI_BUNDLE pathForResource:@"AppcastTrustRoot" ofType:@"pem"];
+    if (trust) {
+#ifdef DEBUG
+        NSLog(@"OSU: Using %@", trust);
+#endif
+        NSArray *verifiedPortions = OSUGetSignedPortionsOfAppcast(data, trust, outError);
+        if (!verifiedPortions || ![verifiedPortions count]) {
+            if (outError) {
+                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to authenticate the response from the software update server.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - we have some update information but it doesn't look authentic");
+                NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObject:description forKey:NSLocalizedDescriptionKey];
+                
+                if (!verifiedPortions) {
+                    NSString *reason = NSLocalizedStringFromTableInBundle(@"There was a problem checking the signature.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - the checksum or signature didn't match - more info in underlying error");
+                    [userInfo setObject:reason forKey:NSLocalizedFailureReasonErrorKey];
+                    [userInfo setObject:*outError forKey:NSUnderlyingErrorKey];
+                } else {
+                    NSString *reason = NSLocalizedStringFromTableInBundle(@"The update information is not signed.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - the update information wasn't signed at all, but we require it to be signed");
+                    [userInfo setObject:reason forKey:NSLocalizedFailureReasonErrorKey];
+                }
+                
+                NSURL *serverURL = [operation url];
+                if (serverURL)
+                    [userInfo setObject:[serverURL absoluteString] forKey:NSURLErrorFailingURLStringErrorKey];
+                
+                *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToParseSoftwareUpdateData userInfo:userInfo];
+            }
+            
+            return NO;
+        }
+        
+        if ([verifiedPortions count] != 1) {
+            NSLog(@"Warning: Update contained %lu reference nodes; only using the first.", [verifiedPortions count]);
+        }
+        
+        data = [verifiedPortions objectAtIndex:0];
+    }
+    
     NSXMLDocument *document = [[[NSXMLDocument alloc] initWithData:data options:NSXMLNodeOptionsNone error:outError] autorelease];
     if (!document) {
         if (outError) {
@@ -645,8 +769,22 @@ static void OSUAtExitHandler(void)
         return NO;
     }
 
-    [OSUItem setSupersededFlagForItems:items];
+    // If it looks like we'll display anything, retrieve the track descriptions and up-to-date orderings
+    if ([items count] > 0 && !_refreshingTrackInfo) {
+        NSArray *trackInfoAttributes = [document objectsForXQuery:[NSString stringWithFormat:@"declare namespace oac = \"%@\";\n /rss/channel/attribute::oac:trackinfo", OSUAppcastTrackInfoNamespace] error:NULL];
+        if ([trackInfoAttributes count]) {
+            NSURL *trackInfoURL = [NSURL URLWithString:[[trackInfoAttributes objectAtIndex:0] stringValue]];
+            if (trackInfoURL) {
+                NSMutableURLRequest *infoRequest = [NSMutableURLRequest requestWithURL:trackInfoURL];
+                [infoRequest setValue:[[operation url] absoluteString] forHTTPHeaderField:@"Referer" /* sic */];
+                _refreshingTrackInfo = [[NSURLConnection alloc] initWithRequest:infoRequest delegate:self];
+                OBASSERT(_refreshingTrackData == nil); 
+            }
+        }
+    }
+    
     [items makeObjectsPerformSelector:@selector(setAvailablityBasedOnSystemVersion:) withObject:[OFVersionNumber userVisibleOperatingSystemVersionNumber]];
+    [OSUItem setSupersededFlagForItems:items];
     
     // Note that we go ahead and pass ignored items to the check target; it will handle the ignored flag
     [_checkTarget newVersionsAvailable:[items filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededPredicate]] fromCheck:operation];
@@ -707,7 +845,7 @@ static void OSUAtExitHandler(void)
 
     // The first time OSU runs for this user, prompt them that we'll send some info to the network.  We check in 'com.omnigroup.OmniSoftwareUpdate' so that the user only gets this panel once for any OSU version rather than getting peppered with it.
     CFStringRef prefKey = CFSTR("OSUHighestRunVersion");
-    CFStringRef prefDomain = CFSTR("com.omnigroup.OmniSoftwareUpdate");
+    CFStringRef prefDomain = OSUSharedPreferencesDomain;
 
     NSString *str = (NSString *)CFPreferencesCopyAppValue(prefKey, prefDomain);
     OFVersionNumber *highestRunVersion = str ? [[[OFVersionNumber alloc] initWithVersionString:str] autorelease] : nil;
@@ -720,10 +858,10 @@ static void OSUAtExitHandler(void)
     CFPreferencesSetAppValue(prefKey, [OSUVersionNumber cleanVersionString], prefDomain);
     CFPreferencesAppSynchronize(prefDomain);
 
-    // Version 2009 actually sends the same info as version 2004, but does so in a different format. No need to re-ask the user about details of transfer encoding.
+    // Version 2009 actually sends the same info as all versions since 2004, but does so in a different format. No need to re-ask the user about details of transfer encoding.
     if (highestRunVersion != nil && OSUVersionNumber != nil &&
-        [highestRunVersion componentCount] == 1 && [highestRunVersion componentAtIndex:0] == 2004 &&
-        [OSUVersionNumber componentCount] == 1 && [OSUVersionNumber componentAtIndex:0] == 2009) {
+        [highestRunVersion componentCount] >= 1 && [highestRunVersion componentAtIndex:0] >= 2004 && [highestRunVersion componentAtIndex:0] <= 2009 &&
+        [OSUVersionNumber componentCount] >= 1 && [OSUVersionNumber componentAtIndex:0] <= 2009) {
         // Manufacture some consent.
         return YES;
     }

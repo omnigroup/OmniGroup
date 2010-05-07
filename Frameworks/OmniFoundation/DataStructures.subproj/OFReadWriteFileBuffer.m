@@ -67,7 +67,7 @@ static fpos_t _OFReadWriteFileBuffer_seekfn(void *_ctx, off_t offset, int whence
     //fprintf(stderr, " seek(buffer:%p off:%qd whence:%d)\n", _ctx, offset, whence);
     OFReadWriteFileBuffer *buffer = (OFReadWriteFileBuffer *)_ctx;
     
-    size_t reference;
+    off_t reference;
     if (whence == SEEK_SET)
         reference = 0;
     else if (whence == SEEK_CUR)
@@ -77,7 +77,7 @@ static fpos_t _OFReadWriteFileBuffer_seekfn(void *_ctx, off_t offset, int whence
     else
         return -1;
     
-    if (reference + offset >= 0 && reference + offset <= buffer->length) {
+    if (reference + offset >= 0 && reference + offset <= (off_t)buffer->length) {
         // position is a size_t (i.e., memory/vm sized) while the reference and offset are off_t (file system positioned).
         // since we are refering to an CFData, this must be OK (and we checked 'reference + offset' vs. our length above).
         buffer->position = (size_t)(reference + offset);

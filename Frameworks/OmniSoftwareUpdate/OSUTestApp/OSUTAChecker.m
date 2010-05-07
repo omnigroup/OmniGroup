@@ -18,7 +18,7 @@ RCS_ID("$Id$");
 static NSString *OSUTargetBundleIdentifierKey = @"targetBundleIdentifier";
 static NSString *OSUTargetMarketingVersionKey = @"targetMarketingVersion";
 static NSString *OSUTargetBuildVersionKey = @"targetBuildVersion";
-static NSString *OSUTargetVisibleTracksStringKey = @"targetVisibleTracksString";
+static NSString *OSUTargetTrackStringKey = @"targetReleaseTrack";
 
 
 @implementation OSUTAChecker
@@ -50,7 +50,7 @@ static NSString *OSUTargetVisibleTracksStringKey = @"targetVisibleTracksString";
 
 - (NSString *)applicationTrack;
 {
-    NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:OSUTargetVisibleTracksStringKey];
+    NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:OSUTargetTrackStringKey];
     return (![NSString isEmptyString:value]) ? value : [super applicationTrack];
 }
 

@@ -1,0 +1,17 @@
+// Copyright 2006-2010 Omni Development, Inc.  All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// We were setting this for all build types on iPhone/iPad. Necessary, or only do it for Debug like on the Mac?
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+GCC_DYNAMIC_NO_PIC = YES
+
+// We let Xcode strip -- presumably for signing
+COPY_PHASE_STRIP = YES
+
+// We require iPhone OS 3.2, for both arm6 and arm7 for all projects now. Only set the architectures if we *are* using the device SDK. If we've picked the simulator, leave it alone.
+SDKROOT = iphoneos3.2
+
+// iPhone OS 3.2 only supports armv7. If we have a target that wants armv6 it'll already need to override the SDK to be 3.1.
+ARCHS[sdk=iphoneos*] = armv7
+VALID_ARCHS[sdk=iphoneos*] = armv7

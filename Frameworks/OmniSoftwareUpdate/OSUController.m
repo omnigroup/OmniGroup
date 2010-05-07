@@ -137,14 +137,15 @@ NSString *OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  Do we re
     if (privacyNoticePanel)
         return YES;
 
-    NS_DURING {
+    @try {
         [[OSUController bundle] loadNibNamed:@"OSUController" owner:self];
-    } NS_HANDLER {
+    } @catch (NSException *exc) {
+        OB_UNUSED_VALUE(exc);
 #ifdef DEBUG    
-        NSLog(@"Unable to load nib: %@", localException);
+        NSLog(@"Unable to load nib: %@", exc);
 #endif	
         return NO;
-    } NS_ENDHANDLER;
+    }
 
     // If we *had* seen the panel before, replace the title string
     NSString *titleFormat = [privacyNoticeTitleTextField stringValue];

@@ -1,4 +1,4 @@
-// Copyright 2001-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,6 @@ static OFPreference *updatesToIgnore = nil;
 @interface OSUPreferences (Private)
 - (void)_systemConfigurationSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;
 @end
-
 
 @implementation OSUPreferences
 
@@ -94,10 +93,42 @@ static OFPreference *updatesToIgnore = nil;
 + (BOOL)itemIsIgnored:(OSUItem *)anItem;
 {
     OFVersionNumber *itemRepr = [anItem buildVersion];
-    if (!itemRepr)
-        return NO;
+    if (itemRepr) {
+        if([[[self ignoredUpdates] stringArrayValue] containsObject:[@"v" stringByAppendingString:[itemRepr cleanVersionString]]])
+            return YES;
+    }
     
-    return [[[self ignoredUpdates] stringArrayValue] containsObject:[@"v" stringByAppendingString:[itemRepr cleanVersionString]]];
+    NSString *itemTrack = [anItem track];
+    if (![OSUItem isTrack:itemTrack includedIn:[self visibleTracks]])
+        return YES;
+    
+    return NO;
+}
+
++ (NSArray *)visibleTracks;
+{
+    return [[OFPreference preferenceForKey:OSUVisibleTracksKey] stringArrayValue];
+}
+
++ (void)setVisibleTracks:(NSArray *)orderedTrackList;
+{
+    OBASSERT(orderedTrackList != nil);
+    
+    OFPreference *pref = [OFPreference preferenceForKey:OSUVisibleTracksKey];
+    
+    if ([orderedTrackList isEqual:[pref stringArrayValue]])
+        return;
+    
+#ifdef DEBUG
+    NSLog(@"OSU tracks %@ -> %@", [[pref stringArrayValue] description], [orderedTrackList description]);
+#endif
+    
+    if (![orderedTrackList count] && [orderedTrackList isEqual:[pref defaultObjectValue]])
+        [pref restoreDefaultValue];
+    else 
+        [pref setArrayValue:orderedTrackList];
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:OSUTrackVisibilityChangedNotification object:self];
 }
 
 - (void)awakeFromNib;
@@ -250,9 +281,7 @@ static NSString *formatAngle(NSString *value, NSString *positive, NSString *nega
             } else if ([key isEqualToString:@"OSU_TRACK"]) {
                 replacement = [checker applicationTrack];
             } else if ([key isEqualToString:@"OSU_VISIBLE_TRACKS"]) {
-                // No longer sending this, but don't want to mess up the localizations, so just returning the current track
-                //replacement = [[OSUChecker visibleTracks] componentsJoinedByString:@", "];
-                replacement = [checker applicationTrack];
+                replacement = [[OSUPreferences visibleTracks] componentsJoinedByString:@", "];
             } else if ([key isEqualToString:@"APP"]) {
                 replacement = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	    } else if ([key isEqualToString:@"license-type"]) {

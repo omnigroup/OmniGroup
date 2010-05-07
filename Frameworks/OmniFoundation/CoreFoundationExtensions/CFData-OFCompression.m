@@ -7,18 +7,26 @@
 
 #import <OmniFoundation/CFData-OFCompression.h>
 
-#import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/CFData-OFFileIO.h>
+#import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFReadWriteFileBuffer.h>
 #import <OmniBase/NSError-OBExtensions.h>
+#import <OmniBase/OBUtilities.h>
 #import <OmniBase/assertions.h>
 #import <OmniBase/rcsid.h>
 #import <Foundation/NSBundle.h>
 #import <Foundation/NSData.h>
 #import <Foundation/NSString.h>
-#import <OmniBase/OBUtilities.h>
-#import <bzlib.h>
-#import <zlib.h>
+
+#include <string.h>
+#include <stdlib.h>
+
+#include <zlib.h>
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#define HAVE_BZIP2
+#include <bzlib.h>
+#endif
 
 RCS_ID("$Id$")
 
@@ -26,10 +34,12 @@ RCS_ID("$Id$")
  We support both bz2 and gzip compression.  We default to using gzip; bz2 compresses better, but its worst-case performance is much, much worse (and we don't want to make users wait when saving).
  "*/
 
+#ifdef HAVE_BZIP2
 static inline Boolean _OFMightBeBzipCompressedData(const unsigned char *bytes, NSUInteger length)
 {
     return (length >= 2 && bytes[0] == 'B' && bytes[1] == 'Z');
 }
+#endif
 
 static inline Boolean _OFMightBeGzipCompressedData(const unsigned char *bytes, NSUInteger length)
 {
@@ -41,7 +51,11 @@ Boolean OFDataMightBeCompressed(CFDataRef data)
 {
     const unsigned char *bytes = CFDataGetBytePtr(data);
     NSUInteger length = CFDataGetLength(data);
-    return _OFMightBeGzipCompressedData(bytes, length) || _OFMightBeBzipCompressedData(bytes, length);
+    return _OFMightBeGzipCompressedData(bytes, length)
+#ifdef HAVE_BZIP2
+        || _OFMightBeBzipCompressedData(bytes, length)
+#endif
+    ;
 }
 
 CFDataRef OFDataCreateCompressedData(CFDataRef data, CFErrorRef *outError)
@@ -55,7 +69,7 @@ static void *_OFCompressionError(CFErrorRef *outError, NSInteger code, NSString 
     
     if (outError) {
         // CFErrorRef is toll-free bridged; but CF APIs return retained instances.
-        OBErrorWithInfo((NSError **)outError, OFUnableToDecompressData, NSLocalizedDescriptionKey, description, NSLocalizedFailureReasonErrorKey, reason, nil);
+        OFError((NSError **)outError, OFUnableToDecompressData, description, reason);
         CFRetain(*outError); // OBError creates an autoreleased instance, but this is a CF API
     }
     
@@ -66,8 +80,10 @@ CFDataRef OFDataCreateDecompressedData(CFAllocatorRef decompressedDataAllocator,
 {
     const uint8_t *initial = CFDataGetBytePtr(data);
     NSUInteger dataLength = CFDataGetLength(data);
+#ifdef HAVE_BZIP2
     if (_OFMightBeBzipCompressedData(initial, dataLength))
         return OFDataCreateDecompressedBzip2Data(decompressedDataAllocator, data, outError);
+#endif
     
     if (_OFMightBeGzipCompressedData(initial, dataLength))
         return OFDataCreateDecompressedGzip2Data(decompressedDataAllocator, data, outError);
@@ -79,6 +95,7 @@ CFDataRef OFDataCreateDecompressedData(CFAllocatorRef decompressedDataAllocator,
 
 
 /*" Compresses the receiver using the bz2 library algorithm and returns the compressed data.   The compressed data is a full bz2 file, not just a headerless compressed blob.  This is very useful if you are including this compressed data in a larger file wrapper and want users to be able to read it with standard tools. "*/
+#ifdef HAVE_BZIP2
 CFDataRef OFDataCreateCompressedBzip2Data(CFDataRef data, CFErrorRef *outError)
 {
     CFMutableDataRef output = CFDataCreateMutable(NULL, 0);
@@ -184,6 +201,7 @@ CFDataRef OFDataCreateDecompressedBzip2Data(CFAllocatorRef decompressedDataAlloc
     
     return output;
 }
+#endif
 
 /* Support for RFC 1952 gzip formatting. This is a simple wrapper around the data produced by zlib. */
 

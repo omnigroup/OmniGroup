@@ -8,6 +8,7 @@
 #import <OmniFoundation/OFRelativeDateParser.h>
 
 #import <OmniFoundation/OFPreference.h>
+#import <OmniFoundation/OFErrors.h>
 
 #import <Foundation/NSDateFormatter.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
@@ -305,9 +306,13 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	NSArray *dateAndTime = [string componentsSeparatedByString:@"@"];
 	
 	if ([dateAndTime count] > 2) {
-	    OBError(error, // error
+#ifdef DEBUG_xmas
+#error this code needs a code in OFErrors -- zero is not valid
+#endif
+	    OFError(error, // error
 		    0,  // code enum
-		    @"accepted strings are of the form \"DATE @ TIME\", there was an extra \"@\" sign" // description
+		    @"accepted strings are of the form \"DATE @ TIME\", there was an extra \"@\" sign", // description
+                    nil
 		    );
 	    
 	    return NO;
@@ -336,7 +341,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	
 	// test for a time at the end of the string.  This will only match things that are clearly times, ie, has colons, or am/pm
 	NSInteger timeMatchIndex = -1;
-	if (maxComponentIndex >= 0 && [self _stringMatchesTime:[stringComponents objectAtIndex:maxComponentIndex] optionalSecondString:nil withTimeFormat:timeFormat]) {
+	if ([self _stringMatchesTime:[stringComponents objectAtIndex:maxComponentIndex] optionalSecondString:nil withTimeFormat:timeFormat]) {
 	    //NSLog(@"returned a true for _stringMatchesTime and the previous thing WASN't A MONTH for the end of the string: %@", [stringComponents objectAtIndex:maxComponentIndex]);
 	    timeMatchIndex = maxComponentIndex;
 	} else if (maxComponentIndex >= 1 && [self _stringMatchesTime:[stringComponents objectAtIndex:maxComponentIndex-1] optionalSecondString:[stringComponents objectAtIndex:maxComponentIndex] withTimeFormat:timeFormat]) {
@@ -549,7 +554,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	NSMutableString *longFormat =
 	[NSMutableString stringWithString:[formatter dateFormat]];
 		
-	NSLog(@"**PLEASE REPORT THIS LINE TO: omnifocus@omnigroup.com | Unparseable Custom Date Format. Date Format trying to parse is: @%; Short Format: %@; Medium Format: %@; Long Format: %@", dateFormat, shortFormat, mediumFormat, longFormat);
+	NSLog(@"**PLEASE REPORT THIS LINE TO: omnifocus@omnigroup.com | Unparseable Custom Date Format. Date Format trying to parse is: %@; Short Format: %@; Medium Format: %@; Long Format: %@", dateFormat, shortFormat, mediumFormat, longFormat);
     }
     return datePosition;
 }

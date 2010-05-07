@@ -10,6 +10,9 @@
 #import <OmniFoundation/OFStringScanner.h>
 #import <OmniFoundation/OFRegularExpression.h>
 
+#import <OmniBase/OmniBase.h>
+#include <stdlib.h>
+
 RCS_ID("$Id$")
 
 @interface OFRegularExpressionMatch (privateUsedByOFRegularExpression)
@@ -109,9 +112,9 @@ RCS_ID("$Id$")
 
     expression = [anExpression retain];
     scanner = [aScanner retain];
-    if ((matchCount = [expression subexpressionCount]))
-        subExpressionMatches = NSAllocateCollectable(sizeof(NSRange) * matchCount, 0);
-    else
+    if ((matchCount = [expression subexpressionCount])) {
+        subExpressionMatches = OBAllocateCollectable(sizeof(NSRange) * matchCount, 0);
+    } else
         subExpressionMatches = NULL;
 
     if (![expression findMatch:self withScanner:scanner]) {

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,7 +58,7 @@ RCS_ID("$Id$");
 {
 #ifdef DEBUG_bungi
     // I've never seen this get called.
-    NSLog(@"%s: mode = 0x%08x\n", __FUNCTION__, mode);
+    NSLog(@"%s: mode = 0x%lx\n", __FUNCTION__, mode);
 #endif
     return YES;
 }

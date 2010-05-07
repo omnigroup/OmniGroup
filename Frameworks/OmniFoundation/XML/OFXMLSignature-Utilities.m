@@ -32,6 +32,8 @@ RCS_ID("$Id$");
 
 /* ASN.1 DER construction utility routines */
 
+#define CLASS_CONSTRUCTED 0x20
+
 /*" Returns an ASN.1 DER INTEGER corresponding to an (unsigned) arbitrary-precision integer. "*/
 NSData *OFASN1IntegerFromBignum(NSData *base256Number)
 {
@@ -49,10 +51,10 @@ NSData *OFASN1IntegerFromBignum(NSData *base256Number)
     NSMutableData *buf;
     if (((unsigned char *)[base256Number bytes])[firstDigit] & 0x80) {
         /* Insert a zero byte, since ASN.1 integers are signed */
-        buf = OFASN1CreateForTag(0x02, bytecount + 1);
+        buf = OFASN1CreateForTag(BER_TAG_INTEGER, bytecount + 1);
         [buf appendBytes:"" length:1];
     } else {
-        buf = OFASN1CreateForTag(0x02, bytecount);
+        buf = OFASN1CreateForTag(BER_TAG_INTEGER, bytecount);
     }
     [buf autorelease];
     
@@ -72,7 +74,6 @@ NSMutableData *OFASN1CreateForTag(uint8_t tag, NSUInteger byteCount)
     
     buf[0] = tag;
     bufUsed = 1;
-    
     
     if (byteCount < 128) {
         /* Short lengths have a 1-byte direct representation */
@@ -115,7 +116,7 @@ NSMutableData *OFASN1CreateForSequence(NSData *item, ...)
         va_end(items);
     }
     
-    NSMutableData *header = OFASN1CreateForTag(0x10 | 0x20, totalLength);
+    NSMutableData *header = OFASN1CreateForTag(BER_TAG_SEQUENCE | CLASS_CONSTRUCTED, totalLength);
     
     if (item != nil) {
         va_list items;
@@ -218,7 +219,7 @@ NSUInteger OFASN1UnwrapSequence(NSData *seq, NSError **outError)
     }
     
     const UInt8 *bytes = [seq bytes];
-    if (bytes[0] != ( 0x10 | 0x20 )) {
+    if (bytes[0] != ( BER_TAG_SEQUENCE | CLASS_CONSTRUCTED )) {
         asnParseFailure(outError, @"Unexpected tag: expecting SEQUENCE (0x30), found 0x%02X", bytes[0]);
         return badvalue;
     }
@@ -246,7 +247,7 @@ NSData *OFASN1UnwrapUnsignedInteger(NSData *buf, NSUInteger *inOutWhere, NSError
     }
     
     const UInt8 *bytes = [buf bytes];
-    if (bytes[where] != ( 0x02 )) {
+    if (bytes[where] != BER_TAG_INTEGER) {
         asnParseFailure(outError, @"Unexpected tag: expecting INTEGER (0x02), found 0x%02X", bytes[0]);
         return nil;
     }
@@ -267,6 +268,47 @@ NSData *OFASN1UnwrapUnsignedInteger(NSData *buf, NSUInteger *inOutWhere, NSError
     NSData *result = [buf subdataWithRange:(NSRange){ where, integerLength }];
     *inOutWhere = where + integerLength;
     return result;
+}
+
+NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len)
+{
+    if (!bytes)
+        return nil;
+    if (len < 1)
+        return @"{ }";
+    
+    
+    // The first byte has a special encoding.
+    unsigned int c0 = bytes[0] / 40;
+    unsigned int c1 = bytes[0] % 40;
+    
+    NSMutableString *buf = [NSMutableString stringWithFormat:@"{ %u %u ", c0, c1];
+
+    size_t p = 1;
+    while(p < len) {
+        size_t e = p;
+        while(e < len && (bytes[e] & 0x80))
+            e++;
+        if (!(e < len)) {
+            [buf appendString:@"*TRUNC "];
+            break;
+        } else {
+            size_t nbytes = 1 + e - p;
+            if (nbytes * 7 >= sizeof(unsigned long)*NBBY) {
+                [buf appendString:@"*BIG "];
+            } else {
+                unsigned long value = 0;
+                while(p <= e) {
+                    value = ( value << 7 ) | ( bytes[p] & 0x7F );
+                    p++;
+                }
+                [buf appendFormat:@"%lu ", value];
+            }
+        }
+    }
+    
+    [buf appendString:@"}"];
+    return buf;
 }
 
 #pragma mark X.509 Certificate Utilities
@@ -578,7 +620,7 @@ OFCSSMKey *OFXMLSigGetKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError)
     
     modulusData = OFASN1IntegerFromBignum(modulusData);
     exponentData = OFASN1IntegerFromBignum(exponentData);
-    NSMutableData *pkcs1Bytes = OFASN1CreateForTag(0x10 | 0x20, [modulusData length] + [exponentData length]);
+    NSMutableData *pkcs1Bytes = OFASN1CreateForTag(BER_TAG_SEQUENCE | CLASS_CONSTRUCTED, [modulusData length] + [exponentData length]);
     [pkcs1Bytes appendData:modulusData];
     [pkcs1Bytes appendData:exponentData];
     
@@ -669,10 +711,10 @@ OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
     
     /* The parameters sequence tag */
     NSUInteger pqgLength = [pData length] + [qData length] + [gData length];
-    NSData *paramSeq = OFASN1CreateForTag(0x10 | 0x20, pqgLength);
+    NSData *paramSeq = OFASN1CreateForTag(BER_TAG_SEQUENCE | CLASS_CONSTRUCTED, pqgLength);
     
     /* The AlgorithmIdentifier */
-    NSMutableData *algorithmId = OFASN1CreateForTag(0x10 | 0x20, dssOidByteCount + [paramSeq length] + pqgLength);
+    NSMutableData *algorithmId = OFASN1CreateForTag(BER_TAG_SEQUENCE | CLASS_CONSTRUCTED, dssOidByteCount + [paramSeq length] + pqgLength);
     [algorithmId appendBytes:dssOidBytes length:dssOidByteCount];
     [algorithmId appendData:paramSeq];
     [algorithmId appendData:pData];
@@ -680,12 +722,12 @@ OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
     [algorithmId appendData:gData];
     
     /* The wrapped Y-value, subjectPublicKey BIT STRING */
-    NSMutableData *pubKey = OFASN1CreateForTag(0x03, 1 + [yData length]);
+    NSMutableData *pubKey = OFASN1CreateForTag(BER_TAG_BIT_STRING, 1 + [yData length]);
     [pubKey appendBytes:"" length:1]; // "Unused bits" count at beginning of BIT STRING (padding to byte boundary, none needed for us)
     [pubKey appendData:yData];
     
     /* The whole shebang */
-    NSMutableData *fullKey = OFASN1CreateForTag(0x10 | 0x20, [algorithmId length] + [pubKey length]);
+    NSMutableData *fullKey = OFASN1CreateForTag(BER_TAG_SEQUENCE | CLASS_CONSTRUCTED, [algorithmId length] + [pubKey length]);
     [fullKey appendData:algorithmId];
     [fullKey appendData:pubKey];
     

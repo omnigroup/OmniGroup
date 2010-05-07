@@ -7,6 +7,9 @@
 
 #import <OmniFoundation/OFKnownKeyDictionaryTemplate.h>
 
+#import <Foundation/Foundation.h>
+#import <OmniBase/OmniBase.h>
+
 RCS_ID("$Id$")
 
 static NSLock              *lock = nil;

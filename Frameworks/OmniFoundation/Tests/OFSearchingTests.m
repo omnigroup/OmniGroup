@@ -1,4 +1,4 @@
-// Copyright 2003-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -102,8 +102,8 @@ RCS_ID("$Id$");
     shouldEqualIndex(([txt1 indexOfBytes:"f" length:0 range:(NSRange){3,6}]), 3);
     shouldEqualIndex(([txt1 indexOfBytes:"f" length:1 range:(NSRange){3,6}]), 5);
     
-    shouldRaise(([[NSData data] indexOfBytes:"x" length:0 range:(NSRange){0,1}]));
-    shouldRaise(([[NSData data] indexOfBytes:"x" length:0 range:(NSRange){1,0}]));
+    OBAssertThrows(([[NSData data] indexOfBytes:"x" length:0 range:(NSRange){0,1}]), @"out of range");
+    OBAssertThrows(([[NSData data] indexOfBytes:"x" length:0 range:(NSRange){1,0}]), @"out of range");
     
     [txt1 release];
     [txt2 release];

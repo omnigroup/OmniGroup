@@ -8,6 +8,7 @@
 #import <OmniUnzip/OUZipArchive.h>
 
 #import <OmniUnzip/OUErrors.h>
+#import <OmniBase/system.h> // S_IFDIR, etc.
 #import "zip.h"
 
 RCS_ID("$Id$");

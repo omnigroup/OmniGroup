@@ -21,7 +21,7 @@
     #import <Foundation/NSByteOrder.h>
     #import <Foundation/NSCalendar.h>
     #import <Foundation/NSCharacterSet.h>
-    #import <Foundation/NSClassDescription.h>
+
     #import <Foundation/NSData.h>
     #import <Foundation/NSDate.h>
     #import <Foundation/NSDictionary.h>
@@ -67,5 +67,9 @@
     #import <OmniFoundation/NSObject-OFExtensions.h>
     #import <OmniFoundation/NSString-OFExtensions.h>
     #import <OmniFoundation/NSThread-OFExtensions.h>
+
+    #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+        #import <Foundation/NSClassDescription.h>
+    #endif
 
 #endif

@@ -35,6 +35,7 @@ typedef NSString *(*OFVariableReplacementFunction)(NSString *, void *);
 // The most generic form of variable replacement, letting you use your own replacer instead of providing a keyword dictionary
 
 // Generalized replacement function, and a convenience cover.
+
 typedef NSString *(*OFSubstringReplacementFunction)(NSString *, NSRange *, void *);
 - (NSString *)stringByPerformingReplacement:(OFSubstringReplacementFunction)replacer
                                onCharacters:(NSCharacterSet *)replaceMe
@@ -43,6 +44,13 @@ typedef NSString *(*OFSubstringReplacementFunction)(NSString *, NSRange *, void 
                                       range:(NSRange)touchMe;
 - (NSString *)stringByPerformingReplacement:(OFSubstringReplacementFunction)replacer
                                onCharacters:(NSCharacterSet *)replaceMe;
+#ifdef NS_BLOCKS_AVAILABLE
+typedef NSString *(^OFSubstringReplacementBlock)(NSString *, NSRange *);
+- (NSString *)stringByPerformingReplacement:(OFSubstringReplacementBlock)replacer
+                               onCharacters:(NSCharacterSet *)replaceMe
+                                    options:(NSStringCompareOptions)options
+                                      range:(NSRange)touchMe;
+#endif
 
 @end
 

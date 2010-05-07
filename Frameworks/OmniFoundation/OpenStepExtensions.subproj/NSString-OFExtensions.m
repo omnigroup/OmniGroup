@@ -9,16 +9,20 @@
 
 #import <math.h>
 
-#import <OmniFoundation/NSData-OFExtensions.h>
+#import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSMutableString-OFExtensions.h>
 #import <OmniFoundation/NSThread-OFExtensions.h>
-#import <OmniFoundation/NSFileManager-OFExtensions.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/OFRegularExpression.h>
 #import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/OFStringDecoder.h>
 #import <OmniFoundation/OFStringScanner.h>
 #import <OmniFoundation/OFUtilities.h>
+
+#import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
+
+#import <Foundation/Foundation.h>
 
 RCS_ID("$Id$")
 
@@ -242,9 +246,9 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 - (FourCharCode)fourCharCodeValue;
 {
-    FourCharCode code;
+    uint32_t code;
     
-    if (OFGet4CCFromPlist(self, (uint32_t *)&code))
+    if (OFGet4CCFromPlist(self, &code))
         return code;
     else
         return 0; // sigh.
@@ -1213,7 +1217,7 @@ char *OFASCIIDecimalStringFromDouble(double value)
             result = buf;
         } else {
             // Must insert a decimal point
-            size_t prepend = - exponent - strlen(digptr);
+            ssize_t prepend = - exponent - strlen(digptr);
             size_t pfxlen = digptr - buf;
             char *trail;
             if (prepend >= 0) {
@@ -1313,7 +1317,7 @@ char *OFShortASCIIDecimalStringFromDouble(double value, double eDigits, BOOL all
     else if (shift < 0) {
         if (allowExponential && shift < -2) {
             /* The exponential representation (which requires at least two more characters, e.g. '477e3') will be shorter than the decimal representation */
-            asprintf(&result, "%se%ld", decimalMantissa, -shift);
+            asprintf(&result, "%se%d", decimalMantissa, -shift);
             free(decimalMantissa);
         } else {
             /* Decimal representation is shorter, or exponential is not allowed */

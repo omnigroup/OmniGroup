@@ -156,7 +156,7 @@ static OFPreference *fileRefreshIntervalPreference = nil;
         address = [OWAddress addressForDirtyString:urlString];
     } NS_HANDLER {
 #ifdef DEBUG
-        NSLog(@"-[%@ %s]: %@: ignoring resources after encountering exception %@", OBShortObjectDescription(self), _cmd, filePath, [localException reason]);
+        NSLog(@"-[%@ %@]: %@: ignoring resources after encountering exception %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), filePath, [localException reason]);
 #endif
         return NO;
     } NS_ENDHANDLER;

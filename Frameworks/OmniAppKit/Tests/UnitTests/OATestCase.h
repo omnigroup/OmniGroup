@@ -14,5 +14,6 @@
 @end
 
 #import <OmniAppKit/OAController.h>
+#import <AppKit/NSApplication.h>
 @interface OATestController : OAController <NSApplicationDelegate>
 @end

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,9 +6,12 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
+#import <OmniBase/rcsid.h>
 
 #import <CoreFoundation/CFStream.h>
 #import <CoreFoundation/CFString.h>
+
+#import <Foundation/NSException.h>
 
 RCS_ID("$Id$")
 

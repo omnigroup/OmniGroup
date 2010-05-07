@@ -6,8 +6,11 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/NSNumber-OFExtensions.h>
-#import <OmniFoundation/OFRationalNumber.h>
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
+
+#import <Foundation/Foundation.h>
+
+#import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$")
 

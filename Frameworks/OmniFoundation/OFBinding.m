@@ -429,6 +429,28 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
 
 @end
 
+NSString *OFKeyPathForKeys(NSString *firstKey, ...)
+{
+    OBPRECONDITION(firstKey);
+    
+    if (firstKey == nil)
+        return nil;
+    
+    NSMutableString *keyPath = [NSMutableString stringWithString:firstKey];
+    
+    NSString *nextKey;
+    va_list argList;
+    
+    va_start(argList, firstKey);
+    while ((nextKey = va_arg(argList, id)) != nil) {
+        [keyPath appendString:@"."];
+        [keyPath appendString:nextKey];
+    }
+    va_end(argList);
+    
+    return keyPath;
+}
+
 // Directly modifies the set, publishing KVO changes
 // Computes the delta operations necessary to transition to the new set.  NSController has a bug where whole-property replacement doesn't send the right KVO, so this can be a workaround for that problem, as well as possibly being more efficient.
 void OFSetMutableSet(id self, NSString *key, NSMutableSet **ivar, NSSet *set)

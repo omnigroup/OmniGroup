@@ -8,6 +8,7 @@
 #import "OSUCheckTool.h"
 
 #import <Foundation/Foundation.h>
+#import <OmniBase/assertions.h>
 #import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$");

@@ -59,7 +59,7 @@ static int permissionsMask = 0022;
     OSErr err = FSFindFolder(kUserDomain, kDesktopFolderType, kCreateFolder, &dirRef);
     if (err != noErr) {
 #ifdef DEBUG
-        NSLog(@"FSFindFolder(kDesktopFolderType) -> %ld", err);
+        NSLog(@"FSFindFolder(kDesktopFolderType) -> %d", err);
 #endif
         [NSException raise:NSInvalidArgumentException format:@"Unable to find desktop directory"];
     }
@@ -81,7 +81,7 @@ static int permissionsMask = 0022;
     OSErr err = FSFindFolder(kUserDomain, kDocumentsFolderType, kCreateFolder, &dirRef);
     if (err != noErr) {
 #ifdef DEBUG
-        NSLog(@"FSFindFolder(kDocumentsFolderType) -> %ld", err);
+        NSLog(@"FSFindFolder(kDocumentsFolderType) -> %d", err);
 #endif
         [NSException raise:NSInvalidArgumentException format:@"Unable to find document directory"];
     }
@@ -164,151 +164,6 @@ static int permissionsMask = 0022;
     [self removeItemAtPath:scratchDirectoryPath error:NULL];
     [scratchDirectoryPath release];
     scratchDirectoryPath = nil;
-}
-
-- (void)touchFile:(NSString *)filePath;
-{
-    NSDictionary *attributes;
-
-    attributes = [[NSDictionary alloc] initWithObjectsAndKeys:[NSDate date], NSFileModificationDate, nil];
-    [self setAttributes:attributes ofItemAtPath:filePath error:NULL];
-    [attributes release];
-}
-
-- (NSDictionary *)attributesOfItemAtPath:(NSString *)filePath traverseLink:(BOOL)traverseLink error:(NSError **)outError
-{
-    int links_followed;
-    
-    links_followed = 0;
-    
-    for(;;) {
-        NSDictionary *attributes = [self attributesOfItemAtPath:filePath error:outError];
-        if (!attributes) // Error return
-            return nil;
-        
-        if (traverseLink && [[attributes fileType] isEqualToString:NSFileTypeSymbolicLink]) {
-            if (links_followed++ < MAXSYMLINKS) {
-                NSString *dest = [self destinationOfSymbolicLinkAtPath:filePath error:outError];
-                if (!dest)
-                    return nil;
-                if ([dest isAbsolutePath])
-                    filePath = dest;
-                else
-                    filePath = [[filePath stringByDeletingLastPathComponent] stringByAppendingPathComponent:dest];
-                continue;
-            } else {
-                if (outError)
-                    *outError = [NSError errorWithDomain:NSPOSIXErrorDomain code:ELOOP userInfo:[NSDictionary dictionaryWithObject:filePath forKey:NSFilePathErrorKey]];
-                return nil;
-            }
-        }
-        
-        return attributes;
-    }
-}
-                                                                                      
-- (BOOL)directoryExistsAtPath:(NSString *)path traverseLink:(BOOL)traverseLink;
-{
-    NSDictionary *attributes = [self attributesOfItemAtPath:path traverseLink:traverseLink error:NULL];
-    return attributes && [[attributes fileType] isEqualToString:NSFileTypeDirectory];
-}                                                                                 
-
-- (BOOL)directoryExistsAtPath:(NSString *)path;
-{
-    return [self directoryExistsAtPath:path traverseLink:NO];
-}
-
-- (BOOL)createPath:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
-    // Creates any directories needed to be able to create a file at the specified path.  Raises an exception on failure.
-{
-    return [self createDirectoryAtPath:path withIntermediateDirectories:YES attributes:attributes error:outError];
-}
-
-- (BOOL)createPathToFile:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
-    // Creates any directories needed to be able to create a file at the specified path.  Returns NO on failure.
-{
-    NSArray *pathComponents = [path pathComponents];
-    NSUInteger componentCount = [pathComponents count];
-    if (componentCount <= 1)
-        return YES;
-    
-    return [self createPathComponents:[pathComponents subarrayWithRange:(NSRange){0, componentCount-1}] attributes:attributes error:outError];
-}
-
-- (BOOL)createPathComponents:(NSArray *)components attributes:(NSDictionary *)attributes error:(NSError **)outError
-{
-    if ([attributes count] == 0)
-        attributes = nil;
-    
-    NSUInteger dirCount = [components count];
-    NSMutableArray *trimmedPaths = [[NSMutableArray alloc] initWithCapacity:dirCount];
-    
-    [trimmedPaths autorelease];
-    
-    NSString *finalPath = [NSString pathWithComponents:components];
-    
-    NSMutableArray *trim = [[NSMutableArray alloc] initWithArray:components];
-    NSError *error = nil;
-    for (NSUInteger trimCount = 0; trimCount < dirCount && !error; trimCount ++) {
-        struct stat statbuf;
-        
-        OBINVARIANT([trim count] == (dirCount - trimCount));
-        NSString *trimmedPath = [NSString pathWithComponents:trim];
-        const char *path = [trimmedPath fileSystemRepresentation];
-        if (stat(path, &statbuf)) {
-            int err = errno;
-            if (err == ENOENT) {
-                [trimmedPaths addObject:trimmedPath];
-                [trim removeLastObject];
-                // continue
-            } else {
-                OBErrorWithErrnoObjectsAndKeys(&error, err, "stat", trimmedPath,
-                                               NSLocalizedStringFromTableInBundle(@"Could not create directory", @"OmniFoundation", OMNI_BUNDLE, @"Error message when stat() fails when trying to create a directory tree"),
-                                               finalPath, NSFilePathErrorKey, nil);
-                
-            }
-        } else if ((statbuf.st_mode & S_IFMT) != S_IFDIR) {
-            OBErrorWithErrnoObjectsAndKeys(&error, ENOTDIR, "mkdir", trimmedPath,
-                                           NSLocalizedStringFromTableInBundle(@"Could not create directory", @"OmniFoundation", OMNI_BUNDLE, @"Error message when mkdir() will fail because there's a file in the way"),
-                                           finalPath, NSFilePathErrorKey, nil);
-        } else {
-            break;
-        }
-    }
-    [trim release];
-    
-    if (error) {
-        if (outError)
-            *outError = error;
-        return NO;
-    }
-    
-    mode_t mode;
-    mode = 0777; // umask typically does the right thing
-    if (attributes && [attributes objectForKey:NSFilePosixPermissions]) {
-        mode = [attributes unsignedIntForKey:NSFilePosixPermissions];
-        if ([attributes count] == 1)
-            attributes = nil;
-    }
-    
-    while ([trimmedPaths count]) {
-        NSString *pathString = [trimmedPaths lastObject];
-        const char *path = [pathString fileSystemRepresentation];
-        if (mkdir(path, mode) != 0) {
-            int err = errno;
-            OBErrorWithErrnoObjectsAndKeys(outError, err, "mkdir", pathString,
-                                           NSLocalizedStringFromTableInBundle(@"Could not create directory", @"OmniFoundation", OMNI_BUNDLE, @"Error message when mkdir() fails"),
-                                           finalPath, NSFilePathErrorKey, nil);
-            return NO;
-        }
-        
-        if (attributes)
-            [self setAttributes:attributes ofItemAtPath:pathString error:NULL];
-        
-        [trimmedPaths removeLastObject];
-    }
-    
-    return YES;
 }
 
 - (NSString *)existingPortionOfPath:(NSString *)path;
@@ -434,12 +289,12 @@ static int permissionsMask = 0022;
     NSData *data = [NSPropertyListSerialization dataFromPropertyList:lockDictionary format:NSPropertyListXMLFormat_v1_0 errorDescription:&errorDescription];
     
     if (!data) {
-        OBError(outError, OFUnableToSerializeLockFileDictionaryError, errorDescription);
+        OFError(outError, OFUnableToSerializeLockFileDictionaryError, errorDescription, nil);
         return nil;
     }
     
     if (![data writeToFile:lockFilePath options:NSAtomicWrite error:outError]) {
-        OBError(outError, OFUnableToCreateLockFileError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to create lock file '%@'.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), lockFilePath]));
+        OFError(outError, OFUnableToCreateLockFileError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to create lock file '%@'.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), lockFilePath]), nil);
         return nil;
     }
     
@@ -486,12 +341,12 @@ static int permissionsMask = 0022;
     // Try FSExchangeObjects.  Under 10.2 this will only work if both files are on the same filesystem and both are files (not folders).  We could check for these conditions up front, but they might fix/extend FSExchangeObjects, so we'll just try it.
     FSRef originalRef, newRef;
     if (!CFURLGetFSRef((CFURLRef)originalURL, &originalRef)) {
-        OBError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to get file reference for '%@'", originalFile]));
+        OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to get file reference for '%@'", originalFile]), nil);
         return NO;
     }
     
     if (!CFURLGetFSRef((CFURLRef)newURL, &newRef)) {
-        OBError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to get file reference for '%@'", newFile]));
+        OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to get file reference for '%@'", newFile]), nil);
         return NO;
     }
 
@@ -517,7 +372,7 @@ static int permissionsMask = 0022;
         
         if (![self moveItemAtPath:newFile toPath:temporaryPath error:outError]) {
             // Wrap the *outError from -moveItemAtPath:toPath:error: in an OFCannotExchangeFileError
-            OBError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", newFile, temporaryPath]));
+            OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", newFile, temporaryPath]), nil);
             return NO;
         }
         
@@ -546,7 +401,7 @@ static int permissionsMask = 0022;
             
             if (![self moveItemAtPath:originalFile toPath:originalAside error:outError]) {
                 // Wrap the *outError from -moveItemAtPath:toPath:error: in an OFCannotExchangeFileError
-                OBError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", originalFile, originalAside]));
+                OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", originalFile, originalAside]), nil);
                 return NO;
             }
 
@@ -556,7 +411,7 @@ static int permissionsMask = 0022;
                 [self moveItemAtPath:originalAside toPath:originalFile error:NULL];
                 
                 // Wrap the *outError from -moveItemAtPath:toPath:error: in an OFCannotExchangeFileError
-                OBError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", temporaryPath, originalFile]));
+                OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", temporaryPath, originalFile]), nil);
                 return NO;
             }
         }
@@ -791,7 +646,7 @@ static int permissionsMask = 0022;
             
             nextComponent = [strippedComponents lastObject];
             componentNameLength = [nextComponent length];
-            componentName = malloc(componentNameLength * sizeof(UniChar));
+            componentName = malloc(componentNameLength * sizeof(*componentName));
             OBASSERT(sizeof(UniChar) == sizeof(unichar));
             [nextComponent getCharacters:componentName];
             bzero(&newRef, sizeof(newRef));

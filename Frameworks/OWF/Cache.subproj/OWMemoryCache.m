@@ -787,7 +787,7 @@ RCS_ID("$Id$");
         }
     } NS_HANDLER {
 #ifdef DEBUG
-        NSLog(@"%@: ignoring exception in %s: %@", [self shortDescription], _cmd, localException);
+        NSLog(@"%@: ignoring exception in %@: %@", [self shortDescription], NSStringFromSelector(_cmd), localException);
 #endif
     } NS_ENDHANDLER;
 

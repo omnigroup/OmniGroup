@@ -17,21 +17,12 @@
 #import <OmniFoundation/NSData-OFCompression.h>
 #import <OmniFoundation/OFFilterProcess.h>
 
-typedef struct OFQuotedPrintableMapping {
-    char map[256];   // 256 entries, one for each octet value
-    unsigned short translations[8];  // 8 is an arbitrary size; must be at least 2
-} OFQuotedPrintableMapping;
-
 @interface NSData (OFExtensions)
 
 + (NSData *)randomDataOfLength:(NSUInteger)byteCount;
 // Returns a new autoreleased instance that contains the number of requested random bytes.
 
 + dataWithDecodedURLString:(NSString *)urlString;
-
-// This is a generic implementation of quoted-printable-style encodings, used by methods elsewhere in OmniFoundation
-- (NSString *)quotedPrintableStringWithMapping:(const OFQuotedPrintableMapping *)qpMap lengthHint:(NSUInteger)zeroIfNoHint;
-- (NSUInteger)lengthOfQuotedPrintableStringWithMapping:(const OFQuotedPrintableMapping *)qpMap;
 
 - (NSUInteger)indexOfFirstNonZeroByte;
     // Returns the index of the first non-zero byte in the receiver, or NSNotFound if if all the bytes in the data are zero.

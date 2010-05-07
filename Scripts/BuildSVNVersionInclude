@@ -1,12 +1,5 @@
 #!/bin/zsh -f
 #
-# Copyright 2008 Omni Development, Inc.  All rights reserved.
-#
-# This software may only be used and reproduced according to the
-# terms in the file OmniSourceLicense.html, which should be
-# distributed with this project and can also be found at
-# <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-#
 # $Id$
 
 setopt ERR_EXIT
@@ -46,16 +39,12 @@ do
 done
 
 BUILD_DATE=`TZ=UTC date +"%Y-%m-%dT%H:%M:%S.000Z"`
-SVNURL=`svn info . | grep "^URL: " | sed 's/^URL: //'`
+SVNURL=`svn info --xml . | xpath '/info/entry/url/text()' 2>& /dev/null`
 if [ -n "$OMNI_VERSIONS" -a -f "$OMNI_VERSIONS" ]; then
     SVNREVISION=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
 else
-    SVNREVISION=`svn info . | grep "^Last Changed Rev: " | sed 's/^Last Changed Rev: //'`
+    SVNREVISION=`svn info --xml . | xpath 'string(/info/entry/@revision)' 2>& /dev/null`
 fi
-
-if [ -z "$SVNURL" ]; then; SVNURL="local build"; fi
-if [ -z "$SVNREVISION" ]; then; SVNREVISION=0; fi
-
 mkdir -p "$PROJECT_DERIVED_FILE_DIR"
 
 (

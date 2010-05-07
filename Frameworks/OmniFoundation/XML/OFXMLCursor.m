@@ -7,10 +7,12 @@
 
 #import <OmniFoundation/OFXMLCursor.h>
 
+#import <Foundation/Foundation.h>
+
 #import <OmniFoundation/OFXMLDocument.h>
 #import <OmniFoundation/OFXMLElement.h>
 #import <OmniFoundation/OFXMLString.h>
-#import <OmniBase/rcsid.h>
+#import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
@@ -58,7 +60,7 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     _document = [document retain];
     _startingElement = [element retain];
     
-    _state = NSAllocateCollectable(sizeof(*_state), NSScannedOption);
+    _state = OBAllocateCollectable(sizeof(*_state), NSScannedOption);
     _stateCount = 1;
     _stateSize = 1;
 
@@ -179,7 +181,7 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     _stateCount++;
     if (_stateCount > _stateSize) {
         _stateSize = 2 * _stateCount;
-        _state = NSReallocateCollectable(_state, sizeof(*_state) * _stateSize, NSScannedOption);
+        _state = OBReallocateCollectable(_state, sizeof(*_state) * _stateSize, NSScannedOption);
     }
 
     _OFXMLCursorStateInit(&_state[_stateCount - 1], currentChild);

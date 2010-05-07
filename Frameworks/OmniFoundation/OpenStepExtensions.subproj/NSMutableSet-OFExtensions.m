@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/NSMutableSet-OFExtensions.h>
+#import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
 
 RCS_ID("$Id$");
 

@@ -85,7 +85,7 @@ static OFPreference *directoryIndexFilenamePreference = nil;
     [lowercaseEffectNameDictionary setObject:[NSNumber numberWithInt:OWAddressEffectNewBrowserWindow] forKey:@"x-popup"];
     [lowercaseEffectNameDictionary setObject:[NSNumber numberWithInt:OWAddressEffectOpenBookmarksWindow] forKey:@"x-as-list"];
     
-    [[OFController sharedController] addObserver:self];
+    [[OFController sharedController] addObserver:(id)self];
 }
 
 + (void)controllerDidInitialize:(OFController *)controller;

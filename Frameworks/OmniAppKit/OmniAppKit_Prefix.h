@@ -7,8 +7,9 @@
 //
 // $Id$
 
-#ifndef DEBUG_automation
 #import <CoreFoundation/CoreFoundation.h>
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 
 #ifdef __OBJC__
 #import <Cocoa/Cocoa.h>
@@ -22,6 +23,6 @@
 #import "OAUtilities.h"
 #import "OAFindControllerTargetProtocol.h"
 
-#endif /* __OBJC__ */
+#endif // __OBJC__
 
-#endif /* DEBUG_automation */
+#endif // TARGET_OS_IPHONE

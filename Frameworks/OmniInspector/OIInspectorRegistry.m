@@ -234,6 +234,12 @@ static NSMutableArray *hiddenPanels = nil;
     [[self sharedInspector] _inspectWindow:[NSApp mainWindow] queue:NO onlyIfVisible:NO updateInspectors:NO];
 }
 
++ (void)clearInspectionSet;
+{
+    [[[self sharedInspector] inspectionSet] removeAllObjects];
+    [[self sharedInspector] inspectionSetChanged];
+}
+
 - (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
 {
     OFForEachInArray(inspectorControllers, OIInspectorController *, anInspector, {

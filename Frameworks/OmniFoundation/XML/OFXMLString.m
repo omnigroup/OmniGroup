@@ -7,14 +7,20 @@
 
 #import <OmniFoundation/OFXMLString.h>
 
+#import <Foundation/Foundation.h>
+
+#import <OmniFoundation/OFXMLDocument.h>
+#import <OmniFoundation/OFXMLElement.h>
+#import <OmniFoundation/OFXMLBuffer.h>
+
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSString-OFUnicodeCharacters.h>
 #import <OmniFoundation/NSString-OFConversion.h>
-#import <OmniFoundation/OFXMLDocument.h>
-#import <OmniFoundation/OFXMLElement.h>
 #import <OmniFoundation/OFUnicodeUtilities.h>
+#import <OmniFoundation/OFNull.h>
 
-#import <OmniFoundation/OFXMLBuffer.h>
+#import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
 
 RCS_ID("$Id$");
 
@@ -289,7 +295,7 @@ NSString *OFXMLCreateParsedEntityString(NSString *sourceString)
 
                 [result appendString:entityValue];
             } else {
-                NSLog(@"Misformed entity reference at location %d (not terminated)", [scanner scanLocation]);
+                NSLog(@"Misformed entity reference at location %ld (not terminated)", [scanner scanLocation]);
                 [result appendString:@"&"];
             }
         } else {

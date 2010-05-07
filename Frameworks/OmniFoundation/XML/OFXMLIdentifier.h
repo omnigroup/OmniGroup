@@ -7,7 +7,7 @@
 //
 // $Id$
 
-@class NSString;
+#import <Foundation/NSString.h>
 
 extern BOOL OFXMLIsValidID(NSString *identifier);
 extern NSString *OFXMLCreateID(void);

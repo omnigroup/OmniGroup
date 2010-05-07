@@ -299,7 +299,7 @@ static NSException *OWDataStreamCursor_SeekException;
         [self bufferBytes:1];
     } NS_HANDLER {
 #ifdef DEBUG
-        NSLog(@"%s, recording exception: %@", _cmd, localException);
+        NSLog(@"%@, recording exception: %@", NSStringFromSelector(_cmd), localException);
 #endif
         [self abortWithException:localException];
     } NS_ENDHANDLER;

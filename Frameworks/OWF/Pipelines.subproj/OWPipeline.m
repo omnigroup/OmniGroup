@@ -409,7 +409,7 @@ static void lockedPostNotificationsAndRelease(NSArray *notesToSend)
             }
             ASSERT_OWPipeline_Locked();
         } NS_HANDLER {
-            NSLog(@"*** Exception raised in pipeline notification, ignoring (%@ %u/%u) %@",
+            NSLog(@"*** Exception raised in pipeline notification, ignoring (%@ %lu/%lu) %@",
                   [notesToSend objectAtIndex:noteIndex-1], noteIndex-1, noteCount, localException);
         } NS_ENDHANDLER;
     }
@@ -470,7 +470,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         addInvocationsToQueue(pendingCacheNotifications, pipelines, targetCount, aSelector, arg);
         pthread_mutex_unlock(&globalCacheLock);
         if (wasEmpty)
-            [[OWProcessor processorQueue] queueSelector:@selector(_blockAndPostNotifications) forObject:self];
+            [[OWProcessor processorQueue] queueSelector:@selector(_blockAndPostNotifications) forObject:(id)self];
         return;
     }
 
@@ -483,8 +483,8 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
                 [aPipeline performSelector:aSelector withObject:arg];
             }
         } NS_HANDLER {
-            NSLog(@"*** Exception raised in pipeline notification, ignoring (target=%p %u/%u, sel=%s) %@",
-                  [pipelines objectAtIndex:targetIndex-1], targetIndex-1, targetCount, aSelector, localException);
+            NSLog(@"*** Exception raised in pipeline notification, ignoring (target=%p %lu/%lu, sel=%@) %@",
+                  [pipelines objectAtIndex:targetIndex-1], targetIndex-1, targetCount, NSStringFromSelector(aSelector), localException);
         } NS_ENDHANDLER;
     } while (targetIndex < targetCount);
 
@@ -793,11 +793,11 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 - (void)abortTask;
 {
     if (OWPipelineDebug || flags.debug)
-        NSLog(@"%@ %s state=%d", OBShortObjectDescription(self), _cmd, state);
+        NSLog(@"%@ %@ state=%d", OBShortObjectDescription(self), NSStringFromSelector(_cmd), state);
 
     if (state == OWPipelineAborting || state == OWPipelineDead || state == OWPipelineInvalidating) {
         if (OWPipelineDebug || flags.debug)
-            NSLog(@"%@ %s - short circuit (already in state %d)", OBShortObjectDescription(self), _cmd, state);
+            NSLog(@"%@ %@ - short circuit (already in state %d)", OBShortObjectDescription(self), NSStringFromSelector(_cmd), state);
         return;
     }
 
@@ -815,7 +815,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
             [self setErrorName:@"UserAbort" reason:nil];
 
         if (OWPipelineDebug)
-            NSLog(@"%@ %s - scanning %d arcs", OBShortObjectDescription(self), _cmd, [followedArcs count]);
+            NSLog(@"%@ %@ - scanning %ld arcs", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [followedArcs count]);
 
         for (arcIndex = 0; arcIndex < [followedArcs count]; arcIndex ++) {
             id <OWCacheArc> anArc = [followedArcs objectAtIndex:arcIndex];
@@ -829,13 +829,13 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
             // Disabling the following test because it makes it impossible to abort tasks that were started in another pipeline (like downloads)--even if that other pipeline no longer exists
             if ([anArc isKindOfClass:[OWProcessorCacheArc class]] && ![(OWProcessorCacheArc *)anArc isOwnedByPipeline:self]) {
                 if (OWPipelineDebug || flags.debug)
-                    NSLog(@"%@ %s - not aborting #%d %@", OBShortObjectDescription(self), _cmd, arcIndex, [(NSObject *)anArc shortDescription]);
+                    NSLog(@"%@ %@ - not aborting #%d %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), arcIndex, [(NSObject *)anArc shortDescription]);
                 continue;
             }
 #endif
 
             if (OWPipelineDebug || flags.debug)
-                NSLog(@"%@ %s - aborting #%d %@", OBShortObjectDescription(self), _cmd, arcIndex, [(NSObject *)anArc shortDescription]);
+                NSLog(@"%@ %@ - aborting #%ld %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), arcIndex, [(NSObject *)anArc shortDescription]);
 
             aborted = [anArc abortArcTask];
             if (aborted) {
@@ -852,7 +852,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         [activeArcs removeAllObjects];
 
         if (OWPipelineDebug)
-            NSLog(@"%@ %s - aborted=%d", OBShortObjectDescription(self), _cmd, aborted);
+            NSLog(@"%@ %@ - aborted=%d", OBShortObjectDescription(self), NSStringFromSelector(_cmd), aborted);
 
     } NS_HANDLER {
         [OWPipeline unlock];
@@ -1047,7 +1047,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
             [self setParentContentInfo:[OWContentInfo orphanParentContentInfo]];
         }
     } NS_HANDLER {
-        NSLog(@"-[%@ %s]: caught exception %@", OBShortObjectDescription(self), _cmd, [localException reason]);
+        NSLog(@"-[%@ %@]: caught exception %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [localException reason]);
     } NS_ENDHANDLER;
 
     OBASSERT(_target == nil);
@@ -1408,7 +1408,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     threadsUsedCount = [followedArcsWithThreads count];
 
     if (/* [info intForKey:OWCacheArcHasThreadChangeInfoKey defaultValue:0] || */ OWPipelineDebug || flags.debug)
-        NSLog(@"%@ <%@> %@ %@ / %@%@ (threadsUsedCount=%d, delta=%d)", OBShortObjectDescription(self), [[self lastAddress] addressString], [(NSObject *)thisArc shortDescription], [info objectForKey:OWCacheArcStatusStringNotificationInfoKey],  [info objectForKey:OWPipelineHasErrorNotificationErrorNameKey],
+        NSLog(@"%@ <%@> %@ %@ / %@%@ (threadsUsedCount=%ld, delta=%d)", OBShortObjectDescription(self), [[self lastAddress] addressString], [(NSObject *)thisArc shortDescription], [info objectForKey:OWCacheArcStatusStringNotificationInfoKey],  [info objectForKey:OWPipelineHasErrorNotificationErrorNameKey],
               [info boolForKey:OWCacheArcIsFinishedNotificationInfoKey defaultValue:NO]?@" (finished)":@"", threadsUsedCount, [info intForKey:OWCacheArcHasThreadChangeInfoKey defaultValue:0]);
 
     errorName = [info objectForKey:OWCacheArcErrorNameNotificationInfoKey];
@@ -1670,24 +1670,24 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     BOOL shouldDeactivate = YES;
 
     if (OWPipelineDebug || flags.debug)
-        NSLog(@"%@: %s", [self shortDescription], _cmd);
+        NSLog(@"%@: %@", [self shortDescription], NSStringFromSelector(_cmd));
 
     [OWPipeline lock];
     NS_DURING {
         if (state == OWPipelineDead) {
             // Already dead or dying.
             if (OWPipelineDebug || flags.debug)
-                NSLog(@"%@: %s: already dead", [self shortDescription], _cmd);
+                NSLog(@"%@: %@: already dead", [self shortDescription], NSStringFromSelector(_cmd));
             shouldDeactivate = NO;
         } else if (state == OWPipelineBuilding || continuationEvent != nil || flags.traversingLastArc) {
             // We're in the middle of doing something right now.
             if (OWPipelineDebug || flags.debug)
-                NSLog(@"%@: %s: continuationEvent=%@, traversingLastArc=%d", [self shortDescription], _cmd, [continuationEvent shortDescription], flags.traversingLastArc);
+                NSLog(@"%@: %@: continuationEvent=%@, traversingLastArc=%d", [self shortDescription], NSStringFromSelector(_cmd), [continuationEvent shortDescription], flags.traversingLastArc);
             shouldDeactivate = NO;
         } else if ([activeArcs count] != 0) {
             // We still have active arc notifications pending:  the arcs themselves may have already switched over to the 'retired' state, but their notifications are still pending
             if (OWPipelineDebug || flags.debug)
-                NSLog(@"%@: %s: activeArcs=%@", [self shortDescription], _cmd, [activeArcs description]);
+                NSLog(@"%@: %@: activeArcs=%@", [self shortDescription], NSStringFromSelector(_cmd), [activeArcs description]);
             shouldDeactivate = NO;
         } else {
             // compute whether we have any active or queued processes associated with us
@@ -1695,7 +1695,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
             OFForEachInArray(followedArcs, id <OWCacheArc>, anArc,
                              if ([anArc status] != OWProcessorRetired) {
                                  if (OWPipelineDebug || flags.debug)
-                                     NSLog(@"%@: %s: arc is not retired: %@ (status=%d)", [self shortDescription], _cmd, anArc, [anArc status]);
+                                     NSLog(@"%@: %@: arc is not retired: %@ (status=%d)", [self shortDescription], NSStringFromSelector(_cmd), anArc, [anArc status]);
                                  shouldDeactivate = NO;
                                  break;
                              }
@@ -1727,7 +1727,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 {
     BOOL treeHasActiveChildren = [self treeHasActiveChildren];
     if (OWPipelineDebug || flags.debug)
-        NSLog(@"%@: %s - target=%@ treeHasActiveChildren=%d", [self shortDescription], _cmd, OBShortObjectDescription([self target]), treeHasActiveChildren);
+        NSLog(@"%@: %@ - target=%@ treeHasActiveChildren=%d", [self shortDescription], NSStringFromSelector(_cmd), OBShortObjectDescription([self target]), treeHasActiveChildren);
 
     // Note: This non-locked access to target should be fine because even if we're half-way through a write our equality test will still give a reasonable result
     if ([self target] != nil || treeHasActiveChildren)
@@ -1927,7 +1927,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 
     if (OWPipelineDebug || flags.debug)
-        NSLog(@"-[%@ %s]: end (progress=%d)", OBShortObjectDescription(self), _cmd, progress);
+        NSLog(@"-[%@ %@]: end (progress=%d)", OBShortObjectDescription(self), NSStringFromSelector(_cmd), progress);
     return progress;
 }
 
@@ -1990,7 +1990,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
                 [self setContentInfo:[newlyFoundContentEntry contentInfo]];
                 
                 if (OWPipelineDebug || flags.debug)
-                    NSLog(@"%@: added content %@: %@ from arc %@; content count = %d, arc count = %d",
+                    NSLog(@"%@: added content %@: %@ from arc %@; content count = %ld, arc count = %ld",
                           OBShortObjectDescription(self), [[newlyFoundContentEntry contentType] contentTypeString], newlyFoundContentEntry, OBShortObjectDescription(producer),                           [followedContent count], [followedArcs count]);
                 OBASSERT([followedContent count] == [followedArcs count]+1);
                 return YES;
@@ -2033,7 +2033,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     ASSERT_OWPipeline_Locked();
 
     if (OWPipelineDebug || flags.debug)
-        NSLog(@"%@: spawning clone: %d arcs, new content = %@, precedes=%d, target = %@",
+        NSLog(@"%@: spawning clone: %ld arcs, new content = %@, precedes=%d, target = %@",
               OBShortObjectDescription(self), arcIndex+1,
               OBShortObjectDescription(newContent), precedes,
               OBShortObjectDescription(targetSnapshot));
@@ -2168,7 +2168,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     OBASSERT(arcIndex != NSNotFound);
     // OBASSERT(arcIndex + 1 == [followedArcs count]); // Otherwise, a future arc is derived from the one we're forgetting (and we ought to forget it too?).  TODO: This assertion fails when loading <http://www.WorldofWarcraft.com>, where we end up with two OWHTTPProcessor arcs.
     if (OWPipelineDebug || flags.debug)
-        NSLog(@"%@: forgetting arc at index %d (of %d arcs); content count = %d",
+        NSLog(@"%@: forgetting arc at index %ld (of %ld arcs); content count = %ld",
               OBShortObjectDescription(self),
               arcIndex, [followedArcs count], [followedContent count]);
 #ifdef DEBUG_kc
@@ -2320,7 +2320,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
         // This shouldn't ever happen (any more)
         if ([followedContent count] == 0) {
-            NSLog(@"-[%@ %s]: followedContent is empty", OBShortObjectDescription(self), _cmd);
+            NSLog(@"-[%@ %@]: followedContent is empty", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
             continuationEvent = [[OFInvocation alloc] initForObject:self selector:@selector(_weAreAtAnImpasse)];
             return continuationEvent;
         }
@@ -2727,7 +2727,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     NSNotification *activationNotification;
 
     if (OWPipelineDebug || flags.debug)
-        NSLog(@"-[%@ %s%@]", OBShortObjectDescription(self), _cmd, OBShortObjectDescription(aTarget));
+        NSLog(@"-[%@ %@%@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd), OBShortObjectDescription(aTarget));
 
     [self _updateStatusOnTarget:aTarget];
 
@@ -2744,7 +2744,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     NSNotification *deactivationNote;
 
     if (OWPipelineDebug || flags.debug)
-        NSLog(@"-[%@ %s%@]", OBShortObjectDescription(self), _cmd, OBShortObjectDescription(aTarget));
+        NSLog(@"-[%@ %@%@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd), OBShortObjectDescription(aTarget));
 
     [self _updateStatusOnTarget:aTarget];
 

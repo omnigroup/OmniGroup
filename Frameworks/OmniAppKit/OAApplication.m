@@ -1,4 +1,4 @@
-// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -613,7 +613,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
             }
             
             if (err != noErr)	
-                NSLog(@"Apple Help error: %d", err);
+                NSLog(@"Apple Help error: %ld", (long)err);
         } else {
             // We can let the system decide who to open the URL with
             [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:helpURL]];

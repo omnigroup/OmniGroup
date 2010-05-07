@@ -9,6 +9,11 @@
 
 #import <Foundation/NSData.h>
 
+typedef struct OFQuotedPrintableMapping {
+    char map[256];   // 256 entries, one for each octet value
+    unsigned short translations[8];  // 8 is an arbitrary size; must be at least 2
+} OFQuotedPrintableMapping;
+
 
 @interface NSData (OFEncoding) 
 
@@ -29,5 +34,9 @@
 // for NSData strings that users have to type in.
 - initWithASCII26String:(NSString *)ascii26String;
 - (NSString *)ascii26String;
+
+// This is a generic implementation of quoted-printable-style encodings, used by methods elsewhere in OmniFoundation
+- (NSString *)quotedPrintableStringWithMapping:(const OFQuotedPrintableMapping *)qpMap lengthHint:(NSUInteger)zeroIfNoHint;
+- (NSUInteger)lengthOfQuotedPrintableStringWithMapping:(const OFQuotedPrintableMapping *)qpMap;
 
 @end

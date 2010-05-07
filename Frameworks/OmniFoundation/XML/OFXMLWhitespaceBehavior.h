@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+#import <CoreFoundation/CFDictionary.h>
 
 typedef enum _OFXMLWhitespaceBehaviorType {
     OFXMLWhitespaceBehaviorTypeAuto,     // do whatever the parent node did -- the default

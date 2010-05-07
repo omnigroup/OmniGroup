@@ -109,7 +109,7 @@ static NSData *repeatedBytes(int bytevalue, unsigned int count)
 - (void)testGilloglyGrieu_Huge
 {
     if (![[self class] shouldRunSlowUnitTests]) {
-        NSLog(@"*** SKIPPING slow test [%@ %s]", [self class], _cmd);
+        NSLog(@"*** SKIPPING slow test [%@ %@]", [self class], NSStringFromSelector(_cmd));
         return;
     }
     
@@ -226,7 +226,7 @@ NSString *md5string(NSString *input)
 - (void)testSHA256_Huge
 {
     if (![[self class] shouldRunSlowUnitTests]) {
-        NSLog(@"*** SKIPPING slow test [%@ %s]", [self class], _cmd);
+        NSLog(@"*** SKIPPING slow test [%@ %@]", [self class], NSStringFromSelector(_cmd));
         return;
     }
     

@@ -9,6 +9,8 @@
 
 #import "OSUChecker.h"
 #import "OSUTAChecker.h"
+#import "OSUItem.h"
+#import "OSUPreferences.h"
 #import "NSApplication-OSUSupport.h"
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
@@ -23,6 +25,7 @@ RCS_ID("$Id$");
 
 // Preferences keys
 static NSString *OSUInstallFromURLKey = @"installFrom";
+static NSString *OSULicenseTypeKey = @"targetLicenseType";
 
 @implementation OSUTAController
 
@@ -55,7 +58,7 @@ static NSString *OSUInstallFromURLKey = @"installFrom";
 
 - (IBAction)changeLicenseState:sender;
 {
-    [[OSUChecker sharedUpdateChecker] setLicenseType:[[licenseStatePopUp selectedItem] representedObject]];
+//    [[OSUChecker sharedUpdateChecker] setLicenseType:[[licenseStatePopUp selectedItem] representedObject]];
 }
 
 @end
@@ -86,6 +89,13 @@ static NSString *OSUInstallFromURLKey = @"installFrom";
     }
     
     [licenseStatePopUp selectItemWithTitle:OSULicenseTypeUnset];
+    [licenseStatePopUp bind:NSSelectedObjectBinding toObject:[NSUserDefaults standardUserDefaults] withKeyPath:OSULicenseTypeKey options:nil];
+    [[OSUChecker sharedUpdateChecker] bind:OSUCheckerLicenseTypeBinding toObject:[NSUserDefaults standardUserDefaults] withKeyPath:OSULicenseTypeKey options:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(noteVisibleTracks:) name:OSUTrackVisibilityChangedNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(noteVisibleTracks:) name:NSUserDefaultsDidChangeNotification object:nil];
+
+    [self noteVisibleTracks:nil];
 }
 
 #pragma mark --
@@ -123,6 +133,59 @@ static NSString *OSUInstallFromURLKey = @"installFrom";
             [NSApp presentError:err modalForWindow:window];
         (void)dl;
     }
+}
+
+extern NSDictionary *knownTrackOrderings;
+
+- (void)textDidEndEditing:(NSNotification *)notification;
+{
+    NSArray *trax = [OSUItem dominantTracks:[[visibleTracksTextView string] componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+
+    OFInvocation *queueEntry = [[OFInvocation alloc] initForObject:[OSUPreferences self] selector:@selector(setVisibleTracks:) withObject:trax];
+    [[OFMessageQueue mainQueue] addQueueEntry:queueEntry];
+    [queueEntry release];
+}
+
+- (void)noteVisibleTracks:(NSNotification *)notification;
+{
+    NSArray *trax = [[OFPreference preferenceForKey:OSUVisibleTracksKey] stringArrayValue];
+    NSMutableSet *more = [NSMutableSet setWithArray:trax];
+    NSMutableAttributedString *txt = [[NSMutableAttributedString alloc] init];
+    NSDictionary *normAttrs = [NSDictionary dictionaryWithObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+    NSDictionary *impliedAttrs = [NSDictionary dictionaryWithObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
+    NSDictionary *unkAttrs = [NSDictionary dictionaryWithObject:[NSColor redColor] forKey:NSForegroundColorAttributeName];
+
+    // tickle OSUItem so that its private static variable knownTrackOrderings becomes valid
+    [OSUItem compareTrack:@"beta" toTrack:@"rc"];
+    
+    for(NSString *track in trax) {
+        if ([NSString isEmptyString:track])
+            continue;
+        if ([txt length])
+            [txt appendString:@" " attributes:normAttrs];
+        
+        NSSet *sup = [knownTrackOrderings objectForKey:track];
+        if (sup) {
+            [txt appendString:track attributes:normAttrs];
+            for(NSString *aSup in sup) {
+                if (![NSString isEmptyString:aSup] && ![more containsObject:aSup]) {
+                    [txt appendString:@" " attributes:normAttrs];
+                    [txt appendString:aSup attributes:impliedAttrs];
+                    [more addObject:aSup];
+                }
+            }
+        } else {
+            [txt appendString:track attributes:unkAttrs];
+        }
+    }
+
+    [[visibleTracksTextView textStorage] setAttributedString:txt];
+    [txt release];
+    
+    NSArray *rTs = [OSUPreferences visibleTracks];
+    NSString *rT = (rTs && [rTs count])? [rTs objectAtIndex:0] : [[OSUChecker sharedUpdateChecker] applicationTrack];
+    // NSLog(@" %@ , \"%@\" -> \"%@\"", rTs, [[OSUChecker sharedUpdateChecker] applicationTrack], rT);
+    [requestedTrackField setStringValue: [NSString isEmptyString:rT]? @"<final>" : rT];
 }
 
 @end

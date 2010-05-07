@@ -46,3 +46,7 @@
 - (OFMultiValueDictionary *)groupBySelector:(SEL)aSelector;
 - (OFMultiValueDictionary *)groupBySelector:(SEL)aSelector withObject:(id)anObject;
 @end
+
+@interface NSString (OFMultiValueDictionary)
+- (OFMultiValueDictionary *)parametersFromQueryString;
+@end

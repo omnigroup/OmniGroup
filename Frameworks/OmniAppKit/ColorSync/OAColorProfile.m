@@ -227,7 +227,7 @@ OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
     CMProfileRef cmProfile = NULL;
     CMError err = CMOpenProfile((CMProfileRef *)&cmProfile, &iterateData->location);
     if (err != noErr) {
-        NSLog(@"CMOpenProfile() for '%@' returns %d", name, err);
+        NSLog(@"CMOpenProfile() for '%@' returns %ld", name, (long)err);
         return err;
     }
     
@@ -342,7 +342,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
             *cmProfilePointer = profile;  // transfer the ref count
             return YES;
         } else {
-            NSLog(@"CMOpenProfile(<%u bytes>) returns error %d", [data length], err);
+            NSLog(@"CMOpenProfile(<%lu bytes>) returns error %ld", [data length], (long)err);
         }
     }
     
@@ -834,7 +834,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 
     CMError err = CMGetProfileHeader(rawProfile, &header);
     if (err != noErr) {
-        NSLog(@"Cannot copy color profile %p: CMError %d", rawProfile, err);
+        NSLog(@"Cannot copy color profile %p: CMError %ld", rawProfile, (long)err);
         return nil;
     }
     

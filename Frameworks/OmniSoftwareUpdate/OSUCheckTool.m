@@ -7,9 +7,12 @@
 
 #import "OSUCheckTool.h"
 
+#import <Foundation/Foundation.h>
 #import <SystemConfiguration/SCDynamicStore.h>
 #import <SystemConfiguration/SCNetwork.h>
 #import <SystemConfiguration/SCNetworkReachability.h>
+
+#import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
@@ -63,6 +66,14 @@ int main(int _argc, char **_argv) // Don't use these directly
 {
     programName = _argv[0];
 
+#ifdef DEBUG
+    if (_argc == 2 && strcmp(_argv[1], "glext-compress-test") == 0) {
+        [[NSAutoreleasePool alloc] init];
+        logTestGLExtensionCompressionTestVector();
+        return 0;
+    }
+#endif
+    
     if (_argc != 10)
         usage();
 

@@ -7,6 +7,9 @@
 //
 // $Id$
 
+#import <CoreFoundation/CFDictionary.h>
+#import <CoreFoundation/CFString.h>
+#import <CoreFoundation/CFSet.h>
 
 #define OSUTool_Success	0
 #define OSUTool_Failure	1
@@ -33,3 +36,7 @@ enum {
 extern CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifier, bool collectHardwareInformation, const char *licenseType, bool reportMode);
 extern CFStringRef copyCompactedGLExtensionsList(CFStringRef extList);
 extern CFSetRef copyParsedGLExtensionsList(CFStringRef extList);
+
+#ifdef DEBUG
+void logTestGLExtensionCompressionTestVector(void);
+#endif

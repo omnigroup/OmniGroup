@@ -1,0 +1,24 @@
+// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+//
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings for all iPhone/iPad targets
+#include "Target-Touch-Common.xcconfig"
+
+// Common settings for Library targets
+INFOPLIST_FILE = 
+
+// Publish all public header files for Foo to a common area as <Foo/header.h>
+PUBLIC_HEADERS_FOLDER_PATH = include/$(PRODUCT_NAME)
+
+// Publish private headers to a per-product area, but still as <Foo/header.h> as would work with a framework
+PRIVATE_HEADERS_FOLDER_PATH = private/$(PRODUCT_NAME)-Private/$(PRODUCT_NAME)
+
+// And include any private headers for just *our* library
+HEADER_SEARCH_PATHS = $(value) $(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME)-Private $(TARGET_BUILD_DIR)/include
+
+// Claim that we are building a framework, though it is a 'static' framework.
+// The point of this is that OmniBase/macros.h will make errors if we use the
+// main-bundle localized string lookup macros.
+OTHER_CFLAGS = $(value) -DOMNI_BUILDING_FRAMEWORK

@@ -7,6 +7,7 @@
 
 #import "OSURunTime.h"
 
+#import <Foundation/Foundation.h>
 #import <OmniFoundation/OFNull.h> // For OFNOTEQUAL
 
 RCS_ID("$Id$");
@@ -51,8 +52,6 @@ void OSURunTimeApplicationStarted(void)
     [defaults setObject:[NSNumber numberWithDouble:now] forKey:OSULastRunStartIntervalKey];
     [defaults synchronize]; // Make sure we save in case we crash before -autoSynchronize would fire
 }
-
-// All the termination code doesn't bother releasing objects accurately -- we are terminating anyway...
 
 static NSDictionary *_OSURunTimeUpdateStatisticsScope(NSDictionary *oldScope, NSString *version, NSNumber *startTimeNumber, NSTimeInterval now, BOOL crashed)
 {
@@ -170,8 +169,8 @@ static void _OSURunTimeAddStatisticsToInfo(NSMutableDictionary *info, NSDictiona
     NSNumber *runTimeNumber = [scope objectForKey:OSUTotalRunTimeKey];
     NSTimeInterval runTime = runTimeNumber ? [runTimeNumber doubleValue] : 0.0;
     
-    unsigned int runMinutes = (unsigned int)floor(runTime / 60.0);
-    [info setObject:[NSString stringWithFormat:@"%u", runMinutes] forKey:[NSString stringWithFormat:@"%@runmin", prefix]];
+    unsigned long runMinutes = (unsigned long)floor(runTime / 60.0);
+    [info setObject:[NSString stringWithFormat:@"%lu", runMinutes] forKey:[NSString stringWithFormat:@"%@runmin", prefix]];
 }
 
 void OSURunTimeAddStatisticsToInfo(NSString *appIdentifier, NSMutableDictionary *info)

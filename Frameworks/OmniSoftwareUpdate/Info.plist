@@ -38,6 +38,8 @@
                                 <array/>
 				<key>OSUIncludeHardwareDetails</key>
 				<true/>
+				<key>OSUVisibleTracks</key>
+				<array/>
 			</dict>
 		</dict>
 		<key>OAPreferenceController</key>

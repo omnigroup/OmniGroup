@@ -136,7 +136,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
 - (BOOL)writeData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically error:(NSError **)outError;
 {
     if (OFSFileManagerDebug > 0)
-        NSLog(@"FILE operation: WRITE %@ (data of %d bytes)", url, [data length]);
+        NSLog(@"FILE operation: WRITE %@ (data of %ld bytes)", url, [data length]);
 
     return [data writeToFile:[url path] options:(atomically ? NSAtomicWrite : 0) error:outError];
 }

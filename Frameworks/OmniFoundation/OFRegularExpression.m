@@ -9,6 +9,13 @@
 
 #import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/OFStringScanner.h>
+#import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
+
+#import <OmniBase/OmniBase.h>
+
+#include <stdint.h>
+#include <stddef.h>
+#include <stdlib.h>
 
 RCS_ID("$Id$")
 
@@ -190,8 +197,8 @@ static inline NSUInteger unicodeStringLength(unichar *string)
         return nil;
     }
     status.scanningString = characters;
-    program = NSAllocateCollectable(sizeof(ExpressionState) * status.writeLength, 0);
-    stringBuffer = NSAllocateCollectable(sizeof(unichar) * (status.stringLength+1), 0); // +1 because we sometimes write an extra then undo
+    program = OBAllocateCollectable(sizeof(ExpressionState) * status.writeLength, 0);
+    stringBuffer = OBAllocateCollectable(sizeof(unichar) * (status.stringLength+1), 0); // +1 because we sometimes write an extra then undo
     subExpressionCount = 0;
     status.writePtr = program;
     status.stringPtr = status.stringPtrBase = stringBuffer;

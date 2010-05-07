@@ -1,0 +1,64 @@
+#!/bin/zsh -euf
+#
+# Copyright 2010 Omni Development, Inc.  All rights reserved.
+#
+# This software may only be used and reproduced according to the
+# terms in the file OmniSourceLicense.html, which should be
+# distributed with this project and can also be found at
+# <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+#
+# $Id$
+
+
+#
+# Xcode doesn't go out of its way to make it easy to figure out which source
+# files were a part of which target.
+# This is a hack to figure out which files were actually included in a static
+# library and run genstrings on only those files (rather than blindling having
+# to localize all the strings in a framework for the subset that is in the
+# Touch subset).
+#
+
+LIB_FILE="$CONFIGURATION_BUILD_DIR/$FULL_PRODUCT_NAME"
+
+# TODO: Handle multiple architectures (we only build armv7 at the moment)
+AR_EXTRACT_DIR="$DERIVED_FILES_DIR/$TARGET_NAME-ExtractedLibrary"
+if [ -d "$AR_EXTRACT_DIR" ]; then
+  rm -rf "$AR_EXTRACT_DIR"
+fi
+
+mkdir -p "$AR_EXTRACT_DIR"
+cd "$AR_EXTRACT_DIR"
+ar x "$LIB_FILE"
+
+# Extract the name of each source file. In the DWARF output, this is in TAG_compile_unit/AT_name, but dwarfdump doesn't seem to have a good way to pick by tag path.
+# Instead, build a search pattern with the base name of the .o file and a preceeding slash. Then, trim off the surrounding AT_name("...") quoting.
+source_files=()
+for ofile in *.o; do
+  base_name="$ofile:t:r"
+  source_files+=(`dwarfdump -x --name "/$base_name" "$ofile" | grep AT_name | sed 's/[^\"]*\"//;s/\".*//'`)
+done
+
+mkdir English.lproj
+if [ $#source_files -gt 0 ]; then
+	/usr/bin/genstrings -u -q -o English.lproj $source_files
+fi
+
+# Sort and translate common ASCII sequences into Unicode.
+FIX_STRINGS_FILE="$BUILD_DIR/$CONFIGURATION"/FixStringsFile
+if [ -x "$FIX_STRINGS_FILE" ]; then
+    # TODO: Make this handle the case where there are no strings files emitted. Right now we only run this script if we know there will be one or more.
+    for sfile in English.lproj/*.strings; do
+    	"$FIX_STRINGS_FILE" "$sfile"
+    done
+else
+    # Probably a local build from Xcode rather than our build scripts.
+    echo "FixStringsFile isn't built -- skipping (this will result in ASCII to Unicode conversions not happening)"
+fi
+
+# Publish the results for the app to pick up.
+RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/Resources/$TARGET_NAME"
+
+# Make sure not to re-copy if only the source timestamp has changed. That will invalidate timestamps that may cause further copying into the app bundle. This in turn can invalidate signing, which is very annoying if we are doing incremental device builds.
+mkdir -p "$RESOURCE_DIR"
+rsync --recursive --checksum English.lproj/ "$RESOURCE_DIR/English.lproj/"

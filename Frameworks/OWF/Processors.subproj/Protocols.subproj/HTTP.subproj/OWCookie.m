@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -307,7 +307,7 @@ NSString *OWCookieGlobalPath = @"/";
     [cookieProperties setObject:([self secure] ? @"TRUE" : @"FALSE") forKey:NSHTTPCookieSecure];
     NSHTTPCookie *nsCookie = [NSHTTPCookie cookieWithProperties:cookieProperties];
     if (nsCookie == nil)
-        NSLog(@"-[%@ %s]: nsCookie=%@, cookieProperties=%@", OBShortObjectDescription(self), _cmd, nsCookie, cookieProperties);
+        NSLog(@"-[%@ %@]: nsCookie=%@, cookieProperties=%@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), nsCookie, cookieProperties);
     [cookieProperties release];
     return nsCookie;
 }

@@ -1,4 +1,4 @@
-// Copyright 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/NSFileManager-OAExtensions.h>
+#import <OmniBase/OmniBase.h>
+#import <AppKit/AppKit.h>
 #import <Security/Security.h>
 
 #import "OSUChecker.h"
@@ -41,10 +43,11 @@ RCS_ID("$Id$");
 - (BOOL)_unpackApplicationFromTarBzip2File:(NSError **)outError;
 
 // Install & Relaunch
-- (BOOL)_installAndArchive:(NSString *)archivePath error:(NSError **)outError;
+- (BOOL)_installAndArchive:(NSError **)outError;
 + (void)_relaunchFromPath:(NSString *)pathString;
 static id reportStringForCapturedOutput(NSOutputStream *errorStream);
 static id reportStringForCapturedOutputData(NSData *errorStreamData);
+static BOOL trashFile(NSString *path, NSString *description, BOOL tryFinder);
 
 @end
 
@@ -253,15 +256,20 @@ static id reportStringForCapturedOutputData(NSData *errorStreamData);
     }
 }
 
-- (BOOL)installAndRelaunch:(BOOL)shouldRelaunch error:(NSError **)outError;
-{    
-    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Installing\\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
-
-    OBPRECONDITION(![NSString isEmptyString:installationName]);
-    OBPRECONDITION(![NSString isEmptyString:packagePath]);
+- (NSString *)_chooseAsideNameForFile:(NSString *)existingFile;
+{
+    if (!existingFile)
+        return nil;
     
     NSFileManager *manager = [NSFileManager defaultManager];
-
+    NSDictionary *info = [manager attributesOfItemAtPath:existingFile error:NULL];
+    if (!info) {
+        // Doesn't exist?
+        return nil;
+    }
+    
+    NSString *existingFileDir = [existingFile stringByDeletingLastPathComponent];
+    
     // Read information about our bundle version and build a new name for any possible archived version.
     // There are several filenames to consider here, not all of which exist on disk right now:
     //   - The name of the currently installed application
@@ -269,50 +277,47 @@ static id reportStringForCapturedOutputData(NSData *errorStreamData);
     //   - A non-colliding name to give to the application when we archive it
     //   - Any other files which might exist in the target directory
     NSString *archivePath = nil;
-    if([installationDirectory isEqualToString:[existingVersionPath_ stringByDeletingLastPathComponent]]) {
-        // NB: We're assuming here that existingVersionPath points to our own main bundle, which is always true right now, but...
+    
+    NSString *bundleVersion = nil;
+    
+    NSDictionary *selfInfo = [manager attributesOfItemAtPath:[[NSBundle mainBundle] bundlePath] error:NULL];
+    if (selfInfo != nil && [selfInfo isEqual:info]) {
         NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-
+        
         // TODO: We could try to include the marketing version, but if the user *already* included it when the originally downloaded the app, they could get 'OmniFocus 1.0 1.0.app'.  Of course, if the app wrapper has been renamed, then the *new* app will be misnamed too (if they update from "Foo 1.0" to "Foo" v2.0, they'll have an app called 'Foo 1.0' that is actually 2.0.  We could maybe detect if the app isn't named what it is expected to be named (based on the existing app's name and the updating apps' name) and rename stuff differently. In addition, we might want to take into account localized names. Needs more thought on all the cases.
         //NSString *marketingVersion = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
         
-        NSString *bundleVersion = [infoDictionary objectForKey:(NSString *)kCFBundleVersionKey];
-        
-        if (![NSString isEmptyString:bundleVersion])
-            archivePath = [[[existingVersionPath_ stringByDeletingPathExtension] stringByAppendingFormat:@" %@", bundleVersion] stringByAppendingPathExtension:[existingVersionPath_ pathExtension]];
-
-        archivePath = [manager uniqueFilenameFromName:archivePath allowOriginal:YES create:NO error:outError];
-        if (!archivePath)
-            return NO;
+        bundleVersion = [infoDictionary objectForKey:(NSString *)kCFBundleVersionKey];
+    } else {
+        /* If the destination file isn't a valid bundle, this will set bundleVersion to nil, which is what we want. */
+        NSBundle *tryBundle = [NSBundle bundleWithPath:existingFile];
+        bundleVersion = [[tryBundle infoDictionary] objectForKey:(NSString *)kCFBundleVersionKey];
     }
     
-    if (![self _installAndArchive:archivePath error:outError])
+    NSString *oldName = [existingFile lastPathComponent];
+    NSString *oldExt = [oldName pathExtension];
+    NSString *newName = oldName;
+    if (![NSString isEmptyString:bundleVersion]) {
+        newName = [[[oldName stringByDeletingPathExtension] stringByAppendingFormat:@" %@", bundleVersion] stringByAppendingPathExtension:oldExt];
+    }
+    archivePath = [existingFileDir stringByAppendingPathComponent:newName];
+
+    return archivePath;
+}
+
+- (BOOL)installAndRelaunch:(BOOL)shouldRelaunch error:(NSError **)outError;
+{    
+    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Installing\\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
+
+    OBPRECONDITION(![NSString isEmptyString:installationName]);
+    OBPRECONDITION(![NSString isEmptyString:packagePath]);
+    
+    if (![self _installAndArchive:outError])
         return NO;
     
-    // If we didn't set archivePath, then we didn't change the location of the installed app.
-    NSString *oldVersionPath = archivePath? archivePath : existingVersionPath_;
-
     if (deletePackageOnSuccess) {
         // The install portion is done; we can torch the dmg now.  Put it in the trash instead of deleting it forever.
-        NSInteger tag;
-        if (![[NSWorkspace sharedWorkspace] performFileOperation:NSWorkspaceRecycleOperation source:[packagePath stringByDeletingLastPathComponent] destination:@"" files:[NSArray arrayWithObject:[packagePath lastPathComponent]] tag:&tag]) {
-#ifdef DEBUG	
-            NSLog(@"Error moving package from '%@' to the trash.", packagePath);
-#endif	    
-	}
-    }
-    
-    if (oldVersionPath && !keepExistingVersion) {
-        // Delete the old version
-        NSInteger tag;
-        if (![[NSWorkspace sharedWorkspace] performFileOperation:NSWorkspaceRecycleOperation source:[oldVersionPath stringByDeletingLastPathComponent] destination:@"" files:[NSArray arrayWithObject:[oldVersionPath lastPathComponent]] tag:&tag]) {
-#ifdef DEBUG	
-            NSLog(@"Error moving previous version from '%@' to the trash.", oldVersionPath);
-#endif	    
-            if (![manager deleteFileUsingFinder:oldVersionPath]) {
-                NSLog(@"Error moving previous version from '%@' to the trash.", oldVersionPath);
-            }
-	}
+        trashFile(packagePath, @"package", NO);
     }
     
     UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Restarting\\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description - when quitting this application in order to finish upgrading")));
@@ -942,7 +947,6 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 #pragma mark -
 #pragma mark Install & Relaunch
 
-#if 0 // No longer used
 static BOOL isInGroupList(gid_t targetGID)
 {
     if (targetGID == getgid())
@@ -961,49 +965,47 @@ static BOOL isInGroupList(gid_t targetGID)
     
     return NO;
 }
-#endif
 
-static BOOL NeedsAuthentication(NSString *installationDirectory, uid_t destinationUID, gid_t destinationGID)
+static BOOL NeedsAuthentication_DestDir(NSString *installationDirectory)
 {
     // There are two reasons we might need to elevate privileges in order to install. One possibility is that we want to install as some other user (e.g., as 'root' or 'appowner' in a shared directory). The other possibility is that we're trying to install in a directory which we don't have write access to.
     
     uid_t runningUID = getuid();
-
-    if (destinationUID != runningUID) {
-        NSLog(@"Running user has uid %d but we want to install as owner uid %d.  Will perform authenticated installation.", runningUID, destinationUID);
-        return YES;
-    }
-
-#if 0  // Disabling this check: if the UID matches us, but the GID doesn't, we'll silently use our default group.
-    
-    // Directories with the sticky bit set, like /Applications, can result in installed applications having one of our supplementary GIDs.
-    if (!isInGroupList(destinationGID)) {
-        NSLog(@"Running user has gid %d but we want to install as group id %d.  Will perform authenticated installation.", runningGID, path, pathGID);
-        return YES;
-    }
-#endif
-    
+        
     NSFileManager *manager = [NSFileManager defaultManager];
     
     // Use access(), which handles groups, ACLs, blah blah.
     if(access([manager fileSystemRepresentationWithPath:installationDirectory], R_OK|W_OK)) {
         if (errno == EACCES) {
             NSLog(@"Running user (id %u) cannot write to installation directory '%@'.  Will perform authenticated installation.", (unsigned)runningUID, installationDirectory);
+            return YES;
         } else {
             NSLog(@"Warning: installation may fail; access(%@): %s", installationDirectory, strerror(errno));
         }
     }
-    
-#if 0
-    // We don't need to be able to write to the old version; we're just going to rename it
-    if (![manager isWritableFileAtPath:path]) {
-        NSLog(@"Installed path '%@' is not writable.  Will perform authenticated installation.", path);
-        return YES;
-    }
-#endif
-    
+        
     if (![manager isWritableFileAtPath:installationDirectory]) {
         NSLog(@"Installation folder '%@' is not writable.  Will perform authenticated installation.", installationDirectory);
+        return YES;
+    }
+    
+    return NO;
+}
+
+static BOOL NeedsAuthentication_Ownership(uid_t destinationUID, gid_t destinationGID)
+{
+    // There are two reasons we might need to elevate privileges in order to install. One possibility is that we want to install as some other user (e.g., as 'root' or 'appowner' in a shared directory). The other possibility is that we're trying to install in a directory which we don't have write access to.
+    
+    uid_t runningUID = getuid();
+    
+    if (destinationUID != runningUID) {
+        NSLog(@"Running user has uid %d but we want to install as owner uid %d.  Will perform authenticated installation.", runningUID, destinationUID);
+        return YES;
+    }
+    
+    // Directories with the sticky bit set, like /Applications, can result in installed applications having one of our supplementary GIDs.
+    if (!isInGroupList(destinationGID)) {
+        NSLog(@"Running user has gid %d but we want to install as group id %d.  Will perform authenticated installation.", getgid(), destinationGID);
         return YES;
     }
     
@@ -1035,18 +1037,12 @@ static CSIdentityRef copyCSIdentityFromPosixId(id_t posixId, CSIdentityClass ide
     return result;
 }
 
-static void checkInstallAsOtherUser(NSString *targetPath, uid_t *as_uid, gid_t *as_gid)
+// Try to guess what uid and gid the user expects the installed version to be owned by.
+// This is all pretty heuristic; what we mostly do is imitate the old version's ownership if it's owned by a system user, but if it's owned by a normal user, just install as us.
+static void checkInstallAsOtherUser(const struct stat *sbuf, uid_t *as_uid, gid_t *as_gid)
 {
-    NSError *error = nil;
-    NSFileManager *manager = [NSFileManager defaultManager];
-    NSDictionary *destinationAttributes = [manager attributesOfItemAtPath:targetPath error:&error];
-    
-    // If we can't stat the existing file, we don't have any reason to do something special
-    if (!destinationAttributes)
-	return;
-    
-    uid_t destinationUID = [[destinationAttributes objectForKey:NSFileOwnerAccountID] unsignedIntValue];
-    gid_t destinationGID = [[destinationAttributes objectForKey:NSFileGroupOwnerAccountID] unsignedIntValue];
+    uid_t destinationUID = sbuf->st_uid;
+    gid_t destinationGID = sbuf->st_gid;
     
     if (destinationUID != *as_uid) {
         // If it's owned by a special user, install the new version as that user. Otherwise, assume it should be owned by whoever installs it.
@@ -1057,18 +1053,44 @@ static void checkInstallAsOtherUser(NSString *targetPath, uid_t *as_uid, gid_t *
         }
         if (owner)
             CFRelease(owner);
+    } else {
+        // If it's owned by us, but by one of our supplementary group IDs, chown to the same supplementary gid when we install it.
+        // (If it's owned by us but group-ownership is some group we're not in, don't bother elevating privs to install, just install as us)
+        if (destinationUID == getuid()) {
+            if (isInGroupList(destinationGID)) {
+                *as_gid = destinationGID;
+            }
+        }
     }
 }
 
-- (BOOL)_installAndArchive:(NSString *)archivePath error:(NSError **)outError;
+static void checkInstallWithFlags(const char *posixPath, const struct stat *sbuf, BOOL *setImmutable, BOOL *authRequired)
+{
+    /* Deal with the immutable flag (aka the Finder's "Locked" checkbox) */
+    if (sbuf->st_flags & (UF_IMMUTABLE|UF_APPEND|SF_IMMUTABLE|SF_APPEND)) {
+        char *flagsstr = fflagstostr(sbuf->st_flags);
+        NSLog(@"existing file's flags = %s", flagsstr);
+        free(flagsstr);
+        
+        *setImmutable = YES;
+        
+        /* Can we turn off the immutable bit ourselves? If so, no need to authenticate. */
+        if (chflags(posixPath, sbuf->st_flags & ~(UF_IMMUTABLE|UF_APPEND|SF_IMMUTABLE|SF_APPEND)) == 0) {
+            /* Hooray. */
+        } else {
+            *authRequired = YES;
+            NSLog(@"  (Will perform authenticated installation to change flags.)");
+        }
+    }
+}
+
+- (BOOL)_installAndArchive:(NSError **)outError;
 {
     OBPRECONDITION(unpackedPath);
     OBPRECONDITION(installationDirectory);
     OBPRECONDITION(installationName);
     NSFileManager *manager = [NSFileManager defaultManager];
         
-    // Note: archivePath may actually be nil, if we don't want to do any archiving (e.g., the old version may be on a cdrom or disk image already)
-    
     NSString *installerPath = [OMNI_BUNDLE pathForResource:@"OSUInstaller" ofType:@"sh"];
     if (!installerPath) {
 	NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
@@ -1082,15 +1104,84 @@ static void checkInstallAsOtherUser(NSString *targetPath, uid_t *as_uid, gid_t *
     NSLog(@"unpackedPath = %@", unpackedPath);
     NSLog(@"installationDirectory = %@", installationDirectory);
     NSLog(@"installationName = %@", installationName);
-    NSLog(@"archivePath = %@", archivePath);
 #endif
     
+    /* The path at which the new application will end up */
+    NSString *finalInstalledPath = [installationDirectory stringByAppendingPathComponent:installationName];
+    
+    /* Are we going to rename something (an existing version)? If so, what are we renaming it to? */
+    NSString *pathToArchive, *archivePath;
+    pathToArchive = nil;
+    
+    BOOL authRequired = NO;  // Are we going to need to authenticate to install?
+    
+    // UID, GID, and uimmutable settings for the new application
     uid_t destinationUID = getuid();
     gid_t destinationGID = getgid();
+    BOOL setImmutable = NO;
 
     // Our theory here is that if we're installing in the same directory as the existing version, we're "replacing" it and should imitate its ownership, otherwise we're just installing as us.
-    if ([installationDirectory isEqualToString:[existingVersionPath_ stringByDeletingLastPathComponent]])
-        checkInstallAsOtherUser(existingVersionPath_, &destinationUID, &destinationGID);
+    if ([installationDirectory isEqualToString:[existingVersionPath_ stringByDeletingLastPathComponent]]) {
+        struct stat dest_stat;
+        bzero(&dest_stat, sizeof(dest_stat));
+        const char *posixPath = [existingVersionPath_ fileSystemRepresentation];
+        
+        if (stat(posixPath, &dest_stat) == 0) {
+
+            /* Decide whether we should chown the app to some other uid or gid */
+            checkInstallAsOtherUser(&dest_stat, &destinationUID, &destinationGID);
+            checkInstallWithFlags(posixPath, &dest_stat, &setImmutable, &authRequired);
+            
+            pathToArchive = existingVersionPath_;
+        }
+    }
+    if (![existingVersionPath_ isEqualToString:finalInstalledPath]) {
+        // Otherwise, check if we're *literally* replacing some file that *isn't* us.
+        
+        struct stat dest_stat;
+        bzero(&dest_stat, sizeof(dest_stat));
+        const char *posixPath = [finalInstalledPath fileSystemRepresentation];
+     
+        if (stat(posixPath, &dest_stat) == 0) {
+            
+            /* Decide whether we should chown the app to some other uid or gid */
+            checkInstallAsOtherUser(&dest_stat, &destinationUID, &destinationGID);
+            checkInstallWithFlags(posixPath, &dest_stat, &setImmutable, &authRequired);
+
+            // Can we simply trash the other guy now? Can we, can we? Huh boss? Can we?
+            BOOL doArchiveDance = YES;
+            
+            if (!keepExistingVersion) {
+                if (trashFile(finalInstalledPath, @"other version", !authRequired))
+                    doArchiveDance = NO;
+            }
+            
+            if (doArchiveDance) {
+                // Nah, gotta do the archive dance
+                
+                if (pathToArchive)
+                    NSLog(@"OmniSoftwareUpdate: Not sure whether I should archive %@ or %@. Choosing %@.",
+                          [existingVersionPath_ lastPathComponent], [finalInstalledPath lastPathComponent], [finalInstalledPath lastPathComponent]);
+                pathToArchive = finalInstalledPath;
+            }
+        }
+    }
+    
+    /* Choose a name for the file we're moving aside (archiving) */
+    if (pathToArchive) {
+#ifdef DEBUG
+        NSLog(@"pathToArchive = %@", pathToArchive);
+#endif
+        archivePath = [self _chooseAsideNameForFile:pathToArchive];
+        archivePath = [manager uniqueFilenameFromName:archivePath allowOriginal:YES create:NO error:outError];
+        if (!archivePath)
+            return NO;
+#ifdef DEBUG
+        NSLog(@"archivePath = %@", archivePath);
+#endif
+    } else {
+        archivePath = nil;
+    }
         
     // The authorization framework gives stdin/stdout if we ask, but we want stderr.  So, the installer script takes the name of a file to write its errors to.
     NSString *errorFile = [manager temporaryPathForWritingToPath:@"/tmp/OSUInstallerLog" allowOriginalDirectory:YES create:NO error:outError];
@@ -1098,7 +1189,7 @@ static void checkInstallAsOtherUser(NSString *targetPath, uid_t *as_uid, gid_t *
         return NO;
     
     // Installer script arguments: what to install from, where to install it, and where to put stderr
-    NSMutableArray *installerArguments = [NSMutableArray arrayWithObjects:unpackedPath, [installationDirectory stringByAppendingPathComponent:installationName], errorFile, nil];
+    NSMutableArray *installerArguments = [NSMutableArray arrayWithObjects:unpackedPath, finalInstalledPath, errorFile, nil];
     
     // Note that the install script doesn't use a real getopt, so the ordering of all the arguments and options is fixed
     
@@ -1110,15 +1201,61 @@ static void checkInstallAsOtherUser(NSString *targetPath, uid_t *as_uid, gid_t *
         [installerArguments addObjects:@"-u", ugid, nil];
     }
     
+    // Check for some other reasons we'll need to authenticate.
+    if (NeedsAuthentication_DestDir(installationDirectory))
+        authRequired = YES;
+    if (NeedsAuthentication_Ownership(destinationUID, destinationGID))
+        authRequired = YES;
+    
     // If we want to archive the existing version, pass the -a flag
-    if (archivePath) {
-        [installerArguments addObjects:@"-a", existingVersionPath_, archivePath, nil];
+    if (pathToArchive && archivePath) {
+        [installerArguments addObjects:@"-a", pathToArchive, archivePath, nil];
+        
+        // Even though we're just moving the old version, we'll need write permission in order to do so
+        // (the UNIX reason for this is that we need access to modify the '..' entry in its directory but I'm guessing that that's just historical at this point)
+        if (!authRequired && ![manager isWritableFileAtPath:pathToArchive]) {
+            NSDictionary *movingAttributes = [manager attributesOfItemAtPath:pathToArchive error:NULL];
+            BOOL unwritable;
+            
+            if (movingAttributes) {
+                /* Perhaps we can make it writable, move it aside, then restore its original permissions? */
+                NSUInteger oldMode = [movingAttributes filePosixPermissions];
+                if ((oldMode & (S_IWUSR|S_IXUSR)) != (S_IWUSR|S_IXUSR) && [manager setAttributes:[NSDictionary dictionaryWithObject:[NSNumber numberWithUnsignedInteger:(oldMode | (S_IWUSR|S_IXUSR))] forKey:NSFilePosixPermissions] ofItemAtPath:pathToArchive error:NULL]) {
+                    [installerArguments addObjects:@"-am", [NSString stringWithFormat:@"0%o", (unsigned int)oldMode], nil];
+                    unwritable = NO;
+                } else
+                    unwritable = YES;
+            } else
+                unwritable = YES;
+            
+            if (unwritable) {
+                NSLog(@"Installed path '%@' is not writable.  Will request privileges so that we can move it aside.", pathToArchive);
+                authRequired = YES;
+            }
+        }
     }
-
-    if (NeedsAuthentication(installationDirectory, destinationUID, destinationGID))
-        return PerformAuthenticatedInstall(installerPath, installerArguments, errorFile, outError);
+    
+    // If the user had the immutable flag set ("locked" file) then pass -f.
+    // As a side effect this will tell the script to try unlocking the old version.
+    if (setImmutable) {
+        [installerArguments addObjects:@"-f", @"uchg", nil];
+    }
+    
+    NSLog(@"[%@auth] %@ %@", authRequired?@"":@"no", [installerPath lastPathComponent], [installerArguments componentsJoinedByString:@" "]);
+    
+    BOOL succeeded;
+    
+    if (authRequired)
+        succeeded = PerformAuthenticatedInstall(installerPath, installerArguments, errorFile, outError);
     else
-        return PerformNormalInstall(installerPath, installerArguments, errorFile, outError);
+        succeeded = PerformNormalInstall(installerPath, installerArguments, errorFile, outError);
+    
+    // If we moved something aside, but don't want to keep it, then move it to the trash now.
+    if (succeeded && archivePath && !keepExistingVersion) {
+        trashFile(archivePath, @"previous version", YES);
+    }
+    
+    return succeeded;
 }
 
 static BOOL PerformNormalInstall(NSString *installerPath, NSArray *installerArguments, NSString *errorFile, NSError **outError)
@@ -1143,6 +1280,9 @@ static BOOL PerformNormalInstall(NSString *installerPath, NSArray *installerArgu
             if (errorString)
                 [userInfo setObject:errorString forKey:@"stderr"];
             
+            if (installerResults && [installerResults length])
+                [userInfo setObject:reportStringForCapturedOutputData(installerResults) forKey:@"stdout"];
+            
             *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToUpgrade userInfo:userInfo];
         }
         
@@ -1157,43 +1297,65 @@ static BOOL AuthInstallError(NSError **outError, NSString *reason, NSError *unde
 {
     if (outError) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - could not move application into place during install");
-        NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
+        NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+        
+        [userInfo setObject:description forKey:NSLocalizedDescriptionKey];
+        [userInfo setObject:reason forKey:NSLocalizedFailureReasonErrorKey];
         
         if (underlyingError)
             [userInfo setObject:underlyingError forKey:NSUnderlyingErrorKey];
         
-        NSError *stringError = nil;
-        NSString *errorString = [[[NSString alloc] initWithContentsOfFile:errorFile encoding:NSUTF8StringEncoding error:&stringError] autorelease];
-        if (errorString)
-            [userInfo setObject:errorString forKey:@"stderr"];
-        *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToUpgrade userInfo:userInfo];
+        if (errorFile) {
+            NSError *stringError = nil;
+            NSString *errorString = [[NSString alloc] initWithContentsOfFile:errorFile encoding:NSUTF8StringEncoding error:&stringError];
+            if (errorString)
+                [userInfo setObject:errorString forKey:@"stderr"];
+            [errorString release];
+        }
+        
+        if (underlyingError && [[underlyingError domain] isEqual:NSOSStatusErrorDomain] && [underlyingError code] == errAuthorizationCanceled) {
+            /* Translate errAuthorizationCanceled into NSUserCancelledError because AppKit doesn't handle errAuthorizationCanceled appropriately */
+            *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:userInfo];
+        } else {
+            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToUpgrade userInfo:userInfo];
+        }
     }
     return NO;
+}
+
+static NSError *mkAuthError(OSStatus errCode, NSString *function)
+{
+    NSDictionary *userInfo;
+    if (function)
+        userInfo = [NSDictionary dictionaryWithObject:function forKey:@"function"];
+    else
+        userInfo = nil;
+    return [NSError errorWithDomain:NSOSStatusErrorDomain code:errCode userInfo:userInfo];
 }
 
 static BOOL PerformAuthenticatedInstall(NSString *installerPath, NSArray *installerArguments, NSString *errorFile, NSError **outError)
 {
     AuthorizationRef auth;
     OSStatus err;
+    NSFileManager *manager = [NSFileManager defaultManager];
     
-    err = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment, kAuthorizationFlagDefaults, &auth);
+    auth = 0;
+    err = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment, kAuthorizationFlagInteractionAllowed, &auth);
     if (err != errAuthorizationSuccess) {
-        return AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"Failed to created authorization.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil], nil);
+        return AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"Failed to create authorization.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), mkAuthError(err, @"AuthorizationCreate"), nil);
     }
-    
+        
     NSUInteger argumentIndex, argumentCount = [installerArguments count];
     char **argumentCStrings = calloc(sizeof(*argumentCStrings), (argumentCount + 1)); // plus one for the terminating null
     for (argumentIndex = 0; argumentIndex < argumentCount; argumentIndex++)
         argumentCStrings[argumentIndex] = (char *)[[installerArguments objectAtIndex:argumentIndex] UTF8String];
-    
-    NSFileManager *manager = [NSFileManager defaultManager];
     
     err = AuthorizationExecuteWithPrivileges(auth, [manager fileSystemRepresentationWithPath:installerPath], kAuthorizationFlagDefaults, argumentCStrings, NULL);
     
     if (err != errAuthorizationSuccess) { // errAuthorizationToolEnvironmentError if our tool itself errored out
         free(argumentCStrings);
         AuthorizationFree(auth, 0);
-        return AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"Failed to execute install script with authorization.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil], errorFile);
+        return AuthInstallError(outError, NSLocalizedStringFromTableInBundle(@"Failed to execute install script with authorization.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), mkAuthError(err, @"AuthorizationExecuteWithPrivileges"), errorFile);
     }
     
     // Wait for the tool to do its thing.  Sadly we have no idea what the child process is, so the exiting child could be anything.  Hurray for iffy API design.
@@ -1325,6 +1487,38 @@ static id reportStringForCapturedOutputData(NSData *data)
             return data;
     }
     return string;
+}
+
+static BOOL trashFile(NSString *path, NSString *description, BOOL tryFinder)
+{
+    NSInteger tag;
+    
+    NSString *basename = [path lastPathComponent];
+    NSString *dirname = [path stringByDeletingLastPathComponent];
+    
+    if (![[NSWorkspace sharedWorkspace] performFileOperation:NSWorkspaceRecycleOperation source:dirname destination:@"" files:[NSArray arrayWithObject:basename] tag:&tag]) {
+#ifdef DEBUG	
+        NSLog(@"Error moving %@ '%@' from '%@' to the trash.", description, basename, dirname);
+#endif	    
+        
+        if (!tryFinder)
+            return NO;
+        
+        /* We can message the Finder to move something to the trash for us. It will authenticate if it thinks that'll help. But if know we're already going to authenticate, we skip that step so the user doesn't have to deal with more authentication dialogs than needed. */
+        
+        if (![[NSFileManager defaultManager] deleteFileUsingFinder:path]) {
+            NSLog(@"Error moving %@ from '%@' to the trash.", description, path);
+            return NO;
+        } else {
+            if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+                NSLog(@"Failed to move %@ from '%@' to the trash.", description, path);
+                return NO;
+            }
+            return YES;
+        }
+    } else {
+        return YES; // Success.
+    }
 }
 
 @end

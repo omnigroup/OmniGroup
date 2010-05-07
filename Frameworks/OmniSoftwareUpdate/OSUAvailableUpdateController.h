@@ -9,6 +9,7 @@
 
 #import <AppKit/NSWindowController.h>
 
+@class NSArrayController, NSButton, NSImageView, NSProgressIndicator, NSSplitView, NSTableView, NSTextField;
 @class WebView;
 @class OSUItem;
 
@@ -28,6 +29,11 @@ extern NSString * const OSUAvailableUpdateControllerCheckInProgressBinding;
     IBOutlet NSImageView *_appIconImageView;
     IBOutlet NSButton *_installButton;
     IBOutlet NSButton *_cancelButton;
+    
+    IBOutlet NSView *_itemAlertPane;
+    IBOutlet NSTextField *_itemAlertMessage;
+    
+    BOOL _displayingWarningPane;
 
     // KVC
     NSArray *_itemSortDescriptors;
@@ -43,8 +49,10 @@ extern NSString * const OSUAvailableUpdateControllerCheckInProgressBinding;
 
 - (IBAction)installSelectedItem:(id)sender;
 - (IBAction)ignoreSelectedItem:(id)sender;
+- (IBAction)ignoreCertainTracks:(id)sender;
 
 // KVC
 - (OSUItem *)selectedItem;
+- (NSString *)ignoreTrackItemTitle;
 
 @end

@@ -22,11 +22,9 @@
 - (void)setUnsignedIntegerValue:(NSUInteger)value forKey:(NSString *)key;
 - (void)setUnsignedLongLongValue:(unsigned long long)value forKey:(NSString *)key;
 - (void)setBoolValue:(BOOL)value forKey:(NSString *)key;
-#ifdef OmniFoundation_NSDictionary_NSGeometry_Extensions
-- (void)setPointValue:(NSPoint)value forKey:(NSString *)key;
-- (void)setSizeValue:(NSSize)value forKey:(NSString *)key;
-- (void)setRectValue:(NSRect)value forKey:(NSString *)key;
-#endif
+- (void)setPointValue:(CGPoint)value forKey:(NSString *)key;
+- (void)setSizeValue:(CGSize)value forKey:(NSString *)key;
+- (void)setRectValue:(CGRect)value forKey:(NSString *)key;
 
 // Setting with default values
 - (void)setObject:(id)object forKey:(NSString *)key defaultObject:(id)defaultObject;
@@ -38,10 +36,8 @@
 - (void)setUnsignedIntegerValue:(NSUInteger)value forKey:(NSString *)key defaultValue:(NSUInteger)defaultValue;
 - (void)setUnsignedLongLongValue:(unsigned long long)value forKey:(NSString *)key defaultValue:(unsigned long long)defaultValue;
 - (void)setBoolValue:(BOOL)value forKey:(NSString *)key defaultValue:(BOOL)defaultValue;
-#ifdef OmniFoundation_NSDictionary_NSGeometry_Extensions
-- (void)setPointValue:(NSPoint)value forKey:(NSString *)key defaultValue:(NSPoint)defaultValue;
-- (void)setSizeValue:(NSSize)value forKey:(NSString *)key defaultValue:(NSSize)defaultValue;
-- (void)setRectValue:(NSRect)value forKey:(NSString *)key defaultValue:(NSRect)defaultValue;
-#endif
+- (void)setPointValue:(CGPoint)value forKey:(NSString *)key defaultValue:(CGPoint)defaultValue;
+- (void)setSizeValue:(CGSize)value forKey:(NSString *)key defaultValue:(CGSize)defaultValue;
+- (void)setRectValue:(CGRect)value forKey:(NSString *)key defaultValue:(CGRect)defaultValue;
 
 @end

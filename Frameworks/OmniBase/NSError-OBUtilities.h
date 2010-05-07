@@ -1,4 +1,4 @@
-// Copyright 2005-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,13 +38,7 @@ extern NSError *_OBWrapUnderlyingError(NSError *underlyingError, NSString *domai
 // Stacks another error on the input that simple records the calling code.  This can help establish the chain of failure when a callsite just fails because something else failed, without the overhead of adding another error code for that specific site.
 #define OBChainError(error) _OBError(error, OBErrorDomain, OBErrorChained, __FILE__, __LINE__, nil)
 extern NSError *OBFirstUnchainedError(NSError *error);
-    
-#ifdef OMNI_BUNDLE_IDENTIFIER
-// It is expected that -DOMNI_BUNDLE_IDENTIFIER=@"com.foo.bar" will be set when building your code.  Build configurations make this easy since you can set it in the target's configuration and then have your Other C Flags have -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\" and also use $(OMNI_BUNDLE_IDENTIFIER) in your Info.plist instead of duplicating it.
-#define OBError(error, code, description) _OBError(error, OMNI_BUNDLE_IDENTIFIER, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, nil)
-#define OBErrorWithInfo(error, code, ...) _OBError(error, OMNI_BUNDLE_IDENTIFIER, code, __FILE__, __LINE__, ## __VA_ARGS__)
-#endif
-    
+
 #define OBUserCancelledError(outError) _OBError(outError, NSCocoaErrorDomain, NSUserCancelledError, __FILE__, __LINE__, nil)
     
 // Unlike the other routines in this file, but like all the other Foundation routines, this takes its key-value pairs with each value followed by its key.  The disadvantage to this is that you can't easily have runtime-ignored values (the nil value is a terminator rather than being skipped).

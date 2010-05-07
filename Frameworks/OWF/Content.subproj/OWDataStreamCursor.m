@@ -75,8 +75,10 @@ static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *a
     OBASSERT(coderInitSel != NULL);
     OBASSERT([coderClass instancesRespondToSelector:coderInitSel]);
 
-    newCursor = [[coderClass allocWithZone:[aCursor zone]] performSelector:coderInitSel withObject:aCursor];
-    [newCursor autorelease];
+    // objc_msgSend avoids confusing clang-sa's reference tracking
+    newCursor = objc_msgSend(coderClass, @selector(allocWithZone:), [aCursor zone]);
+    newCursor = [newCursor performSelector:coderInitSel withObject:aCursor];
+    objc_msgSend(newCursor, @selector(autorelease));
     return newCursor;
 }
 

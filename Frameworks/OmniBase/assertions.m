@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2008-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,8 +23,8 @@ void OBLogAssertionFailure(const char *type, const char *expression, const char 
     fprintf(stderr, "%s failed: requires '%s', at %s:%d\n", type, expression, file, lineNumber);
 }
 
-static NSString *OBShouldAbortOnAssertFailureEnabled = @"OBShouldAbortOnAssertFailureEnabled";
-static NSString *OBEnableExpensiveAssertionsKey = @"OBEnableExpensiveAssertions";
+static NSString * const OBShouldAbortOnAssertFailureEnabled = @"OBShouldAbortOnAssertFailureEnabled";
+static NSString * const OBEnableExpensiveAssertionsKey = @"OBEnableExpensiveAssertions";
 
 static void OBDefaultAssertionHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber)
 {
@@ -66,10 +66,8 @@ void OBInvokeAssertionFailureHandler(const char *type, const char *expression, c
 
 void OBAssertFailed(void)
 {
-    // For breakpoints
-#if defined(__clang__)
-    asm(""); // Clang 1.0 incorrectly inlines this call, even when __attribute__((noinline)) is present.  Radar #7169443.
-#endif
+    // This function is an intended target for breakpoints. To ensure it doesn't get optimized out (even with __attribute__((noinline))), put an asm statement here.
+    asm("");
 }
 
 void _OBAssertNotImplemented(id self, const char *selName)

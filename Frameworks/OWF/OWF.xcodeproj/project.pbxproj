@@ -1850,7 +1850,6 @@
 				INSTALL_MODE_FLAG = "a+rX";
 				OMNI_FRAMEWORK_TARGET_PATH = "@executable_path/../Frameworks";
 				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "$(OMNI_PREBIND_FLAGS)";
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = Tests;
 				SECTORDER_FLAGS = "";

@@ -169,7 +169,7 @@ static id <OFSDAVFileManagerAuthenticationDelegate> AuthenticationDelegate = nil
     
     // TODO: What guarantees does WebDAV make about PUT command atomicity?  Do servers have bugs with this?  We could generate a crazy tmp file name and move it afterward, but we'd have to make assumptions about where we can put that file or what we can name it to make it 'invisible' while we are writing it.
     if (OFSFileManagerDebug > 0)
-        NSLog(@"DAV operation: PUT %@ (data of %d bytes)", url, [data length]);
+        NSLog(@"DAV operation: PUT %@ (data of %ld bytes)", url, [data length]);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:DefaultCachePolicy timeoutInterval:DefaultTimeoutInterval];
     XMLDAVAddUserAgentStringToRequest(self, request);
     [request setHTTPMethod:@"PUT"];
@@ -289,7 +289,7 @@ static NSURL *_noSlashURL(NSURL *url)
 - (BOOL)writeData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically error:(NSError **)outError;
 {
     if (OFSFileManagerDebug > 0)
-        NSLog(@"DAV operation: PUT %@ (data of %d bytes) atomically:%d", url, [data length], atomically);
+        NSLog(@"DAV operation: PUT %@ (data of %ld bytes) atomically:%d", url, [data length], atomically);
 
     // PUT is not atomic.  By itself it will just stream the file right into place; if the transfer is iterrupted, it'll just leave a partial turd there.
     if (atomically) {

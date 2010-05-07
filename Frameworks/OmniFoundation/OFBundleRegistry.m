@@ -13,6 +13,7 @@
 #endif
 
 #import <OmniFoundation/NSObject-OFExtensions.h>
+#import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniFoundation/NSMutableSet-OFExtensions.h>
 #ifdef DYNAMIC_BUNDLE_LOADING
 #import <OmniFoundation/NSString-OFExtensions.h>

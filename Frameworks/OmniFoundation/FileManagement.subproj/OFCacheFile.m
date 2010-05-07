@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -201,7 +201,8 @@ RCS_ID("$Id$");
                 ok = NO;
                 
                 NSError *posixError = [NSError errorWithDomain:NSPOSIXErrorDomain code:OMNI_ERRNO() userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"unlink returned error", NSLocalizedDescriptionKey, nil]];
-                OBErrorWithInfo(outError, OFCacheFileUnableToWriteError, NSLocalizedDescriptionKey, [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to write cache file to '%@'", @"OmniFoundation", OMNI_BUNDLE, @"error description"), filename], NSUnderlyingErrorKey, posixError, nil);
+                NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to write cache file to '%@'", @"OmniFoundation", OMNI_BUNDLE, @"error description"), filename];
+                OFErrorWithInfo(outError, OFCacheFileUnableToWriteError, description, nil/*reason*/, NSUnderlyingErrorKey, posixError, nil);
             }
         }
     }

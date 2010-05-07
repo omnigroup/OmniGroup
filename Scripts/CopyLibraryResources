@@ -1,0 +1,96 @@
+#!/usr/bin/env ruby -w
+#
+# Copyright 2010 Omni Development, Inc.  All rights reserved.
+#
+# This software may only be used and reproduced according to the
+# terms in the file OmniSourceLicense.html, which should be
+# distributed with this project and can also be found at
+# <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+#
+# $Id$
+
+# As part of having 'static-ish' frameworks based on static libraries, we
+# need to be able to include resources. This script lets you specify one
+# or more library names and the resources will be copied into your app bundle.
+
+require 'fileutils'
+
+# We expect each of the static libraries to copy any resources into this directory.
+ResourceDir = "#{ENV["CONFIGURATION_BUILD_DIR"]}/Resources"
+
+# We are copying into an iPhone OS bundle, which is flat.
+AppDir = "#{ENV["TARGET_BUILD_DIR"]}/#{ENV["UNLOCALIZED_RESOURCES_FOLDER_PATH"]}"
+
+ARGV.each {|a|
+  dirname = "#{ResourceDir}/#{a}"
+  STDERR.print "scanning #{dirname} ...\n"
+  Dir.new(dirname).each {|f|
+    case f
+    when ".", ".."
+      next
+    when /\.lproj$/
+      # Merge multiple localized resource directories together
+
+      sources = []
+      Dir.new("#{dirname}/#{f}").each {|l|
+        next if (l == "." || l == "..")
+        sources << "#{dirname}/#{f}/#{l}"
+      }
+      
+      dest_dir = "#{AppDir}/#{f}/"  # Might want to mkdir on this in case the normal build system hasn't made it already
+    else
+      sources = ["#{dirname}/#{f}"]
+      dest_dir = "#{AppDir}/"
+    end
+    
+    sources.each {|source|
+      
+      case source
+      when /\.xib/
+        dest_file = "#{dest_dir}/#{File.basename(source, ".xib")}.nib"
+      else
+        dest_file = "#{dest_dir}/#{File.basename(source)}"
+      end
+      
+      source_mtime = File.new(source).mtime
+      dest_mtime = File.exists?(dest_file) ? File.new(dest_file).mtime : nil
+      
+      if dest_mtime && dest_mtime >= source_mtime
+        #STDERR.print "  skipping up to date #{source} -> #{dest_file}\n"
+        next
+      end
+      STDERR.print "  source_mtime = #{source_mtime} dest_mtime = #{dest_mtime}\n"
+      STDERR.print "  copying #{source} -> #{dest_file}\n"
+      
+      case source
+      when /\.xib/
+        # Need to compile xibs into nibs.
+        ENV["IBC_MINIMUM_COMPATIBILITY_VERSION"] = ENV["IPHONEOS_DEPLOYMENT_TARGET"]
+      
+        # Xcode runs the version in /Developer instead of the version in the SDK (it is a shim to pick up the right version based on xcode-select)
+        `/Developer/usr/bin/ibtool --flatten #{ENV["IBC_FLATTEN_NIBS"]} --errors --warnings --notices --output-format human-readable-text --compile "#{dest_file}" "#{source}"`
+      else
+        FileUtils.mkdir_p(File.dirname(dest_file))
+        FileUtils.cp_r(source, dest_file)
+      end
+    }
+  }
+}
+
+=begin
+
+# debug build
+CompileXIB OOPViewController.xib
+cd /Volumes/Space/Shared/bungi/Source/trunk/OmniGroup/Applications/OmniOutliner/iPad
+setenv IBC_MINIMUM_COMPATIBILITY_VERSION 3.2
+setenv PATH "/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Developer/usr/bin:/usr/local/git/bin:/usr/omni/checker:/Volumes/Space/Users/bungi/Unix/bin/seel:/Volumes/Space/Users/bungi/Unix/bin:/usr/omni/bin/Scripts:/usr/omni/bin:/usr/omni/svn/bin:/usr/omni/sbin:/usr/local/bin:/Developer/Tools:/usr/bin:/bin:/usr/sbin:/sbin"
+/Developer/usr/bin/ibtool --flatten NO --errors --warnings --notices --output-format human-readable-text --compile /Users/Shared/bungi/Source/PROJ/Products/Debug-iphonesimulator/OmniOutliner-iPad.app/OOPViewController.nib /Volumes/Space/Shared/bungi/Source/trunk/OmniGroup/Applications/OmniOutliner/iPad/OOPViewController.xib
+
+# release build
+CompileXIB OOPViewController.xib
+cd /Volumes/Space/Shared/bungi/Source/trunk/OmniGroup/Applications/OmniOutliner/iPad
+setenv IBC_MINIMUM_COMPATIBILITY_VERSION 3.2
+setenv PATH "/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Developer/usr/bin:/usr/local/git/bin:/usr/omni/checker:/Volumes/Space/Users/bungi/Unix/bin/seel:/Volumes/Space/Users/bungi/Unix/bin:/usr/omni/bin/Scripts:/usr/omni/bin:/usr/omni/svn/bin:/usr/omni/sbin:/usr/local/bin:/Developer/Tools:/usr/bin:/bin:/usr/sbin:/sbin"
+/Developer/usr/bin/ibtool --flatten NO --errors --warnings --notices --output-format human-readable-text --compile /Users/Shared/bungi/Source/PROJ/Products/UninstalledProducts/OmniOutliner-iPad.app/OOPViewController.nib /Volumes/Space/Shared/bungi/Source/trunk/OmniGroup/Applications/OmniOutliner/iPad/OOPViewController.xib
+
+=end

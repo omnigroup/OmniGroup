@@ -7,6 +7,9 @@
 
 
 #import <OmniFoundation/OFXMLIdentifier.h>
+#import <OmniBase/OmniBase.h>
+
+#import <Foundation/NSCharacterSet.h>
 
 RCS_ID("$Id$");
 

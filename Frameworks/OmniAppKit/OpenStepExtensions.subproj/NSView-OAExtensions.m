@@ -380,6 +380,21 @@ static unsigned int scrollEntriesCount = 0;
 
 // Finding views
 
+// Will return self if it is of the specified class.
+- (id)enclosingViewOfClass:(Class)cls;
+{
+    OBPRECONDITION(OBClassIsSubclassOfClass(cls, [NSView class]));
+    
+    NSView *view = self;
+    while (view) {
+        if ([view isKindOfClass:cls])
+            return view;
+        view = [view superview];
+    }
+    
+    return nil;
+}
+
 - anyViewOfClass:(Class)cls;
 {
     if ([self isKindOfClass:cls])
@@ -617,8 +632,10 @@ unsigned int NSViewMaxDebugDepth = 10;
     [debugDictionary setObject:NSStringFromRect([self frame]) forKey:@"01_frame"];
     if (!NSEqualSizes([self bounds].size, [self frame].size) || !NSEqualPoints([self bounds].origin, NSZeroPoint))
         [debugDictionary setObject:NSStringFromRect([self bounds]) forKey:@"02_bounds"];
+    
     if ([[self subviews] count] > 0)
-        [debugDictionary setObject:[self subviews] forKey:@"subviews"];
+        [debugDictionary setObject:[[self subviews] arrayByPerformingSelector:_cmd] forKey:@"subviews"];
+
     return debugDictionary;
 }
 

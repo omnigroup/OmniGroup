@@ -519,9 +519,8 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
 
 - (struct swooper *)_swooperForCellIndex:(unsigned)cellIndex motion:(short)motionFlags
 {
-    if (cellIndex < 0 || cellIndex >= swoopCellCount) {
+    if (cellIndex >= swoopCellCount)
         return NULL;
-    }
 
     /* Look for an existing swoop entry */
     for(unsigned swoopIndex = 0; swoopIndex < swoopCount; swoopIndex ++) {
@@ -628,7 +627,6 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
     else
         startTime = [NSDate timeIntervalSinceReferenceDate];
 
-    OBASSERT(cellSwoop->cellIndex >= 0);
     OBASSERT(cellSwoop->cellIndex < swoopCellCount);
     OBASSERT(cellSwoop->cellIndex == cellIndex);
     OBASSERT(delay >= 0);

@@ -284,6 +284,7 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
 // Avoid unknown selector warnings from -Wundeclared-selector.  The selectors we are checking are often in other frameworks.
 #define FIND_SEL(x) sel_getUid(#x)
 
+static BOOL ReportWarningsInSystemLibraries = NO;
 static unsigned MethodSignatureConflictCount = 0;
 static unsigned SuppressedConflictCount = 0;
 static unsigned MethodMultipleImplementationCount = 0;
@@ -459,7 +460,7 @@ static void  __attribute__((unused)) _checkSignaturesWithinClass(Class cls, Meth
             BOOL nonSystem = NO;
             NSString *a = describeMethod(sorted[methodIndex-1].meth, &nonSystem);
             NSString *b = describeMethod(sorted[methodIndex].meth, &nonSystem);
-            if (nonSystem) {
+            if (nonSystem || ReportWarningsInSystemLibraries) {
                 NSLog(@"Class %s has more than one implementation of %s:\n\t%@\n\t%@",
                       class_getName(cls), sorted[methodIndex-1].mname, a, b);
                 MethodMultipleImplementationCount++;
@@ -505,7 +506,7 @@ static void _checkSignaturesVsSuperclass(Class cls, Method *methods, unsigned in
                 BOOL nonSystem = NO;
                 NSString *methodInfo = describeMethod(method, &nonSystem);
                 NSString *superMethodInfo = describeMethod(superMethod, &nonSystem);
-                if (nonSystem) {
+                if (nonSystem || ReportWarningsInSystemLibraries) {
                     const char *normalizedSig = _copyNormalizeMethodSignature(types);
                     const char *normalizedSigSuper = _copyNormalizeMethodSignature(superTypes);
                     NSLog(@"Method %s has conflicting type signatures between class and its superclass:\n\tsignature %s for class %s has %@\n\tsignature %s for class %s has %@",

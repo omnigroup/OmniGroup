@@ -23,7 +23,7 @@ RCS_ID("$Id$")
 #if defined (__LP64__)
     #define CHARACTER_INDEX_TYPE NSInteger
 #else
-    #define CHARACTER_INDEX_TYPE unsigned
+    #define CHARACTER_INDEX_TYPE int
 #endif
 
 // <bug://bugs/26796> -- If you are linked against 10.4, Apple's code will raise if you access 'last character of SomeText' and 'SomeText' is empty.  Under earlier versions, it will create an NSSubTextStorage that contains the out-of-bounds reference, leading to crashes.   They have a log message that comes out under 10.4 saying that you'll get an exception under earlier OS's, but they goofed and you still get the crash.  Testing shows that this is only a problem in the 'characters' version (presumably since they can directly index the characters and thus avoided building an array and the bounds checking code).

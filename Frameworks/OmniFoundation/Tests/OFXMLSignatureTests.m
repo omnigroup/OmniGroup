@@ -103,7 +103,7 @@ NSString *testKeychainPath;
                 CFArrayAppendValue(certs, oneCert);
                 CFRelease(oneCert);
             } else {
-                NSLog(@"*** Could not load cert from %@: SecCertificateCreateFromData returns %ld", fn, oserr);
+                NSLog(@"*** Could not load cert from %@: SecCertificateCreateFromData returns %ld", fn, (long)oserr);
             }
         }
     });
@@ -357,7 +357,7 @@ static SecKeyRef copyKey(SecKeychainRef keychain, CSSM_ALGORITHMS keytype, SecIt
     NSUInteger num = [sig countOfReferenceNodes];
     for(NSUInteger n = 0; n < num; n ++) {
         if (![sig isLocalReferenceAtIndex:n] && ![[self class] shouldRunSlowUnitTests]) {
-            NSLog(@"SKIPPING test of ref %u (count=%u) of %@: is an external reference.",
+            NSLog(@"SKIPPING test of ref %lu (count=%lu) of %@: is an external reference.",
                   n, num, docName);
             continue;
         }
@@ -366,9 +366,9 @@ static SecKeyRef copyKey(SecKeychainRef keychain, CSSM_ALGORITHMS keytype, SecIt
         BOOL didVerify = [sig verifyReferenceAtIndex:n toBuffer:NULL error:&failWhy];
         STAssertTrue(didVerify, @"Verification of reference digest");
         if (didVerify) {
-            NSLog(@"-> Ref %u of %@ passed", n, docName);
+            NSLog(@"-> Ref %lu of %@ passed", n, docName);
         } else {
-            NSLog(@" -verifyReferenceAtIndex:%u returned error: %@ : %@", n, [failWhy description], [[failWhy userInfo] description]);
+            NSLog(@" -verifyReferenceAtIndex:%lu returned error: %@ : %@", n, [failWhy description], [[failWhy userInfo] description]);
         }
     }
 }

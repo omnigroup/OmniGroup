@@ -86,7 +86,7 @@ static NSLock *allActiveTasksLock = nil;
 
         } NS_HANDLER {
             [headerContentInfoLock unlock];
-            NSLog(@"%s %@ : %@", _cmd, name, localException);
+            NSLog(@"%@ %@ : %@", NSStringFromSelector(_cmd), name, localException);
             [newContentInfo release];
             [localException raise];
         } NS_ENDHANDLER;

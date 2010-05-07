@@ -107,3 +107,8 @@ uint64_t OFRandomNext64(void)
 {
     return OFRandomNextState64(_OFDefaultRandomState());
 }
+
+double OFRandomNextDouble(void)
+{
+    return OFRandomNextStateDouble(_OFDefaultRandomState());
+}

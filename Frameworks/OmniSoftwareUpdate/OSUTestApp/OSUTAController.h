@@ -20,7 +20,9 @@
     IBOutlet NSTextField *marketingVersionField;
     IBOutlet NSTextField *buildVersionField;
     IBOutlet NSTextField *systemVersionField;
+    IBOutlet NSTextField *applicationTrackField;
     IBOutlet NSTextView *visibleTracksTextView;
+    IBOutlet NSTextField *requestedTrackField;
     
     IBOutlet NSTextField *urlPromptField;
 }

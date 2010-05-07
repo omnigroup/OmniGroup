@@ -12,12 +12,14 @@
 # At Omni, this is done by a ruby script that figures out the appropriate dependencies for whichever project is passed on the command line and produces the right build order.  But that's overkill for our published source distribution--here, we'll just specify the build order by hand.
 
 cat << .
+OmniGroup/Tools/FixStringsFile
 OmniGroup/Frameworks/OmniBase 
 OmniGroup/Frameworks/OmniFoundation 
 OmniGroup/Frameworks/OmniFileStore
 OmniGroup/Frameworks/OmniUnzip
 OmniGroup/Frameworks/OmniDataObjects 
 OmniGroup/Frameworks/OmniNetworking 
+OmniGroup/Frameworks/OmniQuartz
 OmniGroup/Frameworks/OmniAppKit 
 OmniGroup/Frameworks/OmniInspector 
 OmniGroup/Frameworks/OmniSoftwareUpdate 

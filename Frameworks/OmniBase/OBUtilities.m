@@ -1,4 +1,4 @@
-// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -256,6 +256,11 @@ void _OBFinishPorting(const char *function, const char *file, unsigned int line)
 {
     NSLog(@"Finish porting %s at %s:%d", function, file, line);
     abort();
+}
+
+void _OBFinishPortingLater(const char *function, const char *file, unsigned int line, const char *msg)
+{
+    NSLog(@"Still need to port %s at %s:%d: %s", function, file, line, msg);
 }
 
 DEFINE_NSSTRING(OBAbstractImplementation);

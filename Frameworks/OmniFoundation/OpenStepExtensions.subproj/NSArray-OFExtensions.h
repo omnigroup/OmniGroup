@@ -1,4 +1,4 @@
-// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,16 +53,21 @@
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
 
 #ifdef NS_BLOCKS_AVAILABLE
-typedef id (^OFObjectToObjectBlock)(id anObject);
-
 - (NSArray *)arrayByPerformingBlock:(OFObjectToObjectBlock)blk;
 - (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)blk;
+- (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
 #endif
 
 #ifdef NS_BLOCKS_AVAILABLE
 - (NSArray *)select:(OFPredicateBlock)predicate;
 - (NSArray *)reject:(OFPredicateBlock)predicate;
+
 - (id)first:(OFPredicateBlock)predicate;
+- (id)firstInRange:(NSRange)range that:(OFPredicateBlock)predicate;
+
+- (id)last:(OFPredicateBlock)predicate;
+- (id)lastInRange:(NSRange)range that:(OFPredicateBlock)predicate;
+
 #endif
 
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector;

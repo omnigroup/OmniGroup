@@ -25,7 +25,7 @@ RCS_ID("$Id$")
 + (void)enqueueNotificationInMainThread:(NSNotification *)aNote postingStyle:(NSPostingStyle)aStyle
 {
     NSArray *arguments = [[NSArray alloc] initWithObjects:aNote, [NSNumber numberWithInteger:aStyle], nil];
-    [[OFMessageQueue mainQueue] queueSelector:@selector(_mainThreadEnqueue:) forObject:self withObject:arguments];
+    [[OFMessageQueue mainQueue] queueSelector:@selector(_mainThreadEnqueue:) forObject:(id)self withObject:arguments];
     [arguments release];
 }
 

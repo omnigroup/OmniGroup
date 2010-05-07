@@ -1,4 +1,4 @@
-// Copyright 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,17 +13,22 @@
 #import "OSUSendFeedbackErrorRecovery.h"
 #import "OSUPreferences.h"
 
+#import <AppKit/AppKit.h>
+
 #import <OmniAppKit/OAInternetConfig.h>
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/NSTextField-OAExtensions.h>
 #import <OmniAppKit/NSView-OAExtensions.h>
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniFoundation/OmniFoundation.h>
+#import <OmniBase/OmniBase.h>
 
 static BOOL OSUDebugDownload = NO;
 
 // Preferences not manipulated through the preferences UI
 #define UpgradeShowsOptionsPreferenceKey (@"OSUUpgradeShowsOptions")
+#define UpgradeKeepsExistingVersionPreferenceKey (@"OSUUpgradeArchivesExistingVersion")
+#define UpgradeKeepsPackagePreferenceKey (@"OSUUpgradeKeepsDiskImage")
 
 #define DEBUG_DOWNLOAD(format, ...) \
 do { \
@@ -88,6 +93,24 @@ static OSUDownloadController *CurrentDownloadController = nil;
     _showCautionText = NO;
     
     [self setInstallationDirectory:[OSUInstaller suggestAnotherInstallationDirectory:nil trySelf:YES]];
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if (![[[NSBundle mainBundle] bundlePath] hasPrefix:_installationDirectory] &&
+        ![defaults boolForKey:UpgradeKeepsExistingVersionPreferenceKey]) {
+        
+        // If we can't install over our current location, we probably can't delete the old copy either, so don't try.
+        // We set "archives" to "yes" because "no" means "delete"
+        // We really should have a better name for this flag (or maybe make it multivalued: leave alone, move to trash, move aside, make a zip file)
+        
+        // To avoid setting the preference for future sessions as well, put it in a new volatile domain
+        // Also, it's probably an undesirable side effect that this sets the default for future updates as well as preventing us from trying to delete the old version on this update as well
+        
+        NSDictionary *cmdline = [defaults volatileDomainForName:NSArgumentDomain];
+        cmdline = cmdline? [cmdline dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:UpgradeKeepsExistingVersionPreferenceKey] : [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:UpgradeKeepsExistingVersionPreferenceKey];
+        [defaults setVolatileDomain:cmdline forName:NSArgumentDomain];
+        
+        OBASSERT([defaults boolForKey:UpgradeKeepsExistingVersionPreferenceKey]);
+    }
     
     [self showWindow:nil];
     
@@ -207,8 +230,8 @@ static OSUDownloadController *CurrentDownloadController = nil;
     
     // The code below will eventually call the normal NSApp termination logic (which the app can use to close files and such).
     OSUInstaller *installer = [[OSUInstaller alloc] initWithPackagePath:_destinationFile];
-    installer.archiveExistingVersion = [defaults boolForKey:@"OSUUpgradeArchivesExistingVersion"];
-    installer.deletePackageOnSuccess = ![defaults boolForKey:@"OSUUpgradeKeepsDiskImage"];
+    installer.archiveExistingVersion = [defaults boolForKey:UpgradeKeepsExistingVersionPreferenceKey];
+    installer.deletePackageOnSuccess = ![defaults boolForKey:UpgradeKeepsPackagePreferenceKey];
     [installer setInstalledVersion:[[[NSBundle mainBundle] bundlePath] stringByExpandingTildeInPath]];
     if (_installationDirectory)
         installer.installationDirectory = _installationDirectory;
@@ -389,14 +412,14 @@ static OSUDownloadController *CurrentDownloadController = nil;
     DEBUG_DOWNLOAD(@"protectionSpace = %@", [challenge protectionSpace]);
     DEBUG_DOWNLOAD(@"  realm = %@", [[challenge protectionSpace] realm]);
     DEBUG_DOWNLOAD(@"  host = %@", [[challenge protectionSpace] host]);
-    DEBUG_DOWNLOAD(@"  port = %d", [[challenge protectionSpace] port]);
+    DEBUG_DOWNLOAD(@"  port = %ld", [[challenge protectionSpace] port]);
     DEBUG_DOWNLOAD(@"  isProxy = %d", [[challenge protectionSpace] isProxy]);
     DEBUG_DOWNLOAD(@"  proxyType = %@", [[challenge protectionSpace] proxyType]);
     DEBUG_DOWNLOAD(@"  protocol = %@", [[challenge protectionSpace] protocol]);
     DEBUG_DOWNLOAD(@"  authenticationMethod = %@", [[challenge protectionSpace] authenticationMethod]);
     DEBUG_DOWNLOAD(@"  receivesCredentialSecurely = %d", [[challenge protectionSpace] receivesCredentialSecurely]);
     
-    DEBUG_DOWNLOAD(@"previousFailureCount = %d", [challenge previousFailureCount]);
+    DEBUG_DOWNLOAD(@"previousFailureCount = %ld", [challenge previousFailureCount]);
     NSURLCredential *proposed = [challenge proposedCredential];
     DEBUG_DOWNLOAD(@"proposed = %@", proposed);
     
@@ -431,7 +454,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
     DEBUG_DOWNLOAD(@"  suggestedFilename %@", [response suggestedFilename]);
     
     if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
-        DEBUG_DOWNLOAD(@"  statusCode %d", [(NSHTTPURLResponse *)response statusCode]);
+        DEBUG_DOWNLOAD(@"  statusCode %ld", [(NSHTTPURLResponse *)response statusCode]);
         DEBUG_DOWNLOAD(@"  allHeaderFields %@", [(NSHTTPURLResponse *)response allHeaderFields]);
     }
 
@@ -441,7 +464,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
 
 - (void)download:(NSURLDownload *)download willResumeWithResponse:(NSURLResponse *)response fromByte:(long long)startingByte;
 {
-    DEBUG_DOWNLOAD(@"willResumeWithResponse %@ fromByte %d", response, startingByte);
+    DEBUG_DOWNLOAD(@"willResumeWithResponse %@ fromByte %qd", response, startingByte);
 }
 
 - (void)download:(NSURLDownload *)download didReceiveDataOfLength:(NSUInteger)length;
@@ -511,6 +534,30 @@ static OSUDownloadController *CurrentDownloadController = nil;
     
     [_destinationFile autorelease];
     _destinationFile = [path copy];
+    
+    // Quarantine the file. Later, after we verify its checksum, we can remove the quarantine.
+    NSError *qError = nil;
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if ([fm quarantinePropertiesForItemAtPath:path error:&qError] != nil) {
+        // It already has a quarantine (presumably we're running with LSFileQuarantineEnabled in our Info.plist)
+        // And apparently it's not possible to change the paramneters of an existing quarantine event
+        // So just assume that NSURLDownload did something that was good enough
+    } else {
+        if ( !([[qError domain] isEqualToString:NSOSStatusErrorDomain] && [qError code] == unimpErr) ) {
+            
+            NSMutableDictionary *qua = [NSMutableDictionary dictionary];
+            [qua setObject:(id)kLSQuarantineTypeOtherDownload forKey:(id)kLSQuarantineTypeKey];
+            [qua setObject:[[download request] URL] forKey:(id)kLSQuarantineDataURLKey];
+            NSString *fromWhere = [_item sourceLocation];
+            if (fromWhere) {
+                NSURL *parsed = [NSURL URLWithString:fromWhere];
+                if (parsed)
+                    [qua setObject:parsed forKey:(id)kLSQuarantineOriginURLKey];
+            }
+            
+            [fm setQuarantineProperties:qua forItemAtPath:path error:NULL];
+        }
+    }
 }
 
 - (void)downloadDidFinish:(NSURLDownload *)download;
@@ -693,7 +740,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
     // NSWindow screen coordinates are in a Y-increases-upwards orientation.
     windowFrame.origin.y += ( NSMaxY(oldFrame) - NSMaxY(windowFrame) );
     // If moving horizontally, let's see if keeping a point 1/3 from the left looks good.
-    windowFrame.origin.x = (CGFloat)(oldFrame.origin.x + (1./3.) * (oldFrame.size.width - windowFrame.size.width));
+    windowFrame.origin.x = oldFrame.origin.x + (oldFrame.size.width - windowFrame.size.width)/3;
     
     windowFrame = NSIntegralRect(windowFrame);
     NSScreen *windowScreen = [window screen];

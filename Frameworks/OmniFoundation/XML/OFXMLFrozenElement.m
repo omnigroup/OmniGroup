@@ -7,12 +7,17 @@
 
 #import <OmniFoundation/OFXMLFrozenElement.h>
 
+#import <Foundation/Foundation.h>
+
 #import <OmniFoundation/CFArray-OFExtensions.h>
 #import <OmniFoundation/OFXMLDocument.h>
 #import <OmniFoundation/OFXMLElement.h>
 #import <OmniFoundation/OFXMLString.h>
 
 #import <OmniFoundation/OFXMLBuffer.h>
+
+#import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
 
 RCS_ID("$Id$");
 

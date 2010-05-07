@@ -10,6 +10,7 @@
 #import <Foundation/NSString.h>
 
 #import <Foundation/NSDecimal.h>
+#import <CoreFoundation/CFString.h>
 
 @class NSData, NSDecimalNumber;
 

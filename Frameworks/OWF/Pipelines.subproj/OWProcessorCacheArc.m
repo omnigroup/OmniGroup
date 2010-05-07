@@ -578,7 +578,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
     if (object != nil) {
 #ifdef DEBUG
         if (![object endOfData] && ![[link processorClassName] isEqualToString:@"OWUnknownDataStreamProcessor"])
-            NSLog(@"-[%@ %s]: [object endOfData] = 0, self=%@, source=%@", OBShortObjectDescription(self), _cmd, self, source);
+            NSLog(@"-[%@ %@]: [object endOfData] = 0, self=%@, source=%@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), self, source);
 #endif
         OBASSERT([object endOfData] || [[link processorClassName] isEqualToString:@"OWUnknownDataStreamProcessor"]);
         OBASSERT([object endOfHeaders]);
@@ -1309,7 +1309,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
     if (context == nil) {
         OBASSERT(flags.state == ArcStateRetired); // We expect this to be the only reason we would have no context, and this is the basis of the text in the exception below.  If this assertion fails, just change the message.
 #ifdef DEBUG
-        NSLog(@"-[%@ %s%@]: warning: context == nil", OBShortObjectDescription(self), _cmd, key);
+        NSLog(@"-[%@ %@%@]: warning: context == nil", OBShortObjectDescription(self), NSStringFromSelector(_cmd), key);
 #endif
         [OWPipeline unlock];
         [NSException raise:@"OWProcessorCacheArcHasRetired" format:@"Processor cache arc has retired, and can therefore provide no context"];

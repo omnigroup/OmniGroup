@@ -11,7 +11,7 @@
 
 #import <OmniFoundation/OFXMLWhitespaceBehavior.h>
 
-@class NSArray, NSMutableArray, NSMutableDictionary, NSMutableString, NSError;
+@class NSArray, NSMutableArray, NSDate, NSData, NSMutableDictionary, NSMutableString, NSError;
 @class OFXMLDocument, OFXMLElement;
 
 typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);

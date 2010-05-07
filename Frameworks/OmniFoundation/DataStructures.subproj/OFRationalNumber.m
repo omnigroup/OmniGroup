@@ -324,7 +324,6 @@ static void OFRationalFromParts(struct OFRationalNumberStruct *r, ofr_unsigned_w
 
 static unsigned int ofr_width(ofr_unsigned_wide n)
 {
-    OBASSERT(n >= 0);
     unsigned int shift = 0;
     
     for(;;) {
@@ -359,6 +358,8 @@ static BOOL OFRationalSpecialCases(struct OFRationalNumberStruct *r, ofr_unsigne
 static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_unsigned_wide numerator, ofr_unsigned_wide denominator, int exponent, BOOL negative)
 {
     //NSLog(@"OFRationalFromPartsExp(%lld, %lld, %d, %s)", numerator, denominator, exponent, negative?"neg":"pos");
+    
+#if 0 // clang notices these are dead code since the arguments are unsigned
     if (numerator < 0) {
         numerator = -numerator;
         negative = !negative;
@@ -367,7 +368,8 @@ static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_unsigne
         denominator = -denominator;
         negative = !negative;
     }
-
+#endif
+    
     if (OFRationalSpecialCases(r, numerator, denominator, negative))
         return;
     

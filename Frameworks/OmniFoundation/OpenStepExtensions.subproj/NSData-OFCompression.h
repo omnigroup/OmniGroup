@@ -17,8 +17,10 @@
 - (NSData *)decompressedData:(NSError **)outError;
 
 // Specific algorithms
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSData *)compressedBzip2Data:(NSError **)outError;
 - (NSData *)decompressedBzip2Data:(NSError **)outError;
+#endif
 
 - (NSData *)compressedDataWithGzipHeader:(BOOL)includeHeader compressionLevel:(int)level error:(NSError **)outError;
 - (NSData *)decompressedGzipData:(NSError **)outError;

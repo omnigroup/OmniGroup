@@ -1,0 +1,4 @@
+/* Localized versions of Info.plist keys */
+
+CFBundleName = "OmniCoreImage";
+NSHumanReadableCopyright = "© The Omni Group, 2005";

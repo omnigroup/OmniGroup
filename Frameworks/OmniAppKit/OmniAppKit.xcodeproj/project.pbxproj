@@ -3,25 +3,35 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 42;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		007E767810C8469F00313878 /* OABoxSeparator.h in Headers */ = {isa = PBXBuildFile; fileRef = 007E767610C8469F00313878 /* OABoxSeparator.h */; };
 		007E767910C8469F00313878 /* OABoxSeparator.m in Sources */ = {isa = PBXBuildFile; fileRef = 007E767710C8469F00313878 /* OABoxSeparator.m */; };
+		34013D801193654E00371920 /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34013D811193654E00371920 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; };
 		340DD56109AD38E900E8A437 /* NSFileWrapper-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		340DD56209AD38E900E8A437 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; };
+		341AB85911935816005E6F74 /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		341AB85A11935816005E6F74 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; };
 		3425E49009C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3425E49109C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */; };
 		342B41170A4C6B62002BFC4B /* NSWindowController-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342B41150A4C6B62002BFC4B /* NSWindowController-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		342B41180A4C6B62002BFC4B /* NSWindowController-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342B41160A4C6B62002BFC4B /* NSWindowController-OAExtensions.m */; };
 		3431F1300B1B7847002B728E /* OADatePickerTextFieldCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3431F12E0B1B7847002B728E /* OADatePickerTextFieldCell.h */; };
 		3431F1310B1B7847002B728E /* OADatePickerTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3431F12F0B1B7847002B728E /* OADatePickerTextFieldCell.m */; };
+		3434792F11923BAE007D0CE5 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; };
+		3434793011923BAF007D0CE5 /* NSFileWrapper-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34471AC109D31320004C9DBA /* OAConstructionTimeView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34471ABF09D31320004C9DBA /* OAConstructionTimeView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34471AC209D31320004C9DBA /* OAConstructionTimeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34471AC009D31320004C9DBA /* OAConstructionTimeView.m */; };
 		345E74250C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 345E74230C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		345E74260C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */; };
 		346DB94B0D74BDAD00CA37DE /* ExceptionHandling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */; };
+		3473992311947194002DF726 /* OAParagraphStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473992111947194002DF726 /* OAParagraphStyle.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3473992411947194002DF726 /* OAParagraphStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 3473992211947194002DF726 /* OAParagraphStyle.m */; };
+		3473992511947194002DF726 /* OAParagraphStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473992111947194002DF726 /* OAParagraphStyle.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3473992611947194002DF726 /* OAParagraphStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 3473992211947194002DF726 /* OAParagraphStyle.m */; };
 		3475A09F0DE235EA00FB73CC /* OBTestCase.h in Headers */ = {isa = PBXBuildFile; fileRef = 3475A09D0DE235EA00FB73CC /* OBTestCase.h */; };
 		3475A0A00DE235EA00FB73CC /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A09E0DE235EA00FB73CC /* OBTestCase.m */; };
 		3475A0A30DE235FE00FB73CC /* OFTestCase.h in Headers */ = {isa = PBXBuildFile; fileRef = 3475A0A10DE235FE00FB73CC /* OFTestCase.h */; };
@@ -421,6 +431,8 @@
 		A2C0C3AF0E3596E600773D47 /* WhiteAlpha-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37C0E3596E600773D47 /* WhiteAlpha-string-full.plist */; };
 		A2C0C3B00E3596E600773D47 /* WhiteAlpha-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37D0E3596E600773D47 /* WhiteAlpha-string-partial.plist */; };
 		A2C0C3B10E3596E600773D47 /* WhiteAlpha.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37E0E3596E600773D47 /* WhiteAlpha.xml */; };
+		E228439B115D622F00948C13 /* OAStepperTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = E228439A115D622F00948C13 /* OAStepperTextField.m */; };
+		E228439E115D623700948C13 /* OAStepperTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = E228439D115D623700948C13 /* OAStepperTextField.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -588,12 +600,29 @@
 		3412B1D3089EE7E10046872B /* OAAutosizingHorizontalRule.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OAAutosizingHorizontalRule.m; sourceTree = "<group>"; };
 		341513E8FFA7B9E0C697A14A /* NSFontManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFontManager-OAExtensions.h"; sourceTree = "<group>"; };
 		341513E9FFA7B9E0C697A14A /* NSFontManager-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFontManager-OAExtensions.m"; sourceTree = "<group>"; };
+		341AB85711935816005E6F74 /* OAFontDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFontDescriptor.h; sourceTree = "<group>"; };
+		341AB85811935816005E6F74 /* OAFontDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFontDescriptor.m; sourceTree = "<group>"; };
 		3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSLayoutManager-OAExtensions.h"; path = "OpenStepExtensions.subproj/NSLayoutManager-OAExtensions.h"; sourceTree = "<group>"; };
 		3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSLayoutManager-OAExtensions.m"; path = "OpenStepExtensions.subproj/NSLayoutManager-OAExtensions.m"; sourceTree = "<group>"; };
 		342B41150A4C6B62002BFC4B /* NSWindowController-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSWindowController-OAExtensions.h"; sourceTree = "<group>"; };
 		342B41160A4C6B62002BFC4B /* NSWindowController-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSWindowController-OAExtensions.m"; sourceTree = "<group>"; };
 		3431F12E0B1B7847002B728E /* OADatePickerTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADatePickerTextFieldCell.h; sourceTree = "<group>"; };
 		3431F12F0B1B7847002B728E /* OADatePickerTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADatePickerTextFieldCell.m; sourceTree = "<group>"; };
+		3434791511923B54007D0CE5 /* libOmniAppKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniAppKit.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		3434791A11923B69007D0CE5 /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
+		3434791B11923B69007D0CE5 /* Omni-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3434791C11923B69007D0CE5 /* Omni-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Debug.xcconfig"; sourceTree = "<group>"; };
+		3434791D11923B69007D0CE5 /* Omni-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		3434791E11923B69007D0CE5 /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
+		3434791F11923B69007D0CE5 /* Target-Touch-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Touch-Common.xcconfig"; sourceTree = "<group>"; };
+		3434792011923B69007D0CE5 /* Touch-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		3434792111923B69007D0CE5 /* Touch-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3434792211923B69007D0CE5 /* Touch-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		3434792311923B69007D0CE5 /* Touch-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		3434792411923B69007D0CE5 /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
+		3434792511923B69007D0CE5 /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3434792611923B69007D0CE5 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
+		3434792711923B69007D0CE5 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		34471ABF09D31320004C9DBA /* OAConstructionTimeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAConstructionTimeView.h; sourceTree = "<group>"; };
 		34471AC009D31320004C9DBA /* OAConstructionTimeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAConstructionTimeView.m; sourceTree = "<group>"; };
 		34476AE306DF790B0097A113 /* OAToolbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAToolbar.h; sourceTree = "<group>"; };
@@ -607,7 +636,7 @@
 		345057E206F207DD0097A113 /* OAContextPopUpButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAContextPopUpButton.m; sourceTree = "<group>"; };
 		345057E506F209090097A113 /* OAContextControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAContextControl.h; sourceTree = "<group>"; };
 		345057E606F209090097A113 /* OAContextControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAContextControl.m; sourceTree = "<group>"; };
-		34508D64050FA8C30097A113 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = /System/Library/Frameworks/SenTestingKit.framework; sourceTree = "<absolute>"; };
+		34508D64050FA8C30097A113 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		34508D6E050FAA750097A113 /* OATestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATestCase.h; sourceTree = "<group>"; };
 		34508D6F050FAA750097A113 /* OATestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATestCase.m; sourceTree = "<group>"; };
 		3457306005D00FD50097A113 /* OAPatternColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPatternColorPicker.h; sourceTree = "<group>"; };
@@ -619,6 +648,8 @@
 		345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASendFeedbackErrorRecovery.m; sourceTree = "<group>"; };
 		346A548A0551B08600C03EF8 /* OAUnitTests_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAUnitTests_Prefix.h; sourceTree = "<group>"; };
 		346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExceptionHandling.framework; path = /System/Library/Frameworks/ExceptionHandling.framework; sourceTree = "<absolute>"; };
+		3473992111947194002DF726 /* OAParagraphStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAParagraphStyle.h; sourceTree = "<group>"; };
+		3473992211947194002DF726 /* OAParagraphStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAParagraphStyle.m; sourceTree = "<group>"; };
 		3475A09D0DE235EA00FB73CC /* OBTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OBTestCase.h; path = ../../../OmniBase/OBTestCase.h; sourceTree = "<group>"; };
 		3475A09E0DE235EA00FB73CC /* OBTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OBTestCase.m; path = ../../../OmniBase/OBTestCase.m; sourceTree = "<group>"; };
 		3475A0A10DE235FE00FB73CC /* OFTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFTestCase.h; path = ../../../OmniFoundation/Tests/OFTestCase.h; sourceTree = "<group>"; };
@@ -743,7 +774,6 @@
 		A207C22F0AA3BC7F00C3A5EF /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
 		A207C2300AA3BC7F00C3A5EF /* Omni-Bundle-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
 		A207C2310AA3BC7F00C3A5EF /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Common.xcconfig"; sourceTree = "<group>"; };
-		A207C2330AA3BC7F00C3A5EF /* Omni-Global-Common-10.4.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-10.4.xcconfig"; sourceTree = "<group>"; };
 		A207C2340AA3BC7F00C3A5EF /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
 		A207C2350AA3BC7F00C3A5EF /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
 		A216D1330AB61E9C00CEC8C0 /* NSBezierPath-OAInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBezierPath-OAInternal.h"; sourceTree = "<group>"; };
@@ -863,6 +893,8 @@
 		B5FEDAD0055862C20097A10E /* OABackgroundImageControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OABackgroundImageControl.m; sourceTree = "<group>"; };
 		BF94281F062222D400B83989 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E20CCE8D058021200097A12E /* OAAction.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAAction.png; sourceTree = "<group>"; };
+		E228439A115D622F00948C13 /* OAStepperTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAStepperTextField.m; sourceTree = "<group>"; };
+		E228439D115D623700948C13 /* OAStepperTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAStepperTextField.h; sourceTree = "<group>"; };
 		E274EDCB056D99550097A12E /* OAGradientTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAGradientTableView.h; sourceTree = "<group>"; };
 		E274EDCC056D99550097A12E /* OAGradientTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGradientTableView.m; sourceTree = "<group>"; };
 		E2CBC36006EF77CE0097A11C /* OASpringLoadHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASpringLoadHelper.h; sourceTree = "<group>"; };
@@ -885,6 +917,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3434791311923B54007D0CE5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AA1E7ED08AA764600E2FF6B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -948,6 +987,7 @@
 				4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */,
 				4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */,
 				4AA1E82C08AA764700E2FF6B /* OAPatternColorPicker.bundle */,
+				3434791511923B54007D0CE5 /* libOmniAppKit.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1615,6 +1655,10 @@
 		3FDA4154020975210297A14E /* NSFont */ = {
 			isa = PBXGroup;
 			children = (
+				341AB85711935816005E6F74 /* OAFontDescriptor.h */,
+				341AB85811935816005E6F74 /* OAFontDescriptor.m */,
+				3473992111947194002DF726 /* OAParagraphStyle.h */,
+				3473992211947194002DF726 /* OAParagraphStyle.m */,
 				00E51F3CFE8AB2E911C9CC38 /* NSFont-OAExtensions.h */,
 				00E51F26FE8AB2E911C9CC38 /* NSFont-OAExtensions.m */,
 			);
@@ -1721,6 +1765,8 @@
 				4A785F580B040C3A00B513F3 /* OAPopupDatePicker.m */,
 				4A785F650B040D2E00B513F3 /* OASteppableTextField.h */,
 				4A785F660B040D2E00B513F3 /* OASteppableTextField.m */,
+				E228439D115D623700948C13 /* OAStepperTextField.h */,
+				E228439A115D622F00948C13 /* OAStepperTextField.m */,
 				9FFB676B0C18A44000910EEF /* OADatePicker.h */,
 				9FFB676C0C18A44000910EEF /* OADatePicker.m */,
 			);
@@ -1770,27 +1816,40 @@
 		4AA1EBCC08AA772700E2FF6B /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
+				A207C22F0AA3BC7F00C3A5EF /* Omni-Application-Common.xcconfig */,
 				4AA1EBCD08AA772700E2FF6B /* Omni-Application-Coverage.xcconfig */,
 				4AA1EBCE08AA772700E2FF6B /* Omni-Application-Debug.xcconfig */,
 				4AA1EBCF08AA772700E2FF6B /* Omni-Application-Release.xcconfig */,
+				A207C2300AA3BC7F00C3A5EF /* Omni-Bundle-Common.xcconfig */,
 				4AB8F09808AD0A0600DBB061 /* Omni-Bundle-Coverage.xcconfig */,
 				4AB8F09908AD0A0600DBB061 /* Omni-Bundle-Debug.xcconfig */,
 				4AB8F09A08AD0A0600DBB061 /* Omni-Bundle-Release.xcconfig */,
+				A207C2310AA3BC7F00C3A5EF /* Omni-Framework-Common.xcconfig */,
 				4AA1EBD008AA772700E2FF6B /* Omni-Framework-Coverage.xcconfig */,
 				4AA1EBD108AA772700E2FF6B /* Omni-Framework-Debug.xcconfig */,
 				4AA1EBD208AA772700E2FF6B /* Omni-Framework-Release.xcconfig */,
-				4AB8F09B08AD0A0600DBB061 /* Omni-Global-Coverage.xcconfig */,
-				A207C22F0AA3BC7F00C3A5EF /* Omni-Application-Common.xcconfig */,
-				A207C2300AA3BC7F00C3A5EF /* Omni-Bundle-Common.xcconfig */,
-				A207C2310AA3BC7F00C3A5EF /* Omni-Framework-Common.xcconfig */,
-				A207C2330AA3BC7F00C3A5EF /* Omni-Global-Common-10.4.xcconfig */,
 				A207C2340AA3BC7F00C3A5EF /* Omni-Global-Common.xcconfig */,
+				4AB8F09B08AD0A0600DBB061 /* Omni-Global-Coverage.xcconfig */,
 				4AB8F09C08AD0A0600DBB061 /* Omni-Global-Debug.xcconfig */,
 				4AB8F09D08AD0A0600DBB061 /* Omni-Global-Release.xcconfig */,
+				3434791A11923B69007D0CE5 /* Omni-Library-Common.xcconfig */,
+				3434791B11923B69007D0CE5 /* Omni-Library-Coverage.xcconfig */,
+				3434791C11923B69007D0CE5 /* Omni-Library-Debug.xcconfig */,
+				3434791D11923B69007D0CE5 /* Omni-Library-Release.xcconfig */,
 				A207C2350AA3BC7F00C3A5EF /* Omni-Tool-Common.xcconfig */,
 				4AA1EBD308AA772700E2FF6B /* Omni-Tool-Coverage.xcconfig */,
 				4AA1EBD408AA772700E2FF6B /* Omni-Tool-Debug.xcconfig */,
 				4AA1EBD508AA772700E2FF6B /* Omni-Tool-Release.xcconfig */,
+				3434791E11923B69007D0CE5 /* Target-Mac-Common.xcconfig */,
+				3434791F11923B69007D0CE5 /* Target-Touch-Common.xcconfig */,
+				3434792011923B69007D0CE5 /* Touch-Application-Common.xcconfig */,
+				3434792111923B69007D0CE5 /* Touch-Application-Coverage.xcconfig */,
+				3434792211923B69007D0CE5 /* Touch-Application-Debug.xcconfig */,
+				3434792311923B69007D0CE5 /* Touch-Application-Release.xcconfig */,
+				3434792411923B69007D0CE5 /* Touch-Library-Common.xcconfig */,
+				3434792511923B69007D0CE5 /* Touch-Library-Coverage.xcconfig */,
+				3434792611923B69007D0CE5 /* Touch-Library-Debug.xcconfig */,
+				3434792711923B69007D0CE5 /* Touch-Library-Release.xcconfig */,
 			);
 			name = Configurations;
 			path = ../../Configurations;
@@ -2057,6 +2116,16 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		3434791111923B54007D0CE5 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3434793011923BAF007D0CE5 /* NSFileWrapper-OAExtensions.h in Headers */,
+				34013D801193654E00371920 /* OAFontDescriptor.h in Headers */,
+				3473992511947194002DF726 /* OAParagraphStyle.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AA1E67B08AA764600E2FF6B /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -2200,6 +2269,9 @@
 				34A201230FF0454400B699DB /* NSAlert-OAExtensions.h in Headers */,
 				94E1CE0B10D803C5000A01F9 /* OACloseButtonOverlay.h in Headers */,
 				007E767810C8469F00313878 /* OABoxSeparator.h in Headers */,
+				E228439E115D623700948C13 /* OAStepperTextField.h in Headers */,
+				341AB85911935816005E6F74 /* OAFontDescriptor.h in Headers */,
+				3473992311947194002DF726 /* OAParagraphStyle.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2231,6 +2303,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		3434791411923B54007D0CE5 /* OmniAppKitTouch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3434791911923B5E007D0CE5 /* Build configuration list for PBXNativeTarget "OmniAppKitTouch" */;
+			buildPhases = (
+				3434791111923B54007D0CE5 /* Headers */,
+				3434791211923B54007D0CE5 /* Sources */,
+				3434791311923B54007D0CE5 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OmniAppKitTouch;
+			productName = OmniAppKitTouch;
+			productReference = 3434791511923B54007D0CE5 /* libOmniAppKit.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		4AA1E67A08AA764600E2FF6B /* OmniAppKit (Framework) */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4AA1E7F308AA764600E2FF6B /* Build configuration list for PBXNativeTarget "OmniAppKit (Framework)" */;
@@ -2317,7 +2406,7 @@
 		00E51EF1FE8AB2E911C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 4A4E085608AA75E90098FF0F /* Build configuration list for PBXProject "OmniAppKit" */;
-			compatibilityVersion = "Xcode 2.4";
+			compatibilityVersion = "Xcode 3.2";
 			hasScannedForEncodings = 1;
 			mainGroup = 00E51EF2FE8AB2E911C9CC38 /* OmniAppKit */;
 			projectDirPath = "";
@@ -2327,6 +2416,7 @@
 				4AA1E7FA08AA764600E2FF6B /* OAUnitTests */,
 				4AA1E81208AA764700E2FF6B /* OAMakeImageSizeIntegral */,
 				4AA1E82008AA764700E2FF6B /* OAPatternColorPicker */,
+				3434791411923B54007D0CE5 /* OmniAppKitTouch */,
 			);
 		};
 /* End PBXProject section */
@@ -2512,6 +2602,16 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3434791211923B54007D0CE5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3434792F11923BAE007D0CE5 /* NSFileWrapper-OAExtensions.m in Sources */,
+				34013D811193654E00371920 /* OAFontDescriptor.m in Sources */,
+				3473992611947194002DF726 /* OAParagraphStyle.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AA1E76808AA764600E2FF6B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2649,6 +2749,9 @@
 				94E1CE0C10D803C5000A01F9 /* OACloseButtonOverlay.m in Sources */,
 				007E767910C8469F00313878 /* OABoxSeparator.m in Sources */,
 				34D04A39110E0270007399B9 /* OAUtilities.m in Sources */,
+				E228439B115D622F00948C13 /* OAStepperTextField.m in Sources */,
+				341AB85A11935816005E6F74 /* OAFontDescriptor.m in Sources */,
+				3473992411947194002DF726 /* OAParagraphStyle.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2749,6 +2852,30 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		3434791611923B54007D0CE5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3434792611923B69007D0CE5 /* Touch-Library-Debug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OmniAppKit;
+			};
+			name = Debug;
+		};
+		3434791711923B54007D0CE5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3434792711923B69007D0CE5 /* Touch-Library-Release.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OmniAppKit;
+			};
+			name = Release;
+		};
+		3434791811923B54007D0CE5 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3434792511923B69007D0CE5 /* Touch-Library-Coverage.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OmniAppKit;
+			};
+			name = Coverage;
+		};
 		4A4E085708AA75E90098FF0F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AB8F09C08AD0A0600DBB061 /* Omni-Global-Debug.xcconfig */;
@@ -2920,6 +3047,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3434791911923B5E007D0CE5 /* Build configuration list for PBXNativeTarget "OmniAppKitTouch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3434791611923B54007D0CE5 /* Debug */,
+				3434791711923B54007D0CE5 /* Release */,
+				3434791811923B54007D0CE5 /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		4A4E085608AA75E90098FF0F /* Build configuration list for PBXProject "OmniAppKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

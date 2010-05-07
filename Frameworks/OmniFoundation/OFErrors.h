@@ -7,6 +7,8 @@
 //
 // $Id$
 
+@class NSString, NSError;
+
 // Domain is the OmniFoundation bundle identifier.
 enum {
     // Zero typically means no error
@@ -42,3 +44,8 @@ enum {
 // This key holds the exit status of a process which has exited
 #define OFProcessExitStatusErrorKey (@"OFExitStatus")
 #define OFProcessExitSignalErrorKey (@"OFExitSignal")
+
+extern NSString * const OFErrorDomain;
+
+#define OFErrorWithInfo(error, code, description, suggestion, ...) _OBError(error, OFErrorDomain, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
+#define OFError(error, code, description, reason) OFErrorWithInfo((error), (code), (description), (reason), nil)

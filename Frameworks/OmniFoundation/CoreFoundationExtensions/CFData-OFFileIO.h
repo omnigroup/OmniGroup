@@ -8,6 +8,8 @@
 // $Id$
 
 #import <CoreFoundation/CFData.h>
+#import <CoreFoundation/CFError.h>
+#include <stdio.h>
 
 extern FILE *OFDataCreateReadOnlyStandardIOFile(CFDataRef data, CFErrorRef *outError);
 extern FILE *OFDataCreateReadWriteStandardIOFile(CFMutableDataRef data, CFErrorRef *outError);

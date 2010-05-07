@@ -6,15 +6,6 @@
 #include "Omni-Global-Common.xcconfig"
 
 // Common settings for Release configurations
-PREBINDING = YES
 DEPLOYMENT_LOCATION = YES
 DSTROOT = /
 INSTALL_PATH = $(OMNI_INSTALLED_PRODUCTS)
-OTHER_LDFLAGS = $(OMNI_PREBIND_FLAGS)
-ARCHS = i386 x86_64
-
-// We don't strip in Xcode for release.  We have a custom version of strip and do it during packaing so that we can keep an unstripped copy of the app.
-SKIP_INSTALL = NO
-//STRIPFLAGS = -urSX
-UNSTRIPPED_PRODUCT = YES
-COPY_PHASE_STRIP = NO

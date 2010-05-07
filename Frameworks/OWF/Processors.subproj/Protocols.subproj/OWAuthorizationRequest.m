@@ -884,7 +884,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
         foundAnything = NO;
         keychainStatus = OWKCBeginKeychainSearch(NULL, search, &grepstate);
         if (OWAuthorizationDebug)
-            NSLog(@"beginSearch: keychainStatus=%d", keychainStatus);
+            NSLog(@"beginSearch: keychainStatus=%ld", (long)keychainStatus);
         if (keychainStatus == noErr) {
             do {
                 NSDictionary *parms;
@@ -892,7 +892,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
 
                 keychainStatus = SecKeychainSearchCopyNext(grepstate, &item);
                 if (OWAuthorizationDebug)
-                    NSLog(@"findNext: keychainStatus=%d", keychainStatus);
+                    NSLog(@"findNext: keychainStatus=%ld", (long)keychainStatus);
                 if (keychainStatus != noErr)
                     break;
                 
@@ -949,7 +949,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
                         break;  // we will fall through the remaining tests & return NO.
                         // TODO: If we fail here, we may want to continue with a different keychain
                     } else {
-                        NSLog(@"error getting key data: keychainStatus=%d", keychainStatus);
+                        NSLog(@"error getting key data: keychainStatus=%ld", (long)keychainStatus);
                         // TODO: For which errors should we give up on the keychain entirely?
                     }
                     // TODO: make sure we handle cancel vs. denied vs. the unexpected
@@ -964,7 +964,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
         if (keychainStatus == userCanceledErr) {
             tryAgain = NO;
         } else if (keychainStatus != noErr && keychainStatus != errSecItemNotFound) {
-            NSLog(@"Keychain error: %d", keychainStatus);
+            NSLog(@"Keychain error: %ld", (long)keychainStatus);
             // TODO: report this better?
             tryAgain = NO;
         } else if (foundAnything == YES && [self checkForSatisfaction]) {

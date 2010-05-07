@@ -18,12 +18,6 @@
 
 RCS_ID("$Id$");
 
-#define OmniAppKitBackupFourCharCode FOUR_CHAR_CODE('OABK')
-
-@interface NSDocument (OAExtensions_Private)
-- (OFResourceFork *)_newResourceForkCreateIfMissing:(BOOL)create;
-@end
-
 @implementation NSDocument (OAExtensions)
 
 #ifdef OMNI_ASSERTIONS_ON
@@ -85,107 +79,6 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 }
 #endif
 
-- (NSFileWrapper *)fileWrapperOfType:(NSString *)typeName saveOperation:(NSSaveOperationType)saveOperationType error:(NSError **)outError;
-/*" Methods that care about the save operation when building their file wrapper can subclass this.  OmniAppKit's NSDocument support for autosave calls this method, but currently no other code path does, so you still need to override -fileWrapperOfType:error:.  This just gives the autosave support a way to inform the document that it is saving with a specific operation during autosave. "*/
-{
-    return [self fileWrapperOfType:typeName error:outError];
-}
-
-- (void)writeToBackupInResourceFork;
-{
-    NSString *fileName = [[self fileURL] path];
-    if (!fileName)
-        return;
-
-    NSError *error = nil;
-    NSFileWrapper *wrapper = [self fileWrapperOfType:[self fileType] saveOperation:NSSaveOperation error:&error];
-    if (error)
-	NSLog(@"Failed to create file wrapper in %s -- %@", __PRETTY_FUNCTION__, error);
-    NSData *contentData = [wrapper serializedRepresentation];
-
-    OFResourceFork *newFork = [self _newResourceForkCreateIfMissing:YES];
-    OBASSERT(newFork != nil);
-    [newFork setData:contentData forResourceType:OmniAppKitBackupFourCharCode];
-    // release newFork so that deleteAllBackups... can open it.
-    [newFork release];
-    [self deleteAllBackupsButMostRecentInResourceFork];
-}
-
-- (NSFileWrapper *)fileWrapperFromBackupInResourceFork;
-{
-    OFResourceFork *newFork = [self _newResourceForkCreateIfMissing:NO];
-    if (!newFork)
-        return nil;
-    
-    // if we're maintaining our resource data correctly there are two possibilities:
-    // - we have 2 backups because we crashed doing a backup.  So use the penultimate backup
-    // - we have one backup because life is good.  Use the last backup
-    // in either case, this means we want to load the backup at index 0.
-    NSData *backupData = [newFork dataForResourceType:OmniAppKitBackupFourCharCode atIndex:0];
-    NSFileWrapper *wrapper = [[[NSFileWrapper alloc] initWithSerializedRepresentation:backupData] autorelease];
-    [newFork release];
-
-    return wrapper;
-}
-
-- (BOOL)readFromBackupInResourceFork;
-{
-    NSFileWrapper *wrapper = [self fileWrapperFromBackupInResourceFork];
-    NSError *err = nil;
-    if (![self readFromFileWrapper:wrapper ofType:[self fileType] error:&err]) {
-        [self presentError:err];
-        return NO;
-    } else
-        return YES;
-}
-
-- (BOOL)hasBackupInResourceFork;
-{
-    OFResourceFork *newFork = [self _newResourceForkCreateIfMissing:NO];
-    
-    if (!newFork)
-        return NO;
-
-    short count = [newFork countForResourceType:OmniAppKitBackupFourCharCode];
-    
-    BOOL result = (count > 0);
-
-    [newFork release];
-
-    return result;
-}
-
-- (void)deleteAllBackupsInResourceFork;
-{
-    OFResourceFork *newFork = [self _newResourceForkCreateIfMissing:NO];
-    if (!newFork)
-        return;
-
-    int count = [newFork countForResourceType:OmniAppKitBackupFourCharCode];
-    while (count-- > 0) {
-        [newFork deleteResourceOfType:OmniAppKitBackupFourCharCode atIndex:count];
-        OBASSERT([newFork countForResourceType:OmniAppKitBackupFourCharCode] == count);
-    }
-
-    [newFork release];
-}
-
-- (void)deleteAllBackupsButMostRecentInResourceFork;
-{
-    OFResourceFork *newFork = [self _newResourceForkCreateIfMissing:NO];
-    if (!newFork)
-        return;
-    
-    int count = [newFork countForResourceType:OmniAppKitBackupFourCharCode];
-
-    while (count-- > 1) {
-        [newFork deleteResourceOfType:OmniAppKitBackupFourCharCode atIndex:count - 1];
-        OBASSERT([newFork countForResourceType:OmniAppKitBackupFourCharCode] == count);
-    }
-
-    [newFork release];
-}
-
 - (NSArray *)orderedWindowControllers;
 {
     NSArray *orderedWindows = [NSWindow windowsInZOrder]; // Doesn't include miniaturized or ordered out windows
@@ -223,42 +116,6 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 - (void)finishedLongOperation;
 {
     [NSWindowController finishedLongOperation];
-}
-
-@end
-
-
-@implementation NSDocument (OAExtensions_Private)
-
-- (OFResourceFork *)_newResourceForkCreateIfMissing:(BOOL)create;
-{
-    BOOL isDirectory = NO;
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSURL *fileLocation = [self fileURL];
-    
-    if (!fileLocation || ![fileLocation isFileURL])
-        return nil;
-    
-    NSString *fileName = [fileLocation path];
-
-    if (!fileName || ![fileManager fileExistsAtPath:fileName isDirectory:&isDirectory])
-        return nil;
-
-    if (isDirectory) {
-        NSString *insideWrapperFilename = [fileName stringByAppendingPathComponent:@".OABK"];
-
-        if (![fileManager fileExistsAtPath:insideWrapperFilename]) {
-            if (!create)
-                return nil;
-            
-            if (![fileManager createFileAtPath:insideWrapperFilename contents:[NSData data] attributes:nil])
-                [NSException raise:NSInvalidArgumentException format:@"Unable to create backup file at %@", fileName];
-        }
-        
-        return [[OFResourceFork alloc] initWithContentsOfFile:insideWrapperFilename forkType:OFResourceForkType createFork:create];
-    } else {
-        return [[OFResourceFork alloc] initWithContentsOfFile:fileName forkType:OFResourceForkType createFork:create];
-    }    
 }
 
 @end

@@ -26,6 +26,7 @@
 
 - (NSString *)originalVersionString;
 - (NSString *)cleanVersionString;
+- (NSString *)prettyVersionString; // NB: This version string can't be parsed back into an OFVersionNumber. For display only!
 
 - (NSUInteger)componentCount;
 - (NSUInteger)componentAtIndex:(NSUInteger)componentIndex;

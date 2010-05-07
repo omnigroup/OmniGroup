@@ -7,9 +7,29 @@
 
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 
+#import <OmniFoundation/NSString-OFSimpleMatching.h>
+#import <OmniFoundation/NSMutableArray-OFExtensions.h>
+#import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
+#include <stdlib.h>
+
 RCS_ID("$Id$")
 
 NSString * const OmniDictionaryElementNameKey = @"__omniDictionaryElementNameKey";
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    #define CGPointValue pointValue
+    #define CGRectValue rectValue
+    #define CGSizeValue sizeValue
+#else
+    #import <UIKit/UIGeometry.h>
+    #define NSPointFromString CGPointFromString
+    #define NSRectFromString CGRectFromString
+    #define NSSizeFromString CGSizeFromString
+    #define NSZeroPoint CGPointZero
+    #define NSZeroSize CGSizeZero
+    #define NSZeroRect CGRectZero
+#endif
 
 #define SAFE_ALLOCA_SIZE (8 * 8192)
 
@@ -167,56 +187,53 @@ nochange_noalloc:
     return [self doubleForKey:key defaultValue:0.0];
 }
 
-// If we end up needing these, we could use the CG types.
-#ifdef OmniFoundation_NSDictionary_NSGeometry_Extensions
-- (NSPoint)pointForKey:(NSString *)key defaultValue:(NSPoint)defaultValue;
+- (CGPoint)pointForKey:(NSString *)key defaultValue:(CGPoint)defaultValue;
 {
     id value = [self objectForKey:key];
     if ([value isKindOfClass:[NSString class]] && ![NSString isEmptyString:value])
         return NSPointFromString(value);
     else if ([value isKindOfClass:[NSValue class]])
-        return [value pointValue];
+        return [value CGPointValue];
     else
         return defaultValue;
 }
 
-- (NSPoint)pointForKey:(NSString *)key;
+- (CGPoint)pointForKey:(NSString *)key;
 {
     return [self pointForKey:key defaultValue:NSZeroPoint];
 }
 
-- (NSSize)sizeForKey:(NSString *)key defaultValue:(NSSize)defaultValue;
+- (CGSize)sizeForKey:(NSString *)key defaultValue:(CGSize)defaultValue;
 {
     id value = [self objectForKey:key];
     if ([value isKindOfClass:[NSString class]] && ![NSString isEmptyString:value])
         return NSSizeFromString(value);
     else if ([value isKindOfClass:[NSValue class]])
-        return [value sizeValue];
+        return [value CGSizeValue];
     else
         return defaultValue;
 }
 
-- (NSSize)sizeForKey:(NSString *)key;
+- (CGSize)sizeForKey:(NSString *)key;
 {
     return [self sizeForKey:key defaultValue:NSZeroSize];
 }
 
-- (NSRect)rectForKey:(NSString *)key defaultValue:(NSRect)defaultValue;
+- (CGRect)rectForKey:(NSString *)key defaultValue:(CGRect)defaultValue;
 {
     id value = [self objectForKey:key];
     if ([value isKindOfClass:[NSString class]] && ![NSString isEmptyString:value])
         return NSRectFromString(value);
     else if ([value isKindOfClass:[NSValue class]])
-        return [value rectValue];
+        return [value CGRectValue];
     else
         return defaultValue;
 }
 
-- (NSRect)rectForKey:(NSString *)key;
+- (CGRect)rectForKey:(NSString *)key;
 {
     return [self rectForKey:key defaultValue:NSZeroRect];
 }
-#endif
 
 - (BOOL)boolForKey:(NSString *)key defaultValue:(BOOL)defaultValue;
 {

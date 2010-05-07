@@ -7,10 +7,20 @@
 
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
+#import <OmniFoundation/NSString-OFExtensions.h>
+#import <OmniFoundation/OFObject.h>
 
+#import <CoreFoundation/CoreFoundation.h>
+#import <Foundation/NSData.h>
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import <pthread.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#import <OmniBase/OmniBase.h>
+
 
 RCS_ID("$Id$")
 
@@ -128,11 +138,12 @@ SEL OFRegisterSelectorIfAbsent(const char *selName)
     SEL sel;
 
     if (!(sel = sel_getUid(selName))) {
-        // The documentation isn't clear on whether the input string is copied or not. We won't assume, but will assert that the copy did happen.
-        size_t len = strlen(selName);
-        char *newSel = (char *)malloc(len + 1);
-        strcpy(newSel, selName);
-        OBASSERT(newSel[len] == '\0');
+        // The documentation isn't clear on whether the input string is copied or not.
+        // On NS4.0 and later, sel_registerName copies the selector name.  But
+        // we won't assume that is the case -- we'll make a temporary copy
+        // and get the assertion rather than crashing the runtime (in case they
+        // change this in the future).
+        char *newSel = strdup(selName);
         sel = sel_registerName(newSel);
 
         // Make sure the copy happened
@@ -357,7 +368,7 @@ NSString *OFHostName(void)
 
 static inline char _toHex(unsigned int i)
 {
-    if (i >= 0 && i <= 9)
+    if (i <= 9)
         return '0' + i;
     if (i >= 0xa && i <= 0xf)
         return 'a' + i;
@@ -518,27 +529,5 @@ const char *OFObjCTypeForCFNumberType(CFNumberType cfType)
     // This should never happen, unless Apple adds more types to CoreFoundation and we don't add them to the array.
     OBASSERT_NOT_REACHED("CFNumber type with no corresponding ObjC type");
     return NULL;
-}
-
-NSString *OFKeyPathForKeys(NSString *firstKey, ...)
-{
-    OBPRECONDITION(firstKey);
-    
-    if (firstKey == nil)
-        return nil;
-    
-    NSMutableString *keyPath = [NSMutableString stringWithString:firstKey];
-    
-    NSString *nextKey;
-    va_list argList;
-    
-    va_start(argList, firstKey);
-    while ((nextKey = va_arg(argList, id)) != nil) {
-        [keyPath appendString:@"."];
-        [keyPath appendString:nextKey];
-    }
-    va_end(argList);
-    
-    return keyPath;
 }
 

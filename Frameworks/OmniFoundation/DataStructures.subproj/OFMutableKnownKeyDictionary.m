@@ -7,7 +7,10 @@
 
 #import <OmniFoundation/OFMutableKnownKeyDictionary.h>
 
+#import <Foundation/NSArray.h>
 #import <OmniFoundation/OFKnownKeyDictionaryTemplate.h>
+#import <OmniBase/OmniBase.h>
+#include <stdlib.h>
 
 RCS_ID("$Id$")
 

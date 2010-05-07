@@ -13,7 +13,6 @@
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFXMLInternedStringTable.h>
 #import <OmniFoundation/OFXMLQName.h>
-#import "OFXMLInternedStringTable.h"
 #import "OFXMLError.h"
 
 RCS_ID("$Id$");

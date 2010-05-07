@@ -239,6 +239,12 @@ static BOOL ODOVacuumOnDisconnect = NO;
     if (![self executeSQLWithoutResults:@"PRAGMA auto_vacuum = none" error:outError]) // According to the sqlite documentation: "Auto-vacuum does not defragment the database nor repack individual database pages the way that the VACUUM command does. In fact, because it moves pages around within the file, auto-vacuum can actually make fragmentation worse."
         return NO;
 
+#if 0
+    // "The maximum size of any string or BLOB or table row."
+    int blobSize = sqlite3_limit(_sqlite, SQLITE_LIMIT_LENGTH, -1/* negative means to not change*/);
+    NSLog(@"blobSize = %d", blobSize);
+#endif
+    
     // string compare functions
     rc = sqlite3_create_function(_sqlite, ODOComparisonPredicateStartsWithFunctionName, 
                                  3/*nArg*/,

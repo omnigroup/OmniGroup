@@ -174,7 +174,7 @@ void checkEnumerator(OFBTree *tree, void *element, void *arg)
     NSUInteger *numbers, i, seed;
 
     if (![[self class] shouldRunSlowUnitTests]) {
-        NSLog(@"*** SKIPPING slow test [%@ %s]", [self class], _cmd);
+        NSLog(@"*** SKIPPING slow test [%@ %@]", [self class], NSStringFromSelector(_cmd));
         return;
     }
     
@@ -186,7 +186,7 @@ void checkEnumerator(OFBTree *tree, void *element, void *arg)
 
     OFBTreeInit(&btree, vm_page_size, sizeof(int), pageAllocator, pageDeallocator, testComparator);
 
-    NSLog(@"Inserting 1..%d in random order (seed = %d)\n", INSERT_COUNT, seed);
+    NSLog(@"Inserting 1..%d in random order (seed = %ld)\n", INSERT_COUNT, seed);
     // fill the vector
     for (i = 0; i < INSERT_COUNT; i++)
         numbers[i] = i+1;
