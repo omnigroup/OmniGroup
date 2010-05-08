@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIOmniMenuController.h"
+#import "OUIAppMenuController.h"
 
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIDocumentPicker.h>
@@ -22,16 +22,16 @@ enum {
     MenuItemCount,
 } MenuItem;
 
-@interface OUIOmniMenuController (/*Private*/)
+@interface OUIAppMenuController (/*Private*/)
 - (void)_toggleSampleDocuments:(id)sender;
 - (void)_discardMenu;
 @end
 
-@implementation OUIOmniMenuController
+@implementation OUIAppMenuController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
-    return [super initWithNibName:@"OUIOmniMenu" bundle:OMNI_BUNDLE];
+    return [super initWithNibName:@"OUIAppMenu" bundle:OMNI_BUNDLE];
 }
 
 - (void)dealloc;
@@ -124,9 +124,9 @@ enum {
         case ToggleSampleDocuments: {
             OUIAppController *controller = [OUIAppController controller];
             if (OFISEQUAL(controller.documentPicker.directory, [OUIDocumentPicker userDocumentsDirectory]))
-                title = NSLocalizedStringFromTableInBundle(@"Tutorial and Samples", @"OmniUI", OMNI_BUNDLE, @"Omni menu item title");
+                title = NSLocalizedStringFromTableInBundle(@"Tutorial and Samples", @"OmniUI", OMNI_BUNDLE, @"App menu item title");
             else
-                title = NSLocalizedStringFromTableInBundle(@"My Documents", @"OmniUI", OMNI_BUNDLE, @"Omni menu item title");
+                title = NSLocalizedStringFromTableInBundle(@"My Documents", @"OmniUI", OMNI_BUNDLE, @"App menu item title");
             break;
         }
 #endif
@@ -136,11 +136,11 @@ enum {
             OBASSERT(title != nil);
             break;
         case SendFeedback:
-            title = NSLocalizedStringFromTableInBundle(@"Contact Omni", @"OmniUI", OMNI_BUNDLE, @"Omni menu item title");
+            title = [[OUIAppController controller] feedbackMenuTitle];
             image = [UIImage imageNamed:@"OUIMenuItemSendFeedback.png"];
             break;
         case ReleaseNotes:
-            title = NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"Omni menu item title");
+            title = NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"App menu item title");
             image = [UIImage imageNamed:@"OUIMenuItemReleaseNotes.png"];
             break;
         default:

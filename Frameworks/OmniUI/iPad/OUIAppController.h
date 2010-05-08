@@ -12,7 +12,7 @@
 #import <OmniUI/OUIDocumentPickerDelegate.h>
 
 @class UIBarButtonItem;
-@class OUIOmniMenuController, OUIDocumentPicker;
+@class OUIAppMenuController, OUIDocumentPicker;
 
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) file:__FILE__ line:__LINE__]
 
@@ -20,8 +20,8 @@
 {
 @private
     OUIDocumentPicker *_documentPicker;
-    UIBarButtonItem *_omniMenuBarItem;
-    OUIOmniMenuController *_omniMenuController;
+    UIBarButtonItem *_appMenuBarItem;
+    OUIAppMenuController *_appMenuController;
     
     UIActivityIndicatorView *_activityIndicator;
     UIView *_eventBlockingView;
@@ -33,8 +33,8 @@
 + (void)presentError:(NSError *)error;
 + (void)presentError:(NSError *)error file:(const char *)file line:(int)line;
 
-@property(readonly) UIBarButtonItem *omniMenuBarItem;
-- (void)dismissOmniMenu;
+@property(readonly) UIBarButtonItem *appMenuBarItem;
+- (void)dismissAppMenu;
 
 @property(nonatomic,retain) IBOutlet OUIDocumentPicker *documentPicker;
 
@@ -42,9 +42,10 @@
 - (void)showActivityIndicatorInView:(UIView *)view;
 - (void)hideActivityIndicator;
 
-// NSObject (OUIOmniMenuTarget)
+// NSObject (OUIAppMenuTarget)
+- (NSString *)feedbackMenuTitle;
 - (void)sendFeedback:(id)sender;
-- (void)showOmniMenu:(id)sender;
+- (void)showAppMenu:(id)sender;
 
 // Special URL handling
 - (BOOL)isSpecialURL:(NSURL *)url;

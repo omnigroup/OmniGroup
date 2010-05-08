@@ -298,7 +298,7 @@ static NSString * const SelectAction = @"select";
         UIBarButtonItem *searchItem = [[[UIBarButtonItem alloc] initWithCustomView:searchBar] autorelease];
         [toolbarItems addObject:searchItem];
 #endif
-        [toolbarItems addObject:self.omniMenuBarItem];
+        [toolbarItems addObject:self.appMenuBarItem];
         
         documentPicker.toolbarItems = [toolbarItems copy];
     }

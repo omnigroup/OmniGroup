@@ -120,7 +120,7 @@
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>OUIOmniMenuController</string>
+					<string>OUIAppMenuController</string>
 					<string>UIResponder</string>
 					<string>com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				</object>
@@ -155,13 +155,6 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">OUIColorValue.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -177,15 +170,22 @@
 							<string>id</string>
 						</object>
 					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="274521909">
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="83390786">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">OUIOmniMenuController.h</string>
+						<string key="minorKey">OUIAppMenuController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">OUIOmniMenuController</string>
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">OUIColorValue.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">OUIAppMenuController</string>
 					<string key="superclassName">UIViewController</string>
-					<reference key="sourceIdentifier" ref="274521909"/>
+					<reference key="sourceIdentifier" ref="83390786"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">UIView</string>

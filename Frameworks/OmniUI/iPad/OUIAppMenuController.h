@@ -12,7 +12,7 @@
 
 @class UIBarButtonItem, UIPopoverController, UINavigationController, UITableView;
 
-@interface OUIOmniMenuController : UIViewController <UIPopoverControllerDelegate>
+@interface OUIAppMenuController : UIViewController <UIPopoverControllerDelegate>
 {
 @private
     BOOL _needsReloadOfDocumentsItem;
@@ -26,7 +26,7 @@
 @end
 
 // These currently must all be implemented somewhere in the responder chain.
-@interface NSObject (OUIOmniMenuTarget)
+@interface NSObject (OUIAppMenuTarget)
 - (void)showOnlineHelp:(id)sender;
 - (void)sendFeedback:(id)sender;
 - (void)showReleaseNotes:(id)sender;
