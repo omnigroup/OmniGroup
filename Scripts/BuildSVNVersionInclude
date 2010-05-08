@@ -39,12 +39,19 @@ do
 done
 
 BUILD_DATE=`TZ=UTC date +"%Y-%m-%dT%H:%M:%S.000Z"`
-SVNURL=`svn info --xml . | xpath '/info/entry/url/text()' 2>& /dev/null`
-if [ -n "$OMNI_VERSIONS" -a -f "$OMNI_VERSIONS" ]; then
-    SVNREVISION=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
+
+if [ -d .svn ]; then
+    SVNURL=`svn info --xml . | xpath '/info/entry/url/text()' 2>& /dev/null`
+    if [ -n "$OMNI_VERSIONS" -a -f "$OMNI_VERSIONS" ]; then
+        SVNREVISION=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
+    else
+        SVNREVISION=`svn info --xml . | xpath 'string(/info/entry/@revision)' 2>& /dev/null`
+    fi
 else
-    SVNREVISION=`svn info --xml . | xpath 'string(/info/entry/@revision)' 2>& /dev/null`
+    SVNURL="not svn"
+    SVNREVISION=0
 fi
+
 mkdir -p "$PROJECT_DERIVED_FILE_DIR"
 
 (
