@@ -64,6 +64,9 @@ RCS_ID("$Id$");
 - (NSSet *)colorsForInspectorSlice:(OUIInspectorSlice *)inspector;
 {
     CGColorRef color = (CGColorRef)[frame attribute:(id)kCTForegroundColorAttributeName inRange:self];
+    if (color == NULL) {
+        return [NSSet set];
+    }
     return [NSSet setWithObject:[OQColor colorWithCGColor:color]];
 }
 
