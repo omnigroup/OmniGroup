@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <UIKit/UIApplicationDelegate.h>
+#import <UIKit/UIApplication.h>
 
 @class ScalingScrollViewViewController;
 
