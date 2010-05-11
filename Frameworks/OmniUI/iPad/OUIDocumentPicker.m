@@ -18,6 +18,7 @@
 #import <OmniUI/OUIDocumentPickerDelegate.h>
 #import <OmniUI/OUIToolbarViewController.h>
 #import <OmniFoundation/NSMutableArray-OFExtensions.h>
+#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniQuartz/CALayer-OQExtensions.h>
 #import <OmniQuartz/OQDrawing.h>
 #import <sys/stat.h> // For S_IWUSR
@@ -117,8 +118,21 @@ static void _addPushAndFadeAnimations(OUIDocumentPicker *self, BOOL fade, Animat
 
 + (NSString *)userDocumentsDirectory;
 {
-    // TODO: Who is in charge of creating this directory?
-    return [@"~/Documents" stringByExpandingTildeInPath];
+    static NSString *documentDirectory = nil; // Avoid trying the creation on each call.
+    
+    if (!documentDirectory) {
+        documentDirectory = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES/*expandTilde*/) lastObject] copy];
+        OBASSERT(documentDirectory);
+
+        if (![[NSFileManager defaultManager] directoryExistsAtPath:documentDirectory]) {
+            NSError *error = nil;
+            if (![[NSFileManager defaultManager] createDirectoryAtPath:documentDirectory withIntermediateDirectories:YES attributes:nil error:&error]) {
+                NSLog(@"Error creating %@: %@", documentDirectory, [error toPropertyList]);
+            }
+        }
+    }
+        
+    return documentDirectory;
 }
 
 + (NSString *)sampleDocumentsDirectory;

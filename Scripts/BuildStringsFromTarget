@@ -13,31 +13,24 @@
 #
 # Xcode doesn't go out of its way to make it easy to figure out which source
 # files were a part of which target.
-# This is a hack to figure out which files were actually included in a static
-# library and run genstrings on only those files (rather than blindling having
-# to localize all the strings in a framework for the subset that is in the
-# Touch subset).
 #
 
-LIB_FILE="$CONFIGURATION_BUILD_DIR/$FULL_PRODUCT_NAME"
+SCRIPTS_DIR=$0:h
 
-# TODO: Handle multiple architectures (we only build armv7 at the moment)
-AR_EXTRACT_DIR="$DERIVED_FILES_DIR/$TARGET_NAME-ExtractedLibrary"
-if [ -d "$AR_EXTRACT_DIR" ]; then
-  rm -rf "$AR_EXTRACT_DIR"
+source_files=()
+$SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" "$PROJECT_FILE_PATH" | while read f; do
+   source_files+=($f)
+done
+
+# Build the strings file(s) into a separate directory so we can avoid mucking with timestamps in the build output unless needed (see below).
+
+STRINGS_DIR="$DERIVED_FILES_DIR/BuildStringsFromTarget-$TARGET_NAME"
+if [ -d "$STRINGS_DIR" ]; then
+  rm -rf "$STRINGS_DIR"
 fi
 
-mkdir -p "$AR_EXTRACT_DIR"
-cd "$AR_EXTRACT_DIR"
-ar x "$LIB_FILE"
-
-# Extract the name of each source file. In the DWARF output, this is in TAG_compile_unit/AT_name, but dwarfdump doesn't seem to have a good way to pick by tag path.
-# Instead, build a search pattern with the base name of the .o file and a preceeding slash. Then, trim off the surrounding AT_name("...") quoting.
-source_files=()
-for ofile in *.o; do
-  base_name="$ofile:t:r"
-  source_files+=(`dwarfdump -x --name "/$base_name" "$ofile" | grep AT_name | sed 's/[^\"]*\"//;s/\".*//'`)
-done
+mkdir -p "$STRINGS_DIR"
+cd "$STRINGS_DIR"
 
 mkdir English.lproj
 if [ $#source_files -gt 0 ]; then
@@ -61,4 +54,4 @@ RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/Resources/$TARGET_NAME"
 
 # Make sure not to re-copy if only the source timestamp has changed. That will invalidate timestamps that may cause further copying into the app bundle. This in turn can invalidate signing, which is very annoying if we are doing incremental device builds.
 mkdir -p "$RESOURCE_DIR"
-rsync --recursive --checksum English.lproj/ "$RESOURCE_DIR/English.lproj/"
+rsync -v --recursive --checksum English.lproj/ "$RESOURCE_DIR/English.lproj/"

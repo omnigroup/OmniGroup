@@ -1003,7 +1003,7 @@
 				346C4BC9119328BA00BE8C49 /* Copy Resources */,
 				D2AAC07B0554694100DB518D /* Sources */,
 				D2AAC07C0554694100DB518D /* Frameworks */,
-				346C4BC61193289200BE8C49 /* BuildStringsFromLibrary */,
+				346C4BC61193289200BE8C49 /* Build Strings */,
 			);
 			buildRules = (
 			);
@@ -1033,19 +1033,19 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		346C4BC61193289200BE8C49 /* BuildStringsFromLibrary */ = {
+		346C4BC61193289200BE8C49 /* Build Strings */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = BuildStringsFromLibrary;
+			name = "Build Strings";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "../../../Scripts/BuildStringsFromLibrary\n";
+			shellScript = "../../../Scripts/BuildStringsFromTarget\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
