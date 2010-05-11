@@ -548,7 +548,7 @@ static NSDictionary *_sectionAtIndex(OUIFontInspectorDetailSlice *self, NSUInteg
 {
     NSUInteger sectionCount = [self->_sections count];
     if (sectionIndex >= sectionCount) {
-        NSLog(@"sectionIndex = %d of %d", sectionIndex, sectionCount);
+        NSLog(@"sectionIndex = %ld of %ld", sectionIndex, sectionCount);
         return nil;
     }
     
@@ -572,7 +572,7 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorDetailSlice *self, NSIndex
     NSUInteger itemIndex = [indexPath indexAtPosition:1];
     NSUInteger itemCount = [items count];
     if (itemIndex >= itemCount) {
-        NSLog(@"itemIndex = %d of %d", itemIndex, itemCount);
+        NSLog(@"itemIndex = %ld of %ld", itemIndex, itemCount);
         return nil;
     }
     

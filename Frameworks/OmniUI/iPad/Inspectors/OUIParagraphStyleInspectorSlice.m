@@ -88,7 +88,8 @@ RCS_ID("$Id$");
         inspectable = YES;
         
         OATextAlignment spanAlignment = [style alignment];
-        if (spanAlignment >= 0 && spanAlignment <= OATextAlignmentMAX)
+        OBASSERT_NONNEGATIVE(spanAlignment);
+        if (spanAlignment <= OATextAlignmentMAX)
             sel[spanAlignment] ++;
     }
     

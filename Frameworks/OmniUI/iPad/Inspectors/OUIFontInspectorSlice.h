@@ -49,6 +49,6 @@
 
 + (NSSet *)recommendedFontFamilyNames;
 
-@property(assign) BOOL showFamilies;
+@property(assign,nonatomic) BOOL showFamilies;
 
 @end

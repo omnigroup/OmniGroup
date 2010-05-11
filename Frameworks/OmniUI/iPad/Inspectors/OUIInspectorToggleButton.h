@@ -15,6 +15,6 @@
     UIImage *_image;
 }
 
-@property(retain) UIImage *image;
+@property(retain,nonatomic) UIImage *image;
 
 @end

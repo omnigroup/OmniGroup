@@ -86,8 +86,9 @@ static id _commonInit(OUIInspectorSegmentedControlButton *self)
 @synthesize buttonPosition = _buttonPosition;
 - (void)setButtonPosition:(OUIInspectorSegmentedControlButtonPosition)buttonPosition;
 {
-    OBPRECONDITION(buttonPosition >= 0 && buttonPosition < _OUIInspectorSegmentedControlButtonPositionCount);
-    if (buttonPosition < 0 || buttonPosition >= _OUIInspectorSegmentedControlButtonPositionCount)
+    OBASSERT_NONNEGATIVE(buttonPosition);
+    OBPRECONDITION(buttonPosition < _OUIInspectorSegmentedControlButtonPositionCount);
+    if (buttonPosition >= _OUIInspectorSegmentedControlButtonPositionCount)
         buttonPosition = OUIInspectorSegmentedControlButtonPositionCenter;
 
     if (_buttonPosition == buttonPosition)
@@ -115,8 +116,9 @@ static id _commonInit(OUIInspectorSegmentedControlButton *self)
 - (void)_updateBackgroundImages;
 {
     OUIInspectorSegmentedControlButtonPosition buttonPosition = _buttonPosition;
-    OBASSERT(buttonPosition >= 0 && buttonPosition < _OUIInspectorSegmentedControlButtonPositionCount);
-    if (buttonPosition < 0 || buttonPosition >= _OUIInspectorSegmentedControlButtonPositionCount)
+    OBASSERT_NONNEGATIVE(buttonPosition);
+    OBASSERT(buttonPosition < _OUIInspectorSegmentedControlButtonPositionCount);
+    if (buttonPosition >= _OUIInspectorSegmentedControlButtonPositionCount)
         buttonPosition = OUIInspectorSegmentedControlButtonPositionCenter;
     
     ImageInfo *backgroundImages = &BackgroundImages[buttonPosition];
