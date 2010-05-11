@@ -136,7 +136,7 @@ static NSString * const SelectAction = @"select";
     OUIDocumentPicker *picker = self.documentPicker;
     OUIDocumentProxy *proxy = picker.selectedProxy;
     
-    NSString *title = NSLocalizedStringWithDefaultValue(@"Documents <main toolbar title>", nil, OMNI_BUNDLE, @"Documents", @"Main toolbar title");
+    NSString *title = NSLocalizedStringWithDefaultValue(@"Documents <main toolbar title>", @"OmniUI", OMNI_BUNDLE, @"Documents", @"Main toolbar title");
     NSArray *proxies = picker.previewScrollView.sortedProxies;
     NSUInteger proxyCount = [proxies count];
     
@@ -151,7 +151,7 @@ static NSString * const SelectAction = @"select";
         proxyIndex = 1; // less terrible.
     }
     
-    NSString *counterFormat = NSLocalizedStringWithDefaultValue(@"%d of %d <document index", nil, OMNI_BUNDLE, @"%@ (%d of %d)", @"format for showing the main title, document index and document count, in that order");
+    NSString *counterFormat = NSLocalizedStringWithDefaultValue(@"%d of %d <document index", @"OmniUI", OMNI_BUNDLE, @"%@ (%d of %d)", @"format for showing the main title, document index and document count, in that order");
     title = [NSString stringWithFormat:counterFormat, title, proxyIndex + 1, proxyCount];
     
     _appTitleToolbarTextField.text = title;
