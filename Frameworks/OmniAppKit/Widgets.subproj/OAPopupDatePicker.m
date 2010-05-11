@@ -398,8 +398,11 @@ static NSSize calendarImageSize;
 - (void)resignKeyWindow;
 {
     [super resignKeyWindow];
+    NSWindow *parentWindow = [self parentWindow];
     [[self parentWindow] removeChildWindow:self];
     [self close];
+    // <bug://bugs/57041> (Enter/Return should commit edits on the split task window)
+    [parentWindow makeKeyAndOrderFront:nil];
 }
 
 @end

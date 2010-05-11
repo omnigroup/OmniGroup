@@ -533,7 +533,7 @@ static id _commonInit(OUIDocumentPicker *self)
 
 - (IBAction)newDocument:(id)sender;
 {
-    [[OUIAppController controller] dismissOmniMenu];
+    [[OUIAppController controller] dismissAppMenu];
 
     NSString *documentType = [_nonretained_delegate documentPickerDocumentTypeForNewFiles:self];
     NSURL *newDocumentURL = [self urlForNewDocumentOfType:documentType];

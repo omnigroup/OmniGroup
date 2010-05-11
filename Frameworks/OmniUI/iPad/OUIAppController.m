@@ -7,7 +7,7 @@
 
 #import <OmniUI/OUIAppController.h>
 
-#import "OUIOmniMenuController.h"
+#import "OUIAppMenuController.h"
 #import "OUIEventBlockingView.h"
 
 #import <OmniUI/OUIDocumentPicker.h>
@@ -82,26 +82,32 @@ BOOL OUIShouldLogPerformanceMetrics;
 - (void)dealloc;
 {
     [_documentPicker release];
-    [_omniMenuBarItem release];;
-    [_omniMenuController release];
+    [_appMenuBarItem release];;
+    [_appMenuController release];
     
     [super dealloc];
 }
 
-- (UIBarButtonItem *)omniMenuBarItem;
+- (UIBarButtonItem *)appMenuBarItem;
 {
-    if (!_omniMenuBarItem) {
-        UIImage *omni = [UIImage imageNamed:@"OUIOmni.png"];
-        OBASSERT(omni);
-        _omniMenuBarItem = [[UIBarButtonItem alloc] initWithImage:omni style:UIBarButtonItemStyleBordered target:self action:@selector(showOmniMenu:)];
+    if (!_appMenuBarItem) {
+        NSString *imageName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIAppMenuImage"];
+        if (!imageName) {
+            // This image says 'REPLACE' on it -- you should put something nicer in your app bundle.
+            imageName = @"OUIAppMenu.png";
+        }
+        
+        UIImage *appMenuImage = [UIImage imageNamed:imageName];
+        OBASSERT(appMenuImage);
+        _appMenuBarItem = [[UIBarButtonItem alloc] initWithImage:appMenuImage style:UIBarButtonItemStyleBordered target:self action:@selector(showAppMenu:)];
     }
     
-    return _omniMenuBarItem;
+    return _appMenuBarItem;
 }
 
-- (void)dismissOmniMenu;
+- (void)dismissAppMenu;
 {
-    [_omniMenuController dismiss];
+    [_appMenuController dismiss];
 }
 
 @synthesize documentPicker = _documentPicker;
@@ -116,9 +122,15 @@ BOOL OUIShouldLogPerformanceMetrics;
 }
 
 #pragma mark -
-#pragma mark NSObject (OUIOmniMenuTarget)
+#pragma mark NSObject (OUIAppMenuTarget)
 
-// Invoked by the Omni menu
+- (NSString *)feedbackMenuTitle;
+{
+    OBASSERT_NOT_REACHED("Should be subclassed to provide something nicer.");
+    return @"HALP ME!";
+}
+
+// Invoked by the app menu
 - (void)sendFeedback:(id)sender;
 {
     // May need to allow the app delegate to provide this conditionally later (OmniFocus has a retail build, for example)
@@ -256,13 +268,13 @@ BOOL OUIShouldLogPerformanceMetrics;
     [self _showWebViewWithPath:indexPath title:helpBookName];
 }
 
-- (void)showOmniMenu:(id)sender;
+- (void)showAppMenu:(id)sender;
 {
-    if (!_omniMenuController)
-        _omniMenuController = [[OUIOmniMenuController alloc] init];
+    if (!_appMenuController)
+        _appMenuController = [[OUIAppMenuController alloc] init];
 
     OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
-    [_omniMenuController showMenuFromBarItem:sender];
+    [_appMenuController showMenuFromBarItem:sender];
 }
 
 #pragma mark -
