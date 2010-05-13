@@ -68,7 +68,7 @@ ARGV.each {|a|
         ENV["IBC_MINIMUM_COMPATIBILITY_VERSION"] = ENV["IPHONEOS_DEPLOYMENT_TARGET"]
       
         # Xcode runs the version in /Developer instead of the version in the SDK (it is a shim to pick up the right version based on xcode-select)
-        `/Developer/usr/bin/ibtool --flatten #{ENV["IBC_FLATTEN_NIBS"]} --errors --warnings --notices --output-format human-readable-text --compile "#{dest_file}" "#{source}"`
+        `#{ENV["DEVELOPER_USR_DIR"]}/bin/ibtool --flatten #{ENV["IBC_FLATTEN_NIBS"]} --errors --warnings --notices --output-format human-readable-text --compile "#{dest_file}" "#{source}"`
       else
         FileUtils.mkdir_p(File.dirname(dest_file))
         FileUtils.cp_r(source, dest_file)
