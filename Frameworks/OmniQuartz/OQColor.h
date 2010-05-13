@@ -11,7 +11,11 @@
 #import <Availability.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#import <Foundation/NSGeometry.h>
 @class NSColor;
+#else
+#import <CoreGraphics/CGGeometry.h>
+#import <CoreGraphics/CGColor.h>
 #endif
 
 typedef struct {
