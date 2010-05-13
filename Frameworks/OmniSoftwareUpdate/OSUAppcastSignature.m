@@ -17,36 +17,6 @@
 RCS_ID("$Id$");
 
 
-static SecPolicyRef copyFirstTrustPolicy(const CSSM_OID *policyOID, NSError **outError)
-{
-    OSStatus err;
-    NSString *errWhere;
-    
-    SecPolicySearchRef grepstate = NULL;
-    err = SecPolicySearchCreate(CSSM_CERT_X_509v3, policyOID, NULL, &grepstate);
-    if (err != noErr) {
-        errWhere = @"SecPolicySearchCreate";
-        goto fail_out;
-    }
-    
-    SecPolicyRef policy = NULL;
-    err = SecPolicySearchCopyNext(grepstate, &policy);
-    if (err != noErr) {
-        CFRelease(grepstate);
-        errWhere = @"SecPolicySearchCopyNext";
-        goto fail_out;
-    }
-    
-    CFRelease(grepstate);
-    
-    return policy;
-                         
-fail_out:
-    if (outError)
-        *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObject:errWhere forKey:@"function"]];
-    return NULL;
-}
-
 @interface OSUAppcastSignature : OFXMLSignature
 {
     NSArray *trustedKeys;
@@ -112,9 +82,7 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
     // We use the SecTrust functions, which are just wrappers around the CSSM TP functions.
 
     // First off, we have to get the trust policy we use. 
-    trustPolicy = copyFirstTrustPolicy(&CSSMOID_APPLE_X509_BASIC, outError);
-    if (!trustPolicy)
-        goto fail_out;
+    trustPolicy = SecPolicyCreateBasicX509(); /* Starting with 10.6 we have this convenience function */
     
     // Now we have some certificates and a trust policy, we can check whether we trust any of the certificates.
     
