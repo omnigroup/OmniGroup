@@ -19,8 +19,10 @@ BZ2_LDFLAGS = -lbz2
 SDKROOT = /Developer/SDKs/MacOSX10.6.sdk
 MACOSX_DEPLOYMENT_TARGET = 10.6
 
+// Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.
+SKIP_INSTALL = YES
+
 // We don't strip in Xcode for release.  We have a custom version of strip and do it during packaing so that we can keep an unstripped copy of the app.
-SKIP_INSTALL = NO
 //STRIPFLAGS = -urSX
 UNSTRIPPED_PRODUCT = YES
 COPY_PHASE_STRIP = NO
