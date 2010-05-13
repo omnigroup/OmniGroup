@@ -148,13 +148,13 @@ static void _startElementNsSAX2Func(void *ctx, const xmlChar *localname, const x
         while (nb_attributes--) {
             // TODO: Intern the values or not?  Don't have a great way to do it with the current setup since we want NULL terminated strings.  Some attribute values may be the same over and over; maybe we could intern if the length is small enough?
             
-            const char *localname = (const char *)attributes[0];
+            const char *attributeLocalname = (const char *)attributes[0];
             //const char *prefix = (const char *)attributes[1];
-            const char *URI = (const char *)attributes[2];
+            const char *attributeNsURI = (const char *)attributes[2];
             const char *valueStart = (const char *)attributes[3];
             const char *valueEnd = (const char *)attributes[4];
 
-            OFXMLQName *qname = OFXMLInternedNameTableGetInternedName(state->nameTable, URI, localname);
+            OFXMLQName *qname = OFXMLInternedNameTableGetInternedName(state->nameTable, attributeNsURI, attributeLocalname);
             NSString *value = [[NSString alloc] initWithBytes:valueStart length:valueEnd - valueStart encoding:NSUTF8StringEncoding];
             
             // We specify XML_PARSE_NOENT so entities are already parsed up front.  Clients of the framework should thus always get nice Unicode strings w/o worrying about this muck.

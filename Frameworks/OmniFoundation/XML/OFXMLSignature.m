@@ -1728,11 +1728,11 @@ static xmlNode *singleNodeFromXptrExpression(const xmlChar *expr, xmlDocPtr inDo
 }
 
 /* This is in charge of resolving the <Reference> node and writing its contents to the transform+digest stack. */
-- (BOOL)_writeReference:(xmlNode *)reference to:(struct OFXMLSignatureVerifyContinuation *)stream error:(NSError **)outError;
+- (BOOL)_writeReference:(xmlNode *)referenceNode to:(struct OFXMLSignatureVerifyContinuation *)stream error:(NSError **)outError;
 {
-    OBASSERT(isNamed(reference, "Reference", XMLSignatureNamespace, NULL));
+    OBASSERT(isNamed(referenceNode, "Reference", XMLSignatureNamespace, NULL));
     
-    xmlChar *refURI = lessBrokenGetAttribute(reference, "URI", XMLSignatureNamespace);
+    xmlChar *refURI = lessBrokenGetAttribute(referenceNode, "URI", XMLSignatureNamespace);
     NSString *refURIString = refURI? [NSString stringWithCString:(const char *)refURI encoding:NSUTF8StringEncoding] : nil;
     
     /* We handle intra-document references ourselves. Others get handled by our subclass. */
@@ -1759,7 +1759,7 @@ static xmlNode *singleNodeFromXptrExpression(const xmlChar *expr, xmlDocPtr inDo
             free(refURI);
         return stream->acceptNodes(stream, owningDocument, isOneVisibleOmittingComments, xmlDocGetRootElement(owningDocument), outError);
     } else {
-        xmlChar *refType = lessBrokenGetAttribute(reference, "Type", XMLSignatureNamespace);
+        xmlChar *refType = lessBrokenGetAttribute(referenceNode, "Type", XMLSignatureNamespace);
         NSString *refTypeString = refType? [NSString stringWithCString:(const char *)refType encoding:NSUTF8StringEncoding] : nil;
         xmlFree(refType);
         xmlFree(refURI);
