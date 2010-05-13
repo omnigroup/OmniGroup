@@ -54,23 +54,11 @@ RCS_ID("$Id$")
         [items addObject:self.documentTitleToolbarItem];
         
         [items addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
-        
-        [items addObject:self.infoBarButtonItem];
-        
+                
         _documentToolbarItems = [[NSArray alloc] initWithArray:items];
     }
     
     return _documentToolbarItems;
-}
-
-- (void)showInspectorFromBarButtonItem:(UIBarButtonItem *)item;
-{
-    OBFinishPortingLater("Show the inspector");
-}
-
-- (void)dismissInspectorImmediately;
-{
-    OBFinishPortingLater("Hide the inspector");
 }
 
 #pragma mark -
