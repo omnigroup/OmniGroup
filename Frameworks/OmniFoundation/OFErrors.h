@@ -9,7 +9,6 @@
 
 @class NSString, NSError;
 
-// Domain is the OmniFoundation bundle identifier.
 enum {
     // Zero typically means no error
     OFCacheFileUnableToWriteError = 1,
