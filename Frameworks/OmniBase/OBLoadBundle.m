@@ -5,6 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+#import <OmniBase/OmniBase.h>
 #import <OmniBase/OBPostLoader.h>
 
 RCS_ID("$Id$");
