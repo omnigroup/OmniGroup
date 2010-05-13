@@ -8,7 +8,6 @@
 #import <OmniUI/OUIScalingScrollView.h>
 
 #import <OmniUI/OUITiledScalingView.h>
-#import "OUITiledScalingView-Internal.h"
 
 RCS_ID("$Id$");
 
@@ -112,7 +111,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     self.maximumZoomScale = maxFactor;
     
     if (isTiled)
-        [(OUITiledScalingView *)view _tileVisibleRect];
+        [(OUITiledScalingView *)view tileVisibleRect];
 
     [self adjustContentInset];
 }

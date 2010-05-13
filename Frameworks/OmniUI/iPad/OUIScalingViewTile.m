@@ -6,9 +6,11 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OUIScalingViewTile.h"
+#import "OUITileDebug.h"
 
 #import <OmniUI/OUIScalingView.h>
-#import "OUITileDebug.h"
+#import <QuartzCore/QuartzCore.h>
+#import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 

@@ -16,6 +16,7 @@
 #import <OmniUI/OUIDocumentProxyView.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIToolbarViewController.h>
+#import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
@@ -85,7 +86,7 @@ static NSString * const SelectAction = @"select";
 - (UIBarButtonItem *)closeDocumentBarButtonItem;
 {
     if (!_closeDocumentBarButtonItem) {
-        NSString *closeDocumentTitle = NSLocalizedStringWithDefaultValue(@"Documents <back button>", nil, OMNI_BUNDLE, @"Documents", @"Toolbar button title for returning to list of documents.");
+        NSString *closeDocumentTitle = NSLocalizedStringWithDefaultValue(@"Documents <back button>", @"OmniUI", OMNI_BUNDLE, @"Documents", @"Toolbar button title for returning to list of documents.");
         _closeDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:closeDocumentTitle
                                                                        style:UIBarButtonItemStyleBordered target:self action:@selector(_closeDocument:)];
     }

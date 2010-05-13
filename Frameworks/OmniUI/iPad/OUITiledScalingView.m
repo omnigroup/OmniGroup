@@ -8,11 +8,12 @@
 #import <OmniUI/OUITiledScalingView.h>
 
 #import <OmniUI/OUIScalingScrollView.h>
+#import <QuartzCore/QuartzCore.h>
 
 #import "OUITileDebug.h"
 #import "OUIScalingViewTile.h"
-#import "OUITiledScalingView-Internal.h"
 
+#import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$");
 
@@ -28,7 +29,8 @@ static id _commonInit(OUITiledScalingView *self)
     self.layer.needsDisplayOnBoundsChange = NO;
     
     self->_tiles = [[NSMutableArray alloc] init];
-    
+
+    // Checkerboard pattern for areas that don't have tiles generated yet.
     UIImage *patternImage = [UIImage imageNamed:@"OUIScalingViewBackgroundPattern.png"];
     OBASSERT_NOTNULL(patternImage);
     self.layer.backgroundColor = [[UIColor colorWithPatternImage:patternImage] CGColor];
@@ -59,9 +61,6 @@ static id _commonInit(OUITiledScalingView *self)
 #pragma mark -
 #pragma mark UIView subclass
 
-// Yields an even 4x3 tiles on the current iPad screen. If the screen size ever changes, we might want to make this dynamic so that if we are scrolled to a corner we get an even number of tiles.
-static const CGFloat kTileSize = 256;
-
 - (void)setNeedsDisplay;
 {
     [_tiles makeObjectsPerformSelector:_cmd];
@@ -69,7 +68,7 @@ static const CGFloat kTileSize = 256;
 
 - (void)setNeedsDisplayInRect:(CGRect)rect;
 {
-    for (OUIScalingViewTile *tile in _tiles) {
+    for (UIView *tile in _tiles) {
         if (CGRectIntersectsRect(rect, tile.frame)) {
             CGRect tileRect = CGRectIntersection(rect, tile.frame);
             [tile setNeedsDisplayInRect:[tile convertRect:tileRect fromView:self]];
@@ -89,19 +88,18 @@ static const CGFloat kTileSize = 256;
 
 
 #pragma mark -
-#pragma mark Internal
+#pragma mark API
 
-// Might want to compute the visible rect from our -layoutSubviews, but for now our containing scroll view calls this.
-- (void)_tileVisibleRect;
+static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutableArray *tiles)
 {
-    if (!_tiles)
-        return; // Not tiled
-    
     CGRect bounds = self.bounds;
     if (bounds.size.width == CGFLOAT_MAX) {
         DEBUG_TILE_LAYOUT(@"wow, the bounds of this view cannot be correct (%@) - bailing", NSStringFromCGRect(bounds));
         return;
     }
+    
+    // Yields an even 4x3 tiles on the current iPad screen. If the screen size ever changes, we might want to make this dynamic so that if we are scrolled to a corner we get an even number of tiles.
+    static const CGFloat kTileSize = 256;
     
     OUIScalingScrollView *scrollView = (OUIScalingScrollView *)self.superview;
     OBASSERT([scrollView isKindOfClass:[OUIScalingScrollView class]]);
@@ -111,7 +109,7 @@ static const CGFloat kTileSize = 256;
     
     OBASSERT(CGRectEqualToRect(bounds, CGRectIntegral(bounds)));
     
-    NSMutableArray *availableTiles = [[NSMutableArray alloc] initWithArray:_tiles];
+    NSMutableArray *availableTiles = [[NSMutableArray alloc] initWithArray:tiles];
     
     // Base the number of tiles off our visible area, but their offsets to our bounds origin.
     CGFloat tileStartX = kTileSize * floor((CGRectGetMinX(visibleRect) - CGRectGetMinX(bounds)) / kTileSize);
@@ -157,13 +155,13 @@ static const CGFloat kTileSize = 256;
         }
     }
     
-    // Now that all the existing tiles that can be reused have been, make new tiles.
+    // Now that all the existing tiles that can be reused have been, make new tiles.    
     if (neededRects) {
         DEBUG_TILE_LAYOUT(@"  Need new %d tiles", [neededRects count]);
         
         // If we are rotating, we don't want to use tiles with existing content. Otherwise, they'll fly across the screen, looking weird.
         // Do allow reuse of hidden tiles here, though, so that multiple rotations don't build up more and more tiles.
-        if (_rotating) {
+        if (self.rotating) {
             NSUInteger tileIndex = [availableTiles count];
             while (tileIndex--) {
                 OUIScalingViewTile *tile = [availableTiles objectAtIndex:tileIndex];
@@ -181,7 +179,7 @@ static const CGFloat kTileSize = 256;
                 DEBUG_TILE_LAYOUT(@"    Repurposed tile %@ for rect %@", [tile shortDescription], NSStringFromCGRect(tileFrame));
             } else {
                 tile = [[OUIScalingViewTile alloc] init];
-                [_tiles addObject:tile];
+                [tiles addObject:tile];
                 [self addSubview:tile];
                 [tile release];
                 
@@ -201,6 +199,19 @@ static const CGFloat kTileSize = 256;
     }
     
     [availableTiles release];
+}
+
++ (OUITiledScalingViewTiling)tiling;
+{
+    return OUITileViewWithRegularSquareTiles;
+}
+
+// Might want to compute the visible rect from our -layoutSubviews, but for now our containing scroll view calls this.
+// The default implementation builds a regular square tiling, reusing tiles that fall on the same frame.
+// Subclasses may choose to use non-regular tilings if they have less canvas-y content.
+- (void)tileVisibleRect;
+{
+    [[self class] tiling](self, _tiles);
 }
 
 @end

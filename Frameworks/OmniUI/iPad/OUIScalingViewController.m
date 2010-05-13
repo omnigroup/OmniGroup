@@ -10,8 +10,7 @@
 #import <OmniUI/OUIScalingView.h>
 #import <OmniUI/OUIScalingScrollView.h>
 #import <OmniUI/OUIOverlayView.h>
-
-#import "OUITiledScalingView-Internal.h"
+#import <OmniUI/OUITiledScalingView.h>
 
 RCS_ID("$Id$");
 
@@ -157,7 +156,7 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
         OUIScalingView *view = _scalingView(self);
         
         if ([view isKindOfClass:[OUITiledScalingView class]])
-            [(OUITiledScalingView *)view _tileVisibleRect];
+            [(OUITiledScalingView *)view tileVisibleRect];
     }
 }
 
