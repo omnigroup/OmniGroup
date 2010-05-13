@@ -1,0 +1,136 @@
+#!/usr/bin/perl
+
+BEGIN {
+    my($perllib) = $0;
+    ( $perllib =~ s-/[^/]+$-/perllib- ) or ( $perllib = './perllib' );
+    push(@INC, $perllib);
+};
+
+die "usage: $0 target foo.xcodeproj\n" unless @ARGV == 2;
+
+our($target_name) = $ARGV[0];
+our($projdir) = $ARGV[1];
+
+die "$0: $projdir is not a directory\n" unless -d $projdir;
+die "$0: no project file in $projdir" unless -s "$projdir/project.pbxproj";
+
+our($obj, $root, $proj);   # The project.pbxproj file
+our(%containingGroup, %sourceTrees, %pathCache);  # Derived & cached values
+
+eval {
+    require Foundation;
+    Foundation->import();
+
+    $proj = Foundation::perlRefFromObjectRef(NSDictionary->dictionaryWithContentsOfFile_("$projdir/project.pbxproj"));
+} or do {
+    my($t) = "/tmp/gps$$";
+    die if -e $t;
+    my($plist2lang) = 'plist2lang';
+    system("$plist2lang -l perl '$projdir/project.pbxproj' > '$t'") == 0 
+	or die "can't run $plist2lang: $!\n";
+    
+    ($proj = (do $t)) || die;
+    
+    unlink($t);
+};
+
+$obj = $proj->{'objects'};
+$root = $obj->{$proj->{'rootObject'}};
+
+die "doesn't look like the pbproj I expect, died" 
+    unless $root->{isa} eq 'PBXProject';
+
+foreach my $o (keys %$obj) {
+    if($obj->{$o}->{isa} eq 'PBXGroup' or $obj->{$o}->{isa} eq 'PBXVariantGroup') {
+	foreach my $child (@{$obj->{$o}->{children}}) {
+	    $containingGroup{$child} = $o;
+	}
+    }
+}
+$containingGroup{$root->{mainGroup}} = $proj->{rootObject};
+
+%sourceTrees = ();
+
+
+{
+    my $sourceroot = $projdir;
+    $sourceroot =~ s/\/[^\/]+\.xcodeproj$/\//;
+    $sourceTrees{'SOURCE_ROOT'} = $sourceroot;
+}
+
+sub get {
+    my ($k, @cl) = @_;
+    my $v = $obj->{$k};
+    die "no object with id $k, died" unless defined $v;
+    if (@cl) {
+	my $isa = $v->{isa};
+	die "object isa $isa, expecting ".(join(' or ', @cl)).", died"
+	    unless grep { $_ eq $isa } @cl;
+    }
+    $v;
+}
+
+foreach my $targetid (@{$root->{targets}}) {
+    my($target) = &get($targetid, 'PBXNativeTarget', 'PBXAggregateTarget');
+    if ($target->{name} =~ $target_name) {
+            &do_target($target);
+    }
+}
+
+sub resolvepath {
+    my($k) = @_;
+    my($r) = &get($k, 'PBXFileReference', 'PBXVariantGroup', 'PBXGroup', 'PBXProject');
+    my($i) = $r->{isa};
+
+    if ($i eq 'PBXProject') {
+	return $sourceTrees{'SOURCE_ROOT'};
+    }
+
+    my $su = ( $i eq 'PBXVariantGroup' || $i eq 'PBXGroup' ) ? '/' : '';    
+
+    my $b = $r->{sourceTree};
+    my $base;
+    if ($b eq '<group>') {
+	die "no group contains child ref $k, died" unless exists $containingGroup{$k};
+	$b = $containingGroup{$k};
+	$pathCache{$b} = &resolvepath($b) unless defined $pathCache{$b};
+	$base = $pathCache{$b};
+    } elsif ($b eq '<absolute>') {
+	$base = '/';
+    } elsif (exists $sourceTrees{$b}) {
+	$base = $sourceTrees{$b};
+    } else {
+	die "unsupp sourceTree $b, died";
+    }
+
+    
+    return $base if (!exists $r->{path});
+    my $p = $r->{path};
+    return $base if $p eq '';
+
+    return $base . $p . $su;
+}
+    
+
+sub do_target {
+    my($target) = @_;
+
+    if ($target->{isa} ne 'PBXNativeTarget') {
+        die "Not a native target";
+	return;
+    }
+
+    my (%stringfiles, @srcfiles, $other);
+    $other = 0;
+
+    foreach my $phase (map { &get($_, qw(PBXCopyFilesBuildPhase PBXFrameworksBuildPhase PBXHeadersBuildPhase PBXResourcesBuildPhase PBXRezBuildPhase PBXShellScriptBuildPhase PBXSourcesBuildPhase)) } @{$target->{buildPhases}}) {
+	my $t = $phase->{isa};
+	foreach my $file ( map { &get($_, 'PBXBuildFile')->{fileRef} } @{$phase->{files}} ) {
+	    my $e = &get($file, 'PBXFileReference', 'PBXVariantGroup', 'PBXReferenceProxy');
+	    my $n = ( $e->{name} || $e->{path} );
+	    if ($e->{isa} eq 'PBXFileReference' && $n =~ /\.[mc]$/) {
+	        print &resolvepath($file)."\n";
+	    }
+	}
+    }
+}
