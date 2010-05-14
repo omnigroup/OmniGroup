@@ -1,6 +1,6 @@
-To checkout, preserving the intended case of the project (which the build scripts require right now):
+To checkout:
 
-	git clone git://github.com/omnigroup/omnigroup OmniGroup
+	git clone git://github.com/omnigroup/OmniGroup
 
 To build Debug versions of all the Omni frameworks:
 
