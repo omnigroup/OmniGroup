@@ -1315,7 +1315,6 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
         actionRecognizers[2] = inspectTap;
         [self addGestureRecognizer:inspectTap];
         
-        
         assert(3 == EF_NUM_ACTION_RECOGNIZERS);
     }
     
@@ -2689,11 +2688,22 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     DEBUG_TEXT(@" -> %@", r);
     CGPoint p = [r locationInView:self];
     OUEFTextPosition *pp = (OUEFTextPosition *)[self closestPositionToPoint:p];
+	
+    //NSLog(@"active with state %d at %@ with required taps %d, number of touches %d", r.state, pp, [r numberOfTapsRequired], [r numberOfTouches]);
+
     if (pp) {
         if (r.numberOfTapsRequired > 1 && selection) {
             [self setSelectedTextRange:[[self tokenizer] rangeEnclosingPosition:selection.start withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward]];
         } else {
-            OUEFTextRange *newSelection = [[OUEFTextRange alloc] initWithStart:pp end:pp];
+			// UITextView selects beginning and end of word only on single tap.
+			OUEFTextRange *word = (OUEFTextRange *)[[self tokenizer] rangeEnclosingPosition:pp withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward];
+			OUEFTextPosition *caret;
+			if (pp.index <= [(OUEFTextPosition *)word.start index] + (([(OUEFTextPosition *)word.end index] - [(OUEFTextPosition *)word.start index])/2)) {
+				caret = (OUEFTextPosition *)word.start;
+			} else {
+				caret = (OUEFTextPosition *)word.end;
+			}
+			OUEFTextRange *newSelection = [[OUEFTextRange alloc] initWithStart:caret end:caret];
             [self setSelectedTextRange:newSelection];
             [newSelection release];
         }
@@ -2708,7 +2718,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     CGPoint touchPoint = [r locationInView:self];
     OUEFTextPosition *pp = (OUEFTextPosition *)[self closestPositionToPoint:touchPoint];
     
-    //NSLog(@"inspect with state %d at %@", r.state, pp);
+    //NSLog(@"inspect with state %d at %@ with required taps %d, number of touches %d", r.state, pp, [r numberOfTapsRequired], [r numberOfTouches]);
     
     UIGestureRecognizerState state = r.state;
     
