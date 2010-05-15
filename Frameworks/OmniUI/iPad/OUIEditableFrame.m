@@ -2696,14 +2696,16 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
             [self setSelectedTextRange:[[self tokenizer] rangeEnclosingPosition:selection.start withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward]];
         } else {
 			// UITextView selects beginning and end of word only on single tap.
+			int idx = pp.index;
 			OUEFTextRange *word = (OUEFTextRange *)[[self tokenizer] rangeEnclosingPosition:pp withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward];
-			OUEFTextPosition *caret;
-			if (pp.index <= [(OUEFTextPosition *)word.start index] + (([(OUEFTextPosition *)word.end index] - [(OUEFTextPosition *)word.start index])/2)) {
-				caret = (OUEFTextPosition *)word.start;
-			} else {
-				caret = (OUEFTextPosition *)word.end;
+			if (word) {
+				int start = [(OUEFTextPosition *)word.start index];
+				int end = [(OUEFTextPosition *)word.end index];
+				idx = (idx <= start + ( ( end - start ) / 2 )) ? start : end;
 			}
+			OUEFTextPosition *caret = [[OUEFTextPosition alloc] initWithIndex:idx];
 			OUEFTextRange *newSelection = [[OUEFTextRange alloc] initWithStart:caret end:caret];
+			[caret release];
             [self setSelectedTextRange:newSelection];
             [newSelection release];
         }
