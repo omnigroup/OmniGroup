@@ -216,7 +216,7 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
             if ([rhs expressionType] != NSConstantValueExpressionType) {
                 NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
                 NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert IN expression with non-constant value; %@.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), rhs];
-                ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
+                ODOError(outError, ODOUnableToCreateSQLStatement, description, reason);
                 OBASSERT_NOT_REACHED("Fix me");
                 return NO;
             }
@@ -246,7 +246,7 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
         default: {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert predicate of type %d (%@).", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), opType, self];
-            ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
+            ODOError(outError, ODOUnableToCreateSQLStatement, description, reason);
             OBASSERT_NOT_REACHED("Fix me");
             return NO;
         }
@@ -308,7 +308,7 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
         default: {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert expression of type %d (%@).", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type, self];
-            ODOError(outError, ODOUnableToCreateSQLStatement, description, reason, nil);
+            ODOError(outError, ODOUnableToCreateSQLStatement, description, reason);
             OBASSERT_NOT_REACHED("Fix me");
             return NO;
         }

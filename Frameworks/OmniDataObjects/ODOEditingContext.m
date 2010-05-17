@@ -1036,7 +1036,7 @@ static BOOL _queryUniqueSet(NSSet *set, ODOObject *query)
         NSLog(@"Exception raised while sending -willSave: %@", exc);
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Exception raised while saving: %@", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [exc reason]];
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToSave, description, reason, nil);
+        ODOError(outError, ODOUnableToSave, description, reason);
         success = NO;
     } @finally {
         [_saveDate release];
@@ -1354,7 +1354,7 @@ NSString * const ODOEditingContextDidResetNotification = @"ODOEditingContextDidR
             if (tries > 100) {
                 NSString *reason = NSLocalizedStringFromTableInBundle(@"Tried 100 times to settle -willSave, but edits kept being made.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
                 NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-                ODOError(outError, ODOUnableToSave, description, reason, nil);
+                ODOError(outError, ODOUnableToSave, description, reason);
                 return NO;
             }
         }
@@ -1364,7 +1364,7 @@ NSString * const ODOEditingContextDidResetNotification = @"ODOEditingContextDidR
         NSLog(@"Exception raised while sending -willSave: %@", exc);
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Exception raised while sending -willSave: %@", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [exc reason]];
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToSave, description, reason, nil);
+        ODOError(outError, ODOUnableToSave, description, reason);
         success = NO;
     }
     

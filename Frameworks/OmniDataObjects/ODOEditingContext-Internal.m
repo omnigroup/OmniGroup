@@ -395,7 +395,7 @@ static BOOL PrepareQueryByKey(ODOSQLStatement *query, sqlite3 *sqlite, id key, N
         // Can't fetch while not connected; that's crazy.
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot prepare fetch for key %@ for query %@ while not connected to a database.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), key, query->_sql];
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToFetchFault, description, reason, nil);
+        ODOError(outError, ODOUnableToFetchFault, description, reason);
         return NO;
     }
     
@@ -429,7 +429,7 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
     if (!object) {
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@' and no such object was registered.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToFetchFault, description, reason, nil);
+        ODOError(outError, ODOUnableToFetchFault, description, reason);
     } else if ([object isFault]) {
         // Create the values array to take the values we are about to fetch
         _ODOObjectCreateNullValues(object);
@@ -443,7 +443,7 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
     } else {
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToFetchFault, description, reason, nil);
+        ODOError(outError, ODOUnableToFetchFault, description, reason);
     }
     
     [ctx->results addObject:object];

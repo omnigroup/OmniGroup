@@ -94,7 +94,7 @@ static BOOL _appendColumnWithNameAndType(NSMutableString *str, ODOEntity *entity
         default: {
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Attribute %@.%@ has type %d with unknown SQL column type.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [entity name], name, type];
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create schema.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-            ODOError(outError, ODOUnableToCreateSchema, description, reason, nil);
+            ODOError(outError, ODOUnableToCreateSchema, description, reason);
             return NO;
         }
     }
@@ -213,7 +213,7 @@ static BOOL _bindAttributeValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
         default: {
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Attribute has type unsupported type %d.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type];
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind attribute value to SQL.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-            ODOError(outError, ODOUnableToSave, description, reason, nil);
+            ODOError(outError, ODOUnableToSave, description, reason);
             return NO;
         }
     }

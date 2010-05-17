@@ -401,14 +401,14 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     Class expectedClass = [expectedEntity instanceClass];
     if (![dest isKindOfClass:expectedClass]) {
         NSString *reason = [NSString stringWithFormat:@"Relationship '%@' of '%@' lead to object of class '%@', but it should have been a '%@'", [ctx->relationship name], [ctx->owner shortDescription], NSStringFromClass([dest class]), NSStringFromClass(expectedClass)];
-        ODOError(&ctx->error, ODOValueOfWrongClassValidationError, @"Cannot save.", reason, nil);
+        ODOError(&ctx->error, ODOValueOfWrongClassValidationError, @"Cannot save.", reason);
         return;
     }
     
     // Check the entity too since the same class can be used for multiple entities.  We don't support entity inheritence, so we don't need -isKindOfEntity: here.
     if ([dest entity] != expectedEntity) {
         NSString *reason = [NSString stringWithFormat:@"Relationship '%@' of '%@' lead to object of entity '%@', but it should have been a '%@'", [ctx->relationship name], [ctx->owner shortDescription], [[dest entity] name], [expectedEntity name]];
-        ODOError(&ctx->error, ODOValueOfWrongClassValidationError, @"Cannot save.", reason, nil);
+        ODOError(&ctx->error, ODOValueOfWrongClassValidationError, @"Cannot save.", reason);
         return;
     }
 }
@@ -426,7 +426,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         // Check for required values in attributes and to-one relationships.  A nil in a to-many (currently) means it is an lazy to-many.  We aren't supporting required to-many relationships right now.
         if (!value && (!flags.relationship || !flags.toMany)) {
             if (!flags.optional) {
-                ODOError(outError, ODORequiredValueNotPresentValidationError, @"Cannot save.", ([NSString stringWithFormat:@"Required property '%@' not set on '%@'.", [prop name], [self shortDescription]]), nil);
+                ODOError(outError, ODORequiredValueNotPresentValidationError, @"Cannot save.", ([NSString stringWithFormat:@"Required property '%@' not set on '%@'.", [prop name], [self shortDescription]]));
                 return NO;
             }
             
@@ -450,7 +450,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
                     Class primaryKeyClass = [[[ctx.relationship destinationEntity] primaryKeyAttribute] valueClass];
                     if (![value isKindOfClass:primaryKeyClass]) {
                         ODOError(outError, ODOValueOfWrongClassValidationError, @"Cannot save.",
-                                 ([NSString stringWithFormat:@"Relationship '%@' of '%@' has primary key value of class '%@' instead of '%@'.", [ctx.relationship name], [self shortDescription], NSStringFromClass([value class]), NSStringFromClass(primaryKeyClass)]), nil);
+                                 ([NSString stringWithFormat:@"Relationship '%@' of '%@' has primary key value of class '%@' instead of '%@'.", [ctx.relationship name], [self shortDescription], NSStringFromClass([value class]), NSStringFromClass(primaryKeyClass)]));
                         return NO;
                     }
                 }
@@ -466,7 +466,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
                 Class valueClass = [attr valueClass];
                 if (![value isKindOfClass:valueClass]) {
                     ODOError(outError, ODOValueOfWrongClassValidationError, @"Cannot save.",
-                             ([NSString stringWithFormat:@"Attribute '%@' of '%@' has value of class '%@' instead of '%@'.", [attr name], [self shortDescription], NSStringFromClass([value class]), NSStringFromClass(valueClass)]), nil);
+                             ([NSString stringWithFormat:@"Attribute '%@' of '%@' has value of class '%@' instead of '%@'.", [attr name], [self shortDescription], NSStringFromClass([value class]), NSStringFromClass(valueClass)]));
                     return NO;
                 }
 

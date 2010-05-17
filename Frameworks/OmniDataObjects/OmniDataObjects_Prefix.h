@@ -35,5 +35,8 @@
 
 #import <CoreFoundation/CFNumber.h>
 #import <CoreFoundation/CFSet.h>
+#import <string.h>
+#import <stdlib.h>
+#import <stdio.h>
 
 #import "ODOInternal.h"

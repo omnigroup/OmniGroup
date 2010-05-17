@@ -194,7 +194,7 @@ static BOOL ODOVacuumOnDisconnect = NO;
     if (_connectedURL) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to connect to database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot connect to '%@' since the database is already connected to '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [_connectedURL absoluteString], [fileURL absoluteString]];
-        ODOError(outError, ODOUnableToConnectDatabase, description, reason, nil);
+        ODOError(outError, ODOUnableToConnectDatabase, description, reason);
         return NO;
     }
     
@@ -214,7 +214,7 @@ static BOOL ODOVacuumOnDisconnect = NO;
         sqlite3_close(sql);
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to open database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot open database at '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [fileURL absoluteString]];
-        ODOError(outError, ODOUnableToConnectDatabase, description, reason, nil);
+        ODOError(outError, ODOUnableToConnectDatabase, description, reason);
         return NO;
     }
     
@@ -474,7 +474,7 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     if (!_connectedURL) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Error disconnecting from database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         NSString *reason = NSLocalizedStringFromTableInBundle(@"Attempted to disconnect while not connected.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
-        ODOError(outError, ODOErrorDisconnectingFromDatabase, description, reason, nil);
+        ODOError(outError, ODOErrorDisconnectingFromDatabase, description, reason);
         return NO;
     }
     
@@ -512,7 +512,7 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
         ODOSQLiteError(outError, rc, _sqlite); // stack the underlying error
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to disconnect from database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot disconnect from database at '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [_connectedURL absoluteString]];
-        ODOError(outError, ODOUnableToConnectDatabase, description, reason, nil);
+        ODOError(outError, ODOUnableToConnectDatabase, description, reason);
         return NO;
     } else {
         _sqlite = NULL;
@@ -613,7 +613,7 @@ static void ODOWriteMetadataApplier(const void *key, const void *value, void *co
         if (!plistData) {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save metadata to database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to convert '%@' to a property list data: %@.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), plistObject, plistData];
-            ODOError(ctx->outError, ODOUnableToSaveMetadata, description, reason, nil);
+            ODOError(ctx->outError, ODOUnableToSaveMetadata, description, reason);
             ctx->errorOccurred = YES;
             return;
         }

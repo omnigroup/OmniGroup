@@ -29,9 +29,10 @@ enum {
     ODOValueOfWrongClassValidationError,
 };
 
-#define ODOErrorWithInfo(error, code, description, reason, ...) _OBError(error, OMNI_BUNDLE_IDENTIFIER, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedFailureReasonErrorKey, (reason), ## __VA_ARGS__)
-#define ODOError(error, code, description, reason, suggestion) ODOErrorWithInfo((error), (code), (description), (reason), NSLocalizedRecoverySuggestionErrorKey, (suggestion), nil)
+extern NSString * const ODOErrorDomain;
 
+#define ODOErrorWithInfo(error, code, description, suggestion, ...) _OBError(error, ODOErrorDomain, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
+#define ODOError(error, code, description, reason) ODOErrorWithInfo((error), (code), (description), (reason), nil)
 
 extern NSString * const ODOSQLiteErrorDomain; // Underlying errors will be formed with this, using the SQLite return code and error message.
 

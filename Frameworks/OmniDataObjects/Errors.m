@@ -11,6 +11,8 @@
 
 RCS_ID("$Id$")
 
+NSString * const ODOErrorDomain = @"com.omnigroup.framework.OmniDataObjects.ErrorDomain";
+
 NSString * const ODOSQLiteErrorDomain = @"org.sqlite.sqlite3";
 
 NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sqlite)
