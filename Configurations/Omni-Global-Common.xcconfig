@@ -53,8 +53,11 @@ PREBINDING = NO
 COPY_PHASE_STRIP = NO
 
 // When preprocessing the Info.plist file, don't filter out comments or process trigraphs.  (We don't want "http://www.omnigroup.com/" to become "http://", nor do we want "????" to be interpreted as a trigraph.)
-INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -traditional-cpp -C -I$PROJECT_DERIVED_FILE_DIR
+INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -traditional-cpp -C -I"$PROJECT_DERIVED_FILE_DIR"
 INFOPLIST_PREPROCESS = YES
+
+// Make sure we look for the built SVNVersions.h in the right spot
+HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR"
 
 // Xcode 3.1 converts .strings files to UTF-16 by default, which breaks our localization process.
 STRINGS_FILE_OUTPUT_ENCODING = UTF-8

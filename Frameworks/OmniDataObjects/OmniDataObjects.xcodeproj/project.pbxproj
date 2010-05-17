@@ -785,7 +785,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$PROJECT_DIR/../../Scripts/OmniRunUnitTests\n";
+			shellScript = "\"$PROJECT_DIR\"/../../Scripts/OmniRunUnitTests\n";
 		};
 		3484096A0D89F9CD00E74C9D /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -945,7 +945,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34A5E12B0D89940F0006DF9F /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = $PROJECT_DERIVED_FILE_DIR;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
@@ -957,7 +956,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34A5E12C0D89940F0006DF9F /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = $PROJECT_DERIVED_FILE_DIR;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
@@ -1108,7 +1106,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34A5E12A0D89940F0006DF9F /* Omni-Framework-Coverage.xcconfig */;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = $PROJECT_DERIVED_FILE_DIR;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
