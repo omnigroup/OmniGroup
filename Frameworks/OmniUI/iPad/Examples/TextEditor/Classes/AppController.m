@@ -61,6 +61,11 @@ RCS_ID("$Id$")
     return _documentToolbarItems;
 }
 
+- (void)dismissInspectorImmediately;
+{
+    // No inspector toolbar item right now
+}
+
 #pragma mark -
 #pragma mark OUIDocumentPickerDelegate
 
