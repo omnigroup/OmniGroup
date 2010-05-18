@@ -887,14 +887,16 @@ static CGRect _textRectForViewRect(OUIEditableFrame *self, CGPoint lastLineOrigi
 
 - (void)setupCustomMenuItemsForMenuController:(UIMenuController *)menuController;
 {
-    UIMenuItem *items[1];
+    /* If we have a range selection, allow the user to inspect its attributes */
+    if (selection && ![selection isEmpty]) {
+        UIMenuItem *items[1];
+        
+        items[0] = [[UIMenuItem alloc] initWithTitle:@"Style" action:@selector(_inspectSelection:)];
+        menuController.menuItems = [NSArray arrayWithObjects:items count:1];
+        [items[0] release];
+    }
     
-    items[0] = [[UIMenuItem alloc] initWithTitle:@"Style" action:@selector(_inspectSelection:)];
-//    items[1] = [[UIMenuItem alloc] initWithTitle:@"\u00B6" action:@selector(_inspectParagraph:)];
-    
-    menuController.menuItems = [NSArray arrayWithObjects:items count:1];
-    
-    [items[0] release];
+    /* We currently don't have functionality equivalent to typingAttributes, so there's no point in providing an inspector for the insertion point */
 }
 
 - (void)thumbBegan:(OUITextThumb *)thumb;
@@ -968,6 +970,13 @@ static CGRect _textRectForViewRect(OUIEditableFrame *self, CGPoint lastLineOrigi
 static BOOL beforeMutate(OUIEditableFrame *self, SEL _cmd)
 {
     NSUInteger wasGeneration = self->generation;
+    
+    // We generally don't want to show the context menu while the user is typing.
+    if (self->flags.showingEditMenu) {
+        DEBUG_TEXT(@"Dismissing context menu (%@)", NSStringFromSelector(_cmd));
+        self->flags.showingEditMenu = 0;
+        [self setNeedsLayout];
+    }
     
     DEBUG_TEXT(@">>> textWillChange (%@)", NSStringFromSelector(_cmd));
     [self->inputDelegate textWillChange:self];
@@ -1098,8 +1107,6 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
 
 - (void)layoutSubviews
 {
-    /* FIXME */ flags.showingEditMenu = ( selection != nil && ![selection isEmpty] );
-    
     [super layoutSubviews];
     if (flags.selectionNeedsUpdate && !flags.textNeedsUpdate)
         [self setNeedsDisplay];
@@ -1174,6 +1181,8 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
     }
     
     /* Show or hide the selection context menu. Always suppress it if the loupe is up, though. */
+    if (selection != nil && ![selection isEmpty])
+        flags.showingEditMenu = 1;
     BOOL suppressContextMenu = (_loupe != nil && _loupe.mode != OUILoupeOverlayNone) ||
                                (_textInspector != nil && _textInspector.isVisible);
     if (!flags.showingEditMenu || suppressContextMenu) {
@@ -1195,10 +1204,6 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
         
         /* Get the bounding rect of our selection */
         CGRect selectionRectangle = [self _boundsOfRange:selection];
-        
-        /* Shift from layout coordinates to rendering coordinates */
-        selectionRectangle.origin.x += layoutOrigin.x;
-        selectionRectangle.origin.y += layoutOrigin.y;
         
         /* Shift from rendering coordinates to view/bounds coordinates */
         selectionRectangle = [self convertRectToRenderingSpace:selectionRectangle]; // note method is confusingly named
@@ -2694,7 +2699,15 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
             [self setSelectedTextRange:[[self tokenizer] rangeEnclosingPosition:selection.start withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward]];
         } else {
             OUEFTextRange *newSelection = [[OUEFTextRange alloc] initWithStart:pp end:pp];
-            [self setSelectedTextRange:newSelection];
+            if ([newSelection isEqual:selection]) {
+                // Apple's text editor behaves this way: if you tap-to-select on the same point twice (as opposed to a double-tap, which is a different gesture), then it shows the context menu...
+                flags.showingEditMenu = 1;
+                [self setNeedsLayout];
+            } else {
+                // ...but normally, adjusting the insertion point, like typing, will dismiss the context menu.
+                flags.showingEditMenu = 0;
+                [self setSelectedTextRange:newSelection];
+            }
             [newSelection release];
         }
     }
@@ -2752,6 +2765,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     
     if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled) {
         _loupe.mode = OUILoupeOverlayNone;
+        flags.showingEditMenu = 1;  // Hint that the edit menu would be appropriate once the loupe disappears.
         [self _setSolidCaret:-1];
         return;
     }
@@ -2888,6 +2902,7 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
 }
 
 /* This is used to find the bounding box of our current selection when we want to point some UI element at it (either the context menu or the popover inspector) */
+/* The rectangle is returned in rendering coordinates */
 - (CGRect)_boundsOfRange:(OUEFTextRange *)range;
 {
     if ([range isEmpty])
@@ -2896,6 +2911,11 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
     CGRect bound = CGRectNull;
     
     rectanglesInRange(drawnFrame, [range range], includeRectsInBound, &bound);
+    
+    if (!CGRectIsNull(bound)) {
+        bound.origin.x += layoutOrigin.x;
+        bound.origin.y += layoutOrigin.y;
+    }
     
     return bound;
 }
@@ -3058,9 +3078,7 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
     }
     
     CGRect selectionRect = [self _boundsOfRange:selection];
-    selectionRect.origin.x += layoutOrigin.x;
-    selectionRect.origin.y += layoutOrigin.y;
-    selectionRect = [self convertRectToRenderingSpace:selectionRect];
+    selectionRect = [self convertRectToRenderingSpace:selectionRect]; // (This method is misleadingly named)
     
     DEBUG_TEXT(@"Inspecting: %@ rect: %@", [runs description], NSStringFromCGRect(selectionRect));
     
