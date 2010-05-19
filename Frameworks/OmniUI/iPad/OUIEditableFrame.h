@@ -54,9 +54,11 @@
     CGSize _usedSize;
     CGPoint layoutOrigin; // The location in rendering coordinates of the origin of the text layout coordinate system
     
+    // These are the regions of our view which are affected by the current selection or marked range
+    CGRect selectionDirtyRect, markedTextDirtyRect;
+    
     struct {
         unsigned textNeedsUpdate : 1;
-        unsigned selectionNeedsUpdate: 1;
         unsigned delegateRespondsToLayoutChanged: 1;
         unsigned delegateRespondsToContentsChanged: 1;
         unsigned showSelectionThumbs: 1;

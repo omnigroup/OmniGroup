@@ -95,11 +95,12 @@ static void btrace(void)
 
 @interface OUIEditableFrame (/*Private*/)
 - (CFRange)_lineRangeForStringRange:(NSRange)queryRange;
-- (CGRect)_caretRectForPosition:(OUEFTextPosition *)position affinity:(int)affinity;
+- (CGRect)_caretRectForPosition:(OUEFTextPosition *)position affinity:(int)affinity bloomScale:(double)s;
 - (CGRect)_boundsOfRange:(OUEFTextRange *)range;
+- (void)_setNeedsDisplayForRange:(OUEFTextRange *)range;
 - (void)_setSolidCaret:(int)delta;
 - (void)_setSelectionToIndex:(NSUInteger)ix;
-- (void)_setSelectedTextRange:(UITextRange *)newRange notifyDelegate:(BOOL)shouldNotify;
+- (void)_setSelectedTextRange:(OUEFTextRange *)newRange notifyDelegate:(BOOL)shouldNotify;
 - (void)_idleTap;
 - (void)_activeTap:(UITapGestureRecognizer *)r;
 - (void)_inspectTap:(UILongPressGestureRecognizer *)r;
@@ -127,9 +128,10 @@ static id do_init(OUIEditableFrame *self)
     self->layoutSize.width = 0;
     self->layoutSize.height = 0;
     self->flags.textNeedsUpdate = 1;
-    self->flags.selectionNeedsUpdate = 1;
     self->flags.delegateRespondsToLayoutChanged = 0;
     self->flags.showSelectionThumbs = 1;
+    self->selectionDirtyRect = CGRectNull;
+    self->markedTextDirtyRect = CGRectNull;
     
     self.autocapitalizationType = UITextAutocapitalizationTypeNone;
 
@@ -447,7 +449,7 @@ static unsigned int rectanglesInLine(CTLineRef line, CGPoint lineOrigin, NSRange
     return rectsIssued;
 }
 
-static void rectanglesInRange(CTFrameRef frame, NSRange r, rectanglesInRangeCallback cb, void *ctxt)
+static void rectanglesInRange(CTFrameRef frame, NSRange r, BOOL sloppy, rectanglesInRangeCallback cb, void *ctxt)
 {
     CFArrayRef lines = CTFrameGetLines(frame);
     CFIndex lineCount = CFArrayGetCount(lines);
@@ -495,12 +497,16 @@ static void rectanglesInRange(CTFrameRef frame, NSRange r, rectanglesInRangeCall
             flags |= rectwalker_RightIsRangeBoundary;
         }
         
+        /* Go ahead and be precise instead of sloppy if there's only one line involved */
+        if (lastLine && sloppy && lineIndex == firstLine)
+            sloppy = NO;
+        
         CGPoint lineOrigin[1];
         CTFrameGetLineOrigins(frame, (CFRange){ lineIndex, 1 }, lineOrigin);
         
         BOOL keepGoing;
         
-        if (! (flags & (rectwalker_LeftIsRangeBoundary|rectwalker_RightIsRangeBoundary)) ) {
+        if (! (flags & (rectwalker_LeftIsRangeBoundary|rectwalker_RightIsRangeBoundary))  ||  sloppy) {
             CGFloat trailingWhitespace = (flags & rectwalker_RightIsLineWrap)? CTLineGetTrailingWhitespaceWidth(line) : 0;
             keepGoing = (*cb)( (CGPoint){ lineOrigin[0].x + left, lineOrigin[0].y }, right - left, trailingWhitespace, ascent, descent, flags, ctxt);
         } else {
@@ -1087,9 +1093,14 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
 
 - (void)drawRect:(CGRect)rect;
 {
-    DEBUG_TEXT(@"Drawing: frame=%@ bounds=%@ center=%@",
-               NSStringFromCGRect(self.frame), NSStringFromCGRect(self.bounds), NSStringFromCGPoint(self.center));
+    DEBUG_TEXT(@"Drawing %@: frame=%@ bounds=%@ center=%@",
+               NSStringFromCGRect(rect), NSStringFromCGRect(self.frame), NSStringFromCGRect(self.bounds), NSStringFromCGPoint(self.center));
     
+    if (CGRectContainsRect(rect, selectionDirtyRect))
+        selectionDirtyRect = CGRectNull;
+    if (CGRectContainsRect(rect, markedTextDirtyRect))
+        markedTextDirtyRect = CGRectNull;
+        
     if (!drawnFrame || flags.textNeedsUpdate)
         [self _updateLayout:YES];
     
@@ -1101,8 +1112,6 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
     /* FIXME */ flags.showingEditMenu = ( selection != nil && ![selection isEmpty] );
     
     [super layoutSubviews];
-    if (flags.selectionNeedsUpdate && !flags.textNeedsUpdate)
-        [self setNeedsDisplay];
 
     // NSLog(@"Laying out: solidCaret = %u", flags.solidCaret);
     
@@ -1118,7 +1127,7 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
             startThumb.isEndThumb = NO;
             [self addSubview:startThumb];
         }
-        caretRect = [self _caretRectForPosition:(OUEFTextPosition *)selection.start affinity:1];
+        caretRect = [self _caretRectForPosition:(OUEFTextPosition *)selection.start affinity:1 bloomScale:0];
         caretRect = CGRectInset([self convertRectToRenderingSpace:caretRect], -1, -1); // Method's name is misleading
         [startThumb setCaretRectangle:caretRect];
         startThumb.hidden = NO;
@@ -1128,7 +1137,7 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
             endThumb.isEndThumb = YES;
             [self addSubview:endThumb];
         }
-        caretRect = [self _caretRectForPosition:(OUEFTextPosition *)selection.end affinity:-1];
+        caretRect = [self _caretRectForPosition:(OUEFTextPosition *)selection.end affinity:-1 bloomScale:0];
         caretRect = CGRectInset([self convertRectToRenderingSpace:caretRect], -1, -1); // Method's name is misleading
         [endThumb setCaretRectangle:caretRect];
         endThumb.hidden = NO;
@@ -1142,12 +1151,7 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
     
     /* Show or hide the layer-based blinking cursor */
     if (drawnFrame && !flags.textNeedsUpdate && selection && [selection isEmpty] && !flags.solidCaret) {
-        CGRect caretRect = [self _caretRectForPosition:(OUEFTextPosition *)(selection.start) affinity:1];
-        
-        // Add an extra couple of pixels of size for visibility
-        CGFloat scale = self.scale;
-        if (scale < 2.0)
-            caretRect = CGRectInset(caretRect, -1 / scale, -1 / scale);
+        CGRect caretRect = [self _caretRectForPosition:(OUEFTextPosition *)(selection.start) affinity:1 bloomScale:self.scale];
         
         caretRect = [self convertRectToRenderingSpace:caretRect];  // method name is misleading
 
@@ -1855,13 +1859,14 @@ enum {
 - (void)setSelectedTextRange:(UITextRange *)newRange
 {
     DEBUG_TEXT(@"-- setSelectedTextRange:%@", newRange);
+    OBASSERT(newRange == nil || [newRange isKindOfClass:[OUEFTextRange class]]);
 
     /* TODO: We assume that any selection change that's official enough come through this method should count as caret-solidifying activity. Probably should look for corner cases here. */
     [self _setSolidCaret:0];
     
     [self unmarkText];
     
-    [self _setSelectedTextRange:newRange notifyDelegate:YES];
+    [self _setSelectedTextRange:(OUEFTextRange *)newRange notifyDelegate:YES];
 }
 
 
@@ -1952,13 +1957,13 @@ enum {
 {
     if (!markedRange.length)
         return;
-
+    
     DEBUG_TEXT(@"Unmarking text");
+    [self setNeedsDisplayInRect:markedTextDirtyRect];
     [self willChangeValueForKey:@"markedTextRange"];
     markedRange.location = 0;
     markedRange.length = 0;
     [self didChangeValueForKey:@"markedTextRange"];
-    [self setNeedsDisplay];
 }
 
 /* The end and beginning of the the text document. */
@@ -2283,7 +2288,7 @@ static BOOL firstRect(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat asce
     
     CGRect r = CGRectNull;
     NSRange rn = [(OUEFTextRange *)range range];
-    rectanglesInRange(drawnFrame, rn, firstRect, &r);
+    rectanglesInRange(drawnFrame, rn, NO, firstRect, &r);
     
     if (CGRectIsNull(r)) {
         // Huh.
@@ -2310,15 +2315,14 @@ static BOOL firstRect(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat asce
         [self _updateLayout:YES];
 
     // Get the caret rectangle in rendering coordinates
-    CGRect textRect = [self _caretRectForPosition:(OUEFTextPosition *)position affinity:1];
+    CGRect textRect = [self _caretRectForPosition:(OUEFTextPosition *)position affinity:1 bloomScale:0.0];
 
     // Convert it to UIView coordinates.
     CGRect viewRect = [self convertRectToRenderingSpace:textRect]; // Method's name is misleading
 
     DEBUG_TEXT(@"caretRectForPosition %@ --> %@", [position description], NSStringFromCGRect(viewRect));
     
-    // Add an extra pixel of size
-    return CGRectInset(viewRect, -1, -1);
+    return viewRect;
 }
 
 /* Hit testing. */
@@ -2459,7 +2463,6 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     return [[[OUEFTextRange alloc] initWithRange:r generation:generation] autorelease];
 }
 
-#pragma mark -
 #pragma mark UITextInput optional methods
 
 - (NSDictionary *)textStylingAtPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction;
@@ -2539,7 +2542,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
 
 
 /* This returns the rectangle of the insertion caret, in our rendering coordinates */
-- (CGRect)_caretRectForPosition:(OUEFTextPosition *)position affinity:(int)affinity;
+- (CGRect)_caretRectForPosition:(OUEFTextPosition *)position affinity:(int)affinity bloomScale:(double)bloomScale;
 {
     OBPRECONDITION(drawnFrame && !flags.textNeedsUpdate);
     
@@ -2573,7 +2576,15 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     textRect.origin.x += layoutOrigin.x;
     textRect.origin.y += layoutOrigin.y;
     
-    return textRect;
+    // Add an extra couple of pixels of size for visibility
+    // The bloomScale parameter tells us how to relate our coordinate system to device pixels
+    // bloomScale=0 --> don't bloom
+    // bloomScale>0 --> scale factor
+    // we further limit the range of bloomScale we accept just for sanity's sake
+    if (bloomScale > 1e-2)
+        return CGRectInset(textRect, -1 / bloomScale, -1 / bloomScale);
+    else
+        return textRect;
 }
 
 - (void)_setSelectionToIndex:(NSUInteger)ix
@@ -2585,13 +2596,23 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
 
 /* Text may have a selection, either zero-length (a caret) or ranged.  Editing operations are
  * always performed on the text from this selection.  nil corresponds to no selection. */
-- (void)_setSelectedTextRange:(UITextRange *)newRange notifyDelegate:(BOOL)shouldNotify;
+- (void)_setSelectedTextRange:(OUEFTextRange *)newRange notifyDelegate:(BOOL)shouldNotify;
 {
     if (newRange == selection)
         return;
     
     if (newRange && selection && [newRange isEqual:selection])
         return;
+    
+    /* TODO: If the old and new selections are both ranges, and only differ by a few characters at one end, we can potentially save a lot of redraw by computing the difference and redrawing only the extension/contraction */
+    
+    if (!CGRectIsEmpty(selectionDirtyRect)) {
+        [self setNeedsDisplayInRect:selectionDirtyRect];
+        selectionDirtyRect = CGRectNull;
+    }
+    
+    if (newRange && (![newRange isEmpty] || flags.solidCaret))
+        [self _setNeedsDisplayForRange:newRange];
     
     if (shouldNotify)
         [inputDelegate selectionWillChange:self];
@@ -2604,8 +2625,6 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     if (shouldNotify)
         [inputDelegate selectionDidChange:self];
     
-    flags.selectionNeedsUpdate = YES;
-    /* if (!flags.solidCaret)  TODO: We should be able to avoid subview layout in the common case? */
     [self setNeedsLayout];
 }
 
@@ -2636,11 +2655,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     
     if (!flags.solidCaret) {
         flags.solidCaret = 1;
-
-        if (selection) {
-            CGRect caretRect = [self caretRectForPosition:selection.end];
-            [self setNeedsDisplayInRect:CGRectInset(caretRect, -2, -2)];
-        }
+        [self _setNeedsDisplayForRange:selection];
         [self setNeedsLayout];
     }
 }
@@ -2666,16 +2681,10 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     
     flags.solidCaret = 0;
     
-    if (selection) {
-        if ([selection isEmpty]) {
-            CGRect caretRect = [self caretRectForPosition:selection.end];
-            [self setNeedsDisplayInRect:CGRectInset(caretRect, -2, -2)];
-        } else {
-            // An unlikely code path, but we might as well avoid leaving cruft on the screen if we get here
-            [self setNeedsDisplay];
-        }
-    }
+    // We'll need to redraw the text under the solid caret
+    [self setNeedsDisplayInRect:selectionDirtyRect];
     
+    // And re-show and re-position the non-slid caret overlay view
     [self setNeedsLayout];
 }
 
@@ -2692,6 +2701,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     DEBUG_TEXT(@" -> %@", r);
     CGPoint p = [r locationInView:self];
     OUEFTextPosition *pp = (OUEFTextPosition *)[self closestPositionToPoint:p];
+    
     if (pp) {
         if (r.numberOfTapsRequired > 1 && selection) {
             [self setSelectedTextRange:[[self tokenizer] rangeEnclosingPosition:selection.start withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward]];
@@ -2702,6 +2712,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
         }
     }
     
+    // Reset the caret solidity timer even if we don't otherwise react to this tap, to indicate we did at least receive it
     [self _setSolidCaret:0];
 }
 
@@ -2765,6 +2776,7 @@ struct rectpathwalker {
     CGContextRef ctxt;            // context to append rects to
     CGPoint layoutOrigin;         // translation between ctxt's and text's coordinate systems
     CGFloat leftEdge, rightEdge;  // left & right text edges (in ctxt's coordinate system)
+    CGRect bounds;
 };
 
 /* Convenience routine for computing the fields of rectpathwalker */
@@ -2774,6 +2786,7 @@ static void getMargins(OUIEditableFrame *self, struct rectpathwalker *r)
     r->layoutOrigin = self->layoutOrigin;
     r->leftEdge = bounds.origin.x + self->textInset.left;
     r->rightEdge = bounds.origin.x + bounds.size.width - ( self->textInset.left + self->textInset.right );
+    r->bounds = CGRectNull;
 }
 
 static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat ascent, CGFloat descent, unsigned flags, void *ctxt)
@@ -2821,7 +2834,10 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         highlightRect.size.width = width;
     }
     
-    CGContextAddRect(r->ctxt, highlightRect);
+    r->bounds = CGRectUnion(r->bounds, highlightRect);
+    
+    if (r->ctxt)
+        CGContextAddRect(r->ctxt, highlightRect);
     
     // NSLog(@"Adding rect(me) -> %@ (raw %@)", NSStringFromCGRect(highlightRect), NSStringFromCGPoint(p));
     
@@ -2855,12 +2871,14 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         [_rangeSelectionColor setFill];
         CGContextBeginPath(ctx);
         
-        rectanglesInRange(drawnFrame, selectionRange, addRectsToPath, &ctxt);
+        rectanglesInRange(drawnFrame, selectionRange, NO, addRectsToPath, &ctxt);
         
         // Filling the rects as a single path avoids overlapping alpha compositing on the edges.
         CGContextFillPath(ctx);
-
-    
+        
+        // Record the rect we dirtied so we can redraw when the selection changes
+        selectionDirtyRect = [self convertRectToRenderingSpace:ctxt.bounds]; // note this method does the opposite of what its name implies
+        
         CGContextBeginPath(ctx);
         ctxt.leftEdge = 1e10;
         ctxt.rightEdge = -1e10;
@@ -2894,11 +2912,11 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
 - (CGRect)_boundsOfRange:(OUEFTextRange *)range;
 {
     if ([range isEmpty])
-        return [self _caretRectForPosition:(OUEFTextPosition *)(range.start) affinity:0];
+        return [self _caretRectForPosition:(OUEFTextPosition *)(range.start) affinity:0 bloomScale:0];
     
     CGRect bound = CGRectNull;
     
-    rectanglesInRange(drawnFrame, [range range], includeRectsInBound, &bound);
+    rectanglesInRange(drawnFrame, [range range], NO, includeRectsInBound, &bound);
     
     return bound;
 }
@@ -2917,25 +2935,58 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
         CGContextSetLineWidth(ctx, 0.5);
         CGContextBeginPath(ctx);
         
-        rectanglesInRange(drawnFrame, markedRange, addRectsToPath, &ctxt);
+        rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
         
         CGContextStrokePath(ctx);
+        markedTextDirtyRect = ctxt.bounds;
     }
     
     /* If we're not using a separate view to draw our caret, draw it here */
     if (flags.solidCaret) {
         if (selection && [selection isEmpty]) {
-            CGRect caretRect = [self _caretRectForPosition:(OUEFTextPosition *)(selection.start) affinity:1];
+            // If we're being drawn zoomed, we might not need as much enlargement of the caret in order for it to be visible
+            CGFloat nominalScale = self.scale;
+            double actualScale = sqrt(fabs(OQAffineTransformGetDilation(CGContextGetCTM(ctx))));
+
+            CGRect caretRect = [self _caretRectForPosition:(OUEFTextPosition *)(selection.start) affinity:1 bloomScale:MAX(nominalScale, actualScale)];
             
-            // Add an extra couple of pixels of size for visibility
-            CGAffineTransform xf = CGContextGetCTM(ctx);
-            CGFloat scale = sqrt(fabs(OQAffineTransformGetDilation(xf)));
-            if (scale < 2.0)
-                caretRect = CGRectInset(caretRect, -1 / scale, -1 / scale);
             [_insertionPointSelectionColor setFill];
             CGContextFillRect(ctx, caretRect);
+            selectionDirtyRect = [self convertRectToRenderingSpace:caretRect]; // note this method does the opposite of what its name implies
         }
     }
+}
+
+- (void)_setNeedsDisplayForRange:(OUEFTextRange *)range;
+{
+    if (!range)
+        return;
+    
+    if (flags.textNeedsUpdate || !drawnFrame) {
+        // Can't compute the affected range without valid layout information.
+        // We can't do partial layout yet, so we're going to do a full redisplay soon anyway, which should take care of this range as well.
+        return;
+    }
+    
+    CGRect dirtyRect;
+    
+    if ([range isEmpty]) {
+        // The caret rectangle.
+        // NB this must match the corresponding calculation in _drawDecorations:, but it only needs to match in the normal case where we're drawing into our own rectangle (as opposed to the loupe case which _drawDecorations: also needs to handle)
+        dirtyRect = [self _caretRectForPosition:(OUEFTextPosition *)(range.start) affinity:1 bloomScale:self.scale];
+    } else {
+        /* We don't want the same behavior as _boundsOfRange: here, unfortunately: that method intentionally doesn't extend the rect out to the margins when a line wraps, because the extra area doesn't have any actual text in it for the UI element to point to. On the other hand, _setNeedsDisplayForRange: is usually called to invalidate a rectangle so that the selection can redraw, and we need to extend out in the same way that the selection-drawing code does. */
+        struct rectpathwalker ctxt;
+        ctxt.ctxt = NULL;  // addRectsToPath() will happily ignore a NULL CGContextRef for us
+        getMargins(self, &ctxt);
+        
+        rectanglesInRange(drawnFrame, [range range], YES /* quick and sloppy */, addRectsToPath, &ctxt);
+        
+        dirtyRect = ctxt.bounds;
+    }
+    
+    [self setNeedsDisplayInRect:CGRectIntegral([self convertRectToRenderingSpace:dirtyRect])];
+    // (note that -convertRectToRenderingSpace: does the opposite of what its name suggests)
 }
 
 - (void)_updateLayout:(BOOL)computeDrawnFrame
@@ -3031,7 +3082,7 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
     
     UITextRange *rangeToSelect = [self textRangeFromPosition:positionToSelect toPosition:positionToSelect];
     [self unmarkText];
-    [self _setSelectedTextRange:rangeToSelect notifyDelegate:YES];
+    [self _setSelectedTextRange:(OUEFTextRange *)rangeToSelect notifyDelegate:YES];
 }
 
 #pragma mark Context menu methods
