@@ -887,16 +887,15 @@ static CGRect _textRectForViewRect(OUIEditableFrame *self, CGPoint lastLineOrigi
 
 - (void)setupCustomMenuItemsForMenuController:(UIMenuController *)menuController;
 {
-    /* If we have a range selection, allow the user to inspect its attributes */
-    if (selection && ![selection isEmpty]) {
-        UIMenuItem *items[1];
+    UIMenuItem *items[1];
         
-        items[0] = [[UIMenuItem alloc] initWithTitle:@"Style" action:@selector(_inspectSelection:)];
-        menuController.menuItems = [NSArray arrayWithObjects:items count:1];
-        [items[0] release];
-    }
+    /* If we have a range selection, allow the user to inspect its attributes */
+    /* If we don't have a selection, this item will be disabled via -canPerformAction:withSender: */
+    items[0] = [[UIMenuItem alloc] initWithTitle:@"Style" action:@selector(inspectSelectedText:)];
     
-    /* We currently don't have functionality equivalent to typingAttributes, so there's no point in providing an inspector for the insertion point */
+    menuController.menuItems = [NSArray arrayWithObjects:items count:1];
+    
+    [items[0] release];
 }
 
 - (void)thumbBegan:(OUITextThumb *)thumb;
@@ -1430,7 +1429,7 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
 {
-    if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(delete:)) {
+    if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(delete:) || action == @selector(inspectSelectedText:)) {
         return selection && ![selection isEmpty];
     }
     
@@ -3053,7 +3052,7 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
 
 #pragma mark Context menu methods
 
-- (void)_inspectSelection:(id)sender
+- (void)inspectSelectedText:(id)sender
 {
     NSMutableSet *runs = [NSMutableSet set];
     
