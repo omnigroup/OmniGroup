@@ -2856,13 +2856,6 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         
         // Filling the rects as a single path avoids overlapping alpha compositing on the edges.
         CGContextFillPath(ctx);
-
-    
-        CGContextBeginPath(ctx);
-        ctxt.leftEdge = 1e10;
-        ctxt.rightEdge = -1e10;
-        rectanglesInRange(drawnFrame, selectionRange, addRectsToPath, &ctxt);
-        CGContextFillPath(ctx);
     }
 }
 
