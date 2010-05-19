@@ -1950,6 +1950,9 @@ enum {
 
 - (void)unmarkText;
 {
+    if (!markedRange.length)
+        return;
+
     DEBUG_TEXT(@"Unmarking text");
     [self willChangeValueForKey:@"markedTextRange"];
     markedRange.location = 0;
