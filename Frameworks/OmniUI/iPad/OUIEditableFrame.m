@@ -259,13 +259,16 @@ static enum runPosition __attribute__((const)) runOffset(CTRunStatus runFlags, C
 }
 
 /* These flags are passed to the rectanglesInRangeCallback to indicate why the left and right edges of a given rectangle are where they are. An edge might be the beginning or the end of the range being iterated over; they might be caused by a line break; or they could be caused by a run break in mixed-direction text (if neither RangeBoundary nor LineWrap are set). */
-#define rectwalker_LeftIsRangeBoundary  ( 00010 )
-#define rectwalker_RightIsRangeBoundary ( 00020 )
-#define rectwalker_LeftIsLineWrap       ( 00100 )
-#define rectwalker_RightIsLineWrap      ( 00200 )
+#define rectwalker_LeftIsRangeBoundary  ( 00001 )
+#define rectwalker_RightIsRangeBoundary ( 00002 )
+#define rectwalker_LeftIsLineWrap       ( 00004 )
+#define rectwalker_RightIsLineWrap      ( 00010 )
+#define rectwalker_FirstRectInLine      ( 00020 )
+#define rectwalker_FirstLine            ( 00040 )
 
 #define rectwalker_LeftFlags (rectwalker_LeftIsRangeBoundary|rectwalker_LeftIsLineWrap)
 #define rectwalker_RightFlags (rectwalker_RightIsRangeBoundary|rectwalker_RightIsLineWrap)
+#define rectwalker_LineFlags (rectwalker_FirstLine /* | rectwalker_LastLine */ )
 
 typedef BOOL (*rectanglesInRangeCallback)(CGPoint origin, CGFloat width, CGFloat trailingWhitespaceWidth, CGFloat ascent, CGFloat descent, /* NSRange textRange, */ unsigned flags, void *p);
 
@@ -296,14 +299,14 @@ static CGFloat leftRunBoundary(CTLineRef line, CTRunRef run)
 }
 
 /* Macros for invoking the callback (usually with a 0 for the trailing whitespace width) */
-#define RECT_tww(start, end, tww, flags) do{ CGFloat start_ = (start); BOOL shouldContinue = (*cb)( (CGPoint){ lineOrigin.x + start_, lineOrigin.y }, (end) - start_, tww, ascent, descent, (flags), ctxt); if (!shouldContinue) return -1; rectsIssued ++; }while(0)
+#define RECT_tww(start, end, tww, flags) do{ CGFloat start_ = (start); BOOL shouldContinue = (*cb)( (CGPoint){ lineOrigin.x + start_, lineOrigin.y }, (end) - start_, tww, ascent, descent, (flags) | (rectsIssued? 0 : rectwalker_FirstRectInLine) | lineFlags, ctxt); if (!shouldContinue) return -1; rectsIssued ++; }while(0)
 #define RECT(start, end, flags) RECT_tww(start, end, 0, flags)
 
 static unsigned int rectanglesInLine(CTLineRef line, CGPoint lineOrigin, NSRange r, unsigned boundaryFlags, rectanglesInRangeCallback cb, void *ctxt)
 {
     CFArrayRef runs = CTLineGetGlyphRuns(line);
     CFIndex runCount = CFArrayGetCount(runs);
-    CGFloat ascent = nanf(NULL), descent = nanf(NULL);
+    CGFloat ascent = NAN, descent = NAN;
     CGFloat lineWidth = CTLineGetTypographicBounds(line, &ascent, &descent, NULL);
     int rectsIssued = 0;
     
@@ -312,9 +315,11 @@ static unsigned int rectanglesInLine(CTLineRef line, CGPoint lineOrigin, NSRange
     CGFloat startPosSecondaryOffset, endPosSecondaryOffset;
     CGFloat startPosOffset = CTLineGetOffsetForStringIndex(line, r.location, &startPosSecondaryOffset);
     CGFloat endPosOffset = CTLineGetOffsetForStringIndex(line, r.location + r.length, &endPosSecondaryOffset);
-    unsigned leftFlags = ( boundaryFlags & rectwalker_LeftFlags );
-    unsigned rightFlags = ( boundaryFlags & rectwalker_RightFlags );
+    unsigned leftFlags = ( boundaryFlags & rectwalker_LeftFlags );   // Flags to apply to the leftmost rectangle
+    unsigned rightFlags = ( boundaryFlags & rectwalker_RightFlags ); // Flags to apply to the rightmost rectangle
+    unsigned lineFlags = ( boundaryFlags & rectwalker_LineFlags );   // Flags to apply to all rectangles in this line
     
+    /* Loop through all the runs in the line, figuring out whether the range intersects the run's range at all, and if so, what it contributes to the list of rectangles we're delivering to the callback. */
     
     for(CFIndex i = 0; i < runCount; i++) {
         CTRunRef run = CFArrayGetValueAtIndex(runs, i);
@@ -463,10 +468,10 @@ static void rectanglesInRange(CTFrameRef frame, NSRange r, BOOL sloppy, rectangl
         CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
         CFRange lineRange = CTLineGetStringRange(line);
         CGFloat left, right;
-        CGFloat ascent = nanf(NULL), descent = nanf(NULL);
+        CGFloat ascent = NAN, descent = NAN;
         CGFloat lineWidth = CTLineGetTypographicBounds(line, &ascent, &descent, NULL);
         NSRange spanRange;
-        int flags = 0;
+        int flags = ( lineIndex == firstLine )? rectwalker_FirstLine : 0;
         
         /* We know that lineRange.location >= 0 here, so it's safe to cast it to NSUInteger */
         if (r.location + r.length < (NSUInteger)lineRange.location)
@@ -508,6 +513,7 @@ static void rectanglesInRange(CTFrameRef frame, NSRange r, BOOL sloppy, rectangl
         BOOL keepGoing;
         
         if (! (flags & (rectwalker_LeftIsRangeBoundary|rectwalker_RightIsRangeBoundary))  ||  sloppy) {
+            flags |= rectwalker_FirstRectInLine; // the only rect in the line, in fact
             CGFloat trailingWhitespace = (flags & rectwalker_RightIsLineWrap)? CTLineGetTrailingWhitespaceWidth(line) : 0;
             keepGoing = (*cb)( (CGPoint){ lineOrigin[0].x + left, lineOrigin[0].y }, right - left, trailingWhitespace, ascent, descent, flags, ctxt);
         } else {
@@ -2831,6 +2837,8 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
 #if 0
     {
         NSMutableString *b = [NSMutableString stringWithFormat:@"p=(%.1f,%.1f) x+w=%.1f flags=", p.x, p.y, p.x+width];
+        if (flags & rectwalker_FirstLine) [b appendString:@"F"];
+        if (flags & rectwalker_FirstRectInLine) [b appendString:@"f"];
         if (flags & rectwalker_LeftIsRangeBoundary) [b appendString:@"L"];
         if (flags & rectwalker_LeftIsLineWrap) [b appendString:@"l"];
         if (flags & rectwalker_RightIsLineWrap) [b appendString:@"r"];
