@@ -604,74 +604,6 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
     result->adjustedIndex = adjustedIndex;
 }
 
-#if 0
-/*
- This works out what the metrics of the nonexistent first character of the nonexistent line after the end of the text would be if it existed.
- If isInsertionPoint is YES then typingAttributes is consulted for the font, otherwise not.
-*/
-- (struct typographicPosition)_trailingLineMetrics:(BOOL)isInsertionPoint
-{
-    CTFontRef trailingLineFont = NULL;
-    
-    /* Figure out what font this fake line has: we need to know how tall the caret should be */
-    
-    if (isInsertionPoint && typingAttributes) {
-        trailingLineFont = (CTFontRef)[typingAttributes objectForKey:(id)kCTFontAttributeName];
-    }
-    
-    if (!trailingLineFont && [_content length]) {
-        NSDictionary *lastAttrs = [_content attributesAtIndex:[_content length]-1 effectiveRange:NULL];
-        trailingLineFont = (CTFontRef)[lastAttrs objectForKey:(id)kCTFontAttributeName];
-    }
-    
-    if (!trailingLineFont)
-        trailingLineFont = [self defaultCTFont];
-    
-    /* Figure out the vertical position of the top of the line */
-    
-    CGFloat trailingLineTop;
-    
-    if ([_content length]) {
-        OBASSERT(drawnFrame && !flags.textNeedsUpdate);  // Caller should ensure this.
-
-        /* The leading returned by CTLineGetTypographicBounds() is the distance from the descenders of this line to the ascenders of the next. The baseline-to-baseline distance is therefore the sum of our descent, our leading, and the next line's ascent. */
-        
-        CFArrayRef lines = CTFrameGetLines(drawnFrame);
-        CFIndex actualLineCount = CFArrayGetCount(lines);
-        if (actualLineCount >= 1) {
-            CGPoint lastLineOrigin;
-            CTFrameGetLineOrigins(drawnFrame, (CFRange){actualLineCount-1,1}, &lastLineOrigin);
-            CGFloat lastLineDescent = 0;
-            CGFloat lastLineLeading = 0;
-            CTLineGetTypographicBounds(CFArrayGetValueAtIndex(lines, actualLineCount-1), NULL, &lastLineDescent, &lastLineLeading);
-            
-            trailingLineTop = lastLineOrigin.y - lastLineDescent - lastLineLeading;
-        } else {
-            /* Er, this shouldn't really happen, should it? Anyway, treat it the same as having no content (below) */
-            trailingLineTop = 0;
-        }
-    } else {
-        /* We don't actually have any content, so the fake line abuts the top of our layout rect. */
-        trailingLineTop = 0;
-    }
-    
-    struct typographicPosition result;
-    result.lineIndex = kCFNotFound;
-    
-    result.ascent = CTFontGetAscent(trailingLineFont);
-    result.descent = CTFontGetDescent(trailingLineFont);
-    
-    result.lineOrigin.x = 0;
-    result.lineOrigin.y = trailingLineTop - result.ascent;
-    result.baselinePoint.x = 0;
-    result.baselinePoint.y = 0;
-    result.secondaryOffset = 0;
-    result.position = endsText;
-
-    return result;
-}
-#endif
-
 - (void)dealloc;
 {
     if (defaultParagraphStyle)
@@ -706,64 +638,11 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
  The "text" or "rendering" coordinate system is the interior scaled, (de-)flipped, and possibly translated system for CoreGraphics calls to draw stuff.
  
  The "layout" coordinate system is translated from the rendering coordinate system because CTFramesetter is particular about where it puts its text.
+ The layoutOrigin ivar holds the coordinates, in the rendering coordinate system, of the layout coordinate system's origin.
  
  Some locations are in a line-based coordinate system, which is the text layout coordinate system translated so that a given line's origin is at (0,0).
 
 */
-
-#if 0
-static CGPoint _viewPointForTextPoint(OUIEditableFrame *self, CGPoint lastLineOrigin, CGPoint textPoint)
-{
-    textPoint.x -= lastLineOrigin.x;
-    textPoint.y -= (lastLineOrigin.y - self->_bottomNewlinePadding);
-    
-    CGSize inset = self->_textInset;
-    textPoint.x += inset.width;
-    textPoint.y += inset.height;
-
-    return [self convertPointToRenderingSpace:textPoint];
-}
-
-static CGPoint _textPointForViewPoint(OUIEditableFrame *self, CGPoint lastLineOrigin, CGPoint viewPoint)
-{
-    CGPoint textPoint = [self convertPointFromRenderingSpace:viewPoint];
-    
-    UIEdgeInsets inset = self->textInset;
-    textPoint.x -= inset.left;
-    textPoint.y -= inset.top;
-
-    textPoint.x += lastLineOrigin.x;
-    textPoint.y += (lastLineOrigin.y - self->_bottomNewlinePadding);
-    
-    return textPoint;
-}
-
-static CGRect _viewRectForTextRect(OUIEditableFrame *self, CGPoint lastLineOrigin, CGRect textRect)
-{
-    textRect.origin.x -= lastLineOrigin.x;
-    textRect.origin.y -= (lastLineOrigin.y - self->_bottomNewlinePadding);
-    
-    UIEdgeInsets inset = self->textInset;
-    textRect.origin.x += inset.left;
-    textRect.origin.y += inset.top;
-    
-    return [self convertRectToRenderingSpace:textRect];
-}
-
-static CGRect _textRectForViewRect(OUIEditableFrame *self, CGPoint lastLineOrigin, CGRect viewRect)
-{
-    CGRect textRect = [self convertRectFromRenderingSpace:viewRect];
-    
-    CGSize inset = self->_textInset;
-    textRect.origin.x -= inset.width;
-    textRect.origin.y -= inset.height;
-    
-    textRect.origin.x += lastLineOrigin.x;
-    textRect.origin.y += (lastLineOrigin.y - self->_bottomNewlinePadding);
-    
-    return textRect;
-}
-#endif
 
 #pragma mark -
 #pragma mark Drawing and display
