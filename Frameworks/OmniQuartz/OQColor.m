@@ -44,6 +44,16 @@ OQLinearRGBA OQGetColorComponents(NSColor *c)
         memset(&l, 0, sizeof(l)); // Treat nil as clear.
     return l;
 }
+#else
+OQLinearRGBA OQGetColorComponents(OQColor *c)
+{
+    if (c)
+        return [c toRGBA];
+
+    OQLinearRGBA l;
+    memset(&l, 0, sizeof(l)); // Treat nil as clear.
+    return l;
+}
 #endif
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -159,9 +169,12 @@ OQLinearRGBA OQCompositeLinearRGBA(OQLinearRGBA T, OQLinearRGBA B)
     return R;
 }
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 // Composites *ioTop on bottom and puts it back in *ioTop, using the calibrated RGB color space. Return YES if the output is opaque.  A nil input is interpreted as clear.
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 BOOL OQCompositeColors(NSColor **ioTopColor, NSColor *bottomColor)
+#else
+BOOL OQCompositeColors(OQColor **ioTopColor, OQColor *bottomColor)
+#endif
 {
     OQLinearRGBA T = OQGetColorComponents(*ioTopColor);
     if (T.a >= 1.0) {
@@ -181,10 +194,14 @@ BOOL OQCompositeColors(NSColor **ioTopColor, NSColor *bottomColor)
     
     OQLinearRGBA R = OQCompositeLinearRGBA(T, B);
     
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     *ioTopColor = [NSColor colorWithCalibratedRed:R.r green:R.g blue:R.b alpha:R.a];
+#else
+    *ioTopColor = [OQColor colorWithCalibratedRed:R.r green:R.g blue:R.b alpha:R.a];
+#endif
+    
     return R.a >= 1.0; // Might be fully opaque now if T was translucent and B was opaque.
 }
-#endif
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 CGColorRef OQCreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor, BOOL *isOpaque)

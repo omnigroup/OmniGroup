@@ -16,6 +16,7 @@
 #else
 #import <CoreGraphics/CGGeometry.h>
 #import <CoreGraphics/CGColor.h>
+@class OQColor;
 #endif
 
 typedef struct {
@@ -24,6 +25,8 @@ typedef struct {
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 extern OQLinearRGBA OQGetColorComponents(NSColor *c);
+#else
+extern OQLinearRGBA OQGetColorComponents(OQColor *c);
 #endif
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -39,6 +42,8 @@ extern OQLinearRGBA OQCompositeLinearRGBA(OQLinearRGBA T, OQLinearRGBA B);
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 extern BOOL OQCompositeColors(NSColor **ioTopColor, NSColor *bottomColor);
+#else
+extern BOOL OQCompositeColors(OQColor **ioTopColor, OQColor *bottomColor);
 #endif
 
 extern CGColorRef OQCreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor, BOOL *isOpaque);
