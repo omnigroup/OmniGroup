@@ -6,8 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniBase/OBUtilities.h>
-#import <OmniBase/OBBacktraceBuffer.h>
 #import <OmniBase/rcsid.h>
+#import "OBBacktraceBuffer.h"
 #include <execinfo.h>  // For backtrace()
 
 RCS_ID("$Id$")

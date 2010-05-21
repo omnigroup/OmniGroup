@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/OBUtilities.h>
-#import <OmniBase/OBBacktraceBuffer.h>
+#import "OBBacktraceBuffer.h"
 #import <unistd.h> // For getpid()
 
 RCS_ID("$Id$")

@@ -18,6 +18,12 @@ PRIVATE_HEADERS_FOLDER_PATH = private/$(PRODUCT_NAME)-Private/$(PRODUCT_NAME)
 // And include any private headers for just *our* library
 HEADER_SEARCH_PATHS = $(value) $(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME)-Private $(TARGET_BUILD_DIR)/include
 
+// Xcode is aggressive about #imports included in header maps by default. We want to make sure that only our public headers (the ones copied to .../include/Foo) are #import via <Foo/bar.h>
+// Otherwise, it is easy to let one file include a header for a category and then not include the corresponding .m file.
+HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT = NO
+HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES = NO
+HEADERMAP_INCLUDES_PROJECT_HEADERS = NO
+
 // Claim that we are building a framework, though it is a 'static' framework.
 // The point of this is that OmniBase/macros.h will make errors if we use the
 // main-bundle localized string lookup macros.

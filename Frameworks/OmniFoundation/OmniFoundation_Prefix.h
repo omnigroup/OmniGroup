@@ -41,9 +41,11 @@
     #import <Foundation/NSPredicate.h>
     #import <Foundation/NSProcessInfo.h>
     #import <Foundation/NSRunLoop.h>
+    #import <Foundation/NSScanner.h>
     #import <Foundation/NSSet.h>
     #import <Foundation/NSSortDescriptor.h>
     #import <Foundation/NSTimeZone.h>
+    #import <Foundation/NSThread.h>
     #import <Foundation/NSURL.h>
     #import <Foundation/NSUserDefaults.h>
 
@@ -52,21 +54,23 @@
         
     // Finally, pick up some very common used but infrequently changed headers from OmniFoundation itself
     #import <OmniFoundation/OFByte.h>
-    #import <OmniFoundation/OFMessageQueue.h>
     #import <OmniFoundation/OFNull.h>
     #import <OmniFoundation/OFObject.h>
-    #import <OmniFoundation/OFSimpleLock.h>
-    #import <OmniFoundation/OFScheduler.h>
-    #import <OmniFoundation/OFScheduledEvent.h>
     #import <OmniFoundation/OFStringScanner.h>
     #import <OmniFoundation/OFUtilities.h>
-    #import <OmniFoundation/OFWeakRetainProtocol.h>
-
     #import <OmniFoundation/NSArray-OFExtensions.h>
-    #import <OmniFoundation/NSBundle-OFExtensions.h>
     #import <OmniFoundation/NSObject-OFExtensions.h>
-    #import <OmniFoundation/NSString-OFExtensions.h>
-    #import <OmniFoundation/NSThread-OFExtensions.h>
+    #import <OmniFoundation/NSString-OFSimpleMatching.h>
+    #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+        #import <OmniFoundation/OFMessageQueue.h>
+        #import <OmniFoundation/OFSimpleLock.h>
+        #import <OmniFoundation/OFScheduler.h>
+        #import <OmniFoundation/OFScheduledEvent.h>
+        #import <OmniFoundation/OFWeakRetainProtocol.h>
+        #import <OmniFoundation/NSBundle-OFExtensions.h>
+        #import <OmniFoundation/NSString-OFExtensions.h>
+        #import <OmniFoundation/NSThread-OFExtensions.h>
+    #endif
 
     #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
         #import <Foundation/NSClassDescription.h>
