@@ -66,7 +66,7 @@ NSString *OFXMLIDFromString(NSString *str)
 /*" Manages the identifier/object relationship.  If object is nil, then identifier is required and any mapping for the identifier is cleared and nil is returned.  If object is non-nil, then the object is registered.  In this case, the identifier can be nil, signalling that the caller doesn't care what identifier is registered.  If the identifier is non-nil, then it is the preferred value to use for the identifier.  If some other object already has that identifier registered, though, a new unique identifier will be created.  In the registration case, this method returns a new retained unique identifier for the object.  Note that registration does not retain the object -- thus if the object is deallocated, it must be deregistered.  The identifer actually used is returned autoreleased.  The object is notified when it is added and removed from the registry via the OFXMLIdentifierRegistryObject protocol. "*/
 - (NSString *)registerIdentifier:(NSString *)identifier forObject:(id <OFXMLIdentifierRegistryObject>)object;
 {
-    OBINVARIANT([self checkInvariants]);
+    OBINVARIANT_EXPENSIVE([self checkInvariants]);
     OBPRECONDITION(object || identifier);
     OBPRECONDITION(!object || ![self identifierForObject:object]); // Don't allow duplicate adds
 
@@ -79,7 +79,7 @@ NSString *OFXMLIDFromString(NSString *str)
             CFDictionaryRemoveValue(_objectToID, object);
             [object removedFromIdentifierRegistry:self];
         }
-        OBINVARIANT([self checkInvariants]);
+        OBINVARIANT_EXPENSIVE([self checkInvariants]);
         return nil;
     } else {
         if (identifier)
@@ -94,7 +94,7 @@ NSString *OFXMLIDFromString(NSString *str)
         CFDictionarySetValue(_objectToID, object, identifier);
         CFDictionarySetValue(_idToObject, identifier, object);
         [object addedToIdentifierRegistry:self withIdentifier:identifier];
-        OBINVARIANT([self checkInvariants]);
+        OBINVARIANT_EXPENSIVE([self checkInvariants]);
 
         // _idToObject retains the identifier, so we can -release instead of -autorelease here
         [identifier release];
@@ -104,13 +104,13 @@ NSString *OFXMLIDFromString(NSString *str)
 
 - (id <OFXMLIdentifierRegistryObject>)objectForIdentifier:(NSString *)identifier;
 {
-    OBINVARIANT([self checkInvariants]);
+    OBINVARIANT_EXPENSIVE([self checkInvariants]);
     return (id)CFDictionaryGetValue(_idToObject, identifier);
 }
 
 - (NSString *)identifierForObject:(id <OFXMLIdentifierRegistryObject>)object;
 {
-    OBINVARIANT([self checkInvariants]);
+    OBINVARIANT_EXPENSIVE([self checkInvariants]);
     return (NSString *)CFDictionaryGetValue(_objectToID, object);
 }
 
