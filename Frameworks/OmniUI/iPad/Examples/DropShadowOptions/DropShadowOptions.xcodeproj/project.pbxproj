@@ -1,0 +1,870 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1D3623260D0F684500981E51 /* DropShadowOptionsAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* DropShadowOptionsAppDelegate.m */; };
+		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
+		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
+		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
+		2804200B108E984D000629CD /* RootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 28042008108E984D000629CD /* RootViewController.m */; };
+		2804200C108E984D000629CD /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2804200A108E984D000629CD /* DetailViewController.m */; };
+		2804203C108E9BAB000629CD /* DetailView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2804203B108E9BAB000629CD /* DetailView.xib */; };
+		2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */; };
+		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
+		342B31341166A92700EFE09E /* ShadowDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 342B31331166A92700EFE09E /* ShadowDemo.m */; };
+		342B313C1166ABAE00EFE09E /* PlainCGShadowDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 342B313B1166ABAE00EFE09E /* PlainCGShadowDemo.m */; };
+		342B31951166B6C400EFE09E /* LayerShadowDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 342B31941166B6C400EFE09E /* LayerShadowDemo.m */; };
+		34A9EA9811A6E4FC00C42E27 /* RasterizedLayerShadowDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A9EA9711A6E4FC00C42E27 /* RasterizedLayerShadowDemo.m */; };
+		34CD309611A6EAF3001FA1EB /* libOmniUI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD309511A6EAF1001FA1EB /* libOmniUI.a */; };
+		34CD309711A6EAF7001FA1EB /* libOmniQuartz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD308F11A6EAE2001FA1EB /* libOmniQuartz.a */; };
+		34CD309811A6EAFB001FA1EB /* libOmniFoundation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD307511A6EAD8001FA1EB /* libOmniFoundation.a */; };
+		34CD309911A6EAFE001FA1EB /* libOmniBase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD305F11A6EACD001FA1EB /* libOmniBase.a */; };
+		34CD30B911A6EB30001FA1EB /* libOmniAppKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD30B811A6EB2B001FA1EB /* libOmniAppKit.a */; };
+		34CD30BF11A6EB53001FA1EB /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD30BE11A6EB53001FA1EB /* CoreText.framework */; };
+		34CD30C111A6EB53001FA1EB /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD30C011A6EB53001FA1EB /* MobileCoreServices.framework */; };
+		34CD30C311A6EB53001FA1EB /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD30C211A6EB53001FA1EB /* libxml2.dylib */; };
+		34CD30C511A6EB53001FA1EB /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD30C411A6EB53001FA1EB /* libz.dylib */; };
+		34CD30CB11A6EB62001FA1EB /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD30CA11A6EB62001FA1EB /* QuartzCore.framework */; };
+		34CD30D111A6EB6E001FA1EB /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD30D011A6EB6E001FA1EB /* MessageUI.framework */; };
+		34CD30D911A6EBA7001FA1EB /* OmniUIShadowDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CD30D811A6EBA7001FA1EB /* OmniUIShadowDemo.m */; };
+		34CD315B11A6F84D001FA1EB /* RedrawnCGShadowDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CD315A11A6F84D001FA1EB /* RedrawnCGShadowDemo.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		34CD305C11A6EACD001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A33D42808A0191B003A3FA5 /* OmniBase.framework */;
+			remoteInfo = OmniBase;
+		};
+		34CD305E11A6EACD001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 342163B211907BF600C06E45 /* libOmniBase.a */;
+			remoteInfo = OmniBaseTouch;
+		};
+		34CD306011A6EACD001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34778CD211810BE700EC28C1 /* OBLoadBundle */;
+			remoteInfo = OBLoadBundle;
+		};
+		34CD307211A6EAD8001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A4E075308AA72B10098FF0F /* OmniFoundation.framework */;
+			remoteInfo = OmniFoundation;
+		};
+		34CD307411A6EAD8001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 344D08BA1190D47300264D89 /* libOmniFoundation.a */;
+			remoteInfo = OmniFoundationTouch;
+		};
+		34CD307611A6EAD8001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A4E07CF08AA72B10098FF0F /* OFUnitTests.octest */;
+			remoteInfo = OFUnitTests;
+		};
+		34CD307811A6EAD8001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A4E077408AA72B10098FF0F /* OFSimpleLockTest */;
+			remoteInfo = OFSimpleLockTest;
+		};
+		34CD307A11A6EAD8001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A4E079608AA72B10098FF0F /* OFDedicatedThreadSchedulerTest */;
+			remoteInfo = OFDedicatedThreadSchedulerTest;
+		};
+		34CD307C11A6EAD8001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A4E07A608AA72B10098FF0F /* OFClobberDetectionTest */;
+			remoteInfo = OFClobberDetectionZoneTest;
+		};
+		34CD307E11A6EAD8001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A4E07DF08AA72B10098FF0F /* OFMainThreadLockTest */;
+			remoteInfo = OFMainThreadLockTest;
+		};
+		34CD308011A6EAD8001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 345069110D747ED4004B40C2 /* OFCrashOnExceptionTest */;
+			remoteInfo = OFCrashOnExceptionTest;
+		};
+		34CD308211A6EAD8001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 343B36341034F68F0006290A /* OFRandomRepeatTest */;
+			remoteInfo = OFRandomRepeatTest;
+		};
+		34CD308C11A6EAE2001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD308411A6EAE1001FA1EB /* OmniQuartz.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8DC2EF5B0486A6940098B216 /* OmniQuartz.framework */;
+			remoteInfo = OmniQuartz;
+		};
+		34CD308E11A6EAE2001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD308411A6EAE1001FA1EB /* OmniQuartz.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 345613D41193197700E7D187 /* libOmniQuartz.a */;
+			remoteInfo = OmniQuartzTouch;
+		};
+		34CD309411A6EAF1001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD309011A6EAF1001FA1EB /* OmniUI.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D2AAC07E0554694100DB518D /* libOmniUI.a */;
+			remoteInfo = OmniUITouch;
+		};
+		34CD309A11A6EB0A001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 342163B111907BF600C06E45 /* OmniBaseTouch */;
+			remoteInfo = OmniBaseTouch;
+		};
+		34CD309C11A6EB0A001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD309011A6EAF1001FA1EB /* OmniUI.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D2AAC07D0554694100DB518D /* OmniUITouch */;
+			remoteInfo = OmniUITouch;
+		};
+		34CD309E11A6EB0A001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 344D08B91190D47300264D89 /* OmniFoundationTouch */;
+			remoteInfo = OmniFoundationTouch;
+		};
+		34CD30A011A6EB0A001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD308411A6EAE1001FA1EB /* OmniQuartz.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 345613D31193197700E7D187 /* OmniQuartzTouch */;
+			remoteInfo = OmniQuartzTouch;
+		};
+		34CD30AF11A6EB2B001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */;
+			remoteInfo = "OmniAppKit (Framework)";
+		};
+		34CD30B111A6EB2B001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */;
+			remoteInfo = OAUnitTests;
+		};
+		34CD30B311A6EB2B001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */;
+			remoteInfo = OAMakeImageSizeIntegral;
+		};
+		34CD30B511A6EB2B001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4AA1E82C08AA764700E2FF6B /* OAPatternColorPicker.bundle */;
+			remoteInfo = OAPatternColorPicker;
+		};
+		34CD30B711A6EB2B001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3434791511923B54007D0CE5 /* libOmniAppKit.a */;
+			remoteInfo = OmniAppKitTouch;
+		};
+		34CD30BA11A6EB39001FA1EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3434791411923B54007D0CE5 /* OmniAppKitTouch */;
+			remoteInfo = OmniAppKitTouch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		1D3623240D0F684500981E51 /* DropShadowOptionsAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DropShadowOptionsAppDelegate.h; sourceTree = "<group>"; };
+		1D3623250D0F684500981E51 /* DropShadowOptionsAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DropShadowOptionsAppDelegate.m; sourceTree = "<group>"; };
+		1D6058910D05DD3D006BFB54 /* DropShadowOptions.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DropShadowOptions.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		28042007108E984D000629CD /* RootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RootViewController.h; sourceTree = "<group>"; };
+		28042008108E984D000629CD /* RootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RootViewController.m; sourceTree = "<group>"; };
+		28042009108E984D000629CD /* DetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
+		2804200A108E984D000629CD /* DetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
+		2804203B108E9BAB000629CD /* DetailView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DetailView.xib; sourceTree = "<group>"; };
+		2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		28A0AAE50D9B0CCF005BE974 /* DropShadowOptions_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DropShadowOptions_Prefix.pch; sourceTree = "<group>"; };
+		28AD735F0D9D9599002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
+		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		342B31321166A92700EFE09E /* ShadowDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowDemo.h; sourceTree = "<group>"; };
+		342B31331166A92700EFE09E /* ShadowDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShadowDemo.m; sourceTree = "<group>"; };
+		342B313A1166ABAE00EFE09E /* PlainCGShadowDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlainCGShadowDemo.h; sourceTree = "<group>"; };
+		342B313B1166ABAE00EFE09E /* PlainCGShadowDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlainCGShadowDemo.m; sourceTree = "<group>"; };
+		342B31931166B6C400EFE09E /* LayerShadowDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerShadowDemo.h; sourceTree = "<group>"; };
+		342B31941166B6C400EFE09E /* LayerShadowDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LayerShadowDemo.m; sourceTree = "<group>"; };
+		34A9EA9611A6E4FC00C42E27 /* RasterizedLayerShadowDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RasterizedLayerShadowDemo.h; sourceTree = "<group>"; };
+		34A9EA9711A6E4FC00C42E27 /* RasterizedLayerShadowDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RasterizedLayerShadowDemo.m; sourceTree = "<group>"; };
+		34CD302111A6E9CE001FA1EB /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		34CD302211A6E9CE001FA1EB /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34CD302311A6E9CE001FA1EB /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		34CD302411A6E9CE001FA1EB /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		34CD302511A6E9CE001FA1EB /* Omni-Bundle-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		34CD302611A6E9CE001FA1EB /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34CD302711A6E9CE001FA1EB /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		34CD302811A6E9CE001FA1EB /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		34CD302911A6E9CE001FA1EB /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		34CD302A11A6E9CE001FA1EB /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34CD302B11A6E9CE001FA1EB /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		34CD302C11A6E9CE001FA1EB /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		34CD302D11A6E9CE001FA1EB /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
+		34CD302E11A6E9CE001FA1EB /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34CD302F11A6E9CE001FA1EB /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
+		34CD303011A6E9CE001FA1EB /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
+		34CD303111A6E9CE001FA1EB /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
+		34CD303211A6E9CE001FA1EB /* Omni-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34CD303311A6E9CE001FA1EB /* Omni-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Debug.xcconfig"; sourceTree = "<group>"; };
+		34CD303411A6E9CE001FA1EB /* Omni-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		34CD303511A6E9CE001FA1EB /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
+		34CD303611A6E9CE001FA1EB /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34CD303711A6E9CE001FA1EB /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
+		34CD303811A6E9CE001FA1EB /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
+		34CD303911A6E9CE001FA1EB /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
+		34CD303A11A6E9CE001FA1EB /* Target-Touch-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Touch-Common.xcconfig"; sourceTree = "<group>"; };
+		34CD303B11A6E9CE001FA1EB /* Touch-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		34CD303C11A6E9CE001FA1EB /* Touch-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34CD303D11A6E9CE001FA1EB /* Touch-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		34CD303E11A6E9CE001FA1EB /* Touch-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		34CD303F11A6E9CE001FA1EB /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
+		34CD304011A6E9CE001FA1EB /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34CD304111A6E9CE001FA1EB /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
+		34CD304211A6E9CE001FA1EB /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = OmniBase/OmniBase.xcodeproj; sourceTree = "<group>"; };
+		34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
+		34CD308411A6EAE1001FA1EB /* OmniQuartz.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniQuartz.xcodeproj; path = OmniQuartz/OmniQuartz.xcodeproj; sourceTree = "<group>"; };
+		34CD309011A6EAF1001FA1EB /* OmniUI.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUI.xcodeproj; path = OmniUI/iPad/OmniUI.xcodeproj; sourceTree = "<group>"; };
+		34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = OmniAppKit/OmniAppKit.xcodeproj; sourceTree = "<group>"; };
+		34CD30BE11A6EB53001FA1EB /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		34CD30C011A6EB53001FA1EB /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		34CD30C211A6EB53001FA1EB /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
+		34CD30C411A6EB53001FA1EB /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		34CD30CA11A6EB62001FA1EB /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		34CD30D011A6EB6E001FA1EB /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		34CD30D711A6EBA7001FA1EB /* OmniUIShadowDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUIShadowDemo.h; sourceTree = "<group>"; };
+		34CD30D811A6EBA7001FA1EB /* OmniUIShadowDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OmniUIShadowDemo.m; sourceTree = "<group>"; };
+		34CD315911A6F84D001FA1EB /* RedrawnCGShadowDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RedrawnCGShadowDemo.h; sourceTree = "<group>"; };
+		34CD315A11A6F84D001FA1EB /* RedrawnCGShadowDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RedrawnCGShadowDemo.m; sourceTree = "<group>"; };
+		8D1107310486CEB800E47090 /* DropShadowOptions-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "DropShadowOptions-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1D60588F0D05DD3D006BFB54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
+				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
+				2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */,
+				34CD309611A6EAF3001FA1EB /* libOmniUI.a in Frameworks */,
+				34CD309711A6EAF7001FA1EB /* libOmniQuartz.a in Frameworks */,
+				34CD309811A6EAFB001FA1EB /* libOmniFoundation.a in Frameworks */,
+				34CD309911A6EAFE001FA1EB /* libOmniBase.a in Frameworks */,
+				34CD30B911A6EB30001FA1EB /* libOmniAppKit.a in Frameworks */,
+				34CD30BF11A6EB53001FA1EB /* CoreText.framework in Frameworks */,
+				34CD30C111A6EB53001FA1EB /* MobileCoreServices.framework in Frameworks */,
+				34CD30C311A6EB53001FA1EB /* libxml2.dylib in Frameworks */,
+				34CD30C511A6EB53001FA1EB /* libz.dylib in Frameworks */,
+				34CD30CB11A6EB62001FA1EB /* QuartzCore.framework in Frameworks */,
+				34CD30D111A6EB6E001FA1EB /* MessageUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		080E96DDFE201D6D7F000001 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				1D3623240D0F684500981E51 /* DropShadowOptionsAppDelegate.h */,
+				1D3623250D0F684500981E51 /* DropShadowOptionsAppDelegate.m */,
+				28042007108E984D000629CD /* RootViewController.h */,
+				28042008108E984D000629CD /* RootViewController.m */,
+				28042009108E984D000629CD /* DetailViewController.h */,
+				2804200A108E984D000629CD /* DetailViewController.m */,
+				342B31321166A92700EFE09E /* ShadowDemo.h */,
+				342B31331166A92700EFE09E /* ShadowDemo.m */,
+				342B313A1166ABAE00EFE09E /* PlainCGShadowDemo.h */,
+				342B313B1166ABAE00EFE09E /* PlainCGShadowDemo.m */,
+				34CD315911A6F84D001FA1EB /* RedrawnCGShadowDemo.h */,
+				34CD315A11A6F84D001FA1EB /* RedrawnCGShadowDemo.m */,
+				342B31931166B6C400EFE09E /* LayerShadowDemo.h */,
+				342B31941166B6C400EFE09E /* LayerShadowDemo.m */,
+				34A9EA9611A6E4FC00C42E27 /* RasterizedLayerShadowDemo.h */,
+				34A9EA9711A6E4FC00C42E27 /* RasterizedLayerShadowDemo.m */,
+				34CD30D711A6EBA7001FA1EB /* OmniUIShadowDemo.h */,
+				34CD30D811A6EBA7001FA1EB /* OmniUIShadowDemo.m */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1D6058910D05DD3D006BFB54 /* DropShadowOptions.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
+			isa = PBXGroup;
+			children = (
+				34CD305111A6EA91001FA1EB /* OmniGroup */,
+				080E96DDFE201D6D7F000001 /* Classes */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = CustomTemplate;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				28A0AAE50D9B0CCF005BE974 /* DropShadowOptions_Prefix.pch */,
+				29B97316FDCFA39411CA2CEA /* main.m */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				28AD735F0D9D9599002E5188 /* MainWindow.xib */,
+				2804203B108E9BAB000629CD /* DetailView.xib */,
+				8D1107310486CEB800E47090 /* DropShadowOptions-Info.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
+				1D30AB110D05D00D00671497 /* Foundation.framework */,
+				2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */,
+				34CD30BE11A6EB53001FA1EB /* CoreText.framework */,
+				34CD30C011A6EB53001FA1EB /* MobileCoreServices.framework */,
+				34CD30C211A6EB53001FA1EB /* libxml2.dylib */,
+				34CD30C411A6EB53001FA1EB /* libz.dylib */,
+				34CD30CA11A6EB62001FA1EB /* QuartzCore.framework */,
+				34CD30D011A6EB6E001FA1EB /* MessageUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		34CD302011A6E9CE001FA1EB /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				34CD302111A6E9CE001FA1EB /* Omni-Application-Common.xcconfig */,
+				34CD302211A6E9CE001FA1EB /* Omni-Application-Coverage.xcconfig */,
+				34CD302311A6E9CE001FA1EB /* Omni-Application-Debug.xcconfig */,
+				34CD302411A6E9CE001FA1EB /* Omni-Application-Release.xcconfig */,
+				34CD302511A6E9CE001FA1EB /* Omni-Bundle-Common.xcconfig */,
+				34CD302611A6E9CE001FA1EB /* Omni-Bundle-Coverage.xcconfig */,
+				34CD302711A6E9CE001FA1EB /* Omni-Bundle-Debug.xcconfig */,
+				34CD302811A6E9CE001FA1EB /* Omni-Bundle-Release.xcconfig */,
+				34CD302911A6E9CE001FA1EB /* Omni-Framework-Common.xcconfig */,
+				34CD302A11A6E9CE001FA1EB /* Omni-Framework-Coverage.xcconfig */,
+				34CD302B11A6E9CE001FA1EB /* Omni-Framework-Debug.xcconfig */,
+				34CD302C11A6E9CE001FA1EB /* Omni-Framework-Release.xcconfig */,
+				34CD302D11A6E9CE001FA1EB /* Omni-Global-Common.xcconfig */,
+				34CD302E11A6E9CE001FA1EB /* Omni-Global-Coverage.xcconfig */,
+				34CD302F11A6E9CE001FA1EB /* Omni-Global-Debug.xcconfig */,
+				34CD303011A6E9CE001FA1EB /* Omni-Global-Release.xcconfig */,
+				34CD303111A6E9CE001FA1EB /* Omni-Library-Common.xcconfig */,
+				34CD303211A6E9CE001FA1EB /* Omni-Library-Coverage.xcconfig */,
+				34CD303311A6E9CE001FA1EB /* Omni-Library-Debug.xcconfig */,
+				34CD303411A6E9CE001FA1EB /* Omni-Library-Release.xcconfig */,
+				34CD303511A6E9CE001FA1EB /* Omni-Tool-Common.xcconfig */,
+				34CD303611A6E9CE001FA1EB /* Omni-Tool-Coverage.xcconfig */,
+				34CD303711A6E9CE001FA1EB /* Omni-Tool-Debug.xcconfig */,
+				34CD303811A6E9CE001FA1EB /* Omni-Tool-Release.xcconfig */,
+				34CD303911A6E9CE001FA1EB /* Target-Mac-Common.xcconfig */,
+				34CD303A11A6E9CE001FA1EB /* Target-Touch-Common.xcconfig */,
+				34CD303B11A6E9CE001FA1EB /* Touch-Application-Common.xcconfig */,
+				34CD303C11A6E9CE001FA1EB /* Touch-Application-Coverage.xcconfig */,
+				34CD303D11A6E9CE001FA1EB /* Touch-Application-Debug.xcconfig */,
+				34CD303E11A6E9CE001FA1EB /* Touch-Application-Release.xcconfig */,
+				34CD303F11A6E9CE001FA1EB /* Touch-Library-Common.xcconfig */,
+				34CD304011A6E9CE001FA1EB /* Touch-Library-Coverage.xcconfig */,
+				34CD304111A6E9CE001FA1EB /* Touch-Library-Debug.xcconfig */,
+				34CD304211A6E9CE001FA1EB /* Touch-Library-Release.xcconfig */,
+			);
+			path = Configurations;
+			sourceTree = "<group>";
+		};
+		34CD305111A6EA91001FA1EB /* OmniGroup */ = {
+			isa = PBXGroup;
+			children = (
+				34CD302011A6E9CE001FA1EB /* Configurations */,
+				34CD305211A6EAB5001FA1EB /* Frameworks */,
+			);
+			name = OmniGroup;
+			path = ../../../../..;
+			sourceTree = "<group>";
+		};
+		34CD305211A6EAB5001FA1EB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */,
+				34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */,
+				34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */,
+				34CD308411A6EAE1001FA1EB /* OmniQuartz.xcodeproj */,
+				34CD309011A6EAF1001FA1EB /* OmniUI.xcodeproj */,
+			);
+			path = Frameworks;
+			sourceTree = "<group>";
+		};
+		34CD305411A6EACD001FA1EB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				34CD305D11A6EACD001FA1EB /* OmniBase.framework */,
+				34CD305F11A6EACD001FA1EB /* libOmniBase.a */,
+				34CD306111A6EACD001FA1EB /* OBLoadBundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		34CD306311A6EAD8001FA1EB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				34CD307311A6EAD8001FA1EB /* OmniFoundation.framework */,
+				34CD307511A6EAD8001FA1EB /* libOmniFoundation.a */,
+				34CD307711A6EAD8001FA1EB /* OFUnitTests.octest */,
+				34CD307911A6EAD8001FA1EB /* OFSimpleLockTest */,
+				34CD307B11A6EAD8001FA1EB /* OFDedicatedThreadSchedulerTest */,
+				34CD307D11A6EAD8001FA1EB /* OFClobberDetectionTest */,
+				34CD307F11A6EAD8001FA1EB /* OFMainThreadLockTest */,
+				34CD308111A6EAD8001FA1EB /* OFCrashOnExceptionTest */,
+				34CD308311A6EAD8001FA1EB /* OFRandomRepeatTest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		34CD308511A6EAE1001FA1EB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				34CD308D11A6EAE2001FA1EB /* OmniQuartz.framework */,
+				34CD308F11A6EAE2001FA1EB /* libOmniQuartz.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		34CD309111A6EAF1001FA1EB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				34CD309511A6EAF1001FA1EB /* libOmniUI.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		34CD30A511A6EB2A001FA1EB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				34CD30B011A6EB2B001FA1EB /* OmniAppKit.framework */,
+				34CD30B211A6EB2B001FA1EB /* OAUnitTests.octest */,
+				34CD30B411A6EB2B001FA1EB /* OAMakeImageSizeIntegral */,
+				34CD30B611A6EB2B001FA1EB /* OAPatternColorPicker.bundle */,
+				34CD30B811A6EB2B001FA1EB /* libOmniAppKit.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1D6058900D05DD3D006BFB54 /* DropShadowOptions */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "DropShadowOptions" */;
+			buildPhases = (
+				1D60588D0D05DD3D006BFB54 /* Resources */,
+				34CD30FE11A6EE23001FA1EB /* Copy Library Resources */,
+				1D60588E0D05DD3D006BFB54 /* Sources */,
+				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				34CD309B11A6EB0A001FA1EB /* PBXTargetDependency */,
+				34CD309F11A6EB0A001FA1EB /* PBXTargetDependency */,
+				34CD30BB11A6EB39001FA1EB /* PBXTargetDependency */,
+				34CD30A111A6EB0A001FA1EB /* PBXTargetDependency */,
+				34CD309D11A6EB0A001FA1EB /* PBXTargetDependency */,
+			);
+			name = DropShadowOptions;
+			productName = DropShadowOptions;
+			productReference = 1D6058910D05DD3D006BFB54 /* DropShadowOptions.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "DropShadowOptions" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+				en,
+			);
+			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 34CD30A511A6EB2A001FA1EB /* Products */;
+					ProjectRef = 34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */;
+				},
+				{
+					ProductGroup = 34CD305411A6EACD001FA1EB /* Products */;
+					ProjectRef = 34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */;
+				},
+				{
+					ProductGroup = 34CD306311A6EAD8001FA1EB /* Products */;
+					ProjectRef = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+				},
+				{
+					ProductGroup = 34CD308511A6EAE1001FA1EB /* Products */;
+					ProjectRef = 34CD308411A6EAE1001FA1EB /* OmniQuartz.xcodeproj */;
+				},
+				{
+					ProductGroup = 34CD309111A6EAF1001FA1EB /* Products */;
+					ProjectRef = 34CD309011A6EAF1001FA1EB /* OmniUI.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				1D6058900D05DD3D006BFB54 /* DropShadowOptions */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		34CD305D11A6EACD001FA1EB /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 34CD305C11A6EACD001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD305F11A6EACD001FA1EB /* libOmniBase.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniBase.a;
+			remoteRef = 34CD305E11A6EACD001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD306111A6EACD001FA1EB /* OBLoadBundle */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OBLoadBundle;
+			remoteRef = 34CD306011A6EACD001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD307311A6EAD8001FA1EB /* OmniFoundation.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniFoundation.framework;
+			remoteRef = 34CD307211A6EAD8001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD307511A6EAD8001FA1EB /* libOmniFoundation.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniFoundation.a;
+			remoteRef = 34CD307411A6EAD8001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD307711A6EAD8001FA1EB /* OFUnitTests.octest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OFUnitTests.octest;
+			remoteRef = 34CD307611A6EAD8001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD307911A6EAD8001FA1EB /* OFSimpleLockTest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFSimpleLockTest;
+			remoteRef = 34CD307811A6EAD8001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD307B11A6EAD8001FA1EB /* OFDedicatedThreadSchedulerTest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFDedicatedThreadSchedulerTest;
+			remoteRef = 34CD307A11A6EAD8001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD307D11A6EAD8001FA1EB /* OFClobberDetectionTest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFClobberDetectionTest;
+			remoteRef = 34CD307C11A6EAD8001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD307F11A6EAD8001FA1EB /* OFMainThreadLockTest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFMainThreadLockTest;
+			remoteRef = 34CD307E11A6EAD8001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD308111A6EAD8001FA1EB /* OFCrashOnExceptionTest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFCrashOnExceptionTest;
+			remoteRef = 34CD308011A6EAD8001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD308311A6EAD8001FA1EB /* OFRandomRepeatTest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFRandomRepeatTest;
+			remoteRef = 34CD308211A6EAD8001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD308D11A6EAE2001FA1EB /* OmniQuartz.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniQuartz.framework;
+			remoteRef = 34CD308C11A6EAE2001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD308F11A6EAE2001FA1EB /* libOmniQuartz.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniQuartz.a;
+			remoteRef = 34CD308E11A6EAE2001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD309511A6EAF1001FA1EB /* libOmniUI.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniUI.a;
+			remoteRef = 34CD309411A6EAF1001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD30B011A6EB2B001FA1EB /* OmniAppKit.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniAppKit.framework;
+			remoteRef = 34CD30AF11A6EB2B001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD30B211A6EB2B001FA1EB /* OAUnitTests.octest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OAUnitTests.octest;
+			remoteRef = 34CD30B111A6EB2B001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD30B411A6EB2B001FA1EB /* OAMakeImageSizeIntegral */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OAMakeImageSizeIntegral;
+			remoteRef = 34CD30B311A6EB2B001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD30B611A6EB2B001FA1EB /* OAPatternColorPicker.bundle */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OAPatternColorPicker.bundle;
+			remoteRef = 34CD30B511A6EB2B001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CD30B811A6EB2B001FA1EB /* libOmniAppKit.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniAppKit.a;
+			remoteRef = 34CD30B711A6EB2B001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1D60588D0D05DD3D006BFB54 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */,
+				2804203C108E9BAB000629CD /* DetailView.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		34CD30FE11A6EE23001FA1EB /* Copy Library Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Library Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "../../../../../Scripts/CopyLibraryResources OmniFoundationTouch OmniUITouch\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1D60588E0D05DD3D006BFB54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
+				1D3623260D0F684500981E51 /* DropShadowOptionsAppDelegate.m in Sources */,
+				2804200B108E984D000629CD /* RootViewController.m in Sources */,
+				2804200C108E984D000629CD /* DetailViewController.m in Sources */,
+				342B31341166A92700EFE09E /* ShadowDemo.m in Sources */,
+				342B313C1166ABAE00EFE09E /* PlainCGShadowDemo.m in Sources */,
+				342B31951166B6C400EFE09E /* LayerShadowDemo.m in Sources */,
+				34A9EA9811A6E4FC00C42E27 /* RasterizedLayerShadowDemo.m in Sources */,
+				34CD30D911A6EBA7001FA1EB /* OmniUIShadowDemo.m in Sources */,
+				34CD315B11A6F84D001FA1EB /* RedrawnCGShadowDemo.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		34CD309B11A6EB0A001FA1EB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniBaseTouch;
+			targetProxy = 34CD309A11A6EB0A001FA1EB /* PBXContainerItemProxy */;
+		};
+		34CD309D11A6EB0A001FA1EB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniUITouch;
+			targetProxy = 34CD309C11A6EB0A001FA1EB /* PBXContainerItemProxy */;
+		};
+		34CD309F11A6EB0A001FA1EB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniFoundationTouch;
+			targetProxy = 34CD309E11A6EB0A001FA1EB /* PBXContainerItemProxy */;
+		};
+		34CD30A111A6EB0A001FA1EB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniQuartzTouch;
+			targetProxy = 34CD30A011A6EB0A001FA1EB /* PBXContainerItemProxy */;
+		};
+		34CD30BB11A6EB39001FA1EB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniAppKitTouch;
+			targetProxy = 34CD30BA11A6EB39001FA1EB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1D6058940D05DD3E006BFB54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34CD303D11A6E9CE001FA1EB /* Touch-Application-Debug.xcconfig */;
+			buildSettings = {
+				GCC_PREFIX_HEADER = DropShadowOptions_Prefix.pch;
+				INFOPLIST_FILE = "DropShadowOptions-Info.plist";
+				PRODUCT_NAME = DropShadowOptions;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		1D6058950D05DD3E006BFB54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34CD303E11A6E9CE001FA1EB /* Touch-Application-Release.xcconfig */;
+			buildSettings = {
+				GCC_PREFIX_HEADER = DropShadowOptions_Prefix.pch;
+				INFOPLIST_FILE = "DropShadowOptions-Info.plist";
+				PRODUCT_NAME = DropShadowOptions;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34CD302F11A6E9CE001FA1EB /* Omni-Global-Debug.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34CD303011A6E9CE001FA1EB /* Omni-Global-Release.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "DropShadowOptions" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D6058940D05DD3E006BFB54 /* Debug */,
+				1D6058950D05DD3E006BFB54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "DropShadowOptions" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}
