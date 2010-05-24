@@ -10,19 +10,29 @@
 # $Id$
 
 # As part of having 'static-ish' frameworks based on static libraries, we
-# need to be able to include resources. This script lets you specify one
-# or more library names and the resources will be copied into your app bundle.
+# need to be able to include resources. This script looks up environment variables
+# set by Xcode, extracts the list of static libraries linked, finds the exported
+# resources for those libraries and merges them into your app bundle.
 
 require 'fileutils'
 
-# We expect each of the static libraries to copy any resources into this directory.
-ResourceDir = "#{ENV["CONFIGURATION_BUILD_DIR"]}/Resources"
+# We expect each of the static libraries to copy any resources into this directory, under their product name.
+ResourcesRoot = "#{ENV["CONFIGURATION_BUILD_DIR"]}/Resources"
+
+# Get the list of static library frameworks linked by this project
+ScriptDir = File.dirname(__FILE__)
+StaticLibraryResourceDirectories = []
+`#{ScriptDir}/ListSourceFilesInTarget "#{ENV['TARGET_NAME']}" a "#{ENV['PROJECT_FILE_PATH']}"`.each {|l|
+  l =~ /lib([^\.]+)\.a/
+  
+  resource_dir = "#{ResourcesRoot}/#{$1}"
+  StaticLibraryResourceDirectories << resource_dir if File.directory?(resource_dir)
+}
 
 # We are copying into an iPhone OS bundle, which is flat.
 AppDir = "#{ENV["TARGET_BUILD_DIR"]}/#{ENV["UNLOCALIZED_RESOURCES_FOLDER_PATH"]}"
 
-ARGV.each {|a|
-  dirname = "#{ResourceDir}/#{a}"
+StaticLibraryResourceDirectories.each {|dirname|
   STDERR.print "scanning #{dirname} ...\n"
   Dir.new(dirname).each {|f|
     case f

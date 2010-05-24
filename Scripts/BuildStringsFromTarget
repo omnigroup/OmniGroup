@@ -18,7 +18,7 @@
 SCRIPTS_DIR=$0:h
 
 source_files=()
-$SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" "$PROJECT_FILE_PATH" | while read f; do
+$SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" c,m "$PROJECT_FILE_PATH" | while read f; do
    source_files+=($f)
 done
 
@@ -50,7 +50,7 @@ else
 fi
 
 # Publish the results for the app to pick up.
-RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/Resources/$TARGET_NAME"
+RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/Resources/$PRODUCT_NAME"
 
 # Make sure not to re-copy if only the source timestamp has changed. That will invalidate timestamps that may cause further copying into the app bundle. This in turn can invalidate signing, which is very annoying if we are doing incremental device builds.
 mkdir -p "$RESOURCE_DIR"

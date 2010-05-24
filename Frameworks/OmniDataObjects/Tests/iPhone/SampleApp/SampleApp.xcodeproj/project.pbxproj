@@ -674,7 +674,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "../../../../../Scripts/CopyLibraryResources OmniFoundationTouch\n\n";
+			shellScript = "../../../../../Scripts/CopyLibraryResources\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

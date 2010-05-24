@@ -218,7 +218,7 @@
 		346C4BC9119328BA00BE8C49 /* Copy Resources */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "Resources/$(TARGET_NAME)";
+			dstPath = "Resources/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
 				346C4C29119329B200BE8C49 /* OUIDocumentPicker.xib in Copy Resources */,
