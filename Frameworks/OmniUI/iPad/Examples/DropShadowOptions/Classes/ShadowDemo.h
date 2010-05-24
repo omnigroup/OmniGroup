@@ -9,10 +9,13 @@
 #import <UIKit/UIKit.h>
 
 
-@interface ShadowDemo : UIView {
-
+@interface ShadowDemo : UIView
+{
+    BOOL _usingTimer;
 }
 
 - (NSString *)name;
+
+@property(nonatomic,assign) BOOL usingTimer;
 
 @end

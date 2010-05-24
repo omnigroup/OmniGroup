@@ -144,8 +144,16 @@ static const NSTimeInterval AnimationDuration = 1;
         endFrame.size = startFrame.size;
     }
     
-    demo.frame = startFrame;
-    [demo layoutIfNeeded];
+    // Hack for the shadowPath version to know whether it should manually add a CAAnimation
+    demo.usingTimer = useTimer;
+    
+    [CATransaction begin];
+    [CATransaction setValue:(id)kCFBooleanTrue forKey:(id)kCATransactionDisableActions];
+    {
+        demo.frame = startFrame;
+        [demo layoutIfNeeded];
+    }
+    [CATransaction commit];
     
     [_timer invalidate];
     [_timer release];
@@ -176,8 +184,10 @@ static const NSTimeInterval AnimationDuration = 1;
 
 - (void)_demoAnimationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
 {
-    if ([finished boolValue])
-        [self _startAnimation];
+    if ([finished boolValue]) {
+        // This can get called recursively from +[UIView commitAnimations] above if nothing animates.
+        [self performSelector:@selector(_startAnimation) withObject:nil afterDelay:0];
+    }
 }
 
 static CGFloat interp(CGFloat a, CGFloat b, CGFloat t)

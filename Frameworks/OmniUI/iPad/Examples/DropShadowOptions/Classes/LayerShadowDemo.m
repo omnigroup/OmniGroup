@@ -25,6 +25,9 @@
         self.backgroundColor = [UIColor grayColor];
         
         self.layer.shadowOpacity = 0.5;
+        
+        // Make the shadow more visible for debugging.
+        self.layer.shadowColor = [[UIColor redColor] CGColor];
     }
     
     [super willMoveToWindow:newWindow];

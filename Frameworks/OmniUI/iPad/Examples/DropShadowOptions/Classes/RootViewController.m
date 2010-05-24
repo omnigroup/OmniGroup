@@ -13,6 +13,7 @@
 #import "RedrawnCGShadowDemo.h"
 #import "LayerShadowDemo.h"
 #import "RasterizedLayerShadowDemo.h"
+#import "LayerShadowPathDemo.h"
 #import "OmniUIShadowDemo.h"
 
 @implementation RootViewController
@@ -50,6 +51,7 @@
     [demos addObject:[[[RedrawnCGShadowDemo alloc] init] autorelease]]; // Draw shadow with CG, inside the view's backing store, redrawing it on size changes
     [demos addObject:[[[LayerShadowDemo alloc] init] autorelease]]; // Content inside the view's backing store, shadow provided by CA
     [demos addObject:[[[RasterizedLayerShadowDemo alloc] init] autorelease]]; // Content inside the view's backing store, shadow provided by CA but rasterization cached
+    [demos addObject:[[[LayerShadowPathDemo alloc] init] autorelease]];
     [demos addObject:[[[OmniUIShadowDemo alloc] init] autorelease]]; // Image-stretching views
     
     _demos = [[NSArray alloc] initWithArray:demos];

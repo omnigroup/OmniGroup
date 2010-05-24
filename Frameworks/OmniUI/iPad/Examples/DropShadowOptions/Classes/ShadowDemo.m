@@ -16,4 +16,6 @@
     return @"??";
 }
 
+@synthesize usingTimer = _usingTimer;
+
 @end
