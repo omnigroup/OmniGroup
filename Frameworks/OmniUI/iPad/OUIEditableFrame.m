@@ -1090,6 +1090,12 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
     
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
+    UIColor *background = self.backgroundColor;
+    if (background) {
+        [background setFill];
+        CGContextFillRect(ctx, rect);
+    }
+    
     /* We want to draw any range selections under the text, and we want to draw insertion carets (non-range selections) and markedText hairlines over the text. */
     
     [self _drawSelectionInContext:ctx];

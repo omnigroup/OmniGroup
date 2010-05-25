@@ -202,21 +202,9 @@ RCS_ID("$Id$");
         }
         
         if (!subject.opaque) {
-            /* Fill with the owner's background before translating. We want it to seem like its background goes on forever, not have a clear bit if we are near the edge. */
-            
-            UIColor *backgroundColor;
-            backgroundColor = subject.backgroundColor;
-            if (!backgroundColor)
-                backgroundColor = [UIColor whiteColor];
-            
-            [backgroundColor setFill];
-            if (loupeClipPath) {
-                CGContextBeginPath(ctx);
-                CGContextAddPath(ctx, loupeClipPath);
-                CGContextFillPath(ctx);
-            } else {
-                CGContextFillRect(ctx, bounds);
-            }
+            /* Fill with an opaque color, unless the subject view is going to do that for us. */
+            [[UIColor whiteColor] setFill];
+            CGContextFillRect(ctx, bounds);
         }
         
         /* We want the touchPoint in the subject view to end up at our loupeTouchPoint point (typically the center of our loupe clip path). */
@@ -234,6 +222,9 @@ RCS_ID("$Id$");
         loupeTransform = CGAffineTransformConcat(subjectTransform, loupeTransform);
         CGContextConcatCTM(ctx, loupeTransform);
 
+        /* We can't actually make a patterned background work perfectly because of the scaling, but adjusting the pattern phase here will at least keep the background from appearing to skid around when the loupe is moved. */
+        CGContextSetPatternPhase(ctx, (CGSize){ loupeTransform.tx, loupeTransform.ty });
+        
         /* Compute the rectangle to pass on to the subject view */
         CGRect drawRect;
         if (loupeClipPath) {
