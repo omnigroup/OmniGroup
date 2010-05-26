@@ -1147,9 +1147,15 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
             [self addSubview:startThumb];
         }
         caretRect = [self _caretRectForPosition:(OUEFTextPosition *)selection.start affinity:1 bloomScale:0];
-        caretRect = CGRectInset([self convertRectToRenderingSpace:caretRect], -1, -1); // Method's name is misleading
-        [startThumb setCaretRectangle:caretRect];
-        startThumb.hidden = NO;
+        if (CGRectIsNull(caretRect)) {
+            // This doesn't make a lot of sense, but it can happen if the layout height is finite
+            startThumb.hidden = YES;
+        } else {
+            // Convert to our bounds' coordinate system, and add a few pixels for visibility
+            caretRect = CGRectInset([self convertRectToRenderingSpace:caretRect], -1, -1); // Method's name is misleading
+            [startThumb setCaretRectangle:caretRect];
+            startThumb.hidden = NO;
+        }
         
         if (!endThumb) {
             endThumb = [[OUITextThumb alloc] init];
@@ -1157,9 +1163,14 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
             [self addSubview:endThumb];
         }
         caretRect = [self _caretRectForPosition:(OUEFTextPosition *)selection.end affinity:-1 bloomScale:0];
-        caretRect = CGRectInset([self convertRectToRenderingSpace:caretRect], -1, -1); // Method's name is misleading
-        [endThumb setCaretRectangle:caretRect];
-        endThumb.hidden = NO;
+        if (CGRectIsNull(caretRect)) {
+            // This doesn't make a lot of sense, but it can happen if the layout height is finite
+            endThumb.hidden = YES;
+        } else {
+            caretRect = CGRectInset([self convertRectToRenderingSpace:caretRect], -1, -1); // Method's name is misleading
+            [endThumb setCaretRectangle:caretRect];
+            endThumb.hidden = NO;
+        }
     } else {
         // Hide thumbs if we've got 'em
         if (startThumb)
@@ -1173,7 +1184,7 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
         CGRect caretRect = [self _caretRectForPosition:(OUEFTextPosition *)(selection.start) affinity:1 bloomScale:self.scale];
         
         caretRect = [self convertRectToRenderingSpace:caretRect];  // method name is misleading
-
+        
         if (!_cursorOverlay) {
             _cursorOverlay = [[OUITextCursorOverlay alloc] initWithFrame:caretRect];
             [_cursorOverlay setCursorFrame:caretRect];
@@ -1221,8 +1232,6 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
         /* Get the bounding rect of our selection */
         CGRect selectionRectangle = [self _boundsOfRange:selection];
         
-        /* Shift from rendering coordinates to view/bounds coordinates */
-        selectionRectangle = [self convertRectToRenderingSpace:selectionRectangle]; // note method is confusingly named
         selectionRectangle = CGRectIntegral(selectionRectangle);
         
         [_selectionContextMenu setTargetRect:selectionRectangle inView:self];
@@ -2332,7 +2341,8 @@ static BOOL firstRect(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat asce
 
     // Get the caret rectangle in rendering coordinates
     CGRect textRect = [self _caretRectForPosition:(OUEFTextPosition *)position affinity:1 bloomScale:0.0];
-
+    // TODO: What if the rect is null here?
+    
     // Convert it to UIView coordinates.
     CGRect viewRect = [self convertRectToRenderingSpace:textRect]; // Method's name is misleading
 
@@ -2349,8 +2359,8 @@ static BOOL firstRect(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat asce
 
 CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSRange stringRange, NSUInteger *what)
 {
-    CGFloat ascent = nan(NULL);
-    CGFloat descent = nan(NULL);
+    CGFloat ascent = NAN;
+    CGFloat descent = NAN;
     CGFloat lineWidth = CTLineGetTypographicBounds(line, &ascent, &descent, NULL);
     
     CGFloat x = test.x - lineOrigin.x;
@@ -2558,6 +2568,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
 
 
 /* This returns the rectangle of the insertion caret, in our rendering coordinates */
+/* The returned rectangle may be CGRectNull */
 - (CGRect)_caretRectForPosition:(OUEFTextPosition *)position affinity:(int)affinity bloomScale:(double)bloomScale;
 {
     OBPRECONDITION(drawnFrame && !flags.textNeedsUpdate);
@@ -2570,6 +2581,12 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     if (positionIndex >= [_content length])
         positionIndex = [_content length] - 1;
     getTypographicPosition(lines, positionIndex, affinity, &measures);
+    if (!measures.line) {
+        // It's possible for getTypographicPosition() to fail, if the specified position isn't in any line.
+        // The most likely case here is that we've been given a finite textLayoutSize and the caret's moved outside of the laid-out range.
+        return CGRectNull;
+        // TODO: Make sure all callers behave well if they get CGRectNull!
+    }
     
     CGFloat secondaryOffset = nanf(NULL);
     CGFloat characterOffset = CTLineGetOffsetForStringIndex(measures.line, measures.adjustedIndex, &secondaryOffset);
@@ -2990,22 +3007,31 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
 }
 
 /* This is used to find the bounding box of our current selection when we want to point some UI element at it (either the context menu or the popover inspector) */
-/* The rectangle is returned in rendering coordinates */
+/* The rectangle is returned in view-bounds coordinates, and may be CGRectNull */
 - (CGRect)_boundsOfRange:(OUEFTextRange *)range;
 {
-    if ([range isEmpty])
-        return [self _caretRectForPosition:(OUEFTextPosition *)(range.start) affinity:0 bloomScale:0];
+    CGRect bound;
     
-    CGRect bound = CGRectNull;
-    
-    rectanglesInRange(drawnFrame, [range range], NO, includeRectsInBound, &bound);
-    
-    if (!CGRectIsNull(bound)) {
+    if ([range isEmpty]) {
+        bound = [self _caretRectForPosition:(OUEFTextPosition *)(range.start) affinity:0 bloomScale:0];
+
+        if (CGRectIsNull(bound))
+            return bound;
+    } else {
+        bound = CGRectNull;
+        
+        rectanglesInRange(drawnFrame, [range range], NO, includeRectsInBound, &bound);
+        
+        if (CGRectIsNull(bound))
+            return bound;
+            
+        /* Shift from text coordinates to rendering coordinates */
         bound.origin.x += layoutOrigin.x;
         bound.origin.y += layoutOrigin.y;
     }
     
-    return bound;
+    /* Shift from rendering coordinates to view/bounds coordinates; note that the method is confusingly named */
+    return [self convertRectToRenderingSpace:bound];
 }
 
 /* We have some decorations that are drawn over the text instead of under it */
@@ -3038,9 +3064,11 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
 
             CGRect caretRect = [self _caretRectForPosition:(OUEFTextPosition *)(selection.start) affinity:1 bloomScale:MAX(nominalScale, actualScale)];
             
-            [_insertionPointSelectionColor setFill];
-            CGContextFillRect(ctx, caretRect);
-            selectionDirtyRect = [self convertRectToRenderingSpace:caretRect]; // note this method does the opposite of what its name implies
+            if (!CGRectIsEmpty(caretRect)) {
+                [_insertionPointSelectionColor setFill];
+                CGContextFillRect(ctx, caretRect);
+                selectionDirtyRect = [self convertRectToRenderingSpace:caretRect]; // note this method does the opposite of what its name implies
+            }
         }
     }
 }
@@ -3072,6 +3100,11 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
         rectanglesInRange(drawnFrame, [range range], YES /* quick and sloppy */, addRectsToPath, &ctxt);
         
         dirtyRect = ctxt.bounds;
+    }
+    
+    if (CGRectIsEmpty(dirtyRect)) {
+        // If there's no rectangle for this range, I guess we don't need to redraw anything.
+        return;
     }
     
     [self setNeedsDisplayInRect:CGRectIntegral([self convertRectToRenderingSpace:dirtyRect])];
@@ -3169,6 +3202,10 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
         }
     }
     
+    /* If there is no position in that direction (e.g., we've gone off the top or bottom of the text) then do nothing. */
+    if (!positionToSelect)
+        return;
+    
     UITextRange *rangeToSelect = [self textRangeFromPosition:positionToSelect toPosition:positionToSelect];
     [self unmarkText];
     [self _setSelectedTextRange:(OUEFTextRange *)rangeToSelect notifyDelegate:YES];
@@ -3201,8 +3238,9 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
     }
     
     CGRect selectionRect = [self _boundsOfRange:selection];
-    selectionRect = [self convertRectToRenderingSpace:selectionRect]; // (This method is misleadingly named)
-    
+    if (CGRectIsEmpty(selectionRect))
+        return;
+        
     DEBUG_TEXT(@"Inspecting: %@ rect: %@", [runs description], NSStringFromCGRect(selectionRect));
     
     if (!_textInspector) {
