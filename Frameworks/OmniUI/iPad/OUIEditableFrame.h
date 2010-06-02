@@ -110,6 +110,7 @@
 
 - (void)setupCustomMenuItemsForMenuController:(UIMenuController *)menuController;
 
+- (OUEFTextRange *)rangeOfLineContainingPosition:(OUEFTextPosition *)posn;
 
 /* These are the interface from the thumbs to our selection machinery */
 - (void)thumbBegan:(OUITextThumb *)thumb;
@@ -120,6 +121,7 @@
 - (id <NSObject>)attribute:(NSString *)attr inRange:(OUEFTextRange *)r;
 - (void)setValue:(id)value forAttribute:(NSString *)attr inRange:(OUEFTextRange *)r;
 
+- (BOOL)hasTouchesForEvent:(UIEvent *)event;
 
 @end
 

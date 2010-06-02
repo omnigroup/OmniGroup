@@ -39,7 +39,6 @@ RCS_ID("$Id$");
 - (void)_undoManagerDidUndoOrRedo:(NSNotification *)note;
 - (void)_undoManagerDidOpenGroup:(NSNotification *)note;
 - (void)_undoManagerWillCloseGroup:(NSNotification *)note;
-- (void)_inspectorDidDismiss:(NSNotification *)note;
 @end
 
 @implementation OUIDocument
@@ -90,7 +89,6 @@ RCS_ID("$Id$");
     [center addObserver:self selector:@selector(_undoManagerDidOpenGroup:) name:NSUndoManagerDidOpenUndoGroupNotification object:_undoManager];
     [center addObserver:self selector:@selector(_undoManagerWillCloseGroup:) name:NSUndoManagerWillCloseUndoGroupNotification object:_undoManager];
     
-    [center addObserver:self selector:@selector(_inspectorDidDismiss:) name:OUIInspectorDidDismissNotification object:nil];
     [center addObserver:self selector:@selector(_inspectorDidEndChangingInspectedObjects:) name:OUIInspectorDidEndChangingInspectedObjectsNotification object:nil];
     
     if (![self loadDocumentContents:outError]) {
@@ -290,7 +288,8 @@ RCS_ID("$Id$");
     if (![self saveToURL:url isAutosave:isAutosave error:outError]) {
         OUIDocumentProxy *currentProxy = [self proxy];
         NSString *fileType = [[OUIAppController controller] documentTypeForURL:currentProxy.url];
-        OUIDocumentProxy *newProxy = [[[OUIAppController controller] documentPicker] renameProxy:currentProxy toName:[currentProxy name] type:fileType];
+        NSURL *newProxyURL = [[[OUIAppController controller] documentPicker] renameProxy:currentProxy toName:[currentProxy name] type:fileType];
+        OUIDocumentProxy *newProxy = [[[OUIAppController controller] documentPicker] proxyWithURL:newProxyURL];
         OBASSERT(newProxy != nil);
         [self setProxy:newProxy];
         url = [self url];
@@ -390,13 +389,6 @@ RCS_ID("$Id$");
     
     // Start a timer if one isn't going already
     [self _startAutosaveAndUpdateUndoButton];
-}
-
-- (void)_inspectorDidDismiss:(NSNotification *)note;
-{
-    [self finishUndoGroup];
-    
-    [[self viewToMakeFirstResponderWhenInspectorCloses] becomeFirstResponder];
 }
 
 - (void)_inspectorDidEndChangingInspectedObjects:(NSNotification *)note;

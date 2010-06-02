@@ -11,6 +11,7 @@
 #import <OmniBase/assertions.h>
 #import <OmniFoundation/NSString-OFUnicodeCharacters.h>
 #import <OmniFoundation/NSMutableAttributedString-OFExtensions.h>
+#import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 #import <OmniFoundation/OFStringScanner.h>
 #import <OmniAppKit/OAFontDescriptor.h>
@@ -54,6 +55,9 @@ RCS_ID("$Id$");
 - (void)_actionReadFontCharacterSet:(int)characterSet;
 - (NSString *)_fontNameAtIndex:(int)fontTableIndex;
 
+- (void)_actionUnderline:(int)value;
+- (void)_actionUnderlineStyle:(int)value;
+
 - (void)_actionAppendString:(NSString *)string;
 - (void)_actionSetUnicodeSkipCount:(int)newCount;
 - (void)_actionInsertUnicodeCharacter:(int)unicodeCharacter;
@@ -82,6 +86,7 @@ RCS_ID("$Id$");
     CGFloat _fontSize;
     int _fontNumber;
     int _fontCharacterSet;
+    unsigned int _underline;
 
     int _unicodeSkipCount;
     struct {
@@ -106,6 +111,7 @@ RCS_ID("$Id$");
 @property (readwrite) int fontNumber;
 @property (readwrite) BOOL bold;
 @property (readwrite) BOOL italic;
+@property (readwrite) unsigned int underlineStyle;
 @property (readwrite) int fontCharacterSet;
 @property (readwrite) CTTextAlignment paragraphAlignment;
 @property (readwrite) int paragraphFirstLineIndent;
@@ -129,9 +135,11 @@ RCS_ID("$Id$");
     SEL _selector;
     IMP _implementation;
     int _defaultValue;
+    BOOL _forceValue;
 }
 
 - (id)initWithSelector:(SEL)selector defaultValue:(int)defaultValue;
+- (id)initWithSelector:(SEL)selector value:(int)defaultValue;
 - (id)initWithSelector:(SEL)selector;
 
 @end
@@ -201,6 +209,30 @@ static NSMutableDictionary *KeywordActions;
     [self _registerKeyword:@"i" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionItalic:)] autorelease]];
     [self _registerKeyword:@"fs" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionFontSize:)] autorelease]];
     [self _registerKeyword:@"f" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionFontNumber:)] autorelease]];
+    
+    // Underlines
+    [self _registerKeyword:@"ul" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderline:)] autorelease]];
+    [self _registerKeyword:@"uld" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:(kCTUnderlineStyleSingle|kCTUnderlinePatternDot)] autorelease]];
+    OUIRTFReaderAction *uldash = [[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:(kCTUnderlineStyleSingle|kCTUnderlinePatternDash)] autorelease];
+    [self _registerKeyword:@"uldash" action:uldash];
+    [self _registerKeyword:@"uldashd" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:(kCTUnderlineStyleSingle|kCTUnderlinePatternDashDot)] autorelease]];
+    [self _registerKeyword:@"uldashdd" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:(kCTUnderlineStyleSingle|kCTUnderlinePatternDashDotDot)] autorelease]];
+    OUIRTFReaderAction *uldb = [[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:kCTUnderlineStyleDouble] autorelease];
+    [self _registerKeyword:@"uldb" action:uldb];
+    [self _registerKeyword:@"ulnone" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:kCTUnderlineStyleNone] autorelease]];
+    OUIRTFReaderAction *ulth = [[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:kCTUnderlineStyleThick] autorelease];
+    [self _registerKeyword:@"ulth" action:ulth];
+    [self _registerKeyword:@"ulthd" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:(kCTUnderlineStyleThick|kCTUnderlinePatternDot)] autorelease]];
+    OUIRTFReaderAction *ulthdash = [[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:(kCTUnderlineStyleThick|kCTUnderlinePatternDash)] autorelease];
+    [self _registerKeyword:@"ulthdash" action:ulthdash];
+    [self _registerKeyword:@"ulthdashd" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:(kCTUnderlineStyleThick|kCTUnderlinePatternDashDot)] autorelease]];
+    [self _registerKeyword:@"ulthdashdd" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:(kCTUnderlineStyleThick|kCTUnderlinePatternDashDotDot)] autorelease]];
+    // Underline styles we don't actually support; translate them into something similar
+    [self _registerKeyword:@"ulwave" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderlineStyle:) value:kCTUnderlineStyleSingle] autorelease]];
+    [self _registerKeyword:@"ulhwave" action:ulth];
+    [self _registerKeyword:@"ulldash" action:uldash];
+    [self _registerKeyword:@"ulthldash" action:ulthdash];
+    [self _registerKeyword:@"ululdbwave" action:uldb];
 
     // Paragraph formatting properties
     [self _registerKeyword:@"par" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionNewParagraph)] autorelease]];
@@ -518,6 +550,16 @@ static NSMutableDictionary *KeywordActions;
     _currentState.italic = value != 0;
 }
 
+- (void)_actionUnderline:(int)parameter;
+{
+    [self _actionUnderlineStyle: ( parameter? kCTUnderlineStyleSingle : kCTUnderlineStyleNone )];
+}
+
+- (void)_actionUnderlineStyle:(int)value;
+{
+    _currentState.underlineStyle = value;
+}
+
 - (void)_actionFontSize:(int)value;
 {
     _currentState.fontSize = value * 0.5f;
@@ -804,6 +846,7 @@ static NSMutableDictionary *KeywordActions;
     _stringEncoding = kCFStringEncodingWindowsLatin1;
     _unicodeSkipCount = 1;
     _fontSize = 12.0f;
+    _underline = kCTUnderlineStyleNone;
 
     [self resetParagraphAttributes];
 
@@ -902,6 +945,15 @@ static NSMutableDictionary *KeywordActions;
     [self _resetCache];
 }
 
+- (void)setUnderlineStyle:(unsigned)ul
+{
+    _underline = ul;
+    
+    [self _resetCache];
+}
+
+@synthesize underlineStyle = _underline;
+
 @synthesize fontCharacterSet = _fontCharacterSet;
 
 - (CTTextAlignment)paragraphAlignment;
@@ -965,6 +1017,8 @@ static NSMutableDictionary *KeywordActions;
 #ifdef DEBUG_RTF_READER
             NSLog(@"-stringAttributes: foregroundColor=%@", [OUIRTFReader debugStringForColor:_foregroundColor]);
 #endif
+            if ((_underline & 0xFF) != 0)
+                [_cachedStringAttributes setUnsignedIntValue:_underline forKey:(NSString *)kCTUnderlineStyleAttributeName];
             NSMutableDictionary *fontAttributes = [[NSMutableDictionary alloc] init];
             [fontAttributes setObject:[reader _fontNameAtIndex:_fontNumber] forKey:(id)kCTFontNameAttribute];
             if (_fontSize > 0.0)
@@ -1096,6 +1150,7 @@ static NSMutableDictionary *KeywordActions;
     if (!method)
         [NSException raise:NSInvalidArgumentException format:@"OUIRTFReader does not respond to the selector %@", NSStringFromSelector(selector)];
     _implementation = method_getImplementation(method);
+    _forceValue = NO;
 
     return self;
 }
@@ -1105,6 +1160,13 @@ static NSMutableDictionary *KeywordActions;
     return [self initWithSelector:selector defaultValue:1];
 }
 
+- (id)initWithSelector:(SEL)selector value:(int)value;
+{
+    self = [self initWithSelector:selector defaultValue:value];
+    _forceValue = YES;
+    return self;
+}
+
 - (void)performActionWithParser:(OUIRTFReader *)parser;
 {
     _implementation(parser, _selector, _defaultValue);
@@ -1112,6 +1174,11 @@ static NSMutableDictionary *KeywordActions;
 
 - (void)performActionWithParser:(OUIRTFReader *)parser parameter:(int)parameter;
 {
+    if (_forceValue) {
+        _implementation(parser, _selector, _defaultValue);
+        return;
+    }
+
     _implementation(parser, _selector, parameter);
 }
 

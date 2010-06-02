@@ -227,7 +227,8 @@ static NSString * const SelectAction = @"select";
         OUIDocumentPicker *documentPicker = self.documentPicker;
         if (oldProxy) {
             NSString *documentType = [self documentTypeForURL:oldProxy.url];
-            OUIDocumentProxy *newProxy = [documentPicker renameProxy:oldProxy toName:newName type:documentType];
+            NSURL *newProxyURL = [documentPicker renameProxy:oldProxy toName:newName type:documentType];
+            OUIDocumentProxy *newProxy = [documentPicker proxyWithURL:newProxyURL];
             OBASSERT(newProxy);
             [_document setProxy:newProxy];
         } else {

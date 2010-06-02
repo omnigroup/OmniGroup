@@ -194,7 +194,7 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
     
     // Finally, hide any remaining tiles that didn't get reused.
     for (OUIScalingViewTile *tile in availableTiles) {
-        DEBUG_TILE_LAYOUT(@"  Hidding unused tile %@", [tile shortDescription]);
+        DEBUG_TILE_LAYOUT(@"  Hiding unused tile %@", [tile shortDescription]);
         tile.hidden = YES;
     }
     

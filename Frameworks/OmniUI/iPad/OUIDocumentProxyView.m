@@ -178,6 +178,11 @@ static CGRect _paperRect(id <OUIDocumentPreview> preview, CGRect bounds)
     return preview ? preview.untransformedPageRect : bounds;
 }
 
+- (NSArray *)shadowEdgeViews;
+{
+    return _shadowEdgeViews;
+}
+
 #pragma mark -
 #pragma mark UIView subclass
 

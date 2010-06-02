@@ -208,26 +208,23 @@ static CFIndex bsearchLines(CFArrayRef lines, CFIndex l, CFIndex h, CFIndex quer
 }
 
 /* Similar to bsearchLines(), but finds a CTRun within a CTLine. */
-static CFIndex bsearchRuns(CFArrayRef runs, CFIndex l, CFIndex h, CFIndex queryIndex, CTRunRef *foundRun)
+/* We can't do a binary search, because runs are visually ordered, not logically ordered (experimentally true, but undocumented) */
+/* Hopefully a given character index will only ever be claimed by one run... */
+static CFIndex searchRuns(CFArrayRef runs, CFIndex l, CFIndex h, CFIndex queryIndex, CTRunRef *foundRun)
 {
-    CFIndex orig_h = h;
-    
-    while (h > l) {
-        CFIndex m = ( h + l - 1 ) >> 1;
-        CTRunRef run = CFArrayGetValueAtIndex(runs, m);
+    while (l < h) {
+        CTRunRef run = CFArrayGetValueAtIndex(runs, l);
         CFRange runRange = CTRunGetStringRange(run);
         
-        if (runRange.location > queryIndex) {
-            h = m;
-        } else if ((runRange.location + runRange.length) > queryIndex) {
-            if (foundRun)
-                *foundRun = run;
-            return m;
-        } else {
-            l = m + 1;
+        if (runRange.location <= queryIndex && (runRange.location+runRange.length) > queryIndex) {
+            *foundRun = run;
+            return l;
         }
+        
+        l ++;
     }
-    return ( l < orig_h )? kCFNotFound : l;
+
+    return kCFNotFound;
 }
 
 enum runPosition {
@@ -904,7 +901,7 @@ static CGRect _textRectForViewRect(OUIEditableFrame *self, CGPoint lastLineOrigi
         
     /* If we have a range selection, allow the user to inspect its attributes */
     /* If we don't have a selection, this item will be disabled via -canPerformAction:withSender: */
-    items[0] = [[UIMenuItem alloc] initWithTitle:@"Style" action:@selector(inspectSelectedText:)];
+    items[0] = [[UIMenuItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Style", @"OmniUI", OMNI_BUNDLE, @"Contextual menu item") action:@selector(inspectSelectedText:)];
     
     menuController.menuItems = [NSArray arrayWithObjects:items count:1];
     
@@ -1060,6 +1057,22 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
     [self setNeedsDisplay];
 }
 
+- (BOOL)hasTouchesForEvent:(UIEvent *)event;
+{
+    if (self.hidden || !self.superview)
+        return NO;
+    
+    if ([[event touchesForView:self] count] > 0)
+        return YES;
+    
+    if ([[event touchesForView:startThumb] count] > 0)
+        return YES;
+    else if ([[event touchesForView:endThumb] count] > 0)
+        return YES;
+    
+    return NO;
+}
+
 #pragma mark -
 #pragma mark OUIScalingView subclass
 
@@ -1145,38 +1158,71 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
             startThumb = [[OUITextThumb alloc] init];
             startThumb.isEndThumb = NO;
             [self addSubview:startThumb];
+            
+            UILongPressGestureRecognizer *startThumbLongPressRecognizer = [startThumb longPressGestureRecognizer];
+            UILongPressGestureRecognizer *myLongPressRecognizer = (UILongPressGestureRecognizer *)actionRecognizers[2];
+            OBASSERT([myLongPressRecognizer isKindOfClass:[UILongPressGestureRecognizer class]]);
+            
+            [myLongPressRecognizer requireGestureRecognizerToFail:startThumbLongPressRecognizer];
+            startThumbLongPressRecognizer.enabled = NO;
         }
         caretRect = [self _caretRectForPosition:(OUEFTextPosition *)selection.start affinity:1 bloomScale:0];
         if (CGRectIsNull(caretRect)) {
             // This doesn't make a lot of sense, but it can happen if the layout height is finite
             startThumb.hidden = YES;
+            
+            UILongPressGestureRecognizer *startThumbLongPressRecognizer = [startThumb longPressGestureRecognizer];
+            startThumbLongPressRecognizer.enabled = NO;
         } else {
             // Convert to our bounds' coordinate system, and add a few pixels for visibility
             caretRect = CGRectInset([self convertRectToRenderingSpace:caretRect], -1, -1); // Method's name is misleading
             [startThumb setCaretRectangle:caretRect];
             startThumb.hidden = NO;
+            
+            UILongPressGestureRecognizer *startThumbLongPressRecognizer = [startThumb longPressGestureRecognizer];
+            startThumbLongPressRecognizer.enabled = !selection.isEmpty;
         }
         
         if (!endThumb) {
             endThumb = [[OUITextThumb alloc] init];
             endThumb.isEndThumb = YES;
             [self addSubview:endThumb];
+            
+            UILongPressGestureRecognizer *endThumbLongPressRecognizer = [endThumb longPressGestureRecognizer];
+            UILongPressGestureRecognizer *myLongPressRecognizer = (UILongPressGestureRecognizer *)actionRecognizers[2];
+            OBASSERT([myLongPressRecognizer isKindOfClass:[UILongPressGestureRecognizer class]]);
+            
+            [myLongPressRecognizer requireGestureRecognizerToFail:endThumbLongPressRecognizer];
+            endThumbLongPressRecognizer.enabled = NO;
         }
         caretRect = [self _caretRectForPosition:(OUEFTextPosition *)selection.end affinity:-1 bloomScale:0];
         if (CGRectIsNull(caretRect)) {
             // This doesn't make a lot of sense, but it can happen if the layout height is finite
             endThumb.hidden = YES;
+            
+            UILongPressGestureRecognizer *endThumbLongPressRecognizer = [endThumb longPressGestureRecognizer];
+            endThumbLongPressRecognizer.enabled = NO;
         } else {
             caretRect = CGRectInset([self convertRectToRenderingSpace:caretRect], -1, -1); // Method's name is misleading
             [endThumb setCaretRectangle:caretRect];
             endThumb.hidden = NO;
+            
+            UILongPressGestureRecognizer *endThumbLongPressRecognizer = [endThumb longPressGestureRecognizer];
+            endThumbLongPressRecognizer.enabled = YES;
         }
     } else {
         // Hide thumbs if we've got 'em
-        if (startThumb)
+        if (startThumb) {
             startThumb.hidden = YES;
-        if (endThumb)
+            UILongPressGestureRecognizer *startThumbLongPressRecognizer = [startThumb longPressGestureRecognizer];
+            startThumbLongPressRecognizer.enabled = NO;
+        }
+            
+        if (endThumb) {
             endThumb.hidden = YES;
+            UILongPressGestureRecognizer *endThumbLongPressRecognizer = [endThumb longPressGestureRecognizer];
+            endThumbLongPressRecognizer.enabled = NO;
+        }
     }
     
     /* Show or hide the layer-based blinking cursor */
@@ -1454,6 +1500,9 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
 {
+    if (action == @selector(inspectSelectedText:))
+        return NO; // Temporarily disabling the text style inspector since it isn't quite ready for prime time
+
     if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(delete:) || action == @selector(inspectSelectedText:)) {
         return selection && ![selection isEmpty];
     }
@@ -1926,11 +1975,12 @@ enum {
         adjustedContentLength --; // Hidden trailing newline
 
     if (markedRange.length == 0) {
-        if (selection)
-            replaceRange.location = [(OUEFTextPosition *)(selection.end) index];
-        else
+        if (selection) {
+            replaceRange = selection.range;
+        } else {
             replaceRange.location = adjustedContentLength;
-        replaceRange.length = 0;
+            replaceRange.length = 0;
+        }
     } else {
         replaceRange = markedRange;
     }
@@ -2071,7 +2121,7 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
     
     while (offset) {
         CTRunRef run = NULL;
-        CFIndex runIndex = bsearchRuns(runs, 0, runCount, pos, &run);
+        CFIndex runIndex = searchRuns(runs, 0, runCount, pos, &run);
         if (!run) {
             /* Something broke. Maybe we ran off the beginning/end of the line. */
             return pos;
@@ -2280,6 +2330,30 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
     /* TODO: Implement this */
     btrace();
     abort();
+}
+
+/* Not part of the official UITextInput protocol, but useful */
+- (OUEFTextRange *)rangeOfLineContainingPosition:(OUEFTextPosition *)posn;
+{
+    if (!posn)
+        return nil;
+    
+    if (!drawnFrame || flags.textNeedsUpdate)
+        [self _updateLayout:YES];
+    
+    CFArrayRef lines = CTFrameGetLines(drawnFrame);
+    
+    CTLineRef containingLine = NULL;
+    if (bsearchLines(lines, 0, CFArrayGetCount(lines), posn.index, &containingLine) < 0 || !containingLine)
+        return nil;
+    
+    CFRange lineRange = CTLineGetStringRange(containingLine);
+    
+    if (lineRange.location < 0) /* kCFNotFound is negative */
+        return nil;
+    
+    OUEFTextRange *result = [[OUEFTextRange alloc] initWithRange:(NSRange){ lineRange.location, lineRange.length } generation:generation];
+    return [result autorelease];
 }
 
 /* Writing direction */
@@ -2734,17 +2808,19 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     DEBUG_TEXT(@" -> %@", r);
     CGPoint p = [r locationInView:self];
     OUEFTextPosition *pp = (OUEFTextPosition *)[self closestPositionToPoint:p];
-    
+
     if (pp) {
         id <UITextInputTokenizer> tok = [self tokenizer];
         
         if (r.numberOfTapsRequired > 1 && selection) {
-            [self setSelectedTextRange:[tok rangeEnclosingPosition:selection.start withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward]];
+            UITextRange *tappedWord = [tok rangeEnclosingPosition:selection.start withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward];
+            if (tappedWord)
+                [self setSelectedTextRange:tappedWord];
         } else {
             if (tapSelectionGranularity != UITextGranularityCharacter) {
                 // UITextView selects beginning or end of word on single tap.
                 if (![tok isPosition:pp atBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionForward] &&
-                    ![tok isPosition:pp atBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionForward]) {
+                    ![tok isPosition:pp atBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionBackward]) {
                     // Move pp to the nearest word boundary. We can't simply use -rangeEnclosingPosition: because we want to move to a word boundary even if the tap was outside of any words.
                     // We also need to act correctly if tapped in a non-word area at the beginning or end of the text.
                     OUEFTextPosition *earlier = (OUEFTextPosition *)[tok positionFromPosition:pp toBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionBackward];
@@ -2781,7 +2857,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
 
 /* Press-and-hold calls this */
 - (void)_inspectTap:(UILongPressGestureRecognizer *)r;
-{
+{    
     CGPoint touchPoint = [r locationInView:self];
     OUEFTextPosition *pp = (OUEFTextPosition *)[self closestPositionToPoint:touchPoint];
     
@@ -3266,6 +3342,11 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
     [slices addObject:[[[OUIParagraphStyleInspectorSlice alloc] init] autorelease]];
 
     return slices;
+}
+
+- (void)inspectorDidDismiss:(OUIInspector *)inspector;
+{
+    [self becomeFirstResponder];
 }
 
 

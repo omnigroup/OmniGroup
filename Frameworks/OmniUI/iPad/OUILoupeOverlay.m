@@ -147,14 +147,17 @@ RCS_ID("$Id$");
             case OUILoupeOverlayRectangle:
             {
                 UIImage *plainImage = [UIImage imageNamed:@"OUIRectangularOverlayFrame.png"];
-                loupeFrameImage = [[plainImage stretchableImageWithLeftCapWidth:60 topCapHeight:0] retain];
+                loupeFrameImage = [[plainImage stretchableImageWithLeftCapWidth:0 topCapHeight:22] retain];
                 CGSize loupeImageSize;
                 loupeImageSize = [plainImage size];
-                CGRect contour = (CGRect){ {14, 58}, { 128, 114 } };
-                loupeImageSize.width += 64;
-                contour.size.width += 64;
+                CGRect contour = (CGRect){ {5.0f, 2.0f}, { 197.0f, 36.0f } }; // This should form a rounded rect within the image
+#if 0
+                // We can make the loupe taller by stretching it here
+                loupeImageSize.height += 78.0f;
+                contour.size.height += 78.0f;
+#endif
                 CGMutablePathRef ring = CGPathCreateMutable();
-                OQAddRoundedRect(ring, contour, 17);
+                OQAddRoundedRect(ring, contour, 6.0f);
                 loupeClipPath = CGPathCreateCopy(ring);
                 CFRelease(ring);
                 loupeTouchPoint.x = CGRectGetMidX(contour);

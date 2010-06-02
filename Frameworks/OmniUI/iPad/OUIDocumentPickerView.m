@@ -344,6 +344,9 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
      The reported velocity is the delta between the last two moves, or maybe a few more.  It doesn't matter how long ago those moves were! In a normal scroll setup, if you tap, swipe really quick and stop and hold (so your last delta is huge) and then stop touching the screen, the velocity will start a scroll.
      
      */
+    
+    if (_disableScroll)
+        return;
 
     UIGestureRecognizerState state = gestureRecognizer.state;
     
@@ -483,7 +486,7 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
 }
 
 // Called by OUIDocumentPicker when the interface orientation changes.
-
+@synthesize disableRotationDisplay = _disableRotationDisplay;
 - (void)willRotate;
 {
     OBPRECONDITION(_flags.isRotating == NO);
@@ -491,6 +494,8 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
     // This will cause us to discard speculatively loaded previews (and not rebuild them).
     _flags.isRotating = YES;
     [self layoutSubviews];
+    if (_disableRotationDisplay)
+        return;
     
     // Fade the previews out; make *all* our views go to zero alpha so that that is where they are for the -didRotate call (in case a different set of views is visible when fading in).
     [UIView beginAnimations:@"fade out proxies before rotation" context:NULL];
@@ -508,6 +513,8 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
     // Allow speculative preview loading.  Don't care if we lay out immediately.
     _flags.isRotating = NO;
     [self setNeedsLayout];
+    if (_disableRotationDisplay)
+        return;
     
     // We assume the caller has done a non-animating layout and scroll snap for the new orientation. Fade stuff back in.
     [UIView beginAnimations:@"fade in proxies after rotation" context:NULL];
@@ -738,4 +745,5 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
     [super touchesEnded:touches withEvent:event];
 }
 
+@synthesize disableScroll = _disableScroll;
 @end

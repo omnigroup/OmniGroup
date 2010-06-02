@@ -18,7 +18,6 @@
 extern const CGFloat OUIInspectorContentWidth;
 
 extern NSString * const OUIInspectorDidPresentNotification;
-extern NSString * const OUIInspectorDidDismissNotification;
 
 extern NSString * const OUIInspectorWillBeginChangingInspectedObjectsNotification;
 extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;

@@ -17,6 +17,16 @@ RCS_ID("$Id$");
 
 - initWithProxy:(OUIDocumentProxy *)proxy size:(CGSize)size;
 {
+#ifdef IPAD_RETAIL_DEMO
+    // Terrible terrible hack--I mean, this is the best!
+    // Hack to fix <bug://bugs/61625> (Modifying welcome doc on first launch and going to picker only loads low-res preview)
+    // For now, if we get the bogus small previous size let's just use a previous size of 584x730 instead (which is the largest preview size we're asked to render for the Welcome document).
+    if (size.width == 444.0f && size.height == 345.0f) {
+        size.width = 584.0f;
+        size.height = 730.0f;
+    }
+#endif
+    
     if (!(self = [super init]))
         return nil;
     

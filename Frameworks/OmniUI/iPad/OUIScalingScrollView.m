@@ -94,8 +94,8 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     if (!isTiled) {
         // If we are one big view, we need to limit our scale based on estimated VM size.
         
-        // Limit the maximum zoom size (for now) based on the pixel count we'll cover.  Assume each pixel in the view backing store is 4 bytes. Limit to 32MB of video memory (other backing stores, animating between two zoom levels will temporarily double this). This does mean that if you have a large canvas, we might not even allow you to reach 100%. Better than crashing.
-        CGFloat maxVideoMemory = 32*1024*1024;
+        // Limit the maximum zoom size (for now) based on the pixel count we'll cover.  Assume each pixel in the view backing store is 4 bytes. Limit to 16MB of video memory (other backing stores, animating between two zoom levels will temporarily double this). This does mean that if you have a large canvas, we might not even allow you to reach 100%. Better than crashing.
+        CGFloat maxVideoMemory = 16*1024*1024;
         CGFloat canvasVideoUsage = 4 * canvasSize.width * canvasSize.height;
         maximumZoom = MIN(maximumZoom, sqrt(maxVideoMemory / canvasVideoUsage));
     }

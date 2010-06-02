@@ -10,6 +10,7 @@
 #import <OmniFoundation/OFDataBuffer.h>
 #import <OmniFoundation/OFStringScanner.h>
 #import <OmniAppKit/OAFontDescriptor.h>
+#import <OmniFoundation/NSDictionary-OFExtensions.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <CoreText/CTParagraphStyle.h>
@@ -93,6 +94,7 @@ static OFCharacterSet *ReservedSet;
     _state.fontSize = -1;
     _state.fontIndex = -1;
     _state.colorIndex = -1;
+    _state.underline = kCTUnderlineStyleNone;
     _dataBuffer = malloc(sizeof(OFDataBuffer));
     OFDataBufferInit(_dataBuffer);
     return self;
@@ -107,6 +109,23 @@ static OFCharacterSet *ReservedSet;
 
     [super dealloc];
 }
+
+static const struct {
+    const char *name;
+    unsigned int ctValue;
+} underlineStyleKeywords[] = {
+    { "uld", kCTUnderlineStyleSingle|kCTUnderlinePatternDot },
+    { "uldash", kCTUnderlineStyleSingle|kCTUnderlinePatternDash },
+    { "uldashd", kCTUnderlineStyleSingle|kCTUnderlinePatternDashDot },
+    { "uldashdd", kCTUnderlineStyleSingle|kCTUnderlinePatternDashDotDot },
+    { "uldb", kCTUnderlineStyleDouble },
+    { "ulth", kCTUnderlineStyleThick },
+    { "ulthd", kCTUnderlineStyleThick|kCTUnderlinePatternDot },
+    { "ulthdash", kCTUnderlineStyleThick|kCTUnderlinePatternDash },
+    { "ulthdashd", kCTUnderlineStyleThick|kCTUnderlinePatternDashDot },
+    { "ulthdashdd", kCTUnderlineStyleThick|kCTUnderlinePatternDashDotDot },
+    { NULL, 0 },
+};
 
 - (void)_writeFontAttributes:(NSDictionary *)newAttributes;
 {
@@ -123,7 +142,8 @@ static OFCharacterSet *ReservedSet;
     BOOL newFontBold = [newFontDescriptor bold];
     BOOL newFontItalic = [newFontDescriptor italic];
     [newFontDescriptor release];
-
+    unsigned int newUnderline = [newAttributes unsignedIntForKey:(NSString *)kCTUnderlineStyleAttributeName defaultValue:kCTUnderlineStyleNone];
+    
     BOOL shouldWriteNewFontSize;
     BOOL shouldWriteNewFontIndex;
     BOOL shouldWriteNewFontBold;
@@ -173,6 +193,29 @@ static OFCharacterSet *ReservedSet;
         needTerminatingSpace = YES;
         _state.flags.italic = newFontItalic;
     }
+    
+    if (newUnderline != _state.underline) {
+        if ((newUnderline & 0xFF) == kCTUnderlineStyleNone) {
+            // Special case
+            OFDataBufferAppendCString(_dataBuffer, "\\ul0");
+        } else {
+            int styleIndex;
+            for(styleIndex = 0; underlineStyleKeywords[styleIndex].name != NULL; styleIndex ++) {
+                if (underlineStyleKeywords[styleIndex].ctValue == newUnderline)
+                    break;
+            }
+            if (underlineStyleKeywords[styleIndex].name == NULL) {
+                // Fallback to plain ol' underline
+                OFDataBufferAppendCString(_dataBuffer, "\\ul");
+            } else {
+                OFDataBufferAppendByte(_dataBuffer, '\\');
+                OFDataBufferAppendCString(_dataBuffer, underlineStyleKeywords[styleIndex].name);
+            }
+        }
+        
+        needTerminatingSpace = YES;
+        _state.underline = newUnderline;
+    }    
 
     if (needTerminatingSpace)
         OFDataBufferAppendByte(_dataBuffer, ' ');
