@@ -38,6 +38,8 @@
 		34737817104666670065876F /* OQLayerRemovalAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 34737811104666670065876F /* OQLayerRemovalAnimation.m */; };
 		34737818104666670065876F /* OQSlideOutLayerRemovalAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 34737812104666670065876F /* OQSlideOutLayerRemovalAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34737819104666670065876F /* OQSlideOutLayerRemovalAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 34737813104666670065876F /* OQSlideOutLayerRemovalAnimation.m */; };
+		3499565411B08C1600A5C9BE /* OQContentAnimatingLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 343E506E1046EF2F003EF9CD /* OQContentAnimatingLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3499565511B08C1700A5C9BE /* OQContentAnimatingLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E506F1046EF2F003EF9CD /* OQContentAnimatingLayer.m */; };
 		34A28C24108ECB460054912D /* OQDrawing.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A28C22108ECB460054912D /* OQDrawing.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A28C25108ECB460054912D /* OQDrawing.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A28C23108ECB460054912D /* OQDrawing.m */; };
 		34ABA7C31056F973007202DA /* OQColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 34ABA7C11056F973007202DA /* OQColor.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -372,6 +374,7 @@
 				345613DE119319B700E7D187 /* OQDrawing.h in Headers */,
 				345F498711931B6F00A131E7 /* OmniQuartzTouch_Prefix.h in Headers */,
 				345F499711931C7600A131E7 /* OQDebug.h in Headers */,
+				3499565411B08C1600A5C9BE /* OQContentAnimatingLayer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -480,6 +483,7 @@
 				345613DB119319AE00E7D187 /* OQColor-Archiving.m in Sources */,
 				345613DD119319B200E7D187 /* OQColor.m in Sources */,
 				345613DF119319B700E7D187 /* OQDrawing.m in Sources */,
+				3499565511B08C1700A5C9BE /* OQContentAnimatingLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

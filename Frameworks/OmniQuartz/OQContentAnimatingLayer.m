@@ -19,17 +19,16 @@
 
 RCS_ID("$Id$")
 
-@interface OQContentAnimatingLayer (/*Private*/)
-+ (void)_updateTimerFired:(NSTimer *)timer;
-@end
+/*
+ 
+ NOTE: If you add ivars to your subclass that are referenced in its drawing methods (configuration stuff like non-animated colors/rects), then you must implement -initWithLayer: in your subclass to copy that state. Otherwise, the presentationLayer made when animations start won't be properly configured and will at best draw incorrectly and at worst crash.
+ 
+ */
 
 @implementation OQContentAnimatingLayer
 
 // Ghetto support for -actionFor<Key>
 static CFMutableDictionaryRef ActionNameToSelector = NULL;
-
-static NSTimer *UpdateTimer = nil;
-static NSMutableSet *LayersWithActiveAnimations = nil;
 
 static SEL ActionSelectorForKey(NSString *key)
 {
@@ -68,8 +67,6 @@ static CFHashCode _hashString(const void *value)
         CFDictionaryValueCallBacks valueCallbacks;
         memset(&valueCallbacks, 0, sizeof(valueCallbacks));
         ActionNameToSelector = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &keyCallbacks, &valueCallbacks);
-        
-        LayersWithActiveAnimations = [[NSMutableSet alloc] init];
     }
 }
 
@@ -125,6 +122,13 @@ static CFHashCode _hashString(const void *value)
 
 #pragma mark CALayer subclass
 
++ (BOOL)needsDisplayForKey:(NSString *)key;
+{
+    if ([[self keyPathsForValuesAffectingContent] member:key])
+        return YES;
+    return [super needsDisplayForKey:key];
+}
+
 - (id <CAAction>)actionForKey:(NSString *)event;
 {
     SEL sel = ActionSelectorForKey(event);
@@ -160,15 +164,8 @@ static CFHashCode _hashString(const void *value)
 {
     // Have to do the add here instead of in -addAnimation:forKey: since a copy is started, not the original passed in.
     if ([self isContentAnimation:anim]) {
-        if (!UpdateTimer) {
-            UpdateTimer = [[NSTimer timerWithTimeInterval:1/60.0 target:[OQContentAnimatingLayer class] selector:@selector(_updateTimerFired:) userInfo:nil repeats:YES] retain];
-            [[NSRunLoop currentRunLoop] addTimer:UpdateTimer forMode:NSRunLoopCommonModes]; // Otherwise, if we are dragging to start an animation, the timer won't fire while tracking the mouse.
-        }
-        
         if (!_activeContentAnimations) {
             _activeContentAnimations = [[NSMutableArray alloc] init];
-            OBASSERT([LayersWithActiveAnimations member:self] == nil);
-            [LayersWithActiveAnimations addObject:self];
         }
         OBASSERT([_activeContentAnimations indexOfObjectIdenticalTo:anim] == NSNotFound);
         [_activeContentAnimations addObject:anim];
@@ -185,7 +182,7 @@ static CFHashCode _hashString(const void *value)
     }
     
     [_activeContentAnimations removeObjectAtIndex:animIndex];
-    DEBUG_CONTENT_ANIMATION(@"Stopped content animation %p from %@, count %d", anim, self, [_activeContentAnimations count]);
+    DEBUG_CONTENT_ANIMATION(@"Stopped content animation %@.%@ from %@, count %d", anim, ((CABasicAnimation *)anim).keyPath, self, [_activeContentAnimations count]);
 
     if ([_activeContentAnimations count] == 0) {
         // One last display now that things are in the final state
@@ -194,14 +191,6 @@ static CFHashCode _hashString(const void *value)
         [_activeContentAnimations release];
         _activeContentAnimations = nil;
         [self finishedAnimatingContent];
-
-        OBASSERT([LayersWithActiveAnimations member:self] == self);
-        [LayersWithActiveAnimations removeObject:self];
-        if ([LayersWithActiveAnimations count] == 0) {
-            [UpdateTimer invalidate];
-            [UpdateTimer release];
-            UpdateTimer = nil;
-        }
     }
 }
 
@@ -255,20 +244,6 @@ static CFHashCode _hashString(const void *value)
     OBASSERT(basic.fromValue);
     
     return basic;
-}
-
-- (id <CAAction>)actionForContents;
-{
-    // We don't want to cross-fade between content images.
-    return nil;
-}
-
-#pragma mark Private API
-
-+ (void)_updateTimerFired:(NSTimer *)timer;
-{
-    DEBUG_CONTENT_ANIMATION(@"Update layers %@", LayersWithActiveAnimations);
-    [LayersWithActiveAnimations makeObjectsPerformSelector:@selector(setNeedsDisplay)];
 }
 
 @end
