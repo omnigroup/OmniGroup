@@ -210,6 +210,13 @@
 		34D9ADBE1194A1A4001E3A18 /* OUIRTFReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D9ADBA1194A1A4001E3A18 /* OUIRTFReader.m */; };
 		34D9ADBF1194A1A4001E3A18 /* OUIRTFWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D9ADBB1194A1A4001E3A18 /* OUIRTFWriter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D9ADC01194A1A4001E3A18 /* OUIRTFWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D9ADBC1194A1A4001E3A18 /* OUIRTFWriter.m */; };
+		94429F1011ADC7F4005B8934 /* OUIUndoButtonBackground.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94909BD811ADC18100BA9C40 /* OUIUndoButtonBackground.png */; };
+		94429F1D11ADC8DA005B8934 /* OUIUndoMenu.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94909AEF11AD9F9400BA9C40 /* OUIUndoMenu.xib */; };
+		94429F3C11ADCB8B005B8934 /* OUIStandardPopoverButton.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94429F3811ADCB80005B8934 /* OUIStandardPopoverButton.png */; };
+		94909AF011AD9F9400BA9C40 /* OUIUndoButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 94909AEB11AD9F9400BA9C40 /* OUIUndoButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		94909AF111AD9F9400BA9C40 /* OUIUndoButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 94909AEC11AD9F9400BA9C40 /* OUIUndoButton.m */; };
+		94909AF211AD9F9400BA9C40 /* OUIUndoButtonController.h in Headers */ = {isa = PBXBuildFile; fileRef = 94909AED11AD9F9400BA9C40 /* OUIUndoButtonController.h */; };
+		94909AF311AD9F9400BA9C40 /* OUIUndoButtonController.m in Sources */ = {isa = PBXBuildFile; fileRef = 94909AEE11AD9F9400BA9C40 /* OUIUndoButtonController.m */; };
 		AA747D9F0F9514B9006C5449 /* OmniUI_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* OmniUI_Prefix.h */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 /* End PBXBuildFile section */
@@ -221,6 +228,9 @@
 			dstPath = "Resources/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				94429F3C11ADCB8B005B8934 /* OUIStandardPopoverButton.png in Copy Resources */,
+				94429F1D11ADC8DA005B8934 /* OUIUndoMenu.xib in Copy Resources */,
+				94429F1011ADC7F4005B8934 /* OUIUndoButtonBackground.png in Copy Resources */,
 				346C4C29119329B200BE8C49 /* OUIDocumentPicker.xib in Copy Resources */,
 				346C4C28119329A900BE8C49 /* OUIAppMenu.xib in Copy Resources */,
 				346C4C101193299D00BE8C49 /* OUIDefaultPaletteThemes.plist in Copy Resources */,
@@ -524,6 +534,13 @@
 		34D9ADBA1194A1A4001E3A18 /* OUIRTFReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIRTFReader.m; sourceTree = "<group>"; };
 		34D9ADBB1194A1A4001E3A18 /* OUIRTFWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIRTFWriter.h; sourceTree = "<group>"; };
 		34D9ADBC1194A1A4001E3A18 /* OUIRTFWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIRTFWriter.m; sourceTree = "<group>"; };
+		94429F3811ADCB80005B8934 /* OUIStandardPopoverButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIStandardPopoverButton.png; sourceTree = "<group>"; };
+		94909AEB11AD9F9400BA9C40 /* OUIUndoButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIUndoButton.h; sourceTree = "<group>"; };
+		94909AEC11AD9F9400BA9C40 /* OUIUndoButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIUndoButton.m; sourceTree = "<group>"; };
+		94909AED11AD9F9400BA9C40 /* OUIUndoButtonController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIUndoButtonController.h; sourceTree = "<group>"; };
+		94909AEE11AD9F9400BA9C40 /* OUIUndoButtonController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIUndoButtonController.m; sourceTree = "<group>"; };
+		94909AEF11AD9F9400BA9C40 /* OUIUndoMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIUndoMenu.xib; sourceTree = "<group>"; };
+		94909BD811ADC18100BA9C40 /* OUIUndoButtonBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIUndoButtonBackground.png; sourceTree = "<group>"; };
 		AA747D9E0F9514B9006C5449 /* OmniUI_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUI_Prefix.h; sourceTree = "<group>"; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libOmniUI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniUI.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -628,6 +645,8 @@
 		346C4A521193273600BE8C49 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				94429F3811ADCB80005B8934 /* OUIStandardPopoverButton.png */,
+				94909BD811ADC18100BA9C40 /* OUIUndoButtonBackground.png */,
 				346C4A531193273600BE8C49 /* OUIDocumentDelete.png */,
 				346C4A541193273600BE8C49 /* OUIDocumentDuplicate.png */,
 				346C4A551193273600BE8C49 /* OUIDocumentExport.png */,
@@ -798,6 +817,11 @@
 		346C4BA9119327A100BE8C49 /* Extensions & Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				94909AEB11AD9F9400BA9C40 /* OUIUndoButton.h */,
+				94909AEC11AD9F9400BA9C40 /* OUIUndoButton.m */,
+				94909AED11AD9F9400BA9C40 /* OUIUndoButtonController.h */,
+				94909AEE11AD9F9400BA9C40 /* OUIUndoButtonController.m */,
+				94909AEF11AD9F9400BA9C40 /* OUIUndoMenu.xib */,
 				AA747D9E0F9514B9006C5449 /* OmniUI_Prefix.h */,
 				346C4AED1193273600BE8C49 /* OUIErrors.h */,
 				346C4AEE1193273600BE8C49 /* OUIErrors.m */,
@@ -985,6 +1009,8 @@
 				34D9ADBD1194A1A4001E3A18 /* OUIRTFReader.h in Headers */,
 				34D9ADBF1194A1A4001E3A18 /* OUIRTFWriter.h in Headers */,
 				34D990651194B06E0029EFE3 /* OUIEditableFrameDelegate.h in Headers */,
+				94909AF011AD9F9400BA9C40 /* OUIUndoButton.h in Headers */,
+				94909AF211AD9F9400BA9C40 /* OUIUndoButtonController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1118,6 +1144,8 @@
 				346C4BA51193273600BE8C49 /* UIView-OUIExtensions.m in Sources */,
 				34D9ADBE1194A1A4001E3A18 /* OUIRTFReader.m in Sources */,
 				34D9ADC01194A1A4001E3A18 /* OUIRTFWriter.m in Sources */,
+				94909AF111AD9F9400BA9C40 /* OUIUndoButton.m in Sources */,
+				94909AF311AD9F9400BA9C40 /* OUIUndoButtonController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
