@@ -17,11 +17,11 @@ BOOL OAPushValueThroughBinding(id self, id objectValue, NSString *binding)
     
     NSDictionary *bindingOptions = [bindingInfo objectForKey:NSOptionsKey];
     NSValueTransformer *transformer;
-    if ((transformer = [bindingOptions objectForKey:NSValueTransformerBindingOption])) {
+    if (!OFISNULL(transformer = [bindingOptions objectForKey:NSValueTransformerBindingOption])) {
         objectValue = [transformer reverseTransformedValue:objectValue];
     } else {
         NSString *transformerName = [bindingOptions objectForKey:NSValueTransformerNameBindingOption];
-        if (transformerName) {
+        if (!OFISNULL(transformerName)) {
             NSValueTransformer *transformer = [NSValueTransformer valueTransformerForName:transformerName];
             OBASSERT(transformer);
             if (transformer)
