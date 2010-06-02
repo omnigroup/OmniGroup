@@ -9,6 +9,8 @@
 
 #import "OIInspector.h"
 
+#import <AppKit/NSNibDeclarations.h>
+
 @interface OIInspectorSection : OIInspector
 {
     IBOutlet NSView *firstKeyView;
