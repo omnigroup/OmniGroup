@@ -218,6 +218,11 @@
 		344D0AAA1190DDE400264D89 /* OFErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 344D0A891190DB4700264D89 /* OFErrors.m */; };
 		3455B53011116CCA00074705 /* NSFileManager-OFSimpleExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3455B52E11116CCA00074705 /* NSFileManager-OFSimpleExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3455B53111116CCA00074705 /* NSFileManager-OFSimpleExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3455B52F11116CCA00074705 /* NSFileManager-OFSimpleExtensions.m */; };
+		34562BE911AB1278005F186D /* OFDateFormatConversion.h in Headers */ = {isa = PBXBuildFile; fileRef = 34562BE711AB1278005F186D /* OFDateFormatConversion.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34562BEA11AB1278005F186D /* OFDateFormatConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 34562BE811AB1278005F186D /* OFDateFormatConversion.m */; };
+		34562BF311AB13EE005F186D /* OFDateFormatConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 34562BE811AB1278005F186D /* OFDateFormatConversion.m */; };
+		34562BF411AB13EE005F186D /* OFDateFormatConversion.h in Headers */ = {isa = PBXBuildFile; fileRef = 34562BE711AB1278005F186D /* OFDateFormatConversion.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34562D6311AC2E78005F186D /* OFDateFormatConversionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34562D6211AC2E78005F186D /* OFDateFormatConversionTests.m */; };
 		345886331035C727006E712F /* SFMT-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 343B36CE103514E40006290A /* SFMT-LICENSE.txt */; };
 		345E73E60C6D06630034A811 /* OFErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 345E73E40C6D06630034A811 /* OFErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		345E73E70C6D06630034A811 /* OFErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E73E50C6D06630034A811 /* OFErrorRecovery.m */; };
@@ -1097,6 +1102,9 @@
 		345069110D747ED4004B40C2 /* OFCrashOnExceptionTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFCrashOnExceptionTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3455B52E11116CCA00074705 /* NSFileManager-OFSimpleExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager-OFSimpleExtensions.h"; sourceTree = "<group>"; };
 		3455B52F11116CCA00074705 /* NSFileManager-OFSimpleExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager-OFSimpleExtensions.m"; sourceTree = "<group>"; };
+		34562BE711AB1278005F186D /* OFDateFormatConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFDateFormatConversion.h; sourceTree = "<group>"; };
+		34562BE811AB1278005F186D /* OFDateFormatConversion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDateFormatConversion.m; sourceTree = "<group>"; };
+		34562D6211AC2E78005F186D /* OFDateFormatConversionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDateFormatConversionTests.m; sourceTree = "<group>"; };
 		345E73E40C6D06630034A811 /* OFErrorRecovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFErrorRecovery.h; sourceTree = "<group>"; };
 		345E73E50C6D06630034A811 /* OFErrorRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFErrorRecovery.m; sourceTree = "<group>"; };
 		346149EF08EB0D2F00F4853E /* OFErrorExtensionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFErrorExtensionTests.m; sourceTree = "<group>"; };
@@ -1509,30 +1517,32 @@
 		00E51CE1FE8AAEA611C9CC38 /* Formatters */ = {
 			isa = PBXGroup;
 			children = (
-				00E51CE3FE8AAEA611C9CC38 /* OFCapitalizeFormatter.m */,
-				00E51CE4FE8AAEA611C9CC38 /* OFDateFormatter.m */,
-				00E51CE5FE8AAEA611C9CC38 /* OFSimpleStringFormatter.m */,
-				34DF03980B05108D00D82DFC /* OFRelativeDateFormatter.m */,
-				00E51CE6FE8AAEA611C9CC38 /* OFSocialSecurityFormatter.m */,
-				00E51CE8FE8AAEA611C9CC38 /* OFTelephoneFormatter.m */,
-				28C3E2D1FEF0F1AAC697A12D /* OFTimeSpanFormatter.m */,
-				6C8D1731097D84D500DD3EAE /* OFTimeSpan.m */,
-				00E51CE9FE8AAEA611C9CC38 /* OFUppercaseFormatter.m */,
-				00E51CEAFE8AAEA611C9CC38 /* OFZipCodeFormatter.m */,
-				F5FBE7A7025BEF9F0100084B /* OFMultipleNumberFormatter.m */,
-				A25B740710B200C200195654 /* OFMetricPrefixFormatter.m */,
 				00E51CECFE8AAEA611C9CC38 /* OFCapitalizeFormatter.h */,
+				00E51CE3FE8AAEA611C9CC38 /* OFCapitalizeFormatter.m */,
 				00E51CEDFE8AAEA611C9CC38 /* OFDateFormatter.h */,
-				34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */,
-				00E51CEEFE8AAEA611C9CC38 /* OFSimpleStringFormatter.h */,
-				00E51CEFFE8AAEA611C9CC38 /* OFSocialSecurityFormatter.h */,
-				00E51CF1FE8AAEA611C9CC38 /* OFTelephoneFormatter.h */,
-				28C3E2D2FEF0F1AAC697A12D /* OFTimeSpanFormatter.h */,
-				6C8D1730097D84D500DD3EAE /* OFTimeSpan.h */,
-				00E51CF2FE8AAEA611C9CC38 /* OFUppercaseFormatter.h */,
-				00E51CF3FE8AAEA611C9CC38 /* OFZipCodeFormatter.h */,
-				F5FBE7A8025BEF9F0100084B /* OFMultipleNumberFormatter.h */,
+				00E51CE4FE8AAEA611C9CC38 /* OFDateFormatter.m */,
+				34562BE711AB1278005F186D /* OFDateFormatConversion.h */,
+				34562BE811AB1278005F186D /* OFDateFormatConversion.m */,
 				A25B740610B200C200195654 /* OFMetricPrefixFormatter.h */,
+				A25B740710B200C200195654 /* OFMetricPrefixFormatter.m */,
+				F5FBE7A8025BEF9F0100084B /* OFMultipleNumberFormatter.h */,
+				F5FBE7A7025BEF9F0100084B /* OFMultipleNumberFormatter.m */,
+				34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */,
+				34DF03980B05108D00D82DFC /* OFRelativeDateFormatter.m */,
+				00E51CEEFE8AAEA611C9CC38 /* OFSimpleStringFormatter.h */,
+				00E51CE5FE8AAEA611C9CC38 /* OFSimpleStringFormatter.m */,
+				00E51CEFFE8AAEA611C9CC38 /* OFSocialSecurityFormatter.h */,
+				00E51CE6FE8AAEA611C9CC38 /* OFSocialSecurityFormatter.m */,
+				00E51CF1FE8AAEA611C9CC38 /* OFTelephoneFormatter.h */,
+				00E51CE8FE8AAEA611C9CC38 /* OFTelephoneFormatter.m */,
+				6C8D1730097D84D500DD3EAE /* OFTimeSpan.h */,
+				6C8D1731097D84D500DD3EAE /* OFTimeSpan.m */,
+				28C3E2D2FEF0F1AAC697A12D /* OFTimeSpanFormatter.h */,
+				28C3E2D1FEF0F1AAC697A12D /* OFTimeSpanFormatter.m */,
+				00E51CF2FE8AAEA611C9CC38 /* OFUppercaseFormatter.h */,
+				00E51CE9FE8AAEA611C9CC38 /* OFUppercaseFormatter.m */,
+				00E51CF3FE8AAEA611C9CC38 /* OFZipCodeFormatter.h */,
+				00E51CEAFE8AAEA611C9CC38 /* OFZipCodeFormatter.m */,
 				A2102A96093BCBBE006D0DFC /* Unit Scale */,
 			);
 			name = Formatters;
@@ -2103,6 +2113,7 @@
 				3433588F06415A4C00EEBA57 /* OFCompressionTest.m */,
 				A22C597E0BA88349005F177C /* OFDataTest.m */,
 				8B8DB053039416A313C564E8 /* OFDateTestCase.m */,
+				34562D6211AC2E78005F186D /* OFDateFormatConversionTests.m */,
 				34B051960B2750400095EA0A /* OFDateXMLTests.m */,
 				8B35FEB803943EBF13FD4E88 /* OFDateTestCase.tests */,
 				0153B4BBFF856A08C697A10E /* OFDedicatedThreadSchedulerTest.m */,
@@ -2340,6 +2351,7 @@
 				344D09DE1190D6CD00264D89 /* OFXMLString.h in Headers */,
 				344D09E01190D6D500264D89 /* OFXMLUnparsedElement.h in Headers */,
 				344D09E21190D6D700264D89 /* OFXMLWhitespaceBehavior.h in Headers */,
+				34562BE911AB1278005F186D /* OFDateFormatConversion.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2546,6 +2558,7 @@
 				34E07ED1116A4D170021863D /* OFSaveType.h in Headers */,
 				3443156C1177777E001DEF99 /* OFFileWrapper.h in Headers */,
 				349CCB0E118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.h in Headers */,
+				34562BF411AB13EE005F186D /* OFDateFormatConversion.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2927,6 +2940,7 @@
 				344D09E11190D6D600264D89 /* OFXMLUnparsedElement.m in Sources */,
 				344D09E31190D6D800264D89 /* OFXMLWhitespaceBehavior.m in Sources */,
 				344D0A8A1190DB4700264D89 /* OFErrors.m in Sources */,
+				34562BEA11AB1278005F186D /* OFDateFormatConversion.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3128,6 +3142,7 @@
 				3443156D1177777E001DEF99 /* OFFileWrapper.m in Sources */,
 				349CCB0F118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.m in Sources */,
 				344D0AAA1190DDE400264D89 /* OFErrors.m in Sources */,
+				34562BF311AB13EE005F186D /* OFDateFormatConversion.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3195,6 +3210,7 @@
 				A2FE46650E50C35300977722 /* OFLowerCaseTest.m in Sources */,
 				341714FE0F783BB20062895C /* OFXMLReaderTests.m in Sources */,
 				A22D9877101E513F005FF4FF /* OFXMLSignatureTests.m in Sources */,
+				34562D6311AC2E78005F186D /* OFDateFormatConversionTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
