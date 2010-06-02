@@ -26,3 +26,10 @@ SKIP_INSTALL = YES
 //STRIPFLAGS = -urSX
 UNSTRIPPED_PRODUCT = YES
 COPY_PHASE_STRIP = NO
+
+// Xcode 3.1 converts .strings files to UTF-16 by default, which breaks our localization process.
+STRINGS_FILE_OUTPUT_ENCODING = UTF-8
+
+// Don't strip nibs/xibs:  it makes life difficult for our localizers
+IBC_STRIP_NIBS = NO;
+IBC_FLATTEN_NIBS = NO;

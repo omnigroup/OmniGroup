@@ -72,15 +72,19 @@ StaticLibraryResourceDirectories.each {|dirname|
       STDERR.print "  source_mtime = #{source_mtime} dest_mtime = #{dest_mtime}\n"
       STDERR.print "  copying #{source} -> #{dest_file}\n"
       
+      FileUtils.mkdir_p(File.dirname(dest_file))
+
       case source
       when /\.xib/
         # Need to compile xibs into nibs.
         ENV["IBC_MINIMUM_COMPATIBILITY_VERSION"] = ENV["IPHONEOS_DEPLOYMENT_TARGET"]
       
         # Xcode runs the version in /Developer instead of the version in the SDK (it is a shim to pick up the right version based on xcode-select)
-        `#{ENV["DEVELOPER_USR_DIR"]}/bin/ibtool --flatten #{ENV["IBC_FLATTEN_NIBS"]} --errors --warnings --notices --output-format human-readable-text --compile "#{dest_file}" "#{source}"`
+        `set -x; #{ENV["DEVELOPER_USR_DIR"]}/bin/ibtool --errors --warnings --notices --output-format human-readable-text --compile "#{dest_file}" "#{source}"`
+      when /\.strings/
+        ENV["ICONV"] = "/usr/bin/iconv"
+        `set -x; #{ENV["DEVELOPER_DIR"]}/Library/Xcode/Plug-ins/CoreBuildTasks.xcplugin/Contents/Resources/copystrings --validate --inputencoding utf-8 --outputencoding #{ENV["STRINGS_FILE_OUTPUT_ENCODING"]} "#{source}" --outdir "#{File.dirname(dest_file)}"`
       else
-        FileUtils.mkdir_p(File.dirname(dest_file))
         FileUtils.cp_r(source, dest_file)
       end
     }
