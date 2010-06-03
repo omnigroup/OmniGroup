@@ -40,6 +40,7 @@ RCS_ID("$Id$")
     [date release];
 
     _dateFormatter = [[NSDateFormatter alloc] init];
+    [_dateFormatter setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
     STAssertTrue([_dateFormatter formatterBehavior] == NSDateFormatterBehavior10_4, @"Should default to the 10.4+ behavior when linked on 10.6");
     
     [_dateFormatter setTimeZone:[NSDate UTCTimeZone]];

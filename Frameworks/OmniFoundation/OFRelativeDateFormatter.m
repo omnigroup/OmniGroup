@@ -144,7 +144,7 @@ dateString = [super stringForObjectValue:obj]; \
     NSError *relativeError = nil;
     NSDate *date = nil;
     
-    BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents error:&relativeError];
+    BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] error:&relativeError];
 
     if (success)
         *obj = date;
@@ -156,13 +156,13 @@ dateString = [super stringForObjectValue:obj]; \
 {
     NSError *relativeError = nil;
     NSDate *date = nil;
-    return [[OFRelativeDateParser sharedParser] getDateValue:&date forString:*partialStringPtr useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents error:&relativeError];
+    return [[OFRelativeDateParser sharedParser] getDateValue:&date forString:*partialStringPtr useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] error:&relativeError];
 }
 
 - (BOOL)getObjectValue:(out id *)obj forString:(NSString *)string range:(inout NSRange *)rangep error:(out NSError **)error;
 {
     NSDate *date = nil;
-    BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents error:error];
+    BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] error:error];
 
     if (success)
         *obj = date;

@@ -56,6 +56,10 @@ static unsigned int range(OFRandomState *state, unsigned int min, unsigned int m
 static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSString *mediumFormat, NSString *longFormat, NSString *timeFormat)
 {
     NSCalendar *calendar = [[[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar] autorelease];
+    
+    // specifically set en_US, to make this pass if the user's current locale is ja_JP.
+    [calendar setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
+
     NSString *testDateString = @""; //construct the natural language string
     
     NSDateComponents *testDateComponents = [[[NSDateComponents alloc] init] autorelease];
@@ -177,10 +181,10 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
     
     NSDate *baseDate = _dateFromYear(2007, 1, 1, 0, 0, 0, calendar);
     NSDate *testResult, *result = nil; 
-    [[OFRelativeDateParser sharedParser] getDateValue:&testResult forString:testDateString fromStartingDate:baseDate withTimeZone:[NSTimeZone localTimeZone] withCalendarIdentifier:[calendar calendarIdentifier] withShortDateFormat:shortFormat withMediumDateFormat:mediumFormat withLongDateFormat:longFormat withTimeFormat:timeFormat error:nil]; 
+    [[OFRelativeDateParser sharedParser] getDateValue:&testResult forString:testDateString fromStartingDate:baseDate calendar:calendar withShortDateFormat:shortFormat withMediumDateFormat:mediumFormat withLongDateFormat:longFormat withTimeFormat:timeFormat error:nil]; 
     
-    NSString *stringBack = [[OFRelativeDateParser sharedParser] stringForDate:testDate withDateFormat:dateFormat withTimeFormat:timeFormat withTimeZone:[NSTimeZone localTimeZone] withCalendarIdentifier:NSGregorianCalendar];
-    [[OFRelativeDateParser sharedParser] getDateValue:&result forString:stringBack fromStartingDate:baseDate withTimeZone:[NSTimeZone localTimeZone] withCalendarIdentifier:[calendar calendarIdentifier] withShortDateFormat:shortFormat withMediumDateFormat:mediumFormat withLongDateFormat:longFormat withTimeFormat:timeFormat error:nil]; 
+    NSString *stringBack = [[OFRelativeDateParser sharedParser] stringForDate:testDate withDateFormat:dateFormat withTimeFormat:timeFormat calendar:calendar];
+    [[OFRelativeDateParser sharedParser] getDateValue:&result forString:stringBack fromStartingDate:baseDate calendar:calendar withShortDateFormat:shortFormat withMediumDateFormat:mediumFormat withLongDateFormat:longFormat withTimeFormat:timeFormat error:nil]; 
     
     if ([testResult isEqual:testDate] && [result isEqual:testDate]) 
 	return YES;
@@ -208,7 +212,14 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
     } else
         randomState = OFRandomStateCreate();
     
+    // Default to en_US instead of the user's locale for now (in the tests only). Some tests will override this.
+    [[OFRelativeDateParser sharedParser] setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
+     
     calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    
+    // specifically set en_US, to make this pass if the user's current locale is ja_JP.
+    [calendar setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
+
     [NSDateFormatter setDefaultFormatterBehavior:NSDateFormatterBehavior10_4]; 
     dateFormats = [[NSArray alloc] initWithObjects:@"MM/dd/yy", @"MM/dd/yyyy", @"dd/MM/yy", @"dd/MM/yyyy", @"yyyy-MM-dd", @"MM.dd.yy", @"dd.MM.yy", @"d-MMM-yy", nil];
     timeFormats = [[NSArray alloc] initWithObjects:@"hh:mm a", @"hh:mm:ss a", @"HH:mm:ss", @"HH:mm", @"HHmm", @"kk:mm", @"kkmm", nil];
@@ -234,7 +245,7 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
 #define parseDate(string, expectedDate, baseDate, dateFormat, timeFormat) \
 do { \
     NSDate *result = nil; \
-    [[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate withTimeZone:[NSTimeZone localTimeZone] withCalendarIdentifier:[calendar calendarIdentifier] withShortDateFormat:dateFormat withMediumDateFormat:dateFormat withLongDateFormat:dateFormat withTimeFormat:timeFormat error:nil]; \
+    [[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate calendar:calendar withShortDateFormat:dateFormat withMediumDateFormat:dateFormat withLongDateFormat:dateFormat withTimeFormat:timeFormat error:nil]; \
     if (expectedDate && ![result isEqualTo:expectedDate]) \
         NSLog( @"FAILURE-> String: %@, locale:%@, result:%@, expected: %@ dateFormat:%@, timeFormat:%@", string, [[[OFRelativeDateParser sharedParser] locale] localeIdentifier], result, expectedDate, dateFormat, timeFormat); \
     shouldBeEqual(result, expectedDate); \
@@ -317,6 +328,10 @@ do { \
     // test using canada's date formats
     [calendar autorelease];
     calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    
+    // specifically set en_US, to make this pass if the user's current locale is ja_JP.
+    [calendar setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
+     
     NSString *timeFormat = @"h:mm a";
     NSString *dateFormat = @"d-MMM-yy";
     should(_testRandomDate(randomState, dateFormat, dateFormat, dateFormat, timeFormat));
