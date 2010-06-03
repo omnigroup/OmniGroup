@@ -62,6 +62,7 @@ RCS_ID("$Id$");
 
 - (void)setCaretRectangle:(CGRect)r;
 {
+    // Caret rect is in our frame coordinates (our superview's bounds coordinates).
     CGRect frame = self.frame;
     
     if (ascent != r.size.height || width != r.size.width) {
@@ -78,14 +79,16 @@ RCS_ID("$Id$");
             newBounds.origin.y = - (THUMB_TOUCH_RADIUS + 2*THUMB_HALFWIDTH + THUMB_GAP);
         } else {
             newBounds.size.height = THUMB_TOUCH_RADIUS + THUMB_HALFWIDTH + THUMB_GAP + ascent;
-            if (ascent < (THUMB_TOUCH_RADIUS - (THUMB_GAP + THUMB_HALFWIDTH))) {
-                newBounds.origin.y = (THUMB_TOUCH_RADIUS - (THUMB_GAP + THUMB_HALFWIDTH)) - ascent;
-                newBounds.size.height -= newBounds.origin.y;
+            CGFloat touchBottom = ascent - (THUMB_TOUCH_RADIUS - (THUMB_GAP + THUMB_HALFWIDTH));
+            if (touchBottom < 0) {
+                // If the TOUCH_RADIUS is large enough it extends past the bottom of the caret rectangle, then extend our frame
+                newBounds.origin.y = touchBottom;
+                newBounds.size.height -= touchBottom;
             } else {
                 newBounds.origin.y = 0;
             }
         }
-            
+        
         frame.size = newBounds.size;
         centerYOffset = newBounds.origin.y;
         self.bounds = newBounds;

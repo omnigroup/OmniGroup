@@ -130,6 +130,7 @@ static id do_init(OUIEditableFrame *self)
     self->flags.textNeedsUpdate = 1;
     self->flags.delegateRespondsToLayoutChanged = 0;
     self->flags.showSelectionThumbs = 1;
+    self->flags.showInspector = 0;  // Temporarily disabling the text style inspector since it isn't quite ready for prime time
     self->selectionDirtyRect = CGRectNull;
     self->markedTextDirtyRect = CGRectNull;
     
@@ -1500,8 +1501,8 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
 {
-    if (action == @selector(inspectSelectedText:))
-        return NO; // Temporarily disabling the text style inspector since it isn't quite ready for prime time
+    if (action == @selector(inspectSelectedText:) && !flags.showInspector)
+        return NO;
 
     if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(delete:) || action == @selector(inspectSelectedText:)) {
         return selection && ![selection isEmpty];
@@ -1976,8 +1977,11 @@ enum {
 
     if (markedRange.length == 0) {
         if (selection) {
+            // Creating a marked range is effectively beginning an insertion operation. So if there is a selected range, we want to delete the text in that range and replace it with the inserted text.
+            // (Normally, there will be an empty selection, which just tells us where to insert the marked text.)
             replaceRange = selection.range;
         } else {
+            // If there's no selection, append to the end of the text.
             replaceRange.location = adjustedContentLength;
             replaceRange.length = 0;
         }
@@ -2071,7 +2075,7 @@ enum {
     return [self positionFromPosition:position inDirection:UITextStorageDirectionForward offset:offset];
 }
 
-
+/* True if both or neither of its arguments is true */
 #define XNOR(a, b) ((a)? (b) : !(b))
 
 static NSUInteger _leftmostStringIndex(CTRunRef run)
@@ -2315,6 +2319,7 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
 /* Layout questions. */
 - (UITextPosition *)positionWithinRange:(UITextRange *)range farthestInDirection:(UITextLayoutDirection)direction;
 {
+    /* Storage directions are trivial... */
     if (direction == UITextStorageDirectionForward)
         return range.end;
     if (direction == UITextStorageDirectionBackward)
@@ -3033,7 +3038,6 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         return;
     }
     
-    
     NSRange selectionRange = [selection range];
     CFRange lineRange = [self _lineRangeForStringRange:selectionRange];
     
@@ -3288,14 +3292,13 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
 }
 
 #pragma mark Context menu methods
-
-- (void)inspectSelectedText:(id)sender
+- (NSSet *)inspectableTextSpans;
 {
-    NSMutableSet *runs = [NSMutableSet set];
-    
     if (!selection)
-        return;
+        return nil;
     
+    NSMutableSet *runs = [NSMutableSet set];
+
     NSRange range = [selection range];
     while(range.length > 0) {
         NSRange effective;
@@ -3312,6 +3315,15 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
             range.location = loc;
         }
     }
+    
+    return runs;
+}
+
+- (void)inspectSelectedText:(id)sender
+{
+    NSSet *runs = [self inspectableTextSpans];
+    if (!runs)
+        return;
     
     CGRect selectionRect = [self _boundsOfRange:selection];
     if (CGRectIsEmpty(selectionRect))
