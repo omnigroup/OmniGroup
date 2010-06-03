@@ -65,6 +65,10 @@ typedef enum {
 - (void)setControlsEnabled:(BOOL)enabled;
 - (void)setControlsEnabled:(BOOL)enabled inView:(NSView *)view;
 
+- (BOOL)shouldBeUsedForObject:(id)object;
+// This method is called by OITabbedInspector whenever the selection changes if the inspector is in auto-tab-select mode
+- (NSPredicate *)shouldBeUsedForObjectPredicate;
+
 @end
 
 @protocol OIConcreteInspector

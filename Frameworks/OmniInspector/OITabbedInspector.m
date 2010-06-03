@@ -12,6 +12,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/OmniAppKit.h>
 
+#import "OIInspectionSet.h"
 #import "OIInspectorController.h"
 #import "OIInspectorRegistry.h"
 #import "OIInspectorTabController.h"
@@ -22,6 +23,7 @@
 RCS_ID("$Id$")
 
 @interface OITabbedInspector (/*Private*/)
+- (void)_selectTabBasedOnObjects:(NSArray *)objects;
 - (OIInspectorTabController *)_tabWithIdentifier:(NSString *)identifier;
 - (void)_updateDimmedForTab:(OIInspectorTabController *)tab;
 - (void)_updateSubInspectorObjects;
@@ -382,6 +384,7 @@ RCS_ID("$Id$")
     
     
     _singleSelection = [dict boolForKey:@"single-selection" defaultValue:NO];
+    _autoSelection = [dict boolForKey:@"auto-selection" defaultValue:_singleSelection];
     
     NSMutableArray *tabControllers = [[NSMutableArray alloc] init];
     
@@ -472,6 +475,9 @@ RCS_ID("$Id$")
     // list will be nil when we are collapsed
     _shouldInspectNothing = (list == nil);
     [self _updateSubInspectorObjects];
+    
+    if (_autoSelection && [list count] > 0 && [[self pinnedTabIdentifiers] count] == 0)
+        [self _selectTabBasedOnObjects:list];
 }
 
 
@@ -516,6 +522,36 @@ RCS_ID("$Id$")
 
 #pragma mark -
 #pragma mark Private
+
+- (void)_selectTabBasedOnObjects:(NSArray *)objects;
+{
+    // Find the 'most relevant' object that has an inspector that directly applies to it.  This depends on the objects getting added to the inspection set in the right order.
+    OIInspectionSet *inspectionSet = [[OIInspectorRegistry sharedInspector] inspectionSet];
+    NSArray *sortedObjects = [inspectionSet objectsSortedByInsertionOrder:objects];
+    
+    if (0) {
+        NSUInteger objectIndex, objectCount = [sortedObjects count];
+        for (objectIndex = 0; objectIndex < objectCount; objectIndex++) {
+            id object = [sortedObjects objectAtIndex:objectIndex];
+            NSLog(@"%d - %@", [inspectionSet insertionOrderForObject:object], [object shortDescription]);
+        }
+    }
+    
+    NSArray *tabIdentifiers = [self tabIdentifiers];
+    
+    for (id object in sortedObjects) {
+        // Ask each of the tabs if this tab is the perfect match for the object
+        for (NSString *tabIdentifier in tabIdentifiers) {
+            OIInspector *inspector = [self inspectorWithIdentifier:tabIdentifier];
+            if ([inspector shouldBeUsedForObject:object]) {
+                [self setSelectedTabIdentifiers:[NSArray arrayWithObject:tabIdentifier] pinnedTabIdentifiers:[NSArray array]];
+                return;
+            }
+        }
+    }
+    
+    // Nothing appropriate found; just leave it.
+}
 
 - (OIInspectorTabController *)_tabWithIdentifier:(NSString *)identifier;
 {

@@ -26,6 +26,7 @@
     OIInspectorController *_nonretained_inspectorController;
     BOOL _singleSelection;
     BOOL _shouldInspectNothing;
+    BOOL _autoSelection;
 }
 
 // API

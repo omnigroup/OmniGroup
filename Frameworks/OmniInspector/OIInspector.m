@@ -314,6 +314,17 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     }
 }
 
+- (BOOL)shouldBeUsedForObject:(id)object;
+{
+    return [[self inspectedObjectsPredicate] evaluateWithObject:object] && [[self shouldBeUsedForObjectPredicate] evaluateWithObject:object];
+}
+
+- (NSPredicate *)shouldBeUsedForObjectPredicate;
+{
+    OBASSERT_NOT_REACHED("Not going to get any love this way.");
+    return nil;
+}
+
 #pragma mark -
 #pragma mark Debugging
 - (NSMutableDictionary *)debugDictionary;
