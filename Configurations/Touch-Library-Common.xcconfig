@@ -9,6 +9,9 @@
 // Common settings for Library targets
 INFOPLIST_FILE = 
 
+// Libraries are linked into the main app and shouldn't be installed.
+SKIP_INSTALL = YES
+
 // Publish all public header files for Foo to a common area as <Foo/header.h>
 PUBLIC_HEADERS_FOLDER_PATH = include/$(PRODUCT_NAME)
 

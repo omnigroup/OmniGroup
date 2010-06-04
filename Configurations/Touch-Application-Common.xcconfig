@@ -13,5 +13,7 @@ OTHER_CFLAGS = $(value) -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\"
 // Otherwise, category symbols aren't pulled in from "framework" static libraries.
 OTHER_LDFLAGS = $(value) -all_load -ObjC
 
-// Include all public headers vended by static library targets
-HEADER_SEARCH_PATHS = $(value) $(TARGET_BUILD_DIR)/include
+// Include all public headers vended by static library targets.
+// Since Applications get installed and Libraries don't, TARGET_BUILD_DIR can't be used.
+// BUILD_DIR is .../Products if you have intermediates going into the same directory as products, but if you don't you need OBJROOT.
+HEADER_SEARCH_PATHS = $(value) $(OBJROOT)/UninstalledProducts/include
