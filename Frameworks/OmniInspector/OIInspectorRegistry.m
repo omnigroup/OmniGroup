@@ -933,18 +933,17 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (void)_mergeInspectedObjectsFromResponder:(NSResponder *)responder seenControllers:(NSMutableSet *)seenControllers;
 {
+    [self _mergeInspectedObjectsFromPotentialController:responder seenControllers:seenControllers];
+    
+    // Also allow delegates of responders to be inspectable.  They follow the object of which they are a delegate so they can override it
+    if ([responder respondsToSelector:@selector(delegate)])
+        [self _mergeInspectedObjectsFromPotentialController:[(id)responder delegate] seenControllers:seenControllers];
+
     NSResponder *nextResponder = [responder nextResponder];
 
     if (nextResponder) {
         [self _mergeInspectedObjectsFromResponder:nextResponder seenControllers:seenControllers];
     }
-
-
-    [self _mergeInspectedObjectsFromPotentialController:responder seenControllers:seenControllers];
-    
-    // Also allow delegates of responders to be inspectable.  They follow the object of which they are a delegate so they can overrid it
-    if ([responder respondsToSelector:@selector(delegate)])
-        [self _mergeInspectedObjectsFromPotentialController:[(id)responder delegate] seenControllers:seenControllers];
 }
 
 - (void)_getInspectedObjects;

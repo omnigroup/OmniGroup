@@ -118,9 +118,10 @@ static void initializeDepressionImages(void)
     oldSelection = [[self selectedCells] retain];
     [[self cells] makeObjectsPerformSelector:@selector(saveState)];
     
+    // Wait to see if this is a double-click before proceeding
     if ([event clickCount] == 1) {
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        float doubleClickTime = 0.25f;
+        float doubleClickTime = 0.25f;  // Wait a maximum of a quarter of a second to see if it's a double-click
         id object = [defaults objectForKey: @"com.apple.mouse.doubleClickThreshold"];
         if (object && [object floatValue] < 0.25f)
             doubleClickTime = [object floatValue];
@@ -128,17 +129,24 @@ static void initializeDepressionImages(void)
         if (nextEvent)
             event = nextEvent;
     }
-    if ([event clickCount] == 2 && [self mode] != NSRadioModeMatrix) {  // double-click pins/unpins an inspector, unless we are in single-selection mode
-        NSInteger row, column;
-        if ([self getRow:&row column:&column forPoint:[self convertPoint:[event locationInWindow] fromView:nil]]) {
-            OITabCell *tabCell = [self cellAtRow:row column:column];
-            OBASSERT(tabCell != nil);   // -getRow:column:forPoint: would return NO if the point didn't hit a cell, right?
-            BOOL isPinned = ![tabCell isPinned];
-            [tabCell setIsPinned:isPinned]; // The action method is responsible for checking the pinnedness of the tabs and making sure that attribute gets propagated to the inspector tab controllers as appropriate
+    NSArray *allCells = [self cells];
+    NSInteger row, column;
+    if ([self getRow:&row column:&column forPoint:[self convertPoint:[event locationInWindow] fromView:nil]]) {
+        OITabCell *clickedCell = [self cellAtRow:row column:column];
+        OBASSERT(clickedCell != nil);   // -getRow:column:forPoint: would return NO if the point didn't hit a cell, right?
+        if ([event clickCount] == 2) {  // double-click pins/unpins an inspector
+            [clickedCell setIsPinned:![clickedCell isPinned]];  // The action method is responsible for checking the pinnedness of the tabs and making sure that attribute gets propagated to the inspector tab controllers as appropriate
+        }
+        if ([self mode] == NSRadioModeMatrix) { // If we're in single-selection mode, clear the pinnedness of any other tab cells
+            for (OITabCell *tabCell in allCells) {
+                if (tabCell != clickedCell) {
+                    [tabCell setIsPinned:NO];
+                }
+            }
         }
     }
     [super mouseDown:event];
-    [[self cells] makeObjectsPerformSelector:@selector(clearState)];
+    [allCells makeObjectsPerformSelector:@selector(clearState)];
     [self  setNeedsDisplay:YES];
     [oldSelection release];
     oldSelection = nil;
