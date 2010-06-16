@@ -414,6 +414,7 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
     static NSCalendar *cachedCalendar = nil;
     if (!cachedCalendar) {
         cachedCalendar = [[NSCalendar currentCalendar] retain];
+        [cachedCalendar setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
         OBASSERT(cachedCalendar);
     }
     
