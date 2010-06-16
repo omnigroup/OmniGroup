@@ -1148,8 +1148,10 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
 
     // NSLog(@"Laying out: solidCaret = %u", flags.solidCaret);
     
+    BOOL amFirstResponder = [self isFirstResponder];
+    
     /* Show or hide the selection thumbs */
-    if (selection && ![selection isEmpty] && flags.showSelectionThumbs) {
+    if (selection && ![selection isEmpty] && flags.showSelectionThumbs && amFirstResponder) {
         if (!drawnFrame || flags.textNeedsUpdate)
             [self _updateLayout:YES];
         
@@ -1159,75 +1161,47 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
             startThumb = [[OUITextThumb alloc] init];
             startThumb.isEndThumb = NO;
             [self addSubview:startThumb];
-            
-            UILongPressGestureRecognizer *startThumbLongPressRecognizer = [startThumb longPressGestureRecognizer];
-            UILongPressGestureRecognizer *myLongPressRecognizer = (UILongPressGestureRecognizer *)actionRecognizers[2];
-            OBASSERT([myLongPressRecognizer isKindOfClass:[UILongPressGestureRecognizer class]]);
-            
-            [myLongPressRecognizer requireGestureRecognizerToFail:startThumbLongPressRecognizer];
-            startThumbLongPressRecognizer.enabled = NO;
+            // [[startThumb gestureRecognizers] makeObjectsPerformSelector:@selector(setDelegate:) withObject:self];
         }
         caretRect = [self _caretRectForPosition:(OUEFTextPosition *)selection.start affinity:1 bloomScale:0];
         if (CGRectIsNull(caretRect)) {
             // This doesn't make a lot of sense, but it can happen if the layout height is finite
             startThumb.hidden = YES;
-            
-            UILongPressGestureRecognizer *startThumbLongPressRecognizer = [startThumb longPressGestureRecognizer];
-            startThumbLongPressRecognizer.enabled = NO;
         } else {
             // Convert to our bounds' coordinate system, and add a few pixels for visibility
             caretRect = CGRectInset([self convertRectToRenderingSpace:caretRect], -1, -1); // Method's name is misleading
             [startThumb setCaretRectangle:caretRect];
             startThumb.hidden = NO;
-            
-            UILongPressGestureRecognizer *startThumbLongPressRecognizer = [startThumb longPressGestureRecognizer];
-            startThumbLongPressRecognizer.enabled = !selection.isEmpty;
         }
         
         if (!endThumb) {
             endThumb = [[OUITextThumb alloc] init];
             endThumb.isEndThumb = YES;
             [self addSubview:endThumb];
-            
-            UILongPressGestureRecognizer *endThumbLongPressRecognizer = [endThumb longPressGestureRecognizer];
-            UILongPressGestureRecognizer *myLongPressRecognizer = (UILongPressGestureRecognizer *)actionRecognizers[2];
-            OBASSERT([myLongPressRecognizer isKindOfClass:[UILongPressGestureRecognizer class]]);
-            
-            [myLongPressRecognizer requireGestureRecognizerToFail:endThumbLongPressRecognizer];
-            endThumbLongPressRecognizer.enabled = NO;
+            // [[endThumb gestureRecognizers] makeObjectsPerformSelector:@selector(setDelegate:) withObject:self];
         }
         caretRect = [self _caretRectForPosition:(OUEFTextPosition *)selection.end affinity:-1 bloomScale:0];
         if (CGRectIsNull(caretRect)) {
             // This doesn't make a lot of sense, but it can happen if the layout height is finite
             endThumb.hidden = YES;
-            
-            UILongPressGestureRecognizer *endThumbLongPressRecognizer = [endThumb longPressGestureRecognizer];
-            endThumbLongPressRecognizer.enabled = NO;
         } else {
             caretRect = CGRectInset([self convertRectToRenderingSpace:caretRect], -1, -1); // Method's name is misleading
             [endThumb setCaretRectangle:caretRect];
             endThumb.hidden = NO;
-            
-            UILongPressGestureRecognizer *endThumbLongPressRecognizer = [endThumb longPressGestureRecognizer];
-            endThumbLongPressRecognizer.enabled = YES;
         }
     } else {
         // Hide thumbs if we've got 'em
         if (startThumb) {
             startThumb.hidden = YES;
-            UILongPressGestureRecognizer *startThumbLongPressRecognizer = [startThumb longPressGestureRecognizer];
-            startThumbLongPressRecognizer.enabled = NO;
         }
             
         if (endThumb) {
             endThumb.hidden = YES;
-            UILongPressGestureRecognizer *endThumbLongPressRecognizer = [endThumb longPressGestureRecognizer];
-            endThumbLongPressRecognizer.enabled = NO;
         }
     }
     
     /* Show or hide the layer-based blinking cursor */
-    if (drawnFrame && !flags.textNeedsUpdate && selection && [selection isEmpty] && !flags.solidCaret) {
+    if (drawnFrame && !flags.textNeedsUpdate && selection && [selection isEmpty] && !flags.solidCaret && amFirstResponder) {
         CGRect caretRect = [self _caretRectForPosition:(OUEFTextPosition *)(selection.start) affinity:1 bloomScale:self.scale];
         
         caretRect = [self convertRectToRenderingSpace:caretRect];  // method name is misleading
@@ -1259,7 +1233,7 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
         flags.showingEditMenu = 1;
     BOOL suppressContextMenu = (_loupe != nil && _loupe.mode != OUILoupeOverlayNone) ||
                                (_textInspector != nil && _textInspector.isVisible);
-    if (!flags.showingEditMenu || suppressContextMenu) {
+    if (!flags.showingEditMenu || suppressContextMenu || !amFirstResponder) {
         if (_selectionContextMenu) {
             [_selectionContextMenu setMenuVisible:NO animated:( suppressContextMenu? NO : YES )];
             [_selectionContextMenu autorelease];
@@ -1368,6 +1342,32 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
     [super setBounds:newBounds];
 }
 
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+{
+    // We want our thumbs to receive touches even when they extend a bit outside our area.
+    
+    UIView *hitStartThumb = startThumb? [startThumb hitTest:[self convertPoint:point toView:startThumb] withEvent:event] : nil;
+    UIView *hitEndThumb = endThumb? [endThumb hitTest:[self convertPoint:point toView:endThumb] withEvent:event] : nil;
+    
+    if (hitStartThumb && hitEndThumb) {
+        // Direct touches to one thumb or the other depending on closeness, ignoring their z-order.
+        // (This comes into play when the thumbs are close enough to each other that their areas overlap.)
+        CGFloat dStart = [startThumb distanceFromPoint:point];
+        CGFloat dEnd = [endThumb distanceFromPoint:point];
+        
+        if (dStart < dEnd)
+            return hitStartThumb;
+        else
+            return hitEndThumb;
+    } else if (hitStartThumb)
+        return hitStartThumb;
+    else if (hitEndThumb)
+        return hitEndThumb;
+    
+    // But by default, use our superclass's behavior
+    return [super hitTest:point withEvent:event];
+}
+
 #pragma mark -
 #pragma mark UIResponder subclass
 
@@ -1401,6 +1401,8 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
             actionRecognizers[i].enabled = YES;
     }
     
+    [self setNeedsLayout];
+    
     if (selection)
         [self setNeedsDisplay];
     
@@ -1432,6 +1434,8 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
             endThumb = nil;
         }
     }
+    
+    [self setNeedsLayout];
     
     if (selection)
         [self setNeedsDisplay];
@@ -2325,9 +2329,102 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
     if (direction == UITextStorageDirectionBackward)
         return range.start;
     
-    /* TODO: Implement this using the rect walker */
-    btrace();
-    abort();
+    if (!drawnFrame || flags.textNeedsUpdate)
+        [self _updateLayout:YES];
+        
+    NSRange stringRange = [(OUEFTextRange *)range range];
+    CFRange lineRange = [self _lineRangeForStringRange:stringRange];
+    
+    if (lineRange.length < 1 || lineRange.location < 0)
+        return nil;  // Unlikely but not impossible for there to be no lines for this range
+    
+    UITextPosition *result;
+    CGPoint *origins = malloc(sizeof(*origins) * lineRange.length);
+    CTFrameGetLineOrigins(drawnFrame, lineRange, origins);
+    CFArrayRef lines = CTFrameGetLines(drawnFrame);
+    
+    if (direction == UITextLayoutDirectionLeft || direction == UITextLayoutDirectionRight) {
+        
+        CFIndex foundPosition = kCFNotFound;
+        
+        /* Iterate through all the lines, and all the runs in each line. */
+        /* Not bothering to try to avoid iterating over runs if we can get what we need from the line as a whole, because lines don't generally have very many runs */
+        for(CFIndex lineIndex = 0; lineIndex < lineRange.length; lineIndex ++) {
+            CTLineRef thisLine = CFArrayGetValueAtIndex(lines, lineIndex + lineRange.location);
+            CFArrayRef runs = CTLineGetGlyphRuns(thisLine);
+            CFIndex runCount = CFArrayGetCount(runs);
+            for (CFIndex runIndex = 0; runIndex < runCount; runIndex ++) {
+                CTRunRef run = CFArrayGetValueAtIndex(runs, runIndex);
+                CFRange runRange = CTRunGetStringRange(run);
+
+                if (runRange.location < 0 || runRange.length < 1) {
+                    // Empty or invalid run.
+                    continue;
+                }
+                
+                if ((NSUInteger)runRange.location >= (stringRange.location+stringRange.length) ||
+                    (NSUInteger)(runRange.location+runRange.length) <= stringRange.location) {
+                    // This run doesn't overlap the range of interest; skip it
+                    continue;
+                }
+                
+                CTRunStatus runFlags = CTRunGetStatus(run);
+                
+                // Within this run, which storage direction are we interested in?
+                BOOL lookingForward = XNOR(runFlags & kCTRunStatusRightToLeft, direction == UITextLayoutDirectionLeft);
+                
+                // Look at the edge of the run
+                CFIndex runEdge;
+                if (lookingForward)
+                    runEdge = runRange.location + runRange.length - 1;
+                else
+                    runEdge = runRange.location;
+                
+                // If the run's edge is not in our range, look at the edge of our range
+                if ((NSUInteger)runEdge < stringRange.location ||
+                    (NSUInteger)runEdge >= (stringRange.location + stringRange.length)) {
+                    if (lookingForward)
+                        runEdge = stringRange.location + stringRange.length - 1;
+                    else
+                        runEdge = stringRange.location;
+                    
+                    // If the range's edge isn't in the run, either, then they don't overlap
+                    if (runEdge < runRange.location || runEdge >= (runRange.location + runRange.length))
+                        continue;
+                }
+                
+                CGFloat pos = CTLineGetOffsetForStringIndex(thisLine, runEdge, NULL);
+                pos += origins[lineIndex].x;
+                
+                /* The offset that CTLine gives us is the location of the "starting" edge of the character (depending on the writing direction at that point). We really want the leftmost or rightmost edge, depending on our 'direction' argument. We could optionally move one character to the side, but then we get into trouble at run boundaries (it looks like the secondaryOffset might be intended to help with this, but secondaryOffset is basically uncodumented).  We could retrieve the glyph advance from the CTRun, if needed. For now, I'm just going to punt. */
+                    
+                if (foundPosition == kCFNotFound ||
+                    XNOR(foundPosition < pos, direction == UITextLayoutDirectionRight)) {
+                    foundPosition = runEdge;
+                }
+            }
+        }
+        
+        if (foundPosition < 0 /* kCFNotFound is negative */)
+            result = nil;
+        else {
+            if((NSUInteger)foundPosition == stringRange.location) {
+                result = range.start;
+            } else {
+                OUEFTextPosition *resultPosition = [[OUEFTextPosition alloc] initWithIndex:foundPosition];
+                resultPosition.generation = generation;
+                result = [resultPosition autorelease];
+            }
+        }
+    } else {
+        /* TODO: Need to implement Up/Down, I suppose. Is it ever used? */
+        NSLog(@"Unimplemented movement direction %@", nameof(direction, directions));
+        result = nil;
+    }
+
+    free(origins);
+    
+    return result;
 }
 
 - (UITextRange *)characterRangeByExtendingPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction;

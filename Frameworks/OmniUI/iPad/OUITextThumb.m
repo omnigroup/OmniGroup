@@ -23,7 +23,9 @@
 #define THUMB_GAP 3            // The gap between the thumb circle and the caret bar (pixels)
 #define THUMB_RING_WIDTH 2     // The width of the white border of the thumb circle (pixels)
 
-#define THUMB_TOUCH_RADIUS 25  // How many pixels from the ring should we be sensitive to touches?
+#define THUMB_TOUCH_RADIUS 35  // How many pixels from the ring should we be sensitive to touches?
+
+//#define DEBUG_THUMB_GRABBY
 
 RCS_ID("$Id$");
 
@@ -38,22 +40,20 @@ RCS_ID("$Id$");
     self.opaque = NO;
     self.contentMode = UIViewContentModeRedraw;
     self.userInteractionEnabled = YES;
+    self.hidden = YES;
     
     ascent = -1;
     width = -1;
-    centerYOffset = 0;
     
     /* We create a gesture recognizer for the drag gesture */
     UIPanGestureRecognizer *dragMe = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_dragged:)];
     dragMe.minimumNumberOfTouches = 1;
     dragMe.maximumNumberOfTouches = 1;
-    dragMe.enabled = YES;
+    dragMe.delaysTouchesBegan = YES;
+    dragMe.enabled = NO; // Will be enabled & disabled in our -setHidden: implementation
+    
     [self addGestureRecognizer:dragMe];
     [dragMe release];
-    
-    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_longPress:)];
-    [self addGestureRecognizer:longPress];
-    [longPress release];
     
     return self;
 }
@@ -64,6 +64,7 @@ RCS_ID("$Id$");
 {
     // Caret rect is in our frame coordinates (our superview's bounds coordinates).
     CGRect frame = self.frame;
+    CGFloat belowCaret;
     
     if (ascent != r.size.height || width != r.size.width) {
         ascent = r.size.height;
@@ -73,32 +74,37 @@ RCS_ID("$Id$");
         
         newBounds.size.width = 2 * THUMB_TOUCH_RADIUS; // Assuming this is the largest length we worry about (else, do some MAX() calls here)
         newBounds.origin.x = - THUMB_TOUCH_RADIUS;
-                
+        
+        // How far past the end of the caret does the touch radius extend?
+        // (This is the same for start and end thumbs)
+        CGFloat pastCaret = ( THUMB_TOUCH_RADIUS - THUMB_GAP - THUMB_HALFWIDTH ) - ascent;
+        
+        newBounds.size.height = THUMB_TOUCH_RADIUS + THUMB_HALFWIDTH + THUMB_GAP + ascent + MAX(0, pastCaret);
+        
+        // Work out our bounds rect: place Y=0 at the bottom of the caret rect
         if (isEndThumb) {
-            newBounds.size.height = THUMB_TOUCH_RADIUS + 2*THUMB_HALFWIDTH + THUMB_GAP + MAX(ascent, THUMB_TOUCH_RADIUS - (THUMB_GAP + THUMB_HALFWIDTH));
-            newBounds.origin.y = - (THUMB_TOUCH_RADIUS + 2*THUMB_HALFWIDTH + THUMB_GAP);
+            // Thumb dot is below caret rect
+            newBounds.origin.y = - (THUMB_TOUCH_RADIUS + THUMB_HALFWIDTH + THUMB_GAP);
         } else {
-            newBounds.size.height = THUMB_TOUCH_RADIUS + THUMB_HALFWIDTH + THUMB_GAP + ascent;
-            CGFloat touchBottom = ascent - (THUMB_TOUCH_RADIUS - (THUMB_GAP + THUMB_HALFWIDTH));
-            if (touchBottom < 0) {
-                // If the TOUCH_RADIUS is large enough it extends past the bottom of the caret rectangle, then extend our frame
-                newBounds.origin.y = touchBottom;
-                newBounds.size.height -= touchBottom;
-            } else {
-                newBounds.origin.y = 0;
-            }
+            // Thumb dot is above caret rect
+            newBounds.origin.y = MIN(0, -pastCaret);
         }
         
+        newBounds = CGRectIntegral(newBounds);
+        
         frame.size = newBounds.size;
-        centerYOffset = newBounds.origin.y;
         self.bounds = newBounds;
         // NSLog(@"Thumb(%d): caret rect is %@ -> bounds are %@", (int)isEndThumb, NSStringFromCGRect(r), NSStringFromCGRect(newBounds));
         [self setNeedsDisplay];
+        
+        belowCaret = - (newBounds.origin.y);
+    } else {
+        belowCaret = - (self.bounds.origin.y);
     }
     
     // We work in Y-increases-upwards coordinates internally, but our frame is always in Y-increases-downwards coordinates
-    frame.origin.x = r.origin.x - THUMB_TOUCH_RADIUS + floor(width / 2);
-    frame.origin.y = r.origin.y + r.size.height - centerYOffset - frame.size.height;
+    frame.origin.x = r.origin.x - THUMB_TOUCH_RADIUS + round(width / 2);
+    frame.origin.y = r.origin.y + r.size.height + belowCaret - frame.size.height;
     
     // NSLog(@"Thumb(%d): caret rect is %@ -> frame is %@", (int)isEndThumb, NSStringFromCGRect(r), NSStringFromCGRect(frame));
     self.frame = frame;
@@ -109,21 +115,22 @@ RCS_ID("$Id$");
     return NO;
 }
 
-- (UILongPressGestureRecognizer *)longPressGestureRecognizer;
+- (void)setHidden:(BOOL)newHidden
 {
-    for (UIGestureRecognizer *recognizer in [self gestureRecognizers]) {
-        if ([recognizer isKindOfClass:[UILongPressGestureRecognizer class]])
-            return (UILongPressGestureRecognizer *)recognizer;
-    }
-    
-    return nil;
+    [super setHidden:newHidden];
+    OFForEachInArray([self gestureRecognizers], UIGestureRecognizer *, recognizer, recognizer.enabled = !newHidden);
 }
 
 - (void)drawRect:(CGRect)rect;
 {
     CGContextRef cgContext = UIGraphicsGetCurrentContext();
     CGRect viewBounds = self.bounds;
-        
+    
+#ifdef DEBUG_THUMB_GRABBY
+    CGContextSetRGBFillColor(cgContext, 1.0, 0.5, 0.5, 0.125);
+    CGContextFillRect(cgContext, viewBounds);
+#endif    
+    
     OQFlipVerticallyInRect(cgContext, viewBounds);
     CGContextSetAlpha(cgContext, 1.0);
     
@@ -194,6 +201,29 @@ RCS_ID("$Id$");
     CGContextFillRect(cgContext, caretRect);
 }
 
+- (CGFloat)distanceFromPoint:(CGPoint)p;
+{
+    // Not a true distance, we only need something that increases monotonically with distance so we can compare.
+    
+    // Convert to our bounds coords...
+    p = [self convertPoint:p fromView:[self superview]];
+    // ... and to the system we mostly draw in
+    CGRect f = self.bounds;
+    p.y = (2 * f.origin.y) + f.size.height - p.y;
+    
+    CGFloat dy;
+    
+    if (p.y < 0) {
+        dy = -p.y;
+    } else if (p.y > ascent) {
+        dy = ascent - p.y;
+    } else {
+        dy = 0;
+    }
+
+    return ( dy*dy ) + ( p.x * p.x );
+}
+
 - (void)_dragged:(UIPanGestureRecognizer *)gestureRecognizer;
 {
     OUIEditableFrame *parent = (OUIEditableFrame *)(self.superview);
@@ -219,32 +249,6 @@ RCS_ID("$Id$");
     if (st == UIGestureRecognizerStateEnded || st == UIGestureRecognizerStateCancelled) {
         [parent thumbEnded:self normally:(st == UIGestureRecognizerStateEnded? YES:NO)];
         touchdownPoint = (CGPoint){ NAN, NAN };
-    }
-}
-
-
-- (void)_longPress:(UILongPressGestureRecognizer *)gestureRecognizer;
-{
-    OUIEditableFrame *parent = (OUIEditableFrame *)(self.superview);
-    UIGestureRecognizerState st = gestureRecognizer.state;
-    
-    CGPoint currentPoint = [gestureRecognizer locationInView:parent];
-    
-    if (st == UIGestureRecognizerStateBegan) {
-        CGRect myBounds = self.bounds;
-        /* The point below is the center of the caret rectangle we draw. We want to use that rather than the baseline point or the thumb point to allow the maximum finger slop before the text view selects a different line. */
-        touchdownPoint = [self convertPoint:(CGPoint){0, 2 * myBounds.origin.y + myBounds.size.height - ascent/2} toView:parent];
-        originalPoint = currentPoint;
-        [parent thumbBegan:self];
-    }
-    
-    if (st != UIGestureRecognizerStateBegan)
-        [parent thumbMoved:self targetPosition:(CGPoint){ touchdownPoint.x + (currentPoint.x - originalPoint.x), touchdownPoint.y + (currentPoint.y - originalPoint.y) }];
-    
-    if (st == UIGestureRecognizerStateEnded || st == UIGestureRecognizerStateCancelled) {
-        [parent thumbEnded:self normally:(st == UIGestureRecognizerStateEnded? YES:NO)];
-        touchdownPoint = (CGPoint){ NAN, NAN };
-        originalPoint = CGPointZero;
     }
 }
 

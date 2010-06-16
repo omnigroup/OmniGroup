@@ -14,16 +14,14 @@
 @private
     CGFloat ascent;          // Line ascent at the point of selection
     CGFloat width;           // Visual width of caret bar
-    CGFloat centerYOffset;
     CGPoint touchdownPoint;  // Used during drag to compute touch deltas
-    CGPoint originalPoint;
     BOOL isEndThumb;         // Are we the start-thumb or the end-thumb?
 }
 
 @property (nonatomic, readwrite) BOOL isEndThumb;
 
 - (void)setCaretRectangle:(CGRect)r;
-- (UILongPressGestureRecognizer *)longPressGestureRecognizer;
+- (CGFloat)distanceFromPoint:(CGPoint)p;
 
 @end
 
