@@ -33,8 +33,6 @@ RCS_ID("$Id$");
 - (OIInspectorController *)_registerInspector:(OIInspector *)inspector;
 - (void)_inspectWindow:(NSWindow *)window queue:(BOOL)queue onlyIfVisible:(BOOL)onlyIfVisible updateInspectors:(BOOL)updateInspectors;
 - (void)_queuedRecalculateInspectorsAndInspectWindow:(int)onlyIfVisible updateInspectors:(int)updateInspectors;
-- (void)_mergeInspectedObjectsFromPotentialController:(id)object seenControllers:(NSMutableSet *)seenControllers;
-- (void)_mergeInspectedObjectsFromResponder:(NSResponder *)responder seenControllers:(NSMutableSet *)seenControllers;
 - (void)_getInspectedObjects;
 - (void)_recalculateInspectionSetIfVisible:(BOOL)onlyIfVisible updateInspectors:(BOOL)updateInspectors;
 - (void)_selectionMightHaveChangedNotification:(NSNotification *)notification;
@@ -920,32 +918,6 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     [self _recalculateInspectionSetIfVisible:(BOOL)onlyIfVisible updateInspectors:(BOOL)updateInspectors];
 }
 
-- (void)_mergeInspectedObjectsFromPotentialController:(id)object seenControllers:(NSMutableSet *)seenControllers;
-{
-    if ([object conformsToProtocol:@protocol(OIInspectableController)]) {
-        // A controller may be accessible along two paths in the responder chain by being the delegate for multiple NSResponders.  Only give each object one chance to add its stuff, otherwise controllers that want to override a particular class via -[OIInspectionSet removeObjectsWithClass:] may itself be overriden by the duplicate delegate!
-        if ([seenControllers member:object] == nil) {
-            [seenControllers addObject:object];
-            [(id <OIInspectableController>)object addInspectedObjects:inspectionSet];
-        }
-    }
-}
-
-- (void)_mergeInspectedObjectsFromResponder:(NSResponder *)responder seenControllers:(NSMutableSet *)seenControllers;
-{
-    [self _mergeInspectedObjectsFromPotentialController:responder seenControllers:seenControllers];
-    
-    // Also allow delegates of responders to be inspectable.  They follow the object of which they are a delegate so they can override it
-    if ([responder respondsToSelector:@selector(delegate)])
-        [self _mergeInspectedObjectsFromPotentialController:[(id)responder delegate] seenControllers:seenControllers];
-
-    NSResponder *nextResponder = [responder nextResponder];
-
-    if (nextResponder) {
-        [self _mergeInspectedObjectsFromResponder:nextResponder seenControllers:seenControllers];
-    }
-}
-
 - (void)_getInspectedObjects;
 {
     static BOOL isFloating = YES;
@@ -978,7 +950,28 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     NSResponder *responder = [window firstResponder];
     if (!responder)
         responder = window;
-    [self _mergeInspectedObjectsFromResponder:responder seenControllers:[NSMutableSet set]];
+    NSMutableSet *seenControllers = [NSMutableSet set];
+    [responder applyToResponderChain: ^ BOOL (id target) {
+        // Create a block with this behavior so that we can then apply the exact same behavior to both our target and its delegate (if it has a delegate)
+        OAResponderChainApplier addInspectedObjects = ^ BOOL (id target) {
+            if ([target conformsToProtocol:@protocol(OIInspectableController)]) {
+                // A controller may be accessible along two paths in the responder chain by being the delegate for multiple NSResponders.  Only give each object one chance to add its stuff, otherwise controllers that want to override a particular class via -[OIInspectionSet removeObjectsWithClass:] may itself be overriden by the duplicate delegate!
+                if ([seenControllers member:target] == nil) {
+                    [seenControllers addObject:target];
+                    [(id <OIInspectableController>)target addInspectedObjects:inspectionSet];
+                }
+            }
+            return YES;
+        };
+        
+        if (!addInspectedObjects(target)) {
+            return NO;
+        }
+        if ([target respondsToSelector:@selector(delegate)] && !addInspectedObjects([(id)target delegate])) {
+            return NO;
+        }
+        return YES;
+    }];
 }
 
 - (void)_recalculateInspectionSetIfVisible:(BOOL)onlyIfVisible updateInspectors:(BOOL)updateInspectors;
