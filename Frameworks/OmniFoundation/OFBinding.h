@@ -75,12 +75,6 @@ extern BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b);
 - (NSString *)humanReadableDescriptionForKeyPath:(NSString *)keyPath;
 - (NSString *)shortHumanReadableDescriptionForKeyPath:(NSString *)keyPath;
 @end
-#ifdef OMNI_ASSERTIONS_ON
-OBDEPRECATED_METHODS(OFBindingSourceObject)
-- (NSString *)humanReadableDescriptionForKey:(NSString *)key; // Use the key path variant
-- (NSString *)shortHumanReadableDescriptionForKey:(NSString *)key;
-@end
-#endif
 
 // For plain attributes and to-one relationships.  If you bind this for a to-many, it won't do insert/remove/replace calls.
 // This is the default if you create an ODBinding

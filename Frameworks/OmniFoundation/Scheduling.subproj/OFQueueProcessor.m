@@ -116,7 +116,7 @@ static OFQueueProcessor *detachingQueueProcessor;
         }
         
         if (waitForMessages) {
-            [autoreleasePool release];
+            [autoreleasePool drain];
             autoreleasePool = [[NSAutoreleasePool alloc] init];
         } else {
             if ([self shouldProcessQueueEnd])
@@ -128,7 +128,7 @@ static OFQueueProcessor *detachingQueueProcessor;
         NSLog(@"%@: processQueueUntilEmpty: (exiting)", [self shortDescription]);
         
     
-    [autoreleasePool release];
+    [autoreleasePool drain];
 }
 
 - (void)processQueueUntilEmpty;

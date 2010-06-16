@@ -226,11 +226,11 @@ static void logdescriptors(const char *where)
         posix_spawn_file_actions_t fileActions;
         posix_spawnattr_t spawnAttributes, *attrs;
         
-        posix_spawnattr_init(&spawnAttributes);
         posix_spawn_file_actions_init(&fileActions);
         attrs = NULL;
 
         if (newProcessGroup) {
+            posix_spawnattr_init(&spawnAttributes);
             posix_spawnattr_setflags(&spawnAttributes, POSIX_SPAWN_SETPGROUP);
             attrs = &spawnAttributes;
         }
@@ -272,6 +272,13 @@ static void logdescriptors(const char *where)
             OBErrorWithErrno(&errorBuf, OMNI_ERRNO(), "posix_spawn()", nil, description);
             
             child = -1; // imitate fork()'s error return behavior
+        }
+        
+     	posix_spawn_file_actions_destroy(&fileActions);
+        
+        if (attrs != NULL) {
+            // We only call posix_spawnattr_init() if we need it, so only call _destroy() if we needed it.
+            posix_spawnattr_destroy(attrs);
         }
     } else {
         /* Fork off a child process in the traditional way */

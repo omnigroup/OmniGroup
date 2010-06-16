@@ -88,8 +88,8 @@ RCS_ID("$Id$");
             [a addObject:d];
             [d release];
         }
-        pldata = (NSData *)CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)a);
-        [p release];
+        pldata = NSMakeCollectable(CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)a));
+        [p drain];
     }
     
     NSData *bzipme = [pldata filterDataThroughCommandAtPath:@"/usr/bin/bzip2" withArguments:[NSArray arrayWithObject:@"--compress"] error:NULL];
@@ -123,7 +123,7 @@ RCS_ID("$Id$");
             [a addObject:d];
             [d release];
         }
-        pldata = (NSData *)CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)a);
+        pldata = NSMakeCollectable(CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)a));
         [p release];
     }
     

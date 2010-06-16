@@ -634,7 +634,7 @@ static void OBPerformRuntimeChecksOnLoad(void)
     if (getenv("OBPerformRuntimeChecksOnLoad")) {
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         OBPerformRuntimeChecks();
-        [pool release];
+        [pool drain];
     }
 }
 

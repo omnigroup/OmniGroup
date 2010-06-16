@@ -54,7 +54,7 @@ do { \
     \
     OBShouldNotError([[NSFileManager defaultManager] removeItemAtPath:fileName error:&error]); \
     \
-    NSString *string = (NSString *)CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)data, [doc stringEncoding]); \
+    NSString *string = NSMakeCollectable(CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)data, [doc stringEncoding])); \
     [data release]; \
     \
     STAssertEqualObjects(string, expectedString, @"SAVE_AND_COMPARE"); \
@@ -425,11 +425,11 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
     should(doc != nil);
     
     NSData *inputData = [[NSData alloc] initWithContentsOfFile:inputFile];
-    NSString *inputString = (NSString *)CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)inputData, [doc stringEncoding]);
+    CFStringRef inputString = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)inputData, [doc stringEncoding]);
     [inputData release];
 
-    SAVE_AND_COMPARE(inputString);
-    [inputString release];
+    SAVE_AND_COMPARE((NSString *)inputString);
+    CFRelease(inputString);
 
     [doc release];
 }

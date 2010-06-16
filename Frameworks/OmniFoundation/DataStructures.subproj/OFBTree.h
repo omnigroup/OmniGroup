@@ -20,6 +20,10 @@ typedef void *(*OFBTreeNodeAllocator)(struct _OFBTree *tree);
 typedef void (*OFBTreeNodeDeallocator)(struct _OFBTree *tree, void *node);
 typedef int  (*OFBTreeElementComparator)(struct _OFBTree *tree, const void *elementA, const void *elementB);
 typedef void (*OFBTreeEnumeratorCallback)(struct _OFBTree *tree, void *element, void *arg);
+#ifdef NS_BLOCKS_AVAILABLE
+typedef void (^OFBTreeEnumeratorBlock)(struct _OFBTree *tree, void *element);
+#endif
+
 
 struct _OFBTree {
     // None of these fields should be written to (although they can be read if you like)
@@ -51,8 +55,12 @@ extern void OFBTreeDestroy(OFBTree *tree);
 extern void OFBTreeInsert(OFBTree *tree, void *value);
 extern BOOL OFBTreeDelete(OFBTree *tree, void *value);
 extern void *OFBTreeFind(OFBTree *tree, void *value);
+extern void OFBTreeDeleteAll(OFBTree *tree);
 
 extern void OFBTreeEnumerate(OFBTree *tree, OFBTreeEnumeratorCallback callback, void *arg);
+#ifdef NS_BLOCKS_AVAILABLE
+extern void OFBTreeEnumerateBlock(OFBTree *tree, OFBTreeEnumeratorBlock callback);
+#endif
 
 // This is not a terribly efficient API but it is reliable and does what I need
 extern void *OFBTreePrevious(OFBTree *tree, void *value);

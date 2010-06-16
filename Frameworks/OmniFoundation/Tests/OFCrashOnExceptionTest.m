@@ -99,6 +99,6 @@ int main(int argc, char *argv[])
     } while (NO);
     
     [controller requestTermination];
-    [pool release];
+    [pool drain];
     return status;
 }

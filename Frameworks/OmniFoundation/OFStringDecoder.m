@@ -453,7 +453,7 @@ extern NSString *OFMostlyApplyDeferredEncoding(NSString *str, CFStringEncoding n
     /* The most common case is that we scan the whole buffer in one gulp. */
     struct OFCharacterScanResult firstScan = OFScanCharactersIntoBuffer(recodeState, CFDataGetBytePtr(octets), octetCount, resultCharacters, recodeBufferSize);
     if (firstScan.bytesConsumed == octetCount) {
-        NSString *immutableResult = [(id)CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, resultCharacters, firstScan.charactersProduced, kCFAllocatorMalloc) autorelease];
+        NSString *immutableResult = [NSMakeCollectable(CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, resultCharacters, firstScan.charactersProduced, kCFAllocatorMalloc)) autorelease];
         CFRelease(octets);
         // resultCharacters owned by the result.
         return immutableResult;
@@ -487,7 +487,7 @@ extern NSString *OFMostlyApplyDeferredEncoding(NSString *str, CFStringEncoding n
     CFRelease(octets);
     free(resultCharacters);
     
-    NSString *immutableResult = [(id)CFStringCreateCopy(kCFAllocatorDefault, resultBuffer) autorelease];
+    NSString *immutableResult = [NSMakeCollectable(CFStringCreateCopy(kCFAllocatorDefault, resultBuffer)) autorelease];
     CFRelease(resultBuffer);
           
     return immutableResult;

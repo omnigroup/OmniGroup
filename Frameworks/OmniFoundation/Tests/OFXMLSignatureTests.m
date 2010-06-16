@@ -732,7 +732,7 @@ after the signature value was computed.  Verification should FAIL.
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
                      [self checkReferences:sig];);
-    [p release];
+    [p drain];
     
     p = [[NSAutoreleasePool alloc] init];
     sigs = [self getSigs:@"signature-hmac-md5-c14n-enveloping.xml"];
@@ -741,7 +741,7 @@ after the signature value was computed.  Verification should FAIL.
     verifiedOK = [[sigs objectAtIndex:0] processSignatureElement:&error];
     STAssertFalse(verifiedOK, @"This verification should fail!");
     STAssertEquals((int)[error code], (int)CSSMERR_CSP_VERIFY_FAILED, @"Failure reason should be failure of CSSM_VerifyDataFinal()");
-    [p release];
+    [p drain];
         
     /*
      signature-hmac-sha1-exclusive-c14n-enveloped.xml
@@ -764,7 +764,7 @@ after the signature value was computed.  Verification should FAIL.
     verifiedOK = [[sigs objectAtIndex:0] processSignatureElement:&error];
     STAssertFalse(verifiedOK, @"This verification should fail!");
     STAssertEquals((int)[error code], (int)CSSMERR_CSP_VERIFY_FAILED, @"Failure reason should be failure of CSSM_VerifyDataFinal()");
-    [p release];
+    [p drain];
 
     /*
      signature-hmac-sha1-exclusive-c14n-comments-detached.xml
@@ -780,7 +780,7 @@ after the signature value was computed.  Verification should FAIL.
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
                      [self checkReferences:sig];);
-    [p release];
+    [p drain];
 }
 
 - (void)testX509Various

@@ -120,13 +120,13 @@ static NSData *repeatedBytes(int bytevalue, unsigned int count)
     shouldBeEqual([tripletsAndSuffix(6, 1431655765, 1, 1) sha1Signature],
                   [NSData dataWithHexString:@"d5e09777a94f1ea9240874c48d9fecb6b634256b" error:NULL]);
 
-    [pool release];
+    [pool drain];
     pool = [[NSAutoreleasePool alloc] init];
 
     shouldBeEqual([tripletsAndSuffix(3, 1431655765, 0, 1) sha1Signature],
                   [NSData dataWithHexString:@"A3D7438C589B0B932AA91CC2446F06DF9ABC73F0" error:NULL]);
 
-    [pool release];
+    [pool drain];
 }
 
 NSString *md5string(NSString *input)

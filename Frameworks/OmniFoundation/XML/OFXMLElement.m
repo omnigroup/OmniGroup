@@ -128,7 +128,7 @@ RCS_ID("$Id$");
 
     if (!_children)
 	// This happens a lot; avoid the placeholder goo
-	_children = (NSMutableArray *)CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectArrayCallbacks);
+	_children = NSMakeCollectable(CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectArrayCallbacks));
     CFArrayAppendValue((CFMutableArrayRef)_children, child);
 }
 

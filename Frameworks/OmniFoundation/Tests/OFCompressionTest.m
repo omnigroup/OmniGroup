@@ -152,7 +152,7 @@ static NSData *utf8(NSString *str)
         shouldBeEqual(data, decompressed);
     }
 
-    [pool release];
+    [pool drain];
 }
 
 @end

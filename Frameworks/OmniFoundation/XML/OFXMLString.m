@@ -185,7 +185,7 @@ static NSString *_OFXMLCreateStringWithEntityReferences(NSString *sourceString, 
             CFStringAppendCharacters(result, &c, 1);
     }
 
-    return (NSString *)result;
+    return NSMakeCollectable(result);
 }
 
 // Replace characters not representable in string encoding with numbered character references

@@ -33,6 +33,11 @@
 
 RCS_ID("$Id$")
 
+OBDEPRECATED_METHODS(NSFileManagerHandler)
+- (BOOL)fileManager:(NSFileManager *)fm shouldProceedAfterError:(NSDictionary *)errorInfo;
+- (void)fileManager:(NSFileManager *)fm willProcessPath:(NSString *)path;
+@end
+
 @interface NSFileManager (OFPrivate)
 - (int)filesystemStats:(struct statfs *)stats forPath:(NSString *)path;
 - (NSString *)lockFilePathForPath:(NSString *)path;

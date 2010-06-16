@@ -52,7 +52,7 @@ RCS_ID("$Id$")
                 
                 pool = [[NSAutoreleasePool alloc] init];
                 [scheduler scheduleSelector:@selector(fire) onObject:self withObject:nil afterTime:0.1];
-                [pool release];
+                [pool drain];
             }
 
             NSLog(@"Wait...");

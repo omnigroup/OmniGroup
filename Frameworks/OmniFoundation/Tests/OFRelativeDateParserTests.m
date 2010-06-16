@@ -297,7 +297,7 @@ do { \
 	    expectedDate = _dateFromYear(2001, 1, 1, 23, 0, 0, calendar);
 	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
 	    
-	    [pool release];
+	    [pool drain];
 	}
     }
 }
@@ -467,7 +467,7 @@ do { \
 	    expectedDate = _dateFromYear(2001, 1, 2, 0, 0, 0, calendar);
 	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
             
-            [pool release];
+            [pool drain];
 	}
     }
 }
@@ -851,7 +851,7 @@ do { \
 		      _dateFromYear(2000, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
             
-            [pool release];
+            [pool drain];
 	}
     }
 }

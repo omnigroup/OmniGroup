@@ -75,6 +75,9 @@ RCS_ID("$Id$");
     if (c == 'v' || c == 'V')
         scannerSkipPeekedCharacter(scanner);
 
+    NSUInteger componentsBufSize = 40; // big enough for five 64-bit version number components
+    _components = OBAllocateCollectable(componentsBufSize, 0);
+    
     while (scannerHasData(scanner)) {
         // TODO: Add a OFCharacterScanner method that allows you specify the maximum uint32 value (and a parameterless version that uses UINT_MAX) and passes back a BOOL indicating success (since any uint32 would be valid).
         NSUInteger location = scannerScanLocation(scanner);
@@ -87,7 +90,10 @@ RCS_ID("$Id$");
         [cleanVersionString appendFormat: _componentCount ? @".%u" : @"%u", component];
 
         _componentCount++;
-        _components = realloc(_components, sizeof(*_components) * _componentCount);
+        if (_componentCount*sizeof(*_components) > componentsBufSize) {
+            componentsBufSize = _componentCount*sizeof(*_components);
+            _components = OBReallocateCollectable(_components, componentsBufSize, 0);
+        }
         _components[_componentCount - 1] = component;
 
         c = scannerPeekCharacter(scanner);

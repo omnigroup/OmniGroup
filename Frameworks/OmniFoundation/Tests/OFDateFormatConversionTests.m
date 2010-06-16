@@ -76,7 +76,7 @@ void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateFormat, BOO
     if (expectedNewResult)
         STAssertEqualObjects(newResult, expectedNewResult, nil);
         
-    [pool release];
+    [pool drain];
 }
 
 #define testFormat(format) _testFormat(self, (format), YES, nil)

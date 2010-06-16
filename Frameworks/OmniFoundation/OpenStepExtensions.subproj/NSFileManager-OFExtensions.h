@@ -80,9 +80,3 @@
 - (BOOL)path:(NSString *)otherPath isAncestorOfPath:(NSString *)thisPath relativePath:(NSString **)relativeResult;
 
 @end
-
-#import <OmniBase/macros.h>
-OBDEPRECATED_METHODS(NSFileManagerHandler)
-- (BOOL)fileManager:(NSFileManager *)fm shouldProceedAfterError:(NSDictionary *)errorInfo;
-- (void)fileManager:(NSFileManager *)fm willProcessPath:(NSString *)path;
-@end

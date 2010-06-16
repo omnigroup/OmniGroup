@@ -96,7 +96,7 @@ RCS_ID("$Id$")
             break;
         }
         
-        [pool release];
+        [pool drain];
     }
 #endif
 }

@@ -61,18 +61,37 @@ void OFBTreeInit(OFBTree *tree,
     tree->nodeStackDepth = 0;
 }
 
-static void _OFBTreeDestroyNode(OFBTree *tree, OFBTreeNode *node)
+static void _OFBTreeDeallocateChildren(OFBTree *tree, OFBTreeNode *node)
 {
-    // UNDONE
-    // for (each child in this node) {
-    //   _OFBTreeDestroyNode(tree, the child);
-    // }
-    tree->nodeDeallocator(tree, node);
+    void *childPointer = &( node->childZero );
+    size_t elementStep = tree->elementSize + sizeof(OFBTreeNode *);
+    for(size_t elementIndex = 0; elementIndex <= node->elementCount; elementIndex ++) {
+        OFBTreeNode *childNode = *(OFBTreeNode **)childPointer;
+        if (childNode) {
+            _OFBTreeDeallocateChildren(tree, childNode);
+            tree->nodeDeallocator(tree, childNode);
+        }
+        childPointer += elementStep;
+    }
 }
 
 void OFBTreeDestroy(OFBTree *tree)
 {
-    _OFBTreeDestroyNode(tree, tree->root);
+    _OFBTreeDeallocateChildren(tree, tree->root);
+    tree->nodeDeallocator(tree, tree->root);
+}
+
+extern void OFBTreeDeleteAll(OFBTree *tree)
+{
+    _OFBTreeDeallocateChildren(tree, tree->root);
+#if defined(__OBJC_GC__) && __OBJC_GC__
+    // Scribble on the released elements so that the GC doesn't think any pointers are still live
+    static const uint32_t badfood = 0xBAADF00D;
+    memset_pattern4(tree->root->contents, &badfood, tree->root->elementCount * ( tree->elementSize + sizeof(OFBTreeNode *) ));
+#endif
+    tree->root->elementCount = 0;
+    tree->root->childZero = NULL;
+    tree->nodeStackDepth = 0;
 }
 
 static inline void *_OFBTreeElementAtIndex(OFBTree *btree, OFBTreeNode *node, NSUInteger elementIndex)
@@ -304,12 +323,24 @@ BOOL OFBTreeDelete(OFBTree *btree, void *value)
                 *(OFBTreeNode **)(value - sizeof(OFBTreeNode *)) = *(OFBTreeNode **)((void *)node->contents + btree->elementSize);
             else
                 *(OFBTreeNode **)(value - sizeof(OFBTreeNode *)) = node->childZero;
+            btree->nodeDeallocator(btree, node);
         } else if (node->childZero) {
+            OBASSERT(node == btree->root);
             // the root is now empty, but there is content farther down, so move the root down
             btree->root = node->childZero;
             btree->nodeDeallocator(btree, node);
-        } 
+        } else {
+            // the root is now empty, but it has no children; as a special case, we allow the root node to be empty.
+        }
+    } else {
+#if defined(__OBJC_GC__) && __OBJC_GC__
+        // Scribble on the removed object so that the GC doesn't think its pointers are still live
+        static const uint32_t bad_data = 0xBAADDADA;
+        // (We know that the _OFBTreeElementAtIndex() call here is within bounds since we just decremented node->elementCount, above)
+        memset_pattern4(_OFBTreeElementAtIndex(btree, node, node->elementCount), &bad_data, btree->elementSize);
+#endif
     }
+    
     return YES;
 }
 
@@ -355,6 +386,16 @@ void OFBTreeEnumerate(OFBTree *tree, OFBTreeEnumeratorCallback callback, void *a
     _OFBTreeEnumerateNode(tree, tree->root, callback, arg);
 }
 
+#ifdef NS_BLOCKS_AVAILABLE
+static void _invokeBlock(struct _OFBTree *tree, void *element, void *arg)
+{
+    ((OFBTreeEnumeratorBlock)arg)(tree, element);
+}
+void OFBTreeEnumerateBlock(OFBTree *tree, OFBTreeEnumeratorBlock callback)
+{
+    _OFBTreeEnumerateNode(tree, tree->root, _invokeBlock, callback);
+}
+#endif
 
 /*"
 Finds the element in the tree that compares the same to the given bytes and returns a pointer to the closest element that compares less than the given value.  If there is no such element, NULL is returned.  Any data in the returned pointer that is used in the element comparison function should not be modified (since that would invalidate its position in the tree).

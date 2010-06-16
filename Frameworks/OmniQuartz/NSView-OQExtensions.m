@@ -182,10 +182,6 @@ typedef struct _TransitionUserInfo {
     if ([[NSApp currentEvent] modifierFlags] & NSShiftKeyMask)
 	duration = 2.0f;
     
-    OQTargetAnimation *animation = [[OQTargetAnimation alloc] initWithTarget:self selector:@selector(_setTransitionProgress:forAnimation:userInfo:)];
-    [animation setDuration:duration];
-    [animation setFrameRate:0.0f];
-    
     TransitionUserInfo info;
     memset(&info, 0, sizeof(info));
     info.reverse = reverse;
@@ -202,7 +198,21 @@ typedef struct _TransitionUserInfo {
     info.newImage = [newSubview newImage];
     //[[[[self window] graphicsContext] CIContext] writePNGImage:info.newImage fromRect:[info.newImage extent] toURL:[NSURL fileURLWithPath:@"/tmp/new-image.png"]];
 
-    CGRect extent = CGRectUnion([info.oldImage extent], [info.newImage extent]);
+    CGRect extent;
+    if (info.oldImage && info.newImage)
+        extent = CGRectUnion([info.oldImage extent], [info.newImage extent]);
+    else if (info.oldImage)
+        extent = [info.oldImage extent];
+    else if (info.newImage)
+        extent = [info.newImage extent];
+    else {
+        OBASSERT_NOT_REACHED("Should only both be nil if both views were nil, and then we'd have bailed at the top");
+        return;
+    }
+
+    OQTargetAnimation *animation = [[OQTargetAnimation alloc] initWithTarget:self selector:@selector(_setTransitionProgress:forAnimation:userInfo:)];
+    [animation setDuration:duration];
+    [animation setFrameRate:0.0f];
     
     CIColor *white = [CIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:1.0f];
     

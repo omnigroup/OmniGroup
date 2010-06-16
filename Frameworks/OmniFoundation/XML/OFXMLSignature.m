@@ -592,6 +592,17 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
     [super dealloc];
 }
 
+- (void)finalize
+{
+    if (referenceNodes)
+        free(referenceNodes);
+
+    /* TODO: See if we can make libxml use auto_zone on a per-document . If so, we might be able to get rid of this finalize. */
+    xmlFreeDoc(signedInformation);
+    
+    [super finalize];
+}
+
 /*" Verifies the signature on the Signature element. If verification fails, returns NO and sets *err. If it succeeds, the -countOfReferenceNodes and -verifyReferenceAtIndex:toBuffer:error: methods can be used to retrieve and verify the individual signed referents. "*/
 - (BOOL)processSignatureElement:(NSError **)err
 {
