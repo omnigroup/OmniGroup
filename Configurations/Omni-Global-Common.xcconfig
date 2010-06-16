@@ -59,9 +59,8 @@ INFOPLIST_PREPROCESS = YES
 // Make sure we look for the built SVNVersions.h in the right spot
 HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR"
 
-// Run with gcc by default.  clang has several warts that make it harder to use in development (so we also build with branched configs for things like clang-sa)
-GCC_VERSION = 4.2
+// Use LLVM-GCC as the default compiler.
+GCC_VERSION = com.apple.compilers.llvmgcc42
 //GCC_VERSION = com.apple.compilers.llvm.clang.1_0
-//CC=/Volumes/Space/Users/bungi/Source/LLVM/llvm/Release/bin/clang
 
 RUN_CLANG_STATIC_ANALYZER = YES
