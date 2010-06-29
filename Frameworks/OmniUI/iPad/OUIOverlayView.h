@@ -9,6 +9,15 @@
 
 #import <UIKit/UIView.h>
 
+typedef enum {
+    OUIOverlayViewAlignmentUpCenter = 0,
+    OUIOverlayViewAlignmentMidCenter = 1,
+    OUIOverlayViewAlignmentDownCenter = 2,
+} OUIOverlayViewAlignment;
+
+#define OUIOverlayViewDistanceFromTopEdge 10
+#define OUIOverlayViewDistanceFromHorizontalEdge 10
+
 
 @interface OUIOverlayView : UIView
 {
@@ -20,21 +29,28 @@
     
     NSTimer *_overlayTimer;
     CGSize _cachedSuggestedSize;
+    
+    BOOL shouldHide;
 }
 
+// Convenience methods for creating temporary overlays.  Pass 0 as the displayInterval to use the default delay.
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string avoidingTouchPoint:(CGPoint)touchPoint;
-+ (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAbovePoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval; 
++ (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAbovePoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval;
++ (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string alignment:(OUIOverlayViewAlignment)alignment displayInterval:(NSTimeInterval)displayInterval;
 
 - (void)displayTemporarilyInView:(UIView *)view;
 - (void)displayInView:(UIView *)view;
 - (void)hide;
 
 - (CGSize)suggestedSize;
+- (void)useSuggestedSize;
 
 @property(retain,nonatomic) NSString *text;
 @property(assign,nonatomic) CGSize borderSize;
 @property(assign,nonatomic) NSTimeInterval messageDisplayInterval;  // seconds
 
 - (void)avoidTouchPoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;
+- (void)centerAbovePoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;
+- (void)useAlignment:(OUIOverlayViewAlignment)alignment withinBounds:(CGRect)superBounds;
 
 @end

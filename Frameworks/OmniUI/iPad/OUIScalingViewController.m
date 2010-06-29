@@ -182,9 +182,7 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     CGFloat effectiveScale = view.scale * scrollView.zoomScale;
     NSString *zoomLabel = [NSString stringWithFormat:@"%d%%", (NSUInteger)rint(effectiveScale * 100)];
     
-    CGRect scrollBounds = scrollView.bounds;
-    CGPoint center = CGPointMake(CGRectGetMidX(scrollBounds), CGRectGetMidY(scrollBounds));
-    [OUIOverlayView displayTemporaryOverlayInView:scrollView withString:zoomLabel centeredAbovePoint:center displayInterval:0.5];
+    [OUIOverlayView displayTemporaryOverlayInView:scrollView withString:zoomLabel alignment:OUIOverlayViewAlignmentMidCenter displayInterval:0.5];
 }
 
 - (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(UIView *)view atScale:(float)scale; // scale between minimum and maximum. called after any 'bounce' animations

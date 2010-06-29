@@ -25,7 +25,12 @@ static OUIOverlayView *_overlayView = nil;
     }
     
     _overlayView.text = string;
-    [_overlayView avoidTouchPoint:touchPoint withinBounds:view.bounds];
+    
+    if (CGPointEqualToPoint(touchPoint, CGPointZero)) {
+        [_overlayView useAlignment:OUIOverlayViewAlignmentUpCenter withinBounds:view.bounds];
+    } else {
+        [_overlayView avoidTouchPoint:touchPoint withinBounds:view.bounds];
+    }
     
     [_overlayView displayTemporarilyInView:view];
 }
@@ -38,22 +43,36 @@ static OUIOverlayView *_overlayView = nil;
     
     _overlayView.text = string;
     
-    CGRect _frame = [_overlayView frame];
-    touchPoint.y -= _frame.size.height;
-    touchPoint.x -= _frame.size.width/2;
-    touchPoint.y = round(touchPoint.y);
-    touchPoint.x = round(touchPoint.x);
-    _frame.origin = touchPoint;
-    CGSize suggested = [_overlayView suggestedSize];
-    _frame.size = suggested;
-    _overlayView.frame = _frame;
-    _overlayView.messageDisplayInterval = displayInterval;
+    [_overlayView centerAbovePoint:touchPoint withinBounds:view.bounds];
+    
+    if (displayInterval) {
+        _overlayView.messageDisplayInterval = displayInterval;
+    }
 
+    [_overlayView displayTemporarilyInView:view];
+}
+
++ (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string alignment:(OUIOverlayViewAlignment)alignment displayInterval:(NSTimeInterval)displayInterval;
+{
+    if (!_overlayView) {
+        _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
+    }
+    
+    _overlayView.text = string;
+    
+    [_overlayView useAlignment:alignment withinBounds:view.bounds];
+    
+    if (displayInterval) {
+        _overlayView.messageDisplayInterval = displayInterval;
+    }
+    
     [_overlayView displayTemporarilyInView:view];
 }
 
 - (void)displayTemporarilyInView:(UIView *)view;
 {
+    shouldHide = NO;
+    
     // If an overlay is already being displayed, replace it and cancel its timer
     if (_overlayTimer) {
         [_overlayTimer invalidate];
@@ -69,11 +88,12 @@ static OUIOverlayView *_overlayView = nil;
 
 - (void)displayInView:(UIView *)view;
 {
-    if (self.superview == view)
-        return;
+    shouldHide = NO;
     
-    self.alpha = 0;
-    [view addSubview:self];
+    if (self.superview != view) {
+        self.alpha = 0;
+        [view addSubview:self];
+    }
     
     [UIView beginAnimations:@"RSTemporaryOverlayAnimation" context:NULL];
     {
@@ -85,6 +105,8 @@ static OUIOverlayView *_overlayView = nil;
 
 - (void)hide;
 {
+    shouldHide = YES;
+    
     [UIView beginAnimations:@"RSTemporaryOverlayAnimation" context:NULL];
     {
         //[UIView setAnimationDuration:SELECTION_DELAY];
@@ -106,9 +128,12 @@ static OUIOverlayView *_overlayView = nil;
 - (void)_hideOverlayEffectDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
 {
     // Cancel if a new overlay was created
-    if (_overlayTimer) {
+    if (_overlayTimer)
         return;
-    }
+    
+    // Cancel if the overlay was told to show before finishing hiding
+    if (!shouldHide)
+        return;
     
     [self removeFromSuperview];
 }
@@ -125,8 +150,8 @@ static OUIOverlayView *_overlayView = nil;
     self.userInteractionEnabled = NO;
     self.opaque = NO;
     
-    _font = [[UIFont systemFontOfSize:16] retain];
-    _borderSize = CGSizeMake(8, 4);
+    _font = [[UIFont boldSystemFontOfSize:16] retain];
+    _borderSize = CGSizeMake(8, 8);
     _messageDisplayInterval = 1.5;
     
     _cachedSuggestedSize = CGSizeZero;
@@ -161,6 +186,15 @@ static OUIOverlayView *_overlayView = nil;
 @synthesize borderSize = _borderSize;
 @synthesize messageDisplayInterval = _messageDisplayInterval;
 
+- (void)setFrame:(CGRect)newFrame;
+{
+    if (!CGSizeEqualToSize(self.frame.size, newFrame.size)) {
+        [self setNeedsDisplay];
+    }
+    
+    [super setFrame:newFrame];
+}
+
 - (CGSize)suggestedSize;
 {
     if (_cachedSuggestedSize.width) {
@@ -173,6 +207,12 @@ static OUIOverlayView *_overlayView = nil;
     suggestedSize.width += 1;  // Just in case the -sizeWithFont result is off slightly
     _cachedSuggestedSize = suggestedSize;
     return _cachedSuggestedSize;
+}
+
+- (void)useSuggestedSize;
+{
+    CGSize suggestedSize = [self suggestedSize];
+    self.bounds = CGRectMake(0, 0, suggestedSize.width, suggestedSize.height);
 }
 
 - (void)avoidTouchPoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;
@@ -189,11 +229,63 @@ static OUIOverlayView *_overlayView = nil;
         newFrame = CGRectMake(100, 70, suggestedSize.width, suggestedSize.height);
     }
     
-    BOOL needsDisplay = !CGSizeEqualToSize(self.frame.size, newFrame.size);
-
     self.frame = newFrame;
-    if (needsDisplay)
-        [self setNeedsDisplay];
+}
+
+- (void)centerAbovePoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;
+{
+    CGSize suggestedSize = [self suggestedSize];
+    
+    CGPoint topLeft = touchPoint;
+    topLeft.x -= suggestedSize.width/2;
+    topLeft.y -= suggestedSize.height;
+    topLeft.y -= 80;
+    
+    // Don't go past edges
+    if (topLeft.y < OUIOverlayViewDistanceFromTopEdge)
+        topLeft.y = OUIOverlayViewDistanceFromTopEdge;
+    if (topLeft.x < OUIOverlayViewDistanceFromHorizontalEdge)
+        topLeft.x = OUIOverlayViewDistanceFromHorizontalEdge;
+    
+    CGRect newFrame = CGRectMake(topLeft.x, topLeft.y, suggestedSize.width, suggestedSize.height);
+    
+    // Don't go past edges
+    if (newFrame.origin.y < OUIOverlayViewDistanceFromTopEdge)
+        newFrame.origin.y = OUIOverlayViewDistanceFromTopEdge;
+    if (newFrame.origin.x < OUIOverlayViewDistanceFromHorizontalEdge)
+        newFrame.origin.x = OUIOverlayViewDistanceFromHorizontalEdge;
+    if (CGRectGetMaxX(newFrame) + OUIOverlayViewDistanceFromHorizontalEdge > CGRectGetMaxX(superBounds))
+        newFrame.origin.x = CGRectGetMaxX(superBounds) - suggestedSize.width - OUIOverlayViewDistanceFromHorizontalEdge;
+    
+    newFrame = CGRectIntegral(newFrame);
+    
+    self.frame = newFrame;
+}
+
+- (void)useAlignment:(OUIOverlayViewAlignment)alignment withinBounds:(CGRect)superBounds;
+{
+    CGSize suggestedSize = [self suggestedSize];
+    
+    CGFloat horizontalCenter = CGRectGetMidX(superBounds);
+    CGFloat left = horizontalCenter - suggestedSize.width/2;
+    
+    CGFloat top = OUIOverlayViewDistanceFromTopEdge;
+    switch (alignment) {
+        case OUIOverlayViewAlignmentMidCenter:
+            top = CGRectGetMidY(superBounds);
+            top -= suggestedSize.height/2;
+            break;
+        case OUIOverlayViewAlignmentDownCenter:
+            top = CGRectGetMaxY(superBounds) - OUIOverlayViewDistanceFromTopEdge - suggestedSize.height;
+            break;
+        default:
+            break;
+    }
+    
+    CGRect newFrame = CGRectMake(left, top, suggestedSize.width, suggestedSize.height);
+    newFrame = CGRectIntegral(newFrame);
+    
+    self.frame = newFrame;
 }
 
 
@@ -205,10 +297,14 @@ static OUIOverlayView *_overlayView = nil;
     CGRect bounds = self.bounds;
     
     // Draw background
-    UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:bounds cornerRadius:4];
-    UIColor *color = [UIColor colorWithWhite:0.2 alpha:0.8];
-    [color set];
+    UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:bounds cornerRadius:6];
+    [[UIColor colorWithWhite:0.2 alpha:0.8] set];
     [path fill];
+    
+    // Draw border
+    [[UIColor colorWithWhite:0.8 alpha:0.8] set];
+    path.lineWidth = 1.5;
+    [path stroke];
     
     // Draw text
     if (self.text.length) {
