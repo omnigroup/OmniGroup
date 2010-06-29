@@ -389,6 +389,7 @@ static OAFontDescriptorPlatformFont _copyFont(CTFontDescriptorRef fontDesc, CGFl
             _fontDescriptor = CTFontDescriptorCreateWithAttributes((CFDictionaryRef)_attributes);
         
         CTFontDescriptorRef matchingDesc = NULL;
+        
         do {
             if ((_font = _copyFont(_fontDescriptor, 0/*size*/)))
                 break;
@@ -406,17 +407,17 @@ static OAFontDescriptorPlatformFont _copyFont(CTFontDescriptorRef fontDesc, CGFl
             // No direct match -- most likely the traits produce something w/o an exact match (asking for a bold variant of something w/o bold).
             // In OO3's version of this we'd prefer traits to the family. Continue doing so here. We don't have support for maintaining serif-ness, though.
             
-            [keys removeObject:(id)kCTFontFamilyNameAttribute];
-            [keys removeObject:(id)kCTFontNameAttribute];
-                
-            matchingDesc = CTFontDescriptorCreateMatchingFontDescriptor(_fontDescriptor, (CFSetRef)keys);
-            //NSLog(@"keys = %@, matchingDesc = %@", keys, matchingDesc);
+            NSMutableDictionary *attributeSubset = [NSMutableDictionary dictionaryWithDictionary:_attributes];
+            [attributeSubset removeObjectForKey:(id)kCTFontFamilyNameAttribute];
+            [attributeSubset removeObjectForKey:(id)kCTFontNameAttribute];
+            
+            matchingDesc = CTFontDescriptorCreateWithAttributes((CFDictionaryRef)attributeSubset);
             if (matchingDesc && (_font = _copyFont(matchingDesc, integralSize)))
                 break;
                 
             // TODO: Narrow down the traits in the order we want.
-            [keys removeObject:(id)kCTFontTraitsAttribute];
-            matchingDesc = CTFontDescriptorCreateMatchingFontDescriptor(_fontDescriptor, (CFSetRef)keys);
+            [attributeSubset removeObjectForKey:(id)kCTFontTraitsAttribute];
+            matchingDesc = CTFontDescriptorCreateWithAttributes((CFDictionaryRef)attributeSubset);
             //NSLog(@"keys = %@, matchingDesc = %@", keys, matchingDesc);
             if (matchingDesc && (_font = _copyFont(matchingDesc, integralSize)))
                 break;
