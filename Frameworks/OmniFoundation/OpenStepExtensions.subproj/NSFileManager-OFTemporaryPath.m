@@ -66,7 +66,7 @@ static NSLock *tempFilenameLock = nil;
 /*" Returns the path to the 'Temporary Items' folder on the same filesystem as the given path.  Returns an error if there is a problem (for example, iDisk doesn't have temporary folders).  The returned directory should be only readable by the calling user, so files written into this directory can be written with the desired final permissions without worrying about security (the expectation being that you'll soon call -exchangeFileAtPath:withFileAtPath:). "*/
 {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    // Only one filesystem.
+    // Only one filesystem. Sadly, on the simulator this returns something in / instead of the app sandbox's "tmp" directory. Radar 8137291.
     return NSTemporaryDirectory();
 #else
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -281,6 +281,140 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
     
     OFError(outError, OFCannotUniqueFileNameError, ([NSString stringWithFormat:@"Unable to find a variant of %@ that didn't already exist.", filename]), nil);
     return nil;
+}
+
+- (BOOL)_exchangeFileAtPath:(NSString *)originalFile withFileAtPath:(NSString *)newFile deleteOriginal:(BOOL)deleteOriginal error:(NSError **)outError;
+/*" Replaces the orginal file with the new file, possibly using underlying filesystem features to do so atomically. "*/
+{
+    OBPRECONDITION(OFNOTEQUAL(originalFile, newFile));
+    
+    NSDictionary *originalAttributes = [self attributesOfItemAtPath:originalFile error:outError];
+    if (!originalAttributes)
+        return NO;
+    
+    NSDictionary *newAttributes = [self attributesOfItemAtPath:newFile error:outError];
+    if (!newAttributes)
+        return NO;
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    NSURL *originalURL = [[[NSURL alloc] initFileURLWithPath:originalFile] autorelease];
+    NSURL *newURL = [[[NSURL alloc] initFileURLWithPath:newFile] autorelease];
+    
+    // Try FSExchangeObjects.  Under 10.2 this will only work if both files are on the same filesystem and both are files (not folders).  We could check for these conditions up front, but they might fix/extend FSExchangeObjects, so we'll just try it.
+    FSRef originalRef, newRef;
+    if (!CFURLGetFSRef((CFURLRef)originalURL, &originalRef)) {
+        OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to get file reference for '%@'", originalFile]), nil);
+        return NO;
+    }
+    
+    if (!CFURLGetFSRef((CFURLRef)newURL, &newRef)) {
+        OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to get file reference for '%@'", newFile]), nil);
+        return NO;
+    }
+    
+    OSErr err = FSExchangeObjects(&originalRef, &newRef);
+    if (err == noErr) {
+        // Delete the original file which is now at the new file path.
+        NSError *nErr;
+        if (deleteOriginal && ![self removeItemAtPath:newFile error:&nErr]) {
+            // We assume that failing to remove the temporary file is not a fatal error and don't raise.
+            NSLog(@"Ignoring inability to remove '%@': %@", newFile, nErr);
+        }
+        return YES;
+    }
+#endif
+    
+    // Do a file renaming dance instead.
+    {
+        originalFile = [originalFile stringByStandardizingPath];
+        
+        // There is only one filesystem on iOS, so this extra move isn't necessary on the device. However, on the simulator there NSTemporaryDirectory() returns a value on the root filesystem instead of the app sandboxed "tmp" directory. It seems possible (though unlikely) that they'll add multiple filesystems on the device later, so we'll check at runtime.
+        
+        if ([originalAttributes fileSystemNumber] != [newAttributes fileSystemNumber]) {
+            // Move the new file to the same directory as the original file.  If the files are on different filesystems, this may involve copying.  We do this before renaming the original to ensure that the destination filesystem has enough room for the new file.
+            NSString *originalDir = [originalFile stringByDeletingLastPathComponent];
+            NSString *temporaryPath = [self uniqueFilenameFromName:[originalDir stringByAppendingPathComponent:[newFile lastPathComponent]] allowOriginal:NO create:NO error:outError];
+            if (!temporaryPath)
+                return NO;
+            
+            if (![self moveItemAtPath:newFile toPath:temporaryPath error:outError]) {
+                // Wrap the *outError from -moveItemAtPath:toPath:error: in an OFCannotExchangeFileError
+                OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", newFile, temporaryPath]), nil);
+                return NO;
+            }
+            
+            newFile = temporaryPath;
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+            newURL = [[[NSURL alloc] initFileURLWithPath:newFile] autorelease];
+#endif
+            
+            // Probably not necessary to refresh newAttributes these since we are done checking them. But we'll double-check that the filesystem is right now.
+            OBASSERT([[self attributesOfItemAtPath:newFile error:outError] fileSystemNumber] == [originalAttributes fileSystemNumber]);
+        }
+        
+        NSString *originalAside = nil;
+        
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+        if (err == diffVolErr) {
+            // Try FSExchangeObjects again, now that we know the files are on the same filesystem.
+            
+            if (CFURLGetFSRef((CFURLRef)newURL, &newRef)) {
+                err = FSExchangeObjects(&originalRef, &newRef);
+                if (err == noErr) {
+                    originalAside = newFile; // This is the file we'll delete below, if we do. On successful swap, the old file is in the 'new' spot.
+                }
+            }
+        }            
+#endif
+        
+        if (!originalAside) {
+            // Move the original file aside (in the same directory)
+            originalAside = [self uniqueFilenameFromName:originalFile allowOriginal:NO create:NO error:outError];
+            if (!originalAside)
+                return NO;
+            
+            if (![self moveItemAtPath:originalFile toPath:originalAside error:outError]) {
+                // Wrap the *outError from -moveItemAtPath:toPath:error: in an OFCannotExchangeFileError
+                OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", originalFile, originalAside]), nil);
+                return NO;
+            }
+            
+            // Move the new to the original
+            if (![self moveItemAtPath:newFile toPath:originalFile error:outError]) {
+                // Move the original back, hopefully.  This still leaves the new file in the original's directory.  Don't really want to move it back (might be across filesystems and might be big).  Maybe we should delete it?
+                [self moveItemAtPath:originalAside toPath:originalFile error:NULL];
+                
+                // Wrap the *outError from -moveItemAtPath:toPath:error: in an OFCannotExchangeFileError
+                OFError(outError, OFCannotExchangeFileError, ([NSString stringWithFormat:@"Unable to move '%@' to '%@'", newFile, originalFile]), nil);
+                return NO;
+            }
+        }
+        
+        // Finally, delete the old original (which has successfully been replaced)
+        if (deleteOriginal) {
+            if (![self removeItemAtPath:originalAside error:NULL]) {
+                // We assume failure isn't fatal
+                NSLog(@"Ignoring inability to remove '%@'", originalAside);
+            }
+        } else {
+            // Doing an exchange.
+            if (![self moveItemAtPath:originalAside toPath:newFile error:NULL]) {
+                NSLog(@"Ignoring inability to move preserved old file from '%@' to the new file's original location '%@'", originalAside, newFile);
+            }
+        }
+        
+        return YES;
+    }
+}
+
+- (BOOL)replaceFileAtPath:(NSString *)originalFile withFileAtPath:(NSString *)newFile error:(NSError **)outError;
+{
+    return [self _exchangeFileAtPath:originalFile withFileAtPath:newFile deleteOriginal:YES error:outError];
+}
+
+- (BOOL)exchangeFileAtPath:(NSString *)originalFile withFileAtPath:(NSString *)newFile error:(NSError **)outError;
+{
+    return [self _exchangeFileAtPath:originalFile withFileAtPath:newFile deleteOriginal:NO error:outError];
 }
 
 @end

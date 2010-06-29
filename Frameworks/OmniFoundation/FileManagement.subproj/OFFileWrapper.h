@@ -11,7 +11,7 @@
 #import <Availability.h>
 
 /*
- This is only used on the iPhone/iPad, which doesn't have NSFileWrapper. We have simpler needs on the iPad (no AFP mounts disabling hard linking, etc).
+ This is only used on the iPhone/iPad, which doesn't have NSFileWrapper until iOS 4 (where we still want to support iOS 3.2 for iPad). We have simpler needs on the iPad (no AFP mounts disabling hard linking, etc).
  */
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -20,11 +20,25 @@
     #define OFFILEWRAPPER_ENABLED 0
     #define OFFileWrapper NSFileWrapper // our version is in OmniFoundation for a reason...)
     #import <AppKit/NSFileWrapper.h>
+
+    #define OFFileWrapperReadingOptions NSFileWrapperReadingOptions
+
+    #define OFFileWrapperWritingOptions NSFileWrapperWritingOptions
+    #define OFFileWrapperWritingAtomic NSFileWrapperWritingAtomic
+    #define OFFileWrapperWritingWithNameUpdating NSFileWrapperWritingWithNameUpdating
 #endif
 
 #if OFFILEWRAPPER_ENABLED
 
 typedef NSUInteger OFFileWrapperReadingOptions;
+
+
+enum {
+    OFFileWrapperWritingAtomic = 1 << 0,
+    OFFileWrapperWritingWithNameUpdating = 1 << 1
+};
+
+typedef NSUInteger OFFileWrapperWritingOptions;
 
 @class NSDictionary, NSString, NSData, NSURL, NSError;
 
@@ -46,6 +60,8 @@ typedef NSUInteger OFFileWrapperReadingOptions;
 - (id)initDirectoryWithFileWrappers:(NSDictionary *)childrenByPreferredName;
 - (id)initRegularFileWithContents:(NSData *)contents;
 
+- (BOOL)writeToURL:(NSURL *)url options:(OFFileWrapperWritingOptions)options originalContentsURL:(NSURL *)originalContentsURL error:(NSError **)outError;
+
 - (NSDictionary *)fileAttributes;
 
 - (BOOL)isRegularFile;
@@ -60,6 +76,8 @@ typedef NSUInteger OFFileWrapperReadingOptions;
 - (NSString *)addFileWrapper:(OFFileWrapper *)child;
 - (void)removeFileWrapper:(OFFileWrapper *)child;
 - (NSString *)keyForFileWrapper:(OFFileWrapper *)child;
+
+- (BOOL)matchesContentsOfURL:(NSURL *)url;
 
 @end
 

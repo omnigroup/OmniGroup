@@ -48,9 +48,6 @@
 - (NSDictionary *)lockFileAtPath:(NSString *)path overridingExistingLock:(BOOL)override created:(BOOL *)outCreated error:(NSError **)outError;
 - (void)unlockFileAtPath:(NSString *)path;
 
-- (BOOL)replaceFileAtPath:(NSString *)originalFile withFileAtPath:(NSString *)newFile error:(NSError **)outError;
-- (BOOL)exchangeFileAtPath:(NSString *)originalFile withFileAtPath:(NSString *)newFile error:(NSError **)outError;
-
 //
 
 - (NSNumber *)posixPermissionsForMode:(unsigned int)mode;

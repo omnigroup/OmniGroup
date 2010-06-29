@@ -246,6 +246,8 @@
 		347DB93E0D86509200338653 /* NSObject-OFAppleScriptExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 347DB93C0D86509200338653 /* NSObject-OFAppleScriptExtensions.m */; };
 		347EFD7C0DD4D7C900D6F347 /* OFXMLUnparsedElement.h in Headers */ = {isa = PBXBuildFile; fileRef = 347EFD7A0DD4D7C900D6F347 /* OFXMLUnparsedElement.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		347EFD7D0DD4D7C900D6F347 /* OFXMLUnparsedElement.m in Sources */ = {isa = PBXBuildFile; fileRef = 347EFD7B0DD4D7C900D6F347 /* OFXMLUnparsedElement.m */; };
+		347F624F11D5323600025DAE /* NSFileManager-OFTemporaryPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AD4CB30DF846B8008974EB /* NSFileManager-OFTemporaryPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		347F625011D5323700025DAE /* NSFileManager-OFTemporaryPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AD4CB40DF846B8008974EB /* NSFileManager-OFTemporaryPath.m */; };
 		3482890B0A93A29F0064561B /* CFArrayExtensionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3482890A0A93A29F0064561B /* CFArrayExtensionsTests.m */; };
 		34850C840A71491100675995 /* OFBinding.h in Headers */ = {isa = PBXBuildFile; fileRef = 34850C820A71491100675995 /* OFBinding.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34850C850A71491100675995 /* OFBinding.m in Sources */ = {isa = PBXBuildFile; fileRef = 34850C830A71491100675995 /* OFBinding.m */; };
@@ -2352,6 +2354,7 @@
 				344D09E01190D6D500264D89 /* OFXMLUnparsedElement.h in Headers */,
 				344D09E21190D6D700264D89 /* OFXMLWhitespaceBehavior.h in Headers */,
 				34562BE911AB1278005F186D /* OFDateFormatConversion.h in Headers */,
+				347F624F11D5323600025DAE /* NSFileManager-OFTemporaryPath.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2941,6 +2944,7 @@
 				344D09E31190D6D800264D89 /* OFXMLWhitespaceBehavior.m in Sources */,
 				344D0A8A1190DB4700264D89 /* OFErrors.m in Sources */,
 				34562BEA11AB1278005F186D /* OFDateFormatConversion.m in Sources */,
+				347F625011D5323700025DAE /* NSFileManager-OFTemporaryPath.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
