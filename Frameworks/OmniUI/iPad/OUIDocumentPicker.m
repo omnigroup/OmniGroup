@@ -628,10 +628,6 @@ static id _commonInit(OUIDocumentPicker *self)
 
     [_actionSheetActions addObject:NSStringFromSelector(@selector(_deleteWithoutConfirmation))];
 
-    // Passing a cancelButtonTitle only adds a button on iPhone.  We really want one, though.
-    [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"cancel button title")];
-    [_actionSheetActions addObject:NSStringFromSelector(@selector(actionSheetCancel:))]; // Not really an action, part of the delegate API that gets called when tapping outside the popover on iPad (and you have a cancel button define, which we don't).
-    
     OBASSERT(sender == _deleteButton); // If not, we'll be popping this up from the wrong place
     [actionSheet showFromRect:[_deleteButton frame] inView:[_deleteButton superview] animated:YES];
     
@@ -694,11 +690,10 @@ static id _commonInit(OUIDocumentPicker *self)
     }
 
     NSURL *documentURL = [documentProxy url];
-
     NSString *documentExtension = [[documentURL path] pathExtension];
     NSString *documentType = [(NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)documentExtension, NULL) autorelease];
     OBASSERT(documentType != nil); // UTI should be registered in the Info.plist under CFBundleDocumentTypes
-    NSData *documentData = [NSData dataWithContentsOfURL:documentURL];
+    NSData *documentData = [documentProxy emailData];
     NSString *documentFilename = [[documentURL path] lastPathComponent];
 
     [self _sendEmailWithSubject:[documentProxy name] attachmentName:documentFilename data:documentData fileType:documentType];
@@ -1013,11 +1008,6 @@ static id _commonInit(OUIDocumentPicker *self)
 
 #pragma mark -
 #pragma mark UIActionSheetDelegate
-
-- (void)actionSheetCancel:(UIActionSheet *)actionSheet;
-{
-    // Nothing. Cleanup done in the dismiss hook.
-}
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex;
 {

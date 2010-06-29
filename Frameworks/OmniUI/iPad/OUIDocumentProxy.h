@@ -36,6 +36,8 @@
 - (void)invalidate;
 
 @property(readonly) NSURL *url;
+@property(readonly) NSData *emailData; // packages cannot currently be emailed, so this allows subclasses to return a different content for email
+
 @property(retain,nonatomic) id target;
 @property(assign,nonatomic) SEL action;
 
