@@ -285,6 +285,9 @@ RCS_ID("$Id$");
         return NO;
     }
     
+    if (outError)
+        *outError = nil;
+    
     if (![self saveToURL:url isAutosave:isAutosave error:outError]) {
         OUIDocumentProxy *currentProxy = [self proxy];
         NSString *fileType = [[OUIAppController controller] documentTypeForURL:currentProxy.url];
@@ -294,7 +297,9 @@ RCS_ID("$Id$");
         [self setProxy:newProxy];
         url = [self url];
         
-        if (![self saveToURL:url isAutosave:isAutosave error:outError])
+        // If this fails too, eat this error and return the original one rather than stacking them up.
+        NSError *retryError = nil;
+        if (![self saveToURL:url isAutosave:isAutosave error:&retryError])
             return NO;
     }
     
