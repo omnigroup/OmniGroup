@@ -54,7 +54,7 @@ static BOOL implementsInstanceMethod(Class cls, SEL aSelector)
 
 - (NSBundle *)bundle;
 {
-    return [isa bundle];
+    return [[self class] bundle];
 }
 
 struct reversedApplyContext {
