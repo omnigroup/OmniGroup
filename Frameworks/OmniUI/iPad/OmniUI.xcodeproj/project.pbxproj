@@ -767,7 +767,6 @@
 		346C4BA71193275A00BE8C49 /* Documents */ = {
 			isa = PBXGroup;
 			children = (
-				346C4B021193273600BE8C49 /* OUISingleDocumentAppController.h */,
 				346C4AD21193273600BE8C49 /* OUIDocument.h */,
 				346C4AD31193273600BE8C49 /* OUIDocument.m */,
 				346C4AD41193273600BE8C49 /* OUIDocumentImagePreview.h */,
@@ -791,6 +790,7 @@
 				346C4AE61193273600BE8C49 /* OUIDocumentProxy.m */,
 				346C4AE71193273600BE8C49 /* OUIDocumentProxyView.h */,
 				346C4AE81193273600BE8C49 /* OUIDocumentProxyView.m */,
+				346C4B021193273600BE8C49 /* OUISingleDocumentAppController.h */,
 				346C4B031193273600BE8C49 /* OUISingleDocumentAppController.m */,
 			);
 			name = Documents;
