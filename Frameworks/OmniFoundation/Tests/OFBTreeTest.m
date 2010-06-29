@@ -50,7 +50,7 @@ void pageDeallocator(OFBTree *btree, void *node)
     }
 }
 
-int testComparator(OFBTree *btree, const void *a, const void *b)
+int testComparator(const OFBTree *btree, const void *a, const void *b)
 {
     int avalue = *(const int *)a;
     int bvalue = *(const int *)b;
@@ -86,7 +86,7 @@ struct expectedEnumeration {
     NSString *marker;
 };
 
-void checkEnumerator(OFBTree *tree, void *element, void *arg)
+void checkEnumerator(const OFBTree *tree, void *element, void *arg)
 {
     struct expectedEnumeration *expectation = arg;
     int elt = *(int *)element;
@@ -131,6 +131,13 @@ void checkEnumerator(OFBTree *tree, void *element, void *arg)
 
     CHECK_ENUMERATION(btree, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
+    should(6 == *(int *)OFBTreeFindNear(&btree, NULL, 6, NO));
+    should(10 == *(int *)OFBTreeFindNear(&btree, NULL, 10, NO));
+    should(NULL == OFBTreeFindNear(&btree, NULL, 11, NO));
+    should(4 == *(int *)OFBTreeFindNear(&btree, NULL, -7, NO));
+    should(1 == *(int *)OFBTreeFindNear(&btree, NULL, -10, NO));
+    should(NULL == OFBTreeFindNear(&btree, NULL, -11, NO));
+    
     i = 4;
     should(4 == *(int *)OFBTreeFind(&btree, &i));
     i = 7;
@@ -159,6 +166,22 @@ void checkEnumerator(OFBTree *tree, void *element, void *arg)
     i = 10;
     OFBTreeDelete(&btree, &i);
     CHECK_ENUMERATION(btree, 3, 4, 5, 7, 8, 9);
+    
+    i = 5;
+    should(3 == *(int *)OFBTreeFindNear(&btree, &i, -2, NO));
+    should(4 == *(int *)OFBTreeFindNear(&btree, &i, -2, YES));
+    should(7 == *(int *)OFBTreeFindNear(&btree, &i, 1, NO));
+    should(7 == *(int *)OFBTreeFindNear(&btree, &i, 1, YES));
+    i = 9;
+    should(3 == *(int *)OFBTreeFindNear(&btree, &i, -5, NO));
+    should(3 == *(int *)OFBTreeFindNear(&btree, &i, -6, YES));
+    i = 6;
+    should(3 == *(int *)OFBTreeFindNear(&btree, &i, -3, NO));
+    should(9 == *(int *)OFBTreeFindNear(&btree, &i, 3, NO));
+    i = 1;
+    should(9 == *(int *)OFBTreeFindNear(&btree, &i, 6, NO));
+    should(NULL == OFBTreeFindNear(&btree, &i, 0, NO));
+    
     i = 7;
     OFBTreeDelete(&btree, &i);
     i = 5;
@@ -184,7 +207,7 @@ void checkEnumerator(OFBTree *tree, void *element, void *arg)
     srandom((unsigned)seed);
     numbers = malloc(sizeof(*numbers) * INSERT_COUNT);
 
-    OFBTreeInit(&btree, vm_page_size, sizeof(int), pageAllocator, pageDeallocator, testComparator);
+    OFBTreeInit(&btree, vm_page_size, sizeof(*numbers), pageAllocator, pageDeallocator, testComparator);
 
     NSLog(@"Inserting 1..%d in random order (seed = %ld)\n", INSERT_COUNT, seed);
     // fill the vector
@@ -197,28 +220,53 @@ void checkEnumerator(OFBTree *tree, void *element, void *arg)
         OFBTreeInsert(&btree, &numbers[i]);
     }
 
+    NSLog(@"Testing btree lookups and traversals");
     // Finding 1..N in random order
     permute(numbers, INSERT_COUNT);
     for (i = 0; i < INSERT_COUNT; i++) {
-        void *v = OFBTreeFind(&btree, &numbers[i]);
-        should(v != NULL && *(unsigned int *)v == numbers[i]);
+        NSUInteger *v = OFBTreeFind(&btree, &numbers[i]);
+        should(v != NULL);
+        STAssertEquals(numbers[i], *v, @"i=%d numbers[i]=%d", i, numbers[i]);
         
-        void *p = OFBTreeNext(&btree, &numbers[i]);
+        NSUInteger *p = OFBTreeNext(&btree, &numbers[i]);
         if (numbers[i] == INSERT_COUNT) {
             should(p == NULL);
         } else {
-            should(p != NULL && *(unsigned int *)p == numbers[i]+1);
+            should(p != NULL);
+            STAssertEquals(numbers[i]+1, *p, @"i=%d numbers[i]=%d", i, numbers[i]);
         }
         
         p = OFBTreePrevious(&btree, &numbers[i]);
         if (numbers[i] == 1) {
             should(p == NULL);
         } else {
-            should(p != NULL && *(unsigned int *)p == numbers[i]-1);
-        }        
+            should(p != NULL);
+            STAssertEquals(numbers[i]-1, *p, @"i=%d numbers[i]=%d", i, numbers[i]);
+        }
+        
+        /* This is pretty slow, since OFBTreeFindNear() is doing a linear traversal of the tree, but it should make sure that OFBTreeFindNear() doesn't have any problems traversing things */
+        
+        int offset = -100;
+        p = OFBTreeFindNear(&btree, &numbers[i], offset, NO);
+        if (numbers[i] > (unsigned)-offset) {
+            STAssertTrue(p != NULL, @"i=%d numbers[i]=%d offset=%d", i, numbers[i], offset);
+            STAssertEquals(numbers[i]+offset, *p, @"i=%d numbers[i]=%d offset=%d", i, numbers[i], offset);
+        } else {
+            STAssertTrue(p == NULL, @"i=%d numbers[i]=%d offset=%d", i, numbers[i], offset);
+        }
+
+        offset = 100;
+        p = OFBTreeFindNear(&btree, &numbers[i], offset, NO);
+        if (numbers[i] <= (INSERT_COUNT-(unsigned)offset)) {
+            STAssertTrue(p != NULL, @"i=%d numbers[i]=%d offset=%d", i, numbers[i], offset);
+            STAssertEquals(numbers[i]+offset, *p, @"i=%d numbers[i]=%d offset=%d", i, numbers[i], offset);
+        } else {
+            STAssertTrue(p == NULL, @"i=%d numbers[i]=%d offset=%d", i, numbers[i], offset);
+        }
     }
 
     // Removing 1..N in random order
+    NSLog(@"Deleting btree contents in random order");
     permute(numbers, INSERT_COUNT);
     for (i = 0; i < INSERT_COUNT; i++) {
         void *p = OFBTreeNext(&btree, &numbers[i]);

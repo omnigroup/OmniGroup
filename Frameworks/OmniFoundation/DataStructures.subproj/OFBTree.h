@@ -18,18 +18,15 @@ typedef struct _OFBTree OFBTree;
 
 typedef void *(*OFBTreeNodeAllocator)(struct _OFBTree *tree);
 typedef void (*OFBTreeNodeDeallocator)(struct _OFBTree *tree, void *node);
-typedef int  (*OFBTreeElementComparator)(struct _OFBTree *tree, const void *elementA, const void *elementB);
-typedef void (*OFBTreeEnumeratorCallback)(struct _OFBTree *tree, void *element, void *arg);
+typedef int  (*OFBTreeElementComparator)(const struct _OFBTree *tree, const void *elementA, const void *elementB);
+typedef void (*OFBTreeEnumeratorCallback)(const struct _OFBTree *tree, void *element, void *arg);
 #ifdef NS_BLOCKS_AVAILABLE
-typedef void (^OFBTreeEnumeratorBlock)(struct _OFBTree *tree, void *element);
+typedef void (^OFBTreeEnumeratorBlock)(const struct _OFBTree *tree, void *element);
 #endif
 
 
 struct _OFBTree {
     // None of these fields should be written to (although they can be read if you like)
-    void *nodeStack[10];
-    void *selectionStack[10];
-    int nodeStackDepth;
     struct _OFBTreeNode *root;
     size_t nodeSize;
     size_t elementSize;
@@ -42,7 +39,6 @@ struct _OFBTree {
     void *userInfo;
 };
 
-
 extern void OFBTreeInit(OFBTree *tree,
                         size_t nodeSize,
                         size_t elementSize,
@@ -52,20 +48,21 @@ extern void OFBTreeInit(OFBTree *tree,
 
 extern void OFBTreeDestroy(OFBTree *tree);
 
-extern void OFBTreeInsert(OFBTree *tree, void *value);
+extern void OFBTreeInsert(OFBTree *tree, const void *value);
 extern BOOL OFBTreeDelete(OFBTree *tree, void *value);
-extern void *OFBTreeFind(OFBTree *tree, void *value);
+extern void *OFBTreeFind(const OFBTree *tree, const void *value);
+extern void *OFBTreeFindNear(const OFBTree *tree, const void *value, int offset, BOOL afterMatch);
 extern void OFBTreeDeleteAll(OFBTree *tree);
 
-extern void OFBTreeEnumerate(OFBTree *tree, OFBTreeEnumeratorCallback callback, void *arg);
+extern void OFBTreeEnumerate(const OFBTree *tree, OFBTreeEnumeratorCallback callback, void *arg);
 #ifdef NS_BLOCKS_AVAILABLE
-extern void OFBTreeEnumerateBlock(OFBTree *tree, OFBTreeEnumeratorBlock callback);
+extern void OFBTreeEnumerateBlock(const OFBTree *tree, OFBTreeEnumeratorBlock callback);
 #endif
 
 // This is not a terribly efficient API but it is reliable and does what I need
-extern void *OFBTreePrevious(OFBTree *tree, void *value);
-extern void *OFBTreeNext(OFBTree *tree, void *value);
+extern void *OFBTreePrevious(const OFBTree *tree, const void *value);
+extern void *OFBTreeNext(const OFBTree *tree, const void *value);
 
 #ifdef DEBUG
-extern void OFBTreeDump(FILE *fp, OFBTree *tree);
+extern void OFBTreeDump(FILE *fp, const OFBTree *tree);
 #endif
