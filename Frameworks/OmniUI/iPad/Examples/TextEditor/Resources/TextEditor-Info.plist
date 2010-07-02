@@ -68,5 +68,32 @@
                 <string>UIInterfaceOrientationLandscapeLeft</string>
                 <string>UIInterfaceOrientationLandscapeRight</string>
         </array>
+        
+        <!-- This gets defined on the device for iOS 3.2, but not for the simulator, for some reason -->
+        <key>UTImportedTypeDeclarations</key>
+        <array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<string>public.text</string>
+			<key>UTTypeDescription</key>
+			<string>rich text (RTF)</string>
+			<key>UTTypeIdentifier</key>
+			<string>public.rtf</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>com.apple.nspboard-type</key>
+				<array>
+					<string>NeXT Rich Text Format v1.0 pasteboard type</string>
+					<string>NSRTFPboardType</string>
+				</array>
+				<key>com.apple.ostype</key>
+				<string>RTF </string>
+				<key>public.filename-extension</key>
+				<string>rtf</string>
+				<key>public.mime-type</key>
+				<string>text/rtf</string>
+			</dict>
+		</dict>
+        </array>
 </dict>
 </plist>
