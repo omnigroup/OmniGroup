@@ -39,6 +39,7 @@
     UIColor *_insertionPointSelectionColor;
     UIColor *_rangeSelectionColor;
     NSDictionary *markedTextStyle; // Supplied by UIKit.
+    NSDictionary *_linkTextAttributes;
     id <OUIEditableFrameDelegate> delegate;
     CGSize layoutSize;
     UIEdgeInsets textInset;
@@ -71,6 +72,9 @@
         // Features which can be enabled or disabled
         unsigned showSelectionThumbs: 1;  // Effectively disables range selection
         unsigned showInspector: 1;        // Whether the inspector is offered
+        
+        //
+        unsigned immutableContentHasAttributeTransforms: 1;
     } flags;
     
     // Range selection adjustment and display
@@ -107,6 +111,8 @@
 @property (nonatomic, readwrite) CTFontRef defaultCTFont;                      /* Applied to any runs lacking kCTFontAttributeName */
 @property (nonatomic, readwrite) CTParagraphStyleRef defaultCTParagraphStyle;  /* Applied to any runs lacking kCTParagraphStyleAttributeName */
 
+@property (nonatomic, copy) NSDictionary *linkTextAttributes;
+
 @property (nonatomic) BOOL autoCorrectDoubleSpaceToPeriodAtSentenceEnd;
 @property (nonatomic) UITextAutocorrectionType autocorrectionType;  // defaults to UITextAutocorrectionTypeNo
 @property (nonatomic) UITextAutocapitalizationType autocapitalizationType; // defaults to UITextAutocapitalizationTypeNone
@@ -124,8 +130,8 @@
 - (void)thumbEnded:(OUITextThumb *)thumb normally:(BOOL)normalEnd;
 
 /* These are the interface from the inspectable spans */
-- (id <NSObject>)attribute:(NSString *)attr inRange:(OUEFTextRange *)r;
-- (void)setValue:(id)value forAttribute:(NSString *)attr inRange:(OUEFTextRange *)r;
+- (id <NSObject>)attribute:(NSString *)attr inRange:(UITextRange *)r;
+- (void)setValue:(id)value forAttribute:(NSString *)attr inRange:(UITextRange *)r;
 
 - (BOOL)hasTouchesForEvent:(UIEvent *)event;
 

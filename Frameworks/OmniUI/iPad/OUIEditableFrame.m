@@ -134,6 +134,8 @@ static id do_init(OUIEditableFrame *self)
     self->selectionDirtyRect = CGRectNull;
     self->markedTextDirtyRect = CGRectNull;
     
+    self->_linkTextAttributes = [[OUITextLayout defaultLinkTextAttributes] copy];
+    
     self.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self->tapSelectionGranularity = UITextGranularityWord;
 
@@ -627,6 +629,7 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
     [typingAttributes release];
     [_insertionPointSelectionColor release];
     [markedTextStyle release];
+    [_linkTextAttributes release];
     [immutableContent release];
     if (framesetter)
         CFRelease(framesetter);
@@ -649,7 +652,6 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
  The "text" or "rendering" coordinate system is the interior scaled, (de-)flipped, and possibly translated system for CoreGraphics calls to draw stuff.
  
  The "layout" coordinate system is translated from the rendering coordinate system because CTFramesetter is particular about where it puts its text.
- The layoutOrigin ivar holds the coordinates, in the rendering coordinate system, of the layout coordinate system's origin.
  
  Some locations are in a line-based coordinate system, which is the text layout coordinate system translated so that a given line's origin is at (0,0).
 
@@ -775,6 +777,8 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
     return defaultParagraphStyle;
 }
 
+@synthesize linkTextAttributes = _linkTextAttributes;
+
 - (void)setupCustomMenuItemsForMenuController:(UIMenuController *)menuController;
 {
     UIMenuItem *items[1];
@@ -849,7 +853,7 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
     [self _setSolidCaret:-1];
 }
 
-- (id <NSObject>)attribute:(NSString *)attr inRange:(OUEFTextRange *)r;
+- (id <NSObject>)attribute:(NSString *)attr inRange:(UITextRange *)r;
 {
     NSUInteger pos = ((OUEFTextPosition *)(r.start)).index;
     return [_content attribute:attr atIndex:pos effectiveRange:NULL];
@@ -902,8 +906,10 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
     DEBUG_TEXT(@"<<< textDidChange (%@)", NSStringFromSelector(_cmd));
 }
 
-- (void)setValue:(id)value forAttribute:(NSString *)attr inRange:(OUEFTextRange *)r;
+- (void)setValue:(id)value forAttribute:(NSString *)attr inRange:(UITextRange *)r;
 {
+    OBPRECONDITION([r isKindOfClass:[OUEFTextRange class]]);
+    
     DEBUG_TEXT(@"Setting %@ to %@ in %@", attr, value, r);
     
     NSUInteger st = ((OUEFTextPosition *)(r.start)).index;
@@ -1471,18 +1477,18 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
 
 - (NSAttributedString *)attributedText;
 {
-    if (!immutableContent) {
-        NSUInteger len = [_content length];
-
-        if (len < 1)
-            return nil;  // Shouldn't happen, actually
-
-        // Strip off our implicit trailing newline.
-        return [_content attributedSubstringFromRange:(NSRange){0, len-1}];
-    } else {
+    // If we have an immutable copy that doesn't have attribute transforms applied, return a substring from it (which could potentially just reference the original immutable copy).
+    if (immutableContent && !flags.immutableContentHasAttributeTransforms) {
         NSUInteger len = [immutableContent length];
         return [immutableContent attributedSubstringFromRange:(NSRange){0, len-1}];
     }
+    
+    NSUInteger len = [_content length];
+    if (len < 1)
+        return nil;  // Shouldn't happen, actually
+    
+    // Strip off our implicit trailing newline.
+    return [_content attributedSubstringFromRange:(NSRange){0, len-1}];
 }
 
 - (void)setAttributedText:(NSAttributedString *)newContent
@@ -2851,8 +2857,8 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
             _loupe = [[OUILoupeOverlay alloc] initWithFrame:[self frame]];
             [_loupe setSubjectView:self];
             [[[[self window] subviews] lastObject] addSubview:_loupe];
-       }
-
+        }
+        
         [self _setSolidCaret:1];
     }
     
@@ -3180,8 +3186,18 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
             CFRelease(framesetter);
             framesetter = NULL;
         }
+        
         [immutableContent release];
-        immutableContent = [_content copy];
+        
+        immutableContent = OUICreateTransformedAttributedString(_content, _linkTextAttributes);
+        if (immutableContent) {
+            flags.immutableContentHasAttributeTransforms = YES;
+        } else {
+            // Didn't need transformation
+            immutableContent = [_content copy];
+            flags.immutableContentHasAttributeTransforms = NO;
+        }
+        
         framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)immutableContent);
         
         flags.textNeedsUpdate = NO;

@@ -15,14 +15,18 @@
 @interface OUITextLayout : OFObject
 {
 @private
+    NSAttributedString *_attributedString;
     CTFrameRef _frame;
     CGSize _layoutSize;
     CGRect _usedSize;
 }
 
-- initWithAttributedString:(CFAttributedStringRef)attributedString constraints:(CGSize)constraints;
++ (NSDictionary *)defaultLinkTextAttributes;
 
-@property(readonly) CGSize usedSize;
+- initWithAttributedString:(NSAttributedString *)attributedString constraints:(CGSize)constraints;
+
+@property(readonly,nonatomic) NSAttributedString *attributedString;
+@property(readonly,nonatomic) CGSize usedSize;
 
 - (void)drawInContext:(CGContextRef)ctx;
 
@@ -37,3 +41,4 @@ extern void OUITextLayoutFixupParagraphStyles(NSMutableAttributedString *content
 extern CTFontRef OUIGlobalDefaultFont(void);
 // extern CTParagraphStyleRef OUIGlobalDefaultParagraphStyle(void);
 
+extern NSAttributedString *OUICreateTransformedAttributedString(NSAttributedString *source, NSDictionary *linkAttributes);

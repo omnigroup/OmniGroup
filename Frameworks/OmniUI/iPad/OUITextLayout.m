@@ -6,8 +6,10 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUITextLayout.h>
-#import <Foundation/NSAttributedString.h>
-#import <CoreText/CTStringAttributes.h>
+
+#import <OmniFoundation/NSAttributedString-OFExtensions.h>
+#import <OmniFoundation/NSMutableAttributedString-OFExtensions.h>
+#import <OmniAppKit/OATextAttributes.h>
 
 #include <string.h>
 
@@ -36,6 +38,17 @@ static LineMeasurements _lineMeasurements(CTFrameRef frame, CFArrayRef lines, NS
 #endif
 
 @implementation OUITextLayout
+
++ (NSDictionary *)defaultLinkTextAttributes;
+{
+    static NSDictionary *attributes = nil;
+    
+    if (!attributes)
+        attributes = [[NSDictionary alloc] initWithObjectsAndKeys:(id)[[UIColor blueColor] CGColor], OAForegroundColorAttributeName,
+                      [NSNumber numberWithUnsignedInt:kCTUnderlineStyleSingle], OAUnderlineStyleAttributeName, nil];
+    
+    return attributes;
+}
 
 CTFontRef OUIGlobalDefaultFont(void)
 {
@@ -100,13 +113,17 @@ CGSize OUITextLayoutMeasureSize(CTFrameRef frame)
 }
 #endif
 
-- initWithAttributedString:(CFAttributedStringRef)attributedString constraints:(CGSize)constraints;
+- initWithAttributedString:(NSAttributedString *)attributedString_ constraints:(CGSize)constraints;
 {
+    _attributedString = [attributedString_ copy];
+    CFAttributedStringRef attributedString = (CFAttributedStringRef)_attributedString;
+    
     OBPRECONDITION(attributedString);
     if (!attributedString) {
         _usedSize = CGRectZero;
         return nil;
     }
+    
     
     CFIndex baseStringLength = CFAttributedStringGetLength(attributedString);
     CFMutableAttributedStringRef paddedString = CFAttributedStringCreateMutableCopy(kCFAllocatorDefault, 1+baseStringLength, attributedString);
@@ -150,11 +167,14 @@ CGSize OUITextLayoutMeasureSize(CTFrameRef frame)
 
 - (void)dealloc;
 {
+    [_attributedString release];
     if (_frame)
         CFRelease(_frame);
 
     [super dealloc];
 }
+
+@synthesize attributedString = _attributedString;
 
 - (CGSize)usedSize
 {
@@ -396,6 +416,39 @@ void OUITextLayoutFixupParagraphStyles(NSMutableAttributedString *content)
             cursor = styleRange.location + styleRange.length;
         }
     }
+}
+
+static NSAttributedString *_applyTransformedAttributes(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing, void *context)
+{
+    NSDictionary *linkAttributes = context;
+    
+    if ([attributes objectForKey:OALinkAttributeName]) {
+        if (!*isEditing) {
+            [source beginEditing];
+            *isEditing = YES;
+        }
+        [source addAttributes:linkAttributes range:effectiveAttributeRange];
+    }
+    
+    // We made only attribute changes (if any at all).
+    return nil;
+}
+
+// Later, we may have a callout for a delegate to extent the transformation.
+// Returns nil if no transformation is done, instead of returning [soure copy].
+NSAttributedString *OUICreateTransformedAttributedString(NSAttributedString *source, NSDictionary *linkAttributes)
+{
+    if ([linkAttributes count] == 0 || ![source hasAttribute:OALinkAttributeName])
+        return nil; // No transform needed!
+    
+    NSMutableAttributedString *transformed = [source mutableCopy];
+    
+    [transformed mutateRanges:_applyTransformedAttributes matchingString:nil context:linkAttributes];
+    
+    NSAttributedString *immutableResult = [transformed copy];
+    [transformed release];
+
+    return immutableResult;
 }
 
 @end
