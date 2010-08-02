@@ -243,9 +243,18 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     }
 }
 
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate;
+{
+    OUIScalingView *view = _scalingView(self);
+    [view scrollPositionChanged];
+}
+
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView;      // called when scroll view grinds to a halt
 {
     [self adjustContentInset];
+    
+    OUIScalingView *view = _scalingView(self);
+    [view scrollPositionChanged];
 }
 
 - (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(UIView *)view;

@@ -26,6 +26,7 @@
 
 // For subclasses;
 - (void)scaleChanged;
+- (void)scrollPositionChanged;
 
 @property(assign,nonatomic) BOOL rotating; // Managed by OUIScalingViewController; you can look, but don't touch.
 

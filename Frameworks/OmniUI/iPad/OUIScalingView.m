@@ -55,11 +55,15 @@ static id _commonInit(OUIScalingView *self)
         return;
     
     _scale = scale;
-    [self scaleChanged];
     [self setNeedsDisplay];
 }
 
 - (void)scaleChanged;
+{
+    // for subclasses
+}
+
+- (void)scrollPositionChanged;
 {
     // for subclasses
 }

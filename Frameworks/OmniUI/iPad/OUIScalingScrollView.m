@@ -98,6 +98,8 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
         [(OUITiledScalingView *)view tileVisibleRect];
 
     [self adjustContentInset];
+    
+    [view scaleChanged];
 }
 
 - (void)adjustContentInset;
