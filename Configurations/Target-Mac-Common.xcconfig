@@ -16,7 +16,7 @@ GCC_WARN_64_TO_32_BIT_CONVERSION = YES
 BZ2_LDFLAGS = -lbz2
 
 // We require 10.6 on the Mac now for all projects.
-SDKROOT = /Developer/SDKs/MacOSX10.6.sdk
+SDKROOT = macosx10.6 
 MACOSX_DEPLOYMENT_TARGET = 10.6
 
 // Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.
