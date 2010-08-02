@@ -1,13 +1,13 @@
+// Copyright 2010 Omni Development, Inc.  All rights reserved.
 //
-//  OUILongPressGestureRecognizer.m
-//  GesturePlayground
-//
-//  Created by Robin Stewart on 7/26/10.
-//  Copyright 2010 __MyCompanyName__. All rights reserved.
-//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUILongPressGestureRecognizer.h"
+#import <OmniUI/OUILongPressGestureRecognizer.h>
 
+RCS_ID("$Id$")
 
 @implementation OUILongPressGestureRecognizer
 
