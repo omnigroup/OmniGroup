@@ -81,6 +81,15 @@ RCS_ID("$Id$");
     [_menuPopoverController presentPopoverFromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
+- (BOOL)dismissUndoMenu;
+{
+    if (![_menuPopoverController isPopoverVisible])
+        return NO;
+    
+    [_menuPopoverController dismissPopoverAnimated:YES];
+    return YES;
+}
+
 #pragma mark -
 #pragma mark Actions
 

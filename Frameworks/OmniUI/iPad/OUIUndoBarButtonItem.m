@@ -219,6 +219,9 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     if (!self.enabled)
         return;
     
+    if ([_buttonController dismissUndoMenu])
+        return;
+    
     // If we can only redo, then run our menu on touch-down. Otherwise do nothing and let the guesture recognizers to whatever they detect.
     if (!_canUndo && _canRedo)
         [self _showUndoMenu];
