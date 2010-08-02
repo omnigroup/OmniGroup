@@ -14,8 +14,14 @@
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>
+#import "OIInspectorGroup.h"
 #import "OITabbedInspector.h"  // For OITabbedInspectorUnifiedLookDefaultsKey
 RCS_ID("$Id$")
+
+
+@interface OIInspectorHeaderView (/*Private*/)
+- (BOOL)_allowToggleExpandedness;
+@end
 
 
 @implementation OIInspectorHeaderView
@@ -182,7 +188,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 - (void)drawBackgroundImageForBounds:(NSRect)backgroundBounds inRect:(NSRect)dirtyRect;
 {
     OIInspectorKeyStatus keyStatus = (OIInspectorKeyStatus)[[self window] isKeyWindow];
-    OIInspectorHeaderImageState state = isClicking && !overClose ? OIInspectorHeaderImageStatePressed : OIInspectorHeaderImageStateNormal;
+    OIInspectorHeaderImageState state = isClicking && [self _allowToggleExpandedness] && !overClose ? OIInspectorHeaderImageStatePressed : OIInspectorHeaderImageStateNormal;
     
 #ifdef OITabbedInspectorUnifiedLookDefaultsKey
     if ([[NSUserDefaults standardUserDefaults] boolForKey:OITabbedInspectorUnifiedLookDefaultsKey]) {
@@ -232,7 +238,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     }
     
     CGFloat nextElementX = NSMinX(_bounds) + 26.0f;
-    if (drawAll) {
+    if (drawAll && [self _allowToggleExpandedness]) {
         NSImage *disclosureImage = isExpanded ? _expandedImage : _collapsedImage;
         NSPoint disclosureImagePoint = NSMakePoint(nextElementX, NSMaxY(_bounds)-2.0f);
 
@@ -349,13 +355,22 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         [delegate headerViewDidEndDragging:self toFrame:NSMakeRect(newTopLeft.x, newTopLeft.y - dragWindowHeight, windowFrame.size.width, dragWindowHeight)];
     else if (clickingClose)
         [delegate headerViewDidClose:self];
-    else if (!overClose && isInOriginalFrame)
+    else if (!overClose && isInOriginalFrame && [self _allowToggleExpandedness])
         [delegate headerViewDidToggleExpandedness:self];
     isDragging = NO;
     isClicking = NO;
     overClose = NO;
     clickingClose = NO;
     [self display];
+}
+
+
+#pragma mark -
+#pragma mark Private
+
+- (BOOL)_allowToggleExpandedness;
+{
+    return ([OIInspectorGroup groupCount] > 1);
 }
 
 @end

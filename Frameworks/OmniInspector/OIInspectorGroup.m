@@ -269,6 +269,11 @@ static NSComparisonResult sortGroupByWindowZOrder(OIInspectorGroup *a, OIInspect
     return existingGroups;
 }
 
++ (NSUInteger)groupCount;
+{
+    return [existingGroups count];
+}
+
 + (NSArray *)visibleGroups;
 {
     NSMutableArray *visibleGroups = [NSMutableArray array];
