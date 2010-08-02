@@ -11,6 +11,11 @@
 
 RCS_ID("$Id$");
 
+@interface OUIUndoButton (/*private*/)
+- (void)_undoMenu:(id)sender;
+@end
+
+
 @implementation OUIUndoButton
 static UIImage *_loadImage(NSString *imageName)
 {
@@ -85,6 +90,11 @@ static id _commonInit(OUIUndoButton *self)
     backgroundBounds.origin.y += 1;
     
     return backgroundBounds;
+}
+
+- (void)showUndoMenu;
+{
+    [self _undoMenu:self];
 }
 
 - (void)_undo:(id)sender;

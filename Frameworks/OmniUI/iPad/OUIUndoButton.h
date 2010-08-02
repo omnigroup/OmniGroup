@@ -15,4 +15,6 @@
 }
 
 + (CGRect)appropriateBounds;
+- (void)showUndoMenu;
+
 @end
