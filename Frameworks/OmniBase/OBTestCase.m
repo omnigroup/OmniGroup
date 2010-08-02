@@ -59,7 +59,10 @@ void _OBReportUnexpectedError(NSError *error)
 #ifdef COVERAGE
     atexit(OBTestCaseReportCoverage);
 #endif
+    
+#if !defined(TARGET_OS_IPHONE) && !TARGET_OS_IPHONE
     [OBPostLoader processClasses];
+#endif
 }
 
 + (BOOL)shouldRunSlowUnitTests;

@@ -171,19 +171,6 @@ Class OBClassImplementingMethod(Class cls, SEL sel)
     return cls;
 }
 
-BOOL OBIsRunningUnitTests(void)
-{
-    static BOOL checked = NO;
-    static BOOL runningUnitTests = NO;
-    
-    if (!checked) {
-        checked = YES;
-        runningUnitTests = NSClassFromString(@"SenTestCase") != Nil;
-    }
-    
-    return runningUnitTests;
-}
-
 /*"
  This method returns the original description for anObject, as implemented on NSObject. This allows you to get the original description even if the normal description methods have been overridden.
  

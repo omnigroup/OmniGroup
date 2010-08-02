@@ -23,14 +23,14 @@ void OBLogAssertionFailure(const char *type, const char *expression, const char 
     fprintf(stderr, "%s failed: requires '%s', at %s:%d\n", type, expression, file, lineNumber);
 }
 
-static NSString * const OBShouldAbortOnAssertFailureEnabled = @"OBShouldAbortOnAssertFailureEnabled";
+static NSString * const OBShouldAbortOnAssertFailureKey = @"OBShouldAbortOnAssertFailure";
 static NSString * const OBEnableExpensiveAssertionsKey = @"OBEnableExpensiveAssertions";
 
 static void OBDefaultAssertionHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber)
 {
     OBLogAssertionFailure(type, expression, file, lineNumber);
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:OBShouldAbortOnAssertFailureEnabled]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:OBShouldAbortOnAssertFailureKey]) {
         // If we are running unit tests, abort on assertion failure.  We could make assertions throw exceptions, but note that this wouldn't catch cases where you are using 'shouldRaise' and hit an assertion.
 #ifdef DEBUG
         // If we're failing in a debug build, give the developer a little time to connect in gdb before crashing
@@ -93,8 +93,8 @@ static void _OBAssertionLoad(void)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *assertionDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
-                                       [NSNumber numberWithBool:OBIsRunningUnitTests()], OBShouldAbortOnAssertFailureEnabled,
-                                       [NSNumber numberWithBool:NO], OBEnableExpensiveAssertionsKey,
+                                       (id)kCFBooleanFalse, OBShouldAbortOnAssertFailureKey,
+                                       (id)kCFBooleanFalse, OBEnableExpensiveAssertionsKey,
                                        nil];
     [defaults registerDefaults:assertionDefaults];
     OBEnableExpensiveAssertions = [defaults boolForKey:OBEnableExpensiveAssertionsKey];

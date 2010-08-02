@@ -161,8 +161,6 @@ static inline BOOL OBClassIsSubclassOfClass(Class subClass, Class superClass)
     return NO;
 }
 
-extern BOOL OBIsRunningUnitTests(void);
-
 extern NSString *OBShortObjectDescription(id anObject);
 
 extern CFStringRef const OBBuildByCompilerVersion;
