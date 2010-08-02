@@ -69,7 +69,7 @@
                 <string>UIInterfaceOrientationLandscapeRight</string>
         </array>
         
-        <!-- This gets defined on the device for iOS 3.2, but not for the simulator, for some reason -->
+        <!-- This gets defined on the device for iOS 3.2, but not for the simulator, for some reason. Radar 8219167. -->
         <key>UTImportedTypeDeclarations</key>
         <array>
 		<dict>
