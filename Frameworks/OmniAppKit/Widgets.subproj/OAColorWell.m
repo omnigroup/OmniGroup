@@ -23,6 +23,7 @@ RCS_ID("$Id$");
  */
 
 static NSMutableArray *activeColorWells;
+static NSColor *OAColorWellInactiveColor = nil;
 
 NSString * const OAColorWellWillActivate = @"OAColorWellWillActivate";
 
@@ -38,6 +39,7 @@ NSString * const OAColorWellWillActivate = @"OAColorWellWillActivate";
 
     // Don't want to retain them and prevent them from being deallocated (and thus deactivated)!
     activeColorWells = OFCreateNonOwnedPointerArray();
+    OAColorWellInactiveColor = [[NSColor colorWithCalibratedWhite:0.9f alpha:1.0f] retain];
 }
 
 //
@@ -48,6 +50,17 @@ NSString * const OAColorWellWillActivate = @"OAColorWellWillActivate";
 {
     [self deactivate];
     [super dealloc];
+}
+
+- (void)drawWellInside:(NSRect)insideRect;
+{
+    // NSColorWell draws the color even if it is disabled. We usually don't want to do that - we want to look fully disabled, so we
+    if (self.isEnabled || self.showsColorWhenDisabled) {
+        [super drawWellInside:insideRect];
+    } else {
+        [[[self class] inactiveColor] set];
+        NSRectFill(insideRect);
+    }
 }
 
 - (void)deactivate;
@@ -88,6 +101,11 @@ NSString * const OAColorWellWillActivate = @"OAColorWellWillActivate";
 // API
 //
 
++ (NSColor *)inactiveColor;
+{
+    return OAColorWellInactiveColor;
+}
+
 + (BOOL)hasActiveColorWell;
 {
     return [activeColorWells count] > 0;
@@ -126,6 +144,22 @@ NSString * const OAColorWellWillActivate = @"OAColorWellWillActivate";
 
         // Send our action too so the target will change the color it is using
         [[self target] performSelector:[self action] withObject:self];
+    }
+}
+
+@synthesize showsColorWhenDisabled = _showsColorWhenDisabled;
+
+- (void)setShowsColorWhenDisabled:(BOOL)newValue;
+{
+    if (_showsColorWhenDisabled == newValue) {
+        return;
+    }
+    
+    _showsColorWhenDisabled = newValue;
+    
+    // If we're disabled, changing this value affects our display, so we need to make sure we get redisplayed
+    if (![self isEnabled]) {
+        [self setNeedsDisplay:YES];
     }
 }
 

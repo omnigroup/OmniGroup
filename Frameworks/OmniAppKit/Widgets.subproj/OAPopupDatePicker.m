@@ -112,7 +112,6 @@ static NSSize calendarImageSize;
     [_boundObject release];
     [_boundObjectKeyPath release];
     [_control release];
-    [_controlFormatter release];  
     [_datePickerOriginalValue release];
     [timePicker release];
     
@@ -137,10 +136,10 @@ static NSSize calendarImageSize;
     NSString *bindingKeyPath = [bindingInfo objectForKey:NSObservedKeyPathKey];
     bindingKeyPath = [bindingKeyPath stringByReplacingAllOccurrencesOfString:@"selectedObjects." withString:@"selection."];
      
-    [self startPickingDateWithTitle:title fromRect:[aControl visibleRect] inView:aControl bindToObject:[bindingInfo objectForKey:NSObservedObjectKey] withKeyPath:bindingKeyPath control:aControl controlFormatter:[aControl formatter] stringUpdateSelector:stringUpdateSelector defaultDate:defaultDate];
+    [self startPickingDateWithTitle:title fromRect:[aControl visibleRect] inView:aControl bindToObject:[bindingInfo objectForKey:NSObservedObjectKey] withKeyPath:bindingKeyPath control:aControl controlFormatter:[aControl formatter] defaultDate:defaultDate];
 }
 
-- (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter stringUpdateSelector:(SEL)stringUpdateSelector defaultDate:(NSDate *)defaultDate;
+- (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter defaultDate:(NSDate *)defaultDate;
 {
     [self close];
     
@@ -150,13 +149,11 @@ static NSSize calendarImageSize;
      
     // retain the field editor, its containg view, and optionally formatter so that we can update it as we make changes since we're not pushing values to it each time
     _control = [control retain];
-    _controlFormatter = [controlFormatter retain];
-    _stringUpdateSelector = stringUpdateSelector;
     
     NSWindow *emergeFromWindow = [emergeFromView window];
     NSWindow *popupWindow = [self window];    
 
-    if ([_controlFormatter isKindOfClass:[NSDateFormatter class]] && [(NSDateFormatter *)_controlFormatter timeStyle] == kCFDateFormatterNoStyle) { 
+    if ([controlFormatter isKindOfClass:[NSDateFormatter class]] && [(NSDateFormatter *)controlFormatter timeStyle] == kCFDateFormatterNoStyle) { 
         if ([timePicker superview]) {
             NSRect frame = popupWindow.frame;
             frame.size.height -= NSHeight([timePicker frame]);
@@ -241,13 +238,6 @@ static NSSize calendarImageSize;
     return [[datePicker infoForBinding:@"value"] objectForKey:NSObservedKeyPathKey];
 }
 
-- (void)clearIfNotClicked;
-{
-    if (![datePicker clicked] && _startedWithNilDate) {
-	_datePickerObjectValue = nil;
-    } 
-}
-
 - (BOOL)isKey;
 {
     return [[self window] isKeyWindow];
@@ -291,15 +281,11 @@ static NSSize calendarImageSize;
     
     [_datePickerObjectValue release];
     _datePickerObjectValue = [newObjectValue retain];
-       
-    // update the field editor to display the new value
-    NSString *string;
-    if (_controlFormatter)
-	string = [_controlFormatter stringForObjectValue:_datePickerObjectValue];
-    else
-	string = [_datePickerObjectValue description];
-    
-    [_control performSelector:_stringUpdateSelector withObject:string];
+
+    // update the object
+    if (_boundObject) {
+	[_boundObject setValue:_datePickerObjectValue forKeyPath:_boundObjectKeyPath];
+    }
 }
 
 #pragma mark -
@@ -314,8 +300,6 @@ static NSSize calendarImageSize;
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowWillCloseNotification object:parentWindow];
     
-    [self clearIfNotClicked]; // set the date to nil if we started with a nil date and there was no interaction
-    
     NSEvent *currentEvent = [NSApp currentEvent];
     if (([currentEvent type] == NSKeyDown) && ([[NSApp currentEvent] keyCode] == 53)) { 
 	if (_startedWithNilDate) {
@@ -327,10 +311,6 @@ static NSSize calendarImageSize;
 	}
     } 
     
-    // update the object
-    if (_boundObject) {
-	[_boundObject setValue:_datePickerObjectValue forKeyPath:_boundObjectKeyPath];
-    }
     [datePicker unbind:NSValueBinding];
     [timePicker unbind:NSValueBinding];
     

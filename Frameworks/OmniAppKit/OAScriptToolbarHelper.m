@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -180,7 +180,20 @@ static NSString *removeScriptSuffix(NSString *string)
 	    }
 	    
 	    NSAppleEventDescriptor *result;
+        NSAppleEventDescriptor *arguments;
+        if (![controller respondsToSelector:@selector(scriptToolbarItemArguments:)] || !(arguments = [controller scriptToolbarItemArguments:sender])) {
 	    result = [script executeAndReturnError:&errorDictionary];
+        } else {
+            if ([arguments descriptorType] != cAEList) {
+                // Scripts expect to be given a list of arguments (though for some reason "run script aScriptObj" will give them a reference to the script object, rather than a list)
+                arguments = [arguments coerceToDescriptorType:cAEList];
+                OBASSERT_NOTNULL(arguments);
+            }
+            NSAppleEventDescriptor *executeEvent = [NSAppleEventDescriptor appleEventWithEventClass:kCoreEventClass eventID:kAEOpenApplication targetDescriptor:nil returnID:kAutoGenerateReturnID transactionID:kAnyTransactionID];
+            [executeEvent setParamDescriptor:arguments forKeyword:keyDirectObject];
+            result = [script executeAppleEvent:executeEvent error:&errorDictionary];
+        }
+
 	    if (result == nil) {		
 		NSString *errorText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The script '%@' could not complete.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error"), scriptName];
 		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error message"), [errorDictionary objectForKey:NSAppleScriptErrorMessage]];
@@ -239,6 +252,18 @@ static NSString *removeScriptSuffix(NSString *string)
             [_pathForItemDictionary setObject:path forKey:itemIdentifier];
         } 
     }
+}
+
+@end
+
+@implementation OAToolbarWindowController (OAScriptToolbarHelperExtensions)
+
+- (NSAppleEventDescriptor *)scriptToolbarItemArguments:(OAToolbarItem *)item;
+{
+    NSAppleEventDescriptor *descriptor = [NSAppleEventDescriptor listDescriptor];
+    [descriptor insertDescriptor:[[[self window] objectSpecifier] descriptor] atIndex:0]; // 0 means "at the end"
+    
+    return descriptor;
 }
 
 @end

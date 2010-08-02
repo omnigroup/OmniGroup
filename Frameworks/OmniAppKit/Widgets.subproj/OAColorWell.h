@@ -12,11 +12,17 @@
 #import <AppKit/NSNibDeclarations.h> // For IBAction, IBOutlet
 
 @interface OAColorWell : NSColorWell
+{
+    BOOL _showsColorWhenDisabled;
+}
+
++ (NSColor *)inactiveColor;
+
 + (BOOL)hasActiveColorWell;
 + (NSArray *)activeColorWells;
 + (void)deactivateAllColorWells;
 
-- (IBAction)setPatternColorByPickingImage:(id)sender;
+@property(nonatomic,assign) BOOL showsColorWhenDisabled;
 
 @end
 
