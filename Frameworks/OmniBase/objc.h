@@ -21,3 +21,13 @@
         #define NS_RETURNS_RETAINED
     #endif
 #endif
+
+#import <CoreFoundation/CFBase.h>
+
+#if !defined(CF_RETURNS_RETAINED)
+    #if defined(__clang__)
+        #define CF_RETURNS_RETAINED __attribute__((cf_returns_retained))
+    #else
+        #define CF_RETURNS_RETAINED
+    #endif
+#endif
