@@ -30,7 +30,7 @@ static CGGradientRef HighlightedGradient = NULL;
 
 static BOOL _drawHighlighed(OUIInspectorTextWell *self)
 {
-    return self.highlighted && ([self allControlEvents] != 0);
+    return !self.enabled || (self.highlighted && ([self allControlEvents] != 0));
 }
 
 + (void)initialize;
