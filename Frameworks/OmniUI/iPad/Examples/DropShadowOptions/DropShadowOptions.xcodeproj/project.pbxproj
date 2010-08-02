@@ -37,6 +37,27 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3429ED8612072074009A7A4A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 340115B011E515790016ADB3 /* libOmniBaseTouchTests.a */;
+			remoteInfo = OmniBaseTouchTests;
+		};
+		3429ED9212072074009A7A4A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 340115D411E515DB0016ADB3 /* libOmniFoundationTouchTests.a */;
+			remoteInfo = OmniFoundationTouchTests;
+		};
+		3429ED9912072074009A7A4A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3401163511E5181A0016ADB3 /* libOmniAppKitTouchTests.a */;
+			remoteInfo = OmniAppKitTouchTests;
+		};
 		34CD305C11A6EACD001FA1EB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */;
@@ -466,8 +487,9 @@
 			isa = PBXGroup;
 			children = (
 				34CD305D11A6EACD001FA1EB /* OmniBase.framework */,
-				34CD305F11A6EACD001FA1EB /* libOmniBase.a */,
 				34CD306111A6EACD001FA1EB /* OBLoadBundle */,
+				34CD305F11A6EACD001FA1EB /* libOmniBase.a */,
+				3429ED8712072074009A7A4A /* libOmniBaseTouchTests.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -477,6 +499,7 @@
 			children = (
 				34CD307311A6EAD8001FA1EB /* OmniFoundation.framework */,
 				34CD307511A6EAD8001FA1EB /* libOmniFoundation.a */,
+				3429ED9312072074009A7A4A /* libOmniFoundationTouchTests.a */,
 				34CD307711A6EAD8001FA1EB /* OFUnitTests.octest */,
 				34CD307911A6EAD8001FA1EB /* OFSimpleLockTest */,
 				34CD307B11A6EAD8001FA1EB /* OFDedicatedThreadSchedulerTest */,
@@ -513,6 +536,7 @@
 				34CD30B411A6EB2B001FA1EB /* OAMakeImageSizeIntegral */,
 				34CD30B611A6EB2B001FA1EB /* OAPatternColorPicker.bundle */,
 				34CD30B811A6EB2B001FA1EB /* libOmniAppKit.a */,
+				3429ED9A12072074009A7A4A /* libOmniAppKitTouchTests.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -590,6 +614,27 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		3429ED8712072074009A7A4A /* libOmniBaseTouchTests.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniBaseTouchTests.a;
+			remoteRef = 3429ED8612072074009A7A4A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3429ED9312072074009A7A4A /* libOmniFoundationTouchTests.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniFoundationTouchTests.a;
+			remoteRef = 3429ED9212072074009A7A4A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3429ED9A12072074009A7A4A /* libOmniAppKitTouchTests.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniAppKitTouchTests.a;
+			remoteRef = 3429ED9912072074009A7A4A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		34CD305D11A6EACD001FA1EB /* OmniBase.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;

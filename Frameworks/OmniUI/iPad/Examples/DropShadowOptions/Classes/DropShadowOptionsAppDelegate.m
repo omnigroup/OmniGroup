@@ -1,17 +1,16 @@
+// Copyright 2010 Omni Development, Inc.  All rights reserved.
 //
-//  DropShadowOptionsAppDelegate.m
-//  DropShadowOptions
-//
-//  Created by Timothy J. Wood on 4/2/10.
-//  Copyright The Omni Group 2010. All rights reserved.
-//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "DropShadowOptionsAppDelegate.h"
-
 
 #import "RootViewController.h"
 #import "DetailViewController.h"
 
+RCS_ID("$Id$")
 
 @implementation DropShadowOptionsAppDelegate
 
