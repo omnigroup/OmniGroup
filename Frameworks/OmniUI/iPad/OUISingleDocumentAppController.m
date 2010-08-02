@@ -30,7 +30,6 @@ static NSString * const SelectAction = @"select";
 - (void)_mainThread_finishedLoadingDocument:(id)result;
 - (void)_openDocument:(OUIDocumentProxy *)proxy animated:(BOOL)animated;
 - (void)_closeDocument:(id)sender;
-- (void)_undo:(id)sender;
 - (void)_setupGesturesOnTitleTextField;
 - (void)_proxyFinishedLoadingPreview:(NSNotification *)note;
 @end
@@ -69,7 +68,11 @@ static NSString * const SelectAction = @"select";
     
     [_closeDocumentBarButtonItem release];
     [_infoBarButtonItem release];
+    
+    OBASSERT(_undoBarButtonItem.undoManager == nil);
+    _undoBarButtonItem.undoBarButtonItemTarget = nil;
     [_undoBarButtonItem release];
+    
     [_documentTitleTextField release];
     [_documentTitleToolbarItem release];
     
@@ -102,8 +105,10 @@ static NSString * const SelectAction = @"select";
 
 - (UIBarButtonItem *)undoBarButtonItem;
 {
-    if (!_undoBarButtonItem)
-        _undoBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemUndo target:self action:@selector(_undo:)];
+    if (!_undoBarButtonItem) {
+        _undoBarButtonItem = [[OUIUndoBarButtonItem alloc] init];
+        _undoBarButtonItem.undoBarButtonItemTarget = self;
+    }
     return _undoBarButtonItem;
 }
 
@@ -448,6 +453,29 @@ static NSString * const SelectAction = @"select";
 }
 
 #pragma mark -
+#pragma mark OUIUndoBarButtonItemTarget
+
+- (void)undo:(id)sender;
+{
+    [_document undo:sender];
+}
+
+- (void)redo:(id)sender;
+{
+    [_document redo:sender];
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
+{
+    if (action == @selector(undo:))
+        return [_document.undoManager canUndo];
+    else if (action == @selector(redo:))
+        return [_document.undoManager canRedo];
+        
+    return YES;
+}
+
+#pragma mark -
 #pragma mark Private
 
 - (void)_openDocument:(OUIDocumentProxy *)proxy;
@@ -514,6 +542,13 @@ static NSString * const SelectAction = @"select";
         _toolbarViewController.innerViewController = _document.viewController;
         [self hideActivityIndicator]; // will be up for the initial app load
     }
+
+    // Start automatically tracking undo state from this document's undo manager
+    _undoBarButtonItem.undoManager = _document.undoManager;
+
+    // UIWindow will automatically create an undo manager if one isn't found along the responder chain. We want to be darn sure that don't end up getting two undo managers and accidentally splitting our registrations between them.
+    OBASSERT([_document undoManager] == [_document.viewController undoManager]);
+    OBASSERT([_document undoManager] == [_document.viewController.view undoManager]); // Does your view controller implement -undoManager? We don't do this for you right now.
 }
 
 - (void)_openDocument:(OUIDocumentProxy *)proxy animated:(BOOL)animated;
@@ -541,6 +576,9 @@ static NSString * const SelectAction = @"select";
         _toolbarViewController.innerViewController = self.documentPicker;
         return;
     }
+    
+    // Stop tracking the state from this document's undo manager
+    _undoBarButtonItem.undoManager = nil;
     
     [_window endEditing:YES];
     
@@ -589,11 +627,6 @@ static NSString * const SelectAction = @"select";
     [_window endEditing:YES/*force*/];
     
     [self showInspectorFromBarButtonItem:_infoBarButtonItem];
-}
-
-- (void)_undo:(id)sender;
-{
-    [_document undo:sender];
 }
 
 - (void)_handleTitleTapGesture:(UIGestureRecognizer*)gestureRecognizer;

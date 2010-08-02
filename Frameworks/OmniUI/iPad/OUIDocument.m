@@ -197,6 +197,20 @@ RCS_ID("$Id$");
     [self didUndo];
 }
 
+- (IBAction)redo:(id)sender;
+{
+    if (![self shouldRedo])
+        return;
+    
+    // Make sure any edits get finished and saved in the current undo group
+    [_viewController.view.window endEditing:YES/*force*/];
+    [self finishUndoGroup]; // close any nested group we created
+    
+    [_undoManager redo];
+    
+    [self didRedo];
+}
+
 - (BOOL)hasUnsavedChanges;
 {
     return _saveTimer != nil;
@@ -264,7 +278,16 @@ RCS_ID("$Id$");
     return YES;
 }
 
+- (BOOL)shouldRedo;
+{
+    return YES;
+}
+
 - (void)didUndo;
+{
+}
+
+- (void)didRedo;
 {
 }
 
@@ -369,7 +392,7 @@ RCS_ID("$Id$");
     
     [_undoIndicator show];
     
-    [[[OUIAppController controller] undoBarButtonItem] setEnabled:[_undoManager canUndo]];
+    [[[OUIAppController controller] undoBarButtonItem] setEnabled:[_undoManager canUndo] || [_undoManager canRedo]];
 }
 
 - (void)_undoManagerDidUndoOrRedo:(NSNotification *)note;

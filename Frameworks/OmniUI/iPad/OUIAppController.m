@@ -365,18 +365,6 @@ BOOL OUIShouldLogPerformanceMetrics;
 }
 
 #pragma mark -
-#pragma mark Undo button
-- (BOOL)canUndo;
-{
-    return YES;
-}
-
-- (BOOL)canRedo;
-{
-    return YES;
-}
-
-#pragma mark -
 #pragma mark Private
 
 - (NSString *)_fullReleaseString;

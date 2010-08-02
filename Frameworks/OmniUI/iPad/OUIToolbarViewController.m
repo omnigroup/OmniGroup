@@ -455,6 +455,17 @@ NSString * const OUIToolbarViewControllerResizedForKeyboard = @"OUIToolbarViewCo
     [_innerViewController didRotateFromInterfaceOrientation:fromInterfaceOrientation];
 }
 
+#pragma mark -
+#pragma mark UIResponder subclass
+
+- (NSUndoManager *)undoManager;
+{
+    // By default, if you send -undoManager to a view, it'll go up the responder chain and if it doesn't find one, UIWindow will create one.
+    // We want to ensure that we don't get an implicitly created undo manager (OUIDocument/OUISingleDocumentAppController have other assertions to make sure that only the document's undo manager is used).
+    OBASSERT_NOT_REACHED("This is probably not the -undoManager you want");
+    return nil;
+}
+
 @end
 
 @implementation UIViewController (OUIToolbarViewControllerExtensions)

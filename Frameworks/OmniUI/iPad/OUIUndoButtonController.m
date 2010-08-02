@@ -1,13 +1,14 @@
-    //
-//  OUIUndoButtonController.m
-//  OmniGraffle-iPad
+// Copyright 2010 The Omni Group.  All rights reserved.
 //
-//  Created by Ryan Patrick on 5/24/10.
-//  Copyright 2010 The Omni Group. All rights reserved.
-//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OUIUndoButtonController.h"
-#import "OUIAppController.h"
+
+//#import <OmniUI/OUIAppController.h>
+#import "OUIUndoButton.h"
 
 RCS_ID("$Id$");
 
@@ -45,6 +46,8 @@ RCS_ID("$Id$");
 {
     [_menuNavigationController release];
     [_menuPopoverController release];
+    [_undoButton release];
+    [_redoButton release];
     [super dealloc];
 }
 
@@ -53,11 +56,11 @@ RCS_ID("$Id$");
     UIImage *layoutBackgroundImage = [UIImage imageNamed:@"OUIStandardPopoverButton.png"];
     layoutBackgroundImage = [layoutBackgroundImage stretchableImageWithLeftCapWidth:6 topCapHeight:0];
     
-    [undoButton setBackgroundImage:layoutBackgroundImage forState:UIControlStateNormal];
-    [redoButton setBackgroundImage:layoutBackgroundImage forState:UIControlStateNormal];
+    [_undoButton setBackgroundImage:layoutBackgroundImage forState:UIControlStateNormal];
+    [_redoButton setBackgroundImage:layoutBackgroundImage forState:UIControlStateNormal];
 }
 
-- (void)showUndoMenu:(id)sender;
+- (void)showUndoMenuFromItem:(OUIUndoBarButtonItem *)item;
 {
     if ([_menuPopoverController isPopoverVisible])
         return;
@@ -75,44 +78,41 @@ RCS_ID("$Id$");
     
     [self _updateButtonStates];
     
-    [_menuPopoverController presentPopoverFromRect:[sender frame] inView:[sender superview] permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    [_menuPopoverController presentPopoverFromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
 #pragma mark -
 #pragma mark Actions
-- (void)_sendAction:(SEL)action;
+
+- (IBAction)undoButtonAction:(id)sender;
 {
-    // Try the first responder and then the app delegate.
-    UIApplication *app = [UIApplication sharedApplication];
-    if ([app sendAction:action to:nil from:self forEvent:nil])
-        return;
-    if ([app sendAction:action to:app.delegate from:self forEvent:nil])
-        return;
+    if (undoBarButtonItemTarget)
+        [undoBarButtonItemTarget undo:_undoButton];
     
-    NSLog(@"No target found for menu action %@", NSStringFromSelector(action));
-}
-
-- (IBAction)undoButton:(id)sender;
-{
-    SEL action = @selector(undoButtonAction:);
-    [self _sendAction:action];
     [self _updateButtonStates];
 }
 
-- (IBAction)redoButton:(id)sender;
+- (IBAction)redoButtonAction:(id)sender;
 {
-    SEL action = @selector(redoButtonAction:);
-    [self _sendAction:action];
+    if (undoBarButtonItemTarget)
+        [undoBarButtonItemTarget redo:_redoButton];
+    
     [self _updateButtonStates];
-
 }
+
+@synthesize undoButton = _undoButton;
+@synthesize redoButton = _redoButton;
+@synthesize undoBarButtonItemTarget;
 
 #pragma mark -
 #pragma mark Private
+
 - (void)_updateButtonStates;
 {
-    OUIAppController *controller = [OUIAppController controller];
-    [undoButton setEnabled:[controller canUndo]];
-    [redoButton setEnabled:[controller canRedo]];
+    if (undoBarButtonItemTarget) {
+        [_undoButton setEnabled:[undoBarButtonItemTarget canPerformAction:@selector(undo:) withSender:_undoButton]];
+        [_redoButton setEnabled:[undoBarButtonItemTarget canPerformAction:@selector(redo:) withSender:_redoButton]];
+    }
 }
+
 @end

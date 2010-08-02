@@ -1,20 +1,15 @@
+// Copyright 2010 The Omni Group.  All rights reserved.
 //
-//  OUIUndoButton.h
-//  OmniGraffle-iPad
-//
-//  Created by Ryan Patrick on 5/24/10.
-//  Copyright 2010 The Omni Group. All rights reserved.
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
 // $Id$
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIButton.h>
 
-@class OUIUndoButtonController;
-@interface OUIUndoButton : UIButton {
-    OUIUndoButtonController *_buttonController;
-}
-
-+ (CGRect)appropriateBounds;
-- (void)showUndoMenu;
-
+@interface OUIUndoButton : UIButton
+- (void)setNormalBackgroundImage:(UIImage *)image;
+- (void)setHighlightedBackgroundImage:(UIImage *)image;
 @end

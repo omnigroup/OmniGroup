@@ -41,6 +41,7 @@
 
 - (void)finishUndoGroup;
 - (IBAction)undo:(id)sender;
+- (IBAction)redo:(id)sender;
 
 - (BOOL)hasUnsavedChanges;
 - (BOOL)saveForClosing:(NSError **)outError;
@@ -57,7 +58,9 @@
 // Optional subclass methods
 - (void)willFinishUndoGroup;
 - (BOOL)shouldUndo;
+- (BOOL)shouldRedo;
 - (void)didUndo;
+- (void)didRedo;
 - (UIView *)viewToMakeFirstResponderWhenInspectorCloses;
 - (void)willClose;
 
