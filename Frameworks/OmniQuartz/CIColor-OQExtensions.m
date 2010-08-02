@@ -11,26 +11,6 @@ RCS_ID("$Id$");
 
 @implementation CIColor (OQExtensions)
 
-#ifdef DEBUG
-
-static id (*original_initWithColor)(id self, SEL _cmd, NSColor *color) = NULL;
-
-+ (void)didLoad;
-{
-    original_initWithColor = (void *)OBReplaceMethodImplementationWithSelectorOnClass(self, @selector(initWithColor:), self, @selector(replacement_initWithColor:));
-}
-
-// <bug://28581> If you pass NSCalibratedWhiteColorSpace, you get funky colors (Radar 4561496).
-- replacement_initWithColor:(NSColor *)color;
-{
-    // In the past, -initWithColor: didn't call -colorUsingColorSpaceName:NSCalibratedRGBColorSpace when converting to a CIColor, but now it does.  Just make sure this will work.
-    OBPRECONDITION([color colorUsingColorSpaceName:NSCalibratedRGBColorSpace] != nil);
-
-    return original_initWithColor(self, _cmd, color);
-}
-
-#endif
-
 + (CIColor *)clearColor;
 {
     static CIColor *clear = nil;
