@@ -88,7 +88,7 @@ UIImage *OUIMakeShadowedImage(UIImage *image)
         CGContextRef ctx = UIGraphicsGetCurrentContext();
         OUIBeginControlImageShadow(ctx);
         {
-            [image drawAtPoint:CGPointMake(1, 1)];
+            [image drawAtPoint:CGPointMake(0, 1)];
         }
         OUIEndControlImageShadow(ctx);
         shadowedImage = UIGraphicsGetImageFromCurrentImageContext();
