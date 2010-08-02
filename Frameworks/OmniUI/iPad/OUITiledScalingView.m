@@ -106,6 +106,8 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
     CGRect visibleRect = CGRectIntersection([scrollView convertRect:scrollView.bounds toView:self], bounds);
     
     DEBUG_TILE_LAYOUT(@"Tiling visible %@ with bounds %@", NSStringFromCGRect(visibleRect), NSStringFromCGRect(bounds));
+    if (visibleRect.size.width <= 0 || visibleRect.size.height <= 0)
+        return;
     
     OBASSERT(CGRectEqualToRect(bounds, CGRectIntegral(bounds)));
     
