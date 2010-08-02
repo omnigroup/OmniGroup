@@ -25,6 +25,7 @@
 
 // For the export button. We could potentially use +getPDFPreviewData:... by default, but we probably want a multi-page PDF document in OmniGraffle.
 - (NSData *)documentPicker:(OUIDocumentPicker *)picker PDFDataForProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
+- (NSData *)documentPicker:(OUIDocumentPicker *)picker PNGDataForProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
 
 // For the export button. If implemented, a 'Send to Camera Roll' item will be in the menu. Can return nil to have a default implementation of using the document's preview, scaled to fit the current device orientation.
 - (UIImage *)documentPicker:(OUIDocumentPicker *)picker cameraRollImageForProxy:(OUIDocumentProxy *)proxy;

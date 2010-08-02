@@ -651,6 +651,7 @@ static id _commonInit(OUIDocumentPicker *self)
     _actionSheetActions = [[NSMutableArray alloc] init];
 
     BOOL canMakePDF = [_nonretained_delegate respondsToSelector:@selector(documentPicker:PDFDataForProxy:error:)];
+    BOOL canMakePNG = [_nonretained_delegate respondsToSelector:@selector(documentPicker:PNGDataForProxy:error:)];
     BOOL canMakeImage = [_nonretained_delegate respondsToSelector:@selector(documentPicker:cameraRollImageForProxy:)];
     
     if ([MFMailComposeViewController canSendMail]) {
@@ -662,6 +663,11 @@ static id _commonInit(OUIDocumentPicker *self)
         if (canMakePDF) {
             [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Send PDF via Mail", @"OmniUI", OMNI_BUNDLE, @"Menu option in the document picker view")];
             [_actionSheetActions addObject:NSStringFromSelector(@selector(emailPDF:))];
+        }
+        
+        if (canMakePNG) {
+            [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Send PNG via Mail", @"OmniUI", OMNI_BUNDLE, @"Menu option in the document picker view")];
+            [_actionSheetActions addObject:NSStringFromSelector(@selector(emailPNG:))];
         }
     }
     
@@ -718,6 +724,27 @@ static id _commonInit(OUIDocumentPicker *self)
     NSString *pdfFilename = [[documentFilename stringByDeletingPathExtension] stringByAppendingPathExtension:@"pdf"];
 
     [self _sendEmailWithSubject:[documentProxy name] attachmentName:pdfFilename data:pdfData fileType:(NSString *)kUTTypePDF];
+}
+
+- (void)emailPNG:(id)sender;
+{
+    OUIDocumentProxy *documentProxy = _previewScrollView.selectedProxy;
+    if (!documentProxy) {
+        OBASSERT_NOT_REACHED("button should have been disabled");
+        return;
+    }
+    
+    NSError *error = nil;
+    NSData *pngData = [_nonretained_delegate documentPicker:self PNGDataForProxy:documentProxy error:&error];
+    if (!pngData) {
+        OUI_PRESENT_ERROR(error);
+        return;
+    }
+    
+    NSString *documentFilename = [[documentProxy.url path] lastPathComponent];
+    NSString *pngFilename = [[documentFilename stringByDeletingPathExtension] stringByAppendingPathExtension:@"png"];
+    
+    [self _sendEmailWithSubject:[documentProxy name] attachmentName:pngFilename data:pngData fileType:(NSString *)kUTTypePNG];
 }
 
 - (void)copyAsImage:(id)sender;
