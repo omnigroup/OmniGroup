@@ -28,7 +28,7 @@ static NSString * const TargetLayerKey = @"OQLayerRemovalAnimationTargetLayer";
     return [layer ancestorHasAnimationForKey:RemovalAnimation];
 }
 
-+ (void)removeLayer:(CALayer *)layer;
++ (void)removeLayer:(CALayer *)layer completion:(void (^)(BOOL finished))completion;
 {
     OBPRECONDITION(![self isRemovingLayer:layer]);
     
@@ -39,11 +39,13 @@ static NSString * const TargetLayerKey = @"OQLayerRemovalAnimationTargetLayer";
         return;
     }
     
-    CAAnimation *anim = [self animationForRemovingLayer:layer];
+    OQAnimationGroup *anim = [self animationForRemovingLayer:layer];
     
     // We use fillMode=forward and removedOnCompletion=NO so that we don't get a pop at the end where the layer reappears briefly.  Our animationDidStop:finished: will remove it.
     anim.fillMode = kCAFillModeForwards;
     anim.removedOnCompletion = NO;
+    if (completion != NULL)
+        [anim setCompletionHandler:completion];
     
     // Make this animate with the same non-default curve that default-created animations use.  Grrr.
     anim.timingFunction = [CAMediaTimingFunction functionCompatibleWithDefault];
@@ -55,6 +57,11 @@ static NSString * const TargetLayerKey = @"OQLayerRemovalAnimationTargetLayer";
     [layer addAnimation:anim forKey:RemovalAnimation];
 }
 
++ (void)removeLayer:(CALayer *)layer;
+{
+    [self removeLayer:layer completion:NULL];
+}
+
 + (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag;
 {
     DEBUG_ANIMATION(@"animation did stop:%@ finished:%d", anim, flag);
@@ -62,13 +69,20 @@ static NSString * const TargetLayerKey = @"OQLayerRemovalAnimationTargetLayer";
     CALayer *layer = [anim valueForKey:TargetLayerKey];
     OBASSERT(layer);
     DEBUG_ANIMATION(@"  %@ has completely faded; removing", [layer shortDescription]);
+
+    // Only removing the layer from superlayer if the animation finishes, because if the animation got cancelled halfway through (like via quickly collapse then expand in OOOutline) we need the layer to stay around. 
+    // WARNING: The other reason why the finished flag might be NO is if the layers were never on-screen in the first place, so the animation just stops immediately. Which means anywhere you do removal animations, you need to test for that condition, and if the layer isn't visible, it should immediately removeFromSuperlayer instead.
+    if (flag) {
+        [CATransaction begin];
+        [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
+        [layer removeFromSuperlayer];
+        [CATransaction commit];
+    }
     
-    // Fully out; remove it w/o animation now.
-    [CATransaction begin];
-    [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
-    [layer removeFromSuperlayer];
-    [CATransaction commit];
-    
+    if ([anim isKindOfClass:[OQAnimationGroup class]]) {
+        [(OQAnimationGroup *)anim animationDidComplete:flag];
+    }
+
     // Clean up potential retain cycles
     [layer removeAnimationForKey:RemovalAnimation];
     [anim setValue:nil forKey:TargetLayerKey];

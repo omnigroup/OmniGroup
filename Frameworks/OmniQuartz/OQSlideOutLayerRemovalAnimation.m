@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniQuartz/OQSlideOutLayerRemovalAnimation.h>
+#import <OmniQuartz/CALayer-OQExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -13,7 +14,7 @@ RCS_ID("$Id$");
 
 + animationForRemovingLayer:(CALayer *)layer;
 {
-    CGRect bounds = layer.bounds;
+    CGRect bounds = OQCurrentAnimationValueInLayer(layer, bounds);
     CABasicAnimation *boundsAnimation = [CABasicAnimation animationWithKeyPath:@"bounds"];
     boundsAnimation.fromValue = [NSValue valueWithRect:bounds];
     boundsAnimation.toValue = [NSValue valueWithRect:NSMakeRect(CGRectGetMinX(bounds), CGRectGetMaxY(bounds), CGRectGetWidth(bounds), 0)];
@@ -22,7 +23,7 @@ RCS_ID("$Id$");
     contentsRectAnimation.fromValue = [NSValue valueWithRect:NSMakeRect(0, 0, 1, 1)];
     contentsRectAnimation.toValue = [NSValue valueWithRect:NSMakeRect(0, 1, 1, 0)];
     
-    CAAnimationGroup *group = [CAAnimationGroup animation];
+    OQAnimationGroup *group = [OQAnimationGroup animation];
     group.animations = [NSArray arrayWithObjects:boundsAnimation, contentsRectAnimation, nil];
     
     return group;

@@ -16,7 +16,10 @@ RCS_ID("$Id$");
     CABasicAnimation *anim = [self animationWithKeyPath:@"opacity"];
     anim.fromValue = [NSNumber numberWithFloat:1.0f];
     anim.toValue = [NSNumber numberWithFloat:0.0f];
-    return anim;
+
+    OQAnimationGroup *group = [OQAnimationGroup animation];
+    group.animations = [NSArray arrayWithObject:anim];
+    return group;
 }
 
 @end
