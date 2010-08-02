@@ -35,7 +35,24 @@ static OUIOverlayView *_overlayView = nil;
     [_overlayView displayTemporarilyInView:view];
 }
 
-+ (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAbovePoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval; 
++ (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAtPoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval;
+{
+    if (!_overlayView) {
+        _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
+    }
+    
+    _overlayView.text = string;
+    
+    [_overlayView centerAtPoint:touchPoint withOffset:CGPointZero withinBounds:view.bounds];
+    
+    if (displayInterval) {
+        _overlayView.messageDisplayInterval = displayInterval;
+    }
+    
+    [_overlayView displayTemporarilyInView:view];
+}
+
++ (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAbovePoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval;
 {
     if (!_overlayView) {
         _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
@@ -49,6 +66,23 @@ static OUIOverlayView *_overlayView = nil;
         _overlayView.messageDisplayInterval = displayInterval;
     }
 
+    [_overlayView displayTemporarilyInView:view];
+}
+
++ (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string positionedForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer displayInterval:(NSTimeInterval)displayInterval;
+{
+    if (!_overlayView) {
+        _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
+    }
+    
+    _overlayView.text = string;
+    
+    [_overlayView centerAtPositionForGestureRecognizer:gestureRecognizer inView:view];
+    
+    if (displayInterval) {
+        _overlayView.messageDisplayInterval = displayInterval;
+    }
+    
     [_overlayView displayTemporarilyInView:view];
 }
 
@@ -236,14 +270,17 @@ static OUIOverlayView *_overlayView = nil;
     self.frame = newFrame;
 }
 
-- (void)centerAbovePoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;
+- (void)centerAtPoint:(CGPoint)touchPoint withOffset:(CGPoint)offset withinBounds:(CGRect)superBounds;
 {
     CGSize suggestedSize = [self suggestedSize];
     
     CGPoint topLeft = touchPoint;
     topLeft.x -= suggestedSize.width/2;
     topLeft.y -= suggestedSize.height;
-    topLeft.y -= 80;
+    
+    // Adjust by offset amount
+    topLeft.x += offset.x;
+    topLeft.y += offset.y;
     
     // Don't go past edges
     if (topLeft.y < OUIOverlayViewDistanceFromTopEdge)
@@ -264,6 +301,11 @@ static OUIOverlayView *_overlayView = nil;
     newFrame = CGRectIntegral(newFrame);
     
     self.frame = newFrame;
+}
+
+- (void)centerAbovePoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;
+{
+    [self centerAtPoint:touchPoint withOffset:CGPointMake(0, -80) withinBounds:superBounds];
 }
 
 - (void)useAlignment:(OUIOverlayViewAlignment)alignment withinBounds:(CGRect)superBounds;
@@ -290,6 +332,62 @@ static OUIOverlayView *_overlayView = nil;
     newFrame = CGRectIntegral(newFrame);
     
     self.frame = newFrame;
+}
+
+- (CGPoint)positionForTwoTouchGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer inView:(UIView *)stableView;
+// Imitate the behavior of the iWork apps, which position the zoom overlay a certain distance perpendicularly from the line between the pinching touches.
+{
+    if ([gestureRecognizer numberOfTouches] < 2) {
+        return CGPointZero;
+    }
+    
+    CGPoint touch1 = [gestureRecognizer locationOfTouch:0 inView:stableView];
+    CGPoint touch2 = [gestureRecognizer locationOfTouch:1 inView:stableView];
+    CGPoint touchVector = CGPointMake(touch2.x - touch1.x, touch2.y - touch1.y);
+    
+    // Make sure the vector is pointing up
+    if (touchVector.y > 0) {
+        touchVector.x *= -1;
+        touchVector.y *= -1;
+    }
+    
+    // Normalize length
+    CGFloat length = hypotf(touchVector.x, touchVector.y);
+    CGFloat lengthFactor = OUIOverlayViewPerpendicularDistanceFromTwoTouches/length;
+    CGPoint vNorm = CGPointMake(touchVector.x*lengthFactor, touchVector.y*lengthFactor);
+    
+    // Make perpendicular and pointing up
+    CGPoint vPerp = CGPointMake(vNorm.y, -vNorm.x);
+    if (vPerp.y > 0) {
+        vPerp.x *= -1;
+        vPerp.y *= -1;
+    }
+    
+    // Calculate actual point
+    CGPoint center = CGPointMake((touch1.x + touch2.x)/2, (touch1.y + touch2.y)/2);
+    center.x += vPerp.x;
+    center.y += vPerp.y;
+    
+    return center;
+}
+
+- (void)centerAtPositionForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer inView:(UIView *)view;
+{
+    // If no gesture recognizer was specified, fall back to aligning mid-center
+    if (!gestureRecognizer) {
+        [self useAlignment:OUIOverlayViewAlignmentMidCenter withinBounds:view.bounds];
+        return;
+    }
+    
+    // If gesture recognizer has just one touch, fall back to positioning above the finger
+    if ([gestureRecognizer numberOfTouches] == 1) {
+        [self centerAbovePoint:[gestureRecognizer locationInView:view] withinBounds:view.bounds];
+        return;
+    }
+    
+    CGPoint p = [self positionForTwoTouchGestureRecognizer:gestureRecognizer inView:view];
+    
+    [self centerAtPoint:p withOffset:CGPointZero withinBounds:view.bounds];
 }
 
 

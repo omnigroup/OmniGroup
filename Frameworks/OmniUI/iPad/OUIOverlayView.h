@@ -18,6 +18,8 @@ typedef enum {
 #define OUIOverlayViewDistanceFromTopEdge 10
 #define OUIOverlayViewDistanceFromHorizontalEdge 10
 
+#define OUIOverlayViewPerpendicularDistanceFromTwoTouches 100
+
 
 @interface OUIOverlayView : UIView
 {
@@ -35,7 +37,9 @@ typedef enum {
 
 // Convenience methods for creating temporary overlays.  Pass 0 as the displayInterval to use the default delay.
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string avoidingTouchPoint:(CGPoint)touchPoint;
++ (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAtPoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval;
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAbovePoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval;
++ (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string positionedForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer displayInterval:(NSTimeInterval)displayInterval;
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string alignment:(OUIOverlayViewAlignment)alignment displayInterval:(NSTimeInterval)displayInterval;
 
 - (void)displayTemporarilyInView:(UIView *)view;
@@ -50,7 +54,10 @@ typedef enum {
 @property(assign,nonatomic) NSTimeInterval messageDisplayInterval;  // seconds
 
 - (void)avoidTouchPoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;
+- (void)centerAtPoint:(CGPoint)touchPoint withOffset:(CGPoint)offset withinBounds:(CGRect)superBounds;
 - (void)centerAbovePoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;
 - (void)useAlignment:(OUIOverlayViewAlignment)alignment withinBounds:(CGRect)superBounds;
+
+- (void)centerAtPositionForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer inView:(UIView *)view;
 
 @end

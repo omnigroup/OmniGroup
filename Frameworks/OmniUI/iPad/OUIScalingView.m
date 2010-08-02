@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 #import <OmniQuartz/OQDrawing.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
@@ -36,6 +37,13 @@ static id _commonInit(OUIScalingView *self)
     if (!(self = [super initWithCoder:coder]))
         return nil;
     return _commonInit(self);
+}
+
+- (void)dealloc;
+{
+    [_shadowEdgeViews release];
+    
+    [super dealloc];
 }
 
 // DO NOT set this directly for now. Only should be mucked with via GraphViewController and its UIScrollView (or code needs rearranging to support direct mucking)
@@ -198,6 +206,33 @@ static id _commonInit(OUIScalingView *self)
     return data;
 }
 
+@synthesize wantsShadowEdges = _wantsShadowEdges;
+
+- (void)updateShadowEdgeViews;
+{
+    if (!self.wantsShadowEdges)
+        return;
+    
+    if (!_shadowEdgeViews)
+        _shadowEdgeViews = [OUIViewAddShadowEdges(self) copy];
+    OUIViewLayoutShadowEdges(self, _shadowEdgeViews, YES/*flipped*/);
+}
+
+- (void)setShadowEdgeViewVisibility:(BOOL)visible;
+{
+    if (!self.wantsShadowEdges)
+        return;
+    
+    if (visible) {
+        for (UIView *view in _shadowEdgeViews) {
+            [self addSubview:view];
+        }
+    }
+    else {
+        [_shadowEdgeViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    }
+}
+
 #pragma mark UIView subclass
 
 - (void)drawRect:(CGRect)rect;
@@ -205,6 +240,13 @@ static id _commonInit(OUIScalingView *self)
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     [self establishTransformToRenderingSpace:ctx];
     [self drawScaledContent:rect];
+}
+
+- (void)layoutSubviews;
+{
+    if (self.wantsShadowEdges) {
+        [self updateShadowEdgeViews];
+    }
 }
 
 @end

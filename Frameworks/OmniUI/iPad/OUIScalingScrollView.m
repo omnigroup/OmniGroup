@@ -36,8 +36,6 @@ static id _commonInit(OUIScalingScrollView *self)
 // Caller should call -sizeInitialViewSizeFromCanvasSize on us after setting this.
 @synthesize allowedEffectiveScaleExtent = _allowedEffectiveScaleExtent;
 
-@synthesize lastScaleWasFullScale = _lastScaleWasFullScale;
-
 static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 {
     OUIScalingView *view = (OUIScalingView *)[self.delegate viewForZoomingInScrollView:self];
@@ -46,15 +44,14 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     return view;
 }
 
-- (void)adjustScaleBy:(CGFloat)scale canvasSize:(CGSize)canvasSize;
+- (CGFloat)fullScreenScaleForCanvasSize:(CGSize)canvasSize;
 {
-    OUIScalingView *view = _scalingView(self);
-    if (!view)
-        return;
+    CGRect scrollBounds = self.bounds;
+    CGFloat fitXScale = CGRectGetWidth(scrollBounds) / canvasSize.width;
+    CGFloat fitYScale = CGRectGetHeight(scrollBounds) / canvasSize.height;
+    CGFloat fullScreenScale = MIN(fitXScale, fitYScale); // the maximum size that won't make us scrollable.
     
-    // To get unpixelated drawing, when we are scaled up or down, we need to adjust our view to have a 1-1 pixel mapping.  UIScrollView's "scaling" is just scaling our backing store.
-    // If we were at 2x scale and we are 2x more scaled now, then we should be 4x!
-    [self adjustScaleTo:view.scale * scale canvasSize:canvasSize];
+    return fullScreenScale;
 }
 
 - (void)adjustScaleTo:(CGFloat)effectiveScale canvasSize:(CGSize)canvasSize;
@@ -62,19 +59,6 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     OUIScalingView *view = _scalingView(self);
     if (!view)
         return;
-
-    CGRect scrollBounds = self.bounds;
-    CGFloat fitXScale = CGRectGetWidth(scrollBounds) / canvasSize.width;
-    CGFloat fitYScale = CGRectGetHeight(scrollBounds) / canvasSize.height;
-    CGFloat fullScreenScale = MIN(fitXScale, fitYScale); // the maximum size that won't make us scrollable.
-    
-    // If the caller passes in a non-positive number, or if the effective scale is close to the full screen scale, use it.
-    if (effectiveScale <= 0 || fabs(effectiveScale - fullScreenScale) < OUI_SNAP_TO_ZOOM_FIT_PERCENT) {
-        _lastScaleWasFullScale = YES;
-        effectiveScale = fullScreenScale;
-    } else {
-        _lastScaleWasFullScale = NO;
-    }
     
     view.scale = effectiveScale;
     
@@ -87,7 +71,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     view.bounds = scaledCanvasSize;
     
     // Need to reset the min/max zoom to be factors of our current scale.  The minimum scale allowed needs to be sufficient to fit the whole graph on screen.  Then, allow zooming up to at least 4x that size or 4x the canvas size, whatever is larger.
-    CGFloat minimumZoom = MIN(OFExtentMin(_allowedEffectiveScaleExtent), MIN(fitXScale, fitYScale));
+    CGFloat minimumZoom = MIN(OFExtentMin(_allowedEffectiveScaleExtent), [self fullScreenScaleForCanvasSize:canvasSize]);
     CGFloat maximumZoom = OFExtentMax(_allowedEffectiveScaleExtent);
 
     BOOL isTiled = [view isKindOfClass:[OUITiledScalingView class]];

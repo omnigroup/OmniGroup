@@ -10,19 +10,16 @@
 #import <UIKit/UIScrollView.h>
 #import <OmniFoundation/OFExtent.h>
 
-#define OUI_SNAP_TO_ZOOM_FIT_PERCENT (0.1)
-
 @interface OUIScalingScrollView : UIScrollView
 {
 @private
     OFExtent _allowedEffectiveScaleExtent;
-    BOOL _lastScaleWasFullScale;
 }
 
 @property(assign,nonatomic) OFExtent allowedEffectiveScaleExtent;
-@property(readonly) BOOL lastScaleWasFullScale;
 
-- (void)adjustScaleBy:(CGFloat)scale canvasSize:(CGSize)canvasSize;
+- (CGFloat)fullScreenScaleForCanvasSize:(CGSize)canvasSize;
+
 - (void)adjustScaleTo:(CGFloat)effectiveScale canvasSize:(CGSize)canvasSize;
 - (void)adjustContentInset;
 
