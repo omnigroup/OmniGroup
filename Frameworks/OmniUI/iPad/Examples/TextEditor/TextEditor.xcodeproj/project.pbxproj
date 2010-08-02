@@ -16,11 +16,14 @@
 		342721B01194814200B39788 /* libOmniBase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 342721601194809800B39788 /* libOmniBase.a */; };
 		342721B11194814500B39788 /* libOmniFoundation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34272173119480A700B39788 /* libOmniFoundation.a */; };
 		342721B21194814700B39788 /* libOmniQuartz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3427218A119480B300B39788 /* libOmniQuartz.a */; };
-		342721B31194814A00B39788 /* libOmniAppKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3427219C119480C400B39788 /* libOmniAppKit.a */; };
 		342721B41194814D00B39788 /* libOmniUI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 342721A2119480CE00B39788 /* libOmniUI.a */; };
 		345956AD1194982600ECB2B6 /* Samples in Resources */ = {isa = PBXBuildFile; fileRef = 345956AB1194982600ECB2B6 /* Samples */; };
 		345956BF119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png in Resources */ = {isa = PBXBuildFile; fileRef = 345956BE119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png */; };
 		3459571411949F6100ECB2B6 /* RTFDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 3459571311949F6100ECB2B6 /* RTFDocument.m */; };
+		34656A5B11E6458F003D2FD1 /* libOmniAppKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3427219C119480C400B39788 /* libOmniAppKit.a */; };
+		34656A8611E649CA003D2FD1 /* libOmniBaseTouchTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C6FE3C11E644A600496375 /* libOmniBaseTouchTests.a */; };
+		34656A8711E649CE003D2FD1 /* libOmniFoundationTouchTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C6FE4811E644A600496375 /* libOmniFoundationTouchTests.a */; };
+		34656A8811E649D2003D2FD1 /* libOmniAppKitTouchTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C6FE5011E644A600496375 /* libOmniAppKitTouchTests.a */; };
 		34717BEE11949466003360DE /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34717BED11949466003360DE /* CoreText.framework */; };
 		34717BF311949476003360DE /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34717BF211949476003360DE /* QuartzCore.framework */; };
 		34717BF911949485003360DE /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34717BF811949485003360DE /* MobileCoreServices.framework */; };
@@ -29,6 +32,7 @@
 		34717C05119494A8003360DE /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 34717C04119494A8003360DE /* libxml2.dylib */; };
 		34D98FB11194AAE60029EFE3 /* TextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D98FB01194AAE60029EFE3 /* TextViewController.m */; };
 		34D990071194AB820029EFE3 /* TextViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 34D990061194AB820029EFE3 /* TextViewController.xib */; };
+		34FFD89511DE4062002AA535 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34FFD89411DE4062002AA535 /* SenTestingKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -207,6 +211,48 @@
 			remoteGlobalIDString = 345613D31193197700E7D187;
 			remoteInfo = OmniQuartzTouch;
 		};
+		34656A8911E649E2003D2FD1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 342721571194809800B39788 /* OmniBase.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 340115AF11E515790016ADB3;
+			remoteInfo = OmniBaseTouchTests;
+		};
+		34656A8B11E649E2003D2FD1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3427218B119480C400B39788 /* OmniAppKit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3401163411E5181A0016ADB3;
+			remoteInfo = OmniAppKitTouchTests;
+		};
+		34656A8D11E649E2003D2FD1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34272163119480A700B39788 /* OmniFoundation.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 340115D311E515DB0016ADB3;
+			remoteInfo = OmniFoundationTouchTests;
+		};
+		34C6FE3B11E644A600496375 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 342721571194809800B39788 /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 340115B011E515790016ADB3;
+			remoteInfo = OmniBaseTouchTests;
+		};
+		34C6FE4711E644A600496375 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34272163119480A700B39788 /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 340115D411E515DB0016ADB3;
+			remoteInfo = OmniFoundationTouchTests;
+		};
+		34C6FE4F11E644A600496375 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3427218B119480C400B39788 /* OmniAppKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3401163511E5181A0016ADB3;
+			remoteInfo = OmniAppKitTouchTests;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -271,6 +317,7 @@
 		34D98FAF1194AAE60029EFE3 /* TextViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextViewController.h; sourceTree = "<group>"; };
 		34D98FB01194AAE60029EFE3 /* TextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextViewController.m; sourceTree = "<group>"; };
 		34D990061194AB820029EFE3 /* TextViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextViewController.xib; sourceTree = "<group>"; };
+		34FFD89411DE4062002AA535 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = /Developer/Library/Frameworks/SenTestingKit.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* TextEditor-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TextEditor-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -285,7 +332,6 @@
 				342721B01194814200B39788 /* libOmniBase.a in Frameworks */,
 				342721B11194814500B39788 /* libOmniFoundation.a in Frameworks */,
 				342721B21194814700B39788 /* libOmniQuartz.a in Frameworks */,
-				342721B31194814A00B39788 /* libOmniAppKit.a in Frameworks */,
 				342721B41194814D00B39788 /* libOmniUI.a in Frameworks */,
 				34717BEE11949466003360DE /* CoreText.framework in Frameworks */,
 				34717BF311949476003360DE /* QuartzCore.framework in Frameworks */,
@@ -293,6 +339,11 @@
 				34717BFC11949492003360DE /* libz.dylib in Frameworks */,
 				34717C001194949D003360DE /* MessageUI.framework in Frameworks */,
 				34717C05119494A8003360DE /* libxml2.dylib in Frameworks */,
+				34FFD89511DE4062002AA535 /* SenTestingKit.framework in Frameworks */,
+				34656A5B11E6458F003D2FD1 /* libOmniAppKit.a in Frameworks */,
+				34656A8611E649CA003D2FD1 /* libOmniBaseTouchTests.a in Frameworks */,
+				34656A8711E649CE003D2FD1 /* libOmniFoundationTouchTests.a in Frameworks */,
+				34656A8811E649D2003D2FD1 /* libOmniAppKitTouchTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -367,6 +418,7 @@
 				34717BFF1194949D003360DE /* MessageUI.framework */,
 				34717BFB11949492003360DE /* libz.dylib */,
 				34717C04119494A8003360DE /* libxml2.dylib */,
+				34FFD89411DE4062002AA535 /* SenTestingKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -430,8 +482,9 @@
 			isa = PBXGroup;
 			children = (
 				3427215E1194809800B39788 /* OmniBase.framework */,
-				342721601194809800B39788 /* libOmniBase.a */,
 				342721621194809800B39788 /* OBLoadBundle */,
+				342721601194809800B39788 /* libOmniBase.a */,
+				34C6FE3C11E644A600496375 /* libOmniBaseTouchTests.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -441,6 +494,7 @@
 			children = (
 				34272171119480A700B39788 /* OmniFoundation.framework */,
 				34272173119480A700B39788 /* libOmniFoundation.a */,
+				34C6FE4811E644A600496375 /* libOmniFoundationTouchTests.a */,
 				34272175119480A700B39788 /* OFUnitTests.octest */,
 				34272177119480A700B39788 /* OFSimpleLockTest */,
 				34272179119480A700B39788 /* OFDedicatedThreadSchedulerTest */,
@@ -469,6 +523,7 @@
 				34272198119480C400B39788 /* OAMakeImageSizeIntegral */,
 				3427219A119480C400B39788 /* OAPatternColorPicker.bundle */,
 				3427219C119480C400B39788 /* libOmniAppKit.a */,
+				34C6FE5011E644A600496375 /* libOmniAppKitTouchTests.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -497,9 +552,12 @@
 			);
 			dependencies = (
 				342721A6119480E000B39788 /* PBXTargetDependency */,
+				34656A8A11E649E2003D2FD1 /* PBXTargetDependency */,
 				342721AA119480E000B39788 /* PBXTargetDependency */,
+				34656A8E11E649E2003D2FD1 /* PBXTargetDependency */,
 				342721AC119480E000B39788 /* PBXTargetDependency */,
 				342721A4119480E000B39788 /* PBXTargetDependency */,
+				34656A8C11E649E2003D2FD1 /* PBXTargetDependency */,
 				342721A8119480E000B39788 /* PBXTargetDependency */,
 			);
 			name = TextEditor;
@@ -687,6 +745,27 @@
 			remoteRef = 342721A1119480CE00B39788 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		34C6FE3C11E644A600496375 /* libOmniBaseTouchTests.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniBaseTouchTests.a;
+			remoteRef = 34C6FE3B11E644A600496375 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34C6FE4811E644A600496375 /* libOmniFoundationTouchTests.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniFoundationTouchTests.a;
+			remoteRef = 34C6FE4711E644A600496375 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34C6FE5011E644A600496375 /* libOmniAppKitTouchTests.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniAppKitTouchTests.a;
+			remoteRef = 34C6FE4F11E644A600496375 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -760,6 +839,21 @@
 			name = OmniQuartzTouch;
 			targetProxy = 342721AB119480E000B39788 /* PBXContainerItemProxy */;
 		};
+		34656A8A11E649E2003D2FD1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniBaseTouchTests;
+			targetProxy = 34656A8911E649E2003D2FD1 /* PBXContainerItemProxy */;
+		};
+		34656A8C11E649E2003D2FD1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniAppKitTouchTests;
+			targetProxy = 34656A8B11E649E2003D2FD1 /* PBXContainerItemProxy */;
+		};
+		34656A8E11E649E2003D2FD1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniFoundationTouchTests;
+			targetProxy = 34656A8D11E649E2003D2FD1 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -767,6 +861,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 342721491194802E00B39788 /* Touch-Application-Debug.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SDKROOT)$(DEVELOPER_FRAMEWORKS_DIR)\"",
+				);
 				INFOPLIST_FILE = "Resources/TextEditor-Info.plist";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniText;
 				PRODUCT_NAME = TextEditor;
@@ -778,6 +876,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3427214A1194802E00B39788 /* Touch-Application-Release.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SDKROOT)$(DEVELOPER_FRAMEWORKS_DIR)\"",
+				);
 				INFOPLIST_FILE = "Resources/TextEditor-Info.plist";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniText;
 				PRODUCT_NAME = TextEditor;
@@ -791,6 +893,7 @@
 			baseConfigurationReference = 3427213B1194802E00B39788 /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				SDKROOT = iphoneos3.2;
 			};
 			name = Debug;
 		};
