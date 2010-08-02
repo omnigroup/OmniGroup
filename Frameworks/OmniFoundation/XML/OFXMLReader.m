@@ -147,6 +147,7 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
         return; // should be ignored
 
     _addError(self, errorObject);
+    [errorObject release];
 }
 
 - initWithInputStream:(NSInputStream *)inputStream startingInternedNames:(OFXMLInternedNameTable)startingInternedNames error:(NSError **)outError;
@@ -440,7 +441,9 @@ static void _finalize(OFXMLReader *self)
                 }
                 break;
             case XML_READER_TYPE_TEXT:
-            case XML_READER_TYPE_CDATA: {
+            case XML_READER_TYPE_CDATA:
+            case XML_READER_TYPE_SIGNIFICANT_WHITESPACE: // For example, a text run in OmniStyle where just a range of whitespace as a different style applied.
+            {
                 NSString *text = [[NSString alloc] initWithUTF8String:(const char *)xmlTextReaderConstValue(_reader)];
                 if (str) {
                     // Should be rare, but if we get multiple CDATA sections in a row, it could maybe happen.
@@ -484,6 +487,9 @@ static void _finalize(OFXMLReader *self)
     // We own the return value; inform CFString it should free() it.  Will return NULL on not-found.
     const xmlChar *attributeName = (const xmlChar *)[name.name UTF8String];
     const xmlChar *attributeNamespace = (const xmlChar *)[name.namespace UTF8String];
+    
+    if (attributeNamespace && !*attributeNamespace)
+        attributeNamespace = NULL; // Our namespace property is @"" when unset, but libxml wants NULL for no-namespace lookups.
     
     xmlChar *value = xmlTextReaderGetAttributeNs(_reader, attributeName, attributeNamespace);
     if (!value) {
@@ -546,7 +552,10 @@ static void _finalize(OFXMLReader *self)
     
     OFXMLQName *elementName = [self elementQName];
     OBASSERT(elementName);
+    
     const char *elementNamespace = [elementName.namespace UTF8String];
+    if (elementNamespace && !*elementNamespace)
+        elementNamespace = NULL; // OFXMLInternedNameTableGetInternedName doesn't want ""
     
     // Not preserving order of attributes and whether they are duplicated.  Hopefully never significant and we won't need to care.
     NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];

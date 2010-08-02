@@ -79,9 +79,16 @@ static NSCalendar *_defaultCalendar(void)
 // creates a new relative date parser with your current locale
 + (OFRelativeDateParser *)sharedParser;
 {
-    if (!sharedParser) 
+    if (!sharedParser) {
 	sharedParser = [[OFRelativeDateParser alloc] initWithLocale:[NSLocale currentLocale]];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(currentLocaleDidChange:) name:NSCurrentLocaleDidChangeNotification object:nil];
+    }
     return sharedParser;
+}
+
++ (void)currentLocaleDidChange:(NSNotification *)notification;
+{
+    [sharedParser setLocale:[NSLocale currentLocale]];
 }
 
 + (void)initialize;
@@ -229,7 +236,7 @@ static NSCalendar *_defaultCalendar(void)
     OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4);
 
     [formatter setCalendar:calendar];
-    [formatter setLocale:[calendar locale]];
+    [formatter setLocale:_locale];
     
     [formatter setDateStyle:NSDateFormatterShortStyle]; 
     [formatter setTimeStyle:NSDateFormatterNoStyle]; 
@@ -479,7 +486,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4); // Linked on 10.6
     
     [formatter setCalendar:calendar];
-    [formatter setLocale:[calendar locale]];
+    [formatter setLocale:_locale];
     [formatter setDateFormat:dateFormat];
     
     if ([components hour] != NSUndefinedDateComponent) 

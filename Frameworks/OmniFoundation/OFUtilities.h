@@ -73,7 +73,7 @@ extern char *OFFormatFCC(uint32_t fcc, char fccString[13]);
 BOOL OFGet4CCFromPlist(id pl, uint32_t *fourcc);
 
 // Creates a property-list representation of the given FourCharCode. Not necessarily compatible with UTGetOSTypeFromString(), because it might not return an NSString.
-id OFCreatePlistFor4CC(uint32_t fourcc);
+id OFCreatePlistFor4CC(uint32_t fourcc) NS_RETURNS_RETAINED;
 
 // Converts between CFNumberType and numeric C types represented using @encode. Returns 0 or NULL if there's no exact equivalent (e.g. most of the unsigned integer types).
 CFNumberType OFCFNumberTypeForObjCType(const char *objCType) __attribute__ ((const));

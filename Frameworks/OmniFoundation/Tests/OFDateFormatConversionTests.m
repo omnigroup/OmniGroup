@@ -57,13 +57,23 @@ RCS_ID("$Id$")
     [super tearDown];
 }
 
-void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateFormat, BOOL shouldBeEqual, NSString *expectedNewResult)
+void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateFormat, BOOL expectCorrectReconveredOldFormat, NSString *expectedReconvertedOldDateFormat, BOOL shouldBeEqual, NSString *expectedNewResult)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     NSString *oldResult = [self->_date descriptionWithCalendarFormat:oldDateFormat];
     
     NSString *newDateFormat = OFDateFormatStringForOldFormatString(oldDateFormat);
+    NSString *reConvertedOldDateFormat = OFOldDateFormatStringForFormatString(newDateFormat);
+    
+    if (expectCorrectReconveredOldFormat) {
+        // For the inputs below, we should get idempotence. ICU supports more than strftime, so we can't expect this for every format.
+        // Some strftime formats map to a single ICU format ("%1d" and "%e", in particular) and we have to pick one thing to reverse them to.
+        if (!expectedReconvertedOldDateFormat)
+            expectedReconvertedOldDateFormat = oldDateFormat;
+        STAssertEqualObjects(expectedReconvertedOldDateFormat, reConvertedOldDateFormat, nil);
+    }
+    
     [self->_dateFormatter setDateFormat:newDateFormat];
     
     NSString *newResult = [self->_dateFormatter stringFromDate:self->_date];
@@ -79,8 +89,8 @@ void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateFormat, BOO
     [pool drain];
 }
 
-#define testFormat(format) _testFormat(self, (format), YES, nil)
-#define testFormatXFAIL(format) _testFormat(self, (format), NO, nil)
+#define testFormat(format) _testFormat(self, (format), YES, nil, YES, nil)
+#define testFormatXFAIL(format) _testFormat(self, (format), YES, nil, NO, nil)
 
 - (void)testSingleSpecifiers;
 {
@@ -92,7 +102,7 @@ void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateFormat, BOO
     testFormat(@"%A");
     testFormat(@"%b");
     testFormat(@"%B");
-    testFormatXFAIL(@"%c"); // Time zone names are different
+    _testFormat(self, @"%c", NO, nil, NO, nil); // Time zone names are different. Also, %c maps to something that is locale specific and we can't map it back
     testFormat(@"%d");
     testFormat(@"%e");
     testFormatXFAIL(@"%F"); // Milliseconds round differently
@@ -103,14 +113,14 @@ void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateFormat, BOO
     testFormat(@"%M");
     testFormat(@"%p");
     testFormat(@"%S");
-    testFormatXFAIL(@"%w"); // Numeric weekdays are different
-    testFormat(@"%x");
-    testFormatXFAIL(@"%X"); // Time zone names are different
+    _testFormat(self, @"%w", NO, nil, NO, nil); // Numeric weekdays are different
+    _testFormat(self, @"%x", NO, nil, NO, nil);
+    _testFormat(self, @"%X", NO, nil, NO, nil); // Time zone names are different
     testFormat(@"%y");
     testFormat(@"%Y");
     testFormatXFAIL(@"%Z"); // Time zone names are different
     testFormat(@"%z");
-    testFormat(@"%U%N%K%N%O%W%N");
+    _testFormat(self, @"%U%N%K%N%O%W%N", YES, @"???????", YES, nil);
     testFormat(@"Random text");
     testFormat(@"Year: %Y, Month: %M, Day: %d");
     testFormat(@"Here's a year: %Y");
@@ -118,32 +128,31 @@ void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateFormat, BOO
     // Some example formats from OmniGraffle's Reference stencil
     testFormat(@"%m/%d/%Y %I:%M %p");
     testFormat(@"%m/%d/%Y");
-    testFormatXFAIL(@"%c"); // Time zone names are different
     testFormat(@"%m/%d/%y");
 }
 
 - (void)testSingleDigitSpecifiers;
 {
     // normal specifiers do leading zero
-    _testFormat(self, @"%m", YES, @"09");
-    _testFormat(self, @"%d", YES, @"08");
+    _testFormat(self, @"%m", YES, nil, YES, @"09");
+    _testFormat(self, @"%d", YES, nil, YES, @"08");
 
     // %1d and %1m, which avoid the leading zero <http://developer.apple.com/mac/library/documentation/cocoa/conceptual/dataformatting/Articles/df100103.html#//apple_ref/doc/uid/TP40007972-SW1>
-    _testFormat(self, @"%1m", YES, @"9");
-    _testFormat(self, @"%1d", YES, @"8");
+    _testFormat(self, @"%1m", YES, nil, YES, @"9");
+    _testFormat(self, @"%1d", YES, @"%e", YES, @"8");
 }
 
 - (void)testQuoting;
 {
-    _testFormat(self, @"hi there %1d", YES, @"hi there 8");
-    _testFormat(self, @"%1d/%1m", YES, @"8/9");
-    _testFormat(self, @"'%1d/%1m'", YES, @"'8/9'");
-    _testFormat(self, @"\"%1d/%1m\"", YES, @"\"8/9\"");
-    _testFormat(self, @"'", YES, @"'");
-    _testFormat(self, @"\"", YES, @"\"");
-    _testFormat(self, @"'\"", YES, @"'\"");
-    _testFormat(self, @"\"'", YES, @"\"'");
-    _testFormat(self, @"%H o'clock", YES, @"13 o'clock");
+    _testFormat(self, @"hi there %e", YES, nil, YES, @"hi there 8");
+    _testFormat(self, @"%1d/%1m", YES, @"%e/%1m", YES, @"8/9");
+    _testFormat(self, @"'%1d/%1m'", YES, @"'%e/%1m'", YES, @"'8/9'");
+    _testFormat(self, @"\"%1d/%1m\"", YES, @"\"%e/%1m\"", YES, @"\"8/9\"");
+    _testFormat(self, @"'", YES, nil, YES, @"'");
+    _testFormat(self, @"\"", YES, nil, YES, @"\"");
+    _testFormat(self, @"'\"", YES, nil, YES, @"'\"");
+    _testFormat(self, @"\"'", YES, nil, YES, @"\"'");
+    _testFormat(self, @"%H o'clock", YES, nil, YES, @"13 o'clock");
 }
 
 @end

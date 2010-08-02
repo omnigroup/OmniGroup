@@ -9,8 +9,9 @@
 
 #import <libxml/parser.h>
 #import <libxml/xmlerror.h>
+#import <OmniBase/objc.h>
 
 @class NSError;
 
 // Returns nil if the error should be ignored.
-__private_extern__ NSError *OFXMLCreateError(xmlErrorPtr error);
+__private_extern__ NSError *OFXMLCreateError(xmlErrorPtr error) NS_RETURNS_RETAINED;

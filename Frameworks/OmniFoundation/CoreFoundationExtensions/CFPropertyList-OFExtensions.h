@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,8 @@
 
 #include <CoreFoundation/CFData.h>
 #include <CoreFoundation/CFPropertyList.h>
+#import <OmniBase/objc.h>
 
 /* This simply creates a CFStream, writes the property list using CFPropertyListWriteToStream(), and returns the resulting bytes. if an error occurs, an exception is raised. */
-CFDataRef OFCreateDataFromPropertyList(CFAllocatorRef allocator, CFPropertyListRef plist, CFPropertyListFormat format);
+CFDataRef OFCreateDataFromPropertyList(CFAllocatorRef allocator, CFPropertyListRef plist, CFPropertyListFormat format) CF_RETURNS_RETAINED;
 

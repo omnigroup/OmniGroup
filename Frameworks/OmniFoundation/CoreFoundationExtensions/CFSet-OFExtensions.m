@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,10 +39,10 @@ const CFSetCallBacks OFWeaklyRetainedObjectSetCallbacks = {
 
 NSMutableSet *OFCreateNonOwnedPointerSet(void)
 {
-    return (NSMutableSet *)CFSetCreateMutable(kCFAllocatorDefault, 0, &OFNonOwnedPointerSetCallbacks);
+    return NSMakeCollectable(CFSetCreateMutable(kCFAllocatorDefault, 0, &OFNonOwnedPointerSetCallbacks));
 }
 
 NSMutableSet *OFCreatePointerEqualObjectSet(void)
 {
-    return (NSMutableSet *)CFSetCreateMutable(kCFAllocatorDefault, 0, &OFPointerEqualObjectSetCallbacks);
+    return NSMakeCollectable(CFSetCreateMutable(kCFAllocatorDefault, 0, &OFPointerEqualObjectSetCallbacks));
 }

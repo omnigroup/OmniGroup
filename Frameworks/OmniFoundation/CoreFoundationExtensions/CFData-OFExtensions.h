@@ -8,7 +8,8 @@
 // $Id$
 
 #import <CoreFoundation/CFData.h>
+#import <OmniBase/objc.h>
 
-extern CFDataRef OFDataCreateSHA1Digest(CFAllocatorRef allocator, CFDataRef data);
-extern CFDataRef OFDataCreateSHA256Digest(CFAllocatorRef allocator, CFDataRef data);
-extern CFDataRef OFDataCreateMD5Digest(CFAllocatorRef allocator, CFDataRef data);
+extern CFDataRef OFDataCreateSHA1Digest(CFAllocatorRef allocator, CFDataRef data) CF_RETURNS_RETAINED;
+extern CFDataRef OFDataCreateSHA256Digest(CFAllocatorRef allocator, CFDataRef data) CF_RETURNS_RETAINED;
+extern CFDataRef OFDataCreateMD5Digest(CFAllocatorRef allocator, CFDataRef data) CF_RETURNS_RETAINED;

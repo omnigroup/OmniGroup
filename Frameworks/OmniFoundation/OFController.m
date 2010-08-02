@@ -52,7 +52,7 @@ static void _OFControllerCheckTerminated(void)
     static NSBundle *controllingBundle = nil;
     
     if (!controllingBundle) {
-        if (OBIsRunningUnitTests()) {
+        if (NSClassFromString(@"SenTestCase")) {
             // There should be exactly one bundle with an extension of either 'otest' (the old extension) or 'octest' (what Xcode 3 uses).
             NSBundle *candidateBundle = nil;
             for (NSBundle *bundle in [NSBundle allBundles]) {

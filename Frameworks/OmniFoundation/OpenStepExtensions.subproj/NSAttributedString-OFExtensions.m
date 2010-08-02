@@ -87,4 +87,18 @@ RCS_ID("$Id$")
         return [NSSet set];
 }
 
+- (BOOL)hasAttribute:(NSString *)attributeName;
+{
+    NSUInteger location = 0, length = [self length];
+    
+    while (location < length) {
+        NSRange effectiveRange;
+        if ([self attribute:attributeName atIndex:location effectiveRange:&effectiveRange])
+            return YES;
+        location = NSMaxRange(effectiveRange);
+    }
+    
+    return NO;
+}
+
 @end

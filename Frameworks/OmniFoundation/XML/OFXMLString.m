@@ -21,6 +21,7 @@
 
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
+#import <OmniBase/objc.h>
 
 RCS_ID("$Id$");
 
@@ -123,6 +124,7 @@ static void _OFXMLAppendCharacterEntityWithOptions(CFMutableStringRef result, ui
 }
 
 // Replace characters with basic entities
+static NSString *_OFXMLCreateStringWithEntityReferences(NSString *sourceString, unsigned int entityMask, NSString *optionalNewlineString) NS_RETURNS_RETAINED;
 static NSString *_OFXMLCreateStringWithEntityReferences(NSString *sourceString, unsigned int entityMask, NSString *optionalNewlineString)
 {
     // Could maybe build smaller character sets for different entityMask combinations, but this should get most of the benefit (any special character we handle here).

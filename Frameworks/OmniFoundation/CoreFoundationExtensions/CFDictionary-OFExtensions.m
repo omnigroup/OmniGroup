@@ -28,9 +28,9 @@ const CFDictionaryKeyCallBacks OFCaseInsensitiveStringKeyDictionaryCallbacks = {
 
 NSMutableDictionary *OFCreateCaseInsensitiveKeyMutableDictionary(void)
 {
-    return (NSMutableDictionary *) CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
-                                          &OFCaseInsensitiveStringKeyDictionaryCallbacks,
-                                          &OFNSObjectDictionaryValueCallbacks);
+    return NSMakeCollectable(CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+                                                       &OFCaseInsensitiveStringKeyDictionaryCallbacks,
+                                                       &OFNSObjectDictionaryValueCallbacks));
 }
 
 void OFPerformSelectorOnKeyApplierFunction(const void *key, const void *value, void *context)

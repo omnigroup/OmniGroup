@@ -227,6 +227,8 @@
 		345E73E60C6D06630034A811 /* OFErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 345E73E40C6D06630034A811 /* OFErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		345E73E70C6D06630034A811 /* OFErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E73E50C6D06630034A811 /* OFErrorRecovery.m */; };
 		346149F008EB0D2F00F4853E /* OFErrorExtensionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 346149EF08EB0D2F00F4853E /* OFErrorExtensionTests.m */; };
+		3465C66E11DBA33F0060F19E /* OFAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = E2FCCB3D062205A40097A11C /* OFAlias.m */; };
+		3465C66F11DBA33F0060F19E /* OFAlias.h in Headers */ = {isa = PBXBuildFile; fileRef = E2FCCB3C062205A40097A11C /* OFAlias.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346DE9EB0D861EA7000C9E97 /* NSData-OFEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 346DE9E90D861EA7000C9E97 /* NSData-OFEncoding.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346DE9EC0D861EA7000C9E97 /* NSData-OFEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DE9EA0D861EA7000C9E97 /* NSData-OFEncoding.m */; };
 		346DF739099BA59B008F5B5F /* OFXMLStringTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DF737099BA59B008F5B5F /* OFXMLStringTests.m */; };
@@ -255,6 +257,8 @@
 		349950AA0F72FF95007C0BC9 /* OFXMLParserTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 349950A80F72FF8C007C0BC9 /* OFXMLParserTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		349CCB0E118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.h in Headers */ = {isa = PBXBuildFile; fileRef = 349CCB0C118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		349CCB0F118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.m in Sources */ = {isa = PBXBuildFile; fileRef = 349CCB0D118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.m */; };
+		349D7D8E11E54747005B8C5D /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0280DE2330E00FB73CC /* OFTestCase.m */; };
+		349D7D8F11E54747005B8C5D /* OFTestCase.h in Headers */ = {isa = PBXBuildFile; fileRef = 3475A0270DE2330E00FB73CC /* OFTestCase.h */; };
 		34A2CDF60D865A6100219E36 /* OFEnumNameTable-OFFlagMask.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2CDF40D865A6100219E36 /* OFEnumNameTable-OFFlagMask.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A2CDF70D865A6100219E36 /* OFEnumNameTable-OFFlagMask.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2CDF50D865A6100219E36 /* OFEnumNameTable-OFFlagMask.m */; };
 		34A2CE8B0D865E9200219E36 /* OFCharacterScanner-OFTrie.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2CE890D865E9200219E36 /* OFCharacterScanner-OFTrie.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -282,6 +286,8 @@
 		34E576C20E245BEB00C1F5FB /* OFRelativeDateParser-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E576C10E245BEB00C1F5FB /* OFRelativeDateParser-Internal.h */; };
 		34E7BCC109A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E7BCBF09A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34E7BCC209A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E7BCC009A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.m */; };
+		34E8675D11DBDDBA004CF9CC /* NSAttributedString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D0DFE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.m */; };
+		34E8675E11DBDDBB004CF9CC /* NSAttributedString-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D29FE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F7C0B90D82354A007E383C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F7C0B80D82354A007E383C /* libxml2.dylib */; };
 		34F8271B107E904600458A71 /* OFExtent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F82719107E904600458A71 /* OFExtent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F8271C107E904600458A71 /* OFExtent.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F8271A107E904600458A71 /* OFExtent.m */; };
@@ -654,6 +660,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		340115E211E516020016ADB3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51C5BFE8AAEA611C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 344D08B91190D47300264D89;
+			remoteInfo = OmniFoundationTouch;
+		};
 		343B36411034F7170006290A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 00E51C5BFE8AAEA611C9CC38 /* Project object */;
@@ -957,6 +970,7 @@
 		1D3F8FBE03DE7CFA0097A138 /* EnglishToISO.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = EnglishToISO.strings; sourceTree = "<group>"; };
 		28C3E2D1FEF0F1AAC697A12D /* OFTimeSpanFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFTimeSpanFormatter.m; sourceTree = "<group>"; };
 		28C3E2D2FEF0F1AAC697A12D /* OFTimeSpanFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFTimeSpanFormatter.h; sourceTree = "<group>"; };
+		340115D411E515DB0016ADB3 /* libOmniFoundationTouchTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniFoundationTouchTests.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		34043BDB0DA3EFA500761C40 /* CFData-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFData-OFExtensions.h"; sourceTree = "<group>"; };
 		34043BDC0DA3EFA500761C40 /* CFData-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFData-OFExtensions.m"; sourceTree = "<group>"; };
 		340CDBD5098A9E03006270CA /* ExceptionHandling.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExceptionHandling.framework; path = /System/Library/Frameworks/ExceptionHandling.framework; sourceTree = "<absolute>"; };
@@ -1322,6 +1336,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		340115D211E515DB0016ADB3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		343B36321034F68F0006290A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1728,6 +1749,7 @@
 				345069110D747ED4004B40C2 /* OFCrashOnExceptionTest */,
 				343B36341034F68F0006290A /* OFRandomRepeatTest */,
 				344D08BA1190D47300264D89 /* libOmniFoundation.a */,
+				340115D411E515DB0016ADB3 /* libOmniFoundationTouchTests.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2273,6 +2295,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		340115D011E515DB0016ADB3 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				349D7D8F11E54747005B8C5D /* OFTestCase.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		344D08B61190D47300264D89 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -2355,6 +2385,8 @@
 				344D09E21190D6D700264D89 /* OFXMLWhitespaceBehavior.h in Headers */,
 				34562BE911AB1278005F186D /* OFDateFormatConversion.h in Headers */,
 				347F624F11D5323600025DAE /* NSFileManager-OFTemporaryPath.h in Headers */,
+				3465C66F11DBA33F0060F19E /* OFAlias.h in Headers */,
+				34E8675E11DBDDBB004CF9CC /* NSAttributedString-OFExtensions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2604,6 +2636,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		340115D311E515DB0016ADB3 /* OmniFoundationTouchTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 340115E811E516040016ADB3 /* Build configuration list for PBXNativeTarget "OmniFoundationTouchTests" */;
+			buildPhases = (
+				340115D011E515DB0016ADB3 /* Headers */,
+				340115D111E515DB0016ADB3 /* Sources */,
+				340115D211E515DB0016ADB3 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				340115E311E516020016ADB3 /* PBXTargetDependency */,
+			);
+			name = OmniFoundationTouchTests;
+			productName = OmniFoundationTouchTests;
+			productReference = 340115D411E515DB0016ADB3 /* libOmniFoundationTouchTests.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		343B36331034F68F0006290A /* OFRandomRepeatTest */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 343B363A1034F6940006290A /* Build configuration list for PBXNativeTarget "OFRandomRepeatTest" */;
@@ -2786,6 +2836,7 @@
 			targets = (
 				4A4E05FE08AA72B10098FF0F /* OmniFoundation */,
 				344D08B91190D47300264D89 /* OmniFoundationTouch */,
+				340115D311E515DB0016ADB3 /* OmniFoundationTouchTests */,
 				4A4E075408AA72B10098FF0F /* Tests */,
 				4A4E07A808AA72B10098FF0F /* OFUnitTests */,
 				4A4E076508AA72B10098FF0F /* OFSimpleLockTest */,
@@ -2862,6 +2913,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		340115D111E515DB0016ADB3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				349D7D8E11E54747005B8C5D /* OFTestCase.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		343B36311034F68F0006290A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2945,6 +3004,8 @@
 				344D0A8A1190DB4700264D89 /* OFErrors.m in Sources */,
 				34562BEA11AB1278005F186D /* OFDateFormatConversion.m in Sources */,
 				347F625011D5323700025DAE /* NSFileManager-OFTemporaryPath.m in Sources */,
+				3465C66E11DBA33F0060F19E /* OFAlias.m in Sources */,
+				34E8675D11DBDDBA004CF9CC /* NSAttributedString-OFExtensions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3229,6 +3290,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		340115E311E516020016ADB3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 344D08B91190D47300264D89 /* OmniFoundationTouch */;
+			targetProxy = 340115E211E516020016ADB3 /* PBXContainerItemProxy */;
+		};
 		343B36421034F7170006290A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4A4E05FE08AA72B10098FF0F /* OmniFoundation */;
@@ -3306,6 +3372,42 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		340115DF11E515DB0016ADB3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 344D08D01190D48A00264D89 /* Touch-Library-Debug.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_DIR)/Library/Frameworks",
+					"$(value)",
+				);
+				PRODUCT_NAME = OmniFoundationTouchTests;
+			};
+			name = Debug;
+		};
+		340115E011E515DB0016ADB3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 344D08D11190D48A00264D89 /* Touch-Library-Release.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_DIR)/Library/Frameworks",
+					"$(value)",
+				);
+				PRODUCT_NAME = OmniFoundationTouchTests;
+			};
+			name = Release;
+		};
+		340115E111E515DB0016ADB3 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 344D08CF1190D48A00264D89 /* Touch-Library-Coverage.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_DIR)/Library/Frameworks",
+					"$(value)",
+				);
+				PRODUCT_NAME = OmniFoundationTouchTests;
+			};
+			name = Coverage;
+		};
 		343B36361034F6900006290A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */;
@@ -3717,6 +3819,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		340115E811E516040016ADB3 /* Build configuration list for PBXNativeTarget "OmniFoundationTouchTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				340115DF11E515DB0016ADB3 /* Debug */,
+				340115E011E515DB0016ADB3 /* Release */,
+				340115E111E515DB0016ADB3 /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		343B363A1034F6940006290A /* Build configuration list for PBXNativeTarget "OFRandomRepeatTest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

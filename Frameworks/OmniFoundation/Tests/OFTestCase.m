@@ -75,6 +75,8 @@ RCS_ID("$Id$")
 
 @end
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 #import <OmniBase/NSError-OBExtensions.h>
 
@@ -109,3 +111,4 @@ void OFDiffData(SenTestCase *testCase, NSData *expected, NSData *actual)
     [diffTask waitUntilExit]; // result should be 1 if they are different, so not worth checking
 }
 
+#endif

@@ -17,6 +17,9 @@
 
 @end
 
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#define OFDataShouldBeEqual(expected, actual) STAssertEquals(expected, actual, nil)
+#else
 extern void OFDiffData(SenTestCase *testCase, NSData *expected, NSData *actual);
 
 #define OFDataShouldBeEqual(expected,actual) \
@@ -27,3 +30,5 @@ do { \
         should(dataEqual); \
     } \
 } while (0)
+
+#endif

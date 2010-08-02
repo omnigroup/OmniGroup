@@ -10,12 +10,13 @@
 #import <CoreFoundation/CFDictionary.h>
 #import <Foundation/NSObjCRuntime.h>  // For NSInteger, etc.
 #import <OmniFoundation/OFCFCallbacks.h>
+#import <OmniBase/objc.h>
 
 extern const CFDictionaryKeyCallBacks OFCaseInsensitiveStringKeyDictionaryCallbacks;
 
 // Convenience functions
 @class NSMutableDictionary;
-extern NSMutableDictionary *OFCreateCaseInsensitiveKeyMutableDictionary(void);
+extern NSMutableDictionary *OFCreateCaseInsensitiveKeyMutableDictionary(void) NS_RETURNS_RETAINED;
 
 // Applier functions
 extern void OFPerformSelectorOnKeyApplierFunction(const void *key, const void *value, void *context);   // context==SEL

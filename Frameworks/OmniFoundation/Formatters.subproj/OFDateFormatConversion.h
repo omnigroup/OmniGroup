@@ -7,4 +7,5 @@
 //
 // $Id$
 
-extern NSString *OFDateFormatStringForOldFormatString(NSString *oldFormat);
+extern NSString *OFDateFormatStringForOldFormatString(NSString *oldFormat); // 10.0 strftime-like format to ICU format
+extern NSString *OFOldDateFormatStringForFormatString(NSString *newFormat); // ICU to 10.0 strftime-like format

@@ -21,7 +21,7 @@ RCS_ID("$Id$");
 
 - (void)testPointerArray;
 {
-    NSMutableArray *array = [NSMakeCollectable(OFCreateNonOwnedPointerArray()) autorelease];
+    NSMutableArray *array = [OFCreateNonOwnedPointerArray() autorelease];
     [array addObject:(id)0xdeadbeef];
     should([array count] == 1);
     should([array objectAtIndex:0] == (id)0xdeadbeef);
@@ -36,7 +36,7 @@ RCS_ID("$Id$");
 
 - (void)testIntegerArray;
 {
-    NSMutableArray *array = [NSMakeCollectable(OFCreateIntegerArray()) autorelease];
+    NSMutableArray *array = [OFCreateIntegerArray() autorelease];
     [array addObject:(id)6060842];
     should([array count] == 1);
     should([array objectAtIndex:0] == (id)6060842);

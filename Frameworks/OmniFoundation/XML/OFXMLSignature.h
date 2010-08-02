@@ -9,6 +9,7 @@
 
 #import <OmniFoundation/OFObject.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
+#import <OmniBase/objc.h>
 
 #include <libxml/tree.h>
 
@@ -112,8 +113,8 @@ NSData *OFLibXMLNodeBase64Content(const xmlNode *node);
 
 /* ASN.1 DER construction utility routines */
 NSData *OFASN1IntegerFromBignum(NSData *base256Number);
-NSMutableData *OFASN1CreateForTag(uint8_t tag, NSUInteger byteCount);
-NSMutableData *OFASN1CreateForSequence(NSData *item, ...)  __attribute__((sentinel));
+NSMutableData *OFASN1CreateForTag(uint8_t tag, NSUInteger byteCount) NS_RETURNS_RETAINED;
+NSMutableData *OFASN1CreateForSequence(NSData *item, ...)  __attribute__((sentinel)) NS_RETURNS_RETAINED;
 NSUInteger OFASN1UnwrapSequence(NSData *seq, NSError **outError);
 NSData *OFASN1UnwrapUnsignedInteger(NSData *buf, NSUInteger *inOutWhere, NSError **outError);
 NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len); // Textual description for debugging

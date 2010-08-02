@@ -11,6 +11,7 @@
 #import <CoreFoundation/CFString.h>
 
 #import <OmniFoundation/OFUnicodeUtilities.h>
+#import <OmniBase/objc.h>
 
 struct OFStringDecoderState {
     CFStringEncoding encoding;
@@ -48,5 +49,5 @@ extern NSString *OFApplyDeferredEncoding(NSString *str, CFStringEncoding newEnco
 extern NSString *OFMostlyApplyDeferredEncoding(NSString *str, CFStringEncoding newEncoding);
 extern BOOL OFStringContainsDeferredEncodingCharacters(NSString *str);
 /* This is equivalent to CFStringCreateExternalRepresentation(), except that it maps characters in our private-use deferred encoding range back into the bytes from whence they came */
-extern CFDataRef OFCreateDataFromStringWithDeferredEncoding(CFStringRef str, CFRange range, CFStringEncoding newEncoding, UInt8 lossByte);
+extern CFDataRef OFCreateDataFromStringWithDeferredEncoding(CFStringRef str, CFRange range, CFStringEncoding newEncoding, UInt8 lossByte) CF_RETURNS_RETAINED;
 

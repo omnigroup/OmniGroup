@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSString.h>
+#import <OmniBase/objc.h>
 
 extern BOOL OFXMLIsValidID(NSString *identifier);
-extern NSString *OFXMLCreateID(void);
+extern NSString *OFXMLCreateID(void) NS_RETURNS_RETAINED;

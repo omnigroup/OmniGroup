@@ -27,10 +27,14 @@ typedef void (^OFBTreeEnumeratorBlock)(const struct _OFBTree *tree, void *elemen
 
 struct _OFBTree {
     // None of these fields should be written to (although they can be read if you like)
-    struct _OFBTreeNode *root;
+    union _OFBTreeChildPointer {
+        struct _OFBTreeNode *node;
+        struct _OFBTreeLeafNode *leaf;
+    } root;
+    unsigned height;
     size_t nodeSize;
     size_t elementSize;
-    size_t elementsPerNode;
+    size_t elementsPerInternalNode, elementsPerLeafNode;
     OFBTreeNodeAllocator nodeAllocator;
     OFBTreeNodeDeallocator nodeDeallocator;
     OFBTreeElementComparator elementCompare;
@@ -64,5 +68,5 @@ extern void *OFBTreePrevious(const OFBTree *tree, const void *value);
 extern void *OFBTreeNext(const OFBTree *tree, const void *value);
 
 #ifdef DEBUG
-extern void OFBTreeDump(FILE *fp, const OFBTree *tree);
+extern void OFBTreeDump(FILE *fp, const OFBTree *tree, void (*dumpValue)(FILE *fp, const OFBTree *btree, const void *value));
 #endif

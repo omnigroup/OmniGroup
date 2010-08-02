@@ -11,6 +11,7 @@
 
 #import <CoreFoundation/CFString.h>
 #import <OmniFoundation/OFXMLWhitespaceBehavior.h>
+#import <OmniBase/objc.h>
 
 @class NSMutableString, NSError;
 @class OFXMLElement, OFXMLDocument;
@@ -63,9 +64,9 @@
 #define OFXMLHTMLEntityMask (OFXMLGtEntityMask|OFXMLQuotEntityMask|(OFXMLCharacterFlagWriteCharacterEntity << OFXMLAposCharacterOptionsShift))
 #define OFXMLHTMLWithNewlinesEntityMask (OFXMLHTMLEntityMask|OFXMLNewlineEntityMask)
 
-extern NSString *OFXMLCreateStringInCFEncoding(NSString *sourceString, CFStringEncoding anEncoding);
-extern NSString *OFXMLCreateStringWithEntityReferencesInCFEncoding(NSString *sourceString, unsigned int entityMask, NSString *optionalNewlineString, CFStringEncoding anEncoding);
-extern NSString *OFXMLCreateParsedEntityString(NSString *sourceString);
+extern NSString *OFXMLCreateStringInCFEncoding(NSString *sourceString, CFStringEncoding anEncoding) NS_RETURNS_RETAINED;
+extern NSString *OFXMLCreateStringWithEntityReferencesInCFEncoding(NSString *sourceString, unsigned int entityMask, NSString *optionalNewlineString, CFStringEncoding anEncoding) NS_RETURNS_RETAINED;
+extern NSString *OFXMLCreateParsedEntityString(NSString *sourceString) NS_RETURNS_RETAINED;
 extern NSString *OFStringForEntityName(NSString *entityName);
 
 //extern NSString *OFCharacterDataFromXMLTree(CFXMLTreeRef aTree);
