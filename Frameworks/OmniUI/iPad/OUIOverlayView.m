@@ -105,6 +105,10 @@ static OUIOverlayView *_overlayView = nil;
 
 - (void)hide;
 {
+    // Don't repeat if already in the process of hiding
+    if (shouldHide)
+        return;
+    
     shouldHide = YES;
     
     [UIView beginAnimations:@"RSTemporaryOverlayAnimation" context:NULL];
