@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		34656A8111E646C3003D2FD1 /* OUIMenuItemRunTests.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34656A6F11E645B6003D2FD1 /* OUIMenuItemRunTests.png */; };
 		346C4B1A1193273600BE8C49 /* OUIColorComponentSlider.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4A741193273600BE8C49 /* OUIColorComponentSlider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B1B1193273600BE8C49 /* OUIColorComponentSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4A751193273600BE8C49 /* OUIColorComponentSlider.m */; };
 		346C4B1C1193273600BE8C49 /* OUIColorInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4A7C1193273600BE8C49 /* OUIColorInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -228,6 +229,7 @@
 			dstPath = "Resources/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				34656A8111E646C3003D2FD1 /* OUIMenuItemRunTests.png in Copy Resources */,
 				94429F3C11ADCB8B005B8934 /* OUIStandardPopoverButton.png in Copy Resources */,
 				94429F1D11ADC8DA005B8934 /* OUIUndoMenu.xib in Copy Resources */,
 				94429F1011ADC7F4005B8934 /* OUIUndoButtonBackground.png in Copy Resources */,
@@ -297,6 +299,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		34656A6F11E645B6003D2FD1 /* OUIMenuItemRunTests.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemRunTests.png; sourceTree = "<group>"; };
 		346C49F1119326AD00BE8C49 /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Common.xcconfig"; path = "../../../Configurations/Omni-Application-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
 		346C49F2119326AD00BE8C49 /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Coverage.xcconfig"; path = "../../../Configurations/Omni-Application-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
 		346C49F3119326AD00BE8C49 /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Debug.xcconfig"; path = "../../../Configurations/Omni-Application-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
@@ -645,8 +648,7 @@
 		346C4A521193273600BE8C49 /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				94429F3811ADCB80005B8934 /* OUIStandardPopoverButton.png */,
-				94909BD811ADC18100BA9C40 /* OUIUndoButtonBackground.png */,
+				346C4A5F1193273600BE8C49 /* OUIAppMenu.png */,
 				346C4A531193273600BE8C49 /* OUIDocumentDelete.png */,
 				346C4A541193273600BE8C49 /* OUIDocumentDuplicate.png */,
 				346C4A551193273600BE8C49 /* OUIDocumentExport.png */,
@@ -658,8 +660,8 @@
 				346C4A5B1193273600BE8C49 /* OUIFilePickerBackground-Hardboard-Vertical.jpg */,
 				346C4A5C1193273600BE8C49 /* OUIMenuItemHelp.png */,
 				346C4A5D1193273600BE8C49 /* OUIMenuItemReleaseNotes.png */,
+				34656A6F11E645B6003D2FD1 /* OUIMenuItemRunTests.png */,
 				346C4A5E1193273600BE8C49 /* OUIMenuItemSendFeedback.png */,
-				346C4A5F1193273600BE8C49 /* OUIAppMenu.png */,
 				346C4A601193273600BE8C49 /* OUIPreviewBackgroundBottom.png */,
 				346C4A611193273600BE8C49 /* OUIPreviewBackgroundBottomLeft.png */,
 				346C4A621193273600BE8C49 /* OUIPreviewBackgroundBottomRight.png */,
@@ -675,10 +677,12 @@
 				346C4A6C1193273600BE8C49 /* OUIShadowBorderLeft.png */,
 				346C4A6D1193273600BE8C49 /* OUIShadowBorderRight.png */,
 				346C4A6E1193273600BE8C49 /* OUIShadowBorderTop.png */,
+				94429F3811ADCB80005B8934 /* OUIStandardPopoverButton.png */,
 				346C4A6F1193273600BE8C49 /* OUITextSelectionOverlay.png */,
 				346C4A701193273600BE8C49 /* OUIToolbarAddDocument.png */,
 				346C4A711193273600BE8C49 /* OUIToolbarFavoriteFilled.png */,
 				346C4A721193273600BE8C49 /* OUIToolbarFavoriteHollow.png */,
+				94909BD811ADC18100BA9C40 /* OUIUndoButtonBackground.png */,
 			);
 			path = Images;
 			sourceTree = SOURCE_ROOT;
@@ -1156,6 +1160,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 346C4A11119326AD00BE8C49 /* Touch-Library-Debug.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
+				);
 				PRODUCT_NAME = OmniUI;
 			};
 			name = Debug;
@@ -1164,6 +1172,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 346C4A12119326AD00BE8C49 /* Touch-Library-Release.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
+				);
 				PRODUCT_NAME = OmniUI;
 			};
 			name = Release;

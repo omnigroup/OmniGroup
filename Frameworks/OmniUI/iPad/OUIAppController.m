@@ -18,6 +18,8 @@
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniFoundation/NSString-OFURLEncoding.h>
 
+#import <SenTestingKit/SenTestSuite.h>
+
 RCS_ID("$Id$");
 
 @interface OUIAppController (/*Private*/)
@@ -266,6 +268,12 @@ BOOL OUIShouldLogPerformanceMetrics;
         indexPath = [[NSBundle mainBundle] pathForResource:@"top" ofType:@"html" inDirectory:helpBookFolder];
     OBASSERT(indexPath != nil);
     [self _showWebViewWithPath:indexPath title:helpBookName];
+}
+
+- (void)runTests:(id)sender;
+{
+    SenTestSuite *suite = [SenTestSuite defaultTestSuite];
+    [suite run];
 }
 
 - (void)showAppMenu:(id)sender;
