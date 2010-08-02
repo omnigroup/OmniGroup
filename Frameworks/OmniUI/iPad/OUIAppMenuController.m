@@ -46,7 +46,7 @@ static NSUInteger MenuItemCount = NormalMenuItemCount;
     includedTestsMenu = [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIIncludeTestsMenu"];
 #endif
 
-    if (includedTestsMenu)
+    if (includedTestsMenu && NSClassFromString(@"SenTestSuite"))
         MenuItemCount++;
 }
 

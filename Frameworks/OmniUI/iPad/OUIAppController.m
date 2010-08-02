@@ -272,7 +272,10 @@ BOOL OUIShouldLogPerformanceMetrics;
 
 - (void)runTests:(id)sender;
 {
-    SenTestSuite *suite = [SenTestSuite defaultTestSuite];
+    Class cls = NSClassFromString(@"SenTestSuite");
+    OBASSERT(cls);
+
+    SenTestSuite *suite = [cls defaultTestSuite];
     [suite run];
 }
 
