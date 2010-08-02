@@ -27,6 +27,9 @@
     BOOL _hasDoneAutosave;
 }
 
++ (CFTimeInterval)autosaveTimeInterval;
++ (BOOL)shouldShowAutosaveIndicator;
+
 - initWithExistingDocumentProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 

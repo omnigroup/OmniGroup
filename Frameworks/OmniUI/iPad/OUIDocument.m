@@ -17,14 +17,6 @@
 RCS_ID("$Id$");
 
 #if 0 && defined(DEBUG)
-    #define SHOW_UNDO_INDICATOR 1
-    #define AUTOSAVE_INTERVAL 5
-#else
-    #define SHOW_UNDO_INDICATOR 0
-    #define AUTOSAVE_INTERVAL 15
-#endif
-
-#if 0 && defined(DEBUG)
     #define DEBUG_UNDO(format, ...) NSLog(@"UNDO: " format, ## __VA_ARGS__)
 #else
     #define DEBUG_UNDO(format, ...)
@@ -42,6 +34,19 @@ RCS_ID("$Id$");
 @end
 
 @implementation OUIDocument
+
++ (CFTimeInterval)autosaveTimeInterval;
+{
+    CFTimeInterval ti = [[NSUserDefaults standardUserDefaults] doubleForKey:@"OUIDocumentAutosaveInterval"];
+    if (ti < 1)
+        return 15;
+    return ti;
+}
+
++ (BOOL)shouldShowAutosaveIndicator;
+{
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIDocumentShouldShowAutosaveIndicator"];
+}
 
 // existing document
 - initWithExistingDocumentProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
@@ -320,7 +325,7 @@ RCS_ID("$Id$");
 {
     if (!_saveTimer) {
         DEBUG_UNDO(@"Scheduling autosave timer");
-        _saveTimer = [[NSTimer scheduledTimerWithTimeInterval:AUTOSAVE_INTERVAL target:self selector:@selector(_autosaveTimerFired:) userInfo:nil repeats:NO] retain];
+        _saveTimer = [[NSTimer scheduledTimerWithTimeInterval:[[self class] autosaveTimeInterval] target:self selector:@selector(_autosaveTimerFired:) userInfo:nil repeats:NO] retain];
     }
 }
 
@@ -359,10 +364,8 @@ RCS_ID("$Id$");
 {
     [self _scheduleAutosave];
     
-#if SHOW_UNDO_INDICATOR
-    if (!_undoIndicator)
+    if (!_undoIndicator && [[self class] shouldShowAutosaveIndicator])
         _undoIndicator = [[OUIUndoIndicator alloc] initWithParentView:_viewController.view];
-#endif
     
     [_undoIndicator show];
     
