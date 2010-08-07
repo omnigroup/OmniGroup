@@ -483,7 +483,11 @@ static void _writeString(NSString *str)
 {
     if (self.hidden)
         return;
-    
+    [self renderInContextIgnoringHiddenIgnoringCache:ctx useAnimatedValues:useAnimatedValues];
+}
+
+- (void)renderInContextIgnoringHiddenIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
+{
     [self layoutIfNeeded];
     
 #define GET_VALUE(x) (useAnimatedValues ? OQCurrentAnimationValue(x) : self.x)
