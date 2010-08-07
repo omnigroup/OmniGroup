@@ -39,4 +39,6 @@
 - (void)setNormalBackgroundImage:(UIImage *)image;
 - (void)setHighlightedBackgroundImage:(UIImage *)image;
           
+- (BOOL)dismissUndoMenu;
+
 @end

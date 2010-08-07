@@ -238,4 +238,11 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     [self _showUndoMenu];
 }
 
+- (BOOL)dismissUndoMenu;
+{
+    if (_buttonController) {
+        return [_buttonController dismissUndoMenu];
+    }
+    return NO;
+}
 @end
