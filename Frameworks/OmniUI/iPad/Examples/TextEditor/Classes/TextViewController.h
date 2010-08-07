@@ -7,13 +7,13 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <OmniUI/OUIScalingViewController.h>
 #import <OmniUI/OUIEditableFrameDelegate.h>
 
 @class RTFDocument;
 @class OUIEditableFrame;
 
-@interface TextViewController : UIViewController <OUIEditableFrameDelegate>
+@interface TextViewController : OUIScalingViewController <OUIEditableFrameDelegate>
 {
 @private
     RTFDocument *_nonretained_document;

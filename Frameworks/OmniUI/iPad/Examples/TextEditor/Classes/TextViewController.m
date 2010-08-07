@@ -34,6 +34,15 @@ RCS_ID("$Id$");
 @synthesize editor = _editor;
 
 #pragma mark -
+#pragma mark UIResponder subclass
+
+- (NSUndoManager *)undoManager;
+{
+    // Make sure we get the document's undo manager, not an implicitly created one from UIWindow!
+    return [_nonretained_document undoManager];
+}
+
+#pragma mark -
 #pragma mark UIViewController subclass
 
 - (void)viewDidLoad;
@@ -42,6 +51,9 @@ RCS_ID("$Id$");
 
     _editor.delegate = self;
     _editor.attributedText = _nonretained_document.text;
+    
+    [self adjustScaleTo:1];
+    [self adjustContentInset];
 }
 
 - (void)viewDidUnload;
@@ -56,6 +68,29 @@ RCS_ID("$Id$");
 {
     // We need more of a text storage model so that selection changes can participate in undo.
     _nonretained_document.text = textView.attributedText;
+}
+
+#pragma mark -
+#pragma mark OUIScalingViewController subclass
+
+- (CGSize)canvasSize;
+{
+    if (!_editor)
+        return CGSizeZero; // Don't know our canvas size yet. We'll set up initial scaling in -viewDidLoad.
+    
+    CGSize size;
+    size.width = _editor.frame.size.width;
+    size.height = _editor.textUsedSize.height;
+
+    return size;
+}
+
+#pragma mark -
+#pragma mark UIScrollViewDelegate
+
+- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView;
+{
+    return _editor;
 }
 
 @end
