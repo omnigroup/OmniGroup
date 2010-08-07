@@ -20,35 +20,32 @@ RCS_ID("$Id$");
 {
 @private
     OQColor *_color;
+    BOOL _enabled;
+    CGGradientRef KnobGradient;
+    UIImage *KnobHandleImage;
 }
 @property(retain,nonatomic) OQColor *color;
+@property(assign) BOOL enabled;
 @end
 
 @implementation OUIColorComponentSliderKnobLayer
 
 static UIColor *BackgroundCheckerboardPatternColor = nil;
 
-static CGGradientRef KnobGradient = NULL;
 static const CGSize KnobSize = {35, 49};
 static const CGFloat kKnobBorderThickness = 6;
-static UIImage *KnobHandleImage = nil;
 
 
 + (void)initialize;
 {
     OBINITIALIZE;
-
-    id translucentColor = (id)[[UIColor colorWithWhite:1.0 alpha:0.85] CGColor];
-    id whiteColor = (id)[[UIColor colorWithWhite:1.0 alpha:1.0] CGColor];
-    CGFloat locations[] = {0, 0.5, 0.5, 1.0};
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
-    KnobGradient = CGGradientCreateWithColors(colorSpace, (CFArrayRef)[NSArray arrayWithObjects:translucentColor, whiteColor, translucentColor, translucentColor, nil], locations);
-    CFRelease(colorSpace);
 }
 
 - (void)dealloc;
 {
     [_color release];
+    CGGradientRelease(KnobGradient);
+    [KnobHandleImage release];
     [super dealloc];
 }
 
@@ -57,6 +54,37 @@ static UIImage *KnobHandleImage = nil;
 {
     [_color autorelease];
     _color = [color retain];
+    [self setNeedsDisplay];
+}
+
+@synthesize enabled = _enabled;
+- (void)setEnabled:(BOOL)yn;
+{
+    if (yn == _enabled && KnobGradient != nil)
+        return;
+        
+    _enabled = yn;
+    
+    CGGradientRelease(KnobGradient);
+    [KnobHandleImage release];
+    KnobHandleImage = nil;
+
+    id translucentColor = NULL;
+    id whiteColor = NULL;
+    
+    if (_enabled) {
+        translucentColor = (id)[[UIColor colorWithWhite:1.0 alpha:0.85] CGColor];
+        whiteColor = (id)[[UIColor colorWithWhite:1.0 alpha:1.0] CGColor];
+    } else {
+        translucentColor = (id)[[UIColor colorWithWhite:0.6 alpha:0.85] CGColor];
+        whiteColor = (id)[[UIColor colorWithWhite:0.6 alpha:1.0] CGColor];
+    }
+    
+    CGFloat locations[] = {0, 0.5, 0.5, 1.0};
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
+    KnobGradient = CGGradientCreateWithColors(colorSpace, (CFArrayRef)[NSArray arrayWithObjects:translucentColor, whiteColor, translucentColor, translucentColor, nil], locations);
+    CFRelease(colorSpace);
+    
     [self setNeedsDisplay];
 }
 
@@ -144,19 +172,21 @@ static void _drawGripper(CGContextRef ctx, CGRect bounds, CGPoint pt)
     UIGraphicsPushContext(ctx);
     {
         // Swatch
-        CGContextSaveGState(ctx);
-        {
-            if ([_color alphaComponent] < 1) {
-                CGPoint patternOffset = [self convertPoint:CGPointMake(1, 1) fromLayer:self.superlayer];
-                CGContextSetPatternPhase(ctx, CGSizeMake(patternOffset.x, patternOffset.y));
-                [BackgroundCheckerboardPatternColor set];
-                CGContextFillRect(ctx, CGRectInset(bounds, kKnobBorderThickness, kKnobBorderThickness));
+            CGContextSaveGState(ctx);
+            {
+                if ([_color alphaComponent] < 1 || !_enabled) {
+                    CGPoint patternOffset = [self convertPoint:CGPointMake(1, 1) fromLayer:self.superlayer];
+                    CGContextSetPatternPhase(ctx, CGSizeMake(patternOffset.x, patternOffset.y));
+                    [BackgroundCheckerboardPatternColor set];
+                    CGContextFillRect(ctx, CGRectInset(bounds, kKnobBorderThickness, kKnobBorderThickness));
+                }
+                
+                if (_enabled) {
+                    [_color set];
+                    CGContextFillRect(ctx, CGRectInset(bounds, kKnobBorderThickness, kKnobBorderThickness));
+                }
             }
-            
-            [_color set];
-            CGContextFillRect(ctx, CGRectInset(bounds, kKnobBorderThickness, kKnobBorderThickness));
-        }
-        CGContextRestoreGState(ctx);
+            CGContextRestoreGState(ctx);
         
         // Overlay the cached knob
         [KnobHandleImage drawInRect:bounds];
@@ -202,6 +232,7 @@ static id _commonInit(OUIColorComponentSlider *self)
     self->_knobLayer.needsDisplayOnBoundsChange = YES;
     self->_knobLayer.anchorPoint = CGPointZero; // don't want half pixels from setting the position (our width/height are odd).
     [self->_knobLayer setNeedsDisplay];
+    self->_knobLayer.enabled = YES;
 
     return self;
 }
@@ -469,21 +500,23 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
             UIRectFill(CGRectInset(self.bounds, 1, 1));
         }
         
-        // Reserve 1/2 end cap size for the extremes on the slider and then extend the shading into those end areas
-        CGFloat endCapSize = CGRectGetHeight(bounds);
-        CGFloat reserve = endCapSize/2;
-        
-        CGPoint startPoint = CGPointMake(CGRectGetMinX(bounds) + reserve, CGRectGetMinY(bounds));
-        CGPoint endPoint = CGPointMake(CGRectGetMaxX(bounds) - reserve, CGRectGetMinY(bounds));
-
-        if (_backgroundGradient) {
-            CGContextDrawLinearGradient(ctx, _backgroundGradient, startPoint, endPoint, kCGGradientDrawsBeforeStartLocation|kCGGradientDrawsAfterEndLocation);
-        } else if (_backgroundShadingFunction) {
-            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-            CGShadingRef shading = CGShadingCreateAxial(colorSpace, startPoint, endPoint, _backgroundShadingFunction, YES, YES);
-            CGColorSpaceRelease(colorSpace);
-            CGContextDrawShading(ctx, shading);
-            CGShadingRelease(shading);
+        if (self.enabled) {
+            // Reserve 1/2 end cap size for the extremes on the slider and then extend the shading into those end areas
+            CGFloat endCapSize = CGRectGetHeight(bounds);
+            CGFloat reserve = endCapSize/2;
+            
+            CGPoint startPoint = CGPointMake(CGRectGetMinX(bounds) + reserve, CGRectGetMinY(bounds));
+            CGPoint endPoint = CGPointMake(CGRectGetMaxX(bounds) - reserve, CGRectGetMinY(bounds));
+            
+            if (_backgroundGradient) {
+                CGContextDrawLinearGradient(ctx, _backgroundGradient, startPoint, endPoint, kCGGradientDrawsBeforeStartLocation|kCGGradientDrawsAfterEndLocation);
+            } else if (_backgroundShadingFunction) {
+                CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+                CGShadingRef shading = CGShadingCreateAxial(colorSpace, startPoint, endPoint, _backgroundShadingFunction, YES, YES);
+                CGColorSpaceRelease(colorSpace);
+                CGContextDrawShading(ctx, shading);
+                CGShadingRelease(shading);
+            }
         }
     }
     CGContextRestoreGState(ctx);
@@ -555,7 +588,10 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
             luma = _rightLuma;
         }
         
-        if (luma < 0.5) {
+        if (!self.enabled) {
+            _label.textColor = [UIColor blackColor];
+            _label.shadowColor = nil;
+        } else if (luma < 0.5) {
             _label.textColor = [UIColor whiteColor];
             _label.shadowColor = [UIColor colorWithWhite:0 alpha:0.5];
         } else {
@@ -571,6 +607,13 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
         [_label removeFromSuperview];
     }
     
+}
+
+- (void)setEnabled:(BOOL)yn;
+{
+    super.enabled = yn;
+    
+    _knobLayer.enabled = yn;
 }
 
 #pragma mark -
