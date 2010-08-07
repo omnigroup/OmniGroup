@@ -190,6 +190,18 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 #pragma mark -
 #pragma mark UIViewController subclass;
 
+- (void)viewDidUnload;
+{
+    _scrollView.delegate = nil;
+    [_scrollView release];
+    _scrollView = nil;
+    
+    [_zoomOverlay release];
+    _zoomOverlay = nil;
+    
+    [super viewDidUnload];
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
 {
     return YES;
