@@ -210,17 +210,25 @@ RCS_ID("$Id$");
 
 - (NSUInteger)selectedColorPickerIndex;
 {
-    return _colorTypeSegmentedControl.selectedSegmentIndex;
+    return _colorTypeIndex;
 }
 
 - (void)setSelectedColorPickerIndex:(NSUInteger)segmentIndex;
 {
-    [_colorTypeSegmentedControl setSelectedSegmentIndex:segmentIndex];
-    [self colorTypeSegmentedControlSelectionChanged:_colorTypeSegmentedControl];
+    _colorTypeIndex = segmentIndex;
+    if ([self isViewLoaded]) {
+        [_colorTypeSegmentedControl setSelectedSegmentIndex:_colorTypeIndex];
+        [self colorTypeSegmentedControlSelectionChanged:_colorTypeSegmentedControl];
+    }
 }
 
 - (IBAction)colorTypeSegmentedControlSelectionChanged:(id)sender;
 {
+    if ([_colorTypeSegmentedControl selectedSegmentIndex] != (NSInteger)_colorTypeIndex) {
+        _colorTypeIndex = [_colorTypeSegmentedControl selectedSegmentIndex];
+        [[NSNotificationCenter defaultCenter] postNotificationName:OUIColorTypeChangeNotification object:self];
+    }
+    
     OUIInspectorSegmentedControlButton *segment = _colorTypeSegmentedControl.selectedSegment;
     OUIColorPicker *colorPicker = segment.representedObject;
     if (colorPicker == _currentColorPicker)
@@ -297,7 +305,7 @@ RCS_ID("$Id$");
     [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorRGBSegment.png" representedObject:_rgbColorPicker];
     [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorGraySegment.png" representedObject:_grayColorPicker];
     
-    _colorTypeSegmentedControl.selectedSegment = _colorTypeSegmentedControl.firstSegment;
+    _colorTypeSegmentedControl.selectedSegment = [_colorTypeSegmentedControl segmentAtIndex:_colorTypeIndex];
     [self colorTypeSegmentedControlSelectionChanged:nil];
 }
 
