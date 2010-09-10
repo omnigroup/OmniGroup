@@ -2789,42 +2789,63 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
         [self becomeFirstResponder];
 }
 
+- (UITextRange *)selectionRangeForPoint:(CGPoint)p wordSelection:(BOOL)selectWords;
+{
+    OUEFTextPosition *pp = (OUEFTextPosition *)[self closestPositionToPoint:p];
+    if (!pp)
+        return nil;
+    
+    UITextRange *textRange = nil;
+    id <UITextInputTokenizer> tok = [self tokenizer];
+
+    OUEFTextPosition *earlier = nil;
+    OUEFTextPosition *later = nil;
+    
+    if (tapSelectionGranularity != UITextGranularityCharacter) {
+        // UITextView selects beginning or end of word on single tap.
+        if (![tok isPosition:pp atBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionForward] &&
+            ![tok isPosition:pp atBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionBackward]) {
+            // Move pp to the nearest word boundary. We can't simply use -rangeEnclosingPosition: because we want to move to a word boundary even if the tap was outside of any words.
+            // We also need to act correctly if tapped in a non-word area at the beginning or end of the text.
+            earlier = (OUEFTextPosition *)[tok positionFromPosition:pp toBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionBackward];
+            later = (OUEFTextPosition *)[tok positionFromPosition:pp toBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionForward];
+            if (earlier && later) {
+                if ([earlier index] > [later index]) {  // not sure why, but earlier seems to always be later than later
+                    id temp = earlier;
+                    earlier = later;
+                    later = temp;
+                }
+                if (abs([self offsetFromPosition:pp toPosition:earlier]) < abs([self offsetFromPosition:pp toPosition:later]))
+                    pp = earlier;
+                else
+                    pp = later;
+            } else if (earlier)
+                pp = earlier;
+            else if (later)
+                pp = later;
+        }
+    }
+
+    if (selectWords && earlier && later) {
+        textRange = [[[OUEFTextRange alloc] initWithStart:earlier end:later] autorelease];
+    } else {
+        textRange = [[[OUEFTextRange alloc] initWithStart:pp end:pp] autorelease];
+    }
+        
+    return textRange;
+}
+
 /* Both the single-tap and double-tap recognizers call this */
 - (void)_activeTap:(UITapGestureRecognizer *)r;
 {
     DEBUG_TEXT(@" -> %@", r);
     CGPoint p = [r locationInView:self];
-    OUEFTextPosition *pp = (OUEFTextPosition *)[self closestPositionToPoint:p];
-
-    if (pp) {
-        id <UITextInputTokenizer> tok = [self tokenizer];
-        
-        if (r.numberOfTapsRequired > 1 && selection) {
-            UITextRange *tappedWord = [tok rangeEnclosingPosition:selection.start withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward];
-            if (tappedWord)
-                [self setSelectedTextRange:tappedWord];
+    UITextRange *newSelection = [self selectionRangeForPoint:p wordSelection:(r.numberOfTapsRequired > 1)];
+                                 
+    if (newSelection) {        
+        if (r.numberOfTapsRequired > 1) {
+            [self setSelectedTextRange:newSelection];
         } else {
-            if (tapSelectionGranularity != UITextGranularityCharacter) {
-                // UITextView selects beginning or end of word on single tap.
-                if (![tok isPosition:pp atBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionForward] &&
-                    ![tok isPosition:pp atBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionBackward]) {
-                    // Move pp to the nearest word boundary. We can't simply use -rangeEnclosingPosition: because we want to move to a word boundary even if the tap was outside of any words.
-                    // We also need to act correctly if tapped in a non-word area at the beginning or end of the text.
-                    OUEFTextPosition *earlier = (OUEFTextPosition *)[tok positionFromPosition:pp toBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionBackward];
-                    OUEFTextPosition *later = (OUEFTextPosition *)[tok positionFromPosition:pp toBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionForward];
-                    if (earlier && later) {
-                        if (abs([self offsetFromPosition:pp toPosition:earlier]) < abs([self offsetFromPosition:pp toPosition:later]))
-                            pp = earlier;
-                        else
-                            pp = later;
-                    } else if (earlier)
-                        pp = earlier;
-                    else if (later)
-                        pp = later;
-                }
-            }
-            
-            OUEFTextRange *newSelection = [[OUEFTextRange alloc] initWithStart:pp end:pp];
             if ([newSelection isEqual:selection]) {
                 // Apple's text editor behaves this way: if you tap-to-select on the same point twice (as opposed to a double-tap, which is a different gesture), then it shows the context menu...
                 flags.showingEditMenu = 1;
@@ -2834,7 +2855,6 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
                 flags.showingEditMenu = 0;
                 [self setSelectedTextRange:newSelection];
             }
-            [newSelection release];
         }
     }
     

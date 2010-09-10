@@ -120,6 +120,7 @@
 - (void)setupCustomMenuItemsForMenuController:(UIMenuController *)menuController;
 
 - (OUEFTextRange *)rangeOfLineContainingPosition:(OUEFTextPosition *)posn;
+- (UITextRange *)selectionRangeForPoint:(CGPoint)p wordSelection:(BOOL)selectWords;
 
 /* These are the interface from the thumbs to our selection machinery */
 - (void)thumbBegan:(OUITextThumb *)thumb;
