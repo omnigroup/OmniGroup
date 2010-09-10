@@ -15,6 +15,7 @@
 @class OUIAppMenuController, OUIDocumentPicker;
 
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) file:__FILE__ line:__LINE__]
+#define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) file:__FILE__ line:__LINE__]
 
 @interface OUIAppController : OFObject <UIApplicationDelegate, MFMailComposeViewControllerDelegate, OUIDocumentPickerDelegate>
 {
@@ -32,6 +33,7 @@
 
 + (void)presentError:(NSError *)error;
 + (void)presentError:(NSError *)error file:(const char *)file line:(int)line;
++ (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 
 @property(readonly) UIBarButtonItem *appMenuBarItem;
 - (void)dismissAppMenu;
