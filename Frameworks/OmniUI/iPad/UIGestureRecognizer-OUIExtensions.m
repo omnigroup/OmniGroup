@@ -63,7 +63,7 @@ static void _replacement_setEnabled(UIGestureRecognizer *self, SEL _cmd, BOOL en
 - (UIView *)hitView;
 {
     UIView *view = self.view;
-    CGPoint hitPoint = [self locationInView:view];
+    CGPoint hitPoint = [self locationInView:view.superview];
     return [view hitTest:hitPoint withEvent:nil];
 }
 
