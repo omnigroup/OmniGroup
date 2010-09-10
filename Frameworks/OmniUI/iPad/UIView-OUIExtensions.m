@@ -29,6 +29,17 @@ RCS_ID("$Id$");
     return image;
 }
 
+- (UIView *)containingViewOfClass:(Class)cls; // can return self
+{
+    UIView *view = self;
+    while (view) {
+        if ([view isKindOfClass:cls])
+            return view;
+        view = view.superview;
+    }
+    return nil;
+}
+
 @end
 
 #ifdef DEBUG // Uses private API

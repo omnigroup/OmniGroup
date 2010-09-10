@@ -11,6 +11,7 @@
 
 @interface UIView (OUIExtensions)
 - (UIImage *)snapshotImage;
+- (UIView *)containingViewOfClass:(Class)cls; // can return self
 @end
 
 #ifdef DEBUG // Uses private API
