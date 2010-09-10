@@ -21,18 +21,22 @@ enum OBBacktraceBufferType {
 };
 
 struct OBBacktraceBuffer {
-    volatile int type;
+    volatile uintptr_t type;
     uintptr_t context;
     void *frames[OBBacktraceBufferAddressCount];
 };
 
 #define OBBacktraceBufferInfoVersionMagic  2
 struct OBBacktraceBufferInfo {
+    // The first four fields provide info for CrashCatcher
     unsigned char version;
     unsigned char infoSize;
     unsigned char addressesPerTrace;
     unsigned char traceCount;
-    uintptr_t backtraces;
-    uintptr_t nextTrace;
+    
+    // A pointer to the array of backtrace buffers
+    struct OBBacktraceBuffer *backtraces;
+    // A pointer to the integer which holds the index of the next free buffer entry
+    volatile int32_t *nextTrace;
 };
 

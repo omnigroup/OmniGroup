@@ -93,7 +93,7 @@ extern void _OBFinishPortingLater(const char *function, const char *file, unsign
 extern NSString * const OBAbstractImplementation;
 extern NSString * const OBUnusedImplementation;
 
-void OBRecordBacktrace(uintptr_t ctxt, int optype);
+void OBRecordBacktrace(uintptr_t ctxt, unsigned int optype);
 /*.doc.
   Records a backtrace for possible debugging use in the future. ctxt and optype are free for the caller to use for their own purposes, but optype must be nonzero.
 */
