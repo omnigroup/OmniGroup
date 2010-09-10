@@ -18,10 +18,18 @@
     
     CGPoint firstTouchPoint;
     CGPoint lastTouchPoint;
+    
+    NSTimeInterval latestTimestamp;  // measured since system startup time
+    
+    NSTimeInterval beginTimestamp;  // measured since Jan 1, 2001
+    NSTimeInterval endTimestamp;    // "
 }
 
 @property (nonatomic) CGFloat hysteresisDistance;
 @property (readonly, nonatomic) BOOL overcameHysteresis;
+
+@property (readonly, nonatomic) NSTimeInterval latestTimestamp;  // Provides precise timing suitable for use in stroke recognition algorithms
+@property (readonly, nonatomic) NSTimeInterval gestureDuration;  // The length of time the gesture was in progress.  Only valid after the gesture has finished (ended or cancelled).
 
 - (void)resetHysteresis;
 

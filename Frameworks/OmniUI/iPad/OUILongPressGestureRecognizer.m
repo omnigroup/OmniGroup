@@ -11,7 +11,7 @@ RCS_ID("$Id$")
 
 @implementation OUILongPressGestureRecognizer
 
-@synthesize hysteresisDistance, overcameHysteresis;
+@synthesize hysteresisDistance, overcameHysteresis, latestTimestamp;
 
 - (id)initWithTarget:(id)target action:(SEL)action;
 {
@@ -31,6 +31,12 @@ RCS_ID("$Id$")
     
     overcameHysteresis = NO;
     firstTouchPoint = [self locationInView:self.view.window];
+    
+    latestTimestamp = [[touches anyObject] timestamp];
+    
+    if (!beginTimestamp) {
+        beginTimestamp = CFAbsoluteTimeGetCurrent();
+    }
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
@@ -46,11 +52,39 @@ RCS_ID("$Id$")
     }
     
     lastTouchPoint = [self locationInView:self.view.window];
+    
+    latestTimestamp = [[touches anyObject] timestamp];
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+{
+    [super touchesEnded:touches withEvent:event];
+    
+    endTimestamp = CFAbsoluteTimeGetCurrent();
+}
+
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
+{
+    [super touchesCancelled:touches withEvent:event];
+    
+    endTimestamp = CFAbsoluteTimeGetCurrent();
+}
+
+- (void)reset;
+{
+    [super reset];
+    
+    beginTimestamp = 0;
 }
 
 
 #pragma mark -
 #pragma mark Class methods
+
+- (NSTimeInterval)gestureDuration;
+{
+    return endTimestamp - beginTimestamp;
+}
 
 - (void)resetHysteresis;
 {
