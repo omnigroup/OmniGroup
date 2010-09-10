@@ -11,9 +11,9 @@
 
 RCS_ID("$Id$");
 
-#if OUI_GESTURE_RECOGNIZER_DEBUG
 @implementation UIGestureRecognizer (OUIExtensions)
 
+#if OUI_GESTURE_RECOGNIZER_DEBUG
 static void (*original_setState)(UIGestureRecognizer *self, SEL _cmd, UIGestureRecognizerState state);
 
 static NSString * const stateNames[] = {
@@ -58,6 +58,32 @@ static void _replacement_setEnabled(UIGestureRecognizer *self, SEL _cmd, BOOL en
     original_setState = (typeof(original_setState))OBReplaceMethodImplementation([UIGestureRecognizer class], @selector(setState:), (IMP)_replacement_setState);
     original_setEnabled = (typeof(original_setEnabled))OBReplaceMethodImplementation([UIGestureRecognizer class], @selector(setEnabled:), (IMP)_replacement_setEnabled);
 }
+#endif
+
+- (UIView *)nearestViewFromViews:(NSArray *)views relativeToView:(UIView *)comparisionView maximumDistance:(CGFloat)maximumDistance;
+{
+    CGPoint pt = [self locationInView:comparisionView];
+    
+    UIView *bestView = nil;
+    CGFloat bestDistanceSqr = 0;
+    CGFloat maximumDistanceSqr = maximumDistance * maximumDistance;
+    
+    for (UIView *candidate in views) {
+        CGRect candidateRect = [candidate convertRect:candidate.bounds toView:comparisionView];
+        
+        CGPoint candidateOffset = CGPointMake(CGRectGetMidX(candidateRect) - pt.x, CGRectGetMidY(candidateRect) - pt.y);
+        
+        CGFloat candidateDistanceSqr = candidateOffset.x * candidateOffset.x + candidateOffset.y * candidateOffset.y;
+        if (candidateDistanceSqr > maximumDistanceSqr)
+            continue; // too far
+        
+        if (!bestView || candidateDistanceSqr < bestDistanceSqr) {
+            bestView = candidate;
+            bestDistanceSqr = candidateDistanceSqr;
+        }
+    }
+    
+    return bestView;
+}
 
 @end
-#endif
