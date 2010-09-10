@@ -69,6 +69,9 @@ typedef enum {
 // This method is called by OITabbedInspector whenever the selection changes if the inspector is in auto-tab-select mode
 - (NSPredicate *)shouldBeUsedForObjectPredicate;
 
+// Subclasses should override this if they may need to do something in response to an inspector view programmatically resizing. They should also override this to pass it on to any inspectors they manage. (See OITabbedInspector and OISectionedInspector.) Inspectors which programmatically change the size of their inspectorView should then call this method on their inspectorController so it can notify the inspector chain. This allows an inspector view which contains a child inspector view to know to resize to accommodate changes in the size of that child.
+- (void)inspectorDidResize:(OIInspector *)resizedInspector;
+
 @end
 
 @protocol OIConcreteInspector

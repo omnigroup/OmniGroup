@@ -325,6 +325,11 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return nil;
 }
 
+- (void)inspectorDidResize:(OIInspector *)resizedInspector;
+{
+    OBASSERT_NOT_REACHED("This should only be called on inspectors which are ancestors of the resized inspector.");
+}
+
 #pragma mark -
 #pragma mark Debugging
 - (NSMutableDictionary *)debugDictionary;

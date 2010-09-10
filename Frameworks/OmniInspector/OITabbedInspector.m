@@ -32,6 +32,7 @@ RCS_ID("$Id$")
 - (void)_tabTitleDidChange:(NSNotification *)notification;
 - (void)_layoutSelectedTabs;
 - (void)_updateButtonsToMatchSelection;
+- (OIInspectorTabController *)_tabControllerForInspectorView:(NSView *)view;
 @end
 
 #pragma mark -
@@ -450,6 +451,19 @@ RCS_ID("$Id$")
     return menuItems;
 }
 
+- (void)inspectorDidResize:(OIInspector *)resizedInspector;
+{
+    OBASSERT(resizedInspector != self); // Don't call us if we are the resized inspector, only on ancestors of that inspector
+    NSView *resizedView = [resizedInspector inspectorView];
+    OIInspectorTabController *tab = [self _tabControllerForInspectorView:resizedView];
+    OBASSERT(tab != nil);   // Don't call us if we aren't an ancestor of the resized inspector
+    OIInspector *tabInspector = [tab inspector];
+    if (tabInspector != resizedInspector) {
+        [tabInspector inspectorDidResize:resizedInspector];
+    }
+    [self _layoutSelectedTabs];
+}
+
 #pragma mark -
 #pragma mark OIConcreteInspector protocol
 
@@ -501,6 +515,14 @@ RCS_ID("$Id$")
 - (void)setInspectorController:(OIInspectorController *)aController;
 {
     _nonretained_inspectorController = aController;
+
+    // Set the controller on all of our child inspectors as well
+    for (OIInspectorTabController *tab in _tabControllers) {
+        OIInspector *inspector = [tab inspector];
+        if ([inspector respondsToSelector:_cmd]) {
+            [inspector setInspectorController:aController];
+        }
+    }
 }
 
 #pragma mark -
@@ -698,7 +720,6 @@ RCS_ID("$Id$")
     
     // Any newly exposed inspectors should start tracking; any newly hidden should stop
     [self _updateSubInspectorObjects];
-    
 }
 
 - (void)_updateButtonsToMatchSelection;
@@ -715,6 +736,20 @@ RCS_ID("$Id$")
             [[matrixCells objectAtIndex:tabIndex] setIsPinned:YES];
     }
     [buttonMatrix setNeedsDisplay:YES];
+}
+
+- (OIInspectorTabController *)_tabControllerForInspectorView:(NSView *)view;
+{
+    for (OIInspectorTabController *tab in _tabControllers) {
+        if ([tab hasLoadedView]) {  // Avoid loading any UI that isn't already loaded - if it's not loaded, it can't be one we care about anyway
+            NSView *tabView = [tab inspectorView];
+            if ([view isDescendantOf:tabView]) {
+                return tab;
+            }
+        }
+    }
+    OBASSERT_NOT_REACHED("Don't call this on an inspector that isn't an ancestor of the view in question.");
+    return nil;
 }
 
 @end

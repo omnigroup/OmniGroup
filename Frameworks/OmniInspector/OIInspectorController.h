@@ -74,6 +74,9 @@
 - (void)updateInspector;
 - (void)inspectNothing;
 
+// Inspectors should call this on their controller if they programmatically change their size, so that the controller can notify the root inspector. This allows the root inspector to react to the change and in turn notify any child inspectors. This is necessary because there is often a hierarchy of inspectors (tabbed inspector containing multiple individual inspectors, etc), but individual inspectors are not aware of their parent inspectors.
+- (void)inspectorDidResize:(OIInspector *)resizedInspector;
+
 @end
 
 __private_extern__ NSComparisonResult sortByDefaultDisplayOrderInGroup(OIInspectorController *a, OIInspectorController *b, void *context);
