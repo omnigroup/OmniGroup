@@ -330,7 +330,6 @@ static void _setFrameYExtent(CALayer *layer, OFExtent yExtent)
         // wide and short; just use one layer
         CGSize shadowImageSize = CGSizeMake(edgeLength, CGRectGetHeight(bounds));
         if (!_shadowImage || (CGSizeEqualToSize(_shadowImageSize, shadowImageSize) == NO)) {
-            OBFinishPortingLater("This path not tested, but hopefully works");
             CGImageRelease(_shadowImage);
             _shadowImage = _createShadowImageWithSize(shadowImageSize, _shadowEdgeMask);
             _shadowImageSize = shadowImageSize;
