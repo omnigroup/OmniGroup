@@ -918,6 +918,7 @@
 			baseConfigurationReference = 3427213C1194802E00B39788 /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				SDKROOT = iphoneos3.2;
 			};
 			name = Release;
 		};
