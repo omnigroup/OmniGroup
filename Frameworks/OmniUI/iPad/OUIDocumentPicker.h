@@ -41,6 +41,9 @@
     
     UIActionSheet *_nonretainedActionSheet;
     BOOL _editingTitle;
+    BOOL _keyboardIsShowing;
+    BOOL _isRevealingNewDocument;
+    BOOL _isInnerController;
 }
 
 + (NSString *)userDocumentsDirectory;

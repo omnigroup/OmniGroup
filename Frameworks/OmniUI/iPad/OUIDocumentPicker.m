@@ -397,6 +397,7 @@ static id _commonInit(OUIDocumentPicker *self)
 
     // Not -_documentProxyTapped: since that starts a scroll to the proxy if it isn't the one currently in the middle, but we might still be animating to the new docuemnt
     [_proxyTappedTarget performSelector:_proxyTappedAction withObject:proxy];
+    _isRevealingNewDocument = NO;
 }
 
 - (BOOL)hasDocuments;
@@ -521,8 +522,12 @@ static id _commonInit(OUIDocumentPicker *self)
 
 - (IBAction)newDocument:(id)sender;
 {
+    if (_isRevealingNewDocument || !_isInnerController) {  // will still be the inner controller while scrolling to the new doc
+        return;
+    }
+    
     [[OUIAppController controller] dismissAppMenu];
-
+    
     NSString *documentType = [_nonretained_delegate documentPickerDocumentTypeForNewFiles:self];
     NSURL *newDocumentURL = [self urlForNewDocumentOfType:documentType];
     NSError *error = nil;
@@ -531,6 +536,9 @@ static id _commonInit(OUIDocumentPicker *self)
         OUI_PRESENT_ERROR(error);
         return;
     }
+    
+    _isRevealingNewDocument = YES;
+    
     [document setProxy:[self revealAndActivateNewDocumentAtURL:newDocumentURL]];
 }
 
@@ -833,12 +841,16 @@ static id _commonInit(OUIDocumentPicker *self)
     
     _titleEditingField.text = _titleLabel.currentTitle;
     
-    [_titleEditingField setHidden:NO];
-    _titleEditingField.alpha = 0;
+    _titleEditingField.alpha = 1;
     _editingTitle = YES;
     _previewScrollView.disableRotationDisplay = YES;
 
     [_titleEditingField becomeFirstResponder];
+    
+    [_titleEditingField setHidden:NO];
+    [_titleLabel setHidden:YES];
+    [_dateLabel setHidden:YES];
+    [_buttonGroupView setHidden:YES];
     
     _editingProxyURL = [[[_previewScrollView selectedProxy] url] retain];
 }
@@ -860,6 +872,14 @@ static id _commonInit(OUIDocumentPicker *self)
         NSString *uti = [(NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)fileExtension, NULL) autorelease];
         OBASSERT(uti);
         NSURL *newProxyURL = [self _renameProxy:currentProxy toName:newName type:uti rescanDocuments:NO];
+        
+        if ([[newProxyURL path] isEqualToString:[[currentProxy url] path]]) {
+            NSString *msg = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to rename document to %@", @"OmniUI", OMNI_BUNDLE, @"error when renaming a document"), newName];                
+            NSError *err = [[NSError alloc] initWithDomain:NSURLErrorDomain code:0 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:msg, NSLocalizedDescriptionKey, msg, NSLocalizedFailureReasonErrorKey, nil]];
+            OUI_PRESENT_ERROR(err);
+            [err release];            
+        }
+        
         [_editingProxyURL release];
         _editingProxyURL = nil;
         
@@ -868,6 +888,39 @@ static id _commonInit(OUIDocumentPicker *self)
     
     _editingTitle = NO;
     _previewScrollView.disableRotationDisplay = NO;
+    
+    if (!_keyboardIsShowing) {
+        // TODO: merge this with the similar code in keyboardDidHide
+        [_titleLabel setAlpha:0];
+        [_dateLabel setAlpha:0];
+        [_buttonGroupView setAlpha:0];
+        [_titleLabel setHidden:NO];
+        [_dateLabel setHidden:NO];
+        [_buttonGroupView setHidden:NO];
+        
+        [_titleEditingField setHidden:YES];
+        
+        [UIView beginAnimations:@"button fade in" context:nil];
+        {
+            [UIView setAnimationDuration:0.25];
+            
+            [_titleLabel setAlpha:1];
+            [_dateLabel setAlpha:1];
+            [_buttonGroupView setAlpha:1];
+            
+        }
+        [UIView commitAnimations];
+        
+        [self.view.layer recursivelyRemoveAnimationForKey:PositionAdjustAnimation];
+        self.previewScrollView.disableLayout = NO;
+        
+        if (_editingProxyURL) {
+            [self rescanDocumentsScrollingToURL:_editingProxyURL animated:NO];
+            
+            [_editingProxyURL release];
+            _editingProxyURL = nil;
+        }
+    }
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
@@ -888,6 +941,8 @@ static id _commonInit(OUIDocumentPicker *self)
 @synthesize editingTitle = _editingTitle;
 - (void)keyboardWillShow:(NSNotification *)notification;
 {
+    _keyboardIsShowing = YES;
+    
     if (!_editingTitle)
         return;
     
@@ -896,14 +951,6 @@ static id _commonInit(OUIDocumentPicker *self)
 
 - (void)keyboardDidShow:(NSNotification *)notification;
 {
-    if (!_editingTitle)
-        return;
-    
-    [_titleEditingField setHidden:NO];  // rotating the interface will cause the keyboard to hide and show so make sure that the text field is showing
-    
-    [_titleLabel setHidden:YES];
-    [_dateLabel setHidden:YES];
-    [_buttonGroupView setHidden:YES];
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification;
@@ -922,14 +969,30 @@ static id _commonInit(OUIDocumentPicker *self)
 
 - (void)keyboardDidHide:(NSNotification *)notification;
 {
-    if (_editingTitle)
+    _keyboardIsShowing = NO;
+
+    if (_editingTitle)     // Keyboard hid, but editing is still going on
         return;
     
-    [_titleEditingField setHidden:YES];
-    
+    [_titleLabel setAlpha:0];
+    [_dateLabel setAlpha:0];
+    [_buttonGroupView setAlpha:0];
     [_titleLabel setHidden:NO];
     [_dateLabel setHidden:NO];
     [_buttonGroupView setHidden:NO];
+    
+    [_titleEditingField setHidden:YES];
+    
+    [UIView beginAnimations:@"button fade in" context:nil];
+    {
+        [UIView setAnimationDuration:0.25];
+        
+        [_titleLabel setAlpha:1];
+        [_dateLabel setAlpha:1];
+        [_buttonGroupView setAlpha:1];
+        
+    }
+    [UIView commitAnimations];
     
     [self.view.layer recursivelyRemoveAnimationForKey:PositionAdjustAnimation];
     self.previewScrollView.disableLayout = NO;
@@ -958,11 +1021,6 @@ static id _commonInit(OUIDocumentPicker *self)
         [self _setupProxiesBinding];
         [self _loadProxies];
     }
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
 }
 
 - (void)viewDidUnload;
@@ -1093,6 +1151,7 @@ static id _commonInit(OUIDocumentPicker *self)
 - (UIView *)prepareToResignInnerToolbarControllerAndReturnParentViewForActivityIndicator:(OUIToolbarViewController *)toolbarViewController;
 {
     [self view];
+    _isInnerController = NO;
     
     _addPushAndFadeAnimations(self, YES/*fade*/, AnimateTitleAndButtons);
     
@@ -1128,6 +1187,11 @@ static id _commonInit(OUIDocumentPicker *self)
     // OK for us to do layout again.
     PICKER_DEBUG(@"LAYOUT ENABLED");
     self.previewScrollView.disableLayout = NO;
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidHideNotification object:nil];    
 }
 
 - (void)willBecomeInnerToolbarController:(OUIToolbarViewController *)toolbarViewController animated:(BOOL)animated;
@@ -1159,6 +1223,13 @@ static id _commonInit(OUIDocumentPicker *self)
     // OK for us to do layout again.
     PICKER_DEBUG(@"LAYOUT ENABLED");
     self.previewScrollView.disableLayout = NO;
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
+
+    _isInnerController = YES;
 }
 
 - (BOOL)isEditingViewController;
@@ -1667,15 +1738,15 @@ typedef struct {
     {
         [UIView setAnimationDuration:[[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue]];
         [UIView setAnimationCurve:[[[notification userInfo] objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]];
-        
-        _titleEditingField.alpha = keyboardIsShowing ? 1 : 0;
-        CGPoint _titleEditingFieldOrigin = CGPointMake(_titleEditingField.frame.origin.x, CGRectGetMinY(keyboardEndFrame) - _titleEditingField.frame.size.height - spacer);
-        _titleEditingField.frame = (CGRect){.origin = _titleEditingFieldOrigin, .size = _titleEditingField.frame.size};
-        
-        _titleLabel.alpha = keyboardIsShowing ? 0 : 1;
-        _dateLabel.alpha = keyboardIsShowing ? 0 : 1;
-        _buttonGroupView.alpha = keyboardIsShowing ? 0 : 1;
-        
+        if (keyboardIsShowing) {
+            CGPoint _titleEditingFieldOrigin = CGPointMake(_titleEditingField.frame.origin.x, CGRectGetMinY(keyboardEndFrame) - _titleEditingField.frame.size.height - spacer);
+            _titleEditingField.frame = (CGRect){.origin = _titleEditingFieldOrigin, .size = _titleEditingField.frame.size};
+        } else {
+            CGRect titleEditingFieldFrame = [_titleEditingField frame];
+            titleEditingFieldFrame.origin.x = CGRectGetMidX(_titleLabel.frame) - titleEditingFieldFrame.size.width/2;
+            titleEditingFieldFrame.origin.y = CGRectGetMidY(_titleLabel.frame) - titleEditingFieldFrame.size.height/2;
+            _titleEditingField.frame = titleEditingFieldFrame;
+        }
     }
     [UIView commitAnimations];
 }
