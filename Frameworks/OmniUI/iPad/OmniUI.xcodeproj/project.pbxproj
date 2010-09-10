@@ -124,7 +124,7 @@
 		346C4B891193273600BE8C49 /* OUIScalingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AFD1193273600BE8C49 /* OUIScalingView.m */; };
 		346C4B8A1193273600BE8C49 /* OUIScalingViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AFE1193273600BE8C49 /* OUIScalingViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B8B1193273600BE8C49 /* OUIScalingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AFF1193273600BE8C49 /* OUIScalingViewController.m */; };
-		346C4B8C1193273600BE8C49 /* OUIScalingViewTile.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4B001193273600BE8C49 /* OUIScalingViewTile.h */; };
+		346C4B8C1193273600BE8C49 /* OUIScalingViewTile.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4B001193273600BE8C49 /* OUIScalingViewTile.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B8D1193273600BE8C49 /* OUIScalingViewTile.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4B011193273600BE8C49 /* OUIScalingViewTile.m */; };
 		346C4B8E1193273600BE8C49 /* OUISingleDocumentAppController.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4B021193273600BE8C49 /* OUISingleDocumentAppController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B8F1193273600BE8C49 /* OUISingleDocumentAppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4B031193273600BE8C49 /* OUISingleDocumentAppController.m */; };
@@ -136,7 +136,7 @@
 		346C4B951193273600BE8C49 /* OUITextLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4B091193273600BE8C49 /* OUITextLayout.m */; };
 		346C4B961193273600BE8C49 /* OUITextThumb.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4B0A1193273600BE8C49 /* OUITextThumb.h */; };
 		346C4B971193273600BE8C49 /* OUITextThumb.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4B0B1193273600BE8C49 /* OUITextThumb.m */; };
-		346C4B981193273600BE8C49 /* OUITileDebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4B0C1193273600BE8C49 /* OUITileDebug.h */; };
+		346C4B981193273600BE8C49 /* OUITileDebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4B0C1193273600BE8C49 /* OUITileDebug.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B9A1193273600BE8C49 /* OUITiledScalingView.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4B0E1193273600BE8C49 /* OUITiledScalingView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B9B1193273600BE8C49 /* OUITiledScalingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4B0F1193273600BE8C49 /* OUITiledScalingView.m */; };
 		346C4B9C1193273600BE8C49 /* OUIToolbarViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4B101193273600BE8C49 /* OUIToolbarViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
