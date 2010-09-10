@@ -22,6 +22,7 @@
 + (void)enableStateChangeLogging;
 #endif
 
+- (UIView *)hitView;
 - (UIView *)nearestViewFromViews:(NSArray *)views relativeToView:(UIView *)comparisionView maximumDistance:(CGFloat)maximumDistance;
 
 

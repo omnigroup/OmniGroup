@@ -60,6 +60,13 @@ static void _replacement_setEnabled(UIGestureRecognizer *self, SEL _cmd, BOOL en
 }
 #endif
 
+- (UIView *)hitView;
+{
+    UIView *view = self.view;
+    CGPoint hitPoint = [self locationInView:view];
+    return [view hitTest:hitPoint withEvent:nil];
+}
+
 - (UIView *)nearestViewFromViews:(NSArray *)views relativeToView:(UIView *)comparisionView maximumDistance:(CGFloat)maximumDistance;
 {
     CGPoint pt = [self locationInView:comparisionView];
