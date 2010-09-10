@@ -546,7 +546,7 @@ static void _writeString(NSString *str)
         
         // We require that the delegate implement the CGContextRef path, not just -displayLayer:.
         id delegate = self.delegate;
-        if (delegate) {
+        if (delegate && [delegate respondsToSelector:@selector(drawLayer:inContext:)]) {
             DEBUG_RENDER(@"  rendering %@ via delegate %@", [self shortDescription], [delegate shortDescription]);
             [delegate drawLayer:self inContext:ctx];
         } else {
