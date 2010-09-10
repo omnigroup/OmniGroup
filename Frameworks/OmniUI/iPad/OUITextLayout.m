@@ -10,6 +10,7 @@
 #import <OmniFoundation/NSAttributedString-OFExtensions.h>
 #import <OmniFoundation/NSMutableAttributedString-OFExtensions.h>
 #import <OmniAppKit/OATextAttributes.h>
+#import <OmniQuartz/OQDrawing.h>
 
 #include <string.h>
 
@@ -115,6 +116,19 @@ CTFontRef OUIGlobalDefaultFont(void)
     CGPoint layoutOrigin = OUITextLayoutOrigin(_usedSize, UIEdgeInsetsZero, bounds, 1.0f);
     
     OUITextLayoutDrawFrame(ctx, _frame, bounds, layoutOrigin);
+}
+
+- (void)drawFlippedInContext:(CGContextRef)ctx bounds:(CGRect)bounds;
+{
+    CGContextSaveGState(ctx);
+    {
+        OQFlipVerticallyInRect(ctx, bounds);
+        
+        CGContextTranslateCTM(ctx, 0, CGRectGetHeight(bounds) - _usedSize.size.height);
+        
+        [self drawInContext:ctx];
+    }
+    CGContextRestoreGState(ctx);
 }
 
 #if 0

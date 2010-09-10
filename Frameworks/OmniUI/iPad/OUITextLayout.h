@@ -28,7 +28,8 @@
 @property(readonly,nonatomic) NSAttributedString *attributedString;
 @property(readonly,nonatomic) CGSize usedSize;
 
-- (void)drawInContext:(CGContextRef)ctx;
+- (void)drawInContext:(CGContextRef)ctx; // Draws at (0,0) in the current coordinate system. Text draws upside down normally and with the last line that the origin.
+- (void)drawFlippedInContext:(CGContextRef)ctx bounds:(CGRect)bounds; // Draws like you'd expect text to be drawn -- with the text stuck to the top of the given bounds and right side up.
 
 @end
 
