@@ -3208,15 +3208,26 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
         
         // Default to filling our bounds width and growing "infinitely" high.
         CGSize frameSize = self.bounds.size;
+        const CGFloat kUnlimitedSize = 10000;
         
-        if (CGSizeEqualToSize(layoutSize, CGSizeZero))
-            frameSize.height = 10000;
-        else {
+        if (CGSizeEqualToSize(layoutSize, CGSizeZero)) {
+            frameSize.height = kUnlimitedSize;
+        } else {
             // Owner would like us to constrain along width or height.
             if (layoutSize.width > 0)
                 frameSize.width = layoutSize.width;
             if (layoutSize.height > 0)
                 frameSize.height = layoutSize.height;
+        }
+        
+        // CTFramesetterCreateFrame() will return NULL if the given path's area is zero. On the initial set up of a field editor, though, you might know the width you want but not the height. So, you have to give a width one way or the other, but if you haven't given a height, we'll give a minimum.
+        if (frameSize.width == 0) {
+            OBASSERT_NOT_REACHED("Using unlimited layout width since none was specified"); // Need to specify one implicitly via the view frame or textLayoutSize property. 
+            frameSize.width = kUnlimitedSize;
+        }
+        if (frameSize.height == 0) {
+            OBASSERT_NOT_REACHED("Using unlimited layout height since none was specified"); // Need to specify one implicitly via the view frame or textLayoutSize property. 
+            frameSize.height = kUnlimitedSize;
         }
         
         // Adjust from UIView coordinates to CoreGraphics rendering coordinates.
