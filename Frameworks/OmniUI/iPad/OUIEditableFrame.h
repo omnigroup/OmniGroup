@@ -133,6 +133,7 @@
 - (void)setValue:(id)value forAttribute:(NSString *)attr inRange:(UITextRange *)r;
 
 - (BOOL)hasTouchesForEvent:(UIEvent *)event;
+- (BOOL)hasTouchByGestureRecognizer:(UIGestureRecognizer *)recognizer;
 
 - (NSSet *)inspectableTextSpans;    // returns set of OUEFTextSpans 
 @end

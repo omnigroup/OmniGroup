@@ -943,20 +943,37 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
     [self setNeedsDisplay];
 }
 
-- (BOOL)hasTouchesForEvent:(UIEvent *)event;
+static BOOL _eventTouchesView(UIEvent *event, UIView *view)
 {
-    if (self.hidden || !self.superview)
+    if (view.hidden || !view.superview)
         return NO;
     
-    if ([[event touchesForView:self] count] > 0)
-        return YES;
-    
-    if ([[event touchesForView:startThumb] count] > 0)
-        return YES;
-    else if ([[event touchesForView:endThumb] count] > 0)
+    if ([[event touchesForView:view] count] > 0)
         return YES;
     
     return NO;
+}
+
+- (BOOL)hasTouchesForEvent:(UIEvent *)event;
+{
+    // Thumbs extent outside our bounds, so check them too
+    return _eventTouchesView(event, self) || _eventTouchesView(event, startThumb) || _eventTouchesView(event, endThumb);
+}
+
+static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view)
+{
+    if (view.hidden || !view.superview)
+        return NO;
+    
+    return CGRectContainsPoint(view.bounds, [recognizer locationInView:view]);
+}
+
+- (BOOL)hasTouchByGestureRecognizer:(UIGestureRecognizer *)recognizer;
+{
+    OBPRECONDITION(recognizer);
+    
+    // Thumbs extent outside our bounds, so check them too
+    return _recognizerTouchedView(recognizer, self) || _recognizerTouchedView(recognizer, startThumb) || _recognizerTouchedView(recognizer, endThumb);
 }
 
 #pragma mark -

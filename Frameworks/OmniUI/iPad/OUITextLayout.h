@@ -32,13 +32,9 @@
 
 @end
 
-//extern CGSize OUITextLayoutMeasureSize(CTFrameRef frame);
-CGRect OUITextLayoutMeasureFrame(CTFrameRef frame, BOOL includeTrailingWhitespace);
-//extern CGPoint OUITextLayoutFrameOrigin(CTFrameRef frame);
-//extern void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame);
+extern CGRect OUITextLayoutMeasureFrame(CTFrameRef frame, BOOL includeTrailingWhitespace);
 extern void OUITextLayoutFixupParagraphStyles(NSMutableAttributedString *content);
 
 extern CTFontRef OUIGlobalDefaultFont(void);
-// extern CTParagraphStyleRef OUIGlobalDefaultParagraphStyle(void);
 
 extern NSAttributedString *OUICreateTransformedAttributedString(NSAttributedString *source, NSDictionary *linkAttributes);
