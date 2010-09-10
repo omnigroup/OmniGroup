@@ -22,10 +22,20 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark Convenience methods
 
-static OUIOverlayView *_overlayView = nil;
++ (UIImage *)backgroundImage;
+{
+    static UIImage *_backgroundImage = nil;
+    if (!_backgroundImage) {
+        UIImage *image = [UIImage imageNamed:@"OUIOverlayBackground.png"];
+        _backgroundImage = [[image stretchableImageWithLeftCapWidth:7 topCapHeight:7] retain];
+    }
+    return _backgroundImage;
+}
 
 + (OUIOverlayView *)sharedTemporaryOverlay;
 {
+    static OUIOverlayView *_overlayView = nil;
+
     if (!_overlayView) {
         _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
     }
@@ -35,87 +45,77 @@ static OUIOverlayView *_overlayView = nil;
 
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string avoidingTouchPoint:(CGPoint)touchPoint;
 {
-    if (!_overlayView) {
-        _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
-    }
+    OUIOverlayView *overlayView = [self sharedTemporaryOverlay];
     
-    _overlayView.text = string;
+    overlayView.text = string;
     
     if (CGPointEqualToPoint(touchPoint, CGPointZero)) {
-        [_overlayView useAlignment:OUIOverlayViewAlignmentUpCenter withinBounds:view.bounds];
+        [overlayView useAlignment:OUIOverlayViewAlignmentUpCenter withinBounds:view.bounds];
     } else {
-        [_overlayView avoidTouchPoint:touchPoint withinBounds:view.bounds];
+        [overlayView avoidTouchPoint:touchPoint withinBounds:view.bounds];
     }
     
-    [_overlayView displayTemporarilyInView:view];
+    [overlayView displayTemporarilyInView:view];
 }
 
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAtPoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval;
 {
-    if (!_overlayView) {
-        _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
-    }
+    OUIOverlayView *overlayView = [self sharedTemporaryOverlay];
     
-    _overlayView.text = string;
+    overlayView.text = string;
     
-    [_overlayView centerAtPoint:touchPoint withOffset:CGPointZero withinBounds:view.bounds];
+    [overlayView centerAtPoint:touchPoint withOffset:CGPointZero withinBounds:view.bounds];
     
     if (displayInterval) {
-        _overlayView.messageDisplayInterval = displayInterval;
+        overlayView.messageDisplayInterval = displayInterval;
     }
     
-    [_overlayView displayTemporarilyInView:view];
+    [overlayView displayTemporarilyInView:view];
 }
 
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAbovePoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval;
 {
-    if (!_overlayView) {
-        _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
-    }
+    OUIOverlayView *overlayView = [self sharedTemporaryOverlay];
     
-    _overlayView.text = string;
+    overlayView.text = string;
     
-    [_overlayView centerAbovePoint:touchPoint withinBounds:view.bounds];
+    [overlayView centerAbovePoint:touchPoint withinBounds:view.bounds];
     
     if (displayInterval) {
-        _overlayView.messageDisplayInterval = displayInterval;
+        overlayView.messageDisplayInterval = displayInterval;
     }
 
-    [_overlayView displayTemporarilyInView:view];
+    [overlayView displayTemporarilyInView:view];
 }
 
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string positionedForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer displayInterval:(NSTimeInterval)displayInterval;
 {
-    if (!_overlayView) {
-        _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
-    }
+    OUIOverlayView *overlayView = [self sharedTemporaryOverlay];
     
-    _overlayView.text = string;
+    overlayView.text = string;
     
-    [_overlayView centerAtPositionForGestureRecognizer:gestureRecognizer inView:view];
+    [overlayView centerAtPositionForGestureRecognizer:gestureRecognizer inView:view];
     
     if (displayInterval) {
-        _overlayView.messageDisplayInterval = displayInterval;
+        overlayView.messageDisplayInterval = displayInterval;
     }
     
-    [_overlayView displayTemporarilyInView:view];
+    [overlayView displayTemporarilyInView:view];
 }
 
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string alignment:(OUIOverlayViewAlignment)alignment displayInterval:(NSTimeInterval)displayInterval;
 {
-    if (!_overlayView) {
-        _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
-    }
+    OUIOverlayView *overlayView = [self sharedTemporaryOverlay];
     
-    _overlayView.text = string;
+    overlayView.text = string;
     
-    [_overlayView useAlignment:alignment withinBounds:view.bounds];
+    [overlayView useAlignment:alignment withinBounds:view.bounds];
     
     if (displayInterval) {
-        _overlayView.messageDisplayInterval = displayInterval;
+        overlayView.messageDisplayInterval = displayInterval;
     }
     
-    [_overlayView displayTemporarilyInView:view];
+    [overlayView displayTemporarilyInView:view];
 }
 
 - (void)displayTemporarilyInView:(UIView *)view;
@@ -143,8 +143,9 @@ static OUIOverlayView *_overlayView = nil;
 }
 
 - (void)displayInView:(UIView *)view;
-{
+{    
     shouldHide = NO;
+    [self.layer removeAllAnimations];
     
     if (self.superview != view) {
         self.alpha = 0;
@@ -243,7 +244,7 @@ static OUIOverlayView *_overlayView = nil;
 @synthesize text = _text;
 - (void)setText:(NSString *)string;
 {
-    if (_text == string)
+    if ([_text isEqualToString:string])
         return;
     
     [_text release];
@@ -251,6 +252,7 @@ static OUIOverlayView *_overlayView = nil;
     
     _cachedSuggestedSize = CGSizeZero;
     [self setNeedsDisplay];
+    
 }
 
 @synthesize borderSize = _borderSize;
@@ -258,6 +260,14 @@ static OUIOverlayView *_overlayView = nil;
 
 - (void)setFrame:(CGRect)newFrame;
 {
+    if ([self superview]) {
+        CGPoint origin = [[self superview] convertPoint:[self frame].origin toView:nil];
+        origin.x = rint(origin.x);
+        origin.y = rint(origin.y);
+        origin = [[self superview] convertPoint:origin fromView:nil];
+        newFrame.origin = origin;
+    }
+
     if (!CGSizeEqualToSize(self.frame.size, newFrame.size)) {
         [self setNeedsDisplay];
     }
@@ -282,7 +292,9 @@ static OUIOverlayView *_overlayView = nil;
 - (void)useSuggestedSize;
 {
     CGSize suggestedSize = [self suggestedSize];
-    self.bounds = CGRectMake(0, 0, suggestedSize.width, suggestedSize.height);
+    CGRect rect = [self frame];
+    rect.size = suggestedSize;
+    self.frame = rect;
 }
 
 - (void)avoidTouchPoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;
@@ -313,12 +325,6 @@ static OUIOverlayView *_overlayView = nil;
     // Adjust by offset amount
     topLeft.x += offset.x;
     topLeft.y += offset.y;
-    
-    // Don't go past edges
-    if (topLeft.y < OUIOverlayViewDistanceFromTopEdge)
-        topLeft.y = OUIOverlayViewDistanceFromTopEdge;
-    if (topLeft.x < OUIOverlayViewDistanceFromHorizontalEdge)
-        topLeft.x = OUIOverlayViewDistanceFromHorizontalEdge;
     
     CGRect newFrame = CGRectMake(topLeft.x, topLeft.y, suggestedSize.width, suggestedSize.height);
     
@@ -422,23 +428,14 @@ static OUIOverlayView *_overlayView = nil;
     [self centerAtPoint:p withOffset:CGPointZero withinBounds:view.bounds];
 }
 
-
 #pragma mark -
 #pragma mark UIView
 
 - (void)drawRect:(CGRect)rect;
 {
     CGRect bounds = self.bounds;
-    
-    // Draw background
-    UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:bounds cornerRadius:6];
-    [[UIColor colorWithWhite:0.2 alpha:0.8] set];
-    [path fill];
-    
-    // Draw border
-    [[UIColor colorWithWhite:0.8 alpha:0.8] set];
-    path.lineWidth = 1.5;
-    [path stroke];
+        
+    [[isa backgroundImage] drawInRect:bounds blendMode:kCGBlendModeNormal alpha:0.8];
     
     // Draw text
     if (self.text.length) {

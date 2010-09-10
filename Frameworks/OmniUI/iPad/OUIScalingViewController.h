@@ -20,8 +20,6 @@
     OUIScalingScrollView *_scrollView;
     BOOL _isZooming;
     BOOL _lastScaleWasFullScale;
-    
-    OUIOverlayView *_zoomOverlay;
 }
 
 @property(nonatomic,retain) IBOutlet UIScrollView *scrollView;

@@ -21,7 +21,6 @@ RCS_ID("$Id$");
 {
     _scrollView.delegate = nil;
     [_scrollView release];
-    [_zoomOverlay release];
     
     [super dealloc];
 }
@@ -195,10 +194,7 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     _scrollView.delegate = nil;
     [_scrollView release];
     _scrollView = nil;
-    
-    [_zoomOverlay release];
-    _zoomOverlay = nil;
-    
+        
     [super viewDidUnload];
 }
 
@@ -273,16 +269,14 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 {
     _isZooming = YES;
     
-    if (!_zoomOverlay) {
-        _zoomOverlay = [[OUIOverlayView alloc] initWithFrame:CGRectZero];
-        _zoomOverlay.text = @"Zoom";
-    }
+    OUIOverlayView *overlay = [OUIOverlayView sharedTemporaryOverlay];
+    overlay.text = @"Zoom";
+
     UIView *stableView = scrollView.superview;
     
     // This automatically falls back to something sensible if the gesture recognizer is nil:
-    [_zoomOverlay centerAtPositionForGestureRecognizer:[self zoomingGestureRecognizer] inView:stableView];
-    
-    [_zoomOverlay displayInView:stableView];
+    [overlay centerAtPositionForGestureRecognizer:[self zoomingGestureRecognizer] inView:stableView];
+    [overlay displayInView:stableView];
 }
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView;
@@ -302,13 +296,14 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
         zoomLabel = [NSString stringWithFormat:@"%d%%", (NSUInteger)rint(snappedScale * 100)];
     }
     
-    _zoomOverlay.text = zoomLabel;
-    [_zoomOverlay useSuggestedSize];
+    OUIOverlayView *overlay = [OUIOverlayView sharedTemporaryOverlay];
+    overlay.text = zoomLabel;
+    [overlay useSuggestedSize];
 }
 
 - (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(UIView *)view atScale:(float)scale; // scale between minimum and maximum. called after any 'bounce' animations
 {
-    [_zoomOverlay hide];
+    [[OUIOverlayView sharedTemporaryOverlay] hide];
     
     _isZooming = NO;
     
