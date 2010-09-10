@@ -152,7 +152,7 @@ static NSUInteger MenuItemCount = NormalMenuItemCount;
         }
 #endif
         case OnlineHelp:
-            title = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"];
+            title = [[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"] table:@"InfoPlist"];
             image = [UIImage imageNamed:@"OUIMenuItemHelp.png"];
             OBASSERT(title != nil);
             break;

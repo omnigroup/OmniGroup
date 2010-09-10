@@ -271,12 +271,13 @@ BOOL OUIShouldLogPerformanceMetrics;
     NSString *helpBookFolder = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookFolder"];
     NSString *helpBookName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"];
     OBASSERT(helpBookName != nil);
+    NSString *webViewTitle = [[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:helpBookName table:@"InfoPlist"];
 
     NSString *indexPath = [[NSBundle mainBundle] pathForResource:@"index" ofType:@"html" inDirectory:helpBookFolder];
     if (indexPath == nil)
         indexPath = [[NSBundle mainBundle] pathForResource:@"top" ofType:@"html" inDirectory:helpBookFolder];
     OBASSERT(indexPath != nil);
-    [self _showWebViewWithPath:indexPath title:helpBookName];
+    [self _showWebViewWithPath:indexPath title:webViewTitle];
 }
 
 - (void)runTests:(id)sender;
