@@ -7,7 +7,14 @@
 //
 // $Id$
 
-#import <OmniUI/OUIToolbarButton.h>
+#import <UIKit/UIButton.h>
 
-@interface OUIUndoButton : OUIToolbarButton
+@interface OUIToolbarButton : UIButton
+
++ (UIImage *)normalBackgroundImage;
++ (UIImage *)highlightedBackgroundImage;
+
+- (void)setNormalBackgroundImage:(UIImage *)image;
+- (void)setHighlightedBackgroundImage:(UIImage *)image;
+
 @end

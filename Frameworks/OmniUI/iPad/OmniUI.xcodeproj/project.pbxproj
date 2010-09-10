@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		00AA54A611FE743500A23064 /* OUILongPressGestureRecognizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 00AA54A411FE743500A23064 /* OUILongPressGestureRecognizer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		00AA54A711FE743500A23064 /* OUILongPressGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 00AA54A511FE743500A23064 /* OUILongPressGestureRecognizer.m */; };
+		345A398F121C992900ABA3F0 /* OUIToolbarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 345A398D121C992900ABA3F0 /* OUIToolbarButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		345A3990121C992900ABA3F0 /* OUIToolbarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 345A398E121C992900ABA3F0 /* OUIToolbarButton.m */; };
 		34656A8111E646C3003D2FD1 /* OUIMenuItemRunTests.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34656A6F11E645B6003D2FD1 /* OUIMenuItemRunTests.png */; };
 		346C4B1A1193273600BE8C49 /* OUIColorComponentSlider.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4A741193273600BE8C49 /* OUIColorComponentSlider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B1B1193273600BE8C49 /* OUIColorComponentSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4A751193273600BE8C49 /* OUIColorComponentSlider.m */; };
@@ -310,6 +312,8 @@
 /* Begin PBXFileReference section */
 		00AA54A411FE743500A23064 /* OUILongPressGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILongPressGestureRecognizer.h; sourceTree = "<group>"; };
 		00AA54A511FE743500A23064 /* OUILongPressGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUILongPressGestureRecognizer.m; sourceTree = "<group>"; };
+		345A398D121C992900ABA3F0 /* OUIToolbarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIToolbarButton.h; sourceTree = "<group>"; };
+		345A398E121C992900ABA3F0 /* OUIToolbarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIToolbarButton.m; sourceTree = "<group>"; };
 		34656A6F11E645B6003D2FD1 /* OUIMenuItemRunTests.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemRunTests.png; sourceTree = "<group>"; };
 		346C49F1119326AD00BE8C49 /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Common.xcconfig"; path = "../../../Configurations/Omni-Application-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
 		346C49F2119326AD00BE8C49 /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Application-Coverage.xcconfig"; path = "../../../Configurations/Omni-Application-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
@@ -862,6 +866,8 @@
 				346C4B171193273600BE8C49 /* UIGestureRecognizer-OUIExtensions.m */,
 				346C4B181193273600BE8C49 /* UIView-OUIExtensions.h */,
 				346C4B191193273600BE8C49 /* UIView-OUIExtensions.m */,
+				345A398D121C992900ABA3F0 /* OUIToolbarButton.h */,
+				345A398E121C992900ABA3F0 /* OUIToolbarButton.m */,
 			);
 			name = "Extensions & Utilities";
 			sourceTree = "<group>";
@@ -1049,6 +1055,7 @@
 				34D29BC711F10EC60072B2E1 /* OUIUndoBarButtonItem.h in Headers */,
 				00AA54A611FE743500A23064 /* OUILongPressGestureRecognizer.h in Headers */,
 				34DE83E61211EE420078D1DF /* OUILoupeOverlaySubject.h in Headers */,
+				345A398F121C992900ABA3F0 /* OUIToolbarButton.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1186,6 +1193,7 @@
 				94909AF311AD9F9400BA9C40 /* OUIUndoButtonController.m in Sources */,
 				34D29BC811F10EC60072B2E1 /* OUIUndoBarButtonItem.m in Sources */,
 				00AA54A711FE743500A23064 /* OUILongPressGestureRecognizer.m in Sources */,
+				345A3990121C992900ABA3F0 /* OUIToolbarButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
