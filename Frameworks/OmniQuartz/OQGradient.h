@@ -7,6 +7,6 @@
 //
 // $Id$
 
-extern CGImageRef OQCreateVerticalGradientImage(CGGradientRef gradient, CFStringRef colorSpaceName, size_t height, BOOL flip);
+extern CGImageRef OQCreateVerticalGradientImage(CGGradientRef gradient, CFStringRef colorSpaceName, size_t height, BOOL opaque, BOOL flip);
 
 extern CGGradientRef OQCreateVerticalGrayGradient(CGFloat minGray, CGFloat maxGray);
