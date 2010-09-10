@@ -39,6 +39,12 @@ NSString * const OAFlagsChangedQueuedNotification = @"OAFlagsChangedNotification
 static NSUInteger launchModifierFlags;
 static BOOL OATargetSelection;
 
+BOOL OATargetSelectionEnabled(void)
+{
+    [OAApplication sharedApplication]; // Make sure global is set up.
+    return OATargetSelection;
+}
+
 @implementation OAApplication
 
 + (void)initialize;
@@ -885,17 +891,18 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
     if (![self respondsToSelector:action])
         return nil;
     
-    if ([sender isKindOfClass:[NSMenuItem class]]) {
-        if ([self respondsToSelector:@selector(validateMenuItem:)] && ![self validateMenuItem:sender])
+    if ([sender isKindOfClass:[NSMenuItem class]] && [self respondsToSelector:@selector(validateMenuItem:)]) {
+        if (![self validateMenuItem:sender]) {
             return nil;
-    } else if ([sender isKindOfClass:[NSToolbarItem class]]) {
-        if ([self respondsToSelector:@selector(validateToolbarItem:)] && ![self validateToolbarItem:sender])
+        }
+    } else if ([sender isKindOfClass:[NSToolbarItem class]] && [self respondsToSelector:@selector(validateToolbarItem:)]) {
+        if (![self validateToolbarItem:sender]) {
             return nil;
-    } else if ([sender conformsToProtocol:@protocol(NSValidatedUserInterfaceItem)]) {
-        if ([self respondsToSelector:@selector(validateUserInterfaceItem:)]) {
-            OBASSERT([self conformsToProtocol:@protocol(NSUserInterfaceValidations)]); // or should we check for conformance...
-            if (![(id <NSUserInterfaceValidations>)self validateUserInterfaceItem:sender])
-                return nil;
+        }
+    } else if ([sender conformsToProtocol:@protocol(NSValidatedUserInterfaceItem)] && [self respondsToSelector:@selector(validateUserInterfaceItem:)]) {
+        OBASSERT([self conformsToProtocol:@protocol(NSUserInterfaceValidations)]); // or should we check for conformance...
+        if (![(id <NSUserInterfaceValidations>)self validateUserInterfaceItem:sender]) {
+            return nil;
         }
     }
 

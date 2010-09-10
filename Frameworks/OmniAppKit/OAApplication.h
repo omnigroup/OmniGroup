@@ -1,4 +1,4 @@
-// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -82,6 +82,8 @@ extern NSString * const OAFlagsChangedQueuedNotification; // Same as OAFlagsChan
 // OAApplications's enhanced target selection support is off by default for now.  Set the "OATargetSelection" user default to YES to use it.
 // Return NO to stop the applier, YES to continue
 typedef BOOL (^OAResponderChainApplier)(id target);
+
+extern BOOL OATargetSelectionEnabled(void);
 
 @interface NSObject (OATargetSelection)
 - (BOOL)applyToResponderChain:(OAResponderChainApplier)applier;
