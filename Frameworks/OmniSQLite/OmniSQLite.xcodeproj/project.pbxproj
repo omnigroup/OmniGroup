@@ -170,7 +170,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 4AECC81F08B00400004B92BF /* Build configuration list for PBXProject "OmniSQLite" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = BFF16A5406ECEC1300D38503;
 			productRefGroup = BFF16A6706ECEC3500D38503 /* Products */;
 			projectDirPath = "";

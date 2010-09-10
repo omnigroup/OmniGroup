@@ -282,7 +282,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 4A1F65D308B37C9D007C9742 /* Build configuration list for PBXProject "OIF" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 00E521D0FE8AB4D111C9CC38 /* OIF */;
 			productRefGroup = 00E521D0FE8AB4D111C9CC38 /* OIF */;
 			projectDirPath = "";

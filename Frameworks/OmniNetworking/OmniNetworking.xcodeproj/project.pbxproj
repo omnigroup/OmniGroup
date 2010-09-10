@@ -579,7 +579,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 4A07274708A02D1300A31187 /* Build configuration list for PBXProject "OmniNetworking" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 00E51E86FE8AB1FF11C9CC38 /* OmniNetworking */;
 			productRefGroup = 00E51E86FE8AB1FF11C9CC38 /* OmniNetworking */;
 			projectDirPath = "";

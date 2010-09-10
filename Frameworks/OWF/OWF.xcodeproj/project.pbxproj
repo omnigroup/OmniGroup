@@ -1480,7 +1480,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 00E5205AFE8AB39F11C9CC38 /* OWF */;
 			projectDirPath = "";
 			projectRoot = "";

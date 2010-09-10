@@ -490,7 +490,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* OmniInspector */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
 			projectDirPath = "";
