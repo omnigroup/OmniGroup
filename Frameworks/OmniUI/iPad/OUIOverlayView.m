@@ -261,7 +261,7 @@ RCS_ID("$Id$");
 - (void)setFrame:(CGRect)newFrame;
 {
     if ([self superview]) {
-        CGPoint origin = [[self superview] convertPoint:[self frame].origin toView:nil];
+        CGPoint origin = [[self superview] convertPoint:newFrame.origin toView:nil];
         origin.x = rint(origin.x);
         origin.y = rint(origin.y);
         origin = [[self superview] convertPoint:origin fromView:nil];
