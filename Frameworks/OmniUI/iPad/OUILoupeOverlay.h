@@ -8,6 +8,7 @@
 // $Id$
 
 #import <UIKit/UIView.h>
+#import <OmniUI/OUILoupeOverlaySubject.h>
 
 typedef enum {
     OUILoupeOverlayNone,
@@ -23,7 +24,7 @@ typedef enum {
     OUILoupeMode _mode;           // What kind of loupe we're displaying
     CGPoint _touchPoint;          // The point (in our subject view's bounds coordinates) to display
     CGFloat _scale;               // How much to magnify the subject view
-    OUIScalingView *subjectView;  // If not set, self.superview is used for the subject of display
+    OUIScalingView <OUILoupeOverlaySubject> *subjectView;  // If not set, self.superview is used for the subject of display
     
     // These are updated based on the mode
     UIImage *loupeFrameImage;   // The border image to draw around the zoomed view region
@@ -35,7 +36,7 @@ typedef enum {
 @property(readwrite,nonatomic,assign) CGPoint touchPoint;
 @property(readwrite,nonatomic,assign) OUILoupeMode mode;
 @property(readwrite,nonatomic,assign) CGFloat scale;
-@property(readwrite,nonatomic,assign) OUIScalingView *subjectView;
+@property(readwrite,nonatomic,assign) OUIScalingView <OUILoupeOverlaySubject> *subjectView;
 
 @end
 

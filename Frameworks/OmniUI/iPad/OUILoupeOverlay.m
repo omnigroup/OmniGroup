@@ -56,7 +56,7 @@ RCS_ID("$Id$");
 
         CGPoint centerPoint = touchPoint;
         if (subjectView)
-            centerPoint = [subjectView convertPoint:centerPoint toView:[self superview]];
+            centerPoint = [(OUIScalingView *)subjectView convertPoint:centerPoint toView:[self superview]];
         
         self.center = centerPoint;
     } else {
@@ -66,7 +66,7 @@ RCS_ID("$Id$");
         newFrame.size = loupeFramePosition.size;
         
         if (subjectView)
-            newFrame = [subjectView convertRect:newFrame toView:[self superview]];
+            newFrame = [(OUIScalingView *)subjectView convertRect:newFrame toView:[self superview]];
         
         self.frame = newFrame;
     }        
@@ -192,7 +192,7 @@ RCS_ID("$Id$");
 {
     CGRect bounds = self.bounds;
     CGContextRef ctx = UIGraphicsGetCurrentContext();
-    OUIScalingView *subject = (subjectView) ? (subjectView) : (OUIScalingView *)(self.superview);
+    OUIScalingView <OUILoupeOverlaySubject> *subject = (subjectView) ? (subjectView) : (OUIScalingView <OUILoupeOverlaySubject> *)(self.superview);
 
     /* First draw the contents of the subject view */
     CGContextSaveGState(ctx);
@@ -202,12 +202,6 @@ RCS_ID("$Id$");
             CGContextBeginPath(ctx);
             CGContextAddPath(ctx, loupeClipPath);
             CGContextClip(ctx);
-        }
-        
-        if (!subject.opaque) {
-            /* Fill with an opaque color, unless the subject view is going to do that for us. */
-            [[UIColor whiteColor] setFill];
-            CGContextFillRect(ctx, bounds);
         }
         
         /* We want the touchPoint in the subject view to end up at our loupeTouchPoint point (typically the center of our loupe clip path). */
@@ -243,6 +237,24 @@ RCS_ID("$Id$");
         if (!CGRectIsEmpty(drawRect)) {
             // Convert the rect to the coordinate system seen by -drawScaledContent:
             drawRect = CGRectApplyAffineTransform(drawRect, CGAffineTransformInvert(loupeTransform));
+            
+            if (!subject.opaque) {
+                if ([subject respondsToSelector:@selector(drawLoupeOverlayBackgroundInRect:)])
+                    [subject drawLoupeOverlayBackgroundInRect:drawRect];
+                else {
+                    UIColor *backgroundColor = nil;
+                    
+                    if ([subject respondsToSelector:@selector(loupeOverlayBackgroundColor)])
+                        backgroundColor = [subject loupeOverlayBackgroundColor];
+
+                    if (!backgroundColor)
+                        backgroundColor = [UIColor whiteColor];
+                    
+                    [backgroundColor setFill];
+                    CGContextFillRect(ctx, drawRect);
+                }
+            }
+            
             [subject drawScaledContent:drawRect];
         }
     }

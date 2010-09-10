@@ -11,6 +11,7 @@
 #import <CoreText/CoreText.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIEditableFrameDelegate.h>
+#import <OmniUI/OUILoupeOverlaySubject.h>
 
 @class NSMutableAttributedString;
 
@@ -19,7 +20,7 @@
 
 @class CALayer, CAShapeLayer;
 
-@interface OUIEditableFrame : OUIScalingView <UIKeyInput, UITextInputTraits, UITextInput, OUIInspectorDelegate>
+@interface OUIEditableFrame : OUIScalingView <UIKeyInput, UITextInputTraits, UITextInput, OUIInspectorDelegate, OUILoupeOverlaySubject>
 {
 @private
     /* The data model: an attributed string, a selection range. */
