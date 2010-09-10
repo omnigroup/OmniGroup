@@ -117,9 +117,6 @@
 @property (nonatomic) UITextAutocorrectionType autocorrectionType;  // defaults to UITextAutocorrectionTypeNo
 @property (nonatomic) UITextAutocapitalizationType autocapitalizationType; // defaults to UITextAutocapitalizationTypeNone
 
-- (UITextRange *)selectedTextRange;
-- (void)setSelectedTextRange:(UITextRange *)newRange;
-
 - (void)setupCustomMenuItemsForMenuController:(UIMenuController *)menuController;
 
 - (OUEFTextRange *)rangeOfLineContainingPosition:(OUEFTextPosition *)posn;
