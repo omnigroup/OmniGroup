@@ -235,7 +235,16 @@ static NSString * const SelectAction = @"select";
             NSURL *newProxyURL = [documentPicker renameProxy:oldProxy toName:newName type:documentType];
             OUIDocumentProxy *newProxy = [documentPicker proxyWithURL:newProxyURL];
             OBASSERT(newProxy);
-            [_document setProxy:newProxy];
+            
+            // <bug://bugs/61021> Code below checks for "/" in the name, but there could still be other renaming problems that we don't know about.
+            if (newProxy == oldProxy) {
+                NSString *msg = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to rename document to \"%@\".", @"OmniUI", OMNI_BUNDLE, @"error when renaming a document"), newName];                
+                NSError *err = [[NSError alloc] initWithDomain:NSURLErrorDomain code:0 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:msg, NSLocalizedDescriptionKey, msg, NSLocalizedFailureReasonErrorKey, nil]];
+                OUI_PRESENT_ERROR(err);
+                [err release];
+            } else {
+                [_document setProxy:newProxy];
+            }
         } else {
             // new document does not have a proxy yet
             NSError *error = nil;
@@ -246,11 +255,9 @@ static NSString * const SelectAction = @"select";
                 NSLog(@"Error renaming unsaved document to %@: %@", [safeURL path], [error toPropertyList]);
             }
             [documentPicker rescanDocuments];
-            
-            NSString *safeName = [[[safeURL path] lastPathComponent] stringByDeletingPathExtension];
-            textField.text = safeName;
         }
         
+        textField.text = [[[[_document url] path] lastPathComponent] stringByDeletingPathExtension];
     }
     
     // UITextField adjusts its recognizers when it starts editing. Put ours back.
@@ -260,6 +267,13 @@ static NSString * const SelectAction = @"select";
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 {
     OBPRECONDITION(textField == _documentTitleTextField);
+    
+    // <bug://bugs/61021>
+    NSRange r = [string rangeOfString:@"/"];
+    if (r.location != NSNotFound) {
+        return NO;
+    }
+    
     return YES;
 }
 
