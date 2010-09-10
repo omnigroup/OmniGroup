@@ -33,7 +33,7 @@ RCS_ID("$Id$");
 
 CTFontRef OUIGlobalDefaultFont(void)
 {
-    CTFontRef globalFont = NULL;
+    static CTFontRef globalFont = NULL;
     if (!globalFont)
         globalFont = CTFontCreateWithName(CFSTR("Helvetica"), 12, NULL);
     return globalFont;
