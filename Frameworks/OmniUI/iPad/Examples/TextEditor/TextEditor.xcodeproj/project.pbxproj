@@ -13,6 +13,7 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
 		28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD733E0D9D9553002E5188 /* MainWindow.xib */; };
+		34132FFB1214584400DDBF3D /* TextScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34132FFA1214584400DDBF3D /* TextScrollView.m */; };
 		342721B01194814200B39788 /* libOmniBase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 342721601194809800B39788 /* libOmniBase.a */; };
 		342721B11194814500B39788 /* libOmniFoundation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34272173119480A700B39788 /* libOmniFoundation.a */; };
 		342721B21194814700B39788 /* libOmniQuartz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3427218A119480B300B39788 /* libOmniQuartz.a */; };
@@ -258,6 +259,8 @@
 		28AD733E0D9D9553002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		32CA4F630368D1EE00C91783 /* TextEditor_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextEditor_Prefix.h; sourceTree = "<group>"; };
+		34132FF91214584400DDBF3D /* TextScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextScrollView.h; sourceTree = "<group>"; };
+		34132FFA1214584400DDBF3D /* TextScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextScrollView.m; sourceTree = "<group>"; };
 		3427212D1194802E00B39788 /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
 		3427212E1194802E00B39788 /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		3427212F1194802E00B39788 /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -359,6 +362,8 @@
 				3459571311949F6100ECB2B6 /* RTFDocument.m */,
 				34D98FAF1194AAE60029EFE3 /* TextViewController.h */,
 				34D98FB01194AAE60029EFE3 /* TextViewController.m */,
+				34132FF91214584400DDBF3D /* TextScrollView.h */,
+				34132FFA1214584400DDBF3D /* TextScrollView.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -823,6 +828,7 @@
 				1D3623260D0F684500981E51 /* AppController.m in Sources */,
 				3459571411949F6100ECB2B6 /* RTFDocument.m in Sources */,
 				34D98FB11194AAE60029EFE3 /* TextViewController.m in Sources */,
+				34132FFB1214584400DDBF3D /* TextScrollView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -8,6 +8,7 @@
 #import "TextViewController.h"
 
 #import <OmniUI/OUIEditableFrame.h>
+#import <QuartzCore/QuartzCore.h>
 
 #import "RTFDocument.h"
 
@@ -49,8 +50,19 @@ RCS_ID("$Id$");
 {
     [super viewDidLoad];
 
+#if 0
+    self.view.layer.borderColor = [[UIColor blueColor] CGColor];
+    self.view.layer.borderWidth = 2;
+    
+    _editor.layer.borderColor = [[UIColor colorWithRed:0.75 green:0.75 blue:1.0 alpha:1.0] CGColor];
+    _editor.layer.borderWidth = 2;
+#endif
+    
+    _editor.textInset = UIEdgeInsetsMake(4, 4, 4, 4);
     _editor.delegate = self;
+    
     _editor.attributedText = _nonretained_document.text;
+    [self textViewContentsChanged:_editor];
     
     [self adjustScaleTo:1];
     [self adjustContentInset];
@@ -63,6 +75,14 @@ RCS_ID("$Id$");
 }
 
 #pragma mark OUIEditableFrameDelegate
+
+static CGFloat kPageWidth = (72*8.5); // Vaguely something like 8.5x11 width.
+
+- (void)textViewContentsChanged:(OUIEditableFrame *)textView;
+{
+    CGFloat usedHeight = _editor.viewUsedSize.height;
+    _editor.frame = CGRectMake(0, 0, kPageWidth, usedHeight);
+}
 
 - (void)textViewDidEndEditing:(OUIEditableFrame *)textView;
 {
@@ -79,7 +99,7 @@ RCS_ID("$Id$");
         return CGSizeZero; // Don't know our canvas size yet. We'll set up initial scaling in -viewDidLoad.
     
     CGSize size;
-    size.width = _editor.frame.size.width;
+    size.width = kPageWidth;
     size.height = _editor.textUsedSize.height;
 
     return size;

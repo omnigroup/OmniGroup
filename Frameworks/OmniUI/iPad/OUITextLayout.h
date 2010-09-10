@@ -33,6 +33,10 @@
 @end
 
 extern CGRect OUITextLayoutMeasureFrame(CTFrameRef frame, BOOL includeTrailingWhitespace);
+extern CGPoint OUITextLayoutOrigin(CGRect typographicFrame, UIEdgeInsets textInset, // in text coordinates
+                                   CGRect bounds, // view rect we want to draw in
+                                   CGFloat scale); // scale factor from text to view
+extern void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, CGPoint layoutOrigin);
 extern void OUITextLayoutFixupParagraphStyles(NSMutableAttributedString *content);
 
 extern CTFontRef OUIGlobalDefaultFont(void);

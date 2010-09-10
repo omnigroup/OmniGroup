@@ -134,6 +134,9 @@ static id do_init(OUIEditableFrame *self)
     self->selectionDirtyRect = CGRectNull;
     self->markedTextDirtyRect = CGRectNull;
     
+    // Avoid ugly stretchy text
+    self.contentMode = UIViewContentModeTopLeft;
+
     self->_linkTextAttributes = [[OUITextLayout defaultLinkTextAttributes] copy];
     
     self.autocapitalizationType = UITextAutocapitalizationTypeNone;
@@ -1016,11 +1019,7 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     
     [self _drawSelectionInContext:ctx];
     
-    CGContextTranslateCTM(ctx, layoutOrigin.x, layoutOrigin.y);
-    CGContextSetTextPosition(ctx, 0, 0);
-    CGContextSetTextMatrix(ctx, CGAffineTransformIdentity);
-    CTFrameDraw(drawnFrame, ctx);
-    CGContextTranslateCTM(ctx, -layoutOrigin.x, -layoutOrigin.y);
+    OUITextLayoutDrawFrame(ctx, drawnFrame, self.bounds, layoutOrigin);
     
     [self _drawDecorations:ctx];
 }
@@ -3242,9 +3241,10 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
     
     while (computeDrawnFrame && !drawnFrame) {
         CGMutablePathRef path = CGPathCreateMutable();
-        
+        CGRect bounds = self.bounds;
+
         // Default to filling our bounds width and growing "infinitely" high.
-        CGSize frameSize = self.bounds.size;
+        CGSize frameSize = bounds.size;
         const CGFloat kUnlimitedSize = 10000;
         
         if (CGSizeEqualToSize(layoutSize, CGSizeZero)) {
@@ -3268,11 +3268,12 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
         }
         
         // Adjust from UIView coordinates to CoreGraphics rendering coordinates.
-        CGFloat invScale = 1.0/self.scale;
+        CGFloat scale = self.scale;
+        CGFloat invScale = 1.0/scale;
         frameSize.width *= invScale;
         frameSize.height *= invScale;
         
-        DEBUG_TEXT(@"  Laying out with bounds %@, CG size %@", NSStringFromCGRect(self.bounds), NSStringFromCGSize(frameSize));
+        DEBUG_TEXT(@"  Laying out with bounds %@, CG size %@", NSStringFromCGRect(bounds), NSStringFromCGSize(frameSize));
         
         CGPathAddRect(path, NULL, CGRectMake(0, 0, frameSize.width, frameSize.height));
         
@@ -3283,11 +3284,8 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
         // Calculate the used size (ignoring the text inset, if any).
         CGRect typographicFrame = OUITextLayoutMeasureFrame(drawnFrame, YES);
         _usedSize = typographicFrame.size;
-        // And compute the layout origin
-        layoutOrigin.x = - typographicFrame.origin.x;
-        layoutOrigin.y = - typographicFrame.origin.y;
-        layoutOrigin.x += textInset.left;
-        layoutOrigin.y += textInset.top;
+        
+        layoutOrigin = OUITextLayoutOrigin(typographicFrame, textInset, bounds, scale);
         
         if (flags.delegateRespondsToLayoutChanged)
             [delegate textViewLayoutChanged:self];

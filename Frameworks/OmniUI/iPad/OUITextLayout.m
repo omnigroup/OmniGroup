@@ -108,10 +108,13 @@ CTFontRef OUIGlobalDefaultFont(void)
 
 - (void)drawInContext:(CGContextRef)ctx;
 {
-    CGContextTranslateCTM(ctx, - _usedSize.origin.x, - _usedSize.origin.y);
-    CGContextSetTextPosition(ctx, 0, 0);
-    CGContextSetTextMatrix(ctx, CGAffineTransformIdentity);
-    CTFrameDraw(_frame, ctx);
+    CGRect bounds;
+    bounds.origin = CGPointZero;
+    bounds.size = _usedSize.size;
+    
+    CGPoint layoutOrigin = OUITextLayoutOrigin(_usedSize, UIEdgeInsetsZero, bounds, 1.0f);
+    
+    OUITextLayoutDrawFrame(ctx, _frame, bounds, layoutOrigin);
 }
 
 #if 0
@@ -194,6 +197,40 @@ CGRect OUITextLayoutMeasureFrame(CTFrameRef frame, BOOL includeTrailingWhitespac
     } else {
         return CGRectNull;
     }
+}
+
+CGPoint OUITextLayoutOrigin(CGRect typographicFrame, UIEdgeInsets textInset, // in text coordinates
+                            CGRect bounds, // view rect we want to draw in
+                            CGFloat scale) // scale factor from text to view
+{
+    // We don't offset the layoutOrigin for a non-zero bounds origin.
+    OBASSERT(CGPointEqualToPoint(bounds.origin, CGPointZero));
+    
+    CGPoint layoutOrigin;
+    
+    // And compute the layout origin, pinning the text to the *top* of the view
+    layoutOrigin.x = - typographicFrame.origin.x;
+    layoutOrigin.y = CGRectGetMaxY(bounds) / scale - CGRectGetMaxY(typographicFrame);
+    layoutOrigin.x += textInset.left;
+    layoutOrigin.y -= textInset.top;
+    
+    // Lessens jumpiness when transitioning between a OUITextLayout for display and OUIEditableFrame for editing. But, it seems weird to be rounding in text space instead of view space. Maybe works out since we end up having to draw at pixel-side for UIKit backing store anyway. Still some room for improvement here.
+//    layoutOrigin.x = floor(layoutOrigin.x);
+//    layoutOrigin.y = floor(layoutOrigin.y);
+    
+    return layoutOrigin;
+}
+
+void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, CGPoint layoutOrigin)
+{
+    CGContextSetTextPosition(ctx, 0, 0);
+    CGContextSetTextMatrix(ctx, CGAffineTransformIdentity);
+    
+    CGContextTranslateCTM(ctx, layoutOrigin.x, layoutOrigin.y);
+        
+    CTFrameDraw(frame, ctx);
+
+    CGContextTranslateCTM(ctx, -layoutOrigin.x, -layoutOrigin.y);
 }
 
 /* Fix up paragraph styles. We want any paragraph to have only one paragraph style associated with it. */
