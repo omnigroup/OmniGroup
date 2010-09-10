@@ -16,6 +16,8 @@ RCS_ID("$Id$");
 static id _commonInit(OUIScalingScrollView *self)
 {
     self->_allowedEffectiveScaleExtent = OFExtentMake(1, 8);
+    self->_centerContent = YES;
+    
     return self;
 }
 
@@ -102,10 +104,11 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     [view scaleChanged];
 }
 
+@synthesize centerContent = _centerContent;
 - (void)adjustContentInset;
 {
     OUIScalingView *view = _scalingView(self);
-    if (!view)
+    if (!view || !_centerContent)
         return;
     
     // If the contained view has a size smaller than the scroll view, it will get pinned to the upper left.

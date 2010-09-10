@@ -14,9 +14,11 @@
 {
 @private
     OFExtent _allowedEffectiveScaleExtent;
+    BOOL _centerContent;
 }
 
 @property(assign,nonatomic) OFExtent allowedEffectiveScaleExtent;
+@property (assign) BOOL centerContent;
 
 - (CGFloat)fullScreenScaleForCanvasSize:(CGSize)canvasSize;
 
