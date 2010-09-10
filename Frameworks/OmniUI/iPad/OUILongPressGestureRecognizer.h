@@ -16,6 +16,7 @@
     CGFloat hysteresisDistance;
     BOOL overcameHysteresis;
     
+    // Points stored in window coordinates
     CGPoint firstTouchPoint;
     CGPoint lastTouchPoint;
     
@@ -30,6 +31,8 @@
 
 @property (readonly, nonatomic) NSTimeInterval latestTimestamp;  // Provides precise timing suitable for use in stroke recognition algorithms
 @property (readonly, nonatomic) NSTimeInterval gestureDuration;  // The length of time the gesture was in progress.  Only valid after the gesture has finished (ended or cancelled).
+
+- (CGPoint)cumulativeOffsetInView:(UIView *)view;
 
 - (void)resetHysteresis;
 

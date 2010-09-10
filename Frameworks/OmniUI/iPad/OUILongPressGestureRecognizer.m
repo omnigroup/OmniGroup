@@ -92,5 +92,14 @@ RCS_ID("$Id$")
     firstTouchPoint = lastTouchPoint;
 }
 
+- (CGPoint)cumulativeOffsetInView:(UIView *)view;
+{
+    UIWindow *window = self.view.window;
+    
+    CGPoint startPoint = [view convertPoint:firstTouchPoint fromView:window];
+    CGPoint endPoint = [view convertPoint:lastTouchPoint fromView:window];
+    
+    return CGPointMake(endPoint.x - startPoint.x, endPoint.y - startPoint.y);
+}
 
 @end
