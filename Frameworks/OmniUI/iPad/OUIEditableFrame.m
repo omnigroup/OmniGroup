@@ -1141,7 +1141,8 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     if (selection != nil && ![selection isEmpty])
         flags.showingEditMenu = 1;
     BOOL suppressContextMenu = (_loupe != nil && _loupe.mode != OUILoupeOverlayNone) ||
-                               (_textInspector != nil && _textInspector.isVisible);
+                                (_textInspector != nil && _textInspector.isVisible) ||
+                                (delegate && [delegate respondsToSelector:@selector(textViewCanShowContextMenu:)] && ![delegate textViewCanShowContextMenu:self]);
     if (!flags.showingEditMenu || suppressContextMenu || !amFirstResponder) {
         if (_selectionContextMenu) {
             [_selectionContextMenu setMenuVisible:NO animated:( suppressContextMenu? NO : YES )];
