@@ -36,6 +36,7 @@ typedef enum {
 }
 
 // Convenience methods for creating temporary overlays.  Pass 0 as the displayInterval to use the default delay.
++ (OUIOverlayView *)sharedTemporaryOverlay;
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string avoidingTouchPoint:(CGPoint)touchPoint;
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAtPoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval;
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string centeredAbovePoint:(CGPoint)touchPoint displayInterval:(NSTimeInterval)displayInterval;
@@ -45,6 +46,7 @@ typedef enum {
 - (void)displayTemporarilyInView:(UIView *)view;
 - (void)displayInView:(UIView *)view;
 - (void)hide;
+- (void)hideAnimated:(BOOL)animated;
 
 - (CGSize)suggestedSize;
 - (void)useSuggestedSize;

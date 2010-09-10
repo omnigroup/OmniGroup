@@ -11,12 +11,27 @@
 
 RCS_ID("$Id$");
 
+
+@interface OUIOverlayView (/*Private*/)
+- (void)_hideOverlayEffectDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
+@end
+
+
 @implementation OUIOverlayView
 
 #pragma mark -
 #pragma mark Convenience methods
 
 static OUIOverlayView *_overlayView = nil;
+
++ (OUIOverlayView *)sharedTemporaryOverlay;
+{
+    if (!_overlayView) {
+        _overlayView = [[OUIOverlayView alloc] initWithFrame:CGRectMake(300, 100, 200, 26)];
+    }
+    
+    return _overlayView;
+}
 
 + (void)displayTemporaryOverlayInView:(UIView *)view withString:(NSString *)string avoidingTouchPoint:(CGPoint)touchPoint;
 {
@@ -120,6 +135,13 @@ static OUIOverlayView *_overlayView = nil;
     _overlayTimer = [NSTimer scheduledTimerWithTimeInterval:self.messageDisplayInterval target:self selector:@selector(_temporaryOverlayTimerFired:) userInfo:nil repeats:NO];
 }
 
+- (void)_temporaryOverlayTimerFired:(NSTimer *)timer;
+{
+    _overlayTimer = nil;
+    
+    [self hide];
+}
+
 - (void)displayInView:(UIView *)view;
 {
     shouldHide = NO;
@@ -139,6 +161,23 @@ static OUIOverlayView *_overlayView = nil;
 
 - (void)hide;
 {
+    [self hideAnimated:YES];
+}
+
+- (void)hideAnimated:(BOOL)animated;
+{
+    if (!animated) {
+        // Hide immediately and cancel any timers in progress
+        if (_overlayTimer) {
+            [_overlayTimer invalidate];
+            _overlayTimer = nil;
+        }
+        shouldHide = YES;
+        self.alpha = 0;
+        [self _hideOverlayEffectDidStop:nil finished:nil context:NULL];
+        return;
+    }
+    
     // Don't repeat if already in the process of hiding
     if (shouldHide)
         return;
@@ -154,13 +193,6 @@ static OUIOverlayView *_overlayView = nil;
         [UIView setAnimationDidStopSelector:@selector(_hideOverlayEffectDidStop:finished:context:)];
     }
     [UIView commitAnimations];
-}
-
-- (void)_temporaryOverlayTimerFired:(NSTimer *)timer;
-{
-    _overlayTimer = nil;
-    
-    [self hide];
 }
 
 - (void)_hideOverlayEffectDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
