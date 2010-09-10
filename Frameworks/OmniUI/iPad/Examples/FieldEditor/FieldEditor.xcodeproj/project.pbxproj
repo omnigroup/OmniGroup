@@ -39,217 +39,217 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE01214773400BE430C /* OmniBase.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4A33D42808A0191B003A3FA5 /* OmniBase.framework */;
+			remoteGlobalIDString = 4A33D42808A0191B003A3FA5;
 			remoteInfo = OmniBase;
 		};
 		34ECCBF51214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE01214773400BE430C /* OmniBase.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 34778CD211810BE700EC28C1 /* OBLoadBundle */;
+			remoteGlobalIDString = 34778CD211810BE700EC28C1;
 			remoteInfo = OBLoadBundle;
 		};
 		34ECCBF71214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE01214773400BE430C /* OmniBase.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 342163B211907BF600C06E45 /* libOmniBase.a */;
+			remoteGlobalIDString = 342163B211907BF600C06E45;
 			remoteInfo = OmniBaseTouch;
 		};
 		34ECCBF91214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE01214773400BE430C /* OmniBase.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 340115B011E515790016ADB3 /* libOmniBaseTouchTests.a */;
+			remoteGlobalIDString = 340115B011E515790016ADB3;
 			remoteInfo = OmniBaseTouchTests;
 		};
 		34ECCC061214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4A4E075308AA72B10098FF0F /* OmniFoundation.framework */;
+			remoteGlobalIDString = 4A4E075308AA72B10098FF0F;
 			remoteInfo = OmniFoundation;
 		};
 		34ECCC081214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 344D08BA1190D47300264D89 /* libOmniFoundation.a */;
+			remoteGlobalIDString = 344D08BA1190D47300264D89;
 			remoteInfo = OmniFoundationTouch;
 		};
 		34ECCC0A1214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 340115D411E515DB0016ADB3 /* libOmniFoundationTouchTests.a */;
+			remoteGlobalIDString = 340115D411E515DB0016ADB3;
 			remoteInfo = OmniFoundationTouchTests;
 		};
 		34ECCC0C1214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4A4E07CF08AA72B10098FF0F /* OFUnitTests.octest */;
+			remoteGlobalIDString = 4A4E07CF08AA72B10098FF0F;
 			remoteInfo = OFUnitTests;
 		};
 		34ECCC0E1214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4A4E077408AA72B10098FF0F /* OFSimpleLockTest */;
+			remoteGlobalIDString = 4A4E077408AA72B10098FF0F;
 			remoteInfo = OFSimpleLockTest;
 		};
 		34ECCC101214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4A4E079608AA72B10098FF0F /* OFDedicatedThreadSchedulerTest */;
+			remoteGlobalIDString = 4A4E079608AA72B10098FF0F;
 			remoteInfo = OFDedicatedThreadSchedulerTest;
 		};
 		34ECCC121214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4A4E07A608AA72B10098FF0F /* OFClobberDetectionTest */;
+			remoteGlobalIDString = 4A4E07A608AA72B10098FF0F;
 			remoteInfo = OFClobberDetectionZoneTest;
 		};
 		34ECCC141214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4A4E07DF08AA72B10098FF0F /* OFMainThreadLockTest */;
+			remoteGlobalIDString = 4A4E07DF08AA72B10098FF0F;
 			remoteInfo = OFMainThreadLockTest;
 		};
 		34ECCC161214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 345069110D747ED4004B40C2 /* OFCrashOnExceptionTest */;
+			remoteGlobalIDString = 345069110D747ED4004B40C2;
 			remoteInfo = OFCrashOnExceptionTest;
 		};
 		34ECCC181214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 343B36341034F68F0006290A /* OFRandomRepeatTest */;
+			remoteGlobalIDString = 343B36341034F68F0006290A;
 			remoteInfo = OFRandomRepeatTest;
 		};
 		34ECCC1C1214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE61214773400BE430C /* OmniQuartz.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 8DC2EF5B0486A6940098B216 /* OmniQuartz.framework */;
+			remoteGlobalIDString = 8DC2EF5B0486A6940098B216;
 			remoteInfo = OmniQuartz;
 		};
 		34ECCC1E1214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE61214773400BE430C /* OmniQuartz.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 345613D41193197700E7D187 /* libOmniQuartz.a */;
+			remoteGlobalIDString = 345613D41193197700E7D187;
 			remoteInfo = OmniQuartzTouch;
 		};
 		34ECCC261214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE91214773400BE430C /* OmniAppKit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */;
+			remoteGlobalIDString = 4AA1E7F908AA764600E2FF6B;
 			remoteInfo = "OmniAppKit (Framework)";
 		};
 		34ECCC281214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE91214773400BE430C /* OmniAppKit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */;
+			remoteGlobalIDString = 4AA1E81108AA764700E2FF6B;
 			remoteInfo = OAUnitTests;
 		};
 		34ECCC2A1214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE91214773400BE430C /* OmniAppKit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */;
+			remoteGlobalIDString = 4AA1E81E08AA764700E2FF6B;
 			remoteInfo = OAMakeImageSizeIntegral;
 		};
 		34ECCC2C1214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE91214773400BE430C /* OmniAppKit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4AA1E82C08AA764700E2FF6B /* OAPatternColorPicker.bundle */;
+			remoteGlobalIDString = 4AA1E82C08AA764700E2FF6B;
 			remoteInfo = OAPatternColorPicker;
 		};
 		34ECCC2E1214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE91214773400BE430C /* OmniAppKit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 3434791511923B54007D0CE5 /* libOmniAppKit.a */;
+			remoteGlobalIDString = 3434791511923B54007D0CE5;
 			remoteInfo = OmniAppKitTouch;
 		};
 		34ECCC301214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE91214773400BE430C /* OmniAppKit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 3401163511E5181A0016ADB3 /* libOmniAppKitTouchTests.a */;
+			remoteGlobalIDString = 3401163511E5181A0016ADB3;
 			remoteInfo = OmniAppKitTouchTests;
 		};
 		34ECCC331214773400BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBEC1214773400BE430C /* OmniUI.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = D2AAC07E0554694100DB518D /* libOmniUI.a */;
+			remoteGlobalIDString = D2AAC07E0554694100DB518D;
 			remoteInfo = OmniUITouch;
 		};
 		34ECCC35121477DC00BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE61214773400BE430C /* OmniQuartz.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 345613D31193197700E7D187 /* OmniQuartzTouch */;
+			remoteGlobalIDString = 345613D31193197700E7D187;
 			remoteInfo = OmniQuartzTouch;
 		};
 		34ECCC37121477DC00BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBEC1214773400BE430C /* OmniUI.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = D2AAC07D0554694100DB518D /* OmniUITouch */;
+			remoteGlobalIDString = D2AAC07D0554694100DB518D;
 			remoteInfo = OmniUITouch;
 		};
 		34ECCC39121477DC00BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE91214773400BE430C /* OmniAppKit.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 3434791411923B54007D0CE5 /* OmniAppKitTouch */;
+			remoteGlobalIDString = 3434791411923B54007D0CE5;
 			remoteInfo = OmniAppKitTouch;
 		};
 		34ECCC3B121477DC00BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE91214773400BE430C /* OmniAppKit.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 3401163411E5181A0016ADB3 /* OmniAppKitTouchTests */;
+			remoteGlobalIDString = 3401163411E5181A0016ADB3;
 			remoteInfo = OmniAppKitTouchTests;
 		};
 		34ECCC3D121477DC00BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE01214773400BE430C /* OmniBase.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 342163B111907BF600C06E45 /* OmniBaseTouch */;
+			remoteGlobalIDString = 342163B111907BF600C06E45;
 			remoteInfo = OmniBaseTouch;
 		};
 		34ECCC3F121477DC00BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE01214773400BE430C /* OmniBase.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 340115AF11E515790016ADB3 /* OmniBaseTouchTests */;
+			remoteGlobalIDString = 340115AF11E515790016ADB3;
 			remoteInfo = OmniBaseTouchTests;
 		};
 		34ECCC41121477DC00BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 344D08B91190D47300264D89 /* OmniFoundationTouch */;
+			remoteGlobalIDString = 344D08B91190D47300264D89;
 			remoteInfo = OmniFoundationTouch;
 		};
 		34ECCC43121477DC00BE430C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ECCBE31214773400BE430C /* OmniFoundation.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 340115D311E515DB0016ADB3 /* OmniFoundationTouchTests */;
+			remoteGlobalIDString = 340115D311E515DB0016ADB3;
 			remoteInfo = OmniFoundationTouchTests;
 		};
 /* End PBXContainerItemProxy section */
@@ -591,7 +591,14 @@
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "FieldEditor" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
 			projectDirPath = "";
 			projectReferences = (
