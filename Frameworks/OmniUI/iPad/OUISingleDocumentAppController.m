@@ -638,6 +638,12 @@ static NSString * const SelectAction = @"select";
 - (void)_handleTitleDoubleTapGesture:(UIGestureRecognizer*)gestureRecognizer;
 {
     OBASSERT(gestureRecognizer.view == _documentTitleTextField);
+    
+    // Switch to a white background while editing so that the text loupe will work properly.
+    [_documentTitleTextField setTextColor:[UIColor blackColor]];
+    [_documentTitleTextField setBackgroundColor:[UIColor whiteColor]];
+    _documentTitleTextField.borderStyle = UITextBorderStyleBezel;
+    
     [_documentTitleTextField becomeFirstResponder];
 }
 
@@ -657,6 +663,11 @@ static NSString * const SelectAction = @"select";
     
     [_documentTitleTextField addGestureRecognizer:titleTextFieldTap];
     [_documentTitleTextField addGestureRecognizer:titleTextFieldDoubleTap];
+    
+    // Restore the regular colors of the text field.
+    [_documentTitleTextField setTextColor:[UIColor whiteColor]];
+    [_documentTitleTextField setBackgroundColor:[UIColor clearColor]];
+    _documentTitleTextField.borderStyle = UITextBorderStyleNone;
 }
 
 @end
