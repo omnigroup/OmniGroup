@@ -248,14 +248,14 @@ static void _checkSignaturesVsSuperclass(Class cls, Method *methods, unsigned in
                 NSString *methodInfo = describeMethod(method, &nonSystem);
                 NSString *superMethodInfo = describeMethod(superMethod, &nonSystem);
                 if (nonSystem || OBReportWarningsInSystemLibraries) {
-                    const char *normalizedSig = _copyNormalizeMethodSignature(types);
-                    const char *normalizedSigSuper = _copyNormalizeMethodSignature(superTypes);
+                    char *normalizedSig = _copyNormalizeMethodSignature(types);
+                    char *normalizedSigSuper = _copyNormalizeMethodSignature(superTypes);
                     NSLog(@"Method %s has conflicting type signatures between class and its superclass:\n\tsignature %s for class %s has %@\n\tsignature %s for class %s has %@",
                           sel_getName(sel),
                           normalizedSig, class_getName(cls), methodInfo,
                           normalizedSigSuper, class_getName(superClass), superMethodInfo);
-                    free((void *)normalizedSig);
-                    free((void *)normalizedSigSuper);
+                    free(normalizedSig);
+                    free(normalizedSigSuper);
                     MethodSignatureConflictCount++;
                 } else {
                     SuppressedConflictCount++;
@@ -263,8 +263,8 @@ static void _checkSignaturesVsSuperclass(Class cls, Method *methods, unsigned in
             }
             
             if (freeSignatures) {
-                free((char *)types);
-                free((char *)superTypes);
+                free((void *)types);
+                free((void *)superTypes);
             }
         }
     }
@@ -291,11 +291,25 @@ static void _checkMethodInClassVsMethodInProtocol(Class cls, Protocol *protocol,
     
     const char *types = method_getTypeEncoding(m);
     if (!_methodSignaturesCompatible(cls, sel, types, desc.types)) {
-        NSLog(@"Method %s has type signatures conflicting with adopted protocol\n\tnormalized %s original %s(%s)\n\tnormalized %s original %s(%s)!",
-	      sel_getName(sel),
-	      _copyNormalizeMethodSignature(types), types, class_getName(cls),
-	      _copyNormalizeMethodSignature(desc.types), desc.types, protocol_getName(protocol));
-        MethodSignatureConflictCount++;
+        BOOL nonSystem = NO;
+        NSString *methodInfo = describeMethod(m, &nonSystem);
+        
+        if (nonSystem || OBReportWarningsInSystemLibraries) {
+            char *normalizedSig = _copyNormalizeMethodSignature(types);
+            char *normalizedSigProtocol = _copyNormalizeMethodSignature(desc.types);
+            
+            NSLog(@"Method %s has conflicting type signatures between class and its adopted protocol:\n\tsignature %s for class %s has %@\n\tsignature %s for protocol %s",
+                  sel_getName(sel),
+                  normalizedSig, class_getName(cls), methodInfo,
+                  normalizedSigProtocol, protocol_getName(protocol));
+            
+            free(normalizedSig);
+            free(normalizedSigProtocol);
+        
+            MethodSignatureConflictCount++;
+        } else {
+            SuppressedConflictCount++;
+        }
     }
 }
 
