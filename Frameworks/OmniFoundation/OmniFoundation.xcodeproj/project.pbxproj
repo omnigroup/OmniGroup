@@ -2829,7 +2829,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 4AD1C16408A9803A00C087FE /* Build configuration list for PBXProject "OmniFoundation" */;
 			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 00E51C5CFE8AAEA611C9CC38 /* OmniFoundation */;
 			projectDirPath = "";
 			projectRoot = "";
