@@ -70,18 +70,21 @@ static FontSelection _collectSelection(OUIInspectorSlice *self, NSSet *objects)
 
 // CTFontCreateWithName can end up loading the font off disk, and if this is the only reference, it can do it each time we call this (like when we are reloading in the font family table).
 // Cache the display name for each font to avoid this.
-static NSString *_displayNameForFont(UIFont *font)
+static NSString *_displayNameForFont(UIFont *font, BOOL useFamilyName)
 {
     if (!font)
         return @"???";
     
     static NSMutableDictionary *fontNameToDisplayName = nil;
+    static NSMutableDictionary *familyNameToDisplayName = nil;
     
-    if (!fontNameToDisplayName)
+    if (!fontNameToDisplayName) {
         fontNameToDisplayName = [[NSMutableDictionary alloc] init];
+        familyNameToDisplayName = [[NSMutableDictionary alloc] init];
+    }
 
     NSString *fontName = font.fontName;
-    NSString *cachedDisplayName = [fontNameToDisplayName objectForKey:fontName];
+    NSString *cachedDisplayName = (useFamilyName) ? [familyNameToDisplayName objectForKey:font.familyName] : [fontNameToDisplayName objectForKey:font.fontName];
     if (cachedDisplayName)
         return cachedDisplayName;
     
@@ -91,7 +94,13 @@ static NSString *_displayNameForFont(UIFont *font)
         return @"???";
     }
     
-    CFStringRef displayName = CTFontCopyDisplayName(fontRef);
+    CFStringRef displayName = nil;
+    
+    if (useFamilyName) 
+        displayName = CTFontCopyLocalizedName(fontRef, kCTFontFamilyNameKey, NULL);
+    else
+        displayName = CTFontCopyDisplayName(fontRef);
+    
     CFRelease(fontRef);
     
     OBASSERT(displayName);
@@ -99,7 +108,11 @@ static NSString *_displayNameForFont(UIFont *font)
         displayName = CFStringCreateCopy(kCFAllocatorDefault, (CFStringRef)font.familyName);
     
     cachedDisplayName = [NSMakeCollectable(displayName) autorelease];
-    [fontNameToDisplayName setObject:cachedDisplayName forKey:fontName];
+    if (useFamilyName)
+        [fontNameToDisplayName setObject:cachedDisplayName forKey:font.familyName];
+    else
+        [familyNameToDisplayName setObject:cachedDisplayName forKey:fontName];
+    
     return cachedDisplayName;
 }
 
@@ -393,7 +406,7 @@ static NSString * const ItemIdentifier = @"identifier"; // reuse identifier
 
 static NSMutableDictionary *_itemForFont(UIFont *font, BOOL selected, BOOL isFaceName)
 {
-    NSString *displayName = _displayNameForFont(font);
+    NSString *displayName = _displayNameForFont(font, !isFaceName);
     
     NSMutableDictionary *item = [NSMutableDictionary dictionary];
     [item setObject:displayName forKey:ItemDisplayName];
@@ -485,7 +498,7 @@ static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
             UIFont *baseFont = _baseFontForFamily(family);
             if (!baseFont)
                 continue;
-            NSString *baseDisplayName = _displayNameForFont(baseFont);
+            NSString *baseDisplayName = _displayNameForFont(baseFont, YES);
 
             NSArray *variantNames = [UIFont fontNamesForFamilyName:family];
             for (NSString *name in variantNames) {
