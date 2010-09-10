@@ -13,6 +13,8 @@
 
 RCS_ID("$Id$");
 
+NSString * const OUIUndoPopoverWillShowNotification = @"OUIUndoPopoverWillShowNotification";
+
 // We don't implement this, but UIBarButtonItem doesn't declare that is does (though it really does). If UIBarButtonItem doesn't implement coder later, then our subclass method will never get called and we'll never fail on the call to super.
 @interface UIBarButtonItem (NSCoding) <NSCoding>
 @end
@@ -176,6 +178,12 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     OBPRECONDITION(!note || ([note object] == _undoManager));
     
     // We just use the undo manager notifications to determine *when* to ask the target whether it can undo/redo. Likely the target will just use -[NSUndoManager can{Undo,Redo}], but in some cases it might have additional restrictions.
+    
+    if (note && 
+        [[note name] isEqualToString:NSUndoManagerWillCloseUndoGroupNotification] &&
+        [_undoManager groupingLevel] > 1) {
+        return;
+    }
     
     BOOL enabled = [self isEnabled];
 

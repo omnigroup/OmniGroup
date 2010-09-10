@@ -78,6 +78,8 @@ RCS_ID("$Id$");
     
     [self _updateButtonStates];
     
+    [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoPopoverWillShowNotification object:self];
+    
     [_menuPopoverController presentPopoverFromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 

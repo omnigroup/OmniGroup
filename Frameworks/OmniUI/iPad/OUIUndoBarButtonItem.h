@@ -9,6 +9,8 @@
 
 #import <UIKit/UIBarButtonItem.h>
 
+extern NSString * const OUIUndoPopoverWillShowNotification;
+
 @class OUIUndoButtonController, OUIUndoButton;
 
 @protocol OUIUndoBarButtonItemTarget
