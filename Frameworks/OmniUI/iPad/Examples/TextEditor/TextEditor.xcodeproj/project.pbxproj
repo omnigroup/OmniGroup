@@ -226,6 +226,13 @@
 			remoteGlobalIDString = 340115D311E515DB0016ADB3;
 			remoteInfo = OmniFoundationTouchTests;
 		};
+		34A29220127DE70000C8D74A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3427219D119480CE00B39788 /* OmniUI.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D2AAC07D0554694100DB518D;
+			remoteInfo = OmniUITouch;
+		};
 		34C6FE3B11E644A600496375 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 342721571194809800B39788 /* OmniBase.xcodeproj */;
@@ -579,6 +586,7 @@
 				342721AC119480E000B39788 /* PBXTargetDependency */,
 				342721A4119480E000B39788 /* PBXTargetDependency */,
 				34656A8C11E649E2003D2FD1 /* PBXTargetDependency */,
+				34A29221127DE70000C8D74A /* PBXTargetDependency */,
 			);
 			name = TextEditor;
 			productName = TextEditor;
@@ -592,7 +600,14 @@
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TextEditor" */;
 			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
 			projectDirPath = "";
 			projectReferences = (
@@ -870,6 +885,11 @@
 			name = OmniFoundationTouchTests;
 			targetProxy = 34656A8D11E649E2003D2FD1 /* PBXContainerItemProxy */;
 		};
+		34A29221127DE70000C8D74A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniUITouch;
+			targetProxy = 34A29220127DE70000C8D74A /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -909,7 +929,6 @@
 			baseConfigurationReference = 3427213B1194802E00B39788 /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				SDKROOT = iphoneos3.2;
 			};
 			name = Debug;
 		};
@@ -918,7 +937,6 @@
 			baseConfigurationReference = 3427213C1194802E00B39788 /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				SDKROOT = iphoneos3.2;
 			};
 			name = Release;
 		};
