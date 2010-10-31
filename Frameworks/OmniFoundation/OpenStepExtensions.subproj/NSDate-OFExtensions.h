@@ -49,7 +49,7 @@
 // For old versions of Foundation w/o -dateByAddingTimeInterval:.
 static inline NSDate *OFDateByAddingTimeInterval(NSDate *date, NSTimeInterval interval)
 {
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE && (!defined(__IPHONE_4_0) || __IPHONE_4_0 > __IPHONE_OS_VERSION_MIN_REQUIRED)
     return [date addTimeInterval:interval];
 #else
     return [date dateByAddingTimeInterval:interval];

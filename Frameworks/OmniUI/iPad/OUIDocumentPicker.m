@@ -150,7 +150,18 @@ static void _addPushAndFadeAnimations(OUIDocumentPicker *self, BOOL fade, Animat
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSString *sampleDocumentsDirectory = [[self class] sampleDocumentsDirectory];
     NSString *userDocumentsDirectory = [[self class] userDocumentsDirectory];
+    
+#if defined(__IPHONE_4_0) && (__IPHONE_4_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
+    NSError *error = nil;
+    NSArray *fileNames = [fileManager contentsOfDirectoryAtPath:sampleDocumentsDirectory error:&error];
+    if (!fileNames) {
+        NSLog(@"Unable to find sample documents at %@: %@", sampleDocumentsDirectory, [error toPropertyList]);
+        return;
+    }
+#else
     NSArray *fileNames = [fileManager directoryContentsAtPath:sampleDocumentsDirectory];
+#endif    
+    
     for (NSString *fileName in fileNames) {
         NSString *samplePath = [sampleDocumentsDirectory stringByAppendingPathComponent:fileName];
         NSString *documentPath = [userDocumentsDirectory stringByAppendingPathComponent:fileName];
@@ -1386,7 +1397,16 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
         while ([scanDirectories count] != 0) {
             NSString *scanDirectory = [scanDirectories lastObject]; // We're building a set, and it's faster to remove the last object than the first
             [scanDirectories removeLastObject];
+            
+#if __IPHONE_4_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED
+            NSError *error = nil;
+            NSArray *fileNames = [fileManager contentsOfDirectoryAtPath:scanDirectory error:&error];
+            if (!fileNames)
+                NSLog(@"Unable to scan documents in %@: %@", scanDirectory, [error toPropertyList]);
+#else
             NSArray *fileNames = [fileManager directoryContentsAtPath:scanDirectory];
+#endif
+
             for (NSString *fileName in fileNames) {
                 NSString *fileExtension = [fileName pathExtension];
                 NSString *uti = [(NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)fileExtension, NULL) autorelease];
