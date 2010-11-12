@@ -9,27 +9,23 @@
 
 #import <Foundation/NSObject.h>
 #import <AppKit/NSNibDeclarations.h>
+#import <OmniSoftwareUpdate/OSUCheckerTarget.h>
 
-@class NSDictionary;
+@class NSDictionary, NSURL, NSError;
 @class NSButton, NSImageView, NSPanel, NSTextField, NSTextView, NSWindow;
 @class OSUDownloadController, OSUItem, OSUCheckOperation;
 
-typedef enum _OSUPrivacyNoticeResult {
-    OSUPrivacyNoticeResultOK,
-    OSUPrivacyNoticeResultShowPreferences,
-} OSUPrivacyNoticeResult;
+extern NSString * const OSUReleaseDisplayVersionKey;
+extern NSString * const OSUReleaseDownloadPageKey;
+extern NSString * const OSUReleaseEarliestCompatibleLicenseKey;
+extern NSString * const OSUReleaseRequiredOSVersionKey;
+extern NSString * const OSUReleaseVersionKey;
+extern NSString * const OSUReleaseSpecialNotesKey;
+extern NSString * const OSUReleaseMajorSummaryKey;
+extern NSString * const OSUReleaseMinorSummaryKey;
+extern NSString * const OSUReleaseApplicationSummaryKey;
 
-extern NSString *OSUReleaseDisplayVersionKey;
-extern NSString *OSUReleaseDownloadPageKey;
-extern NSString *OSUReleaseEarliestCompatibleLicenseKey;
-extern NSString *OSUReleaseRequiredOSVersionKey;
-extern NSString *OSUReleaseVersionKey;
-extern NSString *OSUReleaseSpecialNotesKey;
-extern NSString *OSUReleaseMajorSummaryKey;
-extern NSString *OSUReleaseMinorSummaryKey;
-extern NSString *OSUReleaseApplicationSummaryKey;
-
-@interface OSUController : NSObject
+@interface OSUController : NSObject <OSUCheckerTarget>
 {
     // Unused currently
     //IBOutlet NSPanel *panel;
@@ -52,10 +48,6 @@ extern NSString *OSUReleaseApplicationSummaryKey;
 // API
 + (OSUController *)sharedController;
 + (void)checkSynchronouslyWithUIAttachedToWindow:(NSWindow *)aWindow;
-+ (void)newVersionsAvailable:(NSArray *)versionInfos fromCheck:(OSUCheckOperation *)op;
-+ (void)startingCheckForUpdates;
-
-- (OSUPrivacyNoticeResult)runPrivacyNoticePanelHavingSeenPreviousVersion:(BOOL)hasSeenPreviousVersion;
 
 - (BOOL)beginDownloadAndInstallFromPackageAtURL:(NSURL *)packageURL item:(OSUItem *)item error:(NSError **)outError;
 

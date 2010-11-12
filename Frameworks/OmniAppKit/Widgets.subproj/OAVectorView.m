@@ -53,9 +53,9 @@ RCS_ID("$Id$")
     [commaTextField changeColorAsIfEnabledStateWas:flag];
 }
 
-- (void)setObjectValue:(id)objectValue;
+- (void)setObjectValue:(id <NSCopying>)objectValue;
 {
-    OBPRECONDITION(!objectValue || [objectValue isKindOfClass:[OFPoint class]]);
+    OBPRECONDITION(!objectValue || [(id)objectValue isKindOfClass:[OFPoint class]]);
     [super setObjectValue:objectValue];
     
     if (observedObjectForVector != nil) {

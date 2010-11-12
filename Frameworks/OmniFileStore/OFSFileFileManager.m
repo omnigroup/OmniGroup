@@ -9,8 +9,7 @@
 
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSFileInfo.h>
-
-#import <Foundation/NSFileManager.h>
+#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -22,8 +21,11 @@ RCS_ID("$Id$");
         return nil;
     
     if (![[[self baseURL] path] isAbsolutePath]) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The path of the url \"%@\" is not absolute.", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [self baseURL]];
-        OFSError(outError, OFSBaseURLIsNotAbsolute, NSLocalizedStringFromTableInBundle(@"Cannot create file-based file manager.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason);
+        NSString *title =  NSLocalizedStringFromTableInBundle(@"An error has occurred.", @"OmniFileStore", OMNI_BUNDLE, @"error title");
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Ensure that the address is correct and please try again.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
+        OFSError(outError, OFSBaseURLIsNotAbsolute, title, description);
+        
+        NSLog(@"Error: The path of the url \"%@\" is not absolute. Cannot create file-based file manager.", [self baseURL]);
         [self release];
         return nil;
     }
@@ -53,7 +55,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     
     // +[NSURL fileURLWithPath:] will re-check whether this is a directory, but we already know.
     CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)path, kCFURLPOSIXPathStyle, directory);
-    OFSFileInfo *info = [[OFSFileInfo alloc] initWithOriginalURL:(NSURL *)url name:[path lastPathComponent] exists:exists directory:directory size:size];
+    OFSFileInfo *info = [[OFSFileInfo alloc] initWithOriginalURL:(NSURL *)url name:[path lastPathComponent] exists:exists directory:directory size:size lastModifiedDate:[attributes fileModificationDate]];
     CFRelease(url);
     
     return info;
@@ -72,7 +74,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     return info;
 }
 
-- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
+- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension options:(OFSDirectoryEnumerationOptions)options error:(NSError **)outError;
 {
     NSTimeInterval start = 0;
     if (OFSFileManagerDebug > 0) {
@@ -83,9 +85,27 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     // Not using the OmniFoundation extension since it pulls in too much.
     NSString *basePath = [url path];
     
-    NSArray *fileNames = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:basePath error:outError];
+    BOOL errorIsNonexistenceError = NO;
+    NSArray *fileNames = nil;
+    if ((options & OFSDirectoryEnumerationSkipsSubdirectoryDescendants))
+        fileNames = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:basePath error:outError];
+    else
+        fileNames = [[NSFileManager defaultManager] subpathsOfDirectoryAtPath:basePath error:outError];
+    
+    if (!fileNames && outError) {
+        NSString *errorDomain = [*outError domain];
+        NSInteger errorCode = [*outError code];
+        if (([errorDomain isEqualToString:NSCocoaErrorDomain] && (errorCode == NSFileNoSuchFileError || errorCode == NSFileReadNoSuchFileError)) ||
+            ([errorDomain isEqualToString:NSPOSIXErrorDomain] && (errorCode == ENOENT))) {
+            errorIsNonexistenceError = YES;
+        }
+    }
+    
     if (!fileNames) {
-        // TODO: Log an error?  The current callers do for us already, though.
+        if (errorIsNonexistenceError) {
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No document exists at \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason - listing a directory that doesn't exist"), basePath];
+            OFSError(outError, OFSNoSuchDirectory, NSLocalizedStringFromTableInBundle(@"Unable to read document.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason);
+        }
         return nil;
     }
     
@@ -94,6 +114,10 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     for (NSString *fileName in fileNames) {
         OBASSERT([[fileName pathComponents] count] == 1);
 
+        if ((options & OFSDirectoryEnumerationSkipsHiddenFiles) && [fileName hasPrefix:@"."]) {
+            continue;
+        }
+        
         if ([fileName hasPrefix:@"._"]) {
             // Ignore split resource fork files; these presumably happen when moving between filesystems.
             continue;
@@ -120,6 +144,16 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     return results;
 }
 
+- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
+{
+    return [self directoryContentsAtURL:url havingExtension:extension options:OFSDirectoryEnumerationSkipsSubdirectoryDescendants error:outError];
+}
+
+- (NSMutableArray *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections options:(OFSDirectoryEnumerationOptions)options error:(NSError **)outError;
+{
+    return (NSMutableArray *)[self directoryContentsAtURL:url havingExtension:nil options:options error:outError];
+}
+
 - (NSData *)dataWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
 {
     if (OFSFileManagerDebug > 0)
@@ -133,15 +167,15 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
 #endif
 }
 
-- (BOOL)writeData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically error:(NSError **)outError;
+- (NSURL *)writeData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically error:(NSError **)outError;
 {
     if (OFSFileManagerDebug > 0)
         NSLog(@"FILE operation: WRITE %@ (data of %ld bytes)", url, [data length]);
 
-    return [data writeToFile:[url path] options:(atomically ? NSAtomicWrite : 0) error:outError];
+    return [data writeToFile:[url path] options:(atomically ? NSAtomicWrite : 0) error:outError]? url : nil;
 }
 
-- (BOOL)createDirectoryAtURL:(NSURL *)url attributes:(NSDictionary *)attributes error:(NSError **)outError;
+- (NSURL *)createDirectoryAtURL:(NSURL *)url attributes:(NSDictionary *)attributes error:(NSError **)outError;
 {
     if (OFSFileManagerDebug > 0)
         NSLog(@"FILE operation: MKDIR %@", url);
@@ -149,14 +183,14 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     NSFileManager *manager = [NSFileManager defaultManager];
     
     // Don't create intermediate directories. Otherwise if the problem is that the user needs to mount a disk, we might spuriously create the mount point <bug://bugs/47647> (Disk syncing shouldn't automatically create a path to the target location)
-    if (![manager createDirectoryAtPath:[url path] withIntermediateDirectories:NO attributes:attributes error:outError]) {
-	NSString *parentPath = [[url path] stringByDeletingLastPathComponent];
+    NSString *parentPath = [[url path] stringByDeletingLastPathComponent];
+    if (![manager directoryExistsAtPath:parentPath traverseLink:YES]) {
         NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not find \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error description"), parentPath];
         NSString *reason = NSLocalizedStringFromTableInBundle(@"Please make sure that the location set in your Sync preferences actually exists.", @"OmniFileStore", OMNI_BUNDLE, @"error reason");
         OFSError(outError, OFSCannotCreateDirectory, description, reason);
-        return NO;
+        return nil;
     }
-    return YES;
+    return [manager createPathComponents:[[url path] pathComponents] attributes:attributes error:outError]? url : nil;
 }
 
 - (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL error:(NSError **)outError;
@@ -171,6 +205,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
         OFSError(outError, OFSCannotMove, NSLocalizedStringFromTableInBundle(@"Unable to move file.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason);
         return NO;
     }
+
     return YES;
 }
 
@@ -182,10 +217,11 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     NSFileManager *manager = [NSFileManager defaultManager];
 
     if (![manager removeItemAtPath:[url path] error:outError]) {
-	NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to delete \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [url absoluteString]];
-	OFSError(outError, OFSCannotDelete, NSLocalizedStringFromTableInBundle(@"Unable to delete file.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason);
-	return NO;
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to delete \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [url absoluteString]];
+        OFSError(outError, OFSCannotDelete, NSLocalizedStringFromTableInBundle(@"Unable to delete file.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason);
+        return NO;
     }
+    
     return YES;
 }
 

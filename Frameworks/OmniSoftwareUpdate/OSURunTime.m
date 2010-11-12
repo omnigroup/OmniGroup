@@ -12,29 +12,31 @@
 
 RCS_ID("$Id$");
 
-static NSString *OSULastRunStartIntervalKey = @"OSULastRunStartInterval";
+static NSString * const OSULastRunStartIntervalKey = @"OSULastRunStartInterval";
 
-static NSString *OSURunTimeStatisticsKey = @"OSURunTimeStatistics";
+static NSString * const OSURunTimeStatisticsKey = @"OSURunTimeStatistics";
 
 // scopes
-static NSString *OSURunTimeStatisticsAllVersionsScopeKey = @"total";
-static NSString *OSURunTimeStatisticsCurrentVersionsScopeKey = @"current";
+static NSString * const OSURunTimeStatisticsAllVersionsScopeKey = @"total";
+static NSString * const OSURunTimeStatisticsCurrentVersionsScopeKey = @"current";
 
 // Subkeys in each of the scope dictionaries.
-static NSString *OSUNumberOfRunsKey = @"runCount";
-static NSString *OSUNumberOfCrashesKey = @"crashCount";
-static NSString *OSUTotalRunTimeKey = @"runTime";
-static NSString *OSUVersionKey = @"version";
+static NSString * const OSUNumberOfRunsKey = @"runCount";
+static NSString * const OSUNumberOfCrashesKey = @"crashCount";
+static NSString * const OSUTotalRunTimeKey = @"runTime";
+static NSString * const OSUVersionKey = @"version";
 
-static BOOL OSUHasHandledTermination = NO;
+static BOOL OSURunTimeHasRunningSession = NO;
 
 BOOL OSURunTimeHasHandledApplicationTermination(void)
 {
-    return OSUHasHandledTermination;
+    return (OSURunTimeHasRunningSession == NO);
 }
 
 void OSURunTimeApplicationStarted(void)
 {
+    OBPRECONDITION(OSURunTimeHasRunningSession == NO);
+    OSURunTimeHasRunningSession = YES;
     
     // Record the time we started this run of the application.  Also, increment the number of runs.
     // If we crash, OCC will handle calculating how long we ran until we crashed.  If we quit normally, we will do it.
@@ -128,10 +130,11 @@ void OSURunTimeApplicationTerminated(NSString *appIdentifier, NSString *bundleVe
     OBPRECONDITION(appIdentifier);
     OBPRECONDITION(bundleVersion);
     
-    OBPRECONDITION(OSUHasHandledTermination == NO);
-    if (OSUHasHandledTermination)
+    OBPRECONDITION(OSURunTimeHasRunningSession == YES);
+    if (OSURunTimeHasRunningSession == NO)
         return;
-    
+    OSURunTimeHasRunningSession = NO;
+
     NSNumber *startTimeNumber = [(NSNumber *)CFPreferencesCopyAppValue((CFStringRef)OSULastRunStartIntervalKey, (CFStringRef)appIdentifier) autorelease];
     OBASSERT(startTimeNumber == nil || [startTimeNumber isKindOfClass:[NSNumber class]]);
     if (![startTimeNumber isKindOfClass:[NSNumber class]])
@@ -154,7 +157,6 @@ void OSURunTimeApplicationTerminated(NSString *appIdentifier, NSString *bundleVe
     [statistics release];
 
     CFPreferencesSetAppValue((CFStringRef)OSULastRunStartIntervalKey, NULL, (CFStringRef)appIdentifier);
-    OSUHasHandledTermination = YES;
 
     CFPreferencesAppSynchronize((CFStringRef)appIdentifier);
 }

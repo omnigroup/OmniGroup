@@ -19,9 +19,15 @@
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 extern NSString * const OABackgroundColorAttributeName;
 extern NSString * const OALinkAttributeName;
+extern NSString * const OAStrikethroughStyleAttributeName;
+extern NSString * const OAStrikethroughColorAttributeName;
+extern NSUInteger const OAUnderlineByWordMask;
 #else
 #define OABackgroundColorAttributeName NSBackgroundColorAttributeName
 #define OALinkAttributeName NSLinkAttributeName
+#define OAStrikethroughStyleAttributeName NSStrikethroughStyleAttributeName
+#define OAStrikethroughColorAttributeName NSStrikethroughColorAttributeName
+#define OAUnderlineByWordMask NSUnderlineByWordMask
 #endif
 
 // Text attributes that we can map right across
@@ -37,3 +43,4 @@ extern NSString * const OALinkAttributeName;
 #define OAFontAttributeName OA_TEXT_KEY(NSFontAttributeName, kCTFontAttributeName)
 #define OASuperscriptAttributeName OA_TEXT_KEY(NSSuperscriptAttributeName,kCTSuperscriptAttributeName)
 #define OAUnderlineStyleAttributeName OA_TEXT_KEY(NSUnderlineStyleAttributeName, kCTUnderlineStyleAttributeName)
+#define OAUnderlineColorAttributeName OA_TEXT_KEY(NSUnderlineColorAttributeName, kCTUnderlineColorAttributeName)

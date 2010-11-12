@@ -116,6 +116,31 @@ static CALayer *_createEdge(OQHoleLayer *self)
     [super dealloc];
 }
 
+static NSString * const OQHoleLayerExposeAnimationKey = @"OQHoleLayerExposeAnimationKey";
+static NSString * const OQHoleLayerRemoveAtEndOfAnimationKey = @"OQHoleLayerRemoveAtEndOfAnimation";
+
+- (CAAnimationGroup *)positionAndBoundsChangeFromRect:(NSRect)originalRect toRect:(NSRect)finalRect
+{
+    if ([self presentationLayer]) {
+        originalRect.origin = [(CALayer *)[self presentationLayer] position];
+        originalRect.size = [[self presentationLayer] bounds].size;
+    }
+    CABasicAnimation *boundsAnimation = [CABasicAnimation animationWithKeyPath:@"bounds"];
+    boundsAnimation.fromValue = [NSValue valueWithRect:CGRectMake(0, 0, originalRect.size.width, originalRect.size.height)];
+    boundsAnimation.toValue = [NSValue valueWithRect:CGRectMake(0, 0, finalRect.size.width, finalRect.size.height)];
+    
+    CABasicAnimation *positionAnimation = [CABasicAnimation animationWithKeyPath:@"position"];
+    positionAnimation.fromValue = [NSValue valueWithPoint:originalRect.origin];
+    positionAnimation.toValue = [NSValue valueWithPoint:finalRect.origin];
+    
+    CAAnimationGroup *group = [CAAnimationGroup animation];
+    group.animations = [NSArray arrayWithObjects:boundsAnimation, positionAnimation, nil];
+    group.fillMode = kCAFillModeForwards;
+    group.timingFunction = [CAMediaTimingFunction functionCompatibleWithDefault];
+    
+    return group;
+}
+
 - (void)exposeByExpandingFromRect:(CGRect)originalRect toRect:(CGRect)finalRect inLayer:(CALayer *)parentLayer;
 {
     OBPRECONDITION(self.superlayer == nil); // we are doing the expose
@@ -143,40 +168,31 @@ static CALayer *_createEdge(OQHoleLayer *self)
     // Now, animate to the final frame.
     self.position = finalRect.origin;
     self.bounds = CGRectMake(0, 0, finalRect.size.width, finalRect.size.height);
-}
 
-static NSString * const OQHoleLayerRemoveAtEndOfAnimationKey = @"OQHoleLayerRemoveAtEndOfAnimation";
-
-- (void)removeFromSuperlayerAtEndOfAnimation;
-{
-    // Add an animation that we understand to indicate we should remove ourselves at its end.  The animation itself make sure we say behind the cell that is going opaque above us.
-    CABasicAnimation *anim = [CABasicAnimation animationWithKeyPath:@"zPosition"];
-    anim.fromValue = [NSNumber numberWithFloat:/*OOOutlineViewColumnDragHoleZPosition*/300];
-    anim.toValue = [NSNumber numberWithFloat:/*OOOutlineViewColumnDragHoleZPosition*/300];
-    anim.removedOnCompletion = NO;
-    anim.fillMode = kCAFillModeForwards;
-    anim.timingFunction = [CAMediaTimingFunction functionCompatibleWithDefault];
-    anim.delegate = self;
-    [self addAnimation:anim forKey:OQHoleLayerRemoveAtEndOfAnimationKey];
+    CAAnimationGroup *group = [self positionAndBoundsChangeFromRect:originalRect toRect:finalRect];
+    group.removedOnCompletion = YES;
+    [self addAnimation:group forKey:OQHoleLayerExposeAnimationKey];
 }
 
 - (void)removeAfterShrinkingToRect:(CGRect)finalRect;
 {
     OBPRECONDITION(self.superlayer != nil); // we are doing the remove
     
+    CGRect originalRect = self.bounds;
 #ifdef OMNI_ASSERTIONS_ON
     {    
-        CGRect originalRect = self.bounds;
         OBPRECONDITION(originalRect.size.width > 0 && originalRect.size.height > 0); // should be hiding non-zero rect
         OBPRECONDITION(finalRect.size.width == 0 || finalRect.size.height == 0); // to a rect that that is thin
         OBPRECONDITION(originalRect.size.width == finalRect.size.width || originalRect.size.height == finalRect.size.height); // ... along only one axis
     }
 #endif
 
-    self.position = finalRect.origin;
-    self.bounds = CGRectMake(0, 0, finalRect.size.width, finalRect.size.height);
+    originalRect.origin = self.position;
 
-    [self removeFromSuperlayerAtEndOfAnimation];
+    CAAnimationGroup *group = [self positionAndBoundsChangeFromRect:originalRect toRect:finalRect];
+    group.removedOnCompletion = NO;
+    group.delegate = self;
+    [self addAnimation:group forKey:OQHoleLayerRemoveAtEndOfAnimationKey];
 }
 
 #pragma mark CAAnimation delegate
@@ -184,8 +200,10 @@ static NSString * const OQHoleLayerRemoveAtEndOfAnimationKey = @"OQHoleLayerRemo
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag;
 {
     OBPRECONDITION(![[[self class] superclass] instancesRespondToSelector:_cmd]);
+    
+    if ([self animationForKey:OQHoleLayerRemoveAtEndOfAnimationKey] == anim || [self animationKeys] == nil) {
+        // if [self animationKeys] == nil asume that since all animations have been removed from holeLayer and we are only setting the delegate for the hole removal that the animation was to remove the hole
 
-    if ([self animationForKey:OQHoleLayerRemoveAtEndOfAnimationKey] == anim) {
         // We are likely only retained by our superlayer.
         [[self retain] autorelease];
 
@@ -195,7 +213,7 @@ static NSString * const OQHoleLayerRemoveAtEndOfAnimationKey = @"OQHoleLayerRemo
         [CATransaction commit];
 
         [self removeAnimationForKey:OQHoleLayerRemoveAtEndOfAnimationKey]; // break the retain cycle; apparently CAAnimation retains its delegate
-    } else {
+    } else if ([self animationForKey:OQHoleLayerExposeAnimationKey] != anim) {
         OBASSERT_NOT_REACHED("Unknown animation finished");
     }
 }

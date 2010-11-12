@@ -18,6 +18,7 @@
     UIView *_contentView;
     
     UIViewController *_innerViewController;
+    BOOL _animatingAwayFromCurrentInnerViewController; // an animated switch away from _innerViewController is in progress.
     BOOL _resizesToAvoidKeyboard;
     BOOL _didStartActivityIndicator;
 }

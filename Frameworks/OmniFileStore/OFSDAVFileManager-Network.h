@@ -9,8 +9,11 @@
 
 #import <OmniFileStore/OFSDAVFileManager.h>
 
+@class OFSDAVOperation;
+@class OFXMLDocument;
+
 @interface OFSDAVFileManager (Network)
-- (NSData *)_rawDataByRunningRequest:(NSURLRequest *)message error:(NSError **)outError;
-- (BOOL)_runRequestExpectingEmptyResultData:(NSURLRequest *)message error:(NSError **)outError;
-- (OFXMLDocument *)_documentBySendingRequest:(NSURLRequest *)message error:(NSError **)outError;
+- (NSData *)_rawDataByRunningRequest:(NSURLRequest *)message operation:(OFSDAVOperation **)op error:(NSError **)outError;
+- (NSURL *)_runRequestExpectingEmptyResultData:(NSURLRequest *)message error:(NSError **)outError;
+- (OFXMLDocument *)_documentBySendingRequest:(NSURLRequest *)message operation:(OFSDAVOperation **)op error:(NSError **)outError;
 @end

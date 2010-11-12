@@ -13,7 +13,8 @@ extern NSString * const OUIUndoPopoverWillShowNotification;
 
 @class OUIUndoButtonController, OUIUndoButton;
 
-@protocol OUIUndoBarButtonItemTarget
+@protocol OUIUndoBarButtonItemTarget <NSObject>
+- (void)undoBarButtonItemWillShowPopover; // Hide other popovers
 - (void)undo:(id)sender;
 - (void)redo:(id)sender;
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender; // in case the target is not a subclass of UIResponder (like with OUISingleDocumentAppController)

@@ -11,7 +11,9 @@
 
 @class ScalingScrollViewViewController;
 
-@interface ScalingScrollViewAppDelegate : NSObject <UIApplicationDelegate> {
+@interface ScalingScrollViewAppDelegate : NSObject <UIApplicationDelegate>
+{
+@private
     UIWindow *window;
     ScalingScrollViewViewController *viewController;
 }

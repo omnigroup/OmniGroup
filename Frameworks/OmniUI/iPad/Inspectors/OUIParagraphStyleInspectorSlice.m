@@ -6,7 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OUIParagraphStyleInspectorSlice.h"
-#import "OUIInspector.h"
+
+#import <OmniUI/OUIInspector.h>
 
 #import <OmniAppKit/OAParagraphStyle.h>
 

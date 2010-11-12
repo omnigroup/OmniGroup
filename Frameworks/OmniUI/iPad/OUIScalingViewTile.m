@@ -5,8 +5,8 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIScalingViewTile.h"
-#import "OUITileDebug.h"
+#import <OmniUI/OUIScalingViewTile.h>
+#import <OmniUI/OUITileDebug.h>
 
 #import <OmniUI/OUIScalingView.h>
 #import <QuartzCore/QuartzCore.h>

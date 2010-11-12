@@ -12,6 +12,8 @@
 #import <OmniUI/OUIDocumentProxyView.h>
 #import <OmniUI/OUIToolbarViewController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+
+#import "OUIDocumentSlider.h"
 #import "OUIDocumentProxy-Internal.h"
 #import "OUIDocumentPreview.h"
 
@@ -156,19 +158,6 @@ static OUIDocumentProxy *_proxyWithCenterClosestToContentOffsetX(OUIDocumentPick
     return closestProxy;
 }
 
-static void _bounceBackIfNecessary(OUIDocumentPickerView *self)
-{
-    CGPoint limitOffset;
-    if (_shouldConstrainToScrollLimits(self, &limitOffset)) {
-        [self setContentOffset:limitOffset animated:YES];
-        return;
-    }
-    
-    OUIDocumentProxy *proxy = self.proxyClosestToCenter;
-    if (proxy)
-        [self snapToProxy:proxy animated:YES];
-}
-
 
 /*
  Slow the scroll down as if with a constant friction force.  Friction is a constant force in the opposite direction of velocity and is related to the normal force and the friction constant.  We'll just assume the normal force is 1 and make the friction force be a constant (opposite the direction of velocity).
@@ -288,6 +277,20 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
     ss->timer = [[NSTimer scheduledTimerWithTimeInterval:1/60.0 target:self selector:@selector(_smoothScrollTimerFired:) userInfo:nil repeats:YES] retain];
 }
 
+- (void)_bounceBackIfNecessary;
+{
+    CGPoint limitOffset;
+    if (_shouldConstrainToScrollLimits(self, &limitOffset)) {
+        [self setContentOffset:limitOffset animated:YES];
+        [_documentSlider setValue:[self.sortedProxies indexOfObject:_proxyWithCenterClosestToContentOffsetX(self, limitOffset.x)]];
+        return;
+    }
+    
+    OUIDocumentProxy *proxy = self.proxyClosestToCenter;
+    if (proxy)
+        [self snapToProxy:proxy animated:YES];
+}
+
 - (void)_smoothScrollTimerFired:(NSTimer *)timer;
 {
     CFTimeInterval t = [NSDate timeIntervalSinceReferenceDate] - _smoothScroll.t0;
@@ -296,7 +299,7 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
     CGFloat currentVelocity = _smoothScroll.v0 + _smoothScroll.a*t;
     if (fabs(currentVelocity) < 1 || _oppositeSigns(currentVelocity, _smoothScroll.v0)) {
         _cancelSmoothScroll(&_smoothScroll);
-        _bounceBackIfNecessary(self);
+        [self _bounceBackIfNecessary];
         return;
     }
     
@@ -365,7 +368,7 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
             _startSmoothScroll(self, xVelocity);
         } else {
             // Make sure that if we finish touching while we are pulled past our limit that we rebound.
-            _bounceBackIfNecessary(self);
+            [self _bounceBackIfNecessary];
         }
     }
 }
@@ -386,6 +389,7 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
 
 - (void)dealloc;
 {    
+    [_documentSlider release];
     _cancelSmoothScroll(&_smoothScroll);
     [_sortedProxies release];
     [_proxies release];
@@ -414,18 +418,63 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
 }
 
 @synthesize proxies = _proxies;
+
+- (NSArray *)_sortDescriptors;
+{
+    NSMutableArray *descriptors = [NSMutableArray array];
+    
+    if (_proxySort == OUIDocumentProxySortByDate) {
+        NSSortDescriptor *dateSort = [[NSSortDescriptor alloc] initWithKey:@"date" ascending:NO];
+        [descriptors addObject:dateSort];
+        [dateSort release];
+    }
+    
+    NSSortDescriptor *nameSort = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES selector:@selector(proxyNameComparison:)];
+    [descriptors addObject:nameSort];
+    [nameSort release];
+    
+    /* url doesn't implement compare:, causes crash
+    NSSortDescriptor *urlSort = [[NSSortDescriptor alloc] initWithKey:@"url" ascending:YES];
+    [descriptors addObject:urlSort];
+    [urlSort release];
+    */
+    return descriptors;
+}
+
+- (void)sortProxies;
+{
+    OBASSERT(_proxies);
+    if (!_proxies)
+        return;
+    
+    NSArray *newSort = [[_proxies allObjects] sortedArrayUsingDescriptors:[self _sortDescriptors]];
+    [_sortedProxies release];
+    _sortedProxies = [newSort copy];
+}
+
 - (void)setProxies:(NSSet *)proxies;
 {
     [_proxies release];
     _proxies = [[NSMutableSet alloc] initWithSet:proxies];
     
-    [_sortedProxies release];
-    _sortedProxies = [[[_proxies allObjects] sortedArrayUsingSelector:@selector(compare:)] copy];
+    [self sortProxies];
+    
+    [_documentSlider setCount:[_proxies count]];
 
     [self setNeedsLayout];
 }
 
+- (void)setProxySort:(OUIDocumentProxySort)_sort;
+{
+    _proxySort = _sort;
+    
+    [self sortProxies];
+    
+    [self setNeedsLayout];
+}
+
 @synthesize sortedProxies = _sortedProxies;
+@synthesize proxySort = _proxySort;
 
 - (OUIDocumentProxy *)firstProxy;
 {
@@ -467,6 +516,17 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
     [self setContentOffset:_contentOffsetForCenteringProxy(self, proxy) animated:animated];
     [self setNeedsLayout];
     [self layoutIfNeeded];
+    
+    [_documentSlider setValue:[self.sortedProxies indexOfObject:proxy]];
+}
+
+- (IBAction)documentSliderAction:(OUIDocumentSlider *)slider;
+{
+    OUIDocumentProxy *proxy = [self.sortedProxies objectAtIndex:[slider value]];
+    [self layoutIfNeeded];
+    [self setContentOffset:_contentOffsetForCenteringProxy(self, proxy) animated:NO];
+    [self setNeedsLayout];
+    [self layoutIfNeeded];    
 }
 
 // The selected flag is set by layout based on our scroll position. There should be exactly one selected proxy unless we are empty.
@@ -551,6 +611,7 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
     const CGFloat kProxySpacing = 32;
     const CGFloat kNeighborWidthVisible = 120;
     const CGFloat kTopGap = 40;
+    const CGFloat kMinimumProxyWidth = 300;
     
     const CGFloat maximumHeight = CGRectGetHeight(bounds) - (_bottomGap + kTopGap);
     const CGFloat maximumWidth = CGRectGetWidth(bounds) - 2*kProxySpacing - kNeighborWidthVisible;
@@ -585,13 +646,16 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
         DEBUG_LAYOUT(@"  previewSize %@", NSStringFromCGSize(previewSize));
 
         if (firstProxyWidth == 0)
-            firstProxyWidth = previewSize.width;
+            firstProxyWidth = MAX(previewSize.width, kMinimumProxyWidth);
         else
             xOffset += kProxySpacing;
         
-        lastProxyWidth = previewSize.width;
+        lastProxyWidth = MAX(previewSize.width, kMinimumProxyWidth);
         
         // Store the frame on the proxy view controller itself. It will propagate to its view when loaded. This lets us do geometry queries on proxies that don't have their view loaded or scrolled into view.
+        CGFloat additialOffset = (previewSize.width < kMinimumProxyWidth) ? floor((kMinimumProxyWidth-previewSize.width)/2) : 0;
+        xOffset += additialOffset;
+        
         CGRect frame = CGRectMake(xOffset, kTopGap + (maximumHeight - previewSize.height) / 2,
                                   previewSize.width, previewSize.height);
         
@@ -662,6 +726,8 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
             DEBUG_LAYOUT(@"  stepping %f", nextXOffset - xOffset);
             xOffset = nextXOffset;
         }
+        
+        xOffset += additialOffset;
     }
     
     // Now, assign views to visibile or nearly visible proxies that don't have them. First, union the two lists.

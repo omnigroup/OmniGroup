@@ -555,7 +555,7 @@ RCS_ID("$Id$")
         NSUInteger objectIndex, objectCount = [sortedObjects count];
         for (objectIndex = 0; objectIndex < objectCount; objectIndex++) {
             id object = [sortedObjects objectAtIndex:objectIndex];
-            NSLog(@"%d - %@", [inspectionSet insertionOrderForObject:object], [object shortDescription]);
+            NSLog(@"%ld - %@", [inspectionSet insertionOrderForObject:object], [object shortDescription]);
         }
     }
     

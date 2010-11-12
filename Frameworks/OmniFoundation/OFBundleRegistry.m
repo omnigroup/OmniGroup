@@ -16,6 +16,7 @@
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniFoundation/NSMutableSet-OFExtensions.h>
 #ifdef DYNAMIC_BUNDLE_LOADING
+#import <OmniFoundation/OFController.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/OFBundledClass.h>
 #endif
@@ -185,7 +186,13 @@ static BOOL OFBundleRegistryDebug = NO;
 {
     NSString *logBundleRegistration;
 
-    configDictionary = [[[[NSBundle mainBundle] infoDictionary] objectForKey:OFBundleRegistryConfig] retain];
+#ifdef DYNAMIC_BUNDLE_LOADING
+    NSBundle *bundle = [OFController controllingBundle];
+#else
+    NSBundle *bundle = [NSBundle mainBundle];
+#endif
+    
+    configDictionary = [[[bundle infoDictionary] objectForKey:OFBundleRegistryConfig] retain];
     if (!configDictionary)
         configDictionary = [[NSDictionary alloc] init];
 
@@ -210,7 +217,13 @@ static BOOL OFBundleRegistryDebug = NO;
         return standardPath;
 
     // Bundles are stored in the Resources directory of the applications, but tools might have bundles in the same directory as their binary.  Use both paths.
-    mainBundlePath = [[NSBundle mainBundle] bundlePath];
+    // Use the controllingBundle in case we are a unit test.
+#ifdef DYNAMIC_BUNDLE_LOADING
+    NSBundle *mainBundle = [OFController controllingBundle];
+#else
+    NSBundle *mainBundle = [NSBundle mainBundle];
+#endif
+    mainBundlePath = [mainBundle bundlePath];
     mainBundleResourcesPath = [[mainBundlePath stringByAppendingPathComponent:@"Contents"] stringByAppendingPathComponent:@"PlugIns"];
 
     // Search for the config path array in defaults, then in the app wrapper's configuration dictionary.  (In gdb, we set the search path on the command line where it will appear in the NSArgumentDomain, overriding the app wrapper's configuration.)
@@ -222,6 +235,8 @@ static BOOL OFBundleRegistryDebug = NO;
             if ([path isEqualToString:OFBundleRegistryConfigAppWrapperPath]) {
                 [newPath addObject:mainBundleResourcesPath];
                 [newPath addObject:mainBundlePath];
+                
+                // Also look next too the controlling bundle. This allows us to find locally built copies of plugins in development.
 #ifdef DEBUG
                 [newPath addObject:[mainBundlePath stringByDeletingLastPathComponent]];
 #endif

@@ -1260,12 +1260,16 @@ static BOOL xmlSignatureBase64ExtractText(struct OFXMLSignatureVerifyContinuatio
 
         while(cursor->next == NULL) {
             if (cursor == rootElt)
-                break;
+                break; // 1
             cursor = cursor->parent;
         }
         if (cursor == rootElt)
-            break;
+            break; // 2
+        
+        
+        // clang-sa doesn't realize this can't be NULL. We can only get here if the while loop enclosing (1) hits the break. In this case cursor->next was NULL, but cursor is rootElt. This guarantees we'll hit the break at (2) and never reach this line while cursor is NULL. Logged as <http://llvm.org/bugs/show_bug.cgi?id=8590>
         cursor = cursor->next;
+        OBASSERT_NOTNULL(cursor);
     }
     
     {

@@ -23,6 +23,7 @@ RCS_ID("$Id$");
 @end
 
 @interface OUIToolbarViewController (/*Private*/)
+@property(readonly,nonatomic) BOOL animatingAwayFromCurrentInnerViewController;
 - (void)_prepareViewControllerForContainment:(UIViewController *)soonToBeInnerViewController hidden:(BOOL)hidden;
 - (void)_animationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
 @end
@@ -55,7 +56,10 @@ static void _setInnerViewController(OUIToolbarViewController *self, UIViewContro
         // Animation setup has already done this
         if (!forAnimation)
             [self->_innerViewController willResignInnerToolbarController:self animated:forAnimation];
-
+        else {
+            OBASSERT(self->_animatingAwayFromCurrentInnerViewController);
+        }
+        
         // Might have been unloaded already -- don't provoke a reload.
         if ([self->_innerViewController isViewLoaded])
             [self->_innerViewController.view removeFromSuperview];
@@ -73,6 +77,9 @@ static void _setInnerViewController(OUIToolbarViewController *self, UIViewContro
         if (!forAnimation) {
             [self _prepareViewControllerForContainment:viewController hidden:NO];
             [viewController willBecomeInnerToolbarController:self animated:forAnimation]; // This call requires we are the right size. Could have *another* call for will-prepare, if needed
+        } else {
+            OBASSERT(self->_animatingAwayFromCurrentInnerViewController);
+            self->_animatingAwayFromCurrentInnerViewController = NO; // all done animating
         }
 
         OUIDocumentPickerBackgroundView *backgroundView = (OUIDocumentPickerBackgroundView *)self.view;
@@ -159,6 +166,8 @@ typedef struct {
     OBASSERT(toView.layer.hidden == NO);
     
     // Get the document's view controller properly configured and send the 'will' notifications
+    OBASSERT(_animatingAwayFromCurrentInnerViewController == NO);
+    _animatingAwayFromCurrentInnerViewController = YES;
     [_innerViewController willResignInnerToolbarController:self animated:YES];
     [self _prepareViewControllerForContainment:viewController hidden:YES];
     [viewController willBecomeInnerToolbarController:self animated:YES];
@@ -287,6 +296,8 @@ typedef struct {
     free(ctx);
 }
 
+@synthesize animatingAwayFromCurrentInnerViewController = _animatingAwayFromCurrentInnerViewController;
+
 @synthesize resizesToAvoidKeyboard = _resizesToAvoidKeyboard;
 - (void)setResizesToAvoidKeyboard:(BOOL)resizesToAvoidKeyboard;
 {
@@ -344,11 +355,15 @@ NSString * const OUIToolbarViewControllerResizedForKeyboard = @"OUIToolbarViewCo
     
     [UIView beginAnimations:@"avoid keyboard" context:NULL];
     {
+        // Match the keyboard animation time and curve. Also, starting from the current position is very important. If we don't and we are jumping between two editable controls, our view size may bounce.
         [UIView setAnimationDuration:[[[note userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue]];
         [UIView setAnimationCurve:[[[note userInfo] objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]];
+        [UIView setAnimationBeginsFromCurrentState:YES];
         
         _contentView.frame = [_contentView convertRect:contentBoundsAvoidingKeyboard toView:_contentView.superview];
         [[NSNotificationCenter defaultCenter] postNotificationName:OUIToolbarViewControllerResizedForKeyboard object:self];
+
+        [_contentView layoutIfNeeded];
     }
     [UIView commitAnimations];
 
@@ -370,10 +385,13 @@ NSString * const OUIToolbarViewControllerResizedForKeyboard = @"OUIToolbarViewCo
     
     [UIView beginAnimations:@"done avoiding keyboard" context:NULL];
     {
+        // Match the keyboard animation time and curve. Also, starting from the current position is very important. If we don't and we are jumping between two editable controls, our view size may bounce.
         [UIView setAnimationDuration:[[[note userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue]];
         [UIView setAnimationCurve:[[[note userInfo] objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]];
+        [UIView setAnimationBeginsFromCurrentState:YES];
 
         _contentView.frame = contentFrame;
+        [_contentView layoutIfNeeded];
     }
     [UIView commitAnimations];
 
@@ -482,12 +500,14 @@ NSString * const OUIToolbarViewControllerResizedForKeyboard = @"OUIToolbarViewCo
     OBASSERT([controller isKindOfClass:[OUIToolbarViewController class]]);
     OBASSERT(controller.view == backgroundView);
 
-    // If we have an inner view controller, go to it and skip the background view and the OUIToolbarViewController. They'll get hit after the view of the inner view controller.
-    UIViewController *innerViewController = controller.innerViewController;
-    if (innerViewController) {
-        OBASSERT([innerViewController nextResponder] == [innerViewController.view superview]);
-        OBASSERT([[innerViewController nextResponder] nextResponder] == backgroundView);
-        return innerViewController;
+    // If we have an inner view controller (and we aren't animating away from it), go to it and skip the background view and the OUIToolbarViewController. They'll get hit after the view of the inner view controller.
+    if (!controller.animatingAwayFromCurrentInnerViewController) {
+        UIViewController *innerViewController = controller.innerViewController;
+        if (innerViewController) {
+            OBASSERT([innerViewController nextResponder] == [innerViewController.view superview]);
+            OBASSERT([[innerViewController nextResponder] nextResponder] == backgroundView);
+            return innerViewController;
+        }
     }
     
     return backgroundView; // normal next responder

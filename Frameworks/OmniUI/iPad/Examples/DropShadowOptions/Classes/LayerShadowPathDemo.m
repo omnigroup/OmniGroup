@@ -54,7 +54,7 @@ static CGPathRef _createPathForRect(LayerShadowPathDemo *self, CGRect rect)
     CGMutablePathRef newShadowPath = CGPathCreateMutable();
     CGPathAddRect(newShadowPath, NULL/*transform*/, self.bounds);
 
-    if (_usingTimer) {
+    if (self.usingTimer) {
         // Since we are supposedly user-event driven, we'd want to disable the implicit animation here. But, UIView already disables it, which is the point of the 'else'!
         self.layer.shadowPath = newShadowPath;
     } else {

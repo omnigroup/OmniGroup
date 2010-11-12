@@ -8,12 +8,14 @@
 // $Id$
 
 #import "OUEFTextRange.h"
+
 #import <OmniUI/OUIInspector.h>
 
 @class OUIEditableFrame;
 
 @interface OUEFTextSpan : OUEFTextRange <OUIColorInspection, OUIFontInspection, OUIParagraphInspection>
 {
+@private
     OUIEditableFrame *frame;
 }
 

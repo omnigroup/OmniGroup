@@ -25,7 +25,7 @@ RCS_ID("$Id$");
     UIImage *KnobHandleImage;
 }
 @property(retain,nonatomic) OQColor *color;
-@property(assign) BOOL enabled;
+@property(assign,nonatomic) BOOL enabled;
 @end
 
 @implementation OUIColorComponentSliderKnobLayer

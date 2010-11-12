@@ -15,14 +15,16 @@
 @private
     OFExtent _allowedEffectiveScaleExtent;
     BOOL _centerContent;
+    UIEdgeInsets _extraEdgeInsets;
 }
 
 @property(assign,nonatomic) OFExtent allowedEffectiveScaleExtent;
 @property (assign) BOOL centerContent;
+@property (assign) UIEdgeInsets extraEdgeInsets;
 
 - (CGFloat)fullScreenScaleForCanvasSize:(CGSize)canvasSize;
 
 - (void)adjustScaleTo:(CGFloat)effectiveScale canvasSize:(CGSize)canvasSize;
-- (void)adjustContentInset;
+- (void)adjustContentInsetAnimated:(BOOL)animated;
 
 @end

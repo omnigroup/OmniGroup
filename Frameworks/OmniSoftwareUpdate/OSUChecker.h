@@ -8,14 +8,18 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
+#import <OmniFoundation/OFNetReachability.h>
+#import <OmniSoftwareUpdate/OSUCheckerTarget.h>
 
-@class OFScheduledEvent, OFVersionNumber;
-@class NSTask, NSFileHandle, NSData;
+@class OFVersionNumber;
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+@class OFScheduledEvent;
+#else
+@class NSTimer;
+#endif
 @class OSUCheckOperation;
 
-extern NSString *OSUSoftwareUpdateExceptionName;
-
-extern NSString *OSUVisibleTracksKey;
+extern NSString * const OSUSoftwareUpdateExceptionName;
 
 // 
 extern NSString * const OSULicenseTypeUnset;
@@ -29,11 +33,15 @@ extern NSString * const OSULicenseTypeExpiring;
 #define OSUCheckerCheckInProgressBinding (@"checkInProgress")
 #define OSUCheckerLicenseTypeBinding (@"licenseType")
 
-@interface OSUChecker : OFObject
+@interface OSUChecker : OFObject <OFNetReachabilityDelegate>
 {
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    NSTimer *_automaticUpdateTimer;
+#else
     OFScheduledEvent *_automaticUpdateEvent;
+#endif
     
-    id _checkTarget;
+    id <OSUCheckerTarget> _checkTarget;
     
     NSString *_licenseType;
     
@@ -43,7 +51,7 @@ extern NSString * const OSULicenseTypeExpiring;
         unsigned int scheduleNextCheckOnLicenseTypeChange: 1;
     } _flags;
     
-    struct _OSUSoftwareUpdatePostponementState *_postpone;
+    OFNetReachability *_netReachability;
     
     OSUCheckOperation *_currentCheckOperation;
     
@@ -54,21 +62,22 @@ extern NSString * const OSULicenseTypeExpiring;
 
 + (OSUChecker *)sharedUpdateChecker;
 
+// Called automatically on the Mac via OFController, but on iOS we start/shutdown manually.
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
++ (void)startWithTarget:(id <OSUCheckerTarget>)target;
++ (void)shutdown;
+#endif
+
 + (OFVersionNumber *)OSUVersionNumber;          // of the framework itself, not the main app
 
 - (NSString *)licenseType;
 - (void)setLicenseType:(NSString *)licenseType;
-- (void)setTarget:(id)anObject;
-- (void)checkSynchronously;
+- (BOOL)checkSynchronously;
 - (NSDictionary *)generateReport;
 
 @property(readonly) BOOL checkInProgress;
 
 #pragma mark Subclass opportunities
-
-// Subclasses can provide implementations of this in order to prevent OSUChecker from checking when it shouldn't. -hostAppearsToBeReachable: is called in the main thread; OSUChecker's implementation uses the SystemConfiguration framework to check whether the machine has any routes to the outside world. (We can't explicitly check for a route to omnigroup.com or the user's proxy server, because that would require doing a name lookup; we can't do multithreaded name lookups without the stuff in OmniNetworking, so doing a name lookup might hang the app for a while (up to a few minutes) --- bad!)
-
-// - (BOOL)hostAppearsToBeReachable:(NSString *)aHostname;
 
 // Information about the current application (used to determine whether another version is newer / applicable)
 // Subclassers can override these if they have a need to specify different bundle identifiers, app versions or visible tracks (for test purposes, for instance).
@@ -79,9 +88,3 @@ extern NSString * const OSULicenseTypeExpiring;
 - (BOOL)applicationOnReleaseTrack;
 
 @end
-
-@interface NSObject (OFSoftwareUpdateTarget)
-/* Callback for when we determine there are new versions available -- presumably you want to notify the user of this. */
-- (void)newVersionsAvailable:(NSArray *)items /* NSArray of OSUItem */ fromCheck:(OSUCheckOperation *)op;
-@end
-

@@ -9,9 +9,10 @@
 
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorDetailSlice.h>
-#import "OUIInspectorStack.h"
-#import <UIKit/UIKit.h>
 
+#import "OUIInspectorStack.h"
+
+#import <UIKit/UIKit.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
@@ -38,6 +39,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 {
     UIButton *infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
+    infoButton.imageEdgeInsets = UIEdgeInsetsMake(0.0, 7.0, 0.0, 0.0);
     infoButton.frame = CGRectMake(0, 0, 44, 44); // TODO: -sizeToFit makes this too small. No luck making a UIButton subclass that implements the various sizing methods
     [infoButton addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
     return [[[UIBarButtonItem alloc] initWithCustomView:infoButton] autorelease];

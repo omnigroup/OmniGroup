@@ -1,4 +1,4 @@
-// Copyright 2001-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@ enum {
     OFUndoManagerNoLogging = 0,
     OFUndoManagerLogToConsole = 1<<0,
     OFUndoManagerLogToBuffer = 1<<1,
+    OFUndoManagerShortLogging = 1<<2,
 };
 
 @interface NSUndoManager (OFExtensions)

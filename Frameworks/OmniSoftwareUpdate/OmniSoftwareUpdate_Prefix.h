@@ -13,7 +13,12 @@
 
 #ifdef __OBJC__
     #import <Foundation/Foundation.h>
-    #import <AppKit/AppKit.h>
+
+    #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+        #import <UIKit/UIKit.h>
+    #else
+        #import <AppKit/AppKit.h>
+    #endif
 
     // Command line tool shouldn't bring in all of OmniBase
     #ifdef OMNI_BUNDLE_IDENTIFIER

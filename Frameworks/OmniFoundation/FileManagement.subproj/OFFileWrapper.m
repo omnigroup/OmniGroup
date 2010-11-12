@@ -164,9 +164,13 @@ static void _updateWrapperNamesFromURL(OFFileWrapper *self)
             OBASSERT([childWrapper preferredFilename] == nil || [childKey isEqualToString:[childWrapper preferredFilename]]);
             OBASSERT([childWrapper filename] == nil || [childKey isEqualToString:[childWrapper filename]]);
             
+            NSURL *originalChildURL = nil;
+            if (originalContentsURL)
+                originalChildURL = [NSURL fileURLWithPath:[[originalContentsURL path] stringByAppendingPathComponent:childKey]];
+            
             if (![childWrapper writeToURL:[NSURL fileURLWithPath:[path stringByAppendingPathComponent:childKey]]
                                   options:options
-                      originalContentsURL:[NSURL fileURLWithPath:[[originalContentsURL path] stringByAppendingPathComponent:childKey]]
+                      originalContentsURL:originalChildURL
                                     error:outError])
                 return NO;
         }

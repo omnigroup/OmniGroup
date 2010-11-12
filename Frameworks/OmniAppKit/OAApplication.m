@@ -351,10 +351,18 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     if (keyWindow.firstResponder && ![keyWindow.firstResponder applyToResponderChain:applier])
         return;
 
-    NSWindow *mainWindow = [self mainWindow];
-    if (keyWindow != mainWindow) {
-        if (mainWindow.firstResponder && ![mainWindow.firstResponder applyToResponderChain:applier])
-            return;
+    // NSApp class reference: "If the delegate cannot handle the message and the main window is different from the key window, NSApp begins searching again with the first responder in the main window".  Experimentally, this is not true if the key window is a sheet.  That makes sense since if the sheet is key, the window it covers is the mainWindow and the sheet conceptually blocks actions to it.
+    if (![keyWindow isSheet] && ![self modalWindow]) {
+        NSWindow *mainWindow = [self mainWindow];
+        if (keyWindow != mainWindow) {
+            if (mainWindow.firstResponder && ![mainWindow.firstResponder applyToResponderChain:applier])
+                return;
+        }
+    } else {
+        // Sheet is still key when NSWindowDidEndSheetNotification is sent and [toolbar _restoreToolbarItemsAfterSheet]. To make sure we're understanding all the cases where the mainWindow isn't participating, document them here...
+        // - keyWindow is a sheet attached to the mainWindow (like the save panel) or a sheet attached to a sheet attached...
+        // - there is a modal window. It may not be key ("Go to the folder:" from the open panel may)
+        OBASSERT(![keyWindow isVisible] || [[self mainWindow] attachedSheet] || [self modalWindow]);
     }
 
     // This isn't ideal since this forces an NSDocumentController to be created.  AppKit presumably has some magic to avoid this...  We could avoid this if there are no registered document types, if that becomes an issue.

@@ -13,8 +13,9 @@
 @class RootViewController;
 @class DetailViewController;
 
-@interface DropShadowOptionsAppDelegate : NSObject <UIApplicationDelegate> {
-    
+@interface DropShadowOptionsAppDelegate : NSObject <UIApplicationDelegate>
+{
+@private
     UIWindow *window;
     
     UISplitViewController *splitViewController;

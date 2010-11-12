@@ -98,18 +98,30 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     
     if (isTiled)
         [(OUITiledScalingView *)view tileVisibleRect];
+    
+    CGSize viewSize = view.frame.size;
+    self.contentSize = CGSizeMake(viewSize.width, viewSize.height);
 
-    [self adjustContentInset];
+    [self adjustContentInsetAnimated:NO];
+    
+    // UIScrollView will show scrollers if we have the same (or maybe it is nearly the same) size but aren't really scrollable.  See <bug://bugs/60077> (weird scroller issues in landscape mode)
+    CGSize scrollSize = self.bounds.size;
+    self.showsHorizontalScrollIndicator = scrollSize.width < viewSize.width;
+    self.showsVerticalScrollIndicator = scrollSize.height < viewSize.height;
     
     [view scaleChanged];
 }
 
 @synthesize centerContent = _centerContent;
-- (void)adjustContentInset;
+@synthesize extraEdgeInsets = _extraEdgeInsets;
+
+- (void)adjustContentInsetAnimated:(BOOL)animated;
 {
     OUIScalingView *view = _scalingView(self);
     if (!view || !_centerContent)
         return;
+    
+    //NSLog(@"adjustContentInset");
     
     // If the contained view has a size smaller than the scroll view, it will get pinned to the upper left.
     CGSize viewSize = view.frame.size;
@@ -118,12 +130,24 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     CGFloat xSpace = MAX(0, scrollSize.width - viewSize.width);
     CGFloat ySpace = MAX(0, scrollSize.height - viewSize.height);
     
-    self.contentInset = UIEdgeInsetsMake(ySpace/2, xSpace/2, ySpace/2, xSpace/2);
-    self.contentSize = CGSizeMake(viewSize.width, viewSize.height);
+    UIEdgeInsets zi = UIEdgeInsetsMake(ySpace/2, xSpace/2, ySpace/2, xSpace/2);
+    UIEdgeInsets ei = self.extraEdgeInsets;
+    UIEdgeInsets totalInsets = UIEdgeInsetsMake(zi.top + ei.top, zi.left + ei.left, zi.bottom + ei.bottom, zi.right + ei.right);
     
-    // UIScrollView will show scrollers if we have the same (or maybe it is nearly the same) size but aren't really scrollable.  See <bug://bugs/60077> (weird scroller issues in landscape mode)
-    self.showsHorizontalScrollIndicator = scrollSize.width < viewSize.width;
-    self.showsVerticalScrollIndicator = scrollSize.height < viewSize.height;
+    
+    if (UIEdgeInsetsEqualToEdgeInsets(self.contentInset, totalInsets))
+        return;
+    
+    if (animated) {
+        [UIView beginAnimations:@"OUIAdjustContentInsetAnimation" context:NULL];
+        [UIView setAnimationDuration:0.4];
+    }
+    
+    self.contentInset = totalInsets;
+    
+    if (animated) {
+        [UIView commitAnimations];
+    }
 }
 
 #pragma mark -
@@ -131,7 +155,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 
 - (void)layoutSubviews;
 {
-    [self adjustContentInset];
+    [self adjustContentInsetAnimated:NO];
 }
 
 @end

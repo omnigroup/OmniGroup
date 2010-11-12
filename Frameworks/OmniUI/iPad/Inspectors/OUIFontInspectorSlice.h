@@ -10,20 +10,30 @@
 #import <OmniUI/OUIInspectorSlice.h>
 #import <UIKit/UITableView.h>
 
-@class OUIInspectorTextWell, OUIInspectorStepperButton;
+@class OUIInspectorTextWell, OUIInspectorStepperButton, OUIFontInspectorDetailSlice, OUIInspectorSegmentedControl, OUIInspectorSegmentedControlButton;
 
 @interface OUIFontInspectorSlice : OUIInspectorSlice
 {
 @private
     OUIInspectorTextWell *_fontFamilyTextWell;
-    OUIInspectorTextWell *_fontFaceTextWell;
+    
+    OUIInspectorSegmentedControl *_fontAttributeSegmentedControl;
+    OUIInspectorSegmentedControlButton *_boldFontAttributeButton;
+    OUIInspectorSegmentedControlButton *_italicFontAttributeButton;
+    OUIInspectorSegmentedControlButton *_underlineFontAttributeButton;
+    OUIInspectorSegmentedControlButton *_strikethroughFontAttributeButton;
+    
     OUIInspectorStepperButton *_fontSizeDecreaseStepperButton;
     OUIInspectorStepperButton *_fontSizeIncreaseStepperButton;
     OUIInspectorTextWell *_fontSizeTextWell;
+    
+    BOOL _showStrikethrough;
+    
+    OUIFontInspectorDetailSlice *_fontFacesDetailSlice;
 }
 
 @property(retain) IBOutlet OUIInspectorTextWell *fontFamilyTextWell;
-@property(retain) IBOutlet OUIInspectorTextWell *fontFaceTextWell;
+@property(retain) IBOutlet OUIInspectorSegmentedControl *fontAttributeSegmentedControl;
 @property(retain) IBOutlet OUIInspectorStepperButton *fontSizeDecreaseStepperButton;
 @property(retain) IBOutlet OUIInspectorStepperButton *fontSizeIncreaseStepperButton;
 @property(retain) IBOutlet OUIInspectorTextWell *fontSizeTextWell;
@@ -32,23 +42,10 @@
 - (IBAction)decreaseFontSize:(id)sender;
 - (IBAction)fontSizeTextWellAction:(OUIInspectorTextWell *)sender;
 
-@end
+// Called from the family listing to display members of the family
+@property(retain) IBOutlet OUIFontInspectorDetailSlice *fontFacesDetailSlice;
+- (void)showFacesForFamilyBaseFont:(UIFont *)font;
 
-
-#import <OmniUI/OUIInspectorDetailSlice.h>
-@interface OUIFontInspectorDetailSlice : OUIInspectorDetailSlice <UITableViewDataSource, UITableViewDelegate>
-{
-@private
-    BOOL _showFamilies;
-    NSArray *_sections;
-    
-    NSArray *_fonts;
-    NSArray *_fontNames;
-    NSSet *_selectedFonts;
-}
-
-+ (NSSet *)recommendedFontFamilyNames;
-
-@property(assign,nonatomic) BOOL showFamilies;
+@property BOOL showStrikethrough;
 
 @end

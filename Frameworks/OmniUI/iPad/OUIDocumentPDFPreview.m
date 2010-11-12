@@ -103,8 +103,8 @@ RCS_ID("$Id$");
     CGFloat spaceY = targetRect.size.height - transformedRect.size.height;
     
     // CG shouldn't make the output bigger than we asked for, allowing slop for FP.
-    OBASSERT(spaceX > -0.00001);
-    OBASSERT(spaceY > -0.00001);
+    OBASSERT(spaceX > -0.0001);
+    OBASSERT(spaceY > -0.0001);
     
     // If there is extra space on both axes, scale up as much as we can.
     if (spaceX > 1 && spaceY > 1) {

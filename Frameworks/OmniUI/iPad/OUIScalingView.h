@@ -14,6 +14,7 @@
 
 @interface OUIScalingView : UIView
 {
+@private
     CGFloat _scale;
     BOOL _rotating;
     

@@ -24,9 +24,10 @@ typedef enum {
     id _representedObject;
 }
 
-
 @property(assign,nonatomic) OUIInspectorSegmentedControlButtonPosition buttonPosition;
 @property(retain,nonatomic) UIImage *image;
 @property(retain,nonatomic) id representedObject;
+
+- (void)addTarget:(id)target action:(SEL)action; // Convenience; sends action on touch-down.
 
 @end

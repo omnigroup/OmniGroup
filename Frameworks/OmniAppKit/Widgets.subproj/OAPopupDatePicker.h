@@ -20,7 +20,7 @@
     id _datePickerObjectValue;
     id _datePickerOriginalValue;
     
-    id _boundObject;
+    NSObject *_boundObject;
     id _boundObjectKeyPath;
     
     id _control;
@@ -55,3 +55,8 @@
 - (void)setDatePickerObjectValue:(id)newObjectValue;
 
 @end
+
+@interface NSObject (OAPopupDatePickerBoundObject)
+- (void)datePicker:(OAPopupDatePicker *)datePicker willUnbindFromKeyPath:(NSString *)keyPath;
+@end
+

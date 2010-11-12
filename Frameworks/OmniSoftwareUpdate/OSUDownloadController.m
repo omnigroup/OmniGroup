@@ -659,7 +659,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
                                   errorSuggestion, NSLocalizedRecoverySuggestionErrorKey,
                                   error, NSUnderlyingErrorKey,
                                   nil];
-    error = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUDownloadFailed userInfo:userInfo];
+    error = [NSError errorWithDomain:OSUErrorDomain code:OSUDownloadFailed userInfo:userInfo];
     
     error = [OFMultipleOptionErrorRecovery errorRecoveryErrorWithError:error object:nil options:[OSUSendFeedbackErrorRecovery class], [OFCancelErrorRecovery class], nil];
     if (![[self window] presentError:error])

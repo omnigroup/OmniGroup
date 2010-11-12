@@ -16,6 +16,7 @@
 #import "NSToolbar-OAExtensions.h"
 #import "NSFileManager-OAExtensions.h"
 #import "OAApplication.h"
+#import "OAToolbarItem.h"
 #import "OAWorkflow.h"
 
 RCS_ID("$Id$")
@@ -123,8 +124,8 @@ static NSString *removeScriptSuffix(NSString *string)
 
 - (void)executeScriptItem:sender;
 {
-    OAToolbarWindowController *controller = [(id)[sender toolbar] delegate];
-    OBASSERT([controller isKindOfClass:[OAToolbarWindowController class]]); // Need it non-nil for -window
+    OAToolbarItem *toolbarItem = [[sender retain] autorelease];
+    OAToolbarWindowController *controller = [[[[toolbarItem toolbar] delegate] retain] autorelease];
     
     if ([controller respondsToSelector:@selector(scriptToolbarItemShouldExecute:)] &&
 	![controller scriptToolbarItemShouldExecute:sender])

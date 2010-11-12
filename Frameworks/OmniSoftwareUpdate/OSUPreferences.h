@@ -7,24 +7,17 @@
 //
 // $Id$
 
-#import <OmniAppKit/OAPreferenceClient.h>
+#import <OmniFoundation/OFObject.h>
 
+@class OFPreference;
 @class OSUItem;
-@class NSButton, NSPopUpButton, NSTextField, NSTextView;
-@class WebView;
 
 /* Some of our preference keys aren't accessible through NSUserDefaults */
 #define OSUSharedPreferencesDomain CFSTR("com.omnigroup.OmniSoftwareUpdate")
 
-@interface OSUPreferences : OAPreferenceClient
-{
-    IBOutlet NSTextField   *infoTextField;
-    IBOutlet NSButton      *enableButton;
-    IBOutlet NSPopUpButton *frequencyPopup;
-    IBOutlet NSButton      *checkNowButton;
-    IBOutlet NSButton      *includeHardwareButton;
-    IBOutlet WebView       *systemConfigurationWebView;
-}
+#define OSUTrackVisibilityChangedNotification (@"OSUTrackVisibilityChanged")
+
+@interface OSUPreferences : OFObject
 
 // API
 + (OFPreference *)automaticSoftwareUpdateCheckEnabled;
@@ -32,14 +25,12 @@
 + (OFPreference *)includeHardwareDetails;
 + (OFPreference *)ignoredUpdates;
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE // Not including OSUItem on iOS currently
 + (void)setItem:(OSUItem *)anItem isIgnored:(BOOL)shouldBeIgnored;
 + (BOOL)itemIsIgnored:(OSUItem *)anItem;
+#endif
 
 + (NSArray *)visibleTracks;
 + (void)setVisibleTracks:(NSArray *)orderedTrackList;
-
-- (IBAction)checkNow:(id)sender;
-- (IBAction)showSystemConfigurationDetailsSheet:(id)sender;
-- (IBAction)dismissSystemConfigurationDetailsSheet:(id)sender;
 
 @end

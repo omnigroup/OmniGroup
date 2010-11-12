@@ -84,16 +84,9 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     } else
         inspectorResourceBundle = sourceBundle;
     
-    Class cls;
-    if (sourceBundle) {
-        cls = [sourceBundle classNamed:className];
-        if (!cls)
-            [NSException raise:NSInvalidArgumentException format:@"Inspector dictionary in bundle %@ specified class '%@' that doesn't exist: %@", sourceBundle, className, dict];
-    } else {
-        cls = NSClassFromString(className);
-        if (!cls)
-            [NSException raise:NSInvalidArgumentException format:@"Inspector dictionary specified class that doesn't exist: %@", dict];
-    }
+    Class cls = NSClassFromString(className);
+    if (!cls)
+        [NSException raise:NSInvalidArgumentException format:@"Inspector dictionary specified class that doesn't exist: %@", dict];
     
     return [[cls alloc] initWithDictionary:dict bundle:inspectorResourceBundle];
 }
@@ -316,12 +309,19 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 
 - (BOOL)shouldBeUsedForObject:(id)object;
 {
-    return [[self inspectedObjectsPredicate] evaluateWithObject:object] && [[self shouldBeUsedForObjectPredicate] evaluateWithObject:object];
+    if (![[self inspectedObjectsPredicate] evaluateWithObject:object])
+        return NO;
+        
+    // Optional finer grain predicate.
+    NSPredicate *predicate = [self shouldBeUsedForObjectPredicate];
+    if (predicate)
+        return [predicate evaluateWithObject:object];
+    
+    return YES;
 }
 
 - (NSPredicate *)shouldBeUsedForObjectPredicate;
 {
-    OBASSERT_NOT_REACHED("Not going to get any love this way.");
     return nil;
 }
 

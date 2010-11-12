@@ -7,7 +7,6 @@
 
 #import "OUIUndoButtonController.h"
 
-//#import <OmniUI/OUIAppController.h>
 #import "OUIUndoButton.h"
 
 RCS_ID("$Id$");
@@ -39,6 +38,9 @@ RCS_ID("$Id$");
         
         [_menuPopoverController release];
         [_menuNavigationController release];
+        
+        _menuPopoverController = nil;
+        _menuNavigationController = nil;
     }
 }
 
@@ -53,11 +55,27 @@ RCS_ID("$Id$");
 
 - (void)viewDidLoad;
 {
+    [super viewDidLoad];
     UIImage *layoutBackgroundImage = [UIImage imageNamed:@"OUIStandardPopoverButton.png"];
     layoutBackgroundImage = [layoutBackgroundImage stretchableImageWithLeftCapWidth:6 topCapHeight:0];
     
     [_undoButton setBackgroundImage:layoutBackgroundImage forState:UIControlStateNormal];
     [_redoButton setBackgroundImage:layoutBackgroundImage forState:UIControlStateNormal];
+}
+
+- (void)viewDidUnload;
+{
+    [super viewDidUnload];
+    [_undoButton release];
+    [_redoButton release];
+
+    [_menuPopoverController release];
+    [_menuNavigationController release];
+    
+    _undoButton = nil;
+    _redoButton = nil;
+    _menuPopoverController = nil;
+    _menuNavigationController = nil;    
 }
 
 - (void)showUndoMenuFromItem:(OUIUndoBarButtonItem *)item;
@@ -90,6 +108,13 @@ RCS_ID("$Id$");
     
     [_menuPopoverController dismissPopoverAnimated:YES];
     return YES;
+}
+
+- (BOOL)isMenuVisible;
+{
+    if (_menuPopoverController && [_menuPopoverController isPopoverVisible])
+        return YES;
+    return NO;
 }
 
 #pragma mark -

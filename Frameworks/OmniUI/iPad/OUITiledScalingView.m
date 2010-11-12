@@ -10,8 +10,8 @@
 #import <OmniUI/OUIScalingScrollView.h>
 #import <QuartzCore/QuartzCore.h>
 
-#import "OUITileDebug.h"
-#import "OUIScalingViewTile.h"
+#import <OmniUI/OUITileDebug.h>
+#import <OmniUI/OUIScalingViewTile.h>
 
 #import <OmniBase/rcsid.h>
 

@@ -31,6 +31,8 @@ typedef enum {
     CGRect loupeFramePosition;  // The frame of the above image, expressed with (0,0) at the (unmagnified) touch point
     CGPathRef loupeClipPath;    // The clip-path into which to draw the zoomed view region, in our bounds coordinate system
     CGPoint loupeTouchPoint;    // The point in our bounds coordinate system at which (magnified) _touchPoint should be made to draw
+    UIImage *loupeTabImage;     // Additional image to draw, may be nil
+    CGPoint loupeTabPosition;   // The offset of loupeTabImage w.r.t. the origin of loupeFrameImage
 }
 
 @property(readwrite,nonatomic,assign) CGPoint touchPoint;

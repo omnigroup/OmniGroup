@@ -110,6 +110,11 @@ static id _commonInit(OUIInspectorSegmentedControlButton *self)
 
 @synthesize representedObject = _representedObject;
 
+- (void)addTarget:(id)target action:(SEL)action;
+{
+    [super addTarget:target action:action forControlEvents:UIControlEventTouchDown];
+}
+
 #pragma mark -
 #pragma mark Private
 

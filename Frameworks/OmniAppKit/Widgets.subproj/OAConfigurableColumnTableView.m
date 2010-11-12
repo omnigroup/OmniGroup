@@ -98,7 +98,7 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
     return nil;
 }
 
-- (void) setDataSource: (id) dataSource;
+- (void)setDataSource:(id <NSTableViewDataSource>)dataSource;
 {
     [super setDataSource: dataSource];
     

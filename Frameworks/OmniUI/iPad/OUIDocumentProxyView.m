@@ -13,6 +13,7 @@
 #import <OmniUI/OUIDocumentPickerView.h>
 #endif
 #import <OmniQuartz/OQDrawing.h>
+
 #import "OUIDocumentPDFPreview.h"
 #import "OUIDocumentImagePreview.h"
 
@@ -217,6 +218,14 @@ void OUIDocumentProxyDrawPreview(CGContextRef ctx, OUIDocumentPDFPreview *pdfPre
     CGRect paperRect = _paperRect(pdfPreview, bounds);
     CGRect transformedTarget = CGRectApplyAffineTransform(paperRect, xform);
 
+    BOOL isViewingGraffleStencils = ([[NSUserDefaults standardUserDefaults] objectForKey:@"FilterPreference"] && 
+                                     [[[NSUserDefaults standardUserDefaults] objectForKey:@"FilterPreference"] integerValue] == 1);
+    
+    if (isViewingGraffleStencils) {
+        OQAppendRoundedRect(ctx, transformedTarget, 5);
+        CGContextClip(ctx);
+    }
+
     // A white piece of paper and shadow, then the PDF atop the paper.
     CGContextSaveGState(ctx);
     {
@@ -225,18 +234,21 @@ void OUIDocumentProxyDrawPreview(CGContextRef ctx, OUIDocumentPDFPreview *pdfPre
         
         CGContextConcatCTM(ctx, xform); // size the page to the target rect we wanted
         
-        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
-        
-        // Newer OGS builds emit transparent backgrounds.  Make sure our preview appear atop something.
-        CGFloat alpha = pdfPreview != nil ? 1.0 : 0.2;
-        CGFloat whiteComponents[] = {1.0, alpha};
-        CGColorRef white = CGColorCreate(colorSpace, whiteComponents);
-        CGContextSetFillColorWithColor(ctx, white);
-        CGColorRelease(white);
-        
-        CGColorSpaceRelease(colorSpace);
-        
-        CGContextFillRect(ctx, paperRect);
+        // Some temporary code so that stencils can be semi-transparent
+        NSString *name = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDisplayName"];
+        if (!name || ![name isEqualToString:@"OmniGraffle"] || !pdfPreview) {
+            // Newer OGS builds emit transparent backgrounds.  Make sure our preview appear atop something.
+            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
+            CGFloat alpha = pdfPreview != nil ? 1.0 : 0.2;
+            CGFloat whiteComponents[] = {1.0, alpha};
+            CGColorRef white = CGColorCreate(colorSpace, whiteComponents);
+            CGContextSetFillColorWithColor(ctx, white);
+            CGColorRelease(white);
+            
+            CGColorSpaceRelease(colorSpace);
+            
+            CGContextFillRect(ctx, paperRect);
+        }
         
         if (pdfPreview) {
             // the PDF is happy to draw outside its page rect.
@@ -267,7 +279,6 @@ void OUIDocumentProxyDrawPreview(CGContextRef ctx, OUIDocumentPDFPreview *pdfPre
     
     
     // Now, compute the transformed target and draw atop it.
-    
     CGContextSaveGState(ctx);
     {
         // Lighting gradient atop the preview; we don't bother flipping the coordinate system here, but just swapped the colors.
@@ -280,30 +291,31 @@ void OUIDocumentProxyDrawPreview(CGContextRef ctx, OUIDocumentPDFPreview *pdfPre
     // Paper texture.
     CGContextSaveGState(ctx);
     {        
-        CGRect remainder;
-        
-        CGRect topLeft, top, topRight;
-        CGRectDivide(transformedTarget, &top, &remainder, BorderImages.top.size.height, CGRectMaxYEdge);
-        CGRectDivide(top, &topLeft, &top, BorderImages.topLeft.size.width, CGRectMinXEdge);
-        CGRectDivide(top, &topRight, &top, BorderImages.topLeft.size.width, CGRectMaxXEdge);
-        CGContextDrawImage(ctx, topLeft, [BorderImages.topLeft.image CGImage]);
-        CGContextDrawImage(ctx, top, [BorderImages.top.image CGImage]);
-        CGContextDrawImage(ctx, topRight, [BorderImages.topRight.image CGImage]);
-        
-        CGRect bottomLeft, bottom, bottomRight;
-        CGRectDivide(remainder, &bottom, &remainder, BorderImages.bottom.size.height, CGRectMinYEdge);
-        CGRectDivide(bottom, &bottomLeft, &bottom, BorderImages.bottomLeft.size.width, CGRectMinXEdge);
-        CGRectDivide(bottom, &bottomRight, &bottom, BorderImages.bottomLeft.size.width, CGRectMaxXEdge);
-        CGContextDrawImage(ctx, bottomLeft, [BorderImages.bottomLeft.image CGImage]);
-        CGContextDrawImage(ctx, bottom, [BorderImages.bottom.image CGImage]);
-        CGContextDrawImage(ctx, bottomRight, [BorderImages.bottomRight.image CGImage]);
-        
-        CGRect left, right;
-        CGRectDivide(remainder, &left, &remainder, BorderImages.left.size.width, CGRectMinXEdge);
-        CGRectDivide(remainder, &right, &remainder, BorderImages.right.size.width, CGRectMaxXEdge);
-        CGContextDrawImage(ctx, left, [BorderImages.left.image CGImage]);
-        CGContextDrawImage(ctx, right, [BorderImages.right.image CGImage]);
-        
+        if (!isViewingGraffleStencils) {
+            CGRect remainder;
+            
+            CGRect topLeft, top, topRight;
+            CGRectDivide(transformedTarget, &top, &remainder, BorderImages.top.size.height, CGRectMaxYEdge);
+            CGRectDivide(top, &topLeft, &top, BorderImages.topLeft.size.width, CGRectMinXEdge);
+            CGRectDivide(top, &topRight, &top, BorderImages.topLeft.size.width, CGRectMaxXEdge);
+            CGContextDrawImage(ctx, topLeft, [BorderImages.topLeft.image CGImage]);
+            CGContextDrawImage(ctx, top, [BorderImages.top.image CGImage]);
+            CGContextDrawImage(ctx, topRight, [BorderImages.topRight.image CGImage]);
+            
+            CGRect bottomLeft, bottom, bottomRight;
+            CGRectDivide(remainder, &bottom, &remainder, BorderImages.bottom.size.height, CGRectMinYEdge);
+            CGRectDivide(bottom, &bottomLeft, &bottom, BorderImages.bottomLeft.size.width, CGRectMinXEdge);
+            CGRectDivide(bottom, &bottomRight, &bottom, BorderImages.bottomLeft.size.width, CGRectMaxXEdge);
+            CGContextDrawImage(ctx, bottomLeft, [BorderImages.bottomLeft.image CGImage]);
+            CGContextDrawImage(ctx, bottom, [BorderImages.bottom.image CGImage]);
+            CGContextDrawImage(ctx, bottomRight, [BorderImages.bottomRight.image CGImage]);
+            
+            CGRect left, right;
+            CGRectDivide(remainder, &left, &remainder, BorderImages.left.size.width, CGRectMinXEdge);
+            CGRectDivide(remainder, &right, &remainder, BorderImages.right.size.width, CGRectMaxXEdge);
+            CGContextDrawImage(ctx, left, [BorderImages.left.image CGImage]);
+            CGContextDrawImage(ctx, right, [BorderImages.right.image CGImage]);
+        }
         // Rest is tiled middle. The edges are just gray and we want the full page covered with this tile to get texture into the edges/corners
         // The CG tiling fills the clip rect by scaling the image to the specified rect.
         CGContextAddRect(ctx, transformedTarget);

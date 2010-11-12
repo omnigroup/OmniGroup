@@ -49,6 +49,11 @@
 
 @property(readonly) OUIDocument *document;
 
+// UIApplicationDelegate methods we implement (see OUIAppController too)
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
+- (void)applicationDidEnterBackground:(UIApplication *)application;
+
 // Subclass responsibility
 - (Class)documentClassForURL:(NSURL *)url;
 - (UIView *)pickerAnimationViewForTarget:(OUIDocument *)document;

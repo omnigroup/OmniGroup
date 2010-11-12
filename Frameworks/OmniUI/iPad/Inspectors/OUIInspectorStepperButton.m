@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIInspectorStepperButton.h"
+#import <OmniUI/OUIInspectorStepperButton.h>
 
 #import <OmniUI/OUIDrawing.h>
 #import <UIKit/UIKit.h>

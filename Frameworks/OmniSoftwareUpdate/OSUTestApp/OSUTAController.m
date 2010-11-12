@@ -24,8 +24,12 @@ RCS_ID("$Id$");
 @class OSUInstaller;
 
 // Preferences keys
-static NSString *OSUInstallFromURLKey = @"installFrom";
-static NSString *OSULicenseTypeKey = @"targetLicenseType";
+static NSString * const OSUInstallFromURLKey = @"installFrom";
+static NSString * const OSULicenseTypeKey = @"targetLicenseType";
+
+@interface OSUTAController (/*Private*/)
+- (void)_noteVisibleTracks:(NSNotification *)notification;
+@end
 
 @implementation OSUTAController
 
@@ -61,11 +65,6 @@ static NSString *OSULicenseTypeKey = @"targetLicenseType";
 //    [[OSUChecker sharedUpdateChecker] setLicenseType:[[licenseStatePopUp selectedItem] representedObject]];
 }
 
-@end
-
-
-@implementation OSUTAController (DelegatesAndDataSources)
-
 - (void)awakeFromNib
 {
     [licenseStatePopUp removeAllItems];
@@ -92,10 +91,10 @@ static NSString *OSULicenseTypeKey = @"targetLicenseType";
     [licenseStatePopUp bind:NSSelectedObjectBinding toObject:[NSUserDefaults standardUserDefaults] withKeyPath:OSULicenseTypeKey options:nil];
     [[OSUChecker sharedUpdateChecker] bind:OSUCheckerLicenseTypeBinding toObject:[NSUserDefaults standardUserDefaults] withKeyPath:OSULicenseTypeKey options:nil];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(noteVisibleTracks:) name:OSUTrackVisibilityChangedNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(noteVisibleTracks:) name:NSUserDefaultsDidChangeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_noteVisibleTracks:) name:OSUTrackVisibilityChangedNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_noteVisibleTracks:) name:NSUserDefaultsDidChangeNotification object:nil];
 
-    [self noteVisibleTracks:nil];
+    [self _noteVisibleTracks:nil];
 }
 
 #pragma mark --
@@ -146,9 +145,12 @@ extern NSDictionary *knownTrackOrderings;
     [queueEntry release];
 }
 
-- (void)noteVisibleTracks:(NSNotification *)notification;
+#pragma mark -
+#pragma mark Private
+
+- (void)_noteVisibleTracks:(NSNotification *)notification;
 {
-    NSArray *trax = [[OFPreference preferenceForKey:OSUVisibleTracksKey] stringArrayValue];
+    NSArray *trax = [OSUPreferences visibleTracks];
     NSMutableSet *more = [NSMutableSet setWithArray:trax];
     NSMutableAttributedString *txt = [[NSMutableAttributedString alloc] init];
     NSDictionary *normAttrs = [NSDictionary dictionaryWithObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];

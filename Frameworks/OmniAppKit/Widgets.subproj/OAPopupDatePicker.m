@@ -133,10 +133,15 @@ static NSSize calendarImageSize;
 - (void)startPickingDateWithTitle:(NSString *)title forControl:(NSControl *)aControl stringUpdateSelector:(SEL)stringUpdateSelector defaultDate:(NSDate *)defaultDate;
 {
     NSDictionary *bindingInfo = [aControl infoForBinding:@"value"];
+    id bindingObject = [bindingInfo objectForKey:NSObservedObjectKey];
     NSString *bindingKeyPath = [bindingInfo objectForKey:NSObservedKeyPathKey];
     bindingKeyPath = [bindingKeyPath stringByReplacingAllOccurrencesOfString:@"selectedObjects." withString:@"selection."];
-     
-    [self startPickingDateWithTitle:title fromRect:[aControl visibleRect] inView:aControl bindToObject:[bindingInfo objectForKey:NSObservedObjectKey] withKeyPath:bindingKeyPath control:aControl controlFormatter:[aControl formatter] defaultDate:defaultDate];
+
+    if (!bindingInfo) {
+	bindingObject = aControl;
+	bindingKeyPath = @"objectValue";
+    }
+    [self startPickingDateWithTitle:title fromRect:[aControl visibleRect] inView:aControl bindToObject:bindingObject withKeyPath:bindingKeyPath control:aControl controlFormatter:[aControl formatter] defaultDate:defaultDate];
 }
 
 - (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter defaultDate:(NSDate *)defaultDate;
@@ -311,6 +316,9 @@ static NSSize calendarImageSize;
 	}
     } 
     
+    if ([_boundObject respondsToSelector:@selector(datePicker:willUnbindFromKeyPath:)])
+        [_boundObject datePicker:self willUnbindFromKeyPath:_boundObjectKeyPath];
+    
     [datePicker unbind:NSValueBinding];
     [timePicker unbind:NSValueBinding];
     
@@ -379,10 +387,12 @@ static NSSize calendarImageSize;
 {
     [super resignKeyWindow];
     NSWindow *parentWindow = [self parentWindow];
-    [[self parentWindow] removeChildWindow:self];
+    [parentWindow removeChildWindow:self];
     [self close];
-    // <bug://bugs/57041> (Enter/Return should commit edits on the split task window)
-    [parentWindow makeKeyAndOrderFront:nil];
+    if ([[NSApp currentEvent] type] == NSKeyDownMask) {
+        // <bug://bugs/57041> (Enter/Return should commit edits on the split task window)
+        [parentWindow makeKeyAndOrderFront:nil];
+    }
 }
 
 @end

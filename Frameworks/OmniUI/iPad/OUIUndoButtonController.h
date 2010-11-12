@@ -32,6 +32,7 @@
 - (IBAction)redoButtonAction:(id)sender;
 - (void)showUndoMenuFromItem:(OUIUndoBarButtonItem *)item;
 - (BOOL)dismissUndoMenu;
+- (BOOL)isMenuVisible;
 
 @property (nonatomic, assign) id <OUIUndoBarButtonItemTarget> undoBarButtonItemTarget;
 

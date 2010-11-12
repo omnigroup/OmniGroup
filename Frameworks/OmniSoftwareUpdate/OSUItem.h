@@ -26,7 +26,6 @@ enum OSUTrackComparison {
     OSUTrackNotOrdered = 23 // Hail Eris.
 };
 
-#define OSUTrackVisibilityChangedNotification (@"OSUTrackVisibilityChanged")
 #define OSUTrackInformationChangedNotification (@"OSUTrackInfoChanged")
 
 @interface OSUItem : OFObject
@@ -60,10 +59,10 @@ enum OSUTrackComparison {
 + (NSPredicate *)availableAndNotSupersededOrIgnoredPredicate;
 
 + (enum OSUTrackComparison)compareTrack:(NSString *)aTrack toTrack:(NSString *)otherTrack;
-+ (NSArray *)dominantTracks:(NSObject *)someTracks;
-+ (NSArray *)elaboratedTracks:(NSObject *)someTracks;
++ (NSArray *)dominantTracks:(id <NSFastEnumeration>)someTracks;
++ (NSArray *)elaboratedTracks:(id <NSFastEnumeration>)someTracks;
 + (BOOL)isTrack:(NSString *)aTrack includedIn:(NSArray *)someTracks;
-+ (void)processTrackInformation:(NSXMLNode *)trackInfo;
++ (void)processTrackInformation:(NSXMLDocument *)allTracks;
 + (NSDictionary *)informationForTrack:(NSString *)trackName;
 
 - initWithRSSElement:(NSXMLElement *)element error:(NSError **)outError;

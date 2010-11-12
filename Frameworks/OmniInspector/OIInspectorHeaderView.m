@@ -15,6 +15,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>
 #import "OIInspectorGroup.h"
+#import "OIInspectorRegistry.h"
 #import "OITabbedInspector.h"  // For OITabbedInspectorUnifiedLookDefaultsKey
 RCS_ID("$Id$")
 
@@ -370,7 +371,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 
 - (BOOL)_allowToggleExpandedness;
 {
-    return ([OIInspectorGroup groupCount] > 1);
+    return ![[OIInspectorRegistry sharedInspector] hasSingleInspector];
 }
 
 @end

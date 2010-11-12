@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 45;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -24,15 +24,41 @@
 		3444B0710F71FFFF005CFD59 /* OFSFileInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0630F71FFFF005CFD59 /* OFSFileInfo.m */; };
 		3444B0720F71FFFF005CFD59 /* OFSFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0640F71FFFF005CFD59 /* OFSFileManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3444B0730F71FFFF005CFD59 /* OFSFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0650F71FFFF005CFD59 /* OFSFileManager.m */; };
-		3444B0950F72002A005CFD59 /* OFSFileManagerAsynchronousReadTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0940F72002A005CFD59 /* OFSFileManagerAsynchronousReadTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3444B0950F72002A005CFD59 /* OFSFileManagerAsynchronousOperationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0940F72002A005CFD59 /* OFSFileManagerAsynchronousOperationTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3444B0BA0F72022C005CFD59 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0B80F72022C005CFD59 /* Errors.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3444B0BB0F72022C005CFD59 /* Errors.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0B90F72022C005CFD59 /* Errors.m */; };
+		3464810E1276674B00E8A9B4 /* OFSAsynchronousOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3464810D1276674B00E8A9B4 /* OFSAsynchronousOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3464810F1276674B00E8A9B4 /* OFSAsynchronousOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3464810D1276674B00E8A9B4 /* OFSAsynchronousOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3469F30A10FD900100FF0307 /* OFSDAVFileManagerDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 3469F2F610FD8F2400FF0307 /* OFSDAVFileManagerDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34973C9F125BCF340057E909 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34973C9E125BCF340057E909 /* Security.framework */; };
+		34B5E45012773A810007C4E3 /* OFSFileOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B5E44E12773A810007C4E3 /* OFSFileOperation.h */; };
+		34B5E45112773A810007C4E3 /* OFSFileOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B5E44F12773A810007C4E3 /* OFSFileOperation.m */; };
+		34B5E45212773A810007C4E3 /* OFSFileOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B5E44E12773A810007C4E3 /* OFSFileOperation.h */; };
+		34B5E45312773A810007C4E3 /* OFSFileOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B5E44F12773A810007C4E3 /* OFSFileOperation.m */; };
+		34B7F889127600DE0079FAC5 /* OmniFileStore.strings in Resources */ = {isa = PBXBuildFile; fileRef = 34B7F887127600DE0079FAC5 /* OmniFileStore.strings */; };
 		34C017B1109952B1001C110D /* ofs.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C017B0109952B1001C110D /* ofs.m */; };
 		34C017C610995453001C110D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3421AEC10F71F9D80096AADB /* OmniBase.framework */; };
 		34C017C710995454001C110D /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3421AEC20F71F9D80096AADB /* OmniFoundation.framework */; };
 		34C0183D1099582C001C110D /* OmniFileStore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* OmniFileStore.framework */; };
 		34C0185C109958D8001C110D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		34D06C6A125D208200CA3963 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0B80F72022C005CFD59 /* Errors.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34D06C6B125D208200CA3963 /* Errors.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0B90F72022C005CFD59 /* Errors.m */; };
+		34D06C6C125D208400CA3963 /* OFSDAVFileManager-Network.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0580F71FFFF005CFD59 /* OFSDAVFileManager-Network.h */; };
+		34D06C6D125D208500CA3963 /* OFSDAVFileManager-Network.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0590F71FFFF005CFD59 /* OFSDAVFileManager-Network.m */; };
+		34D06C6E125D208500CA3963 /* OFSDAVFileManager-Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B05A0F71FFFF005CFD59 /* OFSDAVFileManager-Reachability.h */; };
+		34D06C6F125D208600CA3963 /* OFSDAVFileManager-Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B05B0F71FFFF005CFD59 /* OFSDAVFileManager-Reachability.m */; };
+		34D06C70125D208600CA3963 /* OFSDAVFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B05C0F71FFFF005CFD59 /* OFSDAVFileManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34D06C71125D208700CA3963 /* OFSDAVFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B05D0F71FFFF005CFD59 /* OFSDAVFileManager.m */; };
+		34D06C72125D208700CA3963 /* OFSDAVFileManagerDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 3469F2F610FD8F2400FF0307 /* OFSDAVFileManagerDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34D06C73125D208800CA3963 /* OFSDAVOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B05F0F71FFFF005CFD59 /* OFSDAVOperation.m */; };
+		34D06C74125D208800CA3963 /* OFSDAVOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B05E0F71FFFF005CFD59 /* OFSDAVOperation.h */; };
+		34D06C75125D208900CA3963 /* OFSFileFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0600F71FFFF005CFD59 /* OFSFileFileManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34D06C76125D208A00CA3963 /* OFSFileFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0610F71FFFF005CFD59 /* OFSFileFileManager.m */; };
+		34D06C77125D208A00CA3963 /* OFSFileInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0620F71FFFF005CFD59 /* OFSFileInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34D06C78125D208B00CA3963 /* OFSFileInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0630F71FFFF005CFD59 /* OFSFileInfo.m */; };
+		34D06C79125D208C00CA3963 /* OFSFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0640F71FFFF005CFD59 /* OFSFileManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34D06C7A125D208C00CA3963 /* OFSFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0650F71FFFF005CFD59 /* OFSFileManager.m */; };
+		34D06C7B125D208D00CA3963 /* OFSFileManagerAsynchronousOperationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0940F72002A005CFD59 /* OFSFileManagerAsynchronousOperationTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
@@ -62,7 +88,6 @@
 		3421AE8B0F71F89C0096AADB /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
 		3421AE8C0F71F89C0096AADB /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		3421AE8D0F71F89C0096AADB /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
-		3421AE900F71F89C0096AADB /* Omni-Global-Common-10.5.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-10.5.xcconfig"; sourceTree = "<group>"; };
 		3421AE910F71F89C0096AADB /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
 		3421AE920F71F89C0096AADB /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
 		3421AE930F71F89C0096AADB /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -92,13 +117,28 @@
 		3444B0630F71FFFF005CFD59 /* OFSFileInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSFileInfo.m; sourceTree = "<group>"; };
 		3444B0640F71FFFF005CFD59 /* OFSFileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSFileManager.h; sourceTree = "<group>"; };
 		3444B0650F71FFFF005CFD59 /* OFSFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSFileManager.m; sourceTree = "<group>"; };
-		3444B0940F72002A005CFD59 /* OFSFileManagerAsynchronousReadTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSFileManagerAsynchronousReadTarget.h; sourceTree = "<group>"; };
+		3444B0940F72002A005CFD59 /* OFSFileManagerAsynchronousOperationTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSFileManagerAsynchronousOperationTarget.h; sourceTree = "<group>"; };
 		3444B0B80F72022C005CFD59 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
 		3444B0B90F72022C005CFD59 /* Errors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Errors.m; sourceTree = "<group>"; };
+		3464810D1276674B00E8A9B4 /* OFSAsynchronousOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSAsynchronousOperation.h; sourceTree = "<group>"; };
 		3469F2F610FD8F2400FF0307 /* OFSDAVFileManagerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSDAVFileManagerDelegate.h; sourceTree = "<group>"; };
-		3469F30410FD8FEB00FF0307 /* Omni-Global-Common-10.6.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-10.6.xcconfig"; sourceTree = "<group>"; };
+		34973BB8125BB4FD0057E909 /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
+		34973C9E125BCF340057E909 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		34B5E44E12773A810007C4E3 /* OFSFileOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSFileOperation.h; sourceTree = "<group>"; };
+		34B5E44F12773A810007C4E3 /* OFSFileOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSFileOperation.m; sourceTree = "<group>"; };
+		34B7F888127600DE0079FAC5 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniFileStore.strings; sourceTree = "<group>"; };
 		34C017A410995278001C110D /* ofs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ofs; sourceTree = BUILT_PRODUCTS_DIR; };
 		34C017B0109952B1001C110D /* ofs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ofs.m; sourceTree = "<group>"; };
+		34D06C54125D202500CA3963 /* libOmniFileStore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniFileStore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		34D06C5E125D203B00CA3963 /* Target-Touch-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Touch-Common.xcconfig"; sourceTree = "<group>"; };
+		34D06C5F125D203B00CA3963 /* Touch-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		34D06C60125D203B00CA3963 /* Touch-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34D06C61125D203B00CA3963 /* Touch-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		34D06C62125D203B00CA3963 /* Touch-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		34D06C63125D203B00CA3963 /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
+		34D06C64125D203B00CA3963 /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34D06C65125D203B00CA3963 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
+		34D06C66125D203B00CA3963 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* OmniFileStore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniFileStore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -115,6 +155,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		34D06C52125D202500CA3963 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DC2EF560486A6940098B216 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -122,6 +169,7 @@
 				3421AEC30F71F9D80096AADB /* OmniBase.framework in Frameworks */,
 				3421AEC40F71F9D80096AADB /* OmniFoundation.framework in Frameworks */,
 				3421AFF70F71F9E40096AADB /* Foundation.framework in Frameworks */,
+				34973C9F125BCF340057E909 /* Security.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,6 +181,7 @@
 			children = (
 				8DC2EF5B0486A6940098B216 /* OmniFileStore.framework */,
 				34C017A410995278001C110D /* ofs */,
+				34D06C54125D202500CA3963 /* libOmniFileStore.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -156,6 +205,7 @@
 			children = (
 				3421AEC10F71F9D80096AADB /* OmniBase.framework */,
 				3421AEC20F71F9D80096AADB /* OmniFoundation.framework */,
+				34973C9E125BCF340057E909 /* Security.framework */,
 				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
 			);
 			name = "Frameworks and Libraries";
@@ -165,6 +215,7 @@
 			isa = PBXGroup;
 			children = (
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
+				34B7F887127600DE0079FAC5 /* OmniFileStore.strings */,
 				089C1666FE841158C02AAC07 /* InfoPlist.strings */,
 			);
 			name = Resources;
@@ -184,11 +235,14 @@
 				3444B05F0F71FFFF005CFD59 /* OFSDAVOperation.m */,
 				3444B0600F71FFFF005CFD59 /* OFSFileFileManager.h */,
 				3444B0610F71FFFF005CFD59 /* OFSFileFileManager.m */,
+				34B5E44E12773A810007C4E3 /* OFSFileOperation.h */,
+				34B5E44F12773A810007C4E3 /* OFSFileOperation.m */,
 				3444B0620F71FFFF005CFD59 /* OFSFileInfo.h */,
 				3444B0630F71FFFF005CFD59 /* OFSFileInfo.m */,
 				3444B0640F71FFFF005CFD59 /* OFSFileManager.h */,
 				3444B0650F71FFFF005CFD59 /* OFSFileManager.m */,
-				3444B0940F72002A005CFD59 /* OFSFileManagerAsynchronousReadTarget.h */,
+				3464810D1276674B00E8A9B4 /* OFSAsynchronousOperation.h */,
+				3444B0940F72002A005CFD59 /* OFSFileManagerAsynchronousOperationTarget.h */,
 				3444B0B80F72022C005CFD59 /* Errors.h */,
 				3444B0B90F72022C005CFD59 /* Errors.m */,
 			);
@@ -219,8 +273,6 @@
 				3421AE8B0F71F89C0096AADB /* Omni-Framework-Coverage.xcconfig */,
 				3421AE8C0F71F89C0096AADB /* Omni-Framework-Debug.xcconfig */,
 				3421AE8D0F71F89C0096AADB /* Omni-Framework-Release.xcconfig */,
-				3421AE900F71F89C0096AADB /* Omni-Global-Common-10.5.xcconfig */,
-				3469F30410FD8FEB00FF0307 /* Omni-Global-Common-10.6.xcconfig */,
 				3421AE910F71F89C0096AADB /* Omni-Global-Common.xcconfig */,
 				3421AE920F71F89C0096AADB /* Omni-Global-Coverage.xcconfig */,
 				3421AE930F71F89C0096AADB /* Omni-Global-Debug.xcconfig */,
@@ -233,6 +285,16 @@
 				3421AE9A0F71F89C0096AADB /* Omni-Tool-Coverage.xcconfig */,
 				3421AE9B0F71F89C0096AADB /* Omni-Tool-Debug.xcconfig */,
 				3421AE9C0F71F89C0096AADB /* Omni-Tool-Release.xcconfig */,
+				34973BB8125BB4FD0057E909 /* Target-Mac-Common.xcconfig */,
+				34D06C5E125D203B00CA3963 /* Target-Touch-Common.xcconfig */,
+				34D06C5F125D203B00CA3963 /* Touch-Application-Common.xcconfig */,
+				34D06C60125D203B00CA3963 /* Touch-Application-Coverage.xcconfig */,
+				34D06C61125D203B00CA3963 /* Touch-Application-Debug.xcconfig */,
+				34D06C62125D203B00CA3963 /* Touch-Application-Release.xcconfig */,
+				34D06C63125D203B00CA3963 /* Touch-Library-Common.xcconfig */,
+				34D06C64125D203B00CA3963 /* Touch-Library-Coverage.xcconfig */,
+				34D06C65125D203B00CA3963 /* Touch-Library-Debug.xcconfig */,
+				34D06C66125D203B00CA3963 /* Touch-Library-Release.xcconfig */,
 			);
 			name = Configurations;
 			path = ../../Configurations;
@@ -249,6 +311,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		34D06C50125D202500CA3963 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34D06C6A125D208200CA3963 /* Errors.h in Headers */,
+				34D06C6C125D208400CA3963 /* OFSDAVFileManager-Network.h in Headers */,
+				34D06C6E125D208500CA3963 /* OFSDAVFileManager-Reachability.h in Headers */,
+				34D06C70125D208600CA3963 /* OFSDAVFileManager.h in Headers */,
+				34D06C72125D208700CA3963 /* OFSDAVFileManagerDelegate.h in Headers */,
+				34D06C74125D208800CA3963 /* OFSDAVOperation.h in Headers */,
+				34D06C75125D208900CA3963 /* OFSFileFileManager.h in Headers */,
+				34D06C77125D208A00CA3963 /* OFSFileInfo.h in Headers */,
+				34D06C79125D208C00CA3963 /* OFSFileManager.h in Headers */,
+				34D06C7B125D208D00CA3963 /* OFSFileManagerAsynchronousOperationTarget.h in Headers */,
+				3464810F1276674B00E8A9B4 /* OFSAsynchronousOperation.h in Headers */,
+				34B5E45212773A810007C4E3 /* OFSFileOperation.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DC2EF500486A6940098B216 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -260,9 +341,11 @@
 				3444B06E0F71FFFF005CFD59 /* OFSFileFileManager.h in Headers */,
 				3444B0700F71FFFF005CFD59 /* OFSFileInfo.h in Headers */,
 				3444B0720F71FFFF005CFD59 /* OFSFileManager.h in Headers */,
-				3444B0950F72002A005CFD59 /* OFSFileManagerAsynchronousReadTarget.h in Headers */,
+				3444B0950F72002A005CFD59 /* OFSFileManagerAsynchronousOperationTarget.h in Headers */,
 				3444B0BA0F72022C005CFD59 /* Errors.h in Headers */,
 				3469F30A10FD900100FF0307 /* OFSDAVFileManagerDelegate.h in Headers */,
+				3464810E1276674B00E8A9B4 /* OFSAsynchronousOperation.h in Headers */,
+				34B5E45012773A810007C4E3 /* OFSFileOperation.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -285,6 +368,24 @@
 			productName = ofs;
 			productReference = 34C017A410995278001C110D /* ofs */;
 			productType = "com.apple.product-type.tool";
+		};
+		34D06C53125D202500CA3963 /* OmniFileStoreTouch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 34D06C67125D203B00CA3963 /* Build configuration list for PBXNativeTarget "OmniFileStoreTouch" */;
+			buildPhases = (
+				34D06C50125D202500CA3963 /* Headers */,
+				34D06C51125D202500CA3963 /* Sources */,
+				34D06C52125D202500CA3963 /* Frameworks */,
+				340496D5125D449F002C3CBA /* Build Strings */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OmniFileStoreTouch;
+			productName = OmniFileStoreTouch;
+			productReference = 34D06C54125D202500CA3963 /* libOmniFileStore.a */;
+			productType = "com.apple.product-type.library.static";
 		};
 		8DC2EF4F0486A6940098B216 /* OmniFileStore */ = {
 			isa = PBXNativeTarget;
@@ -311,7 +412,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniFileStore" */;
-			compatibilityVersion = "Xcode 3.1";
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -326,6 +427,7 @@
 			projectRoot = "";
 			targets = (
 				8DC2EF4F0486A6940098B216 /* OmniFileStore */,
+				34D06C53125D202500CA3963 /* OmniFileStoreTouch */,
 				34C017A310995278001C110D /* ofs */,
 			);
 		};
@@ -337,10 +439,28 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */,
+				34B7F889127600DE0079FAC5 /* OmniFileStore.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		340496D5125D449F002C3CBA /* Build Strings */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build Strings";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "../../Scripts/BuildStringsFromTarget\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		34C017A110995278001C110D /* Sources */ = {
@@ -348,6 +468,22 @@
 			buildActionMask = 2147483647;
 			files = (
 				34C017B1109952B1001C110D /* ofs.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34D06C51125D202500CA3963 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34D06C6B125D208200CA3963 /* Errors.m in Sources */,
+				34D06C6D125D208500CA3963 /* OFSDAVFileManager-Network.m in Sources */,
+				34D06C6F125D208600CA3963 /* OFSDAVFileManager-Reachability.m in Sources */,
+				34D06C71125D208700CA3963 /* OFSDAVFileManager.m in Sources */,
+				34D06C73125D208800CA3963 /* OFSDAVOperation.m in Sources */,
+				34D06C76125D208A00CA3963 /* OFSFileFileManager.m in Sources */,
+				34D06C78125D208B00CA3963 /* OFSFileInfo.m in Sources */,
+				34D06C7A125D208C00CA3963 /* OFSFileManager.m in Sources */,
+				34B5E45312773A810007C4E3 /* OFSFileOperation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -363,6 +499,7 @@
 				3444B0710F71FFFF005CFD59 /* OFSFileInfo.m in Sources */,
 				3444B0730F71FFFF005CFD59 /* OFSFileManager.m in Sources */,
 				3444B0BB0F72022C005CFD59 /* Errors.m in Sources */,
+				34B5E45112773A810007C4E3 /* OFSFileOperation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -383,6 +520,14 @@
 				089C1667FE841158C02AAC07 /* English */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		34B7F887127600DE0079FAC5 /* OmniFileStore.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				34B7F888127600DE0079FAC5 /* English */,
+			);
+			name = OmniFileStore.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -466,6 +611,30 @@
 			};
 			name = Coverage;
 		};
+		34D06C55125D202500CA3963 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34D06C65125D203B00CA3963 /* Touch-Library-Debug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OmniFileStore;
+			};
+			name = Debug;
+		};
+		34D06C56125D202500CA3963 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34D06C66125D203B00CA3963 /* Touch-Library-Release.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OmniFileStore;
+			};
+			name = Release;
+		};
+		34D06C57125D202500CA3963 /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34D06C64125D203B00CA3963 /* Touch-Library-Coverage.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = OmniFileStore;
+			};
+			name = Coverage;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -495,6 +664,16 @@
 				34C017A610995279001C110D /* Debug */,
 				34C017A710995279001C110D /* Release */,
 				34C017A810995279001C110D /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		34D06C67125D203B00CA3963 /* Build configuration list for PBXNativeTarget "OmniFileStoreTouch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34D06C55125D202500CA3963 /* Debug */,
+				34D06C56125D202500CA3963 /* Release */,
+				34D06C57125D202500CA3963 /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -1,6 +1,3 @@
-/* page break placeholder for RTF scanner */
-"\n[New Page]\n" = "\n[New Page]\n";
-
 /* formatter input error format */
 "'%@' is not a valid social security number." = "'%@' is not a valid social security number.";
 
@@ -67,6 +64,15 @@
 /* invalid bundle reason */
 "Bundle requires additional software" = "Bundle requires additional software";
 
+/* compression error reason */
+"bzip2 library returned error code %d when finishing compression. %s." = "bzip2 library returned error code %1$d when finishing compression. %2$s.";
+
+/* decompression error reason */
+"bzip2 library returned error code %d when reading data. %s." = "bzip2 library returned error code %1$d when reading data. %2$s.";
+
+/* compression error reason */
+"bzip2 library returned error code %d when writing data. %s." = "bzip2 library returned error code %1$d when writing data. %2$s.";
+
 /* error recovery option */
 "Cancel <error recovery>" = "Cancel";
 
@@ -81,7 +87,8 @@
    Error message when stat() fails when trying to create a directory tree */
 "Could not create directory" = "Could not create directory";
 
-/* error description */
+/* error description - unable to start a child process using the fork syscall
+   error description - unable to start a child process using the spawn syscall */
 "Could not fork '%@'" = "Could not fork '%@'";
 
 /* time span formatter span */
@@ -102,7 +109,7 @@
 /* error description */
 "Error creating pipe" = "Error creating pipe";
 
-/* error description - parameter is underlying error text */
+/* Error encountered when trying to pass data through a UNIX command - parameter is underlying error text */
 "Error filtering data through UNIX command: %@" = "Error filtering data through UNIX command: %@";
 
 /* time span formatter span */
@@ -181,30 +188,27 @@
 "That is not a valid social security number." = "That is not a valid social security number.";
 
 /* formatter input error */
+"That is not a valid state abbreviation." = "That is not a valid state abbreviation.";
+
+/* formatter input error */
 "That is not a valid zip code." = "That is not a valid zip code.";
 
-/* compression exception format */
-"Unable to compress data (bzip2 rc:%d '%s')" = "Unable to compress data (bzip2 rc:%1$d '%2$s')";
+/* compression error description */
+"Unable to compress data." = "Unable to compress data.";
 
 /* error description */
 "Unable to create lock file '%@'." = "Unable to create lock file '%@'.";
 
-/* decompression exception format */
-"Unable to decompress data (bzip2 rc:%d '%s')" = "Unable to decompress data (bzip2 rc:%1$d '%2$s')";
-
-/* decompression exception format */
-"Unable to decompress data: unrecognized compression format" = "Unable to decompress data: unrecognized compression format";
+/* decompression error description */
+"Unable to decompress data." = "Unable to decompress data.";
 
 /* decompression exception format */
 "Unable to decompress gzip data: invalid header" = "Unable to decompress gzip data: invalid header";
 
-/* compression exception format */
-"Unable to finish compressing data" = "Unable to finish compressing data";
-
-/* compression exception format */
+/* compression error description */
 "Unable to initialize compression" = "Unable to initialize compression";
 
-/* decompression exception format */
+/* decompression error description */
 "Unable to initialize decompression" = "Unable to initialize decompression";
 
 /* script exception format */
@@ -218,6 +222,9 @@
 
 /* error description */
 "Unable to write cache file to '%@'" = "Unable to write cache file to '%@'";
+
+/* decompression error reason */
+"unrecognized compression format." = "unrecognized compression format.";
 
 /* time span formatter span */
 "w" = "w";
@@ -239,4 +246,10 @@
 
 /* time span formatter span */
 "years" = "years";
+
+/* zlib error reason */
+"zlib returned error code %d." = "zlib returned error code %d.";
+
+/* zlib error reason */
+"zlib returned error code %d. %s." = "zlib returned error code %1$d. %2$s.";
 

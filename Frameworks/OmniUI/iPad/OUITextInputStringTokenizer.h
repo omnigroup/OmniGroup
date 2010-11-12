@@ -11,6 +11,7 @@
 
 @interface OUITextInputStringTokenizer : UITextInputStringTokenizer
 {
+@private
     UIResponder <UITextInput> *_nonretainedTextInput;
 }
 

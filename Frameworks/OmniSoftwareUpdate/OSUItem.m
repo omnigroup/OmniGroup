@@ -715,12 +715,12 @@ static void loadFallbackTrackInfoIfNeeded()
  - Tracks which are known are shuffled to the front.
  
  */
-+ (NSArray *)dominantTracks:(id)someTracks;
++ (NSArray *)dominantTracks:(id <NSFastEnumeration>)someTracks;
 {
     NSMutableArray *result = [NSMutableArray array];
     
     /* Copy the track names to 'result', keeping only the dominant ones */
-    OFForEachObject([someTracks objectEnumerator], NSString *, track) {
+    for (NSString *track in someTracks) {
         if ([NSString isEmptyString:track])
             continue;
         
@@ -764,17 +764,17 @@ static void loadFallbackTrackInfoIfNeeded()
     return result;
 }
 
-+ (NSArray *)elaboratedTracks:(id)someTracks;
++ (NSArray *)elaboratedTracks:(id <NSFastEnumeration>)someTracks;
 {
     NSMutableArray *result = [NSMutableArray array];
 
     loadFallbackTrackInfoIfNeeded();
     
-    OFForEachObject([someTracks objectEnumerator], NSString *, aTrack) {
+    for (NSString *aTrack in someTracks) {
         [result addObjectIfAbsent:aTrack];
         NSSet *more = [knownTrackOrderings objectForKey:aTrack];
         if (more) {
-            OFForEachObject([more objectEnumerator], NSString *, anotherTrack) {
+            for (NSString *anotherTrack in more) {
                 [result addObjectIfAbsent:anotherTrack];
             }
         }
@@ -791,11 +791,11 @@ static void loadFallbackTrackInfoIfNeeded()
     if ([someTracks containsObject:aTrack])
         return YES;
     
-    OFForEachInArray(someTracks, NSString *, selectedTrack, {
+    for (NSString *selectedTrack in someTracks) {
         enum OSUTrackComparison order = [self compareTrack:aTrack toTrack:selectedTrack];
         if (order == OSUTrackMoreStable || order == OSUTrackOrderedSame)
             return YES;
-    });
+    };
     
     return NO;
 }

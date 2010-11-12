@@ -23,22 +23,26 @@ NSPoint OFCenterOfCircleFromThreePoints(NSPoint point1, NSPoint point2, NSPoint 
     double x1 = point1.x, y1 = point1.y;
     double x2 = point2.x, y2 = point2.y;
     double x3 = point3.x, y3 = point3.y;
-    double N1[2][2] = {
-    {x2*x2 + y2*y2 - (x1*x1 + y1*y1), y2 - y1},
-    {x3*x3 + y3*y3 - (x1*x1 + y1*y1), y3 - y1}
-    };
-    double N2[2][2] = {
-    {x2 - x1, x2*x2 + y2*y2 - (x1*x1 + y1*y1)},
-    {x3 - x1, x3*x3 + y3*y3 - (x1*x1 + y1*y1)}
-    };
-    double D[2][2] = {
-    {x2 - x1, y2 - y1},
-    {x3 - x1, y3 - y1}
-    };
+    
+    double N1_00 = x2*x2 + y2*y2 - (x1*x1 + y1*y1);
+    double N1_01 = y2 - y1;
+    double N1_10 = x3*x3 + y3*y3 - (x1*x1 + y1*y1);
+    double N1_11 = y3 - y1;
 
-    double determinantN1 = N1[0][0] * N1[1][1] - N1[1][0] * N1[0][1];
-    double determinantN2 = N2[0][0] * N2[1][1] - N2[1][0] * N2[0][1];
-    double determinantD = D[0][0] * D[1][1] - D[1][0] * D[0][1];
+    double N2_00 = x2 - x1;
+    double N2_01 = x2*x2 + y2*y2 - (x1*x1 + y1*y1);
+    double N2_10 = x3 - x1;
+    double N2_11 = x3*x3 + y3*y3 - (x1*x1 + y1*y1);
+    
+    double D_00 = x2 - x1;
+    double D_01 = y2 - y1;
+    double D_10 = x3 - x1;
+    double D_11 = y3 - y1;
+
+    double determinantN1 = N1_00 * N1_11 - N1_10 * N1_01;
+    double determinantN2 = N2_00 * N2_11 - N2_10 * N2_01;
+    
+    double determinantD = D_00 * D_11 - D_10 * D_01;
 
     return NSMakePoint((float)(determinantN1 / (2.0 * determinantD)), (float)(determinantN2 / (2.0 * determinantD)));
 }

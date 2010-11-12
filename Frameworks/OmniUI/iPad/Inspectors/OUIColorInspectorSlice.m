@@ -115,8 +115,11 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark NSObject (OUIColorSwatch)
 
-- (void)changeColor:(id <OUIColorValue>)colorValue;
+- (void)changeColor:(id)sender;
 {
+    OBPRECONDITION([sender conformsToProtocol:@protocol(OUIColorValue)]);
+    id <OUIColorValue> colorValue = sender;
+    
     OQColor *color = colorValue.color;
     
     //NSLog(@"setting color %@, continuous %d", [colorValue.color shortDescription], colorValue.isContinuousColorChange);

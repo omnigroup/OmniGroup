@@ -4,11 +4,11 @@
 /* details panel string - number of times the program has been launched */
 "# of Launches" = "# of Launches";
 
-/* title of new versions available dialog, when no updates are available - text is name of application */
-"%1$@ is up to date." = "%1$@ is up to date.";
-
 /* Download window title - text is name of the running application */
 "%@ Update" = "%@ Update";
+
+/* title of new versions available dialog, when no updates are available - text is name of application */
+"%1$@ is up to date." = "%1$@ is up to date.";
 
 /* error description */
 "%s is not reachable." = "%s is not reachable.";
@@ -30,6 +30,9 @@
 
 /* error description */
 "Cannot parse release notes url '%@'." = "Cannot parse release notes url '%@'.";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "Check operation failed.";
 
 /* title of new versions available dialog, when in the process of checking for updates - text is name of application */
 "Checking for %1$@ updates." = "Checking for %1$@ updates.";
@@ -106,7 +109,7 @@
 /* details panel string - accumulated number of hours the program has been running */
 "Hours Run" = "Hours Run";
 
-/* button title to allow user to stop being notified of releases on a particular track (eg, 'rc', 'beta', 'sneakypeek') */
+/* button title to allow user to stop being notified of releases on a particular track (eg, 'rc', 'beta', 'sneakypeek') - used in stability downgrade warning pane */
 "Ignore \\U201C%@\\U201D Releases" = "Ignore “%@” Releases";
 
 /* error reason */
@@ -241,9 +244,6 @@
 
 /* text of dialog box informing user of change in software update query */
 "This version of %@ sends additional information using your Internet connection (when active) to check for new and updated versions of itself." = "This version of %@ sends additional information using your Internet connection (when active) to check for new and updated versions of itself.";
-
-/* error reason - tried to run a helper tool to fetch software update information, but it exited with an error code */
-"Tool exited with %d" = "Tool exited with %d";
 
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "Tool returned no data";

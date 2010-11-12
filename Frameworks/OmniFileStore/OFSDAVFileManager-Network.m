@@ -9,11 +9,13 @@
 
 RCS_ID("$Id$");
 
+#import <OmniFoundation/NSString-OFConversion.h>
+#import <OmniFoundation/OFXMLDocument.h>
 #import "OFSDAVOperation.h"
 
 @implementation OFSDAVFileManager (Network)
 
-- (NSData *)_rawDataByRunningRequest:(NSURLRequest *)message error:(NSError **)outError;
+- (NSData *)_rawDataByRunningRequest:(NSURLRequest *)message operation:(OFSDAVOperation **)op error:(NSError **)outError;
 {
     NSTimeInterval start = 0;
     if (OFSFileManagerDebug > 0)
@@ -22,6 +24,9 @@ RCS_ID("$Id$");
     OFSDAVOperation *operation = [[[OFSDAVOperation alloc] initWithFileManager:self request:message target:nil] autorelease];
     if (!operation)
         return nil;
+    
+    if (op)
+        *op = operation;
     
     NSData *result = [operation run:outError];
     
@@ -35,9 +40,10 @@ RCS_ID("$Id$");
     return result;
 }
 
-- (BOOL)_runRequestExpectingEmptyResultData:(NSURLRequest *)message error:(NSError **)outError;
+- (NSURL *)_runRequestExpectingEmptyResultData:(NSURLRequest *)message error:(NSError **)outError;
 {
-    NSData *responseData = [self _rawDataByRunningRequest:message error:outError];
+    OFSDAVOperation *operation = nil;
+    NSData *responseData = [self _rawDataByRunningRequest:message operation:&operation error:outError];
     if (!responseData)
         return NO;
     
@@ -47,14 +53,25 @@ RCS_ID("$Id$");
         // still, we didn't get an error code, so let it pass
     }
     
-    return YES;
+    NSURL *resultLocation = [message URL];
+    
+    NSArray *redirects = [operation redirects];
+    if ([redirects count]) {
+        NSURL *lastLocation = [[redirects lastObject] objectForKey:kOFSRedirectedTo];
+        if (![lastLocation isEqual:resultLocation])
+            resultLocation = lastLocation;
+    }
+    
+    return resultLocation;
 }
 
-- (OFXMLDocument *)_documentBySendingRequest:(NSURLRequest *)message error:(NSError **)outError;
+- (OFXMLDocument *)_documentBySendingRequest:(NSURLRequest *)message operation:(OFSDAVOperation **)op error:(NSError **)outError;
 {
     OFXMLDocument *doc = nil;
+    OFSDAVOperation *returnOperation = nil;
+    
     OMNI_POOL_START {
-        NSData *responseData = [self _rawDataByRunningRequest:message error:outError];
+        NSData *responseData = [self _rawDataByRunningRequest:message operation:( op? &returnOperation : NULL) error:outError];
         if (!responseData) {
             OBASSERT(outError && *outError);
             return nil;
@@ -77,7 +94,11 @@ RCS_ID("$Id$");
             NSLog(@"  ... xml: %gs (total %g)", operationWait, totalWait);
         }
         
+        [returnOperation retain];
     } OMNI_POOL_ERROR_END;
+    [returnOperation autorelease];
+    if (op)
+        *op = returnOperation;
     
     if (!doc)
         NSLog(@"Unable to decode XML from WebDAV response: %@", outError ? (id)[*outError toPropertyList] : (id)@"Unknown error");

@@ -3,13 +3,22 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 45;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		00AA54A611FE743500A23064 /* OUILongPressGestureRecognizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 00AA54A411FE743500A23064 /* OUILongPressGestureRecognizer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		00AA54A711FE743500A23064 /* OUILongPressGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 00AA54A511FE743500A23064 /* OUILongPressGestureRecognizer.m */; };
 		0AD6C5E5121D807F000577FE /* OUIOverlayBackground.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 0AD6C5CE121D7EDB000577FE /* OUIOverlayBackground.png */; };
+		0AF2737E1250FF110024ECCA /* OUIDocumentSlider.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AF2737C1250FF110024ECCA /* OUIDocumentSlider.h */; };
+		0AF2737F1250FF110024ECCA /* OUIDocumentSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AF2737D1250FF110024ECCA /* OUIDocumentSlider.m */; };
+		3402B7201270FD520031C27D /* OUIFontInspectorItem-Selected.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3402B70B1270FBBA0031C27D /* OUIFontInspectorItem-Selected.png */; };
+		3402B729127100CC0031C27D /* OUIFontInspectorItem-Highlighted.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3402B727127100C50031C27D /* OUIFontInspectorItem-Highlighted.png */; };
+		3402B72A127100CC0031C27D /* OUIFontInspectorItem-Normal.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3402B728127100C50031C27D /* OUIFontInspectorItem-Normal.png */; };
+		343220931270EFAF001B57CB /* OUIFontInspectorDetailSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 343220911270EFAF001B57CB /* OUIFontInspectorDetailSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		343220941270EFAF001B57CB /* OUIFontInspectorDetailSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 343220921270EFAF001B57CB /* OUIFontInspectorDetailSlice.m */; };
+		343220A71270F06E001B57CB /* OUIFontUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 343220A51270F06E001B57CB /* OUIFontUtilities.h */; };
+		343220A81270F06E001B57CB /* OUIFontUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 343220A61270F06E001B57CB /* OUIFontUtilities.m */; };
 		345A398F121C992900ABA3F0 /* OUIToolbarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 345A398D121C992900ABA3F0 /* OUIToolbarButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		345A3990121C992900ABA3F0 /* OUIToolbarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 345A398E121C992900ABA3F0 /* OUIToolbarButton.m */; };
 		34656A8111E646C3003D2FD1 /* OUIMenuItemRunTests.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34656A6F11E645B6003D2FD1 /* OUIMenuItemRunTests.png */; };
@@ -70,9 +79,9 @@
 		346C4B501193273600BE8C49 /* OUIParagraphStyleInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AB91193273600BE8C49 /* OUIParagraphStyleInspectorSlice.m */; };
 		346C4B511193273600BE8C49 /* OUIRGBColorPicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4ABA1193273600BE8C49 /* OUIRGBColorPicker.h */; };
 		346C4B521193273600BE8C49 /* OUIRGBColorPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4ABB1193273600BE8C49 /* OUIRGBColorPicker.m */; };
-		346C4B531193273600BE8C49 /* OUEFTextPosition.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AC41193273600BE8C49 /* OUEFTextPosition.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		346C4B531193273600BE8C49 /* OUEFTextPosition.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AC41193273600BE8C49 /* OUEFTextPosition.h */; settings = {ATTRIBUTES = (); }; };
 		346C4B541193273600BE8C49 /* OUEFTextPosition.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AC51193273600BE8C49 /* OUEFTextPosition.m */; };
-		346C4B551193273600BE8C49 /* OUEFTextRange.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AC61193273600BE8C49 /* OUEFTextRange.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		346C4B551193273600BE8C49 /* OUEFTextRange.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AC61193273600BE8C49 /* OUEFTextRange.h */; settings = {ATTRIBUTES = (); }; };
 		346C4B561193273600BE8C49 /* OUEFTextRange.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AC71193273600BE8C49 /* OUEFTextRange.m */; };
 		346C4B571193273600BE8C49 /* OUEFTextSpan.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AC81193273600BE8C49 /* OUEFTextSpan.h */; };
 		346C4B581193273600BE8C49 /* OUEFTextSpan.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AC91193273600BE8C49 /* OUEFTextSpan.m */; };
@@ -221,13 +230,74 @@
 		34D9ADBF1194A1A4001E3A18 /* OUIRTFWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D9ADBB1194A1A4001E3A18 /* OUIRTFWriter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D9ADC01194A1A4001E3A18 /* OUIRTFWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D9ADBC1194A1A4001E3A18 /* OUIRTFWriter.m */; };
 		34DE83E61211EE420078D1DF /* OUILoupeOverlaySubject.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DE83E51211EE420078D1DF /* OUILoupeOverlaySubject.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34E5332812543FDE00AFA8E3 /* OUIAnimationSequence.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E5332612543FDE00AFA8E3 /* OUIAnimationSequence.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34E5332912543FDE00AFA8E3 /* OUIAnimationSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E5332712543FDE00AFA8E3 /* OUIAnimationSequence.m */; };
+		34EA43E91267A32200BAC7FD /* OUIFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EA43E41267A32200BAC7FD /* OUIFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34EA43EA1267A32200BAC7FD /* OUISoftwareUpdateController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EA43E51267A32200BAC7FD /* OUISoftwareUpdateController.h */; };
+		34EA43EB1267A32200BAC7FD /* OUISoftwareUpdateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34EA43E61267A32200BAC7FD /* OUISoftwareUpdateController.m */; };
+		34EA43EC1267A32200BAC7FD /* OUISoftwareUpdatePrivacyAlert.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EA43E71267A32200BAC7FD /* OUISoftwareUpdatePrivacyAlert.h */; };
+		34EA43ED1267A32200BAC7FD /* OUISoftwareUpdatePrivacyAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 34EA43E81267A32200BAC7FD /* OUISoftwareUpdatePrivacyAlert.m */; };
+		34F1D212127232FA00F59E56 /* OUIFontStyle-Bold.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34F1D20E127232B700F59E56 /* OUIFontStyle-Bold.png */; };
+		34F1D213127232FA00F59E56 /* OUIFontStyle-Italic.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34F1D20F127232B700F59E56 /* OUIFontStyle-Italic.png */; };
+		34F1D214127232FA00F59E56 /* OUIFontStyle-Strikethrough.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34F1D210127232B700F59E56 /* OUIFontStyle-Strikethrough.png */; };
+		34F1D215127232FA00F59E56 /* OUIFontStyle-Underline.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34F1D211127232B700F59E56 /* OUIFontStyle-Underline.png */; };
+		4A8230A412847D6300D0A902 /* OUIToolbarButtonImport.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 000E844912821B87005D87BD /* OUIToolbarButtonImport.png */; };
+		94074483125F9FA900C4AECB /* OUICredentials-Device.m in Sources */ = {isa = PBXBuildFile; fileRef = 94074480125F9FA900C4AECB /* OUICredentials-Device.m */; };
+		94074484125F9FA900C4AECB /* OUICredentials-Simulator.m in Sources */ = {isa = PBXBuildFile; fileRef = 94074481125F9FA900C4AECB /* OUICredentials-Simulator.m */; };
+		94074485125F9FA900C4AECB /* OUICredentials.h in Headers */ = {isa = PBXBuildFile; fileRef = 94074482125F9FA900C4AECB /* OUICredentials.h */; };
+		9407455B125FD1AB00C4AECB /* OUIWebDAVController.h in Headers */ = {isa = PBXBuildFile; fileRef = 94074559125FD1AB00C4AECB /* OUIWebDAVController.h */; };
+		9407455C125FD1AB00C4AECB /* OUIWebDAVController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9407455A125FD1AB00C4AECB /* OUIWebDAVController.m */; };
+		94074572125FDE6800C4AECB /* OUIWebDAVList.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 9407455F125FD3BB00C4AECB /* OUIWebDAVList.xib */; };
+		94159F001283106200BC3C92 /* OUIExportFinishedBadge.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94159EF612830FFA00BC3C92 /* OUIExportFinishedBadge.png */; };
+		9415A0191283326300BC3C92 /* OUIExportOptionsBackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = 9415A0171283326300BC3C92 /* OUIExportOptionsBackgroundView.h */; };
+		9415A01A1283326300BC3C92 /* OUIExportOptionsBackgroundView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9415A0181283326300BC3C92 /* OUIExportOptionsBackgroundView.m */; };
+		942162E8125BA35300CB1B31 /* OUISyncMenuController.h in Headers */ = {isa = PBXBuildFile; fileRef = 942162E6125BA35300CB1B31 /* OUISyncMenuController.h */; };
+		942162E9125BA35300CB1B31 /* OUISyncMenuController.m in Sources */ = {isa = PBXBuildFile; fileRef = 942162E7125BA35300CB1B31 /* OUISyncMenuController.m */; };
+		94216339125BB8E600CB1B31 /* OUISyncMenu.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 942162E2125BA1DD00CB1B31 /* OUISyncMenu.xib */; };
+		942CB3821283A06A004D45B6 /* OUIExportPane.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 942CB3811283A05D004D45B6 /* OUIExportPane.png */; };
+		943C22151280AE660049EC15 /* UIViewController-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 943C22131280AE660049EC15 /* UIViewController-OUIExtensions.h */; };
+		943C22161280AE660049EC15 /* UIViewController-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 943C22141280AE660049EC15 /* UIViewController-OUIExtensions.m */; };
+		943F2DB41278DD8D003BA080 /* OUIDocument.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 943F2DB31278DD85003BA080 /* OUIDocument.png */; };
 		94429F1011ADC7F4005B8934 /* OUIUndoButtonBackground.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94909BD811ADC18100BA9C40 /* OUIUndoButtonBackground.png */; };
 		94429F1D11ADC8DA005B8934 /* OUIUndoMenu.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94909AEF11AD9F9400BA9C40 /* OUIUndoMenu.xib */; };
 		94429F3C11ADCB8B005B8934 /* OUIStandardPopoverButton.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94429F3811ADCB80005B8934 /* OUIStandardPopoverButton.png */; };
+		946A892B126768B6008272E4 /* OUIWebDAVDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = 946A8929126768B6008272E4 /* OUIWebDAVDownloader.h */; };
+		946A892C126768B6008272E4 /* OUIWebDAVDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 946A892A126768B6008272E4 /* OUIWebDAVDownloader.m */; };
+		946A8994126779CA008272E4 /* OUIWebDAVDownloader.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 946A892E1267693D008272E4 /* OUIWebDAVDownloader.xib */; };
 		94909AF011AD9F9400BA9C40 /* OUIUndoButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 94909AEB11AD9F9400BA9C40 /* OUIUndoButton.h */; settings = {ATTRIBUTES = (); }; };
 		94909AF111AD9F9400BA9C40 /* OUIUndoButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 94909AEC11AD9F9400BA9C40 /* OUIUndoButton.m */; };
 		94909AF211AD9F9400BA9C40 /* OUIUndoButtonController.h in Headers */ = {isa = PBXBuildFile; fileRef = 94909AED11AD9F9400BA9C40 /* OUIUndoButtonController.h */; };
 		94909AF311AD9F9400BA9C40 /* OUIUndoButtonController.m in Sources */ = {isa = PBXBuildFile; fileRef = 94909AEE11AD9F9400BA9C40 /* OUIUndoButtonController.m */; };
+		9492F9191264D40B004DCEC8 /* OUISheetNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 9492F9171264D40B004DCEC8 /* OUISheetNavigationController.h */; };
+		9492F91A1264D40B004DCEC8 /* OUISheetNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9492F9181264D40B004DCEC8 /* OUISheetNavigationController.m */; };
+		94BD5253125E30840048530E /* OUISetUpSyncBaseController.h in Headers */ = {isa = PBXBuildFile; fileRef = 94BD5251125E30840048530E /* OUISetUpSyncBaseController.h */; };
+		94BD5254125E30840048530E /* OUISetUpSyncBaseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 94BD5252125E30840048530E /* OUISetUpSyncBaseController.m */; };
+		94BD5258125E31530048530E /* OUIEditableLabeledValueCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 94BD5256125E31530048530E /* OUIEditableLabeledValueCell.h */; };
+		94BD5259125E31530048530E /* OUIEditableLabeledValueCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 94BD5257125E31530048530E /* OUIEditableLabeledValueCell.m */; };
+		94BD525C125E31E90048530E /* OUILabeledValueCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 94BD525A125E31E90048530E /* OUILabeledValueCell.h */; };
+		94BD525D125E31E90048530E /* OUILabeledValueCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 94BD525B125E31E90048530E /* OUILabeledValueCell.m */; };
+		94BD527C125E40C30048530E /* OUISetUpWebDAVSyncController.h in Headers */ = {isa = PBXBuildFile; fileRef = 94BD527A125E40C30048530E /* OUISetUpWebDAVSyncController.h */; };
+		94BD527D125E40C30048530E /* OUISetUpWebDAVSyncController.m in Sources */ = {isa = PBXBuildFile; fileRef = 94BD527B125E40C30048530E /* OUISetUpWebDAVSyncController.m */; };
+		94BD52B3125E50570048530E /* OUISetUpSyncBase.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94BD5278125E3F7F0048530E /* OUISetUpSyncBase.xib */; };
+		94BD52E2125E51B50048530E /* OUISyncSetupCancelButtonBackground.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94BD52DE125E51980048530E /* OUISyncSetupCancelButtonBackground.png */; };
+		94BD52E3125E51B50048530E /* OUISyncSetupSyncButtonBackground.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94BD52DF125E51980048530E /* OUISyncSetupSyncButtonBackground.png */; };
+		94BD53D9125E83CF0048530E /* OUIWebDAVSetup.h in Headers */ = {isa = PBXBuildFile; fileRef = 94BD53D7125E83CF0048530E /* OUIWebDAVSetup.h */; };
+		94BD53DA125E83CF0048530E /* OUIWebDAVSetup.m in Sources */ = {isa = PBXBuildFile; fileRef = 94BD53D8125E83CF0048530E /* OUIWebDAVSetup.m */; };
+		94BD540F125E8AFF0048530E /* OUIWebDAVSetup.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94BD53DC125E85CB0048530E /* OUIWebDAVSetup.xib */; };
+		94C0FC9412773B5100238360 /* OUIFolder.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94C0FC741277387A00238360 /* OUIFolder.png */; };
+		94C0FC9512773B5100238360 /* OUIPDF.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94C0FC751277387A00238360 /* OUIPDF.png */; };
+		94C0FC9612773B5100238360 /* OUIPNG.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94C0FC761277387A00238360 /* OUIPNG.png */; };
+		94D56E10127094F900BFBD4E /* OUIReplaceDocumentAlert.h in Headers */ = {isa = PBXBuildFile; fileRef = 94D56E0E127094F900BFBD4E /* OUIReplaceDocumentAlert.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		94D56E11127094F900BFBD4E /* OUIReplaceDocumentAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 94D56E0F127094F900BFBD4E /* OUIReplaceDocumentAlert.m */; };
+		94D570FE1270FD3E00BFBD4E /* OUIExportOptionsController.h in Headers */ = {isa = PBXBuildFile; fileRef = 94D570FA1270FD3E00BFBD4E /* OUIExportOptionsController.h */; };
+		94D570FF1270FD3E00BFBD4E /* OUIExportOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 94D570FB1270FD3E00BFBD4E /* OUIExportOptionsController.m */; };
+		94D571001270FD3E00BFBD4E /* OUIExportOptionsView.h in Headers */ = {isa = PBXBuildFile; fileRef = 94D570FC1270FD3E00BFBD4E /* OUIExportOptionsView.h */; };
+		94D571011270FD3E00BFBD4E /* OUIExportOptionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 94D570FD1270FD3E00BFBD4E /* OUIExportOptionsView.m */; };
+		94D571021270FD5000BFBD4E /* OUIExportOptions.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 94D570F91270FD3E00BFBD4E /* OUIExportOptions.xib */; };
+		94FCA2C612722EE600F4BFB9 /* OUIWebDAVConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 94FCA2C412722EE600F4BFB9 /* OUIWebDAVConnection.h */; };
+		94FCA2C712722EE600F4BFB9 /* OUIWebDAVConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 94FCA2C512722EE600F4BFB9 /* OUIWebDAVConnection.m */; };
+		A203E54A126FB37E0073CC61 /* OUITextSelectionHandle.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = A2875969126FAEDE00C8C7BC /* OUITextSelectionHandle.png */; };
+		A2F48EB8126D19B10032C2C4 /* OUIRectangularOverlayArrow.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = A2F48E86126D16B20032C2C4 /* OUIRectangularOverlayArrow.png */; };
 		AA747D9F0F9514B9006C5449 /* OmniUI_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* OmniUI_Prefix.h */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 /* End PBXBuildFile section */
@@ -239,6 +309,28 @@
 			dstPath = "Resources/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				4A8230A412847D6300D0A902 /* OUIToolbarButtonImport.png in Copy Resources */,
+				942CB3821283A06A004D45B6 /* OUIExportPane.png in Copy Resources */,
+				94159F001283106200BC3C92 /* OUIExportFinishedBadge.png in Copy Resources */,
+				943F2DB41278DD8D003BA080 /* OUIDocument.png in Copy Resources */,
+				94C0FC9412773B5100238360 /* OUIFolder.png in Copy Resources */,
+				94C0FC9512773B5100238360 /* OUIPDF.png in Copy Resources */,
+				94C0FC9612773B5100238360 /* OUIPNG.png in Copy Resources */,
+				34F1D212127232FA00F59E56 /* OUIFontStyle-Bold.png in Copy Resources */,
+				34F1D213127232FA00F59E56 /* OUIFontStyle-Italic.png in Copy Resources */,
+				34F1D214127232FA00F59E56 /* OUIFontStyle-Strikethrough.png in Copy Resources */,
+				34F1D215127232FA00F59E56 /* OUIFontStyle-Underline.png in Copy Resources */,
+				3402B729127100CC0031C27D /* OUIFontInspectorItem-Highlighted.png in Copy Resources */,
+				3402B72A127100CC0031C27D /* OUIFontInspectorItem-Normal.png in Copy Resources */,
+				3402B7201270FD520031C27D /* OUIFontInspectorItem-Selected.png in Copy Resources */,
+				94D571021270FD5000BFBD4E /* OUIExportOptions.xib in Copy Resources */,
+				946A8994126779CA008272E4 /* OUIWebDAVDownloader.xib in Copy Resources */,
+				94074572125FDE6800C4AECB /* OUIWebDAVList.xib in Copy Resources */,
+				94BD540F125E8AFF0048530E /* OUIWebDAVSetup.xib in Copy Resources */,
+				94BD52E2125E51B50048530E /* OUISyncSetupCancelButtonBackground.png in Copy Resources */,
+				94BD52E3125E51B50048530E /* OUISyncSetupSyncButtonBackground.png in Copy Resources */,
+				94BD52B3125E50570048530E /* OUISetUpSyncBase.xib in Copy Resources */,
+				94216339125BB8E600CB1B31 /* OUISyncMenu.xib in Copy Resources */,
 				0AD6C5E5121D807F000577FE /* OUIOverlayBackground.png in Copy Resources */,
 				34D2995011EFD6060072B2E1 /* OUIToolbarButton-Black-Highlighted.png in Copy Resources */,
 				34D2995111EFD6060072B2E1 /* OUIToolbarButton-Black-Normal.png in Copy Resources */,
@@ -296,12 +388,14 @@
 				346C4C001193295900BE8C49 /* OUIPreviewBackgroundTopLeft.png in Copy Resources */,
 				346C4C011193295900BE8C49 /* OUIPreviewBackgroundTopRight.png in Copy Resources */,
 				346C4C021193295900BE8C49 /* OUIRectangularOverlayFrame.png in Copy Resources */,
+				A2F48EB8126D19B10032C2C4 /* OUIRectangularOverlayArrow.png in Copy Resources */,
 				346C4C031193295900BE8C49 /* OUIScalingViewBackgroundPattern.png in Copy Resources */,
 				346C4C041193295900BE8C49 /* OUIShadowBorderBottom.png in Copy Resources */,
 				346C4C051193295900BE8C49 /* OUIShadowBorderLeft.png in Copy Resources */,
 				346C4C061193295900BE8C49 /* OUIShadowBorderRight.png in Copy Resources */,
 				346C4C071193295900BE8C49 /* OUIShadowBorderTop.png in Copy Resources */,
 				346C4C081193295900BE8C49 /* OUITextSelectionOverlay.png in Copy Resources */,
+				A203E54A126FB37E0073CC61 /* OUITextSelectionHandle.png in Copy Resources */,
 				346C4C091193295900BE8C49 /* OUIToolbarAddDocument.png in Copy Resources */,
 				346C4C0A1193295900BE8C49 /* OUIToolbarFavoriteFilled.png in Copy Resources */,
 				346C4C0B1193295900BE8C49 /* OUIToolbarFavoriteHollow.png in Copy Resources */,
@@ -312,9 +406,19 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		000E844912821B87005D87BD /* OUIToolbarButtonImport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarButtonImport.png; sourceTree = "<group>"; };
 		00AA54A411FE743500A23064 /* OUILongPressGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILongPressGestureRecognizer.h; sourceTree = "<group>"; };
 		00AA54A511FE743500A23064 /* OUILongPressGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUILongPressGestureRecognizer.m; sourceTree = "<group>"; };
 		0AD6C5CE121D7EDB000577FE /* OUIOverlayBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIOverlayBackground.png; path = Images/OUIOverlayBackground.png; sourceTree = SOURCE_ROOT; };
+		0AF2737C1250FF110024ECCA /* OUIDocumentSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentSlider.h; sourceTree = "<group>"; };
+		0AF2737D1250FF110024ECCA /* OUIDocumentSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentSlider.m; sourceTree = "<group>"; };
+		3402B70B1270FBBA0031C27D /* OUIFontInspectorItem-Selected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontInspectorItem-Selected.png"; sourceTree = "<group>"; };
+		3402B727127100C50031C27D /* OUIFontInspectorItem-Highlighted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontInspectorItem-Highlighted.png"; sourceTree = "<group>"; };
+		3402B728127100C50031C27D /* OUIFontInspectorItem-Normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontInspectorItem-Normal.png"; sourceTree = "<group>"; };
+		343220911270EFAF001B57CB /* OUIFontInspectorDetailSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFontInspectorDetailSlice.h; sourceTree = "<group>"; };
+		343220921270EFAF001B57CB /* OUIFontInspectorDetailSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFontInspectorDetailSlice.m; sourceTree = "<group>"; };
+		343220A51270F06E001B57CB /* OUIFontUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFontUtilities.h; sourceTree = "<group>"; };
+		343220A61270F06E001B57CB /* OUIFontUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFontUtilities.m; sourceTree = "<group>"; };
 		345A398D121C992900ABA3F0 /* OUIToolbarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIToolbarButton.h; sourceTree = "<group>"; };
 		345A398E121C992900ABA3F0 /* OUIToolbarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIToolbarButton.m; sourceTree = "<group>"; };
 		34656A6F11E645B6003D2FD1 /* OUIMenuItemRunTests.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemRunTests.png; sourceTree = "<group>"; };
@@ -560,13 +664,73 @@
 		34D9ADBB1194A1A4001E3A18 /* OUIRTFWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIRTFWriter.h; sourceTree = "<group>"; };
 		34D9ADBC1194A1A4001E3A18 /* OUIRTFWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIRTFWriter.m; sourceTree = "<group>"; };
 		34DE83E51211EE420078D1DF /* OUILoupeOverlaySubject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILoupeOverlaySubject.h; sourceTree = "<group>"; };
+		34E5332612543FDE00AFA8E3 /* OUIAnimationSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIAnimationSequence.h; sourceTree = "<group>"; };
+		34E5332712543FDE00AFA8E3 /* OUIAnimationSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIAnimationSequence.m; sourceTree = "<group>"; };
+		34EA43E41267A32200BAC7FD /* OUIFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFeatures.h; sourceTree = "<group>"; };
+		34EA43E51267A32200BAC7FD /* OUISoftwareUpdateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISoftwareUpdateController.h; sourceTree = "<group>"; };
+		34EA43E61267A32200BAC7FD /* OUISoftwareUpdateController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISoftwareUpdateController.m; sourceTree = "<group>"; };
+		34EA43E71267A32200BAC7FD /* OUISoftwareUpdatePrivacyAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISoftwareUpdatePrivacyAlert.h; sourceTree = "<group>"; };
+		34EA43E81267A32200BAC7FD /* OUISoftwareUpdatePrivacyAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISoftwareUpdatePrivacyAlert.m; sourceTree = "<group>"; };
+		34F1D20E127232B700F59E56 /* OUIFontStyle-Bold.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Bold.png"; sourceTree = "<group>"; };
+		34F1D20F127232B700F59E56 /* OUIFontStyle-Italic.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Italic.png"; sourceTree = "<group>"; };
+		34F1D210127232B700F59E56 /* OUIFontStyle-Strikethrough.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Strikethrough.png"; sourceTree = "<group>"; };
+		34F1D211127232B700F59E56 /* OUIFontStyle-Underline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Underline.png"; sourceTree = "<group>"; };
+		94074480125F9FA900C4AECB /* OUICredentials-Device.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OUICredentials-Device.m"; sourceTree = "<group>"; };
+		94074481125F9FA900C4AECB /* OUICredentials-Simulator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OUICredentials-Simulator.m"; sourceTree = "<group>"; };
+		94074482125F9FA900C4AECB /* OUICredentials.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUICredentials.h; sourceTree = "<group>"; };
+		94074559125FD1AB00C4AECB /* OUIWebDAVController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIWebDAVController.h; sourceTree = "<group>"; };
+		9407455A125FD1AB00C4AECB /* OUIWebDAVController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIWebDAVController.m; sourceTree = "<group>"; };
+		9407455F125FD3BB00C4AECB /* OUIWebDAVList.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIWebDAVList.xib; sourceTree = "<group>"; };
+		94159EF612830FFA00BC3C92 /* OUIExportFinishedBadge.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIExportFinishedBadge.png; sourceTree = "<group>"; };
+		9415A0171283326300BC3C92 /* OUIExportOptionsBackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIExportOptionsBackgroundView.h; sourceTree = "<group>"; };
+		9415A0181283326300BC3C92 /* OUIExportOptionsBackgroundView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIExportOptionsBackgroundView.m; sourceTree = "<group>"; };
+		942162E2125BA1DD00CB1B31 /* OUISyncMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUISyncMenu.xib; sourceTree = "<group>"; };
+		942162E6125BA35300CB1B31 /* OUISyncMenuController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISyncMenuController.h; sourceTree = "<group>"; };
+		942162E7125BA35300CB1B31 /* OUISyncMenuController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISyncMenuController.m; sourceTree = "<group>"; };
+		942CB3811283A05D004D45B6 /* OUIExportPane.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIExportPane.png; sourceTree = "<group>"; };
+		943C22131280AE660049EC15 /* UIViewController-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController-OUIExtensions.h"; sourceTree = "<group>"; };
+		943C22141280AE660049EC15 /* UIViewController-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController-OUIExtensions.m"; sourceTree = "<group>"; };
+		943F2DB31278DD85003BA080 /* OUIDocument.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocument.png; sourceTree = "<group>"; };
 		94429F3811ADCB80005B8934 /* OUIStandardPopoverButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIStandardPopoverButton.png; sourceTree = "<group>"; };
+		946A8929126768B6008272E4 /* OUIWebDAVDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIWebDAVDownloader.h; sourceTree = "<group>"; };
+		946A892A126768B6008272E4 /* OUIWebDAVDownloader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIWebDAVDownloader.m; sourceTree = "<group>"; };
+		946A892E1267693D008272E4 /* OUIWebDAVDownloader.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIWebDAVDownloader.xib; sourceTree = "<group>"; };
 		94909AEB11AD9F9400BA9C40 /* OUIUndoButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIUndoButton.h; sourceTree = "<group>"; };
 		94909AEC11AD9F9400BA9C40 /* OUIUndoButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIUndoButton.m; sourceTree = "<group>"; };
 		94909AED11AD9F9400BA9C40 /* OUIUndoButtonController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIUndoButtonController.h; sourceTree = "<group>"; };
 		94909AEE11AD9F9400BA9C40 /* OUIUndoButtonController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIUndoButtonController.m; sourceTree = "<group>"; };
-		94909AEF11AD9F9400BA9C40 /* OUIUndoMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIUndoMenu.xib; sourceTree = "<group>"; };
+		94909AEF11AD9F9400BA9C40 /* OUIUndoMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = OUIUndoMenu.xib; path = English.lproj/OUIUndoMenu.xib; sourceTree = "<group>"; };
 		94909BD811ADC18100BA9C40 /* OUIUndoButtonBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIUndoButtonBackground.png; sourceTree = "<group>"; };
+		9492F9171264D40B004DCEC8 /* OUISheetNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISheetNavigationController.h; sourceTree = "<group>"; };
+		9492F9181264D40B004DCEC8 /* OUISheetNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISheetNavigationController.m; sourceTree = "<group>"; };
+		94BD5251125E30840048530E /* OUISetUpSyncBaseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISetUpSyncBaseController.h; sourceTree = "<group>"; };
+		94BD5252125E30840048530E /* OUISetUpSyncBaseController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISetUpSyncBaseController.m; sourceTree = "<group>"; };
+		94BD5256125E31530048530E /* OUIEditableLabeledValueCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIEditableLabeledValueCell.h; sourceTree = "<group>"; };
+		94BD5257125E31530048530E /* OUIEditableLabeledValueCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIEditableLabeledValueCell.m; sourceTree = "<group>"; };
+		94BD525A125E31E90048530E /* OUILabeledValueCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILabeledValueCell.h; sourceTree = "<group>"; };
+		94BD525B125E31E90048530E /* OUILabeledValueCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUILabeledValueCell.m; sourceTree = "<group>"; };
+		94BD5278125E3F7F0048530E /* OUISetUpSyncBase.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUISetUpSyncBase.xib; sourceTree = "<group>"; };
+		94BD527A125E40C30048530E /* OUISetUpWebDAVSyncController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISetUpWebDAVSyncController.h; sourceTree = "<group>"; };
+		94BD527B125E40C30048530E /* OUISetUpWebDAVSyncController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISetUpWebDAVSyncController.m; sourceTree = "<group>"; };
+		94BD52DE125E51980048530E /* OUISyncSetupCancelButtonBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUISyncSetupCancelButtonBackground.png; sourceTree = "<group>"; };
+		94BD52DF125E51980048530E /* OUISyncSetupSyncButtonBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUISyncSetupSyncButtonBackground.png; sourceTree = "<group>"; };
+		94BD53D7125E83CF0048530E /* OUIWebDAVSetup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIWebDAVSetup.h; sourceTree = "<group>"; };
+		94BD53D8125E83CF0048530E /* OUIWebDAVSetup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIWebDAVSetup.m; sourceTree = "<group>"; };
+		94BD53DC125E85CB0048530E /* OUIWebDAVSetup.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIWebDAVSetup.xib; sourceTree = "<group>"; };
+		94C0FC741277387A00238360 /* OUIFolder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIFolder.png; sourceTree = "<group>"; };
+		94C0FC751277387A00238360 /* OUIPDF.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIPDF.png; sourceTree = "<group>"; };
+		94C0FC761277387A00238360 /* OUIPNG.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIPNG.png; sourceTree = "<group>"; };
+		94D56E0E127094F900BFBD4E /* OUIReplaceDocumentAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIReplaceDocumentAlert.h; sourceTree = "<group>"; };
+		94D56E0F127094F900BFBD4E /* OUIReplaceDocumentAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIReplaceDocumentAlert.m; sourceTree = "<group>"; };
+		94D570F91270FD3E00BFBD4E /* OUIExportOptions.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIExportOptions.xib; sourceTree = "<group>"; };
+		94D570FA1270FD3E00BFBD4E /* OUIExportOptionsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIExportOptionsController.h; sourceTree = "<group>"; };
+		94D570FB1270FD3E00BFBD4E /* OUIExportOptionsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIExportOptionsController.m; sourceTree = "<group>"; };
+		94D570FC1270FD3E00BFBD4E /* OUIExportOptionsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIExportOptionsView.h; sourceTree = "<group>"; };
+		94D570FD1270FD3E00BFBD4E /* OUIExportOptionsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIExportOptionsView.m; sourceTree = "<group>"; };
+		94FCA2C412722EE600F4BFB9 /* OUIWebDAVConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIWebDAVConnection.h; sourceTree = "<group>"; };
+		94FCA2C512722EE600F4BFB9 /* OUIWebDAVConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIWebDAVConnection.m; sourceTree = "<group>"; };
+		A2875969126FAEDE00C8C7BC /* OUITextSelectionHandle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUITextSelectionHandle.png; sourceTree = "<group>"; };
+		A2F48E86126D16B20032C2C4 /* OUIRectangularOverlayArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIRectangularOverlayArrow.png; sourceTree = "<group>"; };
 		AA747D9E0F9514B9006C5449 /* OmniUI_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUI_Prefix.h; sourceTree = "<group>"; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libOmniUI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniUI.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -614,11 +778,14 @@
 		08FB77AEFE84172EC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				34EA43E41267A32200BAC7FD /* OUIFeatures.h */,
 				346C4BAA119327B800BE8C49 /* Main App Controllers */,
 				346C4BA71193275A00BE8C49 /* Documents */,
 				346C4A731193273600BE8C49 /* Inspectors */,
 				346C4BA61193274A00BE8C49 /* Text Editor */,
 				346C4BA81193276C00BE8C49 /* Scaling View */,
+				94BD524B125E302E0048530E /* Sync */,
+				34EA43EE1267A32B00BAC7FD /* Software Update */,
 				346C4BA9119327A100BE8C49 /* Extensions & Utilities */,
 				346C4C0C1193297600BE8C49 /* English.lproj */,
 				346C4A521193273600BE8C49 /* Images */,
@@ -671,6 +838,14 @@
 		346C4A521193273600BE8C49 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				942CB3811283A05D004D45B6 /* OUIExportPane.png */,
+				94159EF612830FFA00BC3C92 /* OUIExportFinishedBadge.png */,
+				943F2DB31278DD85003BA080 /* OUIDocument.png */,
+				94C0FC741277387A00238360 /* OUIFolder.png */,
+				94C0FC751277387A00238360 /* OUIPDF.png */,
+				94C0FC761277387A00238360 /* OUIPNG.png */,
+				94BD52DE125E51980048530E /* OUISyncSetupCancelButtonBackground.png */,
+				94BD52DF125E51980048530E /* OUISyncSetupSyncButtonBackground.png */,
 				346C4A5F1193273600BE8C49 /* OUIAppMenu.png */,
 				0AD6C5CE121D7EDB000577FE /* OUIOverlayBackground.png */,
 				346C4A531193273600BE8C49 /* OUIDocumentDelete.png */,
@@ -696,6 +871,7 @@
 				346C4A671193273600BE8C49 /* OUIPreviewBackgroundTopLeft.png */,
 				346C4A681193273600BE8C49 /* OUIPreviewBackgroundTopRight.png */,
 				346C4A691193273600BE8C49 /* OUIRectangularOverlayFrame.png */,
+				A2F48E86126D16B20032C2C4 /* OUIRectangularOverlayArrow.png */,
 				346C4A6A1193273600BE8C49 /* OUIScalingViewBackgroundPattern.png */,
 				346C4A6B1193273600BE8C49 /* OUIShadowBorderBottom.png */,
 				346C4A6C1193273600BE8C49 /* OUIShadowBorderLeft.png */,
@@ -703,12 +879,14 @@
 				346C4A6E1193273600BE8C49 /* OUIShadowBorderTop.png */,
 				94429F3811ADCB80005B8934 /* OUIStandardPopoverButton.png */,
 				346C4A6F1193273600BE8C49 /* OUITextSelectionOverlay.png */,
+				A2875969126FAEDE00C8C7BC /* OUITextSelectionHandle.png */,
 				346C4A701193273600BE8C49 /* OUIToolbarAddDocument.png */,
 				346C4A711193273600BE8C49 /* OUIToolbarFavoriteFilled.png */,
 				346C4A721193273600BE8C49 /* OUIToolbarFavoriteHollow.png */,
 				94909BD811ADC18100BA9C40 /* OUIUndoButtonBackground.png */,
 				34D2994C11EFD5F90072B2E1 /* OUIToolbarButton-Black-Highlighted.png */,
 				34D2994D11EFD5F90072B2E1 /* OUIToolbarButton-Black-Normal.png */,
+				000E844912821B87005D87BD /* OUIToolbarButtonImport.png */,
 			);
 			path = Images;
 			sourceTree = SOURCE_ROOT;
@@ -872,6 +1050,14 @@
 				346C4B191193273600BE8C49 /* UIView-OUIExtensions.m */,
 				345A398D121C992900ABA3F0 /* OUIToolbarButton.h */,
 				345A398E121C992900ABA3F0 /* OUIToolbarButton.m */,
+				0AF2737C1250FF110024ECCA /* OUIDocumentSlider.h */,
+				0AF2737D1250FF110024ECCA /* OUIDocumentSlider.m */,
+				34E5332612543FDE00AFA8E3 /* OUIAnimationSequence.h */,
+				34E5332712543FDE00AFA8E3 /* OUIAnimationSequence.m */,
+				9492F9171264D40B004DCEC8 /* OUISheetNavigationController.h */,
+				9492F9181264D40B004DCEC8 /* OUISheetNavigationController.m */,
+				943C22131280AE660049EC15 /* UIViewController-OUIExtensions.h */,
+				943C22141280AE660049EC15 /* UIViewController-OUIExtensions.m */,
 			);
 			name = "Extensions & Utilities";
 			sourceTree = "<group>";
@@ -940,7 +1126,18 @@
 			children = (
 				346C4A8B1193273600BE8C49 /* OUIFontInspectorSlice.h */,
 				346C4A8C1193273600BE8C49 /* OUIFontInspectorSlice.m */,
+				343220911270EFAF001B57CB /* OUIFontInspectorDetailSlice.h */,
+				343220921270EFAF001B57CB /* OUIFontInspectorDetailSlice.m */,
+				343220A51270F06E001B57CB /* OUIFontUtilities.h */,
+				343220A61270F06E001B57CB /* OUIFontUtilities.m */,
 				346C4A8D1193273600BE8C49 /* OUIFontInspectorSlice.xib */,
+				3402B70B1270FBBA0031C27D /* OUIFontInspectorItem-Selected.png */,
+				3402B727127100C50031C27D /* OUIFontInspectorItem-Highlighted.png */,
+				3402B728127100C50031C27D /* OUIFontInspectorItem-Normal.png */,
+				34F1D20E127232B700F59E56 /* OUIFontStyle-Bold.png */,
+				34F1D20F127232B700F59E56 /* OUIFontStyle-Italic.png */,
+				34F1D210127232B700F59E56 /* OUIFontStyle-Strikethrough.png */,
+				34F1D211127232B700F59E56 /* OUIFontStyle-Underline.png */,
 			);
 			name = Font;
 			sourceTree = "<group>";
@@ -968,6 +1165,59 @@
 				34D9ADBC1194A1A4001E3A18 /* OUIRTFWriter.m */,
 			);
 			path = RTF;
+			sourceTree = "<group>";
+		};
+		34EA43EE1267A32B00BAC7FD /* Software Update */ = {
+			isa = PBXGroup;
+			children = (
+				34EA43E51267A32200BAC7FD /* OUISoftwareUpdateController.h */,
+				34EA43E61267A32200BAC7FD /* OUISoftwareUpdateController.m */,
+				34EA43E71267A32200BAC7FD /* OUISoftwareUpdatePrivacyAlert.h */,
+				34EA43E81267A32200BAC7FD /* OUISoftwareUpdatePrivacyAlert.m */,
+			);
+			name = "Software Update";
+			sourceTree = "<group>";
+		};
+		94BD524B125E302E0048530E /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				942162E2125BA1DD00CB1B31 /* OUISyncMenu.xib */,
+				942162E6125BA35300CB1B31 /* OUISyncMenuController.h */,
+				942162E7125BA35300CB1B31 /* OUISyncMenuController.m */,
+				94BD53DC125E85CB0048530E /* OUIWebDAVSetup.xib */,
+				94BD53D7125E83CF0048530E /* OUIWebDAVSetup.h */,
+				94BD53D8125E83CF0048530E /* OUIWebDAVSetup.m */,
+				9407455F125FD3BB00C4AECB /* OUIWebDAVList.xib */,
+				94074559125FD1AB00C4AECB /* OUIWebDAVController.h */,
+				9407455A125FD1AB00C4AECB /* OUIWebDAVController.m */,
+				946A892E1267693D008272E4 /* OUIWebDAVDownloader.xib */,
+				946A8929126768B6008272E4 /* OUIWebDAVDownloader.h */,
+				946A892A126768B6008272E4 /* OUIWebDAVDownloader.m */,
+				94D570F91270FD3E00BFBD4E /* OUIExportOptions.xib */,
+				94D570FA1270FD3E00BFBD4E /* OUIExportOptionsController.h */,
+				94D570FB1270FD3E00BFBD4E /* OUIExportOptionsController.m */,
+				94D570FC1270FD3E00BFBD4E /* OUIExportOptionsView.h */,
+				94D570FD1270FD3E00BFBD4E /* OUIExportOptionsView.m */,
+				9415A0171283326300BC3C92 /* OUIExportOptionsBackgroundView.h */,
+				9415A0181283326300BC3C92 /* OUIExportOptionsBackgroundView.m */,
+				94074480125F9FA900C4AECB /* OUICredentials-Device.m */,
+				94074481125F9FA900C4AECB /* OUICredentials-Simulator.m */,
+				94074482125F9FA900C4AECB /* OUICredentials.h */,
+				94BD5278125E3F7F0048530E /* OUISetUpSyncBase.xib */,
+				94BD5251125E30840048530E /* OUISetUpSyncBaseController.h */,
+				94BD5252125E30840048530E /* OUISetUpSyncBaseController.m */,
+				94BD527A125E40C30048530E /* OUISetUpWebDAVSyncController.h */,
+				94BD527B125E40C30048530E /* OUISetUpWebDAVSyncController.m */,
+				94BD5256125E31530048530E /* OUIEditableLabeledValueCell.h */,
+				94BD5257125E31530048530E /* OUIEditableLabeledValueCell.m */,
+				94BD525A125E31E90048530E /* OUILabeledValueCell.h */,
+				94BD525B125E31E90048530E /* OUILabeledValueCell.m */,
+				94D56E0E127094F900BFBD4E /* OUIReplaceDocumentAlert.h */,
+				94D56E0F127094F900BFBD4E /* OUIReplaceDocumentAlert.m */,
+				94FCA2C412722EE600F4BFB9 /* OUIWebDAVConnection.h */,
+				94FCA2C512722EE600F4BFB9 /* OUIWebDAVConnection.m */,
+			);
+			name = Sync;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1060,6 +1310,29 @@
 				00AA54A611FE743500A23064 /* OUILongPressGestureRecognizer.h in Headers */,
 				34DE83E61211EE420078D1DF /* OUILoupeOverlaySubject.h in Headers */,
 				345A398F121C992900ABA3F0 /* OUIToolbarButton.h in Headers */,
+				0AF2737E1250FF110024ECCA /* OUIDocumentSlider.h in Headers */,
+				34E5332812543FDE00AFA8E3 /* OUIAnimationSequence.h in Headers */,
+				942162E8125BA35300CB1B31 /* OUISyncMenuController.h in Headers */,
+				94BD5253125E30840048530E /* OUISetUpSyncBaseController.h in Headers */,
+				94BD5258125E31530048530E /* OUIEditableLabeledValueCell.h in Headers */,
+				94BD525C125E31E90048530E /* OUILabeledValueCell.h in Headers */,
+				94BD527C125E40C30048530E /* OUISetUpWebDAVSyncController.h in Headers */,
+				94BD53D9125E83CF0048530E /* OUIWebDAVSetup.h in Headers */,
+				94074485125F9FA900C4AECB /* OUICredentials.h in Headers */,
+				9407455B125FD1AB00C4AECB /* OUIWebDAVController.h in Headers */,
+				9492F9191264D40B004DCEC8 /* OUISheetNavigationController.h in Headers */,
+				946A892B126768B6008272E4 /* OUIWebDAVDownloader.h in Headers */,
+				34EA43E91267A32200BAC7FD /* OUIFeatures.h in Headers */,
+				34EA43EA1267A32200BAC7FD /* OUISoftwareUpdateController.h in Headers */,
+				34EA43EC1267A32200BAC7FD /* OUISoftwareUpdatePrivacyAlert.h in Headers */,
+				94D56E10127094F900BFBD4E /* OUIReplaceDocumentAlert.h in Headers */,
+				343220931270EFAF001B57CB /* OUIFontInspectorDetailSlice.h in Headers */,
+				343220A71270F06E001B57CB /* OUIFontUtilities.h in Headers */,
+				94D570FE1270FD3E00BFBD4E /* OUIExportOptionsController.h in Headers */,
+				94D571001270FD3E00BFBD4E /* OUIExportOptionsView.h in Headers */,
+				94FCA2C612722EE600F4BFB9 /* OUIWebDAVConnection.h in Headers */,
+				943C22151280AE660049EC15 /* UIViewController-OUIExtensions.h in Headers */,
+				9415A0191283326300BC3C92 /* OUIExportOptionsBackgroundView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1091,7 +1364,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "OmniUI" */;
-			compatibilityVersion = "Xcode 3.1";
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -1205,6 +1478,29 @@
 				34D29BC811F10EC60072B2E1 /* OUIUndoBarButtonItem.m in Sources */,
 				00AA54A711FE743500A23064 /* OUILongPressGestureRecognizer.m in Sources */,
 				345A3990121C992900ABA3F0 /* OUIToolbarButton.m in Sources */,
+				0AF2737F1250FF110024ECCA /* OUIDocumentSlider.m in Sources */,
+				34E5332912543FDE00AFA8E3 /* OUIAnimationSequence.m in Sources */,
+				942162E9125BA35300CB1B31 /* OUISyncMenuController.m in Sources */,
+				94BD5254125E30840048530E /* OUISetUpSyncBaseController.m in Sources */,
+				94BD5259125E31530048530E /* OUIEditableLabeledValueCell.m in Sources */,
+				94BD525D125E31E90048530E /* OUILabeledValueCell.m in Sources */,
+				94BD527D125E40C30048530E /* OUISetUpWebDAVSyncController.m in Sources */,
+				94BD53DA125E83CF0048530E /* OUIWebDAVSetup.m in Sources */,
+				94074483125F9FA900C4AECB /* OUICredentials-Device.m in Sources */,
+				94074484125F9FA900C4AECB /* OUICredentials-Simulator.m in Sources */,
+				9407455C125FD1AB00C4AECB /* OUIWebDAVController.m in Sources */,
+				9492F91A1264D40B004DCEC8 /* OUISheetNavigationController.m in Sources */,
+				946A892C126768B6008272E4 /* OUIWebDAVDownloader.m in Sources */,
+				34EA43EB1267A32200BAC7FD /* OUISoftwareUpdateController.m in Sources */,
+				34EA43ED1267A32200BAC7FD /* OUISoftwareUpdatePrivacyAlert.m in Sources */,
+				94D56E11127094F900BFBD4E /* OUIReplaceDocumentAlert.m in Sources */,
+				343220941270EFAF001B57CB /* OUIFontInspectorDetailSlice.m in Sources */,
+				343220A81270F06E001B57CB /* OUIFontUtilities.m in Sources */,
+				94D570FF1270FD3E00BFBD4E /* OUIExportOptionsController.m in Sources */,
+				94D571011270FD3E00BFBD4E /* OUIExportOptionsView.m in Sources */,
+				94FCA2C712722EE600F4BFB9 /* OUIWebDAVConnection.m in Sources */,
+				943C22161280AE660049EC15 /* UIViewController-OUIExtensions.m in Sources */,
+				9415A01A1283326300BC3C92 /* OUIExportOptionsBackgroundView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

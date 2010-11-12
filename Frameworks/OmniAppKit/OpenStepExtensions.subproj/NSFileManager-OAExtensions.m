@@ -1,4 +1,4 @@
-// Copyright 2002-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -225,7 +225,7 @@ static OSType finderSignatureBytes = 'MACS';
 /*" Returns any entries in the given directory which conform to any of the UTIs specified in /someUTIs/. Returns nil on error. If /errOut/ is NULL, this routine will continue past errors inspecting individual files and will return any files which can be inspected. Otherwise, it will return nil upon encountering the first error. If /fullPath/ is YES, the returned paths will have /path/ prepended to them. "*/
 - (NSArray *)directoryContentsAtPath:(NSString *)path ofTypes:(NSArray *)someUTIs deep:(BOOL)recurse fullPath:(BOOL)fullPath error:(NSError **)errOut;
 {
-    NSObject <NSFastEnumeration> *enumerable;
+    id <NSFastEnumeration> enumerable;
     NSMutableArray *filteredChildren;
     
     if (!recurse) {

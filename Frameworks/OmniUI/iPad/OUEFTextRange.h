@@ -13,6 +13,7 @@
 
 @interface OUEFTextRange : UITextRange <NSCopying>
 {
+@protected
     // We could simply store a pair of indices here, but we'll have to alloc+init those text positions someday, so might as well do it up-front
     OUEFTextPosition *start, *end;
 }

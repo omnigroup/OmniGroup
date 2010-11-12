@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <OmniFoundation/OmniFoundation.h>
+//#import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CFError.h>

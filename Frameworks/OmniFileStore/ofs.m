@@ -8,12 +8,17 @@
 #import <OmniFileStore/OFSDAVFileManager.h>
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/OFSFileManagerAsynchronousReadTarget.h>
+#import <OmniFileStore/OFSFileManagerAsynchronousOperationTarget.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
-@interface OFSTool : NSObject <OFSDAVFileManagerAuthenticationDelegate>
+@interface OFSTool : NSObject <OFSDAVFileManagerAuthenticationDelegate, OFSFileManagerAsynchronousOperationTarget>
+{
+@private
+    id <OFSAsynchronousOperation> _asyncOperation;
+    NSError *_asyncError;
+}
 @end
 
 static NSString * const OFSToolErrorDomain = @"com.omnigroup.framework.omnifilestore.ofs";
@@ -71,7 +76,8 @@ static NSURL *_url(NSString *str)
         imp = (typeof(imp))[self methodForSelector:action];
     
     if (!imp) {
-        OFSToolError(outError, BadCommand, @"Bad command", @"Unknown command");
+        NSString *reason = [NSString stringWithFormat:@"Unknown command \"%@\".", command];
+        OFSToolError(outError, BadCommand, @"Bad command", reason);
         return NO;
     }
     return imp(self, action, [arguments subarrayWithRange:NSMakeRange(2, argumentCount - 2)], outError);
@@ -129,6 +135,72 @@ static NSURL *_url(NSString *str)
     }
 
     return YES;
+}
+
+- (BOOL)command_acp:(NSArray *)arguments error:(NSError **)outError;
+{
+    // For now, only supporting source->dst
+    if ([arguments count] != 2) {
+        OFSToolError(outError, BadCommand, @"Bad command", @"Need source and destination URLs.");
+        return NO;
+    }
+    
+    // Don't have streaming; just doing the lamest thing that could work.
+    
+    NSData *data;
+    {
+        NSURL *url = _url([arguments objectAtIndex:0]);
+        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url error:outError] autorelease];
+        if (!fileManager)
+            return NO;
+        data = [fileManager dataWithContentsOfURL:url error:outError];
+        if (!data)
+            return NO;
+    }
+    
+    {
+        NSURL *url = _url([arguments objectAtIndex:1]);
+        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url error:outError] autorelease];
+        
+        _asyncOperation = [[fileManager asynchronousWriteData:data toURL:url atomically:NO withTarget:self] retain];
+        [_asyncOperation startOperation];
+        
+        while (_asyncOperation) {
+            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+            [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+            [pool drain];
+        }
+        
+        if (_asyncError) {
+            *outError = [[_asyncError retain] autorelease];
+            return NO;
+        }
+    }
+    
+    return YES;
+}
+
+#pragma mark -
+#pragma mark OFSFileManagerAsynchronousOperationTarget
+
+- (void)fileManager:(OFSFileManager *)fileManager operation:(id <OFSAsynchronousOperation>)operation didProcessBytes:(long long)processedBytes;
+{
+    OBPRECONDITION(_asyncOperation);
+    
+    long long expectedLength = [operation expectedLength];
+    if (expectedLength == NSURLResponseUnknownLength)
+        NSLog(@"%qd bytes processed", [operation processedLength]);
+    else
+        NSLog(@"%.1f%%", 100.0 * (double)[operation processedLength] / expectedLength);
+}
+
+- (void)fileManager:(OFSFileManager *)fileManager operationDidFinish:(id <OFSAsynchronousOperation>)operation withError:(NSError *)error;
+{
+    OBPRECONDITION(_asyncOperation);
+
+    _asyncError = [error retain];
+    [_asyncOperation autorelease];
+    _asyncOperation = nil;
 }
 
 #pragma mark -

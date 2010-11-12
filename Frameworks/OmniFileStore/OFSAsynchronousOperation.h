@@ -7,11 +7,14 @@
 //
 // $Id$
 
-@class OFSFileManager;
+#import <Foundation/NSObject.h>
 
-@protocol OFSFileManagerAsynchronousReadTarget
-- (void)fileManager:(OFSFileManager *)fileManager didReceiveData:(NSData *)data;
-- (void)fileManagerDidFinishLoading:(OFSFileManager *)fileManager;
-- (void)fileManager:(OFSFileManager *)fileManager didFailWithError:(NSError *)error;
+@class NSURL;
+
+@protocol OFSAsynchronousOperation <NSObject>
+@property(readonly,nonatomic) NSURL *url;
+@property(readonly,nonatomic) long long processedLength;
+@property(readonly,nonatomic) long long expectedLength;
+- (void)startOperation;
+- (void)stopOperation;
 @end
-

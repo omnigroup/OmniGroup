@@ -17,7 +17,7 @@ static const CGFloat kButtonWidth = 57;
 static const CGFloat kButtonHeight = 38;
 
 @interface OUIInspectorSegmentedControl (/*Private*/)
-- (void)_segmentPressed:(id)sender;
+- (void)_segmentPressed:(OUIInspectorSegmentedControlButton *)segment;
 @end
 
 @implementation OUIInspectorSegmentedControl
@@ -55,7 +55,7 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
     OUIInspectorSegmentedControlButton *segment = [OUIInspectorSegmentedControlButton buttonWithType:UIButtonTypeCustom];
     segment.image = [UIImage imageNamed:imageName];
     segment.representedObject = representedObject;
-    [segment addTarget:self action:@selector(_segmentPressed:) forControlEvents:UIControlEventTouchDown];
+    [segment addTarget:self action:@selector(_segmentPressed:)];
     [_segments addObject:segment];
     [self setNeedsLayout];
     return segment;
@@ -71,7 +71,7 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
     OUIInspectorSegmentedControlButton *segment = [OUIInspectorSegmentedControlButton buttonWithType:UIButtonTypeCustom];
     [segment setTitle:text forState:UIControlStateNormal];
     segment.representedObject = representedObject;
-    [segment addTarget:self action:@selector(_segmentPressed:) forControlEvents:UIControlEventTouchDown];
+    [segment addTarget:self action:@selector(_segmentPressed:)];
     [_segments addObject:segment];
     [self setNeedsLayout];
     return segment;
@@ -80,6 +80,23 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
 - (OUIInspectorSegmentedControlButton *)addSegmentWithText:(NSString *)text;
 {
     return [self addSegmentWithText:text representedObject:nil];
+}
+
+@synthesize allowsMulitpleSelection = _allowsMulitpleSelection;
+- (void)setAllowsMulitpleSelection:(BOOL)flag;
+{
+    if (_allowsMulitpleSelection == flag)
+        return;
+    
+    _allowsMulitpleSelection = flag;
+    
+    if (!_allowsMulitpleSelection) {
+        // Clear any extra selected items after the first
+        OUIInspectorSegmentedControlButton *firstSelectedSegment = self.selectedSegment;
+        for (OUIInspectorSegmentedControlButton *segment in _segments)
+            if (segment.selected && firstSelectedSegment != segment)
+                segment.selected = NO;
+    }
 }
 
 @synthesize sizesSegmentsToFit = _sizesSegmentsToFit;
@@ -233,7 +250,11 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
 
 - (void)_segmentPressed:(OUIInspectorSegmentedControlButton *)segment;
 {
-    self.selectedSegment = segment;
+    if (_allowsMulitpleSelection) {
+        segment.selected = !segment.selected;
+    } else {
+        self.selectedSegment = segment;
+    }
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 

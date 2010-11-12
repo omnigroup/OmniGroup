@@ -11,6 +11,7 @@
 #import <OmniFoundation/OFXMLDocument.h>
 #import <OmniFoundation/OFXMLElement.h>
 #import <OmniFoundation/CFDictionary-OFExtensions.h>
+#import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$");
 

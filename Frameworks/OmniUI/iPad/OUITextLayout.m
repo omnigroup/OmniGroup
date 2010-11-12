@@ -298,7 +298,7 @@ void OUITextLayoutFixupParagraphStyles(NSMutableAttributedString *content)
     }
 }
 
-static NSAttributedString *_applyTransformedAttributes(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing, void *context)
+static NSAttributedString *_transformLink(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing, void *context)
 {
     NSDictionary *linkAttributes = context;
     
@@ -314,18 +314,83 @@ static NSAttributedString *_applyTransformedAttributes(NSMutableAttributedString
     return nil;
 }
 
-// Later, we may have a callout for a delegate to extent the transformation.
-// Returns nil if no transformation is done, instead of returning [soure copy].
+static NSAttributedString *_transformUnderline(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing, void *context)
+{
+    NSCharacterSet *whitespaceCharacterSet = [NSCharacterSet whitespaceCharacterSet];
+    NSNumber *underlineStyle = [attributes objectForKey:OAUnderlineStyleAttributeName];
+    if (!underlineStyle || ([underlineStyle unsignedIntegerValue] & OAUnderlineByWordMask) == 0)
+        return nil;
+    
+    NSUInteger location = matchRange.location, end = NSMaxRange(matchRange);
+    while (location < end) {
+        NSRange remainingSearchRange = NSMakeRange(location, end - location);
+        NSRange whitespaceRange = [[source string] rangeOfCharacterFromSet:whitespaceCharacterSet options:0 range:remainingSearchRange];
+        if (whitespaceRange.length == 0)
+            break;
+
+        if (!*isEditing) {
+            [source beginEditing];
+            *isEditing = YES;
+        }
+        [source removeAttribute:OAUnderlineStyleAttributeName range:whitespaceRange];
+        location = NSMaxRange(whitespaceRange);
+    }
+
+    // We made only attribute changes (if any at all).
+    return nil;
+}
+
+/*
+ Later, we may have a callout for a delegate to extent the transformation. For now this applies some hard coded transforms to support features that CoreText doesn't have natively.
+
+ - If a non-empty linkAttributes dictionary is passed in, any link attribute ranges will have those attributes added.
+ - Any ranges that have an underline applied and have the OAUnderlineByWordMask set will have the underline attribute removed on whitespace in those ranges.
+ 
+ Returns nil if no transformation is done, instead of returning [soure copy].
+ */
 NSAttributedString *OUICreateTransformedAttributedString(NSAttributedString *source, NSDictionary *linkAttributes)
 {
-    if ([linkAttributes count] == 0 || ![source hasAttribute:OALinkAttributeName])
+    BOOL allowLinkTransform = ([linkAttributes count] > 0);
+    BOOL needsTransform = NO;
+
+    NSUInteger location = 0, length = [source length];
+    while (location < length) {
+        NSRange effectiveRange;
+        NSDictionary *attributes = [source attributesAtIndex:location effectiveRange:&effectiveRange];
+        
+        if (allowLinkTransform && [attributes objectForKey:OALinkAttributeName]) {
+            needsTransform = YES;
+            break;
+        }
+        
+        NSNumber *underlineStyle = [attributes objectForKey:OAUnderlineStyleAttributeName];
+        if (underlineStyle && ([underlineStyle unsignedIntegerValue] & OAUnderlineByWordMask)) {
+            NSRange whitespaceRange = [[source string] rangeOfCharacterFromSet:[NSCharacterSet whitespaceCharacterSet] options:0 range:effectiveRange];
+            if (whitespaceRange.length > 0) {
+                needsTransform = YES;
+                break;
+            }
+        }
+        
+        location = NSMaxRange(effectiveRange);
+    }
+    
+    if (!needsTransform)
         return nil; // No transform needed!
     
     NSMutableAttributedString *transformed = [source mutableCopy];
+    BOOL didEdit = NO;
     
-    [transformed mutateRanges:_applyTransformedAttributes matchingString:nil context:linkAttributes];
+    if (allowLinkTransform)
+        didEdit |= [transformed mutateRanges:_transformLink matchingString:nil context:linkAttributes];
+    didEdit |= [transformed mutateRanges:_transformUnderline matchingString:nil context:nil];
     
-    NSAttributedString *immutableResult = [transformed copy];
+    NSAttributedString *immutableResult = nil;
+    if (didEdit) {
+        // Should only happen if we had an underline attribute with by-word set, but it already didn't cover any whitespace.
+        immutableResult = [transformed copy];
+    }
+
     [transformed release];
 
     return immutableResult;

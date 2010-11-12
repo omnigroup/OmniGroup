@@ -50,7 +50,11 @@ OTHER_MFLAGS = $(value) -Wselector -Wstrict-selector-match -Wundeclared-selector
 ZERO_LINK = NO
 INSTALL_MODE_FLAG = a+rX
 PREBINDING = NO
-COPY_PHASE_STRIP = NO
+
+// We generally want our debug information format to be dwarf-with-dsym (and valgrind likes it best too), except when using OOM which only understands the older stabs format
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+// DEBUG_INFORMATION_FORMAT = stabs
+GCC_DEBUGGING_SYMBOLS = full
 
 // When preprocessing the Info.plist file, don't filter out comments or process trigraphs.  (We don't want "http://www.omnigroup.com/" to become "http://", nor do we want "????" to be interpreted as a trigraph.)
 INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -traditional-cpp -C -I"$PROJECT_DERIVED_FILE_DIR"
@@ -59,8 +63,8 @@ INFOPLIST_PREPROCESS = YES
 // Make sure we look for the built SVNVersions.h in the right spot
 HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR"
 
-// Use LLVM-GCC as the default compiler.
-GCC_VERSION = com.apple.compilers.llvmgcc42
-//GCC_VERSION = com.apple.compilers.llvm.clang.1_0
+// Unlike gcc and llvm-gcc, clang emits ObjC runtime info for class extensions conforming to protocols. Also, clang has more warning checks than gcc.
+//GCC_VERSION = com.apple.compilers.llvmgcc42
+GCC_VERSION = com.apple.compilers.llvm.clang.1_0
 
 RUN_CLANG_STATIC_ANALYZER = YES

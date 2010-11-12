@@ -10,9 +10,14 @@
 #import <OmniFoundation/OFObject.h>
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniUI/OUIDocumentPickerDelegate.h>
+#import <OmniUI/OUIFeatures.h>
 
 @class UIBarButtonItem;
-@class OUIAppMenuController, OUIDocumentPicker;
+@class OUIAppMenuController, OUIDocumentPicker, OUISyncMenuController;
+
+#if OUI_SOFTWARE_UPDATE_CHECK
+@class OUISoftwareUpdateController;
+#endif
 
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) file:__FILE__ line:__LINE__]
@@ -23,9 +28,14 @@
     OUIDocumentPicker *_documentPicker;
     UIBarButtonItem *_appMenuBarItem;
     OUIAppMenuController *_appMenuController;
+    OUISyncMenuController *_syncMenuController;
     
     UIActivityIndicatorView *_activityIndicator;
     UIView *_eventBlockingView;
+    
+#if OUI_SOFTWARE_UPDATE_CHECK
+    OUISoftwareUpdateController *_softwareUpdateController;
+#endif
 }
 
 + (id)controller;
@@ -48,6 +58,7 @@
 - (NSString *)feedbackMenuTitle;
 - (void)sendFeedback:(id)sender;
 - (void)showAppMenu:(id)sender;
+- (void)showSyncMenu:(id)sender;
 
 // Special URL handling
 - (BOOL)isSpecialURL:(NSURL *)url;

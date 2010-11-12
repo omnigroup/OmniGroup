@@ -40,6 +40,7 @@
 		341897950B7C01650032C5FA /* NSSetCommand-OFFixes.m in Sources */ = {isa = PBXBuildFile; fileRef = 341897930B7C01650032C5FA /* NSSetCommand-OFFixes.m */; };
 		341F551D0F72F08100632558 /* OFXMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 341F551B0F72F08100632558 /* OFXMLParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		341F551E0F72F08100632558 /* OFXMLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 341F551C0F72F08100632558 /* OFXMLParser.m */; };
+		342535AE128CBB7A009EFAC0 /* OFGeometryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 342535A9128CB9AD009EFAC0 /* OFGeometryTests.m */; };
 		342877B308EC788400D89442 /* NSBundle-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342877B108EC788400D89442 /* NSBundle-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		342877B408EC788400D89442 /* NSBundle-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342877B208EC788400D89442 /* NSBundle-OFExtensions.m */; };
 		342A9EC808C89683006AA532 /* NSComparisonPredicate-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342A9EC608C89683006AA532 /* NSComparisonPredicate-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -253,6 +254,7 @@
 		3482890B0A93A29F0064561B /* CFArrayExtensionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3482890A0A93A29F0064561B /* CFArrayExtensionsTests.m */; };
 		34850C840A71491100675995 /* OFBinding.h in Headers */ = {isa = PBXBuildFile; fileRef = 34850C820A71491100675995 /* OFBinding.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34850C850A71491100675995 /* OFBinding.m in Sources */ = {isa = PBXBuildFile; fileRef = 34850C830A71491100675995 /* OFBinding.m */; };
+		348C2C1C128C66E000E773FD /* OmniFoundation.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C82FE8AAEA611C9CC38 /* OmniFoundation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34920C7D0D58D2A0001CBD3D /* DateProcessing.strings in Resources */ = {isa = PBXBuildFile; fileRef = 34920C7B0D58D2A0001CBD3D /* DateProcessing.strings */; };
 		349950AA0F72FF95007C0BC9 /* OFXMLParserTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 349950A80F72FF8C007C0BC9 /* OFXMLParserTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		349CCB0E118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.h in Headers */ = {isa = PBXBuildFile; fileRef = 349CCB0C118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -267,6 +269,10 @@
 		34A8C2AE10532007004244E9 /* OFReadWriteFileBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A8C2AC10532007004244E9 /* OFReadWriteFileBuffer.m */; };
 		34AD4CB50DF846B8008974EB /* NSFileManager-OFTemporaryPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AD4CB30DF846B8008974EB /* NSFileManager-OFTemporaryPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34AD4CB60DF846B8008974EB /* NSFileManager-OFTemporaryPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AD4CB40DF846B8008974EB /* NSFileManager-OFTemporaryPath.m */; };
+		34AE03CE12652796008B6FAF /* OFNetReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AE03CC12652796008B6FAF /* OFNetReachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34AE03CF12652796008B6FAF /* OFNetReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AE03CD12652796008B6FAF /* OFNetReachability.m */; };
+		34AE03D012652796008B6FAF /* OFNetReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AE03CC12652796008B6FAF /* OFNetReachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34AE03D112652796008B6FAF /* OFNetReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AE03CD12652796008B6FAF /* OFNetReachability.m */; };
 		34AF16CA0C4FE9BE00ADC170 /* OFXMLComment.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AF16C80C4FE9BE00ADC170 /* OFXMLComment.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34AF16CB0C4FE9BE00ADC170 /* OFXMLComment.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AF16C90C4FE9BE00ADC170 /* OFXMLComment.m */; };
 		34B051970B2750400095EA0A /* OFDateXMLTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B051960B2750400095EA0A /* OFDateXMLTests.m */; };
@@ -992,6 +998,7 @@
 		341897930B7C01650032C5FA /* NSSetCommand-OFFixes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSSetCommand-OFFixes.m"; sourceTree = "<group>"; };
 		341F551B0F72F08100632558 /* OFXMLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLParser.h; sourceTree = "<group>"; };
 		341F551C0F72F08100632558 /* OFXMLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLParser.m; sourceTree = "<group>"; };
+		342535A9128CB9AD009EFAC0 /* OFGeometryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFGeometryTests.m; sourceTree = "<group>"; };
 		342877B108EC788400D89442 /* NSBundle-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBundle-OFExtensions.h"; sourceTree = "<group>"; };
 		342877B208EC788400D89442 /* NSBundle-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBundle-OFExtensions.m"; sourceTree = "<group>"; };
 		342A9EC608C89683006AA532 /* NSComparisonPredicate-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSComparisonPredicate-OFExtensions.h"; sourceTree = "<group>"; };
@@ -1141,8 +1148,8 @@
 		347DB8870D864B9200338653 /* NSString-OFCharacterEnumeration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString-OFCharacterEnumeration.h"; sourceTree = "<group>"; };
 		347DB9140D864F1000338653 /* NSAppleEventDescriptor-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAppleEventDescriptor-OFExtensions.h"; sourceTree = "<group>"; };
 		347DB9150D864F1000338653 /* NSAppleEventDescriptor-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAppleEventDescriptor-OFExtensions.m"; sourceTree = "<group>"; };
-		347DB93B0D86509200338653 /* NSObject-OFAppleScriptExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject-OFAppleScriptExtensions.h"; sourceTree = "<group>"; };
-		347DB93C0D86509200338653 /* NSObject-OFAppleScriptExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject-OFAppleScriptExtensions.m"; sourceTree = "<group>"; };
+		347DB93B0D86509200338653 /* NSObject-OFAppleScriptExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSObject-OFAppleScriptExtensions.h"; path = "../OpenStepExtensions.subproj/NSObject-OFAppleScriptExtensions.h"; sourceTree = "<group>"; };
+		347DB93C0D86509200338653 /* NSObject-OFAppleScriptExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSObject-OFAppleScriptExtensions.m"; path = "../OpenStepExtensions.subproj/NSObject-OFAppleScriptExtensions.m"; sourceTree = "<group>"; };
 		347EFD7A0DD4D7C900D6F347 /* OFXMLUnparsedElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLUnparsedElement.h; sourceTree = "<group>"; };
 		347EFD7B0DD4D7C900D6F347 /* OFXMLUnparsedElement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLUnparsedElement.m; sourceTree = "<group>"; };
 		3482890A0A93A29F0064561B /* CFArrayExtensionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CFArrayExtensionsTests.m; sourceTree = "<group>"; };
@@ -1172,6 +1179,8 @@
 		34A8C2AC10532007004244E9 /* OFReadWriteFileBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFReadWriteFileBuffer.m; sourceTree = "<group>"; };
 		34AD4CB30DF846B8008974EB /* NSFileManager-OFTemporaryPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager-OFTemporaryPath.h"; sourceTree = "<group>"; };
 		34AD4CB40DF846B8008974EB /* NSFileManager-OFTemporaryPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager-OFTemporaryPath.m"; sourceTree = "<group>"; };
+		34AE03CC12652796008B6FAF /* OFNetReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFNetReachability.h; sourceTree = "<group>"; };
+		34AE03CD12652796008B6FAF /* OFNetReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFNetReachability.m; sourceTree = "<group>"; };
 		34AF16C80C4FE9BE00ADC170 /* OFXMLComment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLComment.h; sourceTree = "<group>"; };
 		34AF16C90C4FE9BE00ADC170 /* OFXMLComment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLComment.m; sourceTree = "<group>"; };
 		34B051960B2750400095EA0A /* OFDateXMLTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDateXMLTests.m; sourceTree = "<group>"; };
@@ -1656,8 +1665,6 @@
 				A25B32530E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.m */,
 				00E51D3AFE8AAEA611C9CC38 /* NSNumber-OFExtensions.h */,
 				00E51D1DFE8AAEA611C9CC38 /* NSNumber-OFExtensions.m */,
-				347DB93B0D86509200338653 /* NSObject-OFAppleScriptExtensions.h */,
-				347DB93C0D86509200338653 /* NSObject-OFAppleScriptExtensions.m */,
 				00E51D3BFE8AAEA611C9CC38 /* NSObject-OFExtensions.h */,
 				00E51D1EFE8AAEA611C9CC38 /* NSObject-OFExtensions.m */,
 				00E51D3CFE8AAEA611C9CC38 /* NSProcessInfo-OFExtensions.h */,
@@ -2054,6 +2061,8 @@
 				6C4635F70B38956800635C03 /* OFScriptHelpers.h */,
 				6C4635F80B38956800635C03 /* OFScriptHelpers.m */,
 				34A71C3F0663D4F40097A113 /* NSObjectSpecifier-OFFixes.m */,
+				347DB93B0D86509200338653 /* NSObject-OFAppleScriptExtensions.h */,
+				347DB93C0D86509200338653 /* NSObject-OFAppleScriptExtensions.m */,
 				34B4392C0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.h */,
 				34B4392D0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.m */,
 				3431F4F20CD24BBE000D6E70 /* NSScriptObjectSpecifier-OFExtensions.h */,
@@ -2165,6 +2174,7 @@
 				34F4C0F1078F065E00E8899E /* OFVersionNumberTests.m */,
 				3475FBD10D747F550050931A /* OFCrashOnExceptionTest.m */,
 				343B363E1034F6C40006290A /* OFRandomRepeatTest.m */,
+				342535A9128CB9AD009EFAC0 /* OFGeometryTests.m */,
 				A2BEE38705AB534E0097A146 /* XML */,
 			);
 			path = Tests;
@@ -2223,6 +2233,8 @@
 				16ACF158FFC40A50C697A14E /* OmniFoundation.strings */,
 				34920C7B0D58D2A0001CBD3D /* DateProcessing.strings */,
 				34A1594705641CC70097A113 /* OmniFoundation.order */,
+				34AE03CC12652796008B6FAF /* OFNetReachability.h */,
+				34AE03CD12652796008B6FAF /* OFNetReachability.m */,
 				0C8017CEFEE33D48C697A14E /* General Classes */,
 				3D990C76FF365ADAC697A146 /* General Functions */,
 				00E51C86FE8AAEA611C9CC38 /* DataStructures */,
@@ -2387,6 +2399,8 @@
 				347F624F11D5323600025DAE /* NSFileManager-OFTemporaryPath.h in Headers */,
 				3465C66F11DBA33F0060F19E /* OFAlias.h in Headers */,
 				34E8675E11DBDDBB004CF9CC /* NSAttributedString-OFExtensions.h in Headers */,
+				34AE03CE12652796008B6FAF /* OFNetReachability.h in Headers */,
+				348C2C1C128C66E000E773FD /* OmniFoundation.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2594,6 +2608,7 @@
 				3443156C1177777E001DEF99 /* OFFileWrapper.h in Headers */,
 				349CCB0E118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.h in Headers */,
 				34562BF411AB13EE005F186D /* OFDateFormatConversion.h in Headers */,
+				34AE03D012652796008B6FAF /* OFNetReachability.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3013,6 +3028,7 @@
 				347F625011D5323700025DAE /* NSFileManager-OFTemporaryPath.m in Sources */,
 				3465C66E11DBA33F0060F19E /* OFAlias.m in Sources */,
 				34E8675D11DBDDBA004CF9CC /* NSAttributedString-OFExtensions.m in Sources */,
+				34AE03CF12652796008B6FAF /* OFNetReachability.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3215,6 +3231,7 @@
 				349CCB0F118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.m in Sources */,
 				344D0AAA1190DDE400264D89 /* OFErrors.m in Sources */,
 				34562BF311AB13EE005F186D /* OFDateFormatConversion.m in Sources */,
+				34AE03D112652796008B6FAF /* OFNetReachability.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3283,6 +3300,7 @@
 				341714FE0F783BB20062895C /* OFXMLReaderTests.m in Sources */,
 				A22D9877101E513F005FF4FF /* OFXMLSignatureTests.m in Sources */,
 				34562D6311AC2E78005F186D /* OFDateFormatConversionTests.m in Sources */,
+				342535AE128CBB7A009EFAC0 /* OFGeometryTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3785,7 +3803,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AB8F38B08AD0CA100DBB061 /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
-				GCC_ENABLE_OBJC_GC = supported;
 				"GCC_ENABLE_OBJC_GC[sdk=iphoneos*][arch=*]" = unsupported;
 				"GCC_ENABLE_OBJC_GC[sdk=macosx*][arch=*]" = supported;
 				HEADER_SEARCH_PATHS = (
@@ -3799,7 +3816,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AB8F38C08AD0CA100DBB061 /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
-				GCC_ENABLE_OBJC_GC = supported;
 				"GCC_ENABLE_OBJC_GC[sdk=iphoneos*][arch=*]" = unsupported;
 				"GCC_ENABLE_OBJC_GC[sdk=macosx*][arch=*]" = supported;
 				HEADER_SEARCH_PATHS = (
@@ -3813,7 +3829,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AB8F38A08AD0CA100DBB061 /* Omni-Global-Coverage.xcconfig */;
 			buildSettings = {
-				GCC_ENABLE_OBJC_GC = supported;
 				"GCC_ENABLE_OBJC_GC[sdk=iphoneos*][arch=*]" = unsupported;
 				"GCC_ENABLE_OBJC_GC[sdk=macosx*][arch=*]" = supported;
 				HEADER_SEARCH_PATHS = (

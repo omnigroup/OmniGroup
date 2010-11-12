@@ -219,7 +219,10 @@ static id _commonInit(OUIUndoBarButtonItem *self)
         _buttonController.undoBarButtonItemTarget = _undoBarButtonItemTarget;
     }
     
-    [_buttonController showUndoMenuFromItem:self];
+    if (![_buttonController isMenuVisible]) {
+        [_undoBarButtonItemTarget undoBarButtonItemWillShowPopover];
+        [_buttonController showUndoMenuFromItem:self];
+    }
 }
 
 - (void)_touchDown:(id)sender;

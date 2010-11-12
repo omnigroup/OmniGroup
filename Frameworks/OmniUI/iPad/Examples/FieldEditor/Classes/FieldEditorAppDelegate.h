@@ -11,7 +11,9 @@
 
 @class FieldEditorViewController;
 
-@interface FieldEditorAppDelegate : OUIAppController {
+@interface FieldEditorAppDelegate : OUIAppController
+{
+@private
     UIWindow *window;
     FieldEditorViewController *viewController;
 }

@@ -149,7 +149,7 @@ static const CSSM_API_MEMORY_FUNCS coreFoundationMemoryFuncsPrototype = {
 
 static const CSSM_VERSION callingApiVersion = {2,0};
 
-+ moduleWithGUID:(const CSSM_GUID *)auid type:(CSSM_SERVICE_TYPE)serviceType
++ (OFCDSAModule *)moduleWithGUID:(const CSSM_GUID *)auid type:(CSSM_SERVICE_TYPE)serviceType
 {
     CSSM_RETURN err;
     CSSM_MODULE_HANDLE handle;

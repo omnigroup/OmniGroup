@@ -28,7 +28,7 @@ RCS_ID("$Id$");
 
 - (BOOL)isApplicableToError:(NSError *)error;
 {
-    if (![[error domain] isEqualToString:OMNI_BUNDLE_IDENTIFIER] || [error code] != OSUBadInstallationDirectory)
+    if (![[error domain] isEqualToString:OSUErrorDomain] || [error code] != OSUBadInstallationDirectory)
         return NO;
 
     if (![[self object] respondsToSelector:@selector(chooseInstallationDirectory:)])

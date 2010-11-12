@@ -15,17 +15,19 @@
 {
 }
 
-+ (NSColor *)colorForString:(NSString *)colorString gamma:(double)gamma;
-+ (NSColor *)colorForString:(NSString *)colorString;
-+ (NSString *)stringForColor:(NSColor *)color gamma:(double)gamma;
-+ (NSString *)stringForColor:(NSColor *)color;
++ (NSColor *)colorForString:(NSString *)colorString colorSpace:(NSColorSpace *)space;
++ (NSColor *)colorForString:(NSString *)colorString gamma:(double)gamma    OB_DEPRECATED_ATTRIBUTE;
++ (NSColor *)colorForString:(NSString *)colorString                        OB_DEPRECATED_ATTRIBUTE;
++ (NSString *)stringForColor:(NSColor *)color colorSpace:(NSColorSpace *)space;
++ (NSString *)stringForColor:(NSColor *)color gamma:(double)gamma          OB_DEPRECATED_ATTRIBUTE;
++ (NSString *)stringForColor:(NSColor *)color                              OB_DEPRECATED_ATTRIBUTE;
 
 @end
 
 #import <math.h> // for pow()
 #import <AppKit/NSColor.h> // for +colorWithCalibratedRed...
 
-static inline double
+OB_DEPRECATED_ATTRIBUTE static inline double
 OAColorPaletteApplyGammaAndNormalize(unsigned int sample, unsigned int maxValue, double gammaValue)
 {
     double normalizedSample = ((double)sample / (double)maxValue);
@@ -37,8 +39,8 @@ OAColorPaletteApplyGammaAndNormalize(unsigned int sample, unsigned int maxValue,
 }
 
 #import <OmniAppKit/NSColor-OAExtensions.h>
-static inline NSColor *
-OAColorPaletteColorWithRGBMaxAndGamma(unsigned int red, unsigned int green, unsigned int blue, unsigned int maxValue, double gammaValue)
+OB_DEPRECATED_ATTRIBUTE static inline NSColor *
+OAColorPaletteColorWithRGBMaxAndGamma(unsigned int red, unsigned int green, unsigned int blue, unsigned int maxValue, double gammaValue) 
 {
     return OARGBA(OAColorPaletteApplyGammaAndNormalize(red, maxValue, gammaValue),
                   OAColorPaletteApplyGammaAndNormalize(green, maxValue, gammaValue),

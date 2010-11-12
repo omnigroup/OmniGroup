@@ -20,8 +20,9 @@ typedef enum {
     AnimationTypeCount,
 } AnimationType;
 
-@interface DetailViewController : UIViewController <UIPopoverControllerDelegate, UISplitViewControllerDelegate> {
-    
+@interface DetailViewController : UIViewController <UIPopoverControllerDelegate, UISplitViewControllerDelegate>
+{
+@private
     UIPopoverController *popoverController;
     UIToolbar *toolbar;
     

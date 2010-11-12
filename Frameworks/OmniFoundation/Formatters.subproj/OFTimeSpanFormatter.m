@@ -52,7 +52,7 @@ static OFTimeSpanUnit timeSpanUnits[UNITS_COUNT];
     timeSpanUnits[UNITS_YEARS].localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"y", @"OmniFoundation", bundle, @"time span formatter span");
     timeSpanUnits[UNITS_YEARS].pluralString = @"years";
     timeSpanUnits[UNITS_YEARS].singularString = @"year";
-    timeSpanUnits[UNITS_YEARS].abbreviatedString = @"t";
+    timeSpanUnits[UNITS_YEARS].abbreviatedString = @"y";
     timeSpanUnits[UNITS_YEARS].spanGetImplementation = (FLOAT_IMP)[OFTimeSpan instanceMethodForSelector:@selector(years)];
     timeSpanUnits[UNITS_YEARS].spanSetImplementation = (SETFLOAT_IMP)[OFTimeSpan instanceMethodForSelector:@selector(setYears:)];
     timeSpanUnits[UNITS_YEARS].formatterMultiplierImplementation = (FLOAT_IMP)[self instanceMethodForSelector:@selector(hoursPerYear)];

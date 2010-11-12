@@ -15,6 +15,7 @@ RCS_ID("$Id$")
 
 @interface OUIChangePreferencesActionSheetDelegate : NSObject <UIActionSheetDelegate>
 {
+@private
     NSURL *_url;
 }
 

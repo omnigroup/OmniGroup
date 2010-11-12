@@ -143,7 +143,7 @@ RCS_ID("$Id$");
     [stepper setDoubleValue:[self doubleValue]];
 }
 
-- (void)setObjectValue:(id)newValue;
+- (void)setObjectValue:(id <NSCopying>)newValue;
 {
     [super setObjectValue:newValue];
     [stepper setDoubleValue:[self doubleValue]];

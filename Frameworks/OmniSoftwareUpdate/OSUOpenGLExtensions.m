@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OSUCheckTool.h"
+#import "OSUOpenGLExtensions.h"
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/assertions.h>
@@ -168,7 +168,7 @@ static void append(const void *value, void *context)
 }
 
 #ifdef DEBUG
-void logTestGLExtensionCompressionTestVector(void)
+void OSULogTestGLExtensionCompressionTestVector(void)
 {
     srandom((unsigned)time(NULL));
     NSMutableArray *extensions = [NSMutableArray array];
@@ -179,7 +179,7 @@ void logTestGLExtensionCompressionTestVector(void)
     }
     
     NSString *extensionsString = [extensions componentsJoinedByString:@" "];
-    CFStringRef compressed = copyCompactedGLExtensionsList((CFStringRef)extensionsString);
+    CFStringRef compressed = OSUCopyCompactedOpenGLExtensionsList((CFStringRef)extensionsString);
     NSLog(@"extensionString %@", extensionsString);
     NSLog(@"compressed %@", compressed);
     CFRelease(compressed);
@@ -187,7 +187,7 @@ void logTestGLExtensionCompressionTestVector(void)
 
 #endif
 
-CFStringRef copyCompactedGLExtensionsList(CFStringRef extList)
+CFStringRef OSUCopyCompactedOpenGLExtensionsList(CFStringRef extList)
 {
     if (!extList)
         return NULL;
@@ -250,8 +250,8 @@ CFStringRef copyCompactedGLExtensionsList(CFStringRef extList)
    
 #ifdef DEBUG
     {
-        CFSetRef uA = copyParsedGLExtensionsList(buf);
-        CFSetRef uB = copyParsedGLExtensionsList(extList);
+        CFSetRef uA = OSUCopyParsedOpenGLExtensionsList(buf);
+        CFSetRef uB = OSUCopyParsedOpenGLExtensionsList(extList);
         OBASSERT(CFEqual(uA, uB));
         CFRelease(uA);
         CFRelease(uB);
@@ -294,7 +294,7 @@ static void unpackExtensionBitmap(CFMutableSetRef extensions, CFStringRef packed
     }
 }
 
-CFSetRef copyParsedGLExtensionsList(CFStringRef extList)
+CFSetRef OSUCopyParsedOpenGLExtensionsList(CFStringRef extList)
 {
     CFMutableSetRef extensions = CFSetCreateMutable(kCFAllocatorDefault, 0, &kCFTypeSetCallBacks);
     

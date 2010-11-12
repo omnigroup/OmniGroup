@@ -8,8 +8,9 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
-#import "OUIInspectorDelegate.h"
+#import <OmniUI/OUIInspectorDelegate.h>
 #import <CoreGraphics/CGBase.h>
+#import <CoreText/CTStringAttributes.h>
 
 @class OUIInspectorStack, OUIInspectorSlice, OUIInspectorDetailSlice;
 @class UIBarButtonItem, UINavigationController, UIPopoverController;
@@ -83,11 +84,11 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 - (CGFloat)fontSizeForInspectorSlice:(OUIInspectorSlice *)inspector;
 - (void)setFontSize:(CGFloat)fontSize fromInspectorSlice:(OUIInspectorSlice *)inspector;
 
-#if 0
-@optional  // TODO: Make this non-optional?
 - (CTUnderlineStyle)underlineStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
 - (void)setUnderlineStyle:(CTUnderlineStyle)underlineStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
-#endif
+
+- (CTUnderlineStyle)strikethroughStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
+- (void)setStrikethroughStyle:(CTUnderlineStyle)strikethroughStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
 
 @end
 

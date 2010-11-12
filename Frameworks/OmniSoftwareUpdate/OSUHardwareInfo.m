@@ -5,28 +5,43 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OSUCheckTool.h"
+#import "OSUHardwareInfo.h"
 #import "OSURunTime.h"
 #import <OmniBase/rcsid.h>
 
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    #define OSU_IPHONE 1
+    #define OSU_MAC 0
+#else
+    #define OSU_IPHONE 0
+    #define OSU_MAC 1
+#endif
+
+#if OSU_MAC
 #import <AppKit/NSOpenGL.h>
 #import <IOKit/IOCFBundle.h>
 #import <IOKit/graphics/IOGraphicsLib.h>
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
 #import <QuickTime/QuickTime.h>
-#import <inttypes.h>
-#import <mach-o/arch.h>
 #import <mach/mach_error.h>
+#endif
+
+#if OSU_IPHONE
+#import <OpenGLES/EAGL.h>
+#endif
+
+#import <mach-o/arch.h>
 #import <sys/sysctl.h>
 
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+#if OSU_MAC && defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
 #import <OpenCL/opencl.h>
 #endif
 
 RCS_ID("$Id$");
 
 // CFCopyDescription on a CFDataRef yields "<CFData 0x67d10 [0xa01303fc]>{length = 4, capacity = 4, bytes = 0x00001002}" when we'd like "0x00001002"
+#if OSU_MAC
 static CFStringRef data_desc(CFDataRef data)
 {
     NSUInteger byteIndex, byteCount = CFDataGetLength(data);
@@ -39,6 +54,7 @@ static CFStringRef data_desc(CFDataRef data)
         CFStringAppendFormat(str, NULL, CFSTR("%02x"), bytes[byteIndex]);
     return str;
 }
+#endif
 
 static void setUInt32Key(CFMutableDictionaryRef dict, CFStringRef key, uint32_t value)
 {
@@ -110,6 +126,7 @@ static void setSysctlStringKey(CFMutableDictionaryRef dict, CFStringRef key, int
     free(value);
 }
 
+#if OSU_MAC
 static NSDictionary *copySystemProfileForDataType(NSString *dataType)
 {
     NSPipe *pipe = [NSPipe pipe];
@@ -182,6 +199,7 @@ static NSDictionary *copySystemProfileForDataType(NSString *dataType)
     
     return plist;
 }
+#endif
 
 // setStringValue handles the case of ignoring a NULL value (which is expected to happen from time to time) and not crashing in the eventual consing-up of the URL if we find a non-CFString value (which should never happen, but it's nice to be sure).
 static void setStringValue(CFMutableDictionaryRef info, CFStringRef key, CFStringRef val)
@@ -209,14 +227,12 @@ static void setStringValue(CFMutableDictionaryRef info, CFStringRef key, CFStrin
 static NSString *clGetPlatformString(cl_platform_id plat, cl_platform_info what);
 #endif /* CL_VERSION_1_0 */
 
-CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifier, bool collectHardwareInformation, const char *licenseType, bool reportMode)
+CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collectHardwareInformation, NSString *licenseType, bool reportMode)
 {
     CFMutableDictionaryRef info = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     
     // Run time stats from OSURunTime.
-    CFStringRef appapplicationIdentifierString = CFStringCreateWithCString(kCFAllocatorDefault, applicationIdentifier, kCFStringEncodingUTF8);
-    OSURunTimeAddStatisticsToInfo((NSString *)appapplicationIdentifierString, (NSMutableDictionary *)info);
-    CFRelease(appapplicationIdentifierString);
+    OSURunTimeAddStatisticsToInfo(applicationIdentifier, (NSMutableDictionary *)info);
     
     if (!collectHardwareInformation)
         // The user has opted out.  We still send along the application name and bundle version.  We may use it someday to filter the result that is returned to just the pertinent info for that app.
@@ -224,9 +240,7 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
     
     // License type (bundle, retail, demo, etc)
     {
-        CFStringRef value = CFStringCreateWithCString(kCFAllocatorDefault, licenseType, kCFStringEncodingUTF8);
-        CFDictionarySetValue(info, CFSTR("license-type"), value);
-        CFRelease(value);
+        CFDictionarySetValue(info, CFSTR("license-type"), licenseType);
     }
     
     // UUID for the user's machine
@@ -254,13 +268,17 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
     {
         // sysctlbyname("kern.osrevision"...) returns an error, Radar #3624904
         //setSysctlStringKey(info, "kern.osrevision");
-        
+
+#if OSU_MAC
         SInt32 major, minor, bug;
         Gestalt(gestaltSystemVersionMajor, &major);
         Gestalt(gestaltSystemVersionMinor, &minor);
         Gestalt(gestaltSystemVersionBugFix, &bug);
-
         CFStringRef userVisibleSystemVersion = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%d.%d.%d"), major, minor, bug);
+#endif
+#if OSU_IPHONE
+        CFStringRef userVisibleSystemVersion = CFStringCreateCopy(kCFAllocatorDefault, (CFStringRef)[[UIDevice currentDevice] systemVersion]);
+#endif
         
         CFDictionarySetValue(info, CFSTR("os"), userVisibleSystemVersion);
         CFRelease(userVisibleSystemVersion);
@@ -281,6 +299,7 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
     
     // Location reported via the System Preferences TimeZone pane (or possibly via a GPS dongle; that seems less likely, though)
     {
+#if OSU_MAC
 	MachineLocation location;
 	memset(&location, 0, sizeof(location));
 	ReadLocation(&location);
@@ -294,6 +313,11 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
 	CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%f,%f"), 90*FractToFloat(location.latitude), 90*FractToFloat(location.longitude));
 	CFDictionarySetValue(info, CFSTR("loc"), value);
 	CFRelease(value);
+#endif
+        
+#if OSU_IPHONE
+        // If we ask for the location, the OS will put up a sheet asking if the user wants to allow it. Should we go ahead and do that? Do we have a reason to care where the user is -- seems unlikely.
+#endif
     }
     
     // Computer model
@@ -347,6 +371,7 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
     
     // Displays and accelerators
     {
+#if OSU_MAC
         kern_return_t krc;
         
         mach_port_t masterPort;
@@ -423,6 +448,10 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
                     CFRelease(value);
                 }
                 
+                if (vendor)
+                    CFRelease(vendor);
+                if (device)
+                    CFRelease(device);
                 
                 // We can't get the device memory from IOKit since all IOKit knows are the PCI address ranges (in the IODeviceMemory key for the accelerator's IOPCIDevice owner).  This may be bigger than the actual amount of memory on the hardware (since one card may support different amounts of memory and its easiest for the PCI glue to report the max).
                 // Instead we'll get the info from the CGLRenderer API below (since we have no good way of associating IOKit devices with CGL renderers).
@@ -468,32 +497,33 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
                         continue;
                     if (err) {
                         fprintf(stderr, "CGLQueryRendererInfo -> %d %s\n", err, CGLErrorString(err));
-                        rendererCount = 0;
-                    }
-                    
-                    for (rendererIndex = 0; rendererIndex < rendererCount; rendererIndex++) {
-                        GLint accelerated;
-                        
-                        err = CGLDescribeRenderer(rendererInfo, rendererIndex, kCGLRPAccelerated, &accelerated);
-                        if (err) {
-                            fprintf(stderr, "CGLQueryRendererInfo(%ld, kCGLRPAccelerated) -> %d\n", (long)rendererIndex, err);
-                            continue;
+                    } else {
+                        for (rendererIndex = 0; rendererIndex < rendererCount; rendererIndex++) {
+                            GLint accelerated;
+                            
+                            err = CGLDescribeRenderer(rendererInfo, rendererIndex, kCGLRPAccelerated, &accelerated);
+                            if (err) {
+                                fprintf(stderr, "CGLQueryRendererInfo(%ld, kCGLRPAccelerated) -> %d\n", (long)rendererIndex, err);
+                                continue;
+                            }
+                            if (!accelerated) {
+                                // Software renderer; skip
+                                continue;
+                            }
+                            
+                            GLint videoMemory;
+                            err = CGLDescribeRenderer(rendererInfo, rendererIndex, kCGLRPVideoMemory, &videoMemory);
+                            if (err) {
+                                fprintf(stderr, "CGLQueryRendererInfo(%ld, kCGLRPVideoMemory) -> %d\n", (long)rendererIndex, err);
+                                continue;
+                            }
+                            
+                            if (CFStringGetLength(rendererMem))
+                                CFStringAppend(rendererMem, CFSTR(","));
+                            CFStringAppendFormat(rendererMem, NULL, CFSTR("%ld"), videoMemory);
                         }
-                        if (!accelerated) {
-                            // Software renderer; skip
-                            continue;
-                        }
                         
-                        GLint videoMemory;
-                        err = CGLDescribeRenderer(rendererInfo, rendererIndex, kCGLRPVideoMemory, &videoMemory);
-                        if (err) {
-                            fprintf(stderr, "CGLQueryRendererInfo(%ld, kCGLRPVideoMemory) -> %d\n", (long)rendererIndex, err);
-                            continue;
-                        }
-                        
-                        if (CFStringGetLength(rendererMem))
-                            CFStringAppend(rendererMem, CFSTR(","));
-                        CFStringAppendFormat(rendererMem, NULL, CFSTR("%ld"), videoMemory);
+                        CGLDestroyRendererInfo(rendererInfo);
                     }
                 }
                 
@@ -551,10 +581,16 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
                 CFRelease(qe_value);
             }
         }
+#endif // OSU_MAC
+        
+#if OSU_IPHONE
+        // The display type/resolution and GPU info is implicit in the hardware model, at least for now.
+#endif
     }
     
     // OpenGL extensions for the main display adaptor.
     do {
+#if OSU_MAC
 	NSOpenGLPixelFormatAttribute attributes[] = {
 	    NSOpenGLPFAFullScreen,
 	    NSOpenGLPFAScreenMask,
@@ -603,30 +639,55 @@ CFDictionaryRef OSUCheckToolCollectHardwareInfo(const char *applicationIdentifie
 	    }
             [pixelFormat release];
 	}
+        
 	CFDictionarySetValue(info, CFSTR("gl_vendor0"), (CFStringRef)vendor);
+        [vendor release];
+        
 	CFDictionarySetValue(info, CFSTR("gl_version0"), (CFStringRef)version);
+        [version release];
+        
 	CFDictionarySetValue(info, CFSTR("gl_renderer0"), (CFStringRef)renderer);
+        [renderer release];
+        
 	CFDictionarySetValue(info, CFSTR("gl_extensions0"), (CFStringRef)extensions);
+        [extensions release];
+#endif // OSU_MAC
+        
+#if OSU_IPHONE
+        // The GL info is implicit in the hardware model, but it might be useful for us to collect that instead of having to have one of every device and manually collect it.
+#endif
     } while (0);
         
     // More info on the general hardware from system_profiler
     {
+#if OSU_MAC
 	NSDictionary *profile = copySystemProfileForDataType(@"SPHardwareDataType");
 	
         setStringValue(info, CFSTR("cpu_type"), (CFStringRef)[profile objectForKey:@"cpu_type"]);
         setStringValue(info, CFSTR("machine_name"), (CFStringRef)[profile objectForKey:@"machine_name"]);
         
 	[profile release];
+#endif
+        
+#if OSU_IPHONE
+        setStringValue(info, CFSTR("machine_name"), (CFStringRef)[[UIDevice currentDevice] model]);
+#endif
     }
     
     // More info on the display from system_profiler
     // TODO: Not handling multiple displays here, but really we just want to get the mapping from the displays to names straight.
     {
+#if OSU_MAC
 	NSDictionary *profile = copySystemProfileForDataType(@"SPDisplaysDataType");
 	
         setStringValue(info, CFSTR("adaptor0_name"), (CFStringRef)[profile objectForKey:@"_name"]);
 	
 	[profile release];
+#endif
+
+#if OSU_IPHONE
+        // Implicit in the hardware model.
+#endif
     }
     
     // Number of audio output channels on the default output device (i.e., are they supporting 5.1 audio)

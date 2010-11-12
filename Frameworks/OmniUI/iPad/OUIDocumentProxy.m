@@ -14,11 +14,15 @@
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/NSUserDefaults-OFExtensions.h>
+#import <OmniFileStore/OFSFileManager.h>
+#import <OmniQuartz/OQDrawing.h>
+
 #import "OUIDocumentPDFPreview.h"
 #import "OUIDocumentPreviewLoadOperation.h"
 #import "OUIDocumentProxy-Internal.h"
 #import "OUIDocumentPreview.h"
 #import "OUIDocumentImagePreview.h"
+#import <OmniUI/OUIDocumentPickerView.h>
 
 RCS_ID("$Id$");
 
@@ -30,25 +34,30 @@ RCS_ID("$Id$");
 
 NSString * const OUIDocumentProxyPreviewDidLoadNotification = @"OUIDocumentProxyPreviewDidLoadNotification";
 
-// If the proxy name ends in a number, we are likely dealing with a duplicate.
-void OUIDocumentProxySplitNameAndCounter(NSString *originalName, NSString **outName, NSUInteger *outCounter)
+@implementation NSString (OUIDocumentProxyNameComparison)
+- (NSComparisonResult)proxyNameComparison:(NSString *)otherName;
 {
-    NSString *name = originalName;
-    NSUInteger counter = 0;
-    NSRange notNumberRange = [name rangeOfCharacterFromSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet] options:NSBackwardsSearch];
+    // Then compare name and if the names are equal, duplication counters.
+    NSString *name1, *name2;
+    NSUInteger counter1, counter2;
     
-    // Has at least one digit at the end and isn't all digits?
-    if (notNumberRange.length > 0 && NSMaxRange(notNumberRange) < [name length]) {
-        // Is there a space before the digits?
-        if ([name characterAtIndex:NSMaxRange(notNumberRange) - 1] == ' ') {
-            counter = [[name substringFromIndex:NSMaxRange(notNumberRange)] intValue];
-            name = [name substringToIndex:NSMaxRange(notNumberRange) - 1];
-        }
-    }
+    OFSFileManagerSplitNameAndCounter(self, &name1, &counter1);
+    OFSFileManagerSplitNameAndCounter(otherName, &name2, &counter2);
     
-    *outName = name;
-    *outCounter = counter;
+    NSComparisonResult caseInsensitiveCompare = [name1 localizedCaseInsensitiveCompare:name2];
+    if (caseInsensitiveCompare != NSOrderedSame)
+        return caseInsensitiveCompare; // Sort names into alphabetical order
+    
+    // Use the duplication counters, in reverse order ("Foo 2" should be to the left of "Foo").
+    if (counter1 < counter2)
+        return NSOrderedDescending;
+    else if (counter1 > counter2)
+        return NSOrderedAscending;
+    
+    return NSOrderedSame;
 }
+@end
+
 
 @interface OUIDocumentProxy (/*Private*/)
 - (void)_documentProxyTapped:(UITapGestureRecognizer *)recognizer;
@@ -69,6 +78,44 @@ static OFPreference *ProxyAspectRatioCachePreference;
     ProxyAspectRatioCachePreference = [[OFPreference preferenceForKey:@"OUIDocumentProxyPreviewAspectRatioByURL"] retain];
 }
 
+static NSString *_aspectRatioCacheKey(OUIDocumentProxy *self)
+{
+    OBPRECONDITION(self->_url);
+    return [self->_url absoluteString];
+}
+
+- (void)setUrl:(NSURL*)aUrl;
+{
+    NSString *cacheKey = (_url) ? _aspectRatioCacheKey(self) : nil;
+    
+    [_url release];
+    _url = [[aUrl absoluteURL] copy];
+    
+    if (cacheKey) {
+        NSString *newCacheKey = _aspectRatioCacheKey(self);
+        
+        NSDictionary *aspectRatioCache = [ProxyAspectRatioCachePreference dictionaryValue];
+        if (aspectRatioCache) {
+            id object = [aspectRatioCache objectForKey:cacheKey];
+            if (object) {
+                NSMutableDictionary *updatedCache = [[NSMutableDictionary alloc] initWithDictionary:aspectRatioCache];
+                [object retain];
+                [updatedCache removeObjectForKey:cacheKey];
+                [updatedCache setObject:object forKey:newCacheKey];
+                [object release];
+                [ProxyAspectRatioCachePreference setObjectValue:updatedCache];
+                [updatedCache release];
+                [[NSUserDefaults standardUserDefaults] autoSynchronize];
+            }
+        }
+    }
+}
+
+- (NSURL *)url;
+{
+    return _url;
+}
+
 - initWithURL:(NSURL *)url;
 {
     OBPRECONDITION(url);
@@ -82,7 +129,7 @@ static OFPreference *ProxyAspectRatioCachePreference;
     if (!(self = [super init]))
         return nil;
     
-    _url = [[url absoluteURL] copy];
+    self.url = url;
     _frame = CGRectMake(0, 0, 400, 400);
     _layoutShouldAdvance = YES;
     
@@ -125,8 +172,6 @@ static OFPreference *ProxyAspectRatioCachePreference;
     _previewLoadOperation = nil;
 }
 
-@synthesize url = _url;
-
 - (NSData *)emailData;
 {
     return [NSData dataWithContentsOfURL:self.url];
@@ -135,6 +180,7 @@ static OFPreference *ProxyAspectRatioCachePreference;
 @synthesize date = _date;
 @synthesize target = _target;
 @synthesize action = _action;
+@synthesize preview = _preview;
 
 @synthesize view = _view;
 - (void)setView:(OUIDocumentProxyView *)view;
@@ -194,6 +240,61 @@ static OFPreference *ProxyAspectRatioCachePreference;
     return [[[[self url] path] lastPathComponent] stringByDeletingPathExtension];
 }
 
+static NSDate *_day(NSDate *date)
+{
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit fromDate:date];
+    return [calendar dateFromComponents:components];
+}
+
+static NSDate *_dayOffset(NSDate *date, NSInteger offset)
+{
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components = [[NSDateComponents alloc] init];
+    [components setDay:offset];
+    NSDate *result = [calendar dateByAddingComponents:components toDate:date options:0];
+    [components release];
+    return result;
+}
+
+- (NSString *)dateString;
+{
+    static NSDateFormatter *dateFormatter = nil;
+    static NSDateFormatter *timeFormatter = nil;
+    
+    
+    if (!dateFormatter) {
+        dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateStyle:NSDateFormatterFullStyle];
+        [dateFormatter setTimeStyle:NSDateFormatterNoStyle];
+        
+        timeFormatter = [[NSDateFormatter alloc] init];
+        [timeFormatter setDateStyle:NSDateFormatterNoStyle];
+        [timeFormatter setTimeStyle:NSDateFormatterShortStyle];
+    }
+    
+    NSDate *today = _day([NSDate date]);
+    NSDate *yesterday = _dayOffset(today, -1);
+    
+    NSDate *day = _day(self.date);
+    
+    //NSDate *day = _day([NSDate dateWithTimeIntervalSinceNow:-1000000]);
+    //NSDate *day = _day([NSDate dateWithTimeIntervalSinceNow:-86400]);
+    //NSDate *day = today;
+    
+    if ([day isEqualToDate:today]) {
+        NSString *dayFormat = NSLocalizedStringWithDefaultValue(@"Today, %@ <day name>", @"OmniUI", OMNI_BUNDLE, @"Today, %@", @"time display format for today");
+        NSString *timePart = [timeFormatter stringFromDate:self.date];
+        return [NSString stringWithFormat:dayFormat, timePart];
+    } else if ([day isEqualToDate:yesterday]) {
+        NSString *dayFormat = NSLocalizedStringWithDefaultValue(@"Yesterday, %@ <day name>", @"OmniUI", OMNI_BUNDLE, @"Yesterday, %@", @"time display format for yesterday");
+        NSString *timePart = [timeFormatter stringFromDate:self.date];
+        return [NSString stringWithFormat:dayFormat, timePart];
+    } else {
+        return [dateFormatter stringFromDate:day];
+    }    
+}
+
 - (void)refreshDateAndPreview;
 {
     NSError *error = nil;
@@ -212,12 +313,6 @@ static OFPreference *ProxyAspectRatioCachePreference;
         date = [NSDate date]; // Default to now if we can't get the attributes or they are bogus for some reason.
 
     self.date = date;
-}
-
-static NSString *_aspectRatioCacheKey(OUIDocumentProxy *self)
-{
-    OBPRECONDITION(self->_url);
-    return [self->_url absoluteString];
 }
 
 - (CGSize)previewSizeForTargetSize:(CGSize)targetSize;
@@ -297,8 +392,8 @@ static NSString *_aspectRatioCacheKey(OUIDocumentProxy *self)
     NSString *name1, *name2;
     NSUInteger counter1, counter2;
     
-    OUIDocumentProxySplitNameAndCounter(self.name, &name1, &counter1);
-    OUIDocumentProxySplitNameAndCounter(otherProxy.name, &name2, &counter2);
+    OFSFileManagerSplitNameAndCounter(self.name, &name1, &counter1);
+    OFSFileManagerSplitNameAndCounter(otherProxy.name, &name2, &counter2);
     
     
 
@@ -339,6 +434,60 @@ static NSString *_aspectRatioCacheKey(OUIDocumentProxy *self)
     return YES;
 }
 
+- (UIImage *)cameraRollImage;
+{
+    // Use the default behavior of drawing the document's preview.
+    OUIDocumentProxyView *proxyView = _view;
+    
+    CGSize maxSize = self.view.window.bounds.size; // This is the portrait size always
+    if (UIDeviceOrientationIsLandscape([[UIDevice currentDevice] orientation]))
+        SWAP(maxSize.width, maxSize.height);
+    
+    UIImage *result = nil;
+    id <OUIDocumentPreview> preview = proxyView.preview;
+    
+    if ([preview isKindOfClass:[OUIDocumentPDFPreview class]]) {
+        OUIDocumentPDFPreview *pdfPreview = (OUIDocumentPDFPreview *)preview;
+        
+        CGRect maxBounds = CGRectMake(0, 0, maxSize.width, maxSize.height);
+        
+        CGAffineTransform xform = [pdfPreview transformForTargetRect:maxBounds];
+        CGRect paperRect = pdfPreview.untransformedPageRect;
+        CGRect transformedTarget = CGRectApplyAffineTransform(paperRect, xform);
+        
+        UIGraphicsBeginImageContext(transformedTarget.size);
+        {
+            CGContextRef ctx = UIGraphicsGetCurrentContext();
+            
+            OQFlipVerticallyInRect(ctx, CGRectMake(0, 0, transformedTarget.size.width, transformedTarget.size.height)); // flip w/in the image
+            CGContextTranslateCTM(ctx, -transformedTarget.origin.x, -transformedTarget.origin.y); // the sizing transform centers us in the original rect we gave, but we ended up giving a smaller rect to just fit the content.
+            CGContextConcatCTM(ctx, xform); // size the page to the target rect we wanted
+            
+            // Fill the background with white in case the PDF doesn't have an embedded background color.
+            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
+            CGFloat whiteComponents[] = {1.0, 1.0};
+            CGColorRef white = CGColorCreate(colorSpace, whiteComponents);
+            CGContextSetFillColorWithColor(ctx, white);
+            CGColorRelease(white);
+            CGColorSpaceRelease(colorSpace);
+            CGContextFillRect(ctx, paperRect);
+            
+            // the PDF is happy to draw outside its page rect.
+            CGContextAddRect(ctx, paperRect);
+            CGContextClip(ctx);
+            
+            [pdfPreview drawInTransformedContext:ctx];
+            
+            result = UIGraphicsGetImageFromCurrentImageContext();
+        }
+        UIGraphicsEndImageContext();
+    } else {
+        result = preview.cachedImage;
+    }
+    
+    return result;
+}
+
 #pragma mark -
 #pragma mark Internal
 
@@ -368,7 +517,7 @@ static NSString *_aspectRatioCacheKey(OUIDocumentProxy *self)
                 return; // Good to go!
             } else {
                 PREVIEW_DEBUG(@"  existing is wrong size (%@ vs %@)", NSStringFromCGSize(bounds.size), NSStringFromCGSize(_preview.originalViewSize));
-            }
+           }
         }
     } else {
         // Load it no matter what. The caller presumably knows that the on-disk data has changed.

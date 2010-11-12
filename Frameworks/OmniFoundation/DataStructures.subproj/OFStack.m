@@ -108,7 +108,7 @@ static inline void _OFStackEnsurePopSpace(OFStack *stack, size_t aSize)
     void OFStackPeek ## strType (OFStack *stack, size_t basePointer,				\
                                    ptrdiff_t offset, cType *aVal)				\
     {												\
-        OBASSERT(basePointer + offset >= 0);							\
+        OBASSERT(offset >= 0 || (ptrdiff_t)basePointer > -offset);				\
         OBASSERT(basePointer + offset <= basePointer);						\
         OBASSERT(stack->stackPointer >= basePointer + offset + sizeof(*aVal));			\
         *aVal = *(cType *)((char *)stack->stackRoot + basePointer + offset);			\
@@ -118,7 +118,7 @@ static inline void _OFStackEnsurePopSpace(OFStack *stack, size_t aSize)
     void OFStackPoke ## strType (OFStack *stack, size_t basePointer,				\
                                    ptrdiff_t offset, cType aVal)				\
     {												\
-        OBASSERT(basePointer + offset >= 0);							\
+        OBASSERT(offset >= 0 || (ptrdiff_t)basePointer > -offset);				\
         OBASSERT(basePointer + offset <= basePointer);						\
         OBASSERT(stack->stackPointer >= basePointer + offset + sizeof(aVal));			\
         *(cType *)((char *)stack->stackRoot + basePointer + offset) = aVal;			\

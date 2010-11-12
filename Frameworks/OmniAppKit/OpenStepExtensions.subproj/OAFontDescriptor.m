@@ -63,6 +63,15 @@ static CGFloat _fontManagerWeightToWeight(NSInteger weight)
     return 0.0f;
 }
 
+static NSInteger _weightToFontManagerWeight(CGFloat weight)
+{
+    if (weight < 0)
+        return 2; // light-ish
+    if (weight > 0.3)
+        return 9; // bold-ish
+    return 5; // normal
+}
+
 - initWithFontAttributes:(NSDictionary *)fontAttributes;
 {
     OBPRECONDITION(fontAttributes);
@@ -273,39 +282,58 @@ static CGFloat _fontManagerWeightToWeight(NSInteger weight)
 // We return the NSFontManager-style weight here.
 - (NSInteger)weight;
 {
-    // There is both the weight and a symbolic trait. Sigh.
-    NSNumber *weightNumber = [_attributes objectForKey:(id)kCTFontWeightTrait];
+    // From CTFontTraits.h: "The value returned is a CFNumberRef representing a float value between -1.0 and 1.0 for normalized weight. The value of 0.0 corresponds to the regular or medium font weight."
+    
+    NSNumber *weightNumber = [[_attributes objectForKey:(id)kCTFontWeightTrait] retain];
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    if (!weightNumber) {
+        CFDictionaryRef traitDictionary = CTFontCopyTraits(self.font);
+        weightNumber = [[(NSDictionary *)traitDictionary objectForKey:(id)kCTFontWeightTrait] retain];
+        CFRelease(traitDictionary);
+    }
+#endif
+    
     if (weightNumber) {
         CGFloat weight = [weightNumber cgFloatValue];
-        if (weight < 0)
-            return 2; // light-ish
-        if (weight > 5)
-            return 9; // bold-ish
-        return 5; // normal
+        [weightNumber release];
+        
+        return _weightToFontManagerWeight(weight);
     }
     
-    NSDictionary *traits = [_attributes objectForKey:(id)kCTFontTraitsAttribute];
-    NSNumber *symbolicTraitsNumber = [traits objectForKey:(id)kCTFontSymbolicTrait];
-    BOOL symbolicBold = ([symbolicTraitsNumber unsignedIntegerValue] & kCTFontBoldTrait) != 0;
-    if (symbolicBold)
+    // This will look at the requested symbolic traits if set, and at the traits on the actual matched font if not (allowing us to get YES for "GillSans-Bold" when the traits keys aren't set.
+    if ([self bold])
         return 9;
+    
     return 5;
+}
+
+static CTFontSymbolicTraits _symbolicTraits(OAFontDescriptor *self)
+{
+    NSDictionary *traits = [self->_attributes objectForKey:(id)kCTFontTraitsAttribute];
+    NSNumber *symbolicTraitsNumber = [traits objectForKey:(id)kCTFontSymbolicTrait];
+    if (symbolicTraitsNumber) {
+        OBASSERT(sizeof(CTFontSymbolicTraits) == sizeof(unsigned int));
+        return [symbolicTraitsNumber unsignedIntValue];
+    }
+    
+    OAFontDescriptorPlatformFont font = self.font;
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    return CTFontGetSymbolicTraits(font);
+#else
+    // NSFontTraitMask is NSUInteger; avoid a warning and assert that we aren't dropping anything by the cast.
+    NSFontTraitMask result = [[NSFontManager sharedFontManager] traitsOfFont:font];
+    OBASSERT(sizeof(CTFontSymbolicTraits) == sizeof(uint32_t));
+    OBASSERT(sizeof(result) == sizeof(uint32_t) || result <= UINT32_MAX);
+    return (CTFontSymbolicTraits)result;
+#endif
 }
 
 // NSFontTraitMask and CTFontSymbolicTraits are the same for italic, bold, narrow and fixed-pitch.  Check others before using this for them.
 static BOOL _hasSymbolicTrait(OAFontDescriptor *self, unsigned trait)
 {
-    NSDictionary *traits = [self->_attributes objectForKey:(id)kCTFontTraitsAttribute];
-    NSNumber *symbolicTraitsNumber = [traits objectForKey:(id)kCTFontSymbolicTrait];
-    if (symbolicTraitsNumber)
-        return ([symbolicTraitsNumber unsignedIntegerValue] & trait) != 0;
-    
-    OAFontDescriptorPlatformFont font = self.font;
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    return (CTFontGetSymbolicTraits(font) & trait) != 0;
-#else
-    return ([[NSFontManager sharedFontManager] traitsOfFont:font] & trait) != 0;
-#endif
+    CTFontSymbolicTraits traits = _symbolicTraits(self);
+    return (traits & trait) != 0;
 }
 
 - (BOOL)valueForTrait:(uint32_t)trait;
@@ -447,10 +475,7 @@ static OAFontDescriptor *_newWithFontDescriptor(CTFontDescriptorRef desc)
 
 static OAFontDescriptor *_newWithFontDescriptorHavingTrait(OAFontDescriptor *self, CTFontDescriptorRef desc, uint32_t trait, BOOL value)
 {
-    NSDictionary *traitsDict = [self->_attributes objectForKey:(id)kCTFontTraitsAttribute];
-    NSNumber *symbolicTraitsNumber = [traitsDict objectForKey:(id)kCTFontSymbolicTrait];
-
-    CTFontSymbolicTraits oldTraits = [symbolicTraitsNumber unsignedIntValue];
+    CTFontSymbolicTraits oldTraits = _symbolicTraits(self);
     CTFontSymbolicTraits newTraits;
     if (value)
         newTraits = oldTraits | trait;
@@ -460,6 +485,7 @@ static OAFontDescriptor *_newWithFontDescriptorHavingTrait(OAFontDescriptor *sel
     if (newTraits == oldTraits)
         return [self retain];
     
+    NSDictionary *traitsDict = [self->_attributes objectForKey:(id)kCTFontTraitsAttribute];
     NSMutableDictionary *newTraitsDict = traitsDict ? [traitsDict mutableCopy] : [[NSMutableDictionary alloc] init];
     NSMutableDictionary *newAttributes = [self->_attributes mutableCopy];
 

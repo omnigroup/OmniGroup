@@ -12,6 +12,7 @@
 // Trivial UITextPosition / UITextRange implementations. We can do better than this?
 @interface OUEFTextPosition : UITextPosition <NSCopying>
 {
+@private
     NSUInteger index;
     NSUInteger generation;
 }

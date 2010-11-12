@@ -36,6 +36,8 @@ static NSString * const TargetLayerKey = @"OQLayerRemovalAnimationTargetLayer";
     if (!animate) {
         DEBUG_ANIMATION(@"%@ NOT animating removal", [layer shortDescription]);
         [layer removeFromSuperlayer];
+        if (completion)
+            completion(YES);
         return;
     }
     

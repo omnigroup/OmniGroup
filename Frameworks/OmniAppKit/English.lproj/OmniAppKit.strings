@@ -30,9 +30,6 @@
 /* format string for color with saturation and brightness descriptions */
 "%@, %@ %@" = "%1$@, %2$@ %3$@";
 
-/* Scripts menu item */
-"About the Scripts Menu" = "About the Scripts Menu";
-
 /* script execute error message
    script loading error message */
 "AppleScript reported the following error:\n%@" = "AppleScript reported the following error:\n%@";
@@ -76,9 +73,6 @@
 /* generic color name for custom colors */
 "Custom" = "Custom";
 
-/* undo action name for cutting outline view items */
-"Cut" = "Cut";
-
 /* word comparing color brightnesss */
 "Dark" = "Dark";
 
@@ -87,9 +81,6 @@
 
 /* Color sync profile load error recovery description */
 "Defaulting to '%@'" = "Defaulting to '%@'";
-
-/* undo action name for drag operations in outline view */
-"Drag Operation" = "Drag Operation";
 
 /* script error panel button */
 "Edit Script" = "Edit Script";
@@ -111,9 +102,6 @@
 
 /* Color sync profile load error */
 "Failed to set color sync profile (error %i)" = "Failed to set color sync profile (error %i)";
-
-/* undo action name for grouping outline view items */
-"Group" = "Group";
 
 /* internet config error */
 "ICCountPref returned an error: %@" = "ICCountPref returned an error: %@";
@@ -138,9 +126,6 @@
 
 /* generic color name for pattern colors */
 "Image" = "Image";
-
-/* undo action name for indenting outline view items */
-"Indent" = "Indent";
 
 /* word comparing color saturations */
 "Intense" = "Intense";
@@ -251,12 +236,6 @@
 
 /* internet config error */
 "Unable to set '%@' to be owner for url scheme '%@'." = "Unable to set '%1$@' to be owner for url scheme '%2$@'.";
-
-/* undo action name for ungrouping outline view items */
-"Ungroup" = "Ungroup";
-
-/* undo action name for unindenting outline view items */
-"Unindent" = "Unindent";
 
 /* word comparing color saturations */
 "Washed-out" = "Washed-out";

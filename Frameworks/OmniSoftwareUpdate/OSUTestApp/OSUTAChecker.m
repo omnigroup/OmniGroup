@@ -15,10 +15,10 @@ RCS_ID("$Id$");
 
 
 // Preferences keys
-static NSString *OSUTargetBundleIdentifierKey = @"targetBundleIdentifier";
-static NSString *OSUTargetMarketingVersionKey = @"targetMarketingVersion";
-static NSString *OSUTargetBuildVersionKey = @"targetBuildVersion";
-static NSString *OSUTargetTrackStringKey = @"targetReleaseTrack";
+static NSString * const OSUTargetBundleIdentifierKey = @"targetBundleIdentifier";
+static NSString * const OSUTargetMarketingVersionKey = @"targetMarketingVersion";
+static NSString * const OSUTargetBuildVersionKey = @"targetBuildVersion";
+static NSString * const OSUTargetTrackStringKey = @"targetReleaseTrack";
 
 
 @implementation OSUTAChecker

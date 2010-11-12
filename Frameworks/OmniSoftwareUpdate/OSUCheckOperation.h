@@ -22,11 +22,11 @@ typedef enum {
 {
     OSUCheckOperationRunType _runType;
     BOOL _initiatedByUser;
+    BOOL _forQuery;
+    NSString *_licenseType;
     NSURL *_url;
-    NSTask *_task;
-    NSPipe *_pipe;
-    NSData *_output;
-    int _terminationStatus;
+    NSDictionary *_output;
+    NSError *_error;
 }
 
 - initForQuery:(BOOL)doQuery url:(NSURL *)url licenseType:(NSString *)licenseType;
@@ -34,16 +34,43 @@ typedef enum {
 - (NSURL *)url;
 
 - (void)runAsynchronously;
-- (NSData *)runSynchronously;
+- (NSDictionary *)runSynchronously;
 
 @property(readonly ) OSUCheckOperationRunType runType;
 @property(readwrite) BOOL initiatedByUser;
 
-- (void)waitUntilExit;
-
-- (NSData *)output;
-@property(readonly ) int terminationStatus;
+@property(readonly,retain) NSDictionary *output; // KVO observable; will fire on the main thread
+@property(readonly,retain) NSError *error; // KVO observable; will fire on the main thread
 
 @end
 
 extern NSString * const OSUCheckOperationCompletedNotification;
+
+extern NSDictionary *OSUPerformCheck(NSURL *url);
+
+typedef struct {
+    NSString *firstHopHost;
+    NSString *baseURLString;
+    NSString *appIdentifier;
+    NSString *appVersionString;
+    NSString *track;
+    BOOL includeHardwareInfo;
+    BOOL reportMode;
+    NSString *licenseType;
+    NSString *osuVersionString;
+} OSURunOperationParameters;
+
+extern NSDictionary *OSURunOperation(const OSURunOperationParameters *params, NSError **outError);
+
+// Keys for 'query' mode results (reportMode == NO)
+#define OSUCheckResultsURLKey @"url"  // The URL that was actually fetched, as an NSString
+#define OSUCheckResultsDataKey @"data"  // The response from the server, NSData (XML)
+#define OSUCheckResultsErrorKey @"error" // Any error that occured, NSError
+#define OSUCheckResultsMIMETypeKey @"mime-type" // NSString
+#define OSUCheckResultsTextEncodingNameKey @"text-encoding" // NSString
+#define OSUCheckResultsHeadersKey @"headers" // Any HTTP headers, NSDictionary
+#define OSUCheckResultsStatusCodeKey @"status" // Any HTTP status, NSNumber
+
+// Keys for 'report' mode results
+#define OSUReportResultsURLKey @"url" // the URL that would have been queried
+#define OSUReportResultsInfoKey @"info" // the hardware info

@@ -5,22 +5,14 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIEditableFrame.h"
-#import "OUITextThumb.h"
+#import <OmniUI/OUIEditableFrame.h>
 
-#import "OUEFTextPosition.h"
-#import "OUEFTextRange.h"
-#import "OUITextInputStringTokenizer.h"
-#import "OUITextCursorOverlay.h"
-#import "OUILoupeOverlay.h"
-#import "OUEFTextSpan.h"
-#import "OUIDirectTapGestureRecognizer.h"
+#import <OmniUI/OUIDirectTapGestureRecognizer.h>
 
-#import "OUIColorInspectorSlice.h"
-#import "OUIFontInspectorSlice.h"
-#import "OUIParagraphStyleInspectorSlice.h"
-
+#import <OmniUI/OUIColorInspectorSlice.h>
+#import <OmniUI/OUIFontInspectorSlice.h>
 #import <OmniUI/OUITextLayout.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniQuartz/OQColor.h>
 #import <Foundation/NSAttributedString.h>
 #import <QuartzCore/QuartzCore.h>
@@ -29,8 +21,17 @@
 #import <OmniFoundation/OFNull.h>
 #import <MobileCoreServices/UTCoreTypes.h>
 
-#include <execinfo.h>
-#include <stdlib.h>
+#import <execinfo.h>
+#import <stdlib.h>
+
+#import "OUIParagraphStyleInspectorSlice.h"
+#import "OUITextThumb.h"
+#import "OUEFTextPosition.h"
+#import "OUEFTextRange.h"
+#import "OUITextInputStringTokenizer.h"
+#import "OUITextCursorOverlay.h"
+#import "OUILoupeOverlay.h"
+#import "OUEFTextSpan.h"
 
 RCS_ID("$Id$");
 
@@ -43,8 +44,6 @@ RCS_ID("$Id$");
 /* TODO: If low memory and not first responder, clear out actionRecognizers[] */
 
 /* TODO: If low memory and not first responder, clear out selection layers */
-
-/* TODO: If low memory and not complex selection, clear out the complex selection layer */
 
 #define CARET_ACTIVITY_SOLID_INTERVAL 0.75
 
@@ -97,7 +96,6 @@ static void btrace(void)
 @interface OUIEditableFrame (/*Private*/)
 - (CFRange)_lineRangeForStringRange:(NSRange)queryRange;
 - (CGRect)_caretRectForPosition:(OUEFTextPosition *)position affinity:(int)affinity bloomScale:(double)s;
-- (CGRect)_boundsOfRange:(OUEFTextRange *)range;
 - (void)_setNeedsDisplayForRange:(OUEFTextRange *)range;
 - (void)_setSolidCaret:(int)delta;
 - (void)_setSelectionToIndex:(NSUInteger)ix;
@@ -663,6 +661,7 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
  The "text" or "rendering" coordinate system is the interior scaled, (de-)flipped, and possibly translated system for CoreGraphics calls to draw stuff.
  
  The "layout" coordinate system is translated from the rendering coordinate system because CTFramesetter is particular about where it puts its text.
+ The layoutOrigin ivar holds the coordinates, in the rendering coordinate system, of the layout coordinate system's origin.
  
  Some locations are in a line-based coordinate system, which is the text layout coordinate system translated so that a given line's origin is at (0,0).
 
@@ -682,7 +681,7 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
 #pragma mark Properties and API
 
 @synthesize textColor;
-
+@synthesize tapSelectionGranularity;
 @synthesize selectionColor = _insertionPointSelectionColor;
 - (void)setSelectionColor:(UIColor *)color;
 {
@@ -693,7 +692,7 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
     _insertionPointSelectionColor = [color retain];
     
     [_rangeSelectionColor release];
-    _rangeSelectionColor = [[_insertionPointSelectionColor colorWithAlphaComponent:0.5] retain];
+    _rangeSelectionColor = [[_insertionPointSelectionColor colorWithAlphaComponent:0.25] retain];
     
     if (selection)
         [self setNeedsDisplay];
@@ -792,7 +791,7 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
 
 - (void)setupCustomMenuItemsForMenuController:(UIMenuController *)menuController;
 {
-    UIMenuItem *items[1];
+    UIMenuItem *items[2];
         
     /* If we have a range selection, allow the user to inspect its attributes */
     /* If we don't have a selection, this item will be disabled via -canPerformAction:withSender: */
@@ -816,9 +815,6 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
 
 - (void)thumbMoved:(OUITextThumb *)thumb targetPosition:(CGPoint)pt;
 {
-    _loupe.touchPoint = pt;
-    _loupe.mode = OUILoupeOverlayRectangle;
-    
     OUEFTextPosition *pp;
     
     if (selection && ![selection isEmpty]) {
@@ -840,7 +836,16 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
 
     if (!pp)
         return;
-        
+    
+    CGRect loupeCaret = [self caretRectForPosition:pp];
+    double lscale = 22.0 / MAX(loupeCaret.size.height, 2.0);
+    CGPoint touch;
+    touch.x = loupeCaret.origin.x;
+    touch.y = loupeCaret.origin.y + 0.5 * loupeCaret.size.height;
+    _loupe.touchPoint = touch;
+    _loupe.scale = lscale;
+    _loupe.mode = OUILoupeOverlayRectangle;
+    
     if (thumb.isEndThumb) {
         OUEFTextPosition *st = (OUEFTextPosition *)(selection.start);
         
@@ -1161,7 +1166,7 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
         }
         
         /* Get the bounding rect of our selection */
-        CGRect selectionRectangle = [self _boundsOfRange:selection];
+        CGRect selectionRectangle = [self boundsOfRange:selection];
         
         selectionRectangle = CGRectIntegral(selectionRectangle);
         
@@ -1214,7 +1219,7 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     // We lazily initialize some attributes when we move to a window for the first time.
     
     if (!_insertionPointSelectionColor)
-        self.selectionColor = [UIColor colorWithHue:214.0/360.0 saturation:0.73 brightness:0.95 alpha:1.0];
+        self.selectionColor = [UIColor colorWithHue:210.0/360.0 saturation:1 brightness:0.90 alpha:0.75];
     
     if (!focusRecognizer) {
         UITapGestureRecognizer *tap1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_idleTap)];
@@ -1400,11 +1405,21 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     }
 }
 
-/* TODO
 - (void)select:(id)sender;
 {
+    UITextRange *forRange = [[self tokenizer] rangeEnclosingPosition:[selection start] withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward];
+    UITextRange *backRange = [[self tokenizer] rangeEnclosingPosition:[selection end] withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionBackward];
+
+    if (forRange && backRange) {
+        OUEFTextRange *newRange = [[OUEFTextRange alloc] initWithStart:(OUEFTextPosition *)backRange.start end:(OUEFTextPosition *)forRange.end];
+        [self setSelectedTextRange:newRange];
+        [newRange release];
+    } else if (forRange) {
+        [self setSelectedTextRange:forRange];
+    } else if (backRange) {
+        [self setSelectedTextRange:backRange];
+    }
 }
-*/
 
 - (void)selectAll:(id)sender;
 {
@@ -1424,6 +1439,12 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     
     if (action == @selector(paste:)) {
         return [[UIPasteboard generalPasteboard] containsPasteboardTypes:UIPasteboardTypeListString];
+    }
+    
+    if (action == @selector(select:)) {
+        if ([selection.start isEqual:selection.end])
+            return YES;
+        return NO;
     }
     
     if (action == @selector(selectAll:)) {
@@ -1609,8 +1630,8 @@ enum {
         }
         replaceRange = NSMakeRange(st, en - st);
     }
-
-    DEBUG_TEXT(@"Inserting \"%@\" in range {%d, %d} (content length %u)", text, replaceRange.location, replaceRange.length, [_content length]);
+    
+    DEBUG_TEXT(@"Inserting \"%@\" in range {%"PRIuNS", %"PRIuNS"} (content length %"PRIuNS")", text, replaceRange.location, replaceRange.length, [_content length]);
     
     // When Simulate Hardware Keyboard is on, these get passed in instead of automatically transforming them into movement via our -positionFromPosition:inDirection:offset:.
     // Not publicizing these methods, but I guess we could for callers that want selection movement.
@@ -1874,7 +1895,7 @@ enum {
     if (!markedRange.length)
         return nil;
     
-    DEBUG_TEXT(@"   (marked text %u+%u is \"%@\")", markedRange.location, markedRange.length, [[_content string] substringWithRange:markedRange]);
+    DEBUG_TEXT(@"   (marked text %"PRIuNS"+%"PRIuNS" is \"%@\")", markedRange.location, markedRange.length, [[_content string] substringWithRange:markedRange]);
     
     return [[[OUEFTextRange alloc] initWithRange:markedRange generation:generation] autorelease];
 }
@@ -1903,7 +1924,7 @@ enum {
         replaceRange = markedRange;
     }
     
-    DEBUG_TEXT(@"Marked text: \"%@\" seln %u+%u replacing %u+%u",
+    DEBUG_TEXT(@"Marked text: \"%@\" seln %"PRIuNS"+%"PRIuNS" replacing %"PRIuNS"+%"PRIuNS"",
                markedText,
                selectedRange.location, selectedRange.length,
                replaceRange.location, replaceRange.length);
@@ -2047,7 +2068,7 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
         CFRange indexRange = CTRunGetStringRange(run);
                 
         CTRunStatus flags = CTRunGetStatus(run);
-        DEBUG_TEXT(@"moving %@ by %u; pos=%u; found run %d range=(%u%+d) flags=%02x",
+        DEBUG_TEXT(@"moving %@ by %"PRIuNS"; pos=%"PRIuNS"; found run %"PRIdCFIndex" range=(%"PRIdCFIndex"%+"PRIdCFIndex") flags=%02x",
               rtl?@"left":@"right", offset, pos, runIndex, indexRange.location, indexRange.length, flags);
 #if 0
         if (flags & kCTRunStatusNonMonotonic) {
@@ -2109,7 +2130,7 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
 {
     NSUInteger inGeneration = ((OUEFTextPosition *)position).generation;
     if (inGeneration != generation) {
-        DEBUG_TEXT(@"warning: using %@ from gen %u in gen %u", [position description], inGeneration, generation);
+        DEBUG_TEXT(@"warning: using %@ from gen %"PRIuNS" in gen %"PRIuNS"", [position description], inGeneration, generation);
     }
     
     if (offset == 0)
@@ -2306,7 +2327,7 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
                 CGFloat pos = CTLineGetOffsetForStringIndex(thisLine, runEdge, NULL);
                 pos += origins[lineIndex].x;
                 
-                /* The offset that CTLine gives us is the location of the "starting" edge of the character (depending on the writing direction at that point). We really want the leftmost or rightmost edge, depending on our 'direction' argument. We could optionally move one character to the side, but then we get into trouble at run boundaries (it looks like the secondaryOffset might be intended to help with this, but secondaryOffset is basically uncodumented).  We could retrieve the glyph advance from the CTRun, if needed. For now, I'm just going to punt. */
+                /* The offset that CTLine gives us is the location of the "starting" edge of the character (depending on the writing direction at that point). We really want the leftmost or rightmost edge, depending on our 'direction' argument. We could optionally move one character to the side, but then we get into trouble at run boundaries (it looks like the secondaryOffset might be intended to help with this, but secondaryOffset is basically undocumented).  We could retrieve the glyph advance from the CTRun, if needed. For now, I'm just going to punt. */
                     
                 if (foundPosition == kCFNotFound ||
                     XNOR(foundPosition < pos, direction == UITextLayoutDirectionRight)) {
@@ -2443,6 +2464,7 @@ static BOOL firstRect(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat asce
     return [self closestPositionToPoint:point withinRange:nil];
 }
 
+/* Returns the coordinates and (in *what) the string index of the closest intercharacter point in the line */
 CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSRange stringRange, NSUInteger *what)
 {
     CGFloat ascent = NAN;
@@ -2530,7 +2552,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     while (subIndex < lineRange.length && origins[subIndex].y > point.y)
         subIndex ++;
     
-    DEBUG_TEXT(@"For p=%.1f,%.1f: line range is %u+%u, subIndex = %u",
+    DEBUG_TEXT(@"For p=%.1f,%.1f: line range is %"PRIdCFIndex"+%"PRIdCFIndex", subIndex = %"PRIdCFIndex"",
                point.x, point.y, lineRange.location, lineRange.length, subIndex);
     
     NSUInteger result;
@@ -2688,7 +2710,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     CGRect textRect;
     textRect.origin.x = lineOrigin[0].x + characterOffset;
     textRect.origin.y = lineOrigin[0].y - descent;
-    textRect.size.width = MAX(1.0, secondaryOffset - characterOffset);
+    textRect.size.width = 1.0;
     textRect.size.height = ascent + descent;
     
     // Translate to rendering coordinates
@@ -2822,18 +2844,20 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     
     UITextRange *textRange = nil;
     id <UITextInputTokenizer> tok = [self tokenizer];
-
+    
     OUEFTextPosition *earlier = nil;
     OUEFTextPosition *later = nil;
     
-    if (tapSelectionGranularity != UITextGranularityCharacter) {
+    UITextGranularity granularity = (selectWords) ? UITextGranularityWord : tapSelectionGranularity;
+    
+    if (granularity != UITextGranularityCharacter) {
         // UITextView selects beginning or end of word on single tap.
-        if (![tok isPosition:pp atBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionForward] &&
-            ![tok isPosition:pp atBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionBackward]) {
+        if (![tok isPosition:pp atBoundary:granularity inDirection:UITextStorageDirectionForward] &&
+            ![tok isPosition:pp atBoundary:granularity inDirection:UITextStorageDirectionBackward]) {
             // Move pp to the nearest word boundary. We can't simply use -rangeEnclosingPosition: because we want to move to a word boundary even if the tap was outside of any words.
             // We also need to act correctly if tapped in a non-word area at the beginning or end of the text.
-            earlier = (OUEFTextPosition *)[tok positionFromPosition:pp toBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionBackward];
-            later = (OUEFTextPosition *)[tok positionFromPosition:pp toBoundary:tapSelectionGranularity inDirection:UITextStorageDirectionForward];
+            earlier = (OUEFTextPosition *)[tok positionFromPosition:pp toBoundary:granularity inDirection:UITextStorageDirectionBackward];
+            later = (OUEFTextPosition *)[tok positionFromPosition:pp toBoundary:granularity inDirection:UITextStorageDirectionForward];
             if (earlier && later) {
                 if ([earlier index] > [later index]) {  // not sure why, but earlier seems to always be later than later
                     id temp = earlier;
@@ -2850,14 +2874,66 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
                 pp = later;
         }
     }
-
+    
     if (selectWords && earlier && later) {
         textRange = [[[OUEFTextRange alloc] initWithStart:earlier end:later] autorelease];
     } else {
         textRange = [[[OUEFTextRange alloc] initWithStart:pp end:pp] autorelease];
     }
-        
+    
     return textRange;
+}
+
+static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat ascent, CGFloat descent, unsigned flags, void *ctxt)
+{
+    CGRect *r = ctxt;
+    
+    if (trailingWS < width)
+        width -= trailingWS;
+    
+    CGRect highlightRect = (CGRect){
+        .origin = {
+            .x = p.x,
+            .y = p.y - descent
+        },
+        .size = { width, ascent + descent }
+    };
+    
+    /* NB CGRectUnion() is documented to handle null rectangles */
+    *r = CGRectUnion(*r, highlightRect);
+    
+    return YES;
+}
+
+/* This is used to find the bounding box of our current selection when we want to point some UI element at it (either the context menu or the popover inspector) */
+/* The rectangle is returned in view-bounds coordinates, and may be CGRectNull */
+- (CGRect)boundsOfRange:(UITextRange *)_range;
+{
+    OBPRECONDITION([_range isKindOfClass:[OUEFTextRange class]]);
+    OUEFTextRange *range = (OUEFTextRange *)_range;
+    
+    CGRect bound;
+    
+    if ([range isEmpty]) {
+        bound = [self _caretRectForPosition:(OUEFTextPosition *)(range.start) affinity:0 bloomScale:0];
+        
+        if (CGRectIsNull(bound))
+            return bound;
+    } else {
+        bound = CGRectNull;
+        
+        rectanglesInRange(drawnFrame, [range range], NO, includeRectsInBound, &bound);
+        
+        if (CGRectIsNull(bound))
+            return bound;
+        
+        /* Shift from text coordinates to rendering coordinates */
+        bound.origin.x += layoutOrigin.x;
+        bound.origin.y += layoutOrigin.y;
+    }
+    
+    /* Shift from rendering coordinates to view/bounds coordinates; note that the method is confusingly named */
+    return [self convertRectToRenderingSpace:bound];
 }
 
 /* Both the single-tap and double-tap recognizers call this */
@@ -2865,6 +2941,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
 {
     DEBUG_TEXT(@" -> %@", r);
     CGPoint p = [r locationInView:self];
+
     UITextRange *newSelection = [self selectionRangeForPoint:p wordSelection:(r.numberOfTapsRequired > 1)];
                                  
     if (newSelection) {        
@@ -2926,21 +3003,15 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
         }
     }
     
-    /* UITextView has two selection inspecting/altering modes: caret and range. If you have a caret, you get a round selection inspection that just alters the inspection point. If you have a range, then the end of the range that your tap is closest to is altered and a rectangular selection inspector is shown. */
-    if (selection) {
-        if ([selection isEmpty])
-            _loupe.mode = OUILoupeOverlayCircle;
-        else 
-            _loupe.mode = OUILoupeOverlayRectangle;
-    } else
-        _loupe.mode = OUILoupeOverlayNone;
-    
     if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled) {
         _loupe.mode = OUILoupeOverlayNone;
         flags.showingEditMenu = 1;  // Hint that the edit menu would be appropriate once the loupe disappears.
         [self _setSolidCaret:-1];
         return;
     }
+
+    /* UITextView has two selection inspecting/altering modes: caret and range. If you have a caret, you get a round selection inspection that just alters the inspection point. If you have a range, then the end of the range that your tap is closest to is altered and a rectangular selection inspector is shown. The endpoint manipulation goes through OUEFTextThumb, so we're just dealing with caret adjustment here. */
+    _loupe.mode = OUILoupeOverlayCircle;
 }
 
 /* Used by the addRectsToPath() callback */
@@ -3092,55 +3163,6 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
     }
 }
 
-static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat ascent, CGFloat descent, unsigned flags, void *ctxt)
-{
-    CGRect *r = ctxt;
-    
-    if (trailingWS < width)
-        width -= trailingWS;
-    
-    CGRect highlightRect = (CGRect){
-        .origin = {
-            .x = p.x,
-            .y = p.y - descent
-        },
-        .size = { width, ascent + descent }
-    };
-    
-    /* NB CGRectUnion() is documented to handle null rectangles */
-    *r = CGRectUnion(*r, highlightRect);
-    
-    return YES;
-}
-
-/* This is used to find the bounding box of our current selection when we want to point some UI element at it (either the context menu or the popover inspector) */
-/* The rectangle is returned in view-bounds coordinates, and may be CGRectNull */
-- (CGRect)_boundsOfRange:(OUEFTextRange *)range;
-{
-    CGRect bound;
-    
-    if ([range isEmpty]) {
-        bound = [self _caretRectForPosition:(OUEFTextPosition *)(range.start) affinity:0 bloomScale:0];
-
-        if (CGRectIsNull(bound))
-            return bound;
-    } else {
-        bound = CGRectNull;
-        
-        rectanglesInRange(drawnFrame, [range range], NO, includeRectsInBound, &bound);
-        
-        if (CGRectIsNull(bound))
-            return bound;
-            
-        /* Shift from text coordinates to rendering coordinates */
-        bound.origin.x += layoutOrigin.x;
-        bound.origin.y += layoutOrigin.y;
-    }
-    
-    /* Shift from rendering coordinates to view/bounds coordinates; note that the method is confusingly named */
-    return [self convertRectToRenderingSpace:bound];
-}
-
 /* We have some decorations that are drawn over the text instead of under it */
 - (void)_drawDecorations:(CGContextRef)ctx
 {
@@ -3198,7 +3220,7 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
         // NB this must match the corresponding calculation in _drawDecorations:, but it only needs to match in the normal case where we're drawing into our own rectangle (as opposed to the loupe case which _drawDecorations: also needs to handle)
         dirtyRect = [self _caretRectForPosition:(OUEFTextPosition *)(range.start) affinity:1 bloomScale:self.scale];
     } else {
-        /* We don't want the same behavior as _boundsOfRange: here, unfortunately: that method intentionally doesn't extend the rect out to the margins when a line wraps, because the extra area doesn't have any actual text in it for the UI element to point to. On the other hand, _setNeedsDisplayForRange: is usually called to invalidate a rectangle so that the selection can redraw, and we need to extend out in the same way that the selection-drawing code does. */
+        /* We don't want the same behavior as boundsOfRange: here, unfortunately: that method intentionally doesn't extend the rect out to the margins when a line wraps, because the extra area doesn't have any actual text in it for the UI element to point to. On the other hand, _setNeedsDisplayForRange: is usually called to invalidate a rectangle so that the selection can redraw, and we need to extend out in the same way that the selection-drawing code does. */
         struct rectpathwalker ctxt;
         ctxt.ctxt = NULL;  // addRectsToPath() will happily ignore a NULL CGContextRef for us
         ctxt.includeInterline = YES; // shouldn't actually have any effect
@@ -3372,7 +3394,7 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
     if (!runs)
         return;
     
-    CGRect selectionRect = [self _boundsOfRange:selection];
+    CGRect selectionRect = [self boundsOfRange:selection];
     if (CGRectIsEmpty(selectionRect))
         return;
         
@@ -3390,7 +3412,7 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
 
 - (NSString *)inspectorTitle:(OUIInspector *)inspector;
 {
-    return NSLocalizedStringFromTableInBundle(@"Text Style", @"Inspectors", OMNI_BUNDLE, @"Inspector title");
+    return NSLocalizedStringFromTableInBundle(@"Text Style", @"OUIInspectors", OMNI_BUNDLE, @"Inspector title");
 }
 
 - (NSArray *)inspectorSlices:(OUIInspector *)inspector;

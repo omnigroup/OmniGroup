@@ -26,6 +26,7 @@ static NSMutableArray *activeColorWells;
 static NSColor *OAColorWellInactiveColor = nil;
 
 NSString * const OAColorWellWillActivate = @"OAColorWellWillActivate";
+NSString * const OAColorWellDidDeactivate = @"OAColorWellDidDeactivate";
 
 @interface OAColorWell (Private)
 - (void)_containingWindowWillClose:(NSNotification *)notification;
@@ -67,7 +68,10 @@ NSString * const OAColorWellWillActivate = @"OAColorWellWillActivate";
 {
     [super deactivate];
     [activeColorWells removeObjectIdenticalTo:self];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowWillCloseNotification object:[self window]];
+    
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center removeObserver:self name:NSWindowWillCloseNotification object:[self window]];
+    [center postNotificationName:OAColorWellDidDeactivate object:self];
 }
 
 - (void)activate:(BOOL)exclusive;

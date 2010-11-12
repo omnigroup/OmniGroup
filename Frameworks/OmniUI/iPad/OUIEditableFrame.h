@@ -117,11 +117,14 @@
 @property (nonatomic) BOOL autoCorrectDoubleSpaceToPeriodAtSentenceEnd;
 @property (nonatomic) UITextAutocorrectionType autocorrectionType;  // defaults to UITextAutocorrectionTypeNo
 @property (nonatomic) UITextAutocapitalizationType autocapitalizationType; // defaults to UITextAutocapitalizationTypeNone
+@property (nonatomic) UITextGranularity tapSelectionGranularity;
 
 - (void)setupCustomMenuItemsForMenuController:(UIMenuController *)menuController;
 
 - (OUEFTextRange *)rangeOfLineContainingPosition:(OUEFTextPosition *)posn;
 - (UITextRange *)selectionRangeForPoint:(CGPoint)p wordSelection:(BOOL)selectWords;
+
+- (CGRect)boundsOfRange:(UITextRange *)range; // May return CGRectZero
 
 /* These are the interface from the thumbs to our selection machinery */
 - (void)thumbBegan:(OUITextThumb *)thumb;

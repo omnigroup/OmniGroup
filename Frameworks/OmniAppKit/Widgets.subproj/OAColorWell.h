@@ -13,6 +13,7 @@
 
 @interface OAColorWell : NSColorWell
 {
+@private
     BOOL _showsColorWhenDisabled;
 }
 
@@ -27,3 +28,4 @@
 @end
 
 extern NSString * const OAColorWellWillActivate;
+extern NSString * const OAColorWellDidDeactivate;

@@ -11,4 +11,5 @@
 
 @protocol OUIDocument
 @property (readwrite, retain) OUIDocumentProxy *proxy;
+- (void)proxyURLChanged;
 @end

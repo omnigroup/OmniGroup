@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIComponentColorPicker.h"
+#import <OmniUI/OUIComponentColorPicker.h>
 
 #import <OmniUI/OUIColorComponentSlider.h>
 #import <OmniUI/OUIInspectorSelectionValue.h>

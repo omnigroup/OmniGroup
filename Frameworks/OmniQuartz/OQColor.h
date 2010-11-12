@@ -48,8 +48,11 @@ extern BOOL OQCompositeColors(OQColor **ioTopColor, OQColor *bottomColor);
 
 extern CGColorRef OQCreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor, BOOL *isOpaque);
 
+CGColorRef OQCreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpace, NSArray *colors); // Bottom-most color goes first and must be opaque
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-extern CGColorRef OQCreateColorRefFromColor(NSColor *c);
+extern CGColorRef OQCreateColorRefFromColor(CGColorSpaceRef destinationColorSpace, NSColor *c);
+extern NSColor *OQColorFromColorRef(CGColorRef c);
 
 extern CGColorRef OQCreateGrayColorRefFromColor(NSColor *c);
 #endif

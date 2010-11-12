@@ -13,6 +13,8 @@
 
 RCS_ID("$Id$");
 
+// TODO: Switch to +[NSURL bookmarkDataWithOptions:includingResourceValuesForKeys:relativeToURL:error:]?
+
 // We may want to store the path verbatim as well as the alias.
 
 @implementation OFAlias

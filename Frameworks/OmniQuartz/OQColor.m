@@ -249,11 +249,72 @@ CGColorRef OQCreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor
 }
 #endif
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-CGColorRef OQCreateColorRefFromColor(NSColor *c)
+CGColorRef OQCreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpace, NSArray *colors)
 {
-    OQLinearRGBA C = OQGetColorComponents(c);
-    return CGColorCreateGenericRGB(C.r, C.g, C.b, C.a);
+    OBPRECONDITION(CGColorGetAlpha((CGColorRef)[colors objectAtIndex:0]) == 1.0f);
+    
+    // We calculate the composite color by rendering into a 1x1px 8888RGBA bitmap.
+    unsigned char bitmapData[4] = {0, 0, 0, 0};
+    CGContextRef ctx = CGBitmapContextCreate(bitmapData, 1, 1, 8, 4, destinationColorSpace, kCGImageAlphaPremultipliedLast|kCGBitmapByteOrder32Big);
+    
+    CGRect pixelRect = CGRectMake(0, 0, 1, 1);
+    
+    for (id obj in colors) {
+        CGColorRef color = (CGColorRef)obj;
+        CGContextSetFillColorWithColor(ctx, color);
+        CGContextFillRect(ctx, pixelRect);
+    };
+    
+    OBASSERT(bitmapData[3] == 255);
+    
+    CGFloat floatComponents[4];
+    NSUInteger componentIndex;
+    for (componentIndex = 0; componentIndex < 4; componentIndex++)
+        floatComponents[componentIndex] = bitmapData[componentIndex] / (CGFloat)255;
+    
+    OBASSERT(floatComponents[3] == 1.0f);
+    
+    CGColorRef color = CGColorCreate(destinationColorSpace, floatComponents);
+    
+    CGContextRelease(ctx);
+    return color;
+}
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+CGColorRef OQCreateColorRefFromColor(CGColorSpaceRef destinationColorSpace, NSColor *c)
+{
+    OBPRECONDITION(destinationColorSpace);
+    
+    NSColorSpace *wrappedColorSpace = [[[NSColorSpace alloc] initWithCGColorSpace:destinationColorSpace] autorelease];
+    NSColor *convertedColor = [c colorUsingColorSpace:wrappedColorSpace];
+    
+    if (!convertedColor)
+        return nil;
+    
+    size_t componentCount = CGColorSpaceGetNumberOfComponents(destinationColorSpace);
+    OBASSERT(componentCount > 0);
+    
+    CGFloat *components = malloc((componentCount + 1) * sizeof(CGFloat));
+    [convertedColor getComponents:components];
+    
+    CGColorRef result = CGColorCreate(destinationColorSpace, components);
+    free(components);
+    
+    OBPOSTCONDITION(result);
+    return result;
+}
+
+NSColor *OQColorFromColorRef(CGColorRef c)
+{
+    NSColorSpace *colorSpace = [[NSColorSpace alloc] initWithCGColorSpace:CGColorGetColorSpace(c)];
+    const CGFloat *components = CGColorGetComponents(c);
+    
+    NSColor *result = [NSColor colorWithColorSpace:colorSpace components:components count:[colorSpace numberOfColorComponents] + 1];
+    
+    [colorSpace release];
+    
+    OBPOSTCONDITION(result);
+    return result;
 }
 
 CGColorRef OQCreateGrayColorRefFromColor(NSColor *c)

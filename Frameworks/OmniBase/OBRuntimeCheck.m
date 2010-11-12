@@ -214,6 +214,23 @@ static void  __attribute__((unused)) _checkSignaturesWithinClass(Class cls, Meth
     free(sorted);
 }
 
+static void _checkForCommonClassMethodNameTypos(Class metaClass, Method *methods, unsigned int methodCount)
+{
+    for (unsigned int methodIndex = 0; methodIndex < methodCount; methodIndex ++) {
+        SEL sel = method_getName(methods[methodIndex]);
+        
+        // Someone was asleep at the wheel and we have +automaticallyNotifiesObserversForKey: but +automaticallyNotifiesObserversOf<Key> (note "For" -> "Of").
+        if (sel != @selector(automaticallyNotifiesObserversForKey:)) {
+            const char *selName = sel_getName(sel);
+            const char * const badPrefix = "automaticallyNotifiesObserversFor";
+            if (strncmp(selName, badPrefix, strlen(badPrefix)) == 0) {
+                NSLog(@"Class %s implements +%s, but this is likely a typo where \"For\" should be replaced by \"Of\".", class_getName(metaClass), selName);
+                OBAssertFailed(); // stop in the debugger if we have a breakpoint
+            }
+        }
+    }
+}
+
 static void _checkSignaturesVsSuperclass(Class cls, Method *methods, unsigned int methodCount)
 {
     // Any method that is implemented by a class and its superclass should have the same signature.  ObjC doesn't encode static type declarations in method signatures, so we can't check for covariance.
@@ -391,7 +408,8 @@ static void _validateMethodSignatures(void)
         Class metaClass = object_getClass(cls);
         methods = class_copyMethodList(metaClass, &methodIndex);
         _checkSignaturesVsSuperclass(metaClass, methods, methodIndex); // ... and class methods
-        // _checkSignaturesWithinClass(metaClass, methods, methodIndex); 
+        // _checkSignaturesWithinClass(metaClass, methods, methodIndex);
+        _checkForCommonClassMethodNameTypos(metaClass, methods, methodIndex);
         free(methods);
         
         _checkSignaturesVsProtocols(cls); // checks instance and class and methods, so don't call with the metaclass

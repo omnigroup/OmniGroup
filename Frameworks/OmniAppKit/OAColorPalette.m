@@ -78,7 +78,7 @@ static inline unsigned int parseHexString(NSString *hexString, unsigned long lon
     return hexDigitsFound;
 }
 
-static inline NSColor *colorForHexString(NSString *colorString, double gammaValue)
+static NSColor *colorForHexString(NSString *colorString, NSColorSpace *space)
 {
     unsigned long long int rawColor;
     unsigned int red, green, blue;
@@ -102,48 +102,77 @@ static inline NSColor *colorForHexString(NSString *colorString, double gammaValu
     rawColor >>= bitsPerComponent;
     red = (unsigned int)(rawColor & maskForSingleComponent);
 
-    return OAColorPaletteColorWithRGBMaxAndGamma(red, green, blue, maskForSingleComponent, gammaValue);
+    CGFloat components[4];
+    components[0] = (CGFloat)red / (CGFloat)maskForSingleComponent;
+    components[1] = (CGFloat)green / (CGFloat)maskForSingleComponent;
+    components[2] = (CGFloat)blue / (CGFloat)maskForSingleComponent;
+    components[3] = (CGFloat)1; /* Alpha */
+    
+    return [NSColor colorWithColorSpace:space components:components count:4];
 }
 
-static inline NSColor *colorForNamedColorString(NSString *colorString, double gammaValue)
+static inline NSColor *colorForNamedColorString(NSString *colorString, NSColorSpace *space)
 {
     NSString *namedColorString;
 
     namedColorString = [namedColorsDictionary objectForKey:[colorString lowercaseString]];
     if (namedColorString) {
         // Found the named color, look up its hex value and return the color
-        return colorForHexString(namedColorString, gammaValue);
+        return colorForHexString(namedColorString, space);
     } else {
         // Named color not found
         return nil;
     }
 }
 
+static const CGFloat d65WhitePoint[3] = { (CGFloat)95.04, (CGFloat)100.00, (CGFloat)108.88 };
+
+static NSColorSpace *colorSpaceForGamma(double gammaValue)
+{
+    CGFloat gammaValues[3] = { (CGFloat)gammaValue, (CGFloat)gammaValue, (CGFloat)gammaValue };
+    
+    CGColorSpaceRef gammaSpace = CGColorSpaceCreateCalibratedRGB(d65WhitePoint, NULL, gammaValues, NULL);
+    
+    NSColorSpace *space = [[NSColorSpace alloc] initWithCGColorSpace:gammaSpace];
+    CFRelease(gammaSpace);
+    
+    return [space autorelease];
+}
+
 + (NSColor *)colorForString:(NSString *)colorString gamma:(double)gammaValue;
 {
+    return [self colorForString:colorString colorSpace:colorSpaceForGamma(gammaValue)];
+}
+
++ (NSColor *)colorForString:(NSString *)colorString colorSpace:(NSColorSpace *)space;
+{
+    if ([space colorSpaceModel] != NSRGBColorSpaceModel) {
+        OBRejectInvalidCall(self, _cmd, @"Color space for reading hex strings must be an RGB color space");
+    }
+        
     if (colorString == nil || [colorString length] == 0)
         return nil;
     if ([colorString hasPrefix:@"#"]) {
         NSColor *hexColor;
 
         // Should be a hex color string
-        hexColor = colorForHexString(colorString, gammaValue);
+        hexColor = colorForHexString(colorString, space);
         if (hexColor) {
             return hexColor;
         } else {
             // Sometimes people set their colors to "#RED"
-            return colorForNamedColorString([colorString substringFromIndex:1], gammaValue);
+            return colorForNamedColorString([colorString substringFromIndex:1], space);
         }
     } else {
         NSColor *namedColor;
 
         // Try named color string first
-        namedColor = colorForNamedColorString(colorString, gammaValue);
+        namedColor = colorForNamedColorString(colorString, space);
         if (namedColor) {
             return namedColor;
         } else {
             // Sometimes people write hex colors without a leading "#"
-            return colorForHexString(colorString, gammaValue);
+            return colorForHexString(colorString, space);
         }
     }
 }
@@ -153,7 +182,7 @@ static inline NSColor *colorForNamedColorString(NSString *colorString, double ga
     return [self colorForString:colorString gamma:1.0f];
 }
 
-+ (NSString *)stringForColor:(NSColor *)color gamma:(double)gammaValue;
+static NSString *stringForColor(NSColor *color, double gammaValue)
 {
     CGFloat red = 0.0f, green = 0.0f, blue = 0.0f, alpha = 0.0f;
 
@@ -171,9 +200,23 @@ static inline NSColor *colorForNamedColorString(NSString *colorString, double ga
     return [NSString stringWithFormat:@"#%02x%02x%02x", ((int)rint(red * 255.0f)),  ((int)rint(green * 255.0f)), ((int)rint(blue * 255.0f))];
 }
 
++ (NSString *)stringForColor:(NSColor *)color gamma:(double)gammaValue;
+{
+    return stringForColor([color colorUsingColorSpaceName:NSCalibratedRGBColorSpace], gammaValue);
+}
+
 + (NSString *)stringForColor:(NSColor *)color;
 {
     return [self stringForColor:color gamma:1.0f];
+}
+
++ (NSString *)stringForColor:(NSColor *)color colorSpace:(NSColorSpace *)space;
+{
+    if ([space colorSpaceModel] != NSRGBColorSpaceModel) {
+        OBRejectInvalidCall(self, _cmd, @"Color space for creating hex strings must be an RGB color space");
+    }
+    
+    return stringForColor([color colorUsingColorSpace:space], 1.0f);
 }
 
 @end

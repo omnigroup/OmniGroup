@@ -1,4 +1,4 @@
-// Copyright 2007,2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2007,2010 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,9 +26,17 @@ enum {
     OSUUnableToMountDiskImage,                            // hdiutil failures
     OSUUnableToProcessPackage,                            // other failures (tar, etc.)
     OSUBadInstallationDirectory,                          // There's something wrong with the destination location
+    
+    // Check operation
+    OSURemoteNetworkFailure,
+    OSULocalNetworkFailure,
+    OSUServerError,
+    OSUExceptionRaised,
 };
 
-#define OSUErrorWithInfo(error, code, description, suggestion, ...) _OBError(error, OMNI_BUNDLE_IDENTIFIER, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
+extern NSString * const OSUErrorDomain;
+
+#define OSUErrorWithInfo(error, code, description, suggestion, ...) _OBError(error, OSUErrorDomain, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
 #define OSUError(error, code, description, suggestion) OSUErrorWithInfo((error), (code), (description), (suggestion), nil)
 
 

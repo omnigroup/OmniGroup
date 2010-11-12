@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIInspectorOptionWheelItem.h"
+#import <OmniUI/OUIInspectorOptionWheelItem.h>
 
 #import <OmniBase/OmniBase.h>
 

@@ -14,3 +14,7 @@ NSString * const OFSErrorDomain = @"com.omnigroup.frameworks.OmniFileStore.Error
 
 // Codes are HTTP error codes.  You'd think Foundation would define such a domain...
 NSString * const OFSDAVHTTPErrorDomain = @"com.omnigroup.frameworks.OmniFileStore.DAVHTTP.ErrorDomain";
+
+// using the same values as those found in NSURLErrorFailingURLStringErrorKey and NSURLErrorFailingURLErrorKey
+NSString * const OFSURLErrorFailingURLErrorKey = @"NSErrorFailingURLKey";          
+NSString * const OFSURLErrorFailingURLStringErrorKey = @"NSErrorFailingURLStringKey";

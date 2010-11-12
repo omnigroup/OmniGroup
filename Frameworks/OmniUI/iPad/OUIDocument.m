@@ -147,11 +147,18 @@ RCS_ID("$Id$");
 @synthesize viewController = _viewController;
 
 // Called when we've been renamed in the document editor.
+- (void)proxyURLChanged;
+{
+    [_url release];
+    _url = [_proxy.url retain];
+}
+
 @synthesize proxy = _proxy;
 - (void)setProxy:(OUIDocumentProxy *)proxy;
 {
     if (_proxy == proxy)
         return;
+    
     [_proxy release];
     _proxy = [proxy retain];
     
@@ -397,14 +404,14 @@ RCS_ID("$Id$");
 
 - (void)_undoManagerDidUndoOrRedo:(NSNotification *)note;
 {
-    DEBUG_UNDO(@"%@ level:%d", [note name], [_undoManager groupingLevel]);
+    DEBUG_UNDO(@"%@ level:%ld", [note name], [_undoManager groupingLevel]);
     
     [self _startAutosaveAndUpdateUndoButton];
 }
 
 - (void)_undoManagerDidOpenGroup:(NSNotification *)note;
 {
-    DEBUG_UNDO(@"%@ level:%d", [note name], [_undoManager groupingLevel]);
+    DEBUG_UNDO(@"%@ level:%ld", [note name], [_undoManager groupingLevel]);
     
     // Immediately open a nested group. This will allows NSUndoManager to automatically open groups for us on the first undo operation, but prevents it from closing the whole group.
     if ([_undoManager groupingLevel] == 1) {
@@ -416,7 +423,7 @@ RCS_ID("$Id$");
 
 - (void)_undoManagerWillCloseGroup:(NSNotification *)note;
 {
-    DEBUG_UNDO(@"%@ level:%d", [note name], [_undoManager groupingLevel]);
+    DEBUG_UNDO(@"%@ level:%ld", [note name], [_undoManager groupingLevel]);
     
     // Start a timer if one isn't going already
     [self _startAutosaveAndUpdateUndoButton];

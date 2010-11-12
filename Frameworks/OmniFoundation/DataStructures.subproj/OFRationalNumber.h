@@ -29,7 +29,7 @@ double OFRationalToDouble(struct OFRationalNumberStruct v);
 long OFRationalToLong(struct OFRationalNumberStruct v);
 
 NSString *OFRationalToStringForStorage(struct OFRationalNumberStruct a);
-NSString *OFRationalToStringForLocale(struct OFRationalNumberStruct a, NSDictionary *dict);
+NSString *OFRationalToStringForLocale(struct OFRationalNumberStruct a, id locale);
 BOOL OFRationalFromStringForStorage(NSString *s, struct OFRationalNumberStruct *n);
 
 /* Operations on OFRationals */

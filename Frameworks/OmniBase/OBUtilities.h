@@ -221,6 +221,31 @@ extern CFStringRef const OBBuildByCompilerVersion;
 __private_extern__ const char *_OBGeometryAdjustedSignature(const char *sig);
 #endif
 
+// Inttypes-style format macros for Apple-defined types
+#if __LP64__ || (TARGET_OS_EMBEDDED && !TARGET_OS_IPHONE) || TARGET_OS_WIN32 || NS_BUILD_32_LIKE_64
+// On these platforms NSInteger=long and NSUInteger=unsigned long
+#define PRI_NSInteger_LENGTH_MODIFIER "l"
+    
+// OSErr is int on 64-bit
+#define PRI_OSErr "d"
+#else
+// On these platforms NSInteger=int and NSUInteger=unsigned int
+#define PRI_NSInteger_LENGTH_MODIFIER ""
+    
+// OSErr is long on 32-bit
+#define PRI_OSErr "ld"
+
+#endif
+#define PRIdNS PRI_NSInteger_LENGTH_MODIFIER "d"
+#define PRIiNS PRI_NSInteger_LENGTH_MODIFIER "i"
+#define PRIoNS PRI_NSInteger_LENGTH_MODIFIER "o"
+#define PRIuNS PRI_NSInteger_LENGTH_MODIFIER "u"
+#define PRIxNS PRI_NSInteger_LENGTH_MODIFIER "x"
+#define PRIXNS PRI_NSInteger_LENGTH_MODIFIER "X"
+
+/* CFIndex is always a signed long as far as I know */
+#define PRIdCFIndex "ld"
+    
 #if defined(__cplusplus)
 } // extern "C"
 #endif

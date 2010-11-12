@@ -56,8 +56,21 @@
                 <dict>
                         <key>defaultsDictionary</key>
                         <dict>
-                                <key>OUIDocumentProxyPreviewAspectRatioByURL</key>
-                                <dict/>
+			        <!-- OmniUI -->
+				<key>OUIDocumentProxyPreviewAspectRatioByURL</key>
+				<dict/>
+				<key>OUIWebDAVLocation</key>
+				<string></string>
+				<key>OUIWebDAVUsername</key>
+				<string></string>
+				<key>OUIMobileMeUsername</key>
+				<string></string>
+				<key>OUIOmniSyncUsername</key>
+				<string></string>
+				<key>OUIImportEnabled</key>
+				<true/>
+				<key>OUIExportEnabled</key>
+				<true/>
                         </dict>
                 </dict>
         </dict>

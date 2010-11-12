@@ -31,6 +31,12 @@ RCS_ID("$Id$");
 
 @synthesize trustedKeys;
 
+- (void)dealloc;
+{
+    [trustedKeys release];
+    [super dealloc];
+}
+
 static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *where)
 {
     NSDictionary *userInfo;
@@ -147,6 +153,7 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
             } else {
                 errorInfo = nil; // Suppress overwrite of *outError
                 resultKey = [OFCSSMKey keyFromKeyRef:trustedSigningKey error:outError];
+                CFRelease(trustedSigningKey);
             }
         } else {
             [errorInfo setObject:OFSummarizeTrustResult(evaluationContext) forKey:@"trustResult"];

@@ -6,8 +6,10 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OUEFTextRange.h"
-#import "OUEFTextPosition.h"
+
 #import <OmniBase/rcsid.h>
+
+#import "OUEFTextPosition.h"
 
 RCS_ID("$Id$");
 

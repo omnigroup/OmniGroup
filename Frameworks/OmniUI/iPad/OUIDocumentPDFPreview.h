@@ -8,6 +8,7 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
+
 #import "OUIDocumentPreview.h"
 
 @interface OUIDocumentPDFPreview : OFObject <OUIDocumentPreview>

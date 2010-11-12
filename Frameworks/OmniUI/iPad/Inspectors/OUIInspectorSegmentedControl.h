@@ -21,6 +21,7 @@ typedef enum {
 {
 @private
     NSMutableArray *_segments;
+    BOOL _allowsMulitpleSelection;
     BOOL _sizesSegmentsToFit;
 }
 
@@ -31,6 +32,7 @@ typedef enum {
 
 @property(assign,nonatomic) BOOL sizesSegmentsToFit;
 
+@property(assign,nonatomic) BOOL allowsMulitpleSelection;
 @property(assign,nonatomic) OUIInspectorSegmentedControlButton *selectedSegment;
 @property(readonly,nonatomic) OUIInspectorSegmentedControlButton *firstSegment;
 @property(nonatomic) NSInteger selectedSegmentIndex;

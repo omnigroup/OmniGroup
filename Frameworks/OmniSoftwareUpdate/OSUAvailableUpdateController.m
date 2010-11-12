@@ -306,14 +306,13 @@ RCS_ID("$Id$");
 {
     NSInteger tag = [sender tag];
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSArray *newValue = nil;
     
     if (tag == itemAlertPane_IgnoreOneTrackTag) {
         NSString *track = [[self selectedItem] track];
         if (![NSString isEmptyString:track]) {
             NSMutableSet *newTracks = [NSMutableSet set];
-            OFForEachInArray([OSUItem elaboratedTracks:[defaults arrayForKey:OSUVisibleTracksKey]], NSString *, aTrack, {
+            OFForEachInArray([OSUItem elaboratedTracks:[OSUPreferences visibleTracks]], NSString *, aTrack, {
                 if ([NSString isEmptyString:aTrack])
                     continue;
                 enum OSUTrackComparison order = [OSUItem compareTrack:aTrack toTrack:track];

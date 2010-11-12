@@ -17,6 +17,8 @@ enum {
     OFSBaseURLIsNotAbsolute,
     OFSCannotCreateDirectory,
     OFSCannotMove,
+    OFSCannotWriteFile,
+    OFSNoSuchDirectory,
     OFSCannotDelete,
     
     // DAV
@@ -29,3 +31,8 @@ extern NSString * const OFSErrorDomain;
 #define OFSError(error, code, description, reason) OFSErrorWithInfo((error), (code), (description), (reason), nil)
 
 extern NSString * const OFSDAVHTTPErrorDomain; // codes are the HTTP response number
+
+#define OFSResponseLocationErrorKey (@"Location")
+
+extern NSString * const OFSURLErrorFailingURLErrorKey;          // > 4.0 use NSURLErrorFailingURLErrorKey
+extern NSString * const OFSURLErrorFailingURLStringErrorKey;    // > 4.0 use NSURLErrorFailingURLStringErrorKey

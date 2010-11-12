@@ -16,6 +16,8 @@
     struct TagzipFile__ *_zip;
 }
 
++ (BOOL)createZipFile:(NSString *)zipPath fromFiles:(NSArray *)files error:(NSError **)outError;
+
 - initWithPath:(NSString *)path error:(NSError **)outError;
 
 - (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents raw:(BOOL)raw compressionMethod:(unsigned long)comparessionMethod uncompressedSize:(size_t)uncompressedSize crc:(unsigned long)crc date:(NSDate *)date error:(NSError **)outError;

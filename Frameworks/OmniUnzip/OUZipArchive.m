@@ -8,12 +8,37 @@
 #import <OmniUnzip/OUZipArchive.h>
 
 #import <OmniUnzip/OUErrors.h>
+#import <OmniUnzip/OUZipMember.h>
 #import <OmniBase/system.h> // S_IFDIR, etc.
 #import "zip.h"
 
 RCS_ID("$Id$");
 
 @implementation OUZipArchive
+
++ (BOOL)createZipFile:(NSString *)zipPath fromFiles:(NSArray *)files error:(NSError **)outError;
+{
+    OUZipArchive *zip = [[[OUZipArchive alloc] initWithPath:zipPath error:outError] autorelease];
+    if (!zip) {
+        OBASSERT(outError == NULL || *outError != nil);
+        return NO;
+    }
+    NSString *homeDirectory = NSHomeDirectory();
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    for (NSString *file in files) {
+        NSString *path = [homeDirectory stringByAppendingPathComponent:file];
+        OUZipMember *zipMember = [[OUZipMember alloc] initWithPath:path fileManager:fileManager];
+        if (zipMember == nil)
+            continue;
+        NSError *error = nil;
+        if (![zipMember appendToZipArchive:zip fileNamePrefix:@"" error:&error]) {
+            // Unable to add one of the files to the zip archive.  Just skipping it for now.
+        }
+        [zipMember release];
+    }
+
+    return [zip close:outError];
+}
 
 - initWithPath:(NSString *)path error:(NSError **)outError;
 {

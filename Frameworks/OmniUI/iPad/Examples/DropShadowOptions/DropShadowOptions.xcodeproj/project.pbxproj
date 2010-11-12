@@ -34,6 +34,9 @@
 		34CD30D111A6EB6E001FA1EB /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CD30D011A6EB6E001FA1EB /* MessageUI.framework */; };
 		34CD30D911A6EBA7001FA1EB /* OmniUIShadowDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CD30D811A6EBA7001FA1EB /* OmniUIShadowDemo.m */; };
 		34CD315B11A6F84D001FA1EB /* RedrawnCGShadowDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CD315A11A6F84D001FA1EB /* RedrawnCGShadowDemo.m */; };
+		34CDFF96126922D3005B04A7 /* libOmniFileStore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CDFF93126922B6005B04A7 /* libOmniFileStore.a */; };
+		34CDFF98126922E5005B04A7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CDFF97126922E5005B04A7 /* Security.framework */; };
+		34CDFF9A126922E5005B04A7 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CDFF99126922E5005B04A7 /* SystemConfiguration.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,21 +44,21 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 340115B011E515790016ADB3 /* libOmniBaseTouchTests.a */;
+			remoteGlobalIDString = 340115B011E515790016ADB3;
 			remoteInfo = OmniBaseTouchTests;
 		};
 		3429ED9212072074009A7A4A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 340115D411E515DB0016ADB3 /* libOmniFoundationTouchTests.a */;
+			remoteGlobalIDString = 340115D411E515DB0016ADB3;
 			remoteInfo = OmniFoundationTouchTests;
 		};
 		3429ED9912072074009A7A4A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 3401163511E5181A0016ADB3 /* libOmniAppKitTouchTests.a */;
+			remoteGlobalIDString = 3401163511E5181A0016ADB3;
 			remoteInfo = OmniAppKitTouchTests;
 		};
 		34CD305C11A6EACD001FA1EB /* PBXContainerItemProxy */ = {
@@ -233,6 +236,27 @@
 			remoteGlobalIDString = 3434791411923B54007D0CE5;
 			remoteInfo = OmniAppKitTouch;
 		};
+		34CDFF90126922B6005B04A7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CDFF85126922B6005B04A7 /* OmniFileStore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8DC2EF5B0486A6940098B216 /* OmniFileStore.framework */;
+			remoteInfo = OmniFileStore;
+		};
+		34CDFF92126922B6005B04A7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CDFF85126922B6005B04A7 /* OmniFileStore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34D06C54125D202500CA3963 /* libOmniFileStore.a */;
+			remoteInfo = OmniFileStoreTouch;
+		};
+		34CDFF94126922B6005B04A7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CDFF85126922B6005B04A7 /* OmniFileStore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34C017A410995278001C110D /* ofs */;
+			remoteInfo = ofs;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -309,6 +333,9 @@
 		34CD30D811A6EBA7001FA1EB /* OmniUIShadowDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OmniUIShadowDemo.m; sourceTree = "<group>"; };
 		34CD315911A6F84D001FA1EB /* RedrawnCGShadowDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RedrawnCGShadowDemo.h; sourceTree = "<group>"; };
 		34CD315A11A6F84D001FA1EB /* RedrawnCGShadowDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RedrawnCGShadowDemo.m; sourceTree = "<group>"; };
+		34CDFF85126922B6005B04A7 /* OmniFileStore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFileStore.xcodeproj; path = ../../../../OmniFileStore/OmniFileStore.xcodeproj; sourceTree = SOURCE_ROOT; };
+		34CDFF97126922E5005B04A7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		34CDFF99126922E5005B04A7 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* DropShadowOptions-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "DropShadowOptions-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -331,6 +358,9 @@
 				34CD30C511A6EB53001FA1EB /* libz.dylib in Frameworks */,
 				34CD30CB11A6EB62001FA1EB /* QuartzCore.framework in Frameworks */,
 				34CD30D111A6EB6E001FA1EB /* MessageUI.framework in Frameworks */,
+				34CDFF96126922D3005B04A7 /* libOmniFileStore.a in Frameworks */,
+				34CDFF98126922E5005B04A7 /* Security.framework in Frameworks */,
+				34CDFF9A126922E5005B04A7 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -416,6 +446,8 @@
 				34CD30C411A6EB53001FA1EB /* libz.dylib */,
 				34CD30CA11A6EB62001FA1EB /* QuartzCore.framework */,
 				34CD30D011A6EB6E001FA1EB /* MessageUI.framework */,
+				34CDFF97126922E5005B04A7 /* Security.framework */,
+				34CDFF99126922E5005B04A7 /* SystemConfiguration.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -478,6 +510,7 @@
 				34CD306211A6EAD8001FA1EB /* OmniFoundation.xcodeproj */,
 				34CD30A411A6EB2A001FA1EB /* OmniAppKit.xcodeproj */,
 				34CD308411A6EAE1001FA1EB /* OmniQuartz.xcodeproj */,
+				34CDFF85126922B6005B04A7 /* OmniFileStore.xcodeproj */,
 				34CD309011A6EAF1001FA1EB /* OmniUI.xcodeproj */,
 			);
 			path = Frameworks;
@@ -541,6 +574,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		34CDFF8B126922B6005B04A7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				34CDFF91126922B6005B04A7 /* OmniFileStore.framework */,
+				34CDFF93126922B6005B04A7 /* libOmniFileStore.a */,
+				34CDFF95126922B6005B04A7 /* ofs */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -574,6 +617,7 @@
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "DropShadowOptions" */;
 			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -592,6 +636,10 @@
 				{
 					ProductGroup = 34CD305411A6EACD001FA1EB /* Products */;
 					ProjectRef = 34CD305311A6EACD001FA1EB /* OmniBase.xcodeproj */;
+				},
+				{
+					ProductGroup = 34CDFF8B126922B6005B04A7 /* Products */;
+					ProjectRef = 34CDFF85126922B6005B04A7 /* OmniFileStore.xcodeproj */;
 				},
 				{
 					ProductGroup = 34CD306311A6EAD8001FA1EB /* Products */;
@@ -773,6 +821,27 @@
 			fileType = archive.ar;
 			path = libOmniAppKit.a;
 			remoteRef = 34CD30B711A6EB2B001FA1EB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CDFF91126922B6005B04A7 /* OmniFileStore.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniFileStore.framework;
+			remoteRef = 34CDFF90126922B6005B04A7 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CDFF93126922B6005B04A7 /* libOmniFileStore.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOmniFileStore.a;
+			remoteRef = 34CDFF92126922B6005B04A7 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34CDFF95126922B6005B04A7 /* ofs */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = ofs;
+			remoteRef = 34CDFF94126922B6005B04A7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

@@ -5,9 +5,9 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIInspectorTextWell.h"
+#import <OmniUI/OUIInspectorTextWell.h>
 
-#import "OUIInspectorWell.h"
+#import <OmniUI/OUIInspectorWell.h>
 
 #import <CoreText/CoreText.h>
 #import <OmniQuartz/OQDrawing.h>

@@ -6,10 +6,12 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OUITextInputStringTokenizer.h"
+
+#import <OmniUI/OUIEditableFrame.h>
+#import <OmniBase/rcsid.h>
+
 #import "OUEFTextPosition.h"
 #import "OUEFTextRange.h"
-#import "OUIEditableFrame.h"
-#import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$");
 

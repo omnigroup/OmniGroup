@@ -5,9 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIOverlayView.h"
-#import <UIKit/UIKit.h>
-#import <OmniBase/OmniBase.h>
+#import <OmniUI/OUIOverlayView.h>
 
 RCS_ID("$Id$");
 
@@ -209,6 +207,11 @@ RCS_ID("$Id$");
     [self removeFromSuperview];
 }
 
+- (BOOL)isVisible;
+{
+    return self.superview && self.alpha == 1;
+}
+
 
 #pragma mark -
 #pragma mark alloc/init
@@ -221,9 +224,7 @@ RCS_ID("$Id$");
     self.userInteractionEnabled = NO;
     self.opaque = NO;
     
-    _font = [[UIFont boldSystemFontOfSize:16] retain];
-    _borderSize = CGSizeMake(8, 8);
-    _messageDisplayInterval = 1.5;
+    [self resetDefaults];
     
     _cachedSuggestedSize = CGSizeZero;
     
@@ -241,6 +242,15 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark Class methods
 
+- (void)resetDefaults;
+{
+    _font = [[UIFont boldSystemFontOfSize:16] retain];
+    _borderSize = CGSizeMake(8, 8);
+    _messageDisplayInterval = 1.5;
+    
+    _cachedSuggestedSize = CGSizeZero;
+}
+
 @synthesize text = _text;
 - (void)setText:(NSString *)string;
 {
@@ -253,6 +263,21 @@ RCS_ID("$Id$");
     _cachedSuggestedSize = CGSizeZero;
     [self setNeedsDisplay];
     
+}
+
+- (CGFloat)fontSize;
+{
+    return [_font pointSize];
+}
+- (void)setFontSize:(CGFloat)newSize;
+{
+    if (newSize == [_font pointSize]) {
+        return;
+    }
+    
+    UIFont *newFont = [_font fontWithSize:newSize];
+    [_font release];
+    _font = newFont;
 }
 
 @synthesize borderSize = _borderSize;
@@ -292,9 +317,12 @@ RCS_ID("$Id$");
 - (void)useSuggestedSize;
 {
     CGSize suggestedSize = [self suggestedSize];
-    CGRect rect = [self frame];
+    
+    CGRect rect = [self bounds];
     rect.size = suggestedSize;
-    self.frame = rect;
+    self.bounds = rect;
+    
+    [self setFrame:self.frame];  // pixel-align
 }
 
 - (void)avoidTouchPoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;

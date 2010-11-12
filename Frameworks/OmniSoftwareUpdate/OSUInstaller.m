@@ -121,7 +121,7 @@ static BOOL trashFile(NSString *path, NSString *description, BOOL tryFinder);
     
     if (![self extract:&error]) {
         
-        if ([[error domain] isEqualToString:OMNI_BUNDLE_IDENTIFIER] && [error code] == OSUBadInstallationDirectory && !haveAskedForInstallLocation) {
+        if ([[error domain] isEqualToString:OSUErrorDomain] && [error code] == OSUBadInstallationDirectory && !haveAskedForInstallLocation) {
             if ([self chooseInstallationDirectory:nil]) {
                 OBASSERT(haveAskedForInstallLocation);
                 [self run];
@@ -203,7 +203,7 @@ static BOOL trashFile(NSString *path, NSString *description, BOOL tryFinder);
                              nil);
 #else
             OSUChecker *checker = [OSUChecker sharedUpdateChecker];
-            return [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER
+            return [NSError errorWithDomain:OSUErrorDomain
                                        code:OSUBadInstallationDirectory
                                    userInfo:[NSDictionary dictionaryWithObjectsAndKeys: descr, NSLocalizedDescriptionKey, whynot, NSLocalizedFailureReasonErrorKey, whynot, NSLocalizedRecoverySuggestionErrorKey, installationPath, NSFilePathErrorKey, [checker applicationIdentifier], OSUBundleIdentifierErrorInfoKey, nil]];
 #endif
@@ -559,7 +559,7 @@ static BOOL trashFile(NSString *path, NSString *description, BOOL tryFinder);
                 reason = NSLocalizedStringFromTableInBundle(@"No application was found in the update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason - we downloaded an update, but it doesn't seem to contain a new application");
             
             NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
-            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToUpgrade userInfo:userInfo];
+            *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToUpgrade userInfo:userInfo];
         }
         return nil;
     }
@@ -626,7 +626,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The updated application is invalid (%@)", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason - we downloaded an update, but there's something obviously wrong with the updated application, like it doesn't have an Info.plist or whatever"), badness];
             
             NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
-            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToUpgrade userInfo:userInfo];
+            *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToUpgrade userInfo:userInfo];
         }
         return NO;
     }
@@ -735,7 +735,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             if (*outError)
                 [userInfo setObject:*outError forKey:NSUnderlyingErrorKey];
             
-            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToMountDiskImage userInfo:userInfo];
+            *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToMountDiskImage userInfo:userInfo];
         }
 
         return nil;
@@ -749,7 +749,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to parse the response from hdiutil: %@", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), plistError];
             NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, hdiResults, @"hdi-result-data", reportStringForCapturedOutput(errorStream), @"hdiutil-stderr", nil];
-            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToMountDiskImage userInfo:userInfo];
+            *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToMountDiskImage userInfo:userInfo];
         }
         return nil;
     }
@@ -768,7 +768,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
                     NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
                     NSString *reason = NSLocalizedStringFromTableInBundle(@"Multiple mount points found in hdiutil results.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
                     NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, plist, @"hdi-result-plist", reportStringForCapturedOutput(errorStream), @"hdiutil-stderr", nil];
-                    *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToMountDiskImage userInfo:userInfo];
+                    *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToMountDiskImage userInfo:userInfo];
                 }
                 return nil;
             } else
@@ -781,7 +781,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
             NSString *reason = NSLocalizedStringFromTableInBundle(@"No mount point found in hdiutil results.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
             NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, plist, @"hdi-result-plist", reportStringForCapturedOutput(errorStream), @"hdiutil-stderr", nil];
-            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToMountDiskImage userInfo:userInfo];
+            *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToMountDiskImage userInfo:userInfo];
         }
         return nil;
     }
@@ -847,7 +847,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             NSString *reason = reportStringForCapturedOutput(errorStream);
             NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey,
                                       [ditto error], NSUnderlyingErrorKey, nil];
-            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToProcessPackage userInfo:userInfo];
+            *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToProcessPackage userInfo:userInfo];
         }
         
         [ditto release];
@@ -921,7 +921,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
                                       reportStringForCapturedOutputData(errData), @"extract-stderr", extract, @"filter-params", nil];
             if (*outError)
                 userInfo = [userInfo dictionaryWithObject:*outError forKey:NSUnderlyingErrorKey];
-            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToProcessPackage userInfo:userInfo];
+            *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToProcessPackage userInfo:userInfo];
         }
         return NO;
     }
@@ -1283,7 +1283,7 @@ static BOOL PerformNormalInstall(NSString *installerPath, NSArray *installerArgu
             if (installerResults && [installerResults length])
                 [userInfo setObject:reportStringForCapturedOutputData(installerResults) forKey:@"stdout"];
             
-            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToUpgrade userInfo:userInfo];
+            *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToUpgrade userInfo:userInfo];
         }
         
         return NO;
@@ -1317,7 +1317,7 @@ static BOOL AuthInstallError(NSError **outError, NSString *reason, NSError *unde
             /* Translate errAuthorizationCanceled into NSUserCancelledError because AppKit doesn't handle errAuthorizationCanceled appropriately */
             *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:userInfo];
         } else {
-            *outError = [NSError errorWithDomain:OMNI_BUNDLE_IDENTIFIER code:OSUUnableToUpgrade userInfo:userInfo];
+            *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToUpgrade userInfo:userInfo];
         }
     }
     return NO;

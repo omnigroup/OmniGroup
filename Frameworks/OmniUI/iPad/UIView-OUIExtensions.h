@@ -11,7 +11,7 @@
 
 @interface UIView (OUIExtensions)
 - (UIImage *)snapshotImage;
-- (UIView *)containingViewOfClass:(Class)cls; // can return self
+- (id)containingViewOfClass:(Class)cls; // can return self
 @end
 
 #ifdef DEBUG // Uses private API
@@ -34,3 +34,11 @@ extern void OUIViewLayoutShadowEdges(UIView *self, NSArray *shadowEdges, BOOL fl
     if (_wasAnimating) \
         [UIView setAnimationsEnabled:YES]; \
 } while (0)
+
+#ifdef NS_BLOCKS_AVAILABLE
+extern void OUIWithoutAnimating(void (^actions)(void));
+
+// Takes a time interval, an action and then a list of NSNumbers containing time intervals and action blocks. Numbers change the interval to be used for any remaining blocks. All animations are run with user interaction off. Of an action doesn't actually cause any animations, UIView will complete the action without waiting for the specified delay.
+extern void OUISequenceAnimations(NSTimeInterval ti, void (^action)(void), ...) NS_REQUIRES_NIL_TERMINATION;
+
+#endif

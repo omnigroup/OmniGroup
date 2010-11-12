@@ -10,11 +10,12 @@
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 
 #import <math.h>
-#include <tgmath.h>
+#import <tgmath.h>
 
+// Used to have a ppc frsqrte version, but don't have an x86_64 version right now
 static inline CGFloat OAFastReciprocalSquareRoot(CGFloat x)
 {
-    return 1.0f / sqrt(x);
+    return (CGFloat)(1.0f / sqrt(x));
 }
 
 #if defined(__COREGRAPHICS__) && !defined(__cplusplus)

@@ -31,7 +31,7 @@ RCS_ID("$Id$");
 
 @interface OUIRTFReader ()
 
-@property (readwrite, retain) NSAttributedString *attributedString;
+@property (nonatomic, retain) NSAttributedString *attributedString;
 
 + (void)_registerKeyword:(NSString *)keyword action:(OUIRTFReaderAction *)action;
 
@@ -106,17 +106,17 @@ RCS_ID("$Id$");
 }
 
 @property (nonatomic, readwrite, retain) NSMutableString *alternateDestination;
-@property (readwrite, retain) id foregroundColor;
-@property (readwrite) CGFloat fontSize;
-@property (readwrite) int fontNumber;
-@property (readwrite) BOOL bold;
-@property (readwrite) BOOL italic;
-@property (readwrite) unsigned int underlineStyle;
-@property (readwrite) int fontCharacterSet;
-@property (readwrite) CTTextAlignment paragraphAlignment;
-@property (readwrite) int paragraphFirstLineIndent;
-@property (readwrite) int paragraphLeftIndent;
-@property (readwrite) int paragraphRightIndent;
+@property (nonatomic, retain) id foregroundColor;
+@property (nonatomic) CGFloat fontSize;
+@property (nonatomic) int fontNumber;
+@property (nonatomic) BOOL bold;
+@property (nonatomic) BOOL italic;
+@property (nonatomic) unsigned int underlineStyle;
+@property (nonatomic) int fontCharacterSet;
+@property (nonatomic) CTTextAlignment paragraphAlignment;
+@property (nonatomic) int paragraphFirstLineIndent;
+@property (nonatomic) int paragraphLeftIndent;
+@property (nonatomic) int paragraphRightIndent;
 
 - (NSMutableDictionary *)stringAttributesForReader:(OUIRTFReader *)reader;
 - (CFStringEncoding)fontEncoding;
@@ -162,8 +162,8 @@ RCS_ID("$Id$");
     CFStringEncoding _encoding;
 }
 
-@property (readwrite, retain) NSString *name;
-@property (readwrite) CFStringEncoding encoding;
+@property (nonatomic, retain) NSString *name;
+@property (nonatomic) CFStringEncoding encoding;
 
 @end
 

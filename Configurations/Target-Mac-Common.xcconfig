@@ -22,11 +22,6 @@ MACOSX_DEPLOYMENT_TARGET = 10.6
 // Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.
 SKIP_INSTALL = YES
 
-// We don't strip in Xcode for release.  We have a custom version of strip and do it during packaing so that we can keep an unstripped copy of the app.
-//STRIPFLAGS = -urSX
-UNSTRIPPED_PRODUCT = YES
-COPY_PHASE_STRIP = NO
-
 // Xcode 3.1 converts .strings files to UTF-16 by default, which breaks our localization process.
 STRINGS_FILE_OUTPUT_ENCODING = UTF-8
 

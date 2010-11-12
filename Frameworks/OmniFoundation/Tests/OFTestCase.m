@@ -9,6 +9,9 @@
 
 #import <OmniBase/rcsid.h>
 
+// This import isn't needed for this file, but serves as a test of whether the headers are properly #ifdef in OmniFoundation.h
+#import <OmniFoundation/OmniFoundation.h>
+
 RCS_ID("$Id$")
 
 @implementation OFTestCase
@@ -112,3 +115,66 @@ void OFDiffData(SenTestCase *testCase, NSData *expected, NSData *actual)
 }
 
 #endif
+
+#ifdef NS_BLOCKS_AVAILABLE
+static void _addRelativePaths(NSMutableSet *relativePaths, NSString *base, OFDiffFilesPathFilter pathFilter)
+{
+    NSDirectoryEnumerator *dirEnum = [[NSFileManager defaultManager] enumeratorAtPath:base];
+    for (NSString *path in dirEnum) {
+        if ([[dirEnum fileAttributes].fileType isEqualToString:NSFileTypeDirectory])
+            continue;
+        
+        if (!pathFilter || pathFilter(path))
+            [relativePaths addObject:path];
+    }
+}
+
+void OFDiffFiles(SenTestCase *self, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter)
+{
+    OBPRECONDITION(path1);
+    OBPRECONDITION(path2);
+    
+    // Collect all the files, as relative paths from the two inputs
+    NSMutableSet *files1 = [NSMutableSet set];
+    _addRelativePaths(files1, path1, pathFilter);
+    
+    NSMutableSet *files2 = [NSMutableSet set];
+    _addRelativePaths(files2, path2, pathFilter);
+    
+    // Build a map between entries
+    NSMutableDictionary *map = [NSMutableDictionary dictionary];
+    
+    // TDOO: Delegate hook like OAT's diff.rb
+    
+    // Default maps from 1->2. Have to go over both sets in case one side is missing a file.
+    for (NSString *entry in files1)
+        [map setObject:[path2 stringByAppendingPathComponent:entry] forKey:[path1 stringByAppendingPathComponent:entry]];
+    for (NSString *entry in files2)
+        [map setObject:[path2 stringByAppendingPathComponent:entry] forKey:[path1 stringByAppendingPathComponent:entry]];
+    
+    // Now compare each mapping.
+    for (NSString *map1 in [[map allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
+        NSString *map2 = [map objectForKey:map1];
+
+        // TODO: Support for comparing compressed files, formatting XML, etc.
+        
+        NSData *data1, *data2;
+        
+        NSError *error = nil;
+        
+        OBShouldNotError((data1 = [[NSData alloc] initWithContentsOfFile:map1 options:0 error:&error]));
+        OBShouldNotError((data2 = [[NSData alloc] initWithContentsOfFile:map2 options:0 error:&error]));
+        
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+        if (OFNOTEQUAL(data1, data2))
+            STFail(@"Files differ!\ndiff \"%@\" \"%@\"", map1, map2);
+#else
+        OFDataShouldBeEqual(data1, data2);
+#endif
+        
+        [data1 release];
+        [data2 release];
+    }
+}
+#endif
+

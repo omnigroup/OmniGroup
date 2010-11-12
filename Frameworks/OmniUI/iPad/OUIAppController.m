@@ -9,6 +9,8 @@
 
 #import "OUIAppMenuController.h"
 #import "OUIEventBlockingView.h"
+#import "OUISyncMenuController.h"
+#import "OUISoftwareUpdateController.h"
 
 #import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIDocumentProxy.h>
@@ -17,6 +19,7 @@
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniFoundation/NSString-OFURLEncoding.h>
+#import "UIViewController-OUIExtensions.h"
 
 #import <SenTestingKit/SenTestSuite.h>
 
@@ -38,6 +41,8 @@ BOOL OUIShouldLogPerformanceMetrics;
 
     if (OUIShouldLogPerformanceMetrics)
         NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
+    
+    [UIViewController installOUIExtensions];
 }
 
 + (id)controller;
@@ -90,11 +95,27 @@ BOOL OUIShouldLogPerformanceMetrics;
     [self _presentError:error file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
 }
 
+- (id)init;
+{
+    if (!(self = [super init]))
+        return nil;
+    
+#if OUI_SOFTWARE_UPDATE_CHECK
+    _softwareUpdateController = [[OUISoftwareUpdateController alloc] init];
+#endif
+    
+    return self;
+}
+
 - (void)dealloc;
 {
+#if OUI_SOFTWARE_UPDATE_CHECK
+    [_softwareUpdateController release];
+#endif
     [_documentPicker release];
     [_appMenuBarItem release];;
     [_appMenuController release];
+    [_syncMenuController release];
     
     [super dealloc];
 }
@@ -119,6 +140,7 @@ BOOL OUIShouldLogPerformanceMetrics;
 - (void)dismissAppMenu;
 {
     [_appMenuController dismiss];
+    [_syncMenuController dismiss];
 }
 
 @synthesize documentPicker = _documentPicker;
@@ -291,11 +313,25 @@ BOOL OUIShouldLogPerformanceMetrics;
 
 - (void)showAppMenu:(id)sender;
 {
+    [_syncMenuController dismiss];
+    
     if (!_appMenuController)
         _appMenuController = [[OUIAppMenuController alloc] init];
 
     OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
     [_appMenuController showMenuFromBarItem:sender];
+}
+
+- (void)showSyncMenu:(id)sender;
+// aka "import from webDAV"
+{
+    [_appMenuController dismiss];
+    
+    if (!_syncMenuController)
+        _syncMenuController = [[OUISyncMenuController alloc] init];
+    
+    OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
+    [_syncMenuController showMenuFromBarItem:sender];
 }
 
 #pragma mark -
@@ -338,6 +374,7 @@ BOOL OUIShouldLogPerformanceMetrics;
 #pragma mark -
 #pragma mark UIApplicationDelegate
 
+// For when running on iOS 3.2.
 - (void)applicationWillTerminate:(UIApplication *)application;
 {
     [[NSUserDefaults standardUserDefaults] synchronize];

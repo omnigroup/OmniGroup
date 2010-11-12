@@ -34,7 +34,7 @@ RCS_ID("$Id$");
     [self setNeedsDisplay:YES];
 }
 
-- (void)setObjectValue:(id)newValue;
+- (void)setObjectValue:(id <NSCopying>)newValue;
 {
     [super setObjectValue:(id)newValue];
     [self _resetBounds];

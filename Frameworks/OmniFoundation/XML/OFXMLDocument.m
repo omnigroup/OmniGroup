@@ -22,6 +22,7 @@
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 
 #import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
 #import <OmniBase/OBUtilities.h>
 
 RCS_ID("$Id$");

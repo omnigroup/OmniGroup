@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+// XML comment around #defines so this will validate with plutil before preprocessing.
+#include "InfoPlist.h"
+-->
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
@@ -23,7 +27,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>2009</string>
+	<string>OSU_VERSION_NUMBER</string>
 	<key>OFRegistrations</key>
 	<dict>
 		<key>NSUserDefaults</key>
@@ -44,7 +48,7 @@
 		</dict>
 		<key>OAPreferenceController</key>
 		<dict>
-			<key>OSUPreferences</key>
+			<key>OSUPreferenceClient</key>
 			<dict>
 				<key>category</key>
 				<string>Basic</string>

@@ -139,7 +139,7 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     if (!_scrollView)
         return; // just bail if UI not loaded yet
 
-    [_scrollView adjustContentInset];
+    [_scrollView adjustContentInsetAnimated:NO];
 }
 
 - (void)sizeInitialViewSizeFromCanvasSize;

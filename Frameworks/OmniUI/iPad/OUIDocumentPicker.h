@@ -8,13 +8,15 @@
 // $Id$
 
 #import <UIKit/UIViewController.h>
+
 #import <OmniUI/OUIDocumentPickerView.h>
+#import <OmniUI/OUIReplaceDocumentAlert.h>
 
 @class OFSetBinding;
 @class OUIDocumentProxy, OUIDocumentPickerView;
 @protocol OUIDocumentPickerDelegate;
 
-@interface OUIDocumentPicker : UIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerViewDelegate, UIDocumentInteractionControllerDelegate, UITextFieldDelegate>
+@interface OUIDocumentPicker : UIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerViewDelegate, UIDocumentInteractionControllerDelegate, UITextFieldDelegate, OUIReplaceDocumentAlertDelegate>
 {
 @private
     id <OUIDocumentPickerDelegate> _nonretained_delegate;
@@ -44,6 +46,8 @@
     BOOL _keyboardIsShowing;
     BOOL _isRevealingNewDocument;
     BOOL _isInnerController;
+    
+    OUIReplaceDocumentAlert *_replaceDocumentAlert;
 }
 
 + (NSString *)userDocumentsDirectory;
@@ -52,6 +56,8 @@
 
 + (NSString *)pathToSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
 + (NSString *)availablePathInDirectory:(NSString *)dir baseName:(NSString *)baseName extension:(NSString *)extension counter:(NSUInteger *)ioCounter;
++ (BOOL)canViewTypeWithIdentifier:(NSString *)uti;
+
 - (OUIDocumentProxy *)proxyByInstantiatingSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
 
 @property(assign,nonatomic) IBOutlet id <OUIDocumentPickerDelegate> delegate;
@@ -65,6 +71,7 @@
 @property(retain) IBOutlet UIButton *newDocumentButton;
 @property(retain) IBOutlet UIButton *deleteButton;
 
+@property(readonly) UITextField *titleEditingField;
 @property(copy,nonatomic) NSString *directory;
 @property(retain) id proxyTappedTarget;
 @property(assign) SEL proxyTappedAction;
@@ -87,8 +94,12 @@
 
 - (NSURL *)urlForNewDocumentOfType:(NSString *)documentUTI;
 - (NSURL *)urlForNewDocumentWithName:(NSString *)name ofType:(NSString *)documentUTI;
+- (void)addDocumentFromURL:(NSURL *)url;
 
 - (void)scrollToProxy:(OUIDocumentProxy *)proxy animated:(BOOL)animated;
+- (void)showButtonsAfterEditing;
+
+- (BOOL)okayToOpenMenu;
 
 - (IBAction)favorite:(id)sender;
 - (IBAction)newDocumentMenu:(id)sender;
@@ -97,5 +108,7 @@
 - (IBAction)delete:(id)sender;
 - (IBAction)export:(id)sender;
 - (IBAction)emailDocument:(id)sender;
+- (void)emailPDF:(id)sender;
+- (void)emailPNG:(id)sender;
 - (IBAction)editTitle:(id)sender;
 @end

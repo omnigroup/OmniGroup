@@ -55,6 +55,7 @@ RCS_ID("$Id$");
 {
     // TODO: Don't provoke view loading?
     UIView *view = self.view;
+    
     CGRect bounds = view.bounds;
     CGFloat width = CGRectGetWidth(bounds);
     CGFloat yOffset = CGRectGetMinY(bounds);
@@ -77,13 +78,8 @@ RCS_ID("$Id$");
     }
     
     bounds.size.height = yOffset - CGRectGetMinY(bounds);
-    view.frame = [view convertRect:bounds toView:view.superview];
-
     
-    {
-        CGSize size = view.frame.size;
-        self.contentSizeForViewInPopover = size;
-    }
+    self.contentSizeForViewInPopover = bounds.size;
 }
 
 - (void)updateInterfaceFromInspectedObjects;
