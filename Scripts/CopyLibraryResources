@@ -29,8 +29,21 @@ StaticLibraryResourceDirectories = []
   StaticLibraryResourceDirectories << resource_dir if File.directory?(resource_dir)
 }
 
+# TODO: Right now static libraries can get reported twice, probably due to a bug in how ListSourceFilesInTarget interprets the references in the project file.
+StaticLibraryResourceDirectories.uniq!
+
+# It is also useful to have the main application be able to have dynamically generated resources (like strings files)
+begin
+  resource_dir = "#{ResourcesRoot}/#{ENV['PRODUCT_NAME']}"
+  StaticLibraryResourceDirectories << resource_dir if File.directory?(resource_dir)
+end
+
+
 # We are copying into an iPhone OS bundle, which is flat.
 AppDir = "#{ENV["TARGET_BUILD_DIR"]}/#{ENV["UNLOCALIZED_RESOURCES_FOLDER_PATH"]}"
+
+# Keep track of the source file for each destination path. This will allow us to error out if two resources would be merged to the same destination
+@@SourcePathByDestinationPath = {}
 
 StaticLibraryResourceDirectories.each {|dirname|
   STDERR.print "scanning #{dirname} ...\n"
@@ -61,6 +74,11 @@ StaticLibraryResourceDirectories.each {|dirname|
       else
         dest_file = "#{dest_dir}/#{File.basename(source)}"
       end
+      
+      # Error if there are two source files that would map to the same destination
+      previous_source = @@SourcePathByDestinationPath[dest_file]
+      fail "Both '#{previous_source}' and '#{source}' would map to the same destination!\n" unless previous_source.nil?
+      @@SourcePathByDestinationPath[dest_file] = source
       
       source_mtime = File.new(source).mtime
       dest_mtime = File.exists?(dest_file) ? File.new(dest_file).mtime : nil
