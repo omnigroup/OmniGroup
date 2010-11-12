@@ -22,7 +22,7 @@ ResourcesRoot = "#{ENV["CONFIGURATION_BUILD_DIR"]}/Resources"
 # Get the list of static library frameworks linked by this project
 ScriptDir = File.dirname(__FILE__)
 StaticLibraryResourceDirectories = []
-`#{ScriptDir}/ListSourceFilesInTarget "#{ENV['TARGET_NAME']}" a "#{ENV['PROJECT_FILE_PATH']}"`.each {|l|
+`#{ScriptDir}/ListSourceFilesInTarget "#{ENV['TARGET_NAME']}" a "#{ENV['PROJECT_FILE_PATH']}"`.each_line {|l|
   l =~ /lib([^\.]+)\.a/
   
   resource_dir = "#{ResourcesRoot}/#{$1}"
