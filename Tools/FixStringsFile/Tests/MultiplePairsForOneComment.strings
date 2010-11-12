@@ -1,0 +1,12 @@
+/* genstrings can report multiple key/value pairs for the cross-product style source strings */
+"Level %[1]@ rows" = "Level %[1]@ rows";
+"Level %[2]@ rows" = "Level %[2]@ rows";
+"Level %[3]@ rows" = "Level %[3]@ rows";
+"Level %[4]@ rows" = "Level %[4]@ rows";
+"Level %[5]@ rows" = "Level %[5]@ rows";
+"Level %[6]@ rows" = "Level %[6]@ rows";
+"Level %[7]@ rows" = "Level %[7]@ rows";
+"Level %[8]@ rows" = "Level %[8]@ rows";
+"Level %[9]@ rows" = "Level %[9]@ rows";
+"Level %[10]@ rows" = "Level %[10]@ rows";
+

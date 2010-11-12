@@ -1,0 +1,3 @@
+/* three periods should get transformed to an ellipsis */
+"Ellipsis..." = "Ellipsis…";
+

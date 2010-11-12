@@ -1,0 +1,3 @@
+/* unmatched quotes shouldn't get curlied */
+"5 inches = 5\"" = "5 inches = 5\"";
+

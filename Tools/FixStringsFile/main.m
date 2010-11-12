@@ -20,7 +20,7 @@ static NSString *_quotedString(NSString *str)
     
     if ([str rangeOfCharacterFromSet:CharactersNeedingQuoting].length == 0)
         return str;
-
+    
     NSMutableString *result = [str mutableCopy];
     [result replaceOccurrencesOfString:@"\\" withString:@"\\\\" options:0 range:(NSRange){0, [result length]}]; // must be first to avoid quoting the backslashes entered here
     [result replaceOccurrencesOfString:@"\"" withString:@"\\\"" options:0 range:(NSRange){0, [result length]}];
@@ -60,21 +60,20 @@ static NSString *_smartQuotedString(NSString *source, NSString *asciiQuote, unic
 
 @interface Entry : NSObject
 {
+@private
     NSArray *_comments;
-    NSString *_source;
-    NSString *_translation;
+    NSDictionary *_pairs;
 }
 
-- initWithComments:(NSArray *)comments source:(NSString *)source translation:(NSString *)translation;
+- initWithComments:(NSArray *)comments pairs:(NSDictionary *)pairs;
+@property(nonatomic,readonly) NSString *minimalSource;
 - (NSComparisonResult)compareBySource:(Entry *)entry;
 @end
 
 @implementation Entry
-- initWithComments:(NSArray *)comments source:(NSString *)source translation:(NSString *)translation;
+
+NSString *_transformedTranslation(NSString *translation)
 {
-    _comments = [comments copy];
-    _source = [source copy];
-    
     // Replace ... with real ellipsis characters
     if ([translation rangeOfString:@"..."].length != 0) {
         static NSString *ellipsisString = nil;
@@ -87,21 +86,52 @@ static NSString *_smartQuotedString(NSString *source, NSString *asciiQuote, unic
         [ellipsizedString replaceOccurrencesOfString:@"..." withString:ellipsisString options:0 range:NSMakeRange(0, [ellipsizedString length])];
         translation = ellipsizedString;
     }
-
+    
     // Replace "..." with curly quotes
     translation = _smartQuotedString(translation, @"\"", 8220, 8221);
     
     // This gets quite a few bad matches due to contractions and possessives.  We could be smarter by requiring the starting quote to be at the beginning of the string or have a preceeding non-alpha character (likewise for the ending quote).  This would be significantly more complicated and really we should just use "..." in most places.  We won't need embedded quotes in UI strings.
     //translation = _smartQuotedString(translation, @"'", 8216, 8217);
     
-    _translation = [translation copy];
+    return translation;
+}
+
+- initWithComments:(NSArray *)comments pairs:(NSDictionary *)pairs;
+{
+    _comments = [comments copy];
+    
+    NSMutableDictionary *transformedPairs = [NSMutableDictionary dictionary];
+    for (NSString *source in pairs) {
+        NSString *translation = [pairs objectForKey:source];
+        [transformedPairs setObject:_transformedTranslation(translation) forKey:source];
+    }
+    _pairs = [transformedPairs copy];
     
     return self;
 }
+
+- (void)dealloc;
+{
+    [_comments release];
+    [_pairs release];
+}
+
 - (NSComparisonResult)compareBySource:(Entry *)entry;
 {
-    return [_source localizedCompare:entry->_source];
+    // We keep any multi-pair cross product locations together. Sort between entries by comparing the minimal source.
+    return [self.minimalSource localizedStandardCompare:entry.minimalSource];
 }
+
+- (NSString *)minimalSource;
+{
+    NSString *minimal = nil;
+    for (NSString *source in _pairs) {
+        if (!minimal || [minimal localizedStandardCompare:source] == NSOrderedDescending)
+            minimal = source;
+    }
+    return minimal;
+}
+
 - (void)appendToString:(NSMutableString *)string;
 {
     [string appendString:@"/* "];
@@ -113,7 +143,10 @@ static NSString *_smartQuotedString(NSString *source, NSString *asciiQuote, unic
     }
     [string appendString:@" */\n"];
     
-    [string appendFormat:@"\"%@\" = \"%@\";\n", _quotedString(_source), _quotedString(_translation)];
+    for (NSString *source in [[_pairs allKeys] sortedArrayUsingSelector:@selector(localizedStandardCompare:)]) {
+        NSString *translation = [_pairs objectForKey:source];
+        [string appendFormat:@"\"%@\" = \"%@\";\n", _quotedString(source), _quotedString(translation)];
+    }
 }
 @end
 
@@ -133,7 +166,7 @@ int main (int argc, const char * argv[])
 	fixStringsFile(path);
 	[pool release];
     }
-
+    
     return 0;
 }
 
@@ -154,7 +187,7 @@ static void fixStringsFile(NSString *path)
     uint8_t byte1 = ((const uint8_t *)[fileData bytes])[1];
     
     NSString *fileString = nil;
-
+    
     if ((byte0 == 0xff && byte1 == 0xfe) || (byte0 == 0xfe && byte1 == 0xff))
 	fileString = [[NSString alloc] initWithData:fileData encoding:NSUnicodeStringEncoding];
     
@@ -162,7 +195,7 @@ static void fixStringsFile(NSString *path)
     if (fileString)
 	NSLog(@"Loaded %@ as UTF-16, length = %d", path, [fileString length]);
 #endif
-
+    
     if (!fileString) {
 	fileString = [[NSString alloc] initWithData:fileData encoding:NSUTF8StringEncoding];
 #if 0 && defined(DEBUG_bungi)
@@ -182,10 +215,10 @@ static void fixStringsFile(NSString *path)
     [fileString release];
     while (![scanner isAtEnd]) {
 	if (![scanner scanString:@"/*" intoString:NULL]) {
-	    NSLog(@"no starting comment found, but not at end (at position %d)", [scanner scanLocation]);
+	    NSLog(@"no starting comment found, but not at end (at position %ld)", [scanner scanLocation]);
 	    exit(1);
 	}
-	 
+        
 	NSString *commentString = nil;
 	if (![scanner scanUpToString:@"*/" intoString:&commentString]) {
 	    NSLog(@"Unterminated comment in '%@'", path);
@@ -195,16 +228,16 @@ static void fixStringsFile(NSString *path)
 	    NSLog(@"Unable to read expected comment termination in '%@'", path);
 	    exit(1);
 	}
-	    
+        
 	commentString = [commentString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]; // up-to leaves the trailing space
-
+        
 	NSMutableArray *comments = [NSMutableArray arrayWithArray:[commentString componentsSeparatedByString:@"\n"]];
 	NSUInteger commentIndex = [comments count];
 	while (commentIndex--) {
 	    NSString *comment = [[comments objectAtIndex:commentIndex] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 	    [comments replaceObjectAtIndex:commentIndex withObject:comment];
 	}
-	[comments sortUsingSelector:@selector(localizedCompare:)];
+	[comments sortUsingSelector:@selector(localizedStandardCompare:)];
 	
 	NSString *keyValue;
 	if (![scanner scanUpToString:@"/*" intoString:&keyValue]) {
@@ -212,33 +245,27 @@ static void fixStringsFile(NSString *path)
 	    exit(1);
 	}
 	
-	 //NSLog(@"key/value = '%@'", keyValue);
-	 NSDictionary *dict = [keyValue propertyList]; // So we don't have to parse the string quoting and such.
-	 if ([dict count] != 1) {
-	     NSLog(@"Bizarre key/value pair -- doesn't have exactly one pair: '%@'", keyValue);
-	     exit(1);
-	 }
-
-	 NSString *key = [[dict keyEnumerator] nextObject];
-	 NSString *value = [dict objectForKey:key];
-	 
-	 Entry *entry = [[Entry alloc] initWithComments:comments source:key translation:value];
-	 [entries addObject:entry];
-	 [entry release];
+        //NSLog(@"key/value = '%@'", keyValue);
+        NSDictionary *dict = [keyValue propertyList]; // So we don't have to parse the string quoting and such.
+        
+        // genstrings can emit more than one key/value pair per comment for the cross-product style replacements (see input.m's test).
+        Entry *entry = [[Entry alloc] initWithComments:comments pairs:dict];
+        [entries addObject:entry];
+        [entry release];
     }
     [scanner release];
-	 
+    
     NSMutableString *output = [NSMutableString string];
     {
 	[entries sortUsingSelector:@selector(compareBySource:)];
-	 
+        
 	NSUInteger entryIndex, entryCount = [entries count];
 	for (entryIndex = 0; entryIndex < entryCount; entryIndex++) {
 	    [[entries objectAtIndex:entryIndex] appendToString:output];
 	    [output appendString:@"\n"];
 	}
     }
-     
+    
     NSData *resultData = [output dataUsingEncoding:NSUTF8StringEncoding];
     if (![resultData writeToFile:path atomically:YES]) {
         NSLog(@"Unable to write '%@'", path);

@@ -1,0 +1,21 @@
+#!/bin/zsh -euf
+#
+# $Id$
+#
+
+CMD="$CONFIGURATION_BUILD_DIR/$PRODUCT_NAME"
+
+TEST_OUTPUT_DIR="$DERIVED_FILES_DIR/TestOutput"
+rm -rf "$TEST_OUTPUT_DIR"
+mkdir -p "$TEST_OUTPUT_DIR"
+
+echo "Test output $TEST_OUTPUT_DIR"
+/usr/bin/genstrings -o "$TEST_OUTPUT_DIR" Tests/input.m
+
+for output in "$TEST_OUTPUT_DIR/"*.strings; do
+  test_name="$output:t"
+  expected_output="Tests/${test_name}"
+  #echo expected_output="$expected_output"
+  $CMD "$output"
+  diff "$output" "$expected_output"
+done

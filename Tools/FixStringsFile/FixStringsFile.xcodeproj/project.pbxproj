@@ -34,6 +34,13 @@
 		342ACFF21192541600AD0F83 /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		342ACFF31192541600AD0F83 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		342ACFF41192541600AD0F83 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		343EEEC0128DB75F008133A9 /* input.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = input.m; sourceTree = "<group>"; };
+		343EEEC1128DB75F008133A9 /* MultiplePairsForOneComment.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = MultiplePairsForOneComment.strings; sourceTree = "<group>"; };
+		343EEEC2128DB75F008133A9 /* RunTests */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = RunTests; sourceTree = "<group>"; };
+		343EEEE7128DBA45008133A9 /* Ellipsis.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = Ellipsis.strings; sourceTree = "<group>"; };
+		343EEEE8128DBA45008133A9 /* MultipleCommentsForOnePair.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = MultipleCommentsForOnePair.strings; sourceTree = "<group>"; };
+		343EEEE9128DBA45008133A9 /* SmartQuotes.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = SmartQuotes.strings; sourceTree = "<group>"; };
+		343EEEEA128DBA45008133A9 /* UnmatchedQuotes.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = UnmatchedQuotes.strings; sourceTree = "<group>"; };
 		346C56F0088F0E2F001CAF56 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		34C4D6A508C7AB280072D2D6 /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34C4D6A608C7AB280072D2D6 /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -72,7 +79,7 @@
 			children = (
 				34C4D6A408C7AB280072D2D6 /* Configurations */,
 				08FB7795FE84155DC02AAC07 /* Source */,
-				C6859E96029091FE04C91782 /* Documentation */,
+				343EEEBF128DB75F008133A9 /* Tests */,
 				08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */,
 				19C28FBDFE9D53C911CA2CBB /* Products */,
 			);
@@ -103,6 +110,20 @@
 				8DD76F7E0486A8DE00D96B5E /* FixStringsFile */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		343EEEBF128DB75F008133A9 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				343EEEC2128DB75F008133A9 /* RunTests */,
+				343EEEC0128DB75F008133A9 /* input.m */,
+				343EEEE7128DBA45008133A9 /* Ellipsis.strings */,
+				343EEEE8128DBA45008133A9 /* MultipleCommentsForOnePair.strings */,
+				343EEEC1128DB75F008133A9 /* MultiplePairsForOneComment.strings */,
+				343EEEE9128DBA45008133A9 /* SmartQuotes.strings */,
+				343EEEEA128DBA45008133A9 /* UnmatchedQuotes.strings */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		34C4D6A408C7AB280072D2D6 /* Configurations */ = {
@@ -147,13 +168,6 @@
 			path = ../../Configurations;
 			sourceTree = SOURCE_ROOT;
 		};
-		C6859E96029091FE04C91782 /* Documentation */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Documentation;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -163,6 +177,7 @@
 			buildPhases = (
 				8DD76F760486A8DE00D96B5E /* Sources */,
 				8DD76F780486A8DE00D96B5E /* Frameworks */,
+				343EEEC6128DB775008133A9 /* Run Tests */,
 			);
 			buildRules = (
 			);
@@ -181,7 +196,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 34DB3AAD08C7AADC00BC2748 /* Build configuration list for PBXProject "FixStringsFile" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 08FB7794FE84155DC02AAC07 /* FixStringsFile */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -190,6 +212,24 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		343EEEC6128DB775008133A9 /* Run Tests */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Tests";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "./Tests/RunTests\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8DD76F760486A8DE00D96B5E /* Sources */ = {

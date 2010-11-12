@@ -1,0 +1,3 @@
+/* should get curly quotes in the English localization */
+"Format with \"%@\" quotes." = "Format with “%@” quotes.";
+
