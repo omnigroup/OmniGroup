@@ -2682,6 +2682,9 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     OBPRECONDITION(drawnFrame && !flags.textNeedsUpdate);
     
     CFArrayRef lines = CTFrameGetLines(drawnFrame);
+    if (!lines) {
+        return CGRectNull;
+    }
     
     struct typographicPosition measures;
     
