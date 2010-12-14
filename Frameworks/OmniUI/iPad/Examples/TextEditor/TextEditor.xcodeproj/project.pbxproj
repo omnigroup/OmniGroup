@@ -290,7 +290,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = A260A7A41280C15A004743FA /* OmniUnzip.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 34E20FC9119314D200ECA875 /* OmniUnzipTouch */;
+			remoteGlobalIDString = 34E20FC9119314D200ECA875;
 			remoteInfo = OmniUnzipTouch;
 		};
 		A260A7CB1280C170004743FA /* PBXContainerItemProxy */ = {
