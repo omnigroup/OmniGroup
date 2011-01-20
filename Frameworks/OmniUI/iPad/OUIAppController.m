@@ -27,6 +27,8 @@
 #import <MobileCoreServices/UTType.h>
 
 #import <SenTestingKit/SenTestSuite.h>
+#import <OmniBase/system.h>
+#import <sys/sysctl.h>
 
 RCS_ID("$Id$");
 
@@ -37,6 +39,36 @@ RCS_ID("$Id$");
 @implementation OUIAppController
 
 BOOL OUIShouldLogPerformanceMetrics;
+
+// This should be called right at the top of main() to meausre the time spent in the kernel, dyld, C++ constructors, etc.
+// Since we don't have iOS kernel source, we don't know exactly when p_starttime gets set, so this may miss/include extra stuff.
+NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
+{
+    int mib[] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
+    
+    struct kinfo_proc kp;
+    size_t len = sizeof(kp);
+    if (sysctl(mib, 4, &kp, &len, NULL, 0) < 0) {
+        perror("sysctl");
+        return 1;
+    }
+    
+    struct timeval start_time = kp.kp_proc.p_starttime;
+    
+    struct timeval now;
+    if (gettimeofday(&now, NULL) < 0) {
+        perror("gettimeofday");
+        return 0;
+    }
+    
+    //fprintf(stderr, "start_time.tv_sec:%lu, start_time.tv_usec:%d\n", start_time.tv_sec, start_time.tv_usec);
+    //fprintf(stderr, "now.tv_sec:%lu, now.tv_usec:%d\n", now.tv_sec, now.tv_usec);
+    
+    NSTimeInterval sec = ((now.tv_sec - start_time.tv_sec) * 1e6 + (now.tv_usec - start_time.tv_usec)) / 1e6;
+    //NSLog(@"sec = %f", sec);
+    
+    return sec;
+}
 
 + (void)initialize;
 {

@@ -87,5 +87,6 @@
 @end
 
 extern BOOL OUIShouldLogPerformanceMetrics;
+extern NSTimeInterval OUIElapsedTimeSinceProcessCreation(void); // For timing startup work before main() is entered
 
 #define OUILogPerformanceMetric(format, ...) if (OUIShouldLogPerformanceMetrics) NSLog((format), ## __VA_ARGS__)
