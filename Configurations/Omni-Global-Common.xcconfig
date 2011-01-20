@@ -41,11 +41,16 @@ GCC_WARN_SHADOW = NO
 GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO
 GCC_WARN_SIGN_COMPARE = YES
 GCC_WARN_ABOUT_MISSING_NEWLINE = YES
-// GCC_WARN_PROTOTYPE_CONVERSION = YES // This fails a lot on strip-omni, at least
+// GCC_WARN_PROTOTYPE_CONVERSION = YES // This produces a lot of false positives (passing int as unsigned, for example)
 // GCC_WARN_SHADOW = YES
 
 // Other warning flags that don't have Xcode names.
 OTHER_MFLAGS = $(value) -Wselector -Wstrict-selector-match -Wundeclared-selector
+
+// GCC_WARN_64_TO_32_BIT_CONVERSION only handles 64->32 and only for integers in clang (gcc warns on both)
+// We could use this to get warning about unichar->char, OSStatus->OSErr, int->BOOL.
+// Sadly, this produces tons of false positives (such as CFIndex<->NSUInteger changing signedness)
+// OTHER_CFLAGS = $(value) -Wconversion
 
 ZERO_LINK = NO
 INSTALL_MODE_FLAG = a+rX
