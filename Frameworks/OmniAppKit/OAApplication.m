@@ -358,6 +358,8 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
             if (mainWindow.firstResponder && ![mainWindow.firstResponder applyToResponderChain:applier])
                 return;
         }
+    } else if (keyWindow == [self modalWindow]) {
+        return;
     } else {
         // Sheet is still key when NSWindowDidEndSheetNotification is sent and [toolbar _restoreToolbarItemsAfterSheet]. To make sure we're understanding all the cases where the mainWindow isn't participating, document them here...
         // - keyWindow is a sheet attached to the mainWindow (like the save panel) or a sheet attached to a sheet attached...
@@ -554,7 +556,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 - (NSUInteger)currentModifierFlags;
 {
-    return [isa _currentModifierFlags];
+    return [[self class] _currentModifierFlags];
 }
 
 - (BOOL)checkForModifierFlags:(NSUInteger)flags;
@@ -626,8 +628,8 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
                     err = AHGotoPage((CFStringRef)bookName, (CFStringRef)helpURL, NULL);
             }
             
-            if (err != noErr)	
-                NSLog(@"Apple Help error: %ld", (long)err);
+            if (err != noErr)
+                NSLog(@"Apple Help error: %@", OFOSStatusDescription(err));
         } else {
             // We can let the system decide who to open the URL with
             [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:helpURL]];

@@ -93,9 +93,16 @@ extern void _OBFinishPortingLater(const char *function, const char *file, unsign
 extern NSString * const OBAbstractImplementation;
 extern NSString * const OBUnusedImplementation;
 
-void OBRecordBacktrace(uintptr_t ctxt, unsigned int optype);
+enum OBBacktraceBufferType {
+    OBBacktraceBuffer_Unused = 0,      /* Indicates an unused slot */
+    OBBacktraceBuffer_Allocated = 1,   /* Allocated but not filled slot */
+    
+    /* Remaining integers represent different reasons for recording a backtrace */
+    OBBacktraceBuffer_OBAssertionFailure = 2
+};
+void OBRecordBacktrace(const char *ctxt, unsigned int optype);
 /*.doc.
-  Records a backtrace for possible debugging use in the future. ctxt and optype are free for the caller to use for their own purposes, but optype must be nonzero.
+  Records a backtrace for possible debugging use in the future. ctxt and optype are free for the caller to use for their own purposes, but optype must be greater than one.
 */
     
 #undef NORETURN
@@ -225,17 +232,11 @@ __private_extern__ const char *_OBGeometryAdjustedSignature(const char *sig);
 #if __LP64__ || (TARGET_OS_EMBEDDED && !TARGET_OS_IPHONE) || TARGET_OS_WIN32 || NS_BUILD_32_LIKE_64
 // On these platforms NSInteger=long and NSUInteger=unsigned long
 #define PRI_NSInteger_LENGTH_MODIFIER "l"
-    
-// OSErr is int on 64-bit
-#define PRI_OSErr "d"
 #else
 // On these platforms NSInteger=int and NSUInteger=unsigned int
 #define PRI_NSInteger_LENGTH_MODIFIER ""
-    
-// OSErr is long on 32-bit
-#define PRI_OSErr "ld"
-
 #endif
+
 #define PRIdNS PRI_NSInteger_LENGTH_MODIFIER "d"
 #define PRIiNS PRI_NSInteger_LENGTH_MODIFIER "i"
 #define PRIoNS PRI_NSInteger_LENGTH_MODIFIER "o"
@@ -243,6 +244,16 @@ __private_extern__ const char *_OBGeometryAdjustedSignature(const char *sig);
 #define PRIxNS PRI_NSInteger_LENGTH_MODIFIER "x"
 #define PRIXNS PRI_NSInteger_LENGTH_MODIFIER "X"
 
+// OSStatus is SInt32, which is int on 64-bit and long on 32-bit
+// note this is unaffected by NS_BUILD_32_LIKE_64, etc.
+#if __LP64__
+    // On these platforms, UInt32 and SInt32 are (unsigned) int, and therefore so is OSStatus
+    #define PRI_OSStatus "d"
+#else
+    // On these platforms, UInt32 and SInt32 are (unsigned) long, and therefore so is OSStatus
+    #define PRI_OSStatus "ld"
+#endif
+    
 /* CFIndex is always a signed long as far as I know */
 #define PRIdCFIndex "ld"
     

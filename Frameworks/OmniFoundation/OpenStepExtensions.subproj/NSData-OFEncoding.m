@@ -170,20 +170,19 @@ static inline void ascii85put(OFDataBuffer *buffer, unsigned long tuple, int byt
     static const unsigned long pow85[] = {
         85 * 85 * 85 * 85, 85 * 85 * 85, 85 * 85, 85, 1
     };
-    OFDataBuffer buffer;
     const unsigned char *string;
-    unsigned long tuple = 0, length;
+    unsigned long tuple = 0;
     int c, count = 0;
-    NSData *ascii85Data, *decodedData;
-    NSData *returnValue;
     
     OBPRECONDITION([ascii85String canBeConvertedToEncoding:NSASCIIStringEncoding]);
     
-    ascii85Data = [ascii85String dataUsingEncoding:NSASCIIStringEncoding];
+    NSData *ascii85Data = [ascii85String dataUsingEncoding:NSASCIIStringEncoding];
     string = [ascii85Data bytes];
-    length = [ascii85Data length];
+    NSUInteger length = [ascii85Data length];
     
+    OFDataBuffer buffer;
     OFDataBufferInit(&buffer);
+    
     while (length--) {
         c = (int)*string;
         string++;
@@ -217,13 +216,11 @@ static inline void ascii85put(OFDataBuffer *buffer, unsigned long tuple, int byt
         ascii85put(&buffer, tuple, count);
     }
     
-    decodedData = [OFDataBufferData(&buffer) retain];
-    OFDataBufferRelease(&buffer);
+    CFDataRef resultData = NULL;
+    OFDataBufferRelease(&buffer, kCFAllocatorDefault, &resultData);
     
-    returnValue = [self initWithData:decodedData];
-    [decodedData release];
-    
-    return returnValue;
+    [self release];
+    return NSMakeCollectable(resultData);
 }
 
 static inline void encode85(OFDataBuffer *dataBuffer, unsigned long tuple, int count)
@@ -244,6 +241,7 @@ static inline void encode85(OFDataBuffer *dataBuffer, unsigned long tuple, int c
 - (NSString *)ascii85String;
 {
     uint32_t count = 0, tuple = 0;
+
     OFDataBuffer dataBuffer;
     OFDataBufferInit(&dataBuffer);
     
@@ -283,9 +281,11 @@ static inline void encode85(OFDataBuffer *dataBuffer, unsigned long tuple, int c
     if (count > 0)
         encode85(&dataBuffer, tuple, count);
     
-    NSData *data = OFDataBufferData(&dataBuffer);
-    NSString *string = [NSString stringWithData:data encoding:NSASCIIStringEncoding];
-    OFDataBufferRelease(&dataBuffer);
+    CFDataRef data = NULL;
+    OFDataBufferRelease(&dataBuffer, kCFAllocatorMalloc, &data);
+
+    NSString *string = [NSString stringWithData:(NSData *)data encoding:NSASCIIStringEncoding];
+    CFRelease(data);
     
     return string;
 }
@@ -327,8 +327,6 @@ XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
 {
     NSData *base64Data;
     OFDataBuffer dataBuffer, *buffer;
-    NSData *decodedData;
-    NSData *returnValue;
     BOOL suppressCR = NO;
     unsigned int c1, c2, c3, c4;
     int DataDone = 0;
@@ -386,13 +384,11 @@ XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
         }
     }
     
-    decodedData = [OFDataBufferData(buffer) retain];
-    OFDataBufferRelease(buffer);
-    
-    returnValue = [self initWithData:decodedData];
-    [decodedData release];
-    
-    return returnValue;
+    CFDataRef resultData = NULL;
+    OFDataBufferRelease(buffer, kCFAllocatorDefault, &resultData);
+
+    [self release];
+    return NSMakeCollectable(resultData);
 }
 
 static const char basis_64[] =
@@ -439,9 +435,11 @@ static inline void output64chunk(int c1, int c2, int c3, int pads, OFDataBuffer 
         }
     }
     
-    NSData *data = OFDataBufferData(&dataBuffer);
-    NSString *string = [NSString stringWithData:data encoding:NSASCIIStringEncoding];
-    OFDataBufferRelease(&dataBuffer);
+    CFDataRef data = NULL;
+    OFDataBufferRelease(&dataBuffer, kCFAllocatorMalloc, &data);
+    
+    NSString *string = [NSString stringWithData:(NSData *)data encoding:NSASCIIStringEncoding];
+    CFRelease(data);
     
     return string;
 }
@@ -514,8 +512,7 @@ static inline void ascii26put(OFDataBuffer *buffer, unsigned long tuple, int cou
     const unsigned char *string;
     unsigned long tuple = 0, length;
     unsigned char c, count = 0;
-    NSData *ascii26Data, *decodedData;
-    NSData *returnValue;
+    NSData *ascii26Data;
     
     OBPRECONDITION([ascii26String canBeConvertedToEncoding:NSASCIIStringEncoding]);
     
@@ -561,13 +558,11 @@ static inline void ascii26put(OFDataBuffer *buffer, unsigned long tuple, int cou
         // flush remaining digits
         ascii26put(&buffer, tuple, count);
     
-    decodedData = [OFDataBufferData(&buffer) retain];
-    OFDataBufferRelease(&buffer);
+    CFDataRef resultData = NULL;
+    OFDataBufferRelease(&buffer, kCFAllocatorDefault, &resultData);
     
-    returnValue = [self initWithData:decodedData];
-    [decodedData release];
-    
-    return returnValue;
+    [self release];
+    return NSMakeCollectable(resultData);
 }
 
 static inline void encode26(OFDataBuffer *dataBuffer, unsigned long tuple, int count256)
@@ -625,9 +620,11 @@ static inline void encode26(OFDataBuffer *dataBuffer, unsigned long tuple, int c
     if (count)
         encode26(&dataBuffer, tuple, count);
     
-    NSData *data = OFDataBufferData(&dataBuffer);
-    NSString *string = [NSString stringWithData:data encoding:NSASCIIStringEncoding];
-    OFDataBufferRelease(&dataBuffer);
+    CFDataRef data = NULL;
+    OFDataBufferRelease(&dataBuffer, kCFAllocatorMalloc, &data);
+    
+    NSString *string = [NSString stringWithData:(NSData *)data encoding:NSASCIIStringEncoding];
+    CFRelease(data);
     
     return string;
 }

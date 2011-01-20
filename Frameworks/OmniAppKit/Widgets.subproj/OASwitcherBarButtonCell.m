@@ -53,12 +53,12 @@ static NSImage *DividerRightImage[7];
 
     NSControlTint controlTint = [NSColor currentControlTint];
     if (controlTint == NSGraphiteControlTint && !GraphiteImagesSetup)
-        [isa setupGraphiteImages];
+        [[self class] setupGraphiteImages];
     else if (controlTint == NSBlueControlTint && !BlueImagesSetup)
-        [isa setupBlueImages];
+        [[self class] setupBlueImages];
 
     if (!ImagesSetup) // shared images
-        [isa setupImages];
+        [[self class] setupImages];
 
 //#warning RDR: Having trouble putting together on/off state and highlight state the right way; see comment.
     // Currently, when you mouseDown, the cell turns dark blue regardless of whether it was blue or gray before. If you switch the "isSelected =" lines below, the cell turns dark gray regardless of what color it was before. It's supposed to turn dark blue if it was blue, and dark gray if it was gray. Tried messing around with various wasy to get it to do the right thing, including implementing -highlight:withFrame:inView:, but without any luck -- ended up with some double-drawing instead (resulting in an undesirable dark shadow).

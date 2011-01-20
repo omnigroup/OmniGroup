@@ -23,8 +23,6 @@
 - (BOOL)isBecomingKey;
 - (BOOL)shouldDrawAsKey;
 
-- (void *)carbonWindowRef OB_DEPRECATED_ATTRIBUTE;
-
 - (void)addConstructionWarning;
 
 - (CGPoint)convertBaseToCGScreen:(NSPoint)windowPoint;

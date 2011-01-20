@@ -8,6 +8,7 @@
 #import <OmniUI/OUIDocumentPickerView.h>
 
 #import <OmniFoundation/NSArray-OFExtensions.h>
+#import <OmniUI/OUIDocumentPreview.h>
 #import <OmniUI/OUIDocumentProxy.h>
 #import <OmniUI/OUIDocumentProxyView.h>
 #import <OmniUI/OUIToolbarViewController.h>
@@ -15,7 +16,6 @@
 
 #import "OUIDocumentSlider.h"
 #import "OUIDocumentProxy-Internal.h"
-#import "OUIDocumentPreview.h"
 
 RCS_ID("$Id$");
 
@@ -495,6 +495,8 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
 
 - (OUIDocumentProxy *)proxyToLeftOfProxy:(OUIDocumentProxy *)proxy;
 {
+    if (!proxy)
+        return nil; // empty?
     NSUInteger proxyIndex = [_sortedProxies indexOfObjectIdenticalTo:proxy];
     OBASSERT(proxyIndex != NSNotFound);
     return (proxyIndex == 0 || proxyIndex == NSNotFound) ? nil : [_sortedProxies objectAtIndex:proxyIndex - 1];
@@ -502,6 +504,8 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
 
 - (OUIDocumentProxy *)proxyToRightOfProxy:(OUIDocumentProxy *)proxy;
 {
+    if (!proxy)
+        return nil; // empty?
     NSUInteger proxyIndex = [_sortedProxies indexOfObjectIdenticalTo:proxy];
     OBASSERT(proxyIndex != NSNotFound);
     return (proxyIndex == [_sortedProxies count] - 1 || proxyIndex == NSNotFound) ? nil : [_sortedProxies objectAtIndex:proxyIndex + 1];
@@ -638,8 +642,7 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
     CGFloat firstProxyWidth = 0, lastProxyWidth = 0;
     CGFloat xOffset = 0;
     for (OUIDocumentProxy *proxy in _sortedProxies) {
-        //id <OUIDocumentPreview> preview = proxy.currentPreview;
-        DEBUG_LAYOUT(@"proxy %@, preview = %@", proxy.name, [(id)preview shortDescription]);
+        DEBUG_LAYOUT(@"proxy %@, preview = %@", proxy.name, [(id)proxy.currentPreview shortDescription]);
 
         CGSize previewSize = [proxy previewSizeForTargetSize:CGSizeMake(maximumWidth, maximumHeight)];
         
@@ -666,8 +669,8 @@ static void _startSmoothScroll(OUIDocumentPickerView *self, CGFloat xVelocity)
         integralFrame.size = frame.size;
         frame = CGRectIntegral(integralFrame);
         
-        // If this proxy just has a placeholder, shrink the rect to fit the preview image. This lets us take up the same space (we advance based on 'frame'), but also lets us position the shadows and selection gray view in the preview correctly.
-        if (![proxy hasPDFPreview]) {
+        // If this proxy has a fixed size preview, shrink the rect to fit the preview. This lets us take up the same space (we advance based on 'frame'), but also lets us position the shadows and selection gray view in the preview correctly.
+        if (!proxy.preview.scalable) {
             UIImage *image = [OUIDocumentProxyView placeholderPreviewImage];
             CGSize imageSize = image.size;
             CGPoint center = CGPointMake(CGRectGetMidX(frame), CGRectGetMidY(frame));

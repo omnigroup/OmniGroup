@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,10 +69,12 @@
         // Cached information about our OUIEditableFrameDelegate
         unsigned delegateRespondsToLayoutChanged: 1;
         unsigned delegateRespondsToContentsChanged: 1;
+        unsigned delegateRespondsToCanShowContextMenu: 1;
+        unsigned delegateRespondsToShouldInsertText: 1;
         
         // Features which can be enabled or disabled
         unsigned showSelectionThumbs: 1;  // Effectively disables range selection
-        unsigned showInspector: 1;        // Whether the inspector is offered
+        unsigned showsInspector: 1;        // Whether the inspector is offered
         
         //
         unsigned immutableContentHasAttributeTransforms: 1;
@@ -138,6 +140,8 @@
 - (BOOL)hasTouchesForEvent:(UIEvent *)event;
 - (BOOL)hasTouchByGestureRecognizer:(UIGestureRecognizer *)recognizer;
 
+@property(nonatomic,assign) BOOL showsInspector;
 - (NSSet *)inspectableTextSpans;    // returns set of OUEFTextSpans 
+
 @end
 

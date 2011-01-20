@@ -8,6 +8,8 @@
 #import <OmniUI/OUIInspectorDividerLine.h>
 #import <OmniUI/OUIDrawing.h>
 
+#import "OUIParameters.h"
+
 RCS_ID("$Id$");
 
 @implementation OUIInspectorDividerLine
@@ -18,8 +20,8 @@ RCS_ID("$Id$");
 
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
-    [[UIColor colorWithWhite:1 alpha:0.3] set];
-    OUIBeginShadowing(ctx);
+    [[UIColor colorWithWhite:kOUIInspectorDividerLineGrayAlpha.v alpha:kOUIInspectorDividerLineGrayAlpha.a] set];
+    OUIBeginShadowing(ctx, OUIShadowTypeDarkContentOnLightBackground);
     
     CGRect bottomLine, remainder;
     CGRectDivide(bounds, &bottomLine, &remainder, 1, CGRectMaxYEdge);

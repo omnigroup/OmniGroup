@@ -1,4 +1,4 @@
-// Copyright 2003-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2009, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,8 +95,8 @@ RCS_ID("$Id$");
         }
     }
     
-#ifdef DEBUG_kc
-    NSLog(@"-[%@ %s]: Springing delay set to %0.3f seconds (%@=%@)", OBShortObjectDescription(self), _cmd, springingDelaySeconds, NSStringFromClass([springLoadedFolderDelayNumber class]), springLoadedFolderDelayNumber);
+#ifdef DEBUG_SpringLoad
+    NSLog(@"-[%@ %@]: Springing delay set to %0.3f seconds (%@=%@)", OBShortObjectDescription(self), NSStringFromSelector(_cmd), springingDelaySeconds, NSStringFromClass([springLoadedFolderDelayNumber class]), springLoadedFolderDelayNumber);
 #endif
 
     if ([self _shouldFlash]) {
@@ -114,7 +114,7 @@ RCS_ID("$Id$");
 - (void)_startFlashing;
 {
 #ifdef DEBUG_SpringLoad
-    NSLog(@"-[%@ %s]", OBShortObjectDescription(self), _cmd);
+    NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 #endif
 
     flashCount = 0;
@@ -128,7 +128,7 @@ RCS_ID("$Id$");
 - (void)_flash;
 {
 #ifdef DEBUG_SpringLoad
-    NSLog(@"-[%@ %s]", OBShortObjectDescription(self), _cmd);
+    NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 #endif
 
     if (flashCount++ == 4) {
@@ -143,7 +143,7 @@ RCS_ID("$Id$");
 - (void)_stopSpringTimer;
 {
 #ifdef DEBUG_SpringLoad
-    NSLog(@"-[%@ %s]", OBShortObjectDescription(self), _cmd);
+    NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 #endif
 
     [springTimer invalidate];
@@ -154,7 +154,7 @@ RCS_ID("$Id$");
 - (void)_springLoad;
 {
 #ifdef DEBUG_SpringLoad
-    NSLog(@"-[%@ %s]", OBShortObjectDescription(self), _cmd);
+    NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 #endif
 
     if (springTimer != nil)

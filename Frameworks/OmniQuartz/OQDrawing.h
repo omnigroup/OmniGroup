@@ -7,6 +7,10 @@
 //
 // $Id$
 
+#if TARGET_OS_IPHONE
+    #import <UIKit/UIKit.h>
+#endif
+
 #import <OmniBase/assertions.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -31,7 +35,12 @@ static inline void OQFlipVerticallyInRect(CGContextRef ctx, CGRect rect)
     CGContextConcatCTM(ctx, (CGAffineTransform){ 1, 0, 0, -1, 0, 2 * rect.origin.y + rect.size.height });
 }
 
-extern void OQDrawImageCenteredInRect(CGContextRef ctx, CGImageRef image, CGRect rect);
+extern CGRect OQCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter);
+
+#if TARGET_OS_IPHONE
+extern void OQDrawImageCenteredInRect(CGContextRef ctx, UIImage *image, CGRect rect);
+#endif
+extern void OQDrawCGImageWithScaleCenteredInRect(CGContextRef ctx, CGImageRef image, CGFloat scale, CGRect rect);
 
 void OQCrosshatchRect(CGContextRef ctxt, CGRect rect, CGFloat lineWidth, CGFloat dx, CGFloat dy);
 

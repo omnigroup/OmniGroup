@@ -8,6 +8,7 @@
 // $Id$
 
 @protocol OUIDocumentPreview <NSObject>
+@property(readonly,getter=isScalable) BOOL scalable;
 @property(readonly) CGSize originalViewSize;
 - (CGAffineTransform)transformForTargetRect:(CGRect)targetRect;
 @property(readonly) CGRect untransformedPageRect;

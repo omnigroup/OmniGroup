@@ -92,7 +92,7 @@ static NSFont *smallSystemFont;
     NSSize contentSize;
     CGFloat scrollerWidthDifference;
 
-    contentSize = [isa contentSizeForFrameSize:frameSize hasHorizontalScroller:hasHorizontalScroller hasVerticalScroller:hasVerticalScroller borderType:[self borderType]];
+    contentSize = [[self class] contentSizeForFrameSize:frameSize hasHorizontalScroller:hasHorizontalScroller hasVerticalScroller:hasVerticalScroller borderType:[self borderType]];
 
     if (hasVerticalScroller) {
         scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:NSRegularControlSize] - [NSScroller scrollerWidthForControlSize:[[self verticalScroller] controlSize]];
@@ -382,15 +382,15 @@ static NSFont *smallSystemFont;
             hasVerticalScroller = NO;
             break;
         case VERTICAL_SCROLL:
-            scrollViewSize = [isa frameSizeForContentSize:docViewSize hasHorizontalScroller:NO hasVerticalScroller:NO borderType:[self borderType]];
+            scrollViewSize = [[self class] frameSizeForContentSize:docViewSize hasHorizontalScroller:NO hasVerticalScroller:NO borderType:[self borderType]];
             hasVerticalScroller = scrollViewSize.height > availableSize.height;
             hasHorizontalScroller = NO;
             break;
         default:
         case AUTO_SCROLL:
-            scrollViewSize = [isa frameSizeForContentSize:docViewSize hasHorizontalScroller:NO hasVerticalScroller:NO borderType:[self borderType]];
+            scrollViewSize = [[self class] frameSizeForContentSize:docViewSize hasHorizontalScroller:NO hasVerticalScroller:NO borderType:[self borderType]];
             hasVerticalScroller = scrollViewSize.height > availableSize.height;
-            scrollViewSize = [isa frameSizeForContentSize:docViewSize hasHorizontalScroller:NO hasVerticalScroller:hasVerticalScroller borderType:[self borderType]];
+            scrollViewSize = [[self class] frameSizeForContentSize:docViewSize hasHorizontalScroller:NO hasVerticalScroller:hasVerticalScroller borderType:[self borderType]];
             hasHorizontalScroller = scrollViewSize.width > availableSize.width;
             break;
         case MANUAL_SCROLL:
@@ -398,7 +398,7 @@ static NSFont *smallSystemFont;
             hasVerticalScroller = [self hasVerticalScroller];
             break;
     }
-    scrollViewSize = [isa frameSizeForContentSize:docViewSize hasHorizontalScroller:hasHorizontalScroller hasVerticalScroller:hasVerticalScroller borderType:[self borderType]];
+    scrollViewSize = [[self class] frameSizeForContentSize:docViewSize hasHorizontalScroller:hasHorizontalScroller hasVerticalScroller:hasVerticalScroller borderType:[self borderType]];
     return scrollViewSize;
 }
 

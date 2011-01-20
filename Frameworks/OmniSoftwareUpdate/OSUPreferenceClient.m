@@ -118,7 +118,7 @@ static NSString *formatAngle(NSString *value, NSString *positive, NSString *nega
 
 - (IBAction)showSystemConfigurationDetailsSheet:(id)sender;
 {
-    NSBundle *bundle = [NSBundle bundleForClass:[isa class]];
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *path = [bundle pathForResource:@"HardwareDescription" ofType:@"html"];
     if (!path) {
 #ifdef DEBUG    

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,14 +12,19 @@
 #import "OUISyncMenuController.h"
 #import "OUISoftwareUpdateController.h"
 
+#import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUI/OUIChangePreferencesActionSheet.h>
 #import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIDocumentProxy.h>
 #import <OmniUI/OUIWebViewController.h>
-#import <OmniUI/OUIChangePreferencesActionSheet.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniFoundation/NSString-OFURLEncoding.h>
 #import "UIViewController-OUIExtensions.h"
+
+#import <MobileCoreServices/UTCoreTypes.h>
+#import <MobileCoreServices/UTType.h>
 
 #import <SenTestingKit/SenTestSuite.h>
 
@@ -63,6 +68,61 @@ BOOL OUIShouldLogPerformanceMetrics;
             }
         }
     }
+    return NO;
+}
+
+- (NSArray *)editableFileTypes;
+{
+    if (!_editableFileTypes) {
+        NSMutableArray *types = [NSMutableArray array];
+        
+        NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
+        for (NSDictionary *documentType in documentTypes) {
+            NSString *role = [documentType objectForKey:@"CFBundleTypeRole"];
+            OBASSERT([role isEqualToString:@"Editor"] || [role isEqualToString:@"Viewer"]);
+            if ([role isEqualToString:@"Editor"]) {
+                NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
+                for (NSString *contentType in contentTypes)
+                    [types addObject:[contentType lowercaseString]];
+            }
+        }
+        
+        _editableFileTypes = [types copy];
+    }
+    
+    return _editableFileTypes;
+}
+
+- (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
+{
+    OBPRECONDITION(!uti || [uti isEqualToString:[uti lowercaseString]]); // our cache uses lowercase keys.
+    
+    if (uti == nil)
+        return NO;
+    
+    if (!_roleByFileType) {
+        static NSMutableDictionary *contentTypeRoles = nil;
+        if (contentTypeRoles == nil) {
+            // Make a fast index of all our declared UTIs
+            contentTypeRoles = [[NSMutableDictionary alloc] init];
+            NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
+            for (NSDictionary *documentType in documentTypes) {
+                NSString *role = [documentType objectForKey:@"CFBundleTypeRole"];
+                OBASSERT([role isEqualToString:@"Editor"] || [role isEqualToString:@"Viewer"]);
+                NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
+                for (NSString *contentType in contentTypes)
+                    [contentTypeRoles setObject:role forKey:[contentType lowercaseString]];
+            }
+        }
+        _roleByFileType = [contentTypeRoles copy];
+    }
+    
+    
+    for (NSString *candidateUTI in _roleByFileType) {
+        if (UTTypeConformsTo((CFStringRef)uti, (CFStringRef)candidateUTI))
+            return YES;
+    }
+
     return NO;
 }
 
@@ -131,16 +191,10 @@ BOOL OUIShouldLogPerformanceMetrics;
         
         UIImage *appMenuImage = [UIImage imageNamed:imageName];
         OBASSERT(appMenuImage);
-        _appMenuBarItem = [[UIBarButtonItem alloc] initWithImage:appMenuImage style:UIBarButtonItemStyleBordered target:self action:@selector(showAppMenu:)];
+        _appMenuBarItem = [[OUIBarButtonItem alloc] initWithImage:appMenuImage style:UIBarButtonItemStyleBordered target:self action:@selector(showAppMenu:)];
     }
     
     return _appMenuBarItem;
-}
-
-- (void)dismissAppMenu;
-{
-    [_appMenuController dismiss];
-    [_syncMenuController dismiss];
 }
 
 @synthesize documentPicker = _documentPicker;
@@ -313,7 +367,7 @@ BOOL OUIShouldLogPerformanceMetrics;
 
 - (void)showAppMenu:(id)sender;
 {
-    [_syncMenuController dismiss];
+    [self dismissPopoverAnimated:YES];
     
     if (!_appMenuController)
         _appMenuController = [[OUIAppMenuController alloc] init];
@@ -325,13 +379,103 @@ BOOL OUIShouldLogPerformanceMetrics;
 - (void)showSyncMenu:(id)sender;
 // aka "import from webDAV"
 {
-    [_appMenuController dismiss];
+    [self dismissPopoverAnimated:YES];
     
     if (!_syncMenuController)
         _syncMenuController = [[OUISyncMenuController alloc] init];
     
     OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
     [_syncMenuController showMenuFromBarItem:sender];
+}
+
+#pragma mark -
+#pragma mark Popover Helpers
+
+static void _forgetPossiblyVisiblePopoverIfAlreadyHidden(OUIAppController *self)
+{
+    if (self->_possiblyVisiblePopoverController && !self->_possiblyVisiblePopoverController.popoverVisible) {
+        // The user may have tapped outside the popover and dismissed it automatically (or it could have been dismissed in code without going through code). We'd have to interpose ourselves as the delegate to tell the difference to assert about it. Really, it seems like too much trouble since we just want to make sure multiple popovers aren't visible.
+        [self->_possiblyVisiblePopoverController release];
+        self->_possiblyVisiblePopoverController = nil;
+    }
+}
+
+static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPopoverController *popoverToPresent, BOOL animated)
+{
+    _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
+    
+    UIPopoverController *possiblyVisblePopover = self->_possiblyVisiblePopoverController;
+    
+    if (possiblyVisblePopover && !possiblyVisblePopover.popoverVisible) {
+        // The user may have tapped outside the popover and dismissed it automatically (or it could have been dismissed in code without going through code). We'd have to interpose ourselves as the delegate to tell the difference to assert about it. Really, it seems like too much trouble since we just want to make sure multiple popovers aren't visible.
+        [possiblyVisblePopover release];
+        self->_possiblyVisiblePopoverController = nil;
+    }
+    
+    // Hide the old popover if it is still visible (and we aren't re-presenting the same one).
+    if (possiblyVisblePopover && popoverToPresent != possiblyVisblePopover) {
+        // The popover dismissal delegate is called when your popover is implicitly hidden, but not when you dismiss it in code.
+        // We'll interpret the presentation of a different popover as an implicit dismissal that should tell the delegate.
+        id <UIPopoverControllerDelegate> delegate = possiblyVisblePopover.delegate;
+        if ([delegate respondsToSelector:@selector(popoverControllerShouldDismissPopover:)] && ![delegate popoverControllerShouldDismissPopover:possiblyVisblePopover])
+            // Nobody puts popover in the corner!
+            return NO;
+        
+        UIPopoverController *dismissingPopover = [possiblyVisblePopover autorelease];
+        self->_possiblyVisiblePopoverController = nil;
+        
+        [dismissingPopover dismissPopoverAnimated:animated]; // Might always want to snap the old one out...
+        
+        if ([delegate respondsToSelector:@selector(popoverControllerDidDismissPopover:)])
+            [delegate popoverControllerDidDismissPopover:dismissingPopover];
+    }
+    
+    return YES;
+}
+
+// Returns NO without displaying the popover, if a previously displayed popover refuses to be dismissed.
+- (BOOL)presentPopover:(UIPopoverController *)popover fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
+{
+    OBPRECONDITION(popover);
+    
+    if (!_dismissVisiblePopoverInFavorOfPopover(self, popover, animated))
+        return NO;
+    
+    OBASSERT(_possiblyVisiblePopoverController == nil);
+    _possiblyVisiblePopoverController = [popover retain];
+    
+    [popover presentPopoverFromRect:rect inView:view permittedArrowDirections:arrowDirections animated:animated];
+    return YES;
+}
+
+- (BOOL)presentPopover:(UIPopoverController *)popover fromBarButtonItem:(UIBarButtonItem *)item permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
+{
+    OBPRECONDITION(popover);
+    
+    if (!_dismissVisiblePopoverInFavorOfPopover(self, popover, animated))
+        return NO;
+    
+    OBASSERT(_possiblyVisiblePopoverController == nil);
+    _possiblyVisiblePopoverController = [popover retain];
+    
+    [popover presentPopoverFromBarButtonItem:item permittedArrowDirections:arrowDirections animated:animated];
+    return YES;
+}
+
+- (void)dismissPopoverAnimated:(BOOL)animated;
+{
+    // Unlike the plain UIPopoverController dismissal, this does send the 'did' hook. The reasoning here is that the caller doesn't necessarily know what popover it is dismissing.
+    // If you still want to avoid the delegate method, just call the UIPopoverController method directly on your popover.
+    
+    _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
+
+    id <UIPopoverControllerDelegate> delegate = _possiblyVisiblePopoverController.delegate;
+    UIPopoverController *dismissingPopover = [_possiblyVisiblePopoverController autorelease];
+    _possiblyVisiblePopoverController = nil;
+    [dismissingPopover dismissPopoverAnimated:animated];
+
+    if ([delegate respondsToSelector:@selector(popoverControllerDidDismissPopover:)])
+        [delegate popoverControllerDidDismissPopover:dismissingPopover];
 }
 
 #pragma mark -
@@ -401,12 +545,7 @@ BOOL OUIShouldLogPerformanceMetrics;
     return NSLocalizedStringFromTableInBundle(@"My Document", @"OmniUI", OMNI_BUNDLE, @"Base name for newly created documents. This will have an number appended to it to make it unique.");
 }
 
-- (NSString *)documentPickerDocumentTypeForNewFiles:(OUIDocumentPicker *)picker;
-{
-    OBRequestConcreteImplementation(self, _cmd);
-}
-
-- (id <OUIDocument>)createNewDocumentAtURL:(NSURL *)url error:(NSError **)outError;
+- (BOOL)createNewDocumentAtURL:(NSURL *)url error:(NSError **)outError;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }

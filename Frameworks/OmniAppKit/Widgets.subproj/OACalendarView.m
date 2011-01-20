@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -645,6 +645,10 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
             NSDateComponents *visibleWeekComponents = [calendar components:NSWeekCalendarUnit fromDate:visibleMonth];
             NSInteger selectedWeek = [selectedWeekComponents week] - [visibleWeekComponents week] + 1;
 	    NSRect weekRect; 
+	    
+	    // If we happen to be clicking on the last week in December we may end up getting week 0 of the new year as the result for selectedWeekComponents, so selectedWeek ends up negative, and adding 52 weeks from the previous year fixes things.
+	    if (selectedWeek < 0)
+		selectedWeek += 52;
             
             NSDateComponents *visibleMonthComponents = [calendar components:NSWeekdayCalendarUnit fromDate:visibleMonth];
             if (displayFirstDayOfWeek > [visibleMonthComponents weekday])

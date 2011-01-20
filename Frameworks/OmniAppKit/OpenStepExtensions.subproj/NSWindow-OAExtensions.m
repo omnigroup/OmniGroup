@@ -21,10 +21,6 @@ static void (*oldMakeKeyAndOrderFront)(id self, SEL _cmd, id sender);
 static id (*oldSetFrameDisplayAnimateIMP)(id self, SEL _cmd, NSRect newFrame, BOOL shouldDisplay, BOOL shouldAnimate);
 static NSWindow *becomingKeyWindow = nil;
 
-@interface NSWindow (CarbonControl)
-- (WindowRef)_windowRef;
-@end
-
 @implementation NSWindow (OAExtensions)
 
 + (void)performPosing;
@@ -106,21 +102,6 @@ static NSMutableArray *zOrder;
 - (BOOL)shouldDrawAsKey;
 {
     return [self isKeyWindow];
-}
-
-- (void *)carbonWindowRef;
-{
-    WindowRef windowRef;
-    extern void _SetWindowCGOrderingEnabled(WindowRef, Boolean);
-
-    if (![self respondsToSelector:@selector(_windowRef)]) {
-        NSLog(@"-[NSWindow(OAExtensions) carbonWindowRef]: _windowRef private API no longer exists, returning NULL");
-        return NULL;
-    }
-
-    windowRef = [self _windowRef];
-    _SetWindowCGOrderingEnabled(windowRef, false);
-    return windowRef;
 }
 
 - (void)addConstructionWarning;

@@ -7,7 +7,6 @@
 
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 
-#import <OmniFoundation/NSString-OFCharacterEnumeration.h>
 #import <OmniFoundation/OFCharacterSet.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
@@ -25,10 +24,13 @@ RCS_ID("$Id$");
 
 - (BOOL)containsCharacterInOFCharacterSet:(OFCharacterSet *)searchSet;
 {
-    OFStringStartLoopThroughCharacters(self, character) {
-        if (OFCharacterSetHasMember(searchSet, character))
+    CFStringInlineBuffer charBuf;
+    CFIndex charCount = (CFIndex)[self length];
+    CFStringInitInlineBuffer((CFStringRef)self, &charBuf, (CFRange){0, charCount});
+    for(CFIndex charIndex = 0; charIndex < charCount; charIndex ++) {
+        if (OFCharacterSetHasMember(searchSet, CFStringGetCharacterFromInlineBuffer(&charBuf, charIndex)))
             return YES;
-    } OFStringEndLoopThroughCharacters;
+    }
     
     return NO;
 }

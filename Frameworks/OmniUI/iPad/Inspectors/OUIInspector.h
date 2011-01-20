@@ -12,7 +12,7 @@
 #import <CoreGraphics/CGBase.h>
 #import <CoreText/CTStringAttributes.h>
 
-@class OUIInspectorStack, OUIInspectorSlice, OUIInspectorDetailSlice;
+@class OUIStackedSlicesInspectorPane, OUIInspectorPane, OUIInspectorSlice;
 @class UIBarButtonItem, UINavigationController, UIPopoverController;
 @class NSSet;
 
@@ -26,34 +26,41 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 @interface OUIInspector : OFObject
 {
 @private
-    OUIInspectorStack *_stack;
+    // We hold onto this in case we don't have a _navigationController to retain it on our behalf (if we have -isEmbededInOtherNavigationController subclassed to return YES).
+    OUIStackedSlicesInspectorPane *_mainPane;
+    
     UINavigationController *_navigationController;
     UIPopoverController *_popoverController;
     
     id <OUIInspectorDelegate> _nonretained_delegate;
     
-    NSSet *_inspectedObjects;
     BOOL _isObservingNotifications;
-    BOOL _shouldShowDismissButton;
 }
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 
-@property(assign,nonatomic) id <OUIInspectorDelegate> delegate;
-@property(assign,nonatomic,readwrite,getter=hasDismissButton) BOOL hasDismissButton;
++ (UIColor *)labelTextColor;
++ (UIFont *)labelFont;
 
-- (BOOL)isEmbededInOtherNavigationController; // If YES, this doesn't create a navigation or popover controller
+@property(assign,nonatomic) id <OUIInspectorDelegate> delegate;
+
+- (BOOL)isEmbededInOtherNavigationController; // Subclass to return YES if you intend to embed the inspector into a your own navigation controller (you might not yet have the navigation controller, though).
+- (UINavigationController *)embeddingNavigationController; // Needed when pushing detail panes with -isEmbededInOtherNavigationController.
 
 - (BOOL)isVisible;
-- (void)inspectObjects:(NSSet *)objects fromBarButtonItem:(UIBarButtonItem *)item;
-- (void)inspectObjects:(NSSet *)objects fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
-@property(readonly) NSSet *inspectedObjects;
+- (BOOL)inspectObjects:(NSSet *)objects fromBarButtonItem:(UIBarButtonItem *)item;
+- (BOOL)inspectObjects:(NSSet *)objects fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
 - (void)updateInterfaceFromInspectedObjects;
 - (void)dismiss;
 - (void)dismissAnimated:(BOOL)animated;
 
-- (void)pushDetailSlice:(OUIInspectorDetailSlice *)detail;
-- (void)popDetailSlice;
+- (NSArray *)slicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
+
+@property(readonly,nonatomic) OUIStackedSlicesInspectorPane *mainPane;
+
+- (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSSet *)inspectedObjects;
+- (void)pushPane:(OUIInspectorPane *)pane; // clones the inspected objects of the current top pane
+@property(readonly,nonatomic) OUIInspectorPane *topVisiblePane;
 
 // Call this from inspector slices/details when they change height
 - (void)inspectorSizeChanged;

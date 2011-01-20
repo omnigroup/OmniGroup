@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,8 +33,8 @@ typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);
 - initWithName:(NSString *)name;
 
 
-- (id)deepCopy;
-- (OFXMLElement *)deepCopyWithName:(NSString *)name;
+- (id)deepCopy NS_RETURNS_RETAINED;
+- (OFXMLElement *)deepCopyWithName:(NSString *)name NS_RETURNS_RETAINED;
 
 - (NSString *)name;
 - (NSArray *)children;

@@ -16,51 +16,45 @@ RCS_ID("$Id$");
 
 #pragma mark Utility functions
 
-extern const char *cssmErrorString(CSSM_RETURN code) __attribute__((weak));  /* Apple RADAR #4356597 */
-extern CFStringRef SecCopyErrorMessageString(OSStatus status, void *reserved) __attribute__((weak));
-
 static const struct {
     int moduleBase;
-    const char *moduleName;
+    NSString *moduleName;
 } cssmModuleBases[] = {
-    { CSSM_CSSM_BASE_ERROR, "CSSM" },
-    { CSSM_CSP_BASE_ERROR, "CSP" },
-    { CSSM_DL_BASE_ERROR, "DL" },
-    { CSSM_CL_BASE_ERROR, "CL" },
-    { CSSM_TP_BASE_ERROR, "TP" },
-    { CSSM_KR_BASE_ERROR, "KR" },
-    { CSSM_AC_BASE_ERROR, "AC" },
-    { CSSM_MDS_BASE_ERROR, "MDS" },
-    { 0, NULL }
+    { CSSM_CSSM_BASE_ERROR, @"CSSM" },
+    { CSSM_CSP_BASE_ERROR, @"CSP" },
+    { CSSM_DL_BASE_ERROR, @"DL" },
+    { CSSM_CL_BASE_ERROR, @"CL" },
+    { CSSM_TP_BASE_ERROR, @"TP" },
+    { CSSM_KR_BASE_ERROR, @"KR" },
+    { CSSM_AC_BASE_ERROR, @"AC" },
+    { CSSM_MDS_BASE_ERROR, @"MDS" },
+    { 0, nil }
 };
 
 NSString *OFStringFromCSSMReturn(CSSM_RETURN code)
 {
     NSString *errorString;
     
-    errorString = nil;
-    
-    if (cssmErrorString != NULL) {
-        const char *errString = cssmErrorString(code);
-        if (errString)
-            errorString = [NSString stringWithCString:errString encoding:NSASCIIStringEncoding];
-    }
-    
-    if (errorString == nil && SecCopyErrorMessageString != NULL) {
-        CFStringRef errString = SecCopyErrorMessageString(code, NULL);
-        if (errString)
-            errorString = [NSMakeCollectable(errString) autorelease];
-    }
-    
-    if (errorString == nil)
+    CFStringRef errString = SecCopyErrorMessageString(code, NULL);
+    if (errString)
+        errorString = [NSMakeCollectable(errString) autorelease];
+    else
         errorString = @"error";
     
     if (code >= CSSM_BASE_ERROR && code < (CSSM_BASE_ERROR + 0x10000)) {
         int base = CSSM_ERRBASE(code);
         int module;
-        for(module = 0; cssmModuleBases[module].moduleName != NULL; module++) {
+        for(module = 0; cssmModuleBases[module].moduleName != nil; module++) {
             if (base == cssmModuleBases[module].moduleBase) {
-                return [NSString stringWithFormat:@"%@ (CSSM_%@_BASE+%d)", errorString, [NSString stringWithCString:cssmModuleBases[module].moduleName encoding:NSASCIIStringEncoding], code - cssmModuleBases[module].moduleBase];
+                int offset = code - cssmModuleBases[module].moduleBase;
+                NSString *offsetfrom;
+                if (offset >= CSSM_ERRORCODE_CUSTOM_OFFSET) {
+                    offsetfrom = @"PRIVATE";
+                    offset -= CSSM_ERRORCODE_CUSTOM_OFFSET;
+                } else {
+                    offsetfrom = @"BASE";
+                }
+                return [NSString stringWithFormat:@"%@ (CSSM_%@_%@+%d)", errorString, cssmModuleBases[module].moduleName, offsetfrom, offset];
             }
         }
     }

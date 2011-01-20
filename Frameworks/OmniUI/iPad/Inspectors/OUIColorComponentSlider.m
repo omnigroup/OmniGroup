@@ -20,32 +20,33 @@ RCS_ID("$Id$");
 {
 @private
     OQColor *_color;
-    BOOL _enabled;
-    CGGradientRef KnobGradient;
-    UIImage *KnobHandleImage;
 }
 @property(retain,nonatomic) OQColor *color;
-@property(assign,nonatomic) BOOL enabled;
 @end
 
 @implementation OUIColorComponentSliderKnobLayer
 
-static UIColor *BackgroundCheckerboardPatternColor = nil;
+static UIImage *_handleImage(void)
+{
+    UIImage *image = [UIImage imageNamed:@"OUIColorComponentSliderKnob.png"];
+    OBASSERT(image);
+    return image;
+}
 
-static const CGSize KnobSize = {35, 49};
+static CGSize KnobSize;
 static const CGFloat kKnobBorderThickness = 6;
 
 
 + (void)initialize;
 {
     OBINITIALIZE;
+    
+    KnobSize = [_handleImage() size];
 }
 
 - (void)dealloc;
 {
     [_color release];
-    CGGradientRelease(KnobGradient);
-    [KnobHandleImage release];
     [super dealloc];
 }
 
@@ -57,139 +58,31 @@ static const CGFloat kKnobBorderThickness = 6;
     [self setNeedsDisplay];
 }
 
-@synthesize enabled = _enabled;
-- (void)setEnabled:(BOOL)yn;
-{
-    if (yn == _enabled && KnobGradient != nil)
-        return;
-        
-    _enabled = yn;
-    
-    CGGradientRelease(KnobGradient);
-    [KnobHandleImage release];
-    KnobHandleImage = nil;
-
-    id translucentColor = NULL;
-    id whiteColor = NULL;
-    
-    if (_enabled) {
-        translucentColor = (id)[[UIColor colorWithWhite:1.0 alpha:0.85] CGColor];
-        whiteColor = (id)[[UIColor colorWithWhite:1.0 alpha:1.0] CGColor];
-    } else {
-        translucentColor = (id)[[UIColor colorWithWhite:0.6 alpha:0.85] CGColor];
-        whiteColor = (id)[[UIColor colorWithWhite:0.6 alpha:1.0] CGColor];
-    }
-    
-    CGFloat locations[] = {0, 0.5, 0.5, 1.0};
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
-    KnobGradient = CGGradientCreateWithColors(colorSpace, (CFArrayRef)[NSArray arrayWithObjects:translucentColor, whiteColor, translucentColor, translucentColor, nil], locations);
-    CFRelease(colorSpace);
-    
-    [self setNeedsDisplay];
-}
-
 #pragma mark -
 #pragma mark CALayer subclass
-
-static void _drawGripper(CGContextRef ctx, CGRect bounds, CGPoint pt)
-{    
-    CGContextSaveGState(ctx);
-    {
-        CGRect center = CGRectMake(pt.x,     pt.y, 1, 3);
-        CGRect   left = CGRectMake(pt.x - 2, pt.y, 1, 3);
-        CGRect  right = CGRectMake(pt.x + 2, pt.y, 1, 3);
-        
-        CGContextAddRect(ctx, center);
-        CGContextAddRect(ctx, left);
-        CGContextAddRect(ctx, right);
-
-        CGContextClip(ctx);
-        
-        // RGB colors so the gradient works (giving it RGB color space)
-        CGFloat dark = 0.45;
-        CGFloat light = 0.7;
-        CGColorRef darkColor = [[UIColor colorWithRed:dark green:dark blue:dark alpha:1] CGColor];
-        CGColorRef lightColor = [[UIColor colorWithRed:light green:light blue:light alpha:1] CGColor];
-                                 
-        NSArray *colors = [NSArray arrayWithObjects:(id)darkColor, (id)lightColor, nil];
-        
-        
-        CGGradientRef gradient = CGGradientCreateWithColors(NULL/*rgb*/, (CFArrayRef)colors, NULL);
-        
-        
-        CGContextDrawLinearGradient(ctx, gradient,
-                                    center.origin,
-                                    CGPointMake(CGRectGetMaxX(center), CGRectGetMaxY(center)),
-                                    kCGGradientDrawsBeforeStartLocation|kCGGradientDrawsAfterEndLocation);
-        CFRelease(gradient);
-    }
-    CGContextRestoreGState(ctx);
-}
 
 - (void)drawInContext:(CGContextRef)ctx;
 {
     CGRect bounds = self.bounds;
     OBASSERT(CGSizeEqualToSize(bounds.size, KnobSize));
     
-    // We don't really want to rasterize this up to 4 times each time we drag a knob.
-    if (!KnobHandleImage) {
-        UIGraphicsBeginImageContext(KnobSize);
-        {
-            CGContextRef ctx = UIGraphicsGetCurrentContext();
-            
-            CGContextClearRect(ctx, bounds);
-            
-            // Box-o-shine
-            CGContextSaveGState(ctx);
-            {
-                OQAppendRoundedRect(ctx, CGRectInset(bounds, 1, 1), 1);
-                OQAppendRoundedRect(ctx, CGRectInset(bounds, kKnobBorderThickness + 0.5, kKnobBorderThickness + 0.5), 4);
-                CGContextEOClip(ctx);
-                
-                CGContextDrawLinearGradient(ctx, KnobGradient, bounds.origin, CGPointMake(bounds.origin.x, CGRectGetMaxY(bounds)), kCGGradientDrawsBeforeStartLocation|kCGGradientDrawsAfterEndLocation);
-            }
-            CGContextRestoreGState(ctx);
-            
-            // Border
-            CGContextSaveGState(ctx);
-            {
-                // Drawing this w/o an inner shadow. I tried it and it distorts my perception of the picked color.
-                OQAppendRoundedRect(ctx, CGRectInset(bounds, 0.5, 0.5), 1);
-                OQAppendRoundedRect(ctx, CGRectInset(bounds, kKnobBorderThickness + 0.5, kKnobBorderThickness + 0.5), 4);
-                OUIInspectorWellStrokePathWithBorderColor(ctx);
-            }
-            CGContextRestoreGState(ctx);
-            
-            // Gripper
-            _drawGripper(ctx, bounds, CGPointMake(CGRectGetMidX(bounds) - 0.5, 2));
-            _drawGripper(ctx, bounds, CGPointMake(CGRectGetMidX(bounds) - 0.5, CGRectGetMaxY(bounds) - 2 - 3));
-            
-            KnobHandleImage = [UIGraphicsGetImageFromCurrentImageContext() retain];
-        }
-        UIGraphicsEndImageContext();
-    }
-    
     UIGraphicsPushContext(ctx);
     {
         // Swatch
             CGContextSaveGState(ctx);
             {
-                if ([_color alphaComponent] < 1 || !_enabled) {
+                if ([_color alphaComponent] < 1) {
                     CGPoint patternOffset = [self convertPoint:CGPointMake(1, 1) fromLayer:self.superlayer];
-                    CGContextSetPatternPhase(ctx, CGSizeMake(patternOffset.x, patternOffset.y));
-                    [BackgroundCheckerboardPatternColor set];
-                    CGContextFillRect(ctx, CGRectInset(bounds, kKnobBorderThickness, kKnobBorderThickness));
+                    OUIDrawTransparentColorBackground(ctx, CGRectInset(bounds, kKnobBorderThickness, kKnobBorderThickness), CGSizeMake(patternOffset.x, patternOffset.y));
                 }
                 
-                if (_enabled) {
-                    [_color set];
-                    CGContextFillRect(ctx, CGRectInset(bounds, kKnobBorderThickness, kKnobBorderThickness));
-                }
+                [_color set];
+                CGContextFillRect(ctx, CGRectInset(bounds, kKnobBorderThickness, kKnobBorderThickness));
             }
             CGContextRestoreGState(ctx);
         
         // Overlay the cached knob
-        [KnobHandleImage drawInRect:bounds];
+        [_handleImage() drawInRect:bounds];
     }
     UIGraphicsPopContext();
 }
@@ -201,14 +94,6 @@ static void _drawGripper(CGContextRef ctx, CGRect bounds, CGPoint pt)
 @end
 
 @implementation OUIColorComponentSlider
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    UIImage *patternImage = [UIImage imageNamed:@"OUIColorOpacitySliderBackground.png"];
-    BackgroundCheckerboardPatternColor = [[UIColor alloc] initWithPatternImage:patternImage];
-}
 
 + (id)slider;
 {
@@ -232,7 +117,6 @@ static id _commonInit(OUIColorComponentSlider *self)
     self->_knobLayer.needsDisplayOnBoundsChange = YES;
     self->_knobLayer.anchorPoint = CGPointZero; // don't want half pixels from setting the position (our width/height are odd).
     [self->_knobLayer setNeedsDisplay];
-    self->_knobLayer.enabled = YES;
 
     return self;
 }
@@ -347,28 +231,25 @@ static id _commonInit(OUIColorComponentSlider *self)
 
 static CGFloat _valueToX(OUIColorComponentSlider *self, CGFloat value)
 {
-    CGRect bounds = self.bounds;
-    CGFloat width = CGRectGetWidth(bounds);
-    CGFloat endCapSize = CGRectGetHeight(bounds);
-    CGFloat reserve = endCapSize/2;
-    
     if (value < 0)
         value = 0;
     else if (value > 1)
         value = 1;
     
-    CGFloat x = reserve + value * (width - 2*reserve); // 1/2 knob size on each end
+    CGRect bounds = self.bounds;
+    CGFloat width = CGRectGetWidth(bounds) - KnobSize.width;
+    
+    CGFloat x = value * width + ceil(KnobSize.width/2); // 1/2 knob size on each end
+
     return x;
 }
 
 static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
 {
     CGRect bounds = self.bounds;
-    CGFloat width = CGRectGetWidth(bounds);
-    CGFloat endCapSize = CGRectGetHeight(bounds);
-    CGFloat reserve = endCapSize/2;
+    CGFloat width = CGRectGetWidth(bounds) - KnobSize.width;
     
-    CGFloat value = (x - reserve) / (width - 2*reserve); // 1/2 knob size on each end
+    CGFloat value = (x - ceil(KnobSize.width/2)) / width; // 1/2 knob size on each end
 
     if (value < 0)
         value = 0;
@@ -495,9 +376,7 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
         
         // All the non-alpha channels should be opaque and don't need this checkerboard
         if ([self representsAlpha]) {
-            [BackgroundCheckerboardPatternColor set];
-            CGContextSetPatternPhase(UIGraphicsGetCurrentContext(), CGSizeMake(1,1));
-            UIRectFill(CGRectInset(self.bounds, 1, 1));
+            OUIDrawTransparentColorBackground(ctx, CGRectInset(self.bounds, 1, 1), CGSizeMake(1,1));
         }
         
         if (self.enabled) {
@@ -530,8 +409,8 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
     _knobLayer.bounds = CGRectMake(0, 0, KnobSize.width, KnobSize.height);
     
     CGPoint position;
-    position.x = ceil(_valueToX(self, _value) - KnobSize.width/2);
-    position.y = ceil(CGRectGetMidY(wellInnerRect) - KnobSize.height/2);
+    position.x = floor(_valueToX(self, _value) - KnobSize.width/2);
+    position.y = floor(CGRectGetMidY(wellInnerRect) - KnobSize.height/2);
     
     _knobLayer.position = position;
     
@@ -607,13 +486,6 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
         [_label removeFromSuperview];
     }
     
-}
-
-- (void)setEnabled:(BOOL)yn;
-{
-    super.enabled = yn;
-    
-    _knobLayer.enabled = yn;
 }
 
 #pragma mark -

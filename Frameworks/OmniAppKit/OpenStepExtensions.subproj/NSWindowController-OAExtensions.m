@@ -454,7 +454,7 @@ static NSWindow *RootlessProgressWindow = nil;
     if (!LongOperationIndicatorEnabledForWindow(nil))
         return;
 
-    [isa startingLongOperation:operationDescription controlSize:NSSmallControlSize inWindow:[self window] automaticallyEnds:YES];
+    [[self class] startingLongOperation:operationDescription controlSize:NSSmallControlSize inWindow:[self window] automaticallyEnds:YES];
 }
 
 @end

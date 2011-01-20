@@ -92,7 +92,7 @@ RCS_ID("$Id$")
 
 - (void)drawRoundedRect:(NSRect)rect cornerRadius:(CGFloat)radius color:(NSColor *)color;
 {
-    [isa drawRoundedRect:rect cornerRadius:radius color:color isFilled:YES];
+    [[self class] drawRoundedRect:rect cornerRadius:radius color:color isFilled:YES];
 }
 
 - (void)drawHorizontalSelectionInRect:(NSRect)rect;
@@ -201,7 +201,7 @@ static unsigned int scrollEntriesCount = 0;
 
     deferredScrollEntry = [self _deferredScrollEntry];
     deferredScrollEntry->y += pixels;
-    [isa queueSelectorOnce:@selector(performDeferredScrolling)];
+    [[self class] queueSelectorOnce:@selector(performDeferredScrolling)];
 }
 
 - (void)scrollRightByAdjustedPixels:(CGFloat)pixels;
@@ -217,7 +217,7 @@ static unsigned int scrollEntriesCount = 0;
 
     deferredScrollEntry = [self _deferredScrollEntry];
     deferredScrollEntry->x += pixels;
-    [isa queueSelectorOnce:@selector(performDeferredScrolling)];
+    [[self class] queueSelectorOnce:@selector(performDeferredScrolling)];
 }
 
 - (void)scrollToTop;

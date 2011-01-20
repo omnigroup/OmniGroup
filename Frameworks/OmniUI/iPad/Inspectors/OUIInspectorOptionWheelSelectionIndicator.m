@@ -6,19 +6,21 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIInspectorOptionWheelSelectionIndicator.h>
-#import <UIKit/UIKit.h>
+
+#import <OmniUI/OUIInspectorBackgroundView.h>
 #import <OmniBase/OmniBase.h>
+
+#import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
 @implementation OUIInspectorOptionWheelSelectionIndicator
 
 static const CGFloat kIndicatorSize = 20;
-static const CGFloat kShadowRadius = 1;
 
 - init;
 {
-    CGRect frame = CGRectMake(0, 0, kIndicatorSize, kIndicatorSize/2 + kShadowRadius);
+    CGRect frame = CGRectMake(0, 0, kIndicatorSize, kIndicatorSize/2 + kOUIInspectorWellInnerShadowBlur);
     
     if (!(self = [self initWithFrame:frame]))
         return nil;
@@ -35,15 +37,26 @@ static const CGFloat kShadowRadius = 1;
     [super dealloc];
 }
 
-@synthesize color = _color;
-- (void)setColor:(UIColor *)color;
+- (void)updateColor;
 {
-    if ([_color isEqual:color])
-        return;
+    OUIInspectorBackgroundView *topBackgroundView = nil;
     
-    [_color release];
-    _color = [color retain];
-    [self setNeedsDisplay];
+    UIView *ancestor = self;
+    while (ancestor) {
+        if ([ancestor isKindOfClass:[OUIInspectorBackgroundView class]])
+            topBackgroundView = (OUIInspectorBackgroundView *)ancestor;
+        ancestor = ancestor.superview;
+    }
+    
+    UIColor *color = [topBackgroundView colorForYPosition:CGRectGetMinY(self.bounds) inView:self];
+    if (!color)
+        color = [UIColor whiteColor];
+    
+    if (![_color isEqual:color]) {
+        [_color release];
+        _color = [color retain];
+        [self setNeedsDisplay];
+    }
 }
 
 #pragma mark -
@@ -58,16 +71,40 @@ static const CGFloat kShadowRadius = 1;
 
     CGContextSaveGState(ctx);
     {
-        CGContextSetShadow(ctx, CGSizeMake(0, kShadowRadius), kShadowRadius);
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
+
+        CGFloat shadowComponents[] = {kOUIInspectorWellInnerShadowGrayAlpha.v, kOUIInspectorWellInnerShadowGrayAlpha.a};
+        CGColorRef shadowColor = CGColorCreate(colorSpace, shadowComponents);
         
+        CGFloat strokeComponents[] = {kOUIInspectorWellInnerShadowGrayAlpha.v, kOUIInspectorWellInnerShadowGrayAlpha.a};
+        CGColorRef strokeColor = CGColorCreate(colorSpace, strokeComponents);
+        
+        CGColorSpaceRelease(colorSpace);
+        
+        CGContextSetShadowWithColor(ctx, CGSizeMake(0, 1), kOUIInspectorWellInnerShadowBlur, shadowColor);
+        CGColorRelease(shadowColor);
+        
+        CGContextSetStrokeColorWithColor(ctx, strokeColor);
+        CGColorRelease(strokeColor);
+
         CGContextMoveToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
+        CGContextAddLineToPoint(ctx, CGRectGetMidX(bounds), CGRectGetMaxY(bounds) - kOUIInspectorWellInnerShadowBlur - 0.5);
         CGContextAddLineToPoint(ctx, CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
-        CGContextAddLineToPoint(ctx, CGRectGetMidX(bounds), CGRectGetMaxY(bounds) - kShadowRadius);
-        CGContextAddLineToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
+        //CGContextAddLineToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
         
-        CGContextFillPath(ctx);
+        CGContextDrawPath(ctx, kCGPathFillStroke);
     }
     CGContextRestoreGState(ctx);
+}
+
+#pragma mark -
+#pragma mark UIView (OUIInspectorBackgroundView)
+
+- (void)containingInspectorBackgroundViewColorsChanged;
+{
+    [super containingInspectorBackgroundViewColorsChanged];
+    
+    [self updateColor];
 }
 
 @end

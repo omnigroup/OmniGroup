@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocument.h>
 #import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIDocumentProxy.h>
@@ -18,6 +19,8 @@
 #import <OmniUI/OUIToolbarViewController.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFileStore/OFSFileManager.h>
+
+#import "OUIToolbarViewController-Internal.h"
 
 RCS_ID("$Id$");
 
@@ -91,8 +94,8 @@ static NSString * const SelectAction = @"select";
 {
     if (!_closeDocumentBarButtonItem) {
         NSString *closeDocumentTitle = NSLocalizedStringWithDefaultValue(@"Documents <back button>", @"OmniUI", OMNI_BUNDLE, @"Documents", @"Toolbar button title for returning to list of documents.");
-        _closeDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:closeDocumentTitle
-                                                                       style:UIBarButtonItemStyleBordered target:self action:@selector(_closeDocument:)];
+        _closeDocumentBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:closeDocumentTitle
+                                                                        style:UIBarButtonItemStyleBordered target:self action:@selector(_closeDocument:)];
     }
     return _closeDocumentBarButtonItem;
 }
@@ -299,16 +302,18 @@ static NSString * const SelectAction = @"select";
     {
         NSMutableArray *toolbarItems = [NSMutableArray array];
         
-        UIBarButtonItem *addItem = [[[UIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"New Document", @"OmniUI", OMNI_BUNDLE, @"Toolbar button for creating a new, empty document.")
-                                                                     style:UIBarButtonItemStyleBordered
-                                                                    target:self action:@selector(makeNewDocument:)] autorelease];
-        [toolbarItems addObject:addItem];
+        if (documentPicker.documentTypeForNewFiles != nil) {
+            UIBarButtonItem *addItem = [[[OUIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"New Document", @"OmniUI", OMNI_BUNDLE, @"Toolbar button for creating a new, empty document.")
+                                                                          style:UIBarButtonItemStyleBordered
+                                                                         target:self action:@selector(makeNewDocument:)] autorelease];
+            [toolbarItems addObject:addItem];
+        }
         
         if ([[OFPreferenceWrapper sharedPreferenceWrapper] boolForKey:@"OUIImportEnabled"]) {
-            addItem = [[[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarButtonImport.png"] 
-                                                        style:UIBarButtonItemStyleBordered 
-                                                       target:self action:@selector(showSyncMenu:)] autorelease];
-            [toolbarItems addObject:addItem];
+            UIBarButtonItem *importItem = [[[OUIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarButtonImport.png"] 
+                                                                             style:UIBarButtonItemStyleBordered 
+                                                                            target:self action:@selector(showSyncMenu:)] autorelease];
+            [toolbarItems addObject:importItem];
         }
         
         [toolbarItems addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
@@ -318,7 +323,7 @@ static NSString * const SelectAction = @"select";
         [toolbarItems addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
         
 #if 0 // Punting on favorites for 1.0
-        UIBarButtonItem *favoritesItem = [[[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarFavoriteHollow.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(toggleFavorites:)] autorelease];
+        UIBarButtonItem *favoritesItem = [[[OUIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarFavoriteHollow.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(toggleFavorites:)] autorelease];
         [toolbarItems addObject:favoritesItem];
         
         UISearchBar *searchBar = [[[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, 20)] autorelease];
@@ -503,7 +508,7 @@ static NSString * const SelectAction = @"select";
 #pragma mark -
 #pragma mark OUIDocumentPickerDelegate
 
-- (id <OUIDocument>)createNewDocumentAtURL:(NSURL *)url error:(NSError **)outError;
+- (BOOL)createNewDocumentAtURL:(NSURL *)url error:(NSError **)outError;
 {
     OBPRECONDITION(_document == nil);
     
@@ -512,16 +517,15 @@ static NSString * const SelectAction = @"select";
     
     OUIDocument *document = [[[cls alloc] initEmptyDocumentToBeSavedToURL:url error:outError] autorelease];
     if (document == nil)
-        return nil;
+        return NO;
     
-    // This positions the view controller's view as it will be and thus allows it to emit the right PDF.
-    [_toolbarViewController willAnimateToInnerViewController:document.viewController];
+    // We aren't going to open this document instance -- it will get thrown away. But we want to at least size it correctly so that any PDF preview is emitted correctly.
+    [_toolbarViewController adjustSizeToMatch:document.viewController];
     
     // We do go ahead and save the document immediately so that we can animate it into view most easily.
-    if (![document saveAsNewDocumentToURL:url error:outError])
-        return nil;
-    
-    return document;
+    BOOL ok = [document saveAsNewDocumentToURL:url error:outError];
+    [document willClose];
+    return ok;
 }
 
 #pragma mark -

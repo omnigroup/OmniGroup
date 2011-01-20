@@ -21,7 +21,6 @@
 }
 
 - (void)showMenuFromBarItem:(UIBarButtonItem *)barItem;
-- (void)dismiss;
 
 @end
 

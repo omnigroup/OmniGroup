@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,29 +20,29 @@ RCS_ID("$Id$");
 @implementation OUZipMember
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-- initWithFileWrapper:(NSFileWrapper *)fileWrapper;
+- (id)_initWithFileWrapper:(NSFileWrapper *)fileWrapper name:(NSString *)name;
 {
     // This shouldn't be called on a concrete class.  That would imply the caller knew the type of the file wrapper, which it shouldn't bother with.
     OBPRECONDITION([self class] == [OUZipMember class]);
-    OBPRECONDITION(![NSString isEmptyString:[fileWrapper preferredFilename]]);
+    OBPRECONDITION(![NSString isEmptyString:name]);
     
     if ([fileWrapper isRegularFile]) {
         [self release];
-        return [[OUZipFileMember alloc] initWithName:[fileWrapper preferredFilename] date:[[fileWrapper fileAttributes] fileModificationDate] contents:[fileWrapper regularFileContents]];
+        return [[OUZipFileMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] contents:[fileWrapper regularFileContents]];
     } else if ([fileWrapper isSymbolicLink]) {
         [self release];
-        return [[OUZipLinkMember alloc] initWithName:[fileWrapper preferredFilename] date:[[fileWrapper fileAttributes] fileModificationDate] destination:[fileWrapper symbolicLinkDestination]];
+        return [[OUZipLinkMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] destination:[fileWrapper symbolicLinkDestination]];
     } else if ([fileWrapper isDirectory]) {
         [self release];
 
-        OUZipDirectoryMember *directory = [[OUZipDirectoryMember alloc] initWithName:[fileWrapper preferredFilename] date:[[fileWrapper fileAttributes] fileModificationDate] children:nil archive:YES];
+        OUZipDirectoryMember *directory = [[OUZipDirectoryMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] children:nil archive:YES];
         NSDictionary *childWrappers = [fileWrapper fileWrappers];
         NSArray *childKeys = [[childWrappers allKeys] sortedArrayUsingSelector:@selector(compare:)];
         
         for (NSString *childKey in childKeys) {
             NSFileWrapper *childWrapper = [childWrappers objectForKey:childKey];
-            OBASSERT([childKey isEqualToString:[childWrapper preferredFilename]]); // Otherwise our child names might not be guaranteed to be unique
-            OUZipMember *child = [[OUZipMember alloc] initWithFileWrapper:childWrapper];
+            // Note: this loses the preferred filenames of our children, but zip files don't have a notion of preferred filename vs. actual filename the way file wrappers do
+            OUZipMember *child = [[OUZipMember alloc] _initWithFileWrapper:childWrapper name:childKey];
             [directory addChild:child];
             [child release];
         }
@@ -51,6 +51,11 @@ RCS_ID("$Id$");
     
     OBRequestConcreteImplementation(self, _cmd);
     return nil;
+}
+
+- initWithFileWrapper:(NSFileWrapper *)fileWrapper;
+{
+    return [self _initWithFileWrapper:fileWrapper name:[fileWrapper preferredFilename]];
 }
 
 // Returns a new autoreleased file wrapper; won't return the same wrapper on multiple calls

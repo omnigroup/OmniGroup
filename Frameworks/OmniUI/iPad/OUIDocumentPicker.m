@@ -25,10 +25,8 @@
 #import <OmniQuartz/OQDrawing.h>
 #import <sys/stat.h> // For S_IWUSR
 
-#import <MobileCoreServices/UTCoreTypes.h>
-
 #import "OUIDocumentProxy-Internal.h"
-#import "OUIDocumentPDFPreview.h"
+#import <OmniUI/OUIDocumentPDFPreview.h>
 #import <OmniFileStore/OFSFileInfo.h>
 #import "OUIExportOptionsController.h"
 #import "OUISheetNavigationController.h"
@@ -173,6 +171,14 @@ static void _addPushAndFadeAnimations(OUIDocumentPicker *self, BOOL fade, Animat
     for (NSString *fileName in fileNames) {
         NSString *samplePath = [sampleDocumentsDirectory stringByAppendingPathComponent:fileName];
         NSString *documentPath = [userDocumentsDirectory stringByAppendingPathComponent:fileName];
+        
+        NSString *localizedTitle = [[NSBundle mainBundle] localizedStringForKey:[[documentPath lastPathComponent] stringByDeletingPathExtension] value:nil table:@"SampleNames"];
+        if (localizedTitle && ![localizedTitle isEqualToString:[[documentPath lastPathComponent] stringByDeletingPathExtension]]) {
+            NSString *extension = [documentPath pathExtension];
+            documentPath = [userDocumentsDirectory stringByAppendingPathComponent:localizedTitle];
+            documentPath = [documentPath stringByAppendingPathExtension:extension];
+        }
+        
         NSError *error = nil;
         if (![[NSFileManager defaultManager] copyItemAtPath:samplePath toPath:documentPath error:&error]) {
             NSLog(@"Unable to copy %@ to %@: %@", samplePath, documentPath, [error toPropertyList]);
@@ -234,31 +240,6 @@ static NSString *_availablePath(NSString *directory, NSString *baseName, NSStrin
     return _availablePath(dir, baseName, extension, ioCounter);
 }
 
-+ (BOOL)canViewTypeWithIdentifier:(NSString *)uti;
-{
-    if (uti == nil)
-        return NO;
-    
-    static NSMutableDictionary *contentTypeRoles = nil;
-    if (contentTypeRoles == nil) {
-        // Make a fast index of all our declared UTIs
-        contentTypeRoles = [[NSMutableDictionary alloc] init];
-        NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
-        for (NSDictionary *documentType in documentTypes) {
-            NSString *role = [documentType objectForKey:@"CFBundleTypeRole"];
-            NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
-            for (NSString *contentType in contentTypes)
-                [contentTypeRoles setObject:role forKey:[contentType lowercaseString]];
-        }
-    }
-    NSString *role = [contentTypeRoles objectForKey:uti];
-    if (role == nil)
-        return NO;
-    
-    OBASSERT([role isEqualToString:@"Editor"] || [role isEqualToString:@"Viewer"]); // Otherwise why did we bother declaring it? And the next statement is wrong
-    return YES;
-}
-
 - (OUIDocumentProxy *)proxyByInstantiatingSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
 {
     CFStringRef extension = UTTypeCopyPreferredTagWithClass((CFStringRef)fileType, kUTTagClassFilenameExtension);
@@ -307,7 +288,18 @@ static id _commonInit(OUIDocumentPicker *self)
 {
     if (!(self = [super initWithCoder:coder]))
         return nil;
+    
+    _loadingFromNib = YES;
+    
     return _commonInit(self);
+}
+
+- (void)awakeFromNib;
+{
+    [super awakeFromNib];
+    
+    _loadingFromNib = NO;
+    [self _loadProxies];
 }
 
 - (void)dealloc;
@@ -401,7 +393,7 @@ static id _commonInit(OUIDocumentPicker *self)
     [self rescanDocumentsScrollingToURL:_previewScrollView.proxyClosestToCenter.url];
 }
 
-- (OUIDocumentProxy *)revealAndActivateNewDocumentAtURL:(NSURL *)newDocumentURL;
+- (void)revealAndActivateNewDocumentAtURL:(NSURL *)newDocumentURL;
 {
     [self _loadProxies];
     OUIDocumentProxy *createdProxy = [self proxyWithURL:newDocumentURL];
@@ -427,8 +419,6 @@ static id _commonInit(OUIDocumentPicker *self)
         [_previewScrollView layoutSubviews];
     }
     [UIView commitAnimations];
-    
-    return createdProxy;
 }
 
 - (void)_revealNewDocumentAnimationReallyDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
@@ -513,6 +503,17 @@ static id _commonInit(OUIDocumentPicker *self)
     return [self _renameProxy:proxy toName:name type:documentUTI rescanDocuments:YES];
 }
 
+- (NSString *)documentTypeForNewFiles;
+{
+    if ([_nonretained_delegate respondsToSelector:@selector(documentPickerDocumentTypeForNewFiles:)])
+        return [_nonretained_delegate documentPickerDocumentTypeForNewFiles:self];
+    
+    NSArray *editableTypes = [[OUIAppController controller] editableFileTypes];
+    OBASSERT([editableTypes count] < 2); // If there is more than one, we might pick the wrong one.
+    
+    return [editableTypes lastObject];
+}
+
 - (NSURL *)urlForNewDocumentOfType:(NSString *)documentUTI;
 {
     NSString *baseName = [_nonretained_delegate documentPickerBaseNameForNewFiles:self];
@@ -585,8 +586,10 @@ static id _commonInit(OUIDocumentPicker *self)
     [_actionSheetActions release];
     _actionSheetActions = [[NSMutableArray alloc] init];
 
-    [actionSheet addButtonWithTitle:[self documentActionTitle]];
-    [_actionSheetActions addObject:NSStringFromSelector(@selector(newDocument:))];
+    if (self.documentTypeForNewFiles != nil) {
+        [actionSheet addButtonWithTitle:[self documentActionTitle]];
+        [_actionSheetActions addObject:NSStringFromSelector(@selector(newDocument:))];
+    }
 
     [actionSheet addButtonWithTitle:[self duplicateActionTitle]];
     [_actionSheetActions addObject:NSStringFromSelector(@selector(duplicateDocument:))];
@@ -606,20 +609,21 @@ static id _commonInit(OUIDocumentPicker *self)
     if (![self okayToOpenMenu])
         return;
     
-    [[OUIAppController controller] dismissAppMenu];
+    // Get rid of any visible popovers immediately
+    [[OUIAppController controller] dismissPopoverAnimated:NO];
     
-    NSString *documentType = [_nonretained_delegate documentPickerDocumentTypeForNewFiles:self];
+    NSString *documentType = [self documentTypeForNewFiles];
     NSURL *newDocumentURL = [self urlForNewDocumentOfType:documentType];
     NSError *error = nil;
-    id <OUIDocument> document = [_nonretained_delegate createNewDocumentAtURL:newDocumentURL error:&error];
-    if (document == nil) {
+    if (![_nonretained_delegate createNewDocumentAtURL:newDocumentURL error:&error]) {
         OUI_PRESENT_ERROR(error);
         return;
     }
     
     _isRevealingNewDocument = YES;
     
-    [document setProxy:[self revealAndActivateNewDocumentAtURL:newDocumentURL]];
+    [[NSFileManager defaultManager] touchFile:[[newDocumentURL absoluteURL] path]];
+    [self revealAndActivateNewDocumentAtURL:newDocumentURL];
 }
 
 - (IBAction)duplicateDocument:(id)sender;
@@ -793,7 +797,7 @@ static id _commonInit(OUIDocumentPicker *self)
     return NSLocalizedStringFromTableInBundle(@"Delete Document", @"OmniUI", OMNI_BUNDLE, @"delete button title");
 }
 
-- (IBAction)delete:(id)sender;
+- (IBAction)deleteDocument:(id)sender;
 {
     if (![self okayToOpenMenu])
         return;
@@ -1536,10 +1540,12 @@ static id _commonInit(OUIDocumentPicker *self)
 
 #pragma mark -
 #pragma mark Private
+
 - (void)_loadProxies;
 {
-    // Need to know both where to scan and what class of proxies to make
-    if (!_directory || !_nonretained_delegate)
+    // Need to know both where to scan and what class of proxies to make.
+    // Also, if we are still loading from nib, the main app controller might be in the same nib as us and the UIApp might not have a delegate (for +[OUIAppController controller] below).
+    if (!_directory || !_nonretained_delegate || _loadingFromNib)
         return;
     
     PICKER_DEBUG(@"Scanning %@", _directory);
@@ -1582,7 +1588,7 @@ static id _commonInit(OUIDocumentPicker *self)
                 NSString *uti = [(NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)fileExtension, NULL) autorelease];
                 NSString *filePath = [scanDirectory stringByAppendingPathComponent:fileName];
 
-                if (![OUIDocumentPicker canViewTypeWithIdentifier:uti]) {
+                if (![[OUIAppController controller] canViewFileTypeWithIdentifier:uti]) {
                     if ([fileManager directoryExistsAtPath:filePath traverseLink:YES])
                         [scanDirectories addObject:filePath];
                     continue;

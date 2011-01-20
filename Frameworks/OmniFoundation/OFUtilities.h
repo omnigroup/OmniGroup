@@ -65,6 +65,9 @@ extern NSString *OFHostName(void);
 extern NSString *OFISOLanguageCodeForEnglishName(NSString *languageName);
 extern NSString *OFLocalizedNameForISOLanguageCode(NSString *languageCode);
 
+// Converts an OSError to a number, hopefully along with a less cryptic string (e.g. "File not found" or at least "fnfErr").
+extern NSString *OFOSStatusDescription(OSStatus err);
+
 // Formats a four character code into a ASCII representation.  This can take up to 4*3+1 characters.  Each byte can be up to three characters ('\ff'), plus the trailing NULL.  Returns the given fccString for ease in passing to NSLog/printf.
 // The fcc is really a FourCharCode (or OSType, OSStatus, ComponentResult, etc, etc, etc).  Don't want to include MacTypes.h here though.
 extern char *OFFormatFCC(uint32_t fcc, char fccString[13]);

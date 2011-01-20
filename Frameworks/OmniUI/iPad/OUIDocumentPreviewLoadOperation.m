@@ -10,8 +10,6 @@
 #import <OmniUI/OUIDocumentProxy.h>
 #import <OmniUI/OUIDocumentProxyView.h>
 
-#import "OUIDocumentPDFPreview.h"
-
 RCS_ID("$Id$");
 
 @implementation OUIDocumentPreviewLoadOperation
@@ -48,41 +46,19 @@ RCS_ID("$Id$");
     OBPRECONDITION(![NSThread isMainThread]);
     
     NSError *error = nil;
-    NSData *pdfData = nil;
         
 #if 0 && defined(DEBUG)
     sleep(1);
 #endif
     
-    if (![[_proxy class] getPDFPreviewData:&pdfData modificationDate:NULL fromURL:_proxy.url error:&error]) {
+    id <OUIDocumentPreview> preview = [[_proxy class] makePreviewFromURL:_proxy.url size:_size error:&error];
+    if (!preview) {
         NSLog(@"Unable to load preview from %@: %@", _proxy.url, [error toPropertyList]);
         [_proxy performSelectorOnMainThread:@selector(previewDidLoad:) withObject:error waitUntilDone:NO];
         return;
     }
     
-    // Don't call -view here... probably just paranoia since the view should already be loaded, but we don't want to provoke view loading in the background.
-    OUIDocumentPDFPreview *preview = pdfData ? [[OUIDocumentPDFPreview alloc] initWithData:pdfData originalViewSize:_size] : nil;
-    
-    /****
-     * UIKit's graphics contexts functions aren't thread safe. In particular, UIGraphicsPushContext is documented to be thread-unsafe.
-     * So, we have to use CG directly through all this code. No UIImage, UIColor, etc.
-     ****/
-    
-    CGColorSpaceRef rgbColorSpace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef ctx = CGBitmapContextCreate(NULL, _size.width, _size.height, 8, 4*_size.width, rgbColorSpace, kCGImageAlphaPremultipliedFirst);
-    CFRelease(rgbColorSpace);
-
-    OUIDocumentProxyDrawPreview(ctx, preview, CGRectMake(0, 0, _size.width, _size.height));
-    CGImageRef imageRef = CGBitmapContextCreateImage(ctx);
-    CFRelease(ctx);
-    
-    UIImage *image = [UIImage imageWithCGImage:imageRef];
-    CGImageRelease(imageRef);
-
-    preview.cachedImage = image;
-    
     [_proxy performSelectorOnMainThread:@selector(previewDidLoad:) withObject:preview waitUntilDone:NO];
-    [preview release];
 }
 
 @end

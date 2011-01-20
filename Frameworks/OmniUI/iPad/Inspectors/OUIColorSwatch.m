@@ -15,27 +15,36 @@ RCS_ID("$Id$");
 @implementation OUIColorSwatch
 
 static UIImage *SwatchFrame = nil;
-static UIImage *SwatchTranslucentBackground = nil;
-static UIImage *ColorPickerSwatch = nil;
-static UIImage *NavigationArrow = nil;
 static UIImage *SelectedArrow = nil;
+
+static UIImage *_navigationArrowImage(void)
+{
+    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchNavigationArrow.png"];
+    OBASSERT(image);
+    return image;
+}
+
+static UIImage *_translucentBackgroundImage(void)
+{
+    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchTranslucentBackground.png"];
+    OBASSERT(image);
+    return image;
+}
+
+static UIImage *_nilColorImage(void)
+{
+    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchNone.png"];
+    OBASSERT(image);
+    return image;
+}
 
 + (void)initialize;
 {
     OBINITIALIZE;
     
-    SwatchFrame = [[UIImage imageNamed:@"OUIColorSwatchFrame.png"] retain];
+    SwatchFrame = [[[UIImage imageNamed:@"OUIColorSwatchFrame.png"] stretchableImageWithLeftCapWidth:6 topCapHeight:5] retain];
     OBASSERT(SwatchFrame);
-    
-    SwatchTranslucentBackground = [[UIImage imageNamed:@"OUIColorSwatchTranslucentBackground.png"] retain];
-    OBASSERT(SwatchTranslucentBackground);
-    
-    ColorPickerSwatch = [[UIImage imageNamed:@"OUIColorPickerSwatch.png"] retain];
-    OBASSERT(ColorPickerSwatch);
-    
-    NavigationArrow = [[UIImage imageNamed:@"OUINavigationArrow.png"] retain];
-    OBASSERT(NavigationArrow);
-
+        
     SelectedArrow = [[UIImage imageNamed:@"OUIColorInspectorSelected.png"] retain];
     OBASSERT(SelectedArrow);
 }
@@ -45,11 +54,28 @@ static UIImage *SelectedArrow = nil;
     return [SwatchFrame size];
 }
 
+// Caller expected to set up the target/action on this.
++ (UIButton *)navigateToColorPickerButton;
+{
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    button.opaque = NO;
+    button.showsTouchWhenHighlighted = YES;
+    
+    UIImage *backgroundImage = [UIImage imageNamed:@"OUIColorPickerSwatch.png"];
+    OBASSERT(backgroundImage);
+    [button setBackgroundImage:backgroundImage forState:UIControlStateNormal];
+    
+    [button setImage:_navigationArrowImage() forState:UIControlStateNormal];
+    
+    return button;
+}
+
 static id _commonInit(OUIColorSwatch *self)
 {
     self.opaque = NO;
     self.clearsContextBeforeDrawing = YES;
-    
+    self.showsTouchWhenHighlighted = YES;
+
     return self;
 }
 
@@ -72,13 +98,9 @@ static id _commonInit(OUIColorSwatch *self)
     if (!(self = [self initWithFrame:CGRectZero]))
         return nil;
     
-    self.showsTouchWhenHighlighted = YES;
-    
     _color = [color retain];
 
-    // The navigation swatch has a nil color and shouldn't send -changeColor:
-    if (_color)
-        [self addTarget:nil action:@selector(changeColor:) forControlEvents:UIControlEventTouchDown];
+    [self addTarget:nil action:@selector(changeColor:) forControlEvents:UIControlEventTouchDown];
 
     return self;
 }
@@ -94,6 +116,15 @@ static id _commonInit(OUIColorSwatch *self)
 
 @synthesize color = _color;
 
+@synthesize singleSwatch = _singleSwatch;
+- (void)setSingleSwatch:(BOOL)singleSwatch;
+{
+    if (_singleSwatch == singleSwatch)
+        return;
+    _singleSwatch = singleSwatch;
+    [self setNeedsDisplay];
+}
+
 - (BOOL)isContinuousColorChange;
 {
     return NO;
@@ -107,6 +138,22 @@ static id _commonInit(OUIColorSwatch *self)
     return [SwatchFrame size];
 }
 
+static void _appendSwatchPath(CGContextRef ctx, CGRect bounds)
+{
+    OQAppendRoundedRect(ctx, CGRectInset(bounds, 1, 2), 4);
+}
+
+static void _drawSwatchImage(CGContextRef ctx, CGRect bounds, UIImage *image)
+{
+    CGContextSaveGState(ctx);
+    {
+        _appendSwatchPath(ctx, bounds);
+        CGContextClip(ctx);
+        [image drawInRect:bounds];
+    }
+    CGContextRestoreGState(ctx);
+}
+
 - (void)drawRect:(CGRect)rect;
 {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
@@ -114,27 +161,30 @@ static id _commonInit(OUIColorSwatch *self)
     
     if (_color) {
         if ([_color alphaComponent] < 1.0) {
-            CGContextSaveGState(ctx);
-            {
-                OQAppendRoundedRect(ctx, CGRectInset(bounds, 0.5, 0.5), 3);
-                CGContextClip(ctx);
-                [SwatchTranslucentBackground drawInRect:bounds];
-            }
-            CGContextRestoreGState(ctx);
+            _drawSwatchImage(ctx, bounds, _translucentBackgroundImage());
         }
 
         [_color.toColor set];
-        OQAppendRoundedRect(ctx, CGRectInset(bounds, 0.5, 0.5), 3);
+        _appendSwatchPath(ctx, bounds);
         CGContextFillPath(ctx);
         [SwatchFrame drawInRect:bounds];
-        
-        if (self.selected) {
-            OQFlipVerticallyInRect(ctx, bounds);
-            OQDrawImageCenteredInRect(ctx, [SelectedArrow CGImage], bounds);
-        }
     } else {
-        [ColorPickerSwatch drawInRect:bounds];
-        OQDrawImageCenteredInRect(ctx, [NavigationArrow CGImage], bounds);
+        _drawSwatchImage(ctx, bounds, _nilColorImage());
+        [SwatchFrame drawInRect:bounds];
+    }
+    
+    if (self.selected && !_singleSwatch) {
+        OQFlipVerticallyInRect(ctx, bounds);
+        OQDrawImageCenteredInRect(ctx, SelectedArrow, bounds);
+    }
+
+    if (_singleSwatch) {
+        // Hard coded to match the navigation arrow in OUIInspectorTextWells.
+        CGFloat inset = 32;
+        
+        CGRect swatchRect, dummy;
+        CGRectDivide(bounds, &swatchRect, &dummy, inset, CGRectMaxXEdge);
+        OQDrawImageCenteredInRect(ctx, _navigationArrowImage(), swatchRect);
     }
 }
 

@@ -10,6 +10,9 @@
 #import <OmniUI/OUIDrawing.h>
 #import <OmniBase/OmniBase.h>
 #import <UIKit/UIImage.h>
+#import <OmniUI/OUIInspector.h>
+
+#import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
@@ -58,6 +61,10 @@ static void _loadImages(ImageInfo *info, NSString *normalName, NSString *selecte
 
 static id _commonInit(OUIInspectorSegmentedControlButton *self)
 {
+    [self setTitleColor:[OUIInspector labelTextColor] forState:UIControlStateNormal];
+    [self setTitleShadowColor:OUIShadowColor(OUIShadowTypeDarkContentOnLightBackground) forState:UIControlStateNormal];
+    self.titleLabel.shadowOffset = OUIShadowOffset(OUIShadowTypeDarkContentOnLightBackground);
+    
     [self _updateBackgroundImages];
     return self;
 }
@@ -105,7 +112,7 @@ static id _commonInit(OUIInspectorSegmentedControlButton *self)
     [_image release];
     _image = [image retain];
     
-    [self setImage:(image ? OUIMakeShadowedImage(image) : nil) forState:UIControlStateNormal];
+    [self setImage:(image ? OUIMakeShadowedImage(image, OUIShadowTypeDarkContentOnLightBackground) : nil) forState:UIControlStateNormal];
 }
 
 @synthesize representedObject = _representedObject;

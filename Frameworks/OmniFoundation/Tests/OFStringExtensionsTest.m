@@ -19,6 +19,7 @@
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/NSMutableString-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
+#import <OmniFoundation/CFString-OFExtensions.h>
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniBase/OmniBase.h>
 
@@ -430,6 +431,41 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     should(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:0],(NSRange){0,2}));
     should(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:1],(NSRange){0,2}));
     should(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:2],(NSRange){2,1}));
+}
+
+- (void)testInvalidSequence
+{
+    static const unichar good0[0] = { };                               // zero-length string is valid
+    static const unichar good1[1] = { 'y' };
+    static const unichar good2[4] = { 'y', 'x', 0, 'Z' };              // NULs are valid, even if they don't correspond to a character
+    static const unichar good3[4] = { 'p', 'q', 0xD900, 0xDD00 };      // a normal surrogate pair
+    static const unichar good4[5] = { 0xD900, 0xDD00, 0xD900, 0xDD00, 'k' };  // more surrogate pair stuff
+    
+    static const unichar bad1[1] = { 0xD900 };                 // broken pair
+    static const unichar bad2[2] = { 0xD900, 'A' };            // broken pair
+    static const unichar bad3[2] = { 0xDD00, 0xD900 };         // reversed pair
+    static const unichar bad4[3] = { 0xDD00, 0xD900, 0xDD00 }; // reversed pair
+    static const unichar bad5[4] = { 'y', 'x', 0, 0xFFFE };    // reversed BOM
+    static const unichar bad6[3] = { 0xD87F, 0xDFFF, 'z' };    // valid surrogate pair encoding an invalid codepoint
+    static const unichar bad7[4] = { 0xFFFE, 'H', 'i', '!' };  // reversed BOM
+    static const unichar bad8[4] = { 'H', 'i', '0', 0xDFEE };  // broken pair
+
+#define USTR(x) (CFStringRef)[NSMakeCollectable(CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, x, sizeof(x)/sizeof(x[0]), kCFAllocatorNull)) autorelease]
+    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad1)), nil);
+    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad2)), nil);
+    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad3)), nil);
+    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad4)), nil);
+    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad5)), nil);
+    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad6)), nil);
+    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad7)), nil);
+    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad8)), nil);
+    
+    STAssertFalse(OFStringContainsInvalidSequences(USTR(good0)), nil);
+    STAssertFalse(OFStringContainsInvalidSequences(USTR(good1)), nil);
+    STAssertFalse(OFStringContainsInvalidSequences(USTR(good2)), nil);
+    STAssertFalse(OFStringContainsInvalidSequences(USTR(good3)), nil);
+    STAssertFalse(OFStringContainsInvalidSequences(USTR(good4)), nil);
+#undef USTR
 }
 
 @end

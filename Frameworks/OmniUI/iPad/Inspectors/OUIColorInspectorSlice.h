@@ -21,11 +21,11 @@
     BOOL _inContinuousChange;
 }
 
-@property(retain) IBOutlet OUIColorSwatchPicker *swatchPicker;
+@property(nonatomic,readonly) OUIColorSwatchPicker *swatchPicker;
 
 - (IBAction)changeColor:(id)sender;
 
-@property(readonly) OUIInspectorSelectionValue *selectionValue;
+@property(nonatomic,readonly) OUIInspectorSelectionValue *selectionValue;
 
 // Must be subclassed, in addition to -isAppropriateForInspectedObject:.
 - (NSSet *)getColorsFromObject:(id)object;
@@ -36,37 +36,4 @@
 
 // Uses the OUIColorInspection to validate objects and get/set colors.
 @interface OUIColorInspectorSlice : OUIAbstractColorInspectorSlice
-@end
-
-#import <OmniUI/OUIInspectorDetailSlice.h>
-
-@class OUIInspectorSegmentedControl, OUIColorPicker;
-
-// posts a change whenevrer the colorTypeSegmentedControl is changed via the UI
-#define OUIColorTypeChangeNotification @"OUIColorTypeChangeNotification" 
-
-@interface OUIColorInspectorDetailSlice : OUIInspectorDetailSlice
-{
-@private
-    OUIInspectorSegmentedControl *_colorTypeSegmentedControl;
-    OUIColorPicker *_currentColorPicker;
-    
-    OUIColorPicker *_paletteColorPicker;
-    OUIColorPicker *_hsvColorPicker;
-    OUIColorPicker *_rgbColorPicker;
-    OUIColorPicker *_grayColorPicker;
-    
-    NSUInteger _colorTypeIndex;
-}
-
-@property(retain,nonatomic) IBOutlet OUIInspectorSegmentedControl *colorTypeSegmentedControl;
-@property(retain,nonatomic) IBOutlet OUIColorPicker *paletteColorPicker;
-@property(retain,nonatomic) IBOutlet OUIColorPicker *hsvColorPicker;
-@property(retain,nonatomic) IBOutlet OUIColorPicker *rgbColorPicker;
-@property(retain,nonatomic) IBOutlet OUIColorPicker *grayColorPicker;
-
-@property(assign) NSUInteger selectedColorPickerIndex;
-
-- (IBAction)colorTypeSegmentedControlSelectionChanged:(id)sender;
-
 @end

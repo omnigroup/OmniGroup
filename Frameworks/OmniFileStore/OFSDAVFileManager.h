@@ -11,6 +11,7 @@
 #import <OmniFileStore/OFSDAVFileManagerDelegate.h>
 
 extern NSString * const OFSMobileMeHost;
+extern NSString * const OFSTrustedSyncHostPreference;
 
 @interface OFSDAVFileManager : OFSFileManager <OFSConcreteFileManager>
 
@@ -21,4 +22,7 @@ extern NSString * const OFSMobileMeHost;
 + (void)setAuthenticationDelegate:(id <OFSDAVFileManagerAuthenticationDelegate>)delegate;
 + (id <OFSDAVFileManagerAuthenticationDelegate>)authenticationDelegate;
 
++ (BOOL)isTrustedHost:(NSString *)host;
++ (void)setTrustedHost:(NSString *)host;
++ (void)removeTrustedHost:(NSString *)host;
 @end

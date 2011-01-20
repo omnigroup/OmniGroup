@@ -469,7 +469,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "../../Scripts/BuildStringsFromTarget\n";
+			shellScript = "../../Scripts/BuildStringsFromTarget OmniUnzip\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

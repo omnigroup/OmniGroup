@@ -6,23 +6,25 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIDocumentProxy.h>
+#import <OmniUI/OUIDrawing.h>
 
 #import <OmniUI/OUIDocumentProxyView.h>
 #import <OmniUI/OUIDirectTapGestureRecognizer.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OUIDocumentPreview.h>
+#import <OmniUI/OUIDocumentPDFPreview.h>
+#import <OmniUI/OUIDocumentImagePreview.h>
+#import <OmniUI/OUIDocumentPickerView.h>
+
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/NSUserDefaults-OFExtensions.h>
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniQuartz/OQDrawing.h>
 
-#import "OUIDocumentPDFPreview.h"
 #import "OUIDocumentPreviewLoadOperation.h"
 #import "OUIDocumentProxy-Internal.h"
-#import "OUIDocumentPreview.h"
-#import "OUIDocumentImagePreview.h"
-#import <OmniUI/OUIDocumentPickerView.h>
 
 RCS_ID("$Id$");
 
@@ -315,6 +317,22 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
     self.date = date;
 }
 
+- (CGSize)previewSizeForTargetSize:(CGSize)targetSize aspectRatio:(CGFloat)aspectRatio;
+{
+    // Aspect radio is w/h. Assume the preview has h=1, then its width is the aspect ratio. We can then figure out the max scale factor in each direction.
+    CGFloat previewWidth = aspectRatio;
+    CGFloat previewHeight = 1;
+    
+    CGFloat widthScale = targetSize.width/previewWidth;
+    CGFloat heightScale = targetSize.height/previewHeight;
+    CGFloat scale = MIN(widthScale, heightScale);
+    
+    CGSize size = CGSizeMake(previewWidth * scale, previewHeight * scale);
+    PREVIEW_DEBUG(@"  aspect %f -> %@ for %@", aspectRatio, NSStringFromCGSize(size), self.url);
+    
+    return size;
+}
+
 - (CGSize)previewSizeForTargetSize:(CGSize)targetSize;
 {
     OBPRECONDITION([NSThread isMainThread]); // We read the global aspect ratio cache
@@ -326,7 +344,6 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
         aspectRatioCache = [NSDictionary dictionary]; // make sure we get a non-nil object for the message below
     
     CGFloat aspectRatio = [aspectRatioCache floatForKey:cacheKey defaultValue:-1];
-    CGSize size;
     
     if (aspectRatio < 0) {
         // No preview loaded yet. Use the placeholder size.
@@ -339,18 +356,7 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
         aspectRatio = 4.0/3.0;
     }
     
-    // Aspect radio is w/h. Assume the preview has h=1, then its width is the aspect ratio. We can then figure out the max scale factor in each direction.
-    CGFloat previewWidth = aspectRatio;
-    CGFloat previewHeight = 1;
-    
-    CGFloat widthScale = targetSize.width/previewWidth;
-    CGFloat heightScale = targetSize.height/previewHeight;
-    CGFloat scale = MIN(widthScale, heightScale);
-    
-    size = CGSizeMake(previewWidth * scale, previewHeight * scale);
-    PREVIEW_DEBUG(@"  aspect %f -> %@ for %@", aspectRatio, NSStringFromCGSize(size), cacheKey);
-    
-    return size;
+    return [self previewSizeForTargetSize:targetSize aspectRatio:aspectRatio];
 }
 
 - (BOOL)hasPDFPreview
@@ -434,6 +440,38 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
     return YES;
 }
 
++ (id <OUIDocumentPreview>)makePreviewFromURL:(NSURL *)url size:(CGSize)size error:(NSError **)outError;
+{
+    NSData *pdfData = nil;
+
+    if (![self getPDFPreviewData:&pdfData modificationDate:NULL fromURL:url error:outError])
+        return nil;
+    
+    // Don't call -view here... probably just paranoia since the view should already be loaded, but we don't want to provoke view loading in the background.
+    OUIDocumentPDFPreview *preview = pdfData ? [[[OUIDocumentPDFPreview alloc] initWithData:pdfData originalViewSize:size] autorelease] : nil;
+    
+    /****
+     * UIKit's graphics contexts functions aren't thread safe in pre-4.2 (which some of our apps are still targetting).
+     * In particular, UIGraphicsPushContext is documented to be thread-unsafe.
+     * So, we have to use CG directly through all this code. No UIImage, UIColor, etc.
+     ****/
+    
+    CGColorSpaceRef rgbColorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef ctx = CGBitmapContextCreate(NULL, size.width, size.height, 8, 4*size.width, rgbColorSpace, kCGImageAlphaPremultipliedFirst);
+    CFRelease(rgbColorSpace);
+    
+    OUIDocumentProxyDrawPreview(ctx, preview, CGRectMake(0, 0, size.width, size.height));
+    CGImageRef imageRef = CGBitmapContextCreateImage(ctx);
+    CFRelease(ctx);
+    
+    UIImage *image = [UIImage imageWithCGImage:imageRef];
+    CGImageRelease(imageRef);
+    
+    preview.cachedImage = image;
+    
+    return preview;
+}
+
 - (UIImage *)cameraRollImage;
 {
     // Use the default behavior of drawing the document's preview.
@@ -455,7 +493,7 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
         CGRect paperRect = pdfPreview.untransformedPageRect;
         CGRect transformedTarget = CGRectApplyAffineTransform(paperRect, xform);
         
-        UIGraphicsBeginImageContext(transformedTarget.size);
+        OUIGraphicsBeginImageContext(transformedTarget.size);
         {
             CGContextRef ctx = UIGraphicsGetCurrentContext();
             
@@ -480,7 +518,7 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
             
             result = UIGraphicsGetImageFromCurrentImageContext();
         }
-        UIGraphicsEndImageContext();
+        OUIGraphicsEndImageContext();
     } else {
         result = preview.cachedImage;
     }

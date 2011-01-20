@@ -7,9 +7,9 @@
 //
 // $Id$
 
-#import <OmniUI/OUIInspectorDetailSlice.h>
+#import <OmniUI/OUISingleViewInspectorPane.h>
 
-@interface OUIFontInspectorDetailSlice : OUIInspectorDetailSlice <UITableViewDataSource, UITableViewDelegate>
+@interface OUIFontInspectorPane : OUISingleViewInspectorPane <UITableViewDataSource, UITableViewDelegate>
 {
 @private
     UIFont *_showFacesOfFont;

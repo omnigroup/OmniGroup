@@ -90,13 +90,7 @@ static NSUInteger MenuItemCount = NormalMenuItemCount;
     }
 #endif
 
-    [_menuPopoverController presentPopoverFromBarButtonItem:barItem permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
-}
-
-- (void)dismiss;
-{
-    [_menuPopoverController dismissPopoverAnimated:NO];
-    [self _discardMenu]; // -popoverControllerDidDismissPopover: is only called when user action causes the popover to auto-dismiss 
+    [[OUIAppController controller] presentPopover:_menuPopoverController fromBarButtonItem:barItem permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
 #pragma mark -

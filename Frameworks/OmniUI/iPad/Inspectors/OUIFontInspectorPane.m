@@ -5,26 +5,28 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniUI/OUIFontInspectorDetailSlice.h>
+#import <OmniUI/OUIFontInspectorPane.h>
 
-#import <OmniUI/OUIInspectorSlice.h>
-#import <OmniUI/OUIInspector.h>
-#import <OmniFoundation/NSSet-OFExtensions.h>
+#import <CoreText/CTFont.h>
 #import <OmniAppKit/OAFontDescriptor.h>
+#import <OmniFoundation/NSSet-OFExtensions.h>
+#import <OmniUI/OUIFontInspectorSlice.h>
+#import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorBackgroundView.h>
+#import <OmniUI/OUIInspectorSlice.h>
+#import <OmniUI/UITableView-OUIExtensions.h>
 
 #import "OUIFontUtilities.h"
-#import <OmniUI/OUIFontInspectorSlice.h>
-#import <CoreText/CTFont.h>
 
 RCS_ID("$Id$");
 
-@interface OUIFontInspectorDetailSlice (/*Private*/)
+@interface OUIFontInspectorPane (/*Private*/)
 - (void)_buildSections;
 - (void)_updateSectionItems;
 - (void)_scrollFirstSelectedItemToVisible:(BOOL)animated;
 @end
 
-@implementation OUIFontInspectorDetailSlice
+@implementation OUIFontInspectorPane
 
 static UIFont *_baseFontForFamily(NSString *familyName)
 {
@@ -74,11 +76,11 @@ static UIFont *_baseFontForFamily(NSString *familyName)
 }
 
 #pragma mark -
-#pragma mark OUIInspectorDetailSlice subclass
+#pragma mark OUIInspectorPane subclass
 
-- (void)setSlice:(OUIInspectorSlice *)aSlice
+- (void)setInspector:(OUIInspector *)aInspector;
 {
-    [super setSlice:aSlice];
+    [super setInspector:aInspector];
     [self _buildSections];
 }
 
@@ -149,18 +151,6 @@ static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
 #pragma mark -
 #pragma mark UIViewController
 
-- (void)viewDidLoad;
-{
-    [super viewDidLoad];
-        
-    // TODO: Redo the fore/background color based on the incoming selection?
-    UITableView *tableView = (UITableView *)self.view;
-    tableView.opaque = YES;
-    tableView.backgroundColor = [UIColor whiteColor];
-    
-    [self updateInterfaceFromInspectedObjects];
-}
-
 - (void)viewWillAppear:(BOOL)animated;
 {
     [super viewWillAppear:animated];
@@ -175,7 +165,7 @@ static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
 #pragma mark -
 #pragma mark UITableViewDataSource
 
-static NSDictionary *_sectionAtIndex(OUIFontInspectorDetailSlice *self, NSUInteger sectionIndex)
+static NSDictionary *_sectionAtIndex(OUIFontInspectorPane *self, NSUInteger sectionIndex)
 {
     NSUInteger sectionCount = [self->_sections count];
     if (sectionIndex >= sectionCount) {
@@ -186,12 +176,12 @@ static NSDictionary *_sectionAtIndex(OUIFontInspectorDetailSlice *self, NSUInteg
     return [self->_sections objectAtIndex:sectionIndex];
 }
 
-static NSArray *_itemsForSectionIndex(OUIFontInspectorDetailSlice *self, NSUInteger sectionIndex)
+static NSArray *_itemsForSectionIndex(OUIFontInspectorPane *self, NSUInteger sectionIndex)
 {
     return [_sectionAtIndex(self, sectionIndex) objectForKey:SectionItems];
 }
 
-static NSDictionary *_itemAtIndexPath(OUIFontInspectorDetailSlice *self, NSIndexPath *indexPath)
+static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *indexPath)
 {
     // Index path is group/row -- we expect [01]/N.
     if ([indexPath length] != 2) {
@@ -231,40 +221,6 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorDetailSlice *self, NSIndex
     return [items count];
 }
 
-static UIImage *_normalImage(void)
-{
-    // blank, but the same size as the other images
-    UIImage *image = [UIImage imageNamed:@"OUIFontInspectorItem-Normal.png"];
-    OBASSERT(image);
-    return image;
-}
-
-static UIImage *_selectedImage(void)
-{
-    UIImage *image = [UIImage imageNamed:@"OUIFontInspectorItem-Selected.png"];
-    OBASSERT(image);
-    OBASSERT(CGSizeEqualToSize([image size], [_normalImage() size]));
-    return image;
-}
-static UIImage *_highlightedImage(void)
-{
-    UIImage *image = [UIImage imageNamed:@"OUIFontInspectorItem-Highlighted.png"];
-    OBASSERT(image);
-    OBASSERT(CGSizeEqualToSize([image size], [_normalImage() size]));
-    return image;
-}
-
-static void _updateTableViewCellImage(UITableViewCell *cell, NSDictionary *item)
-{
-    if ([[item objectForKey:ItemSelected] boolValue]) {
-        cell.imageView.image = _selectedImage();
-        cell.imageView.highlightedImage = _highlightedImage();
-    } else {
-        cell.imageView.image = _normalImage();
-        cell.imageView.highlightedImage = nil;
-    }
-}
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     // Returning a nil cell will cause UITableView to throw an exception
@@ -290,7 +246,7 @@ static void _updateTableViewCellImage(UITableViewCell *cell, NSDictionary *item)
         [cell sizeToFit];
     }
     
-    _updateTableViewCellImage(cell, item);
+    OUITableViewCellShowSelection(cell, OUITableViewCellImageSelectionType, [[item objectForKey:ItemSelected] boolValue]);
 
     if (_showFacesOfFont == nil)
         cell.accessoryType = [[item objectForKey:ItemHasMulitpleFaces] boolValue] ? UITableViewCellAccessoryDetailDisclosureButton : UITableViewCellAccessoryNone;
@@ -318,8 +274,8 @@ static void _updateTableViewCellImage(UITableViewCell *cell, NSDictionary *item)
     OUIInspector *inspector = self.inspector;
     [inspector willBeginChangingInspectedObjects];
     {
-        for (id <OUIFontInspection> object in self.slice.appropriateObjectsForInspection) {
-            OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self.slice];
+        for (id <OUIFontInspection> object in self.parentSlice.appropriateObjectsForInspection) {
+            OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self.parentSlice];
             
             CGFloat fontSize;
             if (fontDescriptor)
@@ -344,7 +300,7 @@ static void _updateTableViewCellImage(UITableViewCell *cell, NSDictionary *item)
             
             if (fontDescriptor) {
                 //NSLog(@"setting fontDescriptor = %@", fontDescriptor);
-                [object setFontDescriptor:fontDescriptor fromInspectorSlice:self.slice];
+                [object setFontDescriptor:fontDescriptor fromInspectorSlice:self.parentSlice];
                 [fontDescriptor release];
             }
         }
@@ -354,24 +310,8 @@ static void _updateTableViewCellImage(UITableViewCell *cell, NSDictionary *item)
     // Won't -reloadData since we have _sections set up already (which is good)
     [self updateInterfaceFromInspectedObjects];
 
-    // Clear the selection
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    
-    // Update the checkmarks
-    {
-        UITableViewCell *selectedCell = [tableView cellForRowAtIndexPath:indexPath];
-        
-        // Possibly turn off images
-        for (UITableViewCell *cell in [tableView visibleCells]) {
-            if (cell != selectedCell && cell.imageView.image != _normalImage()) {
-                cell.imageView.image = _normalImage();
-                cell.imageView.highlightedImage = _normalImage();
-            }
-        }
-        
-        selectedCell.imageView.image = _selectedImage();
-        selectedCell.imageView.highlightedImage = _highlightedImage();
-    }
+    // Clears the selection and updates images.
+    OUITableViewFinishedReactingToSelection(tableView, OUITableViewCellImageSelectionType);
 }
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath;
@@ -386,7 +326,7 @@ static void _updateTableViewCellImage(UITableViewCell *cell, NSDictionary *item)
 
     UIFont *font = [item objectForKey:ItemFont];
     
-    [(OUIFontInspectorSlice *)self.slice showFacesForFamilyBaseFont:font];
+    [(OUIFontInspectorSlice *)self.parentSlice showFacesForFamilyBaseFont:font];
 }
 
 #pragma mark -
@@ -394,13 +334,13 @@ static void _updateTableViewCellImage(UITableViewCell *cell, NSDictionary *item)
 
 - (void)_buildSections;
 {
-    if (!self.slice) {
+    if (!self.parentSlice) {
         [_sections release];
         _sections = nil;
         return;
     }
     
-    OUIFontSelection selection = OUICollectFontSelection(self.slice, self.slice.appropriateObjectsForInspection);
+    OUIFontSelection selection = OUICollectFontSelection(self.parentSlice, self.parentSlice.appropriateObjectsForInspection);
     //NSLog(@"selection.fontDescriptors = %@", selection.fontDescriptors);
 
     if (_showFacesOfFont == nil) {
@@ -496,7 +436,7 @@ static void _updateTableViewCellImage(UITableViewCell *cell, NSDictionary *item)
 
 - (void)_updateSectionItems;
 {
-    OUIFontSelection selection = OUICollectFontSelection(self.slice, self.slice.appropriateObjectsForInspection);
+    OUIFontSelection selection = OUICollectFontSelection(self.parentSlice, self.parentSlice.appropriateObjectsForInspection);
         
     NSSet *selectedFontNames;
     if (_showFacesOfFont)

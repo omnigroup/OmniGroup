@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIUndoBarButtonItem.h>
 
-@class OUIDocument, OUIToolbarViewController;
+@class OUIDocument, OUIToolbarViewController, OUIBarButtonItem;
 
 @interface OUISingleDocumentAppController : OUIAppController <UITextFieldDelegate, OUIUndoBarButtonItemTarget>
 {
@@ -22,11 +22,11 @@
     UIBarButtonItem *_appTitleToolbarItem;
     UITextField *_appTitleToolbarTextField;
     
-    UIBarButtonItem *_closeDocumentBarButtonItem;
+    OUIBarButtonItem *_closeDocumentBarButtonItem;
     UITextField *_documentTitleTextField;
     UIBarButtonItem *_documentTitleToolbarItem;
     OUIUndoBarButtonItem *_undoBarButtonItem;
-    UIBarButtonItem *_infoBarButtonItem;
+    OUIBarButtonItem *_infoBarButtonItem;
     OUIDocument *_document;
     
     BOOL _openAnimated;
@@ -44,7 +44,7 @@
 @property(readonly) UIBarButtonItem *infoBarButtonItem;
 
 - (NSString *)documentTypeForURL:(NSURL *)url;
-- (id <OUIDocument>)createNewDocumentAtURL:(NSURL *)url error:(NSError **)outError;
+- (BOOL)createNewDocumentAtURL:(NSURL *)url error:(NSError **)outError;
 - (IBAction)makeNewDocument:(id)sender;
 
 @property(readonly) OUIDocument *document;

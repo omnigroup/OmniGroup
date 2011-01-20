@@ -10,13 +10,20 @@
 #import <Foundation/NSObject.h>
 
 @class NSArray, NSString;
-@class OUIInspector;
+@class OUIInspector, OUIInspectorPane, OUIStackedSlicesInspectorPane;
 
 @protocol OUIInspectorDelegate <NSObject>
-- (NSString *)inspectorTitle:(OUIInspector *)inspector;
-- (NSArray *)inspectorSlices:(OUIInspector *)inspector;
+@optional
 
-/* Delegates should normally implement this method to restore the first responder. */
+// If this is not implemented or returns nil, and the inspector pane doesn't already have a title, an assertion will fire it will be given a title of "Inspector".
+// Thus, you either need to implement this or the manually give titles to the panes.
+- (NSString *)inspector:(OUIInspector *)inspector titleForPane:(OUIInspectorPane *)pane;
+
+// If this is not implemented or returns nil, and the stacked inspector pane doesn't already have slices, an assertion will fire and the inspector dismissed.
+// Thus, you either need to implement this or the manually give slices to the stacked slice panes.
+- (NSArray *)inspector:(OUIInspector *)inspector slicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
+
+// Delegates should normally implement this method to restore the first responder.
 - (void)inspectorDidDismiss:(OUIInspector *)inspector;
 
 @end

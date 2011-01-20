@@ -664,7 +664,7 @@ static NSString *windowFrameSaveName = @"Preferences";
         [categoryHeaderTextField setTextColor:[NSColor controlTextColor]];
         [categoryHeaderTextField setFont:[NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
         [categoryHeaderTextField setAlignment:NSLeftTextAlignment];
-        [categoryHeaderTextField setStringValue:[isa _localizedCategoryNameForCategoryName:categoryName]];
+        [categoryHeaderTextField setStringValue:[[self class] _localizedCategoryNameForCategoryName:categoryName]];
         [categoryHeaderTextField sizeToFit];
         [showAllIconsView addSubview:categoryHeaderTextField];
         [categoryHeaderTextField setFrame:NSMakeRect(sideMargin, boxHeight + verticalSpaceBelowTextField, NSWidth([preferenceBox bounds]) - sideMargin, NSHeight([categoryHeaderTextField frame]))];

@@ -54,7 +54,7 @@ RCS_ID("$Id$");
 
 - (UIViewController *)makeViewController;
 {
-    return [[[TextViewController alloc] initWithDocument:self] autorelease];
+    return [[[TextViewController alloc] init] autorelease];
 }
 
 - (BOOL)saveToURL:(NSURL *)url isAutosave:(BOOL)isAutosave error:(NSError **)outError;

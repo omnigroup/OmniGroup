@@ -14,6 +14,7 @@
 #import <OmniFoundation/OFMultiValueDictionary.h>
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
+#import <OmniFoundation/OFPreference.h>
 #import <Security/SecTrust.h>
 
 RCS_ID("$Id$");
@@ -235,7 +236,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
                     // Record the Content-Type
                     [info setObject:contentType forKey:@"errorDataContentType"];
                     OFMultiValueDictionary *parameters = [[[OFMultiValueDictionary alloc] init] autorelease];
-                    [isa _parseContentTypeHeaderValue:contentType intoDictionary:parameters valueChars:nil];
+                    [[self class] _parseContentTypeHeaderValue:contentType intoDictionary:parameters valueChars:nil];
                     NSString *encodingName = [parameters firstObjectForKey:@"charset"];
                     CFStringEncoding encoding = kCFStringEncodingInvalidId;
                     if (encodingName != nil)
@@ -498,21 +499,23 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
             if (oserr == noErr && evaluationResult == kSecTrustResultRecoverableTrustFailure) {
                 (void)shouldAskDelegate;
                 
-                // tjw -- Didn't pull over the NSSet of trusted hosts. could do that, but nothing on the trunk would call it for now. should we just finish the Security.framework integration here instead?
-                OBFinishPortingLater("Bubble cert problems up to the UI, and use SecTrustSettings and/or +credentialForTrust: to make the override persistent.");
-#if 0
                 // The situation we're interested in is "recoverable failure": this indicates that the evaluation failed, but might succeed if we prod it a little.
                 // shouldAskDelegate = YES;
                 // For now, we're just replicating the behavior of the old WebKit API: if a hostname is in OFSDAVFileManager's whitelist, we disable all certificate checks.
 
-                if ([OFSDAVFileManager isTrustedHost:[protectionSpace host]]) {
+                NSString *trustedHost = [[OFPreferenceWrapper sharedPreferenceWrapper] objectForKey:OFSTrustedSyncHostPreference];
+                if ([OFSDAVFileManager isTrustedHost:[protectionSpace host]] || [trustedHost isEqualToString:[protectionSpace host]]) {
                     credential = [[NSURLCredential class] performSelector:@selector(credentialForTrust:) withObject:(id)trustRef];
                     if (OFSFileManagerDebug > 2)
                         NSLog(@"credential = %@", credential);
                     [[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
                     return;
+                } else {
+                    id <OFSDAVFileManagerAuthenticationDelegate> delegate = [OFSDAVFileManager authenticationDelegate];
+                    [delegate DAVFileManager:_nonretained_fileManager validateCertificateForChallenge:challenge];
+                    [[challenge sender] cancelAuthenticationChallenge:challenge];   // delegate will decide whether to restart the operation
+                    return;
                 }
-#endif
             }
         }
         

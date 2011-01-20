@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <OmniUI/OUIFontInspectorSlice.h>
 #import <OmniUI/OUITextLayout.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniQuartz/OQColor.h>
 #import <Foundation/NSAttributedString.h>
 #import <QuartzCore/QuartzCore.h>
@@ -20,6 +21,7 @@
 #import <OmniBase/rcsid.h>
 #import <OmniFoundation/OFNull.h>
 #import <MobileCoreServices/UTCoreTypes.h>
+#import <OmniAppKit/OATextStorage.h>
 
 #import <execinfo.h>
 #import <stdlib.h>
@@ -42,8 +44,6 @@ RCS_ID("$Id$");
 #endif
 
 /* TODO: If low memory and not first responder, clear out actionRecognizers[] */
-
-/* TODO: If low memory and not first responder, clear out selection layers */
 
 #define CARET_ACTIVITY_SOLID_INTERVAL 0.75
 
@@ -129,7 +129,7 @@ static id do_init(OUIEditableFrame *self)
     self->flags.textNeedsUpdate = 1;
     self->flags.delegateRespondsToLayoutChanged = 0;
     self->flags.showSelectionThumbs = 1;
-    self->flags.showInspector = 0;  // Temporarily disabling the text style inspector since it isn't quite ready for prime time
+    self->flags.showsInspector = 0;
     self->selectionDirtyRect = CGRectNull;
     self->markedTextDirtyRect = CGRectNull;
     
@@ -141,7 +141,6 @@ static id do_init(OUIEditableFrame *self)
     self.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self->tapSelectionGranularity = UITextGranularityWord;
 
-    // You can turn autocorrection on, but it's currently pretty broken: see RADAR 7881864 (dup of 7696512), 7914098 (dup of 7673939).
     self.autocorrectionType = UITextAutocorrectionTypeNo;
 
     return self;
@@ -175,6 +174,42 @@ static inline BOOL in_range(NSRange r, CFIndex i)
     NSUInteger u = (NSUInteger)i;
     return (u >= r.location && ( u - r.location ) < r.length);
 }
+
+/* Returns true if CFIndex i is within CFRange r. */
+static inline BOOL in_cfrange(CFRange r, CFIndex i)
+{
+    return (i >= r.location && ( i - r.location ) < r.length);
+}
+
+/* Returns true if the two ranges overlap. */
+static BOOL cfRangeOverlapsCFRange(CFRange r1, CFRange r2)
+{
+    if (r1.location < r2.location) {
+        return ( r2.location - r1.location ) < r1.length;
+    } else if (r1.location > r2.location) {
+        return ( r1.location - r2.location ) < r2.length;
+    } else {
+        /* Same start location */
+        return r1.length > 0 && r2.length > 0;
+    }
+}
+
+static BOOL cfRangeContainedByCFRange(CFRange r1, CFRange r2)
+{
+    if (r1.location < r2.location)
+        return NO;
+    
+    if (( r1.location + r1.length ) > ( r2.location + r2.length ))
+        return NO;
+    
+    return YES;
+}
+
+/* We're assuming that a composed character sequence corresponds to one grapheme cluster.
+ * This isn't strictly true (see UNICODE Standard Annex #29 for more than you want to know about grapheme segmentation).
+ * Fortunately(?), Apple's composed character sequence methods are documented to actually return grapheme-cluster boundaries rather than composed character sequence boundaries.
+ */
+#define CFStringGetRangeOfGraphemeClusterAtIndex(s, i) CFStringGetRangeOfComposedCharactersAtIndex(s, i)
 
 /* Returns the square of the distance between two points; useful if you only need it for comparison with other distances */
 static inline CGFloat dist_sqr(CGPoint a, CGPoint b)
@@ -215,13 +250,14 @@ static CFIndex bsearchLines(CFArrayRef lines, CFIndex l, CFIndex h, CFIndex quer
 /* Similar to bsearchLines(), but finds a CTRun within a CTLine. */
 /* We can't do a binary search, because runs are visually ordered, not logically ordered (experimentally true, but undocumented) */
 /* Hopefully a given character index will only ever be claimed by one run... */
-static CFIndex searchRuns(CFArrayRef runs, CFIndex l, CFIndex h, CFIndex queryIndex, CTRunRef *foundRun)
+/* Note: Probably a pre-composed character whose base or combining mark must be rendered from a fallback font will result in two runs generated from a single string index */
+static CFIndex searchRuns(CFArrayRef runs, CFIndex l, CFIndex h, CFRange queryRange, CTRunRef *foundRun)
 {
     while (l < h) {
         CTRunRef run = CFArrayGetValueAtIndex(runs, l);
         CFRange runRange = CTRunGetStringRange(run);
         
-        if (runRange.location <= queryIndex && (runRange.location+runRange.length) > queryIndex) {
+        if (cfRangeOverlapsCFRange(runRange, queryRange)) {
             *foundRun = run;
             return l;
         }
@@ -466,6 +502,7 @@ static void rectanglesInRange(CTFrameRef frame, NSRange r, BOOL sloppy, rectangl
     if (firstLine < 0 || firstLine >= lineCount)
         return;
     
+    /* Walk through all the lines containing a part of the range */
     for (CFIndex lineIndex = firstLine; lineIndex < lineCount; lineIndex ++) {
         CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
         CFRange lineRange = CTLineGetStringRange(line);
@@ -479,10 +516,12 @@ static void rectanglesInRange(CTFrameRef frame, NSRange r, BOOL sloppy, rectangl
         if (r.location + r.length < (NSUInteger)lineRange.location)
             break;
         else if (r.location <= (NSUInteger)lineRange.location) {
+            /* The range started before this line */
             left = 0;
             spanRange.location = (NSUInteger)lineRange.location;
             flags |= rectwalker_LeftIsLineWrap;
         } else {
+            /* The range starts after this line does --- presumably it starts during this line */
             left = CTLineGetOffsetForStringIndex(line, r.location, NULL);
             spanRange.location = r.location;
             flags |= rectwalker_LeftIsRangeBoundary;
@@ -491,6 +530,7 @@ static void rectanglesInRange(CTFrameRef frame, NSRange r, BOOL sloppy, rectangl
         BOOL lastLine;
         
         if (in_range(r, lineRange.location + lineRange.length)) {
+            /* The end of this line (or rather, the first location past this line) is still within the range, so this isn't the last line */
             right = lineWidth;
             spanRange.length = ( lineRange.location + lineRange.length ) - spanRange.location;
             if ((lineIndex+1) < lineCount)
@@ -499,6 +539,7 @@ static void rectanglesInRange(CTFrameRef frame, NSRange r, BOOL sloppy, rectangl
                 lastLine = YES;
             flags |= rectwalker_RightIsLineWrap;
         } else {
+            /* This is the last line that we'll be enumerating */
             right = CTLineGetOffsetForStringIndex(line, r.location + r.length, NULL);
             spanRange.length = ( r.location + r.length ) - spanRange.location;
             lastLine = YES;
@@ -544,18 +585,6 @@ struct typographicPosition {
         endsText   =  2
     } position;
 };
-
-#if 0
-
-/* These used to be computed by getTypographicPosition(), but only one caller currently wants them, so they're computed by that caller now. */
-struct typographicPositionMetrics {
-    CGPoint baselinePoint;            // The typographic position relative to lineOrigin
-    CGPoint lineOrigin;               // The line's origin in layout space
-    CGFloat ascent, descent;          // The line's ascent and descent, typically poth are positive
-    CGFloat secondaryOffset;          // CoreText gives this to us but I'm not sure what it's for
-};
-
-#endif
 
 static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int affinity, struct typographicPosition *result)
 {
@@ -703,8 +732,11 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
 {
     if (UIEdgeInsetsEqualToEdgeInsets(newInset, textInset))
         return;
+    
     textInset = newInset;
-    [self setNeedsDisplay];
+    
+    // We could avoid this if we are in unlimited layout mode rather than having a specific layout size or an implicit size of our frame. But likely it'll be set once before we have any text anyway.
+    [self setNeedsLayout];
 }
 
 @synthesize textLayoutSize = layoutSize;
@@ -748,8 +780,13 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
 {
     delegate = newDelegate;
     
+    // Cache some responds-to information.
+    // Don't bother caching everything, just the methods we call frequently during use.
+    
     flags.delegateRespondsToLayoutChanged = ( newDelegate && [newDelegate respondsToSelector:@selector(textViewLayoutChanged:)] )? 1 : 0;
     flags.delegateRespondsToContentsChanged = ( newDelegate && [newDelegate respondsToSelector:@selector(textViewContentsChanged:)] )? 1 : 0;
+    flags.delegateRespondsToCanShowContextMenu = ( newDelegate && [newDelegate respondsToSelector:@selector(textViewCanShowContextMenu:)] )? 1 : 0;
+    flags.delegateRespondsToShouldInsertText = ( newDelegate && [newDelegate respondsToSelector:@selector(textView:shouldInsertText:)] )? 1 : 0;
 }
 
 @synthesize delegate;
@@ -876,7 +913,7 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
 }
 
 /* The pattern of housekeeping we need to do around every change to our content. Call beforeMutate() before changing _content, afterMutate() after changing the content, and notifyAfterMutate() some time after that before returning from the method. */
-static BOOL beforeMutate(OUIEditableFrame *self, SEL _cmd)
+static BOOL beforeMutate(OUIEditableFrame *self, SEL _cmd, BOOL shouldNotifyInputDelegate)
 {
     NSUInteger wasGeneration = self->generation;
     
@@ -887,16 +924,18 @@ static BOOL beforeMutate(OUIEditableFrame *self, SEL _cmd)
         [self setNeedsLayout];
     }
     
-    DEBUG_TEXT(@">>> textWillChange (%@)", NSStringFromSelector(_cmd));
-    [self->inputDelegate textWillChange:self];
-    DEBUG_TEXT(@"<<< textWillChange (%@)", NSStringFromSelector(_cmd));
-    
-    if (wasGeneration != self->generation) {
-        DEBUG_TEXT(@"Aborting %@ due to stupidity of UITextInputDelegate (RADAR 7881864 / 7696512)", NSStringFromSelector(_cmd));
-        DEBUG_TEXT(@">>> textDidChange (%@/abort)", NSStringFromSelector(_cmd));
-        [self->inputDelegate textDidChange:self];
-        DEBUG_TEXT(@"<<< textDidChange (%@/abort)", NSStringFromSelector(_cmd));
-        return NO;
+    if (shouldNotifyInputDelegate) {
+        DEBUG_TEXT(@">>> textWillChange (%@)", NSStringFromSelector(_cmd));
+        [self->inputDelegate textWillChange:self];
+        DEBUG_TEXT(@"<<< textWillChange (%@)", NSStringFromSelector(_cmd));
+        
+        if (wasGeneration != self->generation) {
+            DEBUG_TEXT(@"Aborting %@ due to stupidity of UITextInputDelegate (RADAR 7881864 / 7696512)", NSStringFromSelector(_cmd));
+            DEBUG_TEXT(@">>> textDidChange (%@/abort)", NSStringFromSelector(_cmd));
+            [self->inputDelegate textDidChange:self];
+            DEBUG_TEXT(@"<<< textDidChange (%@/abort)", NSStringFromSelector(_cmd));
+            return NO;
+        }
     }
     
     [self->immutableContent release];
@@ -913,13 +952,18 @@ static inline void afterMutate(OUIEditableFrame *self, SEL _cmd)
     [self->_content endEditing];
 }
 
-static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
+static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd, BOOL shouldNotifyInputDelegate)
 {
-    DEBUG_TEXT(@">>> textDidChange (%@)", NSStringFromSelector(_cmd));
-    [self->inputDelegate textDidChange:self];
-    if (self->flags.delegateRespondsToContentsChanged)
+    if (shouldNotifyInputDelegate) {
+        DEBUG_TEXT(@">>> textDidChange (%@)", NSStringFromSelector(_cmd));
+        [self->inputDelegate textDidChange:self];
+        DEBUG_TEXT(@"<<< textDidChange (%@)", NSStringFromSelector(_cmd));
+    }
+    if (self->flags.delegateRespondsToContentsChanged) {
+        DEBUG_TEXT(@">>> textViewContentsChanged (%@)", NSStringFromSelector(_cmd));
         [self->delegate textViewContentsChanged:self];
-    DEBUG_TEXT(@"<<< textDidChange (%@)", NSStringFromSelector(_cmd));
+        DEBUG_TEXT(@"<<< textViewContentsChanged (%@)", NSStringFromSelector(_cmd));
+    }
 }
 
 - (void)setValue:(id)value forAttribute:(NSString *)attr inRange:(UITextRange *)r;
@@ -938,7 +982,7 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
     
     [self _setSolidCaret:0];
     
-    if (!beforeMutate(self, _cmd))
+    if (!beforeMutate(self, _cmd, YES))
         return;
     
     NSUInteger adjustedContentLength = [_content length] - 1; // don't molest the trailing newline
@@ -954,7 +998,7 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd)
     else
         [_content removeAttribute:attr range:cr];
     afterMutate(self, _cmd);
-    notifyAfterMutate(self, _cmd);
+    notifyAfterMutate(self, _cmd, YES);
     
     [self setNeedsDisplay];
 }
@@ -1060,14 +1104,16 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
 {
     [super layoutSubviews];
 
-    // NSLog(@"Laying out: solidCaret = %u", flags.solidCaret);
-    
     BOOL amFirstResponder = [self isFirstResponder];
     
     /* Show or hide the selection thumbs */
     if (selection && ![selection isEmpty] && flags.showSelectionThumbs && amFirstResponder) {
         if (!drawnFrame || flags.textNeedsUpdate)
             [self _updateLayout:YES];
+        
+        /* We don't want to animate thumb appearance/disappearance --- it's distracting */
+        BOOL wereAnimationsEnabled = [UIView areAnimationsEnabled];
+        [UIView setAnimationsEnabled:NO];
         
         CGRect caretRect;
         
@@ -1103,6 +1149,8 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
             [endThumb setCaretRectangle:caretRect];
             endThumb.hidden = NO;
         }
+        
+        [UIView setAnimationsEnabled:wereAnimationsEnabled];
     } else {
         // Hide thumbs if we've got 'em
         if (startThumb) {
@@ -1143,11 +1191,13 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     }
     
     /* Show or hide the selection context menu. Always suppress it if the loupe is up, though. */
+    if (selection == nil)
+        flags.showingEditMenu = 0;
     if (selection != nil && ![selection isEmpty])
         flags.showingEditMenu = 1;
     BOOL suppressContextMenu = (_loupe != nil && _loupe.mode != OUILoupeOverlayNone) ||
                                 (_textInspector != nil && _textInspector.isVisible) ||
-                                (delegate && [delegate respondsToSelector:@selector(textViewCanShowContextMenu:)] && ![delegate textViewCanShowContextMenu:self]);
+                                (flags.delegateRespondsToCanShowContextMenu && ![delegate textViewCanShowContextMenu:self]);
     if (!flags.showingEditMenu || suppressContextMenu || !amFirstResponder) {
         if (_selectionContextMenu) {
             [_selectionContextMenu setMenuVisible:NO animated:( suppressContextMenu? NO : YES )];
@@ -1328,6 +1378,10 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
 - (BOOL)resignFirstResponder;
 {
     DEBUG_TEXT(@">> resign first responder");
+    
+    if ([delegate respondsToSelector:@selector(textViewShouldEndEditing:)] && ![delegate textViewShouldEndEditing:self])
+        return NO;
+    
     BOOL b = [super resignFirstResponder];
     
     if (![self isFirstResponder]) {
@@ -1367,6 +1421,27 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     return YES;
 }
 
+- (void)willMoveToSuperview:(UIView *)newSuperview;
+{
+    // If we're removed from our superview, -layoutSubviews is not called. This is OK for our actual subviews (like our thumbs) since they're removed along with us, but not for the other view layout we normally do in that method.
+    
+    if (_cursorOverlay && !(_cursorOverlay.hidden)) {
+        [_cursorOverlay stopBlinking];
+        _cursorOverlay.hidden = YES;
+    }
+    
+    if (_selectionContextMenu) {
+        DEBUG_TEXT(@"Hiding context menu (in -willMoveToSuperview:)");
+        [_selectionContextMenu setMenuVisible:NO animated:NO];
+        [_selectionContextMenu autorelease];
+        _selectionContextMenu = nil;
+    }
+    
+    [_loupe setMode:OUILoupeOverlayNone];
+    
+    [super willMoveToSuperview:newSuperview];
+}
+
 #pragma mark UIResponderStandardEditActions
 
 - (void)copy:(id)sender;
@@ -1382,14 +1457,18 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
 {
     if (selection) {
         [self copy:sender];
-        [self replaceRange:selection withText:@""];
+        [self delete:sender];
     }
 }
 
 - (void)delete:(id)sender;
 {
     if (selection && ![selection isEmpty]) {
+        [inputDelegate textWillChange:self];
+        [inputDelegate selectionWillChange:self];
         [self replaceRange:selection withText:@""];
+        [inputDelegate selectionDidChange:self];
+        [inputDelegate textDidChange:self];
     }    
 }
 
@@ -1401,7 +1480,11 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
         if (!seln) {
             seln = [[OUEFTextRange alloc] initWithStart:(OUEFTextPosition *)[self endOfDocument] end:(OUEFTextPosition *)[self endOfDocument]];
         }
+        [inputDelegate textWillChange:self];
+        [inputDelegate selectionWillChange:self];
         [self replaceRange:seln withText:scrap];
+        [inputDelegate selectionDidChange:self];
+        [inputDelegate textDidChange:self];
     }
 }
 
@@ -1430,7 +1513,7 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
 {
-    if (action == @selector(inspectSelectedText:) && !flags.showInspector)
+    if (action == @selector(inspectSelectedText:) && !flags.showsInspector)
         return NO;
 
     if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(delete:) || action == @selector(inspectSelectedText:)) {
@@ -1516,7 +1599,15 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
             insertAt = contentLength;
     }
     
-    return [_content attributesAtIndex:(insertAt > 0 ? insertAt-1 : 0) effectiveRange:NULL];
+    NSDictionary *attributes = [_content attributesAtIndex:(insertAt > 0 ? insertAt-1 : 0) effectiveRange:NULL];
+    
+    if ([attributes objectForKey:OAAttachmentAttributeName]) {
+        NSMutableDictionary *trimmedAttributes = [NSMutableDictionary dictionaryWithDictionary:attributes];
+        [trimmedAttributes removeObjectForKey:OAAttachmentAttributeName];
+        return trimmedAttributes;
+    }
+    
+    return attributes;
 }
 
 @synthesize typingAttributes;
@@ -1551,7 +1642,7 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
         _content = [[NSMutableAttributedString alloc] initWithString:@"\n" attributes:allDefaultAttributes];
     }
     
-    if (!beforeMutate(self, _cmd))
+    if (!beforeMutate(self, _cmd, YES))
         return;
 
     NSInteger len = [_content length];
@@ -1567,7 +1658,11 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     }
     afterMutate(self, _cmd);
     [self unmarkText];
-    [self _setSelectionToIndex:[_content length]-1];
+
+    OUEFTextRange *newSelection = [[OUEFTextRange alloc] initWithRange:(NSRange){ [_content length]-1, 0 } generation:generation];
+    [self _setSelectedTextRange:newSelection notifyDelegate:YES];
+    [newSelection release];
+
     [inputDelegate textDidChange:self];
     
     /* GraphSketcher's TextEditor class doesn't expect us to call it back here. Not sure which way is better. 
@@ -1594,10 +1689,19 @@ enum {
     NSRightArrowFunctionKey = 0xF703,
 };
 
+/* NB: This should only be called by the iOS input system.
+ The reason is that we need to avoid calling [inputDelegate textWillChange:] etc for changes incurred by the iOS input system, and OUIEditableFrame's -insertText: method assumes that it is being called by the OS and should not notify the delegate.
+ The only place this is mentioned in the docs is an aside in the "Text, Web, and Editing Programming Guide": "When changes occur in the text view due to external reasons-that is, they aren't caused by calls from the text input system-the UITextInput object should send textWillChange:, textDidChange:, selectionWillChange:, and selectionDidChange: messages to the input delegate".
+ The implication of the above is that we *shouldn't* call the delegate methods for changes caused by calls from the text input system, and it turns out that if we do, a variety of small bugs appear in autocorrect and ideographic input.
+ (We do call some other UITextInput mutators from non-UITextInput methods, an in those cases we bracket the calls with calls to the inputDelegate.)
+ */
 - (void)insertText:(NSString *)text;
 {
     OBPRECONDITION(_content);
-    
+
+    if (flags.delegateRespondsToShouldInsertText && ![delegate textView:self shouldInsertText:text])
+        return;
+
     [self _setSolidCaret:0];
     
     // iPad simulator's Japanese input method likes to try to insert nil. I don't know why.
@@ -1695,7 +1799,7 @@ enum {
     
     [self unmarkText];
 
-    if (!beforeMutate(self, _cmd))
+    if (!beforeMutate(self, _cmd, NO))
         return;
     
     NSAttributedString *insertThis = [[NSAttributedString alloc] initWithString:text attributes:[self typingAttributes]];
@@ -1703,7 +1807,7 @@ enum {
     [insertThis release];
     afterMutate(self, _cmd);
     [self _setSelectionToIndex: ( replaceRange.location + [text length] )];
-    notifyAfterMutate(self, _cmd);
+    notifyAfterMutate(self, _cmd, NO);
     
     [self setNeedsDisplay];
 }
@@ -1730,14 +1834,14 @@ enum {
         return;
     } else {
         [self unmarkText];
-        if (!beforeMutate(self, _cmd))
+        if (!beforeMutate(self, _cmd, NO))
             return;
         
         NSRange cr = [[_content string] rangeOfComposedCharacterSequenceAtIndex:st-1];
         [_content deleteCharactersInRange:cr];
         afterMutate(self, _cmd);
         [self _setSelectionToIndex:cr.location];
-        notifyAfterMutate(self, _cmd);
+        notifyAfterMutate(self, _cmd, NO);
         [self setNeedsDisplay];
     }
 }
@@ -1766,7 +1870,7 @@ enum {
 
 - (NSString *)textInRange:(UITextRange *)range;
 {
-    DEBUG_TEXT(@"-- textInRange:%@", [range description]);
+    // DEBUG_TEXT(@"-- textInRange:%@", [range description]);
 
     if (!range || ![range isKindOfClass:[OUEFTextRange class]])
         return nil;
@@ -1780,7 +1884,7 @@ enum {
     else
         result = [[_content string] substringWithRange:(NSRange){ st, en - st }];
     
-    //DEBUG_TEXT(@"textInRange:%@ -> \"%@\"", [range description], result);
+    DEBUG_TEXT(@"textInRange:%@ -> %@", [range description], ([result length] > 10)? [NSString stringWithFormat:@"%u chars", (unsigned)[result length]] : [NSString stringWithFormat:@"\"%@\"", result]);
     
     return result;
 }
@@ -1809,6 +1913,10 @@ enum {
 }
 #endif
 
+/*
+ NB: This should only be called from other methods that are also part of the UITextInput / UIKeyInput protocols, and not called by user code. See the comment before -insertText: for some more discussion.
+ Right now we do call it from other places as well (eg menu actions) and those places are responsible for emitting the inputDelegate messages.
+ */
 - (void)replaceRange:(UITextRange *)range withText:(NSString *)text;
 {
     DEBUG_TEXT(@"-- replaceRange:%@ withText:'%@'", [range description], text);
@@ -1833,7 +1941,7 @@ enum {
     [self _setSolidCaret:0];
     
     [self unmarkText];
-    if (!beforeMutate(self, _cmd))
+    if (!beforeMutate(self, _cmd, NO))
         return;
     
     NSUInteger adjustedContentLength = [_content length] - 1; // don't molest the trailing newline
@@ -1854,7 +1962,7 @@ enum {
     [newtext release];
     afterMutate(self, _cmd);
     [self _setSelectionToIndex:endex];
-    notifyAfterMutate(self, _cmd);
+    notifyAfterMutate(self, _cmd, NO);
     
     [self setNeedsDisplay];
 }
@@ -1871,7 +1979,7 @@ enum {
     DEBUG_TEXT(@"-- setSelectedTextRange:%@", newRange);
     OBASSERT(newRange == nil || [newRange isKindOfClass:[OUEFTextRange class]]);
 
-    /* TODO: We assume that any selection change that's official enough come through this method should count as caret-solidifying activity. Probably should look for corner cases here. */
+    /* We assume that any selection change that's official enough come through this method should count as caret-solidifying activity. Probably should look for corner cases here. */
     [self _setSolidCaret:0];
     
     [self unmarkText];
@@ -1935,7 +2043,7 @@ enum {
     
     [self _setSolidCaret:0];
         
-    if (!beforeMutate(self, _cmd))
+    if (!beforeMutate(self, _cmd, NO))
         return;
     
     OBASSERT(NSMaxRange(replaceRange) <= adjustedContentLength);
@@ -1962,7 +2070,7 @@ enum {
     markedRange = (NSRange){ replaceRange.location, markedTextLength };
     [self didChangeValueForKey:@"markedTextRange"];
     
-    notifyAfterMutate(self, _cmd);
+    notifyAfterMutate(self, _cmd, NO);
         
     [self setNeedsDisplay];
 }
@@ -2001,6 +2109,9 @@ enum {
 /* Methods for creating ranges and positions. */
 - (UITextRange *)textRangeFromPosition:(UITextPosition *)fromPosition toPosition:(UITextPosition *)toPosition;
 {
+    /* UIKit will sometimes call us with a nil position if we returned a nil position from positionFromPosition:toBoundary:inDirection: (but only for paragraph motion, oddly, see #68542 and RADAR 8857073). Try to fail softly in that case. */
+    if (!fromPosition || !toPosition)
+        return nil;
     return [[[OUEFTextRange alloc] initWithStart:(OUEFTextPosition *)fromPosition
                                              end:(OUEFTextPosition *)toPosition] autorelease];
 }
@@ -2013,40 +2124,151 @@ enum {
 /* True if both or neither of its arguments is true */
 #define XNOR(a, b) ((a)? (b) : !(b))
 
-static NSUInteger _leftmostStringIndex(CTRunRef run)
+static NSUInteger _leftmostStringIndex(CTRunStatus flags, CFRange sr)
 {
-    CTRunStatus flags = CTRunGetStatus(run);
 #if 0
     if (flags & kCTRunStatusNonMonotonic) {
         /* TODO: Complicated case */
     }
 #endif
-    CFRange sr = CTRunGetStringRange(run);
     if (flags & kCTRunStatusRightToLeft)
         return ( sr.location + sr.length - 1 );
     else
         return sr.location;
 }
 
-static NSUInteger _rightmostStringIndex(CTRunRef run)
+static NSUInteger _rightmostStringIndex(CTRunStatus flags, CFRange sr)
 {
-    CTRunStatus flags = CTRunGetStatus(run);
 #if 0
     if (flags & kCTRunStatusNonMonotonic) {
         /* TODO: Complicated case */
     }
 #endif
-    CFRange sr = CTRunGetStringRange(run);
     if (flags & kCTRunStatusRightToLeft)
         return sr.location;
     else
         return ( sr.location + sr.length - 1 );
 }
 
-static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteger signedOffset)
+/*
+ Finds the grapheme cluster that is visually to the left or to the right of the grapheme cluster generated from the characters in 'fromRange'.
+ Returns kCFNotFound on failure (typically if the search goes past the end of the line).
+ Note that the input range (like the returned index) indicates a character and its glyph(s), not an intercharacter space; this is equivalent to a "logically forward" affinity.
+ On input *runIndexPtr must either be the index of a run containing the current grapheme cluster, or kCFNotFound.
+ On output *runIndexPtr is the index of a run containing the result grapheme cluster.
+*/
+static CFIndex move1VisuallyWithinLine(CFArrayRef runs, CFStringRef base, CFRange fromRange, BOOL rtl, CFIndex *runIndexPtr)
 {
-    CFArrayRef runs = CTLineGetGlyphRuns(line);
-    CFIndex runCount = CFArrayGetCount(runs);
+    CTRunRef run = NULL;
+    CFIndex runIndex = *runIndexPtr;
+    if (runIndex < 0) {
+        runIndex = searchRuns(runs, 0, CFArrayGetCount(runs), fromRange, &run);
+    } else {
+        run = CFArrayGetValueAtIndex(runs, runIndex);
+    }
+    CFIndex resultPosition;
+    
+    for (;;) {
+        if (!run) {
+            /* Something broke. Maybe we ran off the beginning/end of the line. */
+            resultPosition = kCFNotFound;
+            break;
+        }
+        
+        CFRange runRange = CTRunGetStringRange(run);
+        OBASSERT(cfRangeOverlapsCFRange(runRange, fromRange));
+        
+        CTRunStatus flags = CTRunGetStatus(run);
+        DEBUG_TEXT(@"  moving %@ from=%"PRIdCFIndex"%+"PRIdCFIndex"; found run %"PRIdCFIndex" range=(%"PRIdCFIndex"%+"PRIdCFIndex") flags=%02x",
+                   rtl?@"left":@"right", fromRange.location, fromRange.length, runIndex, runRange.location, runRange.length, flags);
+#if 0
+        if (flags & kCTRunStatusNonMonotonic) {
+            /* TODO: Complicated case - in what situation could this happen? */
+            /* Need to find an input that will make CT produce a kCTRunStatusNonMonotonic run */
+        }
+#endif
+        if (XNOR(flags & kCTRunStatusRightToLeft, rtl) /* if we're going in the same direction as this run */) {
+            CFIndex nextIndex = fromRange.location + fromRange.length;
+            if (in_cfrange(runRange, nextIndex)) {
+                /* Simple case: advance one grapheme cluster. */
+                resultPosition = nextIndex;
+                break;
+            } else {
+                /* Complex case: we ran off the end of the run. */
+            }
+        } else /* Run is left-to-right and we're going left, or it's right-to-left and we're going right */ {
+            CFIndex nextIndex = fromRange.location - 1; /* this is ok since CFIndex is signed */
+            if (in_cfrange(runRange, nextIndex)) {
+                /* Simple case: retreat one grapheme cluster. */
+                resultPosition = nextIndex;
+                break;
+            } else {
+                /* Complex case: we ran off the end of the run. */
+            }
+        }
+        
+        DEBUG_TEXT(@"  Fell off end of run %u/%u (%s).", (unsigned)runIndex, (unsigned)CFArrayGetCount(runs), rtl?"moving left":"moving right");
+        
+        /* We need to jump to the "next" run in one direction or the other. We're assuming that runs are always ordered LTR, regardless of the string layout order, which appears to be experimentally true (but undocumented, of course) */
+        
+        if (rtl) {
+            /* we're trying to hop left past the beginning of a run */
+            do {
+                if (runIndex <= 0) {
+                    /* Whoops. */
+                    resultPosition = kCFNotFound;
+                    goto breakbreak;
+                }
+                runIndex --;
+                run = CFArrayGetValueAtIndex(runs, runIndex);
+                runRange = CTRunGetStringRange(run);
+                /* keep going until we get a run that contains something outside of our current grapheme cluster */
+            } while (cfRangeContainedByCFRange(runRange, fromRange));
+            
+            CFIndex pos = _rightmostStringIndex(CTRunGetStatus(run), runRange);
+            if (!in_cfrange(fromRange, pos)) {
+                /* This run is outside of the current grapheme cluster. Assume we've moved one cluster to the left. */
+                resultPosition = pos;
+                break;
+            }
+            /* Otherwise, the current grapheme cluster extends into this run (but doesn't occupy the whole run). */
+        } else {
+            /* we're trying to hop right past the end of a run */
+            CFIndex runCount = CFArrayGetCount(runs);
+            do {
+                if (runIndex+1 >= runCount) {
+                    /* Whoops. */
+                    resultPosition = kCFNotFound;
+                    goto breakbreak;
+                }
+                runIndex ++;
+                run = CFArrayGetValueAtIndex(runs, runIndex);
+                runRange = CTRunGetStringRange(run);
+                /* keep going until we get a run that contains something outside of our current grapheme cluster */
+            } while (cfRangeContainedByCFRange(runRange, fromRange));
+            
+            CFIndex pos = _leftmostStringIndex(CTRunGetStatus(run), runRange);
+            if (!in_cfrange(fromRange, pos)) {
+                /* This run is outside of the current grapheme cluster. Assume we've moved one cluster to the right. */
+                resultPosition = pos;
+                break;
+            }
+            /* Otherwise, the current grapheme cluster extends into this run (but doesn't occupy the whole run). */
+        }
+        
+        /* If we've reached here, we've moved to a different run, but are still searching. */
+    } /* end loop */
+breakbreak:
+    
+    DEBUG_TEXT(@"  Finished moving %@; result position = %"PRIdCFIndex"",
+               rtl?@"left":@"right", resultPosition);
+    
+    *runIndexPtr = runIndex;
+    return resultPosition;
+}
+
+static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUInteger startPosition, NSInteger signedOffset)
+{
     BOOL rtl;
     NSUInteger offset;
     
@@ -2058,76 +2280,32 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
         offset = - signedOffset;
     }
     
+    CFArrayRef runs = CTLineGetGlyphRuns(line);
+    CFRange currentPosition = CFStringGetRangeOfGraphemeClusterAtIndex(base, startPosition);
+    CFIndex runIndex = kCFNotFound;
     while (offset) {
-        CTRunRef run = NULL;
-        CFIndex runIndex = searchRuns(runs, 0, runCount, pos, &run);
-        if (!run) {
+        CFIndex nextPosition = move1VisuallyWithinLine(runs, base, currentPosition, rtl, &runIndex);
+        
+        if (nextPosition < 0) {
             /* Something broke. Maybe we ran off the beginning/end of the line. */
-            return pos;
-        }
-        CFRange indexRange = CTRunGetStringRange(run);
-                
-        CTRunStatus flags = CTRunGetStatus(run);
-        DEBUG_TEXT(@"moving %@ by %"PRIuNS"; pos=%"PRIuNS"; found run %"PRIdCFIndex" range=(%"PRIdCFIndex"%+"PRIdCFIndex") flags=%02x",
-              rtl?@"left":@"right", offset, pos, runIndex, indexRange.location, indexRange.length, flags);
-#if 0
-        if (flags & kCTRunStatusNonMonotonic) {
-            /* TODO: Complicated case */
-        }
-#endif
-        if (XNOR(flags & kCTRunStatusRightToLeft, rtl) /* if we're going in the same direction as this run */) {
-            CFIndex lastIncludedIndex = indexRange.location + indexRange.length - 1;
-            if (( pos + offset ) > (NSUInteger)lastIncludedIndex) {
-                offset -= ( pos - lastIncludedIndex );
-                pos = lastIncludedIndex;
-                goto hopToNextRun;
-            } else {
-                pos += offset;
-                offset = 0;
-            }
-        } else /* Run is left-to-right and we're going left, or it's right-to-left and we're going right */ {
-            if ((pos - indexRange.location) < offset) {
-                offset -= ( pos - indexRange.location );
-                pos = indexRange.location;
-                goto hopToNextRun;
-            } else {
-                pos -= offset;
-                offset = 0;
-            }
+            break;
         }
         
-        if(0) {
-        hopToNextRun:
-            OBASSERT(offset > 0);
-            /* We need to jump to the "next" run in one direction or the other. We're assuming that runs are always ordered LTR, regardless of the string layout order, which appears to be experimentally true (but undocumented, of course) */
-            
-            if (rtl) {
-                if (runIndex <= 0) {
-                    /* Whoops. */
-                    return pos;
-                }
-                /* we're trying to hop left past the beginning of a run */
-                runIndex --;
-                pos = _rightmostStringIndex(CFArrayGetValueAtIndex(runs, runIndex));
-                offset --;
-            } else {
-                if (runIndex+1 >= runCount) {
-                    /* Whoops. */
-                    return pos;
-                }
-                /* we're trying to hop right past the end of a run */
-                runIndex ++;
-                pos = _leftmostStringIndex(CFArrayGetValueAtIndex(runs, runIndex));
-                offset --;
-            }
-        }
-    }
+        currentPosition = CFStringGetRangeOfGraphemeClusterAtIndex(base, nextPosition);
+        offset --;
+    } /* end while(offset) */
     
-    return pos;
+    DEBUG_TEXT(@"  Finished moving %@; result position = %"PRIdCFIndex"%+"PRIdCFIndex"",
+               rtl?@"left":@"right", currentPosition.location, currentPosition.length);
+    
+    return currentPosition.location;
 }
 
 - (UITextPosition *)positionFromPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction offset:(NSInteger)offset;
 {
+    if (!position)
+        return nil;
+    
     NSUInteger inGeneration = ((OUEFTextPosition *)position).generation;
     if (inGeneration != generation) {
         DEBUG_TEXT(@"warning: using %@ from gen %"PRIuNS" in gen %"PRIuNS"", [position description], inGeneration, generation);
@@ -2154,7 +2332,6 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
         
         /* Find the line containing the position */
         CFArrayRef lines = CTFrameGetLines(drawnFrame);
-        /* CFIndex lineCount = CFArrayGetCount(lines); */
         struct typographicPosition measure;
         getTypographicPosition(lines, pos, ( offset < 0 )? -1 : 1, &measure);
         
@@ -2163,7 +2340,7 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
             return nil;
         }
         
-        result = moveVisuallyWithinLine(measure.line, pos, offset);
+        result = moveVisuallyWithinLine(measure.line, (CFStringRef)[immutableContent string], pos, offset);
     } else if (direction == UITextLayoutDirectionUp || direction == UITextLayoutDirectionDown) {
         /* I'm just assuming our CTLines are sorted in order of layout position. I don't know of any reason they wouldn't be. */
         if (direction == UITextLayoutDirectionUp)
@@ -2230,11 +2407,20 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
 /* Simple evaluation of positions */
 - (NSComparisonResult)comparePosition:(UITextPosition *)position toPosition:(UITextPosition *)other;
 {
+    OBASSERT(position != nil);
+    OBASSERT(other != nil);
     return [(OUEFTextPosition *)position compare:other];
 }
 
 - (NSInteger)offsetFromPosition:(UITextPosition *)from toPosition:(UITextPosition *)toPosition;
 {
+    OBASSERT(from != nil);
+    OBASSERT(toPosition != nil);
+    /* This method is nonsensical if one of the positions is nil, but UIKit will occasionally ask us about that (see OBS #68542 and RADAR 8857073). */
+    if (!from || !toPosition)
+        return 0;
+
+
     NSUInteger si = ((OUEFTextPosition *)from).index;
     NSUInteger di = ((OUEFTextPosition *)toPosition).index;
     
@@ -2259,6 +2445,9 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, NSUInteger pos, NSInteg
         return range.end;
     if (direction == UITextStorageDirectionBackward)
         return range.start;
+    
+    if (!range)
+        return nil;
     
     if (!drawnFrame || flags.textNeedsUpdate)
         [self _updateLayout:YES];
@@ -2601,6 +2790,9 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
 
 - (NSDictionary *)textStylingAtPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction;
 {
+    if (!position)
+        return nil;
+    
     OUEFTextPosition *pos = (OUEFTextPosition *)position;
     NSUInteger index = pos.index;
     
@@ -2755,6 +2947,7 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     if (newRange && (![newRange isEmpty] || flags.solidCaret))
         [self _setNeedsDisplayForRange:newRange];
     
+    /* shouldNotify is NO if we're being called from a UITextInput / UIKeyInput protocol method. See the comment ahead of -insertText:. */
     if (shouldNotify)
         [inputDelegate selectionWillChange:self];
     [selection release];
@@ -3273,13 +3466,19 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
     while (computeDrawnFrame && !drawnFrame) {
         CGMutablePathRef path = CGPathCreateMutable();
         CGRect bounds = self.bounds;
+        CGFloat scale = self.scale;
 
-        // Default to filling our bounds width and growing "infinitely" high.
-        CGSize frameSize = bounds.size;
-        const CGFloat kUnlimitedSize = 10000;
+        // Default to filling our bounds width and growing "infinitely" high. Need to adjust from UIView coordinates to CoreGraphics rendering coordinates for these.
+        CGSize frameSize;
+        {
+            frameSize = bounds.size;
+            CGFloat invScale = 1.0/scale;
+            frameSize.width *= invScale;
+            frameSize.height *= invScale;
+        }
         
         if (CGSizeEqualToSize(layoutSize, CGSizeZero)) {
-            frameSize.height = kUnlimitedSize;
+            frameSize.height = OUITextLayoutUnlimitedSize;
         } else {
             // Owner would like us to constrain along width or height.
             if (layoutSize.width > 0)
@@ -3291,30 +3490,47 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         // CTFramesetterCreateFrame() will return NULL if the given path's area is zero. On the initial set up of a field editor, though, you might know the width you want but not the height. So, you have to give a width one way or the other, but if you haven't given a height, we'll give a minimum.
         if (frameSize.width == 0) {
             OBASSERT_NOT_REACHED("Using unlimited layout width since none was specified"); // Need to specify one implicitly via the view frame or textLayoutSize property. 
-            frameSize.width = kUnlimitedSize;
+            frameSize.width = OUITextLayoutUnlimitedSize;
         }
         if (frameSize.height == 0) {
             OBASSERT_NOT_REACHED("Using unlimited layout height since none was specified"); // Need to specify one implicitly via the view frame or textLayoutSize property. 
-            frameSize.height = kUnlimitedSize;
+            frameSize.height = OUITextLayoutUnlimitedSize;
         }
         
-        // Adjust from UIView coordinates to CoreGraphics rendering coordinates.
-        CGFloat scale = self.scale;
-        CGFloat invScale = 1.0/scale;
-        frameSize.width *= invScale;
-        frameSize.height *= invScale;
+        BOOL widthIsConstrained = (frameSize.width != OUITextLayoutUnlimitedSize);
+        BOOL heightIsConstrained = (frameSize.height != OUITextLayoutUnlimitedSize);
         
-        DEBUG_TEXT(@"  Laying out with bounds %@, CG size %@", NSStringFromCGRect(bounds), NSStringFromCGSize(frameSize));
+        // Adjust the length of any limited layout axis by the insets for that axis. Our CGPath below is still zero-origined and we deal with the offset in origin from the textInset elsewhere (though maybe we could do it via the framesetter path?
+        if (widthIsConstrained)
+            frameSize.width -= (textInset.left + textInset.right);
+        if (heightIsConstrained)
+            frameSize.height -= (textInset.top + textInset.bottom);
+        
+        
+        DEBUG_TEXT(@"  Laying out with bounds %@, CG size %@", NSStringFromCGRect(self.bounds), NSStringFromCGSize(frameSize));
         
         CGPathAddRect(path, NULL, CGRectMake(0, 0, frameSize.width, frameSize.height));
-        
+        DEBUG_TEXT(@"%@ editableFrame using %f x %f", [_content string], frameSize.width, frameSize.height);
+
         drawnFrame = CTFramesetterCreateFrame(framesetter, (CFRange){0, 0}, path, NULL);
         
         CFRelease(path);
         
         // Calculate the used size (ignoring the text inset, if any).
-        CGRect typographicFrame = OUITextLayoutMeasureFrame(drawnFrame, YES);
+        CGRect typographicFrame = OUITextLayoutMeasureFrame(drawnFrame, YES, widthIsConstrained);
         _usedSize = typographicFrame.size;
+        
+        if (!widthIsConstrained) {
+            CGRect layoutFrame = CGRectMake(0, 0, typographicFrame.size.width, frameSize.height);
+            DEBUG_TEXT(@"  Re-laying out with size %@", NSStringFromCGSize(layoutFrame.size));
+
+            path = CGPathCreateMutable();
+            CGPathAddRect(path, NULL, layoutFrame);
+            
+            CFRelease(drawnFrame);
+            drawnFrame = CTFramesetterCreateFrame(framesetter, (CFRange){0, 0}, path, NULL);
+            CFRelease(path);
+        }
         
         layoutOrigin = OUITextLayoutOrigin(typographicFrame, textInset, bounds, scale);
         
@@ -3361,6 +3577,17 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
 }
 
 #pragma mark Context menu methods
+
+- (BOOL)showsInspector;
+{
+    return flags.showsInspector;
+}
+
+- (void)setShowsInspector:(BOOL)flag;
+{
+    flags.showsInspector = flag ? 1 : 0;
+}
+
 - (NSSet *)inspectableTextSpans;
 {
     if (!selection)
@@ -3403,27 +3630,20 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
     if (!_textInspector) {
         _textInspector = [[OUIInspector alloc] init];
         _textInspector.delegate = self;
+        _textInspector.mainPane.title = NSLocalizedStringFromTableInBundle(@"Text Style", @"OUIInspectors", OMNI_BUNDLE, @"Inspector title");
+        
+        NSMutableArray *slices = [NSMutableArray array];
+        [slices addObject:[[[OUIColorInspectorSlice alloc] init] autorelease]];
+        [slices addObject:[[[OUIFontInspectorSlice alloc] init] autorelease]];
+        [slices addObject:[[[OUIParagraphStyleInspectorSlice alloc] init] autorelease]];
+
+        _textInspector.mainPane.slices = slices;
     }
     
     [_textInspector inspectObjects:runs fromRect:selectionRect inView:self permittedArrowDirections:UIPopoverArrowDirectionAny];
 }
 
 #pragma mark OUIInspectorDelegate
-
-- (NSString *)inspectorTitle:(OUIInspector *)inspector;
-{
-    return NSLocalizedStringFromTableInBundle(@"Text Style", @"OUIInspectors", OMNI_BUNDLE, @"Inspector title");
-}
-
-- (NSArray *)inspectorSlices:(OUIInspector *)inspector;
-{
-    NSMutableArray *slices = [NSMutableArray array];
-    [slices addObject:[[[OUIColorInspectorSlice alloc] init] autorelease]];
-    [slices addObject:[[[OUIFontInspectorSlice alloc] init] autorelease]];
-    [slices addObject:[[[OUIParagraphStyleInspectorSlice alloc] init] autorelease]];
-
-    return slices;
-}
 
 - (void)inspectorDidDismiss:(OUIInspector *)inspector;
 {

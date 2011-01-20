@@ -1,15 +1,14 @@
-// Copyright 2010 The Omni Group. All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-//
-// $Id$
 
 #import "OFTestCase.h"
 
 #import <OmniBase/rcsid.h>
+#import <OmniBase/macros.h>
 #import <OmniFoundation/OFRandom.h>
 #import <OmniFoundation/OFGeometry.h>
 
@@ -50,7 +49,7 @@ static double _distanceBetweenPoints(NSPoint a, NSPoint b)
 static NSPoint _normalizedVector(NSPoint v)
 {
     double length = _vectorLength(v);
-    return NSMakePoint((CGFloat)v.x/length, (CGFloat)v.y/length);
+    return NSMakePoint((CGFloat)(v.x/length), (CGFloat)(v.y/length));
 }
 
 static double _vectorDot(NSPoint v1, NSPoint v2)
@@ -66,7 +65,7 @@ static double _vectorDot(NSPoint v1, NSPoint v2)
     long tries = 100;
     const char *triesEnv = getenv("OFGeometryTestsTries");
     if (triesEnv)
-        tries = strtod(triesEnv, NULL);
+        tries = strtol(triesEnv, NULL, 0);
     
     double overallMaxDiff = 0;
     
@@ -94,7 +93,7 @@ static double _vectorDot(NSPoint v1, NSPoint v2)
         double d2 = _distanceBetweenPoints(pt2, center);
         double d3 = _distanceBetweenPoints(pt3, center);
         
-        double maxDiff = MAX(MAX(fabs(d1-d2), fabs(d1-d3)), fabs(d2-d3));
+        double maxDiff = MAX3(fabs(d1-d2), fabs(d1-d3), fabs(d2-d3));
         
         const double slop = 1e-4;
         

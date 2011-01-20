@@ -9,9 +9,12 @@
 
 #import <Foundation/NSObject.h>
 #import <OmniFileStore/OFSDAVFileManagerDelegate.h>
+#import "OUICertificateTrustAlert.h"
+
+extern NSString * const OUICertificateTrustUpdated;
 
 @class OFSFileManager;
-@interface OUIWebDAVConnection : NSObject <OFSDAVFileManagerAuthenticationDelegate> {
+@interface OUIWebDAVConnection : NSObject <OFSDAVFileManagerAuthenticationDelegate, OUICertificateTrustAlertDelegate> {
 @private 
     NSURL *_address;
     NSString *_username;
@@ -19,11 +22,13 @@
     
     OFSFileManager *_fileManager;
     NSURLAuthenticationChallenge *_authenticationChallenge;
+    OUICertificateTrustAlert *_certAlert;
 }
 
 + (OUIWebDAVConnection *)sharedConnection;
 - (BOOL)validConnection;
 - (void)close;
+- (BOOL)trustAlertVisible;
 
 @property (readwrite, retain) NSURL *address;
 @property (readwrite, retain) NSString *username;

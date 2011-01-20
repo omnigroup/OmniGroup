@@ -80,8 +80,8 @@ RCS_ID("$Id$");
     CFRelease(spec.appURL);
     
     if( err ) {
-        NSString *exceptionReason = NSLocalizedStringFromTableInBundle(@"Couldn't launch Automator Launcher.app.  LSOpenFromURLSpec returned %d", @"OmniAppKit", [OAWorkflow bundle], "workflow execution exception format string");
-        [NSException raise:NSInternalInconsistencyException format:exceptionReason, err];
+        NSString *exceptionReason = NSLocalizedStringFromTableInBundle(@"Couldn't launch Automator Launcher.app.  LSOpenFromURLSpec returned %@", @"OmniAppKit", [OAWorkflow bundle], "workflow execution exception format string");
+        [NSException raise:NSInternalInconsistencyException format:exceptionReason, OFOSStatusDescription(err)];
     }
     
 }

@@ -17,10 +17,27 @@ extern UIImage *OUIImageByFlippingHorizontally(UIImage *image);
 extern void OUILogAncestorViews(UIView *view);
 #endif
 
-// For segmented contorls, stepper buttons, etc.
-extern void OUIBeginShadowing(CGContextRef ctx);
-extern void OUIBeginControlImageShadow(CGContextRef ctx);
-extern void OUIEndControlImageShadow(CGContextRef ctx);
-extern UIImage *OUIMakeShadowedImage(UIImage *image);
+// Convenience for UIGraphicsBegin/EndImageContext for resolution independent drawing
+extern void OUIGraphicsBeginImageContext(CGSize size);
+extern void OUIGraphicsEndImageContext(void); 
 
-extern void OUISetShadowOnLabel(UILabel *label);
+// For segmented contorls, stepper buttons, etc.
+
+typedef enum {
+    OUIShadowTypeLightContentOnDarkBackground,
+    OUIShadowTypeDarkContentOnLightBackground,
+} OUIShadowType;
+
+extern CGSize OUIShadowOffset(OUIShadowType type);
+extern UIColor *OUIShadowColor(OUIShadowType type);
+
+extern CGRect OUIShadowContentRectForRect(CGRect rect, OUIShadowType type);
+
+extern void OUIBeginShadowing(CGContextRef ctx, OUIShadowType type);
+extern void OUIBeginControlImageShadow(CGContextRef ctx, OUIShadowType type);
+extern void OUIEndControlImageShadow(CGContextRef ctx);
+extern UIImage *OUIMakeShadowedImage(UIImage *image, OUIShadowType type);
+
+extern void OUISetShadowOnLabel(UILabel *label, OUIShadowType type);
+
+extern void OUIDrawTransparentColorBackground(CGContextRef ctx, CGRect rect, CGSize phase);

@@ -36,17 +36,25 @@
 #if OUI_SOFTWARE_UPDATE_CHECK
     OUISoftwareUpdateController *_softwareUpdateController;
 #endif
+    
+    NSDictionary *_roleByFileType;
+    NSArray *_editableFileTypes;
+    
+    UIPopoverController *_possiblyVisiblePopoverController;
 }
 
 + (id)controller;
+
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
+
+- (NSArray *)editableFileTypes;
+- (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 
 + (void)presentError:(NSError *)error;
 + (void)presentError:(NSError *)error file:(const char *)file line:(int)line;
 + (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 
 @property(readonly) UIBarButtonItem *appMenuBarItem;
-- (void)dismissAppMenu;
 
 @property(nonatomic,retain) IBOutlet OUIDocumentPicker *documentPicker;
 
@@ -59,6 +67,12 @@
 - (void)sendFeedback:(id)sender;
 - (void)showAppMenu:(id)sender;
 - (void)showSyncMenu:(id)sender;
+
+// Popover Helpers
+// Present all popovers via this API to help avoid popovers having to know about one another to avoid multiple popovers on screen.
+- (BOOL)presentPopover:(UIPopoverController *)popover fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
+- (BOOL)presentPopover:(UIPopoverController *)popover fromBarButtonItem:(UIBarButtonItem *)item permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
+- (void)dismissPopoverAnimated:(BOOL)animated; // DOES send the 'did' delegate method, unlike the plain UIPopoverController method (see the implementation for reasoning)
 
 // Special URL handling
 - (BOOL)isSpecialURL:(NSURL *)url;

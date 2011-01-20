@@ -16,6 +16,8 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFNull.h>
 
+#import "OUIParameters.h"
+
 RCS_ID("$Id$");
 
 @interface OUIInspectorOptionWheel (/*Private*/)
@@ -77,11 +79,11 @@ static void _backgroundShadingEvaluate(void *info, const CGFloat *in, CGFloat *o
     CGFloat t = *in;
     
     t = 2*fabs(t - 0.5); // ramp up/down
-    t = pow(t, 2.5); // flatten the curve
+    t = pow(t, kOUIInspectorOptionWheelGradientPower); // flatten the curve
 
     // Interpolate between two grays.
-    const CGFloat minGray = 0.333;
-    const CGFloat maxGray = 1.0;
+    const CGFloat minGray = kOUIInspectorOptionWheelEdgeGradientGray;
+    const CGFloat maxGray = kOUIInspectorOptionWheelMiddleGradientGray;
     out[0] = t*minGray + (1-t)*maxGray;
     out[1] = 1; // alpha;
 }
@@ -113,11 +115,12 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     self->_scrollView.delegate = self;
     self->_scrollView.showsHorizontalScrollIndicator = NO;
     self->_scrollView.decelerationRate = UIScrollViewDecelerationRateFast;
+    [self addSubview:self->_scrollView];
     
     self->_selectionIndicator = [[OUIInspectorOptionWheelSelectionIndicator alloc] init];
-    self->_selectionIndicator.color = [UIColor blackColor];
     self->_selectionIndicator.layer.zPosition = 1;
-
+    [self addSubview:self->_selectionIndicator];
+    
     self->_items = [[NSMutableArray alloc] init];
     [self setNeedsLayout];
     
@@ -263,14 +266,11 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     CGRect bounds = self.bounds;
     
     _scrollView.frame = CGRectInset(bounds, 1, 1);
-    if (_scrollView.superview != self)
-        [self addSubview:_scrollView];
 
     CGRect indicatorFrame = _selectionIndicator.frame;
     _selectionIndicator.frame = CGRectMake(CGRectGetMidX(bounds) - CGRectGetWidth(indicatorFrame)/2,
                                            CGRectGetMinY(bounds), indicatorFrame.size.width, indicatorFrame.size.height);
-    if (_selectionIndicator.superview != self)
-        [self addSubview:_selectionIndicator];
+    [_selectionIndicator updateColor];
 }
 
 #pragma mark -

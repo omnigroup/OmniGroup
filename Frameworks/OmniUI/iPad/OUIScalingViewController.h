@@ -35,6 +35,7 @@
 // Mostly internal methods. Need to work more on a good public subclass API for this class
 - (void)adjustScaleBy:(CGFloat)scale;
 - (void)adjustScaleTo:(CGFloat)effectiveScale;
+- (CGFloat)fullScreenScale;
 - (void)adjustContentInset;
 - (void)sizeInitialViewSizeFromCanvasSize;
 

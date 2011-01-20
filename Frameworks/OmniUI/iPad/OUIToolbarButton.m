@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIToolbarButton.h>
+
+#import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
@@ -27,16 +29,18 @@ RCS_ID("$Id$");
 
 static id _commonInit(OUIToolbarButton *self)
 {
+    CGFloat xCap = [[self class] leftImageStretchCapForBackgroundType:OUIBarButtonItemBackgroundTypeBlack];
+
     self.titleLabel.font = [UIFont boldSystemFontOfSize:12];
     [self setTitleShadowColor:[UIColor colorWithWhite:0 alpha:.5f] forState:UIControlStateNormal];
-    self.titleEdgeInsets = UIEdgeInsetsMake(1, 8, 0, 8);
+    self.contentEdgeInsets = UIEdgeInsetsMake(1, xCap, 0, xCap);
     
     [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
     [self setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     
     // set up default background images
-    [self setNormalBackgroundImage:nil];
-    [self setHighlightedBackgroundImage:nil];
+    [self setNormalBackgroundImage:[[[self class] normalBackgroundImage] stretchableImageWithLeftCapWidth:xCap topCapHeight:0]];
+    [self setHighlightedBackgroundImage:[[[self class] highlightedBackgroundImage] stretchableImageWithLeftCapWidth:xCap topCapHeight:0]];
     
     // UIPushButton, a private UIControl subclass used inside the official bar button items uses these settings. Sadly no public API way to get it.
     UIColor *shadowColor = [UIColor colorWithWhite:0 alpha:0.35];
@@ -62,64 +66,127 @@ static id _commonInit(OUIToolbarButton *self)
     return _commonInit(self);
 }
 
-static const CGFloat ButtonEndCapWidth = 4;
++ (CGFloat)leftImageStretchCapForBackgroundType:(OUIBarButtonItemBackgroundType)backgroundType;
+{
+    switch (backgroundType) {
+        case OUIBarButtonItemBackgroundTypeBack:
+            return 20;
+        case OUIBarButtonItemBackgroundTypeBlack:
+        case OUIBarButtonItemBackgroundTypeRed:
+        case OUIBarButtonItemBackgroundTypeBlue:
+            return 9;
+        case OUIBarButtonItemBackgroundTypeNone:
+        default:
+            return 0;
+    }
+}
+
+- (void)configureForBackgroundType:(OUIBarButtonItemBackgroundType)backgroundType;
+{
+    NSString *normalImageName, *highlightedImageName;
+    UIColor *disabledTextColor = nil;
+    
+    switch (backgroundType) {
+        case OUIBarButtonItemBackgroundTypeRed:
+            normalImageName = @"OUIToolbarButton-Red-Normal.png";
+            highlightedImageName = @"OUIToolbarButton-Red-Highlighted.png";
+            break;
+        case OUIBarButtonItemBackgroundTypeBlue:
+            normalImageName = @"OUIToolbarButton-Blue-Normal.png";
+            highlightedImageName = @"OUIToolbarButton-Blue-Highlighted.png";
+            disabledTextColor = [UIColor colorWithWhite:kOUIBarButtonItemDisabledTextGrayForColoredButtons alpha:1.0];
+            break;
+        case OUIBarButtonItemBackgroundTypeNone:
+            normalImageName = nil;
+            highlightedImageName = nil;
+            break;
+        case OUIBarButtonItemBackgroundTypeBack:
+            normalImageName = @"OUIToolbarBackButton-Black-Normal.png";
+            highlightedImageName = @"OUIToolbarBackButton-Black-Highlighted.png";
+            break;
+        case OUIBarButtonItemBackgroundTypeBlack:
+        default:
+            normalImageName = @"OUIToolbarButton-Black-Normal.png";
+            highlightedImageName = @"OUIToolbarButton-Black-Highlighted.png";
+            break;
+    }
+    
+    CGFloat xCap = [[self class] leftImageStretchCapForBackgroundType:backgroundType];
+    self.contentEdgeInsets = UIEdgeInsetsMake(1, xCap, 0, xCap);
+    
+    if (disabledTextColor)
+        [self setTitleColor:disabledTextColor forState:UIControlStateDisabled];
+    
+    UIImage *normalImage = nil;
+    if (normalImageName) {
+        normalImage = [UIImage imageNamed:normalImageName];
+        OBASSERT(normalImageName);
+        if (xCap)
+            normalImage = [normalImage stretchableImageWithLeftCapWidth:xCap topCapHeight:0];
+    }
+    [self setNormalBackgroundImage:normalImage];
+    
+    UIImage *highlightedImage = nil;
+    if (highlightedImageName) {
+        highlightedImage = [UIImage imageNamed:highlightedImageName];
+        OBASSERT(highlightedImage);
+        if (xCap)
+            highlightedImage = [highlightedImage stretchableImageWithLeftCapWidth:xCap topCapHeight:0];
+    }
+    [self setHighlightedBackgroundImage:highlightedImage];
+}
 
 - (void)setNormalBackgroundImage:(UIImage *)image;
 {
-    if (!image)
-        image = [[self class] normalBackgroundImage];
-    [self setBackgroundImage:[image stretchableImageWithLeftCapWidth:ButtonEndCapWidth topCapHeight:0] forState:UIControlStateNormal];
+    // We require the caller to set the end caps and insets to avoid the end caps.
+    OBPRECONDITION(!image || ([image leftCapWidth] > 0));
+    
+    [self setBackgroundImage:image forState:UIControlStateNormal];
 }
 
 - (void)setHighlightedBackgroundImage:(UIImage *)image;
 {
-    if (!image)
-        image = [[self class] highlightedBackgroundImage];
-    [self setBackgroundImage:[image stretchableImageWithLeftCapWidth:ButtonEndCapWidth topCapHeight:0] forState:UIControlStateHighlighted];
+    // We require the caller to set the end caps and insets to avoid the end caps.
+    OBPRECONDITION(!image || ([image leftCapWidth] > 0));
+
+    [self setBackgroundImage:image forState:UIControlStateHighlighted];
 }
 
 #pragma mark -
 #pragma mark UIView subclass
 
+#if 0
 - (CGSize)sizeThatFits:(CGSize)size;
 {
     CGSize fits = [super sizeThatFits:size];
+ 
+    // No need to add the endcaps if we are using the unbordered background image
+    if ([self backgroundImageForState:UIControlStateNormal] == nil &&
+        [self backgroundImageForState:UIControlStateHighlighted] == nil) {
+        return fits;
+    }
     
+    // Add in room for the background image left/right caps.
     UIImage *background = [[self class] normalBackgroundImage];
     CGSize backgroundSize = [background size];
     OBASSERT(backgroundSize.height == 44);
     OBASSERT(fits.height <= backgroundSize.height);
     
-    // We want to be toolbar height sized and we expect our background images to be as well (since they are captured from a live toolbar item in the simulator).
-    // Also, since UIToolbar shifts its buttons up/down by 1px based on the barStyle, this captures the movement of the background.
-    // The superclass method doesn't return enough space for the string to draw w/o clipping, for some reason.
-    return CGSizeMake(fits.width + 2*(ButtonEndCapWidth + 5), backgroundSize.height);
+    return CGSizeMake(fits.width + 2*ButtonEndCapWidth, backgroundSize.height);
 }
+#endif
 
-- (void)layoutSubviews;
+#if 0
+- (void)drawRect:(CGRect)rect;
 {
-    [super layoutSubviews];
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextSaveGState(ctx);
+    [super drawRect:rect];
+    CGContextRestoreGState(ctx);
     
-    // UIToolbar draws its normal button items 1px higher if it is in black mode. We don't have a great spot to put this; ideally you'll set the bar style before adding any the items to it, or hopefully UIToolbar will tell them to layout if barStyle changes.
-    
-    UIToolbar *toolbar = nil;
-    UIView *view = self.superview;
-    while (view) {
-        if ([view isKindOfClass:[UIToolbar class]]) {
-            toolbar = (UIToolbar *)view;
-            break;
-        }
-        view = view.superview;
-    }
-    
-    UIBarStyle barStyle = toolbar.barStyle;
-    
-    if (barStyle == UIBarStyleBlack) {
-        self.contentEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 0);
-    } else {
-        // Otherwise the title is 1px too low (need to pull it up to match other buttons which have shadowing on).
-        self.contentEdgeInsets = UIEdgeInsetsMake(0, 0, 2, 0);
-    }
+    [[UIColor colorWithRed:1 green:0 blue:0 alpha:0.5] set];
+    UIRectFillUsingBlendMode(self.bounds, kCGBlendModeNormal);
 }
+#endif
 
 @end

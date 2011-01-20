@@ -7,7 +7,6 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
 #import <UIKit/UIButton.h>
 
 @interface OUIInspectorOptionWheelItem : UIButton

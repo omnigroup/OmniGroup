@@ -156,7 +156,7 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
     screen = [OAWindowCascade _screenForPoint:startingFrame.origin];
     screenRect = [screen visibleFrame];
     // Adjust the starting frame to fit on the screen
-    startingFrame = [isa _adjustWindowRect:startingFrame forScreenRect:screenRect];
+    startingFrame = [[self class] _adjustWindowRect:startingFrame forScreenRect:screenRect];
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"OAWindowCascadeDisabled"])
         return startingFrame;
 
@@ -239,7 +239,7 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
 #endif
         }
     }
-    nextWindowFrame = [isa _adjustWindowRect:nextWindowFrame forScreenRect:screenRect];
+    nextWindowFrame = [[self class] _adjustWindowRect:nextWindowFrame forScreenRect:screenRect];
 #ifdef DEBUG_CASCADE
     NSLog(@"Result rect = %@", NSStringFromRect(nextWindowFrame));
 #endif

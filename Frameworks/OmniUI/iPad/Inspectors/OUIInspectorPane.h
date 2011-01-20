@@ -10,19 +10,21 @@
 #import <OmniFoundation/OFObject.h>
 #import <UIKit/UIViewController.h>
 
-@class OUIInspector;
+@class OUIInspector, OUIInspectorSlice;
 
-@interface OUIInspectorStack : UIViewController
+@interface OUIInspectorPane : UIViewController
 {
 @private
-    OUIInspector *_nonretained_inspector;
-    NSArray *_slices;
+    OUIInspector *_nonretained_inspector; // the main inspector
+    OUIInspectorSlice *_nonretained_parentSlice; // our parent slice if any
+    NSSet *_inspectedObjects;
 }
 
 @property(assign,nonatomic) OUIInspector *inspector; // Set by the containing inspector
-@property(nonatomic,copy) NSArray *slices; // Managed by the OUIInspector.slices.
+@property(assign,nonatomic) OUIInspectorSlice *parentSlice; // Set by the parent slice, if any.
 
-- (void)layoutSlices;
+@property(nonatomic,copy) NSSet *inspectedObjects; // Typically should NOT be set by anything other than -pushPane: or -pushPane:inspectingObjects:.
+
 
 - (void)updateInterfaceFromInspectedObjects;
 

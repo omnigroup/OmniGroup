@@ -18,6 +18,9 @@
 		342721B11194814500B39788 /* libOmniFoundation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34272173119480A700B39788 /* libOmniFoundation.a */; };
 		342721B21194814700B39788 /* libOmniQuartz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3427218A119480B300B39788 /* libOmniQuartz.a */; };
 		342721B41194814D00B39788 /* libOmniUI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 342721A2119480CE00B39788 /* libOmniUI.a */; };
+		3451267912D43451009A1AF0 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3451267812D43451009A1AF0 /* AssetsLibrary.framework */; };
+		3451281F12D45B43009A1AF0 /* ImageAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451281E12D45B43009A1AF0 /* ImageAttachmentCell.m */; };
+		3451282812D45EF0009A1AF0 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3451282712D45EF0009A1AF0 /* ImageIO.framework */; };
 		345956AD1194982600ECB2B6 /* Samples in Resources */ = {isa = PBXBuildFile; fileRef = 345956AB1194982600ECB2B6 /* Samples */; };
 		345956BF119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png in Resources */ = {isa = PBXBuildFile; fileRef = 345956BE119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png */; };
 		3459571411949F6100ECB2B6 /* RTFDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 3459571311949F6100ECB2B6 /* RTFDocument.m */; };
@@ -360,6 +363,10 @@
 		34272182119480B300B39788 /* OmniQuartz.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniQuartz.xcodeproj; path = OmniQuartz/OmniQuartz.xcodeproj; sourceTree = "<group>"; };
 		3427218B119480C400B39788 /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = OmniAppKit/OmniAppKit.xcodeproj; sourceTree = "<group>"; };
 		3427219D119480CE00B39788 /* OmniUI.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUI.xcodeproj; path = OmniUI/iPad/OmniUI.xcodeproj; sourceTree = "<group>"; };
+		3451267812D43451009A1AF0 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		3451281D12D45B43009A1AF0 /* ImageAttachmentCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageAttachmentCell.h; sourceTree = "<group>"; };
+		3451281E12D45B43009A1AF0 /* ImageAttachmentCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAttachmentCell.m; sourceTree = "<group>"; };
+		3451282712D45EF0009A1AF0 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		345956AB1194982600ECB2B6 /* Samples */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Samples; sourceTree = "<group>"; };
 		345956BE119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DocumentPreviewPlaceholder.png; sourceTree = "<group>"; };
 		3459571211949F6100ECB2B6 /* RTFDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTFDocument.h; sourceTree = "<group>"; };
@@ -415,6 +422,8 @@
 				A260A7E21280C1AC004743FA /* libOmniUnzip.a in Frameworks */,
 				34CDFE8512691F12005B04A7 /* Security.framework in Frameworks */,
 				34CDFE8712691F12005B04A7 /* SystemConfiguration.framework in Frameworks */,
+				3451267912D43451009A1AF0 /* AssetsLibrary.framework in Frameworks */,
+				3451282812D45EF0009A1AF0 /* ImageIO.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -432,6 +441,8 @@
 				34D98FB01194AAE60029EFE3 /* TextViewController.m */,
 				34132FF91214584400DDBF3D /* TextScrollView.h */,
 				34132FFA1214584400DDBF3D /* TextScrollView.m */,
+				3451281D12D45B43009A1AF0 /* ImageAttachmentCell.h */,
+				3451281E12D45B43009A1AF0 /* ImageAttachmentCell.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -494,6 +505,8 @@
 				34717BFB11949492003360DE /* libz.dylib */,
 				34717C04119494A8003360DE /* libxml2.dylib */,
 				34FFD89411DE4062002AA535 /* SenTestingKit.framework */,
+				3451267812D43451009A1AF0 /* AssetsLibrary.framework */,
+				3451282712D45EF0009A1AF0 /* ImageIO.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -596,7 +609,7 @@
 		3427218C119480C400B39788 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				34272194119480C400B39788 /* OmniAppKit.framework */,
+				34272194119480C400B39788 /* OmniAppKit */,
 				34272196119480C400B39788 /* OAUnitTests.octest */,
 				34272198119480C400B39788 /* OAMakeImageSizeIntegral */,
 				3427219A119480C400B39788 /* OAPatternColorPicker.bundle */,
@@ -832,10 +845,10 @@
 			remoteRef = 34272189119480B300B39788 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34272194119480C400B39788 /* OmniAppKit.framework */ = {
+		34272194119480C400B39788 /* OmniAppKit */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = OmniAppKit.framework;
+			path = OmniAppKit;
 			remoteRef = 34272193119480C400B39788 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -973,6 +986,7 @@
 				3459571411949F6100ECB2B6 /* RTFDocument.m in Sources */,
 				34D98FB11194AAE60029EFE3 /* TextViewController.m in Sources */,
 				34132FFB1214584400DDBF3D /* TextScrollView.m in Sources */,
+				3451281F12D45B43009A1AF0 /* ImageAttachmentCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

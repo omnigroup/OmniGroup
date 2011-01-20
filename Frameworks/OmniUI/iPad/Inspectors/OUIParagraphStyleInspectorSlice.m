@@ -115,9 +115,11 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(alignmentControl == nil);
     
-    UIView *container = [[UIView alloc] initWithFrame:(CGRect){{0, 0}, {320, 57}}];
+    UIView *container = [[UIView alloc] initWithFrame:(CGRect){{0, 0}, {320, 46}}];
     
-    OUIInspectorSegmentedControl *alignBar = [[OUIInspectorSegmentedControl alloc] initWithFrame:(CGRect){{9,0}, {302,37}}];
+    OUIInspectorSegmentedControl *alignBar = [[OUIInspectorSegmentedControl alloc] initWithFrame:(CGRect){{9,0}, {302,38}}];
+    alignBar.sizesSegmentsToFit = YES;
+
     OUIInspectorSegmentedControlButton *button;
     
     [container addSubview:alignBar];

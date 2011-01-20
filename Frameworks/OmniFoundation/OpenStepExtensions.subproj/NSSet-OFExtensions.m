@@ -88,4 +88,15 @@ static void insertionSort(const void *anObject, void *_context)
     CFSetApplyFunction((CFSetRef)self, applier, context);
 }
 
+#ifdef NS_BLOCKS_AVAILABLE
+- (id)any:(OFPredicateBlock)predicate;
+{
+    for (id obj in self) {
+        if (predicate(obj))
+            return obj;
+    }
+    return nil;
+}
+#endif
+
 @end

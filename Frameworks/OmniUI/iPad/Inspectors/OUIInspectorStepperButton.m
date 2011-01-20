@@ -28,6 +28,12 @@ static const NSTimeInterval kTimeToPauseBeforeInitialRepeat = 0.5;
 static const NSTimeInterval kTimeToPauseBetweenFollowingRepeats = 0.25;
 static UIImage *StepperImage = nil;
 
++ (CGSize)stepperButtonSize;
+{
+    OBASSERT(StepperImage);
+    return [StepperImage size];
+}
+
 + (void)initialize;
 {
     OBINITIALIZE;
@@ -210,7 +216,13 @@ static id _commonInit(OUIInspectorStepperButton *self)
     CGSize cacheSize = self.bounds.size;
     CGRect cacheRect = CGRectMake(0, 0, cacheSize.width, cacheSize.height);
 
-    UIGraphicsBeginImageContext(cacheSize);
+    // Inset the available content area, based on whether we are flipped or not.
+    UIEdgeInsets contentInsets = UIEdgeInsetsMake(1/*top*/, 0/*left*/, 2/*bottom*/, 1/*right*/);
+    if (_flipped)
+        SWAP(contentInsets.left, contentInsets.right);
+    CGRect contentRect = UIEdgeInsetsInsetRect(cacheRect, contentInsets);
+    
+    OUIGraphicsBeginImageContext(cacheSize);
     {
         CGContextRef ctx = UIGraphicsGetCurrentContext();
         CGContextClearRect(ctx, cacheRect);
@@ -230,25 +242,35 @@ static id _commonInit(OUIInspectorStepperButton *self)
             CGContextRestoreGState(ctx);
         }
         
-        OUIBeginControlImageShadow(ctx);
+        OUIBeginControlImageShadow(ctx, OUIShadowTypeLightContentOnDarkBackground);
         {
             if (_image) {
                 CGContextSaveGState(ctx);
                 CGContextScaleCTM(ctx, 1, -1);
                 CGContextTranslateCTM(ctx, 0, -cacheSize.height);                    
-                OQDrawImageCenteredInRect(ctx, [_image CGImage], cacheRect);
+                OQDrawImageCenteredInRect(ctx, _image, contentRect);
                 CGContextRestoreGState(ctx);
             }
             if ([_label.text length] > 0) {
-                [_label setFrame:cacheRect];
-                [_label drawTextInRect:_label.bounds];
+                [_label sizeToFit];
+                
+                CGSize labelSize = _label.frame.size;
+                labelSize.width = contentRect.size.width; // Let the label text centering handle horizontal centering.
+                
+                CGRect labelRect = OQCenteredIntegralRectInRect(contentRect, labelSize);
+                labelRect = OUIShadowContentRectForRect(labelRect, OUIShadowTypeLightContentOnDarkBackground);
+                
+                CGRect textRect = [_label textRectForBounds:labelRect limitedToNumberOfLines:1];
+                
+                [_label drawTextInRect:textRect];
+                
             }
         }
         OUIEndControlImageShadow(ctx);
         
         _cachedImage = [UIGraphicsGetImageFromCurrentImageContext() retain];
     }
-    UIGraphicsEndImageContext();
+    OUIGraphicsEndImageContext();
     
     [self setImage:_cachedImage forState:UIControlStateNormal];
     [self setNeedsDisplay];

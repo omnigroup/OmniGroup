@@ -32,3 +32,7 @@ CFIndex OFAppendStringBytesToBuffer(CFMutableDataRef buffer, CFStringRef source,
 /* The built-in hash function on NSString/CFString behaves astoundingly poorly on certain classes of input (such as URLs). This is an alternative hash which gives better results on our test data sets (and is quick to compute). */
 /* Note that the hash depends on the string's representation as a sequence of UTF-16 points, and unicode normalization may be necessary before hashing depending on how you're using the strings. */
 unsigned long OFStringHash_djb2(CFStringRef string);
+
+/* Checks for some completely-invalid UTF-16 sequences; returns YES if it finds one */
+BOOL OFStringContainsInvalidSequences(CFStringRef aString);
+

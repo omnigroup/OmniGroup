@@ -44,7 +44,11 @@ static const NSURLRequestCachePolicy DefaultCachePolicy = NSURLRequestUseProtoco
 static const NSTimeInterval DefaultTimeoutInterval = 300.0;
 static NSString *StandardUserAgentString;
 
+// TODO: once iOS supports private api like SecTrustSettingsSetTrustSettings, can get rid of TrustedHosts
+static NSMutableSet *TrustedHosts;
+
 NSString * const OFSMobileMeHost = @"idisk.me.com";
+NSString * const OFSTrustedSyncHostPreference = @"OFSTrustedSyncHostPreference";
 
 @implementation OFSDAVFileManager
 
@@ -120,6 +124,7 @@ static NSString *OFSDAVDepth(int depth)
     NSString *clientName = [NSString encodeURLString:ClientComputerName() asQuery:NO leaveSlashes:YES leaveColons:YES];
     
     StandardUserAgentString = [[NSString alloc] initWithFormat:@"%@/%@ Darwin/%@ (%@) (%@)", appName, appVersionString, osVersionString, hardwareModel, clientName];
+    TrustedHosts = [[NSMutableSet alloc] init];
 }
 
 - initWithBaseURL:(NSURL *)baseURL error:(NSError **)outError;
@@ -178,6 +183,21 @@ static id <OFSDAVFileManagerAuthenticationDelegate> AuthenticationDelegate = nil
 + (id <OFSDAVFileManagerAuthenticationDelegate>)authenticationDelegate;
 {
     return AuthenticationDelegate;
+}
+
++ (BOOL)isTrustedHost:(NSString *)host;
+{
+    return [TrustedHosts containsObject:host];
+}
+
++ (void)setTrustedHost:(NSString *)host;
+{
+    [TrustedHosts addObject:host];
+}
+
++ (void)removeTrustedHost:(NSString *)host;
+{
+    [TrustedHosts removeObject:host];
 }
 
 #pragma mark OFSFileManager subclass

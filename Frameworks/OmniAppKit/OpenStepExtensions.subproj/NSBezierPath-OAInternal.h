@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,10 +31,10 @@ typedef struct {
 
 extern void _parameterizeLine(NSPoint *coefficients, NSPoint startPoint, NSPoint endPoint);
 extern void _parameterizeCurve(NSPoint *coefficients, NSPoint startPoint, NSPoint endPoint, NSPoint controlPoint1, NSPoint controlPoint2);
-extern NSInteger intersectionsBetweenLineAndLine(const NSPoint *l1, const NSPoint *l2, struct intersectionInfo *results);
-extern NSInteger intersectionsBetweenCurveAndLine(const NSPoint *c, const NSPoint *a, struct intersectionInfo *results);
-extern NSInteger intersectionsBetweenCurveAndCurve(const NSPoint *c1coefficients, const NSPoint *c2coefficients, struct intersectionInfo *results);
-extern NSInteger intersectionsBetweenCurveAndSelf(const NSPoint *coefficients, struct intersectionInfo *results);
+extern unsigned intersectionsBetweenLineAndLine(const NSPoint *l1, const NSPoint *l2, struct intersectionInfo *results);
+extern unsigned intersectionsBetweenCurveAndLine(const NSPoint *c, const NSPoint *a, struct intersectionInfo *results);
+extern unsigned intersectionsBetweenCurveAndCurve(const NSPoint *c1coefficients, const NSPoint *c2coefficients, struct intersectionInfo *results);
+extern unsigned intersectionsBetweenCurveAndSelf(const NSPoint *coefficients, struct intersectionInfo *results);
 
 // Happy fun arbitrary constants.
 #define EPSILON 1e-10

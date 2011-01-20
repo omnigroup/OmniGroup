@@ -125,17 +125,32 @@ void OQAppendRectWithRoundedRight(CGContextRef ctx, CGRect rect, CGFloat radius,
         CGContextClosePath(ctx);
 }
 
-void OQDrawImageCenteredInRect(CGContextRef ctx, CGImageRef image, CGRect rect)
+CGRect OQCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter)
 {
-    CGSize imageSize = CGSizeMake(CGImageGetWidth(image), CGImageGetHeight(image));
     CGPoint pt;
     
-    pt.x = CGRectGetMinX(rect) + (rect.size.width - imageSize.width)/2;
-    pt.y = CGRectGetMinY(rect) + (rect.size.height - imageSize.height)/2;
-
+    pt.x = CGRectGetMinX(enclosingRect) + (enclosingRect.size.width - toCenter.width)/2;
+    pt.y = CGRectGetMinY(enclosingRect) + (enclosingRect.size.height - toCenter.height)/2;
+    
     // TODO: Assuming 1-1 mapping between user and device space
     pt.x = ceil(pt.x);
     pt.y = ceil(pt.y);
     
-    CGContextDrawImage(ctx, CGRectMake(pt.x, pt.y, imageSize.width, imageSize.height), image);
+    return CGRectMake(pt.x, pt.y, toCenter.width, toCenter.height);
+}
+
+#if TARGET_OS_IPHONE
+void OQDrawImageCenteredInRect(CGContextRef ctx, UIImage *image, CGRect rect)
+{
+    CGFloat scale = [image respondsToSelector:@selector(scale)] ? [image scale] : 1.0;
+    OQDrawCGImageWithScaleCenteredInRect(ctx, [image CGImage], scale, rect);
+}
+#endif
+
+void OQDrawCGImageWithScaleCenteredInRect(CGContextRef ctx, CGImageRef image, CGFloat scale, CGRect rect)
+{
+    CGSize imageSize = CGSizeMake(CGImageGetWidth(image) / scale, CGImageGetHeight(image) / scale);
+    CGRect imageRect = OQCenteredIntegralRectInRect(rect, imageSize);
+    
+    CGContextDrawImage(ctx, imageRect, image);
 }

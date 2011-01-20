@@ -10,6 +10,7 @@
 #import <OmniUI/OUIPaletteTheme.h>
 #import <OmniUI/OUIColorSwatchPicker.h>
 #import <OmniUI/OUIInspectorSelectionValue.h>
+#import <OmniUI/OUIInspector.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
@@ -112,7 +113,7 @@ RCS_ID("$Id$");
         {
             UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
             label.text = theme.displayName;
-            label.textColor = [UIColor whiteColor];
+            label.textColor = [OUIInspector labelTextColor];
             label.font = labelFont;
             label.opaque = NO;
             label.backgroundColor = nil;

@@ -431,7 +431,7 @@ static BOOL OFBundledClassDebug = NO;
     [self modifiesClassesNamed:[descriptionDictionary objectForKey:@"modifiesClasses"]];
     immediateLoad = [descriptionDictionary boolForKey:@"immediateLoad"];
     if (immediateLoad)
-        [isa addImmediateLoadClass:self];
+        [[self class] addImmediateLoadClass:self];
 }
 
 @end

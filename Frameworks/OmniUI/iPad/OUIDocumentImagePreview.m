@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIDocumentImagePreview.h"
+#import <OmniUI/OUIDocumentImagePreview.h>
 
 RCS_ID("$Id$");
 
@@ -27,6 +27,11 @@ RCS_ID("$Id$");
 {
     [_cachedImage release];
     [super dealloc];
+}
+
+- (BOOL)isScalable;
+{
+    return NO;
 }
 
 - (CGSize)originalViewSize;
