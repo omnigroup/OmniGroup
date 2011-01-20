@@ -590,6 +590,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34E20FC2119314BE00ECA875 /* Touch-Library-Debug.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				PRODUCT_NAME = OmniUnzip;
 			};
@@ -599,6 +600,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34E20FC1119314BE00ECA875 /* Touch-Library-Coverage.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				PRODUCT_NAME = OmniUnzip;
 			};
@@ -608,6 +610,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34E20FC3119314BE00ECA875 /* Touch-Library-Release.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				PRODUCT_NAME = OmniUnzip;
 			};

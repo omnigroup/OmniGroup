@@ -545,6 +545,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 345613C71193195A00E7D187 /* Touch-Library-Debug.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PREFIX_HEADER = "$(TARGET_NAME)_Prefix.h";
 				PRODUCT_NAME = OmniQuartz;
 			};
@@ -554,6 +555,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 345613C81193195A00E7D187 /* Touch-Library-Release.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PREFIX_HEADER = "$(TARGET_NAME)_Prefix.h";
 				PRODUCT_NAME = OmniQuartz;
 			};
@@ -563,6 +565,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 345613C61193195A00E7D187 /* Touch-Library-Coverage.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PREFIX_HEADER = "$(TARGET_NAME)_Prefix.h";
 				PRODUCT_NAME = OmniQuartz;
 			};

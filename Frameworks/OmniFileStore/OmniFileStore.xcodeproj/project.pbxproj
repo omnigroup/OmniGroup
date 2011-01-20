@@ -615,6 +615,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34D06C65125D203B00CA3963 /* Touch-Library-Debug.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
 				PRODUCT_NAME = OmniFileStore;
 			};
 			name = Debug;
@@ -623,6 +624,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34D06C66125D203B00CA3963 /* Touch-Library-Release.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
 				PRODUCT_NAME = OmniFileStore;
 			};
 			name = Release;
@@ -631,6 +633,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34D06C64125D203B00CA3963 /* Touch-Library-Coverage.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
 				PRODUCT_NAME = OmniFileStore;
 			};
 			name = Coverage;

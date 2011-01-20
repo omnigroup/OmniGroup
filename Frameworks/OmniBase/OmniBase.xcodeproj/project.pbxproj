@@ -36,7 +36,7 @@
 		347049760CFB6612007025F7 /* NSError-OBExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 347049740CFB6612007025F7 /* NSError-OBExtensions.m */; };
 		34778CE211810C1800EC28C1 /* OBLoadBundle.m in Sources */ = {isa = PBXBuildFile; fileRef = 34778CE111810C1800EC28C1 /* OBLoadBundle.m */; };
 		34778CE911810D5700EC28C1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51C3EFE8AAE2511C9CC38 /* Foundation.framework */; };
-		34778CED11810D5B00EC28C1 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A33D42808A0191B003A3FA5 /* OmniBase.framework */; };
+		34778CED11810D5B00EC28C1 /* OmniBase in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A33D42808A0191B003A3FA5 /* OmniBase */; };
 		349D7D1511E546A4005B8C5D /* OBTestCase.h in Headers */ = {isa = PBXBuildFile; fileRef = 34759FE50DE22FDD00FB73CC /* OBTestCase.h */; };
 		349D7D1611E546A5005B8C5D /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 34759FE60DE22FDD00FB73CC /* OBTestCase.m */; };
 		34BBACA90BA76AA2002DA71E /* objc.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BBACA80BA76AA2002DA71E /* objc.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -121,11 +121,11 @@
 		347049740CFB6612007025F7 /* NSError-OBExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError-OBExtensions.m"; sourceTree = "<group>"; };
 		34759FE50DE22FDD00FB73CC /* OBTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBTestCase.h; sourceTree = "<group>"; };
 		34759FE60DE22FDD00FB73CC /* OBTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBTestCase.m; sourceTree = "<group>"; };
-		34778CD211810BE700EC28C1 /* OBLoadBundle */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OBLoadBundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		34778CD211810BE700EC28C1 /* OBLoadBundle */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = OBLoadBundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		34778CE111810C1800EC28C1 /* OBLoadBundle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBLoadBundle.m; sourceTree = "<group>"; };
 		34A159450564081F0097A113 /* OmniBase.order */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniBase.order; sourceTree = "<group>"; };
 		34BBACA80BA76AA2002DA71E /* objc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = objc.h; sourceTree = "<group>"; };
-		4A33D42808A0191B003A3FA5 /* OmniBase.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A33D42808A0191B003A3FA5 /* OmniBase */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.framework; path = OmniBase; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AAFAE1808A0216200E04045 /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AAFAE1908A0216200E04045 /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AAFAE1A08A0216200E04045 /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
@@ -172,7 +172,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				34778CE911810D5700EC28C1 /* Foundation.framework in Frameworks */,
-				34778CED11810D5B00EC28C1 /* OmniBase.framework in Frameworks */,
+				34778CED11810D5B00EC28C1 /* OmniBase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -248,7 +248,7 @@
 		019D0532FEB295A7C697A14E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4A33D42808A0191B003A3FA5 /* OmniBase.framework */,
+				4A33D42808A0191B003A3FA5 /* OmniBase */,
 				34778CD211810BE700EC28C1 /* OBLoadBundle */,
 				342163B211907BF600C06E45 /* libOmniBase.a */,
 				340115B011E515790016ADB3 /* libOmniBaseTouchTests.a */,
@@ -431,7 +431,7 @@
 			name = OmniBase;
 			productInstallPath = "$(OMNI_INSTALLED_PRODUCTS)";
 			productName = OmniBase;
-			productReference = 4A33D42808A0191B003A3FA5 /* OmniBase.framework */;
+			productReference = 4A33D42808A0191B003A3FA5 /* OmniBase */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -586,6 +586,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34354D211190BFC700FE1BEB /* Touch-Library-Debug.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
+				LD_NO_PIE = NO;
 				PRODUCT_NAME = OmniBase;
 			};
 			name = Debug;
@@ -594,6 +596,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34354D221190BFC700FE1BEB /* Touch-Library-Release.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
+				LD_NO_PIE = NO;
 				PRODUCT_NAME = OmniBase;
 			};
 			name = Release;
@@ -602,6 +606,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34354D201190BFC700FE1BEB /* Touch-Library-Coverage.xcconfig */;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = NO;
+				LD_NO_PIE = NO;
 				PRODUCT_NAME = OmniBase;
 			};
 			name = Coverage;
