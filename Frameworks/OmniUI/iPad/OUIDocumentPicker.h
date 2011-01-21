@@ -48,6 +48,8 @@
     BOOL _isInnerController;
     
     OUIReplaceDocumentAlert *_replaceDocumentAlert;
+    
+    BOOL _loadingFromNib;
 }
 
 + (NSString *)userDocumentsDirectory;
@@ -56,7 +58,6 @@
 
 + (NSString *)pathToSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
 + (NSString *)availablePathInDirectory:(NSString *)dir baseName:(NSString *)baseName extension:(NSString *)extension counter:(NSUInteger *)ioCounter;
-+ (BOOL)canViewTypeWithIdentifier:(NSString *)uti;
 
 - (OUIDocumentProxy *)proxyByInstantiatingSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
 
@@ -83,7 +84,7 @@
 - (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL animated:(BOOL)animated;
 - (BOOL)hasDocuments;
 
-- (OUIDocumentProxy *)revealAndActivateNewDocumentAtURL:(NSURL *)newDocumentURL;
+- (void)revealAndActivateNewDocumentAtURL:(NSURL *)newDocumentURL;
 
 - (OUIDocumentProxy *)selectedProxy;
 - (OUIDocumentProxy *)proxyWithURL:(NSURL *)url;
@@ -91,6 +92,8 @@
 - (BOOL)canEditProxy:(OUIDocumentProxy *)proxy;
 - (BOOL)deleteDocumentWithoutPrompt:(OUIDocumentProxy *)proxy error:(NSError **)outError;
 - (NSURL *)renameProxy:(OUIDocumentProxy *)proxy toName:(NSString *)name type:(NSString *)documentUTI;
+
+@property(readonly,nonatomic) NSString *documentTypeForNewFiles;
 
 - (NSURL *)urlForNewDocumentOfType:(NSString *)documentUTI;
 - (NSURL *)urlForNewDocumentWithName:(NSString *)name ofType:(NSString *)documentUTI;
@@ -105,7 +108,7 @@
 - (IBAction)newDocumentMenu:(id)sender;
 - (IBAction)newDocument:(id)sender;
 - (IBAction)duplicateDocument:(id)sender;
-- (IBAction)delete:(id)sender;
+- (IBAction)deleteDocument:(id)sender;
 - (IBAction)export:(id)sender;
 - (IBAction)emailDocument:(id)sender;
 - (void)emailPDF:(id)sender;

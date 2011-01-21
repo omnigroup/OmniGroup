@@ -11,6 +11,7 @@
 #import <OmniFoundation/OFObject.h>
 
 #import <CoreFoundation/CoreFoundation.h>
+#import <CoreServices/CoreServices.h> // for Debugging.h
 #import <Foundation/NSData.h>
 #import <objc/runtime.h>
 #import <objc/message.h>
@@ -233,6 +234,18 @@ NSString *OFLocalizedNameForISOLanguageCode(NSString *languageCode)
     return [[NSBundle bundleForClass:[OFObject class]] localizedStringForKey:languageCode value:@"" table:@"Language"];
 }
 
+NSString *OFOSStatusDescription(OSStatus err)
+{
+    const char *longErrorDescription = GetMacOSStatusCommentString(err);
+    if (longErrorDescription && strlen(longErrorDescription))
+        return [NSString stringWithFormat:@"%s (%"PRI_OSStatus")", longErrorDescription, err];
+    
+    const char *shErrDesc = GetMacOSStatusErrorString(err);
+    if (shErrDesc && strlen(shErrDesc))
+        return [NSString stringWithFormat:@"%s (%"PRI_OSStatus")", shErrDesc, err];
+    
+    return [NSString stringWithFormat:@"%"PRI_OSStatus"", err];
+}
 
 // Adapted from OmniNetworking. May be replaced by something cleaner in the future.
 

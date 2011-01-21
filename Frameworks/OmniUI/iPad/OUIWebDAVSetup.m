@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,22 +6,41 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OUIWebDAVSetup.h"
-#import "OUIEditableLabeledValueCell.h"
+
+#import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManager.h>
-#import "OUICredentials.h"
-#import "OUIWebDAVController.h"
 #import <OmniFoundation/OFPreference.h>
-#import "OUIWebDAVConnection.h"
-#import "OUIExportOptionsController.h"
-#import "OUIExportOptionsView.h"
+#import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIDocumentProxy.h>
-#import <OmniUI/OUIAppController.h>
-#import <OmniFileStore/OFSFileInfo.h>
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
+#import "OUICredentials.h"
+#import "OUIEditableLabeledValueCell.h"
+#import "OUIExportOptionsController.h"
+#import "OUIExportOptionsView.h"
+#import "OUIWebDAVConnection.h"
+#import "OUIWebDAVController.h"
+
 RCS_ID("$Id$")
+
+@interface OUIWebDAVSetupSectionLabel : UILabel
+@end
+
+@implementation OUIWebDAVSetupSectionLabel
+const CGFloat OUIWebDAVSetupSectionLabelIndent = 32;    // default grouped, table row indent
+// it would be more convenient to use -textRectForBounds:limitedToNumberOfLines: but that is not getting called
+- (void)drawTextInRect:(CGRect)rect;
+{
+    rect.origin.x += 2*OUIWebDAVSetupSectionLabelIndent;
+    rect.size.width -= 3*OUIWebDAVSetupSectionLabelIndent;
+    
+    [super drawTextInRect:rect];
+}
+
+@end
 
 enum {
     WedDAVAddress,
@@ -36,7 +55,8 @@ NSString * const OUIMobileMeUsername = @"OUIMobileMeUsername";
 NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 
 @interface OUIWebDAVSetup (/* private */)
-- (void)_validateSignInButton;
+- (void)_validateSignInButton:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
+- (UILabel *)_sectionLabelWithFrame:(CGRect)frame;
 @end
 
 
@@ -59,11 +79,11 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
     [super viewDidLoad];
 
     NSString *syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Sign In", @"OmniUI", OMNI_BUNDLE, @"sign in button title");
-    UIBarButtonItem *syncBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(saveSettingsAndSync:)];
+    UIBarButtonItem *syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(saveSettingsAndSync:)];
     self.navigationItem.rightBarButtonItem = syncBarButtonItem;
     [syncBarButtonItem release];
 
-    UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
+    UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
     self.navigationItem.leftBarButtonItem = cancel;
     [cancel release];
     
@@ -84,7 +104,7 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
             break;
     }
     
-    [self _validateSignInButton];
+    [self _validateSignInButton:nil shouldChangeCharactersInRange:(NSRange){0,0} replacementString:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated;
@@ -100,6 +120,13 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
         default:
             break;
     }
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(saveSettingsAndSync:) name:OUICertificateTrustUpdated object:nil];
+}
+
+- (void)viewDidDisappear:(BOOL)animated;
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUICertificateTrustUpdated object:nil];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
@@ -195,17 +222,28 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
 {
-    return 1;
+    return (_syncType == OUIWebDAVSync) ? 2 : 1;
 }
 
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
 {
-    NSUInteger numberSections = NumberWebDavSetupSections;
-    if (_syncType == OUIMobileMeSync || _syncType == OUIOmniSync)
-        numberSections--;   // no server address section for mobile me or omni sync
-        
-    return numberSections;   
+    NSUInteger numberRows = 0;
+
+    switch (_syncType) {
+        case OUIWebDAVSync:
+            if (section == 0)
+                numberRows = 1;
+            else
+                numberRows = 2;
+            break;
+        case OUIMobileMeSync:
+        case OUIOmniSync:
+        default:
+            numberRows = 2;   // no server address section for mobile me or omni sync
+    }
+    
+    return numberRows;   
 }
 
 
@@ -244,12 +282,14 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
         }
         
         NSUInteger fieldIndex = indexPath.row;
-        if (_syncType == OUIMobileMeSync || _syncType == OUIOmniSync)
+        if (_syncType == OUIWebDAVSync)
+            fieldIndex += indexPath.section;
+        else
             fieldIndex++;   // address field is hidden for mobile me and omni sync
             
         switch (fieldIndex) {
             case WedDAVAddress:
-                contents.label = NSLocalizedStringFromTableInBundle(@"Server Address", @"OmniUI", OMNI_BUNDLE, @"for WebDAV address edit field");
+                contents.label = NSLocalizedStringFromTableInBundle(@"Address", @"OmniUI", OMNI_BUNDLE, @"for WebDAV address edit field");
                 contents.value = savedAddress;
                 contents.valueField.placeholder = @"https://example.com/user";
                 _nonretainedAddressField = contents.valueField;
@@ -286,6 +326,55 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
     return cell;
 }
 
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section;
+{
+    if (section == 0 && _syncType == OUIWebDAVSync) {
+        return NSLocalizedStringFromTableInBundle(@"Be aware that hosting providers that don't fully comply with the WebDAV standard may not work properly.", @"OmniUI", OMNI_BUNDLE, @"webdav help");
+    }
+    
+    return nil;
+}
+
+const CGFloat OUIWebDAVSetupHeaderHeight = 40;
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
+{
+    if (section == 0 && _syncType == OUIWebDAVSync) {
+        UILabel *header = [self _sectionLabelWithFrame:CGRectMake(150, 0, tableView.bounds.size.width-150, OUIWebDAVSetupHeaderHeight)];
+        header.text = NSLocalizedStringFromTableInBundle(@"Enter the location of your WebDAV space.", @"OmniUI", OMNI_BUNDLE, @"webdav help");
+        return header;
+    }
+    
+    return nil;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    if (section == 0 && _syncType == OUIWebDAVSync)
+        return OUIWebDAVSetupHeaderHeight;
+    
+    return tableView.sectionHeaderHeight;
+}
+
+const CGFloat OUIWebDAVSetupFooterHeight = 50;
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section;
+{
+    if (section == 0 && _syncType == OUIWebDAVSync) {
+        UILabel *header = [self _sectionLabelWithFrame:CGRectMake(0, 0, tableView.bounds.size.width, OUIWebDAVSetupFooterHeight)];
+        header.text = NSLocalizedStringFromTableInBundle(@"Be aware that hosting providers that don't fully comply with the WebDAV standard may not work properly.", @"OmniUI", OMNI_BUNDLE, @"webdav help");
+        return header;
+    }
+    
+    return nil;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    if (section == 0 && _syncType == OUIWebDAVSync)
+        return OUIWebDAVSetupFooterHeight;
+    
+    return tableView.sectionFooterHeight;
+}
+
 #pragma mark -
 #pragma mark Memory management
 
@@ -296,9 +385,9 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
     // Relinquish ownership any cached data, images, etc that aren't in use.
 }
 
-- (void)viewDidUnload {
-    // Relinquish ownership of anything that can be recreated in viewDidLoad or on demand.
-    // For example: self.myOutlet = nil;
+- (void)viewDidUnload;
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUICertificateTrustUpdated object:nil];
 }
 
 
@@ -312,7 +401,7 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 #pragma mark OUIEditableLabeledValueCell
 - (BOOL)editableLabeledValueCell:(OUIEditableLabeledValueCell *)cell textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 {
-    [self _validateSignInButton];
+    [self _validateSignInButton:textField shouldChangeCharactersInRange:range replacementString:string];
     return YES;
 }
 
@@ -328,21 +417,48 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 
 #pragma mark -
 #pragma mark private
-- (void)_validateSignInButton;
+- (void)_validateSignInButton:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 {
     UIBarButtonItem *signInButton = self.navigationItem.rightBarButtonItem;
     switch (_syncType) {
         case OUIWebDAVSync:
-            signInButton.enabled = (![NSString isEmptyString:_nonretainedPasswordField.text] && ![NSString isEmptyString:_nonretainedAddressField.text] && ![NSString isEmptyString:_nonretainedUsernameField.text]);
+        {
+            if (textField == _nonretainedAddressField && range.length == _nonretainedAddressField.text.length)
+                signInButton.enabled = ![NSString isEmptyString:string];
+            else
+                signInButton.enabled = ![NSString isEmptyString:_nonretainedAddressField.text];
+            
             break;
+        }
         case OUIMobileMeSync:
         case OUIOmniSync:
-            signInButton.enabled = (![NSString isEmptyString:_nonretainedPasswordField.text] && ![NSString isEmptyString:_nonretainedUsernameField.text]);
+        {
+            if (textField == _nonretainedPasswordField && range.length == _nonretainedPasswordField.text.length)
+                signInButton.enabled = ![NSString isEmptyString:string] && ![NSString isEmptyString:_nonretainedUsernameField.text];
+            else if (textField == _nonretainedUsernameField && range.length == _nonretainedUsernameField.text.length)
+                signInButton.enabled = ![NSString isEmptyString:string] && ![NSString isEmptyString:_nonretainedPasswordField.text];
+            else
+                signInButton.enabled = (![NSString isEmptyString:_nonretainedPasswordField.text] && ![NSString isEmptyString:_nonretainedUsernameField.text]);
             break;
+        }
         default:
             break;
     }
+}
+
+- (UILabel *)_sectionLabelWithFrame:(CGRect)frame;
+{
+    OUIWebDAVSetupSectionLabel *header = [[OUIWebDAVSetupSectionLabel alloc] initWithFrame:frame];
+    header.textAlignment = UITextAlignmentLeft;
+    header.font = [UIFont systemFontOfSize:14];
+    header.backgroundColor = [UIColor clearColor];
+    header.opaque = NO;
+    header.textColor = [UIColor colorWithRed:0.196 green:0.224 blue:0.29 alpha:1];
+    header.shadowColor = [UIColor colorWithWhite:1 alpha:.5];
+    header.shadowOffset = CGSizeMake(0, 1);
+    header.numberOfLines = 0 /* no limit */;
     
+    return [header autorelease];
 }
 
 @synthesize isExporting = _isExporting;

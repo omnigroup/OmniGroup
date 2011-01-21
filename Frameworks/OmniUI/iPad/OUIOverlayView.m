@@ -469,7 +469,7 @@ RCS_ID("$Id$");
 {
     CGRect bounds = self.bounds;
         
-    [[isa backgroundImage] drawInRect:bounds blendMode:kCGBlendModeNormal alpha:0.8];
+    [[[self class] backgroundImage] drawInRect:bounds blendMode:kCGBlendModeNormal alpha:0.8];
     
     // Draw text
     if (self.text.length) {

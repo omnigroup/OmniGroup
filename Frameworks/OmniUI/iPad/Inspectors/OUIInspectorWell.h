@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,36 @@
 //
 // $Id$
 
+#import <UIKit/UIControl.h>
 #import <CoreGraphics/CGContext.h>
-#import <Foundation/NSObject.h>
 
 extern void OUIInspectorWellAddPath(CGContextRef ctx, CGRect frame, BOOL rounded);
 extern void OUIInspectorWellDrawOuterShadow(CGContextRef ctx, CGRect frame, BOOL rounded);
 extern void OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect frame, BOOL rounded);
 extern CGRect OUIInspectorWellInnerRect(CGRect frame);
-extern CGColorRef OUIInspectorWellBorderColor(void);
 extern void OUIInspectorWellStrokePathWithBorderColor(CGContextRef ctx);
+
+// This just draws the background border/gradient with highlighting, font and color support methods for subclasses.
+@interface OUIInspectorWell : UIControl
+{
+@private    
+    BOOL _rounded;
+    BOOL _showNavigationArrow;
+}
+
++ (CGFloat)fontSize;
++ (UIFont *)italicFormatFont;
++ (UIColor *)textColor;
++ (UIColor *)highlightedTextColor;
+
+@property(assign,nonatomic) BOOL rounded;
+@property(readonly,nonatomic) BOOL shouldDrawHighlighted;
+@property(readonly,nonatomic) CGRect contentsRect; // Insets from the edges and avoids the navigation arrow if present.
+
+- (void)setNavigationTarget:(id)target action:(SEL)action;
+
+// Subclassing points
+- (UIColor *)textColor; // Returns the text color to use for the current state (defaulting to the class +textColor or +highlightedTextColor)
+- (void)drawInteriorFillWithRect:(CGRect)rect; // Draws the interior gradient
+
+@end

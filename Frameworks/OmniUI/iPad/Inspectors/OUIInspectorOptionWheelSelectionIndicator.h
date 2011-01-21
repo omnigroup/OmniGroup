@@ -15,6 +15,6 @@
     UIColor *_color;
 }
 
-@property(retain,nonatomic) UIColor *color;
+- (void)updateColor;
 
 @end

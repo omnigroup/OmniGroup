@@ -748,7 +748,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "../../Scripts/BuildStringsFromTarget\n";
+			shellScript = "../../Scripts/BuildStringsFromTarget OmniSoftwareUpdate\n";
 		};
 		A24A971B1249A32A005C98E1 /* Copy trust root */ = {
 			isa = PBXShellScriptBuildPhase;

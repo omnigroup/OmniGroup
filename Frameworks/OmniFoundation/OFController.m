@@ -366,6 +366,26 @@ static void _OFControllerCheckTerminated(void)
 
 - (NSString *)copySymbolicBacktraceForNumericBacktrace:(NSString *)numericTrace;
 {
+#if 1
+ // #include <execinfo.h>
+ // #include <stdio.h>
+    NSArray *stackStrings = [numericTrace componentsSeparatedByString:@"  "];
+    NSUInteger frameCount = [stackStrings count];
+    void *callstack[frameCount];
+    for (NSString *stackString in stackStrings) {
+         callstack[frameCount] = (void *)(uintptr_t)[stackString maxHexValue];
+    }
+    OBASSERT(frameCount <= UINT_MAX); // That's all backtrace_symbols() can handle
+    char **symbols = backtrace_symbols(callstack, (unsigned int)frameCount);
+    unsigned int frameIndex;
+    NSMutableString *symbolicBacktrace = [[NSMutableString alloc] init];
+    for (frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+        [symbolicBacktrace appendFormat:@"%08u -- %s", callstack[frameIndex], symbols[frameIndex]];
+        printf("%s\n", symbols[frameIndex]);
+    }
+    free(symbols);
+    return symbolicBacktrace;
+#else
     // atos is in the developer tools package, so it might not be present
     NSString *atosPath = @"/usr/bin/atos";
     if (![[NSFileManager defaultManager] isExecutableFileAtPath:atosPath])
@@ -395,8 +415,8 @@ static void _OFControllerCheckTerminated(void)
         // This method can get called for unhandled exceptions, so let's not have any.
         outputString = [[NSString alloc] initWithFormat:@"Exception raised while converting numeric backtrace: %@\n%@", numericTrace, exc];
     }
-    
     return outputString;
+#endif
 }
 
 // Allow subclasses to override this

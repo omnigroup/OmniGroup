@@ -14,10 +14,14 @@
 {
 @private
     OQColor *_color;
+    BOOL _singleSwatch;
 }
 
 + (CGSize)swatchSize;
++ (UIButton *)navigateToColorPickerButton;
 
 - initWithColor:(OQColor *)color;
+
+@property(nonatomic,assign) BOOL singleSwatch;
 
 @end

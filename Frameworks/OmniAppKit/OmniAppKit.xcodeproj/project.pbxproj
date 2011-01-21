@@ -35,6 +35,14 @@
 		3434793011923BAF007D0CE5 /* NSFileWrapper-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34471AC109D31320004C9DBA /* OAConstructionTimeView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34471ABF09D31320004C9DBA /* OAConstructionTimeView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34471AC209D31320004C9DBA /* OAConstructionTimeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34471AC009D31320004C9DBA /* OAConstructionTimeView.m */; };
+		344B6E4912A4D3DC00D876CD /* OATextAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 344B6E4712A4D3DC00D876CD /* OATextAttachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		344B6E4A12A4D3DC00D876CD /* OATextAttachment.m in Sources */ = {isa = PBXBuildFile; fileRef = 344B6E4812A4D3DC00D876CD /* OATextAttachment.m */; };
+		344B6E6212A4D53000D876CD /* OATextAttachment.m in Sources */ = {isa = PBXBuildFile; fileRef = 344B6E4812A4D3DC00D876CD /* OATextAttachment.m */; };
+		344B6E6312A4D53100D876CD /* OATextAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 344B6E4712A4D3DC00D876CD /* OATextAttachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3451254B12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3451254912D421E6009A1AF0 /* OATextAttachmentCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3451254C12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */; };
+		3451254D12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3451254912D421E6009A1AF0 /* OATextAttachmentCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3451254E12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */; };
 		345E74250C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 345E74230C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		345E74260C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */; };
 		346DB94B0D74BDAD00CA37DE /* ExceptionHandling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */; };
@@ -62,7 +70,7 @@
 		34F0990109322B800001D0D5 /* OAAboutPanelController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F098FF09322B800001D0D5 /* OAAboutPanelController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F0990209322B800001D0D5 /* OAAboutPanelController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F0990009322B800001D0D5 /* OAAboutPanelController.m */; };
 		34F0995809322EA30001D0D5 /* OAAboutPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34F0995709322EA30001D0D5 /* OAAboutPanel.nib */; };
-		34FA961608BD15D800870B6A /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */; };
+		34FA961608BD15D800870B6A /* OmniAppKit in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AA1E7F908AA764600E2FF6B /* OmniAppKit */; };
 		34FA961808BD15E600870B6A /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010AE8EBFF38DCF8C697A13D /* OmniFoundation.framework */; };
 		4205721F0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4205721D0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		420572200CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4205721E0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m */; };
@@ -378,7 +386,7 @@
 		4AA1E80808AA764600E2FF6B /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34508D64050FA8C30097A113 /* SenTestingKit.framework */; };
 		4AA1E81508AA764700E2FF6B /* OAMakeImageSizeIntegral.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DBC8C205979AE60097A113 /* OAMakeImageSizeIntegral.m */; };
 		4AA1E81708AA764700E2FF6B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6389AAFAFFFFF26AC697A14E /* Cocoa.framework */; };
-		4AA1E82F08AA764700E2FF6B /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */; };
+		4AA1E82F08AA764700E2FF6B /* OmniAppKit in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AA1E7F908AA764600E2FF6B /* OmniAppKit */; };
 		50A5C89608C5505500B1C5E4 /* NSEvent-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 50A5C89408C5505500B1C5E4 /* NSEvent-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50A5C89708C5505500B1C5E4 /* NSEvent-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */; };
 		94E1CE0B10D803C5000A01F9 /* OACloseButtonOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -657,6 +665,8 @@
 		344A49C7055FD29B0097A113 /* OAMiniAction.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAMiniAction.png; sourceTree = "<group>"; };
 		344A49C8055FD29B0097A113 /* OAMiniRemove.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAMiniRemove.png; sourceTree = "<group>"; };
 		344B4A6D0537177D0097A113 /* ExtendedText.sdef */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ExtendedText.sdef; sourceTree = "<group>"; };
+		344B6E4712A4D3DC00D876CD /* OATextAttachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATextAttachment.h; sourceTree = "<group>"; };
+		344B6E4812A4D3DC00D876CD /* OATextAttachment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATextAttachment.m; sourceTree = "<group>"; };
 		3450579A06F203F40097A113 /* OAGear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAGear.png; sourceTree = "<group>"; };
 		345057E106F207DD0097A113 /* OAContextPopUpButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAContextPopUpButton.h; sourceTree = "<group>"; };
 		345057E206F207DD0097A113 /* OAContextPopUpButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAContextPopUpButton.m; sourceTree = "<group>"; };
@@ -665,6 +675,8 @@
 		34508D64050FA8C30097A113 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		34508D6E050FAA750097A113 /* OATestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATestCase.h; sourceTree = "<group>"; };
 		34508D6F050FAA750097A113 /* OATestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATestCase.m; sourceTree = "<group>"; };
+		3451254912D421E6009A1AF0 /* OATextAttachmentCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATextAttachmentCell.h; sourceTree = "<group>"; };
+		3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATextAttachmentCell.m; sourceTree = "<group>"; };
 		3457306005D00FD50097A113 /* OAPatternColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPatternColorPicker.h; sourceTree = "<group>"; };
 		3457306105D00FD50097A113 /* OAPatternColorPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPatternColorPicker.m; sourceTree = "<group>"; };
 		3457306505D011B00097A113 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OAPatternColorPicker.nib; sourceTree = "<group>"; };
@@ -733,9 +745,9 @@
 		4A785F8A0B040E5500B513F3 /* smallcalendar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = smallcalendar.png; sourceTree = "<group>"; };
 		4A9FDD370655955D0097A149 /* OAController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAController.h; sourceTree = "<group>"; };
 		4A9FDD380655955D0097A149 /* OAController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAController.m; sourceTree = "<group>"; };
-		4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AA1E7F908AA764600E2FF6B /* OmniAppKit */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.framework; path = OmniAppKit; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAUnitTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OAMakeImageSizeIntegral; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = OAMakeImageSizeIntegral; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1E82C08AA764700E2FF6B /* OAPatternColorPicker.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAPatternColorPicker.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1EBCD08AA772700E2FF6B /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AA1EBCE08AA772700E2FF6B /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -977,7 +989,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AA1E82F08AA764700E2FF6B /* OmniAppKit.framework in Frameworks */,
+				4AA1E82F08AA764700E2FF6B /* OmniAppKit in Frameworks */,
 				4AA1E80508AA764600E2FF6B /* OmniFoundation.framework in Frameworks */,
 				4AA1E80608AA764600E2FF6B /* OmniBase.framework in Frameworks */,
 				4AA1E80708AA764600E2FF6B /* Cocoa.framework in Frameworks */,
@@ -990,7 +1002,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AA1E81708AA764700E2FF6B /* Cocoa.framework in Frameworks */,
-				34FA961608BD15D800870B6A /* OmniAppKit.framework in Frameworks */,
+				34FA961608BD15D800870B6A /* OmniAppKit in Frameworks */,
 				34FA961808BD15E600870B6A /* OmniFoundation.framework in Frameworks */,
 				3477D8D50974EF3200DC4FC3 /* OmniBase.framework in Frameworks */,
 			);
@@ -1018,7 +1030,7 @@
 		00E24AF3FEBFA1D7C697A14E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */,
+				4AA1E7F908AA764600E2FF6B /* OmniAppKit */,
 				4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */,
 				4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */,
 				4AA1E82C08AA764700E2FF6B /* OAPatternColorPicker.bundle */,
@@ -1265,6 +1277,10 @@
 				34ED275C11DBBD2E006C33FF /* OATextAttributes.m */,
 				3401161411E516C10016ADB3 /* OATextStorage.h */,
 				3401161511E516C10016ADB3 /* OATextStorage.m */,
+				344B6E4712A4D3DC00D876CD /* OATextAttachment.h */,
+				344B6E4812A4D3DC00D876CD /* OATextAttachment.m */,
+				3451254912D421E6009A1AF0 /* OATextAttachmentCell.h */,
+				3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */,
 			);
 			name = NSText;
 			sourceTree = "<group>";
@@ -2183,6 +2199,8 @@
 				3473992511947194002DF726 /* OAParagraphStyle.h in Headers */,
 				34ED275D11DBBD2E006C33FF /* OATextAttributes.h in Headers */,
 				3401161611E516C10016ADB3 /* OATextStorage.h in Headers */,
+				344B6E6312A4D53100D876CD /* OATextAttachment.h in Headers */,
+				3451254D12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2334,6 +2352,8 @@
 				3473992311947194002DF726 /* OAParagraphStyle.h in Headers */,
 				34ED275F11DBBD2E006C33FF /* OATextAttributes.h in Headers */,
 				3401161811E516C10016ADB3 /* OATextStorage.h in Headers */,
+				344B6E4912A4D3DC00D876CD /* OATextAttachment.h in Headers */,
+				3451254B12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2416,7 +2436,7 @@
 			name = "OmniAppKit (Framework)";
 			productInstallPath = "$(OMNI_INSTALLED_PRODUCTS)";
 			productName = OmniAppKit;
-			productReference = 4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */;
+			productReference = 4AA1E7F908AA764600E2FF6B /* OmniAppKit */;
 			productType = "com.apple.product-type.framework";
 		};
 		4AA1E7FA08AA764600E2FF6B /* OAUnitTests */ = {
@@ -2709,6 +2729,8 @@
 				3473992611947194002DF726 /* OAParagraphStyle.m in Sources */,
 				34ED275E11DBBD2E006C33FF /* OATextAttributes.m in Sources */,
 				3401161711E516C10016ADB3 /* OATextStorage.m in Sources */,
+				344B6E6212A4D53000D876CD /* OATextAttachment.m in Sources */,
+				3451254E12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2854,6 +2876,8 @@
 				3473992411947194002DF726 /* OAParagraphStyle.m in Sources */,
 				34ED276011DBBD2E006C33FF /* OATextAttributes.m in Sources */,
 				3401161911E516C10016ADB3 /* OATextStorage.m in Sources */,
+				344B6E4A12A4D3DC00D876CD /* OATextAttachment.m in Sources */,
+				3451254C12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

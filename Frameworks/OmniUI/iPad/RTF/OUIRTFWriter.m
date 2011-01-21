@@ -27,7 +27,7 @@ RCS_ID("$Id$");
 
 @property (readwrite, retain) NSAttributedString *attributedString;
 
-- (NSData *)_rtfData;
+- (void)_writeRTFData:(OFDataBuffer *)dataBuffer;
 
 @end
 
@@ -79,14 +79,22 @@ static OFCharacterSet *ReservedSet;
 
 + (NSData *)rtfDataForAttributedString:(NSAttributedString *)attributedString;
 {
-    NSData *rtfData = nil;
+    CFDataRef rtfData = NULL;
+    
     OMNI_POOL_START {
         OUIRTFWriter *rtfWriter = [[self alloc] init];
         rtfWriter.attributedString = attributedString;
-        rtfData = [[rtfWriter _rtfData] retain];
+        
+        OFDataBuffer dataBuffer;
+        OFDataBufferInit(&dataBuffer);
+        
+        [rtfWriter _writeRTFData:&dataBuffer];
+        OFDataBufferRelease(&dataBuffer, kCFAllocatorDefault, &rtfData);
+
         [rtfWriter release];
     } OMNI_POOL_END;
-    return [rtfData autorelease];
+    
+    return [NSMakeCollectable(rtfData) autorelease];
 }
 
 - (id)init;
@@ -95,17 +103,16 @@ static OFCharacterSet *ReservedSet;
     _state.fontIndex = -1;
     _state.colorIndex = -1;
     _state.underline = kCTUnderlineStyleNone;
-    _dataBuffer = malloc(sizeof(OFDataBuffer));
-    OFDataBufferInit(_dataBuffer);
     return self;
 }
 
 - (void)dealloc;
 {
+    OBPRECONDITION(_dataBuffer == NULL); // Only set for the duration of -_writeRTFData:
+    
     [_attributedString release];
     [_registeredColors release];
     [_registeredFonts release];
-    OFDataBufferRelease(_dataBuffer); free(_dataBuffer); _dataBuffer = NULL;
 
     [super dealloc];
 }
@@ -402,8 +409,11 @@ static inline void writeString(OFDataBuffer *dataBuffer, NSString *string)
     OFDataBufferAppendCString(_dataBuffer, "}\n");
 }
 
-- (NSData *)_rtfData;
+- (void)_writeRTFData:(OFDataBuffer *)dataBuffer;
 {
+    OBPRECONDITION(_dataBuffer == NULL);
+    
+    _dataBuffer = dataBuffer;
     OFDataBufferAppendCString(_dataBuffer, "{\\rtf1\\ansi\n");
 
     [self _writeFontTable];
@@ -433,9 +443,7 @@ static inline void writeString(OFDataBuffer *dataBuffer, NSString *string)
     [scanner release];
 
     OFDataBufferAppendCString(_dataBuffer, "}");
-    NSData *data = [OFDataBufferData(_dataBuffer) retain];
-    OFDataBufferRelease(_dataBuffer);
-    return [data autorelease];
+    _dataBuffer = NULL;
 }
 
 @end

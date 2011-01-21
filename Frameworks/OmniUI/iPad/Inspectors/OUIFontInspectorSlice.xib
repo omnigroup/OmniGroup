@@ -2,9 +2,9 @@
 <archive type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1056</int>
-		<string key="IBDocument.SystemVersion">10F569</string>
+		<string key="IBDocument.SystemVersion">10H574</string>
 		<string key="IBDocument.InterfaceBuilderVersion">823</string>
-		<string key="IBDocument.AppKitVersion">1038.29</string>
+		<string key="IBDocument.AppKitVersion">1038.35</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
@@ -12,9 +12,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="1"/>
 			<integer value="57"/>
 			<integer value="67"/>
-			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -73,7 +73,7 @@
 					<object class="IBUIView" id="950389522">
 						<reference key="NSNextResponder" ref="191373211"/>
 						<int key="NSvFlags">290</int>
-						<string key="NSFrame">{{68, 51}, {184, 37}}</string>
+						<string key="NSFrame">{{65, 51}, {190, 37}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<object class="NSColor" key="IBUIBackgroundColor">
 							<int key="NSColorSpace">3</int>
@@ -85,7 +85,7 @@
 					<object class="IBUIButton" id="595236778">
 						<reference key="NSNextResponder" ref="191373211"/>
 						<int key="NSvFlags">292</int>
-						<string key="NSFrame">{{7, 50}, {62, 42}}</string>
+						<string key="NSFrame">{{9, 51}, {56, 37}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<string key="targetRuntimeIdentifier">IBIPadFramework</string>
@@ -112,7 +112,7 @@
 					<object class="IBUIButton" id="293746861">
 						<reference key="NSNextResponder" ref="191373211"/>
 						<int key="NSvFlags">289</int>
-						<string key="NSFrame">{{251, 50}, {62, 42}}</string>
+						<string key="NSFrame">{{255, 51}, {56, 37}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<string key="targetRuntimeIdentifier">IBIPadFramework</string>
@@ -131,7 +131,7 @@
 				<reference key="NSSuperview"/>
 				<object class="NSColor" key="IBUIBackgroundColor">
 					<int key="NSColorSpace">3</int>
-					<bytes key="NSWhite">MAA</bytes>
+					<bytes key="NSWhite">MCAwAA</bytes>
 				</object>
 				<bool key="IBUIOpaque">NO</bool>
 				<object class="IBUISimulatedOrientationMetrics" key="IBUISimulatedOrientationMetrics">
@@ -200,14 +200,6 @@
 						<reference key="destination" ref="191373211"/>
 					</object>
 					<int key="connectionID">3</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBCocoaTouchOutletConnection" key="connection">
-						<string key="label">detailSlice</string>
-						<reference key="source" ref="372490531"/>
-						<reference key="destination" ref="286584264"/>
-					</object>
-					<int key="connectionID">21</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBCocoaTouchOutletConnection" key="connection">
@@ -318,19 +310,27 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBCocoaTouchOutletConnection" key="connection">
-						<string key="label">fontFacesDetailSlice</string>
-						<reference key="source" ref="372490531"/>
-						<reference key="destination" ref="794815467"/>
-					</object>
-					<int key="connectionID">73</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBCocoaTouchOutletConnection" key="connection">
 						<string key="label">fontAttributeSegmentedControl</string>
 						<reference key="source" ref="372490531"/>
 						<reference key="destination" ref="978273511"/>
 					</object>
 					<int key="connectionID">74</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBCocoaTouchOutletConnection" key="connection">
+						<string key="label">detailPane</string>
+						<reference key="source" ref="372490531"/>
+						<reference key="destination" ref="286584264"/>
+					</object>
+					<int key="connectionID">75</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBCocoaTouchOutletConnection" key="connection">
+						<string key="label">fontFacesPane</string>
+						<reference key="source" ref="372490531"/>
+						<reference key="destination" ref="794815467"/>
+					</object>
+					<int key="connectionID">76</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -479,12 +479,12 @@
 					<object class="NSAffineTransform">
 						<bytes key="NSTransformStruct">P4AAAL+AAAAAAAAAw70AAA</bytes>
 					</object>
-					<string>OUIFontInspectorDetailSlice</string>
+					<string>OUIFontInspectorPane</string>
 					<string>{{0, 521}, {768, 1024}}</string>
 					<string>com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 					<string>{{443, 764}, {320, 380}}</string>
 					<string>com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
-					<string>OUIFontInspectorDetailSlice</string>
+					<string>OUIFontInspectorPane</string>
 					<string>{{679, 164}, {768, 1024}}</string>
 					<string>com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				</object>
@@ -505,7 +505,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">74</int>
+			<int key="maxID">76</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -578,11 +578,11 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">OUIFontInspectorDetailSlice</string>
-					<string key="superclassName">OUIInspectorDetailSlice</string>
+					<string key="className">OUIFontInspectorPane</string>
+					<string key="superclassName">OUISingleViewInspectorPane</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Inspectors/OUIFontInspectorDetailSlice.h</string>
+						<string key="minorKey">Inspectors/OUIFontInspectorPane.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -632,7 +632,7 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>fontAttributeSegmentedControl</string>
-							<string>fontFacesDetailSlice</string>
+							<string>fontFacesPane</string>
 							<string>fontFamilyTextWell</string>
 							<string>fontSizeDecreaseStepperButton</string>
 							<string>fontSizeIncreaseStepperButton</string>
@@ -641,7 +641,7 @@
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>OUIInspectorSegmentedControl</string>
-							<string>OUIFontInspectorDetailSlice</string>
+							<string>OUIFontInspectorPane</string>
 							<string>OUIInspectorTextWell</string>
 							<string>OUIInspectorStepperButton</string>
 							<string>OUIInspectorStepperButton</string>
@@ -653,7 +653,7 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>fontAttributeSegmentedControl</string>
-							<string>fontFacesDetailSlice</string>
+							<string>fontFacesPane</string>
 							<string>fontFamilyTextWell</string>
 							<string>fontSizeDecreaseStepperButton</string>
 							<string>fontSizeIncreaseStepperButton</string>
@@ -666,8 +666,8 @@
 								<string key="candidateClassName">OUIInspectorSegmentedControl</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">fontFacesDetailSlice</string>
-								<string key="candidateClassName">OUIFontInspectorDetailSlice</string>
+								<string key="name">fontFacesPane</string>
+								<string key="candidateClassName">OUIFontInspectorPane</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">fontFamilyTextWell</string>
@@ -693,11 +693,11 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">OUIInspectorDetailSlice</string>
+					<string key="className">OUIInspectorPane</string>
 					<string key="superclassName">UIViewController</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Inspectors/OUIInspectorDetailSlice.h</string>
+						<string key="minorKey">Inspectors/OUIInspectorPane.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -723,14 +723,14 @@
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">detailSlice</string>
-						<string key="NS.object.0">OUIInspectorDetailSlice</string>
+						<string key="NS.key.0">detailPane</string>
+						<string key="NS.object.0">OUIInspectorPane</string>
 					</object>
 					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<string key="NS.key.0">detailSlice</string>
+						<string key="NS.key.0">detailPane</string>
 						<object class="IBToOneOutletInfo" key="NS.object.0">
-							<string key="name">detailSlice</string>
-							<string key="candidateClassName">OUIInspectorDetailSlice</string>
+							<string key="name">detailPane</string>
+							<string key="candidateClassName">OUIInspectorPane</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -755,6 +755,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">OUISingleViewInspectorPane</string>
+					<string key="superclassName">OUIInspectorPane</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Inspectors/OUISingleViewInspectorPane.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">UIView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
@@ -766,6 +774,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">OUIToolbarViewController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">UIViewController</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">UIViewController-OUIExtensions.h</string>
 					</object>
 				</object>
 			</object>

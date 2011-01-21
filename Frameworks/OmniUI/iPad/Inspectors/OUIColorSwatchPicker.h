@@ -11,6 +11,10 @@
 
 @class OQColor;
 
+// A few built-in palette preference keys (in OmniUI.defaults)
+extern NSString * const OUIColorSwatchPickerTextBackgroundPalettePreferenceKey;
+extern NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey;
+
 @interface OUIColorSwatchPicker : UIView
 {
 @private
@@ -19,17 +23,23 @@
     OQColor *_swatchSelectionColor;
     
     NSMutableArray *_colorSwatches;
-
+    UIButton *_navigationButton;
+    
+    BOOL _showsSingleSwatch;
     BOOL _wraps;
+    BOOL _showsNoneSwatch;
     BOOL _showsNavigationSwatch;
 }
 
 @property(copy,nonatomic) NSString *palettePreferenceKey;
 
 @property(copy,nonatomic) NSArray *colors;
+@property(retain,nonatomic) OQColor *color; // Simple cover for 'colors' when using a single color
 
-@property(assign,nonatomic) BOOL wraps;
-@property(assign,nonatomic) BOOL showsNavigationSwatch;
+@property(assign,nonatomic) BOOL showsSingleSwatch; // If set, the entire view area shows just the first color and navigation to the detail is enabled.
+@property(assign,nonatomic) BOOL wraps; // If set, and there are more than one row's worth of colors, wrap to following rows
+@property(assign,nonatomic) BOOL showsNoneSwatch; // If set, the first swatch is reserved for a nil color value
+@property(assign,nonatomic) BOOL showsNavigationSwatch; // If set, the last swatch is reserved for the detail color picker
 
 - (void)sizeHeightToFit;
 

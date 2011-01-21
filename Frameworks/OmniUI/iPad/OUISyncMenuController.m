@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,19 +7,21 @@
 
 #import "OUISyncMenuController.h"
 
-#import "OUIWebDAVSetup.h"
-#import <OmniUI/OUIAppController.h>
-#import "OUIWebDAVController.h"
+#import <OmniFileStore/OFSFileInfo.h>
+#import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFPreference.h>
-#import "OUIExportOptionsController.h"
-#import "OUIExportOptionsView.h"
+#import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIDocumentProxy.h>
-#import "OUIWebDAVConnection.h"
-#import <OmniFoundation/NSString-OFSimpleMatching.h>
-#import <OmniFileStore/OFSFileInfo.h>
 
 #import <MobileCoreServices/MobileCoreServices.h>
+
+#import "OUIExportOptionsController.h"
+#import "OUIExportOptionsView.h"
+#import "OUIWebDAVConnection.h"
+#import "OUIWebDAVController.h"
+#import "OUIWebDAVSetup.h"
 
 RCS_ID("$Id$")
 
@@ -40,7 +42,7 @@ RCS_ID("$Id$")
     OUIAppController *appController = [OUIAppController controller];
     [appController.topViewController presentModalViewController:navigationController animated:YES];
     
-    UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:controller action:@selector(cancel:)];
+    UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:controller action:@selector(cancel:)];
     controller.navigationItem.leftBarButtonItem = cancel;
     [cancel release];
     
@@ -81,14 +83,8 @@ RCS_ID("$Id$")
         _menuPopoverController.delegate = self;
     }
     
-    [_menuPopoverController presentPopoverFromBarButtonItem:barItem permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    [[OUIAppController controller] presentPopover:_menuPopoverController fromBarButtonItem:barItem permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     [(UITableView *)self.view reloadData];
-}
-
-- (void)dismiss;
-{
-    [_menuPopoverController dismissPopoverAnimated:NO];
-    [self _discardMenu]; // -popoverControllerDidDismissPopover: is only called when user action causes the popover to auto-dismiss 
 }
 
 #pragma mark -

@@ -15,7 +15,7 @@ RCS_ID("$Id$")
 
 - copy;
 {
-    OFByteSet *copy = [[isa alloc] init];
+    OFByteSet *copy = [[[self class] alloc] init];
 
     unsigned int byteIndex;
     for (byteIndex = 0; byteIndex < OFByteSetBitmapRepLength; byteIndex++)

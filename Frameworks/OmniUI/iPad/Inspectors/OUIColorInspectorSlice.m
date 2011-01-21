@@ -8,12 +8,10 @@
 #import <OmniUI/OUIColorInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorSegmentedControl.h>
-#import <OmniUI/OUIColorPicker.h>
-#import <OmniUI/OUIInspectorSegmentedControlButton.h>
 #import <OmniUI/OUIColorSwatchPicker.h>
 #import <OmniUI/OUIColorValue.h>
 #import <OmniUI/OUIInspectorSelectionValue.h>
+#import <OmniUI/OUIColorInspectorPane.h>
 
 #import <OmniFoundation/OFPreference.h>
 #import <OmniQuartz/OQColor.h>
@@ -36,6 +34,12 @@ RCS_ID("$Id$");
 }
 
 @synthesize swatchPicker = _swatchPicker;
+- (OUIColorSwatchPicker *)swatchPicker;
+{
+    OBPRECONDITION(_swatchPicker); // Call -view first. Could do that here, but then we'd could the view if this was called when closing/unloading the view.
+    return _swatchPicker;
+}
+
 @synthesize selectionValue = _selectionValue;
 
 - (NSSet *)getColorsFromObject:(id)object;
@@ -97,12 +101,66 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark NSViewController
 
-- (void)viewDidLoad;
+- (void)loadView;
 {
-    [super viewDidLoad];
+    const CGFloat kWidth = 200; // will be resized anyway; just something to use as a starting point for the other views
+    const CGFloat kEdgeInset = 9;
+    const CGFloat kLabelToSwatchPadding = 8;
+    const CGFloat kSwatchPickerBottomPadding = 9;
     
+    CGFloat yOffset = 0;
+
+    CGRect viewFrame = CGRectMake(0, 0, kWidth, 10);
+    UIView *view = [[UIView alloc] initWithFrame:viewFrame];
+    view.autoresizesSubviews = YES;
+    
+    // If a title is set on the view controller before the view is loaded, add a UILabel.
+    // Not sure if it is worth allowing this to be set after the view is loaded.
+    NSString *title = self.title;
+    if (![NSString isEmptyString:title]) {
+        CGRect labelFrame = CGRectMake(kEdgeInset, yOffset, kWidth - 2*kEdgeInset, 10);
+        UILabel *label = [[UILabel alloc] initWithFrame:labelFrame];
+        label.text = title;
+        label.font = [OUIInspector labelFont];
+        label.textColor = [OUIInspector labelTextColor];
+        label.opaque = NO;
+        label.backgroundColor = nil;
+        label.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleBottomMargin;
+        
+        [label sizeToFit]; // size the height
+        labelFrame.size.height = label.frame.size.height;
+        label.frame = labelFrame;
+        
+        [view addSubview:label];
+        [label release];
+        
+        yOffset = CGRectGetMaxY(labelFrame) + kLabelToSwatchPadding;
+    }
+    
+    OBASSERT(_swatchPicker == nil);
+    _swatchPicker = [[OUIColorSwatchPicker alloc] initWithFrame:CGRectMake(kEdgeInset, yOffset, kWidth - 2*kEdgeInset, 0)];
+    [_swatchPicker sizeHeightToFit];
     _swatchPicker.wraps = NO;
     _swatchPicker.showsNavigationSwatch = YES;
+    _swatchPicker.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleBottomMargin;
+    
+    [view addSubview:_swatchPicker];
+    
+    yOffset = CGRectGetMaxY(_swatchPicker.frame) + kSwatchPickerBottomPadding;
+    viewFrame.size.height = yOffset;
+    view.frame = viewFrame;
+    
+    NSLog(@"view = %@", view);
+    
+    self.view = view;
+    [view release];
+    
+    if (!self.detailPane) {
+        OUIColorInspectorPane *pane = [[OUIColorInspectorPane alloc] init];
+        pane.title = self.title;
+        self.detailPane = pane;
+        [pane release];
+    }
 }
 
 - (void)viewDidUnload;
@@ -152,7 +210,9 @@ RCS_ID("$Id$");
     [_selectionValue release];
     _selectionValue = [[OUIInspectorSelectionValue alloc] initWithValue:color];
     
-    [self updateInterfaceFromInspectedObjects];
+    // Only need to update if we are the visible inspector (not our detail). Otherwise we'll update when the detail closes.
+    if (inspector.topVisiblePane == self.containingPane)
+        [self updateInterfaceFromInspectedObjects];
 
     // Don't add more than one swatch to our top swatch list per journey into the detail pane.
     // In particular, if you scrub through the HSV sliders, we don't want to blow away all our colors.
@@ -192,133 +252,3 @@ RCS_ID("$Id$");
 
 @end
 
-@implementation OUIColorInspectorDetailSlice
-
-- (void)dealloc;
-{
-    [_colorTypeSegmentedControl release];
-    [_currentColorPicker release];
-    [_paletteColorPicker release];
-    [_hsvColorPicker release];
-    [_rgbColorPicker release];
-    [_grayColorPicker release];
-    [super dealloc];
-}
-
-@synthesize colorTypeSegmentedControl = _colorTypeSegmentedControl;
-@synthesize paletteColorPicker = _paletteColorPicker;
-@synthesize hsvColorPicker = _hsvColorPicker;
-@synthesize rgbColorPicker = _rgbColorPicker;
-@synthesize grayColorPicker = _grayColorPicker;
-
-- (NSUInteger)selectedColorPickerIndex;
-{
-    return _colorTypeIndex;
-}
-
-- (void)setSelectedColorPickerIndex:(NSUInteger)segmentIndex;
-{
-    _colorTypeIndex = segmentIndex;
-    if ([self isViewLoaded]) {
-        [_colorTypeSegmentedControl setSelectedSegmentIndex:_colorTypeIndex];
-        [self colorTypeSegmentedControlSelectionChanged:_colorTypeSegmentedControl];
-    }
-}
-
-- (IBAction)colorTypeSegmentedControlSelectionChanged:(id)sender;
-{
-    if ([_colorTypeSegmentedControl selectedSegmentIndex] != (NSInteger)_colorTypeIndex) {
-        _colorTypeIndex = [_colorTypeSegmentedControl selectedSegmentIndex];
-        [[NSNotificationCenter defaultCenter] postNotificationName:OUIColorTypeChangeNotification object:self];
-    }
-    
-    OUIInspectorSegmentedControlButton *segment = _colorTypeSegmentedControl.selectedSegment;
-    OUIColorPicker *colorPicker = segment.representedObject;
-    if (colorPicker == _currentColorPicker)
-        return;
-    
-    OUIColorInspectorSlice *slice = (OUIColorInspectorSlice *)self.slice;
-
-    [_currentColorPicker.view removeFromSuperview];
-    [_currentColorPicker release];
-    _currentColorPicker = [colorPicker retain];
-    _currentColorPicker.selectionValue = slice.selectionValue;
-    
-    const CGFloat kSpaceBetweenSegmentedControllAndColorPicker = 8;
-    
-    // leaves the inspector at the same height if we somehow get no selection, which we shouldn't
-    if (_currentColorPicker) {
-        CGRect typeFrame = _colorTypeSegmentedControl.frame;
-        
-        // Keep only the height of the picker's view
-        UIView *pickerView = _currentColorPicker.view;
-
-        CGRect pickerFrame;
-        pickerFrame.origin = CGPointMake(CGRectGetMinX(typeFrame), CGRectGetMaxY(typeFrame) + kSpaceBetweenSegmentedControllAndColorPicker);
-        pickerFrame.size.width = CGRectGetWidth(typeFrame); // should span our bounds
-        pickerFrame.size.height = [_currentColorPicker height];
-        
-        UIView *view = self.view;
-        CGRect frame = view.frame;
-        frame.size.height = CGRectGetMaxY(pickerFrame);
-        view.frame = frame;
-        [view layoutIfNeeded];
-        
-        self.contentSizeForViewInPopover = frame.size;
-        
-        [slice.inspector inspectorSizeChanged];
-
-        pickerView.frame = pickerFrame;
-        [self.view addSubview:pickerView];
-        
-        [_currentColorPicker becameCurrentColorPicker];
-    }
-}
-
-#pragma mark -
-#pragma mark OUIInspectorDetailSlice subclass
-
-- (void)updateInterfaceFromInspectedObjects;
-{
-    OUIColorInspectorSlice *slice = (OUIColorInspectorSlice *)self.slice;
-    
-    _currentColorPicker.selectionValue = slice.selectionValue;
-}
-
-- (void)wasPushed;
-{
-    [super wasPushed];
-    
-    [_currentColorPicker becameCurrentColorPicker];
-}
-
-#pragma mark -
-#pragma mark UIViewController subclass
-
-- (void)viewDidLoad;
-{
-    [super viewDidLoad];
-
-    // Let callers assign their own title
-    if (![NSString isEmptyString:self.title])
-        self.title = NSLocalizedStringFromTableInBundle(@"Color", @"OUIInspectors", OMNI_BUNDLE, @"color inspector title");
-    
-    [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorPaletteSegment.png" representedObject:_paletteColorPicker];
-    [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorHSVSegment.png" representedObject:_hsvColorPicker];
-    [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorRGBSegment.png" representedObject:_rgbColorPicker];
-    [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorGraySegment.png" representedObject:_grayColorPicker];
-    
-    _colorTypeSegmentedControl.selectedSegment = [_colorTypeSegmentedControl segmentAtIndex:_colorTypeIndex];
-    [self colorTypeSegmentedControlSelectionChanged:nil];
-}
-
-#pragma mark -
-#pragma mark NSObject (OUIColorSwatch)
-
-- (void)changeColor:(id <OUIColorValue>)colorValue;
-{
-    // The responder chain doesn't leap back up the nav controller stack.
-    [self.slice changeColor:colorValue];
-}
-
-@end

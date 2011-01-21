@@ -14,10 +14,11 @@
 @protocol OUIDocumentPickerDelegate <NSObject>
 - (Class)documentPicker:(OUIDocumentPicker *)picker proxyClassForURL:(NSURL *)proxyURL;
 - (NSString *)documentPickerBaseNameForNewFiles:(OUIDocumentPicker *)picker;
-- (NSString *)documentPickerDocumentTypeForNewFiles:(OUIDocumentPicker *)picker;
-- (id <OUIDocument>)createNewDocumentAtURL:(NSURL *)url error:(NSError **)outError;
+- (BOOL)createNewDocumentAtURL:(NSURL *)url error:(NSError **)outError;
 
 @optional
+
+- (NSString *)documentPickerDocumentTypeForNewFiles:(OUIDocumentPicker *)picker;
 
 - (void)documentPicker:(OUIDocumentPicker *)picker scannedProxies:(NSSet *)proxies;
 

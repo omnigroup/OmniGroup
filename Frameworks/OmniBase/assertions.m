@@ -59,7 +59,7 @@ void OBSetAssertionFailureHandler(OBAssertionFailureHandler handler)
 
 void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber)
 {
-    OBRecordBacktrace((uintptr_t)expression, OBBacktraceBuffer_OBAssertionFailure);
+    OBRecordBacktrace(expression, OBBacktraceBuffer_OBAssertionFailure);
     currentAssertionHandler(type, expression, file, lineNumber);
     OBAssertFailed();
 }

@@ -12,6 +12,8 @@
 #import <CoreText/CTFramesetter.h>
 #import <CoreText/CTFont.h>
 
+extern const CGFloat OUITextLayoutUnlimitedSize;
+
 @interface OUITextLayout : OFObject
 {
 @private
@@ -33,7 +35,7 @@
 
 @end
 
-extern CGRect OUITextLayoutMeasureFrame(CTFrameRef frame, BOOL includeTrailingWhitespace);
+extern CGRect OUITextLayoutMeasureFrame(CTFrameRef frame, BOOL includeTrailingWhitespace, BOOL widthIsConstrained);
 extern CGPoint OUITextLayoutOrigin(CGRect typographicFrame, UIEdgeInsets textInset, // in text coordinates
                                    CGRect bounds, // view rect we want to draw in
                                    CGFloat scale); // scale factor from text to view

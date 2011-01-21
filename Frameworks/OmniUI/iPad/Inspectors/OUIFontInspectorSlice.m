@@ -10,7 +10,7 @@
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorTextWell.h>
 #import <OmniUI/OUIInspectorStepperButton.h>
-#import <OmniUI/OUIFontInspectorDetailSlice.h>
+#import <OmniUI/OUIFontInspectorPane.h>
 #import <OmniUI/OUIInspectorSegmentedControl.h>
 #import <OmniUI/OUIInspectorSegmentedControlButton.h>
 
@@ -40,7 +40,7 @@ RCS_ID("$Id$");
     [_fontSizeDecreaseStepperButton release];
     [_fontSizeIncreaseStepperButton release];
     [_fontSizeTextWell release];
-    [_fontFacesDetailSlice release];
+    [_fontFacesPane release];
     [super dealloc];
 }
 
@@ -49,7 +49,7 @@ RCS_ID("$Id$");
 @synthesize fontSizeDecreaseStepperButton = _fontSizeDecreaseStepperButton;
 @synthesize fontSizeIncreaseStepperButton = _fontSizeIncreaseStepperButton;
 @synthesize fontSizeTextWell = _fontSizeTextWell;
-@synthesize fontFacesDetailSlice = _fontFacesDetailSlice;
+@synthesize fontFacesPane = _fontFacesPane;
 @synthesize showStrikethrough = _showStrikethrough;
 
 static const CGFloat kMinimiumFontSize = 2;
@@ -102,10 +102,10 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
 
 - (void)showFacesForFamilyBaseFont:(UIFont *)font;
 {
-    _fontFacesDetailSlice.showFacesOfFont = font;
-    _fontFacesDetailSlice.title = OUIDisplayNameForFont(font, YES/*useFamilyName*/);
+    _fontFacesPane.showFacesOfFont = font;
+    _fontFacesPane.title = OUIDisplayNameForFont(font, YES/*useFamilyName*/);
 
-    [self.inspector pushDetailSlice:_fontFacesDetailSlice];
+    [self.inspector pushPane:_fontFacesPane];
 }
 
 #pragma mark -
@@ -239,13 +239,13 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
 
     CGFloat fontSize = [OUIInspectorTextWell fontSize];
     _fontSizeTextWell.font = [UIFont boldSystemFontOfSize:fontSize];
-    _fontSizeTextWell.formatString = NSLocalizedStringFromTableInBundle(@"%@ points", @"OUIInspectors", OMNI_BUNDLE, @"font size label format string in points");
-    _fontSizeTextWell.formatFont = [UIFont systemFontOfSize:fontSize];
+    _fontSizeTextWell.label = NSLocalizedStringFromTableInBundle(@"%@ points", @"OUIInspectors", OMNI_BUNDLE, @"font size label format string in points");
+    _fontSizeTextWell.labelFont = [UIFont systemFontOfSize:fontSize];
     _fontSizeTextWell.editable = YES;
     [_fontSizeTextWell setKeyboardType:UIKeyboardTypeNumberPad];
 
     // Superclass does this for the family detail.
-    _fontFacesDetailSlice.slice = self;
+    _fontFacesPane.parentSlice = self;
 }
 
 #pragma mark -
@@ -253,10 +253,13 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
 
 - (IBAction)_showFontFamilies:(id)sender;
 {
-    OUIFontInspectorDetailSlice *details = (OUIFontInspectorDetailSlice *)self.detailSlice;
-    details.title = NSLocalizedStringFromTableInBundle(@"Font", @"OUIInspectors", OMNI_BUNDLE, @"Title for the font family list in the inspector");
-    details.showFacesOfFont = nil; // shows families
-    [self showDetails:sender];
+    OUIFontInspectorPane *familyPane = (OUIFontInspectorPane *)self.detailPane;
+    OBPRECONDITION(familyPane);
+    
+    familyPane.title = NSLocalizedStringFromTableInBundle(@"Font", @"OUIInspectors", OMNI_BUNDLE, @"Title for the font family list in the inspector");
+    familyPane.showFacesOfFont = nil; // shows families
+    
+    [self.inspector pushPane:familyPane];
 }
 
 - (void)_toggleBold:(id)sender;

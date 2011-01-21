@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,7 @@
 // Extra methods factored out into another category
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSData-OFCompression.h>
+#import <OmniFoundation/NSData-OFSignature.h>
 #import <OmniFoundation/OFFilterProcess.h>
 
 @interface NSData (OFExtensions)
@@ -26,18 +27,6 @@
 
 - (NSUInteger)indexOfFirstNonZeroByte;
     // Returns the index of the first non-zero byte in the receiver, or NSNotFound if if all the bytes in the data are zero.
-
-- (NSData *)copySHA1Signature;
-- (NSData *)sha1Signature;
-    // Uses the SHA-1 algorithm to compute a signature for the receiver.
-
-- (NSData *)sha256Signature;
-    // Uses the SHA-256 algorithm to compute a signature for the receiver.
-
-- (NSData *)md5Signature;
-    // Computes an MD5 digest of the receiver and returns it. (Derived from the RSA Data Security, Inc. MD5 Message-Digest Algorithm.)
-
-- (NSData *)signatureWithAlgorithm:(NSString *)algName;
 
 - (BOOL)writeToFile:(NSString *)path atomically:(BOOL)atomically createDirectories:(BOOL)shouldCreateDirectories error:(NSError **)outError;
 

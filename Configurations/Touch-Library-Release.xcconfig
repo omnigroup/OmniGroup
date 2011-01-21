@@ -7,4 +7,3 @@
 #include "Touch-Library-Common.xcconfig"
 
 // Common settings for Release configurations of Library targets
-GCC_DYNAMIC_NO_PIC = YES

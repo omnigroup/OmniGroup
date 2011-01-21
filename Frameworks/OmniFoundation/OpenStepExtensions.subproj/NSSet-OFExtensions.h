@@ -10,6 +10,7 @@
 #import <Foundation/NSSet.h>
 
 #import <CoreFoundation/CFSet.h>
+#import <OmniFoundation/OFUtilities.h>
 
 @interface NSSet (OFExtensions)
 
@@ -17,6 +18,10 @@
 - (NSArray *)sortedArrayUsingSelector:(SEL)comparator;
 
 - (void)applyFunction:(CFSetApplierFunction)applier context:(void *)context;
+
+#ifdef NS_BLOCKS_AVAILABLE
+- (id)any:(OFPredicateBlock)predicate;
+#endif
 
 @end
 

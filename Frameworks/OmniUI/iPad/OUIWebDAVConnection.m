@@ -9,13 +9,14 @@
 
 #import <OmniUI/OUIAppController.h>
 #import "OUICredentials.h"
-
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniFileStore/OFSDAVFileManager.h>
-
+#import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 
 RCS_ID("$Id$")
+
+NSString * const OUICertificateTrustUpdated = @"OUICertificateTrustUpdated";
 
 @implementation OUIWebDAVConnection
 
@@ -37,6 +38,7 @@ static OUIWebDAVConnection *_sharedConnection;
     [_fileManager release];
     [_newKeychainPassword release];
     [_authenticationChallenge release];
+    [_certAlert release];
 
     [super dealloc];
 }
@@ -59,7 +61,9 @@ static OUIWebDAVConnection *_sharedConnection;
     
     // TODO: simpler, quicker way to authenticate?
     [newFileManager fileInfoAtURL:_address error:&outError];    // just here to tickle authentication
-    if (outError) {
+    if (_certAlert) {
+        return NO;
+    } else if (outError) {
         OUI_PRESENT_ALERT(outError);
         return NO;
     }
@@ -81,6 +85,13 @@ static OUIWebDAVConnection *_sharedConnection;
     
     [_authenticationChallenge release];
     _authenticationChallenge = nil;
+    [_certAlert release];
+    _certAlert = nil;
+}
+
+- (BOOL)trustAlertVisible;
+{
+    return _certAlert != nil;
 }
 
 #pragma mark OFSDAVFileManagerDelegate
@@ -99,6 +110,46 @@ static OUIWebDAVConnection *_sharedConnection;
     _authenticationChallenge = [[NSURLAuthenticationChallenge alloc] initWithAuthenticationChallenge:challenge sender:nil];
     
     return OUIReadCredentialsForChallenge(challenge);
+}
+
+- (void)DAVFileManager:(OFSDAVFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
+{
+    OBASSERT(_certAlert == nil);
+    _certAlert = [[OUICertificateTrustAlert alloc] initWithDelegate:self forChallenge:challenge];
+    [_certAlert show];
+}
+
+#pragma mark OUICertificateTrustAlertDelegate
+- (void)certificateTrustAlert:(OUICertificateTrustAlert *)alert didDismissWithButtonIndex:(NSInteger)buttonIndex challenge:(NSURLAuthenticationChallenge *)challenge;
+{
+    switch (buttonIndex) {
+        case 0: /* Cancel */
+            break;
+            
+        case 1: /* Continue */
+        {
+            [OFSDAVFileManager setTrustedHost:[[challenge protectionSpace] host]];
+            [_certAlert release];
+            _certAlert = nil;
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:OUICertificateTrustUpdated object:nil];
+
+            break;
+        }
+        case 2: /* Trust always */
+        {
+            [OFSDAVFileManager setTrustedHost:[[challenge protectionSpace] host]];
+            [[OFPreferenceWrapper sharedPreferenceWrapper] setObject:[[challenge protectionSpace] host] forKey:OFSTrustedSyncHostPreference];
+            [_certAlert release];
+            _certAlert = nil;
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:OUICertificateTrustUpdated object:nil];
+
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 @synthesize address = _address;

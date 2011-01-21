@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,9 @@
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/OFBundledClass.h>
 #endif
+#import <OmniFoundation/NSUserDefaults-OFExtensions.h>
+#import <OmniFoundation/CFPropertyList-OFExtensions.h>
+#import <OmniFoundation/OFPreference.h>
 
 RCS_ID("$Id$")
 
@@ -130,17 +133,12 @@ static NSArray *oldDisabledBundleNames;
 
 + (void)noteAdditionalBundles:(NSArray *)additionalBundles owner:bundleOwner
 {
-    BOOL changedSomething;
-    
     if (additionalBundles && ![additionalBundles count])
         additionalBundles = nil;
-
-    changedSomething = NO;
 
     if (!additionalBundles) {
         if (additionalBundleDescriptions != nil &&
             [additionalBundleDescriptions objectForKey:bundleOwner] != nil) {
-            changedSomething = YES;
             [additionalBundleDescriptions removeObjectForKey:bundleOwner];
         }
     } else {
@@ -149,12 +147,7 @@ static NSArray *oldDisabledBundleNames;
         }
     
         // Assume that the bundle registrar is only sending us this message if something actually changed in its registry.
-        changedSomething = YES;
         [additionalBundleDescriptions setObject:additionalBundles forKey:bundleOwner];
-    }
-
-    if (changedSomething) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:OFBundleRegistryChangedNotificationName object:nil];
     }
 }
 
@@ -177,7 +170,6 @@ static NSString * const OFBundleRegistryConfigLogBundleRegistration = @"LogBundl
 #ifdef DYNAMIC_BUNDLE_LOADING
 NSString * const OFBundleRegistryDisabledBundlesDefaultsKey = @"DisabledBundles";
 #endif
-NSString * const OFBundleRegistryChangedNotificationName = @"OFBundleRegistry changed";
 
 static NSDictionary *configDictionary = nil;
 static BOOL OFBundleRegistryDebug = NO;
@@ -358,8 +350,6 @@ static BOOL OFBundleRegistryDebug = NO;
     }
 
     [newlyLoadedBundleDescription setObject:@"YES" forKey:@"loaded"];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:OFBundleRegistryChangedNotificationName object:nil];
 }
 
 // Invoked when the defaults change
@@ -384,7 +374,6 @@ static BOOL OFBundleRegistryDebug = NO;
         return;
 
     /* Mark all bundles affected by this change as needing a restart before changes will take effect. */
-    BOOL changedAnything = NO;
     
     for (NSMutableDictionary *bundleDescription in [self knownBundles]) {
         NSString *thisBundlePath;
@@ -402,13 +391,8 @@ static BOOL OFBundleRegistryDebug = NO;
             [changedNames containsObject:[thisBundleName stringByDeletingPathExtension]]) {
             if (![bundleDescription objectForKey:@"needsRestart"]) {
                 [bundleDescription setObject:@"YES" forKey:@"needsRestart"];
-                changedAnything = YES;
             }
         }
-    }
-
-    if (changedAnything) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:OFBundleRegistryChangedNotificationName object:nil];
     }
 }
 
@@ -473,11 +457,8 @@ static BOOL OFBundleRegistryDebug = NO;
 
 + (void)registerDictionary:(NSDictionary *)registrationClassToOptionsDictionary forBundle:(NSDictionary *)bundleDescription;
 {
-    NSString *bundlePath, *registrationClassName;
-    NSEnumerator *registrationClassEnumerator, *registrationClassToOptionsDictionaryEnumerator;
-    NSBundle *bundle;
-
-    bundle = [bundleDescription objectForKey:@"bundle"];
+    NSBundle *bundle = [bundleDescription objectForKey:@"bundle"];
+    NSString *bundlePath;
 
     // this is just temporary ...wim
     if (bundle) {
@@ -488,21 +469,9 @@ static BOOL OFBundleRegistryDebug = NO;
     
     bundlePath = bundle ? [bundle bundlePath] : NSLocalizedStringFromTableInBundle(@"local configuration file", @"OmniFoundation", [OFBundleRegistry bundle], @"local bundle path readable string");
 
-    registrationClassEnumerator = [registrationClassToOptionsDictionary keyEnumerator];
-    registrationClassToOptionsDictionaryEnumerator = [registrationClassToOptionsDictionary objectEnumerator];
-
-    while ((registrationClassName = [registrationClassEnumerator nextObject])) {
-        NSDictionary *registrationDictionary;
-        NSEnumerator *itemEnumerator;
-        NSString *itemName;
-        NSEnumerator *descriptionEnumerator;
-        Class registrationClass;
-
-        if (!registrationClassName || [registrationClassName length] == 0)
-            break;
-
-        registrationDictionary = [registrationClassToOptionsDictionaryEnumerator nextObject];
-        registrationClass = NSClassFromString(registrationClassName);
+    for (NSString *registrationClassName in registrationClassToOptionsDictionary) {
+        NSDictionary *registrationDictionary = [registrationClassToOptionsDictionary objectForKey:registrationClassName];
+        Class registrationClass = NSClassFromString(registrationClassName);
         if (!registrationClass) {
             NSLog(@"OFBundleRegistry warning: registration class '%@' from bundle '%@' not found.", registrationClassName, bundlePath);
             continue;
@@ -512,59 +481,59 @@ static BOOL OFBundleRegistryDebug = NO;
             continue;
         }
 
-        itemEnumerator = [registrationDictionary keyEnumerator];
-        descriptionEnumerator = [registrationDictionary objectEnumerator];
+        for (NSString *itemName in registrationDictionary) {
+            NSDictionary *descriptionDictionary = [registrationDictionary objectForKey:itemName];
 
-        while ((itemName = [itemEnumerator nextObject])) {
-            NSDictionary *descriptionDictionary;
-
-            descriptionDictionary = [descriptionEnumerator nextObject];
-            NS_DURING {
+            @try {
                 [registrationClass registerItemName:itemName bundle:bundle description:descriptionDictionary];
-            } NS_HANDLER {
-                NSLog(@"+[%@ registerItemName:%@ bundle:%@ description:%@]: %@", [registrationClass description], [itemName description], [bundle description], [descriptionDictionary description], [localException reason]);
-            } NS_ENDHANDLER;
+            } @catch (NSException *exc) {
+                NSLog(@"+[%@ registerItemName:%@ bundle:%@ description:%@]: %@", [registrationClass description], [itemName description], [bundle description], [descriptionDictionary description], [exc reason]);
+            };
         }
+    }
+    
+    // To facilitate sharing default registrations between Mac frameworks and iOS apps that link them as static libraries (but don't get the Info.plist), we allow putting the shared defaults in *.defaults resources.
+    for (NSString *path in [bundle pathsForResourcesOfType:@"defaults" inDirectory:nil]) {
+        NSError *error = nil;
+        
+        CFPropertyListRef plist = OFCreatePropertyListFromFile((CFStringRef)path, kCFPropertyListImmutable, (CFErrorRef *)&error);
+        if (!plist) {
+            NSLog(@"Unable to parse %@ as a property list: %@", path, [error toPropertyList]);
+            [error release];
+            continue;
+        }
+        
+        if (![(id)plist isKindOfClass:[NSDictionary class]]) {
+            NSLog(@"Contents of %@ is not a dictionary.", path);
+            CFRelease(plist);
+            continue;
+        }
+        
+        [NSUserDefaults registerItemName:OFUserDefaultsRegistrationItemName bundle:bundle description:(NSDictionary *)plist];
+        CFRelease(plist);
     }
 }
 
 + (void)registerBundles:(NSArray *)bundleDescriptions
 {
-    NSEnumerator *bundleEnumerator;
-    NSMutableDictionary *description;
-
     if (!configDictionary)
         return;
 
-    if (!bundleDescriptions || ![bundleDescriptions count]) {
-        // nothing to do, so short-circuit to avoid unnecessary notifications
-        return;
-    }
-
     [knownBundles addObjectsFromArray:bundleDescriptions];
-        
-    bundleEnumerator = [bundleDescriptions objectEnumerator];
-    while ((description = [bundleEnumerator nextObject])) {
-        NSBundle *bundle;
-        NSDictionary *infoDictionary;
-        NSString *bundlePath;
-        NSString *bundleName;
-        NSString *bundleIdentifier;
-        NSString *softwareVersion;
-        NSDictionary *registrationDictionary;
-
+    
+    for (NSMutableDictionary *description in bundleDescriptions) {
         // skip invalidated bundles
         if ([description objectForKey:@"invalid"] != nil)
             continue;
         
-        bundle = [description objectForKey:@"bundle"];
+        NSBundle *bundle = [description objectForKey:@"bundle"];
 
-        bundlePath = [bundle bundlePath];
-        bundleName = [bundlePath lastPathComponent];
-        bundleIdentifier = [bundle bundleIdentifier];
+        NSString *bundlePath = [bundle bundlePath];
+        NSString *bundleName = [bundlePath lastPathComponent];
+        NSString *bundleIdentifier = [bundle bundleIdentifier];
         if ([NSString isEmptyString:bundleIdentifier])
             bundleIdentifier = [bundleName stringByDeletingPathExtension];
-        infoDictionary = [bundle infoDictionary];
+        NSDictionary *infoDictionary = [bundle infoDictionary];
 
         // If the bundle isn't already loaded, decide whether to register it
         if (![[description objectForKey:@"loaded"] isEqualToString:@"YES"]) {
@@ -598,7 +567,7 @@ static BOOL OFBundleRegistryDebug = NO;
         [registeredBundleNames addObject:bundleName];
 
         // Look up the bundle's software version
-        softwareVersion = [infoDictionary objectForKey:@"OFSoftwareVersion"];
+        NSString *softwareVersion = [infoDictionary objectForKey:@"OFSoftwareVersion"];
         if (softwareVersion != nil) {
             NSLog(@"OFBundleRegistry: Deprecated OFSoftwareVersion key found in %@", bundlePath);
         } else {
@@ -612,19 +581,12 @@ static BOOL OFBundleRegistryDebug = NO;
             [softwareVersionDictionary setObject:softwareVersion forKey:bundleIdentifier];
         }
 
-        // Register the bundle
-        registrationDictionary = [infoDictionary objectForKey:OFRegistrations];
-        if (registrationDictionary) {
-            if (OFBundleRegistryDebug)
-                NSLog(@"OFBundleRegistry: Registering %@ (version %@)", bundlePath, softwareVersion);
-            [self registerDictionary:registrationDictionary forBundle:description];
-        } else {
-            if (OFBundleRegistryDebug)
-                NSLog(@"OFBundleRegistry: Found %@ (version %@) (no registrations)", bundlePath, softwareVersion);
-        }
+        // Register the bundle (which will look not only at the passed in dictionary, but also at the bundle's resources).
+        NSDictionary *registrationDictionary = [infoDictionary objectForKey:OFRegistrations];
+        if (OFBundleRegistryDebug)
+            NSLog(@"OFBundleRegistry: Registering %@ (version %@) (%ld registrations)", bundlePath, softwareVersion, [registrationDictionary count]);
+        [self registerDictionary:registrationDictionary forBundle:description];
     }
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:OFBundleRegistryChangedNotificationName object:nil];
 }
 
 + (void)registerAdditionalRegistrations;

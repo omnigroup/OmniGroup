@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 #import <OmniUI/OUIInspectorTextWell.h>
 
 #import <OmniUI/OUIInspectorWell.h>
+#import <OmniUI/OUITextLayout.h>
+#import <OmniUI/OUIEditableFrame.h>
 
 #import <CoreText/CoreText.h>
 #import <OmniQuartz/OQDrawing.h>
@@ -17,59 +19,21 @@
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFNull.h>
 
+#import "OUIParameters.h"
+
 RCS_ID("$Id$");
 
-@interface OUIInspectorTextWell (/*Private*/)
+@interface OUIInspectorTextWell (/*Private*/) <OUIEditableFrameDelegate>
+@property(readonly) OUIEditableFrame *editor; // returns nil unless editable is YES
+- (NSAttributedString *)_defaultStyleFormattedText;
+- (OUITextLayout *)_labelTextLayout;
+- (OUITextLayout *)_valueTextLayoutForWidth:(CGFloat)valueWidth;
+- (void)_drawAttributedString:(NSAttributedString *)attributedString inRect:(CGRect)textRect;
+- (void)_drawTextLayout:(OUITextLayout *)textLayout inRect:(CGRect)textRect;
 - (void)_tappedTextWell:(id)sender;
 @end
 
 @implementation OUIInspectorTextWell
-
-static CGGradientRef NormalGradient = NULL;
-static CGGradientRef HighlightedGradient = NULL;
-
-static BOOL _drawHighlighed(OUIInspectorTextWell *self)
-{
-    return !self.enabled || (self.highlighted && ([self allControlEvents] != 0));
-}
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-        
-    {
-        UIColor *topColor = [UIColor colorWithHue:64.0/360.0 saturation:0.17 brightness:0.78 alpha:1.0];
-        UIColor *bottomColor = [UIColor colorWithHue:60.0/360.0 saturation:0.10 brightness:0.94 alpha:1.0];
-        NormalGradient = CGGradientCreateWithColors(NULL/*colorSpace*/, (CFArrayRef)[NSArray arrayWithObjects:(id)[topColor CGColor], (id)[bottomColor CGColor], nil], NULL);
-    }
-    
-    {
-        UIColor *topColor = [UIColor colorWithHue:64.0/360.0 saturation:0.17 brightness:0.48 alpha:1.0];
-        UIColor *bottomColor = [UIColor colorWithHue:60.0/360.0 saturation:0.10 brightness:0.64 alpha:1.0];
-        HighlightedGradient = CGGradientCreateWithColors(NULL/*colorSpace*/, (CFArrayRef)[NSArray arrayWithObjects:(id)[topColor CGColor], (id)[bottomColor CGColor], nil], NULL);
-    }
-    
-}
-
-+ (CGFloat)fontSize;
-{
-    return 18;
-}
-
-+ (UIFont *)italicFormatFont;
-{
-    return [UIFont fontWithName:@"HoeflerText-Italic" size:[self fontSize]];
-}
-
-+ (UIColor *)textColor;
-{
-    return [UIColor colorWithWhite:0.3 alpha:1];
-}
-
-+ (UIColor *)highlightedTextColor;
-{
-    return [UIColor colorWithWhite:0.2 alpha:1];
-}
 
 static id _commonInit(OUIInspectorTextWell *self)
 {
@@ -77,6 +41,9 @@ static id _commonInit(OUIInspectorTextWell *self)
     self.opaque = NO;
     self.backgroundColor = nil;
     self.keyboardType = UIKeyboardTypeDefault;
+    
+    self->_style = OUIInspectorTextWellStyleDefault;
+    
     return self;
 }
 
@@ -96,35 +63,49 @@ static id _commonInit(OUIInspectorTextWell *self)
 
 - (void)dealloc;
 {
-    _textField.delegate = nil;
-    [_textField release];
+    _editor.delegate = nil;
+    [_editor release];
     [_text release];
     [_font release];
-    [_formatString release];
-    [_formatFont release];
+    [_label release];
+    [_labelFont release];
+    [_labelTextLayout release];
+    [_valueTextLayout release];
     [super dealloc];
 }
 
-@synthesize rounded = _rounded;
-- (void)setRounded:(BOOL)rounded;
+@synthesize style = _style;
+- (void)setStyle:(OUIInspectorTextWellStyle)style;
 {
-    if (rounded == _rounded)
+    if (_style == style)
         return;
-    _rounded = rounded;
+    
+    OBASSERT(!self.editing); // We won't reposition the field editor right now, but we could if needed
+    _style = style;
+    
+    [_labelTextLayout release];
+    _labelTextLayout = nil;
+    
+    [_valueTextLayout release];
+    _valueTextLayout = nil;
+    
     [self setNeedsDisplay];
+    return;
 }
 
+                  
 @synthesize editable = _editable;
 - (void)setEditable:(BOOL)editable;
 {
     if (_editable == editable)
         return;
     
-    if (!editable && _textField) {
-        [_textField removeFromSuperview];
-        _textField.delegate = nil;
-        [_textField release];
-        _textField = nil;
+    if (!editable && _editor) {
+        [_editor resignFirstResponder];
+        [_editor removeFromSuperview];
+        _editor.delegate = nil;
+        [_editor release];
+        _editor = nil;
     }
     
     _editable = editable;
@@ -137,23 +118,34 @@ static id _commonInit(OUIInspectorTextWell *self)
 
 - (BOOL)editing;
 {
-    return (_textField.superview == self);
+    return (_editor.superview == self);
+}
+
+- (NSString *)editingText;
+{
+    OBPRECONDITION(self.editing);
+    return [_editor.attributedText string];
+}
+
+- (void)setEditingText:(NSString *)editingText;
+{
+    OBPRECONDITION(self.editing);
+
+    NSAttributedString *attributedText = [[NSAttributedString alloc] initWithString:editingText ? editingText : @"" attributes:nil];
+    _editor.attributedText = attributedText;
+    [attributedText release];
 }
 
 @synthesize keyboardType;
 
-- (UITextField *)textField;
+- (OUIEditableFrame *)editor;
 {
-    if (_editable && !_textField) {
-        _textField = [[UITextField alloc] initWithFrame:CGRectZero];
-        [_textField setTextAlignment:UITextAlignmentCenter];
-        [_textField setDelegate:self];
-        
-        _textField.font = self.font;
-        _textField.textColor = [[self class] textColor];
-        [_textField setKeyboardType:self.keyboardType];
+    if (_editable && !_editor) {
+        _editor = [[OUIEditableFrame alloc] initWithFrame:CGRectZero];
+        _editor.delegate = self;
+        _editor.textColor = [[self class] textColor];
     }
-    return _textField;
+    return _editor;
 }
 
 - (NSString *)text;
@@ -164,8 +156,13 @@ static id _commonInit(OUIInspectorTextWell *self)
 {
     if (_text == text)
         return;
+
     [_text release];
     _text = [text copy];
+    
+    [_valueTextLayout release];
+    _valueTextLayout = nil;
+
     [self setNeedsDisplay];
 }
 
@@ -177,62 +174,54 @@ static id _commonInit(OUIInspectorTextWell *self)
 {
     if (_font == font)
         return;
+
     [_font release];
     _font = [font retain];
+
+    [_valueTextLayout release];
+    _valueTextLayout = nil;
+
     [self setNeedsDisplay];
 }
 
-- (NSString *)formatString;
+@synthesize label = _label;
+- (void)setLabel:(NSString *)label;
 {
-    return _formatString;
-}
-- (void)setFormatString:(NSString *)formatString;
-{
-    if (_formatString == formatString)
+    if (_label == label)
         return;
-    [_formatString release];
-    _formatString = [formatString copy];
+    
+    [_label release];
+    _label = [label copy];
+    
+    [_labelTextLayout release];
+    _labelTextLayout = nil;
+    
     [self setNeedsDisplay];
+    
+    OBASSERT(!self.editing); // Otherwise we'd need to adjust the space available to the field editor (via -setNeedsLayout) if we were using OUIInspectorTextWellStyleSeparateLabelAndText
 }
 
-- (UIFont *)formatFont;
+@synthesize labelFont = _labelFont;
+- (void)setLabelFont:(UIFont *)labelFont;
 {
-    return _formatFont;
-}
-- (void)setFormatFont:(UIFont *)formatFont;
-{
-    if (_formatFont == formatFont)
+    if (_labelFont == labelFont)
         return;
-    [_formatFont release];
-    _formatFont = [formatFont retain];
+
+    [_labelFont release];
+    _labelFont = [labelFont retain];
+
+    [_labelTextLayout release];
+    _labelTextLayout = nil;
+
     [self setNeedsDisplay];
+    
+    OBASSERT(!self.editing); // Otherwise we'd need to adjust the space available to the field editor (via -setNeedsLayout) if we were using OUIInspectorTextWellStyleSeparateLabelAndText
 }
 
-- (void)setNavigationTarget:(id)target action:(SEL)action;
+- (NSString *)willCommitEditingText:(NSString *)editingText;
 {
-    OBPRECONDITION(target);
-    OBPRECONDITION(action);
-    
-    // We expect to only call this once during setup and to never turn it off.  We might support disabling a well, though.
-    OBPRECONDITION(_showNavigationArrow == NO);
-    
-    _showNavigationArrow = YES;
-    [self setNeedsDisplay];
-    
-    [self addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
+    return editingText;
 }
-
-#pragma mark -
-#pragma mark UIControl subclass
-
-- (void)setHighlighted:(BOOL)highlighted;
-{
-    [super setHighlighted:highlighted];
-    [self setNeedsDisplay];
-}
-
-#pragma mark -
-#pragma mark UIView subclass
 
 static CTFontRef _copyFont(UIFont *font)
 {
@@ -252,123 +241,86 @@ static void _setAttr(NSMutableAttributedString *attrString, NSString *name, id v
         [attrString removeAttribute:name range:range];
 }
 
-- (NSAttributedString *)formattedText;
-{
-    // Add a customizable placeholder?  Only do this if we are doing a substring formatting replacement?
-    NSString *text = [NSString isEmptyString:_text] ? @"–" : _text;
-    
-    NSMutableAttributedString *attrText = [[NSMutableAttributedString alloc] initWithString:text attributes:nil];
-    {
-        CTFontRef font = _copyFont(_font);
-        _setAttr(attrText, (id)kCTFontAttributeName, (id)font);
-        CFRelease(font);
-    }
-    
-    if (_formatString) {
-        NSMutableAttributedString *attrFormat = [[NSMutableAttributedString alloc] initWithString:_formatString ? _formatString : @"" attributes:nil];
-        CTFontRef font = _copyFont(_formatFont ? _formatFont : _font);
-        _setAttr(attrFormat, (id)kCTFontAttributeName, (id)font);
-        CFRelease(font);
-        
-        // Find the first '%@' and replace it with our value text
-        NSRange valueRange = [_formatString rangeOfString:@"%@"];
-        if (valueRange.location != NSNotFound)
-            [attrFormat replaceCharactersInRange:valueRange withAttributedString:attrText];
-        else
-            OBASSERT_NOT_REACHED("No format specifier in format string");
-        
-        [attrText release];
-        attrText = attrFormat;
-    }
-    
-    UIColor *textColor = _drawHighlighed(self) ? [[self class] highlightedTextColor] : [[self class] textColor];
-    
-    _setAttr(attrText, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
-    
-    [attrText autorelease];
-    
-    return attrText;
-}
+#pragma mark -
+#pragma mark UIView subclass
 
-// Need something to overide in graffle to draw some more complex text (2 "text"s)
-// Could overide the attributed string creation instead... might do that anyway
-- (void)drawTheText;
-{
-    CGContextRef ctx = UIGraphicsGetCurrentContext();
+typedef struct {
+    CGRect labelRect, valueRect;
+} OUIInspectorTextWellLayout;
 
-    CGRect textRect = self.bounds; // Center the text across the whole bounds, even if we have a nav arrow chopping off part of it
+static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
+{
+    OBPRECONDITION(self->_style == OUIInspectorTextWellStyleSeparateLabelAndText);
     
-    NSAttributedString *attrText = [self formattedText];
+    OUIInspectorTextWellLayout layout;
+    memset(&layout, 0, sizeof(layout));
+
+    CGRect dummy;
     
-    CTLineRef line = CTLineCreateWithAttributedString((CFAttributedStringRef)attrText);
+    OUITextLayout *labelLayout = [self _labelTextLayout];
+    CGFloat labelWidth = ceil(labelLayout.usedSize.width);
     
-    CGContextSetTextPosition(ctx, 0, 0);
+    CGRect contentsRect = self.contentsRect; // This will already have insets for the left/right margin.
     
-    CGRect lineBounds = CGRectIntegral(CTLineGetImageBounds(line, ctx));
-    CGPoint pt;
-    pt.x = ceil(0.5 * (CGRectGetWidth(textRect) - CGRectGetWidth(lineBounds)));
-    pt.y = ceil(0.5 * (CGRectGetHeight(textRect) - CGRectGetHeight(lineBounds)));
+    CGRectDivide(contentsRect, &layout.labelRect, &layout.valueRect, ceil(labelWidth), CGRectMinXEdge); // label
+    CGRectDivide(layout.valueRect, &dummy, &layout.valueRect, 8, CGRectMinXEdge); // label-value margin
     
-    CGContextSaveGState(ctx);
-    {
-        CGContextTranslateCTM(ctx, pt.x + CGRectGetMinX(lineBounds), pt.y + CGRectGetMaxY(lineBounds));
-        CGContextScaleCTM(ctx, 1, -1);
-        CTLineDraw(line, ctx);
-    }
-    CGContextRestoreGState(ctx);
-    CFRelease(line);
+    return layout;
 }
 
 - (void)drawRect:(CGRect)rect;
 {
-    CGRect bounds = self.bounds;
-    
-    CGContextRef ctx = UIGraphicsGetCurrentContext();
-
-    OUIInspectorWellDrawOuterShadow(ctx, bounds, _rounded);
-    
-    // Fill the gradient
-    CGContextSaveGState(ctx);
-    {
-        OUIInspectorWellAddPath(ctx, bounds, _rounded);
-        CGContextClip(ctx);
+    [super drawRect:rect]; // The background
         
-        CGGradientRef gradient = _drawHighlighed(self) ? HighlightedGradient : NormalGradient;
-        CGContextDrawLinearGradient(ctx, gradient, bounds.origin, CGPointMake(bounds.origin.x, CGRectGetMaxY(bounds)), 0);
-    }
-    CGContextRestoreGState(ctx);
-    
-    OUIInspectorWellDrawBorderAndInnerShadow(ctx, bounds, _rounded);
-        
-    if (_showNavigationArrow) {
-        UIImage *arrowImage = [UIImage imageNamed:@"OUINavigationArrow.png"];
-        CGRect arrowRect, remainder;
-        CGRectDivide(bounds, &arrowRect, &remainder, CGRectGetHeight(bounds), CGRectMaxXEdge);
-        
-        OQDrawImageCenteredInRect(ctx, [arrowImage CGImage], arrowRect);
-    }
-        
-    // Draw the text if we aren't editing. If we are, the text field subview will be drawing it.
-    if (!self.editing) {
-        [self drawTheText];
+    switch (_style) {
+        case OUIInspectorTextWellStyleSeparateLabelAndText: {
+            OUIInspectorTextWellLayout layout = _layout(self);
+                        
+            [self _drawTextLayout:[self _labelTextLayout] inRect:layout.labelRect];
+            
+            if (!self.editing)
+                [self _drawTextLayout:[self _valueTextLayoutForWidth:layout.valueRect.size.width] inRect:layout.valueRect];
+            
+            break;
+        }
+        case OUIInspectorTextWellStyleDefault:
+            // Draw the text if we aren't editing. If we are, the text field subview will be drawing it.
+            if (!self.editing) {
+                // Center the text across the whole bounds, even if we have a nav arrow chopping off part of it
+                [self _drawAttributedString:[self _defaultStyleFormattedText] inRect:self.bounds];
+            }
+            break;
     }
 }
 
 #pragma mark -
-#pragma mark UITextFieldDelegate
+#pragma mark OUIEditableFrameDelegate
 
-// end editing when 'Return' is pressed
-- (BOOL)textFieldShouldReturn:(UITextField *)textField;
+- (BOOL)textView:(OUIEditableFrame *)textView shouldInsertText:(NSString *)text;
 {
-    [textField endEditing:NO];
+    OBPRECONDITION(textView == _editor);
+    
+    if ([text containsString:@"\n"]) {
+        // Hitting return; act like a field editor.
+        [_editor resignFirstResponder];
+        return NO;
+    }
     return YES;
 }
 
-- (void)textFieldDidEndEditing:(UITextField *)aTextField
+- (void)textViewDidEndEditing:(OUIEditableFrame *)textView;
 {
-    NSString *text = [_textField text];
+    OBPRECONDITION(textView == _editor);
     
-    [_textField removeFromSuperview];
+    NSString *text = [[_editor attributedText] string];
+    
+    [_editor removeFromSuperview];
+    _editor.delegate = nil;
+    [_editor autorelease]; // Do NOT call -release here or we'll zombie if the editor is first responder in a popover when the popover is closed. They have a pointer to the view up the call stack from here.
+    _editor = nil;
+    
+    // Let subclasses validate the text and provide a replacement. We should probably have a delegate with an optional -textWell:willCommitEditingText: too.
+    text = [self willCommitEditingText:text];
     
     if (OFNOTEQUAL(text, _text)) {
         self.text = text;
@@ -382,6 +334,142 @@ static void _setAttr(NSMutableAttributedString *attrString, NSString *name, id v
 #pragma mark -
 #pragma mark Private
 
+- (NSAttributedString *)_defaultStyleFormattedText;
+{
+    OBPRECONDITION(_style == OUIInspectorTextWellStyleDefault);
+    
+    // Add a customizable placeholder?  Only do this if we are doing a substring formatting replacement?
+    NSString *text = [NSString isEmptyString:_text] ? @"–" : _text;
+    
+    NSMutableAttributedString *attrText = [[NSMutableAttributedString alloc] initWithString:text attributes:nil];
+    {
+        CTFontRef font = _copyFont(_font);
+        _setAttr(attrText, (id)kCTFontAttributeName, (id)font);
+        CFRelease(font);
+    }
+    
+    if (_label) {
+        NSMutableAttributedString *attrFormat = [[NSMutableAttributedString alloc] initWithString:_label ? _label : @"" attributes:nil];
+        CTFontRef font = _copyFont(_labelFont ? _labelFont : _font);
+        _setAttr(attrFormat, (id)kCTFontAttributeName, (id)font);
+        CFRelease(font);
+        
+        // If there is a '%@', find it and put the text there. Otherwise, append the text.
+        NSRange valueRange = [_label rangeOfString:@"%@"];
+        if (valueRange.location == NSNotFound)
+            valueRange = NSMakeRange([_label length], 0);
+        [attrFormat replaceCharactersInRange:valueRange withAttributedString:attrText];
+        
+        [attrText release];
+        attrText = attrFormat;
+    }
+    
+    UIColor *textColor = [self textColor];
+    
+    _setAttr(attrText, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
+    
+    
+    // Center the text horizontally.
+    {
+        CTTextAlignment centered = kCTCenterTextAlignment;
+        CTParagraphStyleSetting setting = {
+            kCTParagraphStyleSpecifierAlignment, sizeof(centered), &centered
+        };
+        
+        CTParagraphStyleRef pgStyle = CTParagraphStyleCreate(&setting, 1);
+        _setAttr(attrText, (id)kCTParagraphStyleAttributeName, (id)pgStyle);
+        CFRelease(pgStyle);
+    }
+    
+    [attrText autorelease];
+    
+    return attrText;
+}
+
+- (OUITextLayout *)_labelTextLayout;
+{
+    OBPRECONDITION(_style == OUIInspectorTextWellStyleSeparateLabelAndText);
+    OBPRECONDITION(![NSString isEmptyString:_label]);
+    
+    if (!_labelTextLayout) {
+        NSMutableAttributedString *attrLabel = [[NSMutableAttributedString alloc] initWithString:_label ? _label : @"" attributes:nil];
+        CTFontRef font = _copyFont(_labelFont ? _labelFont : _font);
+        _setAttr(attrLabel, (id)kCTFontAttributeName, (id)font);
+        CFRelease(font);
+        
+        UIColor *textColor = [self textColor];
+        _setAttr(attrLabel, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
+        
+        _labelTextLayout = [[OUITextLayout alloc] initWithAttributedString:attrLabel constraints:CGSizeMake(OUITextLayoutUnlimitedSize, OUITextLayoutUnlimitedSize)];
+        [attrLabel autorelease];
+    }
+    
+    return _labelTextLayout;
+}
+
+// We have to format this for a given width for right-alignment to work. An OUITextLayoutUnlimitedSize width will make the text layout use the minimum width possible.
+- (OUITextLayout *)_valueTextLayoutForWidth:(CGFloat)valueWidth;
+{
+    OBPRECONDITION(_style == OUIInspectorTextWellStyleSeparateLabelAndText);
+    
+    if (_valueTextWidth != valueWidth) {
+        [_valueTextLayout release];
+        _valueTextLayout = nil;
+    }
+    
+    if (!_valueTextLayout) {
+        NSString *text = _text ? _text : @"";
+        NSMutableAttributedString *attrString = [[NSMutableAttributedString alloc] initWithString:text attributes:nil];
+        CTFontRef font = _copyFont(_font);
+        _setAttr(attrString, (id)kCTFontAttributeName, (id)font);
+        CFRelease(font);
+        
+        UIColor *textColor = [self textColor];
+        _setAttr(attrString, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
+        
+        // Right align the text
+        {
+            CTTextAlignment right = kCTRightTextAlignment;
+            CTParagraphStyleSetting setting = {
+                kCTParagraphStyleSpecifierAlignment, sizeof(right), &right
+            };
+            
+            CTParagraphStyleRef pgStyle = CTParagraphStyleCreate(&setting, 1);
+            _setAttr(attrString, (id)kCTParagraphStyleAttributeName, (id)pgStyle);
+            CFRelease(pgStyle);
+        }
+
+        _valueTextLayout = [[OUITextLayout alloc] initWithAttributedString:attrString constraints:CGSizeMake(valueWidth, OUITextLayoutUnlimitedSize)];
+        [attrString autorelease];
+
+        _valueTextWidth = valueWidth;
+    }
+    
+    return _valueTextLayout;
+}
+
+- (void)_drawAttributedString:(NSAttributedString *)attributedString inRect:(CGRect)textRect;
+{
+    OUITextLayout *layout = [[OUITextLayout alloc] initWithAttributedString:attributedString constraints:CGSizeMake(CGRectGetWidth(textRect), OUITextLayoutUnlimitedSize)];
+    [self _drawTextLayout:layout inRect:textRect];
+    [layout release];
+}
+
+- (void)_drawTextLayout:(OUITextLayout *)layout inRect:(CGRect)textRect;
+{
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+
+    CGSize usedSize = layout.usedSize;
+        
+    // We center the text vertically, but let the attributedString's parapgraph style control horizontal alignment.
+    if (usedSize.height < CGRectGetHeight(textRect)) {
+        textRect.origin.y += 0.5 * (CGRectGetHeight(textRect) - usedSize.height);
+        textRect.origin.y = floor(textRect.origin.y);
+    }
+    
+    [layout drawFlippedInContext:ctx bounds:textRect];
+}
+
 - (void)_tappedTextWell:(id)sender;
 {
     // Can tap the area above/below the text field. Don't restart editing if that happens.
@@ -391,24 +479,62 @@ static void _setAttr(NSMutableAttributedString *attrString, NSString *name, id v
     
     // turn off display while editing.
     [self setNeedsDisplay];
+        
+    OUIEditableFrame *editor = self.editor; // creates if needed
+
+    // Set this as the default instead of on the attributed string in case we start out with zero length text.
+    UIFont *font = self.font;
+    if (font) {
+        CTFontRef ctFont = CTFontCreateWithName((CFStringRef)font.fontName, font.pointSize, NULL);
+        editor.defaultCTFont = ctFont;
+        if (ctFont)
+            CFRelease(ctFont);
+    } else {
+        editor.defaultCTFont = NULL;
+    }
     
-    CGRect bounds = self.bounds;
+    editor.keyboardType = self.keyboardType;
+    editor.opaque = NO;
+    editor.backgroundColor = nil;
     
-    UITextField *textField = self.textField; // creates if needed
-    textField.text = @"Wagfly";
-    [textField sizeToFit];
+    // Align the text
+    {
+        CTTextAlignment align = _style == OUIInspectorTextWellStyleSeparateLabelAndText ? kCTRightTextAlignment : kCTCenterTextAlignment;
+        CTParagraphStyleSetting setting = {
+            kCTParagraphStyleSpecifierAlignment, sizeof(align), &align
+        };
+        
+        CTParagraphStyleRef pgStyle = CTParagraphStyleCreate(&setting, 1);
+        editor.defaultCTParagraphStyle = pgStyle;
+        CFRelease(pgStyle);
+    }
     
-    CGRect textFieldFrame = textField.frame;
-    textFieldFrame.origin.y = floor(CGRectGetMinY(bounds) + 0.5 * (CGRectGetHeight(bounds) - CGRectGetHeight(textFieldFrame)));
-    textFieldFrame.origin.x = bounds.origin.x;
-    textFieldFrame.size.width = bounds.size.width;
-    textField.frame = textFieldFrame;
+    NSAttributedString *attributedText = [[NSAttributedString alloc] initWithString:_text ? _text : @"" attributes:nil];
+    editor.attributedText = attributedText;
+    [attributedText release];
     
-    textField.text = _text;
+    CGRect valueRect;
+    if (_style == OUIInspectorTextWellStyleSeparateLabelAndText) {
+        OUIInspectorTextWellLayout layout = _layout(self);
+        valueRect = layout.valueRect;
+    } else {
+        valueRect = self.contentsRect;
+    }
     
-    [self addSubview:textField];
+    editor.textLayoutSize = CGSizeMake(CGRectGetWidth(valueRect), OUITextLayoutUnlimitedSize);
     
-    [textField becomeFirstResponder];
+    CGSize usedSize = editor.viewUsedSize;
+    CGRect editorFrame;
+    
+    editorFrame.origin.y = floor(CGRectGetMinY(valueRect) + 0.5 * (CGRectGetHeight(valueRect) - usedSize.height));
+    editorFrame.origin.x = valueRect.origin.x;
+    editorFrame.size.width = valueRect.size.width;
+    editorFrame.size.height = ceil(usedSize.height);
+    editor.frame = editorFrame;
+    
+    [self addSubview:editor];
+    
+    [editor becomeFirstResponder];
 }
 
 @end

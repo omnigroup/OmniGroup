@@ -53,7 +53,9 @@
 - (NSString *)name;
 - (NSString *)dateString;
 - (void)refreshDateAndPreview;
-- (CGSize)previewSizeForTargetSize:(CGSize)targetSize;
+
+- (CGSize)previewSizeForTargetSize:(CGSize)targetSize aspectRatio:(CGFloat)aspectRatio;
+- (CGSize)previewSizeForTargetSize:(CGSize)targetSize; // Looks up the aspect ratio in a cache, or uses a canned guess until the preview really loads
 
 @property(readonly) BOOL hasPDFPreview;
 @property(readonly) BOOL isLoadingPreview;
@@ -65,6 +67,7 @@
 
 // Either input can be NULL if the caller doesn't care about that value. But, sometimes we want both and it is more efficient to get both at once.
 + (BOOL)getPDFPreviewData:(NSData **)outPDFData modificationDate:(NSDate **)outModificationDate fromURL:(NSURL *)url error:(NSError **)outError;
++ (id <OUIDocumentPreview>)makePreviewFromURL:(NSURL *)url size:(CGSize)size error:(NSError **)outError;
 
 - (UIImage *)cameraRollImage;
 

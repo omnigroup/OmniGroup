@@ -1,4 +1,4 @@
-// Copyright 2003-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@
 extern NSString * const OAAttachmentAttributeName;
 
 enum {
-    OAAttachmentCharacter = 0xfffc // There's a CoreText equivalent, actually
+    OAAttachmentCharacter = 0xfffc // The magical Unicode character for attachments in both Cocoa (NSAttachmentCharacter) and CoreText ('run delegate' there).
 };
 
 enum {

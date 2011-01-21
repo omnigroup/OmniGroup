@@ -28,7 +28,7 @@ NSString * const OQAlphaScaleFilterValueKey = @"inputScale";
 - (CIImage *)outputImage
 {
     CISampler *src = [CISampler samplerWithImage:inputImage];
-    return [self apply:[isa kernel], src, inputScale, kCIApplyOptionDefinition, [src definition], nil];
+    return [self apply:[[self class] kernel], src, inputScale, kCIApplyOptionDefinition, [src definition], nil];
 }
 
 #pragma mark NSCopying

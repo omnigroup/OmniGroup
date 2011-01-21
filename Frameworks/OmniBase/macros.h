@@ -1,4 +1,4 @@
-// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,17 @@
 #if !defined(SWAP)
 #define SWAP(A, B) do { __typeof__(A) __temp = (A); (A) = (B); (B) = __temp;} while(0)
 #endif
+
+// These macros are expanded out because if you do something like MIN(MIN(A,B),C), you'll get a shadowed local variable warning. It's harmless in that case but the warning does occasionally point out bad code elsewhere, so I want to avoid causing it spuriously.
+
+#define MIN3(A, B, C) ({ __typeof__(A) __temp1 = (A); __typeof__(B) __temp2 = (B); if (__temp2 < __temp1) { __temp1 = __temp2; } __temp2 = (C); (__temp2 < __temp1)? __temp2 : __temp1; }) 
+#define MAX3(A, B, C) ({ __typeof__(A) __temp1 = (A); __typeof__(B) __temp2 = (B); if (__temp2 > __temp1) { __temp1 = __temp2; } __temp2 = (C); (__temp2 > __temp1)? __temp2 : __temp1; }) 
+
+#define MIN4(A, B, C, D) ({ __typeof__(A) __temp1 = (A); __typeof__(B) __temp2 = (B); if (__temp2 < __temp1) { __temp1 = __temp2; } __typeof__(C) __temp3 = (C); __typeof__(D) __temp4 = (D);  if (__temp4 < __temp3) { __temp3 = __temp4; } (__temp1 < __temp3)? __temp1 : __temp3; })
+#define MAX4(A, B, C, D) ({ __typeof__(A) __temp1 = (A); __typeof__(B) __temp2 = (B); if (__temp2 > __temp1) { __temp1 = __temp2; } __typeof__(C) __temp3 = (C); __typeof__(D) __temp4 = (D);  if (__temp4 > __temp3) { __temp3 = __temp4; } (__temp1 > __temp3)? __temp1 : __temp3; })
+
+/* The CLAMP() macro constrains a value to a range, like MIN(MAX()). Min and max are implicitly coerced to the same type as value. */
+#define CLAMP(value, min, max) ({ __typeof__(value) __temp_value = (value); __typeof__(value) __temp_min = (min); ( __temp_value < __temp_min )? __temp_min : ({ __typeof__(value) __temp_max = (max); ( __temp_value > __temp_max )? __temp_max : __temp_value; }); })
 
 // On Solaris, when _TS_ERRNO is defined <errno.h> defines errno as the thread-safe ___errno() function.
 // On NT, errno is defined to be '(*_errno())' and presumably this function is also thread safe.
@@ -79,3 +90,25 @@ do {						\
 #else
     #define OBDEPRECATED_METHODS(name)     @protocol name ## Deprecated
 #endif
+
+/*
+ OB_BUILTIN_ATOMICS_AVAILABLE: Some compilers have builtins which compile to efficient atomic memory operations.
+ On x86, it knows to use the LOCK prefix; on ARM, we get the ldrex/strex/dmb instructions, etc. The names seem to be derived from an Intel intrinsics library, but GCC picked them up and then Clang did.
+ If the builtins are not available, code can fall back to the routines in <libkern/OSAtomic.h>.
+*/
+
+/* Newer clangs have the builtin atomics that GCC does, and the handy __has_builtin macro */
+#if defined(__has_builtin)
+#if __has_builtin(__sync_synchronize) && __has_builtin(__sync_bool_compare_and_swap)
+#define OB_BUILTIN_ATOMICS_AVAILABLE
+#endif
+#endif
+/* GCC 4.1.x has some builtins for atomic operations */
+#if !defined(OB_BUILTIN_ATOMICS_AVAILABLE) && defined(__GNUC__)
+#if ((__GNUC__ * 100 + __GNUC_MINOR__ ) >= 401)  // gcc version >= 4.1.0
+#ifndef __clang__ // Radar 6964106: clang doesn't have __sync_synchronize builtin (but it claims to be GCC)
+#define OB_BUILTIN_ATOMICS_AVAILABLE
+#endif
+#endif
+#endif
+

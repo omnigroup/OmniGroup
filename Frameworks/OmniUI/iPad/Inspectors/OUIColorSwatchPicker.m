@@ -14,6 +14,11 @@
 RCS_ID("$Id$");
 
 
+// A few built-in palette preference keys (in OmniUI.defaults)
+NSString * const OUIColorSwatchPickerTextBackgroundPalettePreferenceKey = @"OUIColorSwatchPickerTextBackgroundPalette";
+NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey = @"OUIColorSwatchPickerTextColorPalette";
+
+
 @implementation OUIColorSwatchPicker
 
 static id _commonInit(OUIColorSwatchPicker *self)
@@ -45,6 +50,7 @@ static id _commonInit(OUIColorSwatchPicker *self)
     [_colors release];
     [_swatchSelectionColor release];
     [_colorSwatches release];
+    [_navigationButton release];
     [super dealloc];
 }
 
@@ -83,12 +89,43 @@ static id _commonInit(OUIColorSwatchPicker *self)
     [self setNeedsLayout];
 }
 
+- (OQColor *)color;
+{
+    if ([_colors count] > 0)
+        return [_colors objectAtIndex:0];
+    return nil;
+}
+
+- (void)setColor:(OQColor *)color;
+{
+    // empty array if color is nil...
+    self.colors = [NSArray arrayWithObjects:color, nil];
+}
+
+@synthesize showsSingleSwatch = _showsSingleSwatch;
+- (void)setShowsSingleSwatch:(BOOL)showsSingleSwatch;
+{
+    if (_showsSingleSwatch == showsSingleSwatch)
+        return;
+    _showsSingleSwatch = showsSingleSwatch;
+    [self setNeedsLayout];
+}
+
 @synthesize wraps = _wraps;
 - (void)setWraps:(BOOL)wraps;
 {
     if (_wraps == wraps)
         return;
     _wraps = wraps;
+    [self setNeedsLayout];
+}
+
+@synthesize showsNoneSwatch = _showsNoneSwatch;
+- (void)setShowsNoneSwatch:(BOOL)showsNoneSwatch;
+{
+    if (_showsNoneSwatch == showsNoneSwatch)
+        return;
+    _showsNoneSwatch = showsNoneSwatch;
     [self setNeedsLayout];
 }
 
@@ -121,6 +158,9 @@ static id _commonInit(OUIColorSwatchPicker *self)
 // Compare in RGBA space so we don't have red selected in the HSV picker and then not selected in swatches
 static BOOL _colorsMatch(OQColor *color1, OQColor *color2)
 {
+    if (color1 == color2)
+        return YES; // handle the nil case
+    
     return [[color1 colorUsingColorSpace:OQColorSpaceRGB] isEqual:[color2 colorUsingColorSpace:OQColorSpaceRGB]];
 }
 
@@ -167,25 +207,31 @@ static BOOL _colorsMatch(OQColor *color1, OQColor *color2)
 
 static const CGFloat kSwatchSpacing = 2;
 
-static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CGPoint *offset, CGSize size)
+static void _configureSwatchView(OUIColorSwatchPicker *self, UIView *swatchView, CGPoint *offset, CGSize size)
 {
-    OUIColorSwatch *swatch = [[OUIColorSwatch alloc] initWithColor:color];
-    
-    swatch.selected = _colorsMatch(color, self->_swatchSelectionColor);
-    
     CGRect swatchFrame;
     swatchFrame.origin = *offset;
     swatchFrame.size = size;
-    swatch.frame = swatchFrame;
-    if (swatch.superview != self)
-        [self addSubview:swatch];
+    swatchView.frame = swatchFrame;
+    if (swatchView.superview != self)
+        [self addSubview:swatchView];
     
     offset->x = CGRectGetMaxX(swatchFrame) + kSwatchSpacing;
+}
+
+static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CGPoint *offset, CGSize size)
+{
+    OUIColorSwatch *swatch = [[OUIColorSwatch alloc] initWithColor:color];
+    swatch.selected = _colorsMatch(color, self->_swatchSelectionColor);
+    _configureSwatchView(self, swatch, offset, size);
     return swatch;
 }
 
 - (void)layoutSubviews;
 {
+    // If we are going to only show a single color, it should be reserved for actually showing a color
+    OBPRECONDITION(!_showsSingleSwatch || (!_showsNavigationSwatch || !_showsNoneSwatch));
+    
     CGRect bounds = self.bounds;
 
     if (!_colorSwatches)
@@ -202,23 +248,45 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
     // Normal color picking swatches
     CGPoint offset = bounds.origin;
     NSUInteger colorIndex, colorCount = [_colors count];
+    
+    OBASSERT(_showsSingleSwatch == NO || colorCount <= 1); // Should have at most one color if we are in single-swatch mode.
+    
+    if (_showsNoneSwatch) {
+        OUIColorSwatch *swatch = _newSwatch(self, nil, &offset, swatchSize);
+        [_colorSwatches addObject:swatch];
+        [swatch release];
+        swatch.selected = _colorsMatch(nil, _swatchSelectionColor);
+        
+        OBASSERT(swatchsPerRow >= 2); // not wrapping here.
+    }
+    
     for (colorIndex = 0; colorIndex < colorCount; colorIndex++) {
         OQColor *color = [_colors objectAtIndex:colorIndex];
         
+        if (_showsSingleSwatch)
+            swatchSize = bounds.size; // Take up the whole area
+
         OUIColorSwatch *swatch = _newSwatch(self, color, &offset, swatchSize);
         [_colorSwatches addObject:swatch];
         [swatch release];
         
         swatch.selected = _colorsMatch(color, _swatchSelectionColor);
 
+        if (_showsSingleSwatch) {
+            swatch.singleSwatch = YES;
+            break;
+        }
+        
+        NSUInteger swatchColumn = [_colorSwatches count]; // Not equal to colorIndex if _showsNoneSwatch is YES.
+        
         if (!_wraps) {
             // Stop if we are only supposed to show one line and we just did the last one, or if we did the 2nd to last one and we want to show the extra navigation swatch.
-            if ((colorIndex == swatchsPerRow - 1) || ((colorIndex == swatchsPerRow - 2) && _showsNavigationSwatch)) {
+            if ((swatchColumn == swatchsPerRow - 1) || ((swatchColumn == swatchsPerRow - 2) && _showsNavigationSwatch)) {
                 break;
             }
         }
 
-        if (((colorIndex + 1) % swatchsPerRow) == 0) {
+        if (((swatchColumn + 1) % swatchsPerRow) == 0) {
             // Prepare for the next row
             offset.x = CGRectGetMinX(bounds);
             offset.y += swatchSize.height + kSwatchSpacing;
@@ -232,15 +300,16 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
         //NSLog(@"removed colors from %d, now %@", removeFromIndex, _colors);
     }
     
-    // Navigation swatch
-    if (_showsNavigationSwatch) {
-        OUIColorSwatch *swatch = _newSwatch(self, nil, &offset, swatchSize);
+    // Detail navigation setup
+    if (_showsSingleSwatch) {
+        OUIColorSwatch *swatch = [_colorSwatches lastObject];
         [swatch addTarget:nil action:@selector(showDetails:) forControlEvents:UIControlEventTouchDown];
-        [_colorSwatches addObject:swatch];
-        [swatch release];
+    } else if (_showsNavigationSwatch) {
+        if (!_navigationButton)
+            _navigationButton = [[OUIColorSwatch navigateToColorPickerButton] retain];
+        _configureSwatchView(self, _navigationButton, &offset, swatchSize);
+        [_navigationButton addTarget:nil action:@selector(showDetails:) forControlEvents:UIControlEventTouchDown];
     }
-    
-    // TODO: Reuse color swatches and animate them around?
 }
 
 @end

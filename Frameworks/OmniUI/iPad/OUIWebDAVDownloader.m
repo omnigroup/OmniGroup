@@ -56,6 +56,7 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
 
     UIImage *backgroundImage = [[UIImage imageNamed:@"OUIToggleButtonSelected.png"] stretchableImageWithLeftCapWidth:6 topCapHeight:0];
     [cancelButton setBackgroundImage:backgroundImage forState:UIControlStateNormal];
+    [cancelButton setTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") forState:UIControlStateNormal];
 }
 
 - (void)viewWillAppear:(BOOL)animated;

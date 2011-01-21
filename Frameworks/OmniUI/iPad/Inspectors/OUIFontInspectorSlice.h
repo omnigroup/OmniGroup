@@ -10,7 +10,7 @@
 #import <OmniUI/OUIInspectorSlice.h>
 #import <UIKit/UITableView.h>
 
-@class OUIInspectorTextWell, OUIInspectorStepperButton, OUIFontInspectorDetailSlice, OUIInspectorSegmentedControl, OUIInspectorSegmentedControlButton;
+@class OUIInspectorTextWell, OUIInspectorStepperButton, OUIFontInspectorPane, OUIInspectorSegmentedControl, OUIInspectorSegmentedControlButton;
 
 @interface OUIFontInspectorSlice : OUIInspectorSlice
 {
@@ -29,7 +29,7 @@
     
     BOOL _showStrikethrough;
     
-    OUIFontInspectorDetailSlice *_fontFacesDetailSlice;
+    OUIFontInspectorPane *_fontFacesPane;
 }
 
 @property(retain) IBOutlet OUIInspectorTextWell *fontFamilyTextWell;
@@ -42,9 +42,8 @@
 - (IBAction)decreaseFontSize:(id)sender;
 - (IBAction)fontSizeTextWellAction:(OUIInspectorTextWell *)sender;
 
-// Called from the family listing to display members of the family
-@property(retain) IBOutlet OUIFontInspectorDetailSlice *fontFacesDetailSlice;
-- (void)showFacesForFamilyBaseFont:(UIFont *)font;
+@property(retain) IBOutlet OUIFontInspectorPane *fontFacesPane;
+- (void)showFacesForFamilyBaseFont:(UIFont *)font; // Called from the family listing to display members of the family
 
 @property BOOL showStrikethrough;
 

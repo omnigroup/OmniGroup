@@ -16,6 +16,7 @@
 
 @protocol OFSDAVFileManagerAuthenticationDelegate <NSObject>
 - (NSURLCredential *)DAVFileManager:(OFSDAVFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (void)DAVFileManager:(OFSDAVFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
 @end
 
 @protocol OFSDAVFileManagerUserAgentDelegate <NSObject>

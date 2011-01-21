@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIDocumentPDFPreview.h"
+#import <OmniUI/OUIDocumentPDFPreview.h>
 
 // Only needed when enabling the debug code below.
 //#import <OmniFoundation/CFData-OFExtensions.h>
@@ -79,6 +79,11 @@ RCS_ID("$Id$");
 
 #pragma mark -
 #pragma mark OUIDocumentPreview
+
+- (BOOL)isScalable;
+{
+    return YES;
+}
 
 @synthesize originalViewSize = _originalViewSize;
 

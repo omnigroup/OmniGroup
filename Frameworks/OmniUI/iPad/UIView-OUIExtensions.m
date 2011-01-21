@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OUIDrawing.h>
 #import <OmniUI/OUILoadedImage.h>
 #import <OmniQuartz/OQDrawing.h>
 #import <UIKit/UIView.h>
@@ -94,12 +95,12 @@ static void OUIViewPerformPosing(void)
     UIImage *image;
     CGRect bounds = self.bounds;
     
-    UIGraphicsBeginImageContext(bounds.size);
+    OUIGraphicsBeginImageContext(bounds.size);
     {
         [self drawRect:bounds];
         image = UIGraphicsGetImageFromCurrentImageContext();
     }
-    UIGraphicsEndImageContext();
+    OUIGraphicsEndImageContext();
     
     return image;
 }
@@ -175,7 +176,7 @@ static void LoadShadowImages(void)
         CGColorRef shadowColor = CGColorCreate(graySpace, shadowComponents);
         UIImage *shadowImage;
         
-        UIGraphicsBeginImageContext(imageSize);
+        OUIGraphicsBeginImageContext(imageSize);
         {
             CGContextRef ctx = UIGraphicsGetCurrentContext();
             
@@ -195,7 +196,7 @@ static void LoadShadowImages(void)
             
             shadowImage = UIGraphicsGetImageFromCurrentImageContext();
         }
-        UIGraphicsEndImageContext();
+        OUIGraphicsEndImageContext();
         
         CGColorRelease(shadowColor);
         CFRelease(graySpace);
@@ -349,6 +350,16 @@ void OUIWithoutAnimating(void (^actions)(void))
         if (wasAnimating)
             [UIView setAnimationsEnabled:YES];
     }
+}
+
+void OUIWithAppropriateLayerAnimations(void (^actions)(void))
+{
+    BOOL shouldAnimate = [UIView areAnimationsEnabled];
+    
+    [CATransaction begin];
+    [CATransaction setValue:shouldAnimate ? (id)kCFBooleanFalse : (id)kCFBooleanTrue forKey:kCATransactionDisableActions];
+    actions();
+    [CATransaction commit];
 }
 
 #endif

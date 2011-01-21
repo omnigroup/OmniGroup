@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIDocumentProxy.h>
+#import <OmniUI/OUIDocumentViewController.h>
 #import <OmniUI/OUIErrors.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUISingleDocumentAppController.h>
@@ -102,6 +103,9 @@ RCS_ID("$Id$");
     }
 
     _viewController = [[self makeViewController] retain];
+    OBASSERT([_viewController conformsToProtocol:@protocol(OUIDocumentViewController)]);
+    OBASSERT(_viewController.document == nil); // we'll set it; -makeViewController shouldn't bother
+    _viewController.document = self;
     
     // clear out any undo actions created during init
     [_undoManager removeAllActions];
@@ -123,6 +127,7 @@ RCS_ID("$Id$");
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
+    _viewController.document = nil;
     [_viewController release];
     
     [_undoIndicator release];
@@ -146,26 +151,6 @@ RCS_ID("$Id$");
 
 @synthesize viewController = _viewController;
 
-// Called when we've been renamed in the document editor.
-- (void)proxyURLChanged;
-{
-    [_url release];
-    _url = [_proxy.url retain];
-}
-
-@synthesize proxy = _proxy;
-- (void)setProxy:(OUIDocumentProxy *)proxy;
-{
-    if (_proxy == proxy)
-        return;
-    
-    [_proxy release];
-    _proxy = [proxy retain];
-    
-    [_url release];
-    _url = [_proxy.url copy];
-}
-
 - (BOOL)saveAsNewDocumentToURL:(NSURL *)url error:(NSError **)outError;
 {
     OBPRECONDITION(_url == nil || [_url isEqual:url]);
@@ -178,9 +163,12 @@ RCS_ID("$Id$");
     if (!_hasUndoGroupOpen)
         return; // Nothing to do!
     
-    [self willFinishUndoGroup];
-    
     DEBUG_UNDO(@"finishUndoGroup");
+
+    if ([_viewController respondsToSelector:@selector(documentWillCloseUndoGroup)])
+        [_viewController documentWillCloseUndoGroup];
+    
+    [self willFinishUndoGroup];
     
     // Our group might be the only one open, but the auto-created group might be open still too (for example, with a single-event action like -delete:)
     OBASSERT([_undoManager groupingLevel] >= 1);
@@ -254,6 +242,41 @@ RCS_ID("$Id$");
     return YES;
 }
 
+- (void)scheduleAutosave;
+{
+    if (!_saveTimer) {
+        DEBUG_UNDO(@"Scheduling autosave timer");
+        _saveTimer = [[NSTimer scheduledTimerWithTimeInterval:[[self class] autosaveTimeInterval] target:self selector:@selector(_autosaveTimerFired:) userInfo:nil repeats:NO] retain];
+    }
+}
+
+
+#pragma mark -
+#pragma mark OUIDocument protocol
+
+// Called when we've been renamed in the document editor.
+- (void)proxyURLChanged;
+{
+    [_url release];
+    _url = [_proxy.url retain];
+}
+
+@synthesize proxy = _proxy;
+- (void)setProxy:(OUIDocumentProxy *)proxy;
+{
+    if (_proxy == proxy)
+        return;
+    
+    [_proxy release];
+    _proxy = [proxy retain];
+    
+    [_url release];
+    _url = [_proxy.url copy];
+}
+
+- (void)willClose;
+{
+}
 
 #pragma mark -
 #pragma mark Subclass responsibility
@@ -303,10 +326,6 @@ RCS_ID("$Id$");
     return _viewController.view;
 }
 
-- (void)willClose;
-{
-}
-
 #pragma mark -
 #pragma mark Private
 
@@ -351,14 +370,6 @@ RCS_ID("$Id$");
     return YES;
 }
 
-- (void)_scheduleAutosave;
-{
-    if (!_saveTimer) {
-        DEBUG_UNDO(@"Scheduling autosave timer");
-        _saveTimer = [[NSTimer scheduledTimerWithTimeInterval:[[self class] autosaveTimeInterval] target:self selector:@selector(_autosaveTimerFired:) userInfo:nil repeats:NO] retain];
-    }
-}
-
 - (void)_autosave;
 {
     DEBUG_UNDO(@"Autosaving now");
@@ -383,7 +394,7 @@ RCS_ID("$Id$");
     
     if (_hasUndoGroupOpen) {
         // We are in the middle of some multi-event operation (making fill, for example) that will be ended by -finishUndoGroup. Try again later.
-        [self _scheduleAutosave];
+        [self scheduleAutosave];
     } else {
         // can save now if there is no group in progress
         [self _autosave];
@@ -392,7 +403,7 @@ RCS_ID("$Id$");
 
 - (void)_startAutosaveAndUpdateUndoButton;
 {
-    [self _scheduleAutosave];
+    [self scheduleAutosave];
     
     if (!_undoIndicator && [[self class] shouldShowAutosaveIndicator])
         _undoIndicator = [[OUIUndoIndicator alloc] initWithParentView:_viewController.view];
@@ -415,9 +426,13 @@ RCS_ID("$Id$");
     
     // Immediately open a nested group. This will allows NSUndoManager to automatically open groups for us on the first undo operation, but prevents it from closing the whole group.
     if ([_undoManager groupingLevel] == 1) {
-        DEBUG_UNDO(@"  .. nesting");
+        DEBUG_UNDO(@"  ... nesting");
         _hasUndoGroupOpen = YES;
         [_undoManager beginUndoGrouping];
+        
+        // Let our view controller know, if it cares
+        if ([_viewController respondsToSelector:@selector(documentDidOpenUndoGroup)])
+            [_viewController documentDidOpenUndoGroup];
     }
 }
 

@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFObject.h>
 
-#import "OUIDocumentPreview.h"
+#import <OmniUI/OUIDocumentPreview.h>
 
 @interface OUIDocumentPDFPreview : OFObject <OUIDocumentPreview>
 {

@@ -8,6 +8,8 @@
 #import "OUICredentials.h"
 
 #import <Security/Security.h>
+#import <OmniFileStore/OFSDAVFileManager.h>
+#import <OmniFoundation/OFPreference.h>
 
 RCS_ID("$Id$")
 
@@ -134,5 +136,10 @@ void OUIDeleteCredentialsForProtectionSpace(NSURLProtectionSpace *protectionSpac
     OSStatus err = SecItemDelete((CFDictionaryRef)query);
     if (err != noErr && err != errSecItemNotFound)
         NSLog(@"%s: SecItemDelete -> %ld", __PRETTY_FUNCTION__, err);
+    
+    if ([OFSDAVFileManager isTrustedHost:[protectionSpace host]]) {
+        [OFSDAVFileManager removeTrustedHost:[protectionSpace host]];
+        [[OFPreferenceWrapper sharedPreferenceWrapper] removeObjectForKey:[protectionSpace host]];
+    }
 }
 #endif

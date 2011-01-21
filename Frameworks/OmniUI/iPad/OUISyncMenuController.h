@@ -30,7 +30,6 @@ typedef NSUInteger OUISyncType;
 + (void)displayInSheet;
 
 - (void)showMenuFromBarItem:(UIBarButtonItem *)barItem;
-- (void)dismiss;
 
 @property (nonatomic, assign) BOOL isExporting;
 @end

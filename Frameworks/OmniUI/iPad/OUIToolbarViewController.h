@@ -14,9 +14,6 @@
 @interface OUIToolbarViewController : UIViewController
 {
 @private
-    UIToolbar *_toolbar;    
-    UIView *_contentView;
-    
     UIViewController *_innerViewController;
     BOOL _animatingAwayFromCurrentInnerViewController; // an animated switch away from _innerViewController is in progress.
     BOOL _resizesToAvoidKeyboard;
@@ -24,6 +21,8 @@
 }
 
 @property(nonatomic,readonly) UIToolbar *toolbar;
+
+- (void)setToolbarHidden:(BOOL)hidden;
 
 - (void)willAnimateToInnerViewController:(UIViewController *)viewController; // Pass nil if you don't know what view controller, just that *some* animation will take place soon
 @property(nonatomic,retain) UIViewController *innerViewController;

@@ -185,7 +185,7 @@ static id _commonInit(OUIDocumentSlider *self)
     CGFloat verticalOffset = [self verticalOffset];
     CGRect sliderRect = CGRectMake(sliderLocation, verticalOffset, sliderWidth, sliderHeight);
     
-    if (animate || CGRectEqualToRect(_sliderKnob.frame, CGRectZero)) {
+    if (!animate || CGRectEqualToRect(_sliderKnob.frame, CGRectZero)) {
         [_sliderKnob setFrame:sliderRect];
         //        _sliderKnob.displayOptions = (value == (count-1)) ? OUIDocumentSliderKnobDisplayRoundedLeftSide|OUIDocumentSliderKnobDisplayRoundedRightSide : OUIDocumentSliderKnobDisplayRoundedLeftSide;
     } else {

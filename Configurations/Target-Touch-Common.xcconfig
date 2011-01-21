@@ -4,7 +4,6 @@
 
 // We were setting this for all build types on iPhone/iPad. Necessary, or only do it for Debug like on the Mac?
 DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
-GCC_DYNAMIC_NO_PIC = YES
 
 // We let Xcode strip -- presumably for signing
 COPY_PHASE_STRIP = YES

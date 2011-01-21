@@ -399,7 +399,7 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
 
 - (void)handleReplaceScriptCommand:(NSScriptCommand *)command;
 {
-    [self replaceUsingPattern:[isa findPatternForReplaceCommand:command]];
+    [self replaceUsingPattern:[[self class] findPatternForReplaceCommand:command]];
 }
 
 + (id)coerceRecord:(NSDictionary *)dictionary toClass:(Class)aClass

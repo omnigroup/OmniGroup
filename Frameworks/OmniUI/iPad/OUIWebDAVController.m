@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,18 +6,21 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OUIWebDAVController.h"
-#import <OmniFileStore/OFSFileManager.h>
+
 #import <OmniFileStore/OFSFileInfo.h>
-#import "OUICredentials.h"
-#import <OmniUI/OUIAppController.h>
-#import "OUIWebDAVSetup.h"
-#import <OmniUI/OUIDocumentPicker.h>
-#import "OUIWebDAVDownloader.h"
-#import "OUIWebDAVConnection.h"
-#import <OmniUI/OUIReplaceDocumentAlert.h>
+#import <OmniFileStore/OFSFileManager.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUI/OUIDocumentPicker.h>
+#import <OmniUI/OUIReplaceDocumentAlert.h>
 
 #import <MobileCoreServices/MobileCoreServices.h>
+
+#import "OUICredentials.h"
+#import "OUIWebDAVConnection.h"
+#import "OUIWebDAVDownloader.h"
+#import "OUIWebDAVSetup.h"
 
 RCS_ID("$Id$")
 
@@ -45,7 +48,8 @@ RCS_ID("$Id$")
     [_files release];
     [_connectingView release];
     [_connectingProgress release];
-    
+    [_connectingLabel release];
+     
     [_exportingData release];
     [_exportingFilename release];
     
@@ -76,6 +80,13 @@ RCS_ID("$Id$")
     
     [_exportIndexPath release];
     _exportIndexPath = nil;
+    
+    [_connectingView release];
+    _connectingView = nil;
+    [_connectingProgress release];
+    _connectingProgress = nil;
+    [_connectingLabel release];
+    _connectingLabel = nil;
 }
 
 - (void)viewDidAppear:(BOOL)animated;
@@ -85,7 +96,15 @@ RCS_ID("$Id$")
     self.navigationItem.titleView = _connectingView;
     [_connectingProgress startAnimating];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_loadFiles) name:OUICertificateTrustUpdated object:nil];
     [self performSelector:@selector(_loadFiles) withObject:nil afterDelay:0];
+    
+    _connectingLabel.text = NSLocalizedStringFromTableInBundle(@"Connecting", @"OmniUI", OMNI_BUNDLE, @"webdav connecting label");
+}
+
+- (void)viewDidDisappear:(BOOL)animated;
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUICertificateTrustUpdated object:nil];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
@@ -292,6 +311,7 @@ RCS_ID("$Id$")
         if (lastModifiedDate) {
             NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
             [formatter setDateStyle:NSDateFormatterMediumStyle];
+            [formatter setLocale:[NSLocale currentLocale]];
             cell.detailTextLabel.text = [formatter stringFromDate:lastModifiedDate];
             [formatter release];
         }
@@ -395,6 +415,7 @@ RCS_ID("$Id$")
 @synthesize address = _address;
 @synthesize connectingView = _connectingView;
 @synthesize connectingProgress = _connectingProgress;
+@synthesize connectingLabel = _connectingLabel;
 @synthesize files = _files;
 @synthesize isExporting = _isExporting;
 @synthesize exportingData = _exportingData;
@@ -413,7 +434,7 @@ RCS_ID("$Id$")
         fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)[unarchivedFilename pathExtension], NULL);
     }
     
-    BOOL canOpen = [OUIDocumentPicker canViewTypeWithIdentifier:(NSString *)fileUTI];
+    BOOL canOpen = [[OUIAppController controller] canViewFileTypeWithIdentifier:(NSString *)fileUTI];
     
     if (fileUTI)
         CFRelease(fileUTI);
@@ -466,7 +487,8 @@ RCS_ID("$Id$")
         if ([[OUIWebDAVConnection sharedConnection] validConnection]) {
             fileManager = [[OUIWebDAVConnection sharedConnection] fileManager];
         } else {
-            [self signOut:nil];
+            if (![[OUIWebDAVConnection sharedConnection] trustAlertVisible])
+                [self signOut:nil];
             return;
         }
     }
@@ -491,17 +513,17 @@ RCS_ID("$Id$")
     UIBarButtonItem *syncBarButtonItem = nil;
     if (_isExporting) {
         syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Export", @"OmniUI", OMNI_BUNDLE, @"export button title");
-        syncBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(export:)];
+        syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(export:)];
     } else {
         syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Sign out", @"OmniUI", OMNI_BUNDLE, @"sign out button title");
-        syncBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(signOut:)];
+        syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(signOut:)];
     }
     
     self.navigationItem.rightBarButtonItem = syncBarButtonItem;
     [syncBarButtonItem release];
     
     if ([[self.navigationController viewControllers] objectAtIndex:0] == self) {
-        UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
+        UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
         self.navigationItem.leftBarButtonItem = cancel;
         [cancel release];
     }

@@ -1,4 +1,4 @@
-// Copyright 1998-2005,2007,2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005,2007,2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <Foundation/NSStream.h>
 
-#import <OmniFoundation/CFData-OFExtensions.h>
+#import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 #import <OmniFoundation/NSMutableData-OFExtensions.h>
@@ -65,57 +65,6 @@ RCS_ID("$Id$")
     }
 
     return NSNotFound;
-}
-
-- (NSData *)copySHA1Signature;
-{
-    CFDataRef signature = OFDataCreateSHA1Digest(kCFAllocatorDefault, (CFDataRef)self);
-    return NSMakeCollectable(signature);
-}
-
-- (NSData *)sha1Signature;
-{
-    return [[self copySHA1Signature] autorelease];
-}
-
-- (NSData *)sha256Signature;
-{
-    CFDataRef signature = OFDataCreateSHA256Digest(kCFAllocatorDefault, (CFDataRef)self);
-    return [NSMakeCollectable(signature) autorelease];
-}
-
-- (NSData *)md5Signature;
-{
-    CFDataRef signature = OFDataCreateMD5Digest(kCFAllocatorDefault, (CFDataRef)self);
-    return [NSMakeCollectable(signature) autorelease];
-}
-
-- (NSData *)signatureWithAlgorithm:(NSString *)algName;
-{
-    switch ([algName caseInsensitiveCompare:@"sha1"]) {
-        case NSOrderedSame:
-            return [self sha1Signature];
-        case NSOrderedAscending:
-            switch ([algName caseInsensitiveCompare:@"md5"]) {
-                case NSOrderedSame:
-                    return [self md5Signature];
-                default:
-                    break;
-            }
-            break;
-        case NSOrderedDescending:
-            switch ([algName caseInsensitiveCompare:@"sha256"]) {
-                case NSOrderedSame:
-                    return [self sha256Signature];
-                default:
-                    break;
-            }
-            break;
-        default:
-            break;
-    }
-    
-    return nil;
 }
 
 - (BOOL)hasPrefix:(NSData *)data;
@@ -195,6 +144,8 @@ RCS_ID("$Id$")
 
 - propertyList
 {
+#ifndef OF_USE_NEW_CF_PLIST_API  /* Computed in CFPropertyList-OFExtensions.h */
+
     CFStringRef errorString = NULL;
     CFPropertyListRef propList = CFPropertyListCreateFromXMLData(kCFAllocatorDefault, (CFDataRef)self, kCFPropertyListImmutable, &errorString);
     
@@ -208,8 +159,26 @@ RCS_ID("$Id$")
     [exception raise];
     /* NOT REACHED */
     return nil;
+    
+#else
+    
+    CFErrorRef error = NULL;
+    CFPropertyListRef propList = CFPropertyListCreateWithData(kCFAllocatorDefault, (CFDataRef)self, kCFPropertyListImmutable, NULL, &error);
+    if (propList != NULL)
+        return [NSMakeCollectable(propList) autorelease];
+    
+    NSException *exception = [[NSException alloc] initWithName:NSParseErrorException
+                                                        reason:[(NSError *)error localizedDescription]
+                                                      userInfo:[NSDictionary dictionaryWithObject:(NSError *)error forKey:NSUnderlyingErrorKey]];
+    CFRelease(error);
+    
+    [exception autorelease];
+    [exception raise];
+    /* NOT REACHED */
+    return nil;
+    
+#endif
 }
-
 
 - (BOOL)writeToFile:(NSString *)path atomically:(BOOL)atomically createDirectories:(BOOL)shouldCreateDirectories error:(NSError **)outError;
 {

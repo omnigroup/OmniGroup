@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,33 +47,6 @@ RCS_ID("$Id$")
         return [bytesString stringByAppendingString:NSLocalizedStringFromTableInBundle(@" bytes", @"OmniAppKit", [OAApplication bundle], "last word of abbreviated bytes string if no abbreviation is necessary")];
     else
         return [NSString abbreviatedStringForBytes:bytes];
-}
-#endif
-
-// Uses deprecated API
-#if 0
-- (NSString *)truncatedStringWithMaxWidth:(SInt16)maxWidth themeFontID:(ThemeFontID)themeFont truncationMode:(TruncCode)truncationCode;
-{
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5  // Uses API deprecated on 10.5
-    NSMutableString *mutableSelf = [self mutableCopy];
-    Boolean truncated = false;
-    OSStatus theErr;
-    
-    theErr = TruncateThemeText((CFMutableStringRef)mutableSelf, themeFont, kThemeStateActive, maxWidth, truncationCode, &truncated);
-    if (theErr != noErr)
-        NSLog(@"%s: theErr = %ld", _cmd, theErr);
-    
-    return [mutableSelf autorelease];
-#else
-    // OBASSERT_NOT_REACHED("-truncatedStringWithMaxWidth:themeFontID:truncationMode: needs to be updated for 10.5");
-    // Rather than failing at runtime, let's at least attempt to do something along the lines of what the caller intended.  (OmniWeb uses this to make sure that its Bookmark and History menu item titles don't get too wide.)
-    return [self substringToIndex:MIN([self length], (unsigned)maxWidth / 10)];
-#endif
-}
-
-- (NSString *)truncatedMenuItemStringWithMaxWidth:(SInt16)maxWidth;
-{
-    return [self truncatedStringWithMaxWidth:maxWidth themeFontID:kThemeMenuItemFont truncationMode:truncMiddle];
 }
 #endif
 

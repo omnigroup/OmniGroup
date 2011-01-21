@@ -19,13 +19,9 @@
 
 #import <OmniFoundation/OFByte.h>
 #import <OmniBase/assertions.h>
-
-#import <stdio.h>
+#import <stdlib.h>
 
 typedef struct {
-    /*" The full contents of the buffer "*/
-    NSMutableData  *data;
-    
     /*" The current pointer of the data object "*/
     OFByte         *buffer;
     
@@ -42,7 +38,6 @@ typedef struct {
 static inline void
 OFDataBufferInit(OFDataBuffer *dataBuffer)
 {
-    dataBuffer->data = [[NSMutableData alloc] init];
     dataBuffer->buffer = NULL;
     dataBuffer->writeStart = NULL;
     dataBuffer->bufferEnd = NULL;
@@ -50,10 +45,14 @@ OFDataBufferInit(OFDataBuffer *dataBuffer)
 }
 
 static inline void
-OFDataBufferRelease(OFDataBuffer *dataBuffer)
+OFDataBufferRelease(OFDataBuffer *dataBuffer, CFAllocatorRef dataAllocator, CFDataRef *outData)
 {
-    [dataBuffer->data release];
-    dataBuffer->data = nil;
+    if (outData) {
+        // When an outData is supplied, the caller gains ownership of our internal buffer. We allow the caller to specify the allocator for the CFDataRef itself. If the caller passes in kCFAllocatorDefault, then they can make it collectable with NSMakeCollectable. But, if the caller wants to use and discard the buffer immediately in a GC environment, they can pass in kCFAllocatorMalloc.
+        *outData = CFDataCreateWithBytesNoCopy(dataAllocator, dataBuffer->buffer, dataBuffer->writeStart - dataBuffer->buffer, kCFAllocatorMalloc);
+    } else if (dataBuffer->buffer)
+        free(dataBuffer->buffer);
+    
     dataBuffer->buffer = NULL;
     dataBuffer->writeStart = NULL;
     dataBuffer->bufferEnd = NULL;
@@ -81,11 +80,8 @@ OFDataBufferSpaceCapacity(OFDataBuffer *dataBuffer)
 static inline void
 OFDataBufferSetCapacity(OFDataBuffer *dataBuffer, size_t capacity)
 {
-    size_t occupied;
-
-    occupied = OFDataBufferSpaceOccupied(dataBuffer);
-    [dataBuffer->data setLength: capacity];
-    dataBuffer->buffer = (OFByte *)[dataBuffer->data mutableBytes];
+    size_t occupied = OFDataBufferSpaceOccupied(dataBuffer);
+    dataBuffer->buffer = (OFByte *)realloc(dataBuffer->buffer, capacity);
     dataBuffer->writeStart = dataBuffer->buffer + occupied;
     dataBuffer->bufferEnd  = dataBuffer->buffer + capacity;
 }
@@ -96,14 +92,17 @@ OFDataBufferSizeToFit(OFDataBuffer *dataBuffer)
     OFDataBufferSetCapacity(dataBuffer, OFDataBufferSpaceOccupied(dataBuffer));
 }
 
-static inline NSData *
+// If we have API like this, we'd need to make a full copy here, which would be slow. Hopefully all the callers can use the outData on OFDataBufferRelease().
+#if 0
+static inline CFDataRef
 OFDataBufferData(OFDataBuffer *dataBuffer)
 {
     // For backwards compatibility (and just doing what the caller expects)
     // this must size the buffer to the expected size.
     OFDataBufferSizeToFit(dataBuffer);
-    return dataBuffer->data;
+    return dataBuffer->_data;
 }
+#endif
 
 // Backwards compatibility
 static inline void
@@ -115,15 +114,12 @@ OFDataBufferFlush(OFDataBuffer *dataBuffer)
 static inline OFByte *
 OFDataBufferGetPointer(OFDataBuffer *dataBuffer, size_t spaceNeeded)
 {
-    size_t newSize;
-    size_t occupied;
-    
     if (OFDataBufferSpaceAvailable(dataBuffer) >= spaceNeeded)
         return dataBuffer->writeStart;
         
     // Otherwise, we have to grow the internal data and reset all our pointers
-    occupied = OFDataBufferSpaceOccupied(dataBuffer);
-    newSize = 2 * OFDataBufferSpaceCapacity(dataBuffer);
+    size_t occupied = OFDataBufferSpaceOccupied(dataBuffer);
+    size_t newSize = 2 * OFDataBufferSpaceCapacity(dataBuffer);
     if (newSize < occupied + spaceNeeded)
         newSize = 2 * (occupied + spaceNeeded);
 

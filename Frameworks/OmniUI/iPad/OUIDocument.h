@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,8 @@
 #import <OmniFoundation/OFObject.h>
 #import <OmniUI/OUIDocumentProtocol.h>
 
-@class OUIDocumentProxy, OUIUndoIndicator;
+@class OUIDocumentProxy, OUIUndoIndicator, OUIDocumentViewController;
+@protocol OUIDocumentViewController;
 
 @interface OUIDocument : OFObject <OUIDocument>
 {
@@ -19,7 +20,7 @@
     NSURL *_url;
     
     NSUndoManager *_undoManager;
-    UIViewController *_viewController;
+    UIViewController <OUIDocumentViewController> *_viewController;
     OUIUndoIndicator *_undoIndicator;
     
     NSTimer *_saveTimer;
@@ -45,6 +46,7 @@
 
 - (BOOL)hasUnsavedChanges;
 - (BOOL)saveForClosing:(NSError **)outError;
+- (void)scheduleAutosave; // Will happen automatically for undoable changes, but for view stat changes that you want to be saved, you can call this.
 
 // Subclass responsibility
 
@@ -62,6 +64,5 @@
 - (void)didUndo;
 - (void)didRedo;
 - (UIView *)viewToMakeFirstResponderWhenInspectorCloses;
-- (void)willClose;
 
 @end

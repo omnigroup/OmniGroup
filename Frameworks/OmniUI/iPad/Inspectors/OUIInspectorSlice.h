@@ -11,18 +11,19 @@
 #import <UIKit/UIViewController.h>
 #import <UIKit/UINibDeclarations.h>
 
-@class OUIInspector, OUIInspectorDetailSlice;
+@class OUIInspector, OUIInspectorPane;
 
 @interface OUIInspectorSlice : UIViewController
 {
 @private
-    OUIInspector *_nonretained_inspector;
-    OUIInspectorDetailSlice *_detailSlice;
+    OUIInspectorPane *_nonretained_containingPane;
+    OUIInspectorPane *_detailPane;
 }
 
-@property(assign,nonatomic) OUIInspector *inspector; // Set by the containing inspector
+@property(assign,nonatomic) OUIInspectorPane *containingPane; // Set by the containing inspector pane
+@property(readonly,nonatomic) OUIInspector *inspector;
 
-@property(retain,nonatomic) IBOutlet OUIInspectorDetailSlice *detailSlice;
+@property(retain,nonatomic) IBOutlet OUIInspectorPane *detailPane;
 - (IBAction)showDetails:(id)sender;
 
 - (BOOL)isAppropriateForInspectedObjects:(NSSet *)objects; // shouldn't be subclassed

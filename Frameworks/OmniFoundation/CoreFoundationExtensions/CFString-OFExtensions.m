@@ -8,6 +8,7 @@
 #import <OmniFoundation/CFString-OFExtensions.h>
 #import <Foundation/NSObjCRuntime.h> // for BOOL
 #import <OmniFoundation/NSString-OFCharacterEnumeration.h> // for OFStringStartLoopThroughCharacters/OFStringEndLoopThroughCharacters
+#import <OmniFoundation/OFUnicodeUtilities.h>
 #import <OmniBase/rcsid.h>
 #import <string.h>
 
@@ -207,4 +208,52 @@ unsigned long OFStringHash_djb2(CFStringRef string)
     
     return hash;
 }
+
+BOOL OFStringContainsInvalidSequences(CFStringRef str)
+{
+    const CFIndex stringLength = CFStringGetLength(str);
+    CFStringInlineBuffer buf;
+    
+    /* Almost everything we call in this function is a simple inline, so this should be reasonably fast */
+    
+    CFStringInitInlineBuffer(str, &buf, (CFRange){ .location = 0, .length = stringLength });
+    for(CFIndex strIndex = 0; strIndex < stringLength; strIndex ++) {
+        /* CFStrings are a sequence of UTF-16 words. Most of these map directly to Unicode code points, except for the surrogate pair range. */
+        
+        UniChar ch = CFStringGetCharacterFromInlineBuffer(&buf, strIndex);
+        switch(OFCharacterIsSurrogate(ch)) {
+            case OFIsSurrogate_No:
+                /* Common case: Not a surrogate pair, but a Basic-Multilingual-Plane character. */
+                /* Check for a handful of invalid code points. */
+                if (ch == 0xFFFE || ch == 0xFFFF || (ch >= 0xFDD0 && ch < 0xFDF0))
+                    return YES;
+                break;
+            case OFIsSurrogate_HighSurrogate:
+            {
+                /* A high surrogate must be immediately followed by a low surrogate */
+                
+                /* CFStringGetCharacterFromInlineBuffer() will safely return 0 if strIndex+1 is out of range */
+                UniChar nextCh = CFStringGetCharacterFromInlineBuffer(&buf, strIndex+1);
+                if (OFCharacterIsSurrogate(nextCh) != OFIsSurrogate_LowSurrogate)
+                    return YES;
+                
+                UnicodeScalarValue longch = OFCharacterFromSurrogatePair(ch, nextCh);
+                if ((longch & 0xFFFE) == 0xFFFE)
+                    return YES;  // All code points eding in FFFE or FFFF are invalid, for some reason (possibly to make BOMs work?)
+                
+                // Skip past the low surrogate we've already checked
+                strIndex ++;
+                break;
+            }
+            default:
+            case OFIsSurrogate_LowSurrogate:
+                /* If we run into a low surrogate half not preceded by a high surrogate, or if OFCharacterIsSurrogate() somehow returns something unexpected, then fail. */
+                return YES;
+        }
+    }
+    
+    /* Nothing invalid here! */
+    return NO;
+}
+
 

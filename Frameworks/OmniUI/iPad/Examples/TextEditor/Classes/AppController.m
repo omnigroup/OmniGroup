@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,7 +55,11 @@ RCS_ID("$Id$")
         [items addObject:self.documentTitleToolbarItem];
         
         [items addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
-                
+        
+        UIBarButtonItem *attachImageButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:nil action:@selector(attachImage:)] autorelease];
+
+        [items addObject:attachImageButtonItem];
+        
         _documentToolbarItems = [[NSArray alloc] initWithArray:items];
     }
     

@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUIDrawing.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniUI/OUIInspector.h>
 
 RCS_ID("$Id$");
 
@@ -30,9 +31,17 @@ static id _commonInit(OUIInspectorToggleButton *self)
     self.opaque = NO;
     self.backgroundColor = nil;
     self.clearsContextBeforeDrawing = YES;
-
+    
+    self.adjustsImageWhenHighlighted = YES;
+    self.adjustsImageWhenDisabled = YES;
+    
     [self setBackgroundImage:NormalBackgroundImage forState:UIControlStateNormal];
     [self setBackgroundImage:SelectedBackgroundImage forState:UIControlStateSelected];
+
+    [self setTitleColor:[OUIInspector labelTextColor] forState:UIControlStateNormal];
+    [self setTitleShadowColor:OUIShadowColor(OUIShadowTypeDarkContentOnLightBackground) forState:UIControlStateNormal];
+    self.titleLabel.shadowOffset = OUIShadowOffset(OUIShadowTypeDarkContentOnLightBackground);
+
     return self;
 }
 
@@ -64,7 +73,7 @@ static id _commonInit(OUIInspectorToggleButton *self)
     [_image release];
     _image = [image retain];
     
-    [self setImage:(image ? OUIMakeShadowedImage(image) : nil) forState:UIControlStateNormal];
+    [self setImage:(image ? OUIMakeShadowedImage(image, OUIShadowTypeDarkContentOnLightBackground) : nil) forState:UIControlStateNormal];
 }
 
 @end

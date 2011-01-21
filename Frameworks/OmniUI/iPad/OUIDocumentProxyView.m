@@ -14,8 +14,8 @@
 #endif
 #import <OmniQuartz/OQDrawing.h>
 
-#import "OUIDocumentPDFPreview.h"
-#import "OUIDocumentImagePreview.h"
+#import <OmniUI/OUIDocumentPDFPreview.h>
+#import <OmniUI/OUIDocumentImagePreview.h>
 
 
 RCS_ID("$Id$");

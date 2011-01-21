@@ -100,9 +100,9 @@ static NSMutableDictionary *helpersByExtension = nil;
 	}
 	
 	// The subclass may change its response to all the subclass methods and then call this (see OmniOutliner's document-specific toolbar support)
-	[isa _loadToolbarNamed:[self toolbarConfigurationName]];
+	[[self class] _loadToolbarNamed:[self toolbarConfigurationName]];
 	
-	Class toolbarClass = [isa toolbarClass];
+	Class toolbarClass = [[self class] toolbarClass];
 	OBASSERT(OBClassIsSubclassOfClass(toolbarClass, [OAToolbar class]));
 	
 	toolbar = [[toolbarClass alloc] initWithIdentifier:[self toolbarIdentifier]];
@@ -238,7 +238,7 @@ static void copyProperty(NSToolbarItem *anItem,
     NSString *nameWithoutExtension;
     
     // Always use OAToolbarItem since we can't know up front whether we'll need a delegate or not.
-    newItem = [[[[isa toolbarItemClass] alloc] initWithItemIdentifier:itemIdentifier] autorelease];
+    newItem = [[[[[self class] toolbarItemClass] alloc] initWithItemIdentifier:itemIdentifier] autorelease];
     
     NSBundle *bundle = [[self class] toolbarBundle];
     NSString *stringsFileName;

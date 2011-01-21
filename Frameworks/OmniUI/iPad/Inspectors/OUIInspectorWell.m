@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,10 +7,12 @@
 
 #import <OmniUI/OUIInspectorWell.h>
 
+#import <OmniUI/OUIDrawing.h>
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniBase/OmniBase.h>
-
 #import <UIKit/UIImage.h>
+
+#import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
@@ -20,24 +22,19 @@ static CGColorRef OuterShadowColor = NULL;
 
 static void OUIInspectorWellInitialize(void)
 {
-    if (BorderColor)
+    if (InnerShadowColor)
         return;
     
     CGColorSpaceRef grayColorSpace = CGColorSpaceCreateDeviceGray();
     
-    CGFloat borderComponents[] = {0.33, 1.0};
-    BorderColor = CGColorCreate(grayColorSpace, borderComponents);
-    
-    CGFloat innerShadowComponents[] = {0.0, 0.5};
+    CGFloat innerShadowComponents[] = {kOUIInspectorWellInnerShadowGrayAlpha.v, kOUIInspectorWellInnerShadowGrayAlpha.a};
     InnerShadowColor = CGColorCreate(grayColorSpace, innerShadowComponents);
     
-    CGFloat outerShadowComponents[] = {1.0, 0.5};
+    CGFloat outerShadowComponents[] = {kOUIInspectorWellOuterShadowGrayAlpha.v, kOUIInspectorWellOuterShadowGrayAlpha.a};
     OuterShadowColor = CGColorCreate(grayColorSpace, outerShadowComponents);
     
     CFRelease(grayColorSpace);
 }
-
-static const CGFloat kBorderRadius = 5;
 
 void OUIInspectorWellAddPath(CGContextRef ctx, CGRect frame, BOOL rounded)
 {
@@ -47,7 +44,7 @@ void OUIInspectorWellAddPath(CGContextRef ctx, CGRect frame, BOOL rounded)
     borderRect.size.height -= 1; // room for shadow
     
     if (rounded) {
-        OQAppendRoundedRect(ctx, borderRect, kBorderRadius);
+        OQAppendRoundedRect(ctx, borderRect, kOUIInspectorWellCornerRadius);
     } else {
         CGContextAddRect(ctx, borderRect);
     }
@@ -81,20 +78,20 @@ static UIImage *_OUIRoundSquareImageCachedImage(RoundSquareImageCache *cache, OU
     UIImage **imagep = rounded ? &cache->rounded : &cache->square;
     
     if (!*imagep) {
-        // Might be able to get away with just kBorderRadius..
-        CGFloat leftCap = kBorderRadius + 1;
-        CGFloat topCap = kBorderRadius + 1;
+        // Might be able to get away with just kOUIInspectorWellCornerRadius..
+        CGFloat leftCap = kOUIInspectorWellCornerRadius + 1;
+        CGFloat topCap = kOUIInspectorWellCornerRadius + 1;
         
         UIImage *image;
         CGSize imageSize = CGSizeMake(2*leftCap + 1, 2*topCap + 1);
-        UIGraphicsBeginImageContext(imageSize);
+        OUIGraphicsBeginImageContext(imageSize);
         {
             CGContextRef ctx = UIGraphicsGetCurrentContext();
             CGRect imageRect = CGRectMake(0, 0, imageSize.width, imageSize.height);
             draw(ctx, imageRect, rounded);
             image = UIGraphicsGetImageFromCurrentImageContext();
         }
-        UIGraphicsEndImageContext();
+        OUIGraphicsEndImageContext();
         
         *imagep = [[image stretchableImageWithLeftCapWidth:leftCap topCapHeight:topCap] retain];
     }
@@ -119,9 +116,34 @@ static void _OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect i
         OUIInspectorWellAddPath(ctx, CGRectInset(imageRect, 0.5, 0.5), rounded);
         CGContextAddRect(ctx, CGRectInset(imageRect, -20, -20));
         
-        CGContextSetShadowWithColor(ctx, CGSizeMake(0,1), 5/*blur*/, InnerShadowColor);
-        CGContextSetStrokeColorWithColor(ctx, BorderColor);
+        CGContextSaveGState(ctx);
+        CGContextSetShadowWithColor(ctx, kOUIInspectorWellInnerShadowOffset, kOUIInspectorWellInnerShadowBlur/*blur*/, InnerShadowColor);
+        CGContextSetStrokeColorWithColor(ctx, [[UIColor clearColor] CGColor]);
         CGContextDrawPath(ctx, kCGPathEOFillStroke);
+        CGContextRestoreGState(ctx);
+        
+        static CGGradientRef borderGradient = NULL;
+        if (!borderGradient) {
+            NSArray *colors = [NSArray arrayWithObjects:
+                               (id)[[UIColor colorWithWhite:kOUIInspectorWellBorderGradientStartGrayAlpha.v alpha:kOUIInspectorWellBorderGradientStartGrayAlpha.a] CGColor],
+                               (id)[[UIColor colorWithWhite:kOUIInspectorWellBorderGradientEndGrayAlpha.v alpha:kOUIInspectorWellBorderGradientEndGrayAlpha.a] CGColor],
+                               nil
+                               ];
+            CGFloat locations[] = {0, 1.0};
+            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
+            borderGradient = CGGradientCreateWithColors(colorSpace, (CFArrayRef)colors, locations);
+            CGColorSpaceRelease(colorSpace);
+        }    
+        
+        OUIInspectorWellAddPath(ctx, imageRect, rounded);
+        OUIInspectorWellAddPath(ctx, CGRectInset(imageRect, 1.0, 1.0), rounded);
+        
+        CGPoint startPoint = imageRect.origin;
+        CGPoint endPoint = CGPointMake(CGRectGetMinX(imageRect), CGRectGetMaxY(imageRect));
+        CGContextSaveGState(ctx);
+        CGContextEOClip(ctx);
+        CGContextDrawLinearGradient(ctx, borderGradient, startPoint, endPoint, 0);
+        CGContextRestoreGState(ctx);
     }
     CGContextEndTransparencyLayer(ctx);
 }
@@ -140,12 +162,6 @@ CGRect OUIInspectorWellInnerRect(CGRect frame)
     return rect;
 }
 
-CGColorRef OUIInspectorWellBorderColor(void)
-{
-    OUIInspectorWellInitialize();
-    return BorderColor;
-}
-
 void OUIInspectorWellStrokePathWithBorderColor(CGContextRef ctx)
 {
     OUIInspectorWellInitialize();
@@ -155,4 +171,148 @@ void OUIInspectorWellStrokePathWithBorderColor(CGContextRef ctx)
 }
 
 
+@implementation OUIInspectorWell
+
+static CGGradientRef NormalGradient = NULL;
+static CGGradientRef HighlightedGradient = NULL;
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    {
+        UIColor *topColor = OQPlatformColorFromHSV(kOUIInspectorTextWellNormalGradientTopColor);
+        UIColor *bottomColor = OQPlatformColorFromHSV(kOUIInspectorTextWellNormalGradientBottomColor);
+        NormalGradient = CGGradientCreateWithColors(NULL/*colorSpace*/, (CFArrayRef)[NSArray arrayWithObjects:(id)[topColor CGColor], (id)[bottomColor CGColor], nil], NULL);
+    }
+    
+    {
+        UIColor *topColor = OQPlatformColorFromHSV(kOUIInspectorTextWellHighlightedGradientTopColor);
+        UIColor *bottomColor = OQPlatformColorFromHSV(kOUIInspectorTextWellHighlightedGradientBottomColor);
+        HighlightedGradient = CGGradientCreateWithColors(NULL/*colorSpace*/, (CFArrayRef)[NSArray arrayWithObjects:(id)[topColor CGColor], (id)[bottomColor CGColor], nil], NULL);
+    }
+    
+}
+
++ (CGFloat)fontSize;
+{
+    return 18;
+}
+
++ (UIFont *)italicFormatFont;
+{
+    return [UIFont fontWithName:@"HoeflerText-Italic" size:[self fontSize]];
+}
+
++ (UIColor *)textColor;
+{
+    return OQPlatformColorFromHSV(kOUIInspectorTextWellTextColor);
+}
+
++ (UIColor *)highlightedTextColor;
+{
+    return OQPlatformColorFromHSV(kOUIInspectorTextWellHighlightedTextColor);
+}
+
+@synthesize rounded = _rounded;
+- (void)setRounded:(BOOL)rounded;
+{
+    if (rounded == _rounded)
+        return;
+    _rounded = rounded;
+    [self setNeedsDisplay];
+}
+
+- (BOOL)shouldDrawHighlighted;
+{
+    return !self.enabled || (self.highlighted && ([self allControlEvents] != 0));
+}
+
+- (CGRect)contentsRect;
+{
+    CGRect contentsRect = self.bounds;
+    
+    static const CGFloat edgeInset = 8;
+    
+    UIEdgeInsets edgeInsets = UIEdgeInsetsMake(edgeInset, edgeInset, edgeInset, edgeInset);
+    
+    if (_showNavigationArrow) {
+        CGRect arrowRect;
+        CGRectDivide(contentsRect, &arrowRect, &contentsRect, CGRectGetHeight(contentsRect), CGRectMaxXEdge);
+
+        edgeInsets.right = 0; // The image will have some built-in padding from centering w/in this rect. Don't chop off any more.
+    }
+    
+    return UIEdgeInsetsInsetRect(contentsRect, edgeInsets);
+}
+
+- (void)setNavigationTarget:(id)target action:(SEL)action;
+{
+    OBPRECONDITION(target);
+    OBPRECONDITION(action);
+    
+    // We expect to only call this once during setup and to never turn it off.  We might support disabling a well, though.
+    OBPRECONDITION(_showNavigationArrow == NO);
+    
+    _showNavigationArrow = YES;
+    [self setNeedsDisplay];
+    
+    [self addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (UIColor *)textColor;
+{
+    return self.shouldDrawHighlighted ? [[self class] highlightedTextColor] : [[self class] textColor];
+}
+
+- (void)drawInteriorFillWithRect:(CGRect)rect; // Draws the interior gradient
+{
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    
+    CGGradientRef gradient = self.shouldDrawHighlighted ? HighlightedGradient : NormalGradient;
+    CGContextDrawLinearGradient(ctx, gradient, rect.origin, CGPointMake(rect.origin.x, CGRectGetMaxY(rect)), 0);
+}
+
+#pragma mark -
+#pragma mark UIControl subclass
+
+- (void)setHighlighted:(BOOL)highlighted;
+{
+    [super setHighlighted:highlighted];
+    [self setNeedsDisplay];
+}
+
+#pragma mark -
+#pragma mark UIView subclass
+
+- (void)drawRect:(CGRect)rect;
+{
+    CGRect bounds = self.bounds;
+    
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    
+    OUIInspectorWellDrawOuterShadow(ctx, bounds, _rounded);
+    
+    // Fill the gradient
+    CGContextSaveGState(ctx);
+    {
+        OUIInspectorWellAddPath(ctx, bounds, _rounded);
+        CGContextClip(ctx);
+        
+        [self drawInteriorFillWithRect:bounds];
+    }
+    CGContextRestoreGState(ctx);
+    
+    OUIInspectorWellDrawBorderAndInnerShadow(ctx, bounds, _rounded);
+    
+    if (_showNavigationArrow) {
+        UIImage *arrowImage = [UIImage imageNamed:@"OUINavigationArrow.png"];
+        CGRect arrowRect, remainder;
+        CGRectDivide(bounds, &arrowRect, &remainder, CGRectGetHeight(bounds), CGRectMaxXEdge);
+        
+        OQDrawImageCenteredInRect(ctx, arrowImage, arrowRect);
+    }
+}
+
+@end
 

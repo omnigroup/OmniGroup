@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,11 +8,15 @@
 // $Id$
 
 #import <UIKit/UIButton.h>
+#import <OmniUI/OUIBarButtonItemBackgroundType.h>
 
 @interface OUIToolbarButton : UIButton
 
 + (UIImage *)normalBackgroundImage;
 + (UIImage *)highlightedBackgroundImage;
+
++ (CGFloat)leftImageStretchCapForBackgroundType:(OUIBarButtonItemBackgroundType)backgroundType;
+- (void)configureForBackgroundType:(OUIBarButtonItemBackgroundType)backgroundType;
 
 - (void)setNormalBackgroundImage:(UIImage *)image;
 - (void)setHighlightedBackgroundImage:(UIImage *)image;

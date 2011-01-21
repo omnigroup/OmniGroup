@@ -42,7 +42,7 @@ RCS_ID("$Id$");
     AEDesc descriptor;
     OSErr error;
 
-    error = OSAStore([isa _defaultScriptingComponent], [self _compiledScriptID], typeOSAGenericStorage, kOSAModeNull, &descriptor);
+    error = OSAStore([[self class] _defaultScriptingComponent], [self _compiledScriptID], typeOSAGenericStorage, kOSAModeNull, &descriptor);
     if (error != noErr)
         return nil;
     
@@ -132,7 +132,7 @@ RCS_ID("$Id$");
     err = ASCopySourceAttributes(appleScriptComponent, &stylesAttributes);
     
     if (err != noErr)
-            [NSException raise:NSInternalInconsistencyException format:@"Cryptic error from ASCopySourceAttributes: %d", err];
+            [NSException raise:NSInternalInconsistencyException format:@"Cryptic error from ASCopySourceAttributes: %@", OFOSStatusDescription(err)];
     CloseComponent(appleScriptComponent);
     
     CFDictionaryRef style = CFArrayGetValueAtIndex(stylesAttributes, styleNumber);

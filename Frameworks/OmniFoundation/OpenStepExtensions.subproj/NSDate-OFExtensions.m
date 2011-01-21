@@ -419,7 +419,9 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
     }
     
     NSUInteger length = [aString length];
-    if (length != OFDateStringLength) {
+    
+    // allow omitting the trailing Z, and handle timezones outside of this method
+    if (length != OFDateStringLength && length != (OFDateStringLength-1)) {
         OBASSERT(length == 0);
         BAD_INIT;
     }

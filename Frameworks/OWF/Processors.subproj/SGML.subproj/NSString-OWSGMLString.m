@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,9 +68,10 @@ RCS_ID("$Id$")
     } OFStringEndLoopThroughCharacters;
     
     // Slurp data into string
-    escapedString = [[NSString alloc] initWithData:OFDataBufferData(&dataBuffer) encoding:NSUnicodeStringEncoding];
-
-    OFDataBufferRelease(&dataBuffer);
+    CFDataRef data = NULL;
+    OFDataBufferRelease(&dataBuffer, kCFAllocatorDefault, &data);
+    escapedString = [[NSString alloc] initWithData:(NSData *)data encoding:NSUnicodeStringEncoding];
+    CFRelease(data);
 
     return [escapedString autorelease];
 }

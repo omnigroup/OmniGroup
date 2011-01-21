@@ -147,6 +147,8 @@
 		A2411322108D430A00F8F1D5 /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Common.xcconfig"; sourceTree = "<group>"; };
 		A2411323108D430A00F8F1D5 /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
 		A2581A620E2D36DD001ABDA6 /* OBBacktraceBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBBacktraceBuffer.m; sourceTree = "<group>"; };
+		A27426261293799F00674569 /* OBPatchTrap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBPatchTrap.h; sourceTree = "<group>"; };
+		A27426271293799F00674569 /* OBPatchTrap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBPatchTrap.m; sourceTree = "<group>"; };
 		A2E007850E5CA926007709A5 /* OBBacktraceBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBBacktraceBuffer.h; sourceTree = "<group>"; };
 		BFE2186805ED3B330097A147 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BFE2186905ED3B330097A147 /* OmniBase_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniBase_Prefix.h; sourceTree = "<group>"; };
@@ -221,6 +223,8 @@
 				00E51C21FE8AAE2511C9CC38 /* OBPostLoader.m */,
 				34172BA3119C88DB00F7FD6A /* OBRuntimeCheck.h */,
 				34172BA4119C88DB00F7FD6A /* OBRuntimeCheck.m */,
+				A27426261293799F00674569 /* OBPatchTrap.h */,
+				A27426271293799F00674569 /* OBPatchTrap.m */,
 				00E51C2BFE8AAE2511C9CC38 /* OBUtilities.h */,
 				00E51C32FE8AAE2511C9CC38 /* OBUtilities.m */,
 				00E51C23FE8AAE2511C9CC38 /* assertions.h */,

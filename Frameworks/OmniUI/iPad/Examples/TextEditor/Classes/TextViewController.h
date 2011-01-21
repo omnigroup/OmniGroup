@@ -9,18 +9,17 @@
 
 #import <OmniUI/OUIScalingViewController.h>
 #import <OmniUI/OUIEditableFrameDelegate.h>
+#import <OmniUI/OUIDocumentViewController.h>
 
 @class RTFDocument;
 @class OUIEditableFrame;
 
-@interface TextViewController : OUIScalingViewController <OUIEditableFrameDelegate>
+@interface TextViewController : OUIScalingViewController <OUIDocumentViewController, OUIEditableFrameDelegate>
 {
 @private
     RTFDocument *_nonretained_document;
     OUIEditableFrame *_editor;
 }
-
-- initWithDocument:(RTFDocument *)document;
 
 @property(retain,nonatomic) IBOutlet OUIEditableFrame *editor;
 

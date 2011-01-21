@@ -6,8 +6,9 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIDrawing.h>
-#import <UIKit/UIKit.h>
+
 #import <OmniBase/OmniBase.h>
+#import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
@@ -17,7 +18,7 @@ UIImage *OUIImageByFlippingHorizontally(UIImage *image)
     
     UIImage *result;
     CGSize size = [image size];
-    UIGraphicsBeginImageContext(size);
+    OUIGraphicsBeginImageContext(size);
     {
         CGContextRef ctx = UIGraphicsGetCurrentContext();
         CGContextTranslateCTM(ctx, size.width, 0);
@@ -25,7 +26,7 @@ UIImage *OUIImageByFlippingHorizontally(UIImage *image)
         [image drawAtPoint:CGPointZero];
         result = UIGraphicsGetImageFromCurrentImageContext();
     }
-    UIGraphicsEndImageContext();
+    OUIGraphicsEndImageContext();
         
     return result;
 }
@@ -41,27 +42,74 @@ void OUILogAncestorViews(UIView *view)
 
 #endif
 
-static const CGSize OUIShadowOffset = {0, -1};
-static UIColor *OUIShadowColor = nil;
+#define kOUILightContentOnDarkBackgroundShadowOffset ((CGSize){0, -1})
+#define kOUIDarkContentOnLightBackgroundShadowOffset ((CGSize){0, 1})
+
+
+static UIColor *OUILightContentOnDarkBackgroundShadowColor = nil;
+static UIColor *OUIDarkContentOnLightBackgroundShadowColor = nil;
 static void OUIDrawingInitialize(void)
 {
-    if (OUIShadowColor)
+    if (OUILightContentOnDarkBackgroundShadowColor)
         return;
-    OUIShadowColor = [[UIColor colorWithWhite:0 alpha:0.5] retain];
+    OUILightContentOnDarkBackgroundShadowColor = [[UIColor colorWithWhite:kOUILightContentOnDarkBackgroundShadowGrayAlpha.v alpha:kOUILightContentOnDarkBackgroundShadowGrayAlpha.a] retain];
+    OUIDarkContentOnLightBackgroundShadowColor = [[UIColor colorWithWhite:kOUIDarkContentOnLightBackgroundShadowGrayAlpha.v alpha:kOUIDarkContentOnLightBackgroundShadowGrayAlpha.a] retain];
 }
 
-void OUIBeginShadowing(CGContextRef ctx)
+CGSize OUIShadowOffset(OUIShadowType type)
+{
+    return (type == OUIShadowTypeLightContentOnDarkBackground) ? kOUILightContentOnDarkBackgroundShadowOffset : kOUIDarkContentOnLightBackgroundShadowOffset;
+}
+
+UIColor *OUIShadowColor(OUIShadowType type)
 {
     OUIDrawingInitialize();
-    CGContextSetShadowWithColor(ctx, OUIShadowOffset, 0, [OUIShadowColor CGColor]);
+    
+    UIColor *shadowColor = (type == OUIShadowTypeLightContentOnDarkBackground) ? OUILightContentOnDarkBackgroundShadowColor : OUIDarkContentOnLightBackgroundShadowColor;
+    OBASSERT(shadowColor);
+    return shadowColor;
 }
 
-void OUIBeginControlImageShadow(CGContextRef ctx)
+void OUIGraphicsBeginImageContext(CGSize size)
+{
+    if (UIGraphicsBeginImageContextWithOptions != NULL) {
+        // NO = we want a transparent context
+        // 0 = scale factor is set to the scale factor of the device's main screen
+        UIGraphicsBeginImageContextWithOptions(size, NO, 0);
+    } else {
+        UIGraphicsBeginImageContext(size);
+    }
+}
+
+void OUIGraphicsEndImageContext(void) 
+{
+    UIGraphicsEndImageContext();
+}
+
+// Shifts the content within the rect so that it looks centered with the shadow applied. Assumes there is enough padding already so that we aren't going to shift the content far enough to get clipped.
+CGRect OUIShadowContentRectForRect(CGRect rect, OUIShadowType type)
+{
+    if (type == OUIShadowTypeLightContentOnDarkBackground) {
+        rect.origin.y += 1;
+    } else {
+        rect.origin.y -= 1;
+    }
+    return rect;
+}
+
+void OUIBeginShadowing(CGContextRef ctx, OUIShadowType type)
+{
+    OUIDrawingInitialize();
+    
+    CGContextSetShadowWithColor(ctx, OUIShadowOffset(type), 0, [OUIShadowColor(type) CGColor]);
+}
+
+void OUIBeginControlImageShadow(CGContextRef ctx, OUIShadowType type)
 {
     OUIDrawingInitialize();
     
     CGContextSaveGState(ctx);
-    OUIBeginShadowing(ctx);
+    OUIBeginShadowing(ctx, type);
     CGContextBeginTransparencyLayer(ctx, NULL);
 }
 
@@ -71,7 +119,7 @@ void OUIEndControlImageShadow(CGContextRef ctx)
     CGContextRestoreGState(ctx);
 }
 
-UIImage *OUIMakeShadowedImage(UIImage *image)
+UIImage *OUIMakeShadowedImage(UIImage *image, OUIShadowType type)
 {
     OBPRECONDITION(image);
     if (!image)
@@ -83,25 +131,45 @@ UIImage *OUIMakeShadowedImage(UIImage *image)
     size.height += 2; // 1px on top and bottom, one for shadow, one to stay centered
     
     UIImage *shadowedImage;
-    UIGraphicsBeginImageContext(size);
+    OUIGraphicsBeginImageContext(size);
     {
         CGContextRef ctx = UIGraphicsGetCurrentContext();
-        OUIBeginControlImageShadow(ctx);
+        OUIBeginControlImageShadow(ctx, type);
         {
-            [image drawAtPoint:CGPointMake(0, 1)];
+            CGSize shadowOffset = OUIShadowOffset(type);
+            [image drawAtPoint:CGPointMake(0, shadowOffset.height)];
         }
         OUIEndControlImageShadow(ctx);
         shadowedImage = UIGraphicsGetImageFromCurrentImageContext();
     }
-    UIGraphicsEndImageContext();
+    OUIGraphicsEndImageContext();
     
     return shadowedImage;
 }
 
-void OUISetShadowOnLabel(UILabel *label)
+void OUISetShadowOnLabel(UILabel *label, OUIShadowType type)
 {
     OUIDrawingInitialize();
 
-    label.shadowColor = OUIShadowColor;
-    label.shadowOffset = OUIShadowOffset;
+    label.shadowColor = OUIShadowColor(type);
+    label.shadowOffset = OUIShadowOffset(type);
+}
+
+void OUIDrawTransparentColorBackground(CGContextRef ctx, CGRect rect, CGSize phase)
+{
+    UIImage *patternImage = [UIImage imageNamed:@"OUIColorOpacitySliderBackground.png"];
+    OBASSERT(patternImage);
+    
+    UIColor *patternColor = [UIColor colorWithPatternImage:patternImage];
+    
+    CGColorRef patternColorRef = [patternColor CGColor];
+    OBASSERT(patternColor);
+
+    CGContextSaveGState(ctx);
+    {
+        CGContextSetFillColorWithColor(ctx, patternColorRef);
+        CGContextSetPatternPhase(ctx, phase);
+        CGContextFillRect(ctx, rect);
+    }
+    CGContextRestoreGState(ctx);
 }

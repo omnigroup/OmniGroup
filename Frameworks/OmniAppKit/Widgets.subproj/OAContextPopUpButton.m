@@ -35,7 +35,7 @@ RCS_ID("$Id$");
         return nil;
 
     gearItem = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
-    [gearItem setImage:[isa gearImage]];
+    [gearItem setImage:[[self class] gearImage]];
 
     // First item is always the label
     [[self menu] addItem:gearItem];
@@ -56,7 +56,7 @@ RCS_ID("$Id$");
     [super awakeFromNib];
     
     if ([self image] == nil) {
-        [self setImage:[isa gearImage]];
+        [self setImage:[[self class] gearImage]];
     }
     if ([NSString isEmptyString:[self toolTip]])
         [self setToolTip:OAContextControlToolTip()];

@@ -41,7 +41,7 @@ static inline int _writableEnumValue(NSInteger value)
 
 - (void)appendXML:(OFXMLDocument *)doc;
 {
-    [doc pushElement:[isa xmlElementName]];
+    [doc pushElement:[[self class] xmlElementName]];
     {
         [doc setAttribute:@"default-value" integer:_writableEnumValue(_defaultEnumValue)];
         
@@ -78,7 +78,7 @@ static inline int _writableEnumValue(NSInteger value)
 
 - initFromXML:(OFXMLCursor *)cursor;
 {
-    OBPRECONDITION([[cursor name] isEqualToString:[isa xmlElementName]]);
+    OBPRECONDITION([[cursor name] isEqualToString:[[self class] xmlElementName]]);
     
     _defaultEnumValue = [[cursor attributeNamed:@"default-value"] intValue];
     

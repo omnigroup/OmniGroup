@@ -204,7 +204,7 @@ RCS_ID("$Id$");
 {
     OFCharacterSet *copy;
 
-    copy = [[isa alloc] init];
+    copy = [[[self class] alloc] init];
     memcpy(copy->bitmapRep, bitmapRep, OFCharacterSetBitmapRepLength);
     return copy;
 }

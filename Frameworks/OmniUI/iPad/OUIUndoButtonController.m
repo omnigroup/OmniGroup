@@ -7,6 +7,8 @@
 
 #import "OUIUndoButtonController.h"
 
+#import <OmniUI/OUIAppController.h>
+
 #import "OUIUndoButton.h"
 
 RCS_ID("$Id$");
@@ -61,6 +63,9 @@ RCS_ID("$Id$");
     
     [_undoButton setBackgroundImage:layoutBackgroundImage forState:UIControlStateNormal];
     [_redoButton setBackgroundImage:layoutBackgroundImage forState:UIControlStateNormal];
+    
+    [_undoButton setTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title") forState:UIControlStateNormal];
+    [_redoButton setTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title") forState:UIControlStateNormal];
 }
 
 - (void)viewDidUnload;
@@ -98,7 +103,7 @@ RCS_ID("$Id$");
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoPopoverWillShowNotification object:self];
     
-    [_menuPopoverController presentPopoverFromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    [[OUIAppController controller] presentPopover:_menuPopoverController fromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
 - (BOOL)dismissUndoMenu;

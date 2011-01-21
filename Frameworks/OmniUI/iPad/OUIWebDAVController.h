@@ -19,6 +19,7 @@
     NSURL *_address;
     UIView *_connectingView;
     UIActivityIndicatorView *_connectingProgress;
+    UILabel *_connectingLabel;
     
     NSArray *_files;
     BOOL _isDownloading;
@@ -40,6 +41,7 @@
 
 @property (nonatomic, retain) IBOutlet UIView *connectingView;
 @property (nonatomic, retain) IBOutlet UIActivityIndicatorView *connectingProgress;
+@property (nonatomic, retain) IBOutlet UILabel *connectingLabel;
 
 @property (nonatomic, retain) NSArray *files;
 @property (nonatomic, assign) BOOL isExporting;

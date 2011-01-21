@@ -458,7 +458,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "../../Scripts/BuildStringsFromTarget\n";
+			shellScript = "../../Scripts/BuildStringsFromTarget OmniFileStore\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

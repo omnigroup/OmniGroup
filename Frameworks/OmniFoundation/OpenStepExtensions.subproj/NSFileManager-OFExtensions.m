@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
+#import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFUtilities.h>
 
@@ -290,18 +291,19 @@ static int permissionsMask = 0022;
     if (![self createPathToFile:lockFilePath attributes:nil error:outError])
         return nil;
     
-    NSString *errorDescription = nil;
-    NSData *data = [NSPropertyListSerialization dataFromPropertyList:lockDictionary format:NSPropertyListXMLFormat_v1_0 errorDescription:&errorDescription];
-    
+    NSData *data = OFCreateNSDataFromPropertyList(lockDictionary, kCFPropertyListXMLFormat_v1_0, outError);
     if (!data) {
-        OFError(outError, OFUnableToSerializeLockFileDictionaryError, errorDescription, nil);
+        // Stack our error code on top of the CF error code
+        OFError(outError, OFUnableToSerializeLockFileDictionaryError, nil, nil);
         return nil;
     }
     
     if (![data writeToFile:lockFilePath options:NSAtomicWrite error:outError]) {
         OFError(outError, OFUnableToCreateLockFileError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to create lock file '%@'.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), lockFilePath]), nil);
+        [data release];
         return nil;
     }
+    [data release];
     
     *outCreated = YES;
     return lockDictionary;

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -128,15 +128,32 @@ RCS_ID("$Id$");
         return;
     
     [self willChangeValueForKey:@"mode"];
+
+    Class animatorClass = [self class];
+    BOOL wereAnimationsEnabled = [animatorClass areAnimationsEnabled];
+
+    OUILoupeMode oldMode = _mode;
     
-    if (_mode == OUILoupeOverlayNone) {
+    if (oldMode == OUILoupeOverlayNone) {
         // We're bringing the loupe onscreen
         // Make sure it's in front of everything else
         [self.superview bringSubviewToFront:self];
+        
+        // And make sure it animates from the current location, instead of the previous location
+        [animatorClass beginAnimations:@"OUILoupeOverlay" context:NULL];
+        [animatorClass setAnimationsEnabled:NO];
+        CGPoint centerPoint = _touchPoint;
+        if (subjectView)
+            centerPoint = [(OUIScalingView *)subjectView convertPoint:centerPoint toView:[self superview]];
+        self.center = centerPoint;
+        self.transform = OUILoupeDismissedTransform;
+        self.alpha = 1;
+        [animatorClass commitAnimations];
     }
     
-    [[self class] beginAnimations:@"OUILoupeOverlay" context:NULL];
-    [[self class] setAnimationBeginsFromCurrentState: (_mode == OUILoupeOverlayNone)? NO : YES];
+    [animatorClass beginAnimations:@"OUILoupeOverlay" context:NULL];
+    [animatorClass setAnimationBeginsFromCurrentState: (_mode == OUILoupeOverlayNone)? NO : YES];
+    [animatorClass setAnimationsEnabled:YES];
     _mode = newMode;
     
     if (newMode == OUILoupeOverlayNone) {
@@ -226,14 +243,19 @@ RCS_ID("$Id$");
             }
         }
         
-        self.bounds = (CGRect){ .origin = { 0,0 }, .size = loupeFramePosition.size };
         self.alpha = 1;
+        
+        if (oldMode == OUILoupeOverlayNone)
+            [animatorClass setAnimationsEnabled:NO];
+        self.bounds = (CGRect){ .origin = { 0,0 }, .size = loupeFramePosition.size };
+        [animatorClass setAnimationsEnabled:YES];
     }
     
     // Adjust location for new size, touch point, whatever might have changed
     [self setTouchPoint:_touchPoint];
     
-    [[self class] commitAnimations];
+    [animatorClass commitAnimations];
+    [animatorClass setAnimationsEnabled:wereAnimationsEnabled];
     
     [self didChangeValueForKey:@"mode"];
 }

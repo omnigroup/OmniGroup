@@ -24,6 +24,8 @@
     UIImage *_cachedImage;
 }
 
++ (CGSize)stepperButtonSize;
+
 @property(assign,nonatomic) BOOL flipped;
 
 // Defaults to YES. If set, this will resend the UIControlEventTouchDown action while the button is held down.

@@ -8,7 +8,7 @@
 #import <OmniUI/OUIInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorDetailSlice.h>
+#import <OmniUI/OUIInspectorPane.h>
 
 RCS_ID("$Id$");
 
@@ -26,37 +26,43 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
-    [_detailSlice release];
+    [_detailPane release];
     [super dealloc];
 }
 
-@synthesize inspector = _nonretained_inspector;
-- (void)setInspector:(OUIInspector *)inspector;
+@synthesize containingPane = _nonretained_containingPane;
+- (void)setContainingPane:(OUIInspectorPane *)pane;
 {
-    _nonretained_inspector = inspector;
+    _nonretained_containingPane = pane;
 }
 
-@synthesize detailSlice = _detailSlice;
-- (void)setDetailSlice:(OUIInspectorDetailSlice *)detailSlice;
+- (OUIInspector *)inspector;
+{
+    OUIInspector *inspector = _nonretained_containingPane.inspector;
+    OBASSERT(inspector);
+    return inspector;
+}
+
+@synthesize detailPane = _detailPane;
+- (void)setDetailPane:(OUIInspectorPane *)detailPane;
 {
     // Just expect this to get called when loading xib. If we want to swap out details, we'll need to only do it when the detail isn't on screen.
-    OBPRECONDITION(!_detailSlice);
+    OBPRECONDITION(!_detailPane);
     
-    [_detailSlice autorelease];
-    _detailSlice = [detailSlice retain];
+    [_detailPane autorelease];
+    _detailPane = [detailPane retain];
     
     // propagate the inspector if we already got it set.
-    _detailSlice.slice = self;
+    _detailPane.parentSlice = self;
 }
 
 - (IBAction)showDetails:(id)sender;
 {
-    OBPRECONDITION(_detailSlice);
-    OBPRECONDITION(_nonretained_inspector);
-    if (!_detailSlice)
+    OBPRECONDITION(_detailPane);
+    if (!_detailPane)
         return;
     
-    [_nonretained_inspector pushDetailSlice:_detailSlice];
+    [self.inspector pushPane:_detailPane];
 }
 
 - (BOOL)isAppropriateForInspectedObjects:(NSSet *)objects;
@@ -69,9 +75,11 @@ RCS_ID("$Id$");
 
 - (NSSet *)appropriateObjectsForInspection;
 {
+    OBPRECONDITION(_nonretained_containingPane);
+    
     NSMutableSet *objects = nil;
     
-    for (id object in _nonretained_inspector.inspectedObjects) {
+    for (id object in _nonretained_containingPane.inspectedObjects) {
         if ([self isAppropriateForInspectedObject:object]) {
             if (!objects)
                 objects = [NSMutableSet set];
@@ -90,7 +98,7 @@ RCS_ID("$Id$");
 
 - (void)updateInterfaceFromInspectedObjects;
 {
-    [_detailSlice updateInterfaceFromInspectedObjects];
+    // For subclasses
 }
 
 - (NSNumber *)singleSelectedValueForCGFloatSelector:(SEL)sel;
@@ -174,10 +182,6 @@ RCS_ID("$Id$");
         
     UIView *view = self.view;
     view.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleBottomMargin; // Unclear whether "bottom" means visual bottom or max y...
-    
-    // We edit with a black background so we can see stuff in IB, but need to turn that off here to look right in the popover.
-    view.opaque = NO;
-    view.backgroundColor = nil;
 }
 
 @end

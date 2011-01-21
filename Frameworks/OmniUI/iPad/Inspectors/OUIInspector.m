@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,17 +7,23 @@
 
 #import <OmniUI/OUIInspector.h>
 
+#import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIInspectorSlice.h>
-#import <OmniUI/OUIInspectorDetailSlice.h>
+#import <OmniUI/OUIStackedSlicesInspectorPane.h>
 
-#import "OUIInspectorStack.h"
-
-#import <UIKit/UIKit.h>
-#import <OmniBase/OmniBase.h>
+#import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
+OBDEPRECATED_METHODS(OUIInspectorDelegate)
+- (NSString *)inspectorTitle:(OUIInspector *)inspector; // --> inspector:titleForPane:, taking an OUIInspectorPane
+- (NSArray *)inspectorSlices:(OUIInspector *)inspector; // --> inspector:slicesForStackedSlicesPane:, taking an OUIStackedSlicesInspectorPane
+@end
+
 @interface OUIInspector (/*Private*/) <UIPopoverControllerDelegate, UINavigationControllerDelegate>
+- (void)_configureTitleForPane:(OUIInspectorPane *)pane;
+- (BOOL)_configureSlicesForPane:(OUIInspectorPane *)pane;
 - (BOOL)_prepareToInspectObjects:(NSSet *)objects;
 - (void)_makeInterface;
 - (void)_startObserving;
@@ -38,18 +44,24 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 {
-    UIButton *infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
-    infoButton.imageEdgeInsets = UIEdgeInsetsMake(0.0, 7.0, 0.0, 0.0);
-    infoButton.frame = CGRectMake(0, 0, 44, 44); // TODO: -sizeToFit makes this too small. No luck making a UIButton subclass that implements the various sizing methods
-    [infoButton addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
-    return [[[UIBarButtonItem alloc] initWithCustomView:infoButton] autorelease];
+    UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png"];
+    OBASSERT(image);
+    return [[[OUIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action] autorelease];
+}
+
++ (UIColor *)labelTextColor;
+{
+    return [UIColor colorWithHue:kOUIInspectorLabelTextColor.h saturation:kOUIInspectorLabelTextColor.s brightness:kOUIInspectorLabelTextColor.v alpha:kOUIInspectorLabelTextColor.a];
+}
+
++ (UIFont *)labelFont;
+{
+    return [UIFont boldSystemFontOfSize:20];
 }
 
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    [_inspectedObjects release];
     
     _popoverController.delegate = nil;
     [_popoverController release];
@@ -60,56 +72,68 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     _navigationController.delegate = nil;
     [_navigationController release];
     
-    _stack.inspector = nil;
-    [_stack release];
+    _mainPane.inspector = nil;
+    [_mainPane release];
     [super dealloc];
 }
 
 @synthesize delegate = _nonretained_delegate;
-@synthesize inspectedObjects = _inspectedObjects;
-@synthesize hasDismissButton = _shouldShowDismissButton;
 
+// Subclass to return YES if you intend to embed the inspector into a your own navigation controller.
 - (BOOL)isEmbededInOtherNavigationController;
 {
     return NO;
 }
 
+- (UINavigationController *)embeddingNavigationController;
+{
+    return nil;
+}
+
 - (BOOL)isVisible;
 {
+    OBPRECONDITION([self isEmbededInOtherNavigationController] == NO); // need to be smarter here if we are embedded
+    
     return _popoverController.isPopoverVisible;
 }
 
-- (void)inspectObjects:(NSSet *)objects fromBarButtonItem:(UIBarButtonItem *)item;
-{
-    _shouldShowDismissButton = NO;
-    
+- (BOOL)inspectObjects:(NSSet *)objects fromBarButtonItem:(UIBarButtonItem *)item;
+{    
     if (![self _prepareToInspectObjects:objects])
-        return;
+        return NO;
 
-    [_popoverController presentPopoverFromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
-    
-    [self _configurePopoverSize]; // Hack. w/o this the first time we display we can end up the wrong size.
+    // In the embedding case, the 'from whatever' arguments are irrelevant. We assumed the embedding navigation controller is going to be made visibiel somehow.
+    if ([self isEmbededInOtherNavigationController] == NO) {
+        if (![[OUIAppController controller] presentPopover:_popoverController fromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES])
+            return NO;
+            
+        [self _configurePopoverSize]; // Hack. w/o this the first time we display we can end up the wrong size.
+    }
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorDidPresentNotification object:self];
+    return YES;
 }
 
-- (void)inspectObjects:(NSSet *)objects fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
-{
-    _shouldShowDismissButton = YES;
-    
+- (BOOL)inspectObjects:(NSSet *)objects fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
+{    
     if (![self _prepareToInspectObjects:objects])
-        return;
+        return NO;
     
-    [_popoverController presentPopoverFromRect:rect inView:view permittedArrowDirections:arrowDirections animated:YES];
+    // In the embedding case, the 'from whatever' arguments are irrelevant. We assumed the embedding navigation controller is going to be made visibiel somehow.
+    if ([self isEmbededInOtherNavigationController] == NO) {
+        if (![[OUIAppController controller] presentPopover:_popoverController fromRect:rect inView:view permittedArrowDirections:arrowDirections animated:YES])
+            return NO;
     
-    [self _configurePopoverSize]; // Hack. w/o this the first time we display we can end up the wrong size.
+        [self _configurePopoverSize]; // Hack. w/o this the first time we display we can end up the wrong size.
+    }
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorDidPresentNotification object:self];
+    return YES;
 }
 
 - (void)updateInterfaceFromInspectedObjects
 {
-    [_stack.slices makeObjectsPerformSelector:@selector(updateInterfaceFromInspectedObjects)];
+    [self.topVisiblePane updateInterfaceFromInspectedObjects];
 }
 
 - (void)dismiss;
@@ -128,22 +152,90 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     [_nonretained_delegate inspectorDidDismiss:self];
 }
 
-- (void)pushDetailSlice:(OUIInspectorDetailSlice *)detail;
+- (NSArray *)slicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 {
-    OBPRECONDITION(detail);
+    NSArray *slices = nil;
     
-    [_navigationController pushViewController:detail animated:YES];
-    [detail wasPushed];
+    if ([_nonretained_delegate respondsToSelector:@selector(inspector:slicesForStackedSlicesPane:)])
+        slices = [_nonretained_delegate inspector:self slicesForStackedSlicesPane:pane];
+    if (!slices)
+        slices = pane.slices; // manually configured slices?
+    return slices;
 }
 
-- (void)popDetailSlice;
+- (OUIStackedSlicesInspectorPane *)mainPane;
 {
-    OBRequestConcreteImplementation(self, _cmd);
+    if (!_mainPane)
+        [self _makeInterface];
+
+    return _mainPane;
+}
+
+static UINavigationController *_getNavigationController(OUIInspector *self)
+{
+    if (self->_navigationController) {
+        OBASSERT([self isEmbededInOtherNavigationController] == NO);
+        return self->_navigationController;
+    } else {
+        OBASSERT([self isEmbededInOtherNavigationController] == YES);
+        
+        // Can't use the _mainPane's navigationController (at least in the one embedding case we have now in OmniGraffle). The issue is that the mainPane doesn't get pushed on the nav controller stack owned by OmniGraffle in all cases. In some cases, its view is stolen and combined with other views (not great, but that's the way it is now).
+        //UINavigationController *nc = [self->_mainPane navigationController];
+        UINavigationController *nc = [self embeddingNavigationController];
+        return nc;
+    }
+}
+
+- (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSSet *)inspectedObjects;
+{
+    OBPRECONDITION(pane);
+    
+    UINavigationController *navigationController = _getNavigationController(self);
+    OBASSERT(navigationController);
+
+    if (!inspectedObjects)
+        inspectedObjects = self.topVisiblePane.inspectedObjects;
+    OBASSERT([inspectedObjects count] > 0);
+    
+    pane.inspector = self;
+    pane.inspectedObjects = inspectedObjects;
+    
+    [self _configureTitleForPane:pane];
+    
+    if (![self _configureSlicesForPane:pane])
+        return;
+    
+    [navigationController pushViewController:pane animated:YES];
+}
+
+- (void)pushPane:(OUIInspectorPane *)pane;
+{
+    [self pushPane:pane inspectingObjects:nil];
+}
+
+- (OUIInspectorPane *)topVisiblePane;
+{
+    UINavigationController *navigationController = _getNavigationController(self);
+    if (!navigationController) {
+        return _mainPane; // This can happen when we are called to update the inspected objects in the embedded case (OmniGraffle).
+    }
+    
+    for (UIViewController *vc in [navigationController.viewControllers reverseObjectEnumerator]) {
+        if ([vc isKindOfClass:[OUIInspectorPane class]])
+            return (OUIInspectorPane *)vc;
+    }
+    
+    // This can happen when we are on the main pane, but it isn't pushed on the embedding navigation controller's stack. OmniGraffle just steals its view and combines it with other views in its view controller. Not great, but that's how it is currently (would be nicer if it just used an OUIInspectorPane or not for each view controller).
+    return _mainPane;
 }
 
 - (void)inspectorSizeChanged;
 {
-    [_stack layoutSlices];
+    OBFinishPortingLater("Avoid the class check here by adding some API to OUIInspectorPane?");
+    OUIInspectorPane *topVisiblePane = self.topVisiblePane;
+    if ([topVisiblePane isKindOfClass:[OUIStackedSlicesInspectorPane class]])
+        [(OUIStackedSlicesInspectorPane *)topVisiblePane inspectorSizeChanged];
+    
     [self _configurePopoverSize];
 }
 
@@ -170,12 +262,6 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 #pragma mark -
 #pragma mark UINavigationControllerDelegate
 
-- (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
-{
-    // Coming back to a main inspector after having changed something in details. This is implemented by details too, might be useful in that case if we stop sending update requests to details that aren't visible (which seems good, really).
-    [(OUIInspectorStack *)viewController updateInterfaceFromInspectedObjects];
-}
-
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
     // Make sure the popover sizes back down when navigating away from a tall details view (it seems to grow correctly). Doing this in the 'will' hook doesn't make it the right size, clipping off some of the bottom.
@@ -188,7 +274,10 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 - (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController;
 {
-    return [popoverController.contentViewController.view endEditing:YES/*force*/];
+    // You'd think this would always return YES, but the second time it is run, it returns NO, unless you've tapped in a text field in the inspector or something.
+    // Presumably if the first responder isn't in the view at all, it returns NO instead of returning "YES, whatever".
+    [popoverController.contentViewController.view endEditing:YES/*force*/];
+    return YES;
 }
 
 - (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController;
@@ -203,59 +292,91 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 #pragma mark -
 #pragma mark Private
 
-- (BOOL)_prepareToInspectObjects:(NSSet *)objects
+- (void)_configureTitleForPane:(OUIInspectorPane *)pane;
 {
-    if (_popoverController.isPopoverVisible) {
+    NSString *title = nil;
+    if ([_nonretained_delegate respondsToSelector:@selector(inspector:titleForPane:)])
+        title = [_nonretained_delegate inspector:self titleForPane:pane];
+    if (!title)
+        title = pane.title;
+    if (!title) {
+        OBASSERT_NOT_REACHED("Either need to manually set a title on the inspector pane or provide one with the delegate.");
+    }
+    pane.title = title;
+}
+- (BOOL)_configureSlicesForPane:(OUIInspectorPane *)pane;
+{
+    if (![pane isKindOfClass:[OUIStackedSlicesInspectorPane class]])
+        return YES; // nothing to do.
+    
+    OUIStackedSlicesInspectorPane *stackedPane = (OUIStackedSlicesInspectorPane *)pane;
+    
+    NSArray *slices = [self slicesForStackedSlicesPane:stackedPane];
+    if ([slices count] == 0) {
+        OBASSERT_NOT_REACHED("No slices found for stacked pane.");
+        return NO;
+    }
+    stackedPane.slices = slices;
+    return YES;
+}
+
+- (BOOL)_prepareToInspectObjects:(NSSet *)objects;
+{
+    OBPRECONDITION([objects count] > 0);
+    
+    BOOL embedded = [self isEmbededInOtherNavigationController];
+    
+    if (embedded == NO && _popoverController.isPopoverVisible) {
         [self dismiss];
         return NO;
     }
     
     [self _makeInterface];
     
-    [_inspectedObjects release];
-    _inspectedObjects = [[NSSet alloc] initWithSet:objects];
+    _mainPane.inspectedObjects = objects;
     
-    _stack.title = [_nonretained_delegate inspectorTitle:self];
-    NSArray *slices = [_nonretained_delegate inspectorSlices:self];
-    if ([slices count] == 0) {
+    [self _configureTitleForPane:_mainPane];
+    
+    if (![self _configureSlicesForPane:_mainPane]) {
         [self dismiss];
         return NO;
     }
-    _stack.slices = slices;
+
     [self updateInterfaceFromInspectedObjects];
     
-    // TODO: Assuming we aren't on screen.
-    [_navigationController popToRootViewControllerAnimated:NO];
-    
     // We cannot reuse popovers, as far as I can tell. It caches the old -contentSizeForViewInPopover and doesn't requery the next time it is presented.
-    if (![self isEmbededInOtherNavigationController]) {
+    if (embedded == NO) {
+        // TODO: Assuming we aren't on screen.
+        [_navigationController popToRootViewControllerAnimated:NO];
+        
         [self dismiss];
         
         _popoverController = [[UIPopoverController alloc] initWithContentViewController:_navigationController];
         _popoverController.delegate = self;
+
+        [self _startObserving]; // Inside the embedded check since this just signs up for notifications that will fix our popover size, but that isn't our problem if we are embedded
+        [self _configurePopoverSize];
+    } else {
+        OBASSERT(_navigationController == nil);
     }
-    
-    [self _startObserving];
-    
-    [self _configurePopoverSize];
-    
+
     return YES;
 }
 
 - (void)_makeInterface;
 {
-    if (_navigationController)
+    if (_mainPane)
         return;
     
-    _stack = [[OUIInspectorStack alloc] init];
-    _stack.inspector = self;
+    _mainPane = [[OUIStackedSlicesInspectorPane alloc] init];
+    _mainPane.inspector = self;
     
-    if (![self isEmbededInOtherNavigationController]) {
-        _navigationController = [[UINavigationController alloc] initWithRootViewController:_stack];
+    if ([self isEmbededInOtherNavigationController] == NO) {
+        _navigationController = [[UINavigationController alloc] initWithRootViewController:_mainPane];
         _navigationController.delegate = self;
     }
     
-    _stack.view.frame = CGRectMake(0, 0, OUIInspectorContentWidth, 16);
+    _mainPane.view.frame = CGRectMake(0, 0, OUIInspectorContentWidth, 16);
 }
 
 - (void)_startObserving;
@@ -271,7 +392,6 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     if (_isObservingNotifications) {
         _isObservingNotifications = NO;
         [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidHideNotification object:nil];
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];
     }
 }
 
@@ -283,9 +403,8 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 - (void)_configurePopoverSize;
 {
-    // If you return YES to this, you need to override this method too to fix *your* popover controller's size
-    OBPRECONDITION(![self isEmbededInOtherNavigationController]);
-    
+    // If you return an -alternateNavigationController, you need to fix *your* popover controller's size
+    OBPRECONDITION([self isEmbededInOtherNavigationController] == NO);
     
     const CGFloat titleHeight = 37;
     

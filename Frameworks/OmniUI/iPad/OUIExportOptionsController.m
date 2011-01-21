@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,22 +7,30 @@
 //
 
 #import "OUIExportOptionsController.h"
-#import "OUIWebDAVSetup.h"
-#import "OUIWebDAVConnection.h"
-#import <OmniUI/OUIDocumentPicker.h>
-#import <OmniUI/OUIDocumentProxy.h>
+
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniUI/OUIAppController.h>
-#import "OUIWebDAVController.h"
-#import "OUIExportOptionsView.h"
-#import "OUICredentials.h"
+#import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUI/OUIDocumentPicker.h>
+#import <OmniUI/OUIDocumentProxy.h>
 #import <OmniFoundation/OFPreference.h>
 
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <MobileCoreServices/UTType.h>
 
+#import "OUICredentials.h"
+#import "OUIExportOptionsView.h"
+#import "OUIWebDAVConnection.h"
+#import "OUIWebDAVController.h"
+#import "OUIWebDAVSetup.h"
+
 RCS_ID("$Id$")
-       
+    
+@interface OUIExportOptionsController (/* private */)
+- (void)_checkConnection;
+@end
+
+
 @implementation OUIExportOptionsController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
@@ -60,12 +68,12 @@ RCS_ID("$Id$")
         self.navigationItem.rightBarButtonItem = nil;
     } else if (_exportType == OUIExportOptionsExport) {
         NSString *syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Sign Out", @"OmniUI", OMNI_BUNDLE, @"sign out button title");
-        UIBarButtonItem *syncBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(signOut:)];
+        UIBarButtonItem *syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(signOut:)];
         self.navigationItem.rightBarButtonItem = syncBarButtonItem;
         [syncBarButtonItem release];
     } 
     
-    UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
+    UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
     self.navigationItem.leftBarButtonItem = cancel;
     [cancel release];
     
@@ -185,12 +193,19 @@ RCS_ID("$Id$")
     }
     
     _exportDescriptionLabel.text = actionDescription;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_checkConnection) name:OUICertificateTrustUpdated object:nil];
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated;
 {
-    if (_exportType == OUIExportOptionsExport && ![[OUIWebDAVConnection sharedConnection] validConnection])
-        [self signOut:nil];
+    [self _checkConnection];
+}
+
+- (void)viewDidDisappear:(BOOL)animated;
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUICertificateTrustUpdated object:nil];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
@@ -347,5 +362,14 @@ RCS_ID("$Id$")
 @synthesize exportDestinationLabel = _exportDestinationLabel;
 @synthesize exportDescriptionLabel = _exportDescriptionLabel;
 @synthesize syncType = _syncType;
+
+#pragma mark private
+- (void)_checkConnection;
+{
+    if (_exportType == OUIExportOptionsExport && ![[OUIWebDAVConnection sharedConnection] validConnection]) {
+        if (![[OUIWebDAVConnection sharedConnection] trustAlertVisible])
+            [self signOut:nil];
+    }
+}
 
 @end

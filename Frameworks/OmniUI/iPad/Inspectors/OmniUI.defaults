@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>OUIColorSwatchPickerTextBackgroundPalette</key>
+	<array>
+		<string>1 1 1</string>
+		<string>0.898039 0.898039 0.898039</string>
+		<string>0.894117 0.874509 0.827450</string>
+		<string>0.941176 0.886274 0.815686</string>
+		<string>1 0.972549 0.858823</string>
+		<string>0.905882 0.956862 0.819607</string>
+		<string>0.811764 0.854901 0.905882</string>
+	</array>
+        
+	<key>OUIColorSwatchPickerTextColorPalette</key>
+	<array>
+		<string>0.000000 0.000000 0.000000</string>
+		<string>0.133333 0.298039 0.784314</string>
+		<string>0.000000 0.525490 0.262745</string>
+		<string>0.827451 0.000000 0.000000</string>
+		<string>0.631373 0.250980 0.549020</string>
+		<string>0.498039 0.498039 0.498039</string>
+		<string>1.000000 0.368627 0.000000</string>
+		<string>0.489296 0.21886 0</string>
+		<string>0.508537 0.790539 0.956329</string>
+		<string>0.435111 0.827115 0.585794</string>
+		<string>1 0.631846 0.730327</string>
+		<string>0.835828 0.675547 0.917159</string>
+		<string>0.930953 0.643015 0.482506</string>
+	</array>
+</dict>
+</plist>

@@ -93,15 +93,18 @@ StaticLibraryResourceDirectories.each {|dirname|
       FileUtils.mkdir_p(File.dirname(dest_file))
 
       case source
-      when /\.xib/
+      when /\.xib$/
         # Need to compile xibs into nibs.
         ENV["IBC_MINIMUM_COMPATIBILITY_VERSION"] = ENV["IPHONEOS_DEPLOYMENT_TARGET"]
       
         # Xcode runs the version in /Developer instead of the version in the SDK (it is a shim to pick up the right version based on xcode-select)
         `set -x; #{ENV["DEVELOPER_USR_DIR"]}/bin/ibtool --errors --warnings --notices --output-format human-readable-text --compile "#{dest_file}" "#{source}"`
-      when /\.strings/
+      when /\.strings$/
+        output_encoding=ENV["STRINGS_FILE_OUTPUT_ENCODING"].downcase
         ENV["ICONV"] = "/usr/bin/iconv"
-        `set -x; #{ENV["DEVELOPER_DIR"]}/Library/Xcode/Plug-ins/CoreBuildTasks.xcplugin/Contents/Resources/copystrings --validate --inputencoding utf-8 --outputencoding #{ENV["STRINGS_FILE_OUTPUT_ENCODING"]} "#{source}" --outdir "#{File.dirname(dest_file)}"`
+        `set -x; #{ENV["DEVELOPER_DIR"]}/Library/Xcode/Plug-ins/CoreBuildTasks.xcplugin/Contents/Resources/copystrings --validate --inputencoding utf-8 --outputencoding #{output_encoding} "#{source}" --outdir "#{File.dirname(dest_file)}"`
+      when /\.plist$/, /\.defaults$/
+        `set -x; /usr/bin/plutil -convert binary1 "#{source}" -o "#{dest_file}"`
       else
         FileUtils.cp_r(source, dest_file)
       end

@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,11 +60,12 @@
     // This seems more convenient than having to write your own if statement a zillion times
 - (id)objectForKey:(NSString *)key defaultObject:(id)defaultObject;
 
-- (id)deepMutableCopy;
+- (id)deepMutableCopy NS_RETURNS_RETAINED;
 
 - (NSArray *) copyKeys;
 - (NSMutableArray *) mutableCopyKeys;
 
-@end
+- (NSArray *) copyKeySet;
+- (NSMutableArray *) mutableCopyKeySet;
 
-extern NSString * const OmniDictionaryElementNameKey;
+@end

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,9 +16,21 @@
 RCS_ID("$Id$");
 
 
-/* TODO: Provide a nonempty implementation of this. Looks like the only behavior we need to implement ourselves is the granularity=UITextGranularityLine case of each method, since the others are unaffected by layout. */
-/* TODO: Figure out when those methods might actually be invoked, so we can test whether our implementation actually does the right thing. (On the other hand, if they're never invoked, I guess we don't need to implement them.) */
-/* You can get it to invoke beginning/end of line methods by using ^A and ^E on a hardware keyboard */
+/* We rely on the UITextInputStringTokenizer for most behavior; the only thing it can't help with is layout-related questions, which basically means line movement. */
+/* You can get UIKit to invoke beginning/end of line methods by using ^A and ^E on a hardware keyboard */
+
+#if 0
+
+extern const struct enumName {} directions[], granularities[];
+extern NSString *nameof(NSInteger v, const struct enumName *ns);
+
+#define DEBUGLOG(...) NSLog(__VA_ARGS__)
+
+#else
+
+#define DEBUGLOG(...) /* */
+
+#endif
 
 @implementation OUITextInputStringTokenizer
 
@@ -37,7 +49,9 @@ RCS_ID("$Id$");
 {
     UITextRange *r;
     
-    if (granularity == UITextGranularityLine) {
+    if (position == nil) {
+        r = nil;
+    } if (granularity == UITextGranularityLine) {
         /* -[OUIEditableFrame rangeOfLineContainingPosition:] returns the range of the line containing the character pointed to by the position. */
         /* This method appears to be intended to treat the positin as referring to an intercharacter gap. */
         /* We can get the proper behavior by adjusting the position backwards one character, but we don't want to adjust forwards. */
@@ -53,23 +67,26 @@ RCS_ID("$Id$");
         r = [super rangeEnclosingPosition:position withGranularity:granularity inDirection:direction];
     }
     
-    //NSLog(@"rangeEnclosing(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), [r description]);
+    DEBUGLOG(@"rangeEnclosing(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), [r description]);
     return r;
 }
 
 - (BOOL)isPosition:(UITextPosition *)position atBoundary:(UITextGranularity)granularity inDirection:(UITextDirection)direction;                             // Returns YES only if a position is at a boundary of a text unit of the specified granularity in the particular direction.
 {
+    /* TODO: Line boundaries? */
     BOOL r = [super isPosition:position atBoundary:granularity inDirection:direction];
-    //NSLog(@"positionAtBoundary(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), r?@"YES":@"NO");
+    DEBUGLOG(@"positionAtBoundary(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), r?@"YES":@"NO");
     return r;
 }
 
 - (UITextPosition *)positionFromPosition:(UITextPosition *)position toBoundary:(UITextGranularity)granularity inDirection:(UITextDirection)direction;   // Returns the next boundary position of a text unit of the given granularity in the given direction, or nil if there is no such position.
 {
-    //NSLog(@"Computing positionFromTo(%@, %@, %@) ...", [position description], nameof(granularity, granularities), nameof(direction, directions));
+    DEBUGLOG(@"Computing positionFromTo(%@, %@, %@) ...", [position description], nameof(granularity, granularities), nameof(direction, directions));
     UITextPosition *r;
     if (granularity != UITextGranularityLine) {
         r = [super positionFromPosition:position toBoundary:granularity inDirection:direction];
+    } else if (position == nil) {
+        r = nil;
     } else {
         UITextRange *line = [self rangeEnclosingPosition:position withGranularity:UITextGranularityLine inDirection:direction];
 
@@ -92,15 +109,16 @@ RCS_ID("$Id$");
             }
         }
     }
-    //NSLog(@"positionFromTo(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), [r description]);
+    DEBUGLOG(@"positionFromTo(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), [r description]);
     return r;
 }
 
 
 - (BOOL)isPosition:(UITextPosition *)position withinTextUnit:(UITextGranularity)granularity inDirection:(UITextDirection)direction;                         // Returns YES if position is within a text unit of the given granularity.  If the position is at a boundary, returns YES only if the boundary is part of the text unit in the given direction.
 {
+    /* TODO: Line boundaries? */
     BOOL r = [super isPosition:position withinTextUnit:granularity inDirection:direction];
-    //NSLog(@"positionWithinUnit(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), r? @"YES" : @"NO");
+    DEBUGLOG(@"positionWithinUnit(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), r? @"YES" : @"NO");
     return r;
 }
 

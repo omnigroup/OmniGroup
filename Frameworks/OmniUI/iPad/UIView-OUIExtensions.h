@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,6 +31,7 @@ extern void OUIViewLayoutShadowEdges(UIView *self, NSArray *shadowEdges, BOOL fl
 
 #define OUIEndWithoutAnimating \
     } \
+    OBASSERT(![UIView areAnimationsEnabled]); /* Make sure something hasn't turned it on again, like -[UIToolbar setItem:] (Radar 8496247) */ \
     if (_wasAnimating) \
         [UIView setAnimationsEnabled:YES]; \
 } while (0)
@@ -38,7 +39,8 @@ extern void OUIViewLayoutShadowEdges(UIView *self, NSArray *shadowEdges, BOOL fl
 #ifdef NS_BLOCKS_AVAILABLE
 extern void OUIWithoutAnimating(void (^actions)(void));
 
-// Takes a time interval, an action and then a list of NSNumbers containing time intervals and action blocks. Numbers change the interval to be used for any remaining blocks. All animations are run with user interaction off. Of an action doesn't actually cause any animations, UIView will complete the action without waiting for the specified delay.
-extern void OUISequenceAnimations(NSTimeInterval ti, void (^action)(void), ...) NS_REQUIRES_NIL_TERMINATION;
+// Need a better name for this. This checks if +[UIView areAnimationsEnabled]. If not, then it performs the block inside a CATransation that disables implicit animations.
+// Useful for when a setter on your UI view adjusts animatable properties on its layer.
+extern void OUIWithAppropriateLayerAnimations(void (^actions)(void));
 
 #endif

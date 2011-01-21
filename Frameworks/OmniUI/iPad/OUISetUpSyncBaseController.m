@@ -1,12 +1,15 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUISetUpSyncBaseController.h"
+#import <OmniUI/OUIDrawing.h>
 
+#import <OmniUI/OUIBarButtonItem.h>
+
+#import "OUISetUpSyncBaseController.h"
 #import "OUIEditableLabeledValueCell.h"
 
 RCS_ID("$Id$");
@@ -39,11 +42,11 @@ static NSString * const SetUpSyncBaseNibName = @"OUISetUpSyncBase";
         
         CGSize size = blueCheckImage.size;
         
-        UIGraphicsBeginImageContext(size);
+        OUIGraphicsBeginImageContext(size);
         [[UIColor clearColor] set];
         UIRectFill(CGRectMake(0, 0, size.height, size.width));
         _clearCheckImage = [UIGraphicsGetImageFromCurrentImageContext() retain];
-        UIGraphicsEndImageContext();
+        OUIGraphicsEndImageContext();
     }
 
     return _clearCheckImage;
@@ -169,7 +172,7 @@ static NSString * const SetUpSyncBaseNibName = @"OUISetUpSyncBase";
         self.titleLabel.text = NSLocalizedStringFromTableInBundle(@"OmniFocus Sync Setup", @"OmniUI", OMNI_BUNDLE, @"Sync setup title");
     } else {
         NSString *syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Sync", @"OmniUI", OMNI_BUNDLE, @"button title");
-        UIBarButtonItem *syncBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(saveSettingsAndSync)];
+        UIBarButtonItem *syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(saveSettingsAndSync)];
         self.navigationItem.rightBarButtonItem = syncBarButtonItem;
         self.syncBarButtonItem = syncBarButtonItem;
         [syncBarButtonItem release];

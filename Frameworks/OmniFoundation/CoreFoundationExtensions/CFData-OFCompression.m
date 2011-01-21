@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/CFData-OFFileIO.h>
 #import <OmniFoundation/OFErrors.h>
-#import <OmniFoundation/OFReadWriteFileBuffer.h>
+#import <OmniFoundation/OFDataBuffer.h>
 #import <OmniBase/NSError-OBExtensions.h>
 #import <OmniBase/OBUtilities.h>
 #import <OmniBase/assertions.h>
@@ -167,39 +167,36 @@ CFDataRef OFDataCreateDecompressedBzip2Data(CFAllocatorRef decompressedDataAlloc
     }
     
     size_t pageSize  = NSPageSize();
-    NSUInteger totalBytesRead = 0;
-    CFMutableDataRef output = CFDataCreateMutable(decompressedDataAllocator, 0);
+    
+    OFDataBuffer outputBuffer;
+    OFDataBufferInit(&outputBuffer);
     
     do {
-        NSUInteger avail = CFDataGetLength(output) - totalBytesRead;
-        if (avail < pageSize) {
-            CFDataSetLength(output, CFDataGetLength(output) + 4*pageSize);
-            avail = CFDataGetLength(output) - totalBytesRead;
-        }
-        void *ptr = CFDataGetMutableBytePtr(output) + totalBytesRead;
+        size_t avail = 4*pageSize;
+        void *ptr = OFDataBufferGetPointer(&outputBuffer, avail);
         
-        
-        OBASSERT(avail < INT_MAX); // Need to loop to handl large files
+        OBASSERT(avail < INT_MAX); // Need to loop to handle large files
         int bytesRead = BZ2_bzRead(&err, bzFile, ptr, (int)avail);
         if (err != BZ_OK && err != BZ_STREAM_END) {
             // Create exception before closing file since we read from the file
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"bzip2 library returned error code %d when reading data. %s.", @"OmniFoundation", OMNI_BUNDLE, @"decompression error reason"), err, BZ2_bzerror(bzFile, &err)];
             fclose(dataFile);
             BZ2_bzReadClose(&err, bzFile);
-            CFRelease(output);
+            OFDataBufferRelease(&outputBuffer, NULL, NULL);
             return _OFCompressionError(outError, OFUnableToDecompressData,
                                        NSLocalizedStringFromTableInBundle(@"Unable to decompress data.", @"OmniFoundation", OMNI_BUNDLE, @"decompression error description"), reason);
         }
         
-        totalBytesRead += bytesRead;
+        OFDataBufferDidAppend(&outputBuffer, bytesRead);
     } while (err != BZ_STREAM_END);
-    
-    CFDataSetLength(output, totalBytesRead);
     
     BZ2_bzReadClose(&err, bzFile);
     fclose(dataFile);
+
+    CFDataRef resultData = NULL;
+    OFDataBufferRelease(&outputBuffer, decompressedDataAllocator, &resultData);
     
-    return output;
+    return resultData;
 }
 #endif
 
@@ -413,12 +410,12 @@ static Boolean OFZlibError(Boolean compressing, NSString *reason, int rc, z_stre
     return FALSE;
 }
 
-static void writeLE32(u_int32_t le32, FILE *fp)
+static void writeLE32(u_int32_t le32, OFDataBuffer *outputDataBuffer)
 {
-    putc( (le32 & 0x000000FF)      , fp );
-    putc( (le32 & 0x0000FF00) >>  8, fp );
-    putc( (le32 & 0x00FF0000) >> 16, fp );
-    putc( (le32 & 0xFF000000) >> 24, fp );
+    OFDataBufferAppendByte(outputDataBuffer, (le32 & 0x000000FF)      );
+    OFDataBufferAppendByte(outputDataBuffer, (le32 & 0x0000FF00) >>  8);
+    OFDataBufferAppendByte(outputDataBuffer, (le32 & 0x00FF0000) >> 16);
+    OFDataBufferAppendByte(outputDataBuffer, (le32 & 0xFF000000) >> 24);
 }
 
 static u_int32_t unpackLE32(const u_int8_t *from)
@@ -429,7 +426,7 @@ static u_int32_t unpackLE32(const u_int8_t *from)
     ( (u_int32_t)from[3] << 24 );
 }
 
-static Boolean handleRFC1952MemberBody(FILE *fp,
+static Boolean handleRFC1952MemberBody(OFDataBuffer *outputDataBuffer,
                                        CFDataRef data,
                                        NSRange sourceRange,
                                        int compressionLevel,
@@ -457,9 +454,6 @@ static Boolean handleRFC1952MemberBody(FILE *fp,
     if (rc != Z_OK)
         return OFZlibError(compressing, nil, rc, &compressionState, outError);
     
-    unsigned outputBufferSize = OF_ZLIB_BUFFER_SIZE;
-    Bytef *outputBuffer = malloc(outputBufferSize);
-    
     NSUInteger sourceLength = sourceRange.length;
     OBASSERT(sourceLength < INT_MAX);
     
@@ -469,14 +463,16 @@ static Boolean handleRFC1952MemberBody(FILE *fp,
         /* Subtract 8 bytes for the CRC and length which are stored after the compressed data. */
         if (sourceRange.length < 8) {
             deflateEnd(&compressionState);
-            free(outputBuffer);
             return OFZlibError(compressing, @"zlib stream is too short", 0, NULL, outError);
         }
     }
     
-    for(;;) {
-        compressionState.next_out = outputBuffer;
-        compressionState.avail_out = outputBufferSize;
+    for (;;) {
+        // Ensure we have output space
+        OFByte *currentOutputBuffer = OFDataBufferGetPointer(outputDataBuffer, OF_ZLIB_BUFFER_SIZE);
+        compressionState.avail_out = OF_ZLIB_BUFFER_SIZE;
+        compressionState.next_out = currentOutputBuffer;
+        
         // printf("before: in = %u @ %p, out = %u @ %p\n", compressionState.avail_in, compressionState.next_in, compressionState.avail_out, compressionState.next_out);
         if (compressing) {
             const Bytef *last_in = compressionState.next_in;
@@ -488,21 +484,20 @@ static Boolean handleRFC1952MemberBody(FILE *fp,
             }
         } else {
             rc = inflate(&compressionState, Z_SYNC_FLUSH);
-            if (compressionState.next_out > outputBuffer) {
-                NSUInteger crcLen = compressionState.next_out - outputBuffer;
+            if (compressionState.next_out > currentOutputBuffer) {
+                NSUInteger crcLen = compressionState.next_out - currentOutputBuffer;
                 OBASSERT(crcLen < UINT32_MAX);
-                dataCRC = crc32(dataCRC, outputBuffer, (uint32_t)crcLen);
+                dataCRC = crc32(dataCRC, currentOutputBuffer, (uint32_t)crcLen);
             }
         }
         // printf("after : in = %u @ %p, out = %u @ %p, ok = %d\n", compressionState.avail_in, compressionState.next_in, compressionState.avail_out, compressionState.next_out, ok);
-        if (compressionState.next_out > outputBuffer)
-            fwrite(outputBuffer, compressionState.next_out - outputBuffer, 1, fp);
+        if (compressionState.next_out > currentOutputBuffer)
+            OFDataBufferDidAppend(outputDataBuffer, compressionState.next_out - currentOutputBuffer);
         if (rc == Z_STREAM_END)
             break;
         else if (rc != Z_OK) {
             OFZlibError(compressing, nil, rc, &compressionState, outError);
             deflateEnd(&compressionState);
-            free(outputBuffer);
             return FALSE;
         }
     }
@@ -525,16 +520,14 @@ static Boolean handleRFC1952MemberBody(FILE *fp,
         /* Assert that there's space for the CRC and length at the end of the buffer */
         OBASSERT(compressionState.avail_in == 8);
     }
-    
-    free(outputBuffer);
-    
+        
     if (withTrailer && compressing) {
         OBASSERT(dataCRC <= UINT32_MAX);
-        writeLE32((uint32_t)dataCRC, fp);
+        writeLE32((uint32_t)dataCRC, outputDataBuffer);
         
         OBASSERT(sourceRange.length < UINT32_MAX);
         uint32_t truncatedSourceLength = (uint32_t)(0xFFFFFFFFUL & sourceRange.length);
-        writeLE32(truncatedSourceLength, fp);
+        writeLE32(truncatedSourceLength, outputDataBuffer);
     }
     if (withTrailer && !compressing) {
         u_int32_t storedCRC, storedLength;
@@ -561,28 +554,19 @@ static Boolean handleRFC1952MemberBody(FILE *fp,
 
 CFDataRef OFDataCreateCompressedGzipData(CFDataRef data, Boolean includeHeader, int level, CFErrorRef *outError)
 {
-    CFMutableDataRef result;
-    
-    if (includeHeader)
-        result = makeRFC1952MemberHeader((time_t)0, nil, nil, FALSE, FALSE, 0);
-    else
-        result = CFDataCreateMutable(NULL, 0);
-
-    FILE *writeStream = OFDataCreateReadWriteStandardIOFile(result, outError);
-    if (!writeStream) {
-        CFRelease(result);
-        return NULL;
+    OFDataBuffer writeDataBuffer;
+    OFDataBufferInit(&writeDataBuffer);
+        
+    if (includeHeader) {
+        CFMutableDataRef header = makeRFC1952MemberHeader((time_t)0, nil, nil, FALSE, FALSE, 0);
+        OFDataBufferAppendData(&writeDataBuffer, (NSData *)header);
+        CFRelease(header);
     }
-
-    fseek(writeStream, 0, SEEK_END);
-    Boolean ok = handleRFC1952MemberBody(writeStream, data, (NSRange){0, CFDataGetLength(data)}, level, includeHeader, TRUE, outError);
-    fclose(writeStream);
     
-    if (!ok) {
-        CFRelease(result);
-        return NULL;
-    }
-
+    Boolean ok = handleRFC1952MemberBody(&writeDataBuffer, data, (NSRange){0, CFDataGetLength(data)}, level, includeHeader, TRUE, outError);
+    
+    CFDataRef result = NULL;
+    OFDataBufferRelease(&writeDataBuffer, kCFAllocatorDefault, ok ? &result : NULL);
     return result;
 }
 
@@ -602,21 +586,14 @@ CFDataRef OFDataCreateDecompressedGzip2Data(CFAllocatorRef decompressedDataAlloc
     
     // While it is conceivable that some crazy person would put valid pointers into a data, compress it and then decompress it later, expecting those pointers to be valid, we don't want to acknowledge such insanity.  So, when garbage collection is on, we ensure that the bytes of the data are in a non-scanned zone.
     
-    FILE *writeMe = NULL;
-    OFReadWriteFileBuffer *writeBuffer = OFCreateReadWriteFileBuffer(&writeMe, outError);
-    if (!writeBuffer)
-        return NULL;
-    
-    ok = handleRFC1952MemberBody(writeMe, data,
+    OFDataBuffer writeDataBuffer;
+    OFDataBufferInit(&writeDataBuffer);
+
+    ok = handleRFC1952MemberBody(&writeDataBuffer, data,
                                  (NSRange){ headerLength, CFDataGetLength(data) - headerLength },
                                  Z_DEFAULT_COMPRESSION, TRUE, FALSE, outError);
     
-    if (!ok) {
-        OFDestroyReadWriteFileBuffer(writeBuffer, decompressedDataAllocator, NULL); // closes the file and frees the buffer w/o returning a data
-        return NULL;
-    } else {
-        CFDataRef result = NULL;
-        OFDestroyReadWriteFileBuffer(writeBuffer, decompressedDataAllocator, &result);
-        return result;
-    }
+    CFDataRef result = NULL;
+    OFDataBufferRelease(&writeDataBuffer, decompressedDataAllocator, ok ? &result : NULL);
+    return result;
 }

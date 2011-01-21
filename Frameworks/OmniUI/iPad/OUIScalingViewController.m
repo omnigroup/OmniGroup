@@ -270,7 +270,7 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     _isZooming = YES;
     
     OUIOverlayView *overlay = [OUIOverlayView sharedTemporaryOverlay];
-    overlay.text = @"Zoom";
+    overlay.text = NSLocalizedStringFromTableInBundle(@"Zoom", @"OmniUI", OMNI_BUNDLE, @"zoom label");
 
     UIView *stableView = scrollView.superview;
     

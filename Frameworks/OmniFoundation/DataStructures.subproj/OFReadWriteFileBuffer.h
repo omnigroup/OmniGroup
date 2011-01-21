@@ -9,6 +9,7 @@
 
 #import <CoreFoundation/CFError.h>
 #import <CoreFoundation/CFData.h>
+#import <stdio.h>
 
 typedef struct _OFReadWriteFileBuffer OFReadWriteFileBuffer;
 extern OFReadWriteFileBuffer *OFCreateReadWriteFileBuffer(FILE **outFile, CFErrorRef *outError);

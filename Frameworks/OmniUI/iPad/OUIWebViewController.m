@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <MessageUI/MessageUI.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIBarButtonItem.h>
 
 RCS_ID("$Id$")
 
@@ -30,7 +31,7 @@ RCS_ID("$Id$")
     webView.backgroundColor = [UIColor clearColor];
 #endif
 
-    _backButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Back", @"OmniUI", OMNI_BUNDLE, @"Web view nagivation button for going back in history.")
+    _backButton = [[OUIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Back", @"OmniUI", OMNI_BUNDLE, @"Web view nagivation button for going back in history.")
                                                    style:UIBarButtonItemStyleBordered target:self action:@selector(goBack:)];
     self.navigationItem.leftBarButtonItem = _backButton;
 
@@ -64,7 +65,7 @@ RCS_ID("$Id$")
 
 - (void)_updateBarButtonItemForURL:(NSURL *)aURL;
 {
-    self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)] autorelease];
+    self.navigationItem.rightBarButtonItem = [[[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)] autorelease];
 }
 
 - (void)setURL:(NSURL *)aURL;
