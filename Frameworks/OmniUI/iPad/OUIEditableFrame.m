@@ -2409,6 +2409,12 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
 {
     OBASSERT(position != nil);
     OBASSERT(other != nil);
+   
+//  iOS 4.3 “Down” from -[NSObject(UITextInput_Internal) _moveDown:withHistory:]
+//  Makes position nil, other position invalid
+    if (!position || !other)
+    return NSOrderedSame;
+    
     return [(OUEFTextPosition *)position compare:other];
 }
 
