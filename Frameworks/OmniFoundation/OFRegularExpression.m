@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -175,15 +175,15 @@ static inline NSUInteger unicodeStringLength(unichar *string)
 
 - initWithCharacters:(unichar *)characters;
 {
-    unsigned int compileFlags;
-    CompileStatus status;
-
-    [super init];
+    if (!(self = [super init]))
+        return nil;
+    
     if (!characters || !*characters) {
         [self release];
         return nil;
     }
 
+    CompileStatus status;
     status.scanningString = characters;
     status.writePtr = NULL;
     status.stringPtr = status.stringPtrBase = NULL;
@@ -191,6 +191,8 @@ static inline NSUInteger unicodeStringLength(unichar *string)
     status.stringLength = 0;
     status.wroteArgument = NO;
     status.subexpressionNestingCount = 0;
+
+    unsigned int compileFlags;
     [self compile:&status parenthesized:NO flags:&compileFlags];
     if (status.writeLength > (1<<16)) { // expression is too big
         [self release];
@@ -214,17 +216,20 @@ static inline NSUInteger unicodeStringLength(unichar *string)
 {
     NSUInteger length = [string length];
     unichar *buffer = alloca(sizeof(unichar) * (length+1));
-
-    patternString = [string copy];
-    
     [string getCharacters:buffer];
     buffer[length] = 0;
-    return [self initWithCharacters:buffer];
+
+    if (!(self = [self initWithCharacters:buffer]))
+        return nil;
+    
+    _patternString = [string copy];
+
+    return self;
 }
 
 - (void)dealloc;
 {
-    [patternString release];
+    [_patternString release];
     if (program)
         free(program);
     if (stringBuffer)
@@ -325,7 +330,7 @@ static inline BOOL unicodeSubstring(unichar *substring, unichar *string)
 
 - (NSString *)patternString;
 {
-    return patternString;
+    return _patternString;
 }
 
 - (NSString *)prefixString;
@@ -344,7 +349,7 @@ static inline BOOL unicodeSubstring(unichar *substring, unichar *string)
 - (BOOL)isPrefixOnly;
 {
     NSString *prefixString = [self prefixString];
-    return prefixString != nil && [patternString isEqualToString:[prefixString stringByAppendingString:@".*"]];
+    return prefixString != nil && [_patternString isEqualToString:[prefixString stringByAppendingString:@".*"]];
 }
 
 - (NSMutableDictionary *) debugDictionary;
@@ -352,7 +357,7 @@ static inline BOOL unicodeSubstring(unichar *substring, unichar *string)
     NSMutableDictionary *dict;
 
     dict = [super debugDictionary];
-    [dict setObject: patternString forKey: @"patternString"];
+    [dict setObject: _patternString forKey: @"patternString"];
 
     return dict;
 }

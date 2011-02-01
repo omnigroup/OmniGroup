@@ -248,7 +248,7 @@ static CGGradientRef HighlightedGradient = NULL;
 
 - (void)setNavigationTarget:(id)target action:(SEL)action;
 {
-    OBPRECONDITION(target);
+    // OBPRECONDITION(target); nil OK for sending up the responder chain
     OBPRECONDITION(action);
     
     // We expect to only call this once during setup and to never turn it off.  We might support disabling a well, though.

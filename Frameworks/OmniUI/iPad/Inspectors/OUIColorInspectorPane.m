@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,39 +35,35 @@ RCS_ID("$Id$");
 @synthesize rgbColorPicker = _rgbColorPicker;
 @synthesize grayColorPicker = _grayColorPicker;
 
-- (NSUInteger)selectedColorPickerIndex;
+- (void)_setSelectedColorTypeIndex:(NSInteger)colorTypeIndex notify:(BOOL)notify;
 {
-    return _colorTypeIndex;
-}
-
-- (void)setSelectedColorPickerIndex:(NSUInteger)segmentIndex;
-{
-    _colorTypeIndex = segmentIndex;
-    if ([self isViewLoaded]) {
-        [_colorTypeSegmentedControl setSelectedSegmentIndex:_colorTypeIndex];
-        [self colorTypeSegmentedControlSelectionChanged:_colorTypeSegmentedControl];
-    }
-}
-
-- (IBAction)colorTypeSegmentedControlSelectionChanged:(id)sender;
-{
-    if ([_colorTypeSegmentedControl selectedSegmentIndex] != (NSInteger)_colorTypeIndex) {
-        _colorTypeIndex = [_colorTypeSegmentedControl selectedSegmentIndex];
-        [[NSNotificationCenter defaultCenter] postNotificationName:OUIColorTypeChangeNotification object:self];
+    if (colorTypeIndex != (NSInteger)_colorTypeIndex) {
+        _colorTypeIndex = colorTypeIndex;
+        if (notify)
+            [[NSNotificationCenter defaultCenter] postNotificationName:OUIColorTypeChangeNotification object:self];
     }
     
-    OUIInspectorSegmentedControlButton *segment = _colorTypeSegmentedControl.selectedSegment;
+    [_colorTypeSegmentedControl setSelectedSegmentIndex:_colorTypeIndex];
+    
+    OUIInspectorSegmentedControlButton *segment = [_colorTypeSegmentedControl segmentAtIndex:_colorTypeIndex];
     OUIColorPicker *colorPicker = segment.representedObject;
     if (colorPicker == _currentColorPicker)
         return;
     
     OUIColorInspectorSlice *slice = (OUIColorInspectorSlice *)self.parentSlice;
     
+    if (notify)
+        [_currentColorPicker viewWillDisappear:NO];
     [_currentColorPicker.view removeFromSuperview];
     [_currentColorPicker release];
+    if (notify)
+        [_currentColorPicker viewDidDisappear:NO];
+
     _currentColorPicker = [colorPicker retain];
     _currentColorPicker.selectionValue = slice.selectionValue;
-    
+    if (notify)
+        [_currentColorPicker viewWillAppear:NO];
+
     const CGFloat kSpaceBetweenSegmentedControllAndColorPicker = 8;
     
     // leaves the inspector at the same height if we somehow get no selection, which we shouldn't
@@ -95,8 +91,27 @@ RCS_ID("$Id$");
         pickerView.frame = pickerFrame;
         [self.view addSubview:pickerView];
         
-        [_currentColorPicker becameCurrentColorPicker];
+        if (notify)
+            [_currentColorPicker viewDidAppear:NO];
     }
+}
+
+- (NSUInteger)selectedColorPickerIndex;
+{
+    return _colorTypeIndex;
+}
+
+- (void)setSelectedColorPickerIndex:(NSUInteger)segmentIndex;
+{
+    _colorTypeIndex = segmentIndex;
+    if ([self isViewLoaded]) {
+        [self _setSelectedColorTypeIndex:segmentIndex notify:NO];
+    }
+}
+
+- (IBAction)colorTypeSegmentedControlSelectionChanged:(id)sender;
+{
+    [self _setSelectedColorTypeIndex:[_colorTypeSegmentedControl selectedSegmentIndex] notify:YES];
 }
 
 #pragma mark -
@@ -126,14 +141,51 @@ RCS_ID("$Id$");
     [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorGraySegment.png" representedObject:_grayColorPicker];
     
     _colorTypeSegmentedControl.selectedSegment = [_colorTypeSegmentedControl segmentAtIndex:_colorTypeIndex];
-    [self colorTypeSegmentedControlSelectionChanged:nil];
+    [self _setSelectedColorTypeIndex:_colorTypeIndex notify:NO]; // We'll forward the view controller methods.
+}
+
+- (void)viewWillAppear:(BOOL)animated;
+{
+    [super viewWillAppear:animated];
+    
+    // Default to the higest fidelity color picker, prefering earlier pickers. So, if the palette picker has an exact match, it will get used.
+    OUIColorInspectorSlice *slice = (OUIColorInspectorSlice *)self.parentSlice;
+    OUIInspectorSelectionValue *selectionValue = slice.selectionValue;
+    
+    OUIColorPickerFidelity bestFidelity = OUIColorPickerFidelityZero;
+    NSUInteger bestPickerIndex = NSNotFound;
+    NSUInteger pickerCount = [_colorTypeSegmentedControl segmentCount];
+    for (NSUInteger pickerIndex = 0; pickerIndex < pickerCount; pickerIndex++) {
+        OUIColorPicker *picker = [[_colorTypeSegmentedControl segmentAtIndex:pickerIndex] representedObject];
+        OUIColorPickerFidelity fidelity = [picker fidelityForSelectionValue:selectionValue];
+        
+        if (bestPickerIndex == NSNotFound || fidelity > bestFidelity) {
+            bestPickerIndex = pickerIndex;
+            bestFidelity = fidelity;
+        }
+    }
+
+    [self _setSelectedColorTypeIndex:bestPickerIndex notify:NO];
+    
+    [_currentColorPicker viewWillAppear:animated];
 }
 
 - (void)viewDidAppear:(BOOL)animated;
 {
     [super viewDidAppear:animated];
-    
-    [_currentColorPicker becameCurrentColorPicker];
+    [_currentColorPicker viewDidAppear:animated];
+}
+
+- (void)viewWillDisappear:(BOOL)animated;
+{
+    [super viewWillDisappear:animated];
+    [_currentColorPicker viewWillDisappear:animated];
+}
+
+- (void)viewDidDisappear:(BOOL)animated;
+{
+    [super viewDidDisappear:animated];
+    [_currentColorPicker viewDidDisappear:animated];
 }
 
 #pragma mark -

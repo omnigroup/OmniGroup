@@ -1,4 +1,4 @@
-// Copyright 2005-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -729,6 +729,9 @@ int main(int argc, char **argv) {
 
 - initWithBytes:(const void *)rat objCType:(const char *)typeEncoding;
 {
+    if (!(self = [super init]))
+        return nil;
+    
     static const char * const rationalType = @encode(struct OFRationalNumberStruct);
     if (rationalType != typeEncoding && strcmp(rationalType, typeEncoding) != 0) {
         OBRejectInvalidCall(self, _cmd, @"objCType was \"%s\", expecting \"%s\"", typeEncoding, rationalType);

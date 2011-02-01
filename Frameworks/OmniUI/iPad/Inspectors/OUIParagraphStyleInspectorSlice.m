@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,12 +31,14 @@ RCS_ID("$Id$");
 - (IBAction)changeParagraphAlignment:(OUIInspectorSegmentedControl *)sender;
 {
     OUIInspectorSegmentedControlButton *segment = [sender selectedSegment];
-    if (!segment) {
-        // ???
-        return;
+    OATextAlignment desiredAlignment;
+    
+    if (segment) {
+        desiredAlignment = [segment tag]; // We set up the tags in -loadView to be the same as our OATextAlignment values
+    } else {
+        desiredAlignment = OANaturalTextAlignment; // No entry for this, but you can toggle off all the segments to get it.
     }
     
-    OATextAlignment desiredAlignment = [segment tag]; // We set up the tags in -loadView to be the same as our OATextAlignment values
     
     BOOL didMutate = NO;
     
@@ -119,26 +121,24 @@ RCS_ID("$Id$");
     
     OUIInspectorSegmentedControl *alignBar = [[OUIInspectorSegmentedControl alloc] initWithFrame:(CGRect){{9,0}, {302,38}}];
     alignBar.sizesSegmentsToFit = YES;
-
+    alignBar.allowsEmptySelection = YES;
+    
     OUIInspectorSegmentedControlButton *button;
     
     [container addSubview:alignBar];
     
-    button = [alignBar addSegmentWithText:NSLocalizedStringFromTableInBundle(@"Left", @"OUIInspectors", OMNI_BUNDLE, @"popover inspector button label for left-aligned paragraph text")];
+    button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentLeft.png"];
     [button setTag:OALeftTextAlignment];
     
-    button = [alignBar addSegmentWithText:NSLocalizedStringFromTableInBundle(@"Centered", @"OUIInspectors", OMNI_BUNDLE, @"popover inspector button label for centered paragraph text")];
+    button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentCenter.png"];
     [button setTag:OACenterTextAlignment];
 
-    button = [alignBar addSegmentWithText:NSLocalizedStringFromTableInBundle(@"Right", @"OUIInspectors", OMNI_BUNDLE, @"popover inspector button label for right-aligned paragraph text")];
+    button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentRight.png"];
     [button setTag:OARightTextAlignment];
 
-    button = [alignBar addSegmentWithText:NSLocalizedStringFromTableInBundle(@"Justified", @"OUIInspectors", OMNI_BUNDLE, @"popover inspector button label for fully justified paragraph text")];
+    button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentJustified.png"];
     [button setTag:OAJustifiedTextAlignment];
 
-    button = [alignBar addSegmentWithText:NSLocalizedStringFromTableInBundle(@"Natural", @"OUIInspectors", OMNI_BUNDLE, @"popover inspector button label for natural alignment of text")];
-    [button setTag:OANaturalTextAlignment];
-    
     [alignBar addTarget:self action:@selector(changeParagraphAlignment:) forControlEvents:UIControlEventValueChanged];
     
     self.view = container;

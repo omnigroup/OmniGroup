@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,6 +39,9 @@ RCS_ID("$Id$");
 
 - initWithDefaultBehavior:(OFXMLWhitespaceBehaviorType)defaultBehavior;
 {
+    if (!(self = [super init]))
+        return nil;
+
     _defaultBehavior = defaultBehavior;
     _nameToBehavior = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFIntegerDictionaryValueCallbacks);
     return self;

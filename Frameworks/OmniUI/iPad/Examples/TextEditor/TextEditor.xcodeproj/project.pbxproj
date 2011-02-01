@@ -609,7 +609,7 @@
 		3427218C119480C400B39788 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				34272194119480C400B39788 /* OmniAppKit */,
+				34272194119480C400B39788 /* OmniAppKit.framework */,
 				34272196119480C400B39788 /* OAUnitTests.octest */,
 				34272198119480C400B39788 /* OAMakeImageSizeIntegral */,
 				3427219A119480C400B39788 /* OAPatternColorPicker.bundle */,
@@ -845,10 +845,10 @@
 			remoteRef = 34272189119480B300B39788 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34272194119480C400B39788 /* OmniAppKit */ = {
+		34272194119480C400B39788 /* OmniAppKit.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = OmniAppKit;
+			path = OmniAppKit.framework;
 			remoteRef = 34272193119480C400B39788 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};

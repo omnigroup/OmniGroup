@@ -36,8 +36,8 @@ RCS_ID("$Id$");
 }
 
 @synthesize fileWrapper = _fileWrapper;
-@synthesize cell = _cell;
-- (void)setCell:(id <OATextAttachmentCell>)cell;
+@synthesize attachmentCell = _cell;
+- (void)setAttachmentCell:(id <OATextAttachmentCell>)cell;
 {
     if (_cell == cell)
         return;

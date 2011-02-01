@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -840,7 +840,7 @@ static NSMutableDictionary *KeywordActions;
 
 - (id)init;
 {
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
 
     _stringEncoding = kCFStringEncodingWindowsLatin1;
@@ -1141,7 +1141,7 @@ static NSMutableDictionary *KeywordActions;
 
 - (id)initWithSelector:(SEL)selector defaultValue:(int)defaultValue;
 {
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
 
     _selector = selector;
@@ -1193,7 +1193,7 @@ static NSMutableDictionary *KeywordActions;
 
 - (id)initWithString:(NSString *)string;
 {
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
 
     _string = [string retain];

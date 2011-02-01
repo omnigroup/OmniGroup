@@ -1,4 +1,4 @@
-// Copyright 2005-2010 The Omni Group. All rights reserved.
+// Copyright 2005-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,8 +18,8 @@ RCS_ID("$Id$")
 // Selector should have the same signautre as -setCurrentProgress:
 - initWithTarget:(id)target selector:(SEL)selector;
 {
-    if (![super init])
-	return nil;
+    if (!(self = [super init]))
+        return nil;
     
     _target = [target retain];
     _selector = selector;

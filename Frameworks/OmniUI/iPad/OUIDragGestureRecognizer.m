@@ -49,6 +49,7 @@ RCS_ID("$Id$");
     longPressTimer = nil;
     
     if (oneTouch && self.state == UIGestureRecognizerStatePossible) {
+        _completedHold = YES;
         self.likelihood = 1;
         self.state = UIGestureRecognizerStateBegan;
     }
@@ -85,13 +86,14 @@ RCS_ID("$Id$");
     previousTimestamp = latestTimestamp = [[touches anyObject] timestamp];
     
     if (!beginTimestamp) {
-        beginTimestamp = [NSDate timeIntervalSinceReferenceDate];
-        OBASSERT(beginTimestamp > 0); // True after the first instant of Jan 1, 2001.
+        beginTimestamp = [oneTouch timestamp];
+        beginTimestampReference = [NSDate timeIntervalSinceReferenceDate];
     }
     
-    if (!longPressTimer && self.longPressDuration > 0) {
-        longPressTimer = [NSTimer scheduledTimerWithTimeInterval:self.longPressDuration target:self selector:@selector(longPressTimerFired:) userInfo:nil repeats:NO];
+    if (!longPressTimer && self.holdDuration > 0) {
+        _completedHold = NO;
 
+        longPressTimer = [NSTimer scheduledTimerWithTimeInterval:self.holdDuration target:self selector:@selector(longPressTimerFired:) userInfo:nil repeats:NO];
     }
     
     self.likelihood = 0.1;
@@ -140,7 +142,7 @@ RCS_ID("$Id$");
         longPressTimer = nil;
     }
     
-    endTimestamp = [NSDate timeIntervalSinceReferenceDate];
+    endTimestamp = [oneTouch timestamp];
     
     if (!overcameHysteresis) {
         wasATap = YES;  // This can be checked in a delegate implementation of -gestureRecognizerShouldBegin:
@@ -162,7 +164,7 @@ RCS_ID("$Id$");
         longPressTimer = nil;
     }
     
-    endTimestamp = [NSDate timeIntervalSinceReferenceDate];
+    endTimestamp = [oneTouch timestamp];
     
     self.state = UIGestureRecognizerStateCancelled;
     
@@ -181,19 +183,18 @@ RCS_ID("$Id$");
     self.likelihood = 0;
     
     beginTimestamp = 0;
+    beginTimestampReference = 0;
     endTimestamp = 0;
+    
+    _completedHold = NO;
 }
 
 
 #pragma mark -
 #pragma mark Class methods
 
-@synthesize longPressDuration, completedLongPress, hysteresisDistance, overcameHysteresis, latestTimestamp, wasATap, likelihood;
-
-- (BOOL)completedLongPress;
-{
-    return self.gestureDuration >= self.longPressDuration;
-}
+@synthesize holdDuration, hysteresisDistance, overcameHysteresis, latestTimestamp, wasATap, likelihood;
+@synthesize completedHold = _completedHold;
 
 - (BOOL)touchIsDown;
 {
@@ -206,15 +207,27 @@ RCS_ID("$Id$");
         return endTimestamp - beginTimestamp;
     }
     else {
-        return [NSDate timeIntervalSinceReferenceDate] - beginTimestamp;
+        OBASSERT(oneTouch);
+        // If the main thread is blocked up, a touch could end before -touchesEnded: is called.
+        if (oneTouch.phase == UITouchPhaseEnded || oneTouch.phase == UITouchPhaseCancelled) {
+            return [oneTouch timestamp] - beginTimestamp;
+        }
+        
+        // If the touch has not ended yet, calculate the duration from "now" (less precise than using -[UITouch timestamp], but the best we can do since the touch may not have been updated recently, i.e. if the finger is still).
+        return [NSDate timeIntervalSinceReferenceDate] - beginTimestampReference;
     }
 }
 
 - (void)resetHysteresis;
 {
-    NSLog(@"resetHysteresis");
+    //NSLog(@"resetHysteresis");
     overcameHysteresis = NO;
     firstTouchPoint = latestTouchPoint;
+}
+
+- (CGPoint)touchBeganPoint;
+{
+    return [self firstTouchPointInView:self.view];
 }
 
 - (CGPoint)firstTouchPointInView:(UIView *)view;

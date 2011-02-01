@@ -1,4 +1,4 @@
-// Copyright 2002-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,13 +25,16 @@ The implementation does not currently assume anything about the range of the enu
 
 - init;
 {
-    OBRequestConcreteImplementation(isa, _cmd);
+    OBRequestConcreteImplementation([self class], _cmd);
     [self release];
     return nil;
 }
 
 - initWithDefaultEnumValue:(NSInteger)defaultEnumValue;
 {
+    if (!(self = [super init]))
+        return nil;
+
     _defaultEnumValue = defaultEnumValue;
 
     // Typically the default value will be first, but not always, so we don't set its order here.

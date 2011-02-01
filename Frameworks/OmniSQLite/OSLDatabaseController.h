@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2008, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,22 +18,25 @@ typedef int (*OSLDatabaseCallback)(void *, int, char **, char **);
 {
     NSString *databasePath;
     void *sqliteDatabase;
+    BOOL _autoRetry;
 }
+
+@property (assign, nonatomic) BOOL autoRetry;
 
 - initWithDatabasePath:(NSString *)aPath error:(NSError **)outError;
 - (NSString *)databasePath;
 
 - (void)deleteDatabase;
 
-- (void)executeSQL:(NSString *)sql withCallback:(OSLDatabaseCallback)callbackFunction context:(void *)callbackContext;
-- (OSLPreparedStatement *)prepareStatement:(NSString *)sql;
+- (BOOL)executeSQL:(NSString *)sql withCallback:(OSLDatabaseCallback)callbackFunction context:(void *)callbackContext error:(NSError **)outError;
+- (OSLPreparedStatement *)prepareStatement:(NSString *)sql error:(NSError **)outError;
 - (unsigned long long int)lastInsertRowID;
 
 // Convenience methods
 
-- (void)beginTransaction;
-- (void)commitTransaction;
-- (void)rollbackTransaction;
+- (BOOL)beginTransaction;
+- (BOOL)commitTransaction;
+- (BOOL)rollbackTransaction;
 
 @end
 

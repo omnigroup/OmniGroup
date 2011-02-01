@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,6 +43,25 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark OUIColorPicker subclass
 
+- (OUIColorPickerFidelity)fidelityForSelectionValue:(OUIInspectorSelectionValue *)selectionValue;
+{
+    OQColor *color = selectionValue.uniqueValue;
+
+    // The palette color picker can exactly match 'no color' by not selecting any chits.
+    if (!color)
+        return OUIColorPickerFidelityExact;
+    
+    for (UIView *view in _themeViews) {
+        if ([view isKindOfClass:[OUIColorSwatchPicker class]]) {
+            OUIColorSwatchPicker *swatchPicker = (OUIColorSwatchPicker *)view;
+            if ([swatchPicker hasMatchForColor:color])
+                return OUIColorPickerFidelityExact;
+        }
+    }
+    
+    return OUIColorPickerFidelityZero;
+}
+
 - (void)setSelectionValue:(OUIInspectorSelectionValue *)selectionValue;
 {
     [super setSelectionValue:selectionValue];
@@ -56,14 +75,6 @@ RCS_ID("$Id$");
             [swatchPicker setSwatchSelectionColor:color];
         }
     }
-}
-
-- (void)becameCurrentColorPicker;
-{
-    [super becameCurrentColorPicker];
-    
-    UIScrollView *view = (UIScrollView *)self.view;
-    [view flashScrollIndicators];
 }
 
 #pragma mark -
@@ -82,6 +93,14 @@ RCS_ID("$Id$");
     _themeViews = nil;
     
     [super viewDidUnload];
+}
+
+- (void)viewWillAppear:(BOOL)animated;
+{
+    [super viewWillAppear:animated];
+    
+    UIScrollView *view = (UIScrollView *)self.view;
+    [view flashScrollIndicators];
 }
 
 #pragma mark -

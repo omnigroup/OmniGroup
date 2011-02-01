@@ -157,7 +157,7 @@ static CGFloat kPageWidth = (72*8.5); // Vaguely something like 8.5x11 width.
         // a real implementation would really check that the UTI inherits from public.image here (we could get movies any maybe PDFs in the future) and would provide an appropriate cell class for the type (or punt and not create an attachment).
         OATextAttachment *attachment = [[[OATextAttachment alloc] initWithFileWrapper:wrapper] autorelease];
         ImageAttachmentCell *cell = [[ImageAttachmentCell alloc] init];
-        attachment.cell = cell;
+        attachment.attachmentCell = cell;
         OBASSERT(cell.attachment == attachment); // sets the backpointer
         [cell release];
         

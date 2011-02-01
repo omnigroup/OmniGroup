@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ RCS_ID("$Id$");
 
 - (id)initWithFrame:(NSRect)frame;
 {    
-    if ([super initWithFrame:frame] == nil)
+    if (!(self = [super initWithFrame:frame]))
         return nil;
     
     // Create search field

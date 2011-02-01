@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,7 @@
 - (void)recursivelyRemoveAllAnimations;
 
 - (BOOL)isModelLayer;
-- (BOOL)isPresentationLayer;
+- (BOOL)isPresentationLayer OB_DEPRECATED_ATTRIBUTE;
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (void)renderInContextIgnoringCache:(CGContextRef)ctx;

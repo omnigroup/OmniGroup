@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,6 +98,8 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
                 segment.selected = NO;
     }
 }
+
+@synthesize allowsEmptySelection = _allowsEmptySelection;
 
 @synthesize sizesSegmentsToFit = _sizesSegmentsToFit;
 - (void)setSizesSegmentsToFit:(BOOL)flag;
@@ -252,6 +254,8 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
 {
     if (_allowsMulitpleSelection) {
         segment.selected = !segment.selected;
+    } else if (_allowsEmptySelection && self.selectedSegment == segment) {
+        self.selectedSegment = nil;
     } else {
         self.selectedSegment = segment;
     }

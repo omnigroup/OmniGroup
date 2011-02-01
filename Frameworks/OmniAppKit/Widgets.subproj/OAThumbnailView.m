@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,7 +43,7 @@ static NSFont *labelFont = nil;
 {
     aFrame.size.height = 0;
     aFrame.size.width = 0;
-    if (![super initWithFrame:aFrame])
+    if (!(self = [super initWithFrame:aFrame]))
 	return nil;
 
     maximumThumbnailSize = NSMakeSize(-1,-1);

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -99,6 +99,9 @@ static OFCharacterSet *ReservedSet;
 
 - (id)init;
 {
+    if (!(self = [super init]))
+        return nil;
+
     _state.fontSize = -1;
     _state.fontIndex = -1;
     _state.colorIndex = -1;
@@ -452,6 +455,9 @@ static inline void writeString(OFDataBuffer *dataBuffer, NSString *string)
 
 - (id)initWithColor:(id)color;
 {
+    if (!(self = [super init]))
+        return nil;
+
     if (color == nil)
         return self;
 

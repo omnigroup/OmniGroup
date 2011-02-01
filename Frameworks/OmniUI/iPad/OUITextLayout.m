@@ -57,12 +57,16 @@ CTFontRef OUIGlobalDefaultFont(void)
 
 - initWithAttributedString:(NSAttributedString *)attributedString_ constraints:(CGSize)constraints;
 {
+    OBPRECONDITION(attributedString_);
+
+    if (!(self = [super init]))
+        return nil;
+    
     _attributedString = [attributedString_ copy];
     CFAttributedStringRef attributedString = (CFAttributedStringRef)_attributedString;
     
-    OBPRECONDITION(attributedString);
     if (!attributedString) {
-        _usedSize = CGRectZero;
+        [self release];
         return nil;
     }
     
@@ -294,7 +298,7 @@ void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, C
                 OATextAttachment *attachment = (OATextAttachment *)CTRunDelegateGetRefCon(runDelegate);
                 OBASSERT([attachment isKindOfClass:[OATextAttachment class]]);
                 
-                OATextAttachmentCell *cell = attachment.cell;
+                OATextAttachmentCell *cell = attachment.attachmentCell;
                 OBASSERT(cell);
                 OBASSERT(CTRunGetGlyphCount(run) == 1);
                 
@@ -428,7 +432,7 @@ static CGFloat _runDelegateGetAscent(void *refCon)
     OATextAttachment *attachment = refCon;
     OBASSERT([attachment isKindOfClass:[OATextAttachment class]]);
 
-    id <OATextAttachmentCell> cell = attachment.cell;
+    id <OATextAttachmentCell> cell = attachment.attachmentCell;
     OBASSERT(cell);
     
     return cell ? cell.cellSize.height : 0.0;
@@ -439,7 +443,7 @@ static CGFloat _runDelegateGetWidth(void *refCon)
     OATextAttachment *attachment = refCon;
     OBASSERT([attachment isKindOfClass:[OATextAttachment class]]);
     
-    id <OATextAttachmentCell> cell = attachment.cell;
+    id <OATextAttachmentCell> cell = attachment.attachmentCell;
     OBASSERT(cell);
     
     return cell ? cell.cellSize.width : 0.0;

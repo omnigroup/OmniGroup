@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ RCS_ID("$Id$")
     if (recordDefaultsArray)
         [defaultsArray addObjectsFromArray:recordDefaultsArray];
         
-    if (![self initWithTitle:[clientRecord title] defaultsArray:defaultsArray controller:controller])
+    if (!(self = [self initWithTitle:[clientRecord title] defaultsArray:defaultsArray controller:controller]))
         return nil;
     
     if ([clientRecord nibName] != nil)
@@ -48,11 +48,7 @@ RCS_ID("$Id$")
     OBPRECONDITION(![NSString isEmptyString:newTitle]);
     OBPRECONDITION(controller);
     
-    _nonretained_controller = controller;
-    title = [newTitle copy];
-    preferences = [[NSMutableArray alloc] init];
-    
-    NSString *defaultKeySuffix = [_nonretained_controller defaultKeySuffix];
+    NSString *defaultKeySuffix = [controller defaultKeySuffix];
     NSArray *keys;
     if (![NSString isEmptyString:defaultKeySuffix]) {
         NSMutableArray *clonedKeys = [NSMutableArray array];
@@ -75,10 +71,23 @@ RCS_ID("$Id$")
         keys = newDefaultsArray;
     }
     
-    for (NSString *key in keys)
-        [self addPreference:[OFPreference preferenceForKey:key]];
+    NSMutableArray *preferences = [NSMutableArray array];
+    for (NSString *key in keys) {
+        OFPreference *preference = [OFPreference preferenceForKey:key];
+        OBASSERT(preference);
+        
+#ifdef OMNI_ASSERTIONS_ON
+        NSString *suffix = [NSString stringWithFormat:@"-%@", [controller defaultKeySuffix]]; // can't be in the macro invocation or it gets confused by ','
+        OBPRECONDITION([NSString isEmptyString:[controller defaultKeySuffix]] || [[preference key] hasSuffix:suffix]);
+#endif
+        
+        if (![preferences containsObjectIdenticalTo:preference]) {
+            [preferences addObject:preference];
+            [preference setController:self key:@"values"];
+        }
+    }
 
-    defaults = [[OFPreferenceWrapper sharedPreferenceWrapper] retain];
+    OFPreferenceWrapper *defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
     
     // Gather the initial values (not in the loop above since subclasses might have done something in -addPreference:)
     NSMutableDictionary *initialValues = [NSMutableDictionary dictionary];
@@ -90,7 +99,14 @@ RCS_ID("$Id$")
     }
 
     // Giving NSUserDefaultsController a wrapper that goes through our OFPreference stuff.  Iffy...
-    return [super initWithDefaults:(NSUserDefaults *)defaults initialValues:initialValues];
+    if (!(self = [super initWithDefaults:(NSUserDefaults *)defaults initialValues:initialValues]))
+        return nil;
+
+    _nonretained_controller = controller;
+    _title = [newTitle copy];
+    _preferences = [preferences mutableCopy];
+    
+    return self;
 }
 
 - (void)dealloc;
@@ -98,27 +114,14 @@ RCS_ID("$Id$")
     [controlBox release];
     [initialFirstResponder release];
     [lastKeyView release];
-    [title release];
-    [preferences release];
-    [defaults release];
+    [_title release];
+    [_preferences release];
     [super dealloc];
 }
 
 // API
 
-- (void) addPreference: (OFPreference *) preference;
-{
-    OBPRECONDITION(preference);
-#ifdef OMNI_ASSERTIONS_ON
-    NSString *suffix = [NSString stringWithFormat:@"-%@", [_nonretained_controller defaultKeySuffix]]; // can't be in the macro invocation or it gets confused by ','
-    OBPRECONDITION([NSString isEmptyString:[_nonretained_controller defaultKeySuffix]] || [[preference key] hasSuffix:suffix]);
-#endif
-    
-    if (![preferences containsObjectIdenticalTo: preference]) {
-        [preferences addObject: preference];
-        [preference setController:self key:@"values"];
-    }
-}
+@synthesize title = _title;
 
 /*" The controlBox outlet points to the box that will be transferred into the Preferences window when this preference client is selected. "*/
 - (NSView *)controlBox;
@@ -143,7 +146,7 @@ RCS_ID("$Id$")
     NSBundle *bundle;
     
     bundle = [OAPreferenceClient bundle];
-    mainPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Reset %@ preferences to their original values?", @"OmniAppKit", bundle, "message text for reset-to-defaults alert"), title];
+    mainPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Reset %@ preferences to their original values?", @"OmniAppKit", bundle, "message text for reset-to-defaults alert"), _title];
     secondaryPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings in this pane to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
     defaultButton = NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button");
     otherButton = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, "alert panel button");
@@ -158,7 +161,7 @@ RCS_ID("$Id$")
 
 - (BOOL)haveAnyDefaultsChanged;
 {
-    for (OFPreference *aPreference in preferences) {
+    for (OFPreference *aPreference in _preferences) {
         if ([aPreference hasNonDefaultValue]) {
 #ifdef DEBUG_kc0
             NSLog(@"-%s: non-default value: '%@' = '%@'", _cmd, [aPreference key], [aPreference objectValue]);
@@ -235,7 +238,7 @@ RCS_ID("$Id$")
 - (void)valuesHaveChanged;
 {
     [self updateUI];
-    [defaults autoSynchronize];
+    [[self defaults] autoSynchronize];
 }
 
  // Text delegate methods

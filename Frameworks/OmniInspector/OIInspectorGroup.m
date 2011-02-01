@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2007, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -310,7 +310,7 @@ This method iterates over the inspectors controllers in each visible inspector g
 
 - init;
 {
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
     
     [existingGroups addObject:self];

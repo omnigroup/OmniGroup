@@ -1,4 +1,4 @@
-// Copyright 2001-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,7 +95,7 @@ typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
 
 - (IBAction)checkNow:(id)sender;
 {
-    [OSUController checkSynchronouslyWithUIAttachedToWindow:[controlBox window]];
+    [OSUController checkSynchronouslyWithUIAttachedToWindow:[[self controlBox] window]];
 }
 
 static NSString *formatAngle(NSString *value, NSString *positive, NSString *negative)

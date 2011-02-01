@@ -1,4 +1,4 @@
-// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -826,33 +826,36 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
     
     /* TODO: Is CSSM_ALGID_RIPEMAC the same algorithm as HMAC-RIPEMD160 ? Check. */
     CSSM_ALGORITHMS hmac_algid;
-    if ((xmlStrcmp(signatureAlgorithm, XMLSKSignatureHMAC_SHA1) == 0 && (hmac_algid = CSSM_ALGID_SHA1HMAC)) ||
-        (xmlStrcmp(signatureAlgorithm, XMLSKSignatureHMAC_MD5) == 0 && (hmac_algid = CSSM_ALGID_MD5HMAC))) {
-        unsigned int count = 0;
-        OFLibXMLChildNamed(signatureMethod, "HMACOutputLength", XMLSignatureNamespace, &count);
-        if (count != 0) {
-            signatureStructuralFailure(outError, @"Apple CDSA does not support <HMACOutputLength>");
-            return nil;
-        }
-        
-        OFCSSMKey *key = [self getHMACKey:keyInfo algorithm:hmac_algid error:outError];
-        if (!key)
-            return nil;
-        
-        OFCDSAModule *thisCSP = [self cspForKey:key];
+    if (xmlStrcmp(signatureAlgorithm, XMLSKSignatureHMAC_SHA1) == 0)
+        hmac_algid = CSSM_ALGID_SHA1HMAC;
+    else if (xmlStrcmp(signatureAlgorithm, XMLSKSignatureHMAC_MD5) == 0)
+        hmac_algid = CSSM_ALGID_MD5HMAC;
+    else {
+        signatureValidationFailure(outError, @"Unsupported signature algorithm <%s>", signatureAlgorithm);
+        return nil;
+    }
 
-        CSSM_CC_HANDLE context = CSSM_INVALID_HANDLE;
-        CSSM_RETURN err = CSSM_CSP_CreateMacContext([thisCSP handle], hmac_algid, [key key], &context);
-        if (err != CSSM_OK || context == CSSM_INVALID_HANDLE) {
-            OFErrorFromCSSMReturn(outError, err, @"CSSM_CSP_CreateMacContext");
-            return nil;
-        }
-        
-        return [[OFCSSMMacContext alloc] initWithCSP:thisCSP cc:context];
+    unsigned int count = 0;
+    OFLibXMLChildNamed(signatureMethod, "HMACOutputLength", XMLSignatureNamespace, &count);
+    if (count != 0) {
+        signatureStructuralFailure(outError, @"Apple CDSA does not support <HMACOutputLength>");
+        return nil;
     }
     
-    signatureValidationFailure(outError, @"Unsupported signature algorithm <%s>", signatureAlgorithm);
-    return nil;
+    OFCSSMKey *key = [self getHMACKey:keyInfo algorithm:hmac_algid error:outError];
+    if (!key)
+        return nil;
+    
+    OFCDSAModule *thisCSP = [self cspForKey:key];
+    
+    CSSM_CC_HANDLE context = CSSM_INVALID_HANDLE;
+    CSSM_RETURN err = CSSM_CSP_CreateMacContext([thisCSP handle], hmac_algid, [key key], &context);
+    if (err != CSSM_OK || context == CSSM_INVALID_HANDLE) {
+        OFErrorFromCSSMReturn(outError, err, @"CSSM_CSP_CreateMacContext");
+        return nil;
+    }
+    
+    return [[OFCSSMMacContext alloc] initWithCSP:thisCSP cc:context];
 }
 
 static NSData *padInteger(NSData *i, unsigned toLength, NSError **outError)

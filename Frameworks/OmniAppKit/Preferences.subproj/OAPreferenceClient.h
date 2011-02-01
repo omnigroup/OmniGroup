@@ -1,4 +1,4 @@
-// Copyright 1997-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,24 +18,23 @@
 
 @interface OAPreferenceClient : NSUserDefaultsController
 {
+@private
     IBOutlet NSView *controlBox;
     IBOutlet NSView *initialFirstResponder;
     IBOutlet NSView *lastKeyView;
     
     OAPreferenceController *_nonretained_controller;
-    NSString *title;
-    NSMutableArray *preferences;
-    OFPreferenceWrapper *defaults;
+    NSString *_title;
+    NSMutableArray *_preferences;
 }
 
 - initWithPreferenceClientRecord:(OAPreferenceClientRecord *)clientRecord controller:(OAPreferenceController *)controller;
 - initWithTitle:(NSString *)newTitle defaultsArray:(NSArray *)newDefaultsArray controller:(OAPreferenceController *)controller;
 
-- (void) addPreference: (OFPreference *) preference;
-
-- (NSView *)controlBox;
-- (NSView *)initialFirstResponder;
-- (NSView *)lastKeyView;
+@property(readonly, nonatomic) NSString *title;
+@property(readonly, nonatomic) NSView *controlBox;
+@property(readonly, nonatomic) NSView *initialFirstResponder;
+@property(readonly, nonatomic) NSView *lastKeyView;
 
 - (void)resetFloatValueToDefaultNamed:(NSString *)defaultName inTextField:(NSTextField *)textField;
 - (void)resetIntValueToDefaultNamed:(NSString *)defaultName inTextField:(NSTextField *)textField;

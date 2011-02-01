@@ -24,7 +24,7 @@
 - initWithFileWrapper:(OFFileWrapper *)fileWrapper;
 
 @property(nonatomic,retain) OFFileWrapper *fileWrapper;
-@property(nonatomic,retain) id <OATextAttachmentCell> cell;
+@property(nonatomic,retain) id <OATextAttachmentCell> attachmentCell;
 
 @end
 

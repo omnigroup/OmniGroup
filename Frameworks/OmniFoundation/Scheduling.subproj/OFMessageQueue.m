@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,8 +43,8 @@ static BOOL OFMessageQueueDebug = NO;
 
 - init;
 {
-    if (![super init])
-	return nil;
+    if (!(self = [super init]))
+        return nil;
 
     queue = [[NSMutableArray alloc] init];
     queueLock = [[NSConditionLock alloc] initWithCondition:QUEUE_HAS_NO_SCHEDULABLE_INVOCATIONS];

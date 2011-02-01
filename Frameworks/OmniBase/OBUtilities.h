@@ -1,4 +1,4 @@
-// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,7 +98,9 @@ enum OBBacktraceBufferType {
     OBBacktraceBuffer_Allocated = 1,   /* Allocated but not filled slot */
     
     /* Remaining integers represent different reasons for recording a backtrace */
-    OBBacktraceBuffer_OBAssertionFailure = 2
+    OBBacktraceBuffer_OBAssertionFailure = 2,
+    OBBacktraceBuffer_NSAssertionFailure = 3,
+    OBBacktraceBuffer_NSException = 4,
 };
 void OBRecordBacktrace(const char *ctxt, unsigned int optype);
 /*.doc.

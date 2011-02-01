@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -118,15 +118,12 @@ It would be possible to implement this if there was a method '-lockForReadingWit
 
 - init;
 {
-    NSZone *zone;
-    int rc;
-    
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
 
-    zone = [self zone];
+    NSZone *zone = [self zone];
 
-    rc = pthread_mutex_init(&_mutex, NULL);
+    int rc = pthread_mutex_init(&_mutex, NULL);
     if (rc)
         perror("pthread_mutex_init");
 

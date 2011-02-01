@@ -36,9 +36,6 @@ typedef struct {
 #define kOUIInspectorBackgroundTopColor ((OQLinearRGBA){228.0/255.0, 231.0/255.0, 235.0/255.0, 1.0})
 #define kOUIInspectorBackgroundBottomColor ((OQLinearRGBA){197.0/255.0, 200.0/255.0, 207.0/255.0, 1.0})
 
-// OUIInspectorDividerLine
-#define kOUIInspectorDividerLineGrayAlpha ((OUIGrayAlpha){0.2, 1.0})
-
 // OUIInspectorOptionWheel
 #define kOUIInspectorOptionWheelEdgeGradientGray (0.53)
 #define kOUIInspectorOptionWheelMiddleGradientGray (1.0)

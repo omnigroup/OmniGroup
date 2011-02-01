@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -66,11 +66,11 @@ static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
 
 - (id)initForQueue:(OFMessageQueue *)aQueue;
 {
-    OFWeakRetainConcreteImplementation_INIT;
-
-    if (![super initForQueue:aQueue])
+    if (!(self = [super initForQueue:aQueue]))
         return nil;
 
+    OFWeakRetainConcreteImplementation_INIT;
+    
     [messageQueue setDelegate:self];
 
     notificationPort = [[NSPort port] retain];

@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,12 +31,18 @@ RCS_ID("$Id$");
 
 - initWithPoint:(CGPoint)point;
 {
+    if (!(self = [super init]))
+        return nil;
+
     _value = point;
     return self;
 }
 
 - initWithString:(NSString *)string;
 {
+    if (!(self = [super init]))
+        return nil;
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     _value = NSPointFromString(string);
 #else

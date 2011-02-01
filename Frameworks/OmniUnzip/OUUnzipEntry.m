@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,9 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION([name length] > 0);
     OBPRECONDITION(positionInFile > 0); // would be the zip header...
+    
+    if (!(self = [super init]))
+        return nil;
     
     _name = [name copy];
     _fileType = [fileType copy];

@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ static const CGFloat iconBaseline = 36;
 
 - (id)initWithFrame:(NSRect)rect;
 {
-    if (![super initWithFrame:rect])
+    if (!(self = [super initWithFrame:rect]))
         return nil;
     
     [self setBoundsOrigin:NSMakePoint(-4.0f, 0.0f)]; //This matches Apples 4px margin in System Preferences on 10.4

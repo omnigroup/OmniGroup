@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,7 +46,7 @@ static NSFont *smallSystemFont;
 
 - initWithFrame:(NSRect)theFrame;
 {
-    if ([super initWithFrame:theFrame] == nil)
+    if (!(self = [super initWithFrame:theFrame]))
         return nil;
     
     [self _setupScrollView];
@@ -58,7 +58,7 @@ static NSFont *smallSystemFont;
 
 - (id)initWithCoder:(NSCoder *)coder;
 {
-    if ([super initWithCoder:coder] == nil)
+    if (!(self = [super initWithCoder:coder]))
         return nil;
     [self _setupScrollView];
     return self;

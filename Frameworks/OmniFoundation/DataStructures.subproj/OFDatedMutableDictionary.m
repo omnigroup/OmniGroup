@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,7 +29,9 @@ RCS_ID("$Id$")
 
 - (id)init;
 {
-    [super init];
+    if (!(self = [super init]))
+        return nil;
+
     _dictionary = [[NSMutableDictionary alloc] init];
     return self;
 }
@@ -105,7 +107,9 @@ RCS_ID("$Id$")
 
 - initWithObject:(id)anObject;
 {
-    [super init];
+    if (!(self = [super init]))
+        return nil;
+
     object = [anObject retain];
     lastAccess = [[NSDate alloc] init];
     return self;

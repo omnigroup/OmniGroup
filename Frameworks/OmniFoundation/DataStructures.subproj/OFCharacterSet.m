@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ RCS_ID("$Id$");
 
 - init;
 {
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
 
     [self removeAllCharacters];
@@ -42,7 +42,7 @@ RCS_ID("$Id$");
 
 - initWithCharacterSet:(NSCharacterSet *)characterSet;
 {
-    if ([self init] == nil)
+    if (!(self = [super init]))
         return nil;
         
     [self addCharactersFromCharacterSet:characterSet];
@@ -52,7 +52,7 @@ RCS_ID("$Id$");
 
 - initWithOFCharacterSet:(OFCharacterSet *)ofCharacterSet;
 {
-    if ([self init] == nil)
+    if (!(self = [super init]))
         return nil;
         
     [self addCharactersFromOFCharacterSet:ofCharacterSet];
@@ -61,18 +61,12 @@ RCS_ID("$Id$");
 
 - initWithString:(NSString *)string;
 {
-    if ([self init] == nil)
+    if (!(self = [super init]))
         return nil;
         
     [self addCharactersInString:string];
     return self;
 }
-
-- (void)dealloc;
-{
-    [super dealloc];
-}
-
 
 // API
 

@@ -33,8 +33,20 @@ static UIView *_rootView(UIView *view)
     }
 }
 
+static UIWindow *_window(UIView *view)
+{
+    // -window on UIWindow returns nil instead of self.
+    if ([view isKindOfClass:[UIWindow class]])
+        return (UIWindow *)view;
+    return view.window;
+}
+
 static BOOL _viewsCompatible(UIView *self, UIView *otherView)
 {
+    // The documentation for this method is much more restrictive about this than what seems to actually happen.
+    // UIKit will attempt to convert points between different UIWindows in context menus, so we'll allow that here.
+
+    
     if (!otherView) {
         // "If aView is nil, this method instead converts to/from window base coordinates"
 #ifdef OMNI_ASSERTIONS_ON
@@ -50,7 +62,15 @@ static BOOL _viewsCompatible(UIView *self, UIView *otherView)
     UIView *root1 = _rootView(self);
     UIView *root2 = _rootView(otherView);
     
-    OBASSERT(root1 == root2);
+    if (root1 == root2)
+        return YES;
+        
+    UIWindow *window1 = _window(self);
+    UIWindow *window2 = _window(otherView);
+    
+    // Might actually be allowed if they are on any screen, but it isn't clear how UIKit would treat those transforms since there is no screen arrangement UI (presumably left-to-right with the top-edge aligned, but who knows).
+    OBASSERT(window1.screen == window2.screen);
+    
     return YES;
 }
 

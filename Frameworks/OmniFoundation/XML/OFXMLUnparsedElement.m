@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,8 @@ RCS_ID("$Id$")
 // The data is always UTF-8 right now.
 - initWithQName:(OFXMLQName *)qname identifier:(NSString *)identifier data:(NSData *)data; 
 {
+    if (!(self = [super init]))
+        return nil;
     _qname = [qname copy];
     _identifier = [identifier copy];
     _data = [data copy];
