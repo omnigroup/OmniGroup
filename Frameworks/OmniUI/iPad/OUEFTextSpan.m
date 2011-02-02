@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,6 +33,8 @@ RCS_ID("$Id$");
     return self;
 }
 
+@synthesize frame;
+
 - (void)dealloc
 {
     [frame release];
@@ -60,28 +62,6 @@ RCS_ID("$Id$");
     ...;
 }
 #endif
-
-#pragma mark OUIColorInspection
-
-- (NSSet *)colorsForInspectorSlice:(OUIInspectorSlice *)inspector;
-{
-    CGColorRef color = (CGColorRef)[frame attribute:(id)kCTForegroundColorAttributeName inRange:self];
-    if (color == NULL) {
-        return [NSSet set];
-    }
-    return [NSSet setWithObject:[OQColor colorWithCGColor:color]];
-}
-
-- (void)setColor:(OQColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector;
-{
-    [frame setValue:(id)[[color toColor] CGColor] forAttribute:(id)kCTForegroundColorAttributeName inRange:self];
-}
-
-- (NSString *)preferenceKeyForInspectorSlice:(OUIInspectorSlice *)inspector;
-{
-    return nil;
-}
-
 
 #pragma mark OUIFontInspection
 

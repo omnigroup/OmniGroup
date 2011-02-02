@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,13 @@
 RCS_ID("$Id$")
 
 @implementation NSSplitView (OAExtensions)
+
+- (CGFloat)positionOfDividerAtIndex:(NSInteger)dividerIndex;
+{
+    // It looks like NSSplitView relies on its subviews being ordered left->right or top->bottom so we can too.  It also raises w/ array bounds exception if you use its API with dividerIndex > count of subviews.
+    NSRect priorViewFrame = [[[self subviews] objectAtIndex:dividerIndex] frame];
+    return [self isVertical] ? NSMaxX(priorViewFrame) : NSMaxY(priorViewFrame);
+}
 
 - (CGFloat)fraction;
 {

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -239,6 +239,9 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
 - initWithURL:(NSURL *)url startingInternedNames:(OFXMLInternedNameTable)startingInternedNames error:(NSError **)outError;
 {
     OBPRECONDITION(url);
+
+    if (!(self = [super init]))
+        return nil;
 
     _url = [url copy];
     

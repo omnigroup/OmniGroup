@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,8 @@ static Class myClass;
 {
     OBPRECONDITION([targetObject respondsToSelector:aSelector]);
 
-    [super initForObject:targetObject selector:aSelector];
+    if (!(self = [super initForObject:targetObject selector:aSelector]))
+        return nil;
 
     object1 = [anObject1 retain];
     object2 = [anObject2 retain];

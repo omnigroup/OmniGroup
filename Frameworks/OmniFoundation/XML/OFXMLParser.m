@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -402,6 +402,9 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
 
 - (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject <OFXMLParserTarget> *)target error:(NSError **)outError;
 {
+    if (!(self = [super init]))
+        return nil;
+
     OBPRECONDITION(whitespaceBehavior);
     
     _encoding = kCFStringEncodingInvalidId;

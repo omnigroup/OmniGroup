@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,7 +46,9 @@ static void getSchedulingInfo(OFMessageQueueSchedulingInfo *returnValue, id targ
 {
     OBPRECONDITION(targetObject != nil); // since we are going to dereference it below
 
-    [super init];
+    if (!(self = [super init]))
+        return nil;
+
     object = [targetObject retain];
     
     return self;

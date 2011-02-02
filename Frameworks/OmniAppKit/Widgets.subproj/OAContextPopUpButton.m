@@ -1,4 +1,4 @@
-// Copyright 2004-2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2006, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,7 @@ RCS_ID("$Id$");
 
 - (id)initWithFrame:(NSRect)buttonFrame pullsDown:(BOOL)flag;
 {
-    if ([super initWithFrame:buttonFrame pullsDown:flag] == nil)
+    if (!(self = [super initWithFrame:buttonFrame pullsDown:flag]))
         return nil;
 
     gearItem = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];

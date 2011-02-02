@@ -1,4 +1,4 @@
-// Copyright 2005-2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2007, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -380,9 +380,8 @@ RCS_ID("$Id$")
 
 - initWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
 {
-    if (![super initWithDictionary:dict bundle:sourceBundle])
+    if (!(self = [super initWithDictionary:dict bundle:sourceBundle]))
 	return nil;
-    
     
     _singleSelection = [dict boolForKey:@"single-selection" defaultValue:NO];
     _autoSelection = [dict boolForKey:@"auto-selection" defaultValue:_singleSelection];

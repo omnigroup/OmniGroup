@@ -1,4 +1,4 @@
-// Copyright 2003-2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2006, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,7 +47,7 @@ RCS_ID("$Id$");
 
 - (id)initWithFrame:(NSRect)frameRect;
 {
-    if ([super initWithFrame:frameRect] == nil)
+    if (!(self = [super initWithFrame:frameRect]))
         return nil;
 
     [self setImagePosition:NSImageOnly];

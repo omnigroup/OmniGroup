@@ -88,7 +88,7 @@ static OUIBarButtonItemBackgroundType _backgroundTypeForStyle(UIBarButtonItemSty
     return nil;
 }
 
-static id _commonInit(OUIBarButtonItem *self, OUIBarButtonItemBackgroundType backgroundType)
+static void _commonInit(OUIBarButtonItem *self, OUIBarButtonItemBackgroundType backgroundType)
 {
     Class buttonClass = [[self class] buttonClass];
     OBASSERT(OBClassIsSubclassOfClass(buttonClass, [OUIToolbarButton class]));
@@ -101,15 +101,14 @@ static id _commonInit(OUIBarButtonItem *self, OUIBarButtonItemBackgroundType bac
     [button addTarget:self action:@selector(_buttonAction:) forControlEvents:UIControlEventTouchUpInside];
     
     [button configureForBackgroundType:backgroundType];
-    
-    return self;
 }
 
 - initWithCoder:(NSCoder *)coder;
 {
     if (!(self = [super initWithCoder:coder]))
         return nil;
-    return _commonInit(self, OUIBarButtonItemBackgroundTypeBlack);
+    _commonInit(self, OUIBarButtonItemBackgroundTypeBlack);
+    return self;
 }
 
 - init;
@@ -121,8 +120,7 @@ static id _commonInit(OUIBarButtonItem *self, OUIBarButtonItemBackgroundType bac
 {
     if (!(self = [super init]))
         return nil;
-    if (!(self = _commonInit(self, backgroundType)))
-        return nil;
+    _commonInit(self, backgroundType);
     
     OUIToolbarButton *button = (OUIToolbarButton *)self.customView;
     [button setImage:image forState:UIControlStateNormal];

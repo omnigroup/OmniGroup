@@ -82,7 +82,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     NSButton *button;
     NSBundle *thisBundle;
 
-    if ([super initWithFrame:frameRect] == nil)
+    if (!(self = [super initWithFrame:frameRect]))
         return nil;
     
     selectedDays = [[NSMutableArray alloc] init];

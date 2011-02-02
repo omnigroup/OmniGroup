@@ -1,4 +1,4 @@
-// Copyright 2003-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -945,7 +945,7 @@ static OQColor *_colorWithCGColorRef(CGColorRef cgColor)
         return nil;
     
     NSString *colorSpaceName = [color colorSpaceName];
-    NSColor *toConvert;
+    NSColor *toConvert = nil; // Initializer only needed for <http://llvm.org/bugs/show_bug.cgi?id=9076>
     
     if (([colorSpaceName isEqualToString:NSCalibratedRGBColorSpace] && (toConvert = color)) ||
         ([colorSpaceName isEqualToString:NSDeviceRGBColorSpace] && (toConvert = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace])) ||

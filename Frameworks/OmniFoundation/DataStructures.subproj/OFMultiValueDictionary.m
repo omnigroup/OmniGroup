@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,7 @@ RCS_ID("$Id$")
 // The designated initializer
 - initWithKeyCallBacks: (const CFDictionaryKeyCallBacks *) keyBehavior;
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     if (keyBehavior == NULL)

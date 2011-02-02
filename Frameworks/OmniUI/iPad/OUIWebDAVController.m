@@ -33,6 +33,7 @@ RCS_ID("$Id$")
 - (void)_exportToURL:(NSURL *)exportURL;
 - (void)_addDownloaderWithURL:(NSURL *)exportURL toCell:(UITableViewCell *)cell;
 - (void)_stopConnectingIndicator;
+- (void)_goBack:(id)sender;
 @end
 
 @implementation OUIWebDAVController
@@ -519,14 +520,33 @@ RCS_ID("$Id$")
         syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(signOut:)];
     }
     
-    self.navigationItem.rightBarButtonItem = syncBarButtonItem;
+    UINavigationItem *navigationItem = self.navigationItem;
+    OBASSERT(navigationItem);
+    
+    navigationItem.rightBarButtonItem = syncBarButtonItem;
     [syncBarButtonItem release];
     
-    if ([[self.navigationController viewControllers] objectAtIndex:0] == self) {
+    UINavigationController *navigationController = self.navigationController;
+    NSArray *viewControllers = navigationController.viewControllers;
+    NSUInteger viewIndex = [viewControllers indexOfObjectIdenticalTo:self];
+
+    if (viewIndex == 0) {
         UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
-        self.navigationItem.leftBarButtonItem = cancel;
+        navigationItem.leftBarButtonItem = cancel;
         [cancel release];
     }
+    
+#if 1
+    // Custom view items get ignored for the back item. Also, unlike the 'back to me' button, the left button needs to reference the title of the previous view controller and it needs a real target/action
+    if (viewIndex != 0) {
+        UIViewController *previousController = [viewControllers objectAtIndex:viewIndex - 1];
+        navigationItem.leftBarButtonItem = [[[OUIBarButtonItem alloc] initWithBackgroundType:OUIBarButtonItemBackgroundTypeBack image:nil title:previousController.title target:self action:@selector(_goBack:)] autorelease];
+    }
+#else
+    // 'backBarButtonItem' is for 'go back to *me*'
+    navigationItem.backBarButtonItem = [[[OUIBarButtonItem alloc] initWithBackgroundType:OUIBarButtonItemBackgroundTypeBack image:nil title:[NSString stringWithFormat:@"??? %@", self.title] target:nil action:NULL] autorelease];
+    //navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:self.title style:UIBarButtonItemStyleBordered target:nil action:NULL] autorelease];
+#endif
 }
 
 - (void)_fadeOutDownload:(OUIWebDAVDownloader *)downloader;
@@ -596,16 +616,21 @@ RCS_ID("$Id$")
     
     switch (_syncType) {
         case OUIiTunesSync:
-            self.navigationItem.title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to iTunes", @"OmniUI", OMNI_BUNDLE, @"iTunes export") : NSLocalizedStringFromTableInBundle(@"Copy from iTunes", @"OmniUI", OMNI_BUNDLE, @"iTunes export");
+            self.title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to iTunes", @"OmniUI", OMNI_BUNDLE, @"iTunes export") : NSLocalizedStringFromTableInBundle(@"Copy from iTunes", @"OmniUI", OMNI_BUNDLE, @"iTunes export");
             break;
         case OUIMobileMeSync:
         case OUIOmniSync:
         case OUIWebDAVSync:
-            self.navigationItem.title = _isExporting ? [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Export to '%@'", @"OmniUI", OMNI_BUNDLE, @"WebDAV export"), [OFSFileInfo nameForURL:url]] :[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Copy from '%@'", @"OmniUI", OMNI_BUNDLE, @"WebDAV export"), [OFSFileInfo nameForURL:url]];
+            self.title = _isExporting ? [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Export to '%@'", @"OmniUI", OMNI_BUNDLE, @"WebDAV export"), [OFSFileInfo nameForURL:url]] :[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Copy from '%@'", @"OmniUI", OMNI_BUNDLE, @"WebDAV export"), [OFSFileInfo nameForURL:url]];
             break;
         default:
             break;
     }
+}
+
+- (void)_goBack:(id)sender;
+{
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 @end

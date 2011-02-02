@@ -1,4 +1,4 @@
-// Copyright 2002-2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2006, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,13 +18,6 @@ RCS_ID("$Id$")
 @end
 
 @implementation OIInspectorVerticalResizer
-
-- initWithFrame:(NSRect)aFrame;
-{
-    [super initWithFrame:aFrame];
-//    [self setIsPaneSplitter:YES];
-    return self;
-}
 
 - (void)viewDidMoveToSuperview;
 {

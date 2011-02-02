@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2007, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,7 @@ RCS_ID("$Id$");
 
 - (id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag;
 {
-    if (![super initWithContentRect:contentRect styleMask:aStyle backing:bufferingType defer:flag])
+    if (!(self = [super initWithContentRect:contentRect styleMask:aStyle backing:bufferingType defer:flag]))
         return nil;
     [self setHasShadow:YES];
     [self useOptimizedDrawing:YES];

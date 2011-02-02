@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,12 @@
 
 @class OUIInspectorSelectionValue;
 
+typedef enum {
+    OUIColorPickerFidelityZero, // can't represent the color at all
+    OUIColorPickerFidelityApproximate, // can convert the color to something representable
+    OUIColorPickerFidelityExact, // can represent the color exactly
+} OUIColorPickerFidelity;
+
 @interface OUIColorPicker : UIViewController
 {
 @private
@@ -21,6 +27,6 @@
 @property(readonly) CGFloat height;
 @property(retain,nonatomic) OUIInspectorSelectionValue *selectionValue;
 
-- (void)becameCurrentColorPicker;
+- (OUIColorPickerFidelity)fidelityForSelectionValue:(OUIInspectorSelectionValue *)selectionValue;
 
 @end

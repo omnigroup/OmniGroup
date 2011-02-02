@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -213,6 +213,38 @@ static const CGFloat kSliceSpacing = 5; // minimum space; each slice may have mo
     
     self.view = view;
     [view release];
+}
+
+- (void)viewWillAppear:(BOOL)animated;
+{
+    [super viewWillAppear:animated];
+    
+    for (OUIInspectorSlice *slice in _slices)
+        [slice viewWillAppear:animated];
+}
+
+- (void)viewDidAppear:(BOOL)animated;
+{
+    [super viewDidAppear:animated];
+    
+    for (OUIInspectorSlice *slice in _slices)
+        [slice viewDidAppear:animated];
+}
+
+- (void)viewWillDisappear:(BOOL)animated;
+{
+    for (OUIInspectorSlice *slice in _slices)
+        [slice viewWillDisappear:animated];
+    
+    [super viewWillDisappear:animated];
+}
+
+- (void)viewDidDisappear:(BOOL)animated;
+{
+    for (OUIInspectorSlice *slice in _slices)
+        [slice viewDidDisappear:animated];
+    
+    [super viewDidDisappear:animated];
 }
 
 @end

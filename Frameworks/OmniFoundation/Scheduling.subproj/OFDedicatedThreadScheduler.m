@@ -1,4 +1,4 @@
-// Copyright 1999-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2007, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,8 +62,9 @@ static OFDedicatedThreadScheduler *dedicatedThreadScheduler = nil;
 
 - init;
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
+
     scheduleConditionLock = [[NSConditionLock alloc] initWithCondition:SCHEDULE_STABLE_CONDITION];
     mainThreadSynchronizationLock = [[NSConditionLock alloc] initWithCondition:MAIN_THREAD_IDLE];
     wakeDate = nil;

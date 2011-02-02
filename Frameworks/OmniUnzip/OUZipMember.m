@@ -115,6 +115,9 @@ RCS_ID("$Id$");
     OBPRECONDITION(![NSString isEmptyString:name]);
     OBPRECONDITION([self class] != [OUZipMember class]);
     
+    if (!(self = [super init]))
+        return nil;
+
     _name = [name copy];
     _date = [date copy];
 

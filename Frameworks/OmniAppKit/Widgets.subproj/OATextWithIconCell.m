@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,7 +38,7 @@ NSString * const OATextWithIconCellImageKey = @"image";
 
 - (id)init;
 {
-    if ([super initTextCell:@""] == nil)
+    if (!(self = [super initTextCell:@""]))
         return nil;
     
     [self setImagePosition:NSImageLeft];

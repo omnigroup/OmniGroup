@@ -1,4 +1,4 @@
-// Copyright 2005-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -122,7 +122,8 @@ static void logdescriptors(const char *where)
 
 - initWithParameters:(NSDictionary *)filterParameters standardOutput:(NSOutputStream *)stdoutStream standardError:(NSOutputStream *)stderrStream;
 {
-    self = [super init];
+    if (!(self = [super init]))
+        return nil;
     
     /* Instance variables initialized from the parameters dictionary */
     commandPath = [[filterParameters objectForKey:OFFilterProcessCommandPathKey] copy];

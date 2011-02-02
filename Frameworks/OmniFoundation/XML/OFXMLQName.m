@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,9 @@ RCS_ID("$Id$");
     // At least one must be non-empty and we convert nil to empty strings to make comparison easier.
     OBPRECONDITION(![NSString isEmptyString:namespace] || ![NSString isEmptyString:name]);
     
+    if (!(self = [super init]))
+        return nil;
+
     if (!namespace)
         namespace = @"";
     if (!name)

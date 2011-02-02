@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -162,6 +162,14 @@ static BOOL _colorsMatch(OQColor *color1, OQColor *color2)
         return YES; // handle the nil case
     
     return [[color1 colorUsingColorSpace:OQColorSpaceRGB] isEqual:[color2 colorUsingColorSpace:OQColorSpaceRGB]];
+}
+
+- (BOOL)hasMatchForColor:(OQColor *)color;
+{
+    for (OUIColorSwatch *swatch in _colorSwatches)
+        if (_colorsMatch(swatch.color, _swatchSelectionColor))
+            return YES;
+    return NO;
 }
 
 - (void)setSwatchSelectionColor:(OQColor *)color;

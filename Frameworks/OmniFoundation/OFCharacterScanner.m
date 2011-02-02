@@ -37,8 +37,8 @@ static inline int unicharDigitValue(unichar c)
 
 - init;
 {
-    if ([super init] == nil)
-	return nil;
+    if (!(self = [super init]))
+        return nil;
 
     inputBuffer = NULL;
     scanEnd = inputBuffer;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,8 +15,9 @@ enum {RESULT_NOT_AVAILABLE, RESULT_AVAILABLE};
 
 - init;
 {
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
+
     result = nil;
     resultLock = [[NSConditionLock alloc] initWithCondition:RESULT_NOT_AVAILABLE];
     return self;

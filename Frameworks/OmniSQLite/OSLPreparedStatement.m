@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -87,7 +87,7 @@ RCS_ID("$Id$")
         return dictionary;
     }
     if (errorCode != SQLITE_DONE)
-        NSLog(@"ERROR executing sql %@: %s", sql, sqlite3_errmsg([databaseController _database]));
+        NSLog(@"ERROR executing sql %@: %s (%d)", sql, sqlite3_errmsg([databaseController _database]), errorCode);
     
     return nil;
 }

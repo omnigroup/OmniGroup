@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,7 +27,8 @@ RCS_ID("$Id$");
 
 - initWithURLRequest:(NSURLRequest *)req startImmediately:(BOOL)startImmediately;  // D.I.
 {
-    [super init];
+    if (!(self = [super init]))
+        return nil;
     
     source = [req copy];
     slowLoadingState = OASlowLoadNotStarted;

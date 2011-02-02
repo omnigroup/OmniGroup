@@ -1,4 +1,4 @@
-// Copyright 2004-2005,2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005,2009-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -219,7 +219,9 @@ RCS_ID("$Id$");
 
 - initWithParent:(OFXMLMaker *)parentMaker target:(OFXMLSink *)parentTarget
 {
-    [super init];
+    if (!(self = [super init]))
+        return nil;
+
     nonretainedParent = parentMaker;
     target = [parentTarget retain];
     attributeNames = [[NSMutableArray alloc] init];
@@ -376,7 +378,7 @@ RCS_ID("$Id$");
 
 - init
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
     
     namespacePrefixNextUniqueID = 1;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005,2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005,2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,7 +27,8 @@ typedef union __attribute__((packed)) {
 
 @interface OFRegularExpression : OFObject
 {
-    NSString *patternString;
+@private
+    NSString *_patternString;
     unichar startCharacter;
     BOOL matchStartsLine;
     __strong unichar *matchString;

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,13 +13,16 @@
 
 @class OUIEditableFrame;
 
-@interface OUEFTextSpan : OUEFTextRange <OUIColorInspection, OUIFontInspection, OUIParagraphInspection>
+// Represents a text span for the inspector system. This does not conform to OUIColorInspection since we want to be able to set multiple color attributes (foreground/background). See OUITextSpanColorAttributeInspectorSlice for colors.
+@interface OUEFTextSpan : OUEFTextRange <OUIFontInspection, OUIParagraphInspection>
 {
 @private
     OUIEditableFrame *frame;
 }
 
 - initWithRange:(NSRange)characterRange generation:(NSUInteger)g editor:(OUIEditableFrame *)ed; // D.I.
+
+@property(readonly,nonatomic) OUIEditableFrame *frame;
 
 @end
 

@@ -1,4 +1,4 @@
-// Copyright 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,7 +71,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
 // Item might be nil if all we have is the URL (say, if the debugging support for downloading from a URL at launch is enabled).  *Usually* we'll have an item, but don't depend on it.
 - initWithPackageURL:(NSURL *)packageURL item:(OSUItem *)item error:(NSError **)outError;
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     // Only allow one download at a time for now.

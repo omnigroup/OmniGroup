@@ -7,21 +7,21 @@
 
 #import <OmniUI/OUIEditableFrame.h>
 
-#import <OmniUI/OUIDirectTapGestureRecognizer.h>
-
-#import <OmniUI/OUIColorInspectorSlice.h>
-#import <OmniUI/OUIFontInspectorSlice.h>
-#import <OmniUI/OUITextLayout.h>
-#import <OmniUI/UIView-OUIExtensions.h>
-#import <OmniUI/OUIStackedSlicesInspectorPane.h>
-#import <OmniQuartz/OQColor.h>
 #import <Foundation/NSAttributedString.h>
-#import <QuartzCore/QuartzCore.h>
-#import <OmniQuartz/OQDrawing.h>
-#import <OmniBase/rcsid.h>
-#import <OmniFoundation/OFNull.h>
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <OmniAppKit/OATextStorage.h>
+#import <OmniBase/rcsid.h>
+#import <OmniFoundation/OFNull.h>
+#import <OmniQuartz/OQColor.h>
+#import <OmniQuartz/OQDrawing.h>
+#import <OmniUI/OUIColorInspectorSlice.h>
+#import <OmniUI/OUIDirectTapGestureRecognizer.h>
+#import <OmniUI/OUIFontInspectorSlice.h>
+#import <OmniUI/OUIStackedSlicesInspectorPane.h>
+#import <OmniUI/OUITextColorsInspectorSlice.h>
+#import <OmniUI/OUITextLayout.h>
+#import <OmniUI/UIView-OUIExtensions.h>
+#import <QuartzCore/QuartzCore.h>
 
 #import <execinfo.h>
 #import <stdlib.h>
@@ -3642,7 +3642,7 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         _textInspector.mainPane.title = NSLocalizedStringFromTableInBundle(@"Text Style", @"OUIInspectors", OMNI_BUNDLE, @"Inspector title");
         
         NSMutableArray *slices = [NSMutableArray array];
-        [slices addObject:[[[OUIColorInspectorSlice alloc] init] autorelease]];
+        [slices addObject:[[[OUITextColorsInspectorSlice alloc] init] autorelease]];
         [slices addObject:[[[OUIFontInspectorSlice alloc] init] autorelease]];
         [slices addObject:[[[OUIParagraphStyleInspectorSlice alloc] init] autorelease]];
 

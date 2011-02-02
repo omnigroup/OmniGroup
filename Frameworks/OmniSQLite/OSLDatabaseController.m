@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2008, 2010, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <OmniBase/OmniBase.h>
 
 #import "OSLPreparedStatement.h"
+#import "Errors.h"
 
 RCS_ID("$Id$")
 
@@ -21,12 +22,14 @@ RCS_ID("$Id$")
 - (BOOL)_openDatabase:(NSError **)outError;
 - (void)_deleteDatabase;
 - (void)_closeDatabase;
-- (void)_executeSQL:(NSString *)sql withCallback:(OSLDatabaseCallback)callbackFunction context:(void *)callbackContext;
-- (OSLPreparedStatement *)_prepareStatement:(NSString *)sql;
+- (BOOL)_executeSQL:(NSString *)sql withCallback:(OSLDatabaseCallback)callbackFunction context:(void *)callbackContext error:(NSError **)outError;
+- (OSLPreparedStatement *)_prepareStatement:(NSString *)sql error:(NSError **)outError;
 - (unsigned long long int)_lastInsertRowID;
 @end
 
 @implementation OSLDatabaseController
+
+@synthesize autoRetry = _autoRetry;
 
 - initWithDatabasePath:(NSString *)aPath error:(NSError **)outError;
 {
@@ -58,14 +61,14 @@ RCS_ID("$Id$")
     [self _deleteDatabase];
 }
 
-- (void)executeSQL:(NSString *)sql withCallback:(OSLDatabaseCallback)callbackFunction context:(void *)callbackContext;
+- (BOOL)executeSQL:(NSString *)sql withCallback:(OSLDatabaseCallback)callbackFunction context:(void *)callbackContext error:(NSError **)outError;
 {
-    [self _executeSQL:sql withCallback:callbackFunction context:callbackContext];
+    return [self _executeSQL:sql withCallback:callbackFunction context:callbackContext error:outError];
 }
 
-- (OSLPreparedStatement *)prepareStatement:(NSString *)sql;
+- (OSLPreparedStatement *)prepareStatement:(NSString *)sql error:(NSError **)outError;
 {
-    return [self _prepareStatement:sql];
+    return [self _prepareStatement:sql error:outError];
 }
 
 - (unsigned long long int)lastInsertRowID;
@@ -75,19 +78,19 @@ RCS_ID("$Id$")
 
 // Convenience methods
 
-- (void)beginTransaction;
+- (BOOL)beginTransaction;
 {
-    [self executeSQL:@"BEGIN;\n" withCallback:NULL context:NULL];
+    return [self executeSQL:@"BEGIN;\n" withCallback:NULL context:NULL error:NULL];
 }
 
-- (void)commitTransaction;
+- (BOOL)commitTransaction;
 {
-    [self executeSQL:@"COMMIT;\n" withCallback:NULL context:NULL];
+    return [self executeSQL:@"COMMIT;\n" withCallback:NULL context:NULL error:NULL];
 }
 
-- (void)rollbackTransaction;
+- (BOOL)rollbackTransaction;
 {
-    [self executeSQL:@"ROLLBACK;\n" withCallback:NULL context:NULL];
+    return [self executeSQL:@"ROLLBACK;\n" withCallback:NULL context:NULL error:NULL];
 }
 
 @end
@@ -101,7 +104,7 @@ RCS_ID("$Id$")
     return sqliteDatabase;
 }
 
-#if 0 && defined(DEBUG)
+#ifdef DEBUG_kc
     #define DebugLog(format, ...) NSLog(format, ## __VA_ARGS__)
 #else
     #define DebugLog(format, ...) do {} while (0)
@@ -119,28 +122,18 @@ RCS_ID("$Id$")
     if (errorCode != SQLITE_OK) {
         NSLog(@"Failed to open %@: %d -- %@", databasePath, errorCode, [NSString stringWithUTF8String:sqlite3_errmsg(db)]);
         sqlite3_close(db);
-        
-        // try deleting and starting over
-        [self _deleteDatabase];
-        
-        int errorCode = sqlite3_open([fileManager fileSystemRepresentationWithPath:databasePath], &db);
-        if (errorCode != SQLITE_OK) {
-            NSLog(@"Failed to open %@: %d -- %@", databasePath, errorCode, [NSString stringWithUTF8String:sqlite3_errmsg(db)]);
-            sqlite3_close(db);
-            
-            exit(1);
-        }
     }
 
     sqliteDatabase = db;
+
     unsigned long long count;
     
-    [self executeSQL:@"select count(*) from sqlite_master" withCallback:SingleUnsignedLongLongCallback context:&count];
+    [self executeSQL:@"select count(*) from sqlite_master" withCallback:SingleUnsignedLongLongCallback context:&count error:NULL];
     DebugLog(@"sqlite_master count = %llu", count);
     [self executeSQL:
 	@"PRAGMA synchronous = OFF;\n"
 	@"PRAGMA temp_store = MEMORY;\n" 
-	withCallback:NULL context:NULL];
+	withCallback:NULL context:NULL error:NULL];
     return YES;
 }
 
@@ -157,23 +150,34 @@ RCS_ID("$Id$")
     sqlite3_close(sqliteDatabase);
 }
 
-- (void)_executeSQL:(NSString *)sql withCallback:(OSLDatabaseCallback)callbackFunction context:(void *)callbackContext;
+- (BOOL)_executeSQL:(NSString *)sql withCallback:(OSLDatabaseCallback)callbackFunction context:(void *)callbackContext error:(NSError **)outError;
 {
     char *errorMessage = NULL;
-    int errorCode = sqlite3_exec(
-                                 sqliteDatabase, /* An open database */
-                                 [sql UTF8String], /* SQL to be executed */
-                                 callbackFunction, /* Callback function */
-                                 callbackContext, /* 1st argument to callback function */
-                                 &errorMessage /* Error msg written here */
-                                 );
-    if (errorCode != SQLITE_OK)
+
+    int errorCode = SQLITE_OK;
+    do {
+        if (errorCode == SQLITE_BUSY)
+            [[NSDate dateWithTimeIntervalSinceNow:0.01] sleepUntilDate];
+
+        errorCode = sqlite3_exec(
+            sqliteDatabase, /* An open database */
+            [sql UTF8String], /* SQL to be executed */
+            callbackFunction, /* Callback function */
+            callbackContext, /* 1st argument to callback function */
+            &errorMessage /* Error msg written here */
+        );
+    } while (errorCode == SQLITE_BUSY && _autoRetry);
+
+    if (errorCode != SQLITE_OK) {
         NSLog(@"%@: %s (%d)", sql, errorMessage, errorCode);
-    else
+        OSLSQLError(outError, errorCode, sqliteDatabase);
+    } else {
         DebugLog(@"EXEC: %@", sql);
+    }
+    return errorCode == SQLITE_OK;
 }
 
-- (OSLPreparedStatement *)_prepareStatement:(NSString *)sql;
+- (OSLPreparedStatement *)_prepareStatement:(NSString *)sql error:(NSError **)outError;
 {
     const char *remainder;
     sqlite3_stmt *statement;
@@ -189,6 +193,7 @@ RCS_ID("$Id$")
     if (errorCode != SQLITE_OK) {
         const char *errorMessage = sqlite3_errmsg(sqliteDatabase);
         NSLog(@"%@: %s (%d)", sql, errorMessage, errorCode);
+        OSLSQLError(outError, errorCode, sqliteDatabase);
 	return nil;
     } else {
         DebugLog(@"PREPARE: %@", sql);
