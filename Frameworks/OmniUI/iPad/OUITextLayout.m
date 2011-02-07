@@ -184,7 +184,7 @@ static void _logLines(CGContextRef ctx, CTFrameRef frame)
         
         CFRange lineRange = CTLineGetStringRange(line);
         
-        DEBUG_TEXT(@"line:%d range:{%d, %d} image bounds:%@ origin:%@", lineIndex, lineRange.location, lineRange.length, NSStringFromRect(imageBounds), NSStringFromPoint(origins[lineIndex]));
+        DEBUG_TEXT(@"line:%ld range:{%ld, %ld} image bounds:%@ origin:%@", lineIndex, lineRange.location, lineRange.length, NSStringFromCGRect(imageBounds), NSStringFromCGPoint(origins[lineIndex]));
         DEBUG_TEXT(@"  width:%f ascent:%f descent:%f leading:%f", width, ascent, descent, leading);
         
         minY = MIN(minY, CGRectGetMinY(imageBounds));
