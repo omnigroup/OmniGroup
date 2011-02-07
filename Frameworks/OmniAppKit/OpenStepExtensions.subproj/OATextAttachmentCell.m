@@ -29,6 +29,11 @@ RCS_ID("$Id$");
     return CGSizeZero;
 }
 
+- (CGPoint)cellBaselineOffset
+{
+    return CGPointZero;
+}
+
 @end
 
 #endif

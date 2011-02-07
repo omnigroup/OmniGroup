@@ -312,9 +312,11 @@ void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, C
                 CGPoint lineOrigin;
                 CTFrameGetLineOrigins(frame, CFRangeMake(lineIndex, 1), &lineOrigin);
                 //NSLog(@"  lineOrigin %@", NSStringFromCGPoint(lineOrigin));
+		
+		CGPoint baselineOffset = [cell cellBaselineOffset];
                 
                 // The glyph positions returned from CTRunGetPositions() are relative to the line origin.
-                CGRect cellFrame = CGRectMake(lineOrigin.x + positions[0].x, lineOrigin.y + positions[0].y, width, ascent + descent);
+                CGRect cellFrame = CGRectMake(lineOrigin.x + positions[0].x + baselineOffset.x, lineOrigin.y + positions[0].y + baselineOffset.y, width, ascent + descent);
                 
                 UIGraphicsPushContext(ctx);
                 [cell drawWithFrame:cellFrame inView:nil];
@@ -435,7 +437,18 @@ static CGFloat _runDelegateGetAscent(void *refCon)
     id <OATextAttachmentCell> cell = attachment.attachmentCell;
     OBASSERT(cell);
     
-    return cell ? cell.cellSize.height : 0.0;
+    return cell ? MAX(0, cell.cellSize.height + [cell cellBaselineOffset].y) : 0.0;
+}
+
+static CGFloat _runDelegateGetDescent(void *refCon)
+{
+    OATextAttachment *attachment = refCon;
+    OBASSERT([attachment isKindOfClass:[OATextAttachment class]]);
+
+    id <OATextAttachmentCell> cell = attachment.attachmentCell;
+    OBASSERT(cell);
+    
+    return cell ? MAX(0, -1 * [cell cellBaselineOffset].y) : 0.0;
 }
 
 static CGFloat _runDelegateGetWidth(void *refCon)
@@ -461,6 +474,7 @@ static NSAttributedString *_transformAttachment(NSMutableAttributedString *sourc
         .version = kCTRunDelegateCurrentVersion,
         .dealloc = _runDelegateDealloc,
         .getAscent = _runDelegateGetAscent,
+        .getDescent = _runDelegateGetDescent,
         .getWidth = _runDelegateGetWidth
     };
     
