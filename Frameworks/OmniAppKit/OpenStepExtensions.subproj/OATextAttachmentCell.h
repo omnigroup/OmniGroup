@@ -24,9 +24,7 @@
 - (BOOL)trackMouse:(NSEvent *)theEvent inRect:(NSRect)cellFrame ofView:(NSView *)controlView untilMouseUp:(BOOL)flag;
 #endif
 @property(nonatomic,readonly) CGSize cellSize;
-#if 0
-- (NSPoint)cellBaselineOffset;
-#endif
+- (CGPoint)cellBaselineOffset;
 @property(nonatomic,assign) OATextAttachment *attachment;
 
 #if 0
