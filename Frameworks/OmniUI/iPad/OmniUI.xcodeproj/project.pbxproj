@@ -1757,7 +1757,6 @@
 					"$(inherited)",
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 				);
-				GCC_DYNAMIC_NO_PIC = NO;
 				PRODUCT_NAME = OmniUI;
 			};
 			name = Debug;
@@ -1770,7 +1769,6 @@
 					"$(inherited)",
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 				);
-				GCC_DYNAMIC_NO_PIC = NO;
 				PRODUCT_NAME = OmniUI;
 			};
 			name = Release;

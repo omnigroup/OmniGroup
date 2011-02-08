@@ -2409,11 +2409,11 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
 {
     OBASSERT(position != nil);
     OBASSERT(other != nil);
-   
-//  iOS 4.3 “Down” from -[NSObject(UITextInput_Internal) _moveDown:withHistory:]
-//  Makes position nil, other position invalid
+    
+    /* This method is nonsensical if one of the positions is nil, but UIKit will occasionally ask us about that (see OBS #68542 and RADAR 8857073). */
+    /* See also GitHub commit: https://github.com/iridia/OmniGroup/commit/f94eb369311d8b6cf0e84d5d7cdbf01845ce0dc0 */
     if (!position || !other)
-    return NSOrderedSame;
+        return NSOrderedSame;
     
     return [(OUEFTextPosition *)position compare:other];
 }
@@ -2880,9 +2880,6 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
     OBPRECONDITION(drawnFrame && !flags.textNeedsUpdate);
     
     CFArrayRef lines = CTFrameGetLines(drawnFrame);
-    if (!lines) {
-        return CGRectNull;
-    }
     
     struct typographicPosition measures;
     
@@ -3522,6 +3519,9 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         DEBUG_TEXT(@"%@ editableFrame using %f x %f", [_content string], frameSize.width, frameSize.height);
 
         drawnFrame = CTFramesetterCreateFrame(framesetter, (CFRange){0, 0}, path, NULL);
+        
+        /* CTFrameGetLines() is documented not to return NULL, but a frameworks user reports it sometimes does anyway. Needs a repro case. */
+        OBASSERT(CTFrameGetLines(drawnFrame) != NULL);
         
         CFRelease(path);
         

@@ -3485,7 +3485,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 344D08D01190D48A00264D89 /* Touch-Library-Debug.xcconfig */;
 			buildSettings = {
-				GCC_DYNAMIC_NO_PIC = NO;
 				PRODUCT_NAME = OmniFoundation;
 			};
 			name = Debug;
@@ -3494,7 +3493,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 344D08D11190D48A00264D89 /* Touch-Library-Release.xcconfig */;
 			buildSettings = {
-				GCC_DYNAMIC_NO_PIC = NO;
 				PRODUCT_NAME = OmniFoundation;
 			};
 			name = Release;
@@ -3503,7 +3501,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 344D08CF1190D48A00264D89 /* Touch-Library-Coverage.xcconfig */;
 			buildSettings = {
-				GCC_DYNAMIC_NO_PIC = NO;
 				PRODUCT_NAME = OmniFoundation;
 			};
 			name = Coverage;
