@@ -332,7 +332,7 @@ static NSString * const SelectAction = @"select";
 #endif
         [toolbarItems addObject:self.appMenuBarItem];
         
-        documentPicker.toolbarItems = toolbarItems;
+        documentPicker.toolbarItems = [[toolbarItems copy] autorelease];
     }
     
     [OUIDocumentProxyView setPlaceholderPreviewImage:[UIImage imageNamed:@"DocumentPreviewPlaceholder.png"]];
