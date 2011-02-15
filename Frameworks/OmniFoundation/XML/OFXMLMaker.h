@@ -1,4 +1,4 @@
-// Copyright 2004-2005,2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005,2009-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@
 /* Creating child elements */
 - (OFXMLMakerElement *)openElement:(NSString *)elementName;
 - (OFXMLMakerElement *)openElement:(NSString *)elementName xmlns:(NSString *)ns;
-- (OFXMLMakerElement *)openElement:(NSString *)elementName xmlns:(NSString *)ns defaultNamespace:(NSString *)ns;
+- (OFXMLMakerElement *)openElement:(NSString *)elementName xmlns:(NSString *)ns defaultNamespace:(NSString *)defaultNamespace;
 - (void)close;
 
 /* Creating child strings. These all return self for convenience. */

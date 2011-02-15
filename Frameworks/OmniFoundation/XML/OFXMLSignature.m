@@ -183,6 +183,13 @@ static BOOL translateLibXMLError(NSError **outError, BOOL asValidation, NSString
         return signatureStructuralFailure(outError, @"%@%@", userDesc, libDesc);
 }
 
+@interface OFXMLSignature ()
+/* Private API, to be moved */
+- (BOOL)_writeReference:(xmlNode *)reference to:(struct OFXMLSignatureVerifyContinuation *)stream error:(NSError **)outError;
+
+- (BOOL)_prepareTransform:(const xmlChar *)algid :(xmlNode *)transformNode from:(struct OFXMLSignatureVerifyContinuation *)fromBuf error:(NSError **)outError;
+@end
+
 @implementation OFXMLSignature
 
 /* Internal utility routines */

@@ -433,7 +433,7 @@
 		4A4E069B08AA72B10098FF0F /* OFScheduledEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D79FE8AAEA611C9CC38 /* OFScheduledEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E069C08AA72B10098FF0F /* OFScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D7AFE8AAEA611C9CC38 /* OFScheduler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E069D08AA72B10098FF0F /* OFTemporaryPlaceholderInvocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D7BFE8AAEA611C9CC38 /* OFTemporaryPlaceholderInvocation.h */; };
-		4A4E069E08AA72B10098FF0F /* OFXMLBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 3476E4EE07C3BDBA0097A113 /* OFXMLBuffer.h */; };
+		4A4E069E08AA72B10098FF0F /* OFXMLBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 3476E4EE07C3BDBA0097A113 /* OFXMLBuffer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E069F08AA72B10098FF0F /* OFXMLCursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341841F9050CF7800097A113 /* OFXMLCursor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E06A008AA72B10098FF0F /* OFXMLDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 344F2BF5050A921B0097A113 /* OFXMLDocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E06A108AA72B10098FF0F /* OFXMLElement.h in Headers */ = {isa = PBXBuildFile; fileRef = 344F2BF9050A924C0097A113 /* OFXMLElement.h */; settings = {ATTRIBUTES = (Public, ); }; };

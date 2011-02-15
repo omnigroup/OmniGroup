@@ -1,4 +1,4 @@
-// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,11 +98,6 @@ enum OFXMLSignatureOperation {
 - (OFCSSMKey *)getHMACKey:(xmlNode *)keyInfo algorithm:(CSSM_ALGORITHMS)algid error:(NSError **)outError;
 - (BOOL)writeReference:(NSString *)externalReference type:(NSString *)referenceType to:(xmlOutputBuffer *)stream error:(NSError **)outError;
 - (BOOL)computeReferenceDigests:(NSError **)outError;
-
-/* Private API, to be moved */
-- (BOOL)_writeReference:(xmlNode *)reference to:(struct OFXMLSignatureVerifyContinuation *)stream error:(NSError **)outError;
-
-- (BOOL)_prepareTransform:(const xmlChar *)algid :(xmlNode *)transformNode from:(struct OFXMLSignatureVerifyContinuation *)fromBuf error:(NSError **)outError;
 
 @end
 

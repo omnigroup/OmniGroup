@@ -1,4 +1,4 @@
-// Copyright 2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2005, 2008, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <OmniFoundation/OFObject.h>
 
 #import <OmniFoundation/OFXMLWhitespaceBehavior.h>
+#import <OmniFoundation/OFXMLBuffer.h>
 
 @class NSArray, NSError;
 @class OFXMLDocument;
@@ -26,6 +27,6 @@
 
 - (NSString *)name;
 
-- (BOOL)appendXML:(struct _OFXMLBuffer *)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
+- (BOOL)appendXML:(OFXMLBuffer)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
 
 @end

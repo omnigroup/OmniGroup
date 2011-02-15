@@ -94,8 +94,9 @@ typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);
 
 @end
 
+#import <OmniFoundation/OFXMLBuffer.h>
 @interface NSObject (OFXMLWriting)
-- (BOOL)appendXML:(struct _OFXMLBuffer *)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
+- (BOOL)appendXML:(OFXMLBuffer)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
 - (BOOL)xmlRepresentationCanContainChildren;
 - (NSObject *)copyFrozenElement;
 @end
