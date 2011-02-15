@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		34A2996D1302F78B000D37A2 /* ONGetHostEntry_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2996C1302F78B000D37A2 /* ONGetHostEntry_Prefix.h */; };
 		34CA5FA30FDEE29C005FF9D0 /* ONFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AFE726C08A02E9D00ED9F2D /* FrameworkDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E96FE8AB1FF11C9CC38 /* FrameworkDefines.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4AFE726D08A02E9D00ED9F2D /* OmniNetworking.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E97FE8AB1FF11C9CC38 /* OmniNetworking.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -143,6 +144,7 @@
 		00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		18EAC01EFFC40E94C697A14E /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniNetworking.strings; sourceTree = "<group>"; };
 		34A1595A056458170097A113 /* OmniNetworking.order */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniNetworking.order; sourceTree = "<group>"; };
+		34A2996C1302F78B000D37A2 /* ONGetHostEntry_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONGetHostEntry_Prefix.h; sourceTree = "<group>"; };
 		34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONFeatures.h; sourceTree = "<group>"; };
 		4A3CECEF08B02E15003A2A9D /* OmniNetworking_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniNetworking_Prefix.h; sourceTree = "<group>"; };
 		4AB8F3C108AD260400DBB061 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
@@ -267,6 +269,7 @@
 			isa = PBXGroup;
 			children = (
 				00E51EA9FE8AB1FF11C9CC38 /* ONGetHostEntry_main.m */,
+				34A2996C1302F78B000D37A2 /* ONGetHostEntry_Prefix.h */,
 			);
 			name = "ONGetHostEntry tool";
 			path = ONGetHostEntry.tproj;
@@ -444,6 +447,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34A2996D1302F78B000D37A2 /* ONGetHostEntry_Prefix.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -823,6 +827,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AFE734108A042A400ED9F2D /* Omni-Tool-Debug.xcconfig */;
 			buildSettings = {
+				GCC_PREFIX_HEADER = ONGetHostEntry.tproj/ONGetHostEntry_Prefix.h;
 				PRODUCT_NAME = ONGetHostEntry;
 			};
 			name = Debug;
@@ -831,6 +836,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AFE734208A042A400ED9F2D /* Omni-Tool-Release.xcconfig */;
 			buildSettings = {
+				GCC_PREFIX_HEADER = ONGetHostEntry.tproj/ONGetHostEntry_Prefix.h;
 				PRODUCT_NAME = ONGetHostEntry;
 			};
 			name = Release;
@@ -839,6 +845,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AFE734008A042A400ED9F2D /* Omni-Tool-Coverage.xcconfig */;
 			buildSettings = {
+				GCC_PREFIX_HEADER = ONGetHostEntry.tproj/ONGetHostEntry_Prefix.h;
 				PRODUCT_NAME = ONGetHostEntry;
 			};
 			name = Coverage;
