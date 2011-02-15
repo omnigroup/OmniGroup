@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -312,11 +312,11 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
     return result;
 }
 
-static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString *formatString)
+static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString *formatString, BOOL currentCalendar)
 {
     DEBUG_XML_STRING(@"%s: input: %@ %f", __PRETTY_FUNCTION__, self, [self timeIntervalSinceReferenceDate]);
     
-    CFCalendarRef gregorianUTCCalendar = (CFCalendarRef)[NSDate gregorianUTCCalendar];
+    CFCalendarRef gregorianUTCCalendar = (CFCalendarRef)(currentCalendar ? [NSCalendar currentCalendar] : [NSDate gregorianUTCCalendar]);
     CFAbsoluteTime timeInterval = CFDateGetAbsoluteTime((CFDateRef)self);
     
     // Extract the non-millisecond portion.
@@ -352,13 +352,13 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 // date
 - (NSString *)xmlDateString;
 {
-    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d-%02d-%02d");
+    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d-%02d-%02d", YES);
 }
 
 // dateTime
 - (NSString *)xmlString;
 {
-    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d-%02d-%02dT%02d:%02d:%02d.%03dZ");
+    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", NO);
 }
 
 // Expects a string in the ICS format: YYYYMMdd.  This doesn't attempt to be very forgiving in parsing; the goal should be to feed in either nil/empty or a conforming string.
@@ -403,7 +403,7 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 
 - (NSString *)icsDateOnlyString;
 {
-    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02d");
+    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02d", YES);
 }
 
 // Expects a string in the ICS format: YYYYMMddTHHmmssZ.  This doesn't attempt to be very forgiving in parsing; the goal should be to feed in either nil/empty or a conforming string.
@@ -454,7 +454,7 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 
 - (NSString *)icsDateString;
 {
-    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02dT%02d%02d%02dZ");
+    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02dT%02d%02d%02dZ", NO);
 }
 
 
