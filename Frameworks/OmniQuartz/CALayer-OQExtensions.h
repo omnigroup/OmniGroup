@@ -42,9 +42,17 @@
 - (void)writeImagesAndOpen;
 #endif
 
+- (BOOL)drawInVectorContext:(CGContextRef)ctx; // return YES from your subclass's override of this method.
+
 @end
 
 #import <QuartzCore/CAMediaTimingFunction.h>
 @interface CAMediaTimingFunction (OQExtensions)
 + (id)functionCompatibleWithDefault;
+@end
+
+@interface NSObject (CALayerOQDelegate)
+
+- (void)drawLayer:(CALayer *)layer inVectorContext:(CGContextRef)ctx;
+
 @end

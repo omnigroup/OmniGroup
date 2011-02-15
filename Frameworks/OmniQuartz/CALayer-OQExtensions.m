@@ -466,6 +466,11 @@ static void _writeString(NSString *str)
     return self == self.presentationLayer;
 }
 
+- (BOOL)drawInVectorContext:(CGContextRef)ctx;
+{
+    return NO;
+}
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (void)renderInContextIgnoringCache:(CGContextRef)ctx;
 {
@@ -547,12 +552,24 @@ static void _writeString(NSString *str)
         
         // We require that the delegate implement the CGContextRef path, not just -displayLayer:.
         id delegate = self.delegate;
-        if (delegate && [delegate respondsToSelector:@selector(drawLayer:inContext:)]) {
-            DEBUG_RENDER(@"  rendering %@ via delegate %@", [self shortDescription], [delegate shortDescription]);
-            [delegate drawLayer:self inContext:ctx];
+        BOOL didVectorDrawing = NO;
+        if (delegate && [delegate respondsToSelector:@selector(drawLayer:inVectorContext:)]) {
+            DEBUG_RENDER(@"  rendering %@ via vector delegate %@", [self shortDescription], [delegate shortDescription]);
+            [delegate drawLayer:self inVectorContext:ctx];
         } else {
-            DEBUG_RENDER(@"  rendering %@", [self shortDescription]);
-            [self drawInContext:ctx];
+            didVectorDrawing = [self drawInVectorContext:ctx];
+        }
+        
+        if (didVectorDrawing) {
+            DEBUG_RENDER(@"  rendered %@ directly to vector", [self shortDescription]);
+        } else {
+            if (delegate && [delegate respondsToSelector:@selector(drawLayer:inContext:)]) {
+                DEBUG_RENDER(@"  rendering %@ via bitmap delegate %@", [self shortDescription], [delegate shortDescription]);
+                [delegate drawLayer:self inContext:ctx];
+            } else {
+                DEBUG_RENDER(@"  rendering %@ directly to bitmap", [self shortDescription]);
+                [self drawInContext:ctx];
+            }
         }
         
         NSArray *sublayers = self.sublayers;
