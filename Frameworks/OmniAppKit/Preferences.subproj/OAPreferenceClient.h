@@ -32,6 +32,8 @@
 - initWithTitle:(NSString *)newTitle defaultsArray:(NSArray *)newDefaultsArray controller:(OAPreferenceController *)controller;
 
 @property(readonly, nonatomic) NSString *title;
+@property(readonly, nonatomic) OAPreferenceController *controller;
+
 @property(readonly, nonatomic) NSView *controlBox;
 @property(readonly, nonatomic) NSView *initialFirstResponder;
 @property(readonly, nonatomic) NSView *lastKeyView;

@@ -122,6 +122,7 @@ RCS_ID("$Id$")
 // API
 
 @synthesize title = _title;
+@synthesize controller = _nonretained_controller;
 
 /*" The controlBox outlet points to the box that will be transferred into the Preferences window when this preference client is selected. "*/
 - (NSView *)controlBox;
