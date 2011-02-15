@@ -25,6 +25,12 @@
 - (id)anyObject;
 - (NSString *)keyForObjectEqualTo:(id)anObj;
 
+- (NSString *)stringForKey:(NSString *)key defaultValue:(NSString *)defaultValue;
+- (NSString *)stringForKey:(NSString *)key;
+
+- (NSArray *)stringArrayForKey:(NSString *)key defaultValue:(NSArray *)defaultValue;
+- (NSArray *)stringArrayForKey:(NSString *)key;
+
 // ObjC methods to nil have undefined results for non-id values (though ints happen to currently work)
 - (float)floatForKey:(NSString *)key defaultValue:(float)defaultValue;
 - (float)floatForKey:(NSString *)key;

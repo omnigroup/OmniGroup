@@ -159,6 +159,40 @@ nochange_noalloc:
     return nil;
 }
 
+- (NSString *)stringForKey:(NSString *)key defaultValue:(NSString *)defaultValue;
+{
+    id object = [self objectForKey:key];
+    if (![object isKindOfClass:[NSString class]])
+        return defaultValue;
+    return object;
+}
+
+- (NSString *)stringForKey:(NSString *)key;
+{
+    return [self stringForKey:key defaultValue:nil];
+}
+
+- (NSArray *)stringArrayForKey:(NSString *)key defaultValue:(NSArray *)defaultValue;
+{
+#ifdef OMNI_ASSERTIONS_ON
+    for (id value in defaultValue)
+        OBPRECONDITION([value isKindOfClass:[NSString class]]);
+#endif
+    NSArray *array = [self objectForKey:key];
+    if (![array isKindOfClass:[NSArray class]])
+        return defaultValue;
+    for (id value in array) {
+        if (![value isKindOfClass:[NSString class]])
+            return defaultValue;
+    }
+    return array;
+}
+
+- (NSArray *)stringArrayForKey:(NSString *)key;
+{
+    return [self stringArrayForKey:key defaultValue:nil];
+}
+
 - (float)floatForKey:(NSString *)key defaultValue:(float)defaultValue;
 {
     id value = [self objectForKey:key];
