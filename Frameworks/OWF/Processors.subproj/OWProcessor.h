@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,8 +44,8 @@ typedef enum {
 
 - (void)processedBytes:(NSUInteger)bytes ofBytes:(NSUInteger)newTotalBytes;
 - (NSDate *)firstBytesDate;
-- (unsigned int)bytesProcessed;
-- (unsigned int)totalBytes;
+- (NSUInteger)bytesProcessed;
+- (NSUInteger)totalBytes;
 
 - (NSArray *)tasks;  // All OWTasks (OWPipelines, presumably) which are using this processor
 - (id)promptView;  // Returns an NSView for the target, if the target has one. May be a superview, controlView, or the like
@@ -151,8 +151,8 @@ typedef enum {
     // Use NSNotFound to indicate an unknown amount.
 - (void)processedBytes:(NSUInteger)bytes ofBytes:(NSUInteger)newTotalBytes;
 - (NSDate *)firstBytesDate;
-- (unsigned int)bytesProcessed;
-- (unsigned int)totalBytes;
+- (NSUInteger)bytesProcessed;
+- (NSUInteger)totalBytes;
 
 @end
 

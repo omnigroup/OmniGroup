@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -123,7 +123,7 @@ static NSCharacterSet *tokenDelimiters;
     stringBuffer = nil;
 }
 
-- (NSUInteger)seekToOffset:(int)offset fromPosition:(OWCursorSeekPosition)position
+- (NSUInteger)seekToOffset:(NSInteger)offset fromPosition:(OWCursorSeekPosition)position;
 {
     [self discardReadahead];
     
