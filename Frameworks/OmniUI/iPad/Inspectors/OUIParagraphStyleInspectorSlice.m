@@ -117,16 +117,13 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(alignmentControl == nil);
     
-    UIView *container = [[UIView alloc] initWithFrame:(CGRect){{0, 0}, {320, 46}}];
-    
-    OUIInspectorSegmentedControl *alignBar = [[OUIInspectorSegmentedControl alloc] initWithFrame:(CGRect){{9,0}, {302,38}}];
+    // We'll be resized by the stack view
+    OUIInspectorSegmentedControl *alignBar = [[OUIInspectorSegmentedControl alloc] initWithFrame:(CGRect){{0,0}, {OUIInspectorContentWidth,38}}];
     alignBar.sizesSegmentsToFit = YES;
     alignBar.allowsEmptySelection = YES;
     
     OUIInspectorSegmentedControlButton *button;
-    
-    [container addSubview:alignBar];
-    
+        
     button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentLeft.png"];
     [button setTag:OALeftTextAlignment];
     
@@ -141,9 +138,8 @@ RCS_ID("$Id$");
 
     [alignBar addTarget:self action:@selector(changeParagraphAlignment:) forControlEvents:UIControlEventValueChanged];
     
-    self.view = container;
+    self.view = alignBar;
     alignmentControl = alignBar; // Retain moves from our local var to the ivar
-    [container release];
 }
 
 - (void)viewDidUnload

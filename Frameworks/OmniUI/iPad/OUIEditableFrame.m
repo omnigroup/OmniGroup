@@ -10,6 +10,7 @@
 #import <Foundation/NSAttributedString.h>
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <OmniAppKit/OATextStorage.h>
+#import <OmniAppKit/OATextAttributes.h>
 #import <OmniBase/rcsid.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniQuartz/OQColor.h>
@@ -18,9 +19,10 @@
 #import <OmniUI/OUIDirectTapGestureRecognizer.h>
 #import <OmniUI/OUIFontInspectorSlice.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
-#import <OmniUI/OUITextColorsInspectorSlice.h>
+#import <OmniUI/OUITextColorAttributeInspectorSlice.h>
 #import <OmniUI/OUITextLayout.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OUITextExampleInspectorSlice.h>
 #import <QuartzCore/QuartzCore.h>
 
 #import <execinfo.h>
@@ -906,8 +908,23 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
     [self _setSolidCaret:-1];
 }
 
+- (NSDictionary *)attributesInRange:(UITextRange *)r;
+{
+    // Inspectors want the attributes of the beginning of the first range of selected text.
+    // I'm passing in the whole range right now since it isn't clear yet how we should behave in the face of embedded bi-di text; should we always do the first position by character order, or the first character by visual rendering order. Doing the easy thing for now.
+    
+    if ([r isEmpty])
+        return [self typingAttributes];
+
+    NSUInteger pos = ((OUEFTextPosition *)(r.start)).index;
+    return [_content attributesAtIndex:pos effectiveRange:NULL];
+}
+
 - (id <NSObject>)attribute:(NSString *)attr inRange:(UITextRange *)r;
 {
+    if ([r isEmpty])
+        return [[self typingAttributes] objectForKey:attr];
+    
     NSUInteger pos = ((OUEFTextPosition *)(r.start)).index;
     return [_content attribute:attr atIndex:pos effectiveRange:NULL];
 }
@@ -972,6 +989,17 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd, BOOL shouldNotif
     
     DEBUG_TEXT(@"Setting %@ to %@ in %@", attr, value, r);
     
+    if ([r isEmpty]) {
+        NSMutableDictionary *attributes = [self.typingAttributes mutableCopy];
+        if (value)
+            [attributes setObject:value forKey:attr];
+        else
+            [attributes removeObjectForKey:value];
+        self.typingAttributes = attributes;
+        [attributes release];
+        return;
+    }
+
     NSUInteger st = ((OUEFTextPosition *)(r.start)).index;
     NSUInteger en = ((OUEFTextPosition *)(r.end)).index;
     
@@ -1478,7 +1506,7 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     if (scrap) {
         UITextRange *seln = self.selectedTextRange;
         if (!seln) {
-            seln = [[OUEFTextRange alloc] initWithStart:(OUEFTextPosition *)[self endOfDocument] end:(OUEFTextPosition *)[self endOfDocument]];
+            seln = [[[OUEFTextRange alloc] initWithStart:(OUEFTextPosition *)[self endOfDocument] end:(OUEFTextPosition *)[self endOfDocument]] autorelease];
         }
         [inputDelegate textWillChange:self];
         [inputDelegate selectionWillChange:self];
@@ -3602,38 +3630,20 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
     if (!selection)
         return nil;
     
-    NSMutableSet *runs = [NSMutableSet set];
-
-    NSRange range = [selection range];
-    while(range.length > 0) {
-        NSRange effective;
-        /* NSDictionary *d = */ [_content attributesAtIndex:range.location longestEffectiveRange:&effective inRange:range];
-        OUEFTextSpan *run = [[OUEFTextSpan alloc] initWithRange:effective generation:generation editor:self];
-        [runs addObject:run];
-        [run release];
-        
-        NSUInteger loc = effective.location + effective.length;
-        if (loc >= range.location + range.length)
-            break;
-        else {
-            range.length = range.location + range.length - loc;
-            range.location = loc;
-        }
-    }
-    
-    return runs;
+    // Return a single inspection range, allowing the inspector what to do if it spans multiple runs or to easily just use the attributes from the first position.
+    // Also, note that if we just have an insertion point, we return that too, allowing the inspector to adjust properties on the typingAttributes.
+    OUEFTextSpan *span = [[OUEFTextSpan alloc] initWithRange:[selection range] generation:generation editor:self];
+    NSSet *spans = [NSSet setWithObject:span];
+    [span release];
+    return spans;
 }
 
-- (void)inspectSelectedText:(id)sender
+- (NSSet *)_configureInspector;
 {
     NSSet *runs = [self inspectableTextSpans];
     if (!runs)
-        return;
+        return nil;
     
-    CGRect selectionRect = [self boundsOfRange:selection];
-    if (CGRectIsEmpty(selectionRect))
-        return;
-        
     DEBUG_TEXT(@"Inspecting: %@ rect: %@", [runs description], NSStringFromCGRect(selectionRect));
     
     if (!_textInspector) {
@@ -3642,14 +3652,42 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         _textInspector.mainPane.title = NSLocalizedStringFromTableInBundle(@"Text Style", @"OUIInspectors", OMNI_BUNDLE, @"Inspector title");
         
         NSMutableArray *slices = [NSMutableArray array];
-        [slices addObject:[[[OUITextColorsInspectorSlice alloc] init] autorelease]];
+        [slices addObject:[[[OUITextExampleInspectorSlice alloc] init] autorelease]];
+        [slices addObject:[[[OUITextColorAttributeInspectorSlice alloc] initWithLabel:NSLocalizedStringFromTableInBundle(@"Text", @"OUIInspectors", OMNI_BUNDLE, @"Title above color swatch picker for the text color.")
+                                                                        attributeName:OAForegroundColorAttributeName] autorelease]];
+        [slices addObject:[[[OUITextColorAttributeInspectorSlice alloc] initWithLabel:NSLocalizedStringFromTableInBundle(@"Background", @"OUIInspectors", OMNI_BUNDLE, @"Title above color swatch picker for the text color.")
+                                                                        attributeName:OABackgroundColorAttributeName] autorelease]];
         [slices addObject:[[[OUIFontInspectorSlice alloc] init] autorelease]];
         [slices addObject:[[[OUIParagraphStyleInspectorSlice alloc] init] autorelease]];
-
-        _textInspector.mainPane.slices = slices;
+        
+        OUIStackedSlicesInspectorPane *mainPane = (OUIStackedSlicesInspectorPane *)_textInspector.mainPane;
+        OBASSERT([mainPane isKindOfClass:[OUIStackedSlicesInspectorPane class]]);
+        
+        mainPane.availableSlices = slices;
     }
     
+    return runs;
+}
+
+- (void)inspectSelectedText:(id)sender
+{
+    CGRect selectionRect = [self boundsOfRange:selection];
+    if (CGRectIsEmpty(selectionRect))
+        return;
+    
+    NSSet *runs = [self _configureInspector];
     [_textInspector inspectObjects:runs fromRect:selectionRect inView:self permittedArrowDirections:UIPopoverArrowDirectionAny];
+}
+
+- (void)inspectSelectedTextFromBarButtonItem:(UIBarButtonItem *)barButtonItem;
+{
+    NSSet *runs = [self _configureInspector];
+    [_textInspector inspectObjects:runs fromBarButtonItem:barButtonItem];
+}
+
+- (void)dismissInspectorImmediately;
+{
+    [_textInspector dismissAnimated:NO];
 }
 
 #pragma mark OUIInspectorDelegate

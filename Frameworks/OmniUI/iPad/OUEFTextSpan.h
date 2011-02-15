@@ -13,7 +13,7 @@
 
 @class OUIEditableFrame;
 
-// Represents a text span for the inspector system. This does not conform to OUIColorInspection since we want to be able to set multiple color attributes (foreground/background). See OUITextSpanColorAttributeInspectorSlice for colors.
+// Represents a text span for the inspector system. This does not conform to OUIColorInspection since we want to be able to set multiple color attributes (foreground/background).
 @interface OUEFTextSpan : OUEFTextRange <OUIFontInspection, OUIParagraphInspection>
 {
 @private

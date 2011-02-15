@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIDetailInspectorSlice.h>
 
+#import <OmniUI/OUIInspectorTextWell.h>
+
 RCS_ID("$Id$");
 
 @implementation OUIDetailInspectorSlice
@@ -44,6 +46,15 @@ RCS_ID("$Id$");
     if (!self.detailPane && _paneMaker)
         self.detailPane = _paneMaker(self);
     [super showDetails:sender];
+}
+
+#pragma mark -
+#pragma mark UIViewController subclass
+
+- (void)viewDidLoad;
+{
+    [super viewDidLoad];
+    self.textWell.showNavigationArrow = YES;
 }
 
 @end

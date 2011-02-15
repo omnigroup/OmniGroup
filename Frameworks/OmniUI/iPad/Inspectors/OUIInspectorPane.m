@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,11 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
+- (BOOL)inInspector;
+{
+    return _nonretained_inspector != nil;
+}
+
 @synthesize inspector = _nonretained_inspector;
 - (OUIInspector *)inspector;
 {
@@ -37,6 +42,11 @@ RCS_ID("$Id$");
 - (void)updateInterfaceFromInspectedObjects;
 {
     // For subclasses
+}
+
+- (void)updateInspectorToolbarItems:(BOOL)animated;
+{
+    [_nonretained_inspector updateInspectorToolbarItems:animated];
 }
 
 #pragma mark -

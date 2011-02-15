@@ -196,7 +196,7 @@ static CGGradientRef HighlightedGradient = NULL;
 
 + (CGFloat)fontSize;
 {
-    return 18;
+    return [UIFont labelFontSize];
 }
 
 + (UIFont *)italicFormatFont;
@@ -246,17 +246,26 @@ static CGGradientRef HighlightedGradient = NULL;
     return UIEdgeInsetsInsetRect(contentsRect, edgeInsets);
 }
 
+- (UIImage *)navigationArrowImage;
+{
+    return [UIImage imageNamed:@"OUINavigationArrow.png"];
+}
+
+@synthesize showNavigationArrow = _showNavigationArrow;
+- (void)setShowNavigationArrow:(BOOL)showNavigationArrow;
+{
+    if (_showNavigationArrow == showNavigationArrow)
+        return;
+    _showNavigationArrow = showNavigationArrow;
+    [self setNeedsDisplay];
+}
+
 - (void)setNavigationTarget:(id)target action:(SEL)action;
 {
     // OBPRECONDITION(target); nil OK for sending up the responder chain
     OBPRECONDITION(action);
-    
-    // We expect to only call this once during setup and to never turn it off.  We might support disabling a well, though.
-    OBPRECONDITION(_showNavigationArrow == NO);
-    
-    _showNavigationArrow = YES;
-    [self setNeedsDisplay];
-    
+
+    self.showNavigationArrow = YES;
     [self addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -283,11 +292,22 @@ static CGGradientRef HighlightedGradient = NULL;
 }
 
 #pragma mark -
+#pragma mark UIView (OUIExtensions)
+
+- (UIEdgeInsets)borderEdgeInsets
+{
+    // 1px white shadow at the bottom.
+    return UIEdgeInsetsMake(0/*top*/, 0/*left*/, 1/*bottom*/, 0/*right*/);
+}
+
+#pragma mark -
 #pragma mark UIView subclass
 
 - (void)drawRect:(CGRect)rect;
 {
     CGRect bounds = self.bounds;
+    
+    OBASSERT(bounds.size.height == kOUIInspectorWellHeight);
     
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
@@ -306,7 +326,7 @@ static CGGradientRef HighlightedGradient = NULL;
     OUIInspectorWellDrawBorderAndInnerShadow(ctx, bounds, _rounded);
     
     if (_showNavigationArrow) {
-        UIImage *arrowImage = [UIImage imageNamed:@"OUINavigationArrow.png"];
+        UIImage *arrowImage = [self navigationArrowImage];
         CGRect arrowRect, remainder;
         CGRectDivide(bounds, &arrowRect, &remainder, CGRectGetHeight(bounds), CGRectMaxXEdge);
         

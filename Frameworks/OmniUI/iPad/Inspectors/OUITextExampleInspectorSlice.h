@@ -7,8 +7,10 @@
 //
 // $Id$
 
-#import <OmniUI/OUIColorSwatchPickerInspectorSlice.h>
+#import <OmniUI/OUIInspectorSlice.h>
 
-// Uses the OUIColorInspection to validate objects and get/set colors.
-@interface OUIColorInspectorSlice : OUIColorSwatchPickerInspectorSlice
+@interface OUITextExampleInspectorSlice : OUIInspectorSlice
+- (NSAttributedString *)makeExampleAttributedString;
 @end
+
+extern NSString * const OUITextExampleInspectorSliceExmapleString;

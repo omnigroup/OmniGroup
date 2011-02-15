@@ -56,6 +56,8 @@ RCS_ID("$Id$")
         
         [items addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
         
+        [items addObject:self.infoBarButtonItem];
+
         UIBarButtonItem *attachImageButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:nil action:@selector(attachImage:)] autorelease];
 
         [items addObject:attachImageButtonItem];
@@ -66,9 +68,16 @@ RCS_ID("$Id$")
     return _documentToolbarItems;
 }
 
+- (void)showInspectorFromBarButtonItem:(UIBarButtonItem *)item;
+{
+    OUIEditableFrame *editor = ((TextViewController *)self.document.viewController).editor;
+    [editor inspectSelectedTextFromBarButtonItem:item];
+}
+
 - (void)dismissInspectorImmediately;
 {
-    // No inspector toolbar item right now
+    OUIEditableFrame *editor = ((TextViewController *)self.document.viewController).editor;
+    [editor dismissInspectorImmediately];
 }
 
 #pragma mark -

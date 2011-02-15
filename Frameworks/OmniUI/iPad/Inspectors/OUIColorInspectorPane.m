@@ -7,12 +7,13 @@
 
 #import <OmniUI/OUIColorInspectorPane.h>
 
-#import <OmniUI/OUIColorInspectorSlice.h>
 #import <OmniUI/OUIColorPicker.h>
 #import <OmniUI/OUIColorValue.h>
 #import <OmniUI/OUIInspectorSegmentedControl.h>
 #import <OmniUI/OUIInspectorSegmentedControlButton.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorSlice.h>
+#import <OmniUI/OUIColorInspectorPaneParentSlice.h>
 
 RCS_ID("$Id$");
 
@@ -35,11 +36,12 @@ RCS_ID("$Id$");
 @synthesize rgbColorPicker = _rgbColorPicker;
 @synthesize grayColorPicker = _grayColorPicker;
 
-- (void)_setSelectedColorTypeIndex:(NSInteger)colorTypeIndex notify:(BOOL)notify;
+- (void)_setSelectedColorTypeIndex:(NSInteger)colorTypeIndex;
 {
     if (colorTypeIndex != (NSInteger)_colorTypeIndex) {
         _colorTypeIndex = colorTypeIndex;
-        if (notify)
+        
+        if (self.visibility == OUIViewControllerVisibilityVisible)
             [[NSNotificationCenter defaultCenter] postNotificationName:OUIColorTypeChangeNotification object:self];
     }
     
@@ -50,24 +52,22 @@ RCS_ID("$Id$");
     if (colorPicker == _currentColorPicker)
         return;
     
-    OUIColorInspectorSlice *slice = (OUIColorInspectorSlice *)self.parentSlice;
+    OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
     
-    if (notify)
-        [_currentColorPicker viewWillDisappear:NO];
-    [_currentColorPicker.view removeFromSuperview];
-    [_currentColorPicker release];
-    if (notify)
-        [_currentColorPicker viewDidDisappear:NO];
-
-    _currentColorPicker = [colorPicker retain];
-    _currentColorPicker.selectionValue = slice.selectionValue;
-    if (notify)
-        [_currentColorPicker viewWillAppear:NO];
-
-    const CGFloat kSpaceBetweenSegmentedControllAndColorPicker = 8;
-    
-    // leaves the inspector at the same height if we somehow get no selection, which we shouldn't
     if (_currentColorPicker) {
+        [self removeChildViewController:_currentColorPicker animated:NO];
+        [_currentColorPicker.view removeFromSuperview];
+    }
+    
+    [_currentColorPicker release];
+    _currentColorPicker = [colorPicker retain];
+    
+    if (_currentColorPicker) {
+        _currentColorPicker.selectionValue = slice.selectionValue;
+        
+        // leaves the inspector at the same height if we somehow get no selection, which we shouldn't
+        const CGFloat kSpaceBetweenSegmentedControllAndColorPicker = 8;
+        
         CGRect typeFrame = _colorTypeSegmentedControl.frame;
         
         // Keep only the height of the picker's view
@@ -90,9 +90,8 @@ RCS_ID("$Id$");
         
         pickerView.frame = pickerFrame;
         [self.view addSubview:pickerView];
-        
-        if (notify)
-            [_currentColorPicker viewDidAppear:NO];
+
+        [self addChildViewController:_currentColorPicker animated:NO];
     }
 }
 
@@ -104,14 +103,13 @@ RCS_ID("$Id$");
 - (void)setSelectedColorPickerIndex:(NSUInteger)segmentIndex;
 {
     _colorTypeIndex = segmentIndex;
-    if ([self isViewLoaded]) {
-        [self _setSelectedColorTypeIndex:segmentIndex notify:NO];
-    }
+    if ([self isViewLoaded])
+        [self _setSelectedColorTypeIndex:segmentIndex];
 }
 
 - (IBAction)colorTypeSegmentedControlSelectionChanged:(id)sender;
 {
-    [self _setSelectedColorTypeIndex:[_colorTypeSegmentedControl selectedSegmentIndex] notify:YES];
+    [self _setSelectedColorTypeIndex:[_colorTypeSegmentedControl selectedSegmentIndex]];
 }
 
 #pragma mark -
@@ -119,7 +117,7 @@ RCS_ID("$Id$");
 
 - (void)updateInterfaceFromInspectedObjects;
 {
-    OUIColorInspectorSlice *slice = (OUIColorInspectorSlice *)self.parentSlice;
+    OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
     
     _currentColorPicker.selectionValue = slice.selectionValue;
 }
@@ -141,15 +139,13 @@ RCS_ID("$Id$");
     [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorGraySegment.png" representedObject:_grayColorPicker];
     
     _colorTypeSegmentedControl.selectedSegment = [_colorTypeSegmentedControl segmentAtIndex:_colorTypeIndex];
-    [self _setSelectedColorTypeIndex:_colorTypeIndex notify:NO]; // We'll forward the view controller methods.
+    [self _setSelectedColorTypeIndex:_colorTypeIndex];
 }
 
 - (void)viewWillAppear:(BOOL)animated;
 {
-    [super viewWillAppear:animated];
-    
     // Default to the higest fidelity color picker, prefering earlier pickers. So, if the palette picker has an exact match, it will get used.
-    OUIColorInspectorSlice *slice = (OUIColorInspectorSlice *)self.parentSlice;
+    OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
     OUIInspectorSelectionValue *selectionValue = slice.selectionValue;
     
     OUIColorPickerFidelity bestFidelity = OUIColorPickerFidelityZero;
@@ -165,27 +161,10 @@ RCS_ID("$Id$");
         }
     }
 
-    [self _setSelectedColorTypeIndex:bestPickerIndex notify:NO];
-    
-    [_currentColorPicker viewWillAppear:animated];
-}
+    [self _setSelectedColorTypeIndex:bestPickerIndex];
 
-- (void)viewDidAppear:(BOOL)animated;
-{
-    [super viewDidAppear:animated];
-    [_currentColorPicker viewDidAppear:animated];
-}
-
-- (void)viewWillDisappear:(BOOL)animated;
-{
-    [super viewWillDisappear:animated];
-    [_currentColorPicker viewWillDisappear:animated];
-}
-
-- (void)viewDidDisappear:(BOOL)animated;
-{
-    [super viewDidDisappear:animated];
-    [_currentColorPicker viewDidDisappear:animated];
+    // Do this after possibly swapping child view controllers. This allows us to remove the old before it gets send -viewWillAppear:, which would hit an assertion (rightly).
+    [super viewWillAppear:animated];
 }
 
 #pragma mark -

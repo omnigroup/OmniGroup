@@ -289,12 +289,12 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
         
         if (!_wraps) {
             // Stop if we are only supposed to show one line and we just did the last one, or if we did the 2nd to last one and we want to show the extra navigation swatch.
-            if ((swatchColumn == swatchsPerRow - 1) || ((swatchColumn == swatchsPerRow - 2) && _showsNavigationSwatch)) {
+            if ((swatchColumn == swatchsPerRow) || ((swatchColumn == swatchsPerRow - 1) && _showsNavigationSwatch)) {
                 break;
             }
         }
 
-        if (((swatchColumn + 1) % swatchsPerRow) == 0) {
+        if ((swatchColumn % swatchsPerRow) == 0) {
             // Prepare for the next row
             offset.x = CGRectGetMinX(bounds);
             offset.y += swatchSize.height + kSwatchSpacing;

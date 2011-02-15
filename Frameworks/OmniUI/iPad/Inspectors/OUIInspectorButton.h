@@ -7,16 +7,14 @@
 //
 // $Id$
 
-#import <OmniUI/OUIColorInspectorSlice.h>
+#import <UIKit/UIButton.h>
 
-@interface OUITextSpanColorAttributeInspectorSlice : OUIAbstractColorInspectorSlice
+@interface OUIInspectorButton : UIButton
 {
 @private
-    NSString *_attribute;
-    NSString *_palettePreferenceKey;
+    UIImage *_image;
 }
 
-@property(nonatomic,copy) NSString *attribute;
-@property(nonatomic,copy) NSString *palettePreferenceKey;
+@property(retain,nonatomic) UIImage *image;
 
 @end

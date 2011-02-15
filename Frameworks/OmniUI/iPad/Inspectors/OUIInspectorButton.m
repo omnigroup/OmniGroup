@@ -1,11 +1,11 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniUI/OUIInspectorToggleButton.h>
+#import <OmniUI/OUIInspectorButton.h>
 
 #import <OmniUI/OUIDrawing.h>
 #import <OmniBase/OmniBase.h>
@@ -13,33 +13,32 @@
 
 RCS_ID("$Id$");
 
-@implementation OUIInspectorToggleButton
+@implementation OUIInspectorButton
 
-static UIImage *NormalBackgroundImage = nil;
-static UIImage *SelectedBackgroundImage = nil;
-
-+ (void)initialize;
+static UIImage *_backgroundImage(NSString *name)
 {
-    OBINITIALIZE;
-    
-    NormalBackgroundImage = [[[UIImage imageNamed:@"OUIToggleButtonNormal.png"] stretchableImageWithLeftCapWidth:6 topCapHeight:0] retain];
-    SelectedBackgroundImage = [[[UIImage imageNamed:@"OUIToggleButtonSelected.png"] stretchableImageWithLeftCapWidth:6 topCapHeight:0] retain];
+    UIImage *image = [UIImage imageNamed:name];
+    OBASSERT(image);
+    return [image stretchableImageWithLeftCapWidth:6 topCapHeight:0];
 }
 
-static id _commonInit(OUIInspectorToggleButton *self)
+static id _commonInit(OUIInspectorButton *self)
 {
     self.opaque = NO;
     self.backgroundColor = nil;
     self.clearsContextBeforeDrawing = YES;
     
-    self.adjustsImageWhenHighlighted = YES;
+    self.adjustsImageWhenHighlighted = NO;
     self.adjustsImageWhenDisabled = YES;
     
-    [self setBackgroundImage:NormalBackgroundImage forState:UIControlStateNormal];
-    [self setBackgroundImage:SelectedBackgroundImage forState:UIControlStateSelected];
+    [self setBackgroundImage:_backgroundImage(@"OUIInspectorButton-Normal.png") forState:UIControlStateNormal];
+    [self setBackgroundImage:_backgroundImage(@"OUIInspectorButton-Selected.png") forState:UIControlStateSelected];
+    [self setBackgroundImage:_backgroundImage(@"OUIInspectorButton-Highlighted.png") forState:UIControlStateHighlighted];
 
     [self setTitleColor:[OUIInspector labelTextColor] forState:UIControlStateNormal];
+    [self setTitleColor:[OUIInspector disabledLabelTextColor] forState:UIControlStateDisabled];
     [self setTitleShadowColor:OUIShadowColor(OUIShadowTypeDarkContentOnLightBackground) forState:UIControlStateNormal];
+    
     self.titleLabel.shadowOffset = OUIShadowOffset(OUIShadowTypeDarkContentOnLightBackground);
 
     return self;

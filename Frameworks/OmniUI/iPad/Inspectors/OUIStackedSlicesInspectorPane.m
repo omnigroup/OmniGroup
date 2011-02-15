@@ -16,10 +16,8 @@ RCS_ID("$Id$");
 @interface OUIStackedSlicesInspectorPaneContentView : OUIInspectorBackgroundView
 {
 @private
-    CGFloat _topEdgePadding;
     NSArray *_slices;
 }
-@property(nonatomic,assign) CGFloat topEdgePadding;
 @property(nonatomic,copy) NSArray *slices;
 @property(nonatomic,readonly) CGFloat contentHeightForViewInPopover;
 @end
@@ -30,16 +28,6 @@ RCS_ID("$Id$");
 {
     [_slices release];
     [super dealloc];
-}
-
-@synthesize topEdgePadding = _topEdgePadding;
-- (void)setTopEdgePadding:(CGFloat)topEdgePadding;
-{
-    if (_topEdgePadding == topEdgePadding)
-        return;
-    _topEdgePadding = topEdgePadding;
-    
-    [self setNeedsLayout];
 }
 
 @synthesize slices = _slices;
@@ -54,28 +42,32 @@ RCS_ID("$Id$");
     [self setNeedsLayout];
 }
 
-static const CGFloat kSliceSpacing = 5; // minimum space; each slice may have more space built into its xib based on its layout.
-
 - (CGFloat)contentHeightForViewInPopover;
 {
-    // Must mirror -layoutSubviews;
-    CGFloat totalHeight = _topEdgePadding;
+    if ([_slices count] == 0) {
+        OBASSERT_NOT_REACHED("You probably want some slices.");
+        return 0;
+    }
     
-    BOOL firstSlice = YES;
+    // Must mirror -layoutSubviews;
+    CGFloat totalHeight = [[_slices objectAtIndex:0] paddingToInspectorTop];
+    
+    OUIInspectorSlice *previousSlice = nil;
     for (OUIInspectorSlice *slice in _slices) {
         // Don't fiddle with slices that have been stolen by embedding inspectors (OmniGraffle).
         UIView *sliceView = slice.view;
         if (sliceView.superview != self)
             continue;
         
-        if (!firstSlice)
-            totalHeight += kSliceSpacing;
-        else
-            firstSlice = NO;
+        if (previousSlice)
+            totalHeight += [slice paddingToPreviousSlice:previousSlice];
         
         totalHeight += CGRectGetHeight(sliceView.frame);
+        previousSlice = slice;
     }
     
+    totalHeight += [[_slices lastObject] paddingToInspectorBottom];
+
     return totalHeight;
 }
 
@@ -84,30 +76,37 @@ static const CGFloat kSliceSpacing = 5; // minimum space; each slice may have mo
     // OUIInspectorBackgroundView adjusts its gradient here.
     [super layoutSubviews];
     
+    if ([_slices count] == 0) {
+        OBASSERT_NOT_REACHED("You probably want some slices.");
+        return;
+    }
+    
     CGRect bounds = self.bounds;
     CGFloat width = CGRectGetWidth(bounds);
     CGFloat yOffset = CGRectGetMinY(bounds);
-    
-    BOOL firstSlice = YES;
-    
+        
     // Spacing between the header of the popover and the first slice (our slice nibs have their content jammed to the top, typically).
-    yOffset += _topEdgePadding;
+    yOffset += [[_slices objectAtIndex:0] paddingToInspectorTop];
     
+    OUIInspectorSlice *previousSlice = nil;
     for (OUIInspectorSlice *slice in _slices) {
         // Don't fiddle with slices that have been stolen by embedding inspectors (OmniGraffle).
         UIView *sliceView = slice.view;
         if (sliceView.superview != self)
             continue;
         
-        if (!firstSlice)
-            yOffset += kSliceSpacing;
-        else
-            firstSlice = NO;
+        if (previousSlice)
+            yOffset += [slice paddingToPreviousSlice:previousSlice];
         
+        CGFloat sideInset = [slice paddingToInspectorSides];
         CGFloat sliceHeight = CGRectGetHeight(sliceView.frame);
-        sliceView.frame = CGRectMake(CGRectGetMinX(bounds), yOffset, width, sliceHeight);
+        sliceView.frame = CGRectMake(CGRectGetMinX(bounds) + sideInset, yOffset, width - 2*sideInset, sliceHeight);
         yOffset += sliceHeight;
+        
+        previousSlice = slice;
     }
+    
+    yOffset += [[_slices lastObject] paddingToInspectorBottom];
     
     if (CGRectGetHeight(bounds) >= yOffset) {
         // Have been resized by UIPopoverController yet
@@ -122,36 +121,48 @@ static const CGFloat kSliceSpacing = 5; // minimum space; each slice may have mo
 
 @end
 
-@implementation OUIStackedSlicesInspectorPane
+@interface OUIStackedSlicesInspectorPane ()
+@property(nonatomic,copy) NSArray *slices;
+@end
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
-{
-    if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
-        return nil;
-    
-    // Spacing between the header of the popover and the first slice (our slice nibs have their content jammed to the top, typically).
-    _topEdgePadding += 2*kSliceSpacing;
-    
-    return self;
-}
+@implementation OUIStackedSlicesInspectorPane
 
 - (void)dealloc;
 {
+    [_availableSlices release];
     [_slices release];
     [super dealloc];
 }
 
-@synthesize topEdgePadding = _topEdgePadding;
-- (void)setTopEdgePadding:(CGFloat)topEdgePadding;
+- (NSArray *)makeAvailableSlices;
 {
-    if (_topEdgePadding == topEdgePadding)
-        return;
-    _topEdgePadding = topEdgePadding;
+    return nil; // For subclasses
+}
+
+@synthesize availableSlices = _availableSlices;
+
+- (NSArray *)appropriateSlicesForInspectedObjects;
+{
+    NSArray *slices = [self.inspector slicesForStackedSlicesPane:self];
+    if (slices)
+        return slices;
     
-    if ([self isViewLoaded]) {
-        OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.view;
-        view.topEdgePadding = _topEdgePadding;
+    // TODO: Add support for this style of use in the superclass? There already is in the delegate-based path.
+    if (!_availableSlices) {
+        _availableSlices = [[self makeAvailableSlices] copy];
+        OBASSERT([_availableSlices count] > 0); // Didn't get slices from the delegate or a subclass!
     }
+    
+    NSSet *inspectedObjects = self.inspectedObjects;
+    OBASSERT([inspectedObjects count] > 0); // Should be inspecting *something* or no slices will love us.
+    
+    NSMutableArray *appropriateSlices = [NSMutableArray array];
+    for (OUIInspectorSlice *slice in _availableSlices) {
+        if ([slice isAppropriateForInspectedObjects:inspectedObjects])
+            [appropriateSlices addObject:slice];
+    }
+
+    return appropriateSlices;
 }
 
 @synthesize slices = _slices;
@@ -162,28 +173,39 @@ static const CGFloat kSliceSpacing = 5; // minimum space; each slice may have mo
     
     OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.view;
 
+    NSSet *oldSlices = [NSSet setWithArray:_slices];
+    NSSet *newSlices = [NSSet setWithArray:slices];
+    
     // TODO: Might want an 'animate' variant later.
     for (OUIInspectorSlice *slice in _slices) {
-        if ([slice isViewLoaded] && slice.view.superview == view) {
-            [slice.view removeFromSuperview]; // Only remove it if it is loaded and wasn't stolen by an embedding inspector (OmniGraffle).
+        if ([newSlices member:slice] == nil) {
+            [self removeChildViewController:slice animated:NO];
+            if ([slice isViewLoaded] && slice.view.superview == view) {
+                [slice.view removeFromSuperview]; // Only remove it if it is loaded and wasn't stolen by an embedding inspector (OmniGraffle).
+            }
+            slice.containingPane = nil;
         }
-        slice.containingPane = nil;
     }
 
     [_slices release];
     _slices = [[NSArray alloc] initWithArray:slices];
 
     for (OUIInspectorSlice *slice in _slices) {
-        slice.containingPane = self;
-        
-        // Add this once up front, but only if an embedding inspector hasn't stolen it from us (OmniGraffle). Not pretty, but that's how it is right now.
-        if (slice.view.superview == nil)
-            [view addSubview:slice.view];
+        if ([oldSlices member:slice] == nil) {
+            slice.containingPane = self;
+            
+            // Add this once up front, but only if an embedding inspector hasn't stolen it from us (OmniGraffle). Not pretty, but that's how it is right now.
+            if (slice.view.superview == nil)
+                [view addSubview:slice.view];
+            
+            [self addChildViewController:slice animated:NO];
+        }
     }
     
     view.slices = slices;
     
     [self inspectorSizeChanged];
+    [self updateInspectorToolbarItems:NO/*animated*/];
 }
 
 - (void)inspectorSizeChanged;
@@ -192,12 +214,36 @@ static const CGFloat kSliceSpacing = 5; // minimum space; each slice may have mo
     self.contentSizeForViewInPopover = CGSizeMake(view.bounds.size.width, view.contentHeightForViewInPopover);
 }
 
+- (void)updateInspectorToolbarItems:(BOOL)animated;
+{
+    // Likely only slice (at most) will have toolbar items, but we don't have a good way to pick, so gather them all.
+    NSMutableArray *toolbarItems = nil;
+    
+    for (OUIInspectorSlice *slice in _slices) {
+        NSArray *sliceToolbarItems = slice.toolbarItems;
+        if ([sliceToolbarItems count] > 0) {
+            if (!toolbarItems)
+                toolbarItems = [NSMutableArray array];
+            [toolbarItems addObjectsFromArray:sliceToolbarItems];
+        }
+        
+    }
+
+    if (![toolbarItems isEqualToArray:self.toolbarItems])
+        [self setToolbarItems:toolbarItems animated:animated];
+    
+    [super updateInspectorToolbarItems:animated];
+}
+
 #pragma mark -
 #pragma mark OUIInspectorPane subclass
 
 - (void)updateInterfaceFromInspectedObjects;
 {
     [super updateInterfaceFromInspectedObjects];
+    
+    self.slices = [self appropriateSlicesForInspectedObjects];
+    OBASSERT([_slices count] > 0); // If there really would be no applicable slices, the control to get here should have been disabled!
     
     [_slices makeObjectsPerformSelector:_cmd];
 }
@@ -208,43 +254,8 @@ static const CGFloat kSliceSpacing = 5; // minimum space; each slice may have mo
 - (void)loadView;
 {
     OUIStackedSlicesInspectorPaneContentView *view = [[OUIStackedSlicesInspectorPaneContentView alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 16)];
-    
-    view.topEdgePadding = _topEdgePadding;
-    
     self.view = view;
     [view release];
-}
-
-- (void)viewWillAppear:(BOOL)animated;
-{
-    [super viewWillAppear:animated];
-    
-    for (OUIInspectorSlice *slice in _slices)
-        [slice viewWillAppear:animated];
-}
-
-- (void)viewDidAppear:(BOOL)animated;
-{
-    [super viewDidAppear:animated];
-    
-    for (OUIInspectorSlice *slice in _slices)
-        [slice viewDidAppear:animated];
-}
-
-- (void)viewWillDisappear:(BOOL)animated;
-{
-    for (OUIInspectorSlice *slice in _slices)
-        [slice viewWillDisappear:animated];
-    
-    [super viewWillDisappear:animated];
-}
-
-- (void)viewDidDisappear:(BOOL)animated;
-{
-    for (OUIInspectorSlice *slice in _slices)
-        [slice viewDidDisappear:animated];
-    
-    [super viewDidDisappear:animated];
 }
 
 @end

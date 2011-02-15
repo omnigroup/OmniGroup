@@ -23,9 +23,7 @@ OBDEPRECATED_METHODS(OUIInspectorDelegate)
 
 @interface OUIInspector (/*Private*/) <UIPopoverControllerDelegate, UINavigationControllerDelegate>
 - (void)_configureTitleForPane:(OUIInspectorPane *)pane;
-- (BOOL)_configureSlicesForPane:(OUIInspectorPane *)pane;
 - (BOOL)_prepareToInspectObjects:(NSSet *)objects;
-- (void)_makeInterface;
 - (void)_startObserving;
 - (void)_stopObserving;
 - (void)_keyboardDidHide:(NSNotification *)note;
@@ -49,6 +47,11 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     return [[[OUIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action] autorelease];
 }
 
++ (UIColor *)disabledLabelTextColor;
+{
+    return [UIColor colorWithHue:kOUIInspectorLabelTextColor.h saturation:kOUIInspectorLabelTextColor.s brightness:kOUIInspectorLabelTextColor.v alpha:kOUIInspectorLabelDisabledTextColorAlphaScale * kOUIInspectorLabelTextColor.a];
+}
+
 + (UIColor *)labelTextColor;
 {
     return [UIColor colorWithHue:kOUIInspectorLabelTextColor.h saturation:kOUIInspectorLabelTextColor.s brightness:kOUIInspectorLabelTextColor.v alpha:kOUIInspectorLabelTextColor.a];
@@ -57,6 +60,34 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 + (UIFont *)labelFont;
 {
     return [UIFont boldSystemFontOfSize:20];
+}
+
+- init;
+{
+    return [self initWithMainPane:nil];
+}
+
+- initWithMainPane:(OUIInspectorPane *)mainPane;
+{
+    if (!(self = [super init]))
+        return nil;
+    
+    if (mainPane)
+        _mainPane = [mainPane retain];
+    else
+        _mainPane = [[OUIStackedSlicesInspectorPane alloc] init];
+
+    _mainPane.inspector = self;
+    
+    // Avoid loading the view until it is needed. The inspectors themselves should do this.
+    //_mainPane.view.frame = CGRectMake(0, 0, OUIInspectorContentWidth, 16);
+        
+    if (!_navigationController && [self isEmbededInOtherNavigationController] == NO) {
+        _navigationController = [[UINavigationController alloc] initWithRootViewController:_mainPane];
+        _navigationController.delegate = self;
+    }
+
+    return self;
 }
 
 - (void)dealloc;
@@ -154,20 +185,14 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 - (NSArray *)slicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 {
-    NSArray *slices = nil;
-    
     if ([_nonretained_delegate respondsToSelector:@selector(inspector:slicesForStackedSlicesPane:)])
-        slices = [_nonretained_delegate inspector:self slicesForStackedSlicesPane:pane];
-    if (!slices)
-        slices = pane.slices; // manually configured slices?
-    return slices;
+        return [_nonretained_delegate inspector:self slicesForStackedSlicesPane:pane];
+    return nil;
 }
 
-- (OUIStackedSlicesInspectorPane *)mainPane;
+- (OUIInspectorPane *)mainPane;
 {
-    if (!_mainPane)
-        [self _makeInterface];
-
+    OBPRECONDITION(_mainPane);
     return _mainPane;
 }
 
@@ -201,10 +226,7 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
     pane.inspectedObjects = inspectedObjects;
     
     [self _configureTitleForPane:pane];
-    
-    if (![self _configureSlicesForPane:pane])
-        return;
-    
+        
     [navigationController pushViewController:pane animated:YES];
 }
 
@@ -239,6 +261,18 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
     [self _configurePopoverSize];
 }
 
+- (void)updateInspectorToolbarItems:(BOOL)animated;
+{
+    UINavigationController *navigationController = _getNavigationController(self);
+    if (!navigationController) {
+        OBASSERT_NOT_REACHED("No navigation controller found?");
+        return;
+    }
+    
+    UIViewController *topViewController = [navigationController topViewController];
+    [navigationController setToolbarHidden:([[topViewController toolbarItems] count] == 0) animated:animated];
+}
+
 - (void)willBeginChangingInspectedObjects;
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorWillBeginChangingInspectedObjectsNotification object:self];
@@ -264,6 +298,9 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
 
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
+    // This will only get called if we are _not_ embedded in another navigation controller.
+    [self updateInspectorToolbarItems:animated];
+
     // Make sure the popover sizes back down when navigating away from a tall details view (it seems to grow correctly). Doing this in the 'will' hook doesn't make it the right size, clipping off some of the bottom.
     if (viewController)
         [self _configurePopoverSize];
@@ -304,25 +341,11 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
     }
     pane.title = title;
 }
-- (BOOL)_configureSlicesForPane:(OUIInspectorPane *)pane;
-{
-    if (![pane isKindOfClass:[OUIStackedSlicesInspectorPane class]])
-        return YES; // nothing to do.
-    
-    OUIStackedSlicesInspectorPane *stackedPane = (OUIStackedSlicesInspectorPane *)pane;
-    
-    NSArray *slices = [self slicesForStackedSlicesPane:stackedPane];
-    if ([slices count] == 0) {
-        OBASSERT_NOT_REACHED("No slices found for stacked pane.");
-        return NO;
-    }
-    stackedPane.slices = slices;
-    return YES;
-}
 
 - (BOOL)_prepareToInspectObjects:(NSSet *)objects;
 {
     OBPRECONDITION([objects count] > 0);
+    OBPRECONDITION(_mainPane);
     
     BOOL embedded = [self isEmbededInOtherNavigationController];
     
@@ -331,17 +354,10 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
         return NO;
     }
     
-    [self _makeInterface];
-    
     _mainPane.inspectedObjects = objects;
     
     [self _configureTitleForPane:_mainPane];
     
-    if (![self _configureSlicesForPane:_mainPane]) {
-        [self dismiss];
-        return NO;
-    }
-
     [self updateInterfaceFromInspectedObjects];
     
     // We cannot reuse popovers, as far as I can tell. It caches the old -contentSizeForViewInPopover and doesn't requery the next time it is presented.
@@ -361,22 +377,6 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
     }
 
     return YES;
-}
-
-- (void)_makeInterface;
-{
-    if (_mainPane)
-        return;
-    
-    _mainPane = [[OUIStackedSlicesInspectorPane alloc] init];
-    _mainPane.inspector = self;
-    
-    if ([self isEmbededInOtherNavigationController] == NO) {
-        _navigationController = [[UINavigationController alloc] initWithRootViewController:_mainPane];
-        _navigationController.delegate = self;
-    }
-    
-    _mainPane.view.frame = CGRectMake(0, 0, OUIInspectorContentWidth, 16);
 }
 
 - (void)_startObserving;
@@ -411,6 +411,12 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
     // If a detail changes its view's height, adjusts its contentSizeForViewInPopover and then we call this, the nav controller still reports the same height.
     CGSize size = _navigationController.topViewController.contentSizeForViewInPopover;
     size.height += titleHeight;
+
+    if (!_navigationController.toolbarHidden) {
+        const CGFloat toolbarHeight = 38;
+        
+        size.height += toolbarHeight;
+    }
     
     [_popoverController setPopoverContentSize:size animated:NO];
 }

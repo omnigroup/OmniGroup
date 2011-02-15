@@ -68,7 +68,6 @@ RCS_ID("$Id$");
     _editor.layer.borderWidth = 4;
 #endif
     
-    _editor.showsInspector = YES;
     _editor.textInset = UIEdgeInsetsMake(4, 4, 4, 4);
     _editor.delegate = self;
     

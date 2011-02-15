@@ -136,6 +136,41 @@ static void OUIViewPerformPosing(void)
     return nil;
 }
 
+// Magic constant to say that this view has no border or doesn't want to be in your border finding nonsense.
+// Returning UIEdgeInsetsZero, on the other hand, means that the view has a border and it is right up against the edge of the view's bounds.
+const UIEdgeInsets OUINoBorderEdgeInsets = {CGFLOAT_MAX, CGFLOAT_MAX, CGFLOAT_MAX, CGFLOAT_MAX};
+
+- (UIEdgeInsets)borderEdgeInsets;
+{
+    CGRect unionBorderRect = CGRectNull;
+    
+    // Default to looking through our subviews, finding their effective border rects and unioning that.
+    for (UIView *subview in self.subviews) {
+        UIEdgeInsets subviewInsets = subview.borderEdgeInsets;
+        if (UIEdgeInsetsEqualToEdgeInsets(subviewInsets, OUINoBorderEdgeInsets))
+            continue;
+        
+        CGRect borderRect = [self convertRect:UIEdgeInsetsInsetRect(subview.bounds, subviewInsets) fromView:subview];
+        if (CGRectEqualToRect(unionBorderRect, CGRectNull))
+            unionBorderRect = borderRect;
+        else
+            unionBorderRect = CGRectUnion(unionBorderRect, borderRect);
+    }
+
+    // If no subviews have a border, then this UIView doesn't have one.
+    if (CGRectEqualToRect(unionBorderRect, CGRectNull))
+        return OUINoBorderEdgeInsets;
+    
+    // Now, calculate the effective inset from our bounds
+    CGRect bounds = self.bounds;
+    return (UIEdgeInsets){
+        .top = CGRectGetMinY(unionBorderRect) - CGRectGetMinY(bounds),
+        .left = CGRectGetMinX(unionBorderRect) - CGRectGetMinX(bounds),
+        .right = CGRectGetMaxX(bounds) - CGRectGetMaxX(unionBorderRect),
+        .bottom = CGRectGetMaxY(bounds) - CGRectGetMaxY(unionBorderRect),
+    };
+}
+
 @end
 
 #ifdef DEBUG // Uses private API

@@ -7,7 +7,12 @@
 //
 // $Id$
 
-#import <OmniUI/OUIDetailInspectorSlice.h>
+#import <Foundation/NSObject.h>
+#import <OmniUI/OUIColorValue.h>
 
-@interface OUITextColorsInspectorSlice : OUIDetailInspectorSlice
+@class OUIInspectorSelectionValue;
+
+@protocol OUIColorInspectorPaneParentSlice <NSObject>
+@property(readonly,nonatomic) OUIInspectorSelectionValue *selectionValue;
+- (void)changeColor:(id <OUIColorValue>)colorValue;
 @end

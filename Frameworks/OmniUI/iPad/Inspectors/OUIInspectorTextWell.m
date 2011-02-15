@@ -223,10 +223,15 @@ static id _commonInit(OUIInspectorTextWell *self)
     return editingText;
 }
 
-static CTFontRef _copyFont(UIFont *font)
+static CTFontRef _copyFont(OUIInspectorTextWell *self, UIFont *font, BOOL label)
 {
-    if (!font)
-        font = [UIFont systemFontOfSize:[UIFont labelFontSize]];
+    if (!font) {
+        CGFloat fontSize = [[self class] fontSize];
+        if (label)
+            font = [UIFont boldSystemFontOfSize:fontSize];
+        else
+            font = [UIFont systemFontOfSize:fontSize];
+    }
     return CTFontCreateWithName((CFStringRef)[font fontName], [font pointSize], NULL);
 }
 static void _setAttr(NSMutableAttributedString *attrString, NSString *name, id value)
@@ -343,14 +348,14 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     
     NSMutableAttributedString *attrText = [[NSMutableAttributedString alloc] initWithString:text attributes:nil];
     {
-        CTFontRef font = _copyFont(_font);
+        CTFontRef font = _copyFont(self, _font, NO/*label*/);
         _setAttr(attrText, (id)kCTFontAttributeName, (id)font);
         CFRelease(font);
     }
     
     if (_label) {
         NSMutableAttributedString *attrFormat = [[NSMutableAttributedString alloc] initWithString:_label ? _label : @"" attributes:nil];
-        CTFontRef font = _copyFont(_labelFont ? _labelFont : _font);
+        CTFontRef font = _copyFont(self, _labelFont ? _labelFont : _font, YES/*label*/);
         _setAttr(attrFormat, (id)kCTFontAttributeName, (id)font);
         CFRelease(font);
         
@@ -393,7 +398,7 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     
     if (!_labelTextLayout) {
         NSMutableAttributedString *attrLabel = [[NSMutableAttributedString alloc] initWithString:_label ? _label : @"" attributes:nil];
-        CTFontRef font = _copyFont(_labelFont ? _labelFont : _font);
+        CTFontRef font = _copyFont(self, _labelFont ? _labelFont : _font, YES/*label*/);
         _setAttr(attrLabel, (id)kCTFontAttributeName, (id)font);
         CFRelease(font);
         
@@ -420,7 +425,7 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     if (!_valueTextLayout) {
         NSString *text = _text ? _text : @"";
         NSMutableAttributedString *attrString = [[NSMutableAttributedString alloc] initWithString:text attributes:nil];
-        CTFontRef font = _copyFont(_font);
+        CTFontRef font = _copyFont(self, _font, NO/*label*/);
         _setAttr(attrString, (id)kCTFontAttributeName, (id)font);
         CFRelease(font);
         

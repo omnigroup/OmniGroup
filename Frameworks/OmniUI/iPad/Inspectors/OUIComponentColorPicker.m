@@ -122,6 +122,7 @@ RCS_ID("$Id$");
     
     [self _updateSliderValuesFromColor];
     [self setView:view];
+    [view release];
 }
 
 - (void)viewDidUnload;

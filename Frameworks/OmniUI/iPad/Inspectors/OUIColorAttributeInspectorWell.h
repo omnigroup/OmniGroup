@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,14 +7,10 @@
 //
 // $Id$
 
-#import <UIKit/UIButton.h>
+#import <OmniUI/OUIInspectorTextWell.h>
 
-@interface OUIInspectorToggleButton : UIButton
-{
-@private
-    UIImage *_image;
-}
+@class OQColor;
 
-@property(retain,nonatomic) UIImage *image;
-
+@interface OUIColorAttributeInspectorWell : OUIInspectorTextWell
+@property(nonatomic,retain) OQColor *color;
 @end

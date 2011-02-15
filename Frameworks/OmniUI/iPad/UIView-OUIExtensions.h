@@ -7,11 +7,20 @@
 //
 // $Id$
 
+#import <UIKit/UIView.h>
+#import <UIKit/UIGeometry.h>
+
 @class UIView, UIImage;
 
 @interface UIView (OUIExtensions)
 - (UIImage *)snapshotImage;
 - (id)containingViewOfClass:(Class)cls; // can return self
+
+// Defaults to zeros, but subclasses can return spacing offsets for where their border appears to be relative to where their actual view edge is.
+// Used by the inspector system to help build seemingly contsistent spacing between controls.
+extern const UIEdgeInsets OUINoBorderEdgeInsets;
+@property(readonly,nonatomic) UIEdgeInsets borderEdgeInsets;
+
 @end
 
 #ifdef DEBUG // Uses private API

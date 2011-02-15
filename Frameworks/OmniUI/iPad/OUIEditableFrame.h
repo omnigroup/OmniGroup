@@ -134,14 +134,19 @@
 - (void)thumbEnded:(OUITextThumb *)thumb normally:(BOOL)normalEnd;
 
 /* These are the interface from the inspectable spans */
+- (NSDictionary *)attributesInRange:(UITextRange *)r;
 - (id <NSObject>)attribute:(NSString *)attr inRange:(UITextRange *)r;
 - (void)setValue:(id)value forAttribute:(NSString *)attr inRange:(UITextRange *)r;
 
 - (BOOL)hasTouchesForEvent:(UIEvent *)event;
 - (BOOL)hasTouchByGestureRecognizer:(UIGestureRecognizer *)recognizer;
 
-@property(nonatomic,assign) BOOL showsInspector;
+// Controls whether the text style inspector is offered in the selection context menu. Not recommended since adjusting the text attributes can change text layout and make the position of inspector look bad.
+@property(nonatomic,assign) BOOL showsInspector OB_DEPRECATED_ATTRIBUTE;
+
 - (NSSet *)inspectableTextSpans;    // returns set of OUEFTextSpans 
+- (void)inspectSelectedTextFromBarButtonItem:(UIBarButtonItem *)barButtonItem;
+- (void)dismissInspectorImmediately;
 
 @end
 

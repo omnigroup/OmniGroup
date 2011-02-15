@@ -711,15 +711,6 @@ static NSString * const SelectAction = @"select";
 
 - (void)_showInspector:(id)sender;
 {
-    // We don't update the text editor editor live, so this is easiest for now.
-    [_window endEditing:YES/*force*/];
-    
-    // Close any undo group this may have created
-    [[self document] finishUndoGroup];
-
-    // Avoid getting two popovers up.
-    [_undoBarButtonItem dismissUndoMenu];
-     
     [self showInspectorFromBarButtonItem:_infoBarButtonItem];
 }
 

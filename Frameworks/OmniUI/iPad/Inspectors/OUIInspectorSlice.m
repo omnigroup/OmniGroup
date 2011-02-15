@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,10 +9,20 @@
 
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorPane.h>
+#import <OmniUI/OUIStackedSlicesInspectorPane.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
 @implementation OUIInspectorSlice
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    // We add -init below for caller's convenience, but subclasses should not subclass that; they should subclass the designated initializer.
+    OBASSERT(OBClassImplementingMethod(self, @selector(init)) == [OUIInspectorSlice class]);
+}
 
 + (NSString *)nibName;
 {
@@ -21,7 +31,7 @@ RCS_ID("$Id$");
 
 - init;
 {
-    return [super initWithNibName:[[self class] nibName] bundle:[NSBundle mainBundle]];
+    return [self initWithNibName:[[self class] nibName] bundle:[NSBundle mainBundle]];
 }
 
 - (void)dealloc;
@@ -41,6 +51,51 @@ RCS_ID("$Id$");
     OUIInspector *inspector = _nonretained_containingPane.inspector;
     OBASSERT(inspector);
     return inspector;
+}
+
+// Uses -[UIView(OUIExtensions) borderEdgeInsets] to find out what adjustment to make to the nominal spacing to make things *look* like they are spaced that way.
+static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
+{
+    UIEdgeInsets insets = view.borderEdgeInsets;
+    
+    if (UIEdgeInsetsEqualToEdgeInsets(insets, OUINoBorderEdgeInsets))
+        return 0;
+    
+    switch (fromEdge) {
+
+        case CGRectMinXEdge:
+            return insets.left;
+        case CGRectMinYEdge:
+            return insets.top;
+        case CGRectMaxXEdge:
+            return insets.right;
+        case CGRectMaxYEdge:
+            return insets.bottom;
+        default:
+            OBASSERT_NOT_REACHED("Bad edge enum");
+            return 0;
+    }
+}
+
+- (CGFloat)paddingToInspectorTop;
+{
+    return 10 - _borderOffsetFromEdge(self.view, CGRectMinYEdge); // More than the bottom due to the inner shadow on the popover controller.
+}
+
+- (CGFloat)paddingToInspectorBottom;
+{
+    return 8 - _borderOffsetFromEdge(self.view, CGRectMaxYEdge);
+}
+
+- (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice;
+{
+    return 14 - _borderOffsetFromEdge(self.view, CGRectMinYEdge) - _borderOffsetFromEdge(previousSlice.view, CGRectMaxYEdge);
+}
+
+- (CGFloat)paddingToInspectorSides;
+{
+    // The goal is to match the inset of grouped table view cells (for cases where we have controls next to one), though individual inspectors may need to adjust this.
+    return 9 - _borderOffsetFromEdge(self.view, CGRectMinXEdge); // Assumes the left/right border offsets are the same, which they usually are with shadows being done vertically.
 }
 
 @synthesize detailPane = _detailPane;

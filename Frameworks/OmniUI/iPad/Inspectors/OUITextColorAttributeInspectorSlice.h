@@ -7,11 +7,9 @@
 //
 // $Id$
 
-#import <OmniUI/OUIInspectorTextWell.h>
+#import <OmniUI/OUIColorAttributeInspectorSlice.h>
 
-@class OQColor;
-
-@interface OUITextColorInspectorWell : OUIInspectorTextWell
-@property(nonatomic,retain) OQColor *textForegroundColor;
-@property(nonatomic,retain) OQColor *textBackgroundColor;
+@interface OUITextColorAttributeInspectorSlice : OUIColorAttributeInspectorSlice
+- initWithLabel:(NSString *)label attributeName:(NSString *)attributeName;
+@property(nonatomic,readonly) NSString *attributeName;
 @end

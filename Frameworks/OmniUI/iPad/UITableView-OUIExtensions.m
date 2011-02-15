@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,25 @@ void OUITableViewFinishedReactingToSelection(UITableView *tableView, OUITableVie
         OUITableViewCellShowSelection(cell, type, cell == selectedCell);
 }
 
+#ifdef NS_BLOCKS_AVAILABLE
+void OUITableViewFinishedReactingToSelectionWithPredicate(UITableView *tableView, OUITableViewCellSelectionType type, BOOL (^predicate)(NSIndexPath *indexPath))
+{
+    NSIndexPath *indexPath = [tableView indexPathForSelectedRow];
+    OBASSERT(indexPath);
+    
+    // Clear the selection
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+    // Update the checkmarks on all the visible cells.    
+    for (UITableViewCell *cell in [tableView visibleCells]) {
+        NSIndexPath *indexPath = [tableView indexPathForCell:cell];
+        OBASSERT(indexPath);
+        OUITableViewCellShowSelection(cell, type, predicate(indexPath));
+    }
+}
+#endif
+
+
 void OUITableViewCellShowSelection(UITableViewCell *cell, OUITableViewCellSelectionType type, BOOL selected)
 {
     switch (type) {
@@ -48,7 +67,7 @@ void OUITableViewCellShowSelection(UITableViewCell *cell, OUITableViewCellSelect
     }
 }
 
-void OUITableViewAdjustContainingViewToExactlyFitContents(UITableView *tableView)
+BOOL OUITableViewAdjustContainingViewToExactlyFitContents(UITableView *tableView, CGFloat maximumHeight)
 {
     // Make sure it has the correct data first.
     [tableView reloadData];
@@ -58,11 +77,20 @@ void OUITableViewAdjustContainingViewToExactlyFitContents(UITableView *tableView
     CGFloat delta = tableViewContentSize.height - CGRectGetHeight(tableViewFrame); // assuming no scaling here
     
     UIView *container = tableView.superview;
+    if (!container)
+        container = tableView; // Bare tableview.
     
     CGRect frame = container.frame;
     frame.size.height += delta;
+    
+    BOOL fits = YES;
+    if (maximumHeight > 0 && frame.size.height > maximumHeight) {
+        frame.size.height = maximumHeight;
+        fits = NO;
+    }
+    
     container.frame = frame;
     
-    tableView.scrollEnabled = NO;
+    tableView.scrollEnabled = !fits;
+    return fits;
 }
-

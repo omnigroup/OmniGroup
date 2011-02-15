@@ -156,7 +156,7 @@ RCS_ID("$Id$")
     NSString *docName = [proxy name];
     
     NSString *actionDescription = nil;
-    if ((_exportType == OUIExportOptionsEmail)) {
+    if (_exportType == OUIExportOptionsEmail) {
         self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUI", OMNI_BUNDLE, @"export options title");
         
         _exportDestinationLabel.text = nil;

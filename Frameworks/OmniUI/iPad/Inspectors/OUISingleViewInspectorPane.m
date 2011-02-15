@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,9 +52,14 @@ static void _setup(OUISingleViewInspectorPane *self)
         _setup(self);
 }
 
-- (void)adjustSizeToExactlyFitTableView:(UITableView *)tableView;
+- (BOOL)adjustSizeToExactlyFitTableView:(UITableView *)tableView;
 {
-    OUITableViewAdjustContainingViewToExactlyFitContents(tableView);
+    return [self adjustSizeToExactlyFitTableView:tableView maximumHeight:420];
+}
+
+- (BOOL)adjustSizeToExactlyFitTableView:(UITableView *)tableView maximumHeight:(CGFloat)maximumHeight;
+{
+    BOOL fits = OUITableViewAdjustContainingViewToExactlyFitContents(tableView, maximumHeight);
     
     // The superclass will have done this for the old size.
     self.contentSizeForViewInPopover = self.view.frame.size;
@@ -65,6 +70,8 @@ static void _setup(OUISingleViewInspectorPane *self)
     
     [OUIInspectorBackgroundView configureTableViewBackground:tableView];
 #endif
+    
+    return fits;
 }
 
 @end

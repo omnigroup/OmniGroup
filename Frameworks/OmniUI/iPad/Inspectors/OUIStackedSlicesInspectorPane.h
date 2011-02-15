@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,14 +12,14 @@
 @interface OUIStackedSlicesInspectorPane : OUIInspectorPane
 {
 @private
-    CGFloat _topEdgePadding;
+    NSArray *_availableSlices;
     NSArray *_slices;
 }
 
-@property(nonatomic,assign) CGFloat topEdgePadding;
-@property(nonatomic,copy) NSArray *slices; // Managed by the OUIInspector.
+- (NSArray *)makeAvailableSlices; // For subclasses (though the delegate hook can also be used)
+@property(nonatomic,copy) NSArray *availableSlices; // All the possible slices. Will get narrowed by applicability.
 
 - (void)inspectorSizeChanged;
+- (void)updateInspectorToolbarItems:(BOOL)animated;
 
 @end
-

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,11 +23,18 @@ typedef enum {
 extern void OUITableViewFinishedReactingToSelection(UITableView *tableView, OUITableViewCellSelectionType type);
 
 /*
+ More flexible version of OUITableViewFinishedReactingToSelection() which allows a block to specify whether a cell should be considered selected. Useful for cases where more than one cell can be selected (toggled on/off).
+ */
+#ifdef NS_BLOCKS_AVAILABLE
+extern void OUITableViewFinishedReactingToSelectionWithPredicate(UITableView *tableView, OUITableViewCellSelectionType type, BOOL (^predicate)(NSIndexPath *indexPath));
+#endif
+
+/*
  Used for the initial setup of images in this case
  */
 extern void OUITableViewCellShowSelection(UITableViewCell *tableViewCell, OUITableViewCellSelectionType type, BOOL selected);
 
 /*
- Assumes the table view is height stretchable. Adjusts the tableView's superview so that the contents of the table view won't be scrollable.
+ Assumes the table view is height stretchable. Adjusts the tableView's superview so that the contents of the table view won't be scrollable. If maximumHeight is positive and the table view's height would exceed this value, it is clamped there.
  */
-extern void OUITableViewAdjustContainingViewToExactlyFitContents(UITableView *tableView);
+extern BOOL OUITableViewAdjustContainingViewToExactlyFitContents(UITableView *tableView, CGFloat maximumHeight);

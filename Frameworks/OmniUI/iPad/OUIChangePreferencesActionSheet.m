@@ -32,7 +32,8 @@ RCS_ID("$Id$")
     NSString *titleFormat = NSLocalizedStringFromTableInBundle(@"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?", @"OmniUI", OMNI_BUNDLE, @"alert message");
     NSString *title = [NSString stringWithFormat:titleFormat, commandDescription];
 
-    OUIChangePreferencesActionSheetDelegate *delegate = [[OUIChangePreferencesActionSheetDelegate alloc] initWithURL:url]; // retained; releases self in button press
+    OUIChangePreferencesActionSheetDelegate *delegate = [[[OUIChangePreferencesActionSheetDelegate alloc] initWithURL:url] autorelease]; // retained; releases self in button press
+    objc_msgSend(delegate, @selector(retain));
     return [self initWithTitle:title delegate:delegate cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") destructiveButtonTitle:nil otherButtonTitles:NSLocalizedStringFromTableInBundle(@"Accept", @"OmniUI", OMNI_BUNDLE, @"alert button title"), nil];
 }
 

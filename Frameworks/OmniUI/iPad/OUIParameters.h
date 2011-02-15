@@ -14,6 +14,7 @@ typedef struct {
 } OUIGrayAlpha; // TODO: Add to OmniQuartz?
 
 // OUIInspectorWell
+#define kOUIInspectorWellHeight (37)
 #define kOUIInspectorWellBorderGradientStartGrayAlpha ((OUIGrayAlpha){0.31, 1.0})
 #define kOUIInspectorWellBorderGradientEndGrayAlpha ((OUIGrayAlpha){0.48, 1.0})
 #define kOUIInspectorWellInnerShadowGrayAlpha ((OUIGrayAlpha){0.0, 0.4})
@@ -21,7 +22,6 @@ typedef struct {
 #define kOUIInspectorWellInnerShadowOffset (CGSizeMake(0,1))
 #define kOUIInspectorWellOuterShadowGrayAlpha ((OUIGrayAlpha){1.0, 0.5})
 #define kOUIInspectorWellCornerRadius (4)
-
 
 // OUIInspectorTextWell
 #define kOUIInspectorTextWellNormalGradientTopColor ((OSHSV){213.0/360.0, 0.10, 1.00, 1.0})
@@ -31,6 +31,7 @@ typedef struct {
 
 #define kOUIInspectorTextWellTextColor ((OSHSV){213.0/360.0, 0.50, 0.40, 1.0})
 #define kOUIInspectorTextWellHighlightedTextColor ((OSHSV){213.0/360.0, 0.50, 0.30, 1.0})
+#define kOUIInspectorLabelDisabledTextColorAlphaScale (0.5)
 
 // OUIInspectorBackgroundView
 #define kOUIInspectorBackgroundTopColor ((OQLinearRGBA){228.0/255.0, 231.0/255.0, 235.0/255.0, 1.0})
@@ -50,3 +51,7 @@ typedef struct {
 
 // OUIBarButtonItem
 #define kOUIBarButtonItemDisabledTextGrayForColoredButtons (0.9) // The default is too dark against these lighter colored buttons (but OK on the black buttons).
+
+// OUIGradientView
+#define kOUIShadowEdgeThickness (6.0f)
+#define kOUIShadowEdgeMaximumAlpha (0.4f)

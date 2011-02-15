@@ -33,7 +33,10 @@ extern void OUIInspectorWellStrokePathWithBorderColor(CGContextRef ctx);
 @property(readonly,nonatomic) BOOL shouldDrawHighlighted;
 @property(readonly,nonatomic) CGRect contentsRect; // Insets from the edges and avoids the navigation arrow if present.
 
-- (void)setNavigationTarget:(id)target action:(SEL)action;
+- (UIImage *)navigationArrowImage;
+@property(assign,nonatomic) BOOL showNavigationArrow;
+
+- (void)setNavigationTarget:(id)target action:(SEL)action; // Convenience to add a target and turn on the navigation arrow
 
 // Subclassing points
 - (UIColor *)textColor; // Returns the text color to use for the current state (defaulting to the class +textColor or +highlightedTextColor)

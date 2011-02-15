@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,7 +27,7 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 {
 @private
     // We hold onto this in case we don't have a _navigationController to retain it on our behalf (if we have -isEmbededInOtherNavigationController subclassed to return YES).
-    OUIStackedSlicesInspectorPane *_mainPane;
+    OUIInspectorPane *_mainPane;
     
     UINavigationController *_navigationController;
     UIPopoverController *_popoverController;
@@ -39,8 +39,12 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 
++ (UIColor *)disabledLabelTextColor;
 + (UIColor *)labelTextColor;
 + (UIFont *)labelFont;
+
+// Defaults to making a OUIStackedSlicesInspectorPane if mainPane is nil (or if -init is called).
+- initWithMainPane:(OUIInspectorPane *)mainPane;
 
 @property(assign,nonatomic) id <OUIInspectorDelegate> delegate;
 
@@ -56,14 +60,15 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 - (NSArray *)slicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 
-@property(readonly,nonatomic) OUIStackedSlicesInspectorPane *mainPane;
+@property(readonly,nonatomic) OUIInspectorPane *mainPane;
 
 - (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSSet *)inspectedObjects;
 - (void)pushPane:(OUIInspectorPane *)pane; // clones the inspected objects of the current top pane
 @property(readonly,nonatomic) OUIInspectorPane *topVisiblePane;
 
-// Call this from inspector slices/details when they change height
+// Call this from inspector slices/details when they change height or their response to -toolbarItems
 - (void)inspectorSizeChanged;
+- (void)updateInspectorToolbarItems:(BOOL)animated;
 
 - (void)willBeginChangingInspectedObjects; // start of ui action
 - (void)didEndChangingInspectedObjects;    // end of ui action

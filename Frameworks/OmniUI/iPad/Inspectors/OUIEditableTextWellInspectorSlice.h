@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,8 +7,7 @@
 //
 // $Id$
 
-#import <OmniUI/OUIColorSwatchPickerInspectorSlice.h>
+#import <OmniUI/OUIActionInspectorSlice.h>
 
-// Uses the OUIColorInspection to validate objects and get/set colors.
-@interface OUIColorInspectorSlice : OUIColorSwatchPickerInspectorSlice
+@interface OUIEditableTextWellInspectorSlice : OUIActionInspectorSlice
 @end
