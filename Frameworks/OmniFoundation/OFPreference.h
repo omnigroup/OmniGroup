@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -96,6 +96,7 @@
 - (int)intForKey:(NSString *)defaultName;
 - (NSInteger)integerForKey:(NSString *)defaultName;
 - (float)floatForKey:(NSString *)defaultName; 
+- (double)doubleForKey:(NSString *)defaultName; 
 - (BOOL)boolForKey:(NSString *)defaultName;  
 - (void)setInt:(int)value forKey:(NSString *)defaultName;
 - (void)setInteger:(NSInteger)value forKey:(NSString *)defaultName;
