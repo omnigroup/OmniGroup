@@ -104,7 +104,9 @@ static void btrace(void)
 - (void)_activeTap:(UITapGestureRecognizer *)r;
 - (void)_inspectTap:(UILongPressGestureRecognizer *)r;
 - (void)_drawSelectionInContext:(CGContextRef)ctx;
+- (void)_drawMarkedRangeBackground:(CGContextRef)ctx;
 - (void)_drawDecorations:(CGContextRef)ctx;
+- (void)_drawMarkedRangeBorder:(CGContextRef)ctx;
 - (void)_didChangeContent;
 - (void)_updateLayout:(BOOL)computeDrawnFrame;
 - (void)_moveInDirection:(UITextLayoutDirection)direction;
@@ -142,6 +144,10 @@ static id do_init(OUIEditableFrame *self)
     self->tapSelectionGranularity = UITextGranularityWord;
 
     self.autocorrectionType = UITextAutocorrectionTypeNo;
+    
+    self.markedRangeBorderColor = [UIColor blackColor];
+    self.markedRangeBorderThickness = 0.5;
+    self.markedRangeBackgroundColor = nil;
 
     return self;
 }
@@ -680,6 +686,9 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
     [_loupe release];
     [tokenizer release];
     
+    [self.markedRangeBorderColor release];
+    [self.markedRangeBackgroundColor release];
+    
     [super dealloc];
 }
 
@@ -1080,7 +1089,11 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     
     [self _drawSelectionInContext:ctx];
     
+    [self _drawMarkedRangeBackground:ctx];
+    
     OUITextLayoutDrawFrame(ctx, drawnFrame, self.bounds, layoutOrigin);
+
+    [self _drawMarkedRangeBorder:ctx];
     
     [self _drawDecorations:ctx];
 }
@@ -3397,26 +3410,57 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
 }
 
 /* We have some decorations that are drawn over the text instead of under it */
-- (void)_drawDecorations:(CGContextRef)ctx
+
+@synthesize markedRangeBorderColor, markedRangeBackgroundColor, markedRangeBorderThickness;
+
+
+- (void)_drawMarkedRangeBackground:(CGContextRef)ctx
 {
-    /* Draw a thin box around the marked range. We may also want to give it a slightly different background color? */
-    if (markedRange.length) {
+	if (!markedRange.length || !self.markedRangeBackgroundColor)
+	return;
+
         struct rectpathwalker ctxt;
         ctxt.ctxt = ctx;
         ctxt.includeInterline = NO;
         getMargins(self, &ctxt);
         
-        OBASSERT(_rangeSelectionColor);
-        [[UIColor blackColor] setStroke];
-        CGContextSetLineWidth(ctx, 0.5);
-        CGContextBeginPath(ctx);
+	CGContextSaveGState(ctx);
+	
+	CGContextBeginPath(ctx);
+	CGContextSetFillColorWithColor(ctx, markedRangeBackgroundColor.CGColor);
+	rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
+	CGContextFillPath(ctx);
+	
+	CGContextRestoreGState(ctx);
+
+	markedTextDirtyRect = ctxt.bounds;
+}
+
+- (void)_drawMarkedRangeBorder:(CGContextRef)ctx
+{
+	if (!markedRange.length || !self.markedRangeBorderColor)
+	return;
+
+        struct rectpathwalker ctxt;
+        ctxt.ctxt = ctx;
+        ctxt.includeInterline = NO;
+        getMargins(self, &ctxt);
         
-        rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
-        
-        CGContextStrokePath(ctx);
-        markedTextDirtyRect = ctxt.bounds;
-    }
-    
+	CGContextSaveGState(ctx);
+
+	CGContextBeginPath(ctx);
+	CGContextSetStrokeColorWithColor(ctx, markedRangeBorderColor.CGColor);
+	CGContextSetLineWidth(ctx, self.markedRangeBorderThickness);
+	rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
+	CGContextStrokePath(ctx);
+
+	CGContextRestoreGState(ctx);
+
+	markedTextDirtyRect = ctxt.bounds;
+}
+
+- (void)_drawDecorations:(CGContextRef)ctx
+{
     /* If we're not using a separate view to draw our caret, draw it here */
     if (flags.solidCaret) {
         if (selection && [selection isEmpty]) {

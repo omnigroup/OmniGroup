@@ -143,5 +143,10 @@
 @property(nonatomic,assign) BOOL showsInspector;
 - (NSSet *)inspectableTextSpans;    // returns set of OUEFTextSpans 
 
+
+@property (nonatomic, readwrite, retain) UIColor *markedRangeBorderColor;
+@property (nonatomic, readwrite, retain) UIColor *markedRangeBackgroundColor;
+@property (nonatomic, readwrite, assign) CGFloat markedRangeBorderThickness;
+
 @end
 
