@@ -145,9 +145,9 @@ static id do_init(OUIEditableFrame *self)
 
     self.autocorrectionType = UITextAutocorrectionTypeNo;
     
-    self.markedRangeBorderColor = [UIColor blackColor];
-    self.markedRangeBorderThickness = 0.5;
-    self.markedRangeBackgroundColor = nil;
+    self.markedRangeBorderColor = [UIColor colorWithRed:213.0/255.0 green:225.0/255.0 blue:237.0/255.0 alpha:1];
+    self.markedRangeBorderThickness = 1.0;
+    self.markedRangeBackgroundColor = [UIColor colorWithRed:236.0/255.0 green:240.0/255.0 blue:248.0/255.0 alpha:1];
 
     return self;
 }
