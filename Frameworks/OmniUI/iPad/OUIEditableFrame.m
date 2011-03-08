@@ -3392,7 +3392,7 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         CGContextFillPath(ctx);
         
         // Record the rect we dirtied so we can redraw when the selection changes
-        selectionDirtyRect = [self convertRectToRenderingSpace:ctxt.bounds]; // note this method does the opposite of what its name implies
+        selectionDirtyRect = CGRectIntegral([self convertRectToRenderingSpace:ctxt.bounds]); // note this method does the opposite of what its name implies
     }
 }
 
@@ -3405,16 +3405,19 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         ctxt.ctxt = ctx;
         ctxt.includeInterline = NO;
         getMargins(self, &ctxt);
+        CGFloat strokewidth = 0.5;
         
         OBASSERT(_rangeSelectionColor);
         [[UIColor blackColor] setStroke];
-        CGContextSetLineWidth(ctx, 0.5);
+        CGContextSetLineWidth(ctx, strokewidth);
         CGContextBeginPath(ctx);
         
         rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
         
         CGContextStrokePath(ctx);
-        markedTextDirtyRect = ctxt.bounds;
+        // note that -convertRectToRenderingSpace: does the opposite of what its name implies
+        CGRect dirty = [self convertRectToRenderingSpace:CGRectInset(ctxt.bounds, -0.5 * strokewidth, -0.5 * strokewidth)];
+        markedTextDirtyRect = CGRectUnion(markedTextDirtyRect, CGRectIntegral(dirty));
     }
     
     /* If we're not using a separate view to draw our caret, draw it here */
@@ -3429,7 +3432,8 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
             if (!CGRectIsEmpty(caretRect)) {
                 [_insertionPointSelectionColor setFill];
                 CGContextFillRect(ctx, caretRect);
-                selectionDirtyRect = [self convertRectToRenderingSpace:caretRect]; // note this method does the opposite of what its name implies
+                CGRect dirty = [self convertRectToRenderingSpace:caretRect]; // note this method does the opposite of what its name implies
+                selectionDirtyRect = CGRectUnion(selectionDirtyRect, CGRectIntegral(dirty));
             }
         }
     }
