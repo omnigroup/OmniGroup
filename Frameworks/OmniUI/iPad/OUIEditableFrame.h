@@ -40,6 +40,8 @@
     UIColor *_insertionPointSelectionColor;
     UIColor *_rangeSelectionColor;
     NSDictionary *markedTextStyle; // Supplied by UIKit.
+    UIColor *_markedRangeBackgroundColor, *_markedRangeBorderColor;
+    CGFloat _markedRangeBorderThickness;
     NSDictionary *_linkTextAttributes;
     id <OUIEditableFrameDelegate> delegate;
     CGSize layoutSize;
@@ -147,6 +149,11 @@
 - (NSSet *)inspectableTextSpans;    // returns set of OUEFTextSpans 
 - (void)inspectSelectedTextFromBarButtonItem:(UIBarButtonItem *)barButtonItem;
 - (void)dismissInspectorImmediately;
+
+
+@property (nonatomic, readwrite, retain) UIColor *markedRangeBorderColor;
+@property (nonatomic, readwrite, retain) UIColor *markedRangeBackgroundColor;
+@property (nonatomic, readwrite, assign) CGFloat markedRangeBorderThickness;
 
 @end
 
