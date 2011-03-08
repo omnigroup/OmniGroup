@@ -495,7 +495,11 @@ static unsigned int rectanglesInLine(CTLineRef line, CGPoint lineOrigin, NSRange
 
 static void rectanglesInRange(CTFrameRef frame, NSRange r, BOOL sloppy, rectanglesInRangeCallback cb, void *ctxt)
 {
+    if (!frame)
+        return;
     CFArrayRef lines = CTFrameGetLines(frame);
+    if (!lines)
+        return;
     CFIndex lineCount = CFArrayGetCount(lines);
     
     CFIndex firstLine = bsearchLines(lines, 0, lineCount, r.location, NULL);
@@ -1106,11 +1110,11 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
 
     BOOL amFirstResponder = [self isFirstResponder];
     
+    if (!drawnFrame || flags.textNeedsUpdate)
+        [self _updateLayout:YES];
+    
     /* Show or hide the selection thumbs */
-    if (selection && ![selection isEmpty] && flags.showSelectionThumbs && amFirstResponder) {
-        if (!drawnFrame || flags.textNeedsUpdate)
-            [self _updateLayout:YES];
-        
+    if (selection && ![selection isEmpty] && flags.showSelectionThumbs && amFirstResponder && drawnFrame) {
         /* We don't want to animate thumb appearance/disappearance --- it's distracting */
         BOOL wereAnimationsEnabled = [UIView areAnimationsEnabled];
         [UIView setAnimationsEnabled:NO];
@@ -1163,7 +1167,7 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     }
     
     /* Show or hide the layer-based blinking cursor */
-    if (drawnFrame && !flags.textNeedsUpdate && selection && [selection isEmpty] && !flags.solidCaret && amFirstResponder) {
+    if (drawnFrame && selection && [selection isEmpty] && !flags.solidCaret && amFirstResponder) {
         CGRect caretRect = [self _caretRectForPosition:(OUEFTextPosition *)(selection.start) affinity:1 bloomScale:self.scale];
         
         caretRect = [self convertRectToRenderingSpace:caretRect];  // method name is misleading
@@ -1197,6 +1201,7 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
         flags.showingEditMenu = 1;
     BOOL suppressContextMenu = (_loupe != nil && _loupe.mode != OUILoupeOverlayNone) ||
                                 (_textInspector != nil && _textInspector.isVisible) ||
+                                !drawnFrame ||
                                 (flags.delegateRespondsToCanShowContextMenu && ![delegate textViewCanShowContextMenu:self]);
     if (!flags.showingEditMenu || suppressContextMenu || !amFirstResponder) {
         if (_selectionContextMenu) {
@@ -2314,6 +2319,18 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
     if (offset == 0)
         return position;
     
+    if (!drawnFrame || flags.textNeedsUpdate) {
+        if (direction != UITextStorageDirectionForward && direction != UITextStorageDirectionBackward) {
+            /* Except for the text storage directions, we need to have up-to-date layout information */
+            
+            [self _updateLayout:YES];
+            if (!drawnFrame) {
+                /* No layout info? Frame may be completely empty. */
+                return nil;
+            }
+        }
+    }
+    
     NSUInteger contentLength = [_content length] - 1;
     NSUInteger pos = [(OUEFTextPosition *)position index];
     NSUInteger result;
@@ -2457,6 +2474,8 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
     
     if (!drawnFrame || flags.textNeedsUpdate)
         [self _updateLayout:YES];
+    if (!drawnFrame)
+        return nil;
         
     NSRange stringRange = [(OUEFTextRange *)range range];
     CFRange lineRange = [self _lineRangeForStringRange:stringRange];
@@ -2568,6 +2587,8 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
     
     if (!drawnFrame || flags.textNeedsUpdate)
         [self _updateLayout:YES];
+    if (!drawnFrame)
+        return nil;
     
     CFArrayRef lines = CTFrameGetLines(drawnFrame);
     
@@ -2640,6 +2661,10 @@ static BOOL firstRect(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat asce
 {
     if (!drawnFrame || flags.textNeedsUpdate)
         [self _updateLayout:YES];
+    if (!drawnFrame) {
+        OBASSERT_NOT_REACHED("Shouldn't be getting caret queries if we have no content.");
+        return CGRectNull;
+    }
 
     // Get the caret rectangle in rendering coordinates
     CGRect textRect = [self _caretRectForPosition:(OUEFTextPosition *)position affinity:1 bloomScale:0.0];
@@ -2713,6 +2738,8 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
 {
     if (!drawnFrame || flags.textNeedsUpdate)
         [self _updateLayout:YES];
+    if (!drawnFrame)
+        return nil;
     
     NSRange r;
     CFRange lineRange;
@@ -2878,6 +2905,8 @@ CGPoint closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint test, NSR
 - (CGRect)_caretRectForPosition:(OUEFTextPosition *)position affinity:(int)affinity bloomScale:(double)bloomScale;
 {
     OBPRECONDITION(drawnFrame && !flags.textNeedsUpdate);
+    if (!drawnFrame)
+        return CGRectNull;
     
     CFArrayRef lines = CTFrameGetLines(drawnFrame);
     
@@ -3520,7 +3549,7 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
 
         drawnFrame = CTFramesetterCreateFrame(framesetter, (CFRange){0, 0}, path, NULL);
         
-        /* CTFrameGetLines() is documented not to return NULL, but a frameworks user reports it sometimes does anyway. Needs a repro case. */
+        /* CTFrameGetLines() is documented not to return NULL. */
         OBASSERT(CTFrameGetLines(drawnFrame) != NULL);
         
         CFRelease(path);
