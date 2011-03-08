@@ -1501,7 +1501,7 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
         [self replaceRange:selection withText:@""];
         [inputDelegate selectionDidChange:self];
         [inputDelegate textDidChange:self];
-    }    
+    }
 }
 
 - (void)paste:(id)sender;
@@ -2026,7 +2026,8 @@ enum {
  * caret or an extended range, always resides witihin.
  *
  * Setting marked text either replaces the existing marked text or, if none is present,
- * inserts it from the current selection. */ 
+ * inserts it from the current selection.
+ */
 
 - (UITextRange *)markedTextRange;                       // Nil if no marked text.
 {
@@ -3429,8 +3430,8 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         ctxt.includeInterline = NO;
         getMargins(self, &ctxt);
         
-	CGContextBeginPath(ctx);
-	[_markedRangeBackgroundColor setFill];
+        CGContextBeginPath(ctx);
+        [_markedRangeBackgroundColor setFill];
         rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
         CGContextFillPath(ctx);
         
@@ -3452,9 +3453,9 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         
         CGContextBeginPath(ctx);
         [_markedRangeBorderColor setStroke];
-	CGContextSetLineWidth(ctx, strokewidth);
-	rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
-	CGContextStrokePath(ctx);
+        CGContextSetLineWidth(ctx, strokewidth);
+        rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
+        CGContextStrokePath(ctx);
         
         // note that -convertRectToRenderingSpace: does the opposite of what its name implies
         CGRect dirty = [self convertRectToRenderingSpace:CGRectInset(ctxt.bounds, -0.5 * strokewidth, -0.5 * strokewidth)];
@@ -3574,11 +3575,11 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         
         // CTFramesetterCreateFrame() will return NULL if the given path's area is zero. On the initial set up of a field editor, though, you might know the width you want but not the height. So, you have to give a width one way or the other, but if you haven't given a height, we'll give a minimum.
         if (frameSize.width == 0) {
-            OBASSERT_NOT_REACHED("Using unlimited layout width since none was specified"); // Need to specify one implicitly via the view frame or textLayoutSize property. 
+            OBASSERT_NOT_REACHED("Using unlimited layout width since none was specified"); // Need to specify one implicitly via the view frame or textLayoutSize property.
             frameSize.width = OUITextLayoutUnlimitedSize;
         }
         if (frameSize.height == 0) {
-            OBASSERT_NOT_REACHED("Using unlimited layout height since none was specified"); // Need to specify one implicitly via the view frame or textLayoutSize property. 
+            OBASSERT_NOT_REACHED("Using unlimited layout height since none was specified"); // Need to specify one implicitly via the view frame or textLayoutSize property.
             frameSize.height = OUITextLayoutUnlimitedSize;
         }
         
