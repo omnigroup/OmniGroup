@@ -2018,6 +2018,11 @@ enum {
 - (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)selectedRange;  // selectedRange is a range within the markedText
 {
     NSRange replaceRange;
+
+    if (!CGRectIsNull(markedTextDirtyRect)) {
+        [self setNeedsDisplayInRect:markedTextDirtyRect];
+        markedTextDirtyRect = CGRectNull;
+    }
     
     NSUInteger adjustedContentLength = [_content length];
     if (adjustedContentLength > 0)
