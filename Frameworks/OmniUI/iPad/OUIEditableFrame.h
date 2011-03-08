@@ -40,6 +40,8 @@
     UIColor *_insertionPointSelectionColor;
     UIColor *_rangeSelectionColor;
     NSDictionary *markedTextStyle; // Supplied by UIKit.
+    UIColor *_markedRangeBackgroundColor, *_markedRangeBorderColor;
+    CGFloat _markedRangeBorderThickness;
     NSDictionary *_linkTextAttributes;
     id <OUIEditableFrameDelegate> delegate;
     CGSize layoutSize;

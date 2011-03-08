@@ -103,10 +103,8 @@ static void btrace(void)
 - (void)_idleTap;
 - (void)_activeTap:(UITapGestureRecognizer *)r;
 - (void)_inspectTap:(UILongPressGestureRecognizer *)r;
-- (void)_drawSelectionInContext:(CGContextRef)ctx;
-- (void)_drawMarkedRangeBackground:(CGContextRef)ctx;
-- (void)_drawDecorations:(CGContextRef)ctx;
-- (void)_drawMarkedRangeBorder:(CGContextRef)ctx;
+- (void)_drawDecorationsBelowText:(CGContextRef)ctx;
+- (void)_drawDecorationsAboveText:(CGContextRef)ctx;
 - (void)_didChangeContent;
 - (void)_updateLayout:(BOOL)computeDrawnFrame;
 - (void)_moveInDirection:(UITextLayoutDirection)direction;
@@ -146,7 +144,7 @@ static id do_init(OUIEditableFrame *self)
     self.autocorrectionType = UITextAutocorrectionTypeNo;
     
     self.markedRangeBorderColor = [UIColor colorWithRed:213.0/255.0 green:225.0/255.0 blue:237.0/255.0 alpha:1];
-    self.markedRangeBorderThickness = 1.0;
+    self->_markedRangeBorderThickness = 1.0;
     self.markedRangeBackgroundColor = [UIColor colorWithRed:236.0/255.0 green:240.0/255.0 blue:248.0/255.0 alpha:1];
 
     return self;
@@ -740,6 +738,10 @@ static void getTypographicPosition(CFArrayRef lines, NSUInteger posIndex, int af
         [self setNeedsDisplay];
 }
 
+@synthesize markedRangeBorderColor = _markedRangeBorderColor;
+@synthesize markedRangeBackgroundColor = _markedRangeBackgroundColor;
+@synthesize markedRangeBorderThickness = _markedRangeBorderThickness;
+
 @synthesize textInset = textInset;
 - (void)setTextInset:(UIEdgeInsets)newInset;
 {
@@ -1079,23 +1081,35 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
+    /* The overall order of drawing is:
+       
+       The view background (possibly none/transparent)
+       
+       In -_drawDecorationsBelowText:
+          Text background
+          Text range-selection highlight
+          Marked text range highlight background
+
+       In OUITextLayoutDrawFrame():
+          The text proper, drawn by CoreText
+          Any text with an offset baseline, drawn by us
+          Any attachment cells
+
+       In -_drawDecorationsAboveText:
+          Marked text range highlight border
+          The selection caret (if empty selection) or begin/end carets (if range selection)
+    */
+          
+    
     UIColor *background = self.backgroundColor;
     if (background) {
         [background setFill];
         CGContextFillRect(ctx, rect);
     }
     
-    /* We want to draw any range selections under the text, and we want to draw insertion carets (non-range selections) and markedText hairlines over the text. */
-    
-    [self _drawSelectionInContext:ctx];
-    
-    [self _drawMarkedRangeBackground:ctx];
-    
+    [self _drawDecorationsBelowText:ctx];
     OUITextLayoutDrawFrame(ctx, drawnFrame, self.bounds, layoutOrigin);
-
-    [self _drawMarkedRangeBorder:ctx];
-    
-    [self _drawDecorations:ctx];
+    [self _drawDecorationsAboveText:ctx];
 }
 
 #pragma mark -
@@ -3372,102 +3386,86 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
     return YES;
 }
 
-- (void)_drawSelectionInContext:(CGContextRef)ctx
+- (void)_drawDecorationsBelowText:(CGContextRef)ctx
 {
     if (!drawnFrame || flags.textNeedsUpdate)
         return;
     
-    if (!selection) {
-        // No selection no draw
-        return;
+    /* TODO: Draw text background (iterate over runs) */
+    
+    /* Draw the selection highlight for range selections. */
+    if (selection && ![selection isEmpty]) {
+        NSRange selectionRange = [selection range];
+        CFRange lineRange = [self _lineRangeForStringRange:selectionRange];
+        
+        //DEBUG_TEXT(@"Selection %u+%u -> lines %u+%u", selectionRange.location, selectionRange.length, lineRange.location, lineRange.length);
+        
+        if (lineRange.length < 1) {
+            // ?? Shouldn't happen, but if it does, I can't think of a reasonable thing to draw. So, punt.
+        } else {
+            struct rectpathwalker ctxt;
+            ctxt.ctxt = ctx;
+            ctxt.includeInterline = YES;
+            getMargins(self, &ctxt);
+            
+            OBASSERT(_rangeSelectionColor);
+            [_rangeSelectionColor setFill];
+            CGContextBeginPath(ctx);
+            
+            rectanglesInRange(drawnFrame, selectionRange, NO, addRectsToPath, &ctxt);
+            
+            // Filling the rects as a single path avoids overlapping alpha compositing on the edges.
+            CGContextFillPath(ctx);
+            
+            // Record the rect we dirtied so we can redraw when the selection changes
+            selectionDirtyRect = [self convertRectToRenderingSpace:ctxt.bounds]; // note this method does the opposite of what its name implies
+        }
     }
     
-    NSRange selectionRange = [selection range];
-    CFRange lineRange = [self _lineRangeForStringRange:selectionRange];
-    
-    //DEBUG_TEXT(@"Selection %u+%u -> lines %u+%u", selectionRange.location, selectionRange.length, lineRange.location, lineRange.length);
-    
-    if (lineRange.length < 1) {
-        // ?? Shouldn't happen, but if it does, I can't think of a reasonable thing to draw. So, punt.
-    } else {
+    /* Draw the marked-text indication's background, if any */
+    if (markedRange.length && _markedRangeBackgroundColor) {
         struct rectpathwalker ctxt;
         ctxt.ctxt = ctx;
-        ctxt.includeInterline = YES;
+        ctxt.includeInterline = NO;
         getMargins(self, &ctxt);
         
-        OBASSERT(_rangeSelectionColor);
-        [_rangeSelectionColor setFill];
-        CGContextBeginPath(ctx);
-        
-        rectanglesInRange(drawnFrame, selectionRange, NO, addRectsToPath, &ctxt);
-        
-        // Filling the rects as a single path avoids overlapping alpha compositing on the edges.
+	CGContextBeginPath(ctx);
+	[_markedRangeBackgroundColor setFill];
+        rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
         CGContextFillPath(ctx);
         
-        // Record the rect we dirtied so we can redraw when the selection changes
-        selectionDirtyRect = [self convertRectToRenderingSpace:ctxt.bounds]; // note this method does the opposite of what its name implies
+        markedTextDirtyRect = [self convertRectToRenderingSpace:ctxt.bounds]; // note this method does the opposite of what its name implies
     }
 }
 
 /* We have some decorations that are drawn over the text instead of under it */
-
-@synthesize markedRangeBorderColor, markedRangeBackgroundColor, markedRangeBorderThickness;
-
-
-- (void)_drawMarkedRangeBackground:(CGContextRef)ctx
+- (void)_drawDecorationsAboveText:(CGContextRef)ctx
 {
-	if (!markedRange.length || !self.markedRangeBackgroundColor)
-	return;
-
+    /* Draw the marked-text indication's border, if any */
+    if (markedRange.length && _markedRangeBackgroundColor) {
         struct rectpathwalker ctxt;
         ctxt.ctxt = ctx;
         ctxt.includeInterline = NO;
         getMargins(self, &ctxt);
+        CGFloat strokewidth = _markedRangeBorderThickness;
         
-	CGContextSaveGState(ctx);
-	
-	CGContextBeginPath(ctx);
-	CGContextSetFillColorWithColor(ctx, markedRangeBackgroundColor.CGColor);
-	rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
-	CGContextFillPath(ctx);
-	
-	CGContextRestoreGState(ctx);
-
-	markedTextDirtyRect = ctxt.bounds;
-}
-
-- (void)_drawMarkedRangeBorder:(CGContextRef)ctx
-{
-	if (!markedRange.length || !self.markedRangeBorderColor)
-	return;
-
-        struct rectpathwalker ctxt;
-        ctxt.ctxt = ctx;
-        ctxt.includeInterline = NO;
-        getMargins(self, &ctxt);
-        
-	CGContextSaveGState(ctx);
-
-	CGContextBeginPath(ctx);
-	CGContextSetStrokeColorWithColor(ctx, markedRangeBorderColor.CGColor);
-	CGContextSetLineWidth(ctx, self.markedRangeBorderThickness);
+        CGContextBeginPath(ctx);
+        [_markedRangeBorderColor setStroke];
+	CGContextSetLineWidth(ctx, strokewidth);
 	rectanglesInRange(drawnFrame, markedRange, NO, addRectsToPath, &ctxt);
 	CGContextStrokePath(ctx);
-
-	CGContextRestoreGState(ctx);
-
-	markedTextDirtyRect = ctxt.bounds;
-}
-
-- (void)_drawDecorations:(CGContextRef)ctx
-{
+        
+        CGRect dirty = CGRectInset(ctxt.bounds, -0.5 * strokewidth, -0.5 * strokewidth);
+        markedTextDirtyRect = [self convertRectToRenderingSpace:dirty];
+    }
+    
     /* If we're not using a separate view to draw our caret, draw it here */
     if (flags.solidCaret) {
         if (selection && [selection isEmpty]) {
             // If we're being drawn zoomed, we might not need as much enlargement of the caret in order for it to be visible
             CGFloat nominalScale = self.scale;
             double actualScale = sqrt(fabs(OQAffineTransformGetDilation(CGContextGetCTM(ctx))));
-
+            
             CGRect caretRect = [self _caretRectForPosition:(OUEFTextPosition *)(selection.start) affinity:1 bloomScale:MAX(nominalScale, actualScale)];
             
             if (!CGRectIsEmpty(caretRect)) {
