@@ -10,6 +10,7 @@
 #import <Foundation/NSAttributedString.h>
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <OmniAppKit/OATextStorage.h>
+#import <OmniAppKit/OATextAttributes.h>
 #import <OmniBase/rcsid.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniQuartz/OQColor.h>
@@ -3420,7 +3421,42 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
     if (!drawnFrame || flags.textNeedsUpdate)
         return;
     
-    /* TODO: Draw text background (iterate over runs) */
+    /* Draw any text background runs */
+    if (flags.mayHaveBackgroundRanges) {
+        BOOL sawAnything = NO;
+        
+        NSUInteger cursor = 0;
+        NSUInteger textLength = [immutableContent length];
+        while (cursor < textLength) {
+            NSRange span = { 0, 0 };
+            CGColorRef bgColor = (CGColorRef)[immutableContent attribute:OABackgroundColorAttributeName
+                                                                 atIndex:cursor
+                                                   longestEffectiveRange:&span
+                                                                 inRange:(NSRange){cursor, textLength-cursor}];
+            if (!span.length)
+                break;
+            
+            if (bgColor && CGColorGetAlpha(bgColor) > 0) {
+                sawAnything = YES;
+                
+                struct rectpathwalker ctxt;
+                ctxt.ctxt = ctx;
+                ctxt.includeInterline = YES;
+                getMargins(self, &ctxt);
+                
+                CGContextSetFillColorWithColor(ctx, bgColor);
+                CGContextBeginPath(ctx);
+                rectanglesInRange(drawnFrame, span, NO, addRectsToPath, &ctxt);
+                CGContextFillPath(ctx);
+            }
+            
+            cursor = span.location + span.length;
+        }
+        
+        if (!sawAnything)
+            flags.mayHaveBackgroundRanges = 0;
+    }
+
     
     /* Draw the selection highlight for range selections. */
     if (selection && ![selection isEmpty]) {
@@ -3574,6 +3610,7 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
             immutableContent = [_content copy];
             flags.immutableContentHasAttributeTransforms = NO;
         }
+        flags.mayHaveBackgroundRanges = 1;
         
         framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)immutableContent);
         

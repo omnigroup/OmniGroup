@@ -78,8 +78,9 @@
         unsigned showSelectionThumbs: 1;  // Effectively disables range selection
         unsigned showsInspector: 1;        // Whether the inspector is offered
         
-        //
-        unsigned immutableContentHasAttributeTransforms: 1;
+        // Information about our content
+        unsigned immutableContentHasAttributeTransforms: 1;     // False if our -attributedText isn't a simple subrange of immutableContent
+        unsigned mayHaveBackgroundRanges: 1;                    // True unless we know we don't have any ... .
     } flags;
     
     // Range selection adjustment and display
