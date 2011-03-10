@@ -223,6 +223,26 @@ static inline CGFloat dist_sqr(CGPoint a, CGPoint b)
     return dx*dx + dy*dy;
 }
 
+/* Aligns an extent (one dimension of a rectangle) so that its edges lie on half-integer coordinates, under the 1-dimensional affine transform given by translate and scale. This attempts to keep the rectangle's size roughly the same, unlike CGRectIntegral() (but like -[NSView centerScanRect:]). */
+static void alignExtentToPixelCenters(CGFloat translate, CGFloat scale, CGFloat *origin, CGFloat *size)
+{
+    CGFloat xsize = *size * scale;
+    CGFloat xorigin = ( *origin * scale ) + translate;
+    CGFloat rxsize = round(xsize);
+    CGFloat adjustment = xsize - rxsize;
+    CGFloat rxorigin = xorigin;
+    
+    if (fabs(adjustment) > 1e-3) {
+        *size = ( rxsize / scale );
+        rxorigin += adjustment * 0.5;
+    }
+    
+    rxorigin = floor(rxorigin) + 0.5;
+    if (fabs(rxorigin - xorigin) > 1e-3) {
+        *origin = ( rxorigin - translate ) / scale;
+    }
+}
+
 /*
  Searches for the CTLine containing a given string index (queryIndex), confining the search to the range [l,h).
  The line's index is returned and a line ref is stored in *foundLine.
@@ -3284,6 +3304,7 @@ struct rectpathwalker {
     struct rectpathwalkerLineBottom {
         CGFloat descender, left, right;
     } currentLine, previousLine;
+    CGAffineTransform *centerScanUnderTransform;
     BOOL includeInterline;        // Whether to extend lines vertically to fill gaps
 };
 
@@ -3298,6 +3319,8 @@ static void getMargins(OUIEditableFrame *self, struct rectpathwalker *r)
     
     r->currentLine = (struct rectpathwalkerLineBottom){ NAN, NAN, NAN };
     r->previousLine = (struct rectpathwalkerLineBottom){ NAN, NAN, NAN };
+    
+    r->centerScanUnderTransform = NULL;
 }
 
 static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat ascent, CGFloat descent, unsigned flags, void *ctxt)
@@ -3345,6 +3368,11 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         highlightRect.size.width = adjustedRightx - highlightRect.origin.x;
     } else {
         highlightRect.size.width = width;
+    }
+    
+    if (r->centerScanUnderTransform) {
+        alignExtentToPixelCenters(r->centerScanUnderTransform->tx, r->centerScanUnderTransform->a, &highlightRect.origin.x, &highlightRect.size.width);
+        alignExtentToPixelCenters(r->centerScanUnderTransform->ty, r->centerScanUnderTransform->d, &highlightRect.origin.y, &highlightRect.size.height);
     }
     
     if (r->includeInterline) {
@@ -3443,12 +3471,15 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
 /* We have some decorations that are drawn over the text instead of under it */
 - (void)_drawDecorationsAboveText:(CGContextRef)ctx
 {
+    CGAffineTransform currentCTM = CGContextGetCTM(ctx);
+    
     /* Draw the marked-text indication's border, if any */
     if (markedRange.length && _markedRangeBorderColor) {
         struct rectpathwalker ctxt;
         ctxt.ctxt = ctx;
         ctxt.includeInterline = NO;
         getMargins(self, &ctxt);
+        ctxt.centerScanUnderTransform = &currentCTM;
         CGFloat strokewidth = _markedRangeBorderThickness;
         
         CGContextBeginPath(ctx);
@@ -3467,7 +3498,7 @@ static BOOL addRectsToPath(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat
         if (selection && [selection isEmpty]) {
             // If we're being drawn zoomed, we might not need as much enlargement of the caret in order for it to be visible
             CGFloat nominalScale = self.scale;
-            double actualScale = sqrt(fabs(OQAffineTransformGetDilation(CGContextGetCTM(ctx))));
+            double actualScale = sqrt(fabs(OQAffineTransformGetDilation(currentCTM)));
             
             CGRect caretRect = [self _caretRectForPosition:(OUEFTextPosition *)(selection.start) affinity:1 bloomScale:MAX(nominalScale, actualScale)];
             
