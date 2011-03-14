@@ -9,8 +9,10 @@
 
 #import <OmniFoundation/OFDataBuffer.h>
 #import <OmniFoundation/OFStringScanner.h>
-#import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
+#import <OmniFoundation/NSAttributedString-OFExtensions.h>
+#import <OmniAppKit/OAFontDescriptor.h>
+#import <OmniAppKit/OATextAttributes.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <CoreText/CTParagraphStyle.h>
@@ -104,7 +106,8 @@ static OFCharacterSet *ReservedSet;
 
     _state.fontSize = -1;
     _state.fontIndex = -1;
-    _state.colorIndex = -1;
+    _state.foregroundColorIndex = -1;
+    _state.backgroundColorIndex = 0;
     _state.underline = kCTUnderlineStyleNone;
     return self;
 }
@@ -239,14 +242,27 @@ static const struct {
     [colorTableEntry release];
     OBASSERT(newColorIndexValue != nil);
     int newColorIndex = [newColorIndexValue intValue];
-
-    if (newColorIndex == _state.colorIndex)
-        return;
-
-    OFDataBufferAppendCString(_dataBuffer, "\\cf");
-    OFDataBufferAppendInteger(_dataBuffer, newColorIndex);
-    OFDataBufferAppendByte(_dataBuffer, ' ');
-    _state.colorIndex = newColorIndex;
+    
+    if (newColorIndex != _state.foregroundColorIndex) {
+        OFDataBufferAppendCString(_dataBuffer, "\\cf");
+        OFDataBufferAppendInteger(_dataBuffer, newColorIndex);
+        OFDataBufferAppendByte(_dataBuffer, ' ');
+        _state.foregroundColorIndex = newColorIndex;
+    }
+    
+    newColor = [newAttributes objectForKey:OABackgroundColorAttributeName];
+    colorTableEntry = [[OUIRTFColorTableEntry alloc] initWithColor:newColor];
+    newColorIndexValue = [_registeredColors objectForKey:colorTableEntry];
+    [colorTableEntry release];
+    OBASSERT(newColorIndexValue != nil);
+    newColorIndex = [newColorIndexValue intValue];
+    
+    if (newColorIndex != _state.backgroundColorIndex) {
+        OFDataBufferAppendCString(_dataBuffer, "\\cb");
+        OFDataBufferAppendInteger(_dataBuffer, newColorIndex);
+        OFDataBufferAppendByte(_dataBuffer, ' ');
+        _state.backgroundColorIndex = newColorIndex;
+    }
 }
 
 - (void)_writeParagraphAttributes:(NSDictionary *)newAttributes;
@@ -327,10 +343,12 @@ static const struct {
     [defaultColorEntry writeToDataBuffer:_dataBuffer];
     [defaultColorEntry release];
 
-    NSRange effectiveRange;
     NSUInteger stringLength = [_attributedString length];
-    for (NSUInteger textIndex = 0; textIndex < stringLength; textIndex = NSMaxRange(effectiveRange)) {
-        id color = [_attributedString attribute:(NSString *)kCTForegroundColorAttributeName atIndex:textIndex effectiveRange:&effectiveRange];
+    NSSet *textColors = [_attributedString valuesOfAttribute:(NSString *)kCTForegroundColorAttributeName inRange:(NSRange){0, stringLength}];
+    textColors = [textColors setByAddingObjectsFromSet:[_attributedString valuesOfAttribute:OABackgroundColorAttributeName inRange:(NSRange){0, stringLength}]];
+    for (id color in textColors) {
+        if (!color || [color isNull])
+            continue;
 #ifdef DEBUG_RTF_WRITER
         NSLog(@"Registering color: %@", [OUIRTFWriter debugStringForColor:color]);
 #endif
@@ -460,7 +478,9 @@ static inline void writeString(OFDataBuffer *dataBuffer, NSString *string)
 
     if (color == nil)
         return self;
-
+    
+    OBASSERT(CFGetTypeID(color) == CGColorGetTypeID());
+    
     CGColorRef cgColor = (CGColorRef)color;
     CGColorSpaceRef colorSpace = CGColorGetColorSpace(cgColor);
     const CGFloat *components = CGColorGetComponents(cgColor);
