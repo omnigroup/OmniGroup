@@ -5,6 +5,6 @@
       location = "group:../Frameworks/OmniUI/iPad/Examples/TextEditor/TextEditor.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../../../github/OmniGroup/Tools/FixStringsFile/FixStringsFile.xcodeproj">
+      location = "group:../Tools/FixStringsFile/FixStringsFile.xcodeproj">
    </FileRef>
 </Workspace>
