@@ -36,7 +36,7 @@ static NSCharacterSet *tokenDelimiters;
     if (source == nil)
         [NSException raise:NSInvalidArgumentException format:@"-[%@ %@] called with a nil source", NSStringFromClass(isa), NSStringFromSelector(_cmd)];
 
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
         
     byteSource = [source retain];

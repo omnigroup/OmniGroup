@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,8 +27,8 @@ RCS_ID("$Id$")
 	return nil;
     }
 
-    if ([super init] == nil)
-	return nil;
+    if (!(self = [super init]))
+        return nil;
 
     inputFilename = [aFilename retain];
     [self writeData:data];

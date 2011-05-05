@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -414,7 +414,7 @@ nonstandardDate:
 
 - initWithHours:(unsigned int)newHours minutes:(unsigned int)newMinutes seconds:(unsigned int)newSeconds;
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     hours = newHours;

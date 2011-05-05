@@ -1,4 +1,4 @@
-// Copyright 2003-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2006, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,7 @@ RCS_ID("$Id$");
 
 - initWithContent:(OWContent *)initialContent context:(id <OWProcessorContext>)aPipeline;
 {
-    if (![super initWithContent:initialContent context:aPipeline])
+    if (!(self = [super initWithContent:initialContent context:aPipeline]))
         return nil;
 
     baseAddress = [[pipeline contextObjectForKey:OWCacheArcSourceAddressKey] retain];

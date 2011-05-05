@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -74,7 +74,7 @@ RCS_ID("$Id$")
 
 - initWithUsername:(NSString *)aUsername password:(NSString *)aPassword hostname:(NSString *)aHostname port:(NSString *)aPort;
 {
-    if (![super init])
+    if (!(self = [super init]))
 	return nil;
 
     /* Empty usernames/passwords are possible, and are distinct from having no username or password ... */

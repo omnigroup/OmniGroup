@@ -1,4 +1,4 @@
-// Copyright 2004-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -75,7 +75,7 @@ enum { NOT_READY, READY };
 {
     OFWeakRetainConcreteImplementation_INIT;
 
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
 
     dataStreamReadyLock = [[NSConditionLock alloc] initWithCondition:NOT_READY];

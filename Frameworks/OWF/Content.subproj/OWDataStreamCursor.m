@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -147,7 +147,7 @@ static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *a
 
 - initForDataStream:(OWDataStream *)aStream;
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     byteOrder = NS_UnknownByteOrder;
@@ -549,7 +549,7 @@ PEEK_DATA_OF_TYPE(double, Double);
 
 - initForDataStream:(OWDataStream *)aStream;
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     dataStream = [aStream retain];

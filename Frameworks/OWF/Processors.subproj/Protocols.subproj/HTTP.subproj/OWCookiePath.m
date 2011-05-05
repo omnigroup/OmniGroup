@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,6 +30,9 @@ static NSLock *pathLock = nil;
 
 - initWithPath:(NSString *)aPath;
 {
+    if (!(self = [super init]))
+        return nil;
+
     _path = [aPath copy];
     _cookies = [[NSMutableArray alloc] init];
     

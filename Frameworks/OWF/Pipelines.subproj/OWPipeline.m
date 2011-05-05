@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -567,8 +567,8 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
 - (id)initWithCacheGroup:(OWContentCacheGroup *)someCaches content:(NSArray *)someContent arcs:(NSArray *)someArcs target:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;  // Designated initializer
 {
-    if ([super init] == nil)
-	return nil;
+    if (!(self = [super init]))
+        return nil;
 
     OFWeakRetainConcreteImplementation_INIT;
 

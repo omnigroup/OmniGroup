@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -132,7 +132,7 @@ static NSLock *allActiveTasksLock = nil;
 
 - initWithContent:(OWContent *)aContent typeString:(NSString *)aType;
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     nonretainedContent = aContent;

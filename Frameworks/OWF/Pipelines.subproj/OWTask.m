@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,7 +65,7 @@ static NSBundle *OWF_Bundle = nil;
 
 - init;  // DESIGNATED INITIALIZER
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     OFSimpleLockInit(&displayablesSimpleLock);
@@ -80,7 +80,7 @@ static NSBundle *OWF_Bundle = nil;
 
 - initWithName:(NSString *)name contentInfo:(OWContentInfo *)aContentInfo parentContentInfo:(OWContentInfo *)aParentContentInfo;
 {
-    if (![self init])
+    if (!(self = [self init]))
         return nil;
 
     compositeTypeString = [name retain];

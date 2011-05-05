@@ -138,7 +138,7 @@ unlockAndReturn:
 
 - initWithContent:(OWContent *)initialContent context:(id <OWProcessorContext>)aPipeline;
 {
-    if (![super init])
+    if (!(self = [super init]))
 	return nil;
     
     OFSimpleLockInit(&displayablesSimpleLock);

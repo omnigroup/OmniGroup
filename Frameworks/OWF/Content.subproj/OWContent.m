@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -201,7 +201,7 @@ static NSZone *OWContentZone = NULL;
 
 - (id)initWithContent:(id <OWConcreteCacheEntry>)someContent type:(NSString *)contentTypeString;
 {
-    if ([self initWithName:nil content:someContent] == nil)
+    if (!(self = [self initWithName:nil content:someContent]))
         return nil;
 
     [self setContentTypeString:contentTypeString];
@@ -213,7 +213,7 @@ static NSZone *OWContentZone = NULL;
 {
     OBPRECONDITION(someContent != nil);
 
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     if (someContent != nil) {

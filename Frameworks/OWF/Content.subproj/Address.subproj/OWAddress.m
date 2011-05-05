@@ -1,4 +1,4 @@
-// Copyright 1999-2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2007, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -517,7 +517,7 @@ addressForNotSoObviousHostname(NSString *string)
 
 - initWithURL:(OWURL *)aURL target:(NSString *)aTarget methodString:(NSString *)aMethodString methodDictionary:(NSDictionary *)aMethodDictionary effect:(OWAddressEffect)anEffect forceAlwaysUnique:(BOOL)shouldForceAlwaysUnique contextDictionary:(NSDictionary *)aContextDictionary;
 {
-    if (![super init])
+    if (!(self = [super init]))
 	return nil;
 
     url = [aURL retain];
@@ -550,8 +550,8 @@ addressForNotSoObviousHostname(NSString *string)
 {
     OBPRECONDITION(dictionary != nil);
 
-    if ([super init] == nil)
-	return nil;
+    if (!(self = [super init]))
+        return nil;
 
     url = [[OWURL urlFromString:[dictionary objectForKey:@"url" defaultObject:@""]] retain];
     target = [[dictionary objectForKey:@"target" defaultObject:@""] retain];

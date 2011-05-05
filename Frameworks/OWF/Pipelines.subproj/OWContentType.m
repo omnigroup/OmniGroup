@@ -507,7 +507,8 @@ got_path:
 
 - initWithCoder:(NSCoder *)archiver
 {
-    [super init];
+    if (!(self = [super init]))
+        return nil;
     contentTypeString = [[archiver decodeObject] retain];
     // This object will be deallocated in -awakeAfterUsingCoder: and replaced with a real OWContent.
     return self;
@@ -1026,7 +1027,7 @@ got_path:
 {
     unsigned int privateTypeIndex;
 
-    if (![super init])
+    if (!(self = [super init]))
 	return nil;
 
     contentTypeString = [aString copyWithZone:zone];

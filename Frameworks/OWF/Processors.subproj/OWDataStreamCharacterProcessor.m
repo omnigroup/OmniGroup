@@ -1,4 +1,4 @@
-// Copyright 2000-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -187,7 +187,7 @@ static OFPreference *cp1252OverridePref = nil;
     OWDataStreamCursor *dataCursor;
     CFStringEncoding stringEncoding;
     
-    if (![super initWithContent:initialContent context:aPipeline])
+    if (!(self = [super initWithContent:initialContent context:aPipeline]))
         return nil;
 
     dataCursor = [initialContent dataCursor];
