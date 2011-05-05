@@ -16,6 +16,7 @@ GCC_PRECOMPILE_PREFIX_HEADER = YES
 
 YACC = /usr/bin/bison
 YACCFLAGS = -y
+YACC_GENERATED_FILE_STEM = InputFileStem
 LEX_SUPPRESS_DEFAULT_RULE = YES
 
 WARNING_CFLAGS = $(value) -Wall -Wno-#warnings -Wno-trigraphs -Winit-self
@@ -66,10 +67,18 @@ INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -traditional-cpp -C -I"$PROJECT_DERIVED_FIL
 INFOPLIST_PREPROCESS = YES
 
 // Make sure we look for the built SVNVersions.h in the right spot
-HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR"
+// Also, look for <foo/bar.h> headers that other projects have installed
+HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR" "$CONFIGURATION_BUILD_DIR"
 
 // Unlike gcc and llvm-gcc, clang emits ObjC runtime info for class extensions conforming to protocols. Also, clang has more warning checks than gcc.
 //GCC_VERSION = com.apple.compilers.llvmgcc42
 GCC_VERSION = com.apple.compilers.llvm.clang.1_0
 
 RUN_CLANG_STATIC_ANALYZER = YES
+
+// Build setting overrides for the current store target
+#include "Omni-Global-Common-Store.xcconfig"
+
+GCC_PREPROCESSOR_DEFINITIONS = $(OMNI_STORE_PREPROCESSOR_DEFINITIONS)
+
+INFOPLIST_PREPROCESSOR_DEFINITIONS = $(OMNI_STORE_PREPROCESSOR_DEFINITIONS)

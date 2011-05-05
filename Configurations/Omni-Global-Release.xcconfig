@@ -11,7 +11,6 @@ DSTROOT = /
 INSTALL_PATH = $(OMNI_INSTALLED_PRODUCTS)
 
 // Always strip our products (we save DWARF dSYM files to decode crash reports)
-UNSTRIPPED_PRODUCT = NO
 STRIP_INSTALLED_PRODUCT = YES
 COPY_PHASE_STRIP = YES
 

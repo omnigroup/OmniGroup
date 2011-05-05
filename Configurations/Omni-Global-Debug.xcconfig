@@ -6,7 +6,7 @@
 #include "Omni-Global-Common.xcconfig"
 
 // Common settings for Debug configurations
-GCC_PREPROCESSOR_DEFINITIONS = DEBUG DEBUG_$(USER)
+GCC_PREPROCESSOR_DEFINITIONS = DEBUG DEBUG_$(USER) $(OMNI_STORE_PREPROCESSOR_DEFINITIONS)
 
 // When debugging, sometimes it's helpful to turn off optimizations by uncommenting these lines.
 // GCC_OPTIMIZATION_LEVEL = 0

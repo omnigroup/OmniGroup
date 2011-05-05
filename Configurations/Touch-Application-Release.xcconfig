@@ -8,8 +8,6 @@
 
 // Common settings for Release configurations of Application targets
 SKIP_INSTALL = NO
-STRIPFLAGS = -urSX
-UNSTRIPPED_PRODUCT = YES
 COPY_PHASE_STRIP = NO
 STRIP_INSTALLED_PRODUCT = YES
 

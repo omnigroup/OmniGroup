@@ -9,3 +9,7 @@
 GCC_SYMBOLS_PRIVATE_EXTERN = NO
 
 OTHER_CFLAGS = $(value) -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\"
+
+// Build setting overrides for the current store target
+#include "Omni-Application-Common-Store.xcconfig"
+
