@@ -70,7 +70,7 @@ RCS_ID("$Id$");
         
         CGPoint centerPoint = touchPoint;
         if (subjectView)
-            centerPoint = [(OUIScalingView *)subjectView convertPoint:centerPoint toView:[self superview]];
+            centerPoint = [subjectView convertPoint:centerPoint toView:[self superview]];
         
         self.center = centerPoint;
     } else {
@@ -87,25 +87,23 @@ RCS_ID("$Id$");
         if (_mode == OUILoupeOverlayRectangle) {
             CGRect allowedFrame = CGRectInset([[self superview] bounds], -4, -2);
             if (subjectView)
-                allowedFrame = [(OUIScalingView *)subjectView convertRect:allowedFrame fromView:[self superview]];
+                allowedFrame = [subjectView convertRect:allowedFrame fromView:[self superview]];
             
-            if (newFrame.origin.x < allowedFrame.origin.x ||
-                CGRectGetMaxX(newFrame) > CGRectGetMaxX(allowedFrame)) {
-                
+            if (loupeTabImage) {
                 CGSize loupeTabSize = loupeTabImage.size;
+                CGFloat tabHalfWidth = floor(loupeTabSize.width / 2);
                 
                 if (newFrame.origin.x < allowedFrame.origin.x) {
                     loupeFramePosition.origin.x = MAX(indicatedPoint.x - allowedFrame.origin.x,
-                                                      RectLoupeSideArrowStandoff + floor(loupeTabSize.width/2));
+                                                      RectLoupeSideArrowStandoff + tabHalfWidth);
                 } else if (CGRectGetMaxX(newFrame) > CGRectGetMaxX(allowedFrame)) {
                     loupeFramePosition.origin.x = MIN(indicatedPoint.x + newFrame.size.width - CGRectGetMaxX(allowedFrame),
-                                                      newFrame.size.width - RectLoupeSideArrowStandoff - loupeTabSize.width + floor(loupeTabSize.width/2));
+                                                      newFrame.size.width - RectLoupeSideArrowStandoff - loupeTabSize.width + tabHalfWidth);
                 }
                 
                 newFrame.origin.x = round(indicatedPoint.x - loupeFramePosition.origin.x);
                 newFrame.origin.y = round(indicatedPoint.y - loupeFramePosition.origin.y);
-                if (loupeTabImage)
-                    loupeTabPosition.x = loupeFramePosition.origin.x - floor(loupeTabSize.width / 2);
+                loupeTabPosition.x = loupeFramePosition.origin.x - tabHalfWidth;
             }
         }
 
@@ -334,7 +332,7 @@ RCS_ID("$Id$");
                 }
             }
             
-            [subject drawScaledContent:drawRect];
+            [subject drawScaledContent:[subject convertRectToRenderingSpace:drawRect]];
         }
     }
     CGContextRestoreGState(ctx);

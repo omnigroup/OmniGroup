@@ -1,4 +1,4 @@
-// Copyright 2003-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -364,12 +364,12 @@ RCS_ID("$Id$");
 
 - (void)setLineSpacing:(CGFloat)aFloat;
 {
-    OBFinishPorting;
+    _scalar.lineSpacing = aFloat;
 }
 
 - (void)setParagraphSpacing:(CGFloat)aFloat;
 {
-    OBFinishPorting;
+    _scalar.paragraphSpacing = aFloat;
 }
 
 - (void)setAlignment:(OATextAlignment)alignment;
@@ -379,47 +379,56 @@ RCS_ID("$Id$");
 
 - (void)setFirstLineHeadIndent:(CGFloat)aFloat;
 {
-    OBFinishPorting;
+    _scalar.firstLineHeadIndent = aFloat;
 }
 
 - (void)setHeadIndent:(CGFloat)aFloat;
 {
-    OBFinishPorting;
+    _scalar.headIndent = aFloat;
 }
 
 - (void)setTailIndent:(CGFloat)aFloat;
 {
-    OBFinishPorting;
+    _scalar.tailIndent = aFloat;
 }
 
 - (void)setMinimumLineHeight:(CGFloat)aFloat;
 {
-    OBFinishPorting;
+    _scalar.minimumLineHeight = aFloat;
 }
 
 - (void)setMaximumLineHeight:(CGFloat)aFloat;
 {
-    OBFinishPorting;
+    _scalar.maximumLineHeight = aFloat;
 }
 
 - (void)setBaseWritingDirection:(OAWritingDirection)writingDirection;
 {
-    OBFinishPorting;
+    _scalar.baseWritingDirection = writingDirection;
 }
 
 - (void)setLineHeightMultiple:(CGFloat)aFloat;
 {
-    OBFinishPorting;
+    _scalar.lineHeightMultiple = aFloat;
 }
 
 - (void)setParagraphSpacingBefore:(CGFloat)aFloat;
 {
-    OBFinishPorting;
+    _scalar.paragraphSpacingBefore = aFloat;
 }
 
 - (void)setDefaultTabInterval:(CGFloat)aFloat;
 {
-    OBFinishPorting;
+    _scalar.defaultTabInterval = aFloat;
+}
+
+- (void)setTabStops:(NSArray *)tabStops;
+{
+    if (_tabStops == tabStops)
+        return;
+
+    [_tabStops release];
+    _tabStops = [tabStops copy];
 }
 
 @end

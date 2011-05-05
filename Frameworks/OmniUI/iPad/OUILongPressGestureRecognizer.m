@@ -1,26 +1,26 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniUI/OUILongPressGestureRecognizer.h>
+#import "OUILongPressGestureRecognizer.h"
+#import <UIKit/UIGestureRecognizerSubclass.h>
 
 RCS_ID("$Id$")
 
 @implementation OUILongPressGestureRecognizer
-
-@synthesize hysteresisDistance, overcameHysteresis, latestTimestamp;
 
 - (id)initWithTarget:(id)target action:(SEL)action;
 {
     if (!(self = [super initWithTarget:target action:action]))
         return nil;
     
-    // Defaults
-    self.hysteresisDistance = 10;  // pixels
-    overcameHysteresis = NO;
+    self.holdDuration = 0.5;    // taken from UILongPressGestureRecognizer.h
+    self.numberOfTouchesRequired = 1;
+    _allowableMovement = 10;    // taken from UILongPressGestureRecognizer.h
+    _firstTouchPoint = CGPointZero;
     
     return self;
 }
@@ -29,77 +29,88 @@ RCS_ID("$Id$")
 {
     [super touchesBegan:touches withEvent:event];
     
-    overcameHysteresis = NO;
-    firstTouchPoint = [self locationInView:self.view.window];
+    if (self.state != UIGestureRecognizerStatePossible)
+        return;
     
-    latestTimestamp = [[touches anyObject] timestamp];
+    UITouch *firstTouch = [_capturedTouches anyObject];
+    _firstTouchPoint = [firstTouch locationInView:self.view];
     
-    if (!beginTimestamp) {
-        beginTimestamp = CFAbsoluteTimeGetCurrent();
-    }
+    self.likelihood = 0.1;
+    
+    if (!_movementTimer)
+        // 0.065 is an arbitrary value that seems to correspond to when 'movement' gestures - such as UIPanGestureRecognizer and UISwipeGestureRecognizer - will fail to recognize due to the touch/event being a 'stationary' one
+        _movementTimer = [NSTimer scheduledTimerWithTimeInterval:0.065 target:self selector:@selector(movementTimerFired:) userInfo:nil repeats:NO];        
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 {
     [super touchesMoved:touches withEvent:event];
     
-    if (!overcameHysteresis) {
-        CGPoint touchPoint = [self locationInView:self.view.window];
-        CGFloat distanceMoved = hypotf(touchPoint.x - firstTouchPoint.x, touchPoint.y - firstTouchPoint.y);
-        if (distanceMoved > self.hysteresisDistance) {
-            overcameHysteresis = YES;
+    if (self.state == UIGestureRecognizerStatePossible /* holdTimer has not fired */) {
+        UITouch *firstTouch = [_capturedTouches anyObject];
+        CGPoint secondPoint = [firstTouch locationInView:self.view];
+        
+        CGFloat distance = hypotf(secondPoint.x - _firstTouchPoint.x, secondPoint.y - _firstTouchPoint.y);
+        if (distance > _allowableMovement) {
+            self.state = UIGestureRecognizerStateCancelled;
+
+            if (_movementTimer) {
+                [_movementTimer invalidate];
+                _movementTimer = nil;
+            }
         }
+        
+        return;
     }
     
-    lastTouchPoint = [self locationInView:self.view.window];
+    if (self.likelihood < 1)
+        self.likelihood = 1;
     
-    latestTimestamp = [[touches anyObject] timestamp];
+    self.state = UIGestureRecognizerStateChanged;
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 {
     [super touchesEnded:touches withEvent:event];
     
-    endTimestamp = CFAbsoluteTimeGetCurrent();
+    if (_movementTimer) {
+        [_movementTimer invalidate];
+        _movementTimer = nil;
+    }
+    
+    if (self.state == UIGestureRecognizerStateBegan)
+        self.state = UIGestureRecognizerStateEnded;
+    else
+        self.state = UIGestureRecognizerStateCancelled;
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
 {
     [super touchesCancelled:touches withEvent:event];
     
-    endTimestamp = CFAbsoluteTimeGetCurrent();
+    if (_movementTimer) {
+        [_movementTimer invalidate];
+        _movementTimer = nil;
+    }
+    
+    self.state = UIGestureRecognizerStateCancelled;
 }
 
 - (void)reset;
 {
     [super reset];
     
-    beginTimestamp = 0;
+    if (_movementTimer) {
+        [_movementTimer invalidate];
+        _movementTimer = nil;
+    }
 }
 
-
-#pragma mark -
-#pragma mark Class methods
-
-- (NSTimeInterval)gestureDuration;
+- (void)movementTimerFired:(NSTimer *)aTimer;
 {
-    return endTimestamp - beginTimestamp;
-}
-
-- (void)resetHysteresis;
-{
-    overcameHysteresis = NO;
-    firstTouchPoint = lastTouchPoint;
-}
-
-- (CGPoint)cumulativeOffsetInView:(UIView *)view;
-{
-    UIWindow *window = self.view.window;
+    _movementTimer = nil;
     
-    CGPoint startPoint = [view convertPoint:firstTouchPoint fromView:window];
-    CGPoint endPoint = [view convertPoint:lastTouchPoint fromView:window];
-    
-    return CGPointMake(endPoint.x - startPoint.x, endPoint.y - startPoint.y);
+    self.likelihood = 0.2;
 }
 
 @end

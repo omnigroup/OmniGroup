@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,21 +34,6 @@ RCS_ID("$Id$");
 @end
 
 @implementation OFXMLDocument
-
-static NSDictionary *entityReplacements; // amp -> &, etc.
-
-+ (void) initialize;
-{
-    OBINITIALIZE;
-
-    entityReplacements = [[NSDictionary alloc] initWithObjectsAndKeys:
-        @"&", @"amp",
-        @"<", @"lt",
-        @">", @"gt",
-        @"'", @"apos",
-        @"\"", @"quot",
-        nil];
-}
 
 - initWithRootElement:(OFXMLElement *)rootElement
           dtdSystemID:(CFURLRef)dtdSystemID
@@ -435,6 +420,17 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
     [[self topElement] setAttribute: name real: value format: formatString];
 }
 
+- (void) setAttribute: (NSString *) name double: (double) value;  // "%.15g"
+{
+    OBASSERT(DBL_DIG == 15);
+    [[self topElement] setAttribute: name double: value format: @"%.15g"];
+}
+
+- (void) setAttribute: (NSString *) name double: (float) value format: (NSString *) formatString;
+{
+    [[self topElement] setAttribute: name double: value format: formatString];
+}
+
 - (OFXMLElement *)appendElement:(NSString *)elementName containingString:(NSString *)contents;
 {
     return [[self topElement] appendElement:elementName containingString:contents];
@@ -455,7 +451,7 @@ static NSDictionary *entityReplacements; // amp -> &, etc.
     return [[self topElement] appendElement:elementName containingReal:contents format:formatString];
 }
 
-- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents; // "%g"
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents; // "%.15g"
 {
     return [[self topElement] appendElement:elementName containingDouble:contents];
 }

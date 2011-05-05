@@ -9,12 +9,12 @@
 
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManager.h>
+#import <OmniFoundation/OFFileWrapper.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIReplaceDocumentAlert.h>
-
 #import <MobileCoreServices/MobileCoreServices.h>
 
 #import "OUICredentials.h"
@@ -51,8 +51,7 @@ RCS_ID("$Id$")
     [_connectingProgress release];
     [_connectingLabel release];
      
-    [_exportingData release];
-    [_exportingFilename release];
+    [_exportFileWrapper release];
     
     [_exportURL release];
     [_exportIndexPath release];
@@ -71,10 +70,8 @@ RCS_ID("$Id$")
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
-    [_exportingData release];
-    _exportingData = nil;
-    [_exportingFilename release];
-    _exportingFilename = nil;
+    [_exportFileWrapper release];
+    _exportFileWrapper = nil;
     
     [_exportURL release];
     _exportURL = nil;
@@ -117,12 +114,10 @@ RCS_ID("$Id$")
 #pragma mark API
 - (void)export:(id)sender;
 {
-    OBASSERT(_exportingData);
-    OBASSERT(_exportingFilename);
+    OBASSERT(_exportFileWrapper != nil);
     
     OFSFileManager *fileManager = [[OUIWebDAVConnection sharedConnection] fileManager];
     if (!fileManager) {
-        [self signOut:nil];
         return;
     }
     
@@ -131,15 +126,14 @@ RCS_ID("$Id$")
     NSURL *directoryURL = (_address != nil) ? _address : [fileManager baseURL];
     NSURL *fileURL = nil;
     if ([directoryURL isFileURL])
-        fileURL = OFSFileURLRelativeToDirectoryURL(directoryURL, _exportingFilename);
+        fileURL = OFSFileURLRelativeToDirectoryURL(directoryURL, _exportFileWrapper.preferredFilename);
     else
-        fileURL = OFSURLRelativeToDirectoryURL(directoryURL, [_exportingFilename stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
+        fileURL = OFSURLRelativeToDirectoryURL(directoryURL, [_exportFileWrapper.preferredFilename stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
     
     NSError *error = nil;
     OFSFileInfo *fileCheck = [fileManager fileInfoAtURL:fileURL error:&error];
-    if (error) {
+    if (!fileCheck) {
         OUI_PRESENT_ALERT(error);
-        [self signOut:nil];
         return;
     }
     
@@ -257,6 +251,9 @@ RCS_ID("$Id$")
 #pragma mark OUIReplaceDocumentAlert
 - (void)replaceDocumentAlert:(OUIReplaceDocumentAlert *)alert didDismissWithButtonIndex:(NSInteger)buttonIndex documentURL:(NSURL *)documentURL;
 {
+    [_replaceDocumentAlert release];
+    _replaceDocumentAlert = nil;
+
     switch (buttonIndex) {
         case 0: /* Cancel */
             self.navigationItem.rightBarButtonItem.enabled = YES;
@@ -265,7 +262,6 @@ RCS_ID("$Id$")
         case 1: /* Replace */
         {
             [self _exportToURL:documentURL];
-            
             break;
         }
         case 2: /* Add */
@@ -278,9 +274,6 @@ RCS_ID("$Id$")
         default:
             break;
     }
-    
-    [_replaceDocumentAlert release];
-    _replaceDocumentAlert = nil;
 }
 
 #pragma mark -
@@ -319,30 +312,15 @@ RCS_ID("$Id$")
     }
     
     UIImage *icon = nil;
-    CFStringRef fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)[[fileInfo name] pathExtension], NULL);
     if ([self _canOpenFile:fileInfo]) {
-        if (UTTypeConformsTo(fileUTI, kUTTypeArchive)) {
-            NSString *unarchivedFilename = [[fileInfo name] stringByDeletingPathExtension];
-            if (fileUTI)
-                CFRelease(fileUTI);
-
-            fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)[unarchivedFilename pathExtension], NULL);
-        }
-        
         OUIDocumentPicker *picker = [[OUIAppController controller] documentPicker];
-        if ([[picker delegate] respondsToSelector:@selector(documentPicker:iconForUTI:)]) {
-            icon = [[picker delegate] documentPicker:picker iconForUTI:fileUTI];
-        } else {
-            icon = [UIImage imageNamed:@"OUIDocument.png"];
-        }
+        icon = [picker iconForUTI:[fileInfo UTI]];
     } else if ([fileInfo isDirectory]) {
         icon = [UIImage imageNamed:@"OUIFolder.png"];
     } else {
         icon = [UIImage imageNamed:@"OUIDocument.png"];
     }
     
-    if (fileUTI)
-        CFRelease(fileUTI);
     cell.imageView.image = icon;
     
     return cell;
@@ -363,8 +341,7 @@ RCS_ID("$Id$")
         OUIWebDAVController *subfolderController = [[OUIWebDAVController alloc] init];
         subfolderController.address = subFolder;
         subfolderController.syncType = _syncType;
-        subfolderController.exportingFilename = _exportingFilename;
-        subfolderController.exportingData = _exportingData;
+        subfolderController.exportFileWrapper = _exportFileWrapper;
         subfolderController.isExporting = _isExporting;
         
         [self.navigationController pushViewController:subfolderController animated:YES];
@@ -419,28 +396,13 @@ RCS_ID("$Id$")
 @synthesize connectingLabel = _connectingLabel;
 @synthesize files = _files;
 @synthesize isExporting = _isExporting;
-@synthesize exportingData = _exportingData;
-@synthesize exportingFilename = _exportingFilename;
+@synthesize exportFileWrapper = _exportFileWrapper;
 
 #pragma mark private
+
 - (BOOL)_canOpenFile:(OFSFileInfo *)fileInfo;
 {
-    // iOS 4.2 NSURL has easier ways to get at this stuff
-    CFStringRef fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)[[fileInfo name] pathExtension], NULL);
-    if (UTTypeConformsTo(fileUTI, kUTTypeArchive)) {    // only supporting zip files including an extension that we recognize (so, if user uses Finder to compress, will end up with 'filename.graffle.zip') 
-        NSString *unarchivedFilename = [[fileInfo name] stringByDeletingPathExtension];
-        if (fileUTI)
-            CFRelease(fileUTI);
-        
-        fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)[unarchivedFilename pathExtension], NULL);
-    }
-    
-    BOOL canOpen = [[OUIAppController controller] canViewFileTypeWithIdentifier:(NSString *)fileUTI];
-    
-    if (fileUTI)
-        CFRelease(fileUTI);
-    
-    return canOpen;
+    return [[OUIAppController controller] canViewFileTypeWithIdentifier:[fileInfo UTI]];
 }
 
 - (void)_cancelDownloadEffectDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
@@ -500,11 +462,10 @@ RCS_ID("$Id$")
     NSArray *fileInfos = [fileManager directoryContentsAtURL:url havingExtension:nil options:(OFSDirectoryEnumerationSkipsSubdirectoryDescendants | OFSDirectoryEnumerationSkipsHiddenFiles) error:&outError];
     if (outError) {
         OUI_PRESENT_ALERT(outError);
-        [self signOut:nil];
         return;
     }
     
-    [self setFiles:fileInfos];
+    [self setFiles:[fileInfos sortedArrayUsingSelector:@selector(compareByName:)]];
     [self _stopConnectingIndicator];
 }
 
@@ -514,10 +475,10 @@ RCS_ID("$Id$")
     UIBarButtonItem *syncBarButtonItem = nil;
     if (_isExporting) {
         syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Export", @"OmniUI", OMNI_BUNDLE, @"export button title");
-        syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(export:)];
+        syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleBordered target:self action:@selector(export:)];
     } else {
-        syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Sign out", @"OmniUI", OMNI_BUNDLE, @"sign out button title");
-        syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(signOut:)];
+        syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Sign Out", @"OmniUI", OMNI_BUNDLE, @"sign out button title");
+        syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleBordered target:self action:@selector(signOut:)];
     }
     
     UINavigationItem *navigationItem = self.navigationItem;
@@ -540,7 +501,7 @@ RCS_ID("$Id$")
     // Custom view items get ignored for the back item. Also, unlike the 'back to me' button, the left button needs to reference the title of the previous view controller and it needs a real target/action
     if (viewIndex != 0) {
         UIViewController *previousController = [viewControllers objectAtIndex:viewIndex - 1];
-        navigationItem.leftBarButtonItem = [[[OUIBarButtonItem alloc] initWithBackgroundType:OUIBarButtonItemBackgroundTypeBack image:nil title:previousController.title target:self action:@selector(_goBack:)] autorelease];
+        navigationItem.leftBarButtonItem = [[[OUIBarButtonItem alloc] initWithBackgroundType:OUIBarButtonItemBackgroundTypeBack image:nil title:previousController.navigationItem.title target:self action:@selector(_goBack:)] autorelease];
     }
 #else
     // 'backBarButtonItem' is for 'go back to *me*'
@@ -569,7 +530,7 @@ RCS_ID("$Id$")
 
 - (void)_exportToURL:(NSURL *)exportURL;
 {
-    OFSFileInfo *emptyFile = [[OFSFileInfo alloc] initWithOriginalURL:nil name:[OFSFileInfo nameForURL:exportURL] exists:NO directory:NO size:0 lastModifiedDate:nil];
+    OFSFileInfo *emptyFile = [[OFSFileInfo alloc] initWithOriginalURL:exportURL name:[OFSFileInfo nameForURL:exportURL] exists:NO directory:NO size:0 lastModifiedDate:nil];
     NSMutableArray *newFiles = [NSMutableArray arrayWithObject:emptyFile];
     [emptyFile release];
     [newFiles addObjectsFromArray:_files];
@@ -600,7 +561,7 @@ RCS_ID("$Id$")
     
     cell.accessoryView = downloader.view;
     
-    [downloader upload:_exportingData toURL:exportURL];
+    [downloader uploadFileWrapper:_exportFileWrapper toURL:exportURL];
     [downloader release];
 }
 

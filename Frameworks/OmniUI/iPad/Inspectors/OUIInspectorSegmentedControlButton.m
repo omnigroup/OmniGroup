@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,6 +28,7 @@ typedef struct {
 } ImageInfo;
 
 static ImageInfo BackgroundImages[3]; // One for each of OUIInspectorSegmentedControlButtonPosition
+static ImageInfo DarkBackgroundImages[3];
 
 static UIImage *_loadImage(NSString *imageName)
 {
@@ -57,11 +58,16 @@ static void _loadImages(ImageInfo *info, NSString *normalName, NSString *selecte
     _loadImages(&BackgroundImages[OUIInspectorSegmentedControlButtonPositionLeft], @"OUISegmentLeftEndNormal.png", @"OUISegmentLeftEndSelected.png");
     _loadImages(&BackgroundImages[OUIInspectorSegmentedControlButtonPositionRight], @"OUISegmentRightEndNormal.png", @"OUISegmentRightEndSelected.png");
     _loadImages(&BackgroundImages[OUIInspectorSegmentedControlButtonPositionCenter], @"OUISegmentMiddleNormal.png", @"OUISegmentMiddleSelected.png");
+    
+    _loadImages(&DarkBackgroundImages[OUIInspectorSegmentedControlButtonPositionLeft], @"OUIDarkSegmentLeftEndNormal.png", @"OUIDarkSegmentLeftEndSelected.png");
+    _loadImages(&DarkBackgroundImages[OUIInspectorSegmentedControlButtonPositionRight], @"OUIDarkSegmentRightEndNormal.png", @"OUIDarkSegmentRightEndSelected.png");
+    _loadImages(&DarkBackgroundImages[OUIInspectorSegmentedControlButtonPositionCenter], @"OUIDarkSegmentMiddleNormal.png", @"OUIDarkSegmentMiddleSelected.png");
 }
 
 static id _commonInit(OUIInspectorSegmentedControlButton *self)
 {
     [self setTitleColor:[OUIInspector labelTextColor] forState:UIControlStateNormal];
+    [self setTitleColor:[OUIInspector disabledLabelTextColor] forState:UIControlStateDisabled];
     [self setTitleShadowColor:OUIShadowColor(OUIShadowTypeDarkContentOnLightBackground) forState:UIControlStateNormal];
     self.titleLabel.shadowOffset = OUIShadowOffset(OUIShadowTypeDarkContentOnLightBackground);
     
@@ -122,6 +128,14 @@ static id _commonInit(OUIInspectorSegmentedControlButton *self)
     [super addTarget:target action:action forControlEvents:UIControlEventTouchDown];
 }
 
+@synthesize dark = _dark;
+
+- (void)setDark:(BOOL)flag;
+{
+    _dark = flag;
+    [self _updateBackgroundImages];
+}
+
 #pragma mark -
 #pragma mark Private
 
@@ -133,7 +147,7 @@ static id _commonInit(OUIInspectorSegmentedControlButton *self)
     if (buttonPosition >= _OUIInspectorSegmentedControlButtonPositionCount)
         buttonPosition = OUIInspectorSegmentedControlButtonPositionCenter;
     
-    ImageInfo *backgroundImages = &BackgroundImages[buttonPosition];
+    ImageInfo *backgroundImages = (_dark) ? &DarkBackgroundImages[buttonPosition] : &BackgroundImages[buttonPosition];
     [self setBackgroundImage:backgroundImages->normal forState:UIControlStateNormal];
     [self setBackgroundImage:backgroundImages->selected forState:UIControlStateSelected];
 }

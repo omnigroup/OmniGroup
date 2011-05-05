@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,6 +70,7 @@ RCS_ID("$Id$");
     
     // If animation is disabled, perform the blocks synchronously. They'd still get performed without any animated delay, but they'd be one after returning to the run loop. This approach makes it possible to have methods that animate or perform actions immediately and following code can depend on it being done.
     if (![UIView areAnimationsEnabled]) {
+        DEBUG_SEQ(@"animation disabled; running synchronously");
         NSUInteger stepIndex = [_steps count];
         while (stepIndex--) {
             id step = [_steps objectAtIndex:stepIndex];

@@ -17,8 +17,14 @@
 - (id)containingViewOfClass:(Class)cls; // can return self
 
 // Defaults to zeros, but subclasses can return spacing offsets for where their border appears to be relative to where their actual view edge is.
-// Used by the inspector system to help build seemingly contsistent spacing between controls.
-extern const UIEdgeInsets OUINoBorderEdgeInsets;
+// Edge borders: Used by the inspector system to help build seemingly contsistent spacing between controls.
+
+// This view and all its subviews will be completely skipped. Defaults to YES if the receiver is hidden or has alpha of zero.
+@property(nonatomic,readonly) BOOL skipWhenComputingBorderEdgeInsets;
+
+// This view will not be considered, but its subviews will. Defaults to YES for UIView instances, but no for all other subclasses.
+@property(nonatomic,readonly) BOOL recurseWhenComputingBorderEdgeInsets;
+
 @property(readonly,nonatomic) UIEdgeInsets borderEdgeInsets;
 
 @end
@@ -46,6 +52,8 @@ extern void OUIViewLayoutShadowEdges(UIView *self, NSArray *shadowEdges, BOOL fl
 } while (0)
 
 #ifdef NS_BLOCKS_AVAILABLE
+extern void OUIWithAnimationsDisabled(BOOL disabled, void (^actions)(void));
+
 extern void OUIWithoutAnimating(void (^actions)(void));
 
 // Need a better name for this. This checks if +[UIView areAnimationsEnabled]. If not, then it performs the block inside a CATransation that disables implicit animations.

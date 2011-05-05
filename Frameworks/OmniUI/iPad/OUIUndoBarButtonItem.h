@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,10 +11,9 @@
 
 extern NSString * const OUIUndoPopoverWillShowNotification;
 
-@class OUIUndoButtonController, OUIUndoButton;
+@class OUIUndoButtonController, OUIToolbarButton, OUIUndoButton;
 
 @protocol OUIUndoBarButtonItemTarget <NSObject>
-- (void)undoBarButtonItemWillShowPopover; // Hide other popovers
 - (void)undo:(id)sender;
 - (void)redo:(id)sender;
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender; // in case the target is not a subclass of UIResponder (like with OUISingleDocumentAppController)
@@ -38,6 +37,8 @@ extern NSString * const OUIUndoPopoverWillShowNotification;
 @property(nonatomic,retain) NSUndoManager *undoManager;
 
 @property(nonatomic,assign) id <OUIUndoBarButtonItemTarget> undoBarButtonItemTarget;
+
+@property(nonatomic,readonly) OUIToolbarButton *button;
 
 - (void)setNormalBackgroundImage:(UIImage *)image;
 - (void)setHighlightedBackgroundImage:(UIImage *)image;

@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007, 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,6 @@
 #import <Foundation/NSString.h>
 #import <OmniBase/rcsid.h>
 #import <inttypes.h>
-#import <OmniBase/OBObject.h>
 
 RCS_ID("$Id$");
 
@@ -36,10 +35,7 @@ CFStringRef OFNSObjectCopyDescription(const void *value)
     return (CFStringRef)[[(id)value description] retain];
 }
 
-CFStringRef OFNSObjectCopyShortDescription(const void *value)
-{
-    return (CFStringRef)[[(id)value shortDescription] retain];
-}
+// See OBObject.h for OBNSObjectCopyShortDescription
 
 Boolean OFNSObjectIsEqual(const void *value1, const void *value2)
 {

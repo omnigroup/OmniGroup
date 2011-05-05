@@ -27,6 +27,8 @@ RCS_ID("$Id$");
     return image;
 }
 
+@synthesize possibleTitles = _possibleTitles;
+
 static id _commonInit(OUIToolbarButton *self)
 {
     CGFloat xCap = [[self class] leftImageStretchCapForBackgroundType:OUIBarButtonItemBackgroundTypeBlack];
@@ -66,6 +68,12 @@ static id _commonInit(OUIToolbarButton *self)
     return _commonInit(self);
 }
 
+- (void)dealloc;
+{
+    [_possibleTitles release];
+    [super dealloc];
+}
+
 + (CGFloat)leftImageStretchCapForBackgroundType:(OUIBarButtonItemBackgroundType)backgroundType;
 {
     switch (backgroundType) {
@@ -74,6 +82,7 @@ static id _commonInit(OUIToolbarButton *self)
         case OUIBarButtonItemBackgroundTypeBlack:
         case OUIBarButtonItemBackgroundTypeRed:
         case OUIBarButtonItemBackgroundTypeBlue:
+        case OUIBarButtonItemBackgroundTypeClear:
             return 9;
         case OUIBarButtonItemBackgroundTypeNone:
         default:
@@ -103,6 +112,10 @@ static id _commonInit(OUIToolbarButton *self)
         case OUIBarButtonItemBackgroundTypeBack:
             normalImageName = @"OUIToolbarBackButton-Black-Normal.png";
             highlightedImageName = @"OUIToolbarBackButton-Black-Highlighted.png";
+            break;
+        case OUIBarButtonItemBackgroundTypeClear:
+            normalImageName = @"OUIToolbarButton-Clear-Normal.png";
+            highlightedImageName = @"OUIToolbarButton-Clear-Highlighted.png";
             break;
         case OUIBarButtonItemBackgroundTypeBlack:
         default:
@@ -152,29 +165,49 @@ static id _commonInit(OUIToolbarButton *self)
     [self setBackgroundImage:image forState:UIControlStateHighlighted];
 }
 
+- (void)setPossibleTitles:(NSSet *)possibleTitles;
+{
+    if (OFISEQUAL(_possibleTitles, possibleTitles))
+        return;
+    
+    [_possibleTitles release];
+    _possibleTitles = [possibleTitles copy];
+    
+    // This is lame, but sufficient for now.
+    OBASSERT([self superview] == nil);
+    
+    CGRect oldFrame = self.frame;
+    NSString *oldTitle = [[[self titleForState:UIControlStateNormal] copy] autorelease];
+
+    OBASSERT([NSString isEmptyString:oldTitle] || [possibleTitles member:oldTitle]);
+    
+    CGFloat maxWidth = 0;
+    for (NSString *title in possibleTitles) {
+        [self setTitle:title forState:UIControlStateNormal];
+        [self sizeToFit];
+        maxWidth = MAX(maxWidth, self.frame.size.width);
+    }
+    
+    _maxWidth = maxWidth;
+    
+    [self setTitle:oldTitle forState:UIControlStateNormal];
+    
+    [self sizeToFit];
+    self.frame = (CGRect){oldFrame.origin, self.frame.size};
+}
+
 #pragma mark -
 #pragma mark UIView subclass
 
-#if 0
 - (CGSize)sizeThatFits:(CGSize)size;
 {
     CGSize fits = [super sizeThatFits:size];
- 
-    // No need to add the endcaps if we are using the unbordered background image
-    if ([self backgroundImageForState:UIControlStateNormal] == nil &&
-        [self backgroundImageForState:UIControlStateHighlighted] == nil) {
-        return fits;
-    }
+
+    if (_possibleTitles && _maxWidth > 0) // only do this if we aren't in the middle of initializing it!
+        fits.width = _maxWidth;
     
-    // Add in room for the background image left/right caps.
-    UIImage *background = [[self class] normalBackgroundImage];
-    CGSize backgroundSize = [background size];
-    OBASSERT(backgroundSize.height == 44);
-    OBASSERT(fits.height <= backgroundSize.height);
-    
-    return CGSizeMake(fits.width + 2*ButtonEndCapWidth, backgroundSize.height);
+    return fits;
 }
-#endif
 
 #if 0
 - (void)drawRect:(CGRect)rect;

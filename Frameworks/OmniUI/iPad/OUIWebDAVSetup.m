@@ -147,8 +147,15 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
     NSURL *url = nil;
     switch (_syncType) {
         case OUIWebDAVSync:
-            url = [NSURL URLWithString:[_nonretainedAddressField.text stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        {
+            NSString *webdavString = _nonretainedAddressField.text;
+            if (![webdavString hasSuffix:@"/"])
+                webdavString = [webdavString stringByAppendingString:@"/"];
+            
+            url = [NSURL URLWithString:[webdavString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
             break;
+        }
+            
         case OUIMobileMeSync:
         {
             NSURL *mobileMe = [NSURL URLWithString:@"https://idisk.me.com/"];
@@ -299,14 +306,14 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
             case WebDAVUsername:
                 contents.label = NSLocalizedStringFromTableInBundle(@"User Name", @"OmniUI", OMNI_BUNDLE, @"for WebDAV username edit field");
                 contents.value = savedUsername;
-                contents.valueField.placeholder = @"username";
+                contents.valueField.placeholder = NSLocalizedStringFromTableInBundle(@"username", @"OmniUI", OMNI_BUNDLE, @"default for WebDAV username edit field");
                 _nonretainedUsernameField = contents.valueField;
                 contents.valueField.keyboardType = UIKeyboardTypeDefault;
 
                 break;
             case WebDAVPassword:
                 contents.label = NSLocalizedStringFromTableInBundle(@"Password", @"OmniUI", OMNI_BUNDLE, @"for WebDAV password edit field");
-                contents.valueField.placeholder = @"p@ssword";
+                contents.valueField.placeholder = NSLocalizedStringFromTableInBundle(@"p@ssword", @"OmniUI", OMNI_BUNDLE, @"default for WebDAV password edit field");
                 contents.valueField.secureTextEntry = YES;
                 _nonretainedPasswordField = contents.valueField;
                 contents.valueField.keyboardType = UIKeyboardTypeDefault;

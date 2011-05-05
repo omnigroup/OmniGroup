@@ -1,4 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,28 +51,10 @@ NSString *OFDateFormatStringForOldFormatString(NSString *oldFormat)
     [result appendString:(f)]; \
 } while (0)
 
+            unsigned int formatLength = [scanner scanUnsignedIntegerMaximumDigits:5];
+            unichar formatCharacter = scannerReadCharacter(scanner);
             
-            nextCharacter = scannerReadCharacter(scanner);
-            
-            // %1d and %1m, which avoid the leading zero <http://developer.apple.com/mac/library/documentation/cocoa/conceptual/dataformatting/Articles/df100103.html#//apple_ref/doc/uid/TP40007972-SW1>
-            if (nextCharacter == '1') {
-                unichar peek = scannerPeekCharacter(scanner);
-                if (peek == 'd') {
-                    scannerReadCharacter(scanner); // eat peeked character
-                    APPEND_FORMAT(@"d");
-                    continue;
-                }
-                if (peek == 'm') {
-                    scannerReadCharacter(scanner); // eat peeked character
-                    APPEND_FORMAT(@"M");
-                    continue;
-                }
-                
-                OBASSERT_NOT_REACHED("Not expecting any other %1 formats");
-                // fall through...
-            }
-            
-            switch (nextCharacter) {
+            switch (formatCharacter) {
                 default:
                     // Start or continue a literal of ? characters, matching what we'd get from the strftime-like formatter
                     if (!inLiteralMode) {
@@ -107,7 +89,10 @@ NSString *OFDateFormatStringForOldFormatString(NSString *oldFormat)
                     break;
                     
                 case 'd': // Day of the month as a decimal number (01-31)
-                    APPEND_FORMAT(@"dd");
+                    if (formatLength == 1)
+                        APPEND_FORMAT(@"d");
+                    else
+                        APPEND_FORMAT(@"dd");
                     break;
                     
                 case 'e': // Same as %d but does not print the leading 0 for days 1 through 9 (unlike strftime(), does not print a leading space)
@@ -119,11 +104,17 @@ NSString *OFDateFormatStringForOldFormatString(NSString *oldFormat)
                     break;
                     
                 case 'H': // Hour based on a 24-hour clock as a decimal number (00-23)
-                    APPEND_FORMAT(@"HH");
+                    if (formatLength == 1)
+                        APPEND_FORMAT(@"H");
+                    else
+                        APPEND_FORMAT(@"HH");
                     break;
                     
                 case 'I': // Hour based on a 12-hour clock as a decimal number (01-12)
-                    APPEND_FORMAT(@"hh");
+                    if (formatLength == 1)
+                        APPEND_FORMAT(@"h");
+                    else
+                        APPEND_FORMAT(@"hh");
                     break;
                     
                 case 'j': // Day of the year as a decimal number (001-366)
@@ -131,7 +122,10 @@ NSString *OFDateFormatStringForOldFormatString(NSString *oldFormat)
                     break;
                     
                 case 'm': // Month as a decimal number (01-12)
-                    APPEND_FORMAT(@"MM");
+                    if (formatLength == 1)
+                        APPEND_FORMAT(@"M");
+                    else
+                        APPEND_FORMAT(@"MM");
                     break;
                     
                 case 'M': // Minute as a decimal number (00-59)
@@ -240,11 +234,11 @@ NSString *OFOldDateFormatStringForFormatString(NSString *newFormat)
                 break;
 
             case 'y': // year
-                OBASSERT(characterCount == 2 || characterCount == 4); // ICU supports any length, but we expect to get "reasonable" strings for now. Handle other lengths, but alert if we get them.
-                if (characterCount <= 2)
+                OBASSERT(characterCount == 1 || characterCount == 2 || characterCount == 4); // ICU supports any length, but we expect to get "reasonable" strings for now. Handle other lengths, but alert if we get them.
+                if (characterCount == 2)
                     [result appendString:@"%y"];
                 else
-                    [result appendString:@"%Y"];
+                    [result appendString:@"%Y"]; // 'y' and 'yyyy' are explicitly stated to be 4-digit year in ICU
                 break;
             case 'M': // month
                 if (characterCount == 1)
@@ -317,11 +311,17 @@ NSString *OFOldDateFormatStringForFormatString(NSString *newFormat)
                 [result appendString:@"%F"];
                 break;
             case 'z':
-                OBASSERT(characterCount == 4);
-                [result appendString:@"%Z"]; // Time zone name (such as Pacific Daylight Time; produces different results from strftime())
+                if (characterCount <= 3) {
+                    // ICU for this should be "PDT", but strftime/10.2 NSDateFormatter doesn't seem to have a format for that.
+                    [result appendString:@"%Z"];
+                } else {
+                    OBASSERT(characterCount == 4);
+                    // ICU for this should be "Pacific Daylight Time". %Z in strftime gives "America/Los_Angeles"
+                    [result appendString:@"%Z"];
+                }
                 break;
             case 'Z':
-                OBASSERT(characterCount == 3);
+                OBASSERT(characterCount == 3); // 1-3 give "-0800", 4 characters gives a different format in ICU, "GMT-08:00"
                 [result appendString:@"%z"]; // Time zone offset in hours and minutes from GMT (HHMM)
                 break;
                 
@@ -343,10 +343,9 @@ NSString *OFOldDateFormatStringForFormatString(NSString *newFormat)
                 OBASSERT_NOT_REACHED("No support for specified format.");
                 break;
             default:
-#ifdef DEBUG
-                NSLog(@"Unhandled character %C (0x%x)", character, character);
-#endif
-                OBASSERT_NOT_REACHED("Unhandled character!");
+                // NSDateFormatter on iOS will specify random unquoted strings in the middle of formats (like "M/d/yy h:mm a")
+                for (NSUInteger characterIndex = 0; characterIndex < characterCount; characterIndex++)
+                    [result appendFormat:@"%C", character];
                 break;
         }
     }

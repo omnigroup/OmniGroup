@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -162,8 +162,11 @@ static id _commonInit(OUIInspectorStepperButton *self)
 {
     [super sendAction:action to:target forEvent:event];
     
-    if (_repeats && !_repeatTimer)
-        _repeatTimer = [[NSTimer scheduledTimerWithTimeInterval:kTimeToPauseBeforeInitialRepeat target:self selector:@selector(_initialRepeatTimerFired:) userInfo:nil repeats:NO] retain];
+    if (_repeats && !_repeatTimer) {
+        if ([self isTracking]) { // In case the action causes -cancelTrackingWithEvent:, we don't want to leave a timer firing forever!
+            _repeatTimer = [[NSTimer scheduledTimerWithTimeInterval:kTimeToPauseBeforeInitialRepeat target:self selector:@selector(_initialRepeatTimerFired:) userInfo:nil repeats:NO] retain];
+        }
+    }
 }
 
 #pragma mark -
@@ -187,6 +190,7 @@ static id _commonInit(OUIInspectorStepperButton *self)
     
     // Make sure the action didn't cancel our repeat
     if (_repeats && _repeatTimer) {
+        OBASSERT([self isTracking]); // otherwise the timer would have been cleared
         [self _cancelRepeat];
         _repeatTimer = [[NSTimer scheduledTimerWithTimeInterval:kTimeToPauseBetweenFollowingRepeats target:self selector:@selector(_followingRepeatTimerFired:) userInfo:nil repeats:YES] retain];
     }

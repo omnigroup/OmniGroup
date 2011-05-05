@@ -274,9 +274,10 @@ RCS_ID("$Id$");
     [str release];
 }
 
-- (void)setAttribute: (NSString *) name double: (double) value;  // "%g"
+- (void)setAttribute: (NSString *) name double: (double) value;  // "%.15g"
 {
-    [self setAttribute: name double: value format: @"%g"];
+    OBASSERT(DBL_DIG == 15);
+    [self setAttribute: name double: value format: @"%.15g"];
 }
 
 - (void)setAttribute: (NSString *) name double: (double) value format: (NSString *) formatString;
@@ -302,6 +303,12 @@ RCS_ID("$Id$");
 {
     NSString *value = [self attributeNamed:name];
     return value ? [value floatValue] : defaultValue;
+}
+
+- (double)doubleValueForAttributeNamed:(NSString *)name defaultValue:(double)defaultValue;
+{
+    NSString *value = [self attributeNamed:name];
+    return value ? [value doubleValue] : defaultValue;
 }
 
 - (OFXMLElement *)appendElement:(NSString *)elementName containingString:(NSString *)contents;
@@ -335,9 +342,10 @@ RCS_ID("$Id$");
     return child;
 }
 
-- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double)contents; // "%g"
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double)contents; // "%.15g"
 {
-    return [self appendElement: elementName containingDouble: contents format: @"%g"];
+    OBASSERT(DBL_DIG == 15);
+    return [self appendElement: elementName containingDouble: contents format: @"%.15g"];
 }
 
 - (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents format:(NSString *) formatString;

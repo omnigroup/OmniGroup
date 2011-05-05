@@ -14,6 +14,8 @@
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 
+#import "OQDrawing.h"
+
 RCS_ID("$Id$");
 
 #if 0 && defined(DEBUG)
@@ -111,7 +113,7 @@ static void replacement_addAnimation(CALayer *self, SEL _cmd, CAAnimation *anima
     }
     
     NSLog(@"  beginTime:%g duration:%g speed:%g timeOffset:%g repeatCount:%g repeatDuration:%g autoreverses:%d fillMode:%@", animation.beginTime, animation.duration, animation.speed, animation.timeOffset, animation.repeatCount, animation.repeatDuration, animation.autoreverses, animation.fillMode);
-    NSLog(@"  timingFunction:%@ removedOnCompletion:%d", animation.timingFunction, animation.removedOnCompletion);
+    NSLog(@"  removedOnCompletion:%d", animation.removedOnCompletion);
 
     if ([animation isKindOfClass:[CAPropertyAnimation class]]) {
         CAPropertyAnimation *prop = (CAPropertyAnimation *)animation;
@@ -503,7 +505,6 @@ static void _writeString(NSString *str)
     OBASSERT(GET_VALUE(isDoubleSided)); // Not handling back face culling.
     OBASSERT(GET_VALUE(mask) == nil); // Not handling mask layers or any filters
     OBASSERT(NSEqualRects(GET_VALUE(contentsRect), NSMakeRect(0, 0, 1, 1))); // Should be showing the full content
-    OBASSERT(GET_VALUE(cornerRadius) == 0.0);
     OBASSERT(GET_VALUE(borderWidth) == 0.0);
     OBASSERT(GET_VALUE(compositingFilter) == nil);
     OBASSERT([GET_VALUE(filters) count] == 0);
@@ -546,8 +547,14 @@ static void _writeString(NSString *str)
                 DEBUG_RENDER(@"    fill %@ color:%@", NSStringFromRect(localBounds), colorString);
             }
 #endif
+            
             CGContextSetFillColorWithColor(ctx, backgroundColor);
-            CGContextFillRect(ctx, localBounds);
+
+            if (self.cornerRadius != 0.0f) {
+                OQAppendRoundedRect(ctx, localBounds, self.cornerRadius);
+                CGContextFillPath(ctx);
+            } else
+                CGContextFillRect(ctx, localBounds);
         }
         
         // We require that the delegate implement the CGContextRef path, not just -displayLayer:.
@@ -556,6 +563,7 @@ static void _writeString(NSString *str)
         if (delegate && [delegate respondsToSelector:@selector(drawLayer:inVectorContext:)]) {
             DEBUG_RENDER(@"  rendering %@ via vector delegate %@", [self shortDescription], [delegate shortDescription]);
             [delegate drawLayer:self inVectorContext:ctx];
+            didVectorDrawing = YES;
         } else {
             didVectorDrawing = [self drawInVectorContext:ctx];
         }

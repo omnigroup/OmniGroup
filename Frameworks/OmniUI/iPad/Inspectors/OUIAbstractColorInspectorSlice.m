@@ -10,6 +10,7 @@
 #import <OmniUI/OUIColorInspectorPane.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSelectionValue.h>
+#import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniQuartz/OQColor.h>
 
 RCS_ID("$Id$");
@@ -19,10 +20,11 @@ RCS_ID("$Id$");
 - (void)dealloc;
 {
     [_selectionValue release];
+    [_defaultColor release];
     [super dealloc];
 }
 
-- (NSSet *)getColorsFromObject:(id)object;
+- (OQColor *)colorForObject:(id)object;
 {
     OBRequestConcreteImplementation(self, _cmd);
     return nil;
@@ -48,34 +50,46 @@ RCS_ID("$Id$");
     [super showDetails:sender];
 }
 
-- (void)updateInterfaceFromInspectedObjects;
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     NSMutableArray *colors = [NSMutableArray array];
-    NSSet *appropriateObjects = self.appropriateObjectsForInspection;
     
     // Find a single color, obeying color spaces, that all the objects have.
+#ifdef NS_BLOCKS_AVAILABLE
+    [self eachAppropriateObjectForInspection:^(id object){
+        OQColor *objectColor = [self colorForObject:object];
+        if (objectColor)
+            [colors addObject:objectColor];
+    }];
+#else
+    OBFinishPortingLater("Make the trunk 4.x only");
+    NSArray *appropriateObjects = self.appropriateObjectsForInspection;
     for (id object in appropriateObjects) {
-        NSSet *objectColors = [self getColorsFromObject:object];
-        if (objectColors)
-            [colors addObjectsFromArray:[objectColors allObjects]];
+        OQColor *objectColor = [self colorForObject:object];
+        if (objectColor)
+            [colors addObject:objectColor];
     }
+#endif
     
     OUIInspectorSelectionValue *selectionValue = [[OUIInspectorSelectionValue alloc] initWithValues:colors];
     
     // Compare the two colors in RGBA space, but keep the old single color's color space. This allow us to map to RGBA for text (where we store the RGBA in a CGColorRef for CoreText's benefit) but not lose the color space in our color picking UI, mapping all HSV colors with S or V of zero to black or white (and losing the H component).  See <bug://bugs/59912> (Hue slider jumps around)
-    if (OFNOTEQUAL([selectionValue.dominantValue colorUsingColorSpace:OQColorSpaceRGB], [_selectionValue.uniqueValue colorUsingColorSpace:OQColorSpaceRGB])) {
+    if (OFNOTEQUAL([selectionValue.firstValue colorUsingColorSpace:OQColorSpaceRGB], [_selectionValue.firstValue colorUsingColorSpace:OQColorSpaceRGB])) {
         [_selectionValue release];
-        _selectionValue = [selectionValue retain];
+        _selectionValue = selectionValue; // take reference from above
     } else
         [selectionValue release];
     
     // Don't check off swatches as selected unless there is only one color selected. Otherwise, we could have the main swatch list have one checkmark when there is really another selected color that just isn't in the list being shown.
     
-    [super updateInterfaceFromInspectedObjects];
+    [super updateInterfaceFromInspectedObjects:reason];
 }
 
 #pragma mark -
 #pragma mark OUIColorInspectorPaneParentSlice
+
+@synthesize allowsNone = _allowsNone;
+@synthesize defaultColor = _defaultColor;
 
 @synthesize selectionValue = _selectionValue;
 
@@ -91,7 +105,7 @@ RCS_ID("$Id$");
     BOOL isContinuousChange = colorValue.isContinuousColorChange;
     
     OUIInspector *inspector = self.inspector;
-    NSSet *appropriateObjects = self.appropriateObjectsForInspection;
+    NSArray *appropriateObjects = self.appropriateObjectsForInspection;
     
     if (isContinuousChange && !_inContinuousChange) {
         //NSLog(@"will begin");
@@ -106,20 +120,20 @@ RCS_ID("$Id$");
     }
     [inspector endChangeGroup];
     
+    // Pre-populate our selected color before querying back from the objects. This will allow us to keep the original colorspace if the colors are equivalent enough.
+    // Do this before calling -updateInterfaceFromInspectedObjects: or -didEndChangingInspectedObjects (which will also update the interface) since that'll read the current selectionValue.
+    [_selectionValue release];
+    _selectionValue = [[OUIInspectorSelectionValue alloc] initWithValue:color];
+    
     if (!isContinuousChange) {
         //NSLog(@"will end");
         _inContinuousChange = NO;
         [inspector didEndChangingInspectedObjects];
+    } else if (inspector.topVisiblePane == self.containingPane) {
+        // -didEndChangingInspectedObjects will update the interface for us
+        // Only need to update if we are the visible inspector (not our detail). Otherwise we'll update when the detail closes.
+        [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonObjectsEdited];
     }
-    
-    // Pre-populate our selected color before querying back from the objects. This will allow us to keep the original colorspace if the colors are equivalent enough.
-    [_selectionValue release];
-    _selectionValue = [[OUIInspectorSelectionValue alloc] initWithValue:color];
-    
-    // Only need to update if we are the visible inspector (not our detail). Otherwise we'll update when the detail closes.
-    if (inspector.topVisiblePane == self.containingPane)
-        [self updateInterfaceFromInspectedObjects];
-    
 }
 
 @end

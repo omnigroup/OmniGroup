@@ -77,6 +77,15 @@ static id _commonInit(OUIInspectorTextExampleView *self)
 }
 
 #pragma mark -
+#pragma mark UIView (OUIExtensions)
+
+- (UIEdgeInsets)borderEdgeInsets;
+{
+    // Border all the way to the edge.
+    return UIEdgeInsetsZero;
+}
+
+#pragma mark -
 #pragma mark UIView subclass
 
 - (void)layoutSubviews;
@@ -104,7 +113,7 @@ static id _commonInit(OUIInspectorTextExampleView *self)
         UIRectFill(rect);
     } else {
         if (backgroundAlpha < 1.0) {
-            OUIDrawTransparentColorBackground(ctx, bounds, CGSizeZero);
+            OUIDrawPatternBackground(ctx, @"OUITransparencyCheckerboardBackground-24", bounds, CGSizeZero);
         }
     
         [[_styleBackgroundColor toColor] set];

@@ -24,7 +24,10 @@ typedef enum {
     BOOL _allowsMulitpleSelection;
     BOOL _allowsEmptySelection;
     BOOL _sizesSegmentsToFit;
+    BOOL _dark;
 }
+
++ (CGFloat)buttonHeight;
 
 - (OUIInspectorSegmentedControlButton *)addSegmentWithImageNamed:(NSString *)imageName representedObject:(id)representedObject;
 - (OUIInspectorSegmentedControlButton *)addSegmentWithImageNamed:(NSString *)imageName;
@@ -44,4 +47,7 @@ typedef enum {
 - (OUIInspectorSegmentedControlButton *)segmentAtIndex:(NSUInteger)segmentIndex;
 - (OUIInspectorSegmentedControlButton *)segmentWithRepresentedObject:(id)object;
 - (void)setSegmentFont:(UIFont *)font;
+
+@property(nonatomic) BOOL dark;
+
 @end

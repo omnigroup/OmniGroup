@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,12 +31,16 @@
     BOOL _hasRetriedProxyDueToIncorrectSize;
 }
 
++ (NSString *)editNameForURL:(NSURL *)url;
++ (NSString *)displayNameForURL:(NSURL *)url;
+
 - initWithURL:(NSURL *)url;
 
 - (void)invalidate;
 
 @property(retain) NSURL *url;  // set only by OUIDocumentPicker during renaming
 @property(readonly) NSData *emailData; // packages cannot currently be emailed, so this allows subclasses to return a different content for email
+@property(readonly) NSString *emailFilename;
 
 @property(readonly) id <OUIDocumentPreview> preview;
 
@@ -55,7 +59,7 @@
 - (void)refreshDateAndPreview;
 
 - (CGSize)previewSizeForTargetSize:(CGSize)targetSize aspectRatio:(CGFloat)aspectRatio;
-- (CGSize)previewSizeForTargetSize:(CGSize)targetSize; // Looks up the aspect ratio in a cache, or uses a canned guess until the preview really loads
+- (CGSize)previewSizeForTargetSize:(CGSize)targetSize inLandscape:(BOOL)inLandscape; // Looks up the aspect ratio in a cache, or uses a canned guess until the preview really loads
 
 @property(readonly) BOOL hasPDFPreview;
 @property(readonly) BOOL isLoadingPreview;
@@ -66,8 +70,9 @@
 - (NSComparisonResult)compare:(OUIDocumentProxy *)otherProxy;
 
 // Either input can be NULL if the caller doesn't care about that value. But, sometimes we want both and it is more efficient to get both at once.
-+ (BOOL)getPDFPreviewData:(NSData **)outPDFData modificationDate:(NSDate **)outModificationDate fromURL:(NSURL *)url error:(NSError **)outError;
-+ (id <OUIDocumentPreview>)makePreviewFromURL:(NSURL *)url size:(CGSize)size error:(NSError **)outError;
+- (BOOL)getPDFPreviewData:(NSData **)outPDFData modificationDate:(NSDate **)outModificationDate error:(NSError **)outError;
+- (id <OUIDocumentPreview>)makePreviewOfSize:(CGSize)size error:(NSError **)outError;
+- (CGSize)previewTargetSize;
 
 - (UIImage *)cameraRollImage;
 

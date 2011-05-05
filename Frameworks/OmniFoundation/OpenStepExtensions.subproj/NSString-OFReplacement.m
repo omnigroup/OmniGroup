@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,6 +35,33 @@ RCS_ID("$Id$");
 - (NSString *)stringByRemovingSurroundingWhitespace;
 {
     return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+}
+
+- (NSString *)stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace;
+{
+    NSUInteger length = [self length];
+    if (length == 0)
+        return @""; // Trivial optimization
+
+    OFCharacterSet *whitespaceOFCharacterSet = [OFCharacterSet whitespaceOFCharacterSet];
+    OFStringScanner *stringScanner = [[OFStringScanner alloc] initWithString:self];
+    NSMutableString *collapsedString = [[NSMutableString alloc] initWithCapacity:length];
+    BOOL firstSubstring = YES;
+    while (scannerScanUpToCharacterNotInOFCharacterSet(stringScanner, whitespaceOFCharacterSet)) {
+        NSString *nonWhitespaceSubstring;
+
+        nonWhitespaceSubstring = [stringScanner readFullTokenWithDelimiterOFCharacterSet:whitespaceOFCharacterSet forceLowercase:NO];
+        if (nonWhitespaceSubstring) {
+            if (firstSubstring) {
+                firstSubstring = NO;
+            } else {
+                [collapsedString appendString:@" "];
+            }
+            [collapsedString appendString:nonWhitespaceSubstring];
+        }
+    }
+    [stringScanner release];
+    return [collapsedString autorelease];
 }
 
 - (NSString *)stringByRemovingString:(NSString *)removeString

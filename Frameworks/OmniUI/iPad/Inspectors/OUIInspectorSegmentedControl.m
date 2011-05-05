@@ -22,6 +22,11 @@ static const CGFloat kButtonHeight = 38;
 
 @implementation OUIInspectorSegmentedControl
 
++ (CGFloat)buttonHeight;
+{
+    return kButtonHeight;
+}
+
 static id _commonInit(OUIInspectorSegmentedControl *self)
 {
     self.opaque = NO;
@@ -50,9 +55,20 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
     [super dealloc];
 }
 
+@synthesize dark = _dark;
+
+- (void)setDark:(BOOL)flag;
+{
+    _dark = flag;
+    for(OUIInspectorSegmentedControlButton *segment in _segments) {
+        [segment setDark:[self dark]];
+    }
+}
+
 - (OUIInspectorSegmentedControlButton *)addSegmentWithImageNamed:(NSString *)imageName representedObject:(id)representedObject;
 {
     OUIInspectorSegmentedControlButton *segment = [OUIInspectorSegmentedControlButton buttonWithType:UIButtonTypeCustom];
+    segment.dark = self.dark;
     segment.image = [UIImage imageNamed:imageName];
     segment.representedObject = representedObject;
     [segment addTarget:self action:@selector(_segmentPressed:)];
@@ -69,6 +85,7 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
 - (OUIInspectorSegmentedControlButton *)addSegmentWithText:(NSString *)text representedObject:(id)representedObject;
 {
     OUIInspectorSegmentedControlButton *segment = [OUIInspectorSegmentedControlButton buttonWithType:UIButtonTypeCustom];
+    segment.dark = self.dark;
     [segment setTitle:text forState:UIControlStateNormal];
     segment.representedObject = representedObject;
     [segment addTarget:self action:@selector(_segmentPressed:)];
@@ -177,7 +194,7 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
 - (CGFloat)buttonHeight;
 // Graffle subclasses this to keep the height from changing, though sizesToFit might make more sense
 {
-    return kButtonHeight;
+    return [[self class] buttonHeight];
 }
 
 - (void)setEnabled:(BOOL)yn;

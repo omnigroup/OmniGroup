@@ -10,4 +10,10 @@
 #import <OmniUI/OUIActionInspectorSlice.h>
 
 @interface OUIEditableTextWellInspectorSlice : OUIActionInspectorSlice
+{
+    BOOL _isUntitled;
+}
+
+@property(nonatomic) BOOL isUntitled;
+
 @end

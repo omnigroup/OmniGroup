@@ -1,4 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,15 +8,9 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Foundation/NSNetServices.h>
-#endif
 
-@interface OFNetChangeNotifier : NSObject 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-<NSNetServiceDelegate, NSNetServiceBrowserDelegate>
-#endif
+@interface OFNetChangeNotifier : NSObject <NSNetServiceDelegate, NSNetServiceBrowserDelegate>
 {
     id nonretainedDelegate;
     NSString *uuidString;

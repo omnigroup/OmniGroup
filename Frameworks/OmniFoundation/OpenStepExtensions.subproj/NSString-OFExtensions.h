@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,11 +61,12 @@ Currently the only way to create strings with deferred bytes/characters is using
 
 - (BOOL)isPercentage;
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 + (NSString *)stringWithFourCharCode:(FourCharCode)code;
 - (FourCharCode)fourCharCodeValue;
+#endif
 
 - (NSString *)stringByUppercasingAndUnderscoringCaseChanges;
-- (NSString *)stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace;
 - (NSString *)stringByRemovingWhitespace;
 - (NSString *)stringByRemovingCharactersInOFCharacterSet:(OFCharacterSet *)removeSet;
 - (NSString *)stringByRemovingReturns;

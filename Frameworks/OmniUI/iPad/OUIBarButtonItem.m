@@ -8,6 +8,7 @@
 #import <OmniUI/OUIBarButtonItem.h>
 
 #import <OmniUI/OUIToolbarButton.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -21,9 +22,50 @@ RCS_ID("$Id$");
 
 @implementation OUIBarButtonItem
 
++ (id)spacerWithWidth:(CGFloat)width;
+{
+    UIBarButtonItem *spacer = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:NULL] autorelease];
+    spacer.width = width;
+    return spacer;
+}
+
 + (Class)buttonClass;
 {
     return [OUIToolbarButton class];
+}
+
+// Sadly we can't query the normal UIBarButtonItem for its localized titles. It just reports nil. Thanks guys!
+static NSString *_titleForItemStyle(UIBarButtonSystemItem itemStyle)
+{
+    switch (itemStyle) {
+        case UIBarButtonSystemItemDone:
+            return NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"toolbar item title");
+        case UIBarButtonSystemItemEdit:
+            return NSLocalizedStringFromTableInBundle(@"Edit", @"OmniUI", OMNI_BUNDLE, @"toolbar item title");
+        case UIBarButtonSystemItemCancel:
+            return NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"toolbar item title");
+        default:
+            OBASSERT_NOT_REACHED("Unhandled item style");
+            return nil;
+    }
+}
+
++ (NSSet *)possibleTitlesForEditBarButtonItems;
+{
+    static NSSet *editTitles = nil;
+    
+    if (!editTitles) {
+        NSMutableSet *titles = [NSMutableSet set];
+        
+        // Might need to split this up into Edit+Done and Edit+Cancel if one string is excessively long in a localization
+        [titles addObject:_titleForItemStyle(UIBarButtonSystemItemEdit)];
+        [titles addObject:_titleForItemStyle(UIBarButtonSystemItemCancel)];
+        [titles addObject:_titleForItemStyle(UIBarButtonSystemItemDone)];
+        
+        editTitles = [titles copy];
+    }
+    
+    return editTitles;
 }
 
 static OUIBarButtonItemBackgroundType _backgroundTypeForStyle(UIBarButtonItemStyle style)
@@ -69,17 +111,34 @@ static OUIBarButtonItemBackgroundType _backgroundTypeForStyle(UIBarButtonItemSty
 
 - (id)initWithBarButtonSystemItem:(UIBarButtonSystemItem)systemItem target:(id)target action:(SEL)action;
 {
+    OUIBarButtonItem *item;
+    
     switch (systemItem) {
-        case UIBarButtonSystemItemDone:
-            return [self initWithBackgroundType:OUIBarButtonItemBackgroundTypeBlue image:nil title:NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
-        case UIBarButtonSystemItemEdit:
-            return [self initWithBackgroundType:OUIBarButtonItemBackgroundTypeBlack image:nil title:NSLocalizedStringFromTableInBundle(@"Edit", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
-        case UIBarButtonSystemItemCancel:
-            return [self initWithBackgroundType:OUIBarButtonItemBackgroundTypeBlack image:nil title:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
+        case UIBarButtonSystemItemDone: {
+            item = [self initWithBackgroundType:OUIBarButtonItemBackgroundTypeBlue image:nil title:NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
+            item.possibleTitles = [[self class] possibleTitlesForEditBarButtonItems];
+            break;
+        }
+        case UIBarButtonSystemItemEdit: {
+            item = [self initWithBackgroundType:OUIBarButtonItemBackgroundTypeBlack image:nil title:NSLocalizedStringFromTableInBundle(@"Edit", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
+            item.possibleTitles = [[self class] possibleTitlesForEditBarButtonItems];
+            break;
+        }
+        case UIBarButtonSystemItemCancel: {
+            item = [self initWithBackgroundType:OUIBarButtonItemBackgroundTypeBlack image:nil title:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
+            item.possibleTitles = [[self class] possibleTitlesForEditBarButtonItems];
+            break;
+        }
         default:
             OBRejectUnusedImplementation(self, _cmd);
             return nil;
     }
+
+    OUIWithoutAnimating(^{
+        [item.button layoutIfNeeded];
+    });
+    
+    return item;
 }
 
 - (id)initWithCustomView:(UIView *)customView;
@@ -122,11 +181,13 @@ static void _commonInit(OUIBarButtonItem *self, OUIBarButtonItemBackgroundType b
         return nil;
     _commonInit(self, backgroundType);
     
-    OUIToolbarButton *button = (OUIToolbarButton *)self.customView;
-    [button setImage:image forState:UIControlStateNormal];
-    [button setTitle:title forState:UIControlStateNormal];
-    [button sizeToFit];
-    [button layoutIfNeeded];
+    OUIWithoutAnimating(^{
+        OUIToolbarButton *button = (OUIToolbarButton *)self.customView;
+        [button setImage:image forState:UIControlStateNormal];
+        [button setTitle:title forState:UIControlStateNormal];
+        [button sizeToFit];
+        [button layoutIfNeeded];
+    });
     
     self.target = target;
     self.action = action;
@@ -149,6 +210,14 @@ static void _commonInit(OUIBarButtonItem *self, OUIBarButtonItemBackgroundType b
 {
     OUIToolbarButton *button = (OUIToolbarButton *)self.customView;
     [button setHighlightedBackgroundImage:image];
+}
+
+- (void)setPossibleTitles:(NSSet *)possibleTitles;
+{
+    [super setPossibleTitles:possibleTitles];
+    
+    OUIToolbarButton *button = (OUIToolbarButton *)self.customView;
+    [button setPossibleTitles:possibleTitles];
 }
 
 #pragma mark -

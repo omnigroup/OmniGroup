@@ -17,27 +17,26 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-- (CGFloat)height;
-{
-    [self view]; // set in -viewDidLoad
-    return _originalHeight;
-}
-
 @synthesize selectionValue = _selectionValue;
+
+- (NSString *)identifier;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+}
 
 - (OUIColorPickerFidelity)fidelityForSelectionValue:(OUIInspectorSelectionValue *)selectionValue;
 {
     return OUIColorPickerFidelityZero;
 }
 
-#pragma mark -
-#pragma mark UIViewController subclass
-
-- (void)viewDidLoad;
+- (void)wasDeselectedInColorInspectorPane:(OUIColorInspectorPane *)pane;
 {
-    [super viewDidLoad];
-    
-    _originalHeight = CGRectGetHeight(self.view.frame);
+    // for subclasses
+}
+
+- (void)wasSelectedInColorInspectorPane:(OUIColorInspectorPane *)pane;
+{
+    // for subclasses
 }
 
 @end

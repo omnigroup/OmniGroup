@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,6 @@ RCS_ID("$Id$")
 
 - (void)dealloc;
 {
-    [_alertView release];
     [_documentURL release];
     
     [super dealloc];
@@ -46,9 +45,7 @@ RCS_ID("$Id$")
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
 {
-    OBPRECONDITION(alertView == _alertView);
-    
-    [_nonretained_delegate replaceDocumentAlert:self didDismissWithButtonIndex:buttonIndex documentURL:_documentURL];
+    [_nonretained_delegate replaceDocumentAlert:self didDismissWithButtonIndex:buttonIndex documentURL:[[_documentURL copy] autorelease]];
 }
      
 @end

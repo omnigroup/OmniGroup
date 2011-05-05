@@ -12,6 +12,7 @@ typedef enum {
     OUIBarButtonItemBackgroundTypeBlack,
     OUIBarButtonItemBackgroundTypeRed,
     OUIBarButtonItemBackgroundTypeBlue,
+    OUIBarButtonItemBackgroundTypeClear,
     OUIBarButtonItemBackgroundTypeBack, // Left-pointing arrow.
 } OUIBarButtonItemBackgroundType;
 

@@ -14,6 +14,7 @@
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUISingleDocumentAppController.h>
 #import <OmniUI/OUIUndoIndicator.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -114,8 +115,6 @@ RCS_ID("$Id$");
     OBASSERT([_undoManager groupingLevel] == 0);
     _hasUndoGroupOpen = NO;
     
-    [[[OUIAppController controller] undoBarButtonItem] setEnabled:NO];
-    
     // If we didn't have a preview
     if (proxy && !proxy.hasPDFPreview)
         _hasDoneAutosave = YES;
@@ -137,6 +136,7 @@ RCS_ID("$Id$");
     
     [_undoManager release];
     [_proxy release];
+    [_url release];
     
     [super dealloc];
 }
@@ -184,7 +184,11 @@ RCS_ID("$Id$");
         return;
     
     // Make sure any edits get finished and saved in the current undo group
-    [_viewController.view.window endEditing:YES/*force*/];
+    OUIWithoutAnimating(^{
+        [_viewController.view.window endEditing:YES/*force*/];
+        [_viewController.view layoutIfNeeded];
+    });
+    
     [self finishUndoGroup]; // close any nested group we created
     
     [_undoManager undo];

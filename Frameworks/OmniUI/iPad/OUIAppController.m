@@ -9,6 +9,7 @@
 
 #import "OUIAppMenuController.h"
 #import "OUIEventBlockingView.h"
+#import "OUIParameters.h"
 #import "OUISyncMenuController.h"
 #import "OUISoftwareUpdateController.h"
 
@@ -140,7 +141,9 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
             NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
             for (NSDictionary *documentType in documentTypes) {
                 NSString *role = [documentType objectForKey:@"CFBundleTypeRole"];
-                OBASSERT([role isEqualToString:@"Editor"] || [role isEqualToString:@"Viewer"]);
+                if (![role isEqualToString:@"Editor"] && ![role isEqualToString:@"Viewer"])
+                    continue;
+
                 NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
                 for (NSString *contentType in contentTypes)
                     [contentTypeRoles setObject:role forKey:[contentType lowercaseString]];
@@ -432,17 +435,23 @@ static void _forgetPossiblyVisiblePopoverIfAlreadyHidden(OUIAppController *self)
     }
 }
 
+static void _performDismissPopover(UIPopoverController *dismissingPopover, BOOL animated)
+{
+    OBPRECONDITION(dismissingPopover);
+    
+    [dismissingPopover dismissPopoverAnimated:animated]; // Might always want to snap the old one out...
+    
+    // Like the normal case of popovers disappearing (when tapping out), we send this *before* the animation finishes.
+    id <UIPopoverControllerDelegate> delegate = dismissingPopover.delegate;
+    if ([delegate respondsToSelector:@selector(popoverControllerDidDismissPopover:)])
+        [delegate popoverControllerDidDismissPopover:dismissingPopover];
+}
+
 static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPopoverController *popoverToPresent, BOOL animated)
 {
     _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
     
     UIPopoverController *possiblyVisblePopover = self->_possiblyVisiblePopoverController;
-    
-    if (possiblyVisblePopover && !possiblyVisblePopover.popoverVisible) {
-        // The user may have tapped outside the popover and dismissed it automatically (or it could have been dismissed in code without going through code). We'd have to interpose ourselves as the delegate to tell the difference to assert about it. Really, it seems like too much trouble since we just want to make sure multiple popovers aren't visible.
-        [possiblyVisblePopover release];
-        self->_possiblyVisiblePopoverController = nil;
-    }
     
     // Hide the old popover if it is still visible (and we aren't re-presenting the same one).
     if (possiblyVisblePopover && popoverToPresent != possiblyVisblePopover) {
@@ -456,13 +465,17 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
         UIPopoverController *dismissingPopover = [possiblyVisblePopover autorelease];
         self->_possiblyVisiblePopoverController = nil;
         
-        [dismissingPopover dismissPopoverAnimated:animated]; // Might always want to snap the old one out...
-        
-        if ([delegate respondsToSelector:@selector(popoverControllerDidDismissPopover:)])
-            [delegate popoverControllerDidDismissPopover:dismissingPopover];
+        _performDismissPopover(dismissingPopover, animated);
     }
     
     return YES;
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    if (_possiblyTappedButtonItem && _possiblyVisiblePopoverController.popoverVisible) {
+        [self presentPopover:_possiblyVisiblePopoverController fromBarButtonItem:_possiblyTappedButtonItem permittedArrowDirections:[_possiblyVisiblePopoverController popoverArrowDirection] animated:NO];
+    }
 }
 
 // Returns NO without displaying the popover, if a previously displayed popover refuses to be dismissed.
@@ -487,27 +500,44 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     if (!_dismissVisiblePopoverInFavorOfPopover(self, popover, animated))
         return NO;
     
-    OBASSERT(_possiblyVisiblePopoverController == nil);
-    _possiblyVisiblePopoverController = [popover retain];
-    
-    [popover presentPopoverFromBarButtonItem:item permittedArrowDirections:arrowDirections animated:animated];
+    if (_possiblyVisiblePopoverController != popover) { // Might be re-displaying a popover after an orientation change.
+        OBASSERT(_possiblyVisiblePopoverController == nil);
+        _possiblyVisiblePopoverController = [popover retain];
+    }
+
+    // This is here to fix <bug:///69210> (Weird alignment between icon and popover arrow for the contents popover).  When we have a UIBarButtonItem with a custom view the arrow on the popup does not align correctly.  A radar #9293627 has been filed against this.  When we have a UIBarButtonItem with a custom view we present it using presentPopoverFromRect:inView:permittedArrowDirections:animated: instead of the standard presentPopoverFromBarButtonItem:permittedArrowDirections:animated:, which will align the popover arrow in the correct place.  We have to adjust the rect height to get the popover to appear in the correct place, since our buttons view size is for the toolbar height and not the actual button.
+    if (item.customView) {
+        CGRect rect = [item.customView convertRect:item.customView.bounds toView:[item.customView superview]];
+        rect.size.height -= kOUIToolbarEdgePadding;
+        [_possiblyTappedButtonItem release];
+        _possiblyTappedButtonItem = [item retain];
+        [popover presentPopoverFromRect:rect inView:[item.customView superview] permittedArrowDirections:arrowDirections animated:animated];
+    } else
+        [popover presentPopoverFromBarButtonItem:item permittedArrowDirections:arrowDirections animated:animated];
     return YES;
 }
 
-- (void)dismissPopoverAnimated:(BOOL)animated;
+- (void)dismissPopover:(UIPopoverController *)popover animated:(BOOL)animated;
 {
     // Unlike the plain UIPopoverController dismissal, this does send the 'did' hook. The reasoning here is that the caller doesn't necessarily know what popover it is dismissing.
     // If you still want to avoid the delegate method, just call the UIPopoverController method directly on your popover.
     
     _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
-
-    id <UIPopoverControllerDelegate> delegate = _possiblyVisiblePopoverController.delegate;
+    [_possiblyTappedButtonItem release];
+    _possiblyTappedButtonItem = nil;
+    
+    if (!_possiblyVisiblePopoverController || popover != _possiblyVisiblePopoverController)
+        return;
+    
     UIPopoverController *dismissingPopover = [_possiblyVisiblePopoverController autorelease];
     _possiblyVisiblePopoverController = nil;
-    [dismissingPopover dismissPopoverAnimated:animated];
+    
+    _performDismissPopover(dismissingPopover, animated);
+}
 
-    if ([delegate respondsToSelector:@selector(popoverControllerDidDismissPopover:)])
-        [delegate popoverControllerDidDismissPopover:dismissingPopover];
+- (void)dismissPopoverAnimated:(BOOL)animated;
+{
+    [self dismissPopover:_possiblyVisiblePopoverController animated:animated];
 }
 
 #pragma mark -
@@ -554,6 +584,11 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 - (void)applicationWillTerminate:(UIApplication *)application;
 {
     [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
+{
+    _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
 }
 
 #pragma mark -

@@ -67,14 +67,14 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark OUIInspectorSlice subclass
 
-- (void)updateInterfaceFromInspectedObjects;
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
-    [super updateInterfaceFromInspectedObjects];
+    [super updateInterfaceFromInspectedObjects:reason];
     
     OUIInspectorSelectionValue *selectionValue = self.selectionValue;
     
     OUIColorAttributeInspectorWell *textWell = (OUIColorAttributeInspectorWell *)self.textWell;
-    textWell.color = selectionValue.uniqueValue;
+    textWell.color = selectionValue.firstValue;
 }
 
 @end

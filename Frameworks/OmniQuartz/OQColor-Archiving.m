@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -121,9 +121,9 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
         getters.component(container, @"k", &components[3]);
         components[4] = alpha;
         
-        // <bug://bugs/60461> (Deal with CMYK color archive/unarchive in OQColor on iPad)
-        OBFinishPorting;
+        OBFinishPortingLater("<bug://bugs/60461> (Deal with CMYK color archive/unarchive in OQColor on iPad)");
         //return [OQColor colorWithColorSpace:[NSColorSpace genericCMYKColorSpace] components:components count:5];
+        return [OQColor whiteColor];
     }
     
     // There is no HSB/HSV colorspace, but lets allow specifying colors in property lists (for defaults in Info.plist) that way
@@ -141,7 +141,7 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
         patternData = getters.data(container, @"tiff");
     if ([patternData isKindOfClass:[NSData class]]) {
         // <bug://bugs/60462> (Deal with pattern color archive/unarchive in OQColor on iPad)
-        OBFinishPorting;
+        OBFinishPortingLater("Warning: unable to unarchive pattern colors on iOS, falling back to white");
 #if 0
         NSBitmapImageRep *bitmapImageRep = (id)[NSBitmapImageRep imageRepWithData:patternData];
         NSSize imageSize = [bitmapImageRep size];

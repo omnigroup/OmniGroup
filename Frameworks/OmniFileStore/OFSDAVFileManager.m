@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -266,9 +266,16 @@ static id <OFSDAVFileManagerAuthenticationDelegate> AuthenticationDelegate = nil
     NSError *localError = nil;
     NSArray *fileInfos = [self _propfind:url depth:OFSDAVDepth(0) redirects:nil error:&localError];
     if (!fileInfos) {
-        if ([[localError domain] isEqualToString:OFSDAVHTTPErrorDomain] && [localError code] == 404) {
-            // The resource was legitimately not found.
-            return [[[OFSFileInfo alloc] initWithOriginalURL:url name:nil exists:NO directory:NO size:0 lastModifiedDate:nil] autorelease];
+        if ([[localError domain] isEqualToString:OFSDAVHTTPErrorDomain]) {
+            NSInteger code = [localError code];
+            
+            // A 406 Not Acceptable means that there is something possibly similar to what we asked for with a different content type than we specified in our Accepts header.
+            // This is goofy since we didn't ASK for the resource contents, but its properties and our "text/xml" Accepts entry was for the format of the returned properties.
+            // MobileMe doesn't return this, but Apache does on sync.omnigroup.com (at least with the current configuration as of this writing) if we do a PROPFIND for "Foo" and there is a "Foo.txt".
+            if (code == 404 || code == 406) {
+                // The resource was legitimately not found.
+                return [[[OFSFileInfo alloc] initWithOriginalURL:url name:nil exists:NO directory:NO size:0 lastModifiedDate:nil] autorelease];
+            }
         }
         
         // Some other error; pass it up
@@ -309,7 +316,7 @@ static id <OFSDAVFileManagerAuthenticationDelegate> AuthenticationDelegate = nil
                 NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No document exists at \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason - listing contents of a nonexistent directory"), url];
                 NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read document.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
                 OFSError(outError, OFSNoSuchDirectory, description, reason);
-            } else if (!(options & OFSDirectoryEnumerationSkipsSubdirectoryDescendants) && (options & OFSDirectoryEnumerationForceRecusiveDirectoryRead) && [*outError code] == 403 /* 'forbidden' */) {
+            } else if (!(options & OFSDirectoryEnumerationSkipsSubdirectoryDescendants) && (options & OFSDirectoryEnumerationForceRecursiveDirectoryRead) && [*outError code] == 403 /* 'forbidden' */) {
                 /* possible that 'depth:infinity' not supported on this server but still want results */
                 *outError = nil;
                 return [self _recursivelyCollectDirectoryContentsAtURL:url collectingRedirects:redirections options:options error:outError];
@@ -590,7 +597,10 @@ static NSString * const DAVNamespaceString = @"DAV:";
         [requestDocument popElement];
         
         requestXML = [requestDocument xmlData:outError];
-        //NSLog(@"requestXML = %@", [NSString stringWithData:requestXML encoding:NSUTF8StringEncoding]);
+        
+        if (OFSFileManagerDebug > 2)
+            NSLog(@"requestXML = %@", [NSString stringWithData:requestXML encoding:NSUTF8StringEncoding]);
+        
         [requestDocument release];
         
         if (!requestXML)
@@ -646,6 +656,9 @@ static NSString * const DAVNamespaceString = @"DAV:";
     
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss 'GMT'"];   /* rfc 1123 */
+    /* reference: http://developer.apple.com/library/ios/#qa/qa2010/qa1480.html */
+    [dateFormatter setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease]];
+    [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
     
     while ([cursor openNextChildElementNamed:@"response"]) {
 

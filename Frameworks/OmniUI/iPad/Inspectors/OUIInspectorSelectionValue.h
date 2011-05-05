@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,15 +12,13 @@
 @interface OUIInspectorSelectionValue : OFObject
 {
 @private
-    id _dominantValue;
-    NSSet *_uniqueValues;
+    NSArray *_values;
 }
 
 - initWithValue:(id)value;
 - initWithValues:(NSArray *)values;
 
-@property(readonly) id dominantValue;
-@property(readonly) NSSet *uniqueValues;
-@property(readonly) id uniqueValue; // dominantValue if that is the only value, nil otherwise
+@property(readonly) id firstValue;
+@property(readonly) NSArray *values;
 
 @end

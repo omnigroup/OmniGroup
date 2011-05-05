@@ -14,14 +14,21 @@
 @optional
 
 - (BOOL)textView:(OUIEditableFrame *)textView shouldInsertText:(NSString *)text;
+- (BOOL)textView:(OUIEditableFrame *)textView shouldDeleteBackwardsFromIndex:(NSUInteger)startIndex;
 
 - (void)textViewContentsChanged:(OUIEditableFrame *)textView;
 - (void)textViewLayoutChanged:(OUIEditableFrame *)textView;
+- (void)textViewSelectionChanged:(OUIEditableFrame *)textView;
 
 - (BOOL)textViewShouldEndEditing:(OUIEditableFrame *)textView;
+- (void)textViewWillEndEditing:(OUIEditableFrame *)textView;
 - (void)textViewDidEndEditing:(OUIEditableFrame *)textView;
 
 - (BOOL)textViewCanShowContextMenu:(OUIEditableFrame *)textView;
+
+- (BOOL)textView:(OUIEditableFrame *)textView canPasteFromPasteboard:(UIPasteboard *)pasteboard;
+- (NSAttributedString *)readAttributedStringFromPasteboard:(UIPasteboard *)pasteboard forTextView:(OUIEditableFrame *)textView;
+- (BOOL)writeAttributedStringFromTextRange:(UITextRange *)textRange toPasteboard:(UIPasteboard *)pasteboard forTextView:(OUIEditableFrame *)textView;
 
 @end
 

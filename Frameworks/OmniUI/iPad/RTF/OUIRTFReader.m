@@ -349,8 +349,9 @@ static NSMutableDictionary *KeywordActions;
 
 - (id)_initWithRTFString:(NSString *)rtfString;
 {
-    [super init];
-
+    if (!(self = [super init]))
+        return nil;
+    
     _attributedString = [[NSMutableAttributedString alloc] init];
     _scanner = [[OFStringScanner alloc] initWithString:rtfString];
     _currentState = [[OUIRTFReaderState alloc] init];

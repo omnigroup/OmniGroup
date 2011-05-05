@@ -16,8 +16,7 @@
 #import <OmniFoundation/NSThread-OFExtensions.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/OFVersionNumber.h>
-
-#include <execinfo.h>
+#import <OmniFoundation/OFBacktrace.h>
 
 RCS_ID("$Id$")
 
@@ -28,7 +27,6 @@ RCS_ID("$Id$")
 - (void)_makeObserversPerformSelector:(SEL)aSelector;
 - (void)_runQueues;
 - (NSArray *)_observersSnapshot;
-- (NSString *)_copyNumericBacktraceString:(int)framesToSkip;
 @end
 
 /*" OFController is used to represent the current state of the application and to receive notifications about changes in that state. "*/
@@ -356,69 +354,6 @@ static void _OFControllerCheckTerminated(void)
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (NSString *)copySymbolicBacktrace;
-{
-    NSString *numericTrace = [self _copyNumericBacktraceString:1];
-    NSString *symbolicTrace = [self copySymbolicBacktraceForNumericBacktrace:numericTrace];
-    [numericTrace release];
-    return symbolicTrace;
-}
-
-- (NSString *)copySymbolicBacktraceForNumericBacktrace:(NSString *)numericTrace;
-{
-#if 1
- // #include <execinfo.h>
- // #include <stdio.h>
-    NSArray *stackStrings = [numericTrace componentsSeparatedByString:@"  "];
-    NSUInteger frameCount = [stackStrings count];
-    void *callstack[frameCount];
-    for (NSString *stackString in stackStrings) {
-         callstack[frameCount] = (void *)(uintptr_t)[stackString maxHexValue];
-    }
-    OBASSERT(frameCount <= UINT_MAX); // That's all backtrace_symbols() can handle
-    char **symbols = backtrace_symbols(callstack, (unsigned int)frameCount);
-    unsigned int frameIndex;
-    NSMutableString *symbolicBacktrace = [[NSMutableString alloc] init];
-    for (frameIndex = 0; frameIndex < frameCount; frameIndex++) {
-        [symbolicBacktrace appendFormat:@"%08u -- %s", callstack[frameIndex], symbols[frameIndex]];
-        printf("%s\n", symbols[frameIndex]);
-    }
-    free(symbols);
-    return symbolicBacktrace;
-#else
-    // atos is in the developer tools package, so it might not be present
-    NSString *atosPath = @"/usr/bin/atos";
-    if (![[NSFileManager defaultManager] isExecutableFileAtPath:atosPath])
-	return [numericTrace copy];
-    
-    // We could use backtrace_symbols()  /  dladdr() here, but atos gives more accurate results
-    
-    NSString *outputString;
-    @try {
-        NSError *error = nil;
-        NSData *inputData = [numericTrace dataUsingEncoding:NSUTF8StringEncoding];
-        NSData *outputData = [inputData filterDataThroughCommandAtPath:atosPath
-                                                         withArguments:[NSArray arrayWithObjects:@"-p", [NSString stringWithFormat:@"%u", getpid()], nil]
-                                                 includeErrorsInOutput:YES
-                                                           errorStream:nil
-                                                                 error:&error];
-        
-        if (!outputData) {
-            outputString = [[error description] copy]; // for now, just return something for the result
-        } else {
-            outputString = [[NSString alloc] initWithData:outputData encoding:NSUTF8StringEncoding];
-            if (!outputString) {
-                outputString = [[NSString alloc] initWithFormat:@"Unable to convert output data to UTF-8:\n%@", outputData];
-            }
-        }
-    } @catch (NSException *exc) {
-        // This method can get called for unhandled exceptions, so let's not have any.
-        outputString = [[NSString alloc] initWithFormat:@"Exception raised while converting numeric backtrace: %@\n%@", numericTrace, exc];
-    }
-    return outputString;
-#endif
-}
-
 // Allow subclasses to override this
 - (unsigned int)exceptionHandlingMask;
 {
@@ -449,7 +384,7 @@ static void _OFControllerCheckTerminated(void)
 - (void)crashWithException:(NSException *)exception mask:(NSUInteger)mask;
 {
     NSString *numericBacktrace = [[exception userInfo] objectForKey:NSStackTraceKey];
-    NSString *symbolicBacktrace = numericBacktrace ? [[self copySymbolicBacktraceForNumericBacktrace:numericBacktrace] autorelease] : @"No numeric backtrace found";
+    NSString *symbolicBacktrace = numericBacktrace ? [OFCopySymbolicBacktraceForNumericBacktrace(numericBacktrace) autorelease] : @"No numeric backtrace found";
     
     NSString *report = [NSString stringWithFormat:@"Exception raised:\n---------------------------\nMask: 0x%08x\nName: %@\nReason: %@\nInfo:\n%@\nBacktrace:%@\n---------------------------",
                         mask, [exception name], [exception reason], [exception userInfo], symbolicBacktrace];
@@ -492,8 +427,8 @@ static void _OFControllerCheckTerminated(void)
     OBRecordBacktrace(NULL, OBBacktraceBuffer_NSAssertionFailure);
     
     if (![self crashOnAssertionOrUnhandledException]) {
-	NSString *numericTrace = [self _copyNumericBacktraceString:0];
-	NSString *symbolicTrace = [self copySymbolicBacktraceForNumericBacktrace:numericTrace];
+	NSString *numericTrace = OFCopyNumericBacktraceString(0);
+	NSString *symbolicTrace = OFCopySymbolicBacktraceForNumericBacktrace(numericTrace);
 	[numericTrace release];
         
 	NSString *description = [[NSString alloc] initWithFormat:format arguments:args];
@@ -527,7 +462,7 @@ static void _OFControllerCheckTerminated(void)
     OBRecordBacktrace(NULL, OBBacktraceBuffer_NSAssertionFailure);
 
     if (![self crashOnAssertionOrUnhandledException]) {
-	NSString *symbolicTrace = [self copySymbolicBacktrace];
+	NSString *symbolicTrace = OFCopySymbolicBacktrace();
 	
 	NSString *description = [[NSString alloc] initWithFormat:format arguments:args];
 	
@@ -584,7 +519,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     
     handlingException = YES;
     {
-	NSString *symbolicTrace = [self copySymbolicBacktraceForNumericBacktrace:numericTrace];
+	NSString *symbolicTrace = OFCopySymbolicBacktraceForNumericBacktrace(numericTrace);
 	NSLog(@"Exception raised:\n---------------------------\nMask: 0x%lx\nName: %@\nReason: %@\nStack Trace:\n%@\n---------------------------",
 	      aMask, [exception name], [exception reason], symbolicTrace);
 	[symbolicTrace release];
@@ -653,21 +588,6 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
         } else
             break;
     }
-}
-
-- (NSString *)_copyNumericBacktraceString:(int)skip;
-{
-#define MAX_BACKTRACE_DEPTH 128
-    void *frames[MAX_BACKTRACE_DEPTH];
-    int framecount = backtrace(frames, MAX_BACKTRACE_DEPTH);
-    NSMutableString *backtraceText = [[NSMutableString alloc] initWithCapacity:( framecount * ( 2*sizeof(void *) + 2 ) )];
-    for(int frameindex = skip+1; frameindex < framecount; frameindex++) {
-        if (frameindex > 0)
-            [backtraceText appendString:@"  "];  // Two spaces, for compatibility with NSStackTraceKey
-        [backtraceText appendFormat:@"%p", frames[frameindex]];
-    }
-
-    return backtraceText;
 }
 
 @end

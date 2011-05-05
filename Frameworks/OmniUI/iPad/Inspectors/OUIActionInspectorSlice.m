@@ -36,7 +36,7 @@ RCS_ID("$Id$");
     OBPRECONDITION(title);
     OBPRECONDITION(action);
     
-    if (!(self = [super init]))
+    if (!(self = [super initWithNibName:nil bundle:nil]))
         return nil;
     
     _action = action;
@@ -45,6 +45,8 @@ RCS_ID("$Id$");
     
     return self;
 }
+
+@synthesize shouldEditOnLoad = _shouldEditOnLoad;
 
 - (OUIInspectorTextWell *)textWell;
 {
@@ -71,7 +73,7 @@ RCS_ID("$Id$");
     _textWell.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _textWell.rounded = YES;
     
-    [_textWell addTarget:nil action:_action forControlEvents:UIControlEventTouchUpInside];
+    [_textWell addTarget:nil action:_action forControlEvents:UIControlEventTouchUpInside|UIControlEventValueChanged];
     
     OUIInspectorTextWellStyle style = [[self class] textWellStyle];
     _textWell.style = style;
@@ -90,6 +92,15 @@ RCS_ID("$Id$");
     _textWell = nil;
     
     [super viewDidUnload];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    if (self.shouldEditOnLoad) {
+        [[self textWell] startEditing];
+        self.shouldEditOnLoad = NO;
+    }
 }
 
 @end

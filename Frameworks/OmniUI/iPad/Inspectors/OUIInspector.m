@@ -11,6 +11,7 @@
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 #import "OUIParameters.h"
 
@@ -18,16 +19,55 @@ RCS_ID("$Id$");
 
 OBDEPRECATED_METHODS(OUIInspectorDelegate)
 - (NSString *)inspectorTitle:(OUIInspector *)inspector; // --> inspector:titleForPane:, taking an OUIInspectorPane
-- (NSArray *)inspectorSlices:(OUIInspector *)inspector; // --> inspector:slicesForStackedSlicesPane:, taking an OUIStackedSlicesInspectorPane
+- (NSArray *)inspectorSlices:(OUIInspector *)inspector; // --> inspector:makeAvailableSlicesForStackedSlicesPane:, taking an OUIStackedSlicesInspectorPane
+- (NSArray *)inspector:(OUIInspector *)inspector slicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane; // -> -inspector:makeAvailableSlicesForStackedSlicesPane:
+- (void)updateInterfaceFromInspectedObjects; // -> -updateInterfaceFromInspectedObjects:
 @end
+
+@interface OUIInspectorPopoverController : UIPopoverController
+@property(nonatomic,assign) BOOL lockContentSize;
+@end
+@implementation OUIInspectorPopoverController
+
+// Allow the inspector to prevent extra animation resizing passes when toggling the toolbar on/off.
+// This doesn't look great either (some of the popover's dark background can show through), but it is less bad.
+@synthesize lockContentSize = _lockContentSize;
+
+- (void)setPopoverContentSize:(CGSize)popoverContentSize animated:(BOOL)animated;
+{
+    if (!_lockContentSize)
+        [super setPopoverContentSize:popoverContentSize animated:animated];
+}
+- (void)setPopoverContentSize:(CGSize)popoverContentSize;
+{
+    if (!_lockContentSize)
+        [super setPopoverContentSize:popoverContentSize];
+}
+@end
+
+@interface OUIInspectorNavigationController : UINavigationController
+@end
+
+@implementation OUIInspectorNavigationController
+- (void)viewDidDisappear:(BOOL)animated;
+{
+    [super viewDidDisappear:animated];
+    
+    // Clear the selection from all the panes we've pushed. The objects in question could go away at any time and there is no reason for us to be observing or holding onto them! Clear stuff in reverse order (tearing down the opposite of setup).
+    for (OUIInspectorPane *pane in [self.viewControllers reverseObjectEnumerator]) {
+        pane.inspectedObjects = nil;
+        [pane updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
+    }
+}
+@end
+
 
 @interface OUIInspector (/*Private*/) <UIPopoverControllerDelegate, UINavigationControllerDelegate>
 - (void)_configureTitleForPane:(OUIInspectorPane *)pane;
-- (BOOL)_prepareToInspectObjects:(NSSet *)objects;
+- (BOOL)_prepareToInspectObjects:(NSArray *)objects;
 - (void)_startObserving;
 - (void)_stopObserving;
 - (void)_keyboardDidHide:(NSNotification *)note;
-- (void)_configurePopoverSize;
 @end
 
 // Might want to make this variable, but at least let's only hardcode it in one spot. Popovers are required to be between 320 and 600; let's shoot for the minimum.
@@ -64,13 +104,15 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 - init;
 {
-    return [self initWithMainPane:nil];
+    return [self initWithMainPane:nil height:400];
 }
 
-- initWithMainPane:(OUIInspectorPane *)mainPane;
+- initWithMainPane:(OUIInspectorPane *)mainPane height:(CGFloat)height;
 {
     if (!(self = [super init]))
         return nil;
+    
+    _height = height;
     
     if (mainPane)
         _mainPane = [mainPane retain];
@@ -83,8 +125,9 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     //_mainPane.view.frame = CGRectMake(0, 0, OUIInspectorContentWidth, 16);
         
     if (!_navigationController && [self isEmbededInOtherNavigationController] == NO) {
-        _navigationController = [[UINavigationController alloc] initWithRootViewController:_mainPane];
+        _navigationController = [[OUIInspectorNavigationController alloc] initWithRootViewController:_mainPane];
         _navigationController.delegate = self;
+        _navigationController.toolbarHidden = NO;
     }
 
     return self;
@@ -108,6 +151,13 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     [super dealloc];
 }
 
+- (OUIInspectorPane *)mainPane;
+{
+    OBPRECONDITION(_mainPane);
+    return _mainPane;
+}
+
+@synthesize height = _height;
 @synthesize delegate = _nonretained_delegate;
 
 // Subclass to return YES if you intend to embed the inspector into a your own navigation controller.
@@ -128,7 +178,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     return _popoverController.isPopoverVisible;
 }
 
-- (BOOL)inspectObjects:(NSSet *)objects fromBarButtonItem:(UIBarButtonItem *)item;
+- (BOOL)inspectObjects:(NSArray *)objects fromBarButtonItem:(UIBarButtonItem *)item;
 {    
     if (![self _prepareToInspectObjects:objects])
         return NO;
@@ -137,15 +187,13 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     if ([self isEmbededInOtherNavigationController] == NO) {
         if (![[OUIAppController controller] presentPopover:_popoverController fromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES])
             return NO;
-            
-        [self _configurePopoverSize]; // Hack. w/o this the first time we display we can end up the wrong size.
     }
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorDidPresentNotification object:self];
     return YES;
 }
 
-- (BOOL)inspectObjects:(NSSet *)objects fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
+- (BOOL)inspectObjects:(NSArray *)objects fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
 {    
     if (![self _prepareToInspectObjects:objects])
         return NO;
@@ -154,17 +202,15 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     if ([self isEmbededInOtherNavigationController] == NO) {
         if (![[OUIAppController controller] presentPopover:_popoverController fromRect:rect inView:view permittedArrowDirections:arrowDirections animated:YES])
             return NO;
-    
-        [self _configurePopoverSize]; // Hack. w/o this the first time we display we can end up the wrong size.
     }
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorDidPresentNotification object:self];
     return YES;
 }
 
-- (void)updateInterfaceFromInspectedObjects
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
-    [self.topVisiblePane updateInterfaceFromInspectedObjects];
+    [self.topVisiblePane updateInterfaceFromInspectedObjects:reason];
 }
 
 - (void)dismiss;
@@ -176,24 +222,15 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 {
     if (!_popoverController)
         return;
-    [_popoverController dismissPopoverAnimated:NO];
-    [_popoverController release];
-    _popoverController = nil;
     
-    [_nonretained_delegate inspectorDidDismiss:self];
+    [[OUIAppController controller] dismissPopover:_popoverController animated:animated];
 }
 
-- (NSArray *)slicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
+- (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 {
-    if ([_nonretained_delegate respondsToSelector:@selector(inspector:slicesForStackedSlicesPane:)])
-        return [_nonretained_delegate inspector:self slicesForStackedSlicesPane:pane];
+    if ([_nonretained_delegate respondsToSelector:@selector(inspector:makeAvailableSlicesForStackedSlicesPane:)])
+        return [_nonretained_delegate inspector:self makeAvailableSlicesForStackedSlicesPane:pane];
     return nil;
-}
-
-- (OUIInspectorPane *)mainPane;
-{
-    OBPRECONDITION(_mainPane);
-    return _mainPane;
 }
 
 static UINavigationController *_getNavigationController(OUIInspector *self)
@@ -211,13 +248,35 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
     }
 }
 
-- (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSSet *)inspectedObjects;
+static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFloat height, BOOL animated)
+{
+    const CGFloat toolbarHeight = 38;
+
+    BOOL wantsToolbar = ([[vc toolbarItems] count] > 0);
+    if (wantsToolbar)
+        height -= toolbarHeight;
+    
+    self->_popoverController.lockContentSize = YES;
+    {
+        vc.contentSizeForViewInPopover = CGSizeMake(OUIInspectorContentWidth, height);
+        
+        [self->_navigationController setToolbarHidden:!wantsToolbar animated:animated];
+    }
+    self->_popoverController.lockContentSize = NO;
+    
+    // This is necessary to reset the popover size if it is dismissed while the keyboard is up. It doesn't automatically fix this on itself. See <bug:///71703> (Popover doesn't restore size when closed with keyboard up)
+    // Actually, this makes the popover content controller by 1 border width (~8px) w/o being clipped by the popover. <bug:///71895> (Inspector grows slightly 2nd time opening it and background doesn't fill in the space)
+    // Instead, we now track keyboard visibility and avoid closing if we are editing text (see the life of the _keyboardShownWhilePopoverVisible ivar).
+    //[self->_popoverController setPopoverContentSize:self->_navigationController.contentSizeForViewInPopover animated:animated];    
+}
+
+- (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects animated:(BOOL)animated;
 {
     OBPRECONDITION(pane);
     
     UINavigationController *navigationController = _getNavigationController(self);
     OBASSERT(navigationController);
-
+    
     if (!inspectedObjects)
         inspectedObjects = self.topVisiblePane.inspectedObjects;
     OBASSERT([inspectedObjects count] > 0);
@@ -226,8 +285,13 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
     pane.inspectedObjects = inspectedObjects;
     
     [self _configureTitleForPane:pane];
-        
-    [navigationController pushViewController:pane animated:YES];
+    
+    [navigationController pushViewController:pane animated:animated];
+}
+
+- (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects;
+{
+    [self pushPane:pane inspectingObjects:inspectedObjects animated:YES];
 }
 
 - (void)pushPane:(OUIInspectorPane *)pane;
@@ -251,28 +315,6 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
     return _mainPane;
 }
 
-- (void)inspectorSizeChanged;
-{
-    OBFinishPortingLater("Avoid the class check here by adding some API to OUIInspectorPane?");
-    OUIInspectorPane *topVisiblePane = self.topVisiblePane;
-    if ([topVisiblePane isKindOfClass:[OUIStackedSlicesInspectorPane class]])
-        [(OUIStackedSlicesInspectorPane *)topVisiblePane inspectorSizeChanged];
-    
-    [self _configurePopoverSize];
-}
-
-- (void)updateInspectorToolbarItems:(BOOL)animated;
-{
-    UINavigationController *navigationController = _getNavigationController(self);
-    if (!navigationController) {
-        OBASSERT_NOT_REACHED("No navigation controller found?");
-        return;
-    }
-    
-    UIViewController *topViewController = [navigationController topViewController];
-    [navigationController setToolbarHidden:([[topViewController toolbarItems] count] == 0) animated:animated];
-}
-
 - (void)willBeginChangingInspectedObjects;
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorWillBeginChangingInspectedObjectsNotification object:self];
@@ -281,6 +323,9 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
 - (void)didEndChangingInspectedObjects;
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorDidEndChangingInspectedObjectsNotification object:self];
+    
+    // Update the inspector for these changes. In particular if the current pane is a stacked slices inspector, we want the other slices to be able to react to this change.
+    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonObjectsEdited];
 }
 
 - (void)beginChangeGroup;
@@ -296,14 +341,16 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
 #pragma mark -
 #pragma mark UINavigationControllerDelegate
 
-- (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
+- (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
-    // This will only get called if we are _not_ embedded in another navigation controller.
-    [self updateInspectorToolbarItems:animated];
-
-    // Make sure the popover sizes back down when navigating away from a tall details view (it seems to grow correctly). Doing this in the 'will' hook doesn't make it the right size, clipping off some of the bottom.
-    if (viewController)
-        [self _configurePopoverSize];
+    // This delegate method gets called before the pane is queried for its popover content size but before -viewWillAppear: is called.
+    // Need to make sure that the content size is correct, and as part of that, we send the pane -inspectorWillShow: to let it configure toolbar items.
+    
+    // Let the pane configure toolbar items based on the selection, or whatever
+    if ([viewController isKindOfClass:[OUIInspectorPane class]])
+        [(OUIInspectorPane *)viewController inspectorWillShow:self];
+    
+    _configureContentSize(self, viewController, _height, animated);
 }
 
 #pragma mark -
@@ -311,16 +358,26 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
 
 - (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController;
 {
-    // You'd think this would always return YES, but the second time it is run, it returns NO, unless you've tapped in a text field in the inspector or something.
-    // Presumably if the first responder isn't in the view at all, it returns NO instead of returning "YES, whatever".
-    [popoverController.contentViewController.view endEditing:YES/*force*/];
+    // If we started editing a text field in the popover, the first tap out of the popover should just stop editing that field.
+    // Also, closing the keyboard and the popover at the same time leads to terrible sizing problems.
+    if (_keyboardShownWhilePopoverVisible) {
+        // You'd think this would always return YES, but the second time it is run, it returns NO, unless you've tapped in a text field in the inspector or something.
+        // Presumably if the first responder isn't in the view at all, it returns NO instead of returning "YES, whatever".
+        [popoverController.contentViewController.view endEditing:YES/*force*/];
+        
+        // This *should* get cleared by the keyboard closing, but let's just be sure we don't get stuck with the popover open.
+        _keyboardShownWhilePopoverVisible = NO;
+        
+        return NO;
+    }
+    
     return YES;
 }
 
 - (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController;
 {
-    [_popoverController release];
-    _popoverController = nil;
+    // NOTE: This method gets called when the dismisal animation starts, not when it is done. So, we defer clearing the inspected objects/views/slices until our UINavigationController's -viewDidDisappear:. Otherwise we'll animate out an empty background.
+    
     [self _stopObserving];
 
     [_nonretained_delegate inspectorDidDismiss:self];
@@ -336,13 +393,15 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
         title = [_nonretained_delegate inspector:self titleForPane:pane];
     if (!title)
         title = pane.title;
+    if (!title)
+        title = pane.parentSlice.title;
     if (!title) {
         OBASSERT_NOT_REACHED("Either need to manually set a title on the inspector pane or provide one with the delegate.");
     }
     pane.title = title;
 }
 
-- (BOOL)_prepareToInspectObjects:(NSSet *)objects;
+- (BOOL)_prepareToInspectObjects:(NSArray *)objects;
 {
     OBPRECONDITION([objects count] > 0);
     OBPRECONDITION(_mainPane);
@@ -350,7 +409,7 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
     BOOL embedded = [self isEmbededInOtherNavigationController];
     
     if (embedded == NO && _popoverController.isPopoverVisible) {
-        [self dismiss];
+        [self dismissAnimated:YES]; // Like iWork, pop inspectors in, but fade them out.
         return NO;
     }
     
@@ -358,20 +417,24 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
     
     [self _configureTitleForPane:_mainPane];
     
-    [self updateInterfaceFromInspectedObjects];
+    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
     
-    // We cannot reuse popovers, as far as I can tell. It caches the old -contentSizeForViewInPopover and doesn't requery the next time it is presented.
+    // We *MUST* reuse our popover currently. In the past we've not been able to reuse them due to sizing oddities, but we no longer resize our popovers. Also, since we can potentially reuse our panes/slices, if you open an inspector, then quickly tap it closed and reopen, the old popover could not be done animating out before the new one tried to steal the panes/slices. This left them in a confused state. This all seems to work fine if we reuse our popover. See <bug:///71345> (Tapping between the two popover quickly can give you a blank inspector).
     if (embedded == NO) {
         // TODO: Assuming we aren't on screen.
         [_navigationController popToRootViewControllerAnimated:NO];
         
         [self dismiss];
         
-        _popoverController = [[UIPopoverController alloc] initWithContentViewController:_navigationController];
-        _popoverController.delegate = self;
-
+        // The popover controller will read the nav controller's contentSizeForViewInPopover as soon as it is created (and it will read the top view controller's)
+        _configureContentSize(self, _mainPane, _height, NO);
+        
+        if (_popoverController == nil) {
+            _popoverController = [[OUIInspectorPopoverController alloc] initWithContentViewController:_navigationController];
+            _popoverController.delegate = self;
+        }
+         
         [self _startObserving]; // Inside the embedded check since this just signs up for notifications that will fix our popover size, but that isn't our problem if we are embedded
-        [self _configurePopoverSize];
     } else {
         OBASSERT(_navigationController == nil);
     }
@@ -383,6 +446,7 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
 {
     if (!_isObservingNotifications) {
         _isObservingNotifications = YES;
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
     }
 }
@@ -391,34 +455,19 @@ static UINavigationController *_getNavigationController(OUIInspector *self)
 {
     if (_isObservingNotifications) {
         _isObservingNotifications = NO;
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidShowNotification object:nil];
         [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidHideNotification object:nil];
     }
 }
 
+- (void)_keyboardDidShow:(NSNotification *)note;
+{
+    _keyboardShownWhilePopoverVisible = YES;
+    
+}
 - (void)_keyboardDidHide:(NSNotification *)note;
 {
-    // If we got squished, try to grow back to the right size.
-    [self _configurePopoverSize];
-}
-
-- (void)_configurePopoverSize;
-{
-    // If you return an -alternateNavigationController, you need to fix *your* popover controller's size
-    OBPRECONDITION([self isEmbededInOtherNavigationController] == NO);
-    
-    const CGFloat titleHeight = 37;
-    
-    // If a detail changes its view's height, adjusts its contentSizeForViewInPopover and then we call this, the nav controller still reports the same height.
-    CGSize size = _navigationController.topViewController.contentSizeForViewInPopover;
-    size.height += titleHeight;
-
-    if (!_navigationController.toolbarHidden) {
-        const CGFloat toolbarHeight = 38;
-        
-        size.height += toolbarHeight;
-    }
-    
-    [_popoverController setPopoverContentSize:size animated:NO];
+    _keyboardShownWhilePopoverVisible = NO;
 }
 
 @end

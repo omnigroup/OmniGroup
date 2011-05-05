@@ -9,12 +9,12 @@
 
 #import <OmniFoundation/OFObject.h>
 #import <OmniUI/OUIInspectorDelegate.h>
+#import <OmniUI/OUIInspectorUpdateReason.h>
 #import <CoreGraphics/CGBase.h>
 #import <CoreText/CTStringAttributes.h>
 
-@class OUIStackedSlicesInspectorPane, OUIInspectorPane, OUIInspectorSlice;
+@class OUIStackedSlicesInspectorPane, OUIInspectorPane, OUIInspectorSlice, OUIInspectorPopoverController;
 @class UIBarButtonItem, UINavigationController, UIPopoverController;
-@class NSSet;
 
 extern const CGFloat OUIInspectorContentWidth;
 
@@ -28,13 +28,15 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 @private
     // We hold onto this in case we don't have a _navigationController to retain it on our behalf (if we have -isEmbededInOtherNavigationController subclassed to return YES).
     OUIInspectorPane *_mainPane;
+    CGFloat _height;
     
     UINavigationController *_navigationController;
-    UIPopoverController *_popoverController;
+    OUIInspectorPopoverController *_popoverController;
     
     id <OUIInspectorDelegate> _nonretained_delegate;
     
     BOOL _isObservingNotifications;
+    BOOL _keyboardShownWhilePopoverVisible;
 }
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
@@ -44,31 +46,30 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 + (UIFont *)labelFont;
 
 // Defaults to making a OUIStackedSlicesInspectorPane if mainPane is nil (or if -init is called).
-- initWithMainPane:(OUIInspectorPane *)mainPane;
+- initWithMainPane:(OUIInspectorPane *)mainPane height:(CGFloat)height;
+
+@property(readonly,nonatomic) OUIInspectorPane *mainPane;
+@property(readonly,nonatomic) CGFloat height;
 
 @property(assign,nonatomic) id <OUIInspectorDelegate> delegate;
 
 - (BOOL)isEmbededInOtherNavigationController; // Subclass to return YES if you intend to embed the inspector into a your own navigation controller (you might not yet have the navigation controller, though).
 - (UINavigationController *)embeddingNavigationController; // Needed when pushing detail panes with -isEmbededInOtherNavigationController.
 
-- (BOOL)isVisible;
-- (BOOL)inspectObjects:(NSSet *)objects fromBarButtonItem:(UIBarButtonItem *)item;
-- (BOOL)inspectObjects:(NSSet *)objects fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
-- (void)updateInterfaceFromInspectedObjects;
+@property(readonly,nonatomic,getter=isVisible) BOOL visible;
+
+- (BOOL)inspectObjects:(NSArray *)objects fromBarButtonItem:(UIBarButtonItem *)item;
+- (BOOL)inspectObjects:(NSArray *)objects fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason; // If you wrap edits in the will/did change methods below, this will be called automatically on the 'did'.
 - (void)dismiss;
 - (void)dismissAnimated:(BOOL)animated;
 
-- (NSArray *)slicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
+- (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 
-@property(readonly,nonatomic) OUIInspectorPane *mainPane;
-
-- (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSSet *)inspectedObjects;
+- (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects animated:(BOOL)animated;
+- (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects;
 - (void)pushPane:(OUIInspectorPane *)pane; // clones the inspected objects of the current top pane
 @property(readonly,nonatomic) OUIInspectorPane *topVisiblePane;
-
-// Call this from inspector slices/details when they change height or their response to -toolbarItems
-- (void)inspectorSizeChanged;
-- (void)updateInspectorToolbarItems:(BOOL)animated;
 
 - (void)willBeginChangingInspectedObjects; // start of ui action
 - (void)didEndChangingInspectedObjects;    // end of ui action
@@ -84,7 +85,7 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 @class OQColor;
 @protocol OUIColorInspection <NSObject>
-- (NSSet *)colorsForInspectorSlice:(OUIInspectorSlice *)inspector;
+- (OQColor *)colorForInspectorSlice:(OUIInspectorSlice *)inspector;
 - (void)setColor:(OQColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector;
 - (NSString *)preferenceKeyForInspectorSlice:(OUIInspectorSlice *)inspector;
 @end
@@ -107,7 +108,7 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 @class OAParagraphStyle;
 @protocol OUIParagraphInspection <NSObject>
 - (OAParagraphStyle *)paragraphStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
-- (void)setParagraphStyle:(OAParagraphStyle *)fontDescriptor fromInspectorSlice:(OUIInspectorSlice *)inspector;
+- (void)setParagraphStyle:(OAParagraphStyle *)paragraphStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
 @end
 
 

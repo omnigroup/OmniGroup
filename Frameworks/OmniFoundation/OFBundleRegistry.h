@@ -13,7 +13,14 @@
 
 @class NSArray, NSBundle;
 
+// The iPhone can't dynamically load code (or even link frameworks), so a lot of this class does nothing on that platform.
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    #define OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
+#endif
+
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
 extern NSString * const OFBundleRegistryDisabledBundlesDefaultsKey;
+#endif
 
 @interface OFBundleRegistry : OFObject
 

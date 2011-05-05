@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,32 +8,29 @@
 // $Id$
 
 #import <OmniUI/OUIInspectorSlice.h>
-#import <UIKit/UITableView.h>
+#import <OmniFoundation/OFExtent.h>
 
-@class OUIInspectorTextWell, OUIInspectorStepperButton, OUIFontInspectorPane, OUIInspectorSegmentedControl, OUIInspectorSegmentedControlButton;
+@class OAFontDescriptor;
+@class OUIInspectorTextWell, OUIInspectorStepperButton, OUIFontInspectorPane;
+
+typedef struct {
+    NSString *text;
+    UIFont *font;
+} OUIFontInspectorSliceFontDisplay;
 
 @interface OUIFontInspectorSlice : OUIInspectorSlice
 {
 @private
     OUIInspectorTextWell *_fontFamilyTextWell;
     
-    OUIInspectorSegmentedControl *_fontAttributeSegmentedControl;
-    OUIInspectorSegmentedControlButton *_boldFontAttributeButton;
-    OUIInspectorSegmentedControlButton *_italicFontAttributeButton;
-    OUIInspectorSegmentedControlButton *_underlineFontAttributeButton;
-    OUIInspectorSegmentedControlButton *_strikethroughFontAttributeButton;
-    
     OUIInspectorStepperButton *_fontSizeDecreaseStepperButton;
     OUIInspectorStepperButton *_fontSizeIncreaseStepperButton;
     OUIInspectorTextWell *_fontSizeTextWell;
-    
-    BOOL _showStrikethrough;
     
     OUIFontInspectorPane *_fontFacesPane;
 }
 
 @property(retain) IBOutlet OUIInspectorTextWell *fontFamilyTextWell;
-@property(retain) IBOutlet OUIInspectorSegmentedControl *fontAttributeSegmentedControl;
 @property(retain) IBOutlet OUIInspectorStepperButton *fontSizeDecreaseStepperButton;
 @property(retain) IBOutlet OUIInspectorStepperButton *fontSizeIncreaseStepperButton;
 @property(retain) IBOutlet OUIInspectorTextWell *fontSizeTextWell;
@@ -42,9 +39,11 @@
 - (IBAction)decreaseFontSize:(id)sender;
 - (IBAction)fontSizeTextWellAction:(OUIInspectorTextWell *)sender;
 
+- (OUIFontInspectorSliceFontDisplay)fontNameDisplayForFontDescriptor:(OAFontDescriptor *)fontDescriptor;
+- (OUIFontInspectorSliceFontDisplay)fontNameDisplayForFontDescriptors:(NSArray *)fontDescriptors;
+- (void)updateFontSizeTextWellForFontSizes:(NSArray *)fontSizes extent:(OFExtent)fontSizeExtent;
+
 @property(retain) IBOutlet OUIFontInspectorPane *fontFacesPane;
 - (void)showFacesForFamilyBaseFont:(UIFont *)font; // Called from the family listing to display members of the family
-
-@property BOOL showStrikethrough;
 
 @end

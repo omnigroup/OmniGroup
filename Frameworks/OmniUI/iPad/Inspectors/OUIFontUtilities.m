@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -138,38 +138,50 @@ BOOL OUIIsBaseFontNameForFamily(NSString *fontName, NSString *familyName)
     return [fontName isEqualToString:baseFontName];
 }
 
-OUIFontSelection OUICollectFontSelection(OUIInspectorSlice *self, NSSet *objects)
+OUIFontSelection OUICollectFontSelection(OUIInspectorSlice *self, id <NSFastEnumeration> objects)
 {
     OBPRECONDITION(self);
     
-    NSMutableSet *fontDescriptors = [NSMutableSet set];
-    NSMutableSet *fontSizes = [NSMutableSet set];
+    // Keep things in order, but unique them.
+    NSMutableSet *fontDescriptorSet = [NSMutableSet set];
+    NSMutableSet *fontSizeSet = [NSMutableSet set];
+    
+    NSMutableArray *collectedFontDescriptors = [NSMutableArray array];
+    NSMutableArray *collectedFontSizes = [NSMutableArray array];
+    
     CGFloat minFontSize = 0, maxFontSize = 0;
     
     for (id <OUIFontInspection> object in objects) {
         OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self];
         OBASSERT(fontDescriptor);
-        if (fontDescriptor)
-            [fontDescriptors addObject:fontDescriptor];
+        
+        if ([fontDescriptorSet member:fontDescriptor] == nil) {
+            [fontDescriptorSet addObject:fontDescriptor];
+            [collectedFontDescriptors addObject:fontDescriptor];
+        }
         
         CGFloat fontSize = [object fontSizeForInspectorSlice:self];
         OBASSERT(fontSize > 0);
         if (fontSize > 0) {
-            if (![fontSizes count]) {
+            if (![fontSizeSet count]) {
                 minFontSize = maxFontSize = fontSize;
             } else {
                 if (minFontSize > fontSize) minFontSize = fontSize;
                 if (maxFontSize < fontSize) maxFontSize = fontSize;
             }
-            [fontSizes addObject:[NSNumber numberWithFloat:fontSize]];
+            
+            NSNumber *fontSizeNumber = [NSNumber numberWithFloat:fontSize];
+            if ([fontSizeSet member:fontSizeNumber] == nil) {
+                [fontSizeSet addObject:fontSizeNumber];
+                [collectedFontSizes addObject:fontSizeNumber];
+            }
         }
     }
     
     return (OUIFontSelection){
-        .fontDescriptors = fontDescriptors,
-        .fontSizes = fontSizes,
-        .minFontSize = minFontSize,
-        .maxFontSize = maxFontSize
+        .fontDescriptors = collectedFontDescriptors,
+        .fontSizes = collectedFontSizes,
+        .fontSizeExtent = OFExtentFromLocations(minFontSize, maxFontSize)
     };
 }
 

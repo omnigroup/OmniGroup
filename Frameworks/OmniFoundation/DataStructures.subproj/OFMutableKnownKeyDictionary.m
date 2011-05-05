@@ -80,19 +80,28 @@ RCS_ID("$Id$")
 
 @end
 
-
 static inline NSUInteger _offsetForKeyAllowNotFound(id key, id *keys, NSUInteger keyCount)
 {
-    for (NSUInteger keyIndex = 0; keyIndex < keyCount; keyIndex++) {
-        if (*keys == key)
-            return keyIndex;
-        keys++;
+    // Binary search, since our keys array is in ascending pointer order
+    NSUInteger low = 0;
+    NSUInteger range = 1;
+    while (keyCount >= range) // range is the lowest power of 2 > count 
+        range <<= 1;
+    
+    while (range) {
+        NSUInteger test = low + (range >>= 1);
+        if (test >= keyCount)
+            continue;
+        
+        if (keys[test] == key)
+            return test;
+        if (keys[test] < key)
+            low = test+1;
     }
-
+    
     // No pointer match.  Back up and try -isEqual:.  Sigh.
-    keys -= keyCount;
     for (NSUInteger keyIndex = 0; keyIndex < keyCount; keyIndex++) {
-        if ([*keys isEqual: key])
+        if ([*keys isEqual: key]) 
             return keyIndex;
         keys++;
     }
@@ -102,14 +111,24 @@ static inline NSUInteger _offsetForKeyAllowNotFound(id key, id *keys, NSUInteger
 
 static inline NSUInteger _offsetForKey(id key, id *keys, NSUInteger keyCount)
 {
-    for (NSUInteger keyIndex = 0; keyIndex < keyCount; keyIndex++) {
-        if (*keys == key)
-            return keyIndex;
-        keys++;
+    // Binary search, since our keys array is in ascending pointer order
+    NSUInteger low = 0;
+    NSUInteger range = 1;
+    while (keyCount >= range) /* range is the lowest power of 2 > count */
+        range <<= 1;
+    
+    while (range) {
+        NSUInteger test = low + (range >>= 1);
+        if (test >= keyCount)
+            continue;
+        
+        if (keys[test] == key)
+            return test;
+        if (keys[test] < key)
+            low = test+1;
     }
 
     // No pointer match.  Back up and try -isEqual:.  Sigh.
-    keys -= keyCount;
     for (NSUInteger keyIndex = 0; keyIndex < keyCount; keyIndex++) {
         if ([*keys isEqual: key])
             return keyIndex;

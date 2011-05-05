@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,7 +35,7 @@ RCS_ID("$Id$")
 
 - initWithHostAddress:(ONHostAddress *)hostAddress portNumber:(unsigned short int)port;
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     if (hostAddress == nil)
@@ -52,7 +52,7 @@ RCS_ID("$Id$")
 
 - initWithSocketAddress:(const struct sockaddr *)newPortAddress
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     portAddress = malloc(newPortAddress->sa_len);
@@ -184,7 +184,7 @@ RCS_ID("$Id$")
 
 - (id)initWithCoder:(NSCoder *)coder;
 {
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     if ([coder versionForClassName:@"ONPortAddress"] < 3) {

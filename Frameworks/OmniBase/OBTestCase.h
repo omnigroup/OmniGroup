@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,24 +26,3 @@ do { \
     } \
     STAssertFalse(hadError, (id)CFSTR(#expr)); \
 } while (0);
-
-// Like STAssertThrows execept it marks the exception as unused to avoid clang warnings.
-// Radar 7935453: clang-sa with llvm 2.7 reports unused variable for STAssertThrows
-#define OBAssertThrows(expr, description, ...) \
-do { \
-    BOOL __caughtException = NO; \
-    @try { \
-        (expr);\
-    } \
-    @catch (id anException) { \
-        OB_UNUSED_VALUE(anException); \
-        __caughtException = YES; \
-    }\
-    if (!__caughtException) { \
-        [self failWithException:([NSException failureInRaise:[NSString stringWithUTF8String:#expr] \
-        exception:nil \
-        inFile:[NSString stringWithUTF8String:__FILE__] \
-        atLine:__LINE__ \
-        withDescription:@"%@", STComposeString(description, ##__VA_ARGS__)])]; \
-    } \
-} while (0)

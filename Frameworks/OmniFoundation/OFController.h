@@ -1,4 +1,4 @@
-// Copyright 1998-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,9 +64,6 @@ typedef enum _OFControllerTerminateReply {
 
 - (void)willTerminate;
 - (void)gotPostponedTerminateResult:(BOOL)isReadyToTerminate;
-
-- (NSString *)copySymbolicBacktrace;
-- (NSString *)copySymbolicBacktraceForNumericBacktrace:(NSString *)numericTrace;
 
 - (unsigned int)exceptionHandlingMask;
 

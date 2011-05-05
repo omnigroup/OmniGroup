@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -458,9 +458,9 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
         
         OBASSERT(_lastLabelAlignment == UITextAlignmentLeft || _lastLabelAlignment == UITextAlignmentRight);
         if (_lastLabelAlignment == UITextAlignmentLeft) {
-            // We ignore the supposed luma of the left side for alpha since it always fades to the dark checkerboard
+            // We ignore the supposed luma of the left side for alpha since it always fades to the light checkerboard
             if (_representsAlpha)
-                luma = 0;
+                luma = 255;
             else
                 luma = _leftLuma;
         } else {

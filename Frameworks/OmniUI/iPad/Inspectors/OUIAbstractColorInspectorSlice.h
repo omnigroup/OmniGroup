@@ -18,10 +18,12 @@
 @private
     OUIInspectorSelectionValue *_selectionValue;
     BOOL _inContinuousChange;
+    BOOL _allowsNone;
+    OQColor *_defaultColor;
 }
 
 // Must be subclassed, in addition to -isAppropriateForInspectedObject:.
-- (NSSet *)getColorsFromObject:(id)object;
+- (OQColor *)colorForObject:(id)object;
 - (void)setColor:(OQColor *)color forObject:(id)object;
 
 @end

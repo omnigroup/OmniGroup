@@ -117,8 +117,7 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 {
     BOOL isFileURL = [startingURL isFileURL];
     NSString *baseName = [OFSFileInfo nameForURL:startingURL];
-    NSString *directory = isFileURL ? [[startingURL path] stringByDeletingLastPathComponent] : [[startingURL absoluteString] stringByDeletingLastPathComponent];
-    NSURL *directoryURL = isFileURL ? [NSURL fileURLWithPath:directory] : [NSURL URLWithString:directory];
+    NSURL *directoryURL = OFSDirectoryURLForURL(startingURL);
     
     NSString *extension = [baseName pathExtension];
     

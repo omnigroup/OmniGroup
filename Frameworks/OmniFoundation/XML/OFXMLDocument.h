@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,12 +108,14 @@
 - (void) setAttribute: (NSString *) name integer: (int) value;
 - (void) setAttribute: (NSString *) name real: (float) value;  // "%g"
 - (void) setAttribute: (NSString *) name real: (float) value format: (NSString *) formatString;
+- (void) setAttribute: (NSString *) name double: (double) value;  // "%.15g"
+- (void) setAttribute: (NSString *) name double: (float) value format: (NSString *) formatString;
 - (OFXMLElement *)appendElement:(NSString *)elementName;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingString:(NSString *) contents;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingInteger:(int) contents;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingReal:(float) contents; // "%g"
 - (OFXMLElement *)appendElement:(NSString *)elementName containingReal:(float) contents format:(NSString *)formatString;
-- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents; // "%g"
+- (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents; // "%.15g"
 - (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents format:(NSString *) formatString;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingDate:(NSDate *)date; // XML Schema / ISO 8601.
 

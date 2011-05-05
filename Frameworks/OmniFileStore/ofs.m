@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -210,9 +210,20 @@ static NSURL *_url(NSString *str)
 {
     // We don't prompt for credentials, just use whatever is in the keychain.
     NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
-    if ([challenge previousFailureCount] == 0)
-        return [[NSURLCredentialStorage sharedCredentialStorage] defaultCredentialForProtectionSpace:protectionSpace];
+    if ([challenge previousFailureCount] == 0) {
+        NSURLCredential *credentials = [[NSURLCredentialStorage sharedCredentialStorage] defaultCredentialForProtectionSpace:protectionSpace];
+        if (!credentials) {
+            NSLog(@"No credentials found in keychain!");
+        }
+        return credentials;
+    }
+    
     return nil;
+}
+
+- (void)DAVFileManager:(OFSDAVFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
+{
+    OBFinishPorting;
 }
 
 @end

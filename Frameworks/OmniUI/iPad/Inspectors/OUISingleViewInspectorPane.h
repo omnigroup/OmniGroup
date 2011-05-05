@@ -8,11 +8,10 @@
 // $Id$
 
 #import <OmniUI/OUIInspectorPane.h>
+#import <OmniFoundation/OFExtent.h>
 
 @interface OUISingleViewInspectorPane : OUIInspectorPane
 
-// For cases where you have a set of options in a table view and don't want it to be scrollable. Call this from -viewDidLoad.
-- (BOOL)adjustSizeToExactlyFitTableView:(UITableView *)tableView;
-- (BOOL)adjustSizeToExactlyFitTableView:(UITableView *)tableView maximumHeight:(CGFloat)maximumHeight;
+- (void)configureTableViewBackground:(UITableView *)tableView;
 
 @end

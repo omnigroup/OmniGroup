@@ -136,19 +136,37 @@ static void OUIViewPerformPosing(void)
     return nil;
 }
 
-// Magic constant to say that this view has no border or doesn't want to be in your border finding nonsense.
-// Returning UIEdgeInsetsZero, on the other hand, means that the view has a border and it is right up against the edge of the view's bounds.
-const UIEdgeInsets OUINoBorderEdgeInsets = {CGFLOAT_MAX, CGFLOAT_MAX, CGFLOAT_MAX, CGFLOAT_MAX};
+// Subclass to return YES if this view has no border or doesn't want to be in your border finding nonsense.
+- (BOOL)skipWhenComputingBorderEdgeInsets;
+{
+    return self.hidden || self.alpha == 0;
+}
+
+// Subclass to return YES for background-y type views that are just for grouping/positioning. Often this will just be a UIView so this shouldn't be needed.
+- (BOOL)recurseWhenComputingBorderEdgeInsets;
+{
+    return [self class] == [UIView class];
+}
 
 - (UIEdgeInsets)borderEdgeInsets;
 {
+    // Shouldn't have called this, then.
+    OBPRECONDITION(self.skipWhenComputingBorderEdgeInsets == NO);
+
     CGRect unionBorderRect = CGRectNull;
+    
+    if ([self class] != [UIView class]) {
+        // We are either a concrete view of some sort that should define our border insets directly (even if we have implementation defined subviews like UIButton does), or we are a background/placement view of some sort that should define -ignoreWhenComputingBorderEdgeInsets to return YES. Default to using the entire frame for the concrete view case (not recursing and looking at the implementation detail views).
+        if (!self.recurseWhenComputingBorderEdgeInsets)
+            return UIEdgeInsetsZero;
+    }
     
     // Default to looking through our subviews, finding their effective border rects and unioning that.
     for (UIView *subview in self.subviews) {
-        UIEdgeInsets subviewInsets = subview.borderEdgeInsets;
-        if (UIEdgeInsetsEqualToEdgeInsets(subviewInsets, OUINoBorderEdgeInsets))
+        if (subview.skipWhenComputingBorderEdgeInsets)
             continue;
+        
+        UIEdgeInsets subviewInsets = subview.borderEdgeInsets;
         
         CGRect borderRect = [self convertRect:UIEdgeInsetsInsetRect(subview.bounds, subviewInsets) fromView:subview];
         if (CGRectEqualToRect(unionBorderRect, CGRectNull))
@@ -157,9 +175,15 @@ const UIEdgeInsets OUINoBorderEdgeInsets = {CGFLOAT_MAX, CGFLOAT_MAX, CGFLOAT_MA
             unionBorderRect = CGRectUnion(unionBorderRect, borderRect);
     }
 
-    // If no subviews have a border, then this UIView doesn't have one.
-    if (CGRectEqualToRect(unionBorderRect, CGRectNull))
-        return OUINoBorderEdgeInsets;
+    // If no subviews have a border, this this is most likely a leaf view that wants default behavior of having its border go to the edge.
+    if (CGRectEqualToRect(unionBorderRect, CGRectNull)) {
+        // We also could someday support nested container UIViews that happen to currently have all their subviews hidden and so shouldn't count.
+        // But having leaf "concrete" vews return OUINoBorderEdgeInsets here by default means that they will get cut off by default when grouped in a parent UIView.
+        OBASSERT([self class] != [UIView class]);
+        OBASSERT([[self subviews] count] == 0);
+        
+        return UIEdgeInsetsZero;
+    }
     
     // Now, calculate the effective inset from our bounds
     CGRect bounds = self.bounds;
@@ -392,6 +416,15 @@ void OUIViewLayoutShadowEdges(UIView *self, NSArray *shadowEdges, BOOL flipped)
 }
 
 #ifdef NS_BLOCKS_AVAILABLE
+
+// Allows the caller to conditionally leave animations as they were or disable them. Won't ever force animations on.
+void OUIWithAnimationsDisabled(BOOL disabled, void (^actions)(void))
+{
+    if (disabled)
+        OUIWithoutAnimating(actions);
+    else
+        actions();
+}
 
 void OUIWithoutAnimating(void (^actions)(void))
 {

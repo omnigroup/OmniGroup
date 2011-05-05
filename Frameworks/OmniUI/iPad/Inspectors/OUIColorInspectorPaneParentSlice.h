@@ -11,8 +11,18 @@
 #import <OmniUI/OUIColorValue.h>
 
 @class OUIInspectorSelectionValue;
+@class OQColor;
 
 @protocol OUIColorInspectorPaneParentSlice <NSObject>
+
+// If set, detail slices or subclasses may include a 'no color' option of some sort.
+@property(nonatomic,assign) BOOL allowsNone;
+
+// If allowsNone is YES, then this should also be implemented to return non-nil to get the color to use when switching away from nil.
+@property(nonatomic,copy) OQColor *defaultColor;
+
 @property(readonly,nonatomic) OUIInspectorSelectionValue *selectionValue;
+
 - (void)changeColor:(id <OUIColorValue>)colorValue;
+
 @end

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -421,7 +421,7 @@ static u_int32_t parseIpaddrPart(NSString *str, int *ok)
 
 - initWithInternetAddress:(const struct in_addr *)anInternetAddress;
 {
-    if (![self init])
+    if (!(self = [self init]))
         return nil;
 
     if (!anInternetAddress) {
@@ -482,7 +482,7 @@ static u_int32_t parseIpaddrPart(NSString *str, int *ok)
 
 - initWithInternetAddress:(const struct in6_addr *)anInternetAddress;
 {
-    if (![self init])
+    if (!(self = [self init]))
         return nil;
 
     if (!anInternetAddress) {

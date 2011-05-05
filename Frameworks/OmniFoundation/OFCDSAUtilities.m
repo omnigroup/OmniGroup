@@ -1,4 +1,4 @@
-// Copyright 2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,6 +31,7 @@ static const struct {
     { 0, nil }
 };
 
+/* The original motivation for OFStringFromCSSMReturn() was that we had to weak-link both cssmErrorString() (for 10.4) and SecCopyErrorMessageString() (for later OS revisions), but nw it's mostly a cover on SecCopyErrorMessageString(). However, it's still handy to have a guaranteed non-nil result that's at least minimally informative. */
 NSString *OFStringFromCSSMReturn(CSSM_RETURN code)
 {
     NSString *errorString;
@@ -435,13 +436,14 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
     return cssmCheckError(outError, err, @"CSSM_VerifyMacInit");
 }
 
-- (BOOL)processBuffers:(const CSSM_DATA *)buffers count:(unsigned int)bufferCount error:(NSError **)outError;
+- (BOOL)processBuffer:(const uint8_t *)buffer length:(size_t)length error:(NSError **)outError;
 {
+    const CSSM_DATA buffers[1] = { { .Data = (uint8_t *)buffer, .Length = length } };
     if (generating) {
-        CSSM_RETURN err = CSSM_GenerateMacUpdate(ccontext, buffers, bufferCount);
+        CSSM_RETURN err = CSSM_GenerateMacUpdate(ccontext, buffers, 1);
         return cssmCheckError(outError, err, @"CSSM_GenerateMacUpdate");
     } else {
-        CSSM_RETURN err = CSSM_VerifyMacUpdate(ccontext, buffers, bufferCount);
+        CSSM_RETURN err = CSSM_VerifyMacUpdate(ccontext, buffers, 1);
         return cssmCheckError(outError, err, @"CSSM_VerifyMacUpdate");
     }
 }
@@ -497,13 +499,14 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
     return cssmCheckError(outError, err, @"CSSM_VerifyDataInit");
 }
 
-- (BOOL)processBuffers:(const CSSM_DATA *)buffers count:(unsigned int)bufferCount error:(NSError **)outError;
+- (BOOL)processBuffer:(const uint8_t *)buffer length:(size_t)length error:(NSError **)outError;
 {
+    const CSSM_DATA buffers[1] = { { .Data = (uint8_t *)buffer, .Length = length } };
     if (signing) {
-        CSSM_RETURN err = CSSM_SignDataUpdate(ccontext, buffers, bufferCount);
+        CSSM_RETURN err = CSSM_SignDataUpdate(ccontext, buffers, 1);
         return cssmCheckError(outError, err, @"CSSM_SignDataUpdate");
     } else {
-        CSSM_RETURN err = CSSM_VerifyDataUpdate(ccontext, buffers, bufferCount);
+        CSSM_RETURN err = CSSM_VerifyDataUpdate(ccontext, buffers, 1);
         return cssmCheckError(outError, err, @"CSSM_VerifyDataUpdate");
     }
 }
@@ -558,9 +561,10 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
     return cssmCheckError(outError, err, @"CSSM_DigestDataInit");
 }
 
-- (BOOL)processBuffers:(const CSSM_DATA *)buffers count:(unsigned int)bufferCount error:(NSError **)outError;
+- (BOOL)processBuffer:(const uint8_t *)buffer length:(size_t)length error:(NSError **)outError;
 {
-    CSSM_RETURN err = CSSM_DigestDataUpdate(ccontext, buffers, bufferCount);
+    const CSSM_DATA buffers[1] = { { .Data = (uint8_t *)buffer, .Length = length } };
+    CSSM_RETURN err = CSSM_DigestDataUpdate(ccontext, buffers, 1);
     return cssmCheckError(outError, err, @"CSSM_DigestDataUpdate");
 }
 

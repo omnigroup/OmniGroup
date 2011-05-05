@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,12 +20,13 @@ typedef enum {
 
 #define OUIOverlayViewPerpendicularDistanceFromTwoTouches 100
 
-
+@class OUITextLayout;
 @interface OUIOverlayView : UIView
 {
 @private
     NSString *_text;
-    UIFont *_font;
+    NSAttributedString *_attributedText;
+    UIImage *_image;
     CGSize _borderSize;
     NSTimeInterval _messageDisplayInterval;
     
@@ -33,6 +34,8 @@ typedef enum {
     CGSize _cachedSuggestedSize;
     
     BOOL shouldHide;
+    
+    OUITextLayout *_textLayout;
 }
 
 // Convenience methods for creating temporary overlays.  Pass 0 as the displayInterval to use the default delay.
@@ -53,8 +56,9 @@ typedef enum {
 
 - (void)resetDefaults;
 
-@property(retain,nonatomic) NSString *text;
-@property(nonatomic) CGFloat fontSize;
+@property(assign,nonatomic) NSString *text;     // not retained - sets up NSAttributedString with default font and color
+@property(retain,nonatomic) NSAttributedString *attributedText;
+@property(retain,nonatomic) UIImage *image;
 @property(assign,nonatomic) CGSize borderSize;
 @property(assign,nonatomic) NSTimeInterval messageDisplayInterval;  // seconds
 @property(readonly, nonatomic) BOOL isVisible;

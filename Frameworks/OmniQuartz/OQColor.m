@@ -56,12 +56,41 @@ OQLinearRGBA OQGetColorComponents(OQColor *c)
 }
 #endif
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+BOOL OQColorComponentsEqual(OQLinearRGBA x, OQLinearRGBA y)
+{
+    return
+    x.r == y.r &&
+    x.g == y.g &&
+    x.b == y.b &&
+    x.a == y.a;
+}
+
 OQLinearRGBA OQGetColorRefComponents(CGColorRef c)
 {
     OQLinearRGBA l;
     if (c != NULL) {
-        CFStringRef colorSpaceName = CGColorSpaceCopyName(CGColorGetColorSpace(c));
+        CGColorSpaceRef colorSpace = CGColorGetColorSpace(c);
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+        const CGFloat *components = CGColorGetComponents(c);
+        
+        // There are only two color spaces on the iPhone/iPad, as far as we know. white and rgb.
+        switch (CGColorSpaceGetModel(colorSpace)) {
+            case kCGColorSpaceModelMonochrome: {
+                OBASSERT(CGColorSpaceGetNumberOfComponents(colorSpace) == 1);
+                OBASSERT(CGColorGetNumberOfComponents(c) == 2);
+                CGFloat gray = components[0], alpha = components[1];
+                return (OQLinearRGBA){gray, gray, gray, alpha}; // This is what our white color's toRGBA does
+            }
+            case kCGColorSpaceModelRGB:
+                OBASSERT(CGColorSpaceGetNumberOfComponents(colorSpace) == 3);
+                OBASSERT(CGColorGetNumberOfComponents(c) == 4);
+                return (OQLinearRGBA){components[0], components[1], components[2], components[3]};
+            default:
+                OBFinishPortingLater("Unknow color space model!");
+                return (OQLinearRGBA){1, 0, 0, 1};
+        }
+#else
+        CFStringRef colorSpaceName = CGColorSpaceCopyName(colorSpace);
         if (CFStringCompare(colorSpaceName, kCGColorSpaceGenericRGB, 0) == kCFCompareEqualTo) {
             const CGFloat *components = CGColorGetComponents(c);
             l.r = components[0];
@@ -77,11 +106,11 @@ OQLinearRGBA OQGetColorRefComponents(CGColorRef c)
         }
         
         CFRelease(colorSpaceName);
+#endif
     } else
         memset(&l, 0, sizeof(l)); // Treat nil as clear.
     return l;
 }
-#endif
 
 CGFloat OQGetRGBAColorLuma(OQLinearRGBA c)
 {

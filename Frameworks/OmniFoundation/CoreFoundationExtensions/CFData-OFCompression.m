@@ -1,4 +1,4 @@
-// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniFoundation/CFData-OFFileIO.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFDataBuffer.h>
-#import <OmniBase/NSError-OBExtensions.h>
+#import <OmniBase/NSError-OBUtilities.h>
 #import <OmniBase/OBUtilities.h>
 #import <OmniBase/assertions.h>
 #import <OmniBase/rcsid.h>

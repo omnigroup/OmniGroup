@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,6 @@
 
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSMutableString-OFExtensions.h>
-#import <OmniFoundation/NSThread-OFExtensions.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/OFRegularExpression.h>
 #import <OmniFoundation/OFRegularExpressionMatch.h>
@@ -229,6 +228,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     return NO;
 }
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 + (NSString *)stringWithFourCharCode:(FourCharCode)code;
 {
     union {
@@ -253,6 +253,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     else
         return 0; // sigh.
 }
+#endif
 
 - (NSString *)stringByUppercasingAndUnderscoringCaseChanges;
 {
@@ -313,33 +314,6 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     [words addObject:[self substringWithRange:NSMakeRange(wordStartIndex, scannerScanLocation(scanner) - wordStartIndex)]];
 
     return [[words componentsJoinedByString:@"_"] uppercaseString];
-}
-
-- (NSString *)stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace;
-{
-    NSUInteger length = [self length];
-    if (length == 0)
-        return @""; // Trivial optimization
-
-    OFCharacterSet *whitespaceOFCharacterSet = [OFCharacterSet whitespaceOFCharacterSet];
-    OFStringScanner *stringScanner = [[OFStringScanner alloc] initWithString:self];
-    NSMutableString *collapsedString = [[NSMutableString alloc] initWithCapacity:length];
-    BOOL firstSubstring = YES;
-    while (scannerScanUpToCharacterNotInOFCharacterSet(stringScanner, whitespaceOFCharacterSet)) {
-        NSString *nonWhitespaceSubstring;
-
-        nonWhitespaceSubstring = [stringScanner readFullTokenWithDelimiterOFCharacterSet:whitespaceOFCharacterSet forceLowercase:NO];
-        if (nonWhitespaceSubstring) {
-            if (firstSubstring) {
-                firstSubstring = NO;
-            } else {
-                [collapsedString appendString:@" "];
-            }
-            [collapsedString appendString:nonWhitespaceSubstring];
-        }
-    }
-    [stringScanner release];
-    return [collapsedString autorelease];
 }
 
 - (NSString *)stringByRemovingWhitespace;
@@ -1178,7 +1152,7 @@ char *OFASCIIDecimalStringFromDouble(double value)
     char *result;
     int ret;
     
-    if (!finite(value))
+    if (!isfinite(value))
         return nil;
     
     buf = NULL;

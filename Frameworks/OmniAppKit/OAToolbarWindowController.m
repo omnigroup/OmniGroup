@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,7 +41,7 @@ static NSMutableDictionary *helpersByExtension = nil;
     toolbarStringsTables = [[NSMutableDictionary alloc] init];
     helpersByExtension = [[NSMutableDictionary alloc] init];
     
-    [self registerToolbarHelper:[[OAScriptToolbarHelper alloc] init]];
+    [self registerToolbarHelper:[[[OAScriptToolbarHelper alloc] init] autorelease]];
 }
 
 + (void)registerToolbarHelper:(NSObject <OAToolbarHelper> *)helperObject;

@@ -87,8 +87,8 @@ enum OFXMLSignatureOperation {
 - (BOOL)isLocalReferenceAtIndex:(NSUInteger)nodeIndex;
 
 /* Subclass opportunuties */
-- (id <OFCSSMDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError NS_RETURNS_RETAINED;
-- (id <OFCSSMDigestionContext, NSObject>)newDigestContextForMethod:(xmlNode *)digestMethodNode error:(NSError **)outError;
+- (id <OFDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError NS_RETURNS_RETAINED;
+- (id <OFDigestionContext, NSObject>)newDigestContextForMethod:(xmlNode *)digestMethodNode error:(NSError **)outError;
 - (NSData *)signatureForStoredValue:(NSData *)raw algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError;
 - (NSData *)storedValueForSignature:(NSData *)signatureValue algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError;
 - (OFCDSAModule *)cspForKey:(OFCSSMKey *)aKey;

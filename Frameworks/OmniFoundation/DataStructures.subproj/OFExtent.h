@@ -1,4 +1,4 @@
-// Copyright 2000-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,6 +95,18 @@ static inline OFExtent OFExtentUnion(OFExtent a, OFExtent b)
     CGFloat max = MAX(OFExtentMax(a), OFExtentMax(b));
     return OFExtentMake(min, max-min);
 }
+
+static inline OFExtent OFExtentIntersection(OFExtent a, OFExtent b)
+{
+    CGFloat start = MAX(OFExtentMin(a), OFExtentMin(b));
+    CGFloat end = MIN(OFExtentMax(a), OFExtentMax(b));
+    
+    if (end < start)
+        return OFExtentMake(0.0f,0.0f);
+    else
+        return OFExtentMake(start, end-start);
+}
+
 
 // Adds the delta to the minimum and subtracts it from the maximum. We currently allow negative extents, but this seems like a strange way to get one, so we currently asser that doesn't happen.
 static inline OFExtent OFExtentInset(OFExtent a, CGFloat delta)

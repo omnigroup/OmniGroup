@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,6 +24,9 @@
 }
 
 + (NSString *)nameForURL:(NSURL *)url;
++ (NSString *)UTIForFilename:(NSString *)name;
++ (NSString *)UTIForURL:(NSURL *)url;
++ (void)registerNativeUTI:(NSString *)UTI forFileExtension:(NSString *)fileExtension;
 
 - initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date;
 
@@ -37,6 +40,7 @@
 
 // Filename manipulation
 - (BOOL)hasExtension:(NSString *)extension;
+- (NSString *)UTI;
 
 // Other stuff
 - (NSComparisonResult)compareByURLPath:(OFSFileInfo *)otherInfo;
@@ -46,6 +50,9 @@
 
 /* Roughly equivalent to -stringByAppendingPathComponent. The last path component of baseURL is never removed; a slash is inserted if necessary to separate it from the newly inserted path segment. quotedFileName must be a fully URL-escaped path component. */
 extern NSURL *OFSURLRelativeToDirectoryURL(NSURL *baseURL, NSString *quotedFileName);
+
+/* Roughly equivalent to -stringByDeletingLastPathComponent, but without rewriting any of that portion of the path (since some WebDAV servers get upset by that). */
+extern NSURL *OFSDirectoryURLForURL(NSURL *url);
 
 /* Similar to OFSURLRelativeToDirectoryURL(), but nonquotedFileName must *not* be %-escaped. */
 static inline NSURL *OFSFileURLRelativeToDirectoryURL(NSURL *baseURL, NSString *nonquotedFileName)

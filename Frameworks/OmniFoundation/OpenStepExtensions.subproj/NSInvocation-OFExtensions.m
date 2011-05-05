@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,13 +7,25 @@
 
 #import <OmniFoundation/NSInvocation-OFExtensions.h>
 
-// This is not included in OmniBase.h since system.h shouldn't be used except when covering OS specific behaviour
-#import <OmniBase/system.h>
-#import <objc/Protocol.h>
+#import <OmniBase/objc.h>
 
 RCS_ID("$Id$")
 
 @implementation NSInvocation (OFExtensions)
+
++ (NSInvocation *)invocationWithTarget:(id)target action:(SEL)action;
+{
+    OBPRECONDITION(target != nil);
+    OBPRECONDITION([target respondsToSelector:action]);
+
+    NSMethodSignature *methodSignature = [target methodSignatureForSelector:action];
+    NSInvocation *invocation = [self invocationWithMethodSignature:methodSignature];
+    [invocation setTarget:target];
+    [invocation setSelector:action];
+
+    OBPOSTCONDITION(invocation != nil);
+    return invocation;
+}
 
 - (BOOL)isDefinedByProtocol:(Protocol *)aProtocol
 {

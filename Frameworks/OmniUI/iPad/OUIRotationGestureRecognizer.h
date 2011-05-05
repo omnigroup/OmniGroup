@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,22 +7,22 @@
 //
 // $Id$
 
-#import <UIKit/UIGestureRecognizer.h>
+#import <UIKit/UIGestureRecognizerSubclass.h>
+#import "OUIGestureRecognizer.h"
 
-
-@interface OUIRotationGestureRecognizer : UIGestureRecognizer
-{
-@private
-    NSMutableArray *capturedTouches;
-    CGFloat likelihood;
+@interface OUIRotationGestureRecognizer : OUIGestureRecognizer {
     
-    NSTimer *longPressTimer;
-    NSTimeInterval longPressDuration;
-}
+@private
+    CGFloat _hysteresisAngle;
+    BOOL _overcameHysteresis;
+    
+    CGPoint _centerTouchPoint;
+    
+    CGFloat _startAngle;    // in degrees
+    CGFloat _rotation;      // in degrees
+}   
 
-@property (nonatomic) NSTimeInterval longPressDuration;  // Seconds after which the drag gesture will begin, even if the touch has not overcome hysteresis
-
+// Settings
 @property (nonatomic) CGFloat rotation;
-@property (readonly, nonatomic) CGFloat likelihood;
 
 @end

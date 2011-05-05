@@ -71,7 +71,7 @@ static UIFont *_baseFontForFamily(NSString *familyName)
     [_sections release];
     _sections = nil;
     
-    [self updateInterfaceFromInspectedObjects];
+    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
 }
 
 #pragma mark -
@@ -133,9 +133,12 @@ static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
     return _compareDisplayName(obj1, obj2, context);
 }
 
-- (void)updateInterfaceFromInspectedObjects;
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
-    [super updateInterfaceFromInspectedObjects];
+    [super updateInterfaceFromInspectedObjects:reason];
+    
+    if (reason == OUIInspectorUpdateReasonObjectsEdited)
+        return; // list of options not changing and we want to fade selection
     
     if (!_sections) {
         [self _buildSections];
@@ -306,8 +309,7 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
     }
     [inspector didEndChangingInspectedObjects];
     
-    // Won't -reloadData since we have _sections set up already (which is good)
-    [self updateInterfaceFromInspectedObjects];
+    // Our -updateInterfaceFromInspectedObjects: won't reload data when getting called due to an edit, which is good since it lets us fade the selection.
 
     // Clears the selection and updates images.
     OUITableViewFinishedReactingToSelection(tableView, OUITableViewCellImageSelectionType);

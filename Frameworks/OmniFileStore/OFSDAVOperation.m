@@ -29,7 +29,7 @@ static BOOL _isRead(OFSDAVOperation *self)
     if ([method isEqualToString:@"GET"] || [method isEqualToString:@"PROPFIND"])
         return YES;
     
-    OBASSERT([method isEqualToString:@"PUT"]);
+    OBASSERT([method isEqualToString:@"PUT"] || [method isEqualToString:@"MKCOL"] || [method isEqualToString:@"DELETE"] || [method isEqualToString:@"MOVE"]); // The delegate doesn't need to read any data from these operations
     
     return NO;
 }
@@ -50,7 +50,7 @@ static BOOL _isRead(OFSDAVOperation *self)
     // For write operations, we have to record the expected length here AND in the NSURLConnection callback. The issue is that for https PUT operations, we can get an authorization challenge after we've uploaded the entire body, at which point we'll have to start all over. NSURLConnection keeps the # bytes increasing and doubles the expected bytes to write at this point (which is more accurate than going back to zero bytes, by some measure).
     if (!_isRead(self)) {
         NSData *body = [request HTTPBody];
-        OBASSERT(body); // We don't support streams.
+        // OBASSERT(body); // We don't support streams, but we might be performing an operation which doesn't involve data (e.g. removing a file)
         
         _expectedBytesToWrite = [body length];
         
@@ -357,7 +357,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     */
     if (redirectResponse) {
         NSString *method = [_request HTTPMethod];
-        if ([method isEqualToString:@"PROPFIND"] || [method isEqualToString:@"MKCOL"]) {
+        if ([method isEqualToString:@"PROPFIND"] || [method isEqualToString:@"MKCOL"] || [method isEqualToString:@"DELETE"]) {
             // PROPFIND is a GET-like request, so when we redirect, keep the method.
             // Duplicate the original request, including any DAV headers and body content, but put in the redirected URL.
             // MKCOL is not a 'safe' method, but for our purposes it can be considered redirectable.
@@ -401,7 +401,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
             continuation = redirect;
         } else {
             OBASSERT_NOT_REACHED("Anything else get redirected that needs this treatment?");
-            continuation = nil;
+            continuation = request;
         }
         
         if (continuation && redirectResponse) {
@@ -596,7 +596,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         }
     }
     
-    OBASSERT(_isRead(self) || statusCode == 201 /* Accepted */ || statusCode == 204 /* No Content */);
+    OBASSERT(_isRead(self) || statusCode == 201 /* Accepted */ || statusCode == 204 /* No Content */ || statusCode >= 400 /* Some sort of error (e.g. missing file or permission denied) */);
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,6 +40,11 @@
 #else
     #define CLANG_ANALYZER_NORETURN
 #endif
+
+// This is useful for providing hints to the clang static analyzer about paths that cannot be reached.
+static inline void OBAnalyzerNotReached(void) CLANG_ANALYZER_NORETURN;
+static inline void OBAnalyzerNotReached(void) { }
+
 
 // Clang extensions -- Compatibility with non-clang compilers.
 #ifndef __has_feature
@@ -179,19 +184,16 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
     #define OBASSERT_EXPENSIVE(expression) do {} while(0)
 
     // Pointer checks to satisfy clang scan-build in non-assertion builds too.
-    static inline void _OBAnalyzerNoReturn(void) CLANG_ANALYZER_NORETURN;
-    static inline void _OBAnalyzerNoReturn(void) { }
-
     #define OBASSERT_NULL(pointer) do { \
         if (pointer) { \
             void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
-            _OBAnalyzerNoReturn(); \
+            OBAnalyzerNotReached(); \
         } \
     } while(NO);
     #define OBASSERT_NOTNULL(pointer) do { \
         if (!pointer) { \
             void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
-            _OBAnalyzerNoReturn(); \
+            OBAnalyzerNotReached(); \
         } \
     } while(NO);
 

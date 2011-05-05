@@ -9,7 +9,7 @@
 
 #import <UIKit/UIViewController.h>
 
-@class OUIInspectorSelectionValue;
+@class OUIInspectorSelectionValue, OUIColorInspectorPane;
 
 typedef enum {
     OUIColorPickerFidelityZero, // can't represent the color at all
@@ -20,13 +20,16 @@ typedef enum {
 @interface OUIColorPicker : UIViewController
 {
 @private
-    CGFloat _originalHeight;
     OUIInspectorSelectionValue *_selectionValue;
 }
 
-@property(readonly) CGFloat height;
 @property(retain,nonatomic) OUIInspectorSelectionValue *selectionValue;
 
+@property(nonatomic,readonly) NSString *identifier;
+
 - (OUIColorPickerFidelity)fidelityForSelectionValue:(OUIInspectorSelectionValue *)selectionValue;
+
+- (void)wasDeselectedInColorInspectorPane:(OUIColorInspectorPane *)pane; // called when the user taps away from this picker to another
+- (void)wasSelectedInColorInspectorPane:(OUIColorInspectorPane *)pane; // .. and then this called on the new picker
 
 @end

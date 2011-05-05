@@ -1,4 +1,4 @@
-// Copyright 1999-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,6 @@
 
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 
-#import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/OFCharacterSet.h>
 
 
@@ -27,7 +26,8 @@ RCS_ID("$Id$")
         // was a single component?
         return self;
     
-    return [NSString stringWithFormat: @"%@ %@ %@", last, [NSString emdashString], prefix];
+    // 0x2014 is emdash (this is more efficient than calling +emdashString and also means we don't have to pull in OFExtensions for iOS)
+    return [NSString stringWithFormat: @"%@ %C %@", last, 0x2014, prefix];
 }
 
 + (NSString *)pathSeparator;

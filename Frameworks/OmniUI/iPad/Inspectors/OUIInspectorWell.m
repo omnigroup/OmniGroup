@@ -282,6 +282,12 @@ static CGGradientRef HighlightedGradient = NULL;
     CGContextDrawLinearGradient(ctx, gradient, rect.origin, CGPointMake(rect.origin.x, CGRectGetMaxY(rect)), 0);
 }
 
+- (CGFloat)buttonHeight;
+// Graffle subclasses this in GPImageTextWell
+{
+    return kOUIInspectorWellHeight;
+}
+
 #pragma mark -
 #pragma mark UIControl subclass
 
@@ -307,7 +313,7 @@ static CGGradientRef HighlightedGradient = NULL;
 {
     CGRect bounds = self.bounds;
     
-    OBASSERT(bounds.size.height == kOUIInspectorWellHeight);
+    OBASSERT(bounds.size.height == [self buttonHeight]);
     
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     

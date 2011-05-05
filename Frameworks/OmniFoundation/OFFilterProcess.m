@@ -44,7 +44,7 @@ static void keventRunLoopCallback(CFFileDescriptorRef f, CFOptionFlags callBackT
 static void pollTimerRunLoopCallback(CFRunLoopTimerRef timer, void *info);
 
 static char ** __strong computeToolEnvironment(NSDictionary *envp, NSDictionary *setenv, NSString *ensurePath);
-static void freeToolEnvironment(char **envp);
+static void freeToolEnvironment(char ** __strong envp);
 static char *makeEnvEntry(id key, size_t *sepindex, id value);
 static char *pathStringIncludingDirectory(const char *currentPath, const char *pathdir, const char *sep);
 
@@ -267,7 +267,7 @@ static void logdescriptors(const char *where)
         
         int spawned;
         
-        spawned = posix_spawn(&child, toolPath, &fileActions, attrs, (char * const *)toolParameters, toolEnvironment? toolEnvironment : *_NSGetEnviron());
+        spawned = posix_spawn(&child, toolPath, &fileActions, attrs, (char * const *)toolParameters, (char * const *)(toolEnvironment? toolEnvironment : *_NSGetEnviron()));
         if (spawned != 0) {
             NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not fork '%@'", @"OmniFoundation", OMNI_BUNDLE, @"error description - unable to start a child process using the spawn syscall"), commandPath];
             OBErrorWithErrno(&errorBuf, OMNI_ERRNO(), "posix_spawn()", nil, description);
@@ -1262,11 +1262,11 @@ static char ** __strong computeToolEnvironment(NSDictionary *replace_env, NSDict
     }
 }
 
-static void freeToolEnvironment(char **envp)
+static void freeToolEnvironment(char ** __strong envp)
 {
     if (!envp)
         return;
-    for(char **envcursor = envp; *envcursor; envcursor ++)
+    for(char ** __strong envcursor = envp; *envcursor; envcursor ++)
         free(*envcursor);
     OBFreeScanned(envp);
 }

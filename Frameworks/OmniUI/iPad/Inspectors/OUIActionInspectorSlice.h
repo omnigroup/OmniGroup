@@ -20,6 +20,7 @@
 {
 @private
     SEL _action;
+    BOOL _shouldEditOnLoad;
     OUIInspectorTextWell *_textWell;
 }
 
@@ -28,6 +29,7 @@
 
 - initWithTitle:(NSString *)title action:(SEL)action;
 
+@property(nonatomic) BOOL shouldEditOnLoad;
 @property(readonly,nonatomic) OUIInspectorTextWell *textWell;
 
 @end

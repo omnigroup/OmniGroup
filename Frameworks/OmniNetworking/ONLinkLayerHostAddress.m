@@ -1,4 +1,4 @@
-// Copyright 2003-2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2006, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,7 @@ RCS_ID("$Id$");
 {
     int addrlen;
 
-    if (![super init])
+    if (!(self = [super init]))
         return nil;
 
     // We get empty link-layer addresses for pseudo-interfaces like the loopback interface and tunnel interfaces, which we might as well ignore. (They do contain a useful interface-index number and interface-type field, but those are extracted earlier by ONInterface.)

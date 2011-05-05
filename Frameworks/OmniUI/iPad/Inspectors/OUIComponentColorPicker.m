@@ -57,7 +57,7 @@ RCS_ID("$Id$");
 
 - (OUIColorPickerFidelity)fidelityForSelectionValue:(OUIInspectorSelectionValue *)selectionValue;
 {
-    OQColor *color = selectionValue.dominantValue;
+    OQColor *color = selectionValue.firstValue;
     if (!color)
         // Slider-based color pickers can't represent "no color"
         return OUIColorPickerFidelityZero;
@@ -92,6 +92,7 @@ RCS_ID("$Id$");
 - (void)loadView;
 {
     UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
+    view.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     CGRect bounds = view.bounds;
     
     OBASSERT(_componentSliders == nil);
@@ -138,7 +139,7 @@ RCS_ID("$Id$");
 
 - (OQColor *)color;
 {
-    return self.selectionValue.dominantValue;
+    return self.selectionValue.firstValue;
 }
 
 - (BOOL)isContinuousColorChange;
@@ -156,7 +157,7 @@ RCS_ID("$Id$");
 
 /*
  Make a CGFunction that takes N inputs where N-1 are constant and 1 varies from 0..1 (the domain input param).
- Output RGB via a function supplied by the concrete sublcass by substituting the input into a specific channel of then N inputs.
+ Output RGB via a function supplied by the concrete subclass by substituting the input into a specific channel of then N inputs.
  */
 
 typedef struct {
@@ -191,7 +192,7 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
 - (void)_updateSliderValuesFromColor;
 {
     // The sliders need something to base edits on, so we need to give them a color even if there is multiple selection.
-    OQColor *color = self.selectionValue.dominantValue;
+    OQColor *color = self.selectionValue.firstValue;
     NSUInteger componentCount = [_componentSliders count];
     if (!color || !componentCount)
         return;
@@ -216,7 +217,7 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
         [slider setValue:components[componentIndex]];
         
         if (slider.needsShading) {
-            // Build the updated background shading. Make a new info and new copy of the input components for each (since each is goingn to modify a different channel).
+            // Build the updated background shading. Make a new info and new copy of the input components for each (since each is going to modify a different channel).
             BackgroundShadingInfo *info = calloc(sizeof(*info), 1);
             info->shadingComponentIndex = componentIndex;
             
@@ -296,7 +297,7 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
 - (void)_componentSliderValueChanged:(OUIColorComponentSlider *)slider;
 {
     // The sliders need something to base edits on, so we need to give them a color even if there is multiple selection.
-    OQColor *color = self.selectionValue.dominantValue;
+    OQColor *color = self.selectionValue.firstValue;
     NSUInteger componentCount = [_componentSliders count];
     if (!color || !componentCount)
         return;

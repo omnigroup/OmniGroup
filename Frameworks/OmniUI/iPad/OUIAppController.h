@@ -41,6 +41,7 @@
     NSArray *_editableFileTypes;
     
     UIPopoverController *_possiblyVisiblePopoverController;
+    UIBarButtonItem *_possiblyTappedButtonItem;
 }
 
 + (id)controller;
@@ -72,7 +73,8 @@
 // Present all popovers via this API to help avoid popovers having to know about one another to avoid multiple popovers on screen.
 - (BOOL)presentPopover:(UIPopoverController *)popover fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
 - (BOOL)presentPopover:(UIPopoverController *)popover fromBarButtonItem:(UIBarButtonItem *)item permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
-- (void)dismissPopoverAnimated:(BOOL)animated; // DOES send the 'did' delegate method, unlike the plain UIPopoverController method (see the implementation for reasoning)
+- (void)dismissPopover:(UIPopoverController *)popover animated:(BOOL)animated; // If the popover in question is not visible, does nothing. DOES send the 'did' delegate method, unlike the plain UIPopoverController method (see the implementation for reasoning)
+- (void)dismissPopoverAnimated:(BOOL)animated; // Calls -dismissPopover:animated: with whatever popover is visible
 
 // Special URL handling
 - (BOOL)isSpecialURL:(NSURL *)url;

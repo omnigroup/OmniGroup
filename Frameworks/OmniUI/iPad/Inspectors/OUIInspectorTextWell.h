@@ -21,9 +21,14 @@ typedef enum {
 @private
     OUIInspectorTextWellStyle _style;
     BOOL _editable;
+    // should we display the placeholder text while the editor is visible
+    BOOL _shouldDisplayPlaceholderText;
     
     NSString *_text;
+    UIColor *_textColor;
     UIFont *_font;
+    
+    NSString *_placeholderText;
     
     // when in OUIInspectorTextWellStyleSeparateLabelAndText mode    
     OUITextLayout *_labelTextLayout;
@@ -40,6 +45,9 @@ typedef enum {
     UIKeyboardType keyboardType;
 }
 
++ (UIFont *)defaultLabelFont;
++ (UIFont *)defaultFont;
+
 @property(nonatomic) OUIInspectorTextWellStyle style;
 
 @property(nonatomic) UIKeyboardType keyboardType;
@@ -47,12 +55,16 @@ typedef enum {
 @property(assign,nonatomic) BOOL editable;
 @property(readonly) BOOL editing;
 @property(copy,nonatomic) NSString *editingText; // The current contents of the field editor. Only valid when editing is true.
+- (void)startEditing;
 
 @property(copy,nonatomic) NSString *text;
+@property(retain,nonatomic) UIColor *textColor;
 @property(retain,nonatomic) UIFont *font;
 
 @property(copy,nonatomic) NSString *label;
 @property(retain,nonatomic) UIFont *labelFont;
+
+@property(copy,nonatomic) NSString *placeholderText;
 
 // Subclass
 - (NSString *)willCommitEditingText:(NSString *)editingText;

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,8 +10,12 @@
 #import <UIKit/UIView.h>
 
 
-@interface OUIExportOptionsView : UIView
+@interface OUIExportOptionsView : UIImageView
+{
+@private
+    NSMutableArray *_choiceButtons;
+}
 
-- (void)addChoiceToIndex:(NSUInteger)index image:(UIImage *)image label:(NSString *)label target:(id)target selector:(SEL)selector;
+- (void)addChoiceWithImage:(UIImage *)image label:(NSString *)label target:(id)target selector:(SEL)selector;
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 // Only needed when enabling the debug code below.
 //#import <OmniFoundation/CFData-OFExtensions.h>
 //#import <OmniFoundation/NSData-OFEncoding.h>
+
+#import <OmniUI/OUIDocumentProxyView.h>
 
 RCS_ID("$Id$");
 
@@ -77,6 +79,28 @@ RCS_ID("$Id$");
     CGContextDrawPDFPage(ctx, _page);
 }
 
+- (void)cacheImageOfSize:(CGSize)size;
+{
+    /****
+     * UIKit's graphics contexts functions aren't thread safe in pre-4.2 (which some of our apps are still targetting).
+     * In particular, UIGraphicsPushContext is documented to be thread-unsafe.
+     * So, we have to use CG directly through all this code. No UIImage, UIColor, etc.
+     ****/
+    
+    CGColorSpaceRef rgbColorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef ctx = CGBitmapContextCreate(NULL, size.width, size.height, 8, 4*size.width, rgbColorSpace, kCGImageAlphaPremultipliedFirst);
+    CFRelease(rgbColorSpace);
+    
+    OUIDocumentProxyDrawPreview(ctx, self, CGRectMake(0, 0, size.width, size.height));
+    CGImageRef imageRef = CGBitmapContextCreateImage(ctx);
+    CFRelease(ctx);
+    
+    UIImage *image = [UIImage imageWithCGImage:imageRef];
+    CGImageRelease(imageRef);
+    
+    self.cachedImage = image;
+}
+   
 #pragma mark -
 #pragma mark OUIDocumentPreview
 
@@ -85,7 +109,10 @@ RCS_ID("$Id$");
     return YES;
 }
 
-@synthesize originalViewSize = _originalViewSize;
+- (BOOL)isValidAtSize:(CGSize)targetSize;
+{
+    return CGSizeEqualToSize(targetSize, _originalViewSize);
+}
 
 - (CGAffineTransform)transformForTargetRect:(CGRect)targetRect;
 {

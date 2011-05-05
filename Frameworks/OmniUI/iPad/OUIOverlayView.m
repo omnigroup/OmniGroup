@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,13 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIOverlayView.h>
+
+#import "OUITextLayout.h"
+#import <Foundation/NSAttributedString.h>
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import <CoreText/CTStringAttributes.h>
+#endif
 
 RCS_ID("$Id$");
 
@@ -46,6 +53,7 @@ RCS_ID("$Id$");
     OUIOverlayView *overlayView = [self sharedTemporaryOverlay];
     
     overlayView.text = string;
+    overlayView.image = nil;
     
     if (CGPointEqualToPoint(touchPoint, CGPointZero)) {
         [overlayView useAlignment:OUIOverlayViewAlignmentUpCenter withinBounds:view.bounds];
@@ -61,7 +69,8 @@ RCS_ID("$Id$");
     OUIOverlayView *overlayView = [self sharedTemporaryOverlay];
     
     overlayView.text = string;
-    
+    overlayView.image = nil;
+
     [overlayView centerAtPoint:touchPoint withOffset:CGPointZero withinBounds:view.bounds];
     
     if (displayInterval) {
@@ -76,7 +85,8 @@ RCS_ID("$Id$");
     OUIOverlayView *overlayView = [self sharedTemporaryOverlay];
     
     overlayView.text = string;
-    
+    overlayView.image = nil;
+
     [overlayView centerAbovePoint:touchPoint withinBounds:view.bounds];
     
     if (displayInterval) {
@@ -91,7 +101,8 @@ RCS_ID("$Id$");
     OUIOverlayView *overlayView = [self sharedTemporaryOverlay];
     
     overlayView.text = string;
-    
+    overlayView.image = nil;
+
     [overlayView centerAtPositionForGestureRecognizer:gestureRecognizer inView:view];
     
     if (displayInterval) {
@@ -106,7 +117,8 @@ RCS_ID("$Id$");
     OUIOverlayView *overlayView = [self sharedTemporaryOverlay];
     
     overlayView.text = string;
-    
+    overlayView.image = nil;
+
     [overlayView useAlignment:alignment withinBounds:view.bounds];
     
     if (displayInterval) {
@@ -233,8 +245,9 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
-    [_font release];
-    self.text = nil;
+    [_attributedText release];
+    [_image release];
+    [_textLayout release];
     
     [super dealloc];
 }
@@ -244,7 +257,6 @@ RCS_ID("$Id$");
 
 - (void)resetDefaults;
 {
-    _font = [[UIFont boldSystemFontOfSize:16] retain];
     _borderSize = CGSizeMake(8, 8);
     _messageDisplayInterval = 1.5;
     
@@ -252,32 +264,48 @@ RCS_ID("$Id$");
 }
 
 @synthesize text = _text;
-- (void)setText:(NSString *)string;
+@synthesize attributedText = _attributedText;
+- (void)setText:(NSString *)aString;
 {
-    if ([_text isEqualToString:string])
+    if (aString) {
+        // setting defaults on nsattributedstring
+        NSMutableAttributedString *mutableText = [[NSMutableAttributedString alloc] initWithString:aString];
+        [mutableText addAttribute:(id)kCTForegroundColorAttributeName value:(id)[[UIColor whiteColor] CGColor] range:NSMakeRange(0, [mutableText length])];
+        
+        CTFontRef defaultFont = CTFontCreateWithName(CFSTR("Helvetica"), 16, NULL);
+        [mutableText addAttribute:(id)kCTFontAttributeName value:(id)defaultFont range:NSMakeRange(0, [mutableText length])];
+        if (defaultFont)
+            CFRelease(defaultFont);
+        
+        self.attributedText = mutableText;
+        [mutableText release];
+    }
+}
+
+- (void)setAttributedText:(NSAttributedString *)attString;
+{
+    if ([attString isEqualToAttributedString:_attributedText])
         return;
     
-    [_text release];
-    _text = [string retain];
+    [_attributedText release];
+    _attributedText = [attString retain];
+    
+    [_textLayout release];
+    if (_attributedText)
+        _textLayout = [[OUITextLayout alloc] initWithAttributedString:_attributedText constraints:CGSizeMake(OUITextLayoutUnlimitedSize, OUITextLayoutUnlimitedSize)];
     
     _cachedSuggestedSize = CGSizeZero;
     [self setNeedsDisplay];
-    
 }
 
-- (CGFloat)fontSize;
+@synthesize image = _image;
+- (void)setImage:(UIImage *)anImage;
 {
-    return [_font pointSize];
-}
-- (void)setFontSize:(CGFloat)newSize;
-{
-    if (newSize == [_font pointSize]) {
-        return;
-    }
+    [_image release];
+    _image = [anImage retain];
     
-    UIFont *newFont = [_font fontWithSize:newSize];
-    [_font release];
-    _font = newFont;
+    _cachedSuggestedSize = CGSizeZero;
+    [self setNeedsDisplay];
 }
 
 @synthesize borderSize = _borderSize;
@@ -306,10 +334,17 @@ RCS_ID("$Id$");
         return _cachedSuggestedSize;
     }
 
-    //NSLog(@"########### Calculating size");
-    CGSize textSize = [self.text sizeWithFont:_font];
-    CGSize suggestedSize = CGSizeMake(textSize.width + self.borderSize.width*2, textSize.height + self.borderSize.height*2);
-    suggestedSize.width += 1;  // Just in case the -sizeWithFont result is off slightly
+    CGSize textSize = _textLayout.usedSize;
+    CGSize suggestedSize = CGSizeMake(ceil(textSize.width + self.borderSize.width*2), ceil(textSize.height + self.borderSize.height*2));
+    
+    if (_image) {
+        CGSize imageSize = _image.size;
+        suggestedSize.width += ceil(_image.size.width + self.borderSize.width /* space between image and text */);
+        if (imageSize.height > suggestedSize.height) {
+            suggestedSize.height = ceil(imageSize.height + self.borderSize.height*2);
+        }
+    }
+    
     _cachedSuggestedSize = suggestedSize;
     return _cachedSuggestedSize;
 }
@@ -471,11 +506,25 @@ RCS_ID("$Id$");
         
     [[[self class] backgroundImage] drawInRect:bounds blendMode:kCGBlendModeNormal alpha:0.8];
     
+    CGRect contentRect =  CGRectInset(bounds, self.borderSize.width, self.borderSize.height);
+    if (_image) {
+        CGFloat yOrigin = floor(CGRectGetMidY(contentRect) - (_image.size.height/2));
+        CGRect imageRect = CGRectMake(contentRect.origin.x, yOrigin, _image.size.width, _image.size.height);
+        
+        [_image drawInRect:imageRect];
+    }
+    
     // Draw text
-    if (self.text.length) {
-        [[UIColor whiteColor] set];
-        CGRect textRect = CGRectInset(bounds, self.borderSize.width, self.borderSize.height);
-        [self.text drawInRect:textRect withFont:_font];
+    if (self.attributedText.length) {
+        CGFloat xOrigin = CGRectGetMinX(contentRect);
+        CGFloat width = CGRectGetWidth(contentRect);
+        if (_image) {
+            xOrigin += _image.size.width + self.borderSize.width;
+            width -= _image.size.width;
+        }
+        
+        CGRect textRect = CGRectMake(xOrigin, CGRectGetMinY(contentRect), width, CGRectGetHeight(contentRect));
+        [_textLayout drawFlippedInContext:UIGraphicsGetCurrentContext() bounds:textRect];
     }
 }
 

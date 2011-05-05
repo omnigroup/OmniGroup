@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2009, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,20 +8,20 @@
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 
 #import <Foundation/Foundation.h>
-#import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
-
-#import <OmniAppKit/OAColorPalette.h>
+#import <OmniAppKit/OATextStorage.h> // OAAttachmentCharacter
 
 RCS_ID("$Id$")
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 @interface OAInlineImageTextAttachmentCell : NSImageCell /* <NSTextAttachmentCell> */
 {
     NSTextAttachment *nonretained_attachment;
 }
 @property (readwrite, assign) NSTextAttachment *attachment;
 @end
+#endif
 
 @implementation NSAttributedString (OAExtensions)
 
@@ -52,12 +52,13 @@ static NSString *blackColorString;
 {
     static NSString *AttachmentString = nil;
     if (!AttachmentString) {
-        unichar c = NSAttachmentCharacter;
+        unichar c = OAAttachmentCharacter;
         AttachmentString = [[NSString alloc] initWithCharacters:&c length:1];
     }
     return AttachmentString;
 }
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 + (NSAttributedString *)attributedStringWithImage:(NSImage *)anImage;
 {
     OAInlineImageTextAttachmentCell *imageCell = [[OAInlineImageTextAttachmentCell alloc] initImageCell:anImage];
@@ -69,6 +70,7 @@ static NSString *blackColorString;
     [attach release];
     return result;
 }
+#endif
 
 // Use -initWithHTML:options:documentAttributes:?
 #if 0
@@ -407,6 +409,7 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 }
 #endif
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSData *)rtf;
 {
     return [self RTFFromRange:NSMakeRange(0, [self length]) documentAttributes:nil];
@@ -484,7 +487,9 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 	[copy replaceCharactersInRange:NSMakeRange(NSMaxRange(lineCharacterRange), [copy length]-NSMaxRange(lineCharacterRange)) withString:(requiresEllipsis ? ellipsisString : @"")];
     return [copy autorelease];
 }
+#endif
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (void)drawInRectangle:(NSRect)rectangle alignment:(int)alignment verticallyCentered:(BOOL)verticallyCenter;
     // ASSUMPTION: This is for one line
 {
@@ -616,10 +621,12 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
     [self drawInRect:rect];
     [[NSGraphicsContext currentContext] restoreGraphicsState];
 }
+#endif
 
 @end
 
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 @implementation OAInlineImageTextAttachmentCell
 
 // Many of the NSTextAttachmentCell protocol's methods are supplied by NSCell.
@@ -650,5 +657,6 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 }
 
 @end
+#endif
 
 

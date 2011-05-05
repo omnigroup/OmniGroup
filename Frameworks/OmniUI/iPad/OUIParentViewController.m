@@ -34,7 +34,7 @@ RCS_ID("$Id$");
 - (void)addChildViewController:(UIViewController *)child animated:(BOOL)animated;
 {
     OBPRECONDITION([_children indexOfObjectIdenticalTo:child] == NSNotFound); // Don't double-add
-    OBPRECONDITION([child isViewLoaded] && [child.view isDescendantOfView:self.view]); // Theory is that the child's view should be in the heirarchy and sized right before telling it to update itself.
+    OBPRECONDITION([child isViewLoaded] && ([child.view isDescendantOfView:self.view] || ![[self view] superview])); // Theory is that the child's view should be in the heirarchy and sized right before telling it to update itself.  The OG font inspector is in a different view hierarchy
     
     [_children addObject:child];
     
@@ -62,7 +62,7 @@ RCS_ID("$Id$");
 - (void)removeChildViewController:(UIViewController *)child animated:(BOOL)animated;
 {
     OBPRECONDITION([_children indexOfObjectIdenticalTo:child] != NSNotFound);
-    OBPRECONDITION([child isViewLoaded] && [child.view isDescendantOfView:self.view]); // Inverse of the 'add' rule, may want to end editing before the view is removed.
+    OBPRECONDITION([child isViewLoaded] && ([child.view isDescendantOfView:self.view] || ![[self view] superview])); // Inverse of the 'add' rule, may want to end editing before the view is removed. The OG font inspector is in a different view hierarchy
 
     [_children removeObjectIdenticalTo:child];
     
@@ -89,13 +89,11 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark UIViewController subclass
 
-#if 0 // test if children already get this automatically
-- (void)didReceiveMemoryWarning
+- (void)viewDidUnload;
 {
-    [super didReceiveMemoryWarning];
-    [_children makeObjectsPerformSelector:_cmd];
+    OBPRECONDITION(self.visibility == OUIViewControllerVisibilityHidden);
+    [super viewDidUnload];
 }
-#endif
 
 - (void)viewWillAppear:(BOOL)animated;
 {

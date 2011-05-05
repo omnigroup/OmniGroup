@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -161,6 +161,8 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     [_items addObject:item];
     [item release];
     
+    [_scrollView setNeedsLayout];
+    
     if (!_selectedItem) {
         _selectedItem = [item retain];
         [self _snapToSelectionAnimated:NO];
@@ -192,6 +194,7 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     [_selectedItem release];
     _selectedItem = nil;
     
+    [_scrollView setNeedsLayout];
     [self setNeedsLayout];
 }
 

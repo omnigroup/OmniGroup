@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,9 @@
 - (void)collapseAllOccurrencesOfCharactersInSet:(NSCharacterSet *)set toString:(NSString *)replaceString;
 
 - (BOOL)replaceAllOccurrencesOfString:(NSString *)matchString withString:(NSString *)newString;
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (BOOL)replaceAllOccurrencesOfRegularExpressionString:(NSString *)matchString withString:(NSString *)newString;
+#endif
 - (void)replaceAllLineEndingsWithString:(NSString *)newString;
 
 - (void)appendLongCharacter:(UnicodeScalarValue)aCharacter; // This handles >16 bits characters, encoding with with surrogate pairs

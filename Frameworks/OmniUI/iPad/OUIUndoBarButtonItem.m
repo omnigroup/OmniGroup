@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,10 @@
 #import <OmniUI/OUIAppController.h>
 
 RCS_ID("$Id$");
+
+OBDEPRECATED_METHODS(OUIUndoBarButtonItemTarget)
+- (void)undoBarButtonItemWillShowPopover; // Use the OUIAppController single-popover helper instead.
+@end
 
 NSString * const OUIUndoPopoverWillShowNotification = @"OUIUndoPopoverWillShowNotification";
 
@@ -131,6 +135,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 }
 
 @synthesize undoBarButtonItemTarget = _undoBarButtonItemTarget;
+@synthesize button = _undoButton;
 
 - (void)setNormalBackgroundImage:(UIImage *)image;
 {
@@ -221,7 +226,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     }
     
     if (![_buttonController isMenuVisible]) {
-        [_undoBarButtonItemTarget undoBarButtonItemWillShowPopover];
+        [[OUIAppController controller] dismissPopoverAnimated:NO];
         [_buttonController showUndoMenuFromItem:self];
     }
 }

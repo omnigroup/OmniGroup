@@ -1,4 +1,4 @@
-// Copyright 2003-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,11 +28,9 @@ extern OQLinearRGBA OQGetColorComponents(NSColor *c);
 #else
 extern OQLinearRGBA OQGetColorComponents(OQColor *c);
 #endif
+extern BOOL OQColorComponentsEqual(OQLinearRGBA x, OQLinearRGBA y);
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 extern OQLinearRGBA OQGetColorRefComponents(CGColorRef c);
-#endif
-
 extern CGFloat OQGetRGBAColorLuma(OQLinearRGBA c);
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 extern CGFloat OQGetColorLuma(NSColor *c, CGFloat *outAlpha);

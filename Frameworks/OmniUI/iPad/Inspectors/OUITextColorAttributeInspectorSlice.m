@@ -38,7 +38,7 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark OUIAbstractColorInspectorSlice subclass
 
-- (NSSet *)getColorsFromObject:(id)object;
+- (OQColor *)colorForObject:(id)object;
 {
     OBPRECONDITION([object isKindOfClass:[OUEFTextSpan class]]);
     OUEFTextSpan *span = object;
@@ -46,10 +46,9 @@ RCS_ID("$Id$")
     CGColorRef backgroundColor = (CGColorRef)[span.frame attribute:_attributeName inRange:span];
     
     if (!backgroundColor)
-        return [NSSet set];
+        return nil;
     
-    OQColor *color = [OQColor colorWithCGColor:backgroundColor];
-    return [NSSet setWithObject:color];
+    return [OQColor colorWithCGColor:backgroundColor];
 }
 
 - (void)setColor:(OQColor *)color forObject:(id)object;

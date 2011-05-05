@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,8 +20,8 @@
 - (NSString *)inspector:(OUIInspector *)inspector titleForPane:(OUIInspectorPane *)pane;
 
 // If this is not implemented or returns nil, and the stacked inspector pane doesn't already have slices, an assertion will fire and the inspector dismissed.
-// Thus, you either need to implement this or the manually give slices to the stacked slice panes.
-- (NSArray *)inspector:(OUIInspector *)inspector slicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
+// Thus, you either need to implement this or the manually give slices to the stacked slice panes. If you make slices this way, you must return all the possible slices and have the slices themselves decide whether they are appropriate for the inspected object set.
+- (NSArray *)inspector:(OUIInspector *)inspector makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 
 // Delegates should normally implement this method to restore the first responder.
 - (void)inspectorDidDismiss:(OUIInspector *)inspector;

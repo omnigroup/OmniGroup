@@ -43,9 +43,14 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark OUIColorPicker subclass
 
+- (NSString *)identifier;
+{
+    return @"palette";
+}
+
 - (OUIColorPickerFidelity)fidelityForSelectionValue:(OUIInspectorSelectionValue *)selectionValue;
 {
-    OQColor *color = selectionValue.uniqueValue;
+    OQColor *color = selectionValue.firstValue;
 
     // The palette color picker can exactly match 'no color' by not selecting any chits.
     if (!color)
@@ -66,13 +71,23 @@ RCS_ID("$Id$");
 {
     [super setSelectionValue:selectionValue];
     
-    // Only mark unique color selections as checked in the swatch pickers.
-    OQColor *color = selectionValue.uniqueValue;
+    // Don't check every color, just the most important one.
+    OQColor *color = selectionValue.firstValue;
     
     for (UIView *view in _themeViews) {
         if ([view isKindOfClass:[OUIColorSwatchPicker class]]) {
             OUIColorSwatchPicker *swatchPicker = (OUIColorSwatchPicker *)view;
             [swatchPicker setSwatchSelectionColor:color];
+            
+            if ([swatchPicker hasMatchForColor:color]) {                
+                UIScrollView *view = (UIScrollView *)self.view;
+                
+                BOOL animate = (view.window != nil);
+
+                CGRect rect = [view convertRect:swatchPicker.bounds fromView:swatchPicker];
+                rect = CGRectInset(rect, 0, -16); // UIScrollView scrolls as little as needed; include some padding.
+                [view scrollRectToVisible:rect animated:animate];
+            }
         }
     }
 }
@@ -121,8 +136,8 @@ RCS_ID("$Id$");
     UIFont *labelFont = [UIFont fontWithName:@"Helvetica Neue" size:16];
     UIScrollView *view = (UIScrollView *)self.view;
     
-    // Only mark unique color selections as checked in the swatch pickers.
-    OQColor *singleSelectedColor = self.selectionValue.uniqueValue;
+    // Don't select every color, just the most important one.
+    OQColor *singleSelectedColor = self.selectionValue.firstValue;
     
     CGRect viewBounds = view.bounds;
     CGFloat xOffset = 8;

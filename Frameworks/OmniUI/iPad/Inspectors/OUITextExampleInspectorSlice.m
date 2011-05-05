@@ -17,7 +17,7 @@
 
 RCS_ID("$Id$");
 
-NSString * const OUITextExampleInspectorSliceExmapleString = @"Lorem ipsum dolor sit amet"; // For subclasses
+NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena in geardagum"; // For subclasses
 
 @implementation OUITextExampleInspectorSlice
 
@@ -26,7 +26,7 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Lorem ipsum dolor
 
 - (void)loadView;
 {
-    CGRect frame = CGRectMake(0, 0, OUIInspectorContentWidth, 50); // The height will be preserved, but the rest will be munged by the stacking.
+    CGRect frame = CGRectMake(0, 0, OUIInspectorContentWidth, 48); // The height will be preserved, but the rest will be munged by the stacking.
     
     self.view = [[[OUIInspectorTextExampleView alloc] initWithFrame:frame] autorelease];
 }
@@ -41,8 +41,8 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Lorem ipsum dolor
         if (!firstSpan)
             firstSpan = span;
         else {
-            // In case we ever have multiple selected spans...
-            OBASSERT_NOT_REACHED("Pick the earliest span and assert it is in the same text view");
+            if ([span range].location < [firstSpan range].location)
+                firstSpan = span;
         }
     }
     
@@ -72,13 +72,13 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Lorem ipsum dolor
     return [object isKindOfClass:[OUEFTextRange class]];
 }
 
-- (void)updateInterfaceFromInspectedObjects;
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     NSAttributedString *attributedString = [self makeExampleAttributedString];
 
     NSUInteger stringLength = [attributedString length];
     if (stringLength == 0) {
-        OBASSERT_NOT_REACHED("No example text. Incorrectly subclassed -isAppropriateForInspectedObject: or -updateInterfaceFromInspectedObjects");
+        OBASSERT_NOT_REACHED("No example text. Incorrectly subclassed -isAppropriateForInspectedObject: or -updateInterfaceFromInspectedObjects:");
         return;
     }
     

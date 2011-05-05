@@ -11,6 +11,11 @@
 #import <OmniUI/OUIBarButtonItemBackgroundType.h>
 
 @interface OUIToolbarButton : UIButton
+{
+@private
+    NSSet *_possibleTitles;
+    CGFloat _maxWidth;
+}
 
 + (UIImage *)normalBackgroundImage;
 + (UIImage *)highlightedBackgroundImage;
@@ -20,5 +25,7 @@
 
 - (void)setNormalBackgroundImage:(UIImage *)image;
 - (void)setHighlightedBackgroundImage:(UIImage *)image;
+
+@property(nonatomic,copy) NSSet *possibleTitles;
 
 @end

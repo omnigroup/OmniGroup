@@ -18,6 +18,7 @@ RCS_ID("$Id$");
 
 // #define FONT_DESC_STATS
 static NSMutableSet *_OAFontDescriptorUniqueTable = nil;
+static NSLock *_OAFontDescriptorUniqueTableLock;
 
 @interface OAFontDescriptor (/*Private*/)
 - (void)_invalidateCachedFont;
@@ -34,13 +35,17 @@ static NSMutableSet *_OAFontDescriptorUniqueTable = nil;
     callbacks.retain  = NULL;
     callbacks.release = NULL;
     _OAFontDescriptorUniqueTable = (NSMutableSet *)CFSetCreateMutable(kCFAllocatorDefault, 0, &callbacks);
+    _OAFontDescriptorUniqueTableLock = [[NSLock alloc] init];
 }
 
 // This is currently called by the NSNotificationCenter hacks in OmniOutliner.  Horrifying; maybe those hacks should move here, but better yet would be if we didn't need them.
 + (void)fontSetWillChangeNotification:(NSNotification *)note;
 {
     // Invalidate the cached fonts in all our font descriptors.  The various live text storages are about to get a -fixFontAttributeInRange: due to this notification (this gets called specially first so that all the font descriptors are primed to recache the right fonts).
-    [_OAFontDescriptorUniqueTable makeObjectsPerformSelector:@selector(_invalidateCachedFont)];
+    [_OAFontDescriptorUniqueTableLock lock];
+    NSArray *allFontDescriptors = [_OAFontDescriptorUniqueTable allObjects];
+    [_OAFontDescriptorUniqueTableLock unlock];
+    [allFontDescriptors makeObjectsPerformSelector:@selector(_invalidateCachedFont)];
 }
 
 CGFloat OAFontDescriptorDefaultFontWeight(void)
@@ -81,16 +86,21 @@ static NSInteger _weightToFontManagerWeight(CGFloat weight)
     
     _attributes = [fontAttributes copy];
     
-    OAFontDescriptor *uniquedInstance = [_OAFontDescriptorUniqueTable member:self];
-    if (uniquedInstance) {
-        [self release];
-        return [uniquedInstance retain];
-    } else {
-        _isUniquedInstance = YES;
+    [_OAFontDescriptorUniqueTableLock lock];
+    OAFontDescriptor *uniquedInstance = [[_OAFontDescriptorUniqueTable member:self] retain];
+    if (uniquedInstance == nil) {
         [_OAFontDescriptorUniqueTable addObject:self];
 #if defined(FONT_DESC_STATS)
         NSLog(@"%d font descriptors ++ added %@", [_OAFontDescriptorUniqueTable count], self);
 #endif
+    }
+    [_OAFontDescriptorUniqueTableLock unlock];
+
+    if (uniquedInstance) {
+        [self release];
+        return uniquedInstance;
+    } else {
+        _isUniquedInstance = YES; // Track that we need to remove ourselves from the table in -dealloc
         return self;
     }
 }
@@ -196,11 +206,13 @@ static NSInteger _weightToFontManagerWeight(CGFloat weight)
 - (void)dealloc;
 {
     if (_isUniquedInstance) {
+        [_OAFontDescriptorUniqueTableLock lock];
         OBASSERT([_OAFontDescriptorUniqueTable member:self] == self);
         [_OAFontDescriptorUniqueTable removeObject:self];
 #if defined(FONT_DESC_STATS)
         NSLog(@"%d font descriptors -- removed %p", [_OAFontDescriptorUniqueTable count], self);
 #endif
+        [_OAFontDescriptorUniqueTableLock unlock];
     }
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     if (_font)

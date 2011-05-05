@@ -74,12 +74,6 @@ RCS_ID("$Id$")
     [editor inspectSelectedTextFromBarButtonItem:item];
 }
 
-- (void)dismissInspectorImmediately;
-{
-    OUIEditableFrame *editor = ((TextViewController *)self.document.viewController).editor;
-    [editor dismissInspectorImmediately];
-}
-
 #pragma mark -
 #pragma mark OUIDocumentPickerDelegate
 

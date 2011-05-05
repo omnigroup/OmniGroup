@@ -59,6 +59,7 @@
 		34D06C79125D208C00CA3963 /* OFSFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0640F71FFFF005CFD59 /* OFSFileManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D06C7A125D208C00CA3963 /* OFSFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0650F71FFFF005CFD59 /* OFSFileManager.m */; };
 		34D06C7B125D208D00CA3963 /* OFSFileManagerAsynchronousOperationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0940F72002A005CFD59 /* OFSFileManagerAsynchronousOperationTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34F0E3FE1330143E00AB6AEF /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F0E3FD1330143D00AB6AEF /* ApplicationServices.framework */; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
@@ -139,6 +140,7 @@
 		34D06C64125D203B00CA3963 /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34D06C65125D203B00CA3963 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D06C66125D203B00CA3963 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		34F0E3FD1330143D00AB6AEF /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = SDKs/MacOSX10.6.sdk/System/Library/Frameworks/ApplicationServices.framework; sourceTree = DEVELOPER_DIR; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* OmniFileStore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniFileStore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -166,6 +168,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34F0E3FE1330143E00AB6AEF /* ApplicationServices.framework in Frameworks */,
 				3421AEC30F71F9D80096AADB /* OmniBase.framework in Frameworks */,
 				3421AEC40F71F9D80096AADB /* OmniFoundation.framework in Frameworks */,
 				3421AFF70F71F9E40096AADB /* Foundation.framework in Frameworks */,
@@ -207,6 +210,7 @@
 				3421AEC20F71F9D80096AADB /* OmniFoundation.framework */,
 				34973C9E125BCF340057E909 /* Security.framework */,
 				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
+				34F0E3FD1330143D00AB6AEF /* ApplicationServices.framework */,
 			);
 			name = "Frameworks and Libraries";
 			sourceTree = "<group>";

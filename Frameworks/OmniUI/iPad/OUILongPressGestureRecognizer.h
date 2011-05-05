@@ -1,4 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,33 +7,13 @@
 //
 // $Id$
 
-#import <UIKit/UIGestureRecognizerSubclass.h>
+#import "OUIGestureRecognizer.h"
 
-
-@interface OUILongPressGestureRecognizer : UILongPressGestureRecognizer
-{
+@interface OUILongPressGestureRecognizer : OUIGestureRecognizer {
 @private
-    CGFloat hysteresisDistance;
-    BOOL overcameHysteresis;
+    CGFloat _allowableMovement; // above which this is a drag
+    CGPoint _firstTouchPoint;
     
-    // Points stored in window coordinates
-    CGPoint firstTouchPoint;
-    CGPoint lastTouchPoint;
-    
-    NSTimeInterval latestTimestamp;  // measured since system startup time
-    
-    NSTimeInterval beginTimestamp;  // measured since Jan 1, 2001
-    NSTimeInterval endTimestamp;    // "
+    NSTimer *_movementTimer;    // to update likelihood when it is becoming more likely that this is not a movement; to avoid visual flicker as the likelihood can get set to 0.1 on touch and then immediately to 0 as this gesture is cancelled due to movement (like when a pan is happening)
 }
-
-@property (nonatomic) CGFloat hysteresisDistance;
-@property (readonly, nonatomic) BOOL overcameHysteresis;
-
-@property (readonly, nonatomic) NSTimeInterval latestTimestamp;  // Provides precise timing suitable for use in stroke recognition algorithms
-@property (readonly, nonatomic) NSTimeInterval gestureDuration;  // The length of time the gesture was in progress.  Only valid after the gesture has finished (ended or cancelled).
-
-- (CGPoint)cumulativeOffsetInView:(UIView *)view;
-
-- (void)resetHysteresis;
-
 @end

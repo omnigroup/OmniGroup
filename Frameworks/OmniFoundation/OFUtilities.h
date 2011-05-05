@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,7 +53,9 @@ extern SEL OFRegisterSelectorIfAbsent(const char *selName);
 
 #define OFForEachInArray(arrayExpression, valueType, valueVar, loopBody) { NSArray * valueVar ## _array = (arrayExpression); NSUInteger valueVar ## _count , valueVar ## _index; valueVar ## _count = [( valueVar ## _array ) count]; for( valueVar ## _index = 0; valueVar ## _index < valueVar ## _count ; valueVar ## _index ++ ) { valueType valueVar = [( valueVar ## _array ) objectAtIndex:( valueVar ## _index )]; loopBody ; } }
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 extern uint32_t OFLocalIPv4Address(void);
+#endif
 
 // A string which uniquely identifies this computer. Currently, it's the MAC address for the built-in ethernet port, but that or the underlying implementation could change.
 extern NSString *OFUniqueMachineIdentifier(void);

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,9 @@ enum {
 }; 
 typedef NSUInteger OUIExportOptionsType;
 
+@class OFFileWrapper;
 @class OUIExportOptionsView;
+
 @interface OUIExportOptionsController : UIViewController
 {
 @private
@@ -26,10 +28,11 @@ typedef NSUInteger OUIExportOptionsType;
     
     OUISyncType _syncType;
     OUIExportOptionsType _exportType;
+    NSMutableArray *_exportFileTypes;
 }
 
 - (id)initWithExportType:(OUIExportOptionsType)exportType;
-- (void)exportData:(NSData *)data toFileNamed:(NSString *)filename;
+- (void)exportFileWrapper:(OFFileWrapper *)fileWrapper;
 - (void)signOut:(id)sender;
 
 @property(nonatomic, retain) IBOutlet OUIExportOptionsView *exportView;

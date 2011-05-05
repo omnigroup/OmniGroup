@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,3 +41,4 @@ extern UIImage *OUIMakeShadowedImage(UIImage *image, OUIShadowType type);
 extern void OUISetShadowOnLabel(UILabel *label, OUIShadowType type);
 
 extern void OUIDrawTransparentColorBackground(CGContextRef ctx, CGRect rect, CGSize phase);
+extern void OUIDrawPatternBackground(CGContextRef ctx, NSString *imageName, CGRect rect, CGSize phase);

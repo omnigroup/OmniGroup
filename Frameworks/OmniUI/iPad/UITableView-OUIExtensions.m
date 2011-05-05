@@ -11,6 +11,19 @@
 
 RCS_ID("$Id$");
 
+@implementation UITableView (OUIExtensions)
+
+- (UIEdgeInsets)borderEdgeInsets;
+{
+    if (self.style == UITableViewStyleGrouped)
+        // eye-ball the built in padding for the grouped look; to match our other controls.
+        return UIEdgeInsetsMake(10/*top*/, 9/*left*/, 11/*bottom*/, 8/*right*/);
+    
+    return UIEdgeInsetsZero; // all the way to the edges
+}
+
+@end
+
 void OUITableViewFinishedReactingToSelection(UITableView *tableView, OUITableViewCellSelectionType type)
 {
     NSIndexPath *indexPath = [tableView indexPathForSelectedRow];
@@ -67,30 +80,44 @@ void OUITableViewCellShowSelection(UITableViewCell *cell, OUITableViewCellSelect
     }
 }
 
-BOOL OUITableViewAdjustContainingViewToExactlyFitContents(UITableView *tableView, CGFloat maximumHeight)
+// Assumes the table view has current contents
+void OUITableViewAdjustHeightToFitContents(UITableView *tableView)
 {
-    // Make sure it has the correct data first.
-    [tableView reloadData];
+    OBPRECONDITION(tableView);
+    OBPRECONDITION(tableView.autoresizingMask == 0);
+    
+    CGSize contentSize = tableView.contentSize;
+    OBASSERT(contentSize.height > 0); // No rows?
+    
+    CGRect frame = tableView.frame;
+    frame.size.height = contentSize.height;
+    
+    tableView.frame = frame;
+    tableView.scrollEnabled = NO;
+}
 
-    CGSize tableViewContentSize = tableView.contentSize;
-    CGRect tableViewFrame = tableView.frame;
-    CGFloat delta = tableViewContentSize.height - CGRectGetHeight(tableViewFrame); // assuming no scaling here
+void OUITableViewAdjustContainingViewHeightToFitContents(UITableView *tableView)
+{
+    OBPRECONDITION(tableView);
     
     UIView *container = tableView.superview;
-    if (!container)
-        container = tableView; // Bare tableview.
+    if (!container) {
+        // Bare table view
+        OUITableViewAdjustHeightToFitContents(tableView);
+        return;
+    }
+    OBASSERT(tableView.autoresizingMask == UIViewAutoresizingFlexibleHeight);
+
+    CGSize tableViewContentSize = tableView.contentSize;
+    OBASSERT(tableViewContentSize.height > 0); // No rows?
+    
+    CGRect tableViewFrame = tableView.frame;
+    CGFloat delta = tableViewContentSize.height - CGRectGetHeight(tableViewFrame); // assuming no scaling here
     
     CGRect frame = container.frame;
     frame.size.height += delta;
     
-    BOOL fits = YES;
-    if (maximumHeight > 0 && frame.size.height > maximumHeight) {
-        frame.size.height = maximumHeight;
-        fits = NO;
-    }
-    
     container.frame = frame;
     
-    tableView.scrollEnabled = !fits;
-    return fits;
+    tableView.scrollEnabled = NO;
 }

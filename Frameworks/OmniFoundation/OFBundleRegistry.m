@@ -7,15 +7,10 @@
 
 #import <OmniFoundation/OFBundleRegistry.h>
 
-// The iPhone can't dynamically load code (or even link frameworks), so a lot of this class does nothing on that platform.
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-#define DYNAMIC_BUNDLE_LOADING
-#endif
-
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniFoundation/NSMutableSet-OFExtensions.h>
-#ifdef DYNAMIC_BUNDLE_LOADING
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
 #import <OmniFoundation/OFController.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/OFBundledClass.h>
@@ -44,10 +39,10 @@ NB also, if this dictionary changes, the OmniBundlePreferences bundle (in OmniCo
 
 @interface OFBundleRegistry (Private)
 + (void)readConfigDictionary;
-#ifdef DYNAMIC_BUNDLE_LOADING
 + (NSArray *)standardPath;
-+ (NSArray *)newBundlesFromStandardPath;
++ (NSArray *)_bundlesFromStandardPath;
 + (NSArray *)bundlesInDirectory:(NSString *)directoryPath ignoringPaths:(NSSet *)seen;
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
 + (void)recordBundleLoading:(NSNotification *)note;
 + (void)_defaultsDidChange:(NSNotification *)note;
 #endif
@@ -62,7 +57,7 @@ static NSMutableSet *registeredBundleNames;
 static NSMutableDictionary *softwareVersionDictionary;
 static NSMutableArray *knownBundles;
 static NSMutableDictionary *additionalBundleDescriptions;
-#ifdef DYNAMIC_BUNDLE_LOADING
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
 static NSArray *oldDisabledBundleNames;
 #endif
 
@@ -87,13 +82,13 @@ static NSArray *oldDisabledBundleNames;
 {
     [self readConfigDictionary];
     [self registerBundles:[self linkedBundles]];
-#ifdef DYNAMIC_BUNDLE_LOADING
-    [self registerBundles:[self newBundlesFromStandardPath]];
+    [self registerBundles:[self _bundlesFromStandardPath]];
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(recordBundleLoading:) name:NSBundleDidLoadNotification object:nil]; // Keep track of future bundle loads
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_defaultsDidChange:) name:NSUserDefaultsDidChangeNotification object:nil]; // Keep track of changes to defaults
 #endif
     [self registerAdditionalRegistrations];
-#ifdef DYNAMIC_BUNDLE_LOADING
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     [OFBundledClass processImmediateLoadClasses];
 #endif
 }
@@ -126,7 +121,7 @@ static NSArray *oldDisabledBundleNames;
    // This should be changed to use a notification or some other method so that bundle-loaders other than us can catch it and re-scan for bundles when requested 
 + (void)lookForBundles
 {
-    [self registerBundles:[self newBundlesFromStandardPath]];
+    [self registerBundles:[self _bundlesFromStandardPath]];
     [OFBundledClass processImmediateLoadClasses];
 }
 #endif
@@ -159,15 +154,13 @@ static NSString * const OFBundleRegistryConfig = @"OFBundleRegistryConfig";
 static NSString * const OFRequiredSoftwareVersions = @"OFRequiredSoftwareVersions";
 static NSString * const OFRegistrations = @"OFRegistrations";
 
-#ifdef DYNAMIC_BUNDLE_LOADING
 static NSString * const OFBundleRegistryConfigSearchPaths = @"SearchPaths";
 static NSString * const OFBundleRegistryConfigAppWrapperPath = @"AppWrapper";
 static NSString * const OFBundleRegistryConfigBundleExtensions = @"BundleExtensions";
-#endif
 static NSString * const OFBundleRegistryConfigAdditionalRegistrations = @"AdditionalRegistrations";
 static NSString * const OFBundleRegistryConfigLogBundleRegistration = @"LogBundleRegistration";
 
-#ifdef DYNAMIC_BUNDLE_LOADING
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
 NSString * const OFBundleRegistryDisabledBundlesDefaultsKey = @"DisabledBundles";
 #endif
 
@@ -178,7 +171,7 @@ static BOOL OFBundleRegistryDebug = NO;
 {
     NSString *logBundleRegistration;
 
-#ifdef DYNAMIC_BUNDLE_LOADING
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     NSBundle *bundle = [OFController controllingBundle];
 #else
     NSBundle *bundle = [NSBundle mainBundle];
@@ -192,31 +185,26 @@ static BOOL OFBundleRegistryDebug = NO;
     if (logBundleRegistration != nil && [logBundleRegistration boolValue] == YES)
         OFBundleRegistryDebug = YES;
 
-#ifdef DYNAMIC_BUNDLE_LOADING
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     oldDisabledBundleNames = [[[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey] copy];
 #endif
 }
-
-#ifdef DYNAMIC_BUNDLE_LOADING
 
 + (NSArray *)standardPath;
 {
     static NSArray *standardPath = nil;
     NSArray *configPathArray;
-    NSString *mainBundlePath, *mainBundleResourcesPath;
 
     if (standardPath)
         return standardPath;
 
     // Bundles are stored in the Resources directory of the applications, but tools might have bundles in the same directory as their binary.  Use both paths.
     // Use the controllingBundle in case we are a unit test.
-#ifdef DYNAMIC_BUNDLE_LOADING
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     NSBundle *mainBundle = [OFController controllingBundle];
-#else
-    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *mainBundlePath = [mainBundle bundlePath];
+    NSString *mainBundleResourcesPath = [[mainBundlePath stringByAppendingPathComponent:@"Contents"] stringByAppendingPathComponent:@"PlugIns"];
 #endif
-    mainBundlePath = [mainBundle bundlePath];
-    mainBundleResourcesPath = [[mainBundlePath stringByAppendingPathComponent:@"Contents"] stringByAppendingPathComponent:@"PlugIns"];
 
     // Search for the config path array in defaults, then in the app wrapper's configuration dictionary.  (In gdb, we set the search path on the command line where it will appear in the NSArgumentDomain, overriding the app wrapper's configuration.)
     if ((configPathArray = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryConfigSearchPaths]) ||
@@ -225,12 +213,13 @@ static BOOL OFBundleRegistryDebug = NO;
         NSMutableArray *newPath = [[NSMutableArray alloc] init];
         for (NSString *path in configPathArray) {
             if ([path isEqualToString:OFBundleRegistryConfigAppWrapperPath]) {
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
                 [newPath addObject:mainBundleResourcesPath];
                 [newPath addObject:mainBundlePath];
-                
-                // Also look next too the controlling bundle. This allows us to find locally built copies of plugins in development.
 #ifdef DEBUG
-                [newPath addObject:[mainBundlePath stringByDeletingLastPathComponent]];
+                // Also look next to the controlling bundle in DEBUG builds. This allows us to find locally built copies of plugins in development.
+                [newPath addObject:[[[OFController controllingBundle] bundlePath] stringByDeletingLastPathComponent]];
+#endif
 #endif
             } else
                 [newPath addObject:path];
@@ -239,19 +228,19 @@ static BOOL OFBundleRegistryDebug = NO;
         standardPath = [newPath copy];
         [newPath release];
     } else {
-        // standardPath = ("~/Library/Components", "/Library/Components", "/Network/Library/Components", "/System/Library/Components", "AppWrapper");
-        standardPath = [[NSArray alloc] initWithObjects:[NSString pathWithComponents:
+        // standardPath = ("~/Library/Components", "/Library/Components", "AppWrapper");
+        standardPath = [[NSArray alloc] initWithObjects:
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
             // User's library directory
-            [NSArray arrayWithObjects:NSHomeDirectory(), @"Library", @"Components", nil]],
+            [NSString pathWithComponents:[NSArray arrayWithObjects:NSHomeDirectory(), @"Library", @"Components", nil]],
 
             // Standard Mac OS X library directories
             [NSString pathWithComponents:[NSArray arrayWithObjects:@"/", @"Library", @"Components", nil]],
-            [NSString pathWithComponents:[NSArray arrayWithObjects:@"/", @"Network", @"Library", @"Components", nil]],
-            [NSString pathWithComponents:[NSArray arrayWithObjects:@"/", @"System", @"Library", @"Components", nil]],
 
             // App wrapper
             mainBundleResourcesPath,
             mainBundlePath,
+#endif
 
             nil];
     }
@@ -259,13 +248,11 @@ static BOOL OFBundleRegistryDebug = NO;
     return standardPath;
 }
 
-#endif
-
 + (NSArray *)linkedBundles
 {
     NSMutableArray *linkedBundles = [NSMutableArray array];
 
-#ifdef DYNAMIC_BUNDLE_LOADING
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     // The frameworks and main bundle are already loaded, so we should register them first.
     NSEnumerator *frameworkEnumerator = [[NSBundle allFrameworks] objectEnumerator];
     NSBundle *framework;
@@ -289,10 +276,8 @@ static BOOL OFBundleRegistryDebug = NO;
     return linkedBundles;
 }
 
-#ifdef DYNAMIC_BUNDLE_LOADING
-
 // Returns an NSArray of bundle descriptions
-+ (NSArray *)newBundlesFromStandardPath;
++ (NSArray *)_bundlesFromStandardPath;
 {
     // Make a note of paths we've already examined so we can skip them this time
     NSMutableSet *seenPaths = [[NSMutableSet alloc] init];
@@ -325,6 +310,79 @@ static BOOL OFBundleRegistryDebug = NO;
 
     return [bundlesFromStandardPath autorelease];
 }
+
+// Returns an array of bundle descriptions (currently NSMutableDictionaries)
++ (NSArray *)bundlesInDirectory:(NSString *)directoryPath ignoringPaths:(NSSet *)pathsToIgnore;
+{
+    NSString *expandedDirectoryPath = [directoryPath stringByExpandingTildeInPath];
+    if (![expandedDirectoryPath hasPrefix:@"/"]) {
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
+        NSBundle *mainBundle = [OFController controllingBundle];
+#else
+        NSBundle *mainBundle = [NSBundle mainBundle];
+#endif
+        NSString *mainBundlePath = [mainBundle bundlePath];
+        expandedDirectoryPath = [mainBundlePath stringByAppendingPathComponent:expandedDirectoryPath];
+    }
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSArray *candidates = [[fileManager contentsOfDirectoryAtPath:expandedDirectoryPath error:NULL] sortedArrayUsingSelector:@selector(compare:)];
+    if (!candidates)
+        return nil;
+    
+    NSArray *bundleExtensions;
+    if (!(bundleExtensions = [configDictionary objectForKey:OFBundleRegistryConfigBundleExtensions]))
+        bundleExtensions = [NSArray arrayWithObjects:@"omni", nil];
+
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
+    NSSet *disabledBundleNames;
+    NSArray *disabledBundleNamesArray = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey]; 
+    if (disabledBundleNamesArray)
+        disabledBundleNames = [NSSet setWithArray:disabledBundleNamesArray];
+    else
+        disabledBundleNames = [NSSet set];
+#endif
+    
+    NSMutableArray *bundles = [NSMutableArray array];
+    for (NSString *candidateName in candidates) {
+        if (![bundleExtensions containsObject:[candidateName pathExtension]])
+            continue;
+
+        NSString *bundlePath = [expandedDirectoryPath stringByAppendingPathComponent:candidateName];
+        
+        if ([pathsToIgnore containsObject:bundlePath])
+            continue;
+
+        NSMutableDictionary *description = [NSMutableDictionary dictionary];
+        [description setObject:bundlePath forKey:@"path"];
+        [bundles addObject:description];
+
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
+        if ([disabledBundleNames containsObject:candidateName] ||
+            [disabledBundleNames containsObject:[candidateName stringByDeletingPathExtension]] ||
+            [disabledBundleNames containsObject:bundlePath]) {
+            [description setObject:@"disabled" forKey:@"invalid"];
+            continue;
+        }
+#endif
+        
+        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        if (!bundle) {
+            // bundle might be nil if the candidate is not a directory or is a symbolic link to a path that doesn't exist or doesn't contain a valid bundle.
+            [description setObject:NSLocalizedStringFromTableInBundle(@"Not a valid bundle", @"OmniFoundation", [OFBundleRegistry bundle], @"invalid bundle reason") forKey:@"invalid"];
+            continue;
+        }
+
+        [description setObject:bundle forKey:@"bundle"];
+        
+        if ([[bundle infoDictionary] objectForKey:@"CFBundleGetInfoString"])
+            [description setObject:[[bundle infoDictionary] objectForKey:@"CFBundleGetInfoString"] forKey:@"text"];
+    }
+
+    return [bundles count] > 0 ? bundles : nil;
+}
+
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
 
 // Invoked whenever NSBundle loads something
 + (void)recordBundleLoading:(NSNotification *)note
@@ -394,63 +452,6 @@ static BOOL OFBundleRegistryDebug = NO;
             }
         }
     }
-}
-
-// Returns an array of bundle descriptions (currently NSMutableDictionaries)
-+ (NSArray *)bundlesInDirectory:(NSString *)directoryPath ignoringPaths:(NSSet *)pathsToIgnore;
-{
-    NSString *expandedDirectoryPath = [directoryPath stringByExpandingTildeInPath];
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSArray *candidates = [[fileManager contentsOfDirectoryAtPath:expandedDirectoryPath error:NULL] sortedArrayUsingSelector:@selector(compare:)];
-    if (!candidates)
-        return nil;
-    
-    NSArray *bundleExtensions;
-    if (!(bundleExtensions = [configDictionary objectForKey:OFBundleRegistryConfigBundleExtensions]))
-        bundleExtensions = [NSArray arrayWithObjects:@"omni", nil];
-
-    NSSet *disabledBundleNames;
-    NSArray *disabledBundleNamesArray = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey]; 
-    if (disabledBundleNamesArray)
-        disabledBundleNames = [NSSet setWithArray:disabledBundleNamesArray];
-    else
-        disabledBundleNames = [NSSet set];
-    
-    NSMutableArray *bundles = [NSMutableArray array];
-    for (NSString *candidateName in candidates) {
-        if (![bundleExtensions containsObject:[candidateName pathExtension]])
-            continue;
-
-        NSString *bundlePath = [expandedDirectoryPath stringByAppendingPathComponent:candidateName];
-        
-        if ([pathsToIgnore containsObject:bundlePath])
-            continue;
-
-        NSMutableDictionary *description = [NSMutableDictionary dictionary];
-        [description setObject:bundlePath forKey:@"path"];
-        [bundles addObject:description];
-
-        if ([disabledBundleNames containsObject:candidateName] ||
-            [disabledBundleNames containsObject:[candidateName stringByDeletingPathExtension]] ||
-            [disabledBundleNames containsObject:bundlePath]) {
-            [description setObject:@"disabled" forKey:@"invalid"];
-            continue;
-        }
-        
-        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-        if (!bundle) {
-            // bundle might be nil if the candidate is not a directory or is a symbolic link to a path that doesn't exist or doesn't contain a valid bundle.
-            [description setObject:NSLocalizedStringFromTableInBundle(@"Not a valid bundle", @"OmniFoundation", [OFBundleRegistry bundle], @"invalid bundle reason") forKey:@"invalid"];
-            continue;
-        }
-
-        [description setObject:bundle forKey:@"bundle"];
-        
-        if ([[bundle infoDictionary] objectForKey:@"CFBundleGetInfoString"])
-            [description setObject:[[bundle infoDictionary] objectForKey:@"CFBundleGetInfoString"] forKey:@"text"];
-    }
-
-    return [bundles count] > 0 ? bundles : nil;
 }
 
 #endif
@@ -533,6 +534,7 @@ static BOOL OFBundleRegistryDebug = NO;
         NSString *bundleIdentifier = [bundle bundleIdentifier];
         if ([NSString isEmptyString:bundleIdentifier])
             bundleIdentifier = [bundleName stringByDeletingPathExtension];
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
         NSDictionary *infoDictionary = [bundle infoDictionary];
 
         // If the bundle isn't already loaded, decide whether to register it
@@ -563,6 +565,13 @@ static BOOL OFBundleRegistryDebug = NO;
                 continue;
             }
         }
+#else
+        NSString *infoDictionaryPath = [bundle pathForResource:@"Info" ofType:@"plist"];
+        NSDictionary *infoDictionary = [NSDictionary dictionaryWithContentsOfFile:infoDictionaryPath];
+#endif
+
+        OBASSERT(infoDictionary != nil);
+
         // OK, we're going to register this bundle
         [registeredBundleNames addObject:bundleName];
 

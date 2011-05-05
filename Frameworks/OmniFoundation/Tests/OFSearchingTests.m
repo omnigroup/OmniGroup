@@ -102,8 +102,8 @@ RCS_ID("$Id$");
     shouldEqualIndex(([txt1 indexOfBytes:"f" length:0 range:(NSRange){3,6}]), 3);
     shouldEqualIndex(([txt1 indexOfBytes:"f" length:1 range:(NSRange){3,6}]), 5);
     
-    OBAssertThrows(([[NSData data] indexOfBytes:"x" length:0 range:(NSRange){0,1}]), @"out of range");
-    OBAssertThrows(([[NSData data] indexOfBytes:"x" length:0 range:(NSRange){1,0}]), @"out of range");
+    STAssertThrows(([[NSData data] indexOfBytes:"x" length:0 range:(NSRange){0,1}]), @"out of range");
+    STAssertThrows(([[NSData data] indexOfBytes:"x" length:0 range:(NSRange){1,0}]), @"out of range");
     
     [txt1 release];
     [txt2 release];

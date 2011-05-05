@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,9 +33,19 @@ static NSMutableDictionary *uniqueTable = nil;
     uniqueTable = [[NSMutableDictionary alloc] init];
 }
 
-+ (OFKnownKeyDictionaryTemplate *)templateWithKeys:(NSArray *)keys;
++ (OFKnownKeyDictionaryTemplate *)templateWithKeys:(NSArray *)oldKeys;
 {
     OFKnownKeyDictionaryTemplate *template;
+    
+    NSMutableArray *keys = [NSMutableArray arrayWithArray:oldKeys];
+    [keys sortUsingComparator:^NSComparisonResult(id obj1, id obj2){ 
+        if (obj1 < obj2)
+            return NSOrderedAscending;
+        else if (obj1 == obj2)
+            return NSOrderedSame;
+        else
+            return NSOrderedDescending;
+    }];
 
     [lock lock];
     @try {
@@ -67,7 +77,7 @@ static NSMutableDictionary *uniqueTable = nil;
     return self;
 }
 
-- (void)release;
+- (oneway void)release;
 {
 }
 
@@ -79,10 +89,10 @@ static NSMutableDictionary *uniqueTable = nil;
 {
     NSUInteger keyIndex;
     
-    _keyArray = [keys copy];
+    _keyArray = [keys retain];
     _keyCount = [keys count];
     for (keyIndex = 0; keyIndex < _keyCount; keyIndex++)
-        _keys[keyIndex] = [[keys objectAtIndex: keyIndex] copy];
+        _keys[keyIndex] = [keys objectAtIndex: keyIndex];
     return self;
 }
 

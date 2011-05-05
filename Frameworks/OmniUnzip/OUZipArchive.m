@@ -16,18 +16,37 @@ RCS_ID("$Id$");
 
 @implementation OUZipArchive
 
-+ (BOOL)createZipFile:(NSString *)zipPath fromFiles:(NSArray *)files error:(NSError **)outError;
++ (BOOL)createZipFile:(NSString *)zipPath fromFilesAtPaths:(NSArray *)paths error:(NSError **)outError;
 {
     OUZipArchive *zip = [[[OUZipArchive alloc] initWithPath:zipPath error:outError] autorelease];
     if (!zip) {
         OBASSERT(outError == NULL || *outError != nil);
         return NO;
     }
-    NSString *homeDirectory = NSHomeDirectory();
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    for (NSString *file in files) {
-        NSString *path = [homeDirectory stringByAppendingPathComponent:file];
+    for (NSString *path in paths) {
         OUZipMember *zipMember = [[OUZipMember alloc] initWithPath:path fileManager:fileManager];
+        if (zipMember == nil)
+            continue;
+        NSError *error = nil;
+        if (![zipMember appendToZipArchive:zip fileNamePrefix:@"" error:&error]) {
+            // Unable to add one of the files to the zip archive.  Just skipping it for now.
+        }
+        [zipMember release];
+    }
+
+    return [zip close:outError];
+}
+
++ (BOOL)createZipFile:(NSString *)zipPath fromFileWrappers:(NSArray *)fileWrappers error:(NSError **)outError;
+{
+    OUZipArchive *zip = [[[OUZipArchive alloc] initWithPath:zipPath error:outError] autorelease];
+    if (!zip) {
+        OBASSERT(outError == NULL || *outError != nil);
+        return NO;
+    }
+    for (OFFileWrapper *fileWrapper in fileWrappers) {
+        OUZipMember *zipMember = [[OUZipMember alloc] initWithFileWrapper:fileWrapper];
         if (zipMember == nil)
             continue;
         NSError *error = nil;

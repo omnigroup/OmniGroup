@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -266,6 +266,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     if (!setter) {
         // We have a property but no setter; presumably it is read-only.
         [self doesNotRecognizeSelector:sel];
+        OBAnalyzerNotReached(); // <http://llvm.org/bugs/show_bug.cgi?id=9486> -doesNotRecognizeSelector: not flagged as being "no return"
     }
     
     // Avoid looking up the property again

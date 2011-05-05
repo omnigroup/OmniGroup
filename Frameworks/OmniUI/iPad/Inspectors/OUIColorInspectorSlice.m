@@ -12,6 +12,10 @@
 
 RCS_ID("$Id$");
 
+OBDEPRECATED_METHODS(OUIColorInspection)
+- (NSSet *)colorsForInspectorSlice:(OUIInspectorSlice *)inspector; // -> -colorForInspectorSlice:
+@end
+
 @implementation OUIColorInspectorSlice
 
 - (BOOL)isAppropriateForInspectedObject:(id)object;
@@ -19,9 +23,9 @@ RCS_ID("$Id$");
     return [object shouldBeInspectedByInspectorSlice:self protocol:@protocol(OUIColorInspection)];
 }
 
-- (NSSet *)getColorsFromObject:(id)object;
+- (OQColor *)colorForObject:(id)object;
 {
-    return [(id <OUIColorInspection>)object colorsForInspectorSlice:self];
+    return [(id <OUIColorInspection>)object colorForInspectorSlice:self];
 }
 
 - (void)setColor:(OQColor *)color forObject:(id)object;

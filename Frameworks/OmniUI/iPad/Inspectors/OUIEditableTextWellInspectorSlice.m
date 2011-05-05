@@ -28,4 +28,6 @@ RCS_ID("$Id$")
     self.textWell.editable = YES;
 }
 
+@synthesize isUntitled = _isUntitled;
+
 @end

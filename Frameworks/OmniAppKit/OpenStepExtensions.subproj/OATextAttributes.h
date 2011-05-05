@@ -1,4 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,3 +44,7 @@ extern NSUInteger const OAUnderlineByWordMask;
 #define OASuperscriptAttributeName OA_TEXT_KEY(NSSuperscriptAttributeName,kCTSuperscriptAttributeName)
 #define OAUnderlineStyleAttributeName OA_TEXT_KEY(NSUnderlineStyleAttributeName, kCTUnderlineStyleAttributeName)
 #define OAUnderlineColorAttributeName OA_TEXT_KEY(NSUnderlineColorAttributeName, kCTUnderlineColorAttributeName)
+#define OAParagraphStyleAttributeName OA_TEXT_KEY(NSParagraphStyleAttributeName, kCTParagraphStyleAttributeName)
+
+// In OmniStyle's text storage subclass, we add a font descriptor to the attributes for the _desired_ font, leaving the other font attribute around for the best calculated match.
+extern NSString * const OAFontDescriptorAttributeName;

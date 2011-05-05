@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,8 +10,9 @@
 #import <UIKit/UIViewController.h>
 #import <OmniFileStore/OFSFileManagerAsynchronousOperationTarget.h>
 
-@protocol OFSAsynchronousOperation;
+@class OFFileWrapper;
 @class OFSFileInfo;
+@protocol OFSAsynchronousOperation;
 
 extern NSString * const OUIWebDAVDownloadFinishedNotification;
 extern NSString * const OUIWebDAVDownloadURL;
@@ -29,13 +30,16 @@ extern NSString * const OUIWebDAVDownloadCanceledNotification;
     NSMutableArray *_fileQueue;
     
     id <OFSAsynchronousOperation> _downloadOperation;
-    id <OFSAsynchronousOperation> _uploadOperation;
+    NSMutableArray *_uploadOperations;
+    NSURL *_uploadTemporaryURL, *_uploadFinalURL;
     
     off_t _totalDataLength;
+    off_t _totalUploadedBytes;
 }
 
 - (IBAction)cancelDownload:(id)sender;
 - (void)download:(OFSFileInfo *)aFile;
-- (void)upload:(NSData *)data toURL:(NSURL *)fileURL;
+- (void)uploadFileWrapper:(OFFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
+- (void)uploadData:(NSData *)data toURL:(NSURL *)targetURL;
 
 @end

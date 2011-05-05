@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 #import <UIKit/UITableViewController.h>
+
+@class OFFileWrapper;
 
 #import "OUISyncMenuController.h"
 #import <OmniUI/OUIReplaceDocumentAlert.h>
@@ -24,8 +26,7 @@
     NSArray *_files;
     BOOL _isDownloading;
     BOOL _isExporting;
-    NSData *_exportingData;
-    NSString *_exportingFilename;
+    OFFileWrapper *_exportFileWrapper;
     
     /* these are used when the download is delayed in order to scroll the view to the visible */ 
     NSURL *_exportURL; 
@@ -45,7 +46,6 @@
 
 @property (nonatomic, retain) NSArray *files;
 @property (nonatomic, assign) BOOL isExporting;
-@property (readwrite, retain) NSData *exportingData;
-@property (readwrite, retain) NSString *exportingFilename;
+@property (readwrite, retain) OFFileWrapper *exportFileWrapper;
 
 @end

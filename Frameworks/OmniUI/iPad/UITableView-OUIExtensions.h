@@ -8,7 +8,11 @@
 // $Id$
 
 #import <UIKit/UITableView.h>
+#import <OmniFoundation/OFExtent.h>
 
+@interface UITableView (OUIExtensions)
+@property(readonly,nonatomic) UIEdgeInsets borderEdgeInsets; // Overridden from UIView(OUIExtensions)
+@end
 
 typedef enum {
     OUITableViewCellAccessorySelectionType,
@@ -34,7 +38,10 @@ extern void OUITableViewFinishedReactingToSelectionWithPredicate(UITableView *ta
  */
 extern void OUITableViewCellShowSelection(UITableViewCell *tableViewCell, OUITableViewCellSelectionType type, BOOL selected);
 
+// For use when embedding a table view in another scroll view. The containing scroll view should be the scrolling agent, not this table view. Assumes the table view has current contents.
+extern void OUITableViewAdjustHeightToFitContents(UITableView *tableView);
+
 /*
- Assumes the table view is height stretchable. Adjusts the tableView's superview so that the contents of the table view won't be scrollable. If maximumHeight is positive and the table view's height would exceed this value, it is clamped there.
+ Assumes the table view is height stretchable. Adjusts the tableView's superview so that the contents of the table view won't be scrollable. Assumes the table view has current contents.
  */
-extern BOOL OUITableViewAdjustContainingViewToExactlyFitContents(UITableView *tableView, CGFloat maximumHeight);
+extern void OUITableViewAdjustContainingViewHeightToFitContents(UITableView *tableView);

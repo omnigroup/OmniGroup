@@ -15,6 +15,10 @@
 
 RCS_ID("$Id$");
 
+OBDEPRECATED_METHODS(OUIInspectorPane)
+- (void)updateInterfaceFromInspectedObjects; // -> -updateInterfaceFromInspectedObjects:
+@end
+
 @implementation OUIInspectorPane
 
 - (void)dealloc;
@@ -39,14 +43,14 @@ RCS_ID("$Id$");
 
 @synthesize inspectedObjects = _inspectedObjects;
 
-- (void)updateInterfaceFromInspectedObjects;
+- (void)inspectorWillShow:(OUIInspector *)inspector;
 {
     // For subclasses
 }
 
-- (void)updateInspectorToolbarItems:(BOOL)animated;
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
-    [_nonretained_inspector updateInspectorToolbarItems:animated];
+    // For subclasses
 }
 
 #pragma mark -
@@ -58,7 +62,14 @@ RCS_ID("$Id$");
     
     [super viewWillAppear:animated];
     
-    [self updateInterfaceFromInspectedObjects];
+    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+    [[self view] endEditing:YES];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation;

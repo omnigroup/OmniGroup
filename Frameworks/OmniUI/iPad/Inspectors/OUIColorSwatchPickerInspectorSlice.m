@@ -65,17 +65,17 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark OUIInspectorSlice subclass
 
-- (void)updateInterfaceFromInspectedObjects;
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
-    NSSet *appropriateObjects = self.appropriateObjectsForInspection;
+    NSArray *appropriateObjects = self.appropriateObjectsForInspection;
     
     // Get the appropriate color swatch
     [self loadColorSwatchesForObject:[appropriateObjects anyObject]];
     
     // Subclass is assumed to have updated the selection value before calling us.
-    [_swatchPicker setSwatchSelectionColor:self.selectionValue.uniqueValue];
+    [_swatchPicker setSwatchSelectionColor:self.selectionValue.firstValue];
     
-    [super updateInterfaceFromInspectedObjects];
+    [super updateInterfaceFromInspectedObjects:reason];
 }
 
 #pragma mark -

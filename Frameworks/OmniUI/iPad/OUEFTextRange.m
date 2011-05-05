@@ -81,10 +81,12 @@ RCS_ID("$Id$");
 
 - (NSRange)range
 {
-    NSRange r;
-    r.location = start.index;
-    r.length = end.index - start.index;
-    return r;
+    NSUInteger st = start.index;
+    NSUInteger en = end.index;
+    
+    OBASSERT(st <= en);
+    
+    return NSMakeRange(st, en - st);
 }
 
 - (OUEFTextRange *)rangeIncludingPosition:(OUEFTextPosition *)p;
@@ -106,14 +108,22 @@ RCS_ID("$Id$");
     return YES;
 }
 
+- (BOOL)isEqualToRange:(OUEFTextRange *)otherRange;
+{
+    // NOT checking the class here -- just the range. We don't want false negatives when comparing an OUEFTextSpan vs a OUEFTextRange.
+    if (!otherRange)
+        return NO;
+    OBASSERT([otherRange isKindOfClass:[OUEFTextRange class]]);
+    return ([start compare:otherRange.start] == NSOrderedSame) && ([end compare:otherRange.end] == NSOrderedSame);
+}
+
 - (BOOL)isEqual:(id)other
 {
     if (![other isKindOfClass:[self class]])
         return NO;
     
     OUEFTextRange *otherRange = (OUEFTextRange *)other;
-    
-    return ([start compare:otherRange.start] == NSOrderedSame) && ([end compare:otherRange.end] == NSOrderedSame);
+    return [self isEqualToRange:otherRange];
 }
 
 - (NSString *)description

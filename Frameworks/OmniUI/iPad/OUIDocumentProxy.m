@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,7 @@
 #import <OmniUI/OUIDocumentPreview.h>
 #import <OmniUI/OUIDocumentPDFPreview.h>
 #import <OmniUI/OUIDocumentImagePreview.h>
-#import <OmniUI/OUIDocumentPickerView.h>
+#import <OmniUI/OUIDocumentPickerScrollView.h>
 
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/OFPreference.h>
@@ -80,37 +80,81 @@ static OFPreference *ProxyAspectRatioCachePreference;
     ProxyAspectRatioCachePreference = [[OFPreference preferenceForKey:@"OUIDocumentProxyPreviewAspectRatioByURL"] retain];
 }
 
++ (NSString *)editNameForURL:(NSURL *)url;
+{
+    return [[[url path] lastPathComponent] stringByDeletingPathExtension];
+}
+
++ (NSString *)displayNameForURL:(NSURL *)url;
+{
+    return [self editNameForURL:url];
+}
+
 static NSString *_aspectRatioCacheKey(OUIDocumentProxy *self)
 {
-    OBPRECONDITION(self->_url);
     return [self->_url absoluteString];
+}
+
+#define INVALID_ASPECT_RATIO (-1.0f)
+
+- (CGFloat)_cachedAspectRatio;
+{
+    OBPRECONDITION([NSThread isMainThread]); // We read the global aspect ratio cache
+
+    NSString *cacheKey = _aspectRatioCacheKey(self);
+    if (cacheKey == nil)
+        return INVALID_ASPECT_RATIO;
+    
+    NSDictionary *aspectRatioCache = [ProxyAspectRatioCachePreference dictionaryValue];
+    if (aspectRatioCache == nil)
+        aspectRatioCache = [NSDictionary dictionary]; // make sure we get a non-nil object for the message below
+    
+    return [aspectRatioCache floatForKey:cacheKey defaultValue:INVALID_ASPECT_RATIO];
+}
+
+- (void)_cacheAspectRatio:(CGFloat)aspectRatio;
+{
+    NSString *cacheKey = _aspectRatioCacheKey(self);
+    if (cacheKey == nil)
+        return;
+
+    NSDictionary *aspectRatioCache = [ProxyAspectRatioCachePreference dictionaryValue];
+    if (aspectRatioCache != nil && [aspectRatioCache floatForKey:cacheKey defaultValue:INVALID_ASPECT_RATIO] == aspectRatio)
+        return;
+
+    NSMutableDictionary *updatedCache = [[NSMutableDictionary alloc] initWithDictionary:aspectRatioCache];
+    
+    if (aspectRatio == INVALID_ASPECT_RATIO) {
+        // Need to stop using any previous cached value now that we have no preview and just use the placeholder image size.
+        [updatedCache removeObjectForKey:cacheKey];
+    } else {
+        // *Could* be valid outside this range, but probably not. Probably means a struct/float returning message was sent to nil somewhere.
+        OBASSERT(aspectRatio > 1.0/20);
+        OBASSERT(aspectRatio < 20.0);
+        
+        OBASSERT(!isinf(aspectRatio));
+        [updatedCache setFloatValue:aspectRatio forKey:cacheKey defaultValue:INVALID_ASPECT_RATIO];
+    }
+    
+    [ProxyAspectRatioCachePreference setObjectValue:updatedCache];
+    [updatedCache release];
+    [[NSUserDefaults standardUserDefaults] autoSynchronize];
+}
+
+- (void)_flushCachedAspectRatio;
+{
+    [self _cacheAspectRatio:INVALID_ASPECT_RATIO];
 }
 
 - (void)setUrl:(NSURL*)aUrl;
 {
-    NSString *cacheKey = (_url) ? _aspectRatioCacheKey(self) : nil;
+    CGFloat cachedAspectRatio = [self _cachedAspectRatio];
+    [self _flushCachedAspectRatio];
     
     [_url release];
     _url = [[aUrl absoluteURL] copy];
     
-    if (cacheKey) {
-        NSString *newCacheKey = _aspectRatioCacheKey(self);
-        
-        NSDictionary *aspectRatioCache = [ProxyAspectRatioCachePreference dictionaryValue];
-        if (aspectRatioCache) {
-            id object = [aspectRatioCache objectForKey:cacheKey];
-            if (object) {
-                NSMutableDictionary *updatedCache = [[NSMutableDictionary alloc] initWithDictionary:aspectRatioCache];
-                [object retain];
-                [updatedCache removeObjectForKey:cacheKey];
-                [updatedCache setObject:object forKey:newCacheKey];
-                [object release];
-                [ProxyAspectRatioCachePreference setObjectValue:updatedCache];
-                [updatedCache release];
-                [[NSUserDefaults standardUserDefaults] autoSynchronize];
-            }
-        }
-    }
+    [self _cacheAspectRatio:cachedAspectRatio];
 }
 
 - (NSURL *)url;
@@ -179,6 +223,11 @@ static NSString *_aspectRatioCacheKey(OUIDocumentProxy *self)
     return [NSData dataWithContentsOfURL:self.url];
 }
 
+- (NSString *)emailFilename;
+{
+    return [[self.url path] lastPathComponent];
+}
+
 @synthesize date = _date;
 @synthesize target = _target;
 @synthesize action = _action;
@@ -207,7 +256,7 @@ static NSString *_aspectRatioCacheKey(OUIDocumentProxy *self)
         _view.preview = _preview;
         _view.selected = _selected;
         
-        [self startPreviewLoadIfNeeded:YES];
+        [self startPreviewLoadIfNeeded];
     } else {
         // Don't keep the preview around unless the picker view wants us to display (or speculatively display) something. It signals this by giving us a view. No view, no preview.
         [self cancelPreviewLoadIfRunning];
@@ -231,7 +280,7 @@ static NSString *_aspectRatioCacheKey(OUIDocumentProxy *self)
     if (_view) {
         [_view setFrame:frame];
 
-        [self startPreviewLoadIfNeeded:YES];
+        [self startPreviewLoadIfNeeded];
     }
 }
 
@@ -239,7 +288,7 @@ static NSString *_aspectRatioCacheKey(OUIDocumentProxy *self)
 
 - (NSString *)name;
 {
-    return [[[[self url] path] lastPathComponent] stringByDeletingPathExtension];
+    return [[self class] editNameForURL:[self url]];
 }
 
 static NSDate *_day(NSDate *date)
@@ -303,7 +352,7 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
     
     // Clear and reload any preview asynchronously
     if (_view) {
-        [self startPreviewLoadIfNeeded:NO/*ifNeeded*/];
+        [self startPreviewLoad];
     }
     
     // We use the file modification date rather than a date embedded inside the file since the latter would cause duplicated documents to not sort to the front as a new document (until you modified them, at which point they'd go flying to the beginning).
@@ -333,18 +382,9 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
     return size;
 }
 
-- (CGSize)previewSizeForTargetSize:(CGSize)targetSize;
+- (CGSize)previewSizeForTargetSize:(CGSize)targetSize inLandscape:(BOOL)inLandscape;
 {
-    OBPRECONDITION([NSThread isMainThread]); // We read the global aspect ratio cache
-
-    NSString *cacheKey = _aspectRatioCacheKey(self);
-    
-    NSDictionary *aspectRatioCache = [ProxyAspectRatioCachePreference dictionaryValue];
-    if (!aspectRatioCache)
-        aspectRatioCache = [NSDictionary dictionary]; // make sure we get a non-nil object for the message below
-    
-    CGFloat aspectRatio = [aspectRatioCache floatForKey:cacheKey defaultValue:-1];
-    
+    CGFloat aspectRatio = [self _cachedAspectRatio];
     if (aspectRatio < 0) {
         // No preview loaded yet. Use the placeholder size.
         UIImage *image = [OUIDocumentProxyView placeholderPreviewImage];
@@ -417,14 +457,14 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
     return [[_url absoluteString] compare:[otherProxy.url absoluteString]];
  }
 
-+ (BOOL)getPDFPreviewData:(NSData **)outPDFData modificationDate:(NSDate **)outModificationDate fromURL:(NSURL *)url error:(NSError **)outError;
+- (BOOL)getPDFPreviewData:(NSData **)outPDFData modificationDate:(NSDate **)outModificationDate error:(NSError **)outError;
 {
     NSDate *date = nil;
     NSData *data = nil;
     
     if (outModificationDate) {
         // Default to the file creation date, but this can be wildly incorrect (particularly in the simulator) since files might have just been copied willy-nilly w/o care for preserving dates. Subclasses may do something smarter like use a date embedded in the file contents.
-        NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[url path]  error:outError];
+        NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[_url path]  error:outError];
         if (attributes)
             date = [attributes fileModificationDate];
         if (!date)
@@ -440,36 +480,24 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
     return YES;
 }
 
-+ (id <OUIDocumentPreview>)makePreviewFromURL:(NSURL *)url size:(CGSize)size error:(NSError **)outError;
+- (id <OUIDocumentPreview>)makePreviewOfSize:(CGSize)size error:(NSError **)outError;
 {
     NSData *pdfData = nil;
 
-    if (![self getPDFPreviewData:&pdfData modificationDate:NULL fromURL:url error:outError])
+    if (![self getPDFPreviewData:&pdfData modificationDate:NULL error:outError])
         return nil;
     
     // Don't call -view here... probably just paranoia since the view should already be loaded, but we don't want to provoke view loading in the background.
     OUIDocumentPDFPreview *preview = pdfData ? [[[OUIDocumentPDFPreview alloc] initWithData:pdfData originalViewSize:size] autorelease] : nil;
-    
-    /****
-     * UIKit's graphics contexts functions aren't thread safe in pre-4.2 (which some of our apps are still targetting).
-     * In particular, UIGraphicsPushContext is documented to be thread-unsafe.
-     * So, we have to use CG directly through all this code. No UIImage, UIColor, etc.
-     ****/
-    
-    CGColorSpaceRef rgbColorSpace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef ctx = CGBitmapContextCreate(NULL, size.width, size.height, 8, 4*size.width, rgbColorSpace, kCGImageAlphaPremultipliedFirst);
-    CFRelease(rgbColorSpace);
-    
-    OUIDocumentProxyDrawPreview(ctx, preview, CGRectMake(0, 0, size.width, size.height));
-    CGImageRef imageRef = CGBitmapContextCreateImage(ctx);
-    CFRelease(ctx);
-    
-    UIImage *image = [UIImage imageWithCGImage:imageRef];
-    CGImageRelease(imageRef);
-    
-    preview.cachedImage = image;
-    
+    [preview cacheImageOfSize:size];
+
     return preview;
+}
+
+- (CGSize)previewTargetSize;
+{
+    OBPRECONDITION(_view != nil);
+    return _view.bounds.size;
 }
 
 - (UIImage *)cameraRollImage;
@@ -529,7 +557,7 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
 #pragma mark -
 #pragma mark Internal
 
-- (void)startPreviewLoadIfNeeded:(BOOL)ifNeeded;
+- (void)_startPreviewLoadOnlyIfNeeded:(BOOL)ifNeeded;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
@@ -545,16 +573,16 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
         return;
     }
     
-    CGRect bounds = _view.bounds;
+    CGSize previewTargetSize = [self previewTargetSize];
 
     if (ifNeeded) {
         if (_preview) {
             // Already have one, but is it the right size?  We want to keep this preview until we get a good one since it'll be better than the placeholder preview if it did ever get resolved before.
-            if (CGSizeEqualToSize(bounds.size, _preview.originalViewSize)) {
-                PREVIEW_DEBUG(@"  bail -- existing is right size (%@)", NSStringFromCGSize(bounds.size));
+            if ([_preview isValidAtSize:previewTargetSize]) {
+                PREVIEW_DEBUG(@"  bail -- existing is right size (%@)", NSStringFromCGSize(previewTargetSize));
                 return; // Good to go!
             } else {
-                PREVIEW_DEBUG(@"  existing is wrong size (%@ vs %@)", NSStringFromCGSize(bounds.size), NSStringFromCGSize(_preview.originalViewSize));
+                PREVIEW_DEBUG(@"  existing is wrong size (target=%@, current=%@)", NSStringFromCGSize(previewTargetSize), NSStringFromCGSize(_preview.originalViewSize));
            }
         }
     } else {
@@ -564,9 +592,19 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
     PREVIEW_DEBUG(@"  starting op");
     
     // Load the preview in the background.
-    _previewLoadOperation = [[OUIDocumentPreviewLoadOperation alloc] initWithProxy:self size:bounds.size];
+    _previewLoadOperation = [[OUIDocumentPreviewLoadOperation alloc] initWithProxy:self size:previewTargetSize];
     [_previewLoadOperation setQueuePriority:NSOperationQueuePriorityLow];
     [PreviewLoadOperationQueue addOperation:_previewLoadOperation];
+}
+
+- (void)startPreviewLoadIfNeeded;
+{
+    [self _startPreviewLoadOnlyIfNeeded:YES];
+}
+
+- (void)startPreviewLoad;
+{
+    [self _startPreviewLoadOnlyIfNeeded:NO];
 }
 
 - (void)cancelPreviewLoadIfRunning;
@@ -619,38 +657,18 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
     _preview = [preview retain];
 
     // Now that we have a preview, load the aspect ratio cache if necessary.
-    {
+    if (isPlaceholder) {
+        [self _flushCachedAspectRatio];
+    } else {
         CGRect rect = _preview.untransformedPageRect;
         
         // Assumes that the PDF won't do a non X/Y uniform scale. We could make a 1x1 rect, get the transform for that rect and transform our page rect.
         CGFloat aspectRatio = CGRectGetWidth(rect)/CGRectGetHeight(rect);
-        
-        NSString *cacheKey = _aspectRatioCacheKey(self);
-        
-        NSDictionary *aspectRatioCache = [ProxyAspectRatioCachePreference dictionaryValue];
-        if (aspectRatioCache == nil || [aspectRatioCache floatForKey:cacheKey defaultValue:-1] != aspectRatio) {
-            NSMutableDictionary *updatedCache = [[NSMutableDictionary alloc] initWithDictionary:aspectRatioCache];
-            
-            if (isPlaceholder) {
-                // Need to stop using any previous cached value now that we have no preview and just use the placeholder image size.
-                [updatedCache removeObjectForKey:cacheKey];
-            } else {
-                // *Could* be valid outside this range, but probably not. Probably means a struct/float returning message was sent to nil somewhere.
-                OBASSERT(aspectRatio > 1.0/20);
-                OBASSERT(aspectRatio < 20.0);
-                
-                OBASSERT(!isinf(aspectRatio));
-                [updatedCache setFloatValue:aspectRatio forKey:cacheKey];
-            }
-            
-            [ProxyAspectRatioCachePreference setObjectValue:updatedCache];
-            [updatedCache release];
-            [[NSUserDefaults standardUserDefaults] autoSynchronize];
-        }
+        [self _cacheAspectRatio:aspectRatio];
     }
     
     if (_view) {
-        PREVIEW_DEBUG(@"%s %p %@", __PRETTY_FUNCTION__, preview, isPlaceholder ? @"--" : NSStringFromCGSize(preview.originalViewSize));
+        PREVIEW_DEBUG(@"%s %p %@", __PRETTY_FUNCTION__, preview, isPlaceholder ? @"--" : @"*");
         
         _view.preview = preview;
         
@@ -661,7 +679,9 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
         if (!_hasRetriedProxyDueToIncorrectSize) {
             _hasRetriedProxyDueToIncorrectSize = YES;
             //NSLog(@"retry!");
-            [self startPreviewLoadIfNeeded:YES];
+            [self startPreviewLoadIfNeeded];
+        } else {
+            _hasRetriedProxyDueToIncorrectSize = NO;
         }
     }
     

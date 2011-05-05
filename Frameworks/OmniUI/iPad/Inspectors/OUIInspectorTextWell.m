@@ -41,6 +41,7 @@ static id _commonInit(OUIInspectorTextWell *self)
     self.opaque = NO;
     self.backgroundColor = nil;
     self.keyboardType = UIKeyboardTypeDefault;
+    self.textColor = [OUIInspector labelTextColor];
     
     self->_style = OUIInspectorTextWellStyleDefault;
     
@@ -66,12 +67,24 @@ static id _commonInit(OUIInspectorTextWell *self)
     _editor.delegate = nil;
     [_editor release];
     [_text release];
+    [_textColor release];
     [_font release];
     [_label release];
     [_labelFont release];
+    [_placeholderText release];
     [_labelTextLayout release];
     [_valueTextLayout release];
     [super dealloc];
+}
+
++ (UIFont *)defaultLabelFont;
+{
+    return [UIFont boldSystemFontOfSize:[[self class] fontSize]];
+}
+
++ (UIFont *)defaultFont;
+{
+    return [UIFont systemFontOfSize:[[self class] fontSize]];
 }
 
 @synthesize style = _style;
@@ -121,6 +134,76 @@ static id _commonInit(OUIInspectorTextWell *self)
     return (_editor.superview == self);
 }
 
+typedef enum {
+    TextTypeValue,
+    TextTypeLabel,
+    TextTypePlaceholder,
+} TextType;
+
+static UIFont *_defaultFontForType(OUIInspectorTextWell *self, TextType type)
+{
+    if (type == TextTypeLabel)
+        return [[self class] defaultLabelFont];
+    
+    OBASSERT(type == TextTypeValue || type == TextTypePlaceholder);
+    return [[self class] defaultFont];
+}
+
+static CTFontRef _copyFont(OUIInspectorTextWell *self, UIFont *font, TextType type)
+{
+    if (!font)
+        font = _defaultFontForType(self, type);
+    return CTFontCreateWithName((CFStringRef)[font fontName], [font pointSize], NULL);
+}
+static void _setAttr(NSMutableAttributedString *attrString, NSString *name, id value)
+{
+    OBPRECONDITION(attrString);
+    OBPRECONDITION(name);
+    
+    NSRange range = NSMakeRange(0, [attrString length]);
+    if (value)
+        [attrString addAttribute:name value:value range:range];
+    else
+        [attrString removeAttribute:name range:range];
+}
+
+static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *outType)
+{
+    TextType textType = TextTypeValue;
+
+    if ([NSString isEmptyString:text]) {
+        text = self->_placeholderText;
+        if ([NSString isEmptyString:text])
+            text = @"";
+        textType = TextTypePlaceholder;
+    }
+    if (outType)
+        *outType = textType;
+    return text;
+}
+
+- (NSAttributedString *)_attributedStringForEditingString:(NSString *)aString;
+{
+    // We don't want to edit the placeholder text, so don't use _getText().
+    if (!aString)
+        aString = @"";
+    TextType textType = TextTypeValue;
+    
+    NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:aString attributes:nil];
+    {
+        CTFontRef font = _copyFont(self, _font, textType);
+        _setAttr(attributedText, (id)kCTFontAttributeName, (id)font);
+        CFRelease(font);
+    }
+    
+    UIColor *textColor = textType == TextTypePlaceholder ? [OUIInspector disabledLabelTextColor] : [self textColor];
+    _setAttr(attributedText, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
+    
+    [attributedText autorelease];
+    
+    return attributedText;
+}
+
 - (NSString *)editingText;
 {
     OBPRECONDITION(self.editing);
@@ -131,9 +214,7 @@ static id _commonInit(OUIInspectorTextWell *self)
 {
     OBPRECONDITION(self.editing);
 
-    NSAttributedString *attributedText = [[NSAttributedString alloc] initWithString:editingText ? editingText : @"" attributes:nil];
-    _editor.attributedText = attributedText;
-    [attributedText release];
+    _editor.attributedText = [self _attributedStringForEditingString:editingText];
 }
 
 @synthesize keyboardType;
@@ -143,7 +224,7 @@ static id _commonInit(OUIInspectorTextWell *self)
     if (_editable && !_editor) {
         _editor = [[OUIEditableFrame alloc] initWithFrame:CGRectZero];
         _editor.delegate = self;
-        _editor.textColor = [[self class] textColor];
+        _editor.textColor = [self textColor];
     }
     return _editor;
 }
@@ -159,6 +240,20 @@ static id _commonInit(OUIInspectorTextWell *self)
 
     [_text release];
     _text = [text copy];
+    
+    [_valueTextLayout release];
+    _valueTextLayout = nil;
+
+    [self setNeedsDisplay];
+}
+
+@synthesize textColor = _textColor;
+- (void)setTextColor:(UIColor *)textColor;
+{
+    if (_textColor == textColor)
+        return;
+    [_textColor release];
+    _textColor = [textColor retain];
     
     [_valueTextLayout release];
     _valueTextLayout = nil;
@@ -218,32 +313,32 @@ static id _commonInit(OUIInspectorTextWell *self)
     OBASSERT(!self.editing); // Otherwise we'd need to adjust the space available to the field editor (via -setNeedsLayout) if we were using OUIInspectorTextWellStyleSeparateLabelAndText
 }
 
+@synthesize placeholderText = _placeholderText;
+- (void)setPlaceholderText:(NSString *)placeholderText;
+{
+    if (OFISEQUAL(_placeholderText, placeholderText))
+        return;
+    
+    [_placeholderText release];
+    _placeholderText = [placeholderText copy];
+    
+    if ([NSString isEmptyString:_text]) {
+        [_valueTextLayout release];
+        _valueTextLayout = nil;
+    }
+    
+    [self setNeedsDisplay];
+}
+
 - (NSString *)willCommitEditingText:(NSString *)editingText;
 {
     return editingText;
 }
 
-static CTFontRef _copyFont(OUIInspectorTextWell *self, UIFont *font, BOOL label)
+- (void)startEditing;
 {
-    if (!font) {
-        CGFloat fontSize = [[self class] fontSize];
-        if (label)
-            font = [UIFont boldSystemFontOfSize:fontSize];
-        else
-            font = [UIFont systemFontOfSize:fontSize];
-    }
-    return CTFontCreateWithName((CFStringRef)[font fontName], [font pointSize], NULL);
-}
-static void _setAttr(NSMutableAttributedString *attrString, NSString *name, id value)
-{
-    OBPRECONDITION(attrString);
-    OBPRECONDITION(name);
-
-    NSRange range = NSMakeRange(0, [attrString length]);
-    if (value)
-        [attrString addAttribute:name value:value range:range];
-    else
-        [attrString removeAttribute:name range:range];
+    [self becomeFirstResponder];
+    [self _tappedTextWell:nil];
 }
 
 #pragma mark -
@@ -283,7 +378,7 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
                         
             [self _drawTextLayout:[self _labelTextLayout] inRect:layout.labelRect];
             
-            if (!self.editing)
+            if (!self.editing || _shouldDisplayPlaceholderText)
                 [self _drawTextLayout:[self _valueTextLayoutForWidth:layout.valueRect.size.width] inRect:layout.valueRect];
             
             break;
@@ -301,6 +396,21 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
 #pragma mark -
 #pragma mark OUIEditableFrameDelegate
 
+- (void)textViewContentsChanged:(OUIEditableFrame *)textView;
+{
+    BOOL flag = [NSString isEmptyString:[[textView attributedText] string]];
+    
+    if (flag != _shouldDisplayPlaceholderText) {
+        _shouldDisplayPlaceholderText = flag;
+        // if we have a text string set we are going to have to force layout again so that we can properly display the placeholder attributed string.
+        if (_shouldDisplayPlaceholderText && _text && _text.length > 0) {
+            [_valueTextLayout release];
+            _valueTextLayout = nil;
+        }
+        [self setNeedsDisplay];
+    }
+}
+
 - (BOOL)textView:(OUIEditableFrame *)textView shouldInsertText:(NSString *)text;
 {
     OBPRECONDITION(textView == _editor);
@@ -316,8 +426,8 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
 - (void)textViewDidEndEditing:(OUIEditableFrame *)textView;
 {
     OBPRECONDITION(textView == _editor);
-    
     NSString *text = [[_editor attributedText] string];
+    _shouldDisplayPlaceholderText = NO;
     
     [_editor removeFromSuperview];
     _editor.delegate = nil;
@@ -343,19 +453,24 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
 {
     OBPRECONDITION(_style == OUIInspectorTextWellStyleDefault);
     
-    // Add a customizable placeholder?  Only do this if we are doing a substring formatting replacement?
-    NSString *text = [NSString isEmptyString:_text] ? @"–" : _text;
+    TextType textType;
+    NSString *text = _getText(self, _text, &textType);
+
+    if ([NSString isEmptyString:text] && _label == nil) {
+        // Make sure we don't end up with nothing at all
+        text = @"–";
+    }
     
     NSMutableAttributedString *attrText = [[NSMutableAttributedString alloc] initWithString:text attributes:nil];
     {
-        CTFontRef font = _copyFont(self, _font, NO/*label*/);
+        CTFontRef font = _copyFont(self, _font, textType);
         _setAttr(attrText, (id)kCTFontAttributeName, (id)font);
         CFRelease(font);
     }
     
-    if (_label) {
+    if (_label && textType != TextTypePlaceholder) {
         NSMutableAttributedString *attrFormat = [[NSMutableAttributedString alloc] initWithString:_label ? _label : @"" attributes:nil];
-        CTFontRef font = _copyFont(self, _labelFont ? _labelFont : _font, YES/*label*/);
+        CTFontRef font = _copyFont(self, _labelFont ? _labelFont : _font, TextTypeLabel);
         _setAttr(attrFormat, (id)kCTFontAttributeName, (id)font);
         CFRelease(font);
         
@@ -369,8 +484,7 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
         attrText = attrFormat;
     }
     
-    UIColor *textColor = [self textColor];
-    
+    UIColor *textColor = textType == TextTypePlaceholder ? [OUIInspector disabledLabelTextColor] : [self textColor];
     _setAttr(attrText, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
     
     
@@ -398,7 +512,7 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     
     if (!_labelTextLayout) {
         NSMutableAttributedString *attrLabel = [[NSMutableAttributedString alloc] initWithString:_label ? _label : @"" attributes:nil];
-        CTFontRef font = _copyFont(self, _labelFont ? _labelFont : _font, YES/*label*/);
+        CTFontRef font = _copyFont(self, _labelFont ? _labelFont : _font, TextTypeLabel);
         _setAttr(attrLabel, (id)kCTFontAttributeName, (id)font);
         CFRelease(font);
         
@@ -423,23 +537,29 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     }
     
     if (!_valueTextLayout) {
-        NSString *text = _text ? _text : @"";
+        TextType textType;
+        NSString *text = _getText(self, _text, &textType);
+        if (_shouldDisplayPlaceholderText)
+            textType = TextTypePlaceholder;
+
         NSMutableAttributedString *attrString = [[NSMutableAttributedString alloc] initWithString:text attributes:nil];
-        CTFontRef font = _copyFont(self, _font, NO/*label*/);
+        CTFontRef font = _copyFont(self, _font, textType);
         _setAttr(attrString, (id)kCTFontAttributeName, (id)font);
         CFRelease(font);
         
-        UIColor *textColor = [self textColor];
+        UIColor *textColor = textType == TextTypePlaceholder ? [OUIInspector disabledLabelTextColor] : [self textColor];
         _setAttr(attrString, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
         
-        // Right align the text
+        // Right align and tail truncate the text
         {
             CTTextAlignment right = kCTRightTextAlignment;
-            CTParagraphStyleSetting setting = {
-                kCTParagraphStyleSpecifierAlignment, sizeof(right), &right
+            CTLineBreakMode lineBreak = kCTLineBreakByTruncatingTail;
+            CTParagraphStyleSetting setting[] = {
+                {kCTParagraphStyleSpecifierAlignment, sizeof(right), &right},
+                {kCTParagraphStyleSpecifierLineBreakMode, sizeof(lineBreak), &lineBreak},
             };
             
-            CTParagraphStyleRef pgStyle = CTParagraphStyleCreate(&setting, 1);
+            CTParagraphStyleRef pgStyle = CTParagraphStyleCreate(setting, sizeof(setting)/sizeof(*setting));
             _setAttr(attrString, (id)kCTParagraphStyleAttributeName, (id)pgStyle);
             CFRelease(pgStyle);
         }
@@ -481,14 +601,14 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     if (self.editing)
         return;
     
-    
+
     // turn off display while editing.
     [self setNeedsDisplay];
         
     OUIEditableFrame *editor = self.editor; // creates if needed
 
     // Set this as the default instead of on the attributed string in case we start out with zero length text.
-    UIFont *font = self.font;
+    UIFont *font = [self font] ? [self font] : [UIFont systemFontOfSize:[OUIInspectorTextWell fontSize]];
     if (font) {
         CTFontRef ctFont = CTFontCreateWithName((CFStringRef)font.fontName, font.pointSize, NULL);
         editor.defaultCTFont = ctFont;
@@ -497,7 +617,10 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     } else {
         editor.defaultCTFont = NULL;
     }
-    
+
+    TextType textType;
+    _getText(self, _text, &textType);
+    _shouldDisplayPlaceholderText = (textType == TextTypePlaceholder);
     editor.keyboardType = self.keyboardType;
     editor.opaque = NO;
     editor.backgroundColor = nil;
@@ -514,9 +637,7 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
         CFRelease(pgStyle);
     }
     
-    NSAttributedString *attributedText = [[NSAttributedString alloc] initWithString:_text ? _text : @"" attributes:nil];
-    editor.attributedText = attributedText;
-    [attributedText release];
+    editor.attributedText = [self _attributedStringForEditingString:_text];
     
     CGRect valueRect;
     if (_style == OUIInspectorTextWellStyleSeparateLabelAndText) {

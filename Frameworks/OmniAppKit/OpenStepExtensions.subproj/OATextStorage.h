@@ -26,6 +26,7 @@ enum {
     OATextStorageEditedCharacters = 2
 };
 
+extern NSString * const OATextStorageWillProcessEditingNotification;
 extern NSString * const OATextStorageDidProcessEditingNotification;
 
 @protocol OATextStorageDelegate <NSObject>
@@ -54,6 +55,7 @@ extern NSString * const OATextStorageDidProcessEditingNotification;
 #define OATextStorageDelegate NSTextStorageDelegate
 #define OATextStorageEditedAttributes NSTextStorageEditedAttributes
 #define OATextStorageEditedCharacters NSTextStorageEditedCharacters 
+#define OATextStorageWillProcessEditingNotification NSTextStorageWillProcessEditingNotification
 #define OATextStorageDidProcessEditingNotification NSTextStorageDidProcessEditingNotification
 #define OAAttachmentCharacter NSAttachmentCharacter
 #define OAAttachmentAttributeName NSAttachmentAttributeName

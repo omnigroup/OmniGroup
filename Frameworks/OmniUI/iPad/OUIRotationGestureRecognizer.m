@@ -1,17 +1,31 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniUI/OUIRotationGestureRecognizer.h>
 
-#import <UIKit/UIGestureRecognizerSubclass.h>
-#import <OmniUI/OUIDragGestureRecognizer.h>
+#import "OUIRotationGestureRecognizer.h"
 
 RCS_ID("$Id$");
 
+static inline CGFloat _angleBetweenPointsInDegrees(CGPoint pointOne, CGPoint pointTwo)
+{
+    CGFloat radians = (CGFloat)atan2(pointOne.y - pointTwo.y, pointOne.x - pointTwo.x);
+    return (CGFloat)fmod(fmod(radians * 360.0f / (2.0f * M_PI), 360.0f) + 360.0f, 360.0f);
+}
+
+//#define DEBUG_RotationGesture 1
+#ifdef DEBUG_RotationGesture
+static void _logTouchDescription(UITouch *aTouch)
+{
+    // -description works but prints out a lot of extra stuff
+    NSLog(@"    <%@ %p>: gestures", [aTouch class], aTouch);
+    for (UIGestureRecognizer *aGesture in [aTouch gestureRecognizers])
+        NSLog(@"        <%@ %p>", [aGesture class], aGesture);
+}
+#endif
 
 @implementation OUIRotationGestureRecognizer
 
@@ -20,48 +34,22 @@ RCS_ID("$Id$");
     if (!(self = [super initWithTarget:target action:action]))
         return nil;
     
-    // Set up
-    capturedTouches = [[NSMutableArray alloc] init];
-    likelihood = 0;
-    
     // Defaults
-    //self.hysteresisDistance = 9;  // In pixels.  9 pixels is the empirically-determined value that always beats out the scrollview's pan gesture recognizers.
-    //overcameHysteresis = NO;
-    longPressDuration = 0.4;
+    _hysteresisAngle = 5;  
+    _overcameHysteresis = NO;
+    _rotation = 0;
+    
+    self.numberOfTouchesRequired = 2;
     
     return self;
 }
 
 - (void)dealloc;
 {
-    [capturedTouches release];
+    [_capturedTouches release];
     
     [super dealloc];
 }
-
-- (void)setLikelihood:(CGFloat)newLikelihood;
-{
-    if (likelihood == newLikelihood)
-        return;
-    
-    likelihood = newLikelihood;
-    
-    id theDelegate = self.delegate;
-    if (theDelegate && [theDelegate respondsToSelector:@selector(gesture:likelihoodDidChange:)]) {
-        [theDelegate gesture:self likelihoodDidChange:likelihood];
-    }
-}
-
-- (void)longPressTimerFired:(NSTimer *)theTimer;
-{
-    longPressTimer = nil;
-    
-    if ([capturedTouches count] == 2 && self.state == UIGestureRecognizerStatePossible) {
-        self.likelihood = 1;
-        self.state = UIGestureRecognizerStateBegan;
-    }
-}
-
 
 #pragma mark -
 #pragma mark UIGestureRecognizer subclass
@@ -70,82 +58,85 @@ RCS_ID("$Id$");
 {
     [super touchesBegan:touches withEvent:event];
     
-    // If we've already begun, ignore extra touches
-    if (self.state != UIGestureRecognizerStatePossible) {
-        for (UITouch *touch in touches) {
-            [self ignoreTouch:touch forEvent:event];
-        }
-        return;
-    }
+#ifdef DEBUG_RotationGesture
+    NSLog(@"%s (state = %i, capture touches = %lu, input = %lu)", __FUNCTION__, self.state, [_capturedTouches count], [touches count]);
+#endif
     
-    // If we haven't begun, record the incoming touch(es).
-    for (UITouch *touch in touches) {
-        [capturedTouches addObject:touch];
-    }
-    
-    // If too many touches have come in before the timer has fired, then fail.
-    if ([capturedTouches count] > 2) {
-        self.likelihood = 0;
-        self.state = UIGestureRecognizerStateFailed;
-        
+    if (self.state != UIGestureRecognizerStatePossible)
         return;
-    }
     
     // Update the likelihood
-    if ([capturedTouches count] == 1) {
-        self.likelihood = 0.1;
-    }
-    
-    // If the right number of touches have been captured, start the timer.
-    else if ([capturedTouches count] == 2) {
-        self.likelihood = 0.2;
+    if ([_capturedTouches count] == 1) {
+        // updating _centerTouchPoint so that -locationInView returns a valid value
+        UITouch *firstTouch = [_capturedTouches objectAtIndex:0];
+        _centerTouchPoint = [firstTouch locationInView:self.view];
         
-        if (!longPressTimer) {
-            longPressTimer = [NSTimer scheduledTimerWithTimeInterval:self.longPressDuration target:self selector:@selector(longPressTimerFired:) userInfo:nil repeats:NO];
-        }
+        self.likelihood = 0.1;
+        
+        return;
     }
     
-//    overcameHysteresis = NO;
-//    firstTouchPoint = [self locationInView:self.view.window];
-//    
-//    previousTimestamp = latestTimestamp = [[touches anyObject] timestamp];
-//    
-//    if (!beginTimestamp) {
-//        beginTimestamp = [oneTouch timestamp];
-//        beginTimestampReference = [NSDate timeIntervalSinceReferenceDate];
-//    }
+    UITouch *firstTouch = [_capturedTouches objectAtIndex:0];
+    CGPoint firstTouchPoint = [firstTouch locationInView:self.view];
+    UITouch *secondTouch = [_capturedTouches objectAtIndex:1];
+    CGPoint secondTouchPoint = [secondTouch locationInView:self.view];
     
+    _centerTouchPoint = CGPointMake((firstTouchPoint.x + secondTouchPoint.x)/2, (firstTouchPoint.y + secondTouchPoint.y)/2);
+    
+    self.likelihood = 0.2;
+    
+#ifdef DEBUG_RotationGesture
+    NSLog(@"    first touch");
+    _logTouchDescription(firstTouch);
+    NSLog(@"    second touch");
+    _logTouchDescription(secondTouch);
+#endif
+    
+    _startAngle = _angleBetweenPointsInDegrees(firstTouchPoint, secondTouchPoint);
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 {
+#ifdef DEBUG_RotationGesture
+    NSLog(@"%s (state = %i)", __FUNCTION__, self.state);
+#endif
+    
     [super touchesMoved:touches withEvent:event];
     
-    // If we don't do this, the event system will send out multiple action messages with UIGestureRecognizerStateBegan:
-    if (self.state == UIGestureRecognizerStateBegan) {
-        self.state = UIGestureRecognizerStateChanged;
+    CGFloat finishAngle = 0;
+    if ([_capturedTouches count] == 0) {
+        self.state = UIGestureRecognizerStateFailed;
+        return;
+    } else if ([_capturedTouches count] == 1) {
+        UITouch *onlyTouch = [_capturedTouches anyObject];
+        CGPoint onlyTouchPoint = [onlyTouch locationInView:self.view];
+        
+        finishAngle = _angleBetweenPointsInDegrees(onlyTouchPoint, _centerTouchPoint);
+    } else {
+        UITouch *firstTouch = [_capturedTouches objectAtIndex:0];
+        CGPoint firstTouchPoint = [firstTouch locationInView:self.view];
+        UITouch *secondTouch = [_capturedTouches objectAtIndex:1];
+        CGPoint secondTouchPoint = [secondTouch locationInView:self.view];
+        
+        _centerTouchPoint = CGPointMake((firstTouchPoint.x + secondTouchPoint.x)/2, (firstTouchPoint.y + secondTouchPoint.y)/2);
+        
+        finishAngle = _angleBetweenPointsInDegrees(firstTouchPoint, secondTouchPoint);
     }
     
-    CGPoint midpoint = [self locationInView:self.view.window];
-    NSLog(@"%d touches, with midpoint: %@", (int)[capturedTouches count], NSStringFromCGPoint(midpoint));
+    if (!_overcameHysteresis && self.state == UIGestureRecognizerStatePossible /* holdTimer has not fired */) {
+        if (fabs(_startAngle - finishAngle) < _hysteresisAngle)
+            return;
+        
+        _overcameHysteresis = YES;
+    }
     
-//    latestTouchPoint = [self locationInView:self.view.window];
-//    previousTimestamp = latestTimestamp;
-//    latestTimestamp = [[touches anyObject] timestamp];
+    _rotation = finishAngle - _startAngle;
     
-//    if (!overcameHysteresis) {
-//        CGFloat distanceMoved = hypotf(latestTouchPoint.x - firstTouchPoint.x, latestTouchPoint.y - firstTouchPoint.y);
-//        if (distanceMoved < self.hysteresisDistance)
-//            return;
-//        
-//        overcameHysteresis = YES;
-//    }
-    
-    /*if (self.state == UIGestureRecognizerStatePossible) {
+    if (self.state == UIGestureRecognizerStatePossible) {
         self.likelihood = 1;
+        
         self.state = UIGestureRecognizerStateBegan;
-    }
-    else*/ if (self.state == UIGestureRecognizerStateBegan || self.state == UIGestureRecognizerStateChanged) {
+    } else if (self.state == UIGestureRecognizerStateBegan || self.state == UIGestureRecognizerStateChanged) {
         self.state = UIGestureRecognizerStateChanged;
     }
 }
@@ -154,42 +145,32 @@ RCS_ID("$Id$");
 {
     [super touchesEnded:touches withEvent:event];
     
-    for (UITouch *touch in touches) {
-        [capturedTouches removeObjectIdenticalTo:touch];
-    }
+    for (UITouch *touch in touches)
+        [_capturedTouches removeObjectIdenticalTo:touch];
+    
+#ifdef DEBUG_RotationGesture
+    NSLog(@"%s (state = %i, capture touches = %lu, input = %lu)", __FUNCTION__, self.state, [_capturedTouches count], [touches count]);
+    for (UITouch *aTouch in _capturedTouches)
+        _logTouchDescription(aTouch);
+#endif
     
     // If a finger is still down, don't end the gesture
-    if ([capturedTouches count]) {
+    if ([_capturedTouches count])
         return;
-    }
-    
-    // When all fingers are lifted, end the gesture
-    if (longPressTimer) {
-        [longPressTimer invalidate];
-        longPressTimer = nil;
-    }
-    
-//    endTimestamp = [oneTouch timestamp];
     
     self.state = UIGestureRecognizerStateEnded;  // same as UIGestureRecognizerStateRecognized
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
 {
+#ifdef DEBUG_RotationGesture
+    NSLog(@"%s", __FUNCTION__);
+#endif
+    
     [super touchesCancelled:touches withEvent:event];
     
-    for (UITouch *touch in touches) {
-        [capturedTouches removeObjectIdenticalTo:touch];
-    }
-    
-    // Go ahead and cancel the gesture if any of the touches are cancelled.
-    
-    if (longPressTimer) {
-        [longPressTimer invalidate];
-        longPressTimer = nil;
-    }
-    
-//    endTimestamp = [oneTouch timestamp];
+    for (UITouch *touch in touches)
+        [_capturedTouches removeObjectIdenticalTo:touch];
     
     self.state = UIGestureRecognizerStateCancelled;
 }
@@ -198,32 +179,17 @@ RCS_ID("$Id$");
 {
     [super reset];
     
-    [longPressTimer invalidate];
-    longPressTimer = nil;
+    _overcameHysteresis = NO;
+    _rotation = 0;
     
-    [capturedTouches removeAllObjects];
-//    wasATap = NO;
-    self.likelihood = 0;
-    
-//    beginTimestamp = 0;
-//    beginTimestampReference = 0;
-//    endTimestamp = 0;
-//    
-//    _completedHold = NO;
+    [_capturedTouches removeAllObjects];
 }
 
-
-#pragma mark -
-#pragma mark Class methods
-
-@synthesize longPressDuration;
-@synthesize likelihood;
-
-@synthesize rotation;
-- (CGFloat)rotation;
+- (CGPoint)locationInView:(UIView*)view;
 {
-    return 0;
+    return _centerTouchPoint;
 }
 
+@synthesize rotation= _rotation;
 
 @end

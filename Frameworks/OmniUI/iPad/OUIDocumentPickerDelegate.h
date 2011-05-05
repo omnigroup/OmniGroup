@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 //
 // $Id$
 
+@class OFFileWrapper;
 @class OUIDocumentPicker, OUIDocumentProxy;
 
 #import <OmniUI/OUIDocumentProtocol.h>
@@ -24,7 +25,12 @@
 
 - (void)documentPicker:(OUIDocumentPicker *)picker didSelectProxy:(OUIDocumentProxy *)proxy;
 
-// For the export button. We could potentially use +getPDFPreviewData:... by default, but we probably want a multi-page PDF document in OmniGraffle.
+// Export
+- (NSArray *)documentPicker:(OUIDocumentPicker *)picker availableExportTypesForProxy:(OUIDocumentProxy *)proxy;
+- (OFFileWrapper *)documentPicker:(OUIDocumentPicker *)picker exportFileWrapperOfType:(NSString *)fileType forProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
+- (BOOL)documentPicker:(OUIDocumentPicker *)picker canUseEmailBodyForType:(NSString *)fileType;
+
+// Specific export types (for backwards compatibility)
 - (NSData *)documentPicker:(OUIDocumentPicker *)picker PDFDataForProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
 - (NSData *)documentPicker:(OUIDocumentPicker *)picker PNGDataForProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
 
@@ -36,6 +42,9 @@
 
 // Title of the print button in the action menu
 - (NSString *)documentPicker:(OUIDocumentPicker *)picker printButtonTitleForProxy:(OUIDocumentProxy *)proxy;
+
+// Hook for custom export options
+- (void)documentPicker:(OUIDocumentPicker *)picker addExportActionsToSheet:(UIActionSheet *)actionSheet invocations:(NSMutableArray *)invocations;
 
 - (UIImage *)documentPicker:(OUIDocumentPicker *)picker iconForUTI:(CFStringRef)fileUTI;        // used by the export file browser
 - (UIImage *)documentPicker:(OUIDocumentPicker *)picker exportIconForUTI:(CFStringRef)fileUTI;  // used by the large export options buttons

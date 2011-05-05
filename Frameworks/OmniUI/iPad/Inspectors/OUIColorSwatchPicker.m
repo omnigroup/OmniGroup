@@ -256,9 +256,7 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
     // Normal color picking swatches
     CGPoint offset = bounds.origin;
     NSUInteger colorIndex, colorCount = [_colors count];
-    
-    OBASSERT(_showsSingleSwatch == NO || colorCount <= 1); // Should have at most one color if we are in single-swatch mode.
-    
+        
     if (_showsNoneSwatch) {
         OUIColorSwatch *swatch = _newSwatch(self, nil, &offset, swatchSize);
         [_colorSwatches addObject:swatch];

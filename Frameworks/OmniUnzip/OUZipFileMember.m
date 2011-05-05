@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,10 +9,6 @@
 
 #import <OmniUnzip/OUZipArchive.h>
 #import <OmniUnzip/OUErrors.h>
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-#import <AppKit/NSFileWrapper.h>
-#endif
 
 RCS_ID("$Id$");
 
@@ -56,15 +52,13 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark OUZipMember subclass
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-- (NSFileWrapper *)fileWrapperRepresentation;
+- (OFFileWrapper *)fileWrapperRepresentation;
 {
-    NSFileWrapper *wrapper = [[[NSFileWrapper alloc] initRegularFileWithContents:[self contents]] autorelease];
+    OFFileWrapper *wrapper = [[[OFFileWrapper alloc] initRegularFileWithContents:[self contents]] autorelease];
     [wrapper setFilename:[self name]];
     [wrapper setPreferredFilename:[self name]];
     return wrapper;
 }
-#endif
 
 #pragma mark -
 #pragma mark OUZipMember subclass

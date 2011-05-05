@@ -1,4 +1,4 @@
-// Copyright 2006-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <OmniFoundation/OFFileWrapper.h>
 
 @interface OFFileWrapper (OAExtensions)
++ (OFFileWrapper *)fileWrapperWithFilename:(NSString *)filename contents:(NSData *)data;
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSString *)fileType:(BOOL *)isHFSType;
 #endif

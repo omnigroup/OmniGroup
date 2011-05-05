@@ -12,6 +12,7 @@
 #include <mach/mach_vm.h>
 #include <mach/mach_error.h>
 #include <mach/mach_port.h>
+#include <libkern/OSCacheControl.h>
 
 #ifdef DEBUG
 
@@ -59,6 +60,8 @@ BOOL OBPatchCode(void *address, size_t size, const void *newvalue)
     if (krt != KERN_SUCCESS) {
         printf("mach_vm_protect(0x%llx, 0x%04x): %s\n", (unsigned long long)region_start, (unsigned)current_prot, mach_error_string(krt));
     }
+    
+    sys_icache_invalidate(address, size);
     
     return YES;
 }

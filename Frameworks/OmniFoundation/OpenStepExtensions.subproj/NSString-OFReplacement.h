@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,8 @@
 - (NSString *)stringByRemovingSuffix:(NSString *)suffix;
 
 - (NSString *)stringByRemovingSurroundingWhitespace;  // New code should probably use -stringByTrimmingCharactersInSet: instead
+- (NSString *)stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace;
+
 - (NSString *)stringByRemovingString:(NSString *)removeString;
 // - (NSString *)stringByPaddingToLength:(unsigned int)aLength;  // Use Foundation's new -stringByPaddingToLength:withString:startingAtIndex: method.
 

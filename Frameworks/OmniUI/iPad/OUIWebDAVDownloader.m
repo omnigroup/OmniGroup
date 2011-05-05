@@ -14,6 +14,8 @@
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
+#import <OmniFoundation/OFXMLIdentifier.h>
+#import <OmniAppKit/NSFileWrapper-OAExtensions.h>
 #import <OmniUI/OUIDocumentPicker.h>
 #import "OUIWebDAVConnection.h"
 #import <MobileCoreServices/MobileCoreServices.h>
@@ -40,7 +42,7 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
 - (void)dealloc;
 {
     [_downloadOperation release];
-    [_uploadOperation release];
+    [_uploadOperations release];
     [_downloadStream release];
     [_file release];
     [_baseURL release];
@@ -76,7 +78,7 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
         return;
     }
     
-    NSArray *fileInfos = [fileManager directoryContentsAtURL:[aDirectory originalURL] havingExtension:nil options:OFSDirectoryEnumerationForceRecusiveDirectoryRead error:&outError];
+    NSArray *fileInfos = [fileManager directoryContentsAtURL:[aDirectory originalURL] havingExtension:nil options:OFSDirectoryEnumerationForceRecursiveDirectoryRead error:&outError];
     if (outError) {
         OUI_PRESENT_ALERT(outError);
         [self cancelDownload:nil];
@@ -84,7 +86,10 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
     }
     
     [_fileQueue release];
-    _fileQueue = [[NSMutableArray alloc] initWithArray:fileInfos];
+    _fileQueue = [[NSMutableArray alloc] init];
+    for (OFSFileInfo *fileInfo in fileInfos)
+        if (![fileInfo isDirectory])
+            [_fileQueue addObject:fileInfo];
 }
 
 - (void)downloadFile:(OFSFileInfo *)aFile;
@@ -113,7 +118,8 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
     [_downloadStream release];
     _downloadStream = [[NSOutputStream alloc] initToFileAtPath:localFilePath append:NO];
     [_downloadStream open];
-    
+
+    OBASSERT(_downloadOperation == nil);
     _downloadOperation = [[fileManager asynchronousReadContentsOfURL:[aFile originalURL] withTarget:self] retain];
     [_downloadOperation startOperation];
     
@@ -147,22 +153,74 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
 
 - (IBAction)cancelDownload:(id)sender;
 {
-    if (_downloadOperation) {
+    if (_downloadOperation != nil) {
         [_downloadStream close];
         [_downloadOperation stopOperation];
-    } else if (_uploadOperation) {
-        [_uploadOperation stopOperation];
+    } else if (_uploadOperations != nil) {
+        for (id <OFSAsynchronousOperation> uploadOperation in _uploadOperations)
+            [uploadOperation stopOperation];
     }
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIWebDAVDownloadCanceledNotification object:self];
 }
 
-- (void)upload:(NSData *)data toURL:(NSURL *)fileURL;
+- (BOOL)_queueUploadFileWrapper:(OFFileWrapper *)fileWrapper atomically:(BOOL)atomically toURL:(NSURL *)targetURL usingFileManager:(OFSFileManager *)fileManager error:(NSError **)outError;
 {
-    _totalDataLength = [data length];
-    
-    _uploadOperation = [[[[OUIWebDAVConnection sharedConnection] fileManager] asynchronousWriteData:data toURL:fileURL atomically:NO withTarget:self] retain];
-    [_uploadOperation startOperation];
+#ifdef DEBUG_kc
+    NSLog(@"DEBUG: Queueing upload to %@", [targetURL absoluteString]);
+#endif
+
+    if ([fileWrapper isDirectory]) {
+        NSError *error = nil;
+        if (atomically) {
+            OBASSERT(_uploadTemporaryURL == nil); // Otherwise we'd need a stack of things to rename rather than just one
+            OBASSERT(_uploadFinalURL == nil);
+
+            NSString *temporaryNameSuffix = [@"-write-in-progress-" stringByAppendingString:[OFXMLCreateID() autorelease]];
+            _uploadFinalURL = [targetURL retain];
+            targetURL = [OFSURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES) retain];
+        }
+        NSURL *parentURL = [fileManager createDirectoryAtURL:targetURL attributes:nil error:&error];
+        if (atomically)
+            _uploadTemporaryURL = [parentURL retain];
+
+        NSDictionary *childWrappers = [fileWrapper fileWrappers];
+        for (NSString *childName in childWrappers) {
+            OFFileWrapper *childWrapper = [childWrappers objectForKey:childName];
+            NSURL *childURL = OFSFileURLRelativeToDirectoryURL(parentURL, childName);;
+            if (![self _queueUploadFileWrapper:childWrapper atomically:NO toURL:childURL usingFileManager:fileManager error:outError])
+                return NO;
+        }
+    } else if ([fileWrapper isRegularFile]) {
+        NSData *data = [fileWrapper regularFileContents];
+        _totalDataLength += [data length];
+        id <OFSAsynchronousOperation> uploadOperation = [fileManager asynchronousWriteData:data toURL:targetURL atomically:NO withTarget:self];
+        [_uploadOperations addObject:uploadOperation];
+    } else {
+        OBASSERT_NOT_REACHED("We only know how to upload files and directories; we skip symlinks and other file types");
+    }
+    return YES;
+}
+
+- (void)uploadFileWrapper:(OFFileWrapper *)fileWrapper toURL:(NSURL *)targetURL ;
+{
+    _totalDataLength = 0;
+    _uploadOperations = [[NSMutableArray alloc] init];
+    NSError *error = nil;
+    if (![self _queueUploadFileWrapper:fileWrapper atomically:YES toURL:targetURL usingFileManager:[[OUIWebDAVConnection sharedConnection] fileManager] error:&error]) {
+        OBASSERT(error != nil);
+        OUI_PRESENT_ERROR(error);
+        [self _cleanup];
+        return;
+    }
+    for (id <OFSAsynchronousOperation> uploadOperation in [NSArray arrayWithArray:_uploadOperations]) {
+        [uploadOperation startOperation];
+    }
+}
+
+- (void)uploadData:(NSData *)data toURL:(NSURL *)targetURL;
+{
+    [self uploadFileWrapper:[OFFileWrapper fileWrapperWithFilename:nil contents:data] toURL:targetURL];
 }
 
 #pragma mark -
@@ -183,9 +241,9 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
 
 - (void)fileManager:(OFSFileManager *)fileManager operation:(id <OFSAsynchronousOperation>)operation didProcessBytes:(long long)processedBytes;
 {    
-    OBPRECONDITION(operation == _uploadOperation);
-    
-    progressView.progress = (double)operation.processedLength/(double)_totalDataLength;
+    OBPRECONDITION([_uploadOperations containsObjectIdenticalTo:operation]);
+    _totalUploadedBytes += operation.processedLength;
+    progressView.progress = (double)_totalUploadedBytes/(double)_totalDataLength;
 }
 
 - (void)fileManager:(OFSFileManager *)fileManager operationDidFinish:(id <OFSAsynchronousOperation>)operation withError:(NSError *)error;
@@ -197,24 +255,50 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
         return;
     }
     
-    [_downloadStream close];
+    if (operation == _downloadOperation) {
+        // Our current download finished
+        [_downloadStream close];
     
-    if ([_fileQueue count]) {
-        OFSFileInfo *firstFile = [_fileQueue lastObject];
-        [self downloadFile:firstFile];
-        [_fileQueue removeObjectIdenticalTo:firstFile];
+        if ([_fileQueue count] != 0) {
+            [_downloadOperation release]; _downloadOperation = nil;
+            OFSFileInfo *firstFile = [_fileQueue lastObject];
+            [self downloadFile:firstFile];
+            [_fileQueue removeObjectIdenticalTo:firstFile];
+            return; // On to the next download
+        }
     } else {
+        // An upload finished
+        OBASSERT([_uploadOperations containsObjectIdenticalTo:operation]);
+        [_uploadOperations removeObjectIdenticalTo:operation];
+        if ([_uploadOperations count] != 0)
+            return; // Still waiting for more uploads
+
+        // For atomic directory wrapper uploads, move our temporary URL to our final URL
+        if (_uploadTemporaryURL != nil) {
+            [fileManager deleteURL:_uploadFinalURL error:NULL]; // Ignore delete errors
+            NSError *moveError = nil;
+            if (![fileManager moveURL:_uploadTemporaryURL toURL:_uploadFinalURL error:&moveError])
+                OUI_PRESENT_ERROR(moveError);
+
+            [_uploadTemporaryURL release]; _uploadTemporaryURL = nil;
+            [_uploadFinalURL release]; _uploadFinalURL = nil;
+        }
+
+        OBASSERT(_uploadTemporaryURL == nil);
+        OBASSERT(_uploadFinalURL == nil);
+    }
+
+    {
+        // All done!
         NSString *fileName = (_baseURL ? [[_baseURL path] lastPathComponent] : [_file name]);
         NSString *localFile = [NSTemporaryDirectory() stringByAppendingPathComponent:fileName];
-        CFStringRef fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)[fileName pathExtension], NULL);
-        if (UTTypeConformsTo(fileUTI, kUTTypeArchive)) {
+        NSString *fileUTI = [OFSFileInfo UTIForFilename:fileName];
+        if (UTTypeConformsTo((CFStringRef)fileUTI, kUTTypeArchive)) {
             NSError *unarchiveError = nil;
             localFile = [self _unarchiveFileAtPath:localFile error:&unarchiveError];
             if (!localFile || unarchiveError)
                 OUI_PRESENT_ERROR(unarchiveError);
         }
-        if (fileUTI)
-            CFRelease(fileUTI);
         
         if (localFile) {
             [cancelButton setTitle:NSLocalizedStringFromTableInBundle(@"Finished", @"OmniUI", OMNI_BUNDLE, @"finished") forState:UIControlStateNormal];
@@ -237,8 +321,8 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
 {
     [_downloadOperation release];
     _downloadOperation = nil;
-    [_uploadOperation release];
-    _uploadOperation = nil;
+    [_uploadOperations release];
+    _uploadOperations = nil;
     
     [_downloadStream close];
     [_downloadStream release];

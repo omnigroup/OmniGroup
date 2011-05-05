@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,10 +52,15 @@ RCS_ID("$Id$");
 }
 
 @synthesize isEndThumb;
+@synthesize editor = nonretained_editor;
 
 - (void)setCaretRectangle:(CGRect)r;
 {
-    // Caret rect is in our frame coordinates (our superview's bounds coordinates).
+    // Caret rect is supplied in our superview's bounds coordinates
+    if (self.superview != nonretained_editor)
+        r = [nonretained_editor convertRect:r toView:[self superview]];
+    
+    // Caret rect is now in our frame coordinates
     CGRect frame = self.frame;
     CGFloat belowCaret;
     
@@ -150,10 +155,7 @@ RCS_ID("$Id$");
     
     /* Inset the thumb rect to allow for the portion of the stroke that goes outside the rect */
     
-    OUIEditableFrame *editor = ((OUIEditableFrame *)self.superview);
-    
-    
-    CGContextSetFillColorWithColor(cgContext, editor.selectionColor.CGColor);
+    CGContextSetFillColorWithColor(cgContext, self.editor.selectionColor.CGColor);
     CGContextFillRect(cgContext, caretRect);
     
     
@@ -165,7 +167,7 @@ RCS_ID("$Id$");
     // Not a true distance, we only need something that increases monotonically with distance so we can compare.
     
     // Convert to our bounds coords...
-    p = [self convertPoint:p fromView:[self superview]];
+    p = [self convertPoint:p fromView:nonretained_editor];
     // ... and to the system we mostly draw in
     CGRect f = self.bounds;
     p.y = (2 * f.origin.y) + f.size.height - p.y;
@@ -185,27 +187,27 @@ RCS_ID("$Id$");
 
 - (void)_dragged:(UIPanGestureRecognizer *)gestureRecognizer;
 {
-    OUIEditableFrame *parent = (OUIEditableFrame *)(self.superview);
+    OUIEditableFrame *editor = nonretained_editor;
     UIGestureRecognizerState st = gestureRecognizer.state;
-    CGPoint delta = [gestureRecognizer translationInView:parent];
+    CGPoint delta = [gestureRecognizer translationInView:editor];
  
     // UIPanGestureRecognizer seems to be kind of sloppy about its initial offset. Not sure if this'll be a problem in practice but it's noticeable in the simulator. Might need to do our own translation calculations.
     // NSLog(@"pan: %@, delta=%@", gestureRecognizer, NSStringFromCGPoint(delta));
     
     if (st == UIGestureRecognizerStateBegan) {
         /* The point below is the center of the caret rectangle we draw. We want to use that rather than the baseline point or the thumb point to allow the maximum finger slop before the text view selects a different line. */
-        touchdownPoint = [self convertPoint:(CGPoint){0, - ascent/2} toView:parent];
-        [parent thumbBegan:self];
+        touchdownPoint = [self convertPoint:(CGPoint){0, - ascent/2} toView:editor];
+        [editor thumbBegan:self];
     }
 
     /* UIPanGestureRecognizer will return a delta of { -NAN, -NAN } sometimes (if it would be outside the parent view's bounds maybe?). */
     if ((isfinite(delta.x) && isfinite(delta.y)) &&
         (st != UIGestureRecognizerStateBegan || !(delta.x == 0 && delta.y == 0))) {
-        [parent thumbMoved:self targetPosition:(CGPoint){ touchdownPoint.x + delta.x, touchdownPoint.y + delta.y }];
+        [editor thumbMoved:self targetPosition:(CGPoint){ touchdownPoint.x + delta.x, touchdownPoint.y + delta.y }];
     }
     
     if (st == UIGestureRecognizerStateEnded || st == UIGestureRecognizerStateCancelled) {
-        [parent thumbEnded:self normally:(st == UIGestureRecognizerStateEnded? YES:NO)];
+        [editor thumbEnded:self normally:(st == UIGestureRecognizerStateEnded? YES:NO)];
         touchdownPoint = (CGPoint){ NAN, NAN };
     }
 }

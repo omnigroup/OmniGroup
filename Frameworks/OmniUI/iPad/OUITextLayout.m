@@ -23,11 +23,14 @@
 
 RCS_ID("$Id$");
 
-#if 0 && defined(DEBUG)
+#ifdef DEBUG_kc0
     #define DEBUG_TEXT(format, ...) NSLog(@"TEXT: " format, ## __VA_ARGS__)
 #else
     #define DEBUG_TEXT(format, ...)
 #endif
+
+#define OUIRound(x) roundf(x)
+#define OUIFloor(x) floorf(x)
 
 // Lowering this from 1e6 to 1e5 seems to help some pixel shifting when switching between drawing with OUITextLayout and OUIEditableFrame.
 // This may be a spurious coverup for other issues, but its also possible that larger values cause intermediate floats in transform calculations become too large and lose precision.
@@ -75,8 +78,7 @@ CTFontRef OUIGlobalDefaultFont(void)
     CFMutableAttributedStringRef paddedString = CFAttributedStringCreateMutableCopy(kCFAllocatorDefault, 1+baseStringLength, attributedString);
     CFDictionaryRef attrs = NULL;
     if (baseStringLength > 0) {
-        attrs = CFAttributedStringGetAttributes(paddedString, baseStringLength-1, NULL);
-        CFRetain(attrs);
+        attrs = (CFDictionaryRef)OUITextLayoutCopyExtraNewlineAttributes((NSDictionary *)CFAttributedStringGetAttributes(paddedString, baseStringLength-1, NULL));
     } else {
         CFTypeRef attrKeys[1] = { kCTFontAttributeName };
         CFTypeRef attrValues[1] = { OUIGlobalDefaultFont() };
@@ -102,7 +104,7 @@ CTFontRef OUIGlobalDefaultFont(void)
     
     CGMutablePathRef path = CGPathCreateMutable();
     CGPathAddRect(path, NULL/*transform*/, CGRectMake(0, 0, _layoutSize.width, _layoutSize.height));
-    //NSLog(@"%@ textLayout using %f x %f", [attributedString_ string], _layoutSize.width, _layoutSize.height);
+    DEBUG_TEXT(@"%@ textLayout using %f x %f", [attributedString_ string], _layoutSize.width, _layoutSize.height);
     
     /* Many CoreText APIs accept a zero-length range to mean "until the end" */
     _frame = CTFramesetterCreateFrame(framesetter, (CFRange){0, 0}, path, frameAttributes);
@@ -140,29 +142,73 @@ CTFontRef OUIGlobalDefaultFont(void)
     return _usedSize.size;
 }
 
+// The size of the bounds only matters if flipping is specified; we don't clip.
+- (void)drawInContext:(CGContextRef)ctx bounds:(CGRect)bounds options:(NSUInteger)options filter:(OUITextLayoutSpanBackgroundFilter)filter;
+{
+    DEBUG_TEXT(@"  textLayout bounds = %@", NSStringFromCGRect(bounds));
+    DEBUG_TEXT(@"  device = %@", NSStringFromCGPoint(CGContextConvertPointToDeviceSpace(ctx, CGPointZero)));
+
+    BOOL didSaveContext = NO;
+    if ((options & OUITextLayoutDisableFlipping) == 0) {
+        didSaveContext = YES;
+        CGContextSaveGState(ctx);
+        CGContextTranslateCTM(ctx, bounds.origin.x, bounds.origin.y);
+        OQFlipVerticallyInRect(ctx, CGRectMake(0, 0, bounds.size.width, bounds.size.height));
+            
+        CGContextTranslateCTM(ctx, 0, CGRectGetHeight(bounds) - _usedSize.size.height);
+    } else {
+        if (CGPointEqualToPoint(bounds.origin, CGPointZero)) {
+            // Nothing
+        } else {
+            OBASSERT_NOT_REACHED("Haven't tested this path -- if you hit it, make sure it works!");
+            didSaveContext = YES;
+            CGContextSaveGState(ctx);
+            CGContextTranslateCTM(ctx, bounds.origin.x, bounds.origin.y);
+        }
+    }
+    
+    // Now we are all transformed -- the rest just wants the text bounds
+    bounds = (CGRect){
+        .origin = CGPointZero,
+        .size = _usedSize.size,
+    };
+    
+    CGPoint layoutOrigin = OUITextLayoutOrigin(_usedSize, UIEdgeInsetsZero, bounds, 1.0f);
+
+    // Note: We should really be passing the same string to OUITextLayoutDrawRunBackgrounds() as we used to create the CTFrame, but OUITextLayout has discarded that string by now
+    if ((options & OUITextLayoutDisableRunBackgrounds) == 0)
+        OUITextLayoutDrawRunBackgrounds(ctx, _frame, _attributedString, layoutOrigin, CGRectGetMinX(bounds), CGRectGetMaxX(bounds), filter);
+    
+    if ((options & OUITextLayoutDisableGlyphs) == 0)
+        OUITextLayoutDrawFrame(ctx, _frame, bounds, layoutOrigin);
+
+    if (didSaveContext) {
+        CGContextRestoreGState(ctx);
+    }
+}
+
 - (void)drawInContext:(CGContextRef)ctx;
 {
     CGRect bounds;
     bounds.origin = CGPointZero;
     bounds.size = _usedSize.size;
-    
-    CGPoint layoutOrigin = OUITextLayoutOrigin(_usedSize, UIEdgeInsetsZero, bounds, 1.0f);
-    
-    OUITextLayoutDrawFrame(ctx, _frame, bounds, layoutOrigin);
+        
+    [self drawInContext:ctx bounds:bounds options:OUITextLayoutDisableFlipping filter:nil];
 }
 
 - (void)drawFlippedInContext:(CGContextRef)ctx bounds:(CGRect)bounds;
 {
-    CGContextSaveGState(ctx);
-    {
-        CGContextTranslateCTM(ctx, bounds.origin.x, bounds.origin.y);
-        OQFlipVerticallyInRect(ctx, CGRectMake(0, 0, bounds.size.width, bounds.size.height));
-        
-        CGContextTranslateCTM(ctx, 0, CGRectGetHeight(bounds) - _usedSize.size.height);
-        
-        [self drawInContext:ctx];
-    }
-    CGContextRestoreGState(ctx);
+    [self drawInContext:ctx bounds:bounds options:0/*flipped, background and glyphs*/ filter:nil];
+}
+
+- (CGFloat)topTextInsetToCenterFirstLineAtY:(CGFloat)centerFirstLineAtY forEdgeInsets:(UIEdgeInsets)edgeInsets;
+{
+    return OUITopTextInsetToCenterFirstLineAtY(_frame, centerFirstLineAtY, edgeInsets);
+}
+
+- (CGFloat)firstLineAscent;
+{
+    return OUIFirstLineAscent(_frame);
 }
 
 #if 0
@@ -255,10 +301,37 @@ CGPoint OUITextLayoutOrigin(CGRect typographicFrame, UIEdgeInsets textInset, // 
     layoutOrigin.y -= textInset.top;
     
     // Lessens jumpiness when transitioning between a OUITextLayout for display and OUIEditableFrame for editing. But, it seems weird to be rounding in text space instead of view space. Maybe works out since we end up having to draw at pixel-side for UIKit backing store anyway. Still some room for improvement here.
-//    layoutOrigin.x = floor(layoutOrigin.x);
-//    layoutOrigin.y = floor(layoutOrigin.y);
+//    layoutOrigin.x = OUIFloor(layoutOrigin.x);
+//    layoutOrigin.y = OUIFloor(layoutOrigin.y);
     
     return layoutOrigin;
+}
+
+// TODO: get rid of minimumInset argument. strip that off in the drawing code.
+CGFloat OUITopTextInsetToCenterFirstLineAtY(CTFrameRef frame, CGFloat centerFirstLineAtY, UIEdgeInsets minimumInset)
+{
+    CFArrayRef lines = CTFrameGetLines(frame);
+    NSUInteger lineIndex = 0, lineCount = CFArrayGetCount(lines);
+    if (lineIndex >= lineCount)
+        return minimumInset.top;
+
+    CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
+    CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
+    CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+    return MAX3(minimumInset.top, leading, centerFirstLineAtY - 0.5 * (ascent + descent));
+}
+
+CGFloat OUIFirstLineAscent(CTFrameRef frame)
+{
+    CFArrayRef lines = CTFrameGetLines(frame);
+    NSUInteger lineIndex = 0, lineCount = CFArrayGetCount(lines);
+    if (lineIndex >= lineCount)
+        return 0;
+    
+    CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
+    CGFloat ascent = 0.0f, descent = 0.0f, leading = 0.0f;
+    CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+    return ascent;
 }
 
 void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, CGPoint layoutOrigin)
@@ -268,6 +341,8 @@ void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, C
     
     CGContextTranslateCTM(ctx, layoutOrigin.x, layoutOrigin.y);
         
+    DEBUG_TEXT(@"  CTFrameDraw device = %@", NSStringFromCGPoint(CGContextConvertPointToDeviceSpace(ctx, CGPointZero)));
+    DEBUG_TEXT(@"  ... bounds = %@", NSStringFromCGRect(bounds));
     CTFrameDraw(frame, ctx);
 
     // TODO: Instead of passing in the string, add a function to build an array of CTRunRefs that actually have an attachment and cache that? OTOH, maybe we should just avoid drawing if this is slow!
@@ -281,7 +356,7 @@ void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, C
             CTRunRef run = CFArrayGetValueAtIndex(runs, runIndex);
             CFRange range = CTRunGetStringRange(run);
 
-            //NSLog(@"line %p run %p range %ld/%ld", line, run, range.location, range.length);
+            DEBUG_TEXT(@"line %p run %p range %ld/%ld", line, run, range.location, range.length);
             
             if (range.length != 1)
                 continue;
@@ -291,33 +366,48 @@ void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, C
                 continue;
             
             CTRunDelegateRef runDelegate = CFDictionaryGetValue(attributes, kCTRunDelegateAttributeName);
-            //NSLog(@"  runDelegate %p", runDelegate);
-            //NSLog(@"  attributes %@", attributes);
             
             if (runDelegate) {
+                DEBUG_TEXT(@"  runDelegate %p", runDelegate);
+                DEBUG_TEXT(@"  attributes %@", attributes);
+
                 OATextAttachment *attachment = (OATextAttachment *)CTRunDelegateGetRefCon(runDelegate);
                 OBASSERT([attachment isKindOfClass:[OATextAttachment class]]);
                 
                 OATextAttachmentCell *cell = attachment.attachmentCell;
                 OBASSERT(cell);
                 OBASSERT(CTRunGetGlyphCount(run) == 1);
+                DEBUG_TEXT(@"    cell %@", [cell shortDescription]);
                 
                 CGFloat ascent, descent, leading;
                 double width = CTRunGetTypographicBounds(run, CFRangeMake(0, 0), &ascent, &descent, &leading);
-                //NSLog(@"  typo width:%f ascent:%f descent:%f leading:%f", width, ascent, descent, leading);
+                DEBUG_TEXT(@"    typo width:%f ascent:%f descent:%f leading:%f", width, ascent, descent, leading);
 
                 const CGPoint *positions = CTRunGetPositionsPtr(run);
-                //NSLog(@"  glyph position %@", NSStringFromCGPoint(positions[0]));
+                DEBUG_TEXT(@"    glyph position %@", NSStringFromCGPoint(positions[0]));
 
                 CGPoint lineOrigin;
                 CTFrameGetLineOrigins(frame, CFRangeMake(lineIndex, 1), &lineOrigin);
-                //NSLog(@"  lineOrigin %@", NSStringFromCGPoint(lineOrigin));
+                DEBUG_TEXT(@"    lineOrigin %@", NSStringFromCGPoint(lineOrigin));
 		
 		CGPoint baselineOffset = [cell cellBaselineOffset];
                 
                 // The glyph positions returned from CTRunGetPositions() are relative to the line origin.
                 CGRect cellFrame = CGRectMake(lineOrigin.x + positions[0].x + baselineOffset.x, lineOrigin.y + positions[0].y + baselineOffset.y, width, ascent + descent);
+                DEBUG_TEXT(@"    cellFrame %@", NSStringFromCGRect(cellFrame));
+
+                // Give the attachment a pixel-aligned rect, lest we get a blurry image. <bug:///71370> (We are drawing some image attachments blurry; maybe not positioned on pixel edges?)
+                cellFrame = CGContextConvertRectToDeviceSpace(ctx, cellFrame);
+                DEBUG_TEXT(@"    cellFrame device = %@", NSStringFromCGRect(cellFrame));
+
+                // CGRectIntegral can change the size; we don't want that.
+                cellFrame.origin.x = OUIFloor(cellFrame.origin.x);
+                cellFrame.origin.y = OUIFloor(cellFrame.origin.y);
+                DEBUG_TEXT(@"    device integral cellFrame %@", NSStringFromCGRect(cellFrame));
                 
+                cellFrame = CGContextConvertRectToUserSpace(ctx, cellFrame);
+                DEBUG_TEXT(@"    user snapped cellFrame %@", NSStringFromCGRect(cellFrame));
+
                 UIGraphicsPushContext(ctx);
                 [cell drawWithFrame:cellFrame inView:nil];
                 UIGraphicsPopContext();
@@ -555,5 +645,141 @@ NSAttributedString *OUICreateTransformedAttributedString(NSAttributedString *sou
     return immutableResult;
 }
 
+NSDictionary *OUITextLayoutCopyExtraNewlineAttributes(NSDictionary *attributes)
+{
+    if ([attributes objectForKey:OAAttachmentAttributeName] ||
+        [attributes objectForKey:(id)kCTRunDelegateAttributeName] ||
+        [attributes objectForKey:OALinkAttributeName]) {
+        
+        NSMutableDictionary *trimmedAttributes = [[NSMutableDictionary alloc] initWithDictionary:attributes];
+        
+        [trimmedAttributes removeObjectForKey:OAAttachmentAttributeName];
+        [trimmedAttributes removeObjectForKey:(id)kCTRunDelegateAttributeName];
+        [trimmedAttributes removeObjectForKey:OALinkAttributeName];
+        
+        attributes = [trimmedAttributes copy];
+        [trimmedAttributes release];
+        return attributes;
+    } else {
+        return [attributes copy];
+    }
+}
+
 @end
+
+/* CoreText doesn't support superscript or subscript on iOS (although it does on the desktop). This function extracts the font's superscript/subscript positioning information so that we can do it ourselves. */
+static BOOL OUIGetSuperSubScriptInfoFromFont(CTFontRef font, CGRect *superSubScales)
+{
+    uint16_t unitsPerEm;
+    
+    /* In order to interpret the values from the OS/2 table, we need to have the units-per-em scaling value from the 'head' table. */
+    CFDataRef fontHeader = CTFontCopyTable(font, kCTFontTableHead, kCTFontTableOptionNoOptions);
+    if (fontHeader == NULL) {
+        /* http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bhed.html : "The 'bhed' table is byte-for-byte identical with the 'head' (font header) table. Mac OS uses the presence of a 'bhed' table as a flag that a font doesn't have any glyph outlines but only embedded bitmaps." */
+        fontHeader = CTFontCopyTable(font, kCTFontTableBhed, kCTFontTableOptionNoOptions);
+        if (!fontHeader)
+            return NO;
+    }
+    if (CFDataGetLength(fontHeader) < 20) {
+        CFRelease(fontHeader);
+        return NO;
+    }
+    {
+        UInt8 buf[2];
+        CFDataGetBytes(fontHeader, (CFRange){18, 2}, buf);
+        unitsPerEm = OSReadBigInt16(buf, 0);
+    }
+    CFRelease(fontHeader);
+    
+    /* The positioning information is stored in the OS/2 table. */
+    
+    CFDataRef os2table = CTFontCopyTable(font, kCTFontTableOS2, kCTFontTableOptionNoOptions);
+    CFIndex os2tablelength;
+    
+    if (os2table != NULL && (os2tablelength = CFDataGetLength(os2table)) > 2) {
+        const UInt8 * restrict bytes = CFDataGetBytePtr(os2table);
+        uint16_t tableVersion = OSReadBigInt16(bytes, 0);
+        
+        /* Versions 1 through 4 are all found among the iOS default fonts */
+        /* Conveniently the fields we're interested in are all in the same position for versions 0 through 4 */
+        if ((tableVersion <= 4) && os2tablelength >= 26) {
+            /* http://www.microsoft.com/typography/otspec/os2.htm */
+            /* http://www.microsoft.com/typography/otspec/os2ver3.htm */
+            /* http://www.microsoft.com/typography/otspec/os2ver2.htm */
+            /* http://www.microsoft.com/typography/otspec/os2ver1.htm */
+            /* http://www.microsoft.com/typography/otspec/os2ver0.htm */
+            
+            CGFloat scale = (CGFloat)1.0 / (CGFloat)unitsPerEm;
+            
+            int16_t subscriptXSize      = OSReadBigInt16(bytes, 10);
+            int16_t subscriptYSize      = OSReadBigInt16(bytes, 12);
+            int16_t subscriptXOffset    = OSReadBigInt16(bytes, 14);
+            int16_t subscriptYOffset    = OSReadBigInt16(bytes, 16);
+            int16_t superscriptXSize    = OSReadBigInt16(bytes, 18);
+            int16_t superscriptYSize    = OSReadBigInt16(bytes, 20);
+            int16_t superscriptXOffset  = OSReadBigInt16(bytes, 22);
+            int16_t superscriptYOffset  = OSReadBigInt16(bytes, 24);
+            
+            if (subscriptYOffset != 0 || superscriptYOffset != 0) {
+                /* Don't use these values if they're 0 (hopefully that's the value font designers will use if they don't provide this information) */
+                superSubScales[1].size.width  =      scale * subscriptXSize;
+                superSubScales[1].size.height =      scale * subscriptYSize;
+                superSubScales[1].origin.x    =      scale * subscriptXOffset;
+                superSubScales[1].origin.y    = -1 * scale * subscriptYOffset;
+                
+                superSubScales[0].size.width  = scale * superscriptXSize;
+                superSubScales[0].size.height = scale * superscriptYSize;
+                superSubScales[0].origin.x    = scale * superscriptXOffset;
+                superSubScales[0].origin.y    = scale * superscriptYOffset;
+                
+                CFRelease(os2table);
+                return YES;
+            }
+        } else {
+#if DEBUG
+            static BOOL warned = NO;
+            if (!warned) {
+                warned = YES;
+                NSLog(@"This font has an OS/2 table with unexpected version=%u length=%d.", (unsigned)tableVersion, (int)os2tablelength);
+            }
+#endif
+        }
+    }
+    if (os2table)
+        CFRelease(os2table);
+    
+    return NO;
+}
+
+static void OUIHeuristicSuperSubScriptPositions(CTFontRef font, CGRect *supersub)
+{
+    /* A few fonts don't have the OS/2 table containing super/subscript positioning information. */
+    /* This function produces positions that're roughly similar to the positions from fonts that do specify it. */
+    
+    /* X-values: no offset. TODO: Incorporate the slant angle information? */
+    supersub[0].origin.x = 0;
+    supersub[1].origin.x = 0;
+    
+    /* Superscript: Fonts' superscript offsets tend to be either around 0.48 of their point size, or 0.275. It's a distinctly bimodal distribution. There isn't an obvious way to tell which class a font falls into from its metrics, although the 0.275 fonts mostly have a smaller ratio of cap-height to ascent. */
+    if (CTFontGetCapHeight(font) > 0.786 * CTFontGetAscent(font)) {
+        supersub[0].origin.y = 0.48;
+    } else {
+        supersub[0].origin.y = 0.275;
+    }
+    supersub[0].size.width = 0.625;
+    supersub[0].size.height = 0.625;
+    
+    /* Subscript positions fall into three clusters (-0.08, -0.14, and -0.24; mostly the first two) but I don't know of a way to guess which cluster to use. */
+    supersub[1].origin.y = -0.11;
+    supersub[1].size.width = 0.625;
+    supersub[1].size.height = 0.625;
+}
+
+void OUIGetSuperSubScriptPositions(CTFontRef font, CGRect *supersub)
+{
+    if (OUIGetSuperSubScriptInfoFromFont(font, supersub))
+        return;
+    OUIHeuristicSuperSubScriptPositions(font, supersub);
+}
+
 

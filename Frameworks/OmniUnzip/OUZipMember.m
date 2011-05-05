@@ -11,16 +11,11 @@
 #import <OmniUnzip/OUZipDirectoryMember.h>
 #import <OmniUnzip/OUZipLinkMember.h>
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-#import <AppKit/NSFileWrapper.h>
-#endif
-
 RCS_ID("$Id$");
 
 @implementation OUZipMember
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-- (id)_initWithFileWrapper:(NSFileWrapper *)fileWrapper name:(NSString *)name;
+- (id)_initWithFileWrapper:(OFFileWrapper *)fileWrapper name:(NSString *)name;
 {
     // This shouldn't be called on a concrete class.  That would imply the caller knew the type of the file wrapper, which it shouldn't bother with.
     OBPRECONDITION([self class] == [OUZipMember class]);
@@ -40,7 +35,7 @@ RCS_ID("$Id$");
         NSArray *childKeys = [[childWrappers allKeys] sortedArrayUsingSelector:@selector(compare:)];
         
         for (NSString *childKey in childKeys) {
-            NSFileWrapper *childWrapper = [childWrappers objectForKey:childKey];
+            OFFileWrapper *childWrapper = [childWrappers objectForKey:childKey];
             // Note: this loses the preferred filenames of our children, but zip files don't have a notion of preferred filename vs. actual filename the way file wrappers do
             OUZipMember *child = [[OUZipMember alloc] _initWithFileWrapper:childWrapper name:childKey];
             [directory addChild:child];
@@ -53,19 +48,17 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- initWithFileWrapper:(NSFileWrapper *)fileWrapper;
+- initWithFileWrapper:(OFFileWrapper *)fileWrapper;
 {
     return [self _initWithFileWrapper:fileWrapper name:[fileWrapper preferredFilename]];
 }
 
 // Returns a new autoreleased file wrapper; won't return the same wrapper on multiple calls
-- (NSFileWrapper *)fileWrapperRepresentation;
+- (OFFileWrapper *)fileWrapperRepresentation;
 {
     OBRequestConcreteImplementation(self, _cmd);
     return nil;
 }
-
-#endif
 
 - initWithPath:(NSString *)path fileManager:(NSFileManager *)fileManager;
 {

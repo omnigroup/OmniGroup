@@ -61,6 +61,8 @@
 		34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */; };
 		34AF4BE20C99963F003DEC1B /* OAColorArchivingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AF4BE10C99963F003DEC1B /* OAColorArchivingTests.m */; };
 		34D04A39110E0270007399B9 /* OAUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D04A38110E0270007399B9 /* OAUtilities.m */; };
+		34DDE3A7135F65C70099DCCE /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; };
+		34DDE3A8135F65D50099DCCE /* NSAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F36FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34E46E9D0CDEB7330066E943 /* OAFlippedView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E46E9B0CDEB7330066E943 /* OAFlippedView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34E46E9E0CDEB7330066E943 /* OAFlippedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E46E9C0CDEB7330066E943 /* OAFlippedView.m */; };
 		34ED275D11DBBD2E006C33FF /* OATextAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 34ED275B11DBBD2E006C33FF /* OATextAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2201,6 +2203,7 @@
 				3401161611E516C10016ADB3 /* OATextStorage.h in Headers */,
 				344B6E6312A4D53100D876CD /* OATextAttachment.h in Headers */,
 				3451254D12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */,
+				34DDE3A8135F65D50099DCCE /* NSAttributedString-OAExtensions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2731,6 +2734,7 @@
 				3401161711E516C10016ADB3 /* OATextStorage.m in Sources */,
 				344B6E6212A4D53000D876CD /* OATextAttachment.m in Sources */,
 				3451254E12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */,
+				34DDE3A7135F65C70099DCCE /* NSAttributedString-OAExtensions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

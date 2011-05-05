@@ -40,8 +40,6 @@ RCS_ID("$Id$");
     }
     
     
-    BOOL didMutate = NO;
-    
     OUIInspector *inspector = self.inspector;
     [inspector willBeginChangingInspectedObjects];
     {
@@ -51,37 +49,42 @@ RCS_ID("$Id$");
             if ([style alignment] != desiredAlignment) {
                 OAMutableParagraphStyle *mutatis = [style mutableCopy];
                 [mutatis setAlignment:desiredAlignment];
-                didMutate = YES;
                 [object setParagraphStyle:mutatis fromInspectorSlice:self];
                 [mutatis release];
             }
         }
     }
     [inspector didEndChangingInspectedObjects];
-    
-    // Update the interface
-    if (didMutate)
-        [self updateInterfaceFromInspectedObjects];    
 }
 
-
-#pragma mark -
-#pragma mark OUIInspectorSlice subclass
-
-- (BOOL)isAppropriateForInspectedObject:(id)object;
+- (void)updateParagraphAlignmentSegmentedControl:(OUIInspectorSegmentedControl *)segmentedControl;
 {
-    return [object shouldBeInspectedByInspectorSlice:self protocol:@protocol(OUIParagraphInspection)];
-}
-
-- (void)updateInterfaceFromInspectedObjects;
-{
-    [super updateInterfaceFromInspectedObjects];
     
-    int sel[OATextAlignmentMAX+1];
+    BOOL sel[OATextAlignmentMAX+1];
     for(unsigned int i = 0; i <= OATextAlignmentMAX; i++)
-        sel[i] = 0;
-    BOOL inspectable = NO;
+        sel[i] = NO;
+    BOOL *selp = sel; // Can't refer to arrays in blocks, but pointers are OK...
     
+#ifdef NS_BLOCKS_AVAILABLE
+    __block BOOL inspectable = NO;
+    [self eachAppropriateObjectForInspection:^(id object){
+        id <OUIParagraphInspection> paragraph = object;
+        
+        OAParagraphStyle *style = [paragraph paragraphStyleForInspectorSlice:self];
+        
+        if (!style)
+            return;
+        
+        inspectable = YES;
+        
+        OATextAlignment spanAlignment = [style alignment];
+        OBASSERT_NONNEGATIVE(spanAlignment);
+        if (spanAlignment <= OATextAlignmentMAX)
+            selp[spanAlignment] = YES;
+    }];
+#else
+    OBFinishPortingLater("Make the trunk 4.2 only?");
+    BOOL inspectable = NO;
     for (id <OUIParagraphInspection> object in self.appropriateObjectsForInspection) {
         OAParagraphStyle *style = [object paragraphStyleForInspectorSlice:self];
         
@@ -93,20 +96,35 @@ RCS_ID("$Id$");
         OATextAlignment spanAlignment = [style alignment];
         OBASSERT_NONNEGATIVE(spanAlignment);
         if (spanAlignment <= OATextAlignmentMAX)
-            sel[spanAlignment] ++;
+            selp[spanAlignment] = YES;
     }
+#endif
     
-    alignmentControl.enabled = inspectable;
+    segmentedControl.enabled = inspectable;
     
-    NSUInteger segmentIndex = [alignmentControl segmentCount];
+    NSUInteger segmentIndex = [segmentedControl segmentCount];
     while (segmentIndex--) {
-        OUIInspectorSegmentedControlButton *segment = [alignmentControl segmentAtIndex:segmentIndex];
+        OUIInspectorSegmentedControlButton *segment = [segmentedControl segmentAtIndex:segmentIndex];
         NSInteger tag = [segment tag];
         
         if (tag >= 0 && tag <= OATextAlignmentMAX) {
-            segment.selected = ( sel[tag] ? YES : NO );
+            segment.selected = sel[tag];
         }
     }
+}
+
+#pragma mark -
+#pragma mark OUIInspectorSlice subclass
+
+- (BOOL)isAppropriateForInspectedObject:(id)object;
+{
+    return [object shouldBeInspectedByInspectorSlice:self protocol:@protocol(OUIParagraphInspection)];
+}
+
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
+{
+    [super updateInterfaceFromInspectedObjects:reason];
+    [self updateParagraphAlignmentSegmentedControl:alignmentControl];
 }
 
 #pragma mark -

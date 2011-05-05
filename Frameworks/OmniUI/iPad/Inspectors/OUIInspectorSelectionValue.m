@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,8 +16,7 @@ RCS_ID("$Id$");
     if (!(self = [super init]))
         return nil;
 
-    _uniqueValues = [[NSSet alloc] initWithObjects:value, nil]; // works if value == nil.
-    _dominantValue = [value retain];
+    _values = [[NSArray alloc] initWithObjects:value, nil]; // value might be nil.
     
     return self;
 }
@@ -27,55 +26,24 @@ RCS_ID("$Id$");
     if (!(self = [super init]))
         return nil;
     
-    _uniqueValues = [[NSSet alloc] initWithArray:values];
-    
-    switch ([values count]) {
-        case 0:
-            _dominantValue = nil;
-            break;
-        case 1:
-        case 2:
-            _dominantValue = [[values objectAtIndex:0] retain];
-            break;
-        default: {
-            NSCountedSet *countedSet = [[NSCountedSet alloc] init];
-            for (id value in values)
-                [countedSet addObject:value];
-            
-            id mostCommonValue = nil;
-            NSUInteger mostCommonCount = 0;
-            
-            for (id value in countedSet) {
-                NSUInteger count = [countedSet countForObject:value];
-                if (mostCommonCount < count) {
-                    mostCommonCount = count;
-                    mostCommonValue = value;
-                }
-            }
-            
-            _dominantValue = [mostCommonValue retain];
-            [countedSet release];
-        }
-    }
+    _values = [[NSArray alloc] initWithArray:values];
     
     return self;
 }
 
 - (void)dealloc;
 {
-    [_dominantValue release];
-    [_uniqueValues release];
+    [_values release];
     [super dealloc];
 }
 
-@synthesize dominantValue = _dominantValue;
-@synthesize uniqueValues = _uniqueValues;
-
-- (id)uniqueValue;
+- (id)firstValue;
 {
-    if ([_uniqueValues count] == 1)
-        return _dominantValue;
-    return 0;
+    if ([_values count] > 0)
+        return [_values objectAtIndex:0];
+    return nil;
 }
+
+@synthesize values = _values;
 
 @end

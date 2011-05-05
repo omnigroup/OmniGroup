@@ -13,6 +13,7 @@
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIDocumentProxy.h>
+#import <OmniAppKit/NSFileWrapper-OAExtensions.h>
 #import <OmniFoundation/OFPreference.h>
 
 #import <MobileCoreServices/UTCoreTypes.h>
@@ -68,7 +69,7 @@ RCS_ID("$Id$")
         self.navigationItem.rightBarButtonItem = nil;
     } else if (_exportType == OUIExportOptionsExport) {
         NSString *syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Sign Out", @"OmniUI", OMNI_BUNDLE, @"sign out button title");
-        UIBarButtonItem *syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(signOut:)];
+        UIBarButtonItem *syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleBordered target:self action:@selector(signOut:)];
         self.navigationItem.rightBarButtonItem = syncBarButtonItem;
         [syncBarButtonItem release];
     } 
@@ -80,59 +81,32 @@ RCS_ID("$Id$")
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Choose Format", @"OmniUI", OMNI_BUNDLE, @"export options title");
     
     OUIDocumentPicker *picker = [[OUIAppController controller] documentPicker];
-    BOOL addPDF = [[picker delegate] respondsToSelector:@selector(documentPicker:PDFDataForProxy:error:)];
-    BOOL addPNG = [[picker delegate] respondsToSelector:@selector(documentPicker:PNGDataForProxy:error:)];
-    BOOL hasCustomIcons = [[picker delegate] respondsToSelector:@selector(documentPicker:exportIconForUTI:)];
-    
-    NSUInteger choiceIndex = 0;
+
+    [_exportFileTypes release];
+    _exportFileTypes = [[NSMutableArray alloc] init];
+
     if (_syncType != OUIiTunesSync) {
         OUIDocumentProxy *documentProxy = [picker selectedProxy];
         NSURL *documentURL = [documentProxy url];
         NSString *documentExtension = [[documentURL path] pathExtension];
-        CFStringRef fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)documentExtension, NULL);
+        NSString *fileUTI = [OFSFileInfo UTIForURL:documentURL];
+        UIImage *iconImage = [picker exportIconForUTI:fileUTI];
         
-        UIImage *iconImage = nil;
-        if (hasCustomIcons)
-            iconImage = [[picker delegate] documentPicker:picker exportIconForUTI:fileUTI];
-        if (!iconImage)
-            iconImage = [UIImage imageNamed:@"OUIDocument.png"];
+        NSString *nativeFileTypeLabel = [picker exportLabelForUTI:fileUTI];
+        if (nativeFileTypeLabel == nil)
+            nativeFileTypeLabel = documentExtension;
         
-        NSString *nativeFileTypeLabel = nil;
-        if ([[picker delegate] respondsToSelector:@selector(documentPicker:labelForUTI:)]) {
-            nativeFileTypeLabel = [[picker delegate] documentPicker:picker labelForUTI:fileUTI];
-        }
-        if (!nativeFileTypeLabel) {
-            nativeFileTypeLabel = [documentExtension capitalizedString];
-        }
-        
-        [_exportView addChoiceToIndex:choiceIndex image:iconImage label:nativeFileTypeLabel target:self selector:(_exportType == OUIExportOptionsEmail) ? @selector(emailDocument:) : @selector(exportDocument:)];
-        choiceIndex++;
-        
-        if (fileUTI)
-            CFRelease(fileUTI);
+        [_exportFileTypes addObject:[NSNull null]];
+        [_exportView addChoiceWithImage:iconImage label:nativeFileTypeLabel target:self selector:@selector(_performActionForExportOptionButton:)];
     }
-    
-    if (addPDF) {
-        UIImage *iconImage = nil;
-        if (hasCustomIcons)
-            iconImage = [[picker delegate] documentPicker:picker exportIconForUTI:kUTTypePDF];
-        if (!iconImage)
-            iconImage = [UIImage imageNamed:@"OUIPDF.png"];
 
-        [_exportView addChoiceToIndex:choiceIndex image:iconImage label:@"PDF" target:self selector:(_exportType == OUIExportOptionsEmail) ? @selector(emailPDF:) : @selector(exportPDF:)];
-        choiceIndex++;
+    NSArray *exportTypes = [picker availableExportTypesForProxy:[picker selectedProxy]];
+    for (NSString *exportType in exportTypes) {
+        UIImage *iconImage = [picker exportIconForUTI:exportType];
+        [_exportFileTypes addObject:exportType];
+        [_exportView addChoiceWithImage:iconImage label:[picker exportLabelForUTI:exportType] target:self selector:@selector(_performActionForExportOptionButton:)];
     }
-    
-    if (addPNG) {
-        UIImage *iconImage = nil;
-        if (hasCustomIcons)
-            iconImage = [[picker delegate] documentPicker:picker exportIconForUTI:kUTTypePNG];
-        if (!iconImage)
-            iconImage = [UIImage imageNamed:@"OUIPNG.png"];
-
-        [_exportView addChoiceToIndex:choiceIndex image:iconImage label:@"PNG" target:self selector:(_exportType == OUIExportOptionsEmail) ? @selector(emailPNG:) : @selector(exportPNG:)];
-    }
-    
+        
     [_exportView layoutSubviews];
 }
 
@@ -272,19 +246,7 @@ RCS_ID("$Id$")
     [setupView release];
 }
 
-- (void)exportDocument:(id)sender;
-{
-    OUIDocumentPicker *documentPicker = [[OUIAppController controller] documentPicker];
-    OUIDocumentProxy *documentProxy = [documentPicker selectedProxy];
-    if (!documentProxy) {
-        OBASSERT_NOT_REACHED("no selected document proxy");
-        return;
-    }
-    
-    [self exportData:[documentProxy emailData] toFileNamed:[OFSFileInfo nameForURL:[documentProxy url]]];
-}
-
-- (void)exportPDF:(id)sender;
+- (void)_exportDocumentOfType:(NSString *)fileType;
 {
     OUIDocumentPicker *documentPicker = [[OUIAppController controller] documentPicker];
     OUIDocumentProxy *documentProxy = [documentPicker selectedProxy];
@@ -294,68 +256,43 @@ RCS_ID("$Id$")
     }
     
     NSError *error = nil;
-    NSData *pdfData = [[documentPicker delegate] documentPicker:documentPicker PDFDataForProxy:documentProxy error:&error];
-    if (!pdfData) {
+    OFFileWrapper *fileWrapper;
+    if (OFISNULL(fileType))
+        fileWrapper = [[[OFFileWrapper alloc] initWithURL:documentProxy.url options:0 error:&error] autorelease];
+    else
+        fileWrapper = [[documentPicker delegate] documentPicker:documentPicker exportFileWrapperOfType:fileType forProxy:documentProxy error:&error];
+
+    if (fileWrapper == nil) {
         OUI_PRESENT_ERROR(error);
         return;
     }
     
-    NSString *docName = [OFSFileInfo nameForURL:[documentProxy url]];
-    docName = [docName stringByDeletingPathExtension];
-    docName = [docName stringByAppendingPathExtension:@"pdf"];
-    [self exportData:pdfData toFileNamed:docName];
+    [self exportFileWrapper:fileWrapper];
 }
 
-- (void)exportPNG:(id)sender;
+- (void)_performActionForExportOptionButton:(UIButton *)sender;
 {
-    OUIDocumentPicker *documentPicker = [[OUIAppController controller] documentPicker];
-    OUIDocumentProxy *documentProxy = [documentPicker selectedProxy];
-    if (!documentProxy) {
-        OBASSERT_NOT_REACHED("no selected document proxy");
-        return;
+    OBPRECONDITION([sender isKindOfClass:[UIButton class]]);
+    OBPRECONDITION(sender.tag >= 0 && sender.tag < (signed)_exportFileTypes.count);
+
+    NSString *fileType = [_exportFileTypes objectAtIndex:sender.tag];
+    if (_exportType == OUIExportOptionsEmail) {
+        [self.navigationController dismissModalViewControllerAnimated:YES];
+        [[[OUIAppController controller] documentPicker] emailExportType:fileType];
+    } else {
+        [self _exportDocumentOfType:fileType];
     }
-    
-    NSError *error = nil;
-    NSData *pngData = [[documentPicker delegate] documentPicker:documentPicker PNGDataForProxy:documentProxy error:&error];
-    if (!pngData) {
-        OUI_PRESENT_ERROR(error);
-        return;
-    }
-    
-    NSString *docName = [OFSFileInfo nameForURL:[documentProxy url]];
-    docName = [docName stringByDeletingPathExtension];
-    docName = [docName stringByAppendingPathExtension:@"png"];
-    [self exportData:pngData toFileNamed:docName];
 }
 
-- (void)exportData:(NSData *)data toFileNamed:(NSString *)filename;
+- (void)exportFileWrapper:(OFFileWrapper *)fileWrapper;
 {
     OUIWebDAVController *davController = [[OUIWebDAVController alloc] init];
     [davController setSyncType:_syncType];
     [davController setIsExporting:YES];
-    [davController setExportingData:data];
-    [davController setExportingFilename:filename];
+    davController.exportFileWrapper = fileWrapper;
     
     [self.navigationController pushViewController:davController animated:YES];
     [davController release];
-}
-
-- (void)emailDocument:(id)sender;
-{
-    [self.navigationController dismissModalViewControllerAnimated:YES];
-    [[[OUIAppController controller] documentPicker] emailDocument:nil];
-}
-
-- (void)emailPDF:(id)sender;
-{
-    [self.navigationController dismissModalViewControllerAnimated:YES];
-    [[[OUIAppController controller] documentPicker] emailPDF:nil];
-}
-
-- (void)emailPNG:(id)sender;
-{
-    [self.navigationController dismissModalViewControllerAnimated:YES];
-    [[[OUIAppController controller] documentPicker] emailPNG:nil];
 }
 
 @synthesize exportView = _exportView;

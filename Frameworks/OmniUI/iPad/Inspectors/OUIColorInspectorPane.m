@@ -27,14 +27,19 @@ RCS_ID("$Id$");
     [_hsvColorPicker release];
     [_rgbColorPicker release];
     [_grayColorPicker release];
+    [_noneColorPicker release];
     [super dealloc];
 }
 
 @synthesize colorTypeSegmentedControl = _colorTypeSegmentedControl;
+
+@synthesize noneColorPicker = _noneColorPicker;
 @synthesize paletteColorPicker = _paletteColorPicker;
 @synthesize hsvColorPicker = _hsvColorPicker;
 @synthesize rgbColorPicker = _rgbColorPicker;
 @synthesize grayColorPicker = _grayColorPicker;
+
+@synthesize disableAutoPickingPanes;
 
 - (void)_setSelectedColorTypeIndex:(NSInteger)colorTypeIndex;
 {
@@ -73,49 +78,63 @@ RCS_ID("$Id$");
         // Keep only the height of the picker's view
         UIView *pickerView = _currentColorPicker.view;
         
-        CGRect pickerFrame;
-        pickerFrame.origin = CGPointMake(CGRectGetMinX(typeFrame), CGRectGetMaxY(typeFrame) + kSpaceBetweenSegmentedControllAndColorPicker);
-        pickerFrame.size.width = CGRectGetWidth(typeFrame); // should span our bounds
-        pickerFrame.size.height = [_currentColorPicker height];
-        
         UIView *view = self.view;
         CGRect frame = view.frame;
-        frame.size.height = CGRectGetMaxY(pickerFrame);
-        view.frame = frame;
-        [view layoutIfNeeded];
-        
-        self.contentSizeForViewInPopover = frame.size;
-        
-        [slice.inspector inspectorSizeChanged];
+
+        CGFloat yOffset = CGRectGetMaxY(typeFrame) + kSpaceBetweenSegmentedControllAndColorPicker - CGRectGetMinY(frame);
+        CGRect segmentedControlAndPaddingFrame, pickerFrame;
+        CGRectDivide(view.frame, &segmentedControlAndPaddingFrame, &pickerFrame, yOffset, CGRectMinYEdge);
         
         pickerView.frame = pickerFrame;
-        [self.view addSubview:pickerView];
+        [view addSubview:pickerView];
+        [view layoutIfNeeded];
 
         [self addChildViewController:_currentColorPicker animated:NO];
     }
 }
 
-- (NSUInteger)selectedColorPickerIndex;
+- (NSString *)selectedColorPickerIdentifier;
 {
-    return _colorTypeIndex;
+    if (_colorTypeIndex == NSNotFound)
+        return nil;
+    return [[[_colorTypeSegmentedControl segmentAtIndex:_colorTypeIndex] representedObject] identifier];
 }
 
-- (void)setSelectedColorPickerIndex:(NSUInteger)segmentIndex;
+- (void)setSelectedColorPickerIdentifier:(NSString *)identifier;
 {
-    _colorTypeIndex = segmentIndex;
-    if ([self isViewLoaded])
-        [self _setSelectedColorTypeIndex:segmentIndex];
+    NSUInteger pickerIndex = NSNotFound;
+    NSUInteger segmentIndex = [_colorTypeSegmentedControl segmentCount];
+    while (segmentIndex--) {
+        if (OFISEQUAL(identifier, [[[_colorTypeSegmentedControl segmentAtIndex:segmentIndex] representedObject] identifier])) {
+            pickerIndex = segmentIndex;
+            break;
+        }
+    }
+    
+    if (pickerIndex != NSNotFound) {
+        _colorTypeIndex = pickerIndex;
+        if ([self isViewLoaded]) {
+            [self _setSelectedColorTypeIndex:_colorTypeIndex];
+        }
+    }
 }
 
 - (IBAction)colorTypeSegmentedControlSelectionChanged:(id)sender;
 {
+    OUIColorPicker *oldPicker = [[_currentColorPicker retain] autorelease];
+    
     [self _setSelectedColorTypeIndex:[_colorTypeSegmentedControl selectedSegmentIndex]];
+    
+    if (oldPicker != _currentColorPicker) {
+        [oldPicker wasDeselectedInColorInspectorPane:self];
+        [_currentColorPicker wasSelectedInColorInspectorPane:self];
+    }
 }
 
 #pragma mark -
 #pragma mark OUIInspectorPane subclass
 
-- (void)updateInterfaceFromInspectedObjects;
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
     
@@ -130,8 +149,13 @@ RCS_ID("$Id$");
     [super viewDidLoad];
     
     // Let callers assign their own title
-    if (![NSString isEmptyString:self.title])
+    if ([NSString isEmptyString:self.title])
         self.title = NSLocalizedStringFromTableInBundle(@"Color", @"OUIInspectors", OMNI_BUNDLE, @"color inspector title");
+    
+    OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
+    OBASSERT(slice);
+    if (slice.allowsNone)
+        [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorNoneSegment.png" representedObject:_noneColorPicker];
     
     [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorPaletteSegment.png" representedObject:_paletteColorPicker];
     [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorHSVSegment.png" representedObject:_hsvColorPicker];
@@ -144,24 +168,26 @@ RCS_ID("$Id$");
 
 - (void)viewWillAppear:(BOOL)animated;
 {
-    // Default to the higest fidelity color picker, prefering earlier pickers. So, if the palette picker has an exact match, it will get used.
-    OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
-    OUIInspectorSelectionValue *selectionValue = slice.selectionValue;
-    
-    OUIColorPickerFidelity bestFidelity = OUIColorPickerFidelityZero;
-    NSUInteger bestPickerIndex = NSNotFound;
-    NSUInteger pickerCount = [_colorTypeSegmentedControl segmentCount];
-    for (NSUInteger pickerIndex = 0; pickerIndex < pickerCount; pickerIndex++) {
-        OUIColorPicker *picker = [[_colorTypeSegmentedControl segmentAtIndex:pickerIndex] representedObject];
-        OUIColorPickerFidelity fidelity = [picker fidelityForSelectionValue:selectionValue];
+    if (!disableAutoPickingPanes) {
+        // Default to the higest fidelity color picker, prefering earlier pickers. So, if the palette picker has an exact match, it will get used.
+        OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
+        OUIInspectorSelectionValue *selectionValue = slice.selectionValue;
         
-        if (bestPickerIndex == NSNotFound || fidelity > bestFidelity) {
-            bestPickerIndex = pickerIndex;
-            bestFidelity = fidelity;
+        OUIColorPickerFidelity bestFidelity = OUIColorPickerFidelityZero;
+        NSUInteger bestPickerIndex = NSNotFound;
+        NSUInteger pickerCount = [_colorTypeSegmentedControl segmentCount];
+        for (NSUInteger pickerIndex = 0; pickerIndex < pickerCount; pickerIndex++) {
+            OUIColorPicker *picker = [[_colorTypeSegmentedControl segmentAtIndex:pickerIndex] representedObject];
+            OUIColorPickerFidelity fidelity = [picker fidelityForSelectionValue:selectionValue];
+            
+            if (bestPickerIndex == NSNotFound || fidelity > bestFidelity) {
+                bestPickerIndex = pickerIndex;
+                bestFidelity = fidelity;
+            }
         }
+        
+        [self _setSelectedColorTypeIndex:bestPickerIndex];
     }
-
-    [self _setSelectedColorTypeIndex:bestPickerIndex];
 
     // Do this after possibly swapping child view controllers. This allows us to remove the old before it gets send -viewWillAppear:, which would hit an assertion (rightly).
     [super viewWillAppear:animated];
@@ -174,8 +200,6 @@ RCS_ID("$Id$");
 {
     // The responder chain doesn't leap back up the nav controller stack.
     [self.parentSlice changeColor:colorValue];
-    
-    [self updateInterfaceFromInspectedObjects];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@ enum {
     OFSDirectoryEnumerationSkipsSubdirectoryDescendants = 1UL << 0,     /* shallow, non-deep */
     /* OFSDirectoryEnumerationSkipsPackageDescendants = 1UL << 1, */    /* no package contents, not currently supported */
     OFSDirectoryEnumerationSkipsHiddenFiles = 1UL << 2,                 /* no hidden files */
-    OFSDirectoryEnumerationForceRecusiveDirectoryRead = 1UL << 3,       /* useful when the server does not implement PROPFIND requests with Depth:infinity */
+    OFSDirectoryEnumerationForceRecursiveDirectoryRead = 1UL << 3,       /* useful when the server does not implement PROPFIND requests with Depth:infinity */
 };
 typedef NSUInteger OFSDirectoryEnumerationOptions;
 

@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -99,7 +99,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     omitTextAndStateWhenCollapsed = [[NSUserDefaults standardUserDefaults] boolForKey:@"OmitTextAndStateWhenCollapsed"];
     
     unifiedGradientKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.77f alpha:1.0f] endingColor:[NSColor colorWithCalibratedWhite:.59f alpha:1.0f]];
-    unifiedGradientNonKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.91f alpha:1.0f] endingColor:[NSColor colorWithCalibratedWhite:.81f alpha:1.0f]];
+    unifiedGradientNonKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.84f alpha:1.0f] endingColor:[NSColor colorWithCalibratedWhite:.72f alpha:1.0f]];
     
 }
 

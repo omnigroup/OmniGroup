@@ -1,4 +1,4 @@
-// Copyright 2003-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,7 @@ RCS_ID("$Id$");
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
 NSString * const OAAttachmentAttributeName = @"OAAttachmentAttributeName"; // Make this be the same as on the Mac?
+NSString * const OATextStorageWillProcessEditingNotification = @"OATextStorageWillProcessEditingNotification";
 NSString * const OATextStorageDidProcessEditingNotification = @"OATextStorageDidProcessEditingNotification";
 
 
@@ -54,12 +55,38 @@ NSString * const OATextStorageDidProcessEditingNotification = @"OATextStorageDid
 
 @implementation OAConcreteTextStorage
 
+// Various init methods to cover our superclass initializers
+
+- init;
+{
+    return [self initWithString:@"" attributes:nil];
+}
+
+- (id)initWithString:(NSString *)str;
+{
+    return [self initWithString:str attributes:nil];
+}
+
 - (id)initWithString:(NSString *)str attributes:(NSDictionary *)attrs;
+{
+    if (!str)
+        str = @"";
+    
+    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:str attributes:attrs];
+    self = [self initWithAttributedString:attributedString];
+    [attributedString release];
+    return self;
+}
+
+- (id)initWithAttributedString:(NSAttributedString *)attrStr;
 {
     if (!(self = [super init]))
         return nil;
     
-    _contents = [[NSMutableAttributedString alloc] initWithString:str attributes:attrs];
+    if (attrStr)
+        _contents = [attrStr mutableCopy];
+    else
+        _contents = [[NSMutableAttributedString alloc] initWithString:@"" attributes:nil];
     
     // NSTextStorage starts out with having applied an edit. The only effect this ends up having is that editedRange is {NSNotFound, length} (since -processEditing will get called and it only resets editedRange.location.
     NSUInteger length = [_contents length];
@@ -133,6 +160,8 @@ static Class OATextStorageClass = Nil;
 
 - (void)dealloc;
 {
+    if ([_nonretained_delegate respondsToSelector:@selector(textStorageWillProcessEditing:)])
+        [[NSNotificationCenter defaultCenter] removeObserver:_nonretained_delegate name:OATextStorageWillProcessEditingNotification object:self];
     if ([_nonretained_delegate respondsToSelector:@selector(textStorageDidProcessEditing:)])
         [[NSNotificationCenter defaultCenter] removeObserver:_nonretained_delegate name:OATextStorageDidProcessEditingNotification object:self];
     
@@ -177,7 +206,7 @@ static void _processEditing(OATextStorage_ *self)
     
     if (_editedRange.location == NSNotFound) {
         // First edit. The "range" argument is in our pre-edit state, so we need to adjust its length.
-        OBASSERT(delta > 0 || _editedRange.length >= (NSUInteger)-delta);
+        OBASSERT(delta > 0 || range.length >= (NSUInteger)-delta);
         _editedRange = range;
         _editedRange.length += delta;
         _changeInLength = delta;
@@ -203,12 +232,14 @@ static void _processEditing(OATextStorage_ *self)
 
 - (void)fixFontAttributeInRange:(NSRange)aRange;
 {
-    OBFinishPortingLater("Fix up attributes");
+    // OBFinishPortingLater("Fix up attributes");
 }
 
 - (void)processEditing;
 {
-    OBFinishPortingLater("Fix attributes or whatever else NSTextStorage does that we need.");
+    [[NSNotificationCenter defaultCenter] postNotificationName:OATextStorageWillProcessEditingNotification object:self];
+
+    // OBFinishPortingLater("Move OUIEditableFrame's attribute fixup here.");
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OATextStorageDidProcessEditingNotification object:self];
 }
@@ -230,11 +261,15 @@ static void _processEditing(OATextStorage_ *self)
 
 - (void)setDelegate:(id <OATextStorageDelegate>)delegate;
 {
+    if ([_nonretained_delegate respondsToSelector:@selector(textStorageWillProcessEditing:)])
+        [[NSNotificationCenter defaultCenter] removeObserver:_nonretained_delegate name:OATextStorageWillProcessEditingNotification object:self];
     if ([_nonretained_delegate respondsToSelector:@selector(textStorageDidProcessEditing:)])
         [[NSNotificationCenter defaultCenter] removeObserver:_nonretained_delegate name:OATextStorageDidProcessEditingNotification object:self];
     
     _nonretained_delegate = delegate;
 
+    if ([_nonretained_delegate respondsToSelector:@selector(textStorageWillProcessEditing:)])
+        [[NSNotificationCenter defaultCenter] addObserver:_nonretained_delegate selector:@selector(textStorageWillProcessEditing:) name:OATextStorageWillProcessEditingNotification object:self];
     if ([_nonretained_delegate respondsToSelector:@selector(textStorageDidProcessEditing:)])
         [[NSNotificationCenter defaultCenter] addObserver:_nonretained_delegate selector:@selector(textStorageDidProcessEditing:) name:OATextStorageDidProcessEditingNotification object:self];
 }

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 @interface OUIToolbarViewController : UIViewController
 {
 @private
+    CGFloat _lastKeyboardHeight;
     UIViewController *_innerViewController;
     BOOL _animatingAwayFromCurrentInnerViewController; // an animated switch away from _innerViewController is in progress.
     BOOL _resizesToAvoidKeyboard;
@@ -21,6 +22,7 @@
 }
 
 @property(nonatomic,readonly) UIToolbar *toolbar;
+@property(nonatomic,readonly) CGFloat lastKeyboardHeight;
 
 - (void)setToolbarHidden:(BOOL)hidden;
 

@@ -702,7 +702,7 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
     BOOL success;
 
     {
-        id <OFCSSMDigestionContext, NSObject> verifier = nil;
+        id <OFDigestionContext, NSObject> verifier = nil;
         @try {
             verifier = [self newVerificationContextForAlgorithm:signatureAlgorithm
                                                             method:signatureMethod
@@ -713,25 +713,20 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
             if (!verifier)
                 goto failed;
             
-            CSSM_DATA cssmBuffer = (CSSM_DATA){
-                .Data = canonicalSignedInfoBuf->buffer->content,
-                .Length = canonicalSignedInfoBuf->buffer->use
-            };
-            
             if (op == OFXMLSignature_Verify) {
                 NSData *alteredSignatureValue = [self signatureForStoredValue:signatureValue algorithm:signatureAlgorithm method:signatureMethod error:err];
                 if (!alteredSignatureValue)
                     goto failed;
                 success =
                     [verifier verifyInit:err] &&
-                    [verifier processBuffers:&cssmBuffer count:1 error:err] &&
+                    [verifier processBuffer:canonicalSignedInfoBuf->buffer->content length:canonicalSignedInfoBuf->buffer->use error:err] &&
                     [verifier verifyFinal:alteredSignatureValue error:err];
             } else if (op == OFXMLSignature_Sign) {
                 
                 if (![verifier generateInit:err])
                     goto failed;
                 
-                if (![verifier processBuffers:&cssmBuffer count:1 error:err])
+                if (![verifier processBuffer:canonicalSignedInfoBuf->buffer->content length:canonicalSignedInfoBuf->buffer->use error:err])
                     goto failed;
                 
                 NSData *generatedSignature = [verifier generateFinal:err];
@@ -781,7 +776,7 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
 }
 
 /*" Creates and returns a verification context for a given cryptographic algorithm. This method is also in charge of retrieving the key, if any. This is available for subclassing, but this implementation handles DSS-SHA1, HMAC-SHA1/MD5, and RSA-SHA1. "*/
-- (id <OFCSSMDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError;
+- (id <OFDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError;
 {
     CSSM_ALGORITHMS pk_keytype = CSSM_ALGID_NONE;
     CSSM_ALGORITHMS pk_signature_alg = CSSM_ALGID_NONE;
@@ -1065,7 +1060,7 @@ static xmlOutputBuffer *xmlTransformRejectForeignDoc(struct OFXMLSignatureVerify
 /* This is the final "transform" in the sequence; it passes the data to the OFCSSMVerifyContext as well as to the caller. */
 /* Verify-and-tee output buffer */
 struct verifyAndTeeContext {
-    id <OFCSSMBufferEater> digester;
+    id <OFBufferEater> digester;
     xmlOutputBuffer *tee;
     NSError *firstError;
 };
@@ -1086,11 +1081,7 @@ static int xmlioVerifyAndTeeWrite(void *context_, const char *buffer, int len)
     }
     
     {
-        CSSM_DATA cssmbuf = {
-            .Data = (void *)buffer,
-            .Length = len
-        };
-        BOOL ok = [context->digester processBuffers:&cssmbuf count:1 error:&(context->firstError)];
+        BOOL ok = [context->digester processBuffer:(const unsigned char *)buffer length:len error:&(context->firstError)];
         if (!ok)
             return -1;
     }
@@ -1364,7 +1355,7 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
     free(ctxt);
 }
 
-- (BOOL)_verifyReferenceNode:(xmlNode *)referenceNode toBuffer:(xmlOutputBuffer *)outBuf digester:(id <OFCSSMBufferEater>)digester error:(NSError **)outError
+- (BOOL)_verifyReferenceNode:(xmlNode *)referenceNode toBuffer:(xmlOutputBuffer *)outBuf digester:(id <OFBufferEater>)digester error:(NSError **)outError
 {
     OBASSERT(isNamed(referenceNode, "Reference", XMLSignatureNamespace, NULL));
     
@@ -1480,7 +1471,7 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
         signatureStructuralFailure(outError, @"The <DigestValue> content is not parsable as base64 data", count);
         return NO;
     }
-    id <OFCSSMDigestionContext, NSObject> digester = [self newDigestContextForMethod:digestMethodNode error:outError];
+    id <OFDigestionContext, NSObject> digester = [self newDigestContextForMethod:digestMethodNode error:outError];
     if (!digester)
         return NO;
     
@@ -1538,7 +1529,7 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
         signatureStructuralFailure(outError, @"Found %d <DigestMethod> nodes", count);
         return NO;
     }
-    id <OFCSSMDigestionContext, NSObject> digester = [self newDigestContextForMethod:digestMethodNode error:outError];
+    id <OFDigestionContext, NSObject> digester = [self newDigestContextForMethod:digestMethodNode error:outError];
     if (!digester)
         return NO;
     [digester autorelease];
@@ -1629,7 +1620,7 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
 }
 
 /*" Creates and returns a digest context for the specified algorithm. Subclassers may override this to add more algorithms. "*/
-- (id <OFCSSMDigestionContext, NSObject>)newDigestContextForMethod:(xmlNode *)digestMethodNode error:(NSError **)outError;
+- (id <OFDigestionContext, NSObject>)newDigestContextForMethod:(xmlNode *)digestMethodNode error:(NSError **)outError;
 {
     xmlChar *algid = lessBrokenGetAttribute(digestMethodNode, "Algorithm", XMLSignatureNamespace);
     if (!algid) {
@@ -1637,7 +1628,7 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
         return nil;
     }
     
-    id <OFCSSMDigestionContext, NSObject> result;
+    id <OFDigestionContext, NSObject> result;
     
     CSSM_ALGORITHMS cssm_algid;
     

@@ -14,7 +14,10 @@
 
 @interface OUIBarButtonItem : UIBarButtonItem
 
++ (id)spacerWithWidth:(CGFloat)width;
+
 + (Class)buttonClass;
++ (NSSet *)possibleTitlesForEditBarButtonItems;
 
 - initWithBackgroundType:(OUIBarButtonItemBackgroundType)backgroundType image:(UIImage *)image title:(NSString *)title target:(id)target action:(SEL)action;
 

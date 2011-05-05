@@ -5,16 +5,9 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniUI/OUIDragGestureRecognizer.h>
-
-#import <UIKit/UIGestureRecognizerSubclass.h>
+#import "OUIDragGestureRecognizer.h"
 
 RCS_ID("$Id$");
-
-@interface OUIDragGestureRecognizer (/*Private*/)
-@property (readwrite, nonatomic) CGFloat likelihood;  // Re-defined here to be privately writable
-@end
-
 
 @implementation OUIDragGestureRecognizer
 
@@ -26,33 +19,9 @@ RCS_ID("$Id$");
     // Defaults
     self.hysteresisDistance = 9;  // In pixels.  9 pixels is the empirically-determined value that always beats out the scrollview's pan gesture recognizers.
     overcameHysteresis = NO;
-    likelihood = 0;
+    self.numberOfTouchesRequired = 1;
     
     return self;
-}
-
-- (void)setLikelihood:(CGFloat)newLikelihood;
-{
-    if (likelihood == newLikelihood)
-        return;
-    
-    likelihood = newLikelihood;
-    
-    id theDelegate = self.delegate;
-    if (theDelegate && [theDelegate respondsToSelector:@selector(gesture:likelihoodDidChange:)]) {
-        [theDelegate gesture:self likelihoodDidChange:likelihood];
-    }
-}
-
-- (void)longPressTimerFired:(NSTimer *)theTimer;
-{
-    longPressTimer = nil;
-    
-    if (oneTouch && self.state == UIGestureRecognizerStatePossible) {
-        _completedHold = YES;
-        self.likelihood = 1;
-        self.state = UIGestureRecognizerStateBegan;
-    }
 }
 
 #pragma mark -
@@ -62,39 +31,11 @@ RCS_ID("$Id$");
 {
     [super touchesBegan:touches withEvent:event];
     
-    if (oneTouch || [touches count] > 1) {
-        // Extra touches while in state possible cause the gesture recognizer to fail.
-        if (self.state == UIGestureRecognizerStatePossible) {
-            self.likelihood = 0;
-            self.state = UIGestureRecognizerStateFailed;
-        }
-        
-        // If we've already begun, just ignore extra touches
-        else {
-            for (UITouch *touch in touches) {
-                [self ignoreTouch:touch forEvent:event];
-            }
-        }
-        
+    if (self.state != UIGestureRecognizerStatePossible)
         return;
-    }
-    oneTouch = [touches anyObject];
     
     overcameHysteresis = NO;
-    firstTouchPoint = [self locationInView:self.view.window];
-    
-    previousTimestamp = latestTimestamp = [[touches anyObject] timestamp];
-    
-    if (!beginTimestamp) {
-        beginTimestamp = [oneTouch timestamp];
-        beginTimestampReference = [NSDate timeIntervalSinceReferenceDate];
-    }
-    
-    if (!longPressTimer && self.holdDuration > 0) {
-        _completedHold = NO;
-
-        longPressTimer = [NSTimer scheduledTimerWithTimeInterval:self.holdDuration target:self selector:@selector(longPressTimerFired:) userInfo:nil repeats:NO];
-    }
+    firstTouchPoint = latestTouchPoint = [self locationInView:self.view.window];
     
     self.likelihood = 0.1;
 }
@@ -103,7 +44,7 @@ RCS_ID("$Id$");
 {
     [super touchesMoved:touches withEvent:event];
     OBASSERT([touches count] == 1);
-    OBASSERT([touches anyObject] == oneTouch);
+    OBASSERT([touches anyObject] == [_capturedTouches anyObject]);
     
     // If we don't do this, the event system will send out multiple action messages with UIGestureRecognizerStateBegan:
     if (self.state == UIGestureRecognizerStateBegan) {
@@ -111,8 +52,6 @@ RCS_ID("$Id$");
     }
     
     latestTouchPoint = [self locationInView:self.view.window];
-    previousTimestamp = latestTimestamp;
-    latestTimestamp = [[touches anyObject] timestamp];
     
     if (!overcameHysteresis) {
         CGFloat distanceMoved = hypotf(latestTouchPoint.x - firstTouchPoint.x, latestTouchPoint.y - firstTouchPoint.y);
@@ -135,87 +74,40 @@ RCS_ID("$Id$");
 {
     [super touchesEnded:touches withEvent:event];
     OBASSERT([touches count] == 1);
-    OBASSERT([touches anyObject] == oneTouch);
-    
-    if (longPressTimer) {
-        [longPressTimer invalidate];
-        longPressTimer = nil;
-    }
-    
-    endTimestamp = [oneTouch timestamp];
+    OBASSERT([touches anyObject] == [_capturedTouches anyObject]);
     
     if (!overcameHysteresis) {
         wasATap = YES;  // This can be checked in a delegate implementation of -gestureRecognizerShouldBegin:
     }
     
     self.state = UIGestureRecognizerStateEnded;  // same as UIGestureRecognizerStateRecognized
-    
-    oneTouch = nil;
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
 {
     [super touchesCancelled:touches withEvent:event];
     OBASSERT([touches count] == 1);
-    OBASSERT([touches anyObject] == oneTouch);
-    
-    if (longPressTimer) {
-        [longPressTimer invalidate];
-        longPressTimer = nil;
-    }
-    
-    endTimestamp = [oneTouch timestamp];
+    OBASSERT([touches anyObject] == [_capturedTouches anyObject]);
     
     self.state = UIGestureRecognizerStateCancelled;
-    
-    oneTouch = nil;
 }
 
 - (void)reset;
 {
     [super reset];
     
-    [longPressTimer invalidate];
-    longPressTimer = nil;
-    
-    oneTouch = nil;
     wasATap = NO;
-    self.likelihood = 0;
-    
-    beginTimestamp = 0;
-    beginTimestampReference = 0;
-    endTimestamp = 0;
-    
-    _completedHold = NO;
 }
 
 
 #pragma mark -
 #pragma mark Class methods
 
-@synthesize holdDuration, hysteresisDistance, overcameHysteresis, latestTimestamp, wasATap, likelihood;
-@synthesize completedHold = _completedHold;
+@synthesize hysteresisDistance, overcameHysteresis, wasATap;
 
 - (BOOL)touchIsDown;
 {
-    return oneTouch != nil && self.state != UIGestureRecognizerStateFailed;
-}
-
-- (NSTimeInterval)gestureDuration;
-{
-    if (endTimestamp) {
-        return endTimestamp - beginTimestamp;
-    }
-    else {
-        OBASSERT(oneTouch);
-        // If the main thread is blocked up, a touch could end before -touchesEnded: is called.
-        if (oneTouch.phase == UITouchPhaseEnded || oneTouch.phase == UITouchPhaseCancelled) {
-            return [oneTouch timestamp] - beginTimestamp;
-        }
-        
-        // If the touch has not ended yet, calculate the duration from "now" (less precise than using -[UITouch timestamp], but the best we can do since the touch may not have been updated recently, i.e. if the finger is still).
-        return [NSDate timeIntervalSinceReferenceDate] - beginTimestampReference;
-    }
+    return [_capturedTouches anyObject] != nil && self.state != UIGestureRecognizerStateFailed;
 }
 
 - (void)resetHysteresis;
@@ -247,25 +139,6 @@ RCS_ID("$Id$");
     CGPoint endPoint = [view convertPoint:latestTouchPoint fromView:window];
     
     return CGPointMake(endPoint.x - startPoint.x, endPoint.y - startPoint.y);
-}
-
-- (CGFloat)velocity;
-{
-    if (!oneTouch) {
-        return 0;
-    }
-    
-    CGPoint p1 = [oneTouch previousLocationInView:nil];
-    CGPoint p2 = [oneTouch locationInView:nil];
-    CGFloat recentDistance = hypot(p1.x - p2.x, p1.y - p2.y);
-    
-    NSTimeInterval timeElapsed = oneTouch.timestamp - previousTimestamp;
-    if (timeElapsed > 0) {
-        return recentDistance/timeElapsed;
-    }
-    
-    // Otherwise
-    return 0;
 }
 
 @end

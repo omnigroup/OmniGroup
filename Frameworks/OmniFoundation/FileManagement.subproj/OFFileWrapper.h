@@ -1,4 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,6 +54,9 @@ typedef NSUInteger OFFileWrapperWritingOptions;
     
     // If a file
     NSData *_contents;
+    
+    // If a symlink
+    NSString *_symbolicLinkDestination;
 }
 
 - (id)initWithURL:(NSURL *)url options:(OFFileWrapperReadingOptions)options error:(NSError **)outError;
@@ -66,10 +69,12 @@ typedef NSUInteger OFFileWrapperWritingOptions;
 
 - (BOOL)isRegularFile;
 - (BOOL)isDirectory;
+- (BOOL)isSymbolicLink;
 
 @property(nonatomic,copy) NSString *filename;
 - (NSData *)regularFileContents;
 - (NSDictionary *)fileWrappers;
+- (NSString *)symbolicLinkDestination;
 
 @property(nonatomic,copy) NSString *preferredFilename;
 
@@ -78,6 +83,13 @@ typedef NSUInteger OFFileWrapperWritingOptions;
 - (NSString *)keyForFileWrapper:(OFFileWrapper *)child;
 
 - (BOOL)matchesContentsOfURL:(NSURL *)url;
+
+// Serialization
+- (NSData *)serializedRepresentation; // NOTE: No attempt is made to be data-compatible with NSFileWrapper, just API-compatible
+- (id)initWithSerializedRepresentation:(NSData *)serializedRepresentation;
+
+// Convenience methods
+- (NSString *)addRegularFileWithContents:(NSData *)data preferredFilename:(NSString *)fileName;
 
 @end
 

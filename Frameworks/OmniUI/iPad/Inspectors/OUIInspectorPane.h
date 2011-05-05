@@ -8,6 +8,7 @@
 // $Id$
 
 #import <OmniUI/OUIParentViewController.h>
+#import <OmniUI/OUIInspectorUpdateReason.h>
 
 @class OUIInspector, OUIInspectorSlice;
 
@@ -16,17 +17,19 @@
 @private
     OUIInspector *_nonretained_inspector; // the main inspector
     OUIInspectorSlice *_nonretained_parentSlice; // our parent slice if any
-    NSSet *_inspectedObjects;
+    NSArray *_inspectedObjects;
 }
 
 @property(readonly,nonatomic) BOOL inInspector;
 @property(assign,nonatomic) OUIInspector *inspector; // Set by the containing inspector
 @property(assign,nonatomic) OUIInspectorSlice *parentSlice; // Set by the parent slice, if any.
 
-@property(nonatomic,copy) NSSet *inspectedObjects; // Typically should NOT be set by anything other than -pushPane: or -pushPane:inspectingObjects:.
+@property(nonatomic,copy) NSArray *inspectedObjects; // Typically should NOT be set by anything other than -pushPane: or -pushPane:inspectingObjects:.
 
-- (void)updateInterfaceFromInspectedObjects;
-- (void)updateInspectorToolbarItems:(BOOL)animated;
+// Allow panes to configure themselves before being pushed onto the OUIInspector's navigation controller. This is important since the navigation controller queries some properties before -viewWillAppear: is called.
+- (void)inspectorWillShow:(OUIInspector *)inspector;
+
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 
 @end
 
