@@ -1,4 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,10 +7,10 @@
 //
 // RCS_ID("$Id$")
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
+#import <getopt.h>
 
-
-static void fixStringsFile(NSString *path);
+static void fixStringsFile(NSString *path, NSString *outputEncodingName, NSString *outputDirectory);
 
 static NSString *_quotedString(NSString *str)
 {
@@ -114,6 +114,7 @@ NSString *_transformedTranslation(NSString *translation)
 {
     [_comments release];
     [_pairs release];
+    [super dealloc];
 }
 
 - (NSComparisonResult)compareBySource:(Entry *)entry;
@@ -151,40 +152,75 @@ NSString *_transformedTranslation(NSString *translation)
 @end
 
 
-int main (int argc, const char * argv[])
+int main (int argc, char * const * argv)
 {
+    NSString *outputEncodingName = nil;
+    NSString *outputDirectory = nil;
     
-    if (argc < 2) {
-	fprintf(stderr, "usage: %s file1 ... fileN\n", argv[0]);
-	return 1;
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    {
+        static struct option longopts[] = {
+            { "outputencoding",   required_argument, NULL, 'e' },
+            { "outdir", required_argument, NULL, 'o' },
+            { NULL, 0, NULL, 0 }
+        };
+        
+        int ch;
+        while ((ch = getopt_long(argc, argv, "e:o:", longopts, NULL)) != -1) {
+            switch (ch) {
+                case 'e': {
+                    [outputEncodingName release];
+                    outputEncodingName = [[NSString alloc] initWithUTF8String:optarg];
+                    break;
+                }
+                case 'o': {
+                    [outputDirectory release];
+                    outputDirectory = [[[NSFileManager defaultManager] stringWithFileSystemRepresentation:optarg length:strlen(optarg)] copy];
+                    break;
+                }
+                default:
+                    fprintf(stderr, "usage: %s [--outputencoding encoding-name] [--outdir dir] file1 ... fileN\n", argv[0]);
+                    exit(1);
+            }
+        }
     }
-    
+    [pool release];
+        
     int argi;
-    for (argi = 1; argi < argc; argi++) {
+    for (argi = optind; argi < argc; argi++) {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSString *path = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:argv[argi] length:strlen(argv[argi])];
-	fixStringsFile(path);
+	fixStringsFile(path, outputEncodingName, outputDirectory);
 	[pool release];
     }
+    
+    [outputEncodingName release];
+    [outputDirectory release];
     
     return 0;
 }
 
-static void fixStringsFile(NSString *path)
+static NSData *fixedStringRepresentationForStringsFile(NSData *fileData, NSString *outputEncodingName)
 {
-    NSData *fileData = [[[NSData alloc] initWithContentsOfFile:path] autorelease];
-    if (!fileData) {
-	NSLog(@"Unable to read file '%@'", path);
-	exit(1);
-    }
-    
-    // Allow loading both UTF-16 and UTF-8 files.  -[NSString initWithData:encoding:] with NSUnicodeStringEncoding doesn't require the BOM, so if the file is UTF-8, it would just produce gibberish.
-    if ([fileData length] < 2) {
-	// Nothing interesting anyway -- probably just empty.
-	return;
-    }
     uint8_t byte0 = ((const uint8_t *)[fileData bytes])[0];
     uint8_t byte1 = ((const uint8_t *)[fileData bytes])[1];
+    
+    NSError *error = nil;
+    if (byte0 == 'b' && byte1 == 'p') {
+        id plist = [NSPropertyListSerialization propertyListWithData:fileData options:0 format:NULL error:&error];
+        if (!plist) {
+            NSLog(@"Data is not a property list: %@", error);
+            return nil;
+        }
+        
+        // The only valid output format in this case is 'binary'
+        if (!outputEncodingName && [outputEncodingName compare:@"binary" options:NSCaseInsensitiveSearch] != NSOrderedSame) {
+            NSLog(@"Can only copy binary input to binary output.");
+            return nil;
+        }
+        
+        return fileData;
+    }
     
     NSString *fileString = nil;
     
@@ -205,13 +241,13 @@ static void fixStringsFile(NSString *path)
     }
     
     if (!fileString) {
-	NSLog(@"Unable to interpret file '%@' as UTF-8 or UTF-16.", path);
-	exit(1);
+	NSLog(@"Unable to interpret data as UTF-8 or UTF-16.");
+        return nil;
     }
     
     NSMutableArray *entries = [NSMutableArray array];
     
-    NSScanner *scanner = [[NSScanner alloc] initWithString:fileString];
+    NSScanner *scanner = [[[NSScanner alloc] initWithString:fileString] autorelease];
     [fileString release];
     while (![scanner isAtEnd]) {
 	if (![scanner scanString:@"/*" intoString:NULL]) {
@@ -221,12 +257,12 @@ static void fixStringsFile(NSString *path)
         
 	NSString *commentString = nil;
 	if (![scanner scanUpToString:@"*/" intoString:&commentString]) {
-	    NSLog(@"Unterminated comment in '%@'", path);
-	    exit(1);
+	    NSLog(@"Unterminated comment!");
+            return nil;
 	}
 	if (![scanner scanString:@"*/" intoString:NULL]) {
-	    NSLog(@"Unable to read expected comment termination in '%@'", path);
-	    exit(1);
+	    NSLog(@"Unable to read expected comment termination!");
+            return nil;
 	}
         
 	commentString = [commentString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]; // up-to leaves the trailing space
@@ -241,8 +277,8 @@ static void fixStringsFile(NSString *path)
 	
 	NSString *keyValue;
 	if (![scanner scanUpToString:@"/*" intoString:&keyValue]) {
-	    NSLog(@"Missing key-value pair in '%@'", path);
-	    exit(1);
+	    NSLog(@"Missing key-value pair!");
+            return nil;
 	}
 	
         //NSLog(@"key/value = '%@'", keyValue);
@@ -253,7 +289,6 @@ static void fixStringsFile(NSString *path)
         [entries addObject:entry];
         [entry release];
     }
-    [scanner release];
     
     NSMutableString *output = [NSMutableString string];
     {
@@ -265,10 +300,59 @@ static void fixStringsFile(NSString *path)
 	    [output appendString:@"\n"];
 	}
     }
+
+    if (outputEncodingName && [outputEncodingName compare:@"binary" options:NSCaseInsensitiveSearch] == NSOrderedSame) {
+        NSDictionary *plist = [output propertyList];
+        NSData *resultData = [NSPropertyListSerialization dataWithPropertyList:plist format:NSPropertyListBinaryFormat_v1_0 options:0 error:&error];
+        if (!resultData) {
+            NSLog(@"Unable to serialize as a binary plist: %@", error);
+            return nil;
+        }
+        return resultData;
+    } else {
+        CFStringEncoding outputEncoding = kCFStringEncodingUTF8;
+        
+        if (outputEncodingName)
+            outputEncoding = CFStringConvertIANACharSetNameToEncoding((CFStringRef)outputEncodingName);
+        if (outputEncoding == kCFStringEncodingInvalidId) {
+            NSLog(@"No such encoding '%@'!", outputEncodingName);
+            return nil;
+        }
+        return [NSMakeCollectable(CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)output, outputEncoding, 0)) autorelease];
+    }
     
-    NSData *resultData = [output dataUsingEncoding:NSUTF8StringEncoding];
-    if (![resultData writeToFile:path atomically:YES]) {
-        NSLog(@"Unable to write '%@'", path);
+}
+
+static void fixStringsFile(NSString *path, NSString *outputEncodingName, NSString *outputDirectory)
+{
+    NSData *fileData = [[[NSData alloc] initWithContentsOfFile:path] autorelease];
+    if (!fileData) {
+	NSLog(@"Unable to read file '%@'", path);
+	exit(1);
+    }
+    
+    // Allow loading both UTF-16 and UTF-8 files.  -[NSString initWithData:encoding:] with NSUnicodeStringEncoding doesn't require the BOM, so if the file is UTF-8, it would just produce gibberish.
+    // Also, allow pre-converted binary plist files for the case of iOS targets where libraries export strings files and apps copy them in.
+    if ([fileData length] < 2) {
+	// Nothing interesting anyway -- probably just empty.
+	return;
+    }
+
+    NSData *resultData = fixedStringRepresentationForStringsFile(fileData, outputEncodingName);
+    if (!resultData) {
+        NSLog(@"Unable to fix strings file data for \"%@\".", path);
+        exit(1);
+    }
+        
+    NSString *outputPath;
+    if (outputDirectory)
+        outputPath = [outputDirectory stringByAppendingPathComponent:[path lastPathComponent]];
+    else
+        outputPath = path;
+    
+    NSError *error = nil;
+    if (![resultData writeToFile:outputPath options:NSDataWritingAtomic error:&error]) {
+        NSLog(@"Unable to write '%@': %@", outputPath, error);
         exit(1);
     }
 }
