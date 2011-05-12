@@ -86,6 +86,11 @@ RCS_ID("$Id$");
     }
 }
 
+- (BOOL)isChildViewController:(UIViewController *)child;
+{
+    return [_children indexOfObjectIdenticalTo:child] != NSNotFound;
+}
+
 #pragma mark -
 #pragma mark UIViewController subclass
 

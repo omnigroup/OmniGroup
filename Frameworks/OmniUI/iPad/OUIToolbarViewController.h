@@ -23,6 +23,7 @@
 
 @property(nonatomic,readonly) UIToolbar *toolbar;
 @property(nonatomic,readonly) CGFloat lastKeyboardHeight;
+@property(nonatomic,readonly) CGFloat interItemPadding;
 
 - (void)setToolbarHidden:(BOOL)hidden;
 

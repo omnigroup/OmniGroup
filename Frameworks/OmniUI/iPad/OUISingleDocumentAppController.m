@@ -311,11 +311,18 @@ static NSString * const SelectAction = @"select";
     {
         NSMutableArray *toolbarItems = [NSMutableArray array];
         
+        CGFloat interItemPadding = [self.toolbarViewController interItemPadding];
+        CGFloat leftWidth = 0.0f;
+        CGFloat rightWidth = 0.0f;
+        NSInteger itemCount = -1;
+
         if (documentPicker.documentTypeForNewFiles != nil) {
             UIBarButtonItem *addItem = [[[OUIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"New Document", @"OmniUI", OMNI_BUNDLE, @"Toolbar button for creating a new, empty document.")
                                                                           style:UIBarButtonItemStyleBordered
                                                                          target:self action:@selector(makeNewDocument:)] autorelease];
             [toolbarItems addObject:addItem];
+            leftWidth += CGRectGetWidth([[addItem customView] bounds]);
+            itemCount++;
         }
         
         if ([[OFPreferenceWrapper sharedPreferenceWrapper] boolForKey:@"OUIImportEnabled"]) {
@@ -323,13 +330,33 @@ static NSString * const SelectAction = @"select";
                                                                              style:UIBarButtonItemStyleBordered 
                                                                             target:self action:@selector(showSyncMenu:)] autorelease];
             [toolbarItems addObject:importItem];
+            leftWidth += CGRectGetWidth([[importItem customView] bounds]);
+            itemCount++;
         }
         
+        if (itemCount > 0)
+        leftWidth += interItemPadding;
+        rightWidth = CGRectGetWidth([self.appMenuBarItem.customView bounds]);
+        UIBarButtonItem *leftPadding = nil;
+        UIBarButtonItem *rightPadding = nil;
+        
+        if (leftWidth > rightWidth) {
+            rightPadding = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:NULL] autorelease];
+            [rightPadding setWidth:leftWidth - rightWidth + interItemPadding];
+        } else if (rightWidth > leftWidth) {
+            leftPadding = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:NULL] autorelease];
+            [leftPadding setWidth:rightWidth - leftWidth + interItemPadding];
+        }
+
+        if (leftPadding)
+            [toolbarItems addObject:leftPadding];
         [toolbarItems addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
         
         [toolbarItems addObject:_appTitleToolbarItem];
         
         [toolbarItems addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
+        if (rightPadding)
+            [toolbarItems addObject:rightPadding];
         
 #if 0 // Punting on favorites for 1.0
         UIBarButtonItem *favoritesItem = [[[OUIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarFavoriteHollow.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(toggleFavorites:)] autorelease];

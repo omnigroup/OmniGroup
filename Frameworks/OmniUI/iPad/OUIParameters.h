@@ -58,6 +58,7 @@ typedef struct {
 
 // OUIToolbar
 #define kOUIToolbarEdgePadding (5.0f)
+#define kOUIToolbarIteritemPadding (12)
 
 // OUIExportOptionsView and friends
 

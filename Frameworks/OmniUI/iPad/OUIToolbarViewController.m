@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIToolbarViewController.h>
 
+#import "OUIParameters.h"
+
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
@@ -45,6 +47,11 @@ RCS_ID("$Id$");
 
 @synthesize lastKeyboardHeight = _lastKeyboardHeight;
 @synthesize innerViewController = _innerViewController;
+
+- (CGFloat)interItemPadding
+{
+    return kOUIToolbarIteritemPadding;
+}
 
 static void _setInnerViewController(OUIToolbarViewController *self, UIViewController *viewController, BOOL forAnimation)
 {

@@ -33,5 +33,6 @@ typedef enum {
 
 - (void)addChildViewController:(UIViewController *)child animated:(BOOL)animated;
 - (void)removeChildViewController:(UIViewController *)child animated:(BOOL)animated;
+- (BOOL)isChildViewController:(UIViewController *)child;
 
 @end

@@ -339,12 +339,7 @@ void OUIDocumentProxyDrawPreview(CGContextRef ctx, OUIDocumentPDFPreview *pdfPre
     [CATransaction begin];
     [CATransaction setValue:(id)kCFBooleanFalse forKey:(id)kCATransactionDisableActions];
     {
-        // This is for the benefit of the static preview, which is a fixed size.  The other previews are built to match the right size.
-        if ([_preview isKindOfClass:[OUIDocumentImagePreview class]])
-            layer.contentsGravity = kCAGravityCenter;
-        else
-            layer.contentsGravity = kCAGravityResize;
-        
+        layer.contentsGravity = kCAGravityResize;
         layer.contents = (id)imageRef;
     }
     [CATransaction commit];

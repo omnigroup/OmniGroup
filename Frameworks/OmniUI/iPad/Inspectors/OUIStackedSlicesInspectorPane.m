@@ -306,7 +306,8 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 
 - (void)didReceiveMemoryWarning;
 {
-    if (self.visibility == OUIViewControllerVisibilityHidden) {
+    // Make sure to do this only when the whole inspector is hidden. We don't want to kill off a pane that pushed a detail pane.
+    if (self.visibility == OUIViewControllerVisibilityHidden && ![self.inspector isVisible]) {
         // Remove our slices now to avoid getting assertion failures about their views not being subviews of ours when we remove them.
         
         // Ditch our current slices too. When we get reloaded, we'll rebuild and re add them.
@@ -335,6 +336,15 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 - (void)loadView;
 {
     OUIStackedSlicesInspectorPaneContentView *view = [[OUIStackedSlicesInspectorPaneContentView alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 16)];
+    
+    // If we are getting our view reloaded after a memory warning, we might already have slices. They should be mostly set up, but their superview needs fixing.
+    for (OUIInspectorSlice *slice in _slices) {
+        OBASSERT(slice.containingPane == self);
+        OBASSERT([self isChildViewController:slice]);
+        [view addSubview:slice.view];
+    }
+    view.slices = _slices;
+    
     self.view = view;
     [view release];
 }
@@ -345,7 +355,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 
     [super viewDidUnload];
     
-    OBASSERT(_slices == nil); // We expect -didReceiveMemoryWarning to do this
+    OBASSERT(self.inspector.visible || _slices == nil); // We expect -didReceiveMemoryWarning to do this, unless our inspector is still shown
 }
 
 - (void)viewWillAppear:(BOOL)animated;
