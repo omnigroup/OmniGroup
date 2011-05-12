@@ -1,4 +1,13 @@
 #!/bin/zsh -euf
+#
+# Copyright 2010-2011 Omni Development, Inc. All rights reserved.
+#
+# This software may only be used and reproduced according to the
+# terms in the file OmniSourceLicense.html, which should be
+# distributed with this project and can also be found at
+# <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+#
+# $Id$
 
 # Run the right version from our PWD's OmniGroup/Scripts directory if we find this in /usr/omni/bin/Scripts
 OMNI_SCRIPT_EXEC_ORIGINAL=$0 . $0:h/OmniScriptsReexec

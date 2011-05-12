@@ -1,4 +1,13 @@
+#
+# Copyright 2010-2011 Omni Development, Inc. All rights reserved.
+#
+# This software may only be used and reproduced according to the
+# terms in the file OmniSourceLicense.html, which should be
+# distributed with this project and can also be found at
+# <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+#
 # $Id$
+
 #
 # When something from OmniGroup/Scripts is run, it might differ between the trunk
 # version (the one in /usr/omni/bin/Scripts) and the one on the product branch
