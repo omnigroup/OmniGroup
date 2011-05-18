@@ -16,7 +16,7 @@
                BlueprintIdentifier = "8DD76F740486A8DE00D96B5E"
                BuildableName = "FixStringsFile"
                BlueprintName = "FixStringsFile"
-               ReferencedContainer = "container:../../../../github/OmniGroup/Tools/FixStringsFile/FixStringsFile.xcodeproj">
+               ReferencedContainer = "container:../Tools/FixStringsFile/FixStringsFile.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
