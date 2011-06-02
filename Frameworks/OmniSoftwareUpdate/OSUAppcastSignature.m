@@ -1,4 +1,4 @@
-// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,6 +37,7 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
+#if OF_ENABLE_CSSM
 static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *where)
 {
     NSDictionary *userInfo;
@@ -48,7 +49,9 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
     
     [errorInfo setObject:[NSError errorWithDomain:NSOSStatusErrorDomain code:code userInfo:userInfo] forKey:NSUnderlyingErrorKey];
 }
+#endif
 
+#if OF_ENABLE_CSSM
 // API
 - (OFCSSMKey *)getPublicKey:(xmlNode *)keyInfo algorithm:(CSSM_ALGORITHMS)keytype error:(NSError **)outError;
 {
@@ -176,11 +179,13 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
 
     return resultKey;
 }
+#endif
 
 @end
 
 NSArray *OSUGetSignedPortionsOfAppcast(NSData *xmlData, NSString *pemFile, NSError **outError)
 {
+#if OF_ENABLE_CSSM
     NSArray *trusts = OFReadCertificatesFromFile(pemFile, kSecFormatPEMSequence, outError);
     if (!trusts)
         return nil;
@@ -254,5 +259,8 @@ NSArray *OSUGetSignedPortionsOfAppcast(NSData *xmlData, NSString *pemFile, NSErr
         return nil;
     } else 
         return results;
+#else
+    OBFinishPorting;
+#endif
 }
 

@@ -778,6 +778,7 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
 /*" Creates and returns a verification context for a given cryptographic algorithm. This method is also in charge of retrieving the key, if any. This is available for subclassing, but this implementation handles DSS-SHA1, HMAC-SHA1/MD5, and RSA-SHA1. "*/
 - (id <OFDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError;
 {
+#if OF_ENABLE_CSSM
     CSSM_ALGORITHMS pk_keytype = CSSM_ALGID_NONE;
     CSSM_ALGORITHMS pk_signature_alg = CSSM_ALGID_NONE;
     if (xmlStrcmp(signatureAlgorithm, XMLPKSignatureDSS) == 0) {
@@ -858,6 +859,9 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
     }
     
     return [[OFCSSMMacContext alloc] initWithCSP:thisCSP cc:context];
+#else
+    OBFinishPorting;
+#endif
 }
 
 static NSData *padInteger(NSData *i, unsigned toLength, NSError **outError)
@@ -969,6 +973,7 @@ static const SecAsn1Template dsaSignatureTemplate[] =
     return signatureValue;
 }
 
+#if OF_ENABLE_CSSM
 - (OFCDSAModule *)cspForKey:(OFCSSMKey *)aKey;
 {
     OFCDSAModule *keyCSP = [aKey csp];
@@ -978,6 +983,7 @@ static const SecAsn1Template dsaSignatureTemplate[] =
     
     return [OFCDSAModule appleCSP];
 }
+#endif
 
 /*" If -processSignatureElement: returns success, this method indicates the number of references found in the signed information. "*/
 - (NSUInteger)countOfReferenceNodes;
@@ -1630,6 +1636,21 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
     
     id <OFDigestionContext, NSObject> result;
     
+    if (xmlStrcmp(algid, XMLDigestSHA1) == 0) {
+        xmlFree(algid);
+        return [[OFSHA1DigestContext alloc] init];
+    } else if (xmlStrcmp(algid, XMLDigestSHA256) == 0) {
+        xmlFree(algid);
+        return [[OFSHA256DigestContext alloc] init];
+    } else if (xmlStrcmp(algid, XMLDigestSHA512) == 0) {
+        xmlFree(algid);
+        return [[OFSHA512DigestContext alloc] init];
+    } else if (xmlStrcmp(algid, XMLDigestMD5) == 0) {
+        xmlFree(algid);
+        return [[OFMD5DigestContext alloc] init];
+    }
+    
+#if OF_ENABLE_CSSM
     CSSM_ALGORITHMS cssm_algid;
     
     if (xmlStrcmp(algid, XMLDigestSHA1) == 0) {
@@ -1658,14 +1679,16 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
         } else {
             result = [[OFCSSMDigestContext alloc] initWithCSP:csp cc:context];
         }
-    } else {
-        /* TODO: Figure out best way for subclassers to extend this method */
-        signatureValidationFailure(outError, @"Unimplemented digest algorithm <%s>", algid);
-        result = nil;
+        
+        xmlFree(algid);
+        return result;
     }
+#endif
     
+    /* TODO: Figure out best way for subclassers to extend this method */
+    signatureValidationFailure(outError, @"Unimplemented digest algorithm <%s>", algid);
     xmlFree(algid);
-    return result;
+    return nil;
 }
 
 /* This is here so that it can be subclassed, but subclassers would need to understand our internal OFXMLSignatureVerifyContinuation structure to work right. When/if this is needed, figure out what the API should be. */
@@ -1808,6 +1831,7 @@ static xmlNode *singleNodeFromXptrExpression(const xmlChar *expr, xmlDocPtr inDo
  The key methods are completely stubbed because they really have two responsibilities: one is to find the key, and the other is to evaluate whether it should be trusted for this particular application. I don't envision any use cases where it's useful to distinguish between "this was signed with an untrusted key" and "this was signed with an unknown key", so I'm conflating those here. The trust issue is entirely application-dependent, so the generic superclass defaults to trusting nothing.
 */
 
+#if OF_ENABLE_CSSM
 /*" Subclassers must implement this to find and return the specified asymmetric (RSA or DSA) key. "*/
 - (OFCSSMKey *)getPublicKey:(xmlNode *)keyInfo algorithm:(CSSM_ALGORITHMS)algid error:(NSError **)outError
 {
@@ -1827,6 +1851,7 @@ static xmlNode *singleNodeFromXptrExpression(const xmlChar *expr, xmlDocPtr inDo
     signatureValidationFailure(outError, @"HMAC key not available");
     return nil;
 }
+#endif
 
 /*" Subclassers must implement this to resolve any external references (that is, <Reference> nodes pointing outside of the containing document). By default, those references are not resolved. "*/
 - (BOOL)writeReference:(NSString *)externalReference type:(NSString *)referenceType to:(xmlOutputBuffer *)stream error:(NSError **)outError;

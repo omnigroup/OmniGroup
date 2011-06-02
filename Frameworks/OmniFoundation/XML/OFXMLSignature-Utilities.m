@@ -1,4 +1,4 @@
-// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -313,6 +313,7 @@ NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len)
 
 #pragma mark X.509 Certificate Utilities
 
+#if OF_ENABLE_CSSM
 static NSData *getSKI(CSSM_CL_HANDLE cl, const CSSM_DATA *cert)
 {
     uint32 fieldCount;
@@ -420,10 +421,12 @@ static BOOL certificateMatchesSKI(SecCertificateRef aCert, NSData *subjectKeyIde
         return NO;
     } 
 }
+#endif
 
 /*" Given a <KeyInfo> element, this function attempts to find the X.509 certificate(s) corresponding to the key specified by the element's <X509Foo> children. All certificates supplied by the element are appended to auxiliaryCertificates, which may also contain externally supplied certificates which are used to satisfy <X509SKI> patterns. (In the future this function may also support SubjectKeyidentifier lookups, as well as Apple Keychain searches.) "*/
 NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef auxiliaryCertificates, NSMutableDictionary *errorInfo)
 {
+#if OF_ENABLE_CSSM
     unsigned int nodeCount, nodeIndex;
     xmlNode **x509Nodes = OFLibXMLChildrenNamed(keyInfoNode, "X509Data", XMLSignatureNamespace, &nodeCount);
     
@@ -512,6 +515,9 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
     [errorInfo setUnsignedIntValue:(unsigned)auxCertCount forKey:@"auxCertCount"];
     
     return testCertificates;
+#else
+    OBFinishPorting;
+#endif
 }
 
 static const struct { SecTrustResultType code; NSString *display; } results[] = {
@@ -544,6 +550,7 @@ static const struct { CSSM_TP_APPLE_CERT_STATUS bit; NSString *display; } status
 
 NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext)
 {
+#if OF_ENABLE_CSSM
     SecTrustResultType trustResult;
     CFArrayRef chain = NULL;
     CSSM_TP_APPLE_EVIDENCE_INFO *stats = NULL;
@@ -581,12 +588,16 @@ NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext)
     CFRelease(chain);
     
     return buf;
+#else
+    OBFinishPorting;
+#endif
 }
 
 #pragma mark Keys from excplicit key information
 
 /* These key-conversion routines are really only used for the unit tests and for a command-line test utility. Maybe they should be moved out of the framework? */
 
+#if OF_ENABLE_CSSM
 OFCSSMKey *OFXMLSigGetKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError)
 {
     unsigned int count;
@@ -658,6 +669,7 @@ NSData *derIntegerFromNodeChild(xmlNode *parent, const char *childName, NSError 
     
     return OFASN1IntegerFromBignum(OFLibXMLNodeBase64Content(integerNode));
 }
+#endif
 
 #define dssOidByteCount 9
 static const unsigned char dssOidBytes[dssOidByteCount] = {
@@ -669,6 +681,7 @@ static const unsigned char dssOidBytes[dssOidByteCount] = {
     0x2a, 0x86, 0x48, 0xce, 0x38, 0x04, 0x01
 };
 
+#if OF_ENABLE_CSSM
 OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
 {
     unsigned int count;
@@ -754,4 +767,4 @@ OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
     
     return key;
 }
-
+#endif

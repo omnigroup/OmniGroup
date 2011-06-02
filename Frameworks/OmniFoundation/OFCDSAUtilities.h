@@ -11,6 +11,8 @@
 #import <Security/Security.h>
 #import <OmniFoundation/OFDigestUtilities.h>
 
+#define OF_ENABLE_CSSM 1
+
 /*
  This file has a handful of trivial data-holders for CSSM / CDSA objects: service providers, keys, and cryptographic contexts.
  
@@ -19,13 +21,18 @@
  The MAC and Signature objects conform to some common protocols, allowing the caller to ignore some minor differences in the way they behave.
 */
 
+#if OF_ENABLE_CSSM
 NSString *OFStringFromCSSMReturn(CSSM_RETURN code);
 BOOL OFErrorFromCSSMReturn(NSError **outError, CSSM_RETURN errcode, NSString *function);
 NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputFormat_, NSError **outError);
 NSData *OFGetAppleKeyDigest(const CSSM_KEY *pkey, CSSM_CC_HANDLE optionalContext, NSError **outError);
+#endif
 NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext);
+#if OF_ENABLE_CSSM
 CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage, CFTypeRef anchors, SecPolicyRef policy, NSError **outError);
+#endif
 
+#if OF_ENABLE_CSSM
 @interface OFCDSAModule : NSObject
 {
     CSSM_MODULE_HANDLE hdl;
@@ -121,4 +128,5 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 @property (readonly, nonatomic) NSData *result;
 
 @end
+#endif // OF_ENABLE_CSSM
 
