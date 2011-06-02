@@ -116,24 +116,30 @@ RCS_ID("$Id$")
     
     if ([path hasPrefix:[[[[NSBundle mainBundle] bundlePath] stringByStandardizingPath] stringByResolvingSymlinksInPath]])
         return YES;
-    else {
-        NSLog(@"Attempted to load from '%@', but this is URL is not within the app.", url);
+    else 
         return NO;
-    }
 }
 
-- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame
+- (void)webView:(WebView *)aWebView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame
 decisionListener:(id<WebPolicyDecisionListener>)listener;
 {
     NSURL *url = [actionInformation objectForKey:WebActionOriginalURLKey];
     
     // Initial content
-    if ([[actionInformation objectForKey:WebActionNavigationTypeKey] intValue] == WebNavigationTypeOther) {
+    WebNavigationType webNavigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] intValue];
+    if (webNavigationType == WebNavigationTypeOther ) {
         if ([self _urlIsFromAllowedBundle:url])
             [listener use];
-        else
+        else {
+            NSLog(@"Attempted to load from '%@', but this is URL is not within the app.", url);
             [listener ignore];
+        }
         return;
+    } else if (webNavigationType == WebNavigationTypeLinkClicked && [[actionInformation objectForKey:WebActionElementKey] objectForKey:WebElementLinkTargetFrameKey] == [webView mainFrame]) {
+        if ([self _urlIsFromAllowedBundle:url]) {
+            [listener use];
+            return;
+        }
     }
     
     // Open links in the user's browser
