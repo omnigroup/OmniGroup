@@ -95,7 +95,16 @@ static BOOL _isRead(OFSDAVOperation *self)
         NSString *location = [[_request URL] absoluteString];
         NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not access the WebDAV location <%@>.", @"OmniFileStore", OMNI_BUNDLE, @"error description"),
                                  location];
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Please make sure that the location set in your Sync preferences actually exists.", @"OmniFileStore", OMNI_BUNDLE, @"error reason");
+        NSString *reason;
+        switch (code) {
+            case 402:
+                reason = NSLocalizedStringFromTableInBundle(@"Please make sure that the account information is correct.", @"OmniFileStore", OMNI_BUNDLE, @"error reason");
+                break;
+            default:
+            case 409:
+                reason = NSLocalizedStringFromTableInBundle(@"Please make sure that the destination folder exists.", @"OmniFileStore", OMNI_BUNDLE, @"error reason");
+                break;
+        }
         NSMutableDictionary *info = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedRecoverySuggestionErrorKey, nil];
         [info setObject:davError forKey:NSUnderlyingErrorKey];
         

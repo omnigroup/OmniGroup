@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -186,7 +186,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     NSString *parentPath = [[url path] stringByDeletingLastPathComponent];
     if (![manager directoryExistsAtPath:parentPath traverseLink:YES]) {
         NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not find \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error description"), parentPath];
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Please make sure that the location set in your Sync preferences actually exists.", @"OmniFileStore", OMNI_BUNDLE, @"error reason");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Please make sure that the destination folder exists.", @"OmniFileStore", OMNI_BUNDLE, @"error reason");
         OFSError(outError, OFSCannotCreateDirectory, description, reason);
         return nil;
     }
