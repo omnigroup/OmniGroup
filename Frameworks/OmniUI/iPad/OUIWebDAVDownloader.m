@@ -23,7 +23,7 @@
 RCS_ID("$Id$")
 
 @interface OUIWebDAVDownloader (/*private*/)
-- (void)_cleanup;
+- (void)_cleanupWithSuccess:(BOOL)success;
 - (NSString *)_downloadLocation;
 - (NSString *)_unarchiveFileAtPath:(NSString *)filePathWithArchiveExtension error:(NSError **)error;
 @end
@@ -171,6 +171,7 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
 #endif
 
     if ([fileWrapper isDirectory]) {
+        targetURL = OFSURLWithTrailingSlash(targetURL); // RFC 2518 section 5.2 says: In general clients SHOULD use the "/" form of collection names.
         NSError *error = nil;
         if (atomically) {
             OBASSERT(_uploadTemporaryURL == nil); // Otherwise we'd need a stack of things to rename rather than just one
@@ -178,7 +179,7 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
 
             NSString *temporaryNameSuffix = [@"-write-in-progress-" stringByAppendingString:[OFXMLCreateID() autorelease]];
             _uploadFinalURL = [targetURL retain];
-            targetURL = [OFSURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES) retain];
+            targetURL = [OFSURLWithTrailingSlash(OFSURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES)) retain];
         }
         NSURL *parentURL = [fileManager createDirectoryAtURL:targetURL attributes:nil error:&error];
         if (atomically)
@@ -210,7 +211,7 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
     if (![self _queueUploadFileWrapper:fileWrapper atomically:YES toURL:targetURL usingFileManager:[[OUIWebDAVConnection sharedConnection] fileManager] error:&error]) {
         OBASSERT(error != nil);
         OUI_PRESENT_ERROR(error);
-        [self _cleanup];
+        [self _cleanupWithSuccess:NO];
         return;
     }
     for (id <OFSAsynchronousOperation> uploadOperation in [NSArray arrayWithArray:_uploadOperations]) {
@@ -234,24 +235,31 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
     
     if ([_downloadStream write:[data bytes] maxLength:[data length]] == -1) {
         OUI_PRESENT_ERROR([_downloadStream streamError]);
-        [self _cleanup];
+        [self _cleanupWithSuccess:NO];
         return;
     }
 }
 
 - (void)fileManager:(OFSFileManager *)fileManager operation:(id <OFSAsynchronousOperation>)operation didProcessBytes:(long long)processedBytes;
 {    
-    OBPRECONDITION([_uploadOperations containsObjectIdenticalTo:operation]);
-    _totalUploadedBytes += operation.processedLength;
+    OBPRECONDITION(_uploadOperations == nil || [_uploadOperations containsObjectIdenticalTo:operation]);
+    if (_uploadOperations == nil)
+        return; // We've cancelled these uploads
+
+    _totalUploadedBytes += processedBytes;
     progressView.progress = (double)_totalUploadedBytes/(double)_totalDataLength;
 }
 
 - (void)fileManager:(OFSFileManager *)fileManager operationDidFinish:(id <OFSAsynchronousOperation>)operation withError:(NSError *)error;
 {
+    // Some operation that we cancelled due to a failure in an operation before it in the queue? See <bug:///72669> (Exporting files which time out leaves you in a weird state)
+    if (operation != _downloadOperation && [_uploadOperations containsObjectIdenticalTo:operation] == NO)
+        return;
+
     if (error) {
         OUI_PRESENT_ERROR(error);
         
-        [self _cleanup];
+        [self _cleanupWithSuccess:NO];
         return;
     }
     
@@ -304,21 +312,23 @@ NSString * const OUIWebDAVDownloadCanceledNotification = @"OUIWebDAVDownloadCanc
             [cancelButton setTitle:NSLocalizedStringFromTableInBundle(@"Finished", @"OmniUI", OMNI_BUNDLE, @"finished") forState:UIControlStateNormal];
             UIImage *backgroundImage = [[UIImage imageNamed:@"OUIExportFinishedBadge.png"] stretchableImageWithLeftCapWidth:6 topCapHeight:0];
             [cancelButton setBackgroundImage:backgroundImage forState:UIControlStateNormal];
-            
             [[NSNotificationCenter defaultCenter] postNotificationName:OUIWebDAVDownloadFinishedNotification object:self userInfo:[NSDictionary dictionaryWithObject:[NSURL fileURLWithPath:localFile] forKey:OUIWebDAVDownloadURL]];
-        } else {
-            [[NSNotificationCenter defaultCenter] postNotificationName:OUIWebDAVDownloadCanceledNotification object:self];
         }
         
-        [self _cleanup];
+        [self _cleanupWithSuccess:localFile != nil];
     }
 }
 
 #pragma mark -
 #pragma mark Private
 
-- (void)_cleanup;
+- (void)_cleanupWithSuccess:(BOOL)success;
 {
+    if (!success)
+        [[NSNotificationCenter defaultCenter] postNotificationName:OUIWebDAVDownloadCanceledNotification object:self];
+    else if (_downloadOperation != nil || [_uploadOperations count] != 0)
+        [self cancelDownload:nil];
+
     [_downloadOperation release];
     _downloadOperation = nil;
     [_uploadOperations release];
