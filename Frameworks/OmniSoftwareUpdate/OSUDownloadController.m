@@ -267,14 +267,6 @@ static OSUDownloadController *CurrentDownloadController = nil;
     [[self window] displayIfNeeded];
 }
 
-- (void)_didChooseDirectory:(NSSavePanel *)sheet returnCode:(NSInteger)code contextInfo:(void *)contextInfo;
-{
-    if (code == NSFileHandlingPanelOKButton) {
-        // Success!
-        [self setInstallationDirectory:[sheet filename]];
-    }
-}
-
 - (IBAction)chooseDirectory:(id)sender;
 {
     // TODO: This is copy&pasted from OSUInstaller. Consolidate?
@@ -290,18 +282,18 @@ static OSUDownloadController *CurrentDownloadController = nil;
     [chooseInstallLocation setResolvesAliases:YES];
     [chooseInstallLocation setAllowsMultipleSelection:NO];    
     
-    NSString *chosenDirectory;
-    
-    chosenDirectory = [OSUInstaller suggestAnotherInstallationDirectory:[self installationDirectory] trySelf:YES];
+    NSString *chosenDirectory = [OSUInstaller suggestAnotherInstallationDirectory:[self installationDirectory] trySelf:YES];
+    if (chosenDirectory)
+        [chooseInstallLocation setDirectoryURL:[NSURL fileURLWithPath:chosenDirectory]];
     
     // If we couldn't find any writable directories, we're kind of screwed, but go ahead and pop up the panel in case the user can navigate somewhere
     
-    [chooseInstallLocation beginSheetForDirectory:chosenDirectory
-                                             file:nil
-                                            types:allowedTypes
-                                   modalForWindow:[self window]
-                                    modalDelegate:self didEndSelector:@selector(_didChooseDirectory:returnCode:contextInfo:)
-                                      contextInfo:NULL];
+    [chooseInstallLocation beginSheetModalForWindow:[self window] completionHandler:^(NSInteger result){
+        if (result == NSFileHandlingPanelOKButton) {
+            NSURL *directoryURL = [[[chooseInstallLocation URLs] lastObject] absoluteURL];
+            [self setInstallationDirectory:[directoryURL path]];
+        }
+    }];
 }
 
 #pragma mark -

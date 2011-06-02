@@ -1,4 +1,4 @@
-// Copyright 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -436,24 +436,29 @@ static BOOL trashFile(NSString *path, NSString *description, BOOL tryFinder);
     [chooseInstallLocation setResolvesAliases:YES];
     [chooseInstallLocation setAllowsMultipleSelection:NO];    
 
-    NSString *chosenDirectory;
-    
-    chosenDirectory = [[self class] suggestAnotherInstallationDirectory:lastAttemptedPath trySelf:NO];
+    NSString *chosenDirectory = [[self class] suggestAnotherInstallationDirectory:lastAttemptedPath trySelf:NO];
     
     if (!chosenDirectory) {
         // If we couldn't find any writable directories, we're kind of screwed, but go ahead and pop up the panel in case the user can navigate somewhere
         if (lastAttemptedPath)
             chosenDirectory = [lastAttemptedPath stringByDeletingLastPathComponent];
     }
+
+    if (chosenDirectory)
+        [chooseInstallLocation setDirectoryURL:[NSURL fileURLWithPath:chosenDirectory]];
+    
+    // There is no analog to the file argument of the deprecated -runModalForDirectory:file: as far as I can tell.
+    // NSString *selectedFile = lastAttemptedPath ? [lastAttemptedPath lastPathComponent] : installationName;
     
     haveAskedForInstallLocation = YES;
-    NSUInteger code = [chooseInstallLocation runModalForDirectory:chosenDirectory
-                                                             file:lastAttemptedPath? [lastAttemptedPath lastPathComponent] : installationName];
+    NSUInteger code = [chooseInstallLocation runModal];
+    
     // TODO: Run the panel as a sheet if [nonretained_delegate windowForSheet] is non-nil
     
     if (code == NSFileHandlingPanelOKButton) {
         // Success!
-        [self setInstallationDirectory:[chooseInstallLocation filename]];
+        NSURL *resultURL = [[[chooseInstallLocation URLs] lastObject] absoluteURL];
+        [self setInstallationDirectory:[resultURL path]];
         return YES;
     } else {
         // Failure!
