@@ -6,4 +6,3 @@
 #include "Omni-Tool-Common.xcconfig"
 
 // Common settings for Release configurations of Tool targets
-GCC_DYNAMIC_NO_PIC = YES

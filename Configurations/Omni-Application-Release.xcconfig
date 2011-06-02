@@ -7,6 +7,5 @@
 #include "Omni-Application-Common.xcconfig"
 
 // Common settings for Release configurations of Application targets
-GCC_DYNAMIC_NO_PIC = YES
 SKIP_INSTALL = NO
 LD_RUNPATH_SEARCH_PATHS = $(value) @loader_path/../Frameworks

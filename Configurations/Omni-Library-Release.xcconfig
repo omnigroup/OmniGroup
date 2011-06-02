@@ -6,7 +6,6 @@
 #include "Omni-Library-Common.xcconfig"
 
 // Common settings for Release configurations of Library targets
-GCC_DYNAMIC_NO_PIC = YES
 
 // Would like to build dylibs for debug and static for release, but this isn't working yet (we always get static).
 // MACH_O_TYPE = staticlib
