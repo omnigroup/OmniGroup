@@ -19,6 +19,11 @@ RCS_ID("$Id$")
 - (CGFloat)positionOfDividerAtIndex:(NSInteger)dividerIndex;
 {
     // It looks like NSSplitView relies on its subviews being ordered left->right or top->bottom so we can too.  It also raises w/ array bounds exception if you use its API with dividerIndex > count of subviews.
+    while (dividerIndex >= 0 && [self isSubviewCollapsed:[[self subviews] objectAtIndex:dividerIndex]])
+        dividerIndex--;
+    if (dividerIndex < 0)
+        return 0.0f;
+    
     NSRect priorViewFrame = [[[self subviews] objectAtIndex:dividerIndex] frame];
     return [self isVertical] ? NSMaxX(priorViewFrame) : NSMaxY(priorViewFrame);
 }
