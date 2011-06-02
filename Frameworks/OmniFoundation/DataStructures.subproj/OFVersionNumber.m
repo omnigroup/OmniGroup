@@ -47,14 +47,86 @@ RCS_ID("$Id$");
     return userVisibleOperatingSystemVersionNumber;
 }
 
-// Meant to be called during initialization, not repeatedly, since this allocates and discards an instance.
-+ (BOOL)isOperatingSystemLaterThanVersionString:(NSString *)versionString;
+static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
+    // NOTE: Don't expose this directly! Instead, declare a new method (such as +isOperatingSystemLionOrLater) which caches its result (and which will give us nice warnings to find later when we decide to retire support for pre-Lion).
+    // This implementation is meant to be called during initialization, not repeatedly, since this allocates and discards an instance.
 {
     OFVersionNumber *version = [[OFVersionNumber alloc] initWithVersionString:versionString];
     BOOL isLater = ([[OFVersionNumber userVisibleOperatingSystemVersionNumber] compareToVersionNumber:version] != NSOrderedAscending);
     [version release];
     return isLater;
 }
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+
++ (BOOL)isOperatingSystemiOS32OrLater; // iOS 3.2
+{
+    static BOOL initialized = NO;
+    static BOOL isLater;
+
+    if (!initialized) {
+        isLater = isOperatingSystemLaterThanVersionString(@"3.2");
+        initialized = YES;
+    }
+
+    return isLater;
+}
+
++ (BOOL)isOperatingSystemiOS40OrLater; // iOS 4.0
+{
+    static BOOL initialized = NO;
+    static BOOL isLater;
+
+    if (!initialized) {
+        isLater = isOperatingSystemLaterThanVersionString(@"4.0");
+        initialized = YES;
+    }
+
+    return isLater;
+}
+
+#else
+
++ (BOOL)isOperatingSystemLeopardOrLater; // 10.5
+{
+    static BOOL initialized = NO;
+    static BOOL isLater;
+
+    if (!initialized) {
+        isLater = isOperatingSystemLaterThanVersionString(@"10.5");
+        initialized = YES;
+    }
+
+    return isLater;
+}
+
++ (BOOL)isOperatingSystemSnowLeopardOrLater; // 10.6
+{
+    static BOOL initialized = NO;
+    static BOOL isLater;
+
+    if (!initialized) {
+        isLater = isOperatingSystemLaterThanVersionString(@"10.6");
+        initialized = YES;
+    }
+
+    return isLater;
+}
+
++ (BOOL)isOperatingSystemLionOrLater; // 10.7
+{
+    static BOOL initialized = NO;
+    static BOOL isLater;
+
+    if (!initialized) {
+        isLater = isOperatingSystemLaterThanVersionString(@"10.7");
+        initialized = YES;
+    }
+
+    return isLater;
+}
+
+#endif
 
 /* Initializes the receiver from a string representation of a version number.  The input string may have an optional leading 'v' or 'V' followed by a sequence of positive integers separated by '.'s.  Any trailing component of the input string that doesn't match this pattern is ignored.  If no portion of this string matches the pattern, nil is returned. */
 - initWithVersionString:(NSString *)versionString;
