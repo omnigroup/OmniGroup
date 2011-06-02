@@ -145,7 +145,13 @@ static void initializeDepressionImages(void)
             }
         }
     }
-    [super mouseDown:event];
+    @try {
+        // <bug:///71831> (Exception Crash after after moving the inspectors [no repro])
+        // mouseDown can throw and we don't want OmniPlan to crash.
+        [super mouseDown:event];
+    } @catch (NSException *exception) {
+        NSLog(@"Exception raised in -[%@ %@]: %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), exception);
+    } 
     [allCells makeObjectsPerformSelector:@selector(clearState)];
     [self  setNeedsDisplay:YES];
     [oldSelection release];
