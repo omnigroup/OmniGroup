@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -91,16 +91,11 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
     
     OFForEachIndex(dragRows, row) {
         if ([self _shouldShowDragImageForRow:row]) {
-            NSArray *dragColumns;
-            NSEnumerator *columnEnumerator;
-            NSTableColumn *columnIdentifier;
+            NSArray *dragColumnIdentifiers = [self _columnIdentifiersForDragImage];
+            if (dragColumnIdentifiers == nil || [dragColumnIdentifiers count] == 0)
+                dragColumnIdentifiers = [[self tableColumns] arrayByPerformingSelector:@selector(identifier)];
 
-            dragColumns = [self _columnIdentifiersForDragImage];
-            if (dragColumns == nil || [dragColumns count] == 0)
-                dragColumns = [[self tableColumns] arrayByPerformingSelector:@selector(identifier)];
-
-            columnEnumerator = [dragColumns objectEnumerator];
-            while ((columnIdentifier = [columnEnumerator nextObject])) {
+            for (NSString *columnIdentifier in dragColumnIdentifiers) {
                 NSTableColumn *tableColumn;
                 NSCell *cell;
                 NSRect cellRect;
