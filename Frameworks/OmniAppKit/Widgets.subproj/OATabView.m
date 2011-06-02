@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -66,7 +66,7 @@ RCS_ID("$Id$")
     [contentView setAutoresizesSubviews:YES];
     [contentView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
-    tabViewItem = [[NSTabViewItem alloc] initWithIdentifier:controller];
+    tabViewItem = [(NSTabViewItem *)[NSTabViewItem alloc] initWithIdentifier:controller];
     [tabViewItem setLabel:[controller label]];
     [tabViewItem setView:contentView];
     [tabViewItem setInitialFirstResponder:[scratchWindow initialFirstResponder]];
