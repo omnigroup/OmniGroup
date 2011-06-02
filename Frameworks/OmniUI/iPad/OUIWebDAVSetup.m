@@ -10,6 +10,7 @@
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniFoundation/OFRegularExpression.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
@@ -55,6 +56,7 @@ NSString * const OUIMobileMeUsername = @"OUIMobileMeUsername";
 NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 
 @interface OUIWebDAVSetup (/* private */)
+- (NSURL *)_signinURLFromWebDAVString:(NSString *)webdavString;
 - (void)_validateSignInButton:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 - (UILabel *)_sectionLabelWithFrame:(CGRect)frame;
 @end
@@ -148,17 +150,16 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
     switch (_syncType) {
         case OUIWebDAVSync:
         {
-            NSString *webdavString = _nonretainedAddressField.text;
-            if (![webdavString hasSuffix:@"/"])
-                webdavString = [webdavString stringByAppendingString:@"/"];
-            
-            url = [NSURL URLWithString:[webdavString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+            url = [self _signinURLFromWebDAVString:_nonretainedAddressField.text];
             break;
         }
             
         case OUIMobileMeSync:
         {
             NSURL *mobileMe = [NSURL URLWithString:@"https://idisk.me.com/"];
+            NSRange range = [_nonretainedUsernameField.text rangeOfString:@"@"];
+            if (range.length != 0)
+                _nonretainedUsernameField.text = [_nonretainedUsernameField.text substringToIndex:range.location];
             url = OFSURLRelativeToDirectoryURL(mobileMe, [_nonretainedUsernameField.text stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
             break;
         }
@@ -175,7 +176,7 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
     }
     
     OUIWebDAVConnection *sharedConnection = [OUIWebDAVConnection sharedConnection];
-    sharedConnection.address = url;
+    sharedConnection.address = OFSURLWithTrailingSlash(url);
     sharedConnection.username = _nonretainedUsernameField.text;
     sharedConnection.newKeychainPassword = _nonretainedPasswordField.text;
     
@@ -192,18 +193,18 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
         
         switch (_syncType) {
             case OUIWebDAVSync:
-                [[OFPreference preferenceForKey:OUIWebDAVLocation] setStringValue:_nonretainedAddressField.text];
-                [[OFPreference preferenceForKey:OUIWebDAVUsername] setStringValue:_nonretainedUsernameField.text];
+                [[OFPreference preferenceForKey:OUIWebDAVLocation] setStringValue:[sharedConnection.address absoluteString]];
+                [[OFPreference preferenceForKey:OUIWebDAVUsername] setStringValue:sharedConnection.username];
                 break;
             case OUIMobileMeSync:
             {
-                [[OFPreference preferenceForKey:OUIMobileMeUsername] setStringValue:_nonretainedUsernameField.text];
+                [[OFPreference preferenceForKey:OUIMobileMeUsername] setStringValue:sharedConnection.username];
                 break;
             }
                 
             case OUIOmniSync:
             {
-                [[OFPreference preferenceForKey:OUIOmniSyncUsername] setStringValue:_nonretainedUsernameField.text];
+                [[OFPreference preferenceForKey:OUIOmniSyncUsername] setStringValue:sharedConnection.username];
                 break;
             }
                 
@@ -298,7 +299,7 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
             case WedDAVAddress:
                 contents.label = NSLocalizedStringFromTableInBundle(@"Address", @"OmniUI", OMNI_BUNDLE, @"for WebDAV address edit field");
                 contents.value = savedAddress;
-                contents.valueField.placeholder = @"https://example.com/user";
+                contents.valueField.placeholder = @"https://example.com/user/";
                 _nonretainedAddressField = contents.valueField;
                 contents.valueField.keyboardType = UIKeyboardTypeURL;
 
@@ -424,28 +425,53 @@ const CGFloat OUIWebDAVSetupFooterHeight = 50;
 
 #pragma mark -
 #pragma mark private
+
+- (NSURL *)_signinURLFromWebDAVString:(NSString *)webdavString;
+{
+    NSURL *url = [NSURL URLWithString:webdavString];
+
+    if (url == nil)
+        url = [NSURL URLWithString:[webdavString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+
+    static OFRegularExpression *reasonableHostnameRegularExpression = nil;
+    if (reasonableHostnameRegularExpression == nil)
+        reasonableHostnameRegularExpression = [[OFRegularExpression alloc] initWithString:@"^[-_$A-Za-z0-9]+\\.[-_$A-Za-z0-9]+"];
+
+    if ([url scheme] == nil && ![NSString isEmptyString:webdavString] && [reasonableHostnameRegularExpression hasMatchInString:webdavString])
+        url = [NSURL URLWithString:[@"http://" stringByAppendingString:webdavString]];
+
+    NSString *scheme = [url scheme];
+    if (OFNOTEQUAL(scheme, @"http") && OFNOTEQUAL(scheme, @"https"))
+        return nil;
+
+    if ([NSString isEmptyString:[url host]])
+        return nil;
+
+    return url;
+}
+
 - (void)_validateSignInButton:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 {
     UIBarButtonItem *signInButton = self.navigationItem.rightBarButtonItem;
     switch (_syncType) {
         case OUIWebDAVSync:
         {
-            if (textField == _nonretainedAddressField && range.length == _nonretainedAddressField.text.length)
-                signInButton.enabled = ![NSString isEmptyString:string];
-            else
-                signInButton.enabled = ![NSString isEmptyString:_nonretainedAddressField.text];
-            
+            NSString *webdavString = _nonretainedAddressField.text;
+            if (textField == _nonretainedAddressField)
+                webdavString = [webdavString stringByReplacingCharactersInRange:range withString:string];
+            signInButton.enabled = [self _signinURLFromWebDAVString:webdavString] != nil;
             break;
         }
         case OUIMobileMeSync:
         case OUIOmniSync:
         {
-            if (textField == _nonretainedPasswordField && range.length == _nonretainedPasswordField.text.length)
-                signInButton.enabled = ![NSString isEmptyString:string] && ![NSString isEmptyString:_nonretainedUsernameField.text];
-            else if (textField == _nonretainedUsernameField && range.length == _nonretainedUsernameField.text.length)
-                signInButton.enabled = ![NSString isEmptyString:string] && ![NSString isEmptyString:_nonretainedPasswordField.text];
-            else
-                signInButton.enabled = (![NSString isEmptyString:_nonretainedPasswordField.text] && ![NSString isEmptyString:_nonretainedUsernameField.text]);
+            NSString *username = _nonretainedUsernameField.text;
+            NSString *password = _nonretainedPasswordField.text;
+            if (textField == _nonretainedUsernameField)
+                username = [username stringByReplacingCharactersInRange:range withString:string];
+            else if (textField == _nonretainedPasswordField)
+                password = [password stringByReplacingCharactersInRange:range withString:string];
+            signInButton.enabled = (![NSString isEmptyString:password] && ![NSString isEmptyString:username]);
             break;
         }
         default:

@@ -26,6 +26,7 @@
 RCS_ID("$Id$")
 
 @interface OUISyncMenuController (/*Private*/)
++ (NSURL *)_urlFromPreference:(OFPreference *)preference;
 - (void)_discardMenu;
 @end
 
@@ -152,7 +153,7 @@ RCS_ID("$Id$")
             break;
         case OUIWebDAVSync:
             title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUI", OMNI_BUNDLE, @"Import document title");
-            description = [[OFPreference preferenceForKey:OUIWebDAVLocation] stringValue];
+            description = [[[self class] _urlFromPreference:[OFPreference preferenceForKey:OUIWebDAVLocation]] absoluteString];
             break;
         default:
             break;
@@ -197,7 +198,7 @@ RCS_ID("$Id$")
             previousConnectionLocation = [NSURL URLWithString:[@"https://sync.omnigroup.com/" stringByAppendingPathComponent:previousConnectionUsername]];
             break;
         case OUIWebDAVSync:
-            previousConnectionLocation = [NSURL URLWithString:[[[OFPreference preferenceForKey:OUIWebDAVLocation] stringValue] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+            previousConnectionLocation = [[self class] _urlFromPreference:[OFPreference preferenceForKey:OUIWebDAVLocation]];
             previousConnectionUsername = [[OFPreference preferenceForKey:OUIWebDAVUsername] stringValue];
             break;
         case OUIiTunesSync:
@@ -216,7 +217,7 @@ RCS_ID("$Id$")
     UIViewController *viewController = nil;
     
     OUIWebDAVConnection *connection = [OUIWebDAVConnection sharedConnection];
-    connection.address = previousConnectionLocation;
+    connection.address = OFSURLWithTrailingSlash(previousConnectionLocation);
     connection.username = previousConnectionUsername;
     
     if ((previousConnectionLocation && ![NSString isEmptyString:previousConnectionUsername]) || (indexPath.row == OUIiTunesSync)) {
@@ -261,6 +262,20 @@ RCS_ID("$Id$")
 
 #pragma mark -
 #pragma mark Private
+
++ (NSURL *)_urlFromPreference:(OFPreference *)preference;
+{
+    NSString *locationString = [preference stringValue];
+    if ([NSString isEmptyString:locationString])
+        return nil;
+
+    NSURL *url = [NSURL URLWithString:locationString];
+    if (url != nil)
+        return url;
+
+    return [NSURL URLWithString:[locationString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+}
+
 - (void)_discardMenu;
 {
     _menuPopoverController.delegate = nil;
