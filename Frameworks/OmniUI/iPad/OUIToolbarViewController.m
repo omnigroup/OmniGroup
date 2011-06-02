@@ -410,13 +410,19 @@ NSString * const OUIToolbarViewControllerResizedForKeyboard = @"OUIToolbarViewCo
 
 - (void)keyboardWillHide:(NSNotification *)note;
 {
+    OUIToolbarViewControllerBackgroundView *backgroundView = (OUIToolbarViewControllerBackgroundView *)self.view;
+
     // Documentation, mail or other modal view atop us -- the keyboard isn't for us. This has an implicit assumption that the keyboard will go away before the modal view controller.
-    if (self.modalViewController)
+    // Still, if the keyboard is gone, we need to make clear our avoidance.
+    if (self.modalViewController) {
+        OUIWithoutAnimating(^{
+            backgroundView.avoidedBottomHeight = 0;
+            [backgroundView layoutIfNeeded];
+        });
         return;
+    }
 
     // Remove the restriction on the content height
-    OUIToolbarViewControllerBackgroundView *backgroundView = (OUIToolbarViewControllerBackgroundView *)self.view;
-    
     [UIView beginAnimations:@"done avoiding keyboard" context:NULL];
     {
         // Match the keyboard animation time and curve. Also, starting from the current position is very important. If we don't and we are jumping between two editable controls, our view size may bounce.
