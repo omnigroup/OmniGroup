@@ -118,7 +118,10 @@ static id _commonInit(OUIInspectorSegmentedControlButton *self)
     [_image release];
     _image = [image retain];
     
-    [self setImage:(image ? OUIMakeShadowedImage(image, OUIShadowTypeDarkContentOnLightBackground) : nil) forState:UIControlStateNormal];
+    if ([self dark])
+        [self setImage:(image ? OUIMakeShadowedImage(image, OUIShadowTypeLightContentOnDarkBackground) : nil) forState:UIControlStateNormal];
+    else
+        [self setImage:(image ? OUIMakeShadowedImage(image, OUIShadowTypeDarkContentOnLightBackground) : nil) forState:UIControlStateNormal];
 }
 
 @synthesize representedObject = _representedObject;
