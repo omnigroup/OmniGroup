@@ -36,31 +36,6 @@ RCS_ID("$Id$");
 
 NSString * const OUIDocumentProxyPreviewDidLoadNotification = @"OUIDocumentProxyPreviewDidLoadNotification";
 
-@implementation NSString (OUIDocumentProxyNameComparison)
-- (NSComparisonResult)proxyNameComparison:(NSString *)otherName;
-{
-    // Then compare name and if the names are equal, duplication counters.
-    NSString *name1, *name2;
-    NSUInteger counter1, counter2;
-    
-    OFSFileManagerSplitNameAndCounter(self, &name1, &counter1);
-    OFSFileManagerSplitNameAndCounter(otherName, &name2, &counter2);
-    
-    NSComparisonResult caseInsensitiveCompare = [name1 localizedCaseInsensitiveCompare:name2];
-    if (caseInsensitiveCompare != NSOrderedSame)
-        return caseInsensitiveCompare; // Sort names into alphabetical order
-    
-    // Use the duplication counters, in reverse order ("Foo 2" should be to the left of "Foo").
-    if (counter1 < counter2)
-        return NSOrderedDescending;
-    else if (counter1 > counter2)
-        return NSOrderedAscending;
-    
-    return NSOrderedSame;
-}
-@end
-
-
 @interface OUIDocumentProxy (/*Private*/)
 - (void)_documentProxyTapped:(UITapGestureRecognizer *)recognizer;
 @end

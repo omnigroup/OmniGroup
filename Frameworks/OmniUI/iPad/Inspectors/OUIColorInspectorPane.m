@@ -22,6 +22,7 @@ RCS_ID("$Id$");
 - (void)dealloc;
 {
     [_colorTypeSegmentedControl release];
+    [_shadowDivider release];
     [_currentColorPicker release];
     [_paletteColorPicker release];
     [_hsvColorPicker release];
@@ -32,6 +33,7 @@ RCS_ID("$Id$");
 }
 
 @synthesize colorTypeSegmentedControl = _colorTypeSegmentedControl;
+@synthesize shadowDivider = _shadowDivider;
 
 @synthesize noneColorPicker = _noneColorPicker;
 @synthesize paletteColorPicker = _paletteColorPicker;
@@ -86,11 +88,13 @@ RCS_ID("$Id$");
         CGRectDivide(view.frame, &segmentedControlAndPaddingFrame, &pickerFrame, yOffset, CGRectMinYEdge);
         
         pickerView.frame = pickerFrame;
-        [view addSubview:pickerView];
+        [view insertSubview:pickerView belowSubview:self.shadowDivider];
         [view layoutIfNeeded];
 
         [self addChildViewController:_currentColorPicker animated:NO];
     }
+    
+    [_shadowDivider setHidden:(_currentColorPicker != _paletteColorPicker)];
 }
 
 - (NSString *)selectedColorPickerIdentifier;

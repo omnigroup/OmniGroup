@@ -16,6 +16,7 @@
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/NSInvocation-OFExtensions.h>
 #import <OmniFoundation/OFBinding.h>
+#import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniFoundation/OFFileWrapper.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniUI/OUIAppController.h>
@@ -49,7 +50,7 @@ RCS_ID("$Id$");
 
 static NSString * const ProxiesBinding = @"proxies";
 
-@interface OUIDocumentPicker (/*Private*/) <UIActionSheetDelegate, MFMailComposeViewControllerDelegate>
+@interface OUIDocumentPicker (/*Private*/) <UIActionSheetDelegate, MFMailComposeViewControllerDelegate, UITableViewDataSource, UITableViewDelegate>
 - (void)_loadProxies;
 - (void)_setupProxiesBinding;
 - (OUIDocumentProxy *)_makeProxyForURL:(NSURL *)fileURL;
@@ -60,6 +61,8 @@ static NSString * const ProxiesBinding = @"proxies";
 - (void)_animateWithKeyboard:(NSNotification *)notification showing:(BOOL)keyboardIsShowing;
 - (NSURL *)_renameProxy:(OUIDocumentProxy *)proxy toName:(NSString *)name type:(NSString *)documentUTI rescanDocuments:(BOOL)rescanDocuments;
 - (void)_updateFieldsForSelectedProxy;
++ (OFPreference *)_sortPreference;
+- (void)_updateSort;
 @end
 
 @implementation OUIDocumentPicker
@@ -1370,6 +1373,38 @@ static id _commonInit(OUIDocumentPicker *self)
     [self.previewScrollView documentSliderAction:slider];
 }
 
+- (IBAction)filterAction:(UIView *)sender;
+{
+    if (![self okayToOpenMenu])
+        return;
+    
+/*
+    if (skipAction)
+        return;
+*/
+    
+    if ([self editingTitle]) {
+        [[self titleEditingField] resignFirstResponder];
+    }
+    
+    if (_filterPopoverController && [_filterPopoverController isPopoverVisible]) {
+        [_filterPopoverController dismissPopoverAnimated:YES];
+        [_filterPopoverController release];
+        _filterPopoverController = nil;
+        return;
+    }
+
+    UITableViewController *table = [[UITableViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    [[table tableView] setDelegate:self];
+    [[table tableView] setDataSource:self];
+    [table setContentSizeForViewInPopover:CGSizeMake(320, 110)];
+    // [table setContentSizeForViewInPopover:[[table tableView] rectForSection:0].size];
+    _filterPopoverController = [[UIPopoverController alloc] initWithContentViewController:table];
+    [table release];
+    
+    [[OUIAppController controller] presentPopover:_filterPopoverController fromRect:[sender frame] inView:[sender superview] permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
 #pragma mark -
 #pragma mark UITextField delegate
 
@@ -1541,6 +1576,8 @@ static id _commonInit(OUIDocumentPicker *self)
     _previewScrollView.bottomGap = CGRectGetHeight(viewBounds) - CGRectGetHeight(_previewScrollView.frame);
     _previewScrollView.frame = viewBounds;
     
+    [self _updateSort];
+
     if (_directory) {
         [self _setupProxiesBinding];
         [self _loadProxies];
@@ -1787,6 +1824,7 @@ static id _commonInit(OUIDocumentPicker *self)
     NSLog(@"%s %@", __PRETTY_FUNCTION__, NSStringFromSelector(action));
     return NO;
 }
+
 - (BOOL)documentInteractionController:(UIDocumentInteractionController *)controller performAction:(SEL)action;
 {
     NSLog(@"%s %@", __PRETTY_FUNCTION__, NSStringFromSelector(action));
@@ -1794,6 +1832,66 @@ static id _commonInit(OUIDocumentPicker *self)
     if (action == @selector(copy:))
         return YES;
     return NO;
+}
+
+#pragma mark -
+#pragma mark UITableViewDataSource protocol
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)aTableView numberOfRowsInSection:(NSInteger)section
+{
+    return 2;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    static NSString *CellIdentifier = @"FilterCellIdentifier";
+    
+    // Dequeue or create a cell of the appropriate type.
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil)
+        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
+    
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.textLabel.text = (indexPath.row == OUIDocumentProxySortByName) ? NSLocalizedStringFromTableInBundle(@"Sort by title", @"OmniUI", OMNI_BUNDLE, @"sort by title") : NSLocalizedStringFromTableInBundle(@"Sort by date", @"OmniUI", OMNI_BUNDLE, @"sort by date");
+    cell.imageView.image = (indexPath.row == OUIDocumentProxySortByName) ? [UIImage imageNamed:@"OUIDocumentSortByName.png"] : [UIImage imageNamed:@"OUIDocumentSortByDate.png"];
+    
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    OUIDocumentProxySort sortPref = [[[self class] _sortPreference] enumeratedValue];
+    if ((indexPath.row == 0) == (sortPref == 0))  // or indexPath.row == sortPref
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    else
+        cell.accessoryType = UITableViewCellAccessoryNone;        
+}
+
+#pragma mark -
+#pragma mark Table view delegate
+
+- (void)tableView:(UITableView *)aTableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    OFPreference *sortPreference = [[self class] _sortPreference];
+    [sortPreference setEnumeratedValue:indexPath.row];
+    OUIDocumentProxy *proxy = [self selectedProxy];
+    [self _updateSort];
+    [self scrollToProxy:proxy animated:NO];        
+    
+    UITableViewCell *cell = [aTableView cellForRowAtIndexPath:indexPath];
+    cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    
+    NSIndexPath *otherPath = (indexPath.row == 0) ? [NSIndexPath indexPathForRow:1 inSection:indexPath.section] : [NSIndexPath indexPathForRow:0 inSection:indexPath.section];
+    [[aTableView cellForRowAtIndexPath:otherPath] setAccessoryType:UITableViewCellAccessoryNone];
+    
+    [_filterPopoverController dismissPopoverAnimated:YES];
+    [_filterPopoverController release];
+    _filterPopoverController = nil;
 }
 
 #pragma mark -
@@ -2191,7 +2289,7 @@ typedef struct {
     
     
     [self willChangeValueForKey:ProxiesBinding];
-    [_proxies release];
+    [_proxies autorelease];
     _proxies = [[NSSet alloc] initWithSet:_proxies];
     [self didChangeValueForKey:ProxiesBinding];
 
@@ -2234,5 +2332,22 @@ typedef struct {
     _deleteButton.enabled = [self canEditProxy:proxy];
 }
 
-@end
++ (OFPreference *)_sortPreference;
+{
+    static OFPreference *SortPreference = nil;
+    if (SortPreference == nil) {
+        OFEnumNameTable *enumeration = [[OFEnumNameTable alloc] initWithDefaultEnumValue:OUIDocumentProxySortByDate];
+        [enumeration setName:@"name" forEnumValue:OUIDocumentProxySortByName];
+        [enumeration setName:@"date" forEnumValue:OUIDocumentProxySortByDate];
+        SortPreference = [[OFPreference preferenceForKey:@"OUIDocumentPickerSortKey" enumeration:enumeration] retain];
+        [enumeration release];
+    }
+    return SortPreference;
+}
 
+- (void)_updateSort;
+{
+    self.previewScrollView.proxySort = [[[self class] _sortPreference] enumeratedValue];
+}
+
+@end

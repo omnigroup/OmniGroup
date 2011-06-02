@@ -51,7 +51,10 @@ extern NSString *nameof(NSInteger v, const struct enumName *ns);
     
     if (position == nil) {
         r = nil;
-    } if (granularity == UITextGranularityLine) {
+    } else if (granularity == UITextGranularityLine) {
+        // This causes <bug:///72506> (Control-a while at the beginning of a line in multiple lines of text moves to to the beginning of the line above)
+        // With this on, if we have a long bunch of text that is wrapped into multiple lines, and we put the insertion point at the beginning of a line (so it is after the space on the previous line), then control-a will get the range of the *previous* line here. This will make -isPosition:atBoundary:inDirection: return NO and we'll jump to the beginning of the previous line.
+#if 0
         /* -[OUIEditableFrame rangeOfLineContainingPosition:] returns the range of the line containing the character pointed to by the position. */
         /* This method appears to be intended to treat the positin as referring to an intercharacter gap. */
         /* We can get the proper behavior by adjusting the position backwards one character, but we don't want to adjust forwards. */
@@ -61,7 +64,7 @@ extern NSString *nameof(NSInteger v, const struct enumName *ns);
                 position = adjusted;
             /* Note if adjusted==nil, we want to return nil; -rangeOfLineContainingPosition: will pass through a nil position for us */
         }
-        
+#endif   
         r = [(OUIEditableFrame *)_nonretainedTextInput rangeOfLineContainingPosition:(OUEFTextPosition *)position];
     } else {
         r = [super rangeEnclosingPosition:position withGranularity:granularity inDirection:direction];
@@ -73,10 +76,28 @@ extern NSString *nameof(NSInteger v, const struct enumName *ns);
 
 - (BOOL)isPosition:(UITextPosition *)position atBoundary:(UITextGranularity)granularity inDirection:(UITextDirection)direction;                             // Returns YES only if a position is at a boundary of a text unit of the specified granularity in the particular direction.
 {
-    /* TODO: Line boundaries? */
-    BOOL r = [super isPosition:position atBoundary:granularity inDirection:direction];
-    DEBUGLOG(@"positionAtBoundary(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), r?@"YES":@"NO");
-    return r;
+    BOOL rc;
+    
+    do {
+        // The superclass doesn't seem to know about selection affinity (it doesn't ask the textInput for its -selectionAffinity when the position is just after a newline).
+        // It seems like it could work for paragraphs by checking for newlines, but it doesn't.
+        UITextRange *range = [self rangeEnclosingPosition:position withGranularity:granularity inDirection:direction];
+            
+        if (direction == UITextStorageDirectionForward || direction == UITextLayoutDirectionRight) {
+            rc = [range.end isEqual:position];
+            break;
+        } else if (direction == UITextStorageDirectionBackward || direction == UITextLayoutDirectionLeft) {
+            rc = [range.start isEqual:position];
+            break;
+        } else {
+            OBASSERT_NOT_REACHED("Unhandled direction; fall through and hope for the best from the superclass...");
+        }
+        
+        rc = [super isPosition:position atBoundary:granularity inDirection:direction];
+    } while (0);
+    
+    DEBUGLOG(@"positionAtBoundary(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), rc ? @"YES":@"NO");
+    return rc;
 }
 
 - (UITextPosition *)positionFromPosition:(UITextPosition *)position toBoundary:(UITextGranularity)granularity inDirection:(UITextDirection)direction;   // Returns the next boundary position of a text unit of the given granularity in the given direction, or nil if there is no such position.

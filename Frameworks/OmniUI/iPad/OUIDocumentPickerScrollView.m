@@ -426,7 +426,7 @@ static void _startSmoothScroll(OUIDocumentPickerScrollView *self, CGFloat xVeloc
         [dateSort release];
     }
     
-    NSSortDescriptor *nameSort = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES selector:@selector(proxyNameComparison:)];
+    NSSortDescriptor *nameSort = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES selector:@selector(localizedCaseInsensitiveCompare:)];
     [descriptors addObject:nameSort];
     [nameSort release];
     
@@ -465,9 +465,10 @@ static void _startSmoothScroll(OUIDocumentPickerScrollView *self, CGFloat xVeloc
 {
     _proxySort = _sort;
     
-    [self sortProxies];
-    
-    [self setNeedsLayout];
+    if (_proxies != nil) {
+        [self sortProxies];
+        [self setNeedsLayout];
+    }
 }
 
 @synthesize sortedProxies = _sortedProxies;

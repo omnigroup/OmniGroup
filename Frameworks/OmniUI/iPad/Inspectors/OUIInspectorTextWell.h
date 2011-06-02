@@ -42,7 +42,9 @@ typedef enum {
     
     // While editing
     OUIEditableFrame *_editor;
-    UIKeyboardType keyboardType;
+    UITextAutocapitalizationType _autocapitalizationType;
+    UITextAutocorrectionType _autocorrectionType;
+    UIKeyboardType _keyboardType;
 }
 
 + (UIFont *)defaultLabelFont;
@@ -50,7 +52,10 @@ typedef enum {
 
 @property(nonatomic) OUIInspectorTextWellStyle style;
 
-@property(nonatomic) UIKeyboardType keyboardType;
+// Subset of UITextInputTraits
+@property(nonatomic) UITextAutocapitalizationType autocapitalizationType; // default is UITextAutocapitalizationTypeSentences
+@property(nonatomic) UITextAutocorrectionType autocorrectionType;         // default is UITextAutocorrectionTypeDefault
+@property(nonatomic) UIKeyboardType keyboardType;                         // default is UIKeyboardTypeDefault
 
 @property(assign,nonatomic) BOOL editable;
 @property(readonly) BOOL editing;

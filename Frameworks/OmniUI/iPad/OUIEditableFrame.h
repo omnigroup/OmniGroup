@@ -49,12 +49,13 @@
     CGSize layoutSize;
     UIEdgeInsets _minimumTextInset;
     UIEdgeInsets _currentTextInset;
-    UIKeyboardType keyboardType;
     UITextGranularity tapSelectionGranularity;
     BOOL _autoCorrectDoubleSpaceToPeriodAtSentenceEnd;
+    
     UITextAutocorrectionType _autocorrectionType;
     UITextAutocapitalizationType _autocapitalizationType;
-
+    UIKeyboardType _keyboardType;
+    
     /* The cached typeset frame. */
     /* Note that 'immutableContent' contains an additional trailing newline which we hide from people who read/write our attributedText property */
     NSAttributedString *immutableContent;

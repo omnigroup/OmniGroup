@@ -41,6 +41,14 @@ static NSString * const SelectAction = @"select";
 - (void)_proxyFinishedLoadingPreviewNotification:(NSNotification *)note;
 @end
 
+@interface OUIToolbarTitleButton : UIButton
+{
+    BOOL _touchesInside;
+    UIImageView *_highlightView;
+}
+
+@end
+
 @implementation OUISingleDocumentAppController
 
 + (void)initialize;
@@ -90,8 +98,7 @@ static NSString * const SelectAction = @"select";
 
 @synthesize window = _window;
 @synthesize toolbarViewController = _toolbarViewController;
-@synthesize appTitleToolbarItem = _appTitleToolbarItem;
-@synthesize appTitleToolbarTextField = _appTitleToolbarTextField;
+@synthesize appTitleToolbarButton = _appTitleToolbarButton;
 @synthesize documentTitleTextField = _documentTitleTextField;
 @synthesize documentTitleToolbarItem = _documentTitleToolbarItem;
 
@@ -156,21 +163,21 @@ static NSString * const SelectAction = @"select";
     NSArray *proxies = picker.previewScrollView.sortedProxies;
     NSUInteger proxyCount = [proxies count];
     
-    if (!proxy || proxyCount < 2) {
-        _appTitleToolbarTextField.text = title;
-        return;
+    if (proxy != nil && proxyCount > 1) {
+        NSUInteger proxyIndex = [proxies indexOfObjectIdenticalTo:proxy];
+        if (proxyIndex == NSNotFound) {
+            OBASSERT_NOT_REACHED("Missing proxy");
+            proxyIndex = 1; // less terrible.
+        }
+        
+        NSString *counterFormat = NSLocalizedStringWithDefaultValue(@"%d of %d <document index", @"OmniUI", OMNI_BUNDLE, @"%@ (%d of %d)", @"format for showing the main title, document index and document count, in that order");
+        title = [NSString stringWithFormat:counterFormat, title, proxyIndex + 1, proxyCount];
     }
     
-    NSUInteger proxyIndex = [proxies indexOfObjectIdenticalTo:proxy];
-    if (proxyIndex == NSNotFound) {
-        OBASSERT_NOT_REACHED("Missing proxy");
-        proxyIndex = 1; // less terrible.
-    }
-    
-    NSString *counterFormat = NSLocalizedStringWithDefaultValue(@"%d of %d <document index", @"OmniUI", OMNI_BUNDLE, @"%@ (%d of %d)", @"format for showing the main title, document index and document count, in that order");
-    title = [NSString stringWithFormat:counterFormat, title, proxyIndex + 1, proxyCount];
-    
-    _appTitleToolbarTextField.text = title;
+    [_appTitleToolbarButton setTitle:title forState:UIControlStateNormal];
+    _appTitleToolbarButton.titleLabel.font = [UIFont boldSystemFontOfSize:17.0];
+    [_appTitleToolbarButton sizeToFit];
+    [_appTitleToolbarButton layoutIfNeeded];
 }
 
 - (void)documentPicker:(OUIDocumentPicker *)picker scannedProxies:(NSSet *)proxies;
@@ -352,7 +359,19 @@ static NSString * const SelectAction = @"select";
             [toolbarItems addObject:leftPadding];
         [toolbarItems addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
         
-        [toolbarItems addObject:_appTitleToolbarItem];
+        UIButton *titleButton = [OUIToolbarTitleButton buttonWithType:UIButtonTypeCustom];
+        UIImage *disclosureImage = [UIImage imageNamed:@"OUIToolbarTitleDisclosureButton.png"];
+        OBASSERT(disclosureImage != nil);
+        [titleButton setImage:disclosureImage forState:UIControlStateNormal];
+        titleButton.adjustsImageWhenHighlighted = NO;
+        [titleButton addTarget:self.documentPicker action:@selector(filterAction:) forControlEvents:UIControlEventTouchUpInside];
+        self.appTitleToolbarButton = titleButton;
+
+        [self _updateTitle];
+
+        UIBarButtonItem *titleItem = [[UIBarButtonItem alloc] initWithCustomView:titleButton];
+        [toolbarItems addObject:titleItem];
+        [titleItem release];
         
         [toolbarItems addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
         if (rightPadding)
@@ -809,6 +828,82 @@ static NSString * const SelectAction = @"select";
     [_documentTitleTextField setTextColor:[UIColor whiteColor]];
     [_documentTitleTextField setBackgroundColor:[UIColor clearColor]];
     _documentTitleTextField.borderStyle = UITextBorderStyleNone;
+}
+
+@end
+
+@implementation OUIToolbarTitleButton
+
+#pragma mark -
+#pragma mark UIControl subclass
+
+- (BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event;
+{
+    _touchesInside = YES;
+    
+    _highlightView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarButtonFauxHighlight.png"]];
+    CGRect imageRect = [self bounds];
+    imageRect.origin.x = floor(CGRectGetMidX(imageRect));
+    imageRect.origin.y = floor(CGRectGetMidY(imageRect));
+    imageRect.size = [_highlightView frame].size;
+    imageRect.origin.x -= floor(imageRect.size.width/2);
+    imageRect.origin.y -= floor(imageRect.size.height/2);
+    [_highlightView setFrame:imageRect];
+    [self addSubview:_highlightView];
+    return [super beginTrackingWithTouch:touch withEvent:event];
+}
+
+- (BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event;
+{
+    CGPoint location = [touch locationInView:self];
+    CGRect rect = [self bounds];
+    BOOL inside = CGRectContainsPoint(rect, location);
+    if (inside != _touchesInside) {
+        _touchesInside = inside;
+        [_highlightView setHidden:!_touchesInside];
+    }
+    return [super continueTrackingWithTouch:touch withEvent:event];
+}
+
+- (void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
+{
+    [super endTrackingWithTouch:touch withEvent:event];
+    [_highlightView removeFromSuperview];
+    [_highlightView release];
+    _highlightView = nil;
+}
+
+- (void)cancelTrackingWithEvent:(UIEvent *)event;
+{
+    [super cancelTrackingWithEvent:event];
+    [_highlightView removeFromSuperview];
+    [_highlightView release];
+    _highlightView = nil;
+}
+
+- (void)dealloc;
+{
+    [_highlightView release];
+    [super dealloc];
+}
+
+#pragma mark -
+#pragma mark UIButton subclass
+
+- (CGRect)titleRectForContentRect:(CGRect)contentRect;
+{
+    CGRect originalTitleRect = [super titleRectForContentRect:contentRect];
+    CGRect titleRect = originalTitleRect;
+    titleRect.origin.x = CGRectGetMinX(contentRect);
+    return titleRect;
+}
+
+- (CGRect)imageRectForContentRect:(CGRect)contentRect;
+{
+    CGRect originalImageRect = [super imageRectForContentRect:contentRect];
+    CGRect imageRect = originalImageRect;
+    imageRect.origin.x = CGRectGetMaxX(contentRect) - imageRect.size.width;
+    return imageRect;
 }
 
 @end

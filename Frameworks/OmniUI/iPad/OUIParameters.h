@@ -62,3 +62,7 @@ typedef struct {
 
 // OUIExportOptionsView and friends
 
+// UIScrollView(OUIExtensions)
+#define kOUIAutoscrollBorderWidth (44.0 * 1.1) // Area on edge of the screen that defines the ramp for autoscroll speed. Want to be able to hit the max speed without finger risking going off edge of view
+#define kOUIAutoscrollMaximumVelocity (850) // in pixels per second
+#define kOUIAutoscrollVelocityRampPower (0.25) // power ramp for autoscroll velocity

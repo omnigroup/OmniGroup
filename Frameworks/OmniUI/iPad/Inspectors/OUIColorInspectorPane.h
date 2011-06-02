@@ -18,6 +18,7 @@
 {
 @private
     OUIInspectorSegmentedControl *_colorTypeSegmentedControl;
+    UIView *_shadowDivider;
     OUIColorPicker *_currentColorPicker;
     
     OUIColorPicker *_noneColorPicker;
@@ -31,6 +32,7 @@
 }
 
 @property(retain,nonatomic) IBOutlet OUIInspectorSegmentedControl *colorTypeSegmentedControl;
+@property(retain,nonatomic) IBOutlet UIView *shadowDivider;
 
 @property(copy,nonatomic) NSString *selectedColorPickerIdentifier;
 

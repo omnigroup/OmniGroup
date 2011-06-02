@@ -40,8 +40,12 @@ static id _commonInit(OUIInspectorTextWell *self)
     self.clearsContextBeforeDrawing = YES;
     self.opaque = NO;
     self.backgroundColor = nil;
-    self.keyboardType = UIKeyboardTypeDefault;
     self.textColor = [OUIInspector labelTextColor];
+    
+    // Same defaults as for UITextInputTraits
+    self.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+    self.autocorrectionType = UITextAutocorrectionTypeDefault;
+    self.keyboardType = UIKeyboardTypeDefault;
     
     self->_style = OUIInspectorTextWellStyleDefault;
     
@@ -217,7 +221,9 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     _editor.attributedText = [self _attributedStringForEditingString:editingText];
 }
 
-@synthesize keyboardType;
+@synthesize autocapitalizationType = _autocapitalizationType;
+@synthesize autocorrectionType = _autocorrectionType;
+@synthesize keyboardType = _keyboardType;
 
 - (OUIEditableFrame *)editor;
 {
@@ -393,6 +399,17 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     }
 }
 
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
+{
+    UIView *hit = [super hitTest:point withEvent:event];
+    
+    if (hit == nil && self.editing)
+        // Let the field editor have a chance. It may have subviews that are outside our bounds (for autocorrection).
+        hit = [_editor hitTest:[self convertPoint:point toView:_editor] withEvent:event];
+
+    return hit;
+}
+
 #pragma mark -
 #pragma mark OUIEditableFrameDelegate
 
@@ -416,8 +433,14 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     OBPRECONDITION(textView == _editor);
     
     if ([text containsString:@"\n"]) {
-        // Hitting return; act like a field editor.
-        [_editor resignFirstResponder];
+        // Hitting return; act like a field editor and end editing.
+        
+        // We don't have autocorrect on in at least some cases, but if we do, we have to do this after a delay. Otherwise, if there *is* an auto-correction widget up on the text editor, it will have already done its autocorrection and then when we tell it to end editing, it will do it again!
+        // <bug:///72342> (Tapping return when autocomplete is up appends the substitution after your typed string)
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [_editor resignFirstResponder];
+        }];
+
         return NO;
     }
     return YES;
@@ -601,7 +624,9 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     if (self.editing)
         return;
     
-
+    // Move ourselves to the top of our peer subviews. Otherwise, text widgets can end up being clipped by peer views, see <bug:///72491> (Autocorrect/Kanji selection difficult in Column & Style Name fields entering Japanese with BT keyboard)
+    [[self superview] bringSubviewToFront:self];
+    
     // turn off display while editing.
     [self setNeedsDisplay];
         
@@ -621,6 +646,8 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     TextType textType;
     _getText(self, _text, &textType);
     _shouldDisplayPlaceholderText = (textType == TextTypePlaceholder);
+    editor.autocapitalizationType = self.autocapitalizationType;
+    editor.autocorrectionType = self.autocorrectionType;
     editor.keyboardType = self.keyboardType;
     editor.opaque = NO;
     editor.backgroundColor = nil;

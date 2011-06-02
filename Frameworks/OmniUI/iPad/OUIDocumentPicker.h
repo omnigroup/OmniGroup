@@ -44,6 +44,7 @@
     NSURL *_editingProxyURL;
     
     UIActionSheet *_nonretainedActionSheet;
+    UIPopoverController *_filterPopoverController;
     BOOL _editingTitle;
     BOOL _keyboardIsShowing;
     BOOL _isRevealingNewDocument;
@@ -129,4 +130,6 @@
 - (void)emailExportType:(NSString *)exportType;
 - (IBAction)editTitle:(id)sender;
 - (IBAction)documentSliderAction:(OUIDocumentSlider *)slider;
+- (IBAction)filterAction:(UIView *)sender;
+
 @end

@@ -79,7 +79,3 @@
 @end
 
 extern NSString * const OUIDocumentProxyPreviewDidLoadNotification;
-
-@interface NSString (OUIDocumentProxyNameComparison)
-- (NSComparisonResult)proxyNameComparison:(NSString *)otherName;
-@end

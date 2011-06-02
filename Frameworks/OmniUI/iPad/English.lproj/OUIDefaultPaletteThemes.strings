@@ -51,3 +51,6 @@
 
 /* Localized name for color palette in color inspector. */
 "katsushikahokusai" = "Hokusai";
+
+/* Localized name for color palette in color inspector. */
+"solarized" = "Solarized";

@@ -19,8 +19,8 @@
     UIWindow *_window;
     OUIToolbarViewController *_toolbarViewController;
     
-    UIBarButtonItem *_appTitleToolbarItem;
-    UITextField *_appTitleToolbarTextField;
+    // UIBarButtonItem *_appTitleToolbarItem;
+    UIButton *_appTitleToolbarButton;
     
     OUIBarButtonItem *_closeDocumentBarButtonItem;
     UITextField *_documentTitleTextField;
@@ -34,11 +34,10 @@
 
 @property(nonatomic,retain) IBOutlet UIWindow *window;
 @property(nonatomic,retain) IBOutlet OUIToolbarViewController *toolbarViewController;
-@property(nonatomic,retain) IBOutlet UIBarButtonItem *appTitleToolbarItem;
-@property(nonatomic,retain) IBOutlet UITextField *appTitleToolbarTextField;
 @property(nonatomic,retain) IBOutlet UITextField *documentTitleTextField;
 @property(nonatomic,retain) IBOutlet UIBarButtonItem *documentTitleToolbarItem;
 
+@property(nonatomic,retain) UIButton *appTitleToolbarButton;
 @property(readonly) OUIBarButtonItem *closeDocumentBarButtonItem;
 @property(readonly) OUIUndoBarButtonItem *undoBarButtonItem;
 @property(readonly) OUIBarButtonItem *infoBarButtonItem;

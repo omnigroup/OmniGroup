@@ -149,9 +149,12 @@ static id do_init(OUIEditableFrame *self)
     if (!self->defaultFont)
         self->defaultFont = CFRetain(OUIGlobalDefaultFont());
     
+    self->_autocorrectionType = UITextAutocorrectionTypeDefault;
+    self->_autocapitalizationType = UITextAutocapitalizationTypeSentences;
+    self->_keyboardType = UIKeyboardTypeDefault;
+
     self->generation = 1;
-    self->markedRange.location = 0;
-    self->markedRange.length = 0;
+    self->markedRange = NSMakeRange(NSNotFound, 0);
     self->layoutSize.width = 0;
     self->layoutSize.height = 0;
     self->flags.textNeedsUpdate = 1;
@@ -166,10 +169,7 @@ static id do_init(OUIEditableFrame *self)
 
     self->_linkTextAttributes = [[OUITextLayout defaultLinkTextAttributes] copy];
     
-    self.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self->tapSelectionGranularity = UITextGranularityWord;
-
-    self.autocorrectionType = UITextAutocorrectionTypeNo;
     
     self.markedRangeBorderColor = [UIColor colorWithRed:213.0/255.0 green:225.0/255.0 blue:237.0/255.0 alpha:1];
     self->_markedRangeBorderThickness = 1.0;
@@ -1623,12 +1623,15 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
 - (void)setFrame:(CGRect)newFrame
 {
     DEBUG_TEXT(@"Frame is getting set to %@", NSStringFromCGRect(newFrame));
-    
+
     if (drawnFrame && !CGSizeEqualToSize(newFrame.size, self.frame.size)) {
         CFRelease(drawnFrame);
         drawnFrame = NULL;
         [self setNeedsDisplay];
     }
+
+    if (_cursorOverlay != nil || _selectionContextMenu != nil || startThumb != nil || endThumb != nil)
+        [self setNeedsLayout]; // Make sure we reposition our overlay views (even if our frame didn't change relative to our superview, it may have changed relative to their superview)
     
     [super setFrame:newFrame];
 }
@@ -1677,6 +1680,21 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
     else if (hitEndThumb)
         return hitEndThumb;
     
+    // We also want our autocomplete view to receive touches even when it's outside our view
+    for (UIView *subview in [self subviews]) {
+        if (subview == startThumb || subview == endThumb)
+            continue; // We just tested these
+
+        CGPoint pointInSubview = [self convertPoint:point toView:subview];
+        UIView *hitView = [subview hitTest:pointInSubview withEvent:event];
+        if (hitView) {
+#ifdef DEBUG_kc
+            NSLog(@"-[%@ %@]: point=%@, event=%@, returning %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), NSStringFromCGPoint(point), event, [hitView shortDescription]);
+#endif
+            return hitView;
+        }
+    }
+
     // But by default, use our superclass's behavior
     return [super hitTest:point withEvent:event];
 }
@@ -1953,8 +1971,6 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
 
 #pragma mark -
 #pragma mark UIKeyInput protocol
-@synthesize autocorrectionType = _autocorrectionType;
-@synthesize autocapitalizationType = _autocapitalizationType;
 
 - (void)_didChangeContent
 {
@@ -2118,29 +2134,24 @@ enum {
     NSUInteger contentLength = [_content length];
     
     NSRange replaceRange;
-    if (!selection)
+
+    if (markedRange.location != NSNotFound) {
+        // Replace marked text.
+        replaceRange = markedRange;
+    } else if (selection) {
+        replaceRange = selection.range;
+    } else {
         replaceRange = NSMakeRange(contentLength, 0);
-    else {
-        NSUInteger st = ((OUEFTextPosition *)(selection.start)).index;
-        NSUInteger en = ((OUEFTextPosition *)(selection.end)).index;
-        
-        if (en > contentLength) {
-            OBASSERT_NOT_REACHED("Bad selection range");
-            return;
-        }
-        if (st > contentLength) {
-            OBASSERT_NOT_REACHED("Bad selection range");
-            return;
-        }
-        if (en < st) {
-            OBASSERT_NOT_REACHED("Bad selection range");
-            return;
-        }
-        replaceRange = NSMakeRange(st, en - st);
+    }
+    
+    if (NSMaxRange(replaceRange) > contentLength) {
+        OBASSERT_NOT_REACHED("Bad selection range");
+        return;
     }
     
     DEBUG_TEXT(@"Inserting \"%@\" in range {%"PRIuNS", %"PRIuNS"} (content length %"PRIuNS")", text, replaceRange.location, replaceRange.length, [_content length]);
     
+#if 0
     // When Simulate Hardware Keyboard is on, these get passed in instead of automatically transforming them into movement via our -positionFromPosition:inDirection:offset:.
     // Not publicizing these methods, but I guess we could for callers that want selection movement.
     if ([text length] == 1) {
@@ -2200,6 +2211,7 @@ enum {
         }
 #endif
     }
+#endif
     
     [self unmarkText];
 
@@ -2223,27 +2235,26 @@ enum {
     
     [self _setSolidCaret:0];
 
-    OUEFTextRange *seln = (OUEFTextRange *)[self selectedTextRange];
-    if (!seln)
-        return;
-    
-    OUEFTextPosition *seln_start = (OUEFTextPosition *)(seln.start);
-    OUEFTextPosition *seln_end = (OUEFTextPosition *)(seln.end);
-    
-    NSUInteger startIndex = seln_start.index;
-    NSUInteger endIndex = seln_end.index;
-    
-    if (startIndex < endIndex) {
-        // If we have a range of text selected, delete it
-        [self replaceRange:seln withText:@""];
+    NSRange deleteRange;
+    if (markedRange.location != NSNotFound)
+        deleteRange = markedRange;
+    else if (selection)
+        deleteRange = selection.range;
+    else {
+        OBASSERT_NOT_REACHED("-deleteBackward with no selection");
         return;
     }
-
-    if (flags.delegateRespondsToShouldDeleteBackwardsFromIndex && ![delegate textView:self shouldDeleteBackwardsFromIndex:startIndex])
+    
+    if (NSMaxRange(deleteRange) > [_content length]) {
+        OBASSERT_NOT_REACHED("Bad deletion range in -deleteBackward");
+        return;
+    }
+    
+    if (deleteRange.length == 0 && flags.delegateRespondsToShouldDeleteBackwardsFromIndex && ![delegate textView:self shouldDeleteBackwardsFromIndex:deleteRange.location])
         return; // Our delegate has handled (or refused) this delete action
 
-    if (startIndex == 0)
-        return; // There isn't anything before this to delete
+    if (deleteRange.location == 0 && deleteRange.length == 0)
+        return; // Insertion point at the beginning, there isn't anything before this to delete
 
     [self unmarkText];
     
@@ -2251,27 +2262,42 @@ enum {
     if (!beforeMutate(self, _cmd, options))
         return;
     
-    NSRange cr = [[_content string] rangeOfComposedCharacterSequenceAtIndex:startIndex - 1];
-    [_content deleteCharactersInRange:cr];
+    if (deleteRange.length)
+        deleteRange = [[_content string] rangeOfComposedCharacterSequencesForRange:deleteRange];
+    else
+        deleteRange = [[_content string] rangeOfComposedCharacterSequenceAtIndex:deleteRange.location - 1];
+    OBASSERT(deleteRange.length > 0);
+    
+    [_content deleteCharactersInRange:deleteRange];
     afterMutate(self, _cmd, options);
-    [self _setSelectionToIndex:cr.location];
+    [self _setSelectionToIndex:deleteRange.location];
     notifyAfterMutate(self, _cmd, options);
     [self setNeedsDisplay];
 }
 
 #pragma mark -
 #pragma mark UITextInputTraits protocol
-@synthesize autoCorrectDoubleSpaceToPeriodAtSentenceEnd = _autoCorrectDoubleSpaceToPeriodAtSentenceEnd;
 
-- (UIKeyboardAppearance)keyboardAppearance;                { return UIKeyboardAppearanceDefault; }
-- (UIReturnKeyType)returnKeyType;                          { return UIReturnKeyDefault; } 
+@synthesize autocapitalizationType = _autocapitalizationType;
+@synthesize autocorrectionType = _autocorrectionType;
+@synthesize keyboardType = _keyboardType;
 
-@synthesize keyboardType;
+- (UIKeyboardAppearance)keyboardAppearance;
+{
+    return UIKeyboardAppearanceDefault;
+}
+
+- (UIReturnKeyType)returnKeyType;
+{
+    return UIReturnKeyDefault;
+} 
 
 - (BOOL)enablesReturnKeyAutomatically;
 {
     return NO;
 }
+
+@synthesize autoCorrectDoubleSpaceToPeriodAtSentenceEnd = _autoCorrectDoubleSpaceToPeriodAtSentenceEnd;
 
 - (BOOL)isSecureTextEntry
 {
@@ -2382,7 +2408,8 @@ enum {
     /* We assume that any selection change that's official enough come through this method should count as caret-solidifying activity. Probably should look for corner cases here. */
     [self _setSolidCaret:0];
     
-    [self unmarkText];
+    // We *cannot* clear marked text here. See <bug:///72439> (Unable to change insertion point within marked text) where the Japanese input manager lets the user drag the insertion point around to get different autocorrections. The insertion point is clamped to the marked range in this case.
+    // [self unmarkText];
     
     [self _setSelectedTextRange:(OUEFTextRange *)newRange notifyDelegate:YES];
     self.showingEditMenu = newRange != nil && ![newRange isEmpty];
@@ -2414,8 +2441,6 @@ enum {
 
 - (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)selectedRange;  // selectedRange is a range within the markedText
 {
-    NSRange replaceRange;
-
     if (!CGRectIsNull(markedTextDirtyRect)) {
         [self setNeedsDisplayInRect:markedTextDirtyRect];
         markedTextDirtyRect = CGRectNull;
@@ -2423,18 +2448,17 @@ enum {
     
     NSUInteger contentLength = [_content length];
 
-    if (markedRange.length == 0) {
-        if (selection) {
-            // Creating a marked range is effectively beginning an insertion operation. So if there is a selected range, we want to delete the text in that range and replace it with the inserted text.
-            // (Normally, there will be an empty selection, which just tells us where to insert the marked text.)
-            replaceRange = selection.range;
-        } else {
-            // If there's no selection, append to the end of the text.
-            replaceRange.location = contentLength;
-            replaceRange.length = 0;
-        }
-    } else {
+    NSRange replaceRange;
+    if (markedRange.location != NSNotFound) {
+        // Have some marked text; replace it.
         replaceRange = markedRange;
+    } else if (selection) {
+        // No marked text, but there is selected text. Replace that and update the marked range.
+        replaceRange = selection.range;
+    } else {
+        // Append to the end of the text, then?
+        OBASSERT_NOT_REACHED("Ever hit?");
+        replaceRange = NSMakeRange(contentLength, 0);
     }
     
     DEBUG_TEXT(@"Marked text: \"%@\" seln %"PRIuNS"+%"PRIuNS" replacing %"PRIuNS"+%"PRIuNS"",
@@ -2443,9 +2467,6 @@ enum {
                replaceRange.location, replaceRange.length);
     DEBUG_TEXT(@"  (Marked style: %@)", [markedTextStyle description]);
 
-    if (!markedText)
-        markedText = @""; // We get nil from the Japanese input manager on delete sometimes
-    
     [self _setSolidCaret:0];
         
     OUIEditableFrameMutationOptions options = 0;
@@ -2454,6 +2475,9 @@ enum {
     
     OBASSERT(NSMaxRange(replaceRange) <= contentLength);
 
+    if (!markedText)
+        markedText = @""; // We get nil from the Japanese input manager on delete sometimes
+    
     [_content replaceCharactersInRange:replaceRange withString:markedText];
     
     NSUInteger markedTextLength = [markedText length];
@@ -2485,12 +2509,12 @@ enum {
 {
     if (!markedRange.length)
         return;
-    
+
     DEBUG_TEXT(@"Unmarking text  (dirty rect was %@)", NSStringFromCGRect(markedTextDirtyRect));
     [self setNeedsDisplayInRect:markedTextDirtyRect];
+    
     [self willChangeValueForKey:@"markedTextRange"];
-    markedRange.location = 0;
-    markedRange.length = 0;
+    markedRange = NSMakeRange(NSNotFound, 0);
     [self didChangeValueForKey:@"markedTextRange"];
 }
 
@@ -2893,10 +2917,12 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
     CGPoint *origins = malloc(sizeof(*origins) * lineRange.length);
     CTFrameGetLineOrigins(drawnFrame, lineRange, origins);
     CFArrayRef lines = CTFrameGetLines(drawnFrame);
+    CFIndex contentLength = (CFIndex)[_content length];
     
     if (direction == UITextLayoutDirectionLeft || direction == UITextLayoutDirectionRight) {
         
         CFIndex foundPosition = kCFNotFound;
+        CGFloat foundPositionX = 0;
         
         /* Iterate through all the lines, and all the runs in each line. */
         /* Not bothering to try to avoid iterating over runs if we can get what we need from the line as a whole, because lines don't generally have very many runs */
@@ -2915,8 +2941,12 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
                 
                 if ((NSUInteger)runRange.location >= (stringRange.location+stringRange.length) ||
                     (NSUInteger)(runRange.location+runRange.length) <= stringRange.location) {
-                    // This run doesn't overlap the range of interest; skip it
-                    continue;
+                    // This run doesn't overlap the range of interest; skip it.
+                    if (runRange.location == contentLength && runRange.length == 1) {
+                        // As a special case, though, if this run is just the implicit trailing newline we *do* need to consider it. Sometimes the implicit newline is in the final run (in which case the runEdgeIsEndOfContent case below handles it), sometimes not.
+                    } else {
+                        continue;
+                    }
                 }
                 
                 CTRunStatus runFlags = CTRunGetStatus(run);
@@ -2931,9 +2961,10 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
                 else
                     runEdge = runRange.location;
                 
-                // If the run's edge is not in our range, look at the edge of our range
-                if ((NSUInteger)runEdge < stringRange.location ||
-                    (NSUInteger)runEdge >= (stringRange.location + stringRange.length)) {
+                // If the run's edge is not in our range, look at the edge of our range. But, if this is due to the implicit newline, don't (so control-e on the last line works, for example).
+                BOOL runEdgeOutsideStringRange = ((NSUInteger)runEdge < stringRange.location || (NSUInteger)runEdge >= (stringRange.location + stringRange.length));
+                BOOL runEdgeIsEndOfContent = (runEdge == contentLength);
+                if (runEdgeOutsideStringRange && !runEdgeIsEndOfContent) {
                     if (lookingForward)
                         runEdge = stringRange.location + stringRange.length - 1;
                     else
@@ -2950,8 +2981,9 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
                 /* The offset that CTLine gives us is the location of the "starting" edge of the character (depending on the writing direction at that point). We really want the leftmost or rightmost edge, depending on our 'direction' argument. We could optionally move one character to the side, but then we get into trouble at run boundaries (it looks like the secondaryOffset might be intended to help with this, but secondaryOffset is basically undocumented).  We could retrieve the glyph advance from the CTRun, if needed. For now, I'm just going to punt. */
                     
                 if (foundPosition == kCFNotFound ||
-                    XNOR(foundPosition < pos, direction == UITextLayoutDirectionRight)) {
+                    XNOR(foundPositionX < pos, direction == UITextLayoutDirectionRight)) {
                     foundPosition = runEdge;
+                    foundPositionX = pos;
                 }
             }
         }
@@ -3011,9 +3043,12 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
     if (lineRange.location + lineRange.length > contentLength) // CTFrameGetLines() sees our magic trailing newline, but that isn't actually part of our content
         lineRange.length = contentLength - lineRange.location;
 
+    // We can't do this since UITextInput seems to want newlines to be part of the line, and making that true means that this would cause control-e to not skip to the end of line, but one character short of it. Also, it turns out the UITextInput's emacs key bindings are busted. Testing in iWork, control-k only deletes to the ending of the LINE, not paragraph. AND it will never delete the newline. So... one approach is to be bug-for-bug compatible with them and hope they fix it in the system text input. See <bug:///70843> (Control-right arrow (and control-e) takes you to before the last character in the line [end of line]) for previous approaches to this that failed.
+#if 0
     if (lineRange.length > 1 && [[_content string] characterAtIndex:lineRange.location + lineRange.length - 1] == '\n')
         lineRange.length--; // Don't include a trailing newline as part of the line range unless it's the entire range. (Control-K should delete up to the newline character without deleting the newline itself.)
-
+#endif
+    
     OUEFTextRange *result = [[OUEFTextRange alloc] initWithRange:(NSRange){ lineRange.location, lineRange.length } generation:generation];
     return [result autorelease];
 }
@@ -3174,6 +3209,37 @@ static BOOL firstRect(CGPoint p, CGFloat width, CGFloat trailingWS, CGFloat asce
 }
 
 //@property (nonatomic) UITextStorageDirection selectionAffinity;
+/*
+ 
+ Only seen this called here so far (when pressing the up arrow in a long bit of wrapped text):
+ 
+ #2  0x001b5b82 in -[OUIEditableFrame selectionAffinity] (self=0x17d5afa0, _cmd=0xcf9632) at /Volumes/Home/bungi/Source/Omni/trunk/OmniGroup/Frameworks/OmniUI/iPad/OUIEditableFrame.m:3204
+ #3  0x00bd94a4 in -[NSObject(UITextInput_Internal) _moveUp:withHistory:] ()
+ #4  0x00a1d921 in -[UIKeyboardImpl handleKeyCommand:repeatOkay:] ()
+ */
+#if 0 && defined(DEBUG_bungi)
+- (UITextStorageDirection)selectionAffinity;
+{
+    return UITextStorageDirectionForward;
+}
+#endif
+
+#if 0 && defined(DEBUG_bungi)
+- (BOOL)respondsToSelector:(SEL)aSelector;
+{
+    BOOL rc = [super respondsToSelector:aSelector];
+    if (!rc)
+        NSLog(@"OUIEditableFrame respondsToSelector:@selector(%@) --> %d", NSStringFromSelector(aSelector), rc);
+    return rc;
+}
+
+// This method is not in UITextInput, but they check for it and will call it with appropriate affinity based when you do control-e vs. control-a, for example.
+- (void)setSelectedTextRange:(UITextRange *)range withAffinityDownstream:(int)xxx;
+{
+    NSLog(@"range = %@, downstream %d", range, xxx);
+    [self setSelectedTextRange:range];
+}
+#endif
 
 #pragma mark -
 #pragma mark Private
@@ -3427,8 +3493,12 @@ static CGPoint _closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint t
  * always performed on the text from this selection.  nil corresponds to no selection. */
 - (void)_setSelectedTextRange:(OUEFTextRange *)newRange notifyDelegate:(BOOL)shouldNotify;
 {
+    // We cannot early out on the range being the same as before here. The text system depends on us sending selection change notifications to close text input auxilliary views. We probably shouldn't be calling the inputDelegate methods here, though, but in higher level code (unclear, but Apple's sample doesn't). If the higher level code was calling the delegate, then we could go back to having an early-out.
+    // See <bug:///72532> (Can't tap out of the suggestions list for Japanese marked text)
+#if 0
     if (_rangeIsInsertionPoint(self, newRange))
         return;
+#endif
     
     /* TODO: If the old and new selections are both ranges, and only differ by a few characters at one end, we can potentially save a lot of redraw by computing the difference and redrawing only the extension/contraction */
     
@@ -3525,6 +3595,28 @@ static CGPoint _closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint t
         [self becomeFirstResponder];
 }
 
+- (BOOL)_characterAtIndex:(NSUInteger)index containsPoint:(CGPoint)p
+{
+    OUEFTextPosition *start = [[[OUEFTextPosition alloc] initWithIndex:index] autorelease];
+    OUEFTextPosition *end = [[[OUEFTextPosition alloc] initWithIndex:index + 1] autorelease];
+
+    UITextRange *range = [self textRangeFromPosition:start toPosition:end];
+
+    CGRect bounds = [self boundsOfRange:range];
+    return (CGRectContainsPoint(bounds, p));
+}
+
+- (OUEFTextRange *)_textRangeForAttachmentAtIndex:(NSUInteger)index;
+{
+    OBASSERT([[_content string] characterAtIndex:index] == OAAttachmentCharacter);
+    OUEFTextPosition *start = [[[OUEFTextPosition alloc] initWithIndex:index] autorelease];
+    OUEFTextPosition *end = [[[OUEFTextPosition alloc] initWithIndex:index + 1] autorelease];
+    start.generation = generation;
+    end.generation = generation;
+
+    return [[[OUEFTextRange alloc] initWithStart:start end:end] autorelease];
+}
+
 - (UITextRange *)selectionRangeForPoint:(CGPoint)p granularity:(UITextGranularity)granularity;
 {
     BOOL wasBeyondLineBounds = NO;
@@ -3548,6 +3640,20 @@ static CGPoint _closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint t
         NSUInteger characterIndex = pp.index;
         OFCharacterSet *whitespaceOFCharacterSet = [OFCharacterSet whitespaceOFCharacterSet];
         OBASSERT(characterIndex <= [string length]);
+
+        // Test to see if point was an attachment, if so return a range for the attachment.
+        NSUInteger testIndex = characterIndex;
+        if (characterIndex == [string length])
+            testIndex--;
+
+        if ([string characterAtIndex:testIndex] == OAAttachmentCharacter && [self _characterAtIndex:testIndex containsPoint:p])
+            return [self _textRangeForAttachmentAtIndex:testIndex];
+        
+        testIndex--;
+        
+        if ([string characterAtIndex:testIndex] == OAAttachmentCharacter && [self _characterAtIndex:testIndex containsPoint:p])
+            return [self _textRangeForAttachmentAtIndex:testIndex];
+
         if (characterIndex == [string length] || OFCharacterSetHasMember(whitespaceOFCharacterSet, [string characterAtIndex:characterIndex])) {
             // If we're on whitespace, scan backward for non-whitespace
             while (characterIndex > 0) {
@@ -3698,10 +3804,13 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
     OBASSERT(!newSelection || [newSelection isKindOfClass:[OUEFTextRange class]]);
                                  
     if (newSelection) {        
-        if (r.numberOfTapsRequired == 1 && [newSelection isEqualToRange:selection]) {
-            // Apple's text editor behaves this way: if you tap-to-select on the same point twice (as opposed to a double-tap, which is a different gesture), then it shows the context menu
+        // Apple's text editor behaves this way: if you tap-to-select on the same point twice (as opposed to a double-tap, which is a different gesture), then it shows the context menu
+        // We avoid this case if there is marked text since then we could have input method specific controls up instead. Clearing the marked text and informing the input delegate will close those.
+        // See <bug:///72532> (Can't tap out of the suggestions list for Japanese marked text)
+        if (r.numberOfTapsRequired == 1 && [newSelection isEqualToRange:selection] && markedRange.location == NSNotFound) {
             self.showingEditMenu = YES;
         } else {
+            [self unmarkText];
             [self setSelectedTextRange:newSelection];
         }
     }
