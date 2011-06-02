@@ -112,7 +112,7 @@ RCS_ID("$Id$");
 
 #ifdef DEBUG_kc
     if (flags.debug)
-        NSLog(@"-[%@ %s]: cachesToSearch=%@ arcsToConsider=%@", OBShortObjectDescription(self), _cmd, [cachesToSearch description], [arcsToConsider description]);
+        NSLog(@"-[%@ %@]: cachesToSearch=%@ arcsToConsider=%@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [cachesToSearch description], [arcsToConsider description]);
 #endif
     while ([cachesToSearch count] > 0 || [arcsToConsider count] > 0) {
         id <OWCacheArcProvider> aCache;
@@ -125,7 +125,7 @@ RCS_ID("$Id$");
 
 #ifdef DEBUG_kc
         if (flags.debug)
-            NSLog(@"-[%@ %s]: considering arc %@", OBShortObjectDescription(self), _cmd, anArc);
+            NSLog(@"-[%@ %@]: considering arc %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), anArc);
 #endif
 
         if (aCache == nil || ( anArc != nil && ([aCache cost] > arcCostEstimate) )) {
@@ -138,7 +138,7 @@ RCS_ID("$Id$");
 
 #ifdef DEBUG_kc
             if (flags.debug)
-                NSLog(@"-[%@ %s]: returning an arc: %@", OBShortObjectDescription(self), _cmd, anArc);
+                NSLog(@"-[%@ %@]: returning an arc: %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), anArc);
 #endif
             return anArc;
         } else if ([aCache cost] <= 0.0) {
@@ -146,7 +146,7 @@ RCS_ID("$Id$");
         } else {
 #ifdef DEBUG_kc
             if (flags.debug)
-                NSLog(@"-[%@ %s]: returning nil rather than blocking", OBShortObjectDescription(self), _cmd);
+                NSLog(@"-[%@ %@]: returning nil rather than blocking", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 #endif
             return nil; // We would block, so return nil.
         }
@@ -155,7 +155,7 @@ RCS_ID("$Id$");
     // We've failed to find an arc. All die, O the embarrassment!
 #ifdef DEBUG_kc
     if (flags.debug)
-        NSLog(@"-[%@ %s]: failed to find an arc", OBShortObjectDescription(self), _cmd);
+        NSLog(@"-[%@ %@]: failed to find an arc", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 #endif
     return nil;
 }
@@ -206,7 +206,7 @@ RCS_ID("$Id$");
     anEstimate = [weaklyRetainedPipeline estimateCostFromType:destType];
 #ifdef DEBUG_kc
     if (flags.debug)
-        NSLog(@"-[%@ %s%@]: estimateCostFromType:%@ = %@", OBShortObjectDescription(self), _cmd, OBShortObjectDescription(anArc), [destType contentTypeString], anEstimate);
+        NSLog(@"-[%@ %@%@]: estimateCostFromType:%@ = %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), OBShortObjectDescription(anArc), [destType contentTypeString], anEstimate);
 #endif
 
     followonCost = anEstimate != nil ? [anEstimate floatValue] : unacceptableCost;
@@ -215,7 +215,7 @@ RCS_ID("$Id$");
         anEstimate = [weaklyRetainedPipeline estimateCostFromType:[OWContentType sourceContentType]];
 #ifdef DEBUG_kc
         if (flags.debug)
-            NSLog(@"-[%@ %s%@]: estimateCostFromType:%@ = %@", OBShortObjectDescription(self), _cmd, OBShortObjectDescription(anArc), [[OWContentType sourceContentType] contentTypeString], anEstimate);
+            NSLog(@"-[%@ %@%@]: estimateCostFromType:%@ = %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), OBShortObjectDescription(anArc), [[OWContentType sourceContentType] contentTypeString], anEstimate);
 #endif
         if (anEstimate)
             followonCost = MIN(followonCost, [anEstimate floatValue]);
@@ -228,7 +228,7 @@ RCS_ID("$Id$");
 
 #ifdef DEBUG_kc
     if (flags.debug)
-        NSLog(@"-[%@ %s%@]: total cost is %f = arcCost %f + COST_PER_LINK %f + followonCost %f", OBShortObjectDescription(self), _cmd, OBShortObjectDescription(anArc), arcCost + COST_PER_LINK + followonCost, arcCost, COST_PER_LINK, followonCost);
+        NSLog(@"-[%@ %@%@]: total cost is %f = arcCost %f + COST_PER_LINK %f + followonCost %f", OBShortObjectDescription(self), NSStringFromSelector(_cmd), OBShortObjectDescription(anArc), arcCost + COST_PER_LINK + followonCost, arcCost, COST_PER_LINK, followonCost);
 #endif
 
     return arcCost + COST_PER_LINK + followonCost;
@@ -323,7 +323,7 @@ RCS_ID("$Id$");
 
 #ifdef DEBUG_kc
     if (flags.debug)
-        NSLog(@"-[%@ %s]: %@ --> %@", OBShortObjectDescription(self), _cmd, OBShortObjectDescription(aCache), [cacheArcs description]);
+        NSLog(@"-[%@ %@]: %@ --> %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), OBShortObjectDescription(aCache), [cacheArcs description]);
 #endif
 
     [OWPipeline lock];
@@ -334,7 +334,7 @@ RCS_ID("$Id$");
                              [arcsToConsider addObject:anArc];
 #ifdef DEBUG_kc0
                          else
-                             NSLog(@"-[%@ %s]: arc %@ matched rejected arc %@", OBShortObjectDescription(self), _cmd, anArc, [rejectedArcs member:anArc]);
+                             NSLog(@"-[%@ %@]: arc %@ matched rejected arc %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), anArc, [rejectedArcs member:anArc]);
 #endif
                      });
 
@@ -342,7 +342,7 @@ RCS_ID("$Id$");
     
 #ifdef DEBUG_kc
     if (flags.debug)
-        NSLog(@"-[%@ %s]: arcsToConsider=%@, rejectedArcs=%@", OBShortObjectDescription(self), _cmd, [arcsToConsider description], [rejectedArcs description]);
+        NSLog(@"-[%@ %@]: arcsToConsider=%@, rejectedArcs=%@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [arcsToConsider description], [rejectedArcs description]);
 #endif
 }
 

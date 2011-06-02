@@ -622,7 +622,7 @@ got_path:
     OWContentType *replacedContentType = [contentTypeDictionary objectForKey:key];
     if (replacedContentType != nil && replacedContentType != self) {
 #ifdef DEBUG_kc
-        NSLog(@"-[%@ %s%@]: replacing %@ with %@", OBShortObjectDescription(self), _cmd, newAlias, [replacedContentType contentTypeString], [self contentTypeString]);
+        NSLog(@"-[%@ %@%@]: replacing %@ with %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), newAlias, [replacedContentType contentTypeString], [self contentTypeString]);
 #endif
         [replacedContentTypes addObject:replacedContentType];
     }

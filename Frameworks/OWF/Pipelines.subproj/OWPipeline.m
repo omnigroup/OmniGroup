@@ -1487,7 +1487,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
             // The arc we're waiting on has finished but either it didn't produce anything or it didn't produce anything we haven't seen before. We're probably stuck, but call _processContent again in case it comes up with something.
 #ifdef DEBUG_kc
             if (flags.debug)
-                NSLog(@"-[%@ %s]: arc has result, but _incorporateOneEntry:fromArc: failed, forgetting arc %@", OBShortObjectDescription(self), _cmd, OBShortObjectDescription(productiveArc));
+                NSLog(@"-[%@ %@]: arc has result, but _incorporateOneEntry:fromArc: failed, forgetting arc %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), OBShortObjectDescription(productiveArc));
 #endif
             [self _forgetArc:productiveArc];  // deregister as an observer of this arc
 
@@ -1908,7 +1908,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
         case OWCacheArcTraversal_Failed:
 #ifdef DEBUG_kc
             if (OWPipelineDebug || flags.debug)
-                NSLog(@"-[%@ %s]: traversal failed, forgetting arc %@", OBShortObjectDescription(self), _cmd, OBShortObjectDescription(possibleArc));
+                NSLog(@"-[%@ %@]: traversal failed, forgetting arc %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), OBShortObjectDescription(possibleArc));
 #endif
             [self _forgetArc:possibleArc];
             OBASSERT([followedArcs count]+1 == [followedContent count]);
@@ -2296,7 +2296,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     
     if (state != OWPipelineBuilding) {
 #ifdef DEBUG_kc
-	NSLog(@"-[%@ %s]: state=%d", OBShortObjectDescription(self), _cmd, state);
+	NSLog(@"-[%@ %@]: state=%d", OBShortObjectDescription(self), NSStringFromSelector(_cmd), state);
 	flags.debug = YES;
 #endif
 	return nil;
@@ -2362,7 +2362,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
             [cacheSearch setCostLimit:deliveryCost];  // don't consider arcs more expensive than delivery
 #ifdef DEBUG_kc
             if (flags.debug)
-                NSLog(@"-[%@ %s]: %@ searching for an arc from content type %@, cacheSearch=%@", OBShortObjectDescription(self), _cmd, [[self lastAddress] addressString], [[mostRecentContent contentType] contentTypeString], cacheSearch);
+                NSLog(@"-[%@ %@]: %@ searching for an arc from content type %@, cacheSearch=%@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [[self lastAddress] addressString], [[mostRecentContent contentType] contentTypeString], cacheSearch);
 #endif
         }
 
@@ -2390,7 +2390,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
             } else {
                 /* Our cache search stopped because we ran out of things to try. */
 #ifdef DEBUG_kc
-                NSLog(@"-[%@ %s]: %@ failed to traverse any arc from content type %@ (state=%d), cacheSearch=%@", OBShortObjectDescription(self), _cmd, [[self lastAddress] addressString], [[mostRecentContent contentType] contentTypeString], state, OBShortObjectDescription(cacheSearch));
+                NSLog(@"-[%@ %@]: %@ failed to traverse any arc from content type %@ (state=%d), cacheSearch=%@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [[self lastAddress] addressString], [[mostRecentContent contentType] contentTypeString], state, OBShortObjectDescription(cacheSearch));
 #endif
                 /* TODO: Should we back up and try again with earlier entries? (probably not) */
                 continuationEvent = [[OFInvocation alloc] initForObject:self selector:@selector(_weAreAtAnImpasse)];

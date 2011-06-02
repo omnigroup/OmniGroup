@@ -140,7 +140,7 @@ static OFPreference *directoryIndexFilenamePreference = nil;
     if (![importedPreference boolValue]) {
         NSDictionary *oldDomain = [[NSUserDefaults standardUserDefaults] persistentDomainForName:@"com.omnigroup.OmniWeb"];
         NSDictionary *oldShortcutDictionary = [oldDomain objectForKey:@"OWAddressShortcuts"];
-        if (oldShortcutDictionary == nil) {
+        if (oldShortcutDictionary != nil) {
             // -[NSUserDefaults dictionaryForKey:] returns nil if the stored value was originally a string, which is how we used to store everything with OFUserDefaults.  This lets us read the old format, then store the new format.
             oldShortcutDictionary = [(NSString *)oldShortcutDictionary propertyList];
         }
@@ -1137,7 +1137,7 @@ addressForNotSoObviousHostname(NSString *string)
         [request setHTTPBody:[methodDictionary objectForKey:OWAddressContentDataMethodKey]];
     }
 #ifdef DEBUG_kc
-    NSLog(@"-[%@ %s]: request=%@, method=%@, headers=%@, body=%@, address=%@", OBShortObjectDescription(self), _cmd, request, [request HTTPMethod], [request allHTTPHeaderFields], [request HTTPBody], self);
+    NSLog(@"-[%@ %@]: request=%@, method=%@, headers=%@, body=%@, address=%@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), request, [request HTTPMethod], [request allHTTPHeaderFields], [request HTTPBody], self);
 #endif
     return request;
 }
