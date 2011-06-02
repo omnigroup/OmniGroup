@@ -19,6 +19,13 @@
 @class OQColor;
 #endif
 
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#define OQ_PLATFORM_COLOR_CLASS UIColor
+#else
+#define OQ_PLATFORM_COLOR_CLASS NSColor
+#endif
+@class OQ_PLATFORM_COLOR_CLASS;
+
 typedef struct {
     CGFloat r, g, b, a;
 } OQLinearRGBA;
@@ -71,12 +78,6 @@ extern NSColor *OQColorFromColorRef(CGColorRef c);
 extern CGColorRef OQCreateGrayColorRefFromColor(NSColor *c);
 #endif
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-@class UIColor;
-#else
-@class NSColor;
-#endif
-
 typedef enum {
     OQColorSpaceRGB,
     OQColorSpaceWhite, // 0=black, 1=white
@@ -95,15 +96,11 @@ extern OQLinearRGBA OQHSVToRGB(OSHSV c);
 
 @interface OQColor : OFObject <NSCopying>
 {
-    id _platformColor;
+    OQ_PLATFORM_COLOR_CLASS *_platformColor;
 }
 
 + (OQColor *)colorWithCGColor:(CGColorRef)cgColor;
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-+ (OQColor *)colorWithPlatformColor:(UIColor *)color;
-#else
-+ (OQColor *)colorWithPlatformColor:(NSColor *)color;
-#endif
++ (OQColor *)colorWithPlatformColor:(OQ_PLATFORM_COLOR_CLASS *)color;
 
 + (OQColor *)colorFromRGBAString:(NSString *)rgbaString;
 - (NSString *)rgbaString;
@@ -162,11 +159,7 @@ extern OQLinearRGBA OQHSVToRGB(OSHSV c);
 - (BOOL)isEqualToColorInSameColorSpace:(OQColor *)color;
 - (NSUInteger)hash;
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-@property(readonly,nonatomic) UIColor *toColor;
-#else
-@property(readonly,nonatomic) NSColor *toColor;
-#endif
+@property(readonly,nonatomic) OQ_PLATFORM_COLOR_CLASS *toColor;
 @end
 @interface OQColor (OQColor) <OQColor>
 @end
