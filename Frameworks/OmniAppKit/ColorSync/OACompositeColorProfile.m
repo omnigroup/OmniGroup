@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 #import "OAColorProfile.h"
 #import "NSColor-ColorSyncExtensions.h"
 #import <AppKit/AppKit.h>
+#import <OmniAppKit/OAFeatures.h>
 #import <OmniBase/assertions.h>
 #import <OmniBase/rcsid.h>
 
@@ -54,6 +55,7 @@ RCS_ID("$Id$");
     return [[profiles objectAtIndex:0] _hasGraySpace];
 }
 
+#if OA_USE_COLOR_MANAGER
 - (CMWorldRef)_colorWorldForOutput:(OAColorProfile *)aProfile componentSelector:(SEL)componentSelector;
 {
     CMWorldRef result;
@@ -79,32 +81,45 @@ RCS_ID("$Id$");
     NCWConcatColorWorld(&result, profileSet, NULL, NULL);
     return result;
 }
+#endif
 
 - (void *)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     CMWorldRef *colorWorld = (CMWorldRef *)[self _cachedRGBColorWorldForOutput:aProfile];
 
     if (!*colorWorld)  
         *colorWorld = [self _colorWorldForOutput:aProfile componentSelector:@selector(_rgbProfile)];
     return *colorWorld;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void *)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     CMWorldRef *colorWorld = (CMWorldRef *)[self _cachedCMYKColorWorldForOutput:aProfile];
 
     if (!*colorWorld)  
         *colorWorld = [self _colorWorldForOutput:aProfile componentSelector:@selector(_cmykProfile)];
     return *colorWorld;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void *)_grayConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     CMWorldRef *colorWorld = (CMWorldRef *)[self _cachedGrayColorWorldForOutput:aProfile];
 
     if (!*colorWorld)  
         *colorWorld = [self _colorWorldForOutput:aProfile componentSelector:@selector(_grayProfile)];
     return *colorWorld;
+#else
+    OBFinishPorting;
+#endif
 }
 
 #pragma mark NSCopying

@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,12 +6,14 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OAColorProfile.h"
+
 #import "NSColor-ColorSyncExtensions.h"
 #import <Cocoa/Cocoa.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/OBUtilities.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/assertions.h>
+#import <OmniAppKit/OAFeatures.h>
 #import "OAColorProfile-Deprecated.h"
 
 RCS_ID("$Id$");
@@ -26,8 +28,10 @@ RCS_ID("$Id$");
 
 - (void *)_anyProfile;
 - (void)_updateConversionCacheForOutput:(OAColorProfile *)outputProfile;
+#if OA_USE_COLOR_MANAGER
 - (NSData *)_dataForRawProfile:(CMProfileRef)rawProfile;
 - (BOOL)_addProfile:(CMProfileRef)cmProfile toPropertyList:(NSMutableDictionary *)dict keyStem:(NSString *)spaceName;
+#endif
 - (void)_profileLoadError:(int)errorCode defaultColorSpace:(NSColorSpace *)colorSpace;
 
 @end
@@ -37,21 +41,27 @@ NSString * const OAColorProofingDevicesDidChangeNotification = @"OAColorProofing
 
 @implementation OAColorProfile
 
+#if OA_USE_COLOR_MANAGER
 static BOOL resetProfileLists = YES;
+#endif
 static NSMutableDictionary *rgbProfileDictionary = nil;
 static NSMutableDictionary *cmykProfileDictionary = nil;
 static NSMutableDictionary *grayProfileDictionary = nil;
+#if OA_USE_COLOR_MANAGER
 static BOOL resetDeviceList = YES;
+#endif
 static NSMutableDictionary *deviceProfileDictionary = nil;
 static NSMutableDictionary *deviceNameDictionary = nil;
 static OAColorProfile *currentColorProfile = nil;
 static NSView *focusedViewForCurrentColorProfile = nil;
 
+#if OA_USE_COLOR_MANAGER
 static OAColorProfile *lastInProfile = nil;
 static OAColorProfile *lastOutProfile = nil;
 static CMWorldRef rgbColorWorld = NULL;
 static CMWorldRef cmykColorWorld = NULL;
 static CMWorldRef grayColorWorld = NULL;
+#endif
 
 + (void)initialize;
 {
@@ -93,11 +103,15 @@ static CMWorldRef grayColorWorld = NULL;
 
 + (OAColorProfile *)workingCMYKProfile;
 {
+#if OA_USE_COLOR_MANAGER
     OAColorProfile *result = [[self alloc] init];
     
     result->cmykProfile = [[self defaultDocumentProfile] _cmykProfile];
     CMCloneProfileRef((CMProfileRef)result->cmykProfile);
     return [result autorelease];
+#else
+    OBFinishPorting;
+#endif
 }
 
 + (OAColorProfile *)currentProfile;
@@ -111,6 +125,7 @@ static CMWorldRef grayColorWorld = NULL;
     return nil;
 }
 
+#if OA_USE_COLOR_MANAGER
 OSErr deviceListIterator(const CMDeviceInfo *deviceInfo, const NCMDeviceProfileInfo *profileInfo, void *refCon)
 {
     CMProfileRef cmProfile;
@@ -182,14 +197,19 @@ OSErr deviceListIterator(const CMDeviceInfo *deviceInfo, const NCMDeviceProfileI
     [profile release];
     return 0;
 }
+#endif
 
 + (NSArray *)proofingDeviceProfileNames;
 {
+#if OA_USE_COLOR_MANAGER
     static UInt32 seed = 0;
     
     resetDeviceList = YES;
     CMIterateDeviceProfiles(deviceListIterator, &seed, NULL, cmIterateCurrentDeviceProfiles, NULL);
     return [deviceProfileDictionary allKeys];
+#else
+    OBFinishPorting;
+#endif
 }
 
 + (OAColorProfile *)proofProfileForDeviceProfileName:(NSString *)deviceProfileName;
@@ -211,6 +231,7 @@ OSErr deviceListIterator(const CMDeviceInfo *deviceInfo, const NCMDeviceProfileI
     return result;
 }
 
+#if OA_USE_COLOR_MANAGER
 OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
 {
     if (resetProfileLists) {
@@ -254,13 +275,18 @@ OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
     [profile release];
     return 0;
 }
+#endif
 
 + (void)_iterateAvailableProfiles;
 {
+#if OA_USE_COLOR_MANAGER
     static UInt32 seed = 0;
     
     resetProfileLists = YES;
     CMIterateColorSyncFolder (nameListIterator, &seed, NULL, NULL);
+#else
+    OBFinishPorting;
+#endif
 }
 
 + (NSArray *)rgbProfileNames;
@@ -283,6 +309,7 @@ OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
 
 + (OAColorProfile *)colorProfileWithRGBNamed:(NSString *)rgbName cmykNamed:(NSString *)cmykName grayNamed:(NSString *)grayName;
 {
+#if OA_USE_COLOR_MANAGER
     OAColorProfile *profile = [[self alloc] init];
     OAColorProfile *match;
 
@@ -320,8 +347,12 @@ OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
     }
     
     return [profile autorelease];
+#else
+    OBFinishPorting;
+#endif
 }
 
+#if OA_USE_COLOR_MANAGER
 static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType fallbackToDefault)
 {
     if (data && [data length]) {
@@ -359,9 +390,11 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     
     return NO;
 }
+#endif
 
 + (OAColorProfile *)colorProfileFromPropertyListRepresentation:(NSDictionary *)dict;
 {
+#if OA_USE_COLOR_MANAGER
     // If the Name key doesn't exist, +colorProfileWithRGBNamed: will just keep the default entry, and we'll overwrite it below
     OAColorProfile *colorProfile = [self colorProfileWithRGBNamed:[dict objectForKey:@"rgbName"]
                                                         cmykNamed:[dict objectForKey:@"cmykName"]
@@ -375,10 +408,14 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     // NSLog(@"Read profiles %p %p %p from %@", colorProfile->rgbProfile, colorProfile->cmykProfile, colorProfile->grayProfile, dict);
     
     return colorProfile;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void)dealloc;
 {
+#if OA_USE_COLOR_MANAGER
     if (currentColorProfile == self)
         currentColorProfile = nil;
     if (lastInProfile == self)
@@ -392,11 +429,16 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         CMCloseProfile(cmykProfile);
     if (grayProfile)
         CMCloseProfile(grayProfile);
+#else
+    OBFinishPorting;
+#endif
+    
     [super dealloc];
 }
 
 - (id)copyWithZone:(NSZone *)zone;
 {
+#if OA_USE_COLOR_MANAGER
     if (isMutable) {
         OAColorProfile *result = [[OAColorProfile alloc] init];
         
@@ -415,10 +457,14 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         return result;
     } else
         return [self retain];
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (NSMutableDictionary *)propertyListRepresentation;
 {
+#if OA_USE_COLOR_MANAGER
     NSMutableDictionary *result = [NSMutableDictionary dictionary];
 
     [self _addProfile:rgbProfile  toPropertyList:result keyStem:@"rgb"];
@@ -426,6 +472,9 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     [self _addProfile:grayProfile toPropertyList:result keyStem:@"gray"];
     
     return result;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void)set;
@@ -464,15 +513,27 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 
 - (NSData *)rgbData;
 {
+#if OA_USE_COLOR_MANAGER
     return (rgbProfile == nil) ? nil : [self _dataForRawProfile:rgbProfile];
+#else
+    OBFinishPorting;
+#endif
 }
 - (NSData *)cmykData;
 {
+#if OA_USE_COLOR_MANAGER
     return (cmykProfile == nil) ? nil : [self _dataForRawProfile:cmykProfile];
+#else
+    OBFinishPorting;
+#endif
 }
 - (NSData *)grayData;
 {
+#if OA_USE_COLOR_MANAGER
     return (grayProfile == nil) ? nil : [self _dataForRawProfile:grayProfile];
+#else
+    OBFinishPorting;
+#endif
 }
 
 
@@ -561,20 +622,32 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 
 - (void **)_cachedRGBColorWorldForOutput:(OAColorProfile *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     [self _updateConversionCacheForOutput:aProfile];
     return (void **)&rgbColorWorld;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void **)_cachedCMYKColorWorldForOutput:(OAColorProfile *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     [self _updateConversionCacheForOutput:aProfile];
     return (void **)&cmykColorWorld;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void **)_cachedGrayColorWorldForOutput:(OAColorProfile *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     [self _updateConversionCacheForOutput:aProfile];
     return (void **)&grayColorWorld;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void *)_rgbProfile;
@@ -594,6 +667,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 
 - (void *)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     if (!aProfile)
         return NULL;
     
@@ -605,10 +679,14 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         NCWNewColorWorld(&rgbColorWorld, rgbProfile, [aProfile _rgbProfile]);
     }
     return rgbColorWorld;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void *)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     [self _updateConversionCacheForOutput:aProfile];
     
     if (!cmykColorWorld) {
@@ -617,10 +695,14 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         NCWNewColorWorld(&cmykColorWorld, cmykProfile, [aProfile _cmykProfile]);
     }
     return cmykColorWorld;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void *)_grayConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     [self _updateConversionCacheForOutput:aProfile];
     
     if (!grayColorWorld) {
@@ -629,6 +711,9 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         NCWNewColorWorld(&grayColorWorld, grayProfile, [aProfile _grayProfile]);
     }
     return grayColorWorld;
+#else
+    OBFinishPorting;
+#endif
 }
 
 @end
@@ -648,6 +733,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 // TODO: This function returns the localized string, which is not very useful for storing in plists!
 - (NSString *)_getProfileName:(void *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     // TODO: This leaks.
 
     CFStringRef string = nil;
@@ -680,10 +766,14 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 #endif
     
     return nil; // everything errored out
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void)colorProfileDidChange:(NSNotification *)notification;
 {
+#if OA_USE_COLOR_MANAGER
     lastInProfile = nil;
     lastOutProfile = nil;
 
@@ -695,10 +785,14 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     CMGetDefaultProfileBySpace(cmGrayData, (CMProfileRef *)&grayProfile);
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OADefaultDocumentColorProfileDidChangeNotification object:nil]; 
+#else
+    OBFinishPorting;
+#endif
 }
 
 - initDefaultDocumentProfile;
 {
+#if OA_USE_COLOR_MANAGER
     [super init];
     
     int errorCode = CMGetDefaultProfileBySpace(cmRGBData, (CMProfileRef *)&rgbProfile);
@@ -729,10 +823,14 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 
     isMutable = YES;
     return self;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - initDefaultProofProfile;
 {
+#if OA_USE_COLOR_MANAGER
     CMProfileRef profile;
     CMAppleProfileHeader header;
     
@@ -761,10 +859,14 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     }
     isMutable = YES;
     return self;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - initDefaultDisplayProfile;
 {
+#if OA_USE_COLOR_MANAGER
     CMProfileRef profile;
     CMAppleProfileHeader header;
     
@@ -793,10 +895,14 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     }
     isMutable = YES;
     return self;
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void)_updateConversionCacheForOutput:(OAColorProfile *)aProfile;
 {
+#if OA_USE_COLOR_MANAGER
     if (self != lastInProfile || aProfile != lastOutProfile) {
         if (rgbColorWorld != NULL) {
             CWDisposeColorWorld(rgbColorWorld);
@@ -813,6 +919,9 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         lastInProfile = self;
         lastOutProfile = aProfile;
     }
+#else
+    OBFinishPorting;
+#endif
 }
 
 - (void *)_anyProfile;
@@ -825,6 +934,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         return grayProfile;
 }
 
+#if OA_USE_COLOR_MANAGER
 - (NSData *)_dataForRawProfile:(CMProfileRef)rawProfile;
 {
     CMProfileRef targetRef;
@@ -878,6 +988,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     
     return NO;
 }
+#endif
 
 - (void)_profileLoadError:(int)errorCode defaultColorSpace:(NSColorSpace *)colorSpace;
 {

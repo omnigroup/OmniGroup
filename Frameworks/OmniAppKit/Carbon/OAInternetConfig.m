@@ -7,6 +7,8 @@
 
 #import "OAInternetConfig.h"
 
+#if OA_INTERNET_CONFIG_ENABLED
+
 #import <AppKit/NSPanel.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <Foundation/Foundation.h>
@@ -15,6 +17,7 @@
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$")
+
 
 // The InternetConfig documentation can be found at http://www.quinn.echidna.id.au/Quinn/Config/.
 
@@ -667,3 +670,5 @@ static NSString *OANameForInternetConfigErrorCode(OSStatus errorCode)
 }
 
 @end
+
+#endif // OA_INTERNET_CONFIG_ENABLED

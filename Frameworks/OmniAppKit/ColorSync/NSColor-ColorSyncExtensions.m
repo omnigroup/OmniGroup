@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 #import "OAColorProfile.h"
 #import "NSImage-ColorSyncExtensions.h"
 
+#import <OmniAppKit/OAFeatures.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 
@@ -164,6 +165,7 @@ static IMP originalPatternImp, originalCalibratedRGBImp, originalCalibratedGrayI
 
 #define MAXUINT16 ((1 << 16) - 1)
 
+#if OA_USE_COLOR_MANAGER
 - (NSColor *)_rgbConvertUsingColorWorld:(CMWorldRef)colorWorldRef;
 {
     CMColor cmColor;
@@ -212,9 +214,11 @@ static IMP originalPatternImp, originalCalibratedRGBImp, originalCalibratedGrayI
     else
         return [NSColor colorWithDeviceWhite:((float)cmColor.gray.gray / (float)MAXUINT16) alpha:[self alphaComponent]];
 }
+#endif
 
 - (NSColor *)convertFromProfile:(OAColorProfile *)inProfile toProfile:(OAColorProfile *)outProfile;
 {
+#if OA_USE_COLOR_MANAGER
     NSString *colorSpaceName;
         
     colorSpaceName = [self colorSpaceName];
@@ -245,6 +249,9 @@ static IMP originalPatternImp, originalCalibratedRGBImp, originalCalibratedGrayI
         else
             return [[self colorUsingColorSpaceName:NSDeviceRGBColorSpace] _rgbConvertUsingColorWorld:world];
     }
+#else
+    OBFinishPorting;
+#endif
 }
 
 @end

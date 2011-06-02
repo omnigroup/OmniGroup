@@ -27,6 +27,8 @@
 		341AB85A11935816005E6F74 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; };
 		3425E49009C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3425E49109C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */; };
+		34275D1D13981621003F28F5 /* OAFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34275D1C13981621003F28F5 /* OAFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34275D1E13981621003F28F5 /* OAFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34275D1C13981621003F28F5 /* OAFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		342B41170A4C6B62002BFC4B /* NSWindowController-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342B41150A4C6B62002BFC4B /* NSWindowController-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		342B41180A4C6B62002BFC4B /* NSWindowController-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342B41160A4C6B62002BFC4B /* NSWindowController-OAExtensions.m */; };
 		3431F1300B1B7847002B728E /* OADatePickerTextFieldCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3431F12E0B1B7847002B728E /* OADatePickerTextFieldCell.h */; };
@@ -640,6 +642,7 @@
 		341AB85811935816005E6F74 /* OAFontDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFontDescriptor.m; sourceTree = "<group>"; };
 		3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSLayoutManager-OAExtensions.h"; path = "OpenStepExtensions.subproj/NSLayoutManager-OAExtensions.h"; sourceTree = "<group>"; };
 		3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSLayoutManager-OAExtensions.m"; path = "OpenStepExtensions.subproj/NSLayoutManager-OAExtensions.m"; sourceTree = "<group>"; };
+		34275D1C13981621003F28F5 /* OAFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFeatures.h; sourceTree = "<group>"; };
 		342B41150A4C6B62002BFC4B /* NSWindowController-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSWindowController-OAExtensions.h"; sourceTree = "<group>"; };
 		342B41160A4C6B62002BFC4B /* NSWindowController-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSWindowController-OAExtensions.m"; sourceTree = "<group>"; };
 		3431F12E0B1B7847002B728E /* OADatePickerTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADatePickerTextFieldCell.h; sourceTree = "<group>"; };
@@ -1864,6 +1867,7 @@
 				4A0277F608959F0400594E5E /* OAUtilities.h */,
 				34D04A38110E0270007399B9 /* OAUtilities.m */,
 				34DAF8660556CA0D0097A113 /* OAVersion.h */,
+				34275D1C13981621003F28F5 /* OAFeatures.h */,
 				34A1594805642A810097A113 /* OmniAppKit.order */,
 				BF94281F062222D400B83989 /* Info.plist */,
 				3FDA413402096AEB0297A14E /* Omni Application Patterns */,
@@ -2204,6 +2208,7 @@
 				344B6E6312A4D53100D876CD /* OATextAttachment.h in Headers */,
 				3451254D12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */,
 				34DDE3A8135F65D50099DCCE /* NSAttributedString-OAExtensions.h in Headers */,
+				34275D1E13981621003F28F5 /* OAFeatures.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2357,6 +2362,7 @@
 				3401161811E516C10016ADB3 /* OATextStorage.h in Headers */,
 				344B6E4912A4D3DC00D876CD /* OATextAttachment.h in Headers */,
 				3451254B12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */,
+				34275D1D13981621003F28F5 /* OAFeatures.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

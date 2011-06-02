@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,8 @@
 
 #import "NSImage-ColorSyncExtensions.h"
 #import "OAColorProfile.h"
+
+#import <OmniAppKit/OAFeatures.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
@@ -28,6 +30,7 @@ RCS_ID("$Id$");
     return NO;
 }
 
+#if OA_USE_COLOR_MANAGER
 - (void)_convertUsingColorWorld:(CMWorldRef)world;
 {
     for (NSImageRep *rep in [self representations]) {
@@ -66,14 +69,19 @@ RCS_ID("$Id$");
         break;
     }
 }
+#endif
 
 - (void)convertFromProfile:(OAColorProfile *)inProfile toProfile:(OAColorProfile *)outProfile;
 {
+#if OA_USE_COLOR_MANAGER
     CMWorldRef world = [inProfile _rgbConversionWorldForOutput:outProfile];
     
     if (!world)
         return;
     [self _convertUsingColorWorld:world];
+#else
+    OBFinishPorting;
+#endif
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2004-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2008, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,11 +70,15 @@ RCS_ID("$Id$")
     if (!feedbackAddress) {
         NSRunAlertPanel(@"Unable to send feedback email.", @"No support email address configured in this applications.", @"Cancel", nil, nil);
     } else {
+#if OA_INTERNET_CONFIG_ENABLED
         OAInternetConfig *internetConfig = [[[OAInternetConfig alloc] init] autorelease];
         
         NSError *error = nil;
         if (![internetConfig launchMailTo:feedbackAddress carbonCopy:nil subject:subjectLine body:body error:&error])
             [NSApp presentError:error];
+#else
+        OBFinishPorting;
+#endif
     }
 }
 
