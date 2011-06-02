@@ -212,6 +212,9 @@ NSURL *OFSDirectoryURLForURL(NSURL *url)
 
 NSURL *OFSURLWithTrailingSlash(NSURL *baseURL)
 {
+    if (baseURL == nil)
+        return nil;
+
     if ([[baseURL path] hasSuffix:@"/"])
         return baseURL;
     
