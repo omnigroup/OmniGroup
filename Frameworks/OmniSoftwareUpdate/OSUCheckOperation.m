@@ -325,7 +325,7 @@ NSDictionary *OSUPerformCheck(NSURL *url)
             NSString *description = NSLocalizedStringFromTableInBundle(@"Error fetching software update information.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
             NSString *reason = [NSHTTPURLResponse localizedStringForStatusCode:statusCode];
             NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Please try again later or contact us to let us know this is broken.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
-            NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, suggestion, NSLocalizedRecoverySuggestionErrorKey, nil];
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, suggestion, NSLocalizedRecoverySuggestionErrorKey, url, NSURLErrorFailingURLErrorKey, nil];
             error = [NSError errorWithDomain:OSUErrorDomain code:OSUServerError userInfo:userInfo];
         }
     }
