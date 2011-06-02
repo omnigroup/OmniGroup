@@ -414,11 +414,11 @@ static void _checkSignaturesVsProtocol(Class cls, Protocol *protocol)
     // Recursively check protocol conformed to by the original protocol.
     {
         unsigned int protocolIndex = 0;
-        Protocol **protocols = protocol_copyProtocolList(protocol, &protocolIndex);
+        Protocol * const *protocols = protocol_copyProtocolList(protocol, &protocolIndex);
         if (protocols) {
             while (protocolIndex--)
                 _checkSignaturesVsProtocol(cls, protocols[protocolIndex]);
-            free(protocols);
+            free((void *)protocols);
         }
     }
     
@@ -430,11 +430,11 @@ static void _checkSignaturesVsProtocol(Class cls, Protocol *protocol)
 static void _checkSignaturesVsProtocols(Class cls)
 {
     unsigned int protocolIndex = 0;
-    Protocol **protocols = class_copyProtocolList(cls, &protocolIndex);
+    Protocol * const *protocols = class_copyProtocolList(cls, &protocolIndex);
     if (protocols) {
         while (protocolIndex--)
             _checkSignaturesVsProtocol(cls, protocols[protocolIndex]);
-        free(protocols);
+        free((void *)protocols);
     }
 }
 
@@ -542,7 +542,7 @@ static void _checkForMethodsInDeprecatedProtocols(void)
     
     BOOL oneDeprecatedProtocolFound = NO;
     unsigned int protocolIndex = 0;
-    Protocol **protocols = objc_copyProtocolList(&protocolIndex);
+    Protocol * const *protocols = objc_copyProtocolList(&protocolIndex);
     if (protocols) {
         while (protocolIndex--) {
             Protocol *protocol = protocols[protocolIndex];
@@ -575,7 +575,7 @@ static void _checkForMethodsInDeprecatedProtocols(void)
                 free(descs);
             }
         }
-        free(protocols);
+        free((void *)protocols);
     }
     
     // Make sure the OBDEPRECATED_METHODS macro is forcing the otherwise unused protocols to be emitted
