@@ -3633,17 +3633,19 @@ static CGPoint _closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint t
     if (granularity == UITextGranularityCharacter)
         granularity = tapSelectionGranularity;
 
-    if (!wasBeyondLineBounds && granularity != UITextGranularityCharacter) {
+    NSString *string = [_content string];
+    NSUInteger stringLength = [string length];
+
+    if (stringLength > 0 && !wasBeyondLineBounds && granularity != UITextGranularityCharacter) {
         // UITextView looks for the edge of whitespace when performing a tap within a line
 
-        NSString *string = [_content string];
         NSUInteger characterIndex = pp.index;
         OFCharacterSet *whitespaceOFCharacterSet = [OFCharacterSet whitespaceOFCharacterSet];
         OBASSERT(characterIndex <= [string length]);
 
         // Test to see if point was an attachment, if so return a range for the attachment.
         NSUInteger testIndex = characterIndex;
-        if (characterIndex == [string length])
+        if (characterIndex == stringLength)
             testIndex--;
 
         if ([string characterAtIndex:testIndex] == OAAttachmentCharacter && [self _characterAtIndex:testIndex containsPoint:p])
@@ -3654,7 +3656,7 @@ static CGPoint _closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint t
         if ([string characterAtIndex:testIndex] == OAAttachmentCharacter && [self _characterAtIndex:testIndex containsPoint:p])
             return [self _textRangeForAttachmentAtIndex:testIndex];
 
-        if (characterIndex == [string length] || OFCharacterSetHasMember(whitespaceOFCharacterSet, [string characterAtIndex:characterIndex])) {
+        if (characterIndex == stringLength || OFCharacterSetHasMember(whitespaceOFCharacterSet, [string characterAtIndex:characterIndex])) {
             // If we're on whitespace, scan backward for non-whitespace
             while (characterIndex > 0) {
                 characterIndex--;
@@ -3685,7 +3687,6 @@ static CGPoint _closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint t
 
             if (!foundLeadingWhitespace) {
                 // Scan forward for whitespace
-                NSUInteger stringLength = [string length];
                 while ((++characterIndex) < stringLength) {
                     unichar nextCharacter = [string characterAtIndex:characterIndex];
                     if (OFCharacterSetHasMember(whitespaceOFCharacterSet, nextCharacter)) {
