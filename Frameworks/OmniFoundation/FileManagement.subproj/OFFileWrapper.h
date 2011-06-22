@@ -62,6 +62,7 @@ typedef NSUInteger OFFileWrapperWritingOptions;
 - (id)initWithURL:(NSURL *)url options:(OFFileWrapperReadingOptions)options error:(NSError **)outError;
 - (id)initDirectoryWithFileWrappers:(NSDictionary *)childrenByPreferredName;
 - (id)initRegularFileWithContents:(NSData *)contents;
+- (id)initSymbolicLinkWithDestination:(NSString *)path;
 
 - (BOOL)writeToURL:(NSURL *)url options:(OFFileWrapperWritingOptions)options originalContentsURL:(NSURL *)originalContentsURL error:(NSError **)outError;
 

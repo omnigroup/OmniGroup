@@ -119,7 +119,7 @@ static NSString *OFFileWrapperConflictMarker = @"__#$!@%!#__";
 
 - (id)initRegularFileWithContents:(NSData *)contents;
 {
-    OBPRECONDITION(contents);
+    OBPRECONDITION(contents != nil);
     
     if (!(self = [super init]))
         return nil;
@@ -129,10 +129,23 @@ static NSString *OFFileWrapperConflictMarker = @"__#$!@%!#__";
     return self;
 }
 
+- (id)initSymbolicLinkWithDestination:(NSString *)path;
+{
+    OBPRECONDITION(path != nil);
+    
+    if (!(self = [super init]))
+        return nil;
+    
+    _symbolicLinkDestination = [path copy];
+    
+    return self;
+}
+
 - (void)dealloc;
 {
     [_fileWrappers release];
     [_contents release];
+    [_symbolicLinkDestination release];
     [_fileAttributes release];
     [_preferredFilename release];
     [_filename release];
