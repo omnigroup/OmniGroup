@@ -129,7 +129,7 @@ static NSUInteger MenuItemCount = NormalMenuItemCount;
 {
     // Returning a nil cell will cause UITableView to throw an exception
     if (indexPath.section != 0)
-        return [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:nil] autorelease];
+        return [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
 
     NSString *title;
     UIImage *image = nil;
@@ -165,14 +165,14 @@ static NSUInteger MenuItemCount = NormalMenuItemCount;
             
         default:
             OBASSERT_NOT_REACHED("Unknown menu item row requested");
-            return [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:nil] autorelease];
+            return [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
     }
 
     OBASSERT(image);
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:title];
     if (!cell) {
-        cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:title] autorelease];
+        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:title] autorelease];
         cell.backgroundColor = [UIColor whiteColor];
         cell.opaque = YES;
         UILabel *label = cell.textLabel;

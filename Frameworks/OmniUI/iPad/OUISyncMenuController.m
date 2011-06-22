@@ -134,7 +134,7 @@ RCS_ID("$Id$")
 {
     // Returning a nil cell will cause UITableView to throw an exception
     if (indexPath.section != 0)
-        return [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:nil] autorelease];
+        return [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
     
     NSString *title = nil;
     NSString *description = nil;

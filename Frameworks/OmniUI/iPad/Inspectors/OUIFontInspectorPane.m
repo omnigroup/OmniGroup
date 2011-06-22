@@ -228,12 +228,12 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
     // Returning a nil cell will cause UITableView to throw an exception
     NSDictionary *item = _itemAtIndexPath(self, indexPath);
     if (!item)
-        return [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:nil] autorelease];
+        return [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
     
     NSString *identifier = [item objectForKey:ItemIdentifier];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
     if (!cell) {
-        cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:identifier] autorelease];
+        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier] autorelease];
         
         cell.backgroundColor = [UIColor whiteColor];
         cell.opaque = YES;
