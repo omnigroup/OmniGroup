@@ -28,7 +28,7 @@
     UIView *_buttonGroupView;
     UIButton *_favoriteButton;
     UIButton *_exportButton;
-    UIButton *_newDocumentButton;
+    UIButton *_addDocumentButton;
     UIButton *_deleteButton;
     UITextField *_titleEditingField;
     
@@ -72,7 +72,7 @@
 @property(retain) IBOutlet UIView *buttonGroupView;
 @property(retain) IBOutlet UIButton *favoriteButton;
 @property(retain) IBOutlet UIButton *exportButton;
-@property(retain) IBOutlet UIButton *newDocumentButton;
+@property(retain) IBOutlet UIButton *addDocumentButton;
 @property(retain) IBOutlet UIButton *deleteButton;
 
 @property(readonly) UITextField *titleEditingField;

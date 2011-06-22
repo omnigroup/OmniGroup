@@ -373,7 +373,7 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBCocoaTouchOutletConnection" key="connection">
-						<string key="label">newDocumentButton</string>
+						<string key="label">addDocumentButton</string>
 						<reference key="source" ref="841351856"/>
 						<reference key="destination" ref="953350776"/>
 					</object>
@@ -703,7 +703,7 @@
 							<string>deleteButton</string>
 							<string>exportButton</string>
 							<string>favoriteButton</string>
-							<string>newDocumentButton</string>
+							<string>addDocumentButton</string>
 							<string>previewScrollView</string>
 							<string>titleLabel</string>
 						</object>
@@ -730,7 +730,7 @@
 							<string>deleteButton</string>
 							<string>exportButton</string>
 							<string>favoriteButton</string>
-							<string>newDocumentButton</string>
+							<string>addDocumentButton</string>
 							<string>previewScrollView</string>
 							<string>titleLabel</string>
 						</object>
@@ -761,7 +761,7 @@
 								<string key="candidateClassName">UIButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">newDocumentButton</string>
+								<string key="name">addDocumentButton</string>
 								<string key="candidateClassName">UIButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">

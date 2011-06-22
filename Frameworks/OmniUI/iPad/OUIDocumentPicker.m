@@ -113,7 +113,7 @@ static void _addPushAndFadeAnimations(OUIDocumentPicker *self, BOOL fade, Animat
         _pushAndFadeAnimation(self->_dateLabel, down, fade);
         _pushAndFadeAnimation(self->_favoriteButton, down, fade);
         _pushAndFadeAnimation(self->_exportButton, down, fade);
-        _pushAndFadeAnimation(self->_newDocumentButton, down, fade);
+        _pushAndFadeAnimation(self->_addDocumentButton, down, fade);
         _pushAndFadeAnimation(self->_deleteButton, down, fade);
     } else if (type == AnimateNeighborProxies) {
         OUIDocumentProxy *proxy = self->_previewScrollView.proxyClosestToCenter;
@@ -320,7 +320,7 @@ static id _commonInit(OUIDocumentPicker *self)
     [_buttonGroupView release];
     [_favoriteButton release];
     [_exportButton release];
-    [_newDocumentButton release];
+    [_addDocumentButton release];
     [_deleteButton release];
     
     [_proxiesBinding invalidate];
@@ -352,7 +352,7 @@ static id _commonInit(OUIDocumentPicker *self)
 @synthesize dateLabel = _dateLabel;
 @synthesize favoriteButton = _favoriteButton;
 @synthesize exportButton = _exportButton;
-@synthesize newDocumentButton = _newDocumentButton;
+@synthesize addDocumentButton = _addDocumentButton;
 @synthesize deleteButton = _deleteButton;
 @synthesize buttonGroupView = _buttonGroupView;
 
@@ -1606,8 +1606,8 @@ static id _commonInit(OUIDocumentPicker *self)
     [_exportButton release];
     _exportButton = nil;
     
-    [_newDocumentButton release];
-    _newDocumentButton = nil;
+    [_addDocumentButton release];
+    _addDocumentButton = nil;
     
     [_deleteButton release];
     _deleteButton = nil;

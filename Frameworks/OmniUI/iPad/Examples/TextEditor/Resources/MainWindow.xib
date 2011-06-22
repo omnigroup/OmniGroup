@@ -465,7 +465,7 @@
 							<string>deleteButton</string>
 							<string>exportButton</string>
 							<string>favoriteButton</string>
-							<string>newDocumentButton</string>
+							<string>addDocumentButton</string>
 							<string>previewScrollView</string>
 							<string>titleLabel</string>
 						</object>
@@ -492,7 +492,7 @@
 							<string>deleteButton</string>
 							<string>exportButton</string>
 							<string>favoriteButton</string>
-							<string>newDocumentButton</string>
+							<string>addDocumentButton</string>
 							<string>previewScrollView</string>
 							<string>titleLabel</string>
 						</object>
@@ -523,7 +523,7 @@
 								<string key="candidateClassName">UIButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">newDocumentButton</string>
+								<string key="name">addDocumentButton</string>
 								<string key="candidateClassName">UIButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
