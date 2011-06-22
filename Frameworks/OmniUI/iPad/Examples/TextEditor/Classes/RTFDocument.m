@@ -43,10 +43,10 @@ RCS_ID("$Id$");
             OBFinishPorting;
         }
         
-        _text = [[NSAttributedString alloc] initWithAttributedString:attributedString];
+        _text = [[NSMutableAttributedString alloc] initWithAttributedString:attributedString];
     } else {
         // New document
-        _text = [[NSAttributedString alloc] init];
+        _text = [[NSMutableAttributedString alloc] init];
     }
     
     return YES;
