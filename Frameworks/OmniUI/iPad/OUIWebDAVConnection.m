@@ -36,7 +36,7 @@ static OUIWebDAVConnection *_sharedConnection;
     [_address release];
     [_username release];
     [_fileManager release];
-    [_newKeychainPassword release];
+    [_password release];
     [_authenticationChallenge release];
     [_certAlert release];
 
@@ -80,8 +80,8 @@ static OUIWebDAVConnection *_sharedConnection;
     _address = nil;
     [_username release];
     _username = nil;
-    [_newKeychainPassword release];
-    _newKeychainPassword = nil;
+    [_password release];
+    _password = nil;
     
     [_authenticationChallenge release];
     _authenticationChallenge = nil;
@@ -98,10 +98,10 @@ static OUIWebDAVConnection *_sharedConnection;
 - (NSURLCredential *)DAVFileManager:(OFSDAVFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
     NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
-    if (_username && _newKeychainPassword) {        
-        OUIWriteCredentialsForProtectionSpace(_username, _newKeychainPassword, protectionSpace);
-        [_newKeychainPassword release];
-        _newKeychainPassword = nil;
+    if (_username && _password) {        
+        OUIWriteCredentialsForProtectionSpace(_username, _password, protectionSpace);
+        [_password release];
+        _password = nil;
     }
     
     [_authenticationChallenge release];
@@ -154,7 +154,7 @@ static OUIWebDAVConnection *_sharedConnection;
 
 @synthesize address = _address;
 @synthesize username = _username;
-@synthesize newKeychainPassword = _newKeychainPassword;
+@synthesize password = _password;
 @synthesize fileManager = _fileManager;
 @synthesize authenticationChallenge = _authenticationChallenge;
 @end

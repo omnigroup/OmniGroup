@@ -178,7 +178,7 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
     OUIWebDAVConnection *sharedConnection = [OUIWebDAVConnection sharedConnection];
     sharedConnection.address = OFSURLWithTrailingSlash(url);
     sharedConnection.username = _nonretainedUsernameField.text;
-    sharedConnection.newKeychainPassword = _nonretainedPasswordField.text;
+    sharedConnection.password = _nonretainedPasswordField.text;
     
     if ([sharedConnection validConnection]) {
         UIViewController *viewController = nil;
