@@ -85,19 +85,24 @@ static NSRange rangeFromString(NSString *aString, NSIndexSet *errSelf, SEL errCm
         return [self initWithIndexesInRange:rangeFromString([ranges objectAtIndex:0], self, _cmd)];
 
     if ([self isKindOfClass:[NSMutableIndexSet class]]) {
-        NSMutableIndexSet *mutableSelf;
-        self = mutableSelf = [self init];
-        for(NSString *rangeString in ranges)
+        NSMutableIndexSet *mutableSelf = (NSMutableIndexSet *)[self init];
+        if (mutableSelf == nil)
+            return nil;
+
+        OBASSERT([mutableSelf isKindOfClass:[NSMutableIndexSet class]]);
+        for (NSString *rangeString in ranges)
             [mutableSelf addIndexesInRange:rangeFromString(rangeString, self, _cmd)];
+
+        return mutableSelf;
     } else {
         NSMutableIndexSet *temporarySet = [[NSMutableIndexSet alloc] init];
-        for(NSString *rangeString in ranges)
+        for (NSString *rangeString in ranges)
             [temporarySet addIndexesInRange:rangeFromString(rangeString, self, _cmd)];
-        self = [self initWithIndexSet:temporarySet];
+        NSIndexSet *immutableSelf = [self initWithIndexSet:temporarySet];
         [temporarySet release];
+
+        return immutableSelf;
     }
-    
-    return self;
 }
 
 + indexSetWithRangeString:(NSString *)aString;
