@@ -13,7 +13,7 @@
 #import <CoreGraphics/CGBase.h>
 #import <CoreText/CTStringAttributes.h>
 
-@class OUIStackedSlicesInspectorPane, OUIInspectorPane, OUIInspectorSlice, OUIInspectorPopoverController;
+@class OUIStackedSlicesInspectorPane, OUIInspectorPane, OUIInspectorSlice, OUIInspectorPopoverController, OUIBarButtonItem;
 @class UIBarButtonItem, UINavigationController, UIPopoverController;
 
 extern const CGFloat OUIInspectorContentWidth;
@@ -39,7 +39,7 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
     BOOL _keyboardShownWhilePopoverVisible;
 }
 
-+ (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
++ (OUIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 
 + (UIColor *)disabledLabelTextColor;
 + (UIColor *)labelTextColor;

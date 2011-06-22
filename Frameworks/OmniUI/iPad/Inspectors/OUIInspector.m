@@ -80,7 +80,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 @implementation OUIInspector
 
-+ (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
++ (OUIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 {
     UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png"];
     OBASSERT(image);
