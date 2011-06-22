@@ -290,7 +290,7 @@ RCS_ID("$Id$");
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (UIViewController *)makeViewController;
+- (UIViewController <OUIDocumentViewController> *)makeViewController;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }

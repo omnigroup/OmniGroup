@@ -54,7 +54,7 @@
  self.proxy, self.url and self.undoManager will be set appropriately when this is called. If proxy is nil, this is a new document. The URL will be set no matter what.
  */
 - (BOOL)loadDocumentContents:(NSError **)outError;
-- (UIViewController *)makeViewController;
+- (UIViewController <OUIDocumentViewController> *)makeViewController;
 - (BOOL)saveToURL:(NSURL *)url isAutosave:(BOOL)isAutosave error:(NSError **)outError;
 
 // Optional subclass methods
