@@ -221,12 +221,12 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
     [_fontFamilyTextWell setNavigationTarget:self action:@selector(_showFontFamilies:)];
     
     _fontSizeDecreaseStepperButton.title = @"A";
-    _fontSizeDecreaseStepperButton.titleFont = [UIFont boldSystemFontOfSize:14];
+    _fontSizeDecreaseStepperButton.titleLabelFont = [UIFont boldSystemFontOfSize:14];
     _fontSizeDecreaseStepperButton.titleColor = [UIColor whiteColor];
     _fontSizeDecreaseStepperButton.flipped = YES;
 
     _fontSizeIncreaseStepperButton.title = @"A";
-    _fontSizeIncreaseStepperButton.titleFont = [UIFont boldSystemFontOfSize:32];
+    _fontSizeIncreaseStepperButton.titleLabelFont = [UIFont boldSystemFontOfSize:32];
     _fontSizeIncreaseStepperButton.titleColor = [UIColor whiteColor];
 
     CGFloat fontSize = [OUIInspectorTextWell fontSize];
