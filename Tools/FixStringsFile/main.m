@@ -72,7 +72,7 @@ static NSString *_smartQuotedString(NSString *source, NSString *asciiQuote, unic
 
 @implementation Entry
 
-NSString *_transformedTranslation(NSString *translation)
+static NSString *_transformedTranslation(NSString *translation)
 {
     // Replace ... with real ellipsis characters
     if ([translation rangeOfString:@"..."].length != 0) {
