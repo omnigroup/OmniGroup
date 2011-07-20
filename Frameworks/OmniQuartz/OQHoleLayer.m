@@ -1,4 +1,4 @@
-// Copyright 2000-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -219,6 +219,8 @@ static NSString * const OQHoleLayerRemoveAtEndOfAnimationKey = @"OQHoleLayerRemo
 }
 
 #pragma mark CALayer subclass
+
+static CGImageRef _createShadowImageWithSize(CGSize size, NSUInteger shadowEdgeMask) CF_RETURNS_RETAINED;
 
 static CGImageRef _createShadowImageWithSize(CGSize size, NSUInteger shadowEdgeMask)
 {

@@ -1,4 +1,4 @@
-// Copyright 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,14 +72,24 @@ BOOL OBPatchStretToNil(void (*callme)(void *, id, SEL, ...))
     void *stret = dlsym(RTLD_DEFAULT, "objc_msgSend_stret");
     
     if (stret) {
+        void *dest = NULL;
         static const unsigned char prologue[5] = {
             0x48, 0x85, 0xf6,   /* test %rsi, %rsi */
             0x0f, 0x84,         /* jump near if equal (32-bit displacement) */
         };
+        static const unsigned char prologue2[4] = {
+            0x48, 0x85, 0xf6,   /* test %rsi, %rsi */
+            0x74,               /* jump near if equal (8-bit displacement) */
+        };
         if (memcmp(stret, prologue, 5) == 0) {
             int32_t displacement = *(int32_t *)( stret + 5 );
-            void *dest = ( stret + 9 /* displacement is from the beginning of the next insn */ ) + displacement;
-            
+            dest = ( stret + 9 /* displacement is from the beginning of the next insn */ ) + displacement;
+        } else if (memcmp(stret, prologue2, 4) == 0) {
+            int8_t displacement = *(int8_t *)( stret + 4 );
+            dest = ( stret + 5 /* displacement is from the beginning of the next insn */ ) + displacement;
+        }
+        
+        if (dest) {
             if (callme == NULL) {
                 /* ud2a instruction: illegal operation trap */
                 static const unsigned char ud2a[2] = { 0x0F, 0x0B };

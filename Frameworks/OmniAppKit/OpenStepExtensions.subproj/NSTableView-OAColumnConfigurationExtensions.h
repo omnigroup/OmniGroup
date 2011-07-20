@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,8 +26,9 @@
 @end
 
 
-// These are all optional
-@interface NSObject (OATableViewColumnConfigurationDataSource)
+@protocol OATableViewColumnConfigurationDataSource <NSTableViewDataSource>
+
+@optional
 
 - (NSArray *)tableViewDefaultColumnIdentifiers:(NSTableView *)tableView;
     // Implementation of this method is required to enable the user-column-configuration feature. The rest are optional.

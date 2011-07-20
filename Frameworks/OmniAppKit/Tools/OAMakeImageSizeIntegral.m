@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,10 +18,10 @@ int main(int argc, char *argv[])
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSFileManager *manager = [NSFileManager defaultManager];
-    unsigned int totalOriginalImageSize = 0;
-    unsigned int totalTIFFSize = 0;
-    unsigned int totalPNGImageSize = 0;
-    unsigned int totalBestImageSize = 0;
+    NSUInteger totalOriginalImageSize = 0;
+    NSUInteger totalTIFFSize = 0;
+    NSUInteger totalPNGImageSize = 0;
+    NSUInteger totalBestImageSize = 0;
 
     if (argc < 2) {
         fprintf(stderr, "usage: %s [-drop-dpi] file1.tiff [... fileN.tiff]\n", argv[0]);
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
         NS_DURING {
             NSData *originalData = [[NSData alloc] initWithContentsOfFile:imagePath];
-            unsigned int originalImageSize = [originalData length];
+            NSUInteger originalImageSize = [originalData length];
             NSImage *image = [[NSImage alloc] initWithData:originalData];
             [image setScalesWhenResized:NO];
 
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	    if (dropDPI) {
 		NSBitmapImageRep *imageRep = (NSBitmapImageRep *)[image imageRepOfClass:[NSBitmapImageRep class]];
 		if (!imageRep) {
-		    NSLog(@"ERROR:  %@ has no bitmap image rep!");
+		    NSLog(@"ERROR: %@ has no bitmap image rep!", imagePath);
 		    exit(1);
 		}
 		
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
                 [image setSize:integralSize];
     
                 NSArray *reps = [image representations];
-                unsigned int repIndex = [reps count];
+                NSUInteger repIndex = [reps count];
                 if (repIndex != 1) {
                     // We currently composite just one representation, so skip this file if we see more
                     [NSException raise:NSGenericException format:@"Unable to process images with multiple (%d) representations", repIndex];
@@ -90,8 +90,8 @@ int main(int argc, char *argv[])
             [newImage unlockFocus];
             [image release];
 
-            NSData *lzwData = [newImage TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:0.0];
-            NSData *packbitsData = [newImage TIFFRepresentationUsingCompression:NSTIFFCompressionPackBits factor:0.0];
+            NSData *lzwData = [newImage TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:0.0f];
+            NSData *packbitsData = [newImage TIFFRepresentationUsingCompression:NSTIFFCompressionPackBits factor:0.0f];
             NSBitmapImageRep *bitmapImageRep = [NSBitmapImageRep imageRepWithData:lzwData];
             NSData *pngData = [bitmapImageRep representationUsingType:NSPNGFileType properties:nil];
             [newImage release];
@@ -99,10 +99,10 @@ int main(int argc, char *argv[])
             totalOriginalImageSize += originalImageSize;
             totalTIFFSize += MIN(originalImageSize, MIN([lzwData length], [packbitsData length]));
             totalPNGImageSize += [pngData length];
-            unsigned int bestSize = MIN(MIN(MIN([lzwData length], [packbitsData length]), [pngData length]), originalImageSize);
+            NSUInteger bestSize = MIN(MIN(MIN([lzwData length], [packbitsData length]), [pngData length]), originalImageSize);
             totalBestImageSize += bestSize;
             if ([pngData length] > bestSize) {
-                NSLog(@"PNG loses for %@ by %d", imagePath, [pngData length] - bestSize);
+                NSLog(@"PNG loses for %@ by %lu", imagePath, [pngData length] - bestSize);
             }
             NSData *tiffData = [lzwData length] <= [packbitsData length] ? lzwData : packbitsData;
             if (![tiffData writeToFile:imagePath atomically:YES])
@@ -115,10 +115,10 @@ int main(int argc, char *argv[])
         [pool release];
         pool = [[NSAutoreleasePool alloc] init];
     }
-    NSLog(@"totalOriginalImageSize = %d", totalOriginalImageSize);
-    NSLog(@"totalTIFFSize = %d", totalTIFFSize);
-    NSLog(@"totalPNGImageSize = %d", totalPNGImageSize);
-    NSLog(@"totalBestImageSize = %d", totalBestImageSize);
+    NSLog(@"totalOriginalImageSize = %lu", totalOriginalImageSize);
+    NSLog(@"totalTIFFSize = %lu", totalTIFFSize);
+    NSLog(@"totalPNGImageSize = %lu", totalPNGImageSize);
+    NSLog(@"totalBestImageSize = %lu", totalBestImageSize);
     [pool release];
 
     return 0;

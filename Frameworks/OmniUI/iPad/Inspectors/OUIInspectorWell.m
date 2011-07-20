@@ -51,16 +51,23 @@ void OUIInspectorWellAddPath(CGContextRef ctx, CGRect frame, BOOL rounded)
     
 }
 
+enum {
+    RoundMask = (1 << 0),
+    ShadowMask = (2 << 0),
+};
+
+#define ROUND_SQUARE_IMAGE_CACHE_SIZE (4)
 typedef struct {
-    UIImage *rounded;
-    UIImage *square;
+    UIImage *images[ROUND_SQUARE_IMAGE_CACHE_SIZE]; // {round,square}x{inner shadow, flat}
 } RoundSquareImageCache;
 
-typedef void (*OUIDrawIntoImageCache)(CGContextRef, CGRect imageRect, BOOL rounded);
+typedef void (*OUIDrawIntoImageCache)(CGContextRef, CGRect imageRect, BOOL rounded, BOOL shadowed);
 
 // The shadow we want has 1px offset, 0px radius and it just a shifted down path.
-static void _OUIInspectorWellDrawOuterShadow(CGContextRef ctx, CGRect imageRect, BOOL rounded)
+static void _OUIInspectorWellDrawOuterShadow(CGContextRef ctx, CGRect imageRect, BOOL rounded, BOOL shadowed)
 {
+    OBPRECONDITION(shadowed); // Ignores the shadowed parameter; this always is YES here.
+    
     CGRect shadowRect = imageRect;
     shadowRect.origin.y += 1;
     
@@ -70,12 +77,19 @@ static void _OUIInspectorWellDrawOuterShadow(CGContextRef ctx, CGRect imageRect,
     CGContextFillPath(ctx);
 }
 
-static UIImage *_OUIRoundSquareImageCachedImage(RoundSquareImageCache *cache, OUIDrawIntoImageCache draw, BOOL rounded)
+static UIImage *_OUIRoundSquareImageCachedImage(RoundSquareImageCache *cache, OUIDrawIntoImageCache draw, BOOL rounded, BOOL shadowed)
 {
     // Cache a 9-part image for rounded and not.
     OUIInspectorWellInitialize();
     
-    UIImage **imagep = rounded ? &cache->rounded : &cache->square;
+    NSUInteger cacheSlot = 0;
+    if (rounded)
+        cacheSlot |= RoundMask;
+    if (shadowed)
+        cacheSlot |= ShadowMask;
+    OBASSERT(cacheSlot < ROUND_SQUARE_IMAGE_CACHE_SIZE);
+    
+    UIImage **imagep = &cache->images[cacheSlot];
     
     if (!*imagep) {
         // Might be able to get away with just kOUIInspectorWellCornerRadius..
@@ -88,7 +102,7 @@ static UIImage *_OUIRoundSquareImageCachedImage(RoundSquareImageCache *cache, OU
         {
             CGContextRef ctx = UIGraphicsGetCurrentContext();
             CGRect imageRect = CGRectMake(0, 0, imageSize.width, imageSize.height);
-            draw(ctx, imageRect, rounded);
+            draw(ctx, imageRect, rounded, shadowed);
             image = UIGraphicsGetImageFromCurrentImageContext();
         }
         OUIGraphicsEndImageContext();
@@ -102,12 +116,12 @@ static UIImage *_OUIRoundSquareImageCachedImage(RoundSquareImageCache *cache, OU
 void OUIInspectorWellDrawOuterShadow(CGContextRef ctx, CGRect frame, BOOL rounded)
 {
     static RoundSquareImageCache cache;
-    UIImage *image = _OUIRoundSquareImageCachedImage(&cache, _OUIInspectorWellDrawOuterShadow, rounded);
+    UIImage *image = _OUIRoundSquareImageCachedImage(&cache, _OUIInspectorWellDrawOuterShadow, rounded, YES/*shadowed*/);
     [image drawInRect:frame];
 }
 
 // Border and inner shadow
-static void _OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect imageRect, BOOL rounded)
+static void _OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect imageRect, BOOL rounded, BOOL shadowed)
 {
     OUIInspectorWellAddPath(ctx, imageRect, rounded);
     CGContextClip(ctx);
@@ -117,7 +131,8 @@ static void _OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect i
         CGContextAddRect(ctx, CGRectInset(imageRect, -20, -20));
         
         CGContextSaveGState(ctx);
-        CGContextSetShadowWithColor(ctx, kOUIInspectorWellInnerShadowOffset, kOUIInspectorWellInnerShadowBlur/*blur*/, InnerShadowColor);
+        if (shadowed)
+            CGContextSetShadowWithColor(ctx, kOUIInspectorWellInnerShadowOffset, kOUIInspectorWellInnerShadowBlur/*blur*/, InnerShadowColor);
         CGContextSetStrokeColorWithColor(ctx, [[UIColor clearColor] CGColor]);
         CGContextDrawPath(ctx, kCGPathEOFillStroke);
         CGContextRestoreGState(ctx);
@@ -148,10 +163,10 @@ static void _OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect i
     CGContextEndTransparencyLayer(ctx);
 }
 
-void OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect frame, BOOL rounded)
+void OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect frame, BOOL rounded, BOOL innerShadow)
 {
     static RoundSquareImageCache cache;
-    UIImage *image = _OUIRoundSquareImageCachedImage(&cache, _OUIInspectorWellDrawBorderAndInnerShadow, rounded);
+    UIImage *image = _OUIRoundSquareImageCachedImage(&cache, _OUIInspectorWellDrawBorderAndInnerShadow, rounded, innerShadow);
     [image drawInRect:frame];
 }
 
@@ -214,6 +229,11 @@ static CGGradientRef HighlightedGradient = NULL;
     return OQPlatformColorFromHSV(kOUIInspectorTextWellHighlightedTextColor);
 }
 
++ (UIImage *)navigationArrowImage;
+{
+    return [UIImage imageNamed:@"OUINavigationArrow.png"];
+}
+
 @synthesize rounded = _rounded;
 - (void)setRounded:(BOOL)rounded;
 {
@@ -228,36 +248,73 @@ static CGGradientRef HighlightedGradient = NULL;
     return !self.enabled || (self.highlighted && ([self allControlEvents] != 0));
 }
 
+@synthesize backgroundType = _backgroundType;
+- (void)setBackgroundType:(OUIInspectorWellBackgroundType)backgroundType;
+{
+    if (_backgroundType == backgroundType)
+        return;
+    
+    _backgroundType = backgroundType;
+    
+    [self setNeedsDisplay];
+    return;
+}
+
+@synthesize leftView = _leftView;
+- (void)setLeftView:(UIView *)leftView;
+{
+    if (_leftView == leftView)
+        return;
+    [_leftView removeFromSuperview];
+    _leftView = [leftView retain];
+    [self addSubview:_leftView];
+    
+    // contentsRect probably changed
+    [self setNeedsDisplay];
+}
+
+@synthesize rightView = _rightView;
+- (void)setRightView:(UIView *)rightView;
+{
+    if (_rightView == rightView)
+        return;
+    [_rightView removeFromSuperview];
+    _rightView = [rightView retain];
+    [self addSubview:_rightView];
+    
+    // contentsRect probably changed
+    [self setNeedsDisplay];
+}
+
 - (CGRect)contentsRect;
 {
-    CGRect contentsRect = self.bounds;
+    CGRect contentsRect = OUIInspectorWellInnerRect(self.bounds);
     
     static const CGFloat edgeInset = 8;
     
     UIEdgeInsets edgeInsets = UIEdgeInsetsMake(edgeInset, edgeInset, edgeInset, edgeInset);
     
-    if (_showNavigationArrow) {
-        CGRect arrowRect;
-        CGRectDivide(contentsRect, &arrowRect, &contentsRect, CGRectGetHeight(contentsRect), CGRectMaxXEdge);
-
-        edgeInsets.right = 0; // The image will have some built-in padding from centering w/in this rect. Don't chop off any more.
+    // The left/right views are currently expected to have built-in padding.
+    if (_leftView) {
+        CGRect leftRect;
+        CGRectDivide(contentsRect, &leftRect, &contentsRect, CGRectGetHeight(contentsRect), CGRectMinXEdge);
+        edgeInsets.left = 0;
+    }
+    
+    if (_rightView) {
+        CGRect rightRect;
+        CGRectDivide(contentsRect, &rightRect, &contentsRect, CGRectGetHeight(contentsRect), CGRectMaxXEdge);
+        edgeInsets.right = 0;
     }
     
     return UIEdgeInsetsInsetRect(contentsRect, edgeInsets);
 }
 
-- (UIImage *)navigationArrowImage;
+- (void)setNavigationArrowRightView;
 {
-    return [UIImage imageNamed:@"OUINavigationArrow.png"];
-}
-
-@synthesize showNavigationArrow = _showNavigationArrow;
-- (void)setShowNavigationArrow:(BOOL)showNavigationArrow;
-{
-    if (_showNavigationArrow == showNavigationArrow)
-        return;
-    _showNavigationArrow = showNavigationArrow;
-    [self setNeedsDisplay];
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:[[self class] navigationArrowImage]];
+    self.rightView = imageView;
+    [imageView release];
 }
 
 - (void)setNavigationTarget:(id)target action:(SEL)action;
@@ -265,7 +322,8 @@ static CGGradientRef HighlightedGradient = NULL;
     // OBPRECONDITION(target); nil OK for sending up the responder chain
     OBPRECONDITION(action);
 
-    self.showNavigationArrow = YES;
+    [self setNavigationArrowRightView];
+
     [self addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -278,8 +336,14 @@ static CGGradientRef HighlightedGradient = NULL;
 {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
-    CGGradientRef gradient = self.shouldDrawHighlighted ? HighlightedGradient : NormalGradient;
-    CGContextDrawLinearGradient(ctx, gradient, rect.origin, CGPointMake(rect.origin.x, CGRectGetMaxY(rect)), 0);
+    if (_backgroundType == OUIInspectorWellBackgroundTypeNormal) {
+        CGGradientRef gradient = self.shouldDrawHighlighted ? HighlightedGradient : NormalGradient;
+        CGContextDrawLinearGradient(ctx, gradient, rect.origin, CGPointMake(rect.origin.x, CGRectGetMaxY(rect)), 0);
+    } else {
+        UIColor *backgroundColor = OQPlatformColorFromHSV(self.shouldDrawHighlighted ? kOUIInspectorTextWellHighlightedGradientBottomColor : kOUIInspectorTextWellNormalGradientBottomColor);
+        [backgroundColor set];
+        UIRectFill(rect);
+    }
 }
 
 - (CGFloat)buttonHeight;
@@ -309,6 +373,30 @@ static CGGradientRef HighlightedGradient = NULL;
 #pragma mark -
 #pragma mark UIView subclass
 
+- (void)layoutSubviews;
+{
+    CGRect contentsRect = OUIInspectorWellInnerRect(self.bounds);
+
+    [super layoutSubviews];
+    
+    // The left/right views are currently expected to have built-in padding.
+    // Also, right now at least, we don't want to resize the views since they are UIImageViews (which stretch their content), though maybe we could use UIViewContentModeCenter
+    
+    if (_leftView) {
+        CGRect leftRect;
+        CGRectDivide(contentsRect, &leftRect, &contentsRect, CGRectGetHeight(contentsRect), CGRectMinXEdge);
+        
+        _leftView.frame = OQCenteredIntegralRectInRect(leftRect, _leftView.bounds.size);
+    }
+    
+    if (_rightView) {
+        CGRect rightRect;
+        CGRectDivide(contentsRect, &rightRect, &contentsRect, CGRectGetHeight(contentsRect), CGRectMaxXEdge);
+
+        _rightView.frame = OQCenteredIntegralRectInRect(rightRect, _rightView.bounds.size);
+}
+}
+
 - (void)drawRect:(CGRect)rect;
 {
     CGRect bounds = self.bounds;
@@ -329,15 +417,8 @@ static CGGradientRef HighlightedGradient = NULL;
     }
     CGContextRestoreGState(ctx);
     
-    OUIInspectorWellDrawBorderAndInnerShadow(ctx, bounds, _rounded);
-    
-    if (_showNavigationArrow) {
-        UIImage *arrowImage = [self navigationArrowImage];
-        CGRect arrowRect, remainder;
-        CGRectDivide(bounds, &arrowRect, &remainder, CGRectGetHeight(bounds), CGRectMaxXEdge);
-        
-        OQDrawImageCenteredInRect(ctx, arrowImage, arrowRect);
-    }
+    BOOL innerShadow = _backgroundType == OUIInspectorWellBackgroundTypeNormal;
+    OUIInspectorWellDrawBorderAndInnerShadow(ctx, bounds, _rounded, innerShadow);
 }
 
 @end

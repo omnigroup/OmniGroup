@@ -32,6 +32,7 @@
         int foregroundColorIndex;
         int backgroundColorIndex;
         unsigned int underline;
+        int superscript;
         OAFontDescriptor *fontDescriptor;
         int alignment;
         int firstLineIndent;

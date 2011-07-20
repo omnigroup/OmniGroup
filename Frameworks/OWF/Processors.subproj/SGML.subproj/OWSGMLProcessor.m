@@ -146,7 +146,7 @@ static BOOL debugSGMLProcessing = NO;
 
 #define MINIMUM_RECURSION_HEADROOM 65536
 
-size_t remainingStackSize(void)
+static size_t remainingStackSize(void)
 {
 #if !TARGET_CPU_PPC
 #warning Do not know how stack grows on this platform

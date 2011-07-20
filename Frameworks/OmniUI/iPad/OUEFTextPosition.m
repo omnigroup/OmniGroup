@@ -19,6 +19,8 @@ RCS_ID("$Id$");
         return nil;
     
     index = ix;
+    affinity = UITextStorageDirectionForward;
+    
     return self;
 }
 
@@ -28,12 +30,14 @@ RCS_ID("$Id$");
         return [self retain];
     } else {
         OUEFTextPosition *result = [[OUEFTextPosition allocWithZone:z] initWithIndex:index];
+        result->affinity = affinity;
         result->generation = generation;
         return result;
     }
 }
 
 @synthesize index;
+@synthesize affinity;
 @synthesize generation;
 
 - (NSComparisonResult)compare:other;
@@ -51,9 +55,19 @@ RCS_ID("$Id$");
         return NSOrderedDescending;
 }
 
+- (BOOL)isEqual:(id)other;
+{
+    assert([other isKindOfClass:[self class]]);
+
+    NSUInteger mine = index;
+    NSUInteger theirs = ((OUEFTextPosition *)other)->index;
+    
+    return mine == theirs;
+}
+
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"%lu/%lu", (unsigned long)index, (unsigned int)generation];
+    return [NSString stringWithFormat:@"%lu%c/%lu", (unsigned long)index, affinity == UITextStorageDirectionForward ? '+' : '-', (unsigned int)generation];
 }
 
 @end

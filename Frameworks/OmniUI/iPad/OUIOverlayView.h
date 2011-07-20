@@ -58,6 +58,7 @@ typedef enum {
 
 @property(assign,nonatomic) NSString *text;     // not retained - sets up NSAttributedString with default font and color
 @property(retain,nonatomic) NSAttributedString *attributedText;
+@property(readonly) OUITextLayout *textLayout;
 @property(retain,nonatomic) UIImage *image;
 @property(assign,nonatomic) CGSize borderSize;
 @property(assign,nonatomic) NSTimeInterval messageDisplayInterval;  // seconds

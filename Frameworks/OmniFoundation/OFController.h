@@ -62,6 +62,7 @@ typedef enum _OFControllerTerminateReply {
 // continuePostponedTermination: should be called as soon as the operation is finished.
 - (void)continuePostponedTermination:(id)observer;
 
+// Call -willTerminate: from your application delegate's implementation of -applicationWillTerminate:, or if you aren't AppKit-based as soon as you're about to quit (after -gotPostponedTerminateResult: has been called, if anyone called -postponeTermination).
 - (void)willTerminate;
 - (void)gotPostponedTerminateResult:(BOOL)isReadyToTerminate;
 

@@ -29,6 +29,7 @@ typedef enum {
 
 + (CGFloat)buttonHeight;
 
+- (OUIInspectorSegmentedControlButton *)addSegmentWithImage:(UIImage *)image representedObject:(id)representedObject;
 - (OUIInspectorSegmentedControlButton *)addSegmentWithImageNamed:(NSString *)imageName representedObject:(id)representedObject;
 - (OUIInspectorSegmentedControlButton *)addSegmentWithImageNamed:(NSString *)imageName;
 - (OUIInspectorSegmentedControlButton *)addSegmentWithText:(NSString *)text representedObject:(id)representedObject;

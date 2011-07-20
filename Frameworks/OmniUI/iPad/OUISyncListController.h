@@ -9,13 +9,17 @@
 
 #import <UIKit/UITableViewController.h>
 
-@class OFFileWrapper;
-
 #import "OUISyncMenuController.h"
 #import <OmniUI/OUIReplaceDocumentAlert.h>
 
-@interface OUIWebDAVController : UITableViewController <OUIReplaceDocumentAlertDelegate>
-{
+@class OFFileWrapper;
+@class OFSFileInfo;
+@class OUISyncDownloader;
+
+@interface OUISyncListController : UITableViewController <OUIReplaceDocumentAlertDelegate> {
+@protected
+    BOOL _isDownloading;
+    
 @private 
     OUISyncType _syncType;
     NSURL *_address;
@@ -24,7 +28,6 @@
     UILabel *_connectingLabel;
     
     NSArray *_files;
-    BOOL _isDownloading;
     BOOL _isExporting;
     OFFileWrapper *_exportFileWrapper;
     
@@ -33,9 +36,9 @@
     NSIndexPath *_exportIndexPath; 
     
     OUIReplaceDocumentAlert *_replaceDocumentAlert;
+    
+    OUISyncDownloader *_downloader;
 }
-
-- (void)signOut:(id)sender;
 
 @property (nonatomic, assign) OUISyncType syncType;
 @property (readwrite, retain) NSURL *address;
@@ -47,5 +50,20 @@
 @property (nonatomic, retain) NSArray *files;
 @property (nonatomic, assign) BOOL isExporting;
 @property (readwrite, retain) OFFileWrapper *exportFileWrapper;
+
+@property (nonatomic, retain) OUISyncDownloader *downloader;
+
+// Public
+- (void)signOut:(id)sender;
+- (void)addDownloaderWithURL:(NSURL *)exportURL toCell:(UITableViewCell *)cell;
+- (void)downloadFinished:(NSNotification *)notification;
+
+// Private
+- (BOOL)_canOpenFile:(OFSFileInfo *)fileInfo;
+- (void)_loadFiles;
+- (void)_stopConnectingIndicator;
+- (void)_exportToURL:(NSURL *)exportURL;
+- (void)_displayDuplicateFileAlertForFile:(NSURL *)fileURL;
+- (void)_exportToNewPathGeneratedFromURL:(NSURL *)documentURL;
 
 @end

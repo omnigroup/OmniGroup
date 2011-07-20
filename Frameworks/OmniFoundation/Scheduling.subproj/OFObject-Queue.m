@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -136,9 +136,9 @@ RCS_ID("$Id$")
     if ([NSThread isMainThread]) {
 	Method method;
 
-	method = class_getInstanceMethod(isa, aSelector);
+	method = class_getInstanceMethod([self class], aSelector);
         if (!method)
-            [NSException raise:NSInvalidArgumentException format:@"%s(%p) does not respond to the selector %@", class_getName(isa), self, NSStringFromSelector(aSelector)];
+            [NSException raise:NSInvalidArgumentException format:@"%@ does not respond to the selector %@", OBShortObjectDescription(self), NSStringFromSelector(aSelector)];
 	method_getImplementation(method)(self, aSelector, aBool);
     } else
 	[self queueSelector:aSelector withBool:aBool];
@@ -149,9 +149,9 @@ RCS_ID("$Id$")
     if ([NSThread isMainThread]) {
 	Method method;
 
-	method = class_getInstanceMethod(isa, aSelector);
+	method = class_getInstanceMethod([self class], aSelector);
         if (!method)
-            [NSException raise:NSInvalidArgumentException format:@"%s(%p) does not respond to the selector %@", class_getName(isa), self, NSStringFromSelector(aSelector)];
+            [NSException raise:NSInvalidArgumentException format:@"%@ does not respond to the selector %@", OBShortObjectDescription(self), NSStringFromSelector(aSelector)];
 	method_getImplementation(method)(self, aSelector, anInt);
     } else
 	[self queueSelector:aSelector withInt:anInt];
@@ -162,9 +162,9 @@ RCS_ID("$Id$")
     if ([NSThread isMainThread]) {
 	Method method;
 
-	method = class_getInstanceMethod(isa, aSelector);
+	method = class_getInstanceMethod([self class], aSelector);
         if (!method)
-            [NSException raise:NSInvalidArgumentException format:@"%s(%p) does not respond to the selector %@", class_getName(isa), self, NSStringFromSelector(aSelector)];
+            [NSException raise:NSInvalidArgumentException format:@"%@ does not respond to the selector %@", OBShortObjectDescription(self), NSStringFromSelector(aSelector)];
 	method_getImplementation(method)(self, aSelector, anInt, anInt2);
     } else
 	[self queueSelector:aSelector withInt:anInt withInt:anInt2];

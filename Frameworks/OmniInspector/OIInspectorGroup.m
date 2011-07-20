@@ -208,8 +208,8 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
         for (OIInspectorGroup *group in groupsInColumn) {
             [group setInitialBottommostInspector];
             [group setTopLeftPoint:topLeft];
-
-            if ([group defaultGroupVisibility])
+            
+            if ([group defaultGroupVisibility] && [OIInspectorRegistry sharedInspector].applicationDidFinishRestoringWindows)
                 [group showGroup];
             else
                 [group hideGroup];
@@ -1049,9 +1049,13 @@ This method iterates over the inspectors controllers in each visible inspector g
     
     [self setInitialBottommostInspector];
     
-    if (willBeVisible) 
-        [self _showGroup];
-    else
+    if (willBeVisible) {
+        OIInspectorRegistry *registry = [OIInspectorRegistry sharedInspector];
+        if (registry.applicationDidFinishRestoringWindows)
+            [self _showGroup];
+        else
+            [registry addGroupToShowAfterWindowRestoration:self];
+    } else
         [self _hideGroup];
 }
 

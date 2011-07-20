@@ -209,6 +209,13 @@ static CFMutableDataRef makeRFC1952MemberHeader(time_t modtime,
                                                 NSString *file_comment,
                                                 Boolean withCRC16,
                                                 Boolean isText,
+                                                u_int8_t xfl) CF_RETURNS_RETAINED;
+
+static CFMutableDataRef makeRFC1952MemberHeader(time_t modtime,
+                                                NSString *orig_filename,
+                                                NSString *file_comment,
+                                                Boolean withCRC16,
+                                                Boolean isText,
                                                 u_int8_t xfl)
 {
     NSData *filename_bytes, *comment_bytes;

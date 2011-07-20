@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,11 +36,9 @@ static inline unichar hexDigit(unichar digit)
 	return 10 + digit - 'a';
 }
 
-NSData *decodeURLEscapedBytes(NSString *input)
+#if 0 // OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+static NSData *decodeURLEscapedBytes(NSString *input)
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
     NSData *result;
     unichar *characters;
     unsigned char *bytes;
@@ -75,8 +73,8 @@ NSData *decodeURLEscapedBytes(NSString *input)
     NSZoneFree(NULL, bytes);
     
     return result;
-#endif
 }
+#endif
 
 
 + (void)didLoad;

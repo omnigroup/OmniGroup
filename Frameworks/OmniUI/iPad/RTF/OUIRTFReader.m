@@ -89,6 +89,7 @@ RCS_ID("$Id$");
     int _fontNumber;
     int _fontCharacterSet;
     unsigned int _underline;
+    int _superscriptCount;
 
     int _unicodeSkipCount;
     struct {
@@ -115,6 +116,7 @@ RCS_ID("$Id$");
 @property (nonatomic) BOOL bold;
 @property (nonatomic) BOOL italic;
 @property (nonatomic) unsigned int underlineStyle;
+@property (nonatomic) int superscript;
 @property (nonatomic) int fontCharacterSet;
 @property (nonatomic) CTTextAlignment paragraphAlignment;
 @property (nonatomic) int paragraphFirstLineIndent;
@@ -212,6 +214,9 @@ static NSMutableDictionary *KeywordActions;
     [self _registerKeyword:@"i" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionItalic:)] autorelease]];
     [self _registerKeyword:@"fs" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionFontSize:)] autorelease]];
     [self _registerKeyword:@"f" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionFontNumber:)] autorelease]];
+    [self _registerKeyword:@"super" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionSuperSubScript:) value:1] autorelease]];
+    [self _registerKeyword:@"sub" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionSuperSubScript:) value:-1] autorelease]];
+    [self _registerKeyword:@"nosupersub" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionSuperSubScript:) value:0] autorelease]];
     
     // Underlines
     [self _registerKeyword:@"ul" action:[[[OUIRTFReaderSelectorAction alloc] initWithSelector:@selector(_actionUnderline:)] autorelease]];
@@ -579,6 +584,18 @@ static NSMutableDictionary *KeywordActions;
     CFStringRef encodingName = CFStringGetNameOfEncoding(_currentState->_stringEncoding);
     NSLog(@"Changed font number to %d (string encoding %@=[%@])", value, (NSString *)encodingName, CFStringGetNameOfEncoding(_currentState->_stringEncoding));
 #endif
+}
+
+- (void)_actionSuperSubScript:(int)which;
+{
+    // Rudimentary notion of superscript/subscript
+    if (which == 0) {
+        _currentState.superscript = 0;
+    } else if (which > 0) {
+        _currentState.superscript = _currentState.superscript + 1;
+    } else if (which < 0) {
+        _currentState.superscript = _currentState.superscript - 1;
+    }
 }
 
 - (void)_actionReadColorTableRedValue:(int)componentValue;
@@ -979,6 +996,14 @@ static NSMutableDictionary *KeywordActions;
 
 @synthesize underlineStyle = _underline;
 
+- (void)setSuperscript:(int)s
+{
+    _superscriptCount = s;
+    [self _resetCache];
+}
+
+@synthesize superscript = _superscriptCount;
+
 @synthesize fontCharacterSet = _fontCharacterSet;
 
 - (CTTextAlignment)paragraphAlignment;
@@ -1070,7 +1095,9 @@ static NSMutableDictionary *KeywordActions;
 #endif
             [_cachedStringAttributes setObject:(id)font forKey:(NSString *)kCTFontAttributeName];
 
-
+            if (_superscriptCount != 0)
+                [_cachedStringAttributes setIntValue:_superscriptCount forKey:(NSString *)kCTSuperscriptAttributeName];
+            
             CTTextAlignment alignment = _paragraph.alignment;
             CGFloat firstLineHeadIndent = 1.0f / 20.0f * (_paragraph.leftIndent + _paragraph.firstLineIndent);
             CGFloat headIndent = 1.0f / 20.0f * _paragraph.leftIndent;

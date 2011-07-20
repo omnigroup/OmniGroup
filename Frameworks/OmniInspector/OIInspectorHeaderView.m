@@ -164,7 +164,8 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 - (void)resetCursorRects;
 {
     if ([delegate headerViewShouldDisplayCloseButton:self]) {
-        NSRect closeRect = NSMakeRect(NSMinX(_bounds) + 6.0f, NSMaxY(_bounds)-1.0f - 14.0f, 14.0f, 14.0f);    
+        NSRect bounds = self.bounds;
+        NSRect closeRect = NSMakeRect(NSMinX(bounds) + 6.0f, NSMaxY(bounds)-1.0f - 14.0f, 14.0f, 14.0f);    
         [self addTrackingRect:closeRect owner:self userData:NULL assumeInside:NO];
     }
 }
@@ -231,17 +232,18 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     BOOL drawAll = isExpanded || !omitTextAndStateWhenCollapsed;
     OIInspectorHeaderImageTint imageTint = ([NSColor currentControlTint] == NSBlueControlTint) ? OIInspectorHeaderImageTintBlue : OIInspectorHeaderImageTintGraphite;
     
+    NSRect bounds = self.bounds;
     if ([delegate headerViewShouldDisplayCloseButton:self]) {
-        NSPoint closeImagePoint = NSMakePoint(NSMinX(_bounds) + 6.0f, NSMaxY(_bounds)-1.0f);
+        NSPoint closeImagePoint = NSMakePoint(NSMinX(bounds) + 6.0f, NSMaxY(bounds)-1.0f);
         NSImage *closeImage = _closeButtonImages[imageTint][clickingClose ? OIInspectorCloseButtonStatePressed : (overClose ? OIInspectorCloseButtonStateRollover : OIInspectorCloseButtonStateNormal)];
         
         [closeImage compositeToPoint:closeImagePoint operation:NSCompositeSourceOver];
     }
     
-    CGFloat nextElementX = NSMinX(_bounds) + 26.0f;
+    CGFloat nextElementX = NSMinX(bounds) + 26.0f;
     if (drawAll && [self _allowToggleExpandedness]) {
         NSImage *disclosureImage = isExpanded ? _expandedImage : _collapsedImage;
-        NSPoint disclosureImagePoint = NSMakePoint(nextElementX, NSMaxY(_bounds)-2.0f);
+        NSPoint disclosureImagePoint = NSMakePoint(nextElementX, NSMaxY(bounds)-2.0f);
 
         [disclosureImage compositeToPoint:disclosureImagePoint operation:NSCompositeSourceOver];
 
@@ -256,7 +258,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         CGContextRef cgContext = [currentContext graphicsPort];
 
         CGContextSaveGState(cgContext);
-        CGContextTranslateCTM(cgContext, nextElementX, NSMaxY(_bounds)-2.0f);
+        CGContextTranslateCTM(cgContext, nextElementX, NSMaxY(bounds)-2.0f);
         CGContextScaleCTM(cgContext, 1.0f, -1.0f);
         [image drawAtPoint:NSZeroPoint fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
         CGContextRestoreGState(cgContext);
@@ -271,7 +273,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         keyEquivalentWidth = [keyEquivalent sizeWithAttributes:_keyEquivalentAttributes].width + 5.0f;
     
     if (drawAll) {
-        NSRect rect = NSMakeRect(nextElementX, NSMinY(_bounds), NSMaxX(_bounds) - nextElementX - 5.0f - keyEquivalentWidth, NSHeight(_bounds));
+        NSRect rect = NSMakeRect(nextElementX, NSMinY(bounds), NSMaxX(bounds) - nextElementX - 5.0f - keyEquivalentWidth, NSHeight(bounds));
         if ([title isKindOfClass:[NSAttributedString class]]) {
             [(NSAttributedString *)title drawInRectangle:rect alignment:NSLeftTextAlignment verticallyCentered:YES];
         } else {
@@ -281,7 +283,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         }
     }
 
-    [keyEquivalent drawAtPoint:NSMakePoint(NSMaxX(_bounds) - keyEquivalentWidth, NSMinY(_bounds) + 1.0f) withAttributes:_keyEquivalentAttributes];
+    [keyEquivalent drawAtPoint:NSMakePoint(NSMaxX(bounds) - keyEquivalentWidth, NSMinY(bounds) + 1.0f) withAttributes:_keyEquivalentAttributes];
 }
 
 - (void)mouseDown:(NSEvent *)theEvent;
@@ -291,7 +293,8 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     NSRect windowFrame = [window frame];
     NSSize windowOriginOffset = NSMakeSize(click.x - windowFrame.origin.x, click.y - windowFrame.origin.y);
     NSRect hysterisisRect = NSMakeRect(click.x - 3.0f, click.y - 3.0f, 6.0f, 6.0f);
-    NSRect closeRect = NSMakeRect(NSMinX(_bounds) + 6.0f, NSMaxY(_bounds)-1.0f - 14.0f, 14.0f, 14.0f);
+    NSRect bounds = self.bounds;
+    NSRect closeRect = NSMakeRect(NSMinX(bounds) + 6.0f, NSMaxY(bounds)-1.0f - 14.0f, 14.0f, 14.0f);
     NSPoint newTopLeft = NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame));
     CGFloat dragWindowHeight = 0.0f;
     BOOL isInOriginalFrame = NSPointInRect([theEvent locationInWindow], [self frame]);  // don't collapse if the mousedown is not within the header frame (as when this is called from tab area)

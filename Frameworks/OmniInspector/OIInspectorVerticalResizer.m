@@ -26,7 +26,7 @@ RCS_ID("$Id$")
 
 - (void)drawRect:(NSRect)rect 
 {
-    [super drawDividerInRect:_bounds];
+    [super drawDividerInRect:self.bounds];
 }
 
 - (void)mouseDown:(NSEvent *)event;
@@ -53,7 +53,7 @@ RCS_ID("$Id$")
 
 - (void)resetCursorRects;
 {
-    [self addCursorRect:_bounds cursor:[NSCursor _verticalResizeCursor]];
+    [self addCursorRect:self.bounds cursor:[NSCursor _verticalResizeCursor]];
 }
 
 @end

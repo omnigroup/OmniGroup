@@ -10,6 +10,7 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocument.h>
 #import <OmniUI/OUIDocumentPicker.h>
@@ -406,7 +407,9 @@ static NSString * const SelectAction = @"select";
         // Copy in a welcome document if one exists and we don't have any other documents
         [OUIDocumentPicker copySampleDocumentsToUserDocuments];
         [documentPicker rescanDocuments];
-        OUIDocumentProxy *welcomeProxy = [documentPicker proxyNamed:@"Welcome"];
+        
+        NSString *welcomeTitle = [[documentPicker class] localizedNameForSampleDocumentNamed:@"Welcome"];
+        OUIDocumentProxy *welcomeProxy = [documentPicker proxyNamed:welcomeTitle];
         if (welcomeProxy != nil) {
             [self _openDocument:welcomeProxy animated:NO];
             startedOpeningDocument = YES;
@@ -522,11 +525,6 @@ static NSString * const SelectAction = @"select";
 - (void)_saveDocumentAndState;
 {
     NSArray *nextLaunchAction = nil;
-    
-    OUIWithoutAnimating(^{
-        [_window endEditing:YES];
-        [_window layoutIfNeeded];
-    });
     
     if (_document) {
         NSError *error = nil;
@@ -692,6 +690,9 @@ static NSString * const SelectAction = @"select";
         [[NSUserDefaults standardUserDefaults] setObject:nextLaunchAction forKey:OUINextLaunchActionDefaultsKey];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
+
+    // Wait until the document is opened to do this, which will let cache entries from opening document A be used in document B w/o being flushed.
+    [OAFontDescriptor forgetUnusedInstances];
 
     // UIWindow will automatically create an undo manager if one isn't found along the responder chain. We want to be darn sure that don't end up getting two undo managers and accidentally splitting our registrations between them.
     OBASSERT([_document undoManager] == [_document.viewController undoManager]);

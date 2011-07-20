@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -111,10 +111,11 @@ RCS_ID("$Id$")
 
 - (id)firstItem;
 {
-    NSInteger count = [_dataSource outlineView: self numberOfChildrenOfItem:nil];
+    id <NSOutlineViewDataSource> dataSource = self.dataSource;
+    NSInteger count = [dataSource outlineView:self numberOfChildrenOfItem:nil];
     if (!count)
         return nil;
-    return [_dataSource outlineView:self child:0 ofItem:nil];
+    return [dataSource outlineView:self child:0 ofItem:nil];
 }
 
 - (void)expandAllItemsAtLevel:(NSInteger)level;
@@ -133,24 +134,26 @@ RCS_ID("$Id$")
 
 - (void)expandItemAndChildren:(id)item;
 {
-    if (item == nil || [_dataSource outlineView:self isItemExpandable:item]) {
+    id <NSOutlineViewDataSource> dataSource = self.dataSource;
+    if (item == nil || [dataSource outlineView:self isItemExpandable:item]) {
         if (item != nil)
             [self expandItem:item];
     
-        NSInteger childCount = [_dataSource outlineView:self numberOfChildrenOfItem:item];
+        NSInteger childCount = [dataSource outlineView:self numberOfChildrenOfItem:item];
         for (NSInteger childIndex = 0; childIndex < childCount; childIndex++)
-            [self expandItemAndChildren:[_dataSource outlineView:self child:childIndex ofItem:item]];
+            [self expandItemAndChildren:[dataSource outlineView:self child:childIndex ofItem:item]];
     }
 }
 
 - (void)collapseItemAndChildren:(id)item;
 {
-    if (item == nil || [_dataSource outlineView:self isItemExpandable:item]) {
+    id <NSOutlineViewDataSource> dataSource = self.dataSource;
+    if (item == nil || [dataSource outlineView:self isItemExpandable:item]) {
 
         // Collapse starting from the bottom.  This makes it feasible to have the smooth scrolling on when doing this (since most of the collapsing then happens off screen and thus doesn't get animated).
-        NSInteger childIndex = [_dataSource outlineView:self numberOfChildrenOfItem:item];
+        NSInteger childIndex = [dataSource outlineView:self numberOfChildrenOfItem:item];
         while (childIndex--)
-            [self collapseItemAndChildren:[_dataSource outlineView:self child:childIndex ofItem:item]];
+            [self collapseItemAndChildren:[dataSource outlineView:self child:childIndex ofItem:item]];
             
         if (item != nil)
             [self collapseItem:item];
@@ -223,10 +226,11 @@ RCS_ID("$Id$")
 
 - (void)_expandItems:(NSArray *)items andChildren:(BOOL)andChildren;
 {
+    id <NSOutlineViewDataSource> dataSource = self.dataSource;
     NSInteger itemCount = [items count];
     for (NSInteger itemIndex = 0; itemIndex < itemCount; itemIndex++) {
         id selectedItem = [items objectAtIndex:itemIndex];
-        if ([_dataSource outlineView:self isItemExpandable:selectedItem]) {
+        if ([dataSource outlineView:self isItemExpandable:selectedItem]) {
             if (andChildren)
                 [self expandItemAndChildren:selectedItem];
             else
@@ -237,10 +241,11 @@ RCS_ID("$Id$")
 
 - (void)_collapseItems:(NSArray *)items andChildren:(BOOL)andChildren;
 {
+    id <NSOutlineViewDataSource> dataSource = self.dataSource;
     NSInteger itemCount = [items count];
     for (NSInteger itemIndex = 0; itemIndex < itemCount; itemIndex++) {
         id selectedItem = [items objectAtIndex:itemIndex];
-        if ([_dataSource outlineView:self isItemExpandable:selectedItem]) {
+        if ([dataSource outlineView:self isItemExpandable:selectedItem]) {
             if (andChildren)
                 [self collapseItemAndChildren:selectedItem];
             else

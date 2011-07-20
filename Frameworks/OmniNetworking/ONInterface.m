@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2007, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -66,7 +66,7 @@ static const struct { int ift; ONInterfaceCategory cat; } interfaceClassificatio
     if (!(self = [super init]))
         return nil;
 
-    name = [[NSString alloc] initWithCString:info->ifa_name];
+    name = [[NSString alloc] initWithBytes:info->ifa_name length:strlen(info->ifa_name) encoding:NSASCIIStringEncoding];
     flags = info->ifa_flags;
     maximumTransmissionUnit = 0;
     interfaceCategory = ONUnknownInterfaceCategory;

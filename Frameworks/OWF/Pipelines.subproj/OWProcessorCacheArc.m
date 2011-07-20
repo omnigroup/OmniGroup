@@ -295,7 +295,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
         return OWCacheArcTraversal_HaveResult;
     }
 
-    OWPipeline *oldTask = nil;
+    OWTask *oldTask = nil;
     
     if (cachedTaskInfo == nil || cachedTaskPriority > [pipeline messageQueueSchedulingInfo].priority) {
         cachedTaskPriority = [pipeline messageQueueSchedulingInfo].priority;

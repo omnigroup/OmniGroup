@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -323,7 +323,7 @@ static NSDictionary *OFLinkLayerInterfaceAddresses(void)
 }
 
 // There is no perfect unique identifier for a machine since Apple doesn't guarantee that the machine's serial number will be accessible or present.  It's unclear if the caveats to the machine serial number are really for old Macs or current ones.
-NSString *_OFCalculateUniqueMachineIdentifier(void)
+static NSString *_OFCalculateUniqueMachineIdentifier(void)
 {
     NSDictionary *interfaces = OFLinkLayerInterfaceAddresses();
         

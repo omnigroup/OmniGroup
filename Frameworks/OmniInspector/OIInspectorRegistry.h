@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 
 @class NSArray, NSMutableArray, NSMutableDictionary, NSSet, NSPredicate;
 @class NSButton, NSTableView, NSTextField, NSWindow, NSWindowController, NSMenu, NSMenuItem;
-@class OIInspectionSet;
+@class OIInspectionSet, OIInspectorGroup;
 
 @class OIInspector, OIInspectorController;
 
@@ -43,6 +43,10 @@
 
     NSMutableArray *inspectorControllers;
     float inspectorWidth;
+    
+@private 
+    BOOL _applicationDidFinishRestoringWindows;	// for document based app on 10.7, this means that the app has loaded its documents
+    NSMutableArray *_groupsToShowAfterWindowRestoration;
 }
 
 // API
@@ -102,6 +106,9 @@
 - (NSPoint)adjustTopLeftDefaultPositioningPoint:(NSPoint)topLeft;  // point is given in screen coordinates
 
 - (void)setLastWindowAskedToInspect:(NSWindow *)aWindow;
+
+@property (nonatomic, readonly) BOOL applicationDidFinishRestoringWindows;
+- (void)addGroupToShowAfterWindowRestoration:(OIInspectorGroup *)group;
 
 @end
 

@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -114,7 +114,7 @@ static BOOL colorSyncEnabled;
     if (imageContentName == nil)
         imageContentName = [NSLocalizedStringFromTableInBundle(@"Image", @"OIF", [OIImage bundle], "content or task type name for image content") retain];
 
-    if (![super initWithName:imageContentName])
+    if (!(self = [super initWithName:imageContentName]))
 	return nil;
 
     haveSize = NO;

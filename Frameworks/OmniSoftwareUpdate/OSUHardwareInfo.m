@@ -1,4 +1,4 @@
-// Copyright 2002-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,6 +42,7 @@ RCS_ID("$Id$");
 
 // CFCopyDescription on a CFDataRef yields "<CFData 0x67d10 [0xa01303fc]>{length = 4, capacity = 4, bytes = 0x00001002}" when we'd like "0x00001002"
 #if OSU_MAC
+static CFStringRef data_desc(CFDataRef data) CF_RETURNS_RETAINED;
 static CFStringRef data_desc(CFDataRef data)
 {
     NSUInteger byteIndex, byteCount = CFDataGetLength(data);
@@ -625,13 +626,13 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
 		    const GLubyte *glStr;
 		    
 		    if ((glStr = glGetString(GL_VENDOR)))
-			vendor = [[NSString alloc] initWithCString:(const char *)glStr];
+			vendor = [[NSString alloc] initWithUTF8String:(const char *)glStr];
 		    if ((glStr = glGetString(GL_VERSION)))
-			version = [[NSString alloc] initWithCString:(const char *)glStr];
+			version = [[NSString alloc] initWithUTF8String:(const char *)glStr];
 		    if ((glStr = glGetString(GL_RENDERER)))
-			renderer = [[NSString alloc] initWithCString:(const char *)glStr];
+			renderer = [[NSString alloc] initWithUTF8String:(const char *)glStr];
 		    if ((glStr = glGetString(GL_EXTENSIONS)))
-			extensions = [[NSString alloc] initWithCString:(const char *)glStr];
+			extensions = [[NSString alloc] initWithUTF8String:(const char *)glStr];
 		    
 		    [NSOpenGLContext clearCurrentContext];
 		}

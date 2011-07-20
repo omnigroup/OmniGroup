@@ -8,6 +8,7 @@
 #import <OmniUnzip/OUZipLinkMember.h>
 
 #import <OmniUnzip/OUZipArchive.h>
+#import <OmniFoundation/OFFileWrapper.h>
 
 RCS_ID("$Id$");
 
@@ -41,10 +42,13 @@ RCS_ID("$Id$");
 
 - (OFFileWrapper *)fileWrapperRepresentation;
 {
+    OBFinishPorting; // <bug:///72886> (OFFileWrapper is missing -initSymbolicLinkWithDestination:)
+#if 0
     OFFileWrapper *wrapper = [[[OFFileWrapper alloc] initSymbolicLinkWithDestination:_destination] autorelease];
     [wrapper setFilename:[self name]];
     [wrapper setPreferredFilename:[self name]];
     return wrapper;
+#endif
 }
 
 #pragma mark -

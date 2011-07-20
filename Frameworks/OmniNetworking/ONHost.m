@@ -1,4 +1,4 @@
-// Copyright 1997-2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2007, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -143,6 +143,7 @@ static void systemConfigChanged(SCDynamicStoreRef	store,
     [ONHostLookupLock unlock];
 }
 
+static CFStringRef createDnsStateKey(void) CF_RETURNS_RETAINED;
 static CFStringRef createDnsStateKey(void)
 {
     return SCDynamicStoreKeyCreateNetworkGlobalEntity(NULL, kSCDynamicStoreDomainState, kSCEntNetDNS);
@@ -867,11 +868,8 @@ static uint32_t getUint32(NSData *outputData, NSRange *range)
 - (void)_lookupHostInfoByPipe;
 {
     static NSString *ONGetHostByNamePath;
-    const unsigned char *addressBytes;
-    unsigned long int addressCount, addressIndex;
     int addressFamily, addressLength;
     NSData *addressData;
-    ONHostAddress **addressIds;
     NSUInteger canonicalHostnameLength, hostnameLength;
     NSRange nextRange;
     NSData *outputData;
@@ -980,19 +978,22 @@ static uint32_t getUint32(NSData *outputData, NSRange *range)
     addressFamily = getUint32(outputData, &nextRange);
     addressLength = getUint32(outputData, &nextRange);
     addressData = [outputData subdataWithRange:nextRange];
-    addressCount = [addressData length] / addressLength;
+    
+    unsigned long int addressCount = [addressData length] / addressLength;
     OBASSERT(([addressData length] % addressLength) == 0);
+    
     if (addressCount == 0)
         [ONHost _raiseExceptionForHostErrorNumber:NO_DATA hostname:hostname];
-
-    addressBytes = [addressData bytes];
-    addressIds = malloc(addressCount * sizeof(*addressIds));
-    for (addressIndex = 0; addressIndex < addressCount; addressIndex ++) {
-        addressIds[addressIndex] = [ONHostAddress hostAddressWithInternetAddress:addressBytes family:addressFamily];
-        addressBytes += addressLength;
+    else {
+        const unsigned char *addressBytes = [addressData bytes];
+        ONHostAddress **addressIds = malloc(addressCount * sizeof(*addressIds));
+        for (unsigned long int addressIndex = 0; addressIndex < addressCount; addressIndex ++) {
+            addressIds[addressIndex] = [ONHostAddress hostAddressWithInternetAddress:addressBytes family:addressFamily];
+            addressBytes += addressLength;
+        }
+        addresses = [[NSArray alloc] initWithObjects:addressIds count:addressCount];
+        free(addressIds);
     }
-    addresses = [[NSArray alloc] initWithObjects:addressIds count:addressCount];
-    free(addressIds);
 }
 
 // Somebody out there has finally twigged to the fact that it would be nice to be able to resolve host information in multiple threads; the getaddrinfo() API is threadsafe, and the implementation in Darwin is nearly-threadsafe as of MacOS 10.2, according to the Darwin CVS repository. By "nearly threadsafe" I mean that it's approximately as threadsafe as our lookupd hack (in fact, it has pretty much the same problem we used to have: a race condition when linking to the lookupd process). 
@@ -1023,7 +1024,8 @@ static uint32_t getUint32(NSData *outputData, NSRange *range)
     }
 
     if (results->ai_canonname != NULL) {
-        canonicalHostname = [[NSString alloc] initWithCString:results->ai_canonname];
+        // OBFinishPorting: Is this really ASCII or is it UTF-8 or some other encoding? Before this was using -initWithCString: which would likely have used Mac Roman.
+        canonicalHostname = [[NSString alloc] initWithBytes:results->ai_canonname length:strlen(results->ai_canonname) encoding:NSASCIIStringEncoding];
     }
 
     addressBuf = [[NSMutableArray alloc] init];

@@ -13,13 +13,15 @@
 enum {
     OUIExportOptionsExport,
     OUIExportOptionsEmail,
+    OUIExportOptionsSendToApp,
 }; 
 typedef NSUInteger OUIExportOptionsType;
 
 @class OFFileWrapper;
 @class OUIExportOptionsView;
+@class OUIOverlayView;
 
-@interface OUIExportOptionsController : UIViewController
+@interface OUIExportOptionsController : UIViewController <UIDocumentInteractionControllerDelegate>
 {
 @private
     OUIExportOptionsView *_exportView;
@@ -29,6 +31,11 @@ typedef NSUInteger OUIExportOptionsType;
     OUISyncType _syncType;
     OUIExportOptionsType _exportType;
     NSMutableArray *_exportFileTypes;
+    
+    OUIOverlayView *_fileConversionOverlayView;
+    
+    UIDocumentInteractionController *_documentInteractionController;
+    CGRect _rectForExportOptionButtonChosen;
 }
 
 - (id)initWithExportType:(OUIExportOptionsType)exportType;
@@ -40,5 +47,7 @@ typedef NSUInteger OUIExportOptionsType;
 @property(nonatomic, retain) IBOutlet UILabel *exportDestinationLabel;
 
 @property (nonatomic, assign) OUISyncType syncType;
+
+@property (nonatomic, retain) UIDocumentInteractionController *documentInteractionController;
 
 @end

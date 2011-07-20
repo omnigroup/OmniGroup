@@ -17,7 +17,7 @@
 
 RCS_ID("$Id$")
 
-OBDEPRECATED_METHODS(NSTableViewOAExtendedDataSource)
+OBDEPRECATED_METHODS(OAExtendedTableViewDataSource)
 - (void)tableView:(NSTableView *)tableView deleteRows:(NSArray *)rows; // Use -tableView:deleteRowsAtIndexes:
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard; // deprecated by the OS, but let's warn if anyone implements it.  Use the indexes version.
 - (NSTableColumn *)tableViewTypeAheadSelectionColumn:(NSTableView *)tableView;  // NSTableView automagically has this is 10.5 and later (see any number of type select delegate methods in the NSTableView header)
@@ -89,6 +89,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
     [dragImage lockFocus];
     
+    id <NSTableViewDataSource> dataSource = self.dataSource;
     OFForEachIndex(dragRows, row) {
         if ([self _shouldShowDragImageForRow:row]) {
             NSArray *dragColumnIdentifiers = [self _columnIdentifiersForDragImage];
@@ -102,7 +103,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
                 id objectValue;
 
                 tableColumn = [self tableColumnWithIdentifier:columnIdentifier];
-                objectValue = [_dataSource tableView:self objectValueForTableColumn:tableColumn row:row];
+                objectValue = [dataSource tableView:self objectValueForTableColumn:tableColumn row:row];
 
                 cellRect = [self frameOfCellAtColumn:[[self tableColumns] indexOfObject:tableColumn] row:row];
                 cellRect.origin.y = NSMaxY([self bounds]) - NSMaxY(cellRect);
@@ -258,13 +259,14 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 - (void)deleteForward:(id)sender;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:deleteRows:)]) {
+    id <OAExtendedTableViewDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:deleteRowsAtIndexes:)]) {
         NSInteger selectedRow = [self selectedRow]; // last selected row if there's a multiple selection -- that's ok.
         if (selectedRow == -1)
             return;
 
         NSInteger originalNumberOfRows = [self numberOfRows];
-        [_dataSource tableView:self deleteRowsAtIndexes:[self selectedRowIndexes]];
+        [dataSource tableView:self deleteRowsAtIndexes:[self selectedRowIndexes]];
         [self reloadData];
 
         // Maintain an appropriate selection after deletions
@@ -279,22 +281,24 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 - (void)deleteBackward:(id)sender;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:deleteRows:)]) {
+    id <OAExtendedTableViewDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:deleteRowsAtIndexes:)]) {
         if ([self numberOfSelectedRows] == 0)
             return;
 
         // -selectedRow is last row of multiple selection, no good for trying to select the row before the selection.
         NSInteger selectedRow = [[self selectedRowIndexes] firstIndex];
         NSInteger originalNumberOfRows = [self numberOfRows];
-        [_dataSource tableView:self deleteRowsAtIndexes:[self selectedRowIndexes]];
+        [dataSource tableView:self deleteRowsAtIndexes:[self selectedRowIndexes]];
         [self reloadData];
         NSInteger newNumberOfRows = [self numberOfRows];
         
         // Maintain an appropriate selection after deletions
         if (originalNumberOfRows != newNumberOfRows) {
+            id <NSTableViewDelegate> delegate = self.delegate;
             if (selectedRow == 0) {
-                if ([_delegate respondsToSelector:@selector(tableView:shouldSelectRow:)]) {
-                    if ([_delegate tableView:self shouldSelectRow:0])
+                if ([delegate respondsToSelector:@selector(tableView:shouldSelectRow:)]) {
+                    if ([delegate tableView:self shouldSelectRow:0])
                         [self selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
                     else
                         [self moveDown:nil];
@@ -306,8 +310,8 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
                 selectedRow = MIN(selectedRow - 1, newNumberOfRows - 1);
                 
                 // Skip all unselectable rows if the delegate responds to -tableView:shouldSelectRow:
-                if ([_delegate respondsToSelector:@selector(tableView:shouldSelectRow:)]) {
-                    while (selectedRow > 0 && ![_delegate tableView:self shouldSelectRow:selectedRow])
+                if ([delegate respondsToSelector:@selector(tableView:shouldSelectRow:)]) {
+                    while (selectedRow > 0 && ![delegate tableView:self shouldSelectRow:selectedRow])
                         selectedRow--;
                 }
                 
@@ -323,8 +327,9 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 - (void)insertNewline:(id)sender;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:insertNewline:)])
-        [_dataSource tableView:self insertNewline:sender];
+    id <OAExtendedTableViewDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:insertNewline:)])
+        [dataSource tableView:self insertNewline:sender];
 }
 
 - (void)insertTab:(id)sender;
@@ -373,22 +378,22 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 - (IBAction)delete:(id)sender;
 {
-    if ([_dataSource respondsToSelector:@selector(delete:)])
-        [_dataSource delete:sender];
-    else if ([_delegate respondsToSelector:@selector(delete:)])
-        [_delegate delete:sender];
+    if ([self.dataSource respondsToSelector:@selector(delete:)])
+        [(id)self.dataSource delete:sender];
+    else if ([self.delegate respondsToSelector:@selector(delete:)])
+        [(id)self.delegate delete:sender];
     else
         [self deleteBackward:sender];
 }
 
 - (IBAction)cut:(id)sender;
 {
-    if ([_dataSource respondsToSelector:@selector(cut:)]) {
-        [_dataSource cut:sender];
-    } else if ([_delegate respondsToSelector:@selector(cut:)]) {
-        [_delegate cut:sender];
+    id <NSTableViewDataSource> dataSource = self.dataSource;
+    if ([dataSource respondsToSelector:@selector(cut:)]) {
+        [(id)dataSource cut:sender];
+    } else if ([self.delegate respondsToSelector:@selector(cut:)]) {
+        [(id)self.delegate cut:sender];
     } else {
-        
         if ([self _copyToPasteboard:[NSPasteboard generalPasteboard]])
             [self delete:sender];
     }
@@ -396,24 +401,22 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 - (IBAction)copy:(id)sender;
 {
-    if ([_dataSource respondsToSelector:@selector(copy:)]) {
-        [_dataSource copy:sender];
-    } else if ([_delegate respondsToSelector:@selector(copy:)]) {
-        [_delegate copy:sender];
+    if ([self.dataSource respondsToSelector:@selector(copy:)]) {
+        [(id)self.dataSource copy:sender];
+    } else if ([self.delegate respondsToSelector:@selector(copy:)]) {
+        [(id)self.delegate copy:sender];
     } else {
-
         [self _copyToPasteboard:[NSPasteboard generalPasteboard]];
     }
 }
 
 - (IBAction)paste:(id)sender;
 {
-    if ([_dataSource respondsToSelector:@selector(paste:)]) {
-        [_dataSource paste:sender];
-    } else if ([_delegate respondsToSelector:@selector(paste:)]) {
-        [_delegate paste:sender];
+    if ([self.dataSource respondsToSelector:@selector(paste:)]) {
+        [(id)self.dataSource paste:sender];
+    } else if ([self.delegate respondsToSelector:@selector(paste:)]) {
+        [(id)self.delegate paste:sender];
     } else {
-        
         if ([self _dataSourceHandlesPaste])
             [self _pasteFromPasteboard:[NSPasteboard generalPasteboard]];
     }
@@ -421,14 +424,12 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 - (IBAction)duplicate:(id)sender; // duplicate == copy + paste (but it doesn't use the general pasteboard)
 {
-    if ([_dataSource respondsToSelector:@selector(duplicate:)]) {
-        [_dataSource duplicate:sender];
-    } else if ([_delegate respondsToSelector:@selector(duplicate:)]) {
-        [_delegate duplicate:sender];
+    if ([self.dataSource respondsToSelector:@selector(duplicate:)]) {
+        [(id)self.dataSource duplicate:sender];
+    } else if ([self.delegate respondsToSelector:@selector(duplicate:)]) {
+        [(id)self.delegate duplicate:sender];
     } else {
-        NSPasteboard *tempPasteboard;
-
-        tempPasteboard = [NSPasteboard pasteboardWithUniqueName];
+        NSPasteboard *tempPasteboard = [NSPasteboard pasteboardWithUniqueName];
         if ([self _copyToPasteboard:tempPasteboard] && [self _dataSourceHandlesPaste])
             [self _pasteFromPasteboard:tempPasteboard];
     }
@@ -441,8 +442,8 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 {
     // We get NSDragOperationDelete now for dragging to the Trash.
     if (operation == NSDragOperationDelete) {
-        if ([_dataSource respondsToSelector:@selector(tableView:deleteRows:)]) {
-            [_dataSource tableView:self deleteRowsAtIndexes:OATableViewRowsInCurrentDrag];
+        if ([self.dataSource respondsToSelector:@selector(tableView:deleteRowsAtIndexes:)]) {
+            [(id <OAExtendedTableViewDataSource>)self.dataSource tableView:self deleteRowsAtIndexes:OATableViewRowsInCurrentDrag];
             [self reloadData];
         }
     }
@@ -455,7 +456,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 - (id <OAFindControllerTarget>)omniFindControllerTarget;
 {
-    if (![_dataSource respondsToSelector:@selector(tableView:itemAtRow:matchesPattern:)])
+    if (![self.dataSource respondsToSelector:@selector(tableView:itemAtRow:matchesPattern:)])
         return nil;
     return self;
 }
@@ -479,9 +480,10 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
             rowIndex = 0;
     }
         
+    id <OAExtendedTableViewDataSource> dataSource = (id)self.dataSource;
     BOOL hasWrapped = NO;
     while (YES) {
-        if (rowIndex != [self selectedRow] && [_dataSource tableView:self itemAtRow:rowIndex matchesPattern:pattern]) {
+        if (rowIndex != [self selectedRow] && [dataSource tableView:self itemAtRow:rowIndex matchesPattern:pattern]) {
             [self selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
             [self scrollRowToVisible:rowIndex];
             return YES;
@@ -515,13 +517,16 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 - (BOOL)_copyToPasteboard:(NSPasteboard *)pasteboard;
 {
     if ([self isKindOfClass:[NSOutlineView class]]) {
-        if ([self numberOfSelectedRows] > 0 && [_dataSource respondsToSelector:@selector(outlineView:writeItems:toPasteboard:)])
-            return [_dataSource outlineView:(NSOutlineView *)self writeItems:[(NSOutlineView *)self selectedItems] toPasteboard:pasteboard];
+        NSOutlineView *outlineView = (id)self;
+        id <NSOutlineViewDataSource> dataSource = outlineView.dataSource;
+        if ([self numberOfSelectedRows] > 0 && [dataSource respondsToSelector:@selector(outlineView:writeItems:toPasteboard:)])
+            return [dataSource outlineView:outlineView writeItems:[outlineView selectedItems] toPasteboard:pasteboard];
         else
             return NO;
     } else {
-        if ([self numberOfSelectedRows] > 0 && [_dataSource respondsToSelector:@selector(tableView:writeRows:toPasteboard:)])
-            return [_dataSource tableView:self writeRowsWithIndexes:[self selectedRowIndexes] toPasteboard:pasteboard];
+        id <NSTableViewDataSource> dataSource = self.dataSource;
+        if ([self numberOfSelectedRows] > 0 && [dataSource respondsToSelector:@selector(tableView:writeRows:toPasteboard:)])
+            return [dataSource tableView:self writeRowsWithIndexes:[self selectedRowIndexes] toPasteboard:pasteboard];
         else
             return NO;
     }
@@ -529,7 +534,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 - (void)_pasteFromPasteboard:(NSPasteboard *)pasteboard;
 {
-    [_dataSource tableView:self addItemsFromPasteboard:pasteboard];
+    [(id <OAExtendedTableViewDataSource>)self.dataSource tableView:self addItemsFromPasteboard:pasteboard];
 }
 
 @end
@@ -539,36 +544,34 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 - (BOOL)_dataSourceHandlesPaste;
 {
     // This is an override point so that OutlineView can get our implementation for free but provide item-based datasource API
-    return [_dataSource respondsToSelector:@selector(tableView:addItemsFromPasteboard:)];
+    return [self.dataSource respondsToSelector:@selector(tableView:addItemsFromPasteboard:)];
 }
 
 - (BOOL)_dataSourceHandlesContextMenu;
 {
     // This is an override point so that OutlineView can get our implementation for free but provide item-based datasource API
-    return [_dataSource respondsToSelector:@selector(tableView:contextMenuForRow:column:)];
+    return [self.dataSource respondsToSelector:@selector(tableView:contextMenuForRow:column:)];
 }
 
 - (NSMenu *)_contextMenuForRow:(NSInteger)row column:(NSInteger)column;
 {
     // This is an override point so that OutlineView can get our implementation for free but provide item-based datasource API
     OBASSERT([self _dataSourceHandlesContextMenu]); // should already know this by the time we get here
-    return [_dataSource tableView:self contextMenuForRow:row column:column];
+    return [(id <OAExtendedTableViewDataSource>)self.dataSource tableView:self contextMenuForRow:row column:column];
 }
 
 - (BOOL)_shouldShowDragImageForRow:(NSInteger)row;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:shouldShowDragImageForRow:)])
-        return [_dataSource tableView:self shouldShowDragImageForRow:row];
+    if ([self.dataSource respondsToSelector:@selector(tableView:shouldShowDragImageForRow:)])
+        return [(id <OAExtendedTableViewDataSource>)self.dataSource tableView:self shouldShowDragImageForRow:row];
     else
         return YES;
 }
 
 - (NSArray *)_columnIdentifiersForDragImage;
 {
-    if ([_dataSource respondsToSelector:@selector(tableViewColumnIdentifiersForDragImage:)]) {
-        NSArray *identifiers;
-
-        identifiers = [_dataSource tableViewColumnIdentifiersForDragImage:self];
+    if ([self.dataSource respondsToSelector:@selector(tableViewColumnIdentifiersForDragImage:)]) {
+        NSArray *identifiers = [(id <OAExtendedTableViewDataSource>)self.dataSource tableViewColumnIdentifiersForDragImage:self];
         if ([identifiers count] < 1)
             [NSException raise:NSInvalidArgumentException format:@"-tableViewColumnIdentifiersForDragImage: must return at least one valid column identifier"];
         else
@@ -580,8 +583,8 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 - (BOOL)_shouldEditNextItemWhenEditingEnds;
 {
-    if ([_dataSource respondsToSelector:@selector(tableViewShouldEditNextItemWhenEditingEnds:)])
-        return [_dataSource tableViewShouldEditNextItemWhenEditingEnds:self];
+    if ([self.dataSource respondsToSelector:@selector(tableViewShouldEditNextItemWhenEditingEnds:)])
+        return [(id <OAExtendedTableViewDataSource>)self.dataSource tableViewShouldEditNextItemWhenEditingEnds:self];
     else
         return YES;
 }

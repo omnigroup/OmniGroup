@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,7 @@
     NSMutableArray *queue;
     NSMutableSet *queueSet;
     NSConditionLock *queueLock;
-    id <OFMessageQueueDelegate> weaklyRetainedDelegate;
+    NSObject <OFMessageQueueDelegate> *weaklyRetainedDelegate;
 
     NSLock *queueProcessorsLock;
     unsigned int idleProcessors;

@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,7 @@ unsigned int OIImageProcessorCheckTimeEveryNRows = 16;
 
 - initWithContent:(OWContent *)initialContent context:(id <OWProcessorContext>)aPipeline;
 {
-    if (![super initWithContent:initialContent context:aPipeline])
+    if (!(self = [super initWithContent:initialContent context:aPipeline]))
         return nil;
 
     // Hmmm, should images be in a "content" zone or in a "UI" zone?

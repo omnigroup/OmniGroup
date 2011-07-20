@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:../Tools/FixStringsFile/FixStringsFile.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OIF/OIF.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniAppKit/OmniAppKit.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniBase/OmniBase.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniFileStore/OmniFileStore.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniFoundation/OmniFoundation.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniInspector/OmniInspector.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniNetworking/OmniNetworking.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniQuartz/OmniQuartz.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniSoftwareUpdate/OmniSoftwareUpdate.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniSQLite/OmniSQLite.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniUI/iPad/OmniUI.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniUnzip/OmniUnzip.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OWF/OWF.xcodeproj">
+   </FileRef>
+</Workspace>

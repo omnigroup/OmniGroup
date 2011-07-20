@@ -261,7 +261,7 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     }
     CGContextRestoreGState(ctx);
 
-    OUIInspectorWellDrawBorderAndInnerShadow(ctx, bounds, YES/*rounded*/);
+    OUIInspectorWellDrawBorderAndInnerShadow(ctx, bounds, YES/*rounded*/, YES/*innerShadow*/);
 }
 
 - (void)layoutSubviews;

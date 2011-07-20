@@ -9,6 +9,9 @@
 
 #import <Foundation/NSString.h>
 #import <Foundation/NSBundle.h>
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#import <Foundation/NSGeometry.h> // For NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
+#endif
 
 #import <OmniBase/assertions.h>
 #import <OmniBase/objc.h>
@@ -93,6 +96,12 @@ extern void _OBFinishPortingLater(const char *function, const char *file, unsign
 extern NSString * const OBAbstractImplementation;
 extern NSString * const OBUnusedImplementation;
 
+#if defined(DEBUG)
+#define OB_DEBUG_LOG_CALLER() do { NSArray *syms = [NSThread callStackSymbols]; if ([syms count] > 1) NSLog(@"caller: %@", [syms objectAtIndex:1U]); } while (0)
+#else
+#define OB_DEBUG_LOG_CALLER()
+#endif
+    
 enum OBBacktraceBufferType {
     OBBacktraceBuffer_Unused = 0,      /* Indicates an unused slot */
     OBBacktraceBuffer_Allocated = 1,   /* Allocated but not filled slot */

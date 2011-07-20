@@ -21,9 +21,6 @@ RCS_ID("$Id$");
 
 #if 0
 
-extern const struct enumName {} directions[], granularities[];
-extern NSString *nameof(NSInteger v, const struct enumName *ns);
-
 #define DEBUGLOG(...) NSLog(__VA_ARGS__)
 
 #else
@@ -33,6 +30,16 @@ extern NSString *nameof(NSInteger v, const struct enumName *ns);
 #endif
 
 @implementation OUITextInputStringTokenizer
+
+#if 0 && defined(DEBUG_bungi)
+- (BOOL)respondsToSelector:(SEL)aSelector;
+{
+    BOOL rc = [super respondsToSelector:aSelector];
+    if (!rc)
+        NSLog(@"OUITextInputStringTokenizer respondsToSelector:@selector(%@) --> %d", NSStringFromSelector(aSelector), rc);
+    return rc;
+}
+#endif
 
 - (id)initWithTextInput:(UIResponder <UITextInput> *)textInput;
 {
@@ -70,7 +77,7 @@ extern NSString *nameof(NSInteger v, const struct enumName *ns);
         r = [super rangeEnclosingPosition:position withGranularity:granularity inDirection:direction];
     }
     
-    DEBUGLOG(@"rangeEnclosing(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), [r description]);
+    DEBUGLOG(@"rangeEnclosing(%@, %@, %@) -> %@", [position description], OUISelectionGranularityName(granularity), OUITextDirectionName(direction), [r description]);
     return r;
 }
 
@@ -96,13 +103,13 @@ extern NSString *nameof(NSInteger v, const struct enumName *ns);
         rc = [super isPosition:position atBoundary:granularity inDirection:direction];
     } while (0);
     
-    DEBUGLOG(@"positionAtBoundary(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), rc ? @"YES":@"NO");
+    DEBUGLOG(@"positionAtBoundary(%@, %@, %@) -> %@", [position description], OUISelectionGranularityName(granularity), OUITextDirectionName(direction), rc ? @"YES":@"NO");
     return rc;
 }
 
 - (UITextPosition *)positionFromPosition:(UITextPosition *)position toBoundary:(UITextGranularity)granularity inDirection:(UITextDirection)direction;   // Returns the next boundary position of a text unit of the given granularity in the given direction, or nil if there is no such position.
 {
-    DEBUGLOG(@"Computing positionFromTo(%@, %@, %@) ...", [position description], nameof(granularity, granularities), nameof(direction, directions));
+    DEBUGLOG(@"Computing positionFromTo(%@, %@, %@) ...", [position description], OUISelectionGranularityName(granularity), OUITextDirectionName(direction));
     UITextPosition *r;
     if (granularity != UITextGranularityLine) {
         r = [super positionFromPosition:position toBoundary:granularity inDirection:direction];
@@ -130,7 +137,7 @@ extern NSString *nameof(NSInteger v, const struct enumName *ns);
             }
         }
     }
-    DEBUGLOG(@"positionFromTo(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), [r description]);
+    DEBUGLOG(@"positionFromTo(%@, %@, %@) -> %@", [position description], OUISelectionGranularityName(granularity), OUITextDirectionName(direction), [r description]);
     return r;
 }
 
@@ -139,7 +146,7 @@ extern NSString *nameof(NSInteger v, const struct enumName *ns);
 {
     /* TODO: Line boundaries? */
     BOOL r = [super isPosition:position withinTextUnit:granularity inDirection:direction];
-    DEBUGLOG(@"positionWithinUnit(%@, %@, %@) -> %@", [position description], nameof(granularity, granularities), nameof(direction, directions), r? @"YES" : @"NO");
+    DEBUGLOG(@"positionWithinUnit(%@, %@, %@) -> %@", [position description], OUISelectionGranularityName(granularity), OUITextDirectionName(direction), r? @"YES" : @"NO");
     return r;
 }
 

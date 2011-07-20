@@ -29,7 +29,7 @@
 // Methods used in OUIStackSlicesInspector layout to determine how to space slices
 - (CGFloat)paddingToInspectorTop; // For the top slice
 - (CGFloat)paddingToInspectorBottom; // For the bottom slice
-- (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice;
+- (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice remainingHeight:(CGFloat)remainingHeight;
 - (CGFloat)paddingToInspectorSides; // Left/right
 
 - (void)sizeChanged;

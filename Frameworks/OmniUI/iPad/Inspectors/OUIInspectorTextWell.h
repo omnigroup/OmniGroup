@@ -9,7 +9,7 @@
 
 #import <OmniUI/OUIInspectorWell.h>
 
-@class OUITextLayout, OUIEditableFrame;
+@class OUITextLayout, OUIInspectorTextWellEditor;
 
 typedef enum {
     OUIInspectorTextWellStyleDefault, // Label and value text combined and centered. If the label has a '%@', then the value text replaces that range, otherwise they are concatenated.
@@ -24,6 +24,7 @@ typedef enum {
     // should we display the placeholder text while the editor is visible
     BOOL _shouldDisplayPlaceholderText;
     
+    UITextAlignment _textAlignment;
     NSString *_text;
     UIColor *_textColor;
     UIFont *_font;
@@ -41,7 +42,10 @@ typedef enum {
     UIFont *_labelFont;
     
     // While editing
-    OUIEditableFrame *_editor;
+    UIView *_editorContainerView;
+    OUIInspectorTextWellEditor *_editor;
+    CGFloat _editorXOffset;
+    
     UITextAutocapitalizationType _autocapitalizationType;
     UITextAutocorrectionType _autocorrectionType;
     UIKeyboardType _keyboardType;
@@ -61,6 +65,8 @@ typedef enum {
 @property(readonly) BOOL editing;
 @property(copy,nonatomic) NSString *editingText; // The current contents of the field editor. Only valid when editing is true.
 - (void)startEditing;
+
+@property(assign,nonatomic) UITextAlignment textAlignment; // Only useful for OUIInspectorTextWellStyleDefault
 
 @property(copy,nonatomic) NSString *text;
 @property(retain,nonatomic) UIColor *textColor;

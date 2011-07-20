@@ -10,12 +10,14 @@
 #import <OmniUI/OUIInspectorPane.h>
 
 @class OUIInspectorSlice;
+@protocol OUIScrollNotifier;
 
 @interface OUIStackedSlicesInspectorPane : OUIInspectorPane
 {
 @private
     NSArray *_availableSlices;
     NSArray *_slices;
+    id<OUIScrollNotifier> _scrollNotifier;
 }
 
 - (NSArray *)makeAvailableSlices; // For subclasses (though the delegate hook can also be used)

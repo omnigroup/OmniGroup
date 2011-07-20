@@ -33,7 +33,7 @@ RCS_ID("$Id$")
 
 - initWithDatabasePath:(NSString *)aPath error:(NSError **)outError;
 {
-    if ([super init] == nil)
+    if (!(self = [super init]))
         return nil;
     
     databasePath = [aPath retain];    

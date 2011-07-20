@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,6 +67,9 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
 {
     OBPRECONDITION(database);
     
+    if (!(self = [super init]))
+        return nil;
+
     // TODO: Register with the database so we can ensure there is only one editing context at a time (not supporting edit merging).
     _database = [database retain];
     

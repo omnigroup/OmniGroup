@@ -13,6 +13,12 @@
 
 RCS_ID("$Id$")
 
+#if 0 && defined(DEBUG)
+#define DEBUG_PREFERENCES(format, ...) NSLog(@"PREF: " format, ## __VA_ARGS__)
+#else
+#define DEBUG_PREFERENCES(format, ...)
+#endif
+
 @interface OUIChangePreferencesActionSheetDelegate : NSObject <UIActionSheetDelegate>
 {
 @private
@@ -68,14 +74,20 @@ RCS_ID("$Id$")
     OFMultiValueDictionary *parameters = [[_url query] parametersFromQueryString];
     NSLog(@"Changing preferences for URL <%@>: parameters=%@", [_url absoluteString], parameters);
     OFPreferenceWrapper *preferences = [OFPreferenceWrapper sharedPreferenceWrapper];
+    DEBUG_PREFERENCES(@"Using shared preferences object: %@", preferences);
     for (NSString *key in [parameters allKeys]) {
+        DEBUG_PREFERENCES(@"Setting preference for key %@: %@", key, [preferences preferenceForKey:key]);
         id defaultValue = [[preferences preferenceForKey:key] defaultObjectValue];
+        DEBUG_PREFERENCES(@"    with default value: %@", defaultValue);
         id oldValue = [preferences valueForKey:key];
+        DEBUG_PREFERENCES(@"    and old value: %@", oldValue);
         NSString *stringValue = [parameters lastObjectForKey:key];
+        DEBUG_PREFERENCES(@"    to string value: %@", stringValue);
         if ([stringValue isNull])
             stringValue = nil;
 
         id coercedValue = [OFPreference coerceStringValue:stringValue toTypeOfPropertyListValue:defaultValue];
+        DEBUG_PREFERENCES(@"    using coerced value: %@", coercedValue);
         if (coercedValue == nil) {
             NSLog(@"Unable to update %@: failed to convert '%@' to the same type as '%@' (%@)", key, stringValue, defaultValue, [defaultValue class]);
             return;

@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 #import <OmniAppKit/NSBundle-OAExtensions.h>
 #import <OmniAppKit/OAApplication.h>
 #import <OmniAppKit/OAWindowCascade.h>
+#import <OmniAppKit/OAVersion.h>
 
 #import "OIInspectableControllerProtocol.h"
 #import "OIInspectionSet.h"
@@ -310,6 +311,9 @@ static NSMutableArray *hiddenPanels = nil;
 - init
 {
     [super init];
+    
+    _applicationDidFinishRestoringWindows = NO;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidFinishRestoringWindowsNotification:) name:(NSAppKitVersionNumber >= OAAppKitVersionNumber10_7) ? @"NSApplicationDidFinishRestoringWindowsNotification" : NSApplicationDidFinishLaunchingNotification object:nil];
     
     inspectorControllers = [[NSMutableArray alloc] init];
 
@@ -1085,6 +1089,24 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     for (OIInspectorController *controller in inspectorControllers)
         if ([[controller inspector] respondsToSelector:@selector(loadConfiguration:)])
             [[controller inspector] loadConfiguration:[config objectForKey:[controller identifier]]];
+}
+
+- (void)_applicationDidFinishRestoringWindowsNotification:(NSNotification *)notification;
+{
+    _applicationDidFinishRestoringWindows = YES;
+    
+    [_groupsToShowAfterWindowRestoration makeObjectsPerformSelector:@selector(_showGroup)];
+    [_groupsToShowAfterWindowRestoration release];
+    _groupsToShowAfterWindowRestoration = nil;
+}
+
+@synthesize applicationDidFinishRestoringWindows = _applicationDidFinishRestoringWindows;
+
+- (void)addGroupToShowAfterWindowRestoration:(OIInspectorGroup *)group;
+{
+    if (!_groupsToShowAfterWindowRestoration)
+        _groupsToShowAfterWindowRestoration = [[NSMutableArray alloc] init];
+    [_groupsToShowAfterWindowRestoration addObject:group];
 }
 
 @end

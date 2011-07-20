@@ -50,7 +50,7 @@ static Class myClass;
     OFIObjectNSInvocation *otherInvocation;
 
     otherInvocation = anObject;
-    if (otherInvocation->isa != myClass)
+    if ([otherInvocation class] != myClass)
 	return NO;
     return object == otherInvocation->object && [nsInvocation isEqual:otherInvocation->nsInvocation];
 }

@@ -19,8 +19,7 @@ RCS_ID("$Id$");
 static id _commonInit(OUIColorAttributeInspectorWell *self)
 {
     self.style = OUIInspectorTextWellStyleSeparateLabelAndText;
-    self.showNavigationArrow = YES;
-    
+    [self setNavigationArrowRightView];
     return self;
 }
 

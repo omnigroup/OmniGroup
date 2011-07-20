@@ -38,9 +38,10 @@ static NSMutableDictionary *classToKernel = nil;
 	return;
     }
     
-    NSString *kernelSource = [[NSString alloc] initWithContentsOfFile:kernelSourcePath];
+    NSError *error = nil;
+    NSString *kernelSource = [[NSString alloc] initWithContentsOfFile:kernelSourcePath encoding:NSUTF8StringEncoding error:&error];
     if (!kernelSource) {
-	NSLog(@"Unable to load source for kernel for '%@' from '%@'", className, kernelSource);
+	NSLog(@"Unable to load source for kernel for \"%@\" from \"%@\": %@", className, kernelSource, [error toPropertyList]);
 	return;
     }
     
@@ -59,8 +60,14 @@ static NSMutableDictionary *classToKernel = nil;
 	className, kCIAttributeFilterDisplayName,
 	[NSArray arrayWithObject:@"OmniMagicWand Internal"], kCIAttributeFilterCategories, nil];
     
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+    id constructor = (id <CIFilterConstructor>)self; // OBFinishPorting: Can't declare that the class implements CIFilterConstructor (just +filterWithName:).
+#else
+    id constructor = self;
+#endif
+    
     [CIFilter registerFilterName:className  
-		     constructor:self
+		     constructor:constructor
 		 classAttributes:attributes];
 }
 

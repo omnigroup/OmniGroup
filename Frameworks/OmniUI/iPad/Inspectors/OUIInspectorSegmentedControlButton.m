@@ -128,7 +128,7 @@ static id _commonInit(OUIInspectorSegmentedControlButton *self)
 
 - (void)addTarget:(id)target action:(SEL)action;
 {
-    [super addTarget:target action:action forControlEvents:UIControlEventTouchDown];
+    [super addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
 }
 
 @synthesize dark = _dark;

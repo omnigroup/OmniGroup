@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,7 @@ static OFScheduler *animationScheduler;
 
 - (id)initWithAnimation:(OIAnimation *)anAnimation;
 {
-    if ([super initWithSourceContent:nil] == nil)
+    if (!(self = [super initWithSourceContent:nil]))
         return nil;
 
     OFWeakRetainConcreteImplementation_INIT;

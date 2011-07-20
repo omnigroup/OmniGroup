@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,7 +60,7 @@ typedef OFByte *OIImageGammaCorrectionTable;
 - (BOOL)hasSize;
 - (NSSize)size;
 - (void)setSize:(NSSize)newSize;
-- (CGImageRef)retainedCGImage;
+- (CGImageRef)retainedCGImage CF_RETURNS_RETAINED;
 - (NSImage *)nsImage;
 
 - (void)updateImage:(CGImageRef)anImage;

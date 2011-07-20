@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,7 @@ RCS_ID("$Id$")
 
 static struct OBBacktraceBuffer backtraces[OBBacktraceBufferTraceCount];
 static volatile int32_t next_available_backtrace;
-static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer();
+static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer(void);
 
 /* this is non-static so that CrashCatcher can find it even in a stripped build */
 const struct OBBacktraceBufferInfo OBBacktraceBufferInfo = {
@@ -61,7 +61,7 @@ void OBRecordBacktrace(const char *ctxt, unsigned int optype)
     buf->type = optype;
 }
 
-static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer()
+static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer(void)
 {
     int32_t slot;
     

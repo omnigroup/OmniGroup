@@ -229,7 +229,7 @@ static void _configureSwatchView(OUIColorSwatchPicker *self, UIView *swatchView,
 
 static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CGPoint *offset, CGSize size)
 {
-    OUIColorSwatch *swatch = [[OUIColorSwatch alloc] initWithColor:color];
+    OUIColorSwatch *swatch = [(OUIColorSwatch *)[OUIColorSwatch alloc] initWithColor:color];
     swatch.selected = _colorsMatch(color, self->_swatchSelectionColor);
     _configureSwatchView(self, swatch, offset, size);
     return swatch;

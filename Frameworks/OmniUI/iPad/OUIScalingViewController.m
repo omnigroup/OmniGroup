@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -240,6 +240,12 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 
 #pragma mark -
 #pragma mark UIScrollViewDelegate
+#pragma mark OUIScrollNotifier
+
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView;
+{
+    OUIPostScrollingWillBeginNotification(scrollView);
+}
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView;
 {
@@ -255,6 +261,9 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 {
     OUIScalingView *view = _scalingView(self);
     [view scrollPositionChanged];
+    if (!decelerate) {
+        OUIPostScrollingDidEndNotification(scrollView);
+    }
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView;      // called when scroll view grinds to a halt
@@ -263,6 +272,18 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     
     OUIScalingView *view = _scalingView(self);
     [view scrollPositionChanged];
+    OUIPostScrollingDidEndNotification(scrollView);
+}
+
+- (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView;
+{
+    OUIPostScrollingWillBeginNotification(scrollView); // only post if returning YES
+    return YES;
+}
+
+- (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView;
+{
+    OUIPostScrollingDidEndNotification(scrollView);
 }
 
 - (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(UIView *)view;
@@ -277,6 +298,8 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     // This automatically falls back to something sensible if the gesture recognizer is nil:
     [overlay centerAtPositionForGestureRecognizer:[self zoomingGestureRecognizer] inView:stableView];
     [overlay displayInView:stableView];
+    
+    OUIPostScrollingWillBeginNotification(scrollView);
 }
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView;
@@ -317,6 +340,7 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
         [self adjustScaleBy:scale]; // This will re-tile the view
 //    }
 //    [UIView commitAnimations];
+    OUIPostScrollingDidEndNotification(scrollView);
 }
 
 - (void)zoomAdjustmentAnimationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;

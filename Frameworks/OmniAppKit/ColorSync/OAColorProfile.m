@@ -126,7 +126,7 @@ static CMWorldRef grayColorWorld = NULL;
 }
 
 #if OA_USE_COLOR_MANAGER
-OSErr deviceListIterator(const CMDeviceInfo *deviceInfo, const NCMDeviceProfileInfo *profileInfo, void *refCon)
+static OSErr deviceListIterator(const CMDeviceInfo *deviceInfo, const NCMDeviceProfileInfo *profileInfo, void *refCon)
 {
     CMProfileRef cmProfile;
     CMAppleProfileHeader header;
@@ -232,7 +232,7 @@ OSErr deviceListIterator(const CMDeviceInfo *deviceInfo, const NCMDeviceProfileI
 }
 
 #if OA_USE_COLOR_MANAGER
-OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
+static OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
 {
     if (resetProfileLists) {
         [rgbProfileDictionary release];
@@ -244,7 +244,11 @@ OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
         resetProfileLists = NO;
     }
        
+    if (iterateData->uniCodeNameCount <= 1) // null terminated
+        return cmProfileError;
+    
     NSString *name = [NSString stringWithCharacters:iterateData->uniCodeName length:iterateData->uniCodeNameCount - 1]; // -1 because iterateData includes null on end
+
     CMProfileRef cmProfile = NULL;
     CMError err = CMOpenProfile((CMProfileRef *)&cmProfile, &iterateData->location);
     if (err != noErr) {
@@ -793,7 +797,8 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 - initDefaultDocumentProfile;
 {
 #if OA_USE_COLOR_MANAGER
-    [super init];
+    if (!(self = [super init]))
+        return nil;
     
     int errorCode = CMGetDefaultProfileBySpace(cmRGBData, (CMProfileRef *)&rgbProfile);
     if (rgbProfile == NULL || errorCode != noErr) {
@@ -831,10 +836,12 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 - initDefaultProofProfile;
 {
 #if OA_USE_COLOR_MANAGER
+    if (!(self = [super init]))
+        return nil;
+    
     CMProfileRef profile;
     CMAppleProfileHeader header;
     
-    [super init];
     int errorCode = CMGetDefaultProfileByUse(cmProofUse, &profile);
     if (profile == NULL || errorCode != noErr) {
         NSColorSpace *colorSpace = [NSColorSpace genericRGBColorSpace];
@@ -867,10 +874,12 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 - initDefaultDisplayProfile;
 {
 #if OA_USE_COLOR_MANAGER
+    if (!(self = [super init]))
+        return nil;
+    
     CMProfileRef profile;
     CMAppleProfileHeader header;
     
-    [super init];
     int errorCode = CMGetDefaultProfileByUse(cmDisplayUse, &profile);
     if (profile == NULL || errorCode != noErr) {
         NSColorSpace *colorSpace = [NSColorSpace genericRGBColorSpace];

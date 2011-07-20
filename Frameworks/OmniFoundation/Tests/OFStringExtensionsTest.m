@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -259,7 +259,7 @@ RCS_ID("$Id$");
     shouldBeEqual([@".Hi.there!" componentsSeparatedByCharactersFromSet:delimiterSet], ([NSArray arrayWithObjects:@"", @"Hi", @"there", @"", nil]));
 }
 
-NSString *simpleXMLEscape(NSString *str, NSRange *where, void *dummy)
+static NSString *simpleXMLEscape(NSString *str, NSRange *where, void *dummy)
 {
     OBASSERT(where->length == 1);
     unichar ch = [str characterAtIndex:where->location];
@@ -278,7 +278,7 @@ NSString *simpleXMLEscape(NSString *str, NSRange *where, void *dummy)
     }
 }
 
-NSString *unpair(NSString *str, NSRange *where, void *dummy)
+static NSString *unpair(NSString *str, NSRange *where, void *dummy)
 {
     NSRange another;
     

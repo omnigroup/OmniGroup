@@ -14,7 +14,11 @@
 
 extern const CGFloat OUITextLayoutUnlimitedSize;
 
+#define OUICTLineAttachmentAttributeName       CFSTR("OUICTLineAttachment")   // A CTLineRef
+#define OUICTLineAttachmentOffsetAttributeName CFSTR("OUICTLineAttachmentOffset")  // A NSValue<CGPoint>
+
 typedef BOOL (^OUITextLayoutSpanBackgroundFilter)(NSRange spanRange, CGColorRef spanColor);
+typedef void (^OUITextLayoutExtraBackgroundRangesAndColors)(CGContextRef ctx, void (^rangeAndColor)(NSRange range, CGColorRef color));
 
 typedef enum {
     // All are 'negative' so that options=0 means "do the normal thing"
@@ -34,17 +38,22 @@ typedef enum {
 
 + (NSDictionary *)defaultLinkTextAttributes;
 
++ (UIImage *)imageFromAttributedString:(NSAttributedString *)attString;
+
 - initWithAttributedString:(NSAttributedString *)attributedString constraints:(CGSize)constraints;
 
 @property(readonly,nonatomic) NSAttributedString *attributedString;
 @property(readonly,nonatomic) CGSize usedSize;
 
 - (void)drawInContext:(CGContextRef)ctx bounds:(CGRect)bounds options:(NSUInteger)options filter:(OUITextLayoutSpanBackgroundFilter)filter;
+- (void)drawInContext:(CGContextRef)ctx bounds:(CGRect)bounds options:(NSUInteger)options filter:(OUITextLayoutSpanBackgroundFilter)filter extraBackgroundRangesAndColors:(OUITextLayoutExtraBackgroundRangesAndColors)extraBackgroundRangesAndColors;
 
 - (void)drawInContext:(CGContextRef)ctx; // Draws at (0,0) in the current coordinate system. Text draws upside down normally and with the last line that the origin.
 - (void)drawFlippedInContext:(CGContextRef)ctx bounds:(CGRect)bounds; // Draws like you'd expect text to be drawn -- with the text stuck to the top of the given bounds and right side up.
 - (CGFloat)topTextInsetToCenterFirstLineAtY:(CGFloat)centerFirstLineAtY forEdgeInsets:(UIEdgeInsets)edgeInsets;
 - (CGFloat)firstLineAscent;
+
+- (CGRect)firstRectForRange:(NSRange)range;
 
 @end
 
@@ -57,9 +66,15 @@ extern CGFloat OUIFirstLineAscent(CTFrameRef frame);
 
 extern void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, CGPoint layoutOrigin);
 
-BOOL OUITextLayoutDrawRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFrame, NSAttributedString *immutableContent,
-                                     CGPoint layoutOrigin, CGFloat leftEdge, CGFloat rightEdge,
-                                     OUITextLayoutSpanBackgroundFilter filter);
+extern CGRect OUITextLayoutFirstRectForRange(CTFrameRef frame, NSRange characterRange);
+
+extern BOOL OUITextLayoutDrawRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFrame, NSAttributedString *immutableContent,
+                                            CGPoint layoutOrigin, CGFloat leftEdge, CGFloat rightEdge,
+                                            OUITextLayoutSpanBackgroundFilter filter);
+
+extern void OUITextLayoutDrawExtraRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFrame, CGPoint layoutOrigin, CGFloat leftEdge, CGFloat rightEdge,
+                                                 OUITextLayoutExtraBackgroundRangesAndColors extraBackgroundRangesAndColors);
+
 extern void OUITextLayoutFixupParagraphStyles(NSMutableAttributedString *content);
 
 extern CTFontRef OUIGlobalDefaultFont(void);

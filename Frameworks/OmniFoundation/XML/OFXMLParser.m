@@ -338,7 +338,7 @@ static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
         }
     } else {
         //NSLog(@"_addString:%@", str);
-        if (state->targetImp.addWhitespace)
+        if (state->targetImp.addString)
             state->targetImp.addString(state->target, @selector(parser:addWhitespace:), parser, str);
     }
     

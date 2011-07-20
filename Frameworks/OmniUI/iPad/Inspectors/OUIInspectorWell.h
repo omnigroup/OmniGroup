@@ -12,31 +12,36 @@
 
 extern void OUIInspectorWellAddPath(CGContextRef ctx, CGRect frame, BOOL rounded);
 extern void OUIInspectorWellDrawOuterShadow(CGContextRef ctx, CGRect frame, BOOL rounded);
-extern void OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect frame, BOOL rounded);
+extern void OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect frame, BOOL rounded, BOOL innerShadow);
 extern CGRect OUIInspectorWellInnerRect(CGRect frame);
 extern void OUIInspectorWellStrokePathWithBorderColor(CGContextRef ctx);
 
+typedef enum {
+    OUIInspectorWellBackgroundTypeNormal, // Value holding well
+    OUIInspectorWellBackgroundTypeButton,
+} OUIInspectorWellBackgroundType;
+
+
 // This just draws the background border/gradient with highlighting, font and color support methods for subclasses.
 @interface OUIInspectorWell : UIControl
-{
-@private    
-    BOOL _rounded;
-    BOOL _showNavigationArrow;
-}
 
 + (CGFloat)fontSize;
 + (UIFont *)italicFormatFont;
 + (UIColor *)textColor;
 + (UIColor *)highlightedTextColor;
++ (UIImage *)navigationArrowImage;
 
 @property(assign,nonatomic) BOOL rounded;
 @property(readonly,nonatomic) BOOL shouldDrawHighlighted;
+@property(nonatomic) OUIInspectorWellBackgroundType backgroundType;
+
+@property(nonatomic,retain) UIView *leftView;
+@property(nonatomic,retain) UIView *rightView;
+
 @property(readonly,nonatomic) CGRect contentsRect; // Insets from the edges and avoids the navigation arrow if present.
 
-- (UIImage *)navigationArrowImage;
-@property(assign,nonatomic) BOOL showNavigationArrow;
-
-- (void)setNavigationTarget:(id)target action:(SEL)action; // Convenience to add a target and turn on the navigation arrow
+- (void)setNavigationArrowRightView;
+- (void)setNavigationTarget:(id)target action:(SEL)action; // Convenience to add a target and make a UIImageView as the rightView with +navigationArrowImage
 
 // Subclassing points
 - (UIColor *)textColor; // Returns the text color to use for the current state (defaulting to the class +textColor or +highlightedTextColor)

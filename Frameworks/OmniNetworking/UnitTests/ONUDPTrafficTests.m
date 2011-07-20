@@ -1,4 +1,4 @@
-// Copyright 2003-2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2006, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,9 +44,9 @@ const char *s4 = "Would you like another packet? It is WAFFER THIN!";
 
 - (void)setUp;
 {
-    huey = [[ONUDPSocket socket] retain];
-    dewie = [[ONUDPSocket socket] retain];
-    louie = [[ONUDPSocket socket] retain];
+    huey = [(ONUDPSocket *)[ONUDPSocket socket] retain];
+    dewie = [(ONUDPSocket *)[ONUDPSocket socket] retain];
+    louie = [(ONUDPSocket *)[ONUDPSocket socket] retain];
 
     if (addressFamily != AF_UNSPEC) {
         [huey setAddressFamily:addressFamily];

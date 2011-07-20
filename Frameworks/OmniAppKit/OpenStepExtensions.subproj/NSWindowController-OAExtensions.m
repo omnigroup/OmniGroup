@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -336,6 +336,7 @@ static NSWindow *RootlessProgressWindow = nil;
         NSRect contentRect = NSMakeRect(0, 0, 200, 100);
         NSWindow *window = [[[NSPanel alloc] initWithContentRect:contentRect styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO] autorelease];
         [window setReleasedWhenClosed:NO]; // We'll manage this manually
+        [window setLevel:NSFloatingWindowLevel]; // Float above normal windows. This also triggers NSWindowCollectionBehaviorTransient on 10.6.
         
         if ([window respondsToSelector:@selector(setCollectionBehavior:)])
             [window setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
@@ -443,7 +444,7 @@ static NSWindow *RootlessProgressWindow = nil;
     if (parentWindow)
         [parentWindow removeChildWindow:operationWindow];
     [operationWindow orderOut:nil];
-    if (operationWindow == RootlessProgressWindow) {
+    if (parentWindow == RootlessProgressWindow) {
         [RootlessProgressWindow release];
         RootlessProgressWindow = nil;
     }

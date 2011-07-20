@@ -107,7 +107,8 @@ static NSMutableDictionary *helpersByExtension = nil;
 	
 	toolbar = [[toolbarClass alloc] initWithIdentifier:[self toolbarIdentifier]];
 	[toolbar setAllowsUserCustomization:[self shouldAllowUserToolbarCustomization]];
-	
+        [toolbar setDisplayMode:NSToolbarDisplayModeIconOnly];
+
 	NSDictionary *config = nil;
 	if ([self shouldAutosaveToolbarConfiguration])
 	    [toolbar setAutosavesConfiguration:YES];
@@ -167,7 +168,7 @@ static NSMutableDictionary *helpersByExtension = nil;
 - (NSDictionary *)toolbarConfigurationDictionary;
 {
     // This is called if -shouldAutosaveConfiguration is NO (i.e., the configuration isn't in user defaults, so it has to come from somewhere)
-    OBRequestConcreteImplementation(isa, _cmd);
+    OBRequestConcreteImplementation(self, _cmd);
     return nil;
 }
 

@@ -91,7 +91,7 @@ action got_number {
     
     /* If we have a full set of operands, perform the operation */
     if (operands_seen == operands_expected) {
-        if (!do_operation(&svg, operands, performer, ctxt))
+        if (!svg_path_operation(&svg, operands, performer, ctxt))
             return false;
         operands_seen = 0;
     }
@@ -125,7 +125,7 @@ action got_parameter {
     
     /* If we have a full set of operands, perform the operation */
     if (operands_seen == operands_expected) {
-        if (!do_operation(&svg, operands, performer, ctxt))
+        if (!svg_path_operation(&svg, operands, performer, ctxt))
             return false;
         operands_seen = 0;
     }
@@ -133,7 +133,7 @@ action got_parameter {
 
 }%%
 
-static bool do_operation(struct svg_state *svg, double *operands, perform_op_fun performer, void *ctxt)
+static bool svg_path_operation(struct svg_state *svg, double *operands, perform_op_fun performer, void *ctxt)
 {
     /* If we have a full set of operands, perform the operation */
     if (1) {
@@ -467,7 +467,24 @@ static bool applyToCGPath(enum SVG_condensed_op op, const double *operands, void
         case SVGc_lineto:     CGPathAddLineToPoint(p, NULL, (CGFloat)operands[0], (CGFloat)operands[1]); break;
         case SVGc_cubic:      CGPathAddCurveToPoint(p, NULL, (CGFloat)operands[0], (CGFloat)operands[1], (CGFloat)operands[2], (CGFloat)operands[3], (CGFloat)operands[4], (CGFloat)operands[5]); break;
         case SVGc_quadratic:  CGPathAddQuadCurveToPoint(p, NULL, (CGFloat)operands[0], (CGFloat)operands[1], (CGFloat)operands[2], (CGFloat)operands[3]); break;
-        case SVGc_arc:        assert(0); /* need to implement this */ break;
+        case SVGc_arc:
+        {
+            struct OQEllipseParameters arc;
+            OQComputeEllipseParameters((CGFloat)(operands[5] - operands[7]),
+                                       (CGFloat)(operands[6] - operands[8]),
+                                       (CGFloat)(operands[0]), (CGFloat)(operands[1]),  (CGFloat)(operands[2]),
+                                       operands[3]?YES:NO, operands[4]?YES:NO,
+                                       &arc);
+            if (!arc.numSegments) return false;
+            CGFloat x0 = (CGFloat)operands[7];
+            CGFloat y0 = (CGFloat)operands[8];
+            for (unsigned int i = 0; i < arc.numSegments; i++)
+                CGPathAddCurveToPoint(p, NULL,
+                                      arc.points[3*i  ].x + x0, arc.points[3*i  ].x + y0,
+                                      arc.points[3*i+1].x + x0, arc.points[3*i+1].x + y0,
+                                      arc.points[3*i+2].x + x0, arc.points[3*i+2].x + y0);
+            break;
+        }
         default:              return false;
     }
     return true;
@@ -482,7 +499,24 @@ static bool applyToCGContext(enum SVG_condensed_op op, const double *operands, v
         case SVGc_lineto:     CGContextAddLineToPoint(cg, (CGFloat)operands[0], (CGFloat)operands[1]); break;
         case SVGc_cubic:      CGContextAddCurveToPoint(cg, (CGFloat)operands[0], (CGFloat)operands[1], (CGFloat)operands[2], (CGFloat)operands[3], (CGFloat)operands[4], (CGFloat)operands[5]); break;
         case SVGc_quadratic:  CGContextAddQuadCurveToPoint(cg, (CGFloat)operands[0], (CGFloat)operands[1], (CGFloat)operands[2], (CGFloat)operands[3]); break;
-        case SVGc_arc:        assert(0); /* need to implement this */ break;
+        case SVGc_arc:
+        {
+            struct OQEllipseParameters arc;
+            OQComputeEllipseParameters((CGFloat)(operands[5] - operands[7]),
+                                       (CGFloat)(operands[6] - operands[8]),
+                                       (CGFloat)(operands[0]), (CGFloat)(operands[1]),  (CGFloat)(operands[2]),
+                                       operands[3]?YES:NO, operands[4]?YES:NO,
+                                       &arc);
+            if (!arc.numSegments) return false;
+            CGFloat x0 = (CGFloat)operands[7];
+            CGFloat y0 = (CGFloat)operands[8];
+            for (unsigned int i = 0; i < arc.numSegments; i++)
+                CGContextAddCurveToPoint(cg,
+                                         arc.points[3*i  ].x + x0, arc.points[3*i  ].x + y0,
+                                         arc.points[3*i+1].x + x0, arc.points[3*i+1].x + y0,
+                                         arc.points[3*i+2].x + x0, arc.points[3*i+2].x + y0);
+            break;
+        }
         default:              return false;
     }
     return true;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,7 @@
 RCS_ID("$Id$")
 
 
-static NSLock *domainLock;
+static NSRecursiveLock *domainLock;
 static NSMutableDictionary *domainsByName;
 static OFScheduledEvent *saveEvent;
 
@@ -1032,6 +1032,9 @@ static NSString *OWCookiesElementName = @"OmniWebCookies";
 
 - (id)initWithDomain:(NSString *)domain;
 {
+    if (!(self = [super init]))
+        return nil;
+
     _name = [domain copy];
     _nameDomain = [[OWURL domainForHostname:_name] retain];
     _cookiePaths = [[NSMutableArray alloc] init];

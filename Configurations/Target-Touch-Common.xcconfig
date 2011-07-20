@@ -8,11 +8,9 @@ DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 // We let Xcode strip -- presumably for signing
 COPY_PHASE_STRIP = YES
 
-// Use the latest iOS (4.2 currently), for both arm6 and arm7 for all projects now. Only set the architectures if we *are* using the device SDK. If we've picked the simulator, leave it alone.
+// Use the latest iOS SDK with a specific deployment target
 SDKROOT = iphoneos
-
-// By default, try to load on anything 3.2 or greater. Individual apps may override this.
-IPHONEOS_DEPLOYMENT_TARGET = 3.2
+IPHONEOS_DEPLOYMENT_TARGET = 4.2
 
 // iPhone OS 3.2+ only supports armv7. If we have a target that wants armv6 it'll already need to override the SDK to be 3.1.
 ARCHS[sdk=iphoneos*] = armv7

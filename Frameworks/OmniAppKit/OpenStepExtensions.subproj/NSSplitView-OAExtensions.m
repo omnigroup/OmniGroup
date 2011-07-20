@@ -64,6 +64,8 @@ RCS_ID("$Id$")
 {
     OBASSERT([resizingSubview superview] == self);
     
+    BOOL shouldAnimate = [[self window] isVisible];
+    
     NSRect currentFrame, startingFrame, endingFrame;
     currentFrame = [resizingSubview frame];
     
@@ -82,7 +84,7 @@ RCS_ID("$Id$")
     id <NSAnimationDelegate> delegate = (id)[self delegate]; // Let our delegate implement some of the animation delegate methods if it wants
     [animation setDelegate:delegate];
     [animation setAnimationBlockingMode:NSAnimationBlocking];
-    [animation setDuration:0.25];
+    [animation setDuration:shouldAnimate ? 0.25 : 0.0];
     [animation startAnimation];
     [animation release];
 }

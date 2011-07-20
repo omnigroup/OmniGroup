@@ -11,7 +11,11 @@
 #import <Security/Security.h>
 #import <OmniFoundation/OFDigestUtilities.h>
 
-#define OF_ENABLE_CSSM 1
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+    #define OF_ENABLE_CSSM 0
+#else
+    #define OF_ENABLE_CSSM 1
+#endif
 
 /*
  This file has a handful of trivial data-holders for CSSM / CDSA objects: service providers, keys, and cryptographic contexts.

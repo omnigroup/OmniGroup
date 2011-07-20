@@ -68,10 +68,10 @@
 
 - (id)deepMutableCopy NS_RETURNS_RETAINED;
 
-- (NSArray *) copyKeys;
-- (NSMutableArray *) mutableCopyKeys;
+- (NSArray *)copyKeys;
+- (NSMutableArray *)mutableCopyKeys;
 
-- (NSArray *) copyKeySet;
-- (NSMutableArray *) mutableCopyKeySet;
+- (NSSet *)copyKeySet;
+- (NSMutableSet *)mutableCopyKeySet;
 
 @end

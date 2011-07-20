@@ -24,6 +24,8 @@ RCS_ID("$Id$")
 {
     if ([self status] == OFControllerPostponingTerminateStatus)
         [NSApp replyToApplicationShouldTerminate:isReadyToTerminate];
+    
+    [super gotPostponedTerminateResult:isReadyToTerminate];
 }
 
 #pragma mark -
@@ -55,13 +57,18 @@ RCS_ID("$Id$")
     NSString *appName = [infoDictionary objectForKey:@"CFBundleName"];
     NSString *appVersion = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
     NSString *buildVersion = [infoDictionary objectForKey:@"CFBundleVersion"];
+    NSString *buildVersionSuffix = @"";
     NSString *buildRevision = [infoDictionary objectForKey:@"OABuildRevision"]; // For a possible svn revision if you aren't including that in CFBundleVersion
     
     if (![NSString isEmptyString:buildRevision])
         buildVersion = [NSString stringWithFormat:@"%@ r%@", buildVersion, buildRevision];
+
+#ifdef MAC_APP_STORE
+    buildVersionSuffix = @" Mac App Store";
+#endif
     
     *feedbackAddress = [[NSUserDefaults standardUserDefaults] stringForKey:@"FeedbackAddress"];
-    *subjectLine = [NSString stringWithFormat:@"%@ %@ (v%@) Feedback", appName, appVersion, buildVersion];
+    *subjectLine = [NSString stringWithFormat:@"%@ %@ (v%@%@) Feedback", appName, appVersion, buildVersion, buildVersionSuffix];
 }
 
 - (void)sendFeedbackEmailTo:(NSString *)feedbackAddress subject:(NSString *)subjectLine body:(NSString *)body;

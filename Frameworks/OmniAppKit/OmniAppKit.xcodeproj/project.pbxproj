@@ -62,6 +62,8 @@
 		34A201230FF0454400B699DB /* NSAlert-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2011E0FF0453800B699DB /* NSAlert-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */; };
 		34AF4BE20C99963F003DEC1B /* OAColorArchivingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AF4BE10C99963F003DEC1B /* OAColorArchivingTests.m */; };
+		34C21B3013BCF386008D756C /* OAFindPattern.h in Headers */ = {isa = PBXBuildFile; fileRef = 137CBE6F011899AF7F000001 /* OAFindPattern.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34C21B3213BCF38C008D756C /* OAFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE70011899AF7F000001 /* OAFindPattern.m */; };
 		34D04A39110E0270007399B9 /* OAUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D04A38110E0270007399B9 /* OAUtilities.m */; };
 		34DDE3A7135F65C70099DCCE /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; };
 		34DDE3A8135F65D50099DCCE /* NSAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F36FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2209,6 +2211,7 @@
 				3451254D12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */,
 				34DDE3A8135F65D50099DCCE /* NSAttributedString-OAExtensions.h in Headers */,
 				34275D1E13981621003F28F5 /* OAFeatures.h in Headers */,
+				34C21B3013BCF386008D756C /* OAFindPattern.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2741,6 +2744,7 @@
 				344B6E6212A4D53000D876CD /* OATextAttachment.m in Sources */,
 				3451254E12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */,
 				34DDE3A7135F65C70099DCCE /* NSAttributedString-OAExtensions.m in Sources */,
+				34C21B3213BCF38C008D756C /* OAFindPattern.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

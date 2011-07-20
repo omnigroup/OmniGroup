@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -176,7 +176,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
 
 - (void)drawRect:(NSRect)rect;
 {
-    rect = _bounds;
+    rect = self.bounds;
     [[NSColor clearColor] set];
     NSRectFill(rect);
     

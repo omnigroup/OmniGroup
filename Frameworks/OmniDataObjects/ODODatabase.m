@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -140,6 +140,9 @@ static BOOL ODOVacuumOnDisconnect = NO;
 {
     OBPRECONDITION(model);
     
+    if (!(self = [super init]))
+        return nil;
+
     _model = [model retain];
     _cachedStatements = [[NSMutableDictionary alloc] init];
     
@@ -727,7 +730,8 @@ static void _committedPendingMetadataChangesApplier(const void *key, const void 
         return nil;
     
     [self _setCachedStatement:query forKey:rel];
-    return query;
+    
+    return [query autorelease];
 }
 
 @end

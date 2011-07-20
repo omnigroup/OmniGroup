@@ -864,6 +864,9 @@
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniDataObjects" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
@@ -1253,7 +1256,6 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				PRODUCT_NAME = "Build SVNVersion.h";
 				ZERO_LINK = NO;
 			};
@@ -1273,7 +1275,6 @@
 					"-framework",
 					AppKit,
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = xcd2odo;
 			};
 			name = Debug;
@@ -1291,7 +1292,6 @@
 					"-framework",
 					AppKit,
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = xcd2odo;
 			};
 			name = Release;
@@ -1328,7 +1328,6 @@
 					"-framework",
 					AppKit,
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = xcd2odo;
 			};
 			name = Coverage;

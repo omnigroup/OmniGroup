@@ -7,39 +7,32 @@
 //
 // $Id$
 
-#import <UIKit/UIViewController.h>
+#import "OUISyncDownloader.h"
 #import <OmniFileStore/OFSFileManagerAsynchronousOperationTarget.h>
 
-@class OFFileWrapper;
-@class OFSFileInfo;
 @protocol OFSAsynchronousOperation;
 
-extern NSString * const OUIWebDAVDownloadFinishedNotification;
-extern NSString * const OUIWebDAVDownloadURL;
-extern NSString * const OUIWebDAVDownloadCanceledNotification;
+@class OFSFIleInfo;
 
-@interface OUIWebDAVDownloader : UIViewController <OFSFileManagerAsynchronousOperationTarget>
+@interface OUIWebDAVSyncDownloader : OUISyncDownloader <OFSFileManagerAsynchronousOperationTarget>
 {
 @private
-    IBOutlet UIProgressView *progressView;
-    IBOutlet UIButton *cancelButton;
-    
+    id <OFSAsynchronousOperation> _downloadOperation;
     NSOutputStream *_downloadStream;
+    NSMutableArray *_uploadOperations;
+    
     OFSFileInfo *_file;
     NSURL *_baseURL;
     NSMutableArray *_fileQueue;
     
-    id <OFSAsynchronousOperation> _downloadOperation;
-    NSMutableArray *_uploadOperations;
-    NSURL *_uploadTemporaryURL, *_uploadFinalURL;
-    
     off_t _totalDataLength;
     off_t _totalUploadedBytes;
+    
+    NSURL *_uploadTemporaryURL, *_uploadFinalURL;
 }
 
-- (IBAction)cancelDownload:(id)sender;
 - (void)download:(OFSFileInfo *)aFile;
+- (IBAction)cancelDownload:(id)sender;
 - (void)uploadFileWrapper:(OFFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
-- (void)uploadData:(NSData *)data toURL:(NSURL *)targetURL;
 
 @end

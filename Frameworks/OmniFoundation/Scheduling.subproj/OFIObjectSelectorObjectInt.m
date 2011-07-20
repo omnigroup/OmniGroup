@@ -54,7 +54,7 @@ RCS_ID("$Id$")
     OFIObjectSelectorObjectInt *otherObject;
 
     otherObject = anObject;
-    if (object_getClass(otherObject) != isa)
+    if (object_getClass(otherObject) != object_getClass(self))
         return NO;
     return object == otherObject->object && selector == otherObject->selector && withObject == otherObject->withObject && theInt == otherObject->theInt;
 }

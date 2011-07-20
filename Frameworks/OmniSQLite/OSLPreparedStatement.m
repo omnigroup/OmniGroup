@@ -23,7 +23,9 @@ RCS_ID("$Id$")
 
 - initWithSQL:(NSString *)someSQL statement:(void *)preparedStatement databaseController:(OSLDatabaseController *)aDatabaseController;
 {
-    [super init];
+    if (!(self = [super init]))
+        return nil;
+    
     sql = [someSQL retain];
     statement = preparedStatement;
     databaseController = [aDatabaseController retain];

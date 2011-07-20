@@ -32,6 +32,7 @@ static const struct {
     { 0, nil }
 };
 
+#if OF_ENABLE_CSSM
 /* The original motivation for OFStringFromCSSMReturn() was that we had to weak-link both cssmErrorString() (for 10.4) and SecCopyErrorMessageString() (for later OS revisions), but nw it's mostly a cover on SecCopyErrorMessageString(). However, it's still handy to have a guaranteed non-nil result that's at least minimally informative. */
 NSString *OFStringFromCSSMReturn(CSSM_RETURN code)
 {
@@ -76,7 +77,6 @@ BOOL OFErrorFromCSSMReturn(NSError **outError, CSSM_RETURN errcode, NSString *fu
     return NO; // Useless, but makes clang-analyze happy
 }
 
-#if OF_ENABLE_CSSM
 static inline NSString *NSStringFromCSSMGUID(CSSM_GUID uid)
 {
     /* Note that despite the presence of ints and shorts in the CSSM_GUID structure, it's actually a byte sequence: the ordering within Data1, for example, does not change depending on the host's byte order. */

@@ -108,7 +108,7 @@ static Class myClass;
     otherEvent = anObject;
     if (otherEvent == self)
 	return YES;
-    if (otherEvent->isa != myClass)
+    if (object_getClass(otherEvent) != myClass)
 	return NO;
     return [invocation isEqual:otherEvent->invocation] && [date isEqual:otherEvent->date];
 }

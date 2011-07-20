@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,7 +39,7 @@ static OFXMLWhitespaceBehavior *IgnoreAllWhitespace(void)
 #define SAVE_AND_COMPARE(expectedString) \
 do { \
     NSError *error = nil; \
-    NSString *pattern = [NSString stringWithFormat:@"%@-%@.xml", NSStringFromClass(isa), NSStringFromSelector(_cmd)]; \
+    NSString *pattern = [NSString stringWithFormat:@"%@-%@.xml", NSStringFromClass([self class]), NSStringFromSelector(_cmd)]; \
     NSString *fileName = [[NSFileManager defaultManager] scratchFilenameNamed:pattern error:&error]; \
     should(fileName != nil); \
     if (!fileName) { \

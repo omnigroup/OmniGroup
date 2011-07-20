@@ -194,7 +194,7 @@ The implementation does not currently assume anything about the range of the enu
     if (anotherEnumeration_ == self)
         return YES;
     
-    if (![anotherEnumeration_ isMemberOfClass:isa])
+    if (![anotherEnumeration_ isMemberOfClass:[self class]])
         return NO;
     
     OFEnumNameTable *anotherEnumeration = anotherEnumeration_;

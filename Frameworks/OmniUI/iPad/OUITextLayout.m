@@ -23,7 +23,7 @@
 
 RCS_ID("$Id$");
 
-#ifdef DEBUG_kc0
+#if 0 && defined(DEBUG)
     #define DEBUG_TEXT(format, ...) NSLog(@"TEXT: " format, ## __VA_ARGS__)
 #else
     #define DEBUG_TEXT(format, ...)
@@ -48,6 +48,30 @@ const CGFloat OUITextLayoutUnlimitedSize = 100000;
                       [NSNumber numberWithUnsignedInt:kCTUnderlineStyleSingle], OAUnderlineStyleAttributeName, nil];
     
     return attributes;
+}
+
++ (UIImage *)imageFromAttributedString:(NSAttributedString *)attString;
+{
+    // Apply superscript and other fix-ups
+    NSAttributedString *transformedString = OUICreateTransformedAttributedString(attString, nil);
+    if (!transformedString)
+        transformedString = [attString copy];
+    
+    // Create an OUITextLayout
+    OUITextLayout *textLayout = [[OUITextLayout alloc] initWithAttributedString:transformedString constraints:CGSizeMake(300, 300)];
+    CGRect drawingBounds = (CGRect){ { 0, 0}, textLayout.usedSize };
+    
+    // Draw into an image context
+    UIGraphicsBeginImageContextWithOptions(drawingBounds.size, NO, 0.0);
+    
+    [textLayout drawFlippedInContext:UIGraphicsGetCurrentContext() bounds:drawingBounds];
+    
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    [textLayout release];
+    [transformedString release];
+    return image;
 }
 
 CTFontRef OUIGlobalDefaultFont(void)
@@ -114,7 +138,7 @@ CTFontRef OUIGlobalDefaultFont(void)
     
     if (!widthIsConstrained) {
         path = CGPathCreateMutable();
-        CGPathAddRect(path, NULL, CGRectMake(0, 0, _usedSize.size.width, _layoutSize.height));
+        CGPathAddRect(path, NULL, CGRectMake(0, 0, ceil(_usedSize.size.width), _layoutSize.height));
         
         CFRelease(_frame);
         _frame = CTFramesetterCreateFrame(framesetter, (CFRange){0, 0}, path, NULL);
@@ -142,8 +166,13 @@ CTFontRef OUIGlobalDefaultFont(void)
     return _usedSize.size;
 }
 
-// The size of the bounds only matters if flipping is specified; we don't clip.
 - (void)drawInContext:(CGContextRef)ctx bounds:(CGRect)bounds options:(NSUInteger)options filter:(OUITextLayoutSpanBackgroundFilter)filter;
+{
+    [self drawInContext:ctx bounds:bounds options:options filter:filter extraBackgroundRangesAndColors:nil];
+}
+                                                                                                                                                                                    
+// The size of the bounds only matters if flipping is specified; we don't clip.
+- (void)drawInContext:(CGContextRef)ctx bounds:(CGRect)bounds options:(NSUInteger)options filter:(OUITextLayoutSpanBackgroundFilter)filter extraBackgroundRangesAndColors:(OUITextLayoutExtraBackgroundRangesAndColors)extraBackgroundRangesAndColors;
 {
     DEBUG_TEXT(@"  textLayout bounds = %@", NSStringFromCGRect(bounds));
     DEBUG_TEXT(@"  device = %@", NSStringFromCGPoint(CGContextConvertPointToDeviceSpace(ctx, CGPointZero)));
@@ -179,6 +208,9 @@ CTFontRef OUIGlobalDefaultFont(void)
     if ((options & OUITextLayoutDisableRunBackgrounds) == 0)
         OUITextLayoutDrawRunBackgrounds(ctx, _frame, _attributedString, layoutOrigin, CGRectGetMinX(bounds), CGRectGetMaxX(bounds), filter);
     
+    if (extraBackgroundRangesAndColors)
+        OUITextLayoutDrawExtraRunBackgrounds(ctx, _frame, layoutOrigin, CGRectGetMinX(bounds), CGRectGetMaxX(bounds), extraBackgroundRangesAndColors);
+        
     if ((options & OUITextLayoutDisableGlyphs) == 0)
         OUITextLayoutDrawFrame(ctx, _frame, bounds, layoutOrigin);
 
@@ -209,6 +241,11 @@ CTFontRef OUIGlobalDefaultFont(void)
 - (CGFloat)firstLineAscent;
 {
     return OUIFirstLineAscent(_frame);
+}
+
+- (CGRect)firstRectForRange:(NSRange)range;
+{
+    return OUITextLayoutFirstRectForRange(_frame, range);
 }
 
 #if 0
@@ -355,6 +392,8 @@ void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, C
         while (runIndex--) {
             CTRunRef run = CFArrayGetValueAtIndex(runs, runIndex);
             CFRange range = CTRunGetStringRange(run);
+            CGPoint lineOrigin[1];
+            CGPoint runPosition[1];
 
             DEBUG_TEXT(@"line %p run %p range %ld/%ld", line, run, range.location, range.length);
             
@@ -366,12 +405,19 @@ void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, C
                 continue;
             
             CTRunDelegateRef runDelegate = CFDictionaryGetValue(attributes, kCTRunDelegateAttributeName);
+            if (!runDelegate)
+                continue;
             
-            if (runDelegate) {
+            CTFrameGetLineOrigins(frame, CFRangeMake(lineIndex, 1), lineOrigin);
+            CTRunGetPositions(run, (CFRange){0, 1}, runPosition);
+            
+            const void *attachmentAttribute;
+            if ((attachmentAttribute = CFDictionaryGetValue(attributes, OAAttachmentAttributeName)) != NULL) {
                 DEBUG_TEXT(@"  runDelegate %p", runDelegate);
                 DEBUG_TEXT(@"  attributes %@", attributes);
 
-                OATextAttachment *attachment = (OATextAttachment *)CTRunDelegateGetRefCon(runDelegate);
+                OATextAttachment *attachment = (OATextAttachment *)attachmentAttribute;
+                OBASSERT(attachmentAttribute == CTRunDelegateGetRefCon(runDelegate));
                 OBASSERT([attachment isKindOfClass:[OATextAttachment class]]);
                 
                 OATextAttachmentCell *cell = attachment.attachmentCell;
@@ -383,17 +429,10 @@ void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, C
                 double width = CTRunGetTypographicBounds(run, CFRangeMake(0, 0), &ascent, &descent, &leading);
                 DEBUG_TEXT(@"    typo width:%f ascent:%f descent:%f leading:%f", width, ascent, descent, leading);
 
-                const CGPoint *positions = CTRunGetPositionsPtr(run);
-                DEBUG_TEXT(@"    glyph position %@", NSStringFromCGPoint(positions[0]));
-
-                CGPoint lineOrigin;
-                CTFrameGetLineOrigins(frame, CFRangeMake(lineIndex, 1), &lineOrigin);
-                DEBUG_TEXT(@"    lineOrigin %@", NSStringFromCGPoint(lineOrigin));
-		
 		CGPoint baselineOffset = [cell cellBaselineOffset];
                 
                 // The glyph positions returned from CTRunGetPositions() are relative to the line origin.
-                CGRect cellFrame = CGRectMake(lineOrigin.x + positions[0].x + baselineOffset.x, lineOrigin.y + positions[0].y + baselineOffset.y, width, ascent + descent);
+                CGRect cellFrame = CGRectMake(lineOrigin[0].x + runPosition[0].x + baselineOffset.x, lineOrigin[0].y + runPosition[0].y + baselineOffset.y, width, ascent + descent);
                 DEBUG_TEXT(@"    cellFrame %@", NSStringFromCGRect(cellFrame));
 
                 // Give the attachment a pixel-aligned rect, lest we get a blurry image. <bug:///71370> (We are drawing some image attachments blurry; maybe not positioned on pixel edges?)
@@ -410,6 +449,26 @@ void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, C
 
                 UIGraphicsPushContext(ctx);
                 [cell drawWithFrame:cellFrame inView:nil];
+                UIGraphicsPopContext();
+            } else if ((attachmentAttribute = CFDictionaryGetValue(attributes, OUICTLineAttachmentAttributeName)) != NULL) {
+                OBASSERT(CFGetTypeID(attachmentAttribute) == CTLineGetTypeID());
+                OBASSERT(CTRunGetGlyphCount(run) == 1);
+                
+                runPosition[0].x += lineOrigin[0].x;
+                runPosition[0].y += lineOrigin[0].y;
+                
+                NSNumber *offset = CFDictionaryGetValue(attributes, OUICTLineAttachmentOffsetAttributeName);
+                if (offset) {
+                    CGPoint offs = [offset CGPointValue];
+                    runPosition[0].x += offs.x;
+                    runPosition[0].y += offs.y;
+                }
+                
+                /* We don't snap to pixels here because CoreText does that automatically (and probably does so based on sekrit font-rendering knowledge we aren't privy to) */
+                
+                UIGraphicsPushContext(ctx);
+                CGContextSetTextPosition(ctx, runPosition[0].x, runPosition[0].y);
+                CTLineDraw((CTLineRef)attachmentAttribute, ctx);
                 UIGraphicsPopContext();
             }
         }
@@ -511,6 +570,8 @@ static NSAttributedString *_transformUnderline(NSMutableAttributedString *source
     return nil;
 }
 
+#pragma mark OATextAttachment support
+
 static void _runDelegateDealloc(void *refCon)
 {
     OATextAttachment *attachment = refCon;
@@ -583,12 +644,177 @@ static NSAttributedString *_transformAttachment(NSMutableAttributedString *sourc
     return nil;
 }
 
+#pragma mark Superscript/subscript recursive typesetter
+
+/* Simple CTRunDelegate refCon structure for items that are of a fixed size and which we want to compute up-front and cache. */
+
+struct OUITextLayoutFixedRunDelegateParameters {
+#ifdef OMNI_ASSERTIONS_ON
+    void *magic;  /* Anti-bogosity sentinel */
+#endif
+    CGFloat ascent, descent, width;
+};
+
+static void fixedRunDelegateDealloc(void *refCon)
+{
+#ifdef OMNI_ASSERTIONS_ON
+    struct OUITextLayoutFixedRunDelegateParameters *info = refCon;
+    OBASSERT(info->magic == fixedRunDelegateDealloc);
+    info->magic = NULL;
+#endif
+    free(refCon);
+}
+
+static CGFloat fixedRunDelegateGetAscent(void *refCon)
+{
+    struct OUITextLayoutFixedRunDelegateParameters *info = refCon;
+    OBASSERT(info->magic == fixedRunDelegateDealloc);
+    return info->ascent;
+}
+
+static CGFloat fixedRunDelegateGetDescent(void *refCon)
+{
+    struct OUITextLayoutFixedRunDelegateParameters *info = refCon;
+    OBASSERT(info->magic == fixedRunDelegateDealloc);
+    return info->descent;
+}
+
+static CGFloat fixedRunDelegateGetWidth(void *refCon)
+{
+    struct OUITextLayoutFixedRunDelegateParameters *info = refCon;
+    OBASSERT(info->magic == fixedRunDelegateDealloc);
+    return info->width;
+}
+
+static void applySubPositioning(CGRect *applyTo, const CGRect *pos)
+{
+    CGFloat w = applyTo->size.width;
+    CGFloat h = applyTo->size.height;
+    
+    applyTo->origin.x += pos->origin.x * w;
+    applyTo->origin.y += pos->origin.y * h;
+    
+    applyTo->size.width = pos->size.width * w;
+    applyTo->size.height = pos->size.height * h;
+}
+
+/*
+ Converts a super-or-sub-script run into a OUICTLineAttachment which OUITextLayoutDrawFrame will be able to draw.
+ This doesn't work well with OUIEditableFrame, and doesn't work with line-breaking much at all, but it can be used for simple single-line display.
+*/
+static NSDictionary *abscriptRunAttributes(NSString *source, NSDictionary *attributes, int superscript)
+{
+    OBPRECONDITION(![attributes objectForKey:OAAttachmentAttributeName]);
+    CTFontRef font = (CTFontRef)[attributes objectForKey:(id)kCTFontAttributeName];
+    if (!font)
+        return nil;
+    
+    CGRect supersub[2];
+    OUIGetSuperSubScriptPositions(font, supersub);
+    
+    CGRect positioning = (CGRect){ {0, 0}, {1, 1} };
+    
+    /* This is bogus--- the order of application of superscripts and subscripts matters. However, most of Apple's APIs can't represent that (the attribute just indicates a numeric number-of-superscripts or negative for subscripts) and in our current iPad use case we only ever want a single superscript or subscript, we don't need full text positioning capability. */
+    while (superscript > 0) {
+        applySubPositioning(&positioning, &(supersub[0]));
+        superscript--;
+    }
+    while (superscript < 0) {
+        applySubPositioning(&positioning, &(supersub[1]));
+        superscript++;
+    }
+    
+    /* positioning.size now holds the proportional change in size; positioning.origin holds the character's offset from its normal position, in ems */
+    
+    /* We adjust the font size proportionally to the scaled height, and if the scaled width is more than a few percent different, we apply a font matrix to produce that effect as well. */
+    CGFloat baseFontSize = CTFontGetSize(font);
+    CTFontRef abscriptFont;
+    CGFloat abscriptFontSize = baseFontSize * positioning.size.height;
+    CGFloat dWidth = positioning.size.width / positioning.size.height;
+    if (dWidth < 0.95 || dWidth > 1.05) {
+        CGAffineTransform fontMatrix = CTFontGetMatrix(font);
+        fontMatrix.a *= dWidth;
+        abscriptFont = CTFontCreateCopyWithAttributes(font, abscriptFontSize, &fontMatrix, NULL);
+    } else {
+        abscriptFont = CTFontCreateCopyWithAttributes(font, abscriptFontSize, NULL, NULL);
+    }
+    /* The offsets have been scaled to ems by OUIGetSuperSubScriptPositions(). It's not documented anywhere, but mailing-list discussions turn up that the em-size of a CTFont is equal to its CTFontGetSize() value (presumably only for an identity matrix). */
+    positioning.origin.y *= baseFontSize;
+    positioning.origin.x *= baseFontSize;
+    
+    NSMutableDictionary *newAttributes = [attributes mutableCopy];
+    [newAttributes removeObjectForKey:(id)kCTSuperscriptAttributeName];
+    [newAttributes setObject:(id)abscriptFont forKey:(id)kCTFontAttributeName];
+    NSAttributedString *subString = [[NSAttributedString alloc] initWithString:source attributes:newAttributes];
+    [newAttributes release];
+    CFRelease(abscriptFont);
+    
+    CTTypesetterRef typesetter = CTTypesetterCreateWithAttributedString((CFAttributedStringRef)subString);
+    CTLineRef typesetLine = CTTypesetterCreateLine(typesetter, (CFRange){0, 0});
+    [subString release];
+    CFRelease(typesetter);
+    
+    struct OUITextLayoutFixedRunDelegateParameters *info = malloc(sizeof(struct OUITextLayoutFixedRunDelegateParameters));
+#ifdef OMNI_ASSERTIONS_ON
+    info->magic = fixedRunDelegateDealloc;
+#endif
+    info->width = CTLineGetTypographicBounds(typesetLine, &(info->ascent), &(info->descent), NULL);
+    info->ascent = MAX(0, info->ascent + positioning.origin.y);
+    info->descent = MAX(0, info->descent - positioning.origin.y);
+    
+    const void *keys[3];
+    const void *values[3];
+    
+    const CTRunDelegateCallbacks frdCallbacks = {
+        .version = kCTRunDelegateCurrentVersion,       // There is contradictory documentation about what value should go here
+        .dealloc = fixedRunDelegateDealloc,
+        .getAscent = fixedRunDelegateGetAscent,
+        .getDescent = fixedRunDelegateGetDescent,
+        .getWidth = fixedRunDelegateGetWidth
+    };    
+    keys[0] = kCTRunDelegateAttributeName;
+    values[0] = CTRunDelegateCreate(&frdCallbacks, info);
+    
+    keys[1] = OUICTLineAttachmentAttributeName;
+    values[1] = typesetLine;
+    
+    keys[2] = OUICTLineAttachmentOffsetAttributeName;
+    values[2] = [NSValue valueWithCGPoint:positioning.origin];
+    
+    NSDictionary *result = [NSDictionary dictionaryWithObjects:(id *)values forKeys:(id *)keys count:3];
+    
+    CFRelease(values[0]);
+    CFRelease(typesetLine);
+    
+    return result;
+}
+
+/* This is a really, really limited implementation of superscript; it's just good enough to do basic exponential notation and variable subscripts, nothing more. */
+static NSAttributedString *_transformAbscript(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing, void *context)
+{
+    NSNumber *superscriptNumber = [attributes objectForKey:(id)kCTSuperscriptAttributeName];
+    if (!superscriptNumber)
+        return nil;
+    int superscript = [superscriptNumber intValue];
+    if (!superscript)
+        return nil;
+    
+    NSDictionary *subRun = abscriptRunAttributes([[source string] substringWithRange:matchRange], attributes, superscript);
+    if (!subRun)
+        return nil;
+    
+    NSAttributedString *result = [[NSAttributedString alloc] initWithString:@"\uFFFC" attributes:subRun];
+    
+    return result;
+}
+
 /*
  Later, we may have a callout for a delegate to extend the transformation. For now this applies some hard coded transforms to support features that CoreText doesn't have natively.
 
  - If a non-empty linkAttributes dictionary is passed in, any link attribute ranges will have those attributes added.
  - Any ranges that have an underline applied and have the OAUnderlineByWordMask set will have the underline attribute removed on whitespace in those ranges.
  - OAAttachmentAttributeName ranges get converted to kCTRunDelegateAttributeName with a CTRunDelegateRef value.
+ - Any runs with a kCTSuperscript attribute will be replaced with an attachment that draws the super(or sub)scripted text. (Note that this will interfere with cursor positioning and line breaking, so don't expect to be able to edit super/subscripted text.)
  
  Returns nil if no transformation is done, instead of returning [soure copy].
  */
@@ -620,6 +846,12 @@ NSAttributedString *OUICreateTransformedAttributedString(NSAttributedString *sou
             }
         }
         
+        NSNumber *superscript = [attributes objectForKey:(id)kCTSuperscriptAttributeName];
+        if (superscript && [superscript intValue]) {
+            needsTransform = YES;
+            break;
+        }
+        
         location = NSMaxRange(effectiveRange);
     }
     
@@ -631,8 +863,9 @@ NSAttributedString *OUICreateTransformedAttributedString(NSAttributedString *sou
     
     if (allowLinkTransform)
         didEdit |= [transformed mutateRanges:_transformLink matchingString:nil context:linkAttributes];
-    didEdit |= [transformed mutateRanges:_transformUnderline matchingString:nil context:nil];
-    didEdit |= [transformed mutateRanges:_transformAttachment matchingString:nil context:nil];
+    didEdit |= [transformed mutateRanges:_transformUnderline matchingString:nil context:NULL];
+    didEdit |= [transformed mutateRanges:_transformAttachment matchingString:nil context:NULL];
+    didEdit |= [transformed mutateRanges:_transformAbscript matchingString:nil context:NULL];
     
     NSAttributedString *immutableResult = nil;
     if (didEdit) {
@@ -690,6 +923,8 @@ static BOOL OUIGetSuperSubScriptInfoFromFont(CTFontRef font, CGRect *superSubSca
         unitsPerEm = OSReadBigInt16(buf, 0);
     }
     CFRelease(fontHeader);
+    if (unitsPerEm < 1) /* Sanity check */
+        return NO;
     
     /* The positioning information is stored in the OS/2 table. */
     
@@ -732,6 +967,24 @@ static BOOL OUIGetSuperSubScriptInfoFromFont(CTFontRef font, CGRect *superSubSca
                 superSubScales[0].origin.x    = scale * superscriptXOffset;
                 superSubScales[0].origin.y    = scale * superscriptYOffset;
                 
+                //NSLog(@"Font provided superscript info: %@", NSStringFromCGRect(superSubScales[0]));
+                
+                /* Fix font metrics that are outliers. */
+                if (superSubScales[0].origin.y < 0.27) {
+                    //NSLog(@"cap/ascent ratio: %g", CTFontGetCapHeight(font)/CTFontGetAscent(font));
+                    if (CTFontGetCapHeight(font) > 0.745 * CTFontGetAscent(font)) {
+                        superSubScales[0].origin.y = 0.48;
+                    } else {
+                        superSubScales[0].origin.y = 0.28;
+                    }
+                }
+                if (superSubScales[0].size.height < 0.5) {
+                    superSubScales[0].size.width = 0.7;
+                    superSubScales[0].size.height = 0.65;
+                }
+                
+                //NSLog(@"New superscript info: %@", NSStringFromCGRect(superSubScales[0]));
+                
                 CFRelease(os2table);
                 return YES;
             }
@@ -760,14 +1013,16 @@ static void OUIHeuristicSuperSubScriptPositions(CTFontRef font, CGRect *supersub
     supersub[0].origin.x = 0;
     supersub[1].origin.x = 0;
     
-    /* Superscript: Fonts' superscript offsets tend to be either around 0.48 of their point size, or 0.275. It's a distinctly bimodal distribution. There isn't an obvious way to tell which class a font falls into from its metrics, although the 0.275 fonts mostly have a smaller ratio of cap-height to ascent. */
-    if (CTFontGetCapHeight(font) > 0.786 * CTFontGetAscent(font)) {
+    /* Superscript: Fonts' superscript offsets tend to be either around 0.48 of their point size, or 0.28. It's a distinctly bimodal distribution. There isn't an obvious way to tell which class a font falls into from its metrics, although the 0.28 fonts mostly have a smaller ratio of cap-height to ascent. */
+    /* Gill Sans has a capHeight/ascent ratio of 0.7484, and looks better with a 0.48 offset. So I'm setting the cutoff ratio below that of Gill Sans. */
+    if (CTFontGetCapHeight(font) > 0.745 * CTFontGetAscent(font)) {
         supersub[0].origin.y = 0.48;
     } else {
-        supersub[0].origin.y = 0.275;
+        supersub[0].origin.y = 0.28;
     }
-    supersub[0].size.width = 0.625;
-    supersub[0].size.height = 0.625;
+    /* The most common metrics for superscript sizing (of those that are sane) are as follows. */
+    supersub[0].size.width = 0.7;
+    supersub[0].size.height = 0.65;
     
     /* Subscript positions fall into three clusters (-0.08, -0.14, and -0.24; mostly the first two) but I don't know of a way to guess which cluster to use. */
     supersub[1].origin.y = -0.11;

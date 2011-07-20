@@ -1252,7 +1252,7 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 - initWithLowercaseScheme:(NSString *)aScheme netLocation:(NSString *)aNetLocation path:(NSString *)aPath params:(NSString *)someParams query:(NSString *)aQuery fragment:(NSString *)aFragment;
 {
-    if (![self _initWithLowercaseScheme:aScheme])
+    if (!(self = [self _initWithLowercaseScheme:aScheme]))
         return nil;
             
         
@@ -1274,7 +1274,7 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 - initWithLowercaseScheme:(NSString *)aScheme schemeSpecificPart:(NSString *)aSchemeSpecificPart fragment:(NSString *)aFragment;
 {
-    if (![self _initWithLowercaseScheme:aScheme])
+    if (!(self = [self _initWithLowercaseScheme:aScheme]))
         return nil;
     
     schemeSpecificPart = [aSchemeSpecificPart copy];

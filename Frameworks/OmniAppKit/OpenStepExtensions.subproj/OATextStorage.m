@@ -12,6 +12,13 @@
 
 RCS_ID("$Id$");
 
+
+#if 0 && defined(DEBUG)
+    #define DEBUG_INSERT(format, ...) NSLog(@"INSERT: " format, ## __VA_ARGS__)
+#else
+    #define DEBUG_INSERT(format, ...)
+#endif
+
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
 NSString * const OAAttachmentAttributeName = @"OAAttachmentAttributeName"; // Make this be the same as on the Mac?
@@ -188,6 +195,7 @@ static void _processEditing(OATextStorage_ *self)
 
 - (void)edited:(NSUInteger)editedMask range:(NSRange)range changeInLength:(NSInteger)delta;
 {
+    DEBUG_INSERT(@"In %s. Edit location: %ld, length: %ld. Change in overall string length: %ld.", __func__, range.location, range.length, delta);
     OBPRECONDITION(editedMask); // must have edited something
     OBPRECONDITION((editedMask & ~(OATextStorageEditedAttributes|OATextStorageEditedCharacters)) == 0); // only should get flags we know about
     OBPRECONDITION(range.location != NSNotFound); // must have edited something
@@ -212,6 +220,8 @@ static void _processEditing(OATextStorage_ *self)
         _changeInLength = delta;
     } else {
         // Our _editedRange and the input are in the old space. Union them.
+        DEBUG_INSERT(@"Old _editedRange length %ld and location %ld.", _editedRange.length, _editedRange.location);
+        DEBUG_INSERT(@"New range length %ld and location %ld.", range.length, range.location);
         
         NSUInteger unionStart = MIN(_editedRange.location, range.location);
         NSUInteger unionEnd = MAX(NSMaxRange(_editedRange), NSMaxRange(range));
@@ -222,7 +232,9 @@ static void _processEditing(OATextStorage_ *self)
         unionRange.length += delta;
         
         _editedRange = unionRange;
+        DEBUG_INSERT(@"Unioned range length %ld and location %ld.", _editedRange.length, _editedRange.location);
         _changeInLength += delta;
+        DEBUG_INSERT(@"Change in length for this edit: %ld, and total, %ld.", delta, _changeInLength);
     }
     
     // From NSTextStorage.h, if this is zero, we 

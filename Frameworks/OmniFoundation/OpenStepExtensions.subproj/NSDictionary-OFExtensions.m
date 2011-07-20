@@ -417,12 +417,12 @@ static id copyDictionaryKeys(CFDictionaryRef self, Class resultClass)
     return copyDictionaryKeys((CFDictionaryRef)self, [NSMutableArray class]);
 }
 
-- (NSArray *) copyKeySet;
+- (NSSet *) copyKeySet;
 {
     return copyDictionaryKeys((CFDictionaryRef)self, [NSSet class]);
 }
 
-- (NSMutableArray *) mutableCopyKeySet;
+- (NSMutableSet *) mutableCopyKeySet;
 {
     return copyDictionaryKeys((CFDictionaryRef)self, [NSMutableSet class]);
 }

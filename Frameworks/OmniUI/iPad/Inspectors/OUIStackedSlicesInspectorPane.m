@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSlice.h>
+#import <OmniUI/OUIMinimalScrollNotifierImplementation.h>
 
 #import "OUIInspectorBackgroundView.h"
 
@@ -95,7 +96,7 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
             continue;
         
         if (previousSlice)
-            yOffset += [slice paddingToPreviousSlice:previousSlice];
+            yOffset += [slice paddingToPreviousSlice:previousSlice remainingHeight:bounds.size.height - yOffset];
         
         CGFloat sideInset = [slice paddingToInspectorSides];
         
@@ -153,6 +154,7 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 {
     [_availableSlices release];
     [_slices release];
+    [_scrollNotifier release];
     [super dealloc];
 }
 
@@ -323,6 +325,10 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         
         // Tell all our available slices about this tradegy now that they aren't children view controllers.
         [_availableSlices makeObjectsPerformSelector:@selector(fakeDidReceiveMemoryWarning)];
+        
+        [_scrollNotifier release];
+        _scrollNotifier = nil;
+        view.delegate = nil;
     }
     
     [super didReceiveMemoryWarning];
@@ -336,6 +342,10 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 - (void)loadView;
 {
     OUIStackedSlicesInspectorPaneContentView *view = [[OUIStackedSlicesInspectorPaneContentView alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 16)];
+    
+    if (!_scrollNotifier)
+        _scrollNotifier = [[OUIMinimalScrollNotifierImplementation alloc] init];
+    view.delegate = _scrollNotifier;
     
     // If we are getting our view reloaded after a memory warning, we might already have slices. They should be mostly set up, but their superview needs fixing.
     for (OUIInspectorSlice *slice in _slices) {

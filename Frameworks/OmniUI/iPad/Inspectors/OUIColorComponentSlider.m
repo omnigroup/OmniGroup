@@ -400,7 +400,7 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
     }
     CGContextRestoreGState(ctx);
     
-    OUIInspectorWellDrawBorderAndInnerShadow(ctx, bounds, YES/*rounded*/);
+    OUIInspectorWellDrawBorderAndInnerShadow(ctx, bounds, YES/*rounded*/, YES/*innerShadow*/);
 }
 
 - (void)layoutSubviews;

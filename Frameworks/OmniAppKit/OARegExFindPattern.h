@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,7 @@
 
 @class OFRegularExpression, OFRegularExpressionMatch;
 
-#import <OmniAppKit/OAFindControllerTargetProtocol.h>
+#import <OmniAppKit/OAFindPattern.h>
 
 #define SELECT_FULL_EXPRESSION (-1)
 

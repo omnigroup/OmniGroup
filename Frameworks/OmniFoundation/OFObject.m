@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,7 +35,11 @@ RCS_ID("$Id$")
 }
 #endif
 
-#ifdef DEBUG
+#if defined(DEBUG)
+    #define OF_CHECK_INSANE_RETAIN_COUNT
+#endif
+
+#ifdef OF_CHECK_INSANE_RETAIN_COUNT
 #define SaneRetainCount 1000000
 #define FreedObjectRetainCount SaneRetainCount + 234567;
 #endif
@@ -45,12 +49,12 @@ RCS_ID("$Id$")
 #if OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT
 - (id)retain;
 {
-#ifdef DEBUG
+#ifdef OF_CHECK_INSANE_RETAIN_COUNT
     int32_t newExtraRefCount = 
 #endif
     OSAtomicIncrement32(&_extraRefCount);
     
-#ifdef DEBUG
+#if defined(OF_CHECK_INSANE_RETAIN_COUNT)
     if (newExtraRefCount > SaneRetainCount) {
         OBASSERT(newExtraRefCount <= SaneRetainCount);
         [NSException raise:@"RetainInsane" format:@"-[%@ %s]: Insane retain count! count=%d", OBShortObjectDescription(self), _cmd, newExtraRefCount];
@@ -78,12 +82,12 @@ RCS_ID("$Id$")
     
     int32_t newExtraRefCount = OSAtomicDecrement32(&_extraRefCount);
     if (newExtraRefCount < 0) {
-#ifdef DEBUG
+#if defined(OF_CHECK_INSANE_RETAIN_COUNT)
         _extraRefCount = FreedObjectRetainCount;
 #endif
         [self dealloc];
     } else {
-#ifdef DEBUG
+#if defined(OF_CHECK_INSANE_RETAIN_COUNT)
         if (newExtraRefCount > SaneRetainCount) {
             [NSException raise:@"RetainInsane" format:@"-[%@ %s]: Insane retain count! count=%d", OBShortObjectDescription(self), _cmd, _extraRefCount];
         }

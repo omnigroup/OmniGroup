@@ -300,7 +300,7 @@ static inline void _nonNilKey(id key)
 
 - (OFMutableKnownKeyDictionary *)mutableKnownKeyCopyWithZone:(NSZone *)zone;
 {
-    OFMutableKnownKeyDictionary *copy = NSAllocateObject(isa, _template->_keyCount * sizeof(id), zone);
+    OFMutableKnownKeyDictionary *copy = NSAllocateObject([self class], _template->_keyCount * sizeof(id), zone);
     copy->_template = _template;
     NSUInteger valueCount = _template->_keyCount;
     

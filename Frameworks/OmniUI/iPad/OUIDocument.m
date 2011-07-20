@@ -24,9 +24,13 @@ RCS_ID("$Id$");
     #define DEBUG_UNDO(format, ...)
 #endif
 
+OBDEPRECATED_METHODS(OUIDocument)
+- (BOOL)saveToURL:(NSURL *)url isAutosave:(BOOL)isAutosave error:(NSError **)outError; // -writeToURL:forSaveType:error:
+@end
+
 @interface OUIDocument (/*Private*/)
 - _initWithProxy:(OUIDocumentProxy *)proxy url:(NSURL *)url error:(NSError **)outError;
-- (BOOL)_saveToURL:(NSURL *)url isAutosave:(BOOL)isAutosave error:(NSError **)outError;
+- (BOOL)_writeToURL:(NSURL *)url forSaveType:(OFSaveType)saveType error:(NSError **)outError;
 - (void)_autosave;
 - (void)_autosaveTimerFired:(NSTimer *)timer;
 - (void)_startAutosaveAndUpdateUndoButton;
@@ -155,7 +159,7 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(_url == nil || [_url isEqual:url]);
     OBPRECONDITION(_proxy == nil);
-    return [self _saveToURL:url isAutosave:NO error:outError];
+    return [self _writeToURL:url forSaveType:OFSaveTypeNew error:outError];
 }
 
 - (void)finishUndoGroup;
@@ -219,8 +223,16 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(_url);
     
-    // Make sure any label editing is finished.
-    [_viewController.view endEditing:YES/*force*/];
+    OUIWithoutAnimating(^{
+        // If the user is just switching to another app quickly and coming right back (maybe to paste something at us), we don't want to end editing.
+        // Instead, we should commit any partial edits, but leave the editor up.
+        
+        [self willAutosave];
+        //[_window endEditing:YES];
+        
+        UIWindow *window = [[OUISingleDocumentAppController controller] window];
+        [window layoutIfNeeded];
+    });
     
     // If we have previously done an autosave, we need to save to restore our preview. Otherwise, we only need to save if there is a pending autosave.
     if (!_hasDoneAutosave && !_saveTimer && !_hasUndoGroupOpen)
@@ -236,7 +248,7 @@ RCS_ID("$Id$");
     [_saveTimer release];
     _saveTimer = nil;
     
-    if (![self _saveToURL:_url isAutosave:NO error:outError])
+    if (![self _writeToURL:_url forSaveType:OFSaveTypeReplaceExisting error:outError])
         return NO;
     
     // We have a new preview now and the document picker is about to care.
@@ -254,6 +266,26 @@ RCS_ID("$Id$");
     }
 }
 
+- (void)willAutosave;
+{
+    BOOL hadUndoGroupOpen = _hasUndoGroupOpen;
+
+    // This may open an undo group that doesn't get closed until after the autosave finishes and returns to the event loop. We want to ensure the undo group is closed so that our autosave will actually happen (if via timer) and so our state will be consistent (if going through the close path).
+    
+    if ([_viewController respondsToSelector:@selector(documentWillAutosave)])
+        [_viewController documentWillAutosave];
+
+    // Close our nested group, if one was created and the view controller didn't call -finishUndoGroup itself.
+    if (!hadUndoGroupOpen && _hasUndoGroupOpen)
+        [self finishUndoGroup];
+    
+    // If there is still the automatically created group open, try to close it too since we haven't returned to the event loop. The model needs a consistent state and may perform delayed actions in undo group closing notifications.
+    if (!_hasUndoGroupOpen && [_undoManager groupingLevel] == 1) {
+        // Terrible hack to let the by-event undo group close, plus a check that the hack worked...
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantPast]];
+        OBASSERT(!_hasUndoGroupOpen);
+    }
+}
 
 #pragma mark -
 #pragma mark OUIDocument protocol
@@ -295,7 +327,7 @@ RCS_ID("$Id$");
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (BOOL)saveToURL:(NSURL *)url isAutosave:(BOOL)isAutosave error:(NSError **)outError;
+- (BOOL)writeToURL:(NSURL *)url forSaveType:(OFSaveType)saveType error:(NSError **)outError;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }
@@ -333,7 +365,7 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark Private
 
-- (BOOL)_saveToURL:(NSURL *)url isAutosave:(BOOL)isAutosave error:(NSError **)outError;
+- (BOOL)_writeToURL:(NSURL *)url forSaveType:(OFSaveType)saveType error:(NSError **)outError;
 {
     OBPRECONDITION(!_url || [_url isEqual:url]); // New documents can gain a URL, but we don't intend to have "save as".
     
@@ -346,7 +378,7 @@ RCS_ID("$Id$");
     if (outError)
         *outError = nil;
     
-    if (![self saveToURL:url isAutosave:isAutosave error:outError]) {
+    if (![self writeToURL:url forSaveType:saveType error:outError]) {
         OUIDocumentProxy *currentProxy = [self proxy];
         NSString *fileType = [[OUIAppController controller] documentTypeForURL:currentProxy.url];
         NSURL *newProxyURL = [[[OUIAppController controller] documentPicker] renameProxy:currentProxy toName:[currentProxy name] type:fileType];
@@ -357,11 +389,11 @@ RCS_ID("$Id$");
         
         // If this fails too, eat this error and return the original one rather than stacking them up.
         NSError *retryError = nil;
-        if (![self saveToURL:url isAutosave:isAutosave error:&retryError])
+        if (![self writeToURL:url forSaveType:saveType error:&retryError])
             return NO;
     }
     
-    if (isAutosave) {
+    if (saveType == OFSaveTypeAuto) {
         // Remember that we've done an autosave, thus blowing away our last preview. When we close the document, this forces a save with the preview.
         _hasDoneAutosave = YES;
     }
@@ -380,7 +412,7 @@ RCS_ID("$Id$");
     [_undoIndicator hide];
     
     NSError *error = nil;
-    if (![self _saveToURL:_url isAutosave:YES error:&error])
+    if (![self _writeToURL:_url forSaveType:OFSaveTypeAuto error:&error])
         OUI_PRESENT_ERROR(error);
 }
 
@@ -392,6 +424,8 @@ RCS_ID("$Id$");
     OBPRECONDITION(![_undoManager isRedoing]);
     
     DEBUG_UNDO(@"Save timer fired");
+    
+    [self willAutosave];
     
     [_saveTimer release];
     _saveTimer = nil;

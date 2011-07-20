@@ -118,7 +118,7 @@ NSString *OWContentTypeNeverExpireString = @"NeverExpire";
 NSString *OWContentTypeExpireWhenFlushedString = @"ExpireWhenFlushed";
 NSString *OWContentTypeReloadExpirationTimeIntervalsNotificationName = @"OWContentTypeReloadExpirationTimeIntervals";
 
-static NSLock *contentTypeLock;
+static NSRecursiveLock *contentTypeLock;
 static NSMutableDictionary *contentTypeDictionary;
 static NSMutableArray *contentEncodings;
 static NSMutableDictionary *extensionToContentTypeDictionary;
@@ -491,7 +491,7 @@ got_path:
     return self;
 }
 
-- (void)release;
+- (oneway void)release;
 {
 }
 

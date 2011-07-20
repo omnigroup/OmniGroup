@@ -125,7 +125,11 @@ static NSString *removeScriptSuffix(NSString *string)
 - (void)executeScriptItem:sender;
 {
     OAToolbarItem *toolbarItem = [[sender retain] autorelease];
-    OAToolbarWindowController *controller = [[[[toolbarItem toolbar] delegate] retain] autorelease];
+    
+    OAToolbarWindowController *controller = (OAToolbarWindowController *)[[toolbarItem toolbar] delegate];
+    OBASSERT(!controller || [controller isKindOfClass:[OAToolbarWindowController class]]);
+    
+    [[controller retain] autorelease];
     
     if ([controller respondsToSelector:@selector(scriptToolbarItemShouldExecute:)] &&
 	![controller scriptToolbarItemShouldExecute:sender])

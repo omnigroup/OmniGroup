@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,7 +110,8 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
 #endif
     if (runLoopSource != NULL && currentRunLoop != NULL)
         CFRunLoopAddSource(currentRunLoop, runLoopSource, kCFRunLoopDefaultMode);
-    CFRelease(runLoopSource);
+    if (runLoopSource)
+        CFRelease(runLoopSource);
 }
 
 + (void)_updateProxySettingsFromDictionary:(NSDictionary *)dictionary;

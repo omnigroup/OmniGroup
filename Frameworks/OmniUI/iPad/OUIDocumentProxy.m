@@ -325,6 +325,8 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
 {
     NSError *error = nil;
     
+    [self _flushCachedAspectRatio];
+    
     // Clear and reload any preview asynchronously
     if (_view) {
         [self startPreviewLoad];

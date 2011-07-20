@@ -1,4 +1,4 @@
-// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1029,7 +1029,7 @@ after the signature value was computed.  Verification should FAIL.
     return loadedDoc;
 }
 
-xmlNode *applySigBlob(xmlDoc *tree, const xmlChar *sigAlg, const xmlChar *canonAlg)
+static xmlNode *applySigBlob(xmlDoc *tree, const xmlChar *sigAlg, const xmlChar *canonAlg)
 {
     xmlNode *sigNode = xmlNewNode(NULL, (const xmlChar *)"Signature");
     xmlAddChild(xmlDocGetRootElement(tree), sigNode);
@@ -1049,7 +1049,7 @@ xmlNode *applySigBlob(xmlDoc *tree, const xmlChar *sigAlg, const xmlChar *canonA
     return sigNode;
 }
 
-xmlNode *addRefNode(xmlNode *sigNode, const xmlChar *uri, const xmlChar *digestAlg, const xmlChar *xformAlg)
+static xmlNode *addRefNode(xmlNode *sigNode, const xmlChar *uri, const xmlChar *digestAlg, const xmlChar *xformAlg)
 {
     xmlNode *signedInfo = OFLibXMLChildNamed(sigNode, "SignedInfo", XMLSignatureNamespace, NULL);
     xmlNs *dsig = signedInfo->ns;

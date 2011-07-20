@@ -16,9 +16,10 @@
 
 RCS_ID("$Id$");
 
-// #define FONT_DESC_STATS
+//#define FONT_DESC_STATS
 static NSMutableSet *_OAFontDescriptorUniqueTable = nil;
-static NSLock *_OAFontDescriptorUniqueTableLock;
+static NSLock *_OAFontDescriptorUniqueTableLock = nil;
+static NSMutableArray *_OAFontDescriptorRecentInstances = nil;
 
 @interface OAFontDescriptor (/*Private*/)
 - (void)_invalidateCachedFont;
@@ -36,6 +37,26 @@ static NSLock *_OAFontDescriptorUniqueTableLock;
     callbacks.release = NULL;
     _OAFontDescriptorUniqueTable = (NSMutableSet *)CFSetCreateMutable(kCFAllocatorDefault, 0, &callbacks);
     _OAFontDescriptorUniqueTableLock = [[NSLock alloc] init];
+    
+    // Keep recently created/in-use instances alive until the next call to +forgetUnusedInstances. We could have a timer running to do this periodically, but we also want to do it in response to memory warnings in UIKit and we don't really want a timer waking up every N seconds when there is nothing to do. Hopefully we'll get a memory warning point to hook into on the Mac or we can add a timer there if we need it (or we could call it when a document is closed).
+    _OAFontDescriptorRecentInstances = [[NSMutableArray alloc] init];
+}
+
++ (void)forgetUnusedInstances;
+{
+    NSArray *oldInstances = nil;
+    
+    [_OAFontDescriptorUniqueTableLock lock];
+    oldInstances = _OAFontDescriptorRecentInstances;
+    _OAFontDescriptorRecentInstances = nil;
+    [_OAFontDescriptorUniqueTableLock unlock];
+    
+    [oldInstances release]; // -dealloc will clean out the otherwise unused instances
+    
+    [_OAFontDescriptorUniqueTableLock lock];
+    if (_OAFontDescriptorRecentInstances == nil) // another thread called this?
+        _OAFontDescriptorRecentInstances = [[NSMutableArray alloc] initWithArray:[_OAFontDescriptorUniqueTable allObjects]];
+    [_OAFontDescriptorUniqueTableLock unlock];
 }
 
 // This is currently called by the NSNotificationCenter hacks in OmniOutliner.  Horrifying; maybe those hacks should move here, but better yet would be if we didn't need them.
@@ -90,8 +111,9 @@ static NSInteger _weightToFontManagerWeight(CGFloat weight)
     OAFontDescriptor *uniquedInstance = [[_OAFontDescriptorUniqueTable member:self] retain];
     if (uniquedInstance == nil) {
         [_OAFontDescriptorUniqueTable addObject:self];
+        [_OAFontDescriptorRecentInstances addObject:self];
 #if defined(FONT_DESC_STATS)
-        NSLog(@"%d font descriptors ++ added %@", [_OAFontDescriptorUniqueTable count], self);
+        NSLog(@"%lu font descriptors ++ added %@", [_OAFontDescriptorUniqueTable count], self);
 #endif
     }
     [_OAFontDescriptorUniqueTableLock unlock];
@@ -165,7 +187,7 @@ static NSInteger _weightToFontManagerWeight(CGFloat weight)
             symbolicTraits |= kCTFontItalicTrait;
         
         if (condensed) // We don't archive any notion of expanded.
-            [traits setObject:[NSNumber numberWithCGFloat:-1] forKey:(id)kCTFontWidthTrait];
+            symbolicTraits |= kCTFontCondensedTrait;
         
         if (symbolicTraits != 0)
             [traits setObject:[NSNumber numberWithUnsignedInt:symbolicTraits] forKey:(id)kCTFontSymbolicTrait];
@@ -210,7 +232,7 @@ static NSInteger _weightToFontManagerWeight(CGFloat weight)
         OBASSERT([_OAFontDescriptorUniqueTable member:self] == self);
         [_OAFontDescriptorUniqueTable removeObject:self];
 #if defined(FONT_DESC_STATS)
-        NSLog(@"%d font descriptors -- removed %p", [_OAFontDescriptorUniqueTable count], self);
+        NSLog(@"%lu font descriptors -- removed %p", [_OAFontDescriptorUniqueTable count], self);
 #endif
         [_OAFontDescriptorUniqueTableLock unlock];
     }

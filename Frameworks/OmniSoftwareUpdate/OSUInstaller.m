@@ -1297,6 +1297,9 @@ static BOOL PerformNormalInstall(NSString *installerPath, NSArray *installerArgu
     return YES;
 }
 
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+// OBFinishPorting
+#else
 // Returns NO to satisfy the outError convention and so caller can just "return AuthInstallError(...);
 static BOOL AuthInstallError(NSError **outError, NSString *reason, NSError *underlyingError, NSString *errorFile)
 {
@@ -1337,9 +1340,13 @@ static NSError *mkAuthError(OSStatus errCode, NSString *function)
         userInfo = nil;
     return [NSError errorWithDomain:NSOSStatusErrorDomain code:errCode userInfo:userInfo];
 }
+#endif
 
 static BOOL PerformAuthenticatedInstall(NSString *installerPath, NSArray *installerArguments, NSString *errorFile, NSError **outError)
 {
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+    OBFinishPorting;
+#else
     AuthorizationRef auth;
     OSStatus err;
     NSFileManager *manager = [NSFileManager defaultManager];
@@ -1387,6 +1394,7 @@ static BOOL PerformAuthenticatedInstall(NSString *installerPath, NSArray *instal
     }
     
     return YES;
+#endif
 }
 
 static void _terminate(int status) __attribute__((__noreturn__));

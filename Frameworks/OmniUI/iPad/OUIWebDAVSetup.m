@@ -23,7 +23,7 @@
 #import "OUIExportOptionsController.h"
 #import "OUIExportOptionsView.h"
 #import "OUIWebDAVConnection.h"
-#import "OUIWebDAVController.h"
+#import "OUIWebDAVSyncListController.h"
 
 RCS_ID("$Id$")
 
@@ -186,9 +186,9 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
             viewController = [[OUIExportOptionsController alloc] initWithExportType:OUIExportOptionsExport];
             [(OUIExportOptionsController *)viewController setSyncType:_syncType];
         } else {
-            viewController = [[OUIWebDAVController alloc] initWithNibName:nil bundle:nil];
-            [(OUIWebDAVController *)viewController setSyncType:_syncType];
-            [(OUIWebDAVController *)viewController setIsExporting:_isExporting];
+            viewController = [[OUIWebDAVSyncListController alloc] initWithNibName:nil bundle:nil];
+            [(OUIWebDAVSyncListController *)viewController setSyncType:_syncType];
+            [(OUIWebDAVSyncListController *)viewController setIsExporting:_isExporting];
         }
         
         switch (_syncType) {

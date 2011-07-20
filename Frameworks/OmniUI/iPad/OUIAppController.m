@@ -19,6 +19,7 @@
 #import <OmniUI/OUIDocumentProxy.h>
 #import <OmniUI/OUIWebViewController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniAppKit/OAFontDescriptor.h>
 
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniFoundation/NSString-OFURLEncoding.h>
@@ -588,6 +589,8 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
 {
+    [OAFontDescriptor forgetUnusedInstances];
+    
     _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
 }
 

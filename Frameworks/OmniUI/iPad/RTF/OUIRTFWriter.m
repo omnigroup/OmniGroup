@@ -109,6 +109,7 @@ static OFCharacterSet *ReservedSet;
     _state.foregroundColorIndex = -1;
     _state.backgroundColorIndex = 0;
     _state.underline = kCTUnderlineStyleNone;
+    _state.superscript = 0;
     return self;
 }
 
@@ -156,6 +157,7 @@ static const struct {
     BOOL newFontItalic = [newFontDescriptor italic];
     [newFontDescriptor release];
     unsigned int newUnderline = [newAttributes unsignedIntForKey:(NSString *)kCTUnderlineStyleAttributeName defaultValue:kCTUnderlineStyleNone];
+    int newSuperscript = [newAttributes intForKey:(NSString *)kCTSuperscriptAttributeName defaultValue:0];
     
     BOOL shouldWriteNewFontSize;
     BOOL shouldWriteNewFontIndex;
@@ -228,7 +230,25 @@ static const struct {
         
         needTerminatingSpace = YES;
         _state.underline = newUnderline;
-    }    
+    }
+    
+    if (newSuperscript != _state.superscript) {
+        if ( (newSuperscript < _state.superscript && _state.superscript > 0) ||
+             (newSuperscript > _state.superscript && _state.superscript < 0) ) {
+            OFDataBufferAppendCString(_dataBuffer, "\\nosupersub");
+            _state.superscript = 0;
+        }
+        while (newSuperscript > _state.superscript) {
+            OFDataBufferAppendCString(_dataBuffer, "\\super");
+            _state.superscript ++;
+        }
+        while (newSuperscript < _state.superscript) {
+            OFDataBufferAppendCString(_dataBuffer, "\\sub");
+            _state.superscript --;
+        }
+        
+        needTerminatingSpace = YES;
+    }
 
     if (needTerminatingSpace)
         OFDataBufferAppendByte(_dataBuffer, ' ');

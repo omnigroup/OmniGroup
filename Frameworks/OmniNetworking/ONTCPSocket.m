@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -252,7 +252,7 @@ static Class defaultTCPSocketClass = nil;
 
 - _initWithSocketFD:(int)aSocketFD connected:(BOOL)isConnected
 {
-    if (![super _initWithSocketFD:aSocketFD connected:isConnected])
+    if (!(self = [super _initWithSocketFD:aSocketFD connected:isConnected]))
         return nil;
 
     tcpFlags.useNagle = ONTCP_OPT_USE_DEFAULT;

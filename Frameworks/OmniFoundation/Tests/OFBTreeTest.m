@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,17 +17,17 @@
 
 RCS_ID("$Id$")
 
-void *mallocAllocator(OFBTree *btree)
+static void *mallocAllocator(OFBTree *btree)
 {
     return malloc(btree->nodeSize);
 }
 
-void mallocDeallocator(OFBTree *btree, void *node)
+static void mallocDeallocator(OFBTree *btree, void *node)
 {
     free(node);
 }
 
-void *pageAllocator(struct _OFBTree *tree)
+static void *pageAllocator(struct _OFBTree *tree)
 {
     kern_return_t	err;
     vm_address_t	addr;
@@ -40,7 +40,7 @@ void *pageAllocator(struct _OFBTree *tree)
     return (void *)addr;
 }
 
-void pageDeallocator(OFBTree *btree, void *node)
+static void pageDeallocator(OFBTree *btree, void *node)
 {
     kern_return_t	err;
     err = vm_deallocate(mach_task_self(), (vm_address_t)node, vm_page_size);
@@ -50,14 +50,14 @@ void pageDeallocator(OFBTree *btree, void *node)
     }
 }
 
-int testComparator(const OFBTree *btree, const void *a, const void *b)
+static int testComparator(const OFBTree *btree, const void *a, const void *b)
 {
     int avalue = *(const int *)a;
     int bvalue = *(const int *)b;
     return avalue - bvalue;
 }
 
-void permute(NSUInteger *numbers, NSUInteger count)
+static void permute(NSUInteger *numbers, NSUInteger count)
 {
     NSUInteger i, j, tmp;
     
@@ -86,7 +86,7 @@ struct expectedEnumeration {
     NSString *marker;
 };
 
-void checkEnumerator(const OFBTree *tree, void *element, void *arg)
+static void checkEnumerator(const OFBTree *tree, void *element, void *arg)
 {
     struct expectedEnumeration *expectation = arg;
     int elt = *(int *)element;

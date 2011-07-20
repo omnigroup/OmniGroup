@@ -35,6 +35,9 @@ typedef enum {
 
 @interface OUIDocumentPickerScrollView : UIScrollView
 {
+@protected
+    OUIDocumentPickerScrollViewSmoothScroll _smoothScroll;  // need to get at this from Graffle to know if it is safe to re-center after loading a preview - will move it to private if we can find another way
+
 @private
     BOOL _disableLayout;
     CGFloat _bottomGap;
@@ -45,7 +48,6 @@ typedef enum {
     
     CGPoint _contentOffsetOnPanStart;
 
-    OUIDocumentPickerScrollViewSmoothScroll _smoothScroll;
     struct {
         unsigned int needsRecentering:1;
         unsigned int isRotating:1;

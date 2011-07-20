@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 42;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -22,6 +22,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		3475B67D13C39E4C006E3819 /* OWMLSTFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = A2228B3004D5BB500097A146 /* OWMLSTFTPProcessor.h */; };
+		3475B67E13C39E4D006E3819 /* OWAboutURLProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8B357A6301C182251397A146 /* OWAboutURLProcessor.h */; };
 		4A502734094128980035E67F /* OWProcessorDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 55DC8647FFD2F409C697A10E /* OWProcessorDescription.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A5027610944C16E0035E67F /* OWSitePreference.h in Headers */ = {isa = PBXBuildFile; fileRef = B59C0A5405474D3C0097A10E /* OWSitePreference.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A50276E0944C3390035E67F /* OWFTPListingProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = A23D75A404DF27750097A146 /* OWFTPListingProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -81,7 +83,6 @@
 		4AA535BB08B27DE600F0872D /* OWXMLURLFileProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 0B27A514FF9AB331C697A14E /* OWXMLURLFileProcessor.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4AA535BD08B27DE600F0872D /* OWFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E4FE8AB39F11C9CC38 /* OWFTPProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA535BE08B27DE600F0872D /* OWFTPSession.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E5FE8AB39F11C9CC38 /* OWFTPSession.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
-		4AA535BF08B27DE600F0872D /* OWMLSTFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = A2228B3004D5BB500097A146 /* OWMLSTFTPProcessor.h */; };
 		4AA535C008B27DE600F0872D /* OWMacOSPeterLewisFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E6FE8AB39F11C9CC38 /* OWMacOSPeterLewisFTPProcessor.h */; settings = {ATTRIBUTES = (); }; };
 		4AA535C108B27DE600F0872D /* OWUnixFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E7FE8AB39F11C9CC38 /* OWUnixFTPProcessor.h */; settings = {ATTRIBUTES = (); }; };
 		4AA535C208B27DE600F0872D /* NSDate-OWExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520F6FE8AB39F11C9CC38 /* NSDate-OWExtensions.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
@@ -93,7 +94,6 @@
 		4AA535C808B27DE600F0872D /* OWHTTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520FAFE8AB39F11C9CC38 /* OWHTTPProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA535C908B27DE600F0872D /* OWHTTPSession.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520FBFE8AB39F11C9CC38 /* OWHTTPSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA535CA08B27DE600F0872D /* OWHTTPSessionQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520FCFE8AB39F11C9CC38 /* OWHTTPSessionQueue.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA535CB08B27DE600F0872D /* OWAboutURLProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8B357A6301C182251397A146 /* OWAboutURLProcessor.h */; };
 		4AA535CC08B27DE600F0872D /* OWAuthorization-KeychainFunctions.h in Headers */ = {isa = PBXBuildFile; fileRef = 027EDD2F0030C594C697A146 /* OWAuthorization-KeychainFunctions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4AA535CD08B27DE600F0872D /* OWAuthorizationCredential.h in Headers */ = {isa = PBXBuildFile; fileRef = 0343449A001D106CC697A146 /* OWAuthorizationCredential.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA535CE08B27DE600F0872D /* OWAuthorizationPassword.h in Headers */ = {isa = PBXBuildFile; fileRef = 0343449C001D106CC697A146 /* OWAuthorizationPassword.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -543,7 +543,7 @@
 		A2E965D0050D29A20097A146 /* OWnHTTPSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWnHTTPSession.h; sourceTree = "<group>"; };
 		A2E965D1050D29A20097A146 /* OWnHTTPSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWnHTTPSession.m; sourceTree = "<group>"; };
 		A2E965D6050D4CA70097A146 /* OWHeaderDictionaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OWHeaderDictionaryTests.m; path = Tests/OWHeaderDictionaryTests.m; sourceTree = SOURCE_ROOT; };
-		A2E965E6050D4E580097A146 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SenTestingKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A2E965E6050D4E580097A146 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		A2F15E04053276E50097A146 /* OWProcessorCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWProcessorCache.h; sourceTree = "<group>"; };
 		A2F15E05053276E50097A146 /* OWProcessorCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWProcessorCache.m; sourceTree = "<group>"; };
 		B59C0A5405474D3C0097A10E /* OWSitePreference.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWSitePreference.h; sourceTree = "<group>"; };
@@ -814,7 +814,6 @@
 			children = (
 				B6520A790152E76B0F97A14A /* Apple */,
 				B6520A7B0152E76B0F97A14A /* Omni */,
-				A2E965E6050D4E580097A146 /* SenTestingKit.framework */,
 			);
 			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
@@ -1191,6 +1190,7 @@
 				B6827658012DF7920F97A14A /* CoreServices.framework */,
 				4A94189A049CB4F600278BF7 /* Security.framework */,
 				B6520A7A0152E76B0F97A14A /* SystemConfiguration.framework */,
+				A2E965E6050D4E580097A146 /* SenTestingKit.framework */,
 			);
 			name = Apple;
 			sourceTree = "<group>";
@@ -1271,7 +1271,7 @@
 				4AA535BB08B27DE600F0872D /* OWXMLURLFileProcessor.h in Headers */,
 				4AA535BD08B27DE600F0872D /* OWFTPProcessor.h in Headers */,
 				4AA535BE08B27DE600F0872D /* OWFTPSession.h in Headers */,
-				4AA535BF08B27DE600F0872D /* OWMLSTFTPProcessor.h in Headers */,
+				3475B67D13C39E4C006E3819 /* OWMLSTFTPProcessor.h in Headers */,
 				4AA535C008B27DE600F0872D /* OWMacOSPeterLewisFTPProcessor.h in Headers */,
 				4AA535C108B27DE600F0872D /* OWUnixFTPProcessor.h in Headers */,
 				4AA535C208B27DE600F0872D /* NSDate-OWExtensions.h in Headers */,
@@ -1283,7 +1283,7 @@
 				4AA535C808B27DE600F0872D /* OWHTTPProcessor.h in Headers */,
 				4AA535C908B27DE600F0872D /* OWHTTPSession.h in Headers */,
 				4AA535CA08B27DE600F0872D /* OWHTTPSessionQueue.h in Headers */,
-				4AA535CB08B27DE600F0872D /* OWAboutURLProcessor.h in Headers */,
+				3475B67E13C39E4D006E3819 /* OWAboutURLProcessor.h in Headers */,
 				4AA535CC08B27DE600F0872D /* OWAuthorization-KeychainFunctions.h in Headers */,
 				4AA535CD08B27DE600F0872D /* OWAuthorizationCredential.h in Headers */,
 				4AA535CE08B27DE600F0872D /* OWAuthorizationPassword.h in Headers */,
@@ -1300,8 +1300,6 @@
 				4AA535D908B27DE600F0872D /* OWSGMLTag.h in Headers */,
 				4AA535DA08B27DE600F0872D /* OWSGMLTagType.h in Headers */,
 				4AA535DB08B27DE600F0872D /* OWSGMLTokenProtocol.h in Headers */,
-				4AA535CB08B27DE600F0872D /* OWAboutURLProcessor.h in Headers */,
-				4AA535BF08B27DE600F0872D /* OWMLSTFTPProcessor.h in Headers */,
 				4A502734094128980035E67F /* OWProcessorDescription.h in Headers */,
 				4A5027610944C16E0035E67F /* OWSitePreference.h in Headers */,
 				4A50276E0944C3390035E67F /* OWFTPListingProcessor.h in Headers */,
@@ -1478,8 +1476,11 @@
 /* Begin PBXProject section */
 		00E52059FE8AB39F11C9CC38 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
-			compatibilityVersion = "Xcode 2.4";
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -1586,7 +1587,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "INFILE=$SOURCE_ROOT/Content.subproj/OWDataStream.m\n(\necho -n '{ gzIn = <'\ngzip --best < $INFILE | hexdump -v -e '32/1 \"%02X\" \"\\n\"'\necho -n '>; bzIn = <'\nbzip2 -1 < $INFILE | hexdump -v -e '32/1 \"%02X\" \"\\n\"'\necho -n '>; out = <'\ncat $INFILE | hexdump -v -e '32/1 \"%02X\" \"\\n\"'\necho '>; }'\n) > $BUILD_ROOT/OWF.otest/Contents/Resources/bigdata.plist";
+			shellScript = "OUTDIR=\"$SYMROOT$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nmkdir -p \"$OUTDIR\"\n\nINFILE=\"$SOURCE_ROOT\"/Content.subproj/OWDataStream.m\n(\necho -n '{ gzIn = <'\ngzip --best < \"$INFILE\" | hexdump -v -e '32/1 \"%02X\" \"\\n\"'\necho -n '>; bzIn = <'\nbzip2 -1 < \"$INFILE\" | hexdump -v -e '32/1 \"%02X\" \"\\n\"'\necho -n '>; out = <'\ncat \"$INFILE\" | hexdump -v -e '32/1 \"%02X\" \"\\n\"'\necho '>; }'\n) > \"$OUTDIR/bigdata.plist\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1827,7 +1828,6 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 1;
 				OTHER_CFLAGS = (
@@ -1853,7 +1853,6 @@
 				COPY_PHASE_STRIP = YES;
 				DYLIB_INSTALLED_NAME_normal = "$(FRAMEWORK_INSTALLED_NAME)";
 				FRAMEWORK_INSTALLED_NAME = "$(OMNI_FRAMEWORK_TARGET_PATH)$(/)$(PRODUCT_NAME).$(WRAPPER_EXTENSION)$(/)Versions$(/)$(FRAMEWORK_VERSION)$(/)$(PRODUCT_NAME)";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				INSTALL_MODE_FLAG = "a+rX";
 				OMNI_FRAMEWORK_TARGET_PATH = "@executable_path/../Frameworks";
 				OTHER_CFLAGS = "";
@@ -1914,6 +1913,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5357708B27DDC00F0872D /* Omni-Bundle-Debug.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_DIR)/Library/Frameworks",
+				);
 				INFOPLIST_FILE = "Info-OWFUnitTests.plist";
 				PRODUCT_NAME = OWF;
 				WRAPPER_EXTENSION = otest;
@@ -1924,6 +1927,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5357808B27DDC00F0872D /* Omni-Bundle-Release.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_DIR)/Library/Frameworks",
+				);
 				INFOPLIST_FILE = "Info-OWFUnitTests.plist";
 				PRODUCT_NAME = OWF;
 				WRAPPER_EXTENSION = otest;
@@ -1934,6 +1941,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5357608B27DDC00F0872D /* Omni-Bundle-Coverage.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_DIR)/Library/Frameworks",
+				);
 				INFOPLIST_FILE = "Info-OWFUnitTests.plist";
 				PRODUCT_NAME = OWF;
 				WRAPPER_EXTENSION = otest;

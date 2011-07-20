@@ -32,7 +32,10 @@ void OFNSObjectRelease(CFAllocatorRef allocator, const void *value)
 
 CFStringRef OFNSObjectCopyDescription(const void *value)
 {
-    return (CFStringRef)[[(id)value description] retain];
+    CFStringRef str = (CFStringRef)[(id)value description];
+    if (str)
+        CFRetain(str);
+    return str;
 }
 
 // See OBObject.h for OBNSObjectCopyShortDescription
@@ -78,7 +81,7 @@ CFHashCode OFCFTypeHash(const void *value)
 
 CFStringRef OFPointerCopyDescription(const void *ptr)
 {
-    return (CFStringRef)[[NSString alloc] initWithFormat: @"<%p>", ptr];
+    return CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("<%p>"), ptr);
 }
 
 CFStringRef OFIntegerCopyDescription(const void *ptr)

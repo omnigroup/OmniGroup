@@ -88,7 +88,7 @@ NSString * const OATextWithIconCellImageKey = @"image";
 {
     if (_oaFlags.settingUpFieldEditor)
         return [NSColor blackColor];
-    else if (!_oaFlags.drawsHighlight && _cFlags.highlighted)
+    else if (!_oaFlags.drawsHighlight && [self isHighlighted])
         return [NSColor textBackgroundColor];
     else
         return [super textColor];

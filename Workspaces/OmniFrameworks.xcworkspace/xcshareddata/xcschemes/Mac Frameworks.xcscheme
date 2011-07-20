@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   version = "1.3">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8DD76F740486A8DE00D96B5E"
+               BuildableName = "FixStringsFile"
+               BlueprintName = "FixStringsFile"
+               ReferencedContainer = "container:../Tools/FixStringsFile/FixStringsFile.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4A33D40608A0191B003A3FA5"
+               BuildableName = "OmniBase.framework"
+               BlueprintName = "OmniBase"
+               ReferencedContainer = "container:../Frameworks/OmniBase/OmniBase.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4A4E05FE08AA72B10098FF0F"
+               BuildableName = "OmniFoundation.framework"
+               BlueprintName = "OmniFoundation"
+               ReferencedContainer = "container:../Frameworks/OmniFoundation/OmniFoundation.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4AFE726808A02E9D00ED9F2D"
+               BuildableName = "OmniNetworking.framework"
+               BlueprintName = "OmniNetworking (Framework)"
+               ReferencedContainer = "container:../Frameworks/OmniNetworking/OmniNetworking.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
+               BuildableName = "OmniDataObjects.framework"
+               BlueprintName = "OmniDataObjects"
+               ReferencedContainer = "container:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
+               BuildableName = "OmniFileStore.framework"
+               BlueprintName = "OmniFileStore"
+               ReferencedContainer = "container:../Frameworks/OmniFileStore/OmniFileStore.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4AA5358208B27DE600F0872D"
+               BuildableName = "OWF.framework"
+               BlueprintName = "OWF (Framework)"
+               ReferencedContainer = "container:../Frameworks/OWF/OWF.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4A1F65DF08B37D04007C9742"
+               BuildableName = "OIF.framework"
+               BlueprintName = "OIF (Framework)"
+               ReferencedContainer = "container:../Frameworks/OIF/OIF.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4AA1E67A08AA764600E2FF6B"
+               BuildableName = "OmniAppKit.framework"
+               BlueprintName = "OmniAppKit (Framework)"
+               ReferencedContainer = "container:../Frameworks/OmniAppKit/OmniAppKit.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
+               BuildableName = "OmniInspector.framework"
+               BlueprintName = "OmniInspector"
+               ReferencedContainer = "container:../Frameworks/OmniInspector/OmniInspector.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
+               BuildableName = "OmniQuartz.framework"
+               BlueprintName = "OmniQuartz"
+               ReferencedContainer = "container:../Frameworks/OmniQuartz/OmniQuartz.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4AB9E6DB08BBA136002A253E"
+               BuildableName = "OmniSQLite.framework"
+               BlueprintName = "OmniSQLite"
+               ReferencedContainer = "container:../Frameworks/OmniSQLite/OmniSQLite.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4A40EBE908AB009A00E1769D"
+               BuildableName = "OmniSoftwareUpdate.framework"
+               BlueprintName = "OmniSoftwareUpdate"
+               ReferencedContainer = "container:../Frameworks/OmniSoftwareUpdate/OmniSoftwareUpdate.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
+               BuildableName = "OmniUnzip.framework"
+               BlueprintName = "OmniUnzip"
+               ReferencedContainer = "container:../Frameworks/OmniUnzip/OmniUnzip.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4AA1E7FA08AA764600E2FF6B"
+               BuildableName = "OAUnitTests.octest"
+               BlueprintName = "OAUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniAppKit/OmniAppKit.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "340D5DB40DAACED300BF27F8"
+               BuildableName = "ODOTests.octest"
+               BlueprintName = "ODOTests"
+               ReferencedContainer = "container:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4A4E07A808AA72B10098FF0F"
+               BuildableName = "OFUnitTests.octest"
+               BlueprintName = "OFUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniFoundation/OmniFoundation.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4AFE72AA08A02E9D00ED9F2D"
+               BuildableName = "ONUnitTests.otest"
+               BlueprintName = "ONUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniNetworking/OmniNetworking.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      buildConfiguration = "Debug">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4AA1E7FA08AA764600E2FF6B"
+               BuildableName = "OAUnitTests.octest"
+               BlueprintName = "OAUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniAppKit/OmniAppKit.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "340D5DB40DAACED300BF27F8"
+               BuildableName = "ODOTests.octest"
+               BlueprintName = "ODOTests"
+               ReferencedContainer = "container:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4A4E07A808AA72B10098FF0F"
+               BuildableName = "OFUnitTests.octest"
+               BlueprintName = "OFUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniFoundation/OmniFoundation.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      buildConfiguration = "Debug"
+      debugDocumentVersioning = "YES">
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "8DD76F740486A8DE00D96B5E"
+            BuildableName = "FixStringsFile"
+            BlueprintName = "FixStringsFile"
+            ReferencedContainer = "container:../Tools/FixStringsFile/FixStringsFile.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <AdditionalOptions>
+      </AdditionalOptions>
+   </LaunchAction>
+   <ProfileAction
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      buildConfiguration = "Release"
+      debugDocumentVersioning = "YES">
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "8DD76F740486A8DE00D96B5E"
+            BuildableName = "FixStringsFile"
+            BlueprintName = "FixStringsFile"
+            ReferencedContainer = "container:../Tools/FixStringsFile/FixStringsFile.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

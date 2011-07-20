@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2008-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,4 +22,6 @@
 #define OAAppKitVersionNumber10_5_3 (949.33)
 
 #define OAAppKitVersionNumber10_6   (1038)
+
+#define OAAppKitVersionNumber10_7   (1121)
 

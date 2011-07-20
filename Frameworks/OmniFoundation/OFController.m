@@ -340,7 +340,6 @@ static void _OFControllerCheckTerminated(void)
     }
 }
 
-/*" The application should call this method when it is going to terminate and there is no chance of cancelling it (i.e., after it has called -requestTermination and a YES has been returned). "*/
 - (void)willTerminate;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -351,7 +350,8 @@ static void _OFControllerCheckTerminated(void)
 
 - (void)gotPostponedTerminateResult:(BOOL)isReadyToTerminate;
 {
-    OBRequestConcreteImplementation(self, _cmd);
+    if (isReadyToTerminate)
+        self->status = OFControllerTerminatingStatus;
 }
 
 // Allow subclasses to override this

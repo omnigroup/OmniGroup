@@ -2095,7 +2095,7 @@ processStatus:
 
         message = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Server returns \"%@\" (%d)", @"OWF", [OWHTTPSession bundle], @"httpsession error - string and numeric code from server"), commentString, httpStatus];
 
-        result = [[NSException alloc] initWithName:[NSString stringWithFormat:@"HTTP %d", httpStatus] reason:message userInfo:nil];
+        result = (id <OWConcreteCacheEntry>)[[NSException alloc] initWithName:[NSString stringWithFormat:@"HTTP %d", httpStatus] reason:message userInfo:nil];
     }
 
     resultContent = [[OWContent alloc] initWithContent:result];

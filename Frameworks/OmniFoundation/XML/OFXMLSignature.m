@@ -1634,8 +1634,6 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
         return nil;
     }
     
-    id <OFDigestionContext, NSObject> result;
-    
     if (xmlStrcmp(algid, XMLDigestSHA1) == 0) {
         xmlFree(algid);
         return [[OFSHA1DigestContext alloc] init];
@@ -1651,6 +1649,7 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
     }
     
 #if OF_ENABLE_CSSM
+    id <OFDigestionContext, NSObject> result;
     CSSM_ALGORITHMS cssm_algid;
     
     if (xmlStrcmp(algid, XMLDigestSHA1) == 0) {

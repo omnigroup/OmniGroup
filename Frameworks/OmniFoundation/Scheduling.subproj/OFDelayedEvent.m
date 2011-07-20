@@ -121,7 +121,7 @@ RCS_ID("$Id$")
             }
         }
     } NS_HANDLER {
-        NSLog(@"Ignored exception raised during -[%@ %@]: %@", isa, NSStringFromSelector(_cmd), localException);
+        NSLog(@"Ignored exception raised during -[%@ %@]: %@", NSStringFromClass([self class]), NSStringFromSelector(_cmd), localException);
     } NS_ENDHANDLER;
 
     // Forget the event regardless of whether it raised or not

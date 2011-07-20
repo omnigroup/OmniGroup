@@ -291,7 +291,7 @@ static void duplicateFunction(const void *key, const void *value, void *context)
     [coder decodeValuesOfObjCTypes:"si", &flags, &keyCount];
     
     if ((flags & 0xFE) != 0)
-        [NSException raise:NSGenericException format:@"Serialized %@ is of unknown kind", [(id)isa name]];
+        [NSException raise:NSGenericException format:@"Serialized %@ is of unknown kind", [[self class] name]];
     
     if (![self initWithCaseInsensitiveKeys: (flags&1)? YES : NO])
         return nil;
@@ -330,7 +330,7 @@ static void duplicateFunction(const void *key, const void *value, void *context)
     if (dictionaryFlags == DictKeysOFCaseInsensitiveStrings)
         flags |= 1;
     else if (dictionaryFlags != DictKeysStandard) {
-        [NSException raise:NSGenericException format:@"Cannot serialize an %@ with custom key callbacks", [(id)isa name]];
+        [NSException raise:NSGenericException format:@"Cannot serialize an %@ with custom key callbacks", [[self class] name]];
     }
 
     keys = [[self allKeys] sortedArrayUsingSelector:@selector(compare:)];

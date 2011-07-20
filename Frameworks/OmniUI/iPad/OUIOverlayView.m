@@ -265,6 +265,8 @@ RCS_ID("$Id$");
 
 @synthesize text = _text;
 @synthesize attributedText = _attributedText;
+@synthesize textLayout = _textLayout;
+
 - (void)setText:(NSString *)aString;
 {
     if (aString) {

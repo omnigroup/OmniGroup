@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIWebDAVController.h"
+#import "OUISyncListController.h"
 
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManager.h>
@@ -18,29 +18,40 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 
 #import "OUICredentials.h"
+#import "OUISyncDownloader.h"
+
+// TODO: Refactor so neither OUIWebDAVConnection.h nor OUIWebDAVSetup.h need to be included here.
 #import "OUIWebDAVConnection.h"
-#import "OUIWebDAVDownloader.h"
 #import "OUIWebDAVSetup.h"
 
-RCS_ID("$Id$")
+RCS_ID("$Id$");
 
-@interface OUIWebDAVController (/* private */)
-- (void)_loadFiles;
-- (BOOL)_canOpenFile:(OFSFileInfo *)fileInfo;
+@interface OUISyncListController (/* Private */)
+
 - (NSString *)_formattedFileSize:(NSUInteger)sizeinBytes;
 - (void)_updateNavigationButtons;
-- (void)_fadeOutDownload:(OUIWebDAVDownloader *)downloader;
-- (void)_exportToURL:(NSURL *)exportURL;
-- (void)_addDownloaderWithURL:(NSURL *)exportURL toCell:(UITableViewCell *)cell;
-- (void)_stopConnectingIndicator;
+- (void)_fadeOutDownload:(OUISyncDownloader *)downloader;
 - (void)_goBack:(id)sender;
+
 @end
 
-@implementation OUIWebDAVController
+
+@implementation OUISyncListController
+
+@synthesize syncType = _syncType;
+@synthesize address = _address;
+@synthesize connectingView = _connectingView;
+@synthesize connectingProgress = _connectingProgress;
+@synthesize connectingLabel = _connectingLabel;
+@synthesize files = _files;
+@synthesize isExporting = _isExporting;
+@synthesize exportFileWrapper = _exportFileWrapper;
+
+@synthesize downloader = _downloader;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
-    return [super initWithNibName:@"OUIWebDAVList" bundle:OMNI_BUNDLE];
+    return [super initWithNibName:@"OUISyncListController" bundle:OMNI_BUNDLE];
 }
 
 - (void)dealloc;
@@ -50,11 +61,12 @@ RCS_ID("$Id$")
     [_connectingView release];
     [_connectingProgress release];
     [_connectingLabel release];
-     
+    
     [_exportFileWrapper release];
     
     [_exportURL release];
     [_exportIndexPath release];
+    [_downloader release];
     
     [super dealloc];
 }
@@ -114,38 +126,7 @@ RCS_ID("$Id$")
 #pragma mark API
 - (void)export:(id)sender;
 {
-    OBASSERT(_exportFileWrapper != nil);
-    
-    OFSFileManager *fileManager = [[OUIWebDAVConnection sharedConnection] fileManager];
-    if (!fileManager) {
-        return;
-    }
-    
-    self.navigationItem.rightBarButtonItem.enabled = NO; /* 'Copy' button */
-    
-    NSURL *directoryURL = (_address != nil) ? _address : [fileManager baseURL];
-    NSURL *fileURL = nil;
-    if ([directoryURL isFileURL])
-        fileURL = OFSFileURLRelativeToDirectoryURL(directoryURL, _exportFileWrapper.preferredFilename);
-    else
-        fileURL = OFSURLRelativeToDirectoryURL(directoryURL, [_exportFileWrapper.preferredFilename stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
-    
-    NSError *error = nil;
-    OFSFileInfo *fileCheck = [fileManager fileInfoAtURL:fileURL error:&error];
-    if (!fileCheck) {
-        OUI_PRESENT_ALERT(error);
-        return;
-    }
-    
-    if ([fileCheck exists]) {
-        OBASSERT(_replaceDocumentAlert == nil); // this should never happen
-        _replaceDocumentAlert = [[OUIReplaceDocumentAlert alloc] initWithDelegate:self documentURL:fileURL];
-        [_replaceDocumentAlert show];
-        
-        return;
-    }
-    
-    [self _exportToURL:fileURL];
+    // TODO: Must override in subclass.
 }
 
 - (void)signOut:(id)sender;
@@ -205,10 +186,10 @@ RCS_ID("$Id$")
 
 - (void)downloadFinished:(NSNotification *)notification;
 {
-    OUIWebDAVDownloader *downloader = [notification object];
+    OUISyncDownloader *downloader = [notification object];
     
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIWebDAVDownloadFinishedNotification object:downloader];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIWebDAVDownloadCanceledNotification object:downloader];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUISyncDownloadFinishedNotification object:downloader];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUISyncDownloadCanceledNotification object:downloader];
     
     
     if (_isExporting) {
@@ -218,21 +199,19 @@ RCS_ID("$Id$")
         [self _fadeOutDownload:downloader];
         [self.navigationController dismissModalViewControllerAnimated:YES];
         
-        NSURL *downloadURL = [[notification userInfo] objectForKey:OUIWebDAVDownloadURL];
+        NSURL *downloadURL = [[notification userInfo] objectForKey:OUISyncDownloadURL];
         [[[OUIAppController controller] documentPicker] addDocumentFromURL:downloadURL];
         
         _isDownloading = NO;
     }
-    
-    [[OUIWebDAVConnection sharedConnection] close];
 }
 
 - (void)downloadCanceled:(NSNotification *)notification;
 {
-    OUIWebDAVDownloader *downloader = [notification object];
+    OUISyncDownloader *downloader = [notification object];
     
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIWebDAVDownloadFinishedNotification object:downloader];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIWebDAVDownloadCanceledNotification object:downloader];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUISyncDownloadFinishedNotification object:downloader];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUISyncDownloadCanceledNotification object:downloader];
     
     [self _fadeOutDownload:downloader];
     
@@ -247,13 +226,22 @@ RCS_ID("$Id$")
     }
 }
 
+- (void)addDownloaderWithURL:(NSURL *)exportURL toCell:(UITableViewCell *)cell;
+{
+    // Should override in subclass.
+}
+
+- (void)_exportToNewPathGeneratedFromURL:(NSURL *)documentURL;
+{
+    // Should override in subclass.
+}
 #pragma mark -
 #pragma mark OUIReplaceDocumentAlert
 - (void)replaceDocumentAlert:(OUIReplaceDocumentAlert *)alert didDismissWithButtonIndex:(NSInteger)buttonIndex documentURL:(NSURL *)documentURL;
 {
     [_replaceDocumentAlert release];
     _replaceDocumentAlert = nil;
-
+    
     switch (buttonIndex) {
         case 0: /* Cancel */
             self.navigationItem.rightBarButtonItem.enabled = YES;
@@ -266,9 +254,7 @@ RCS_ID("$Id$")
         }
         case 2: /* Add */
         {
-            NSURL *newURL = [[[OUIWebDAVConnection sharedConnection] fileManager] availableURL:documentURL];
-            OBASSERT(newURL);
-            [self _exportToURL:newURL];
+            [self _exportToNewPathGeneratedFromURL:documentURL];
             break;
         }
         default:
@@ -296,19 +282,26 @@ RCS_ID("$Id$")
     OFSFileInfo *fileInfo = [_files objectAtIndex:indexPath.row];
     cell.textLabel.text = [[fileInfo name] stringByDeletingPathExtension];
     cell.accessoryType = (![self _canOpenFile:fileInfo] && [fileInfo isDirectory]) ? UITableViewCellAccessoryDisclosureIndicator : UITableViewCellAccessoryNone;
-
+    
     BOOL canOpenFile = ([fileInfo isDirectory] || [self _canOpenFile:fileInfo] || _isExporting) && [fileInfo exists];
     cell.textLabel.textColor = canOpenFile ? [UIColor blackColor] : [UIColor grayColor];
     
     if (![fileInfo isDirectory] || [self _canOpenFile:fileInfo]) {
         NSDate *lastModifiedDate = [fileInfo lastModifiedDate];
         if (lastModifiedDate) {
+            NSLog(@"%@", fileInfo.name);
+            NSLog(@"%@", fileInfo.lastModifiedDate);
+            
+            
             NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
             [formatter setDateStyle:NSDateFormatterMediumStyle];
             [formatter setLocale:[NSLocale currentLocale]];
             cell.detailTextLabel.text = [formatter stringFromDate:lastModifiedDate];
             [formatter release];
         }
+    }
+    else {
+        cell.detailTextLabel.text = nil;
     }
     
     UIImage *icon = nil;
@@ -332,39 +325,14 @@ RCS_ID("$Id$")
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    if (_isDownloading)
-        return;
-        
-    OFSFileInfo *fileInfo = [_files objectAtIndex:indexPath.row];
-    if (![self _canOpenFile:fileInfo] && [fileInfo isDirectory]) {
-        NSURL *subFolder = [fileInfo originalURL];
-        OUIWebDAVController *subfolderController = [[OUIWebDAVController alloc] init];
-        subfolderController.address = subFolder;
-        subfolderController.syncType = _syncType;
-        subfolderController.exportFileWrapper = _exportFileWrapper;
-        subfolderController.isExporting = _isExporting;
-        
-        [self.navigationController pushViewController:subfolderController animated:YES];
-        [subfolderController release];
-    } else {
-        OUIWebDAVDownloader *downloader = [[OUIWebDAVDownloader alloc] init];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadFinished:) name:OUIWebDAVDownloadFinishedNotification object:downloader];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadCanceled:) name:OUIWebDAVDownloadCanceledNotification object:downloader];
-        
-        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-        cell.accessoryView = downloader.view;
-        _isDownloading = YES;
-        [downloader download:fileInfo];
-        [downloader release];
-    }
+    // TODO: This should be handled in the subclass.
 }
 
 - (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     if (_isDownloading)
         return nil;
-        
+    
     OFSFileInfo *fileInfo = [_files objectAtIndex:indexPath.row];
     if (![self _canOpenFile:fileInfo] && [fileInfo isDirectory])
         return indexPath;
@@ -380,7 +348,7 @@ RCS_ID("$Id$")
     if (!_isExporting || indexPath.row != _exportIndexPath.row || _exportURL == nil)
         return;
     
-    [self _addDownloaderWithURL:_exportURL toCell:cell];
+    [self addDownloaderWithURL:_exportURL toCell:cell];
     
     [_exportURL release];
     _exportURL = nil;
@@ -389,17 +357,13 @@ RCS_ID("$Id$")
     _exportIndexPath = nil;
 }
 
-@synthesize syncType = _syncType;
-@synthesize address = _address;
-@synthesize connectingView = _connectingView;
-@synthesize connectingProgress = _connectingProgress;
-@synthesize connectingLabel = _connectingLabel;
-@synthesize files = _files;
-@synthesize isExporting = _isExporting;
-@synthesize exportFileWrapper = _exportFileWrapper;
-
 #pragma mark private
-
+- (void)_displayDuplicateFileAlertForFile:(NSURL *)fileURL;
+{
+    OBASSERT(_replaceDocumentAlert == nil); // this should never happen
+    _replaceDocumentAlert = [[OUIReplaceDocumentAlert alloc] initWithDelegate:self documentURL:fileURL];
+    [_replaceDocumentAlert show];
+}
 - (BOOL)_canOpenFile:(OFSFileInfo *)fileInfo;
 {
     return [[OUIAppController controller] canViewFileTypeWithIdentifier:[fileInfo UTI]];
@@ -419,7 +383,7 @@ RCS_ID("$Id$")
     NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
     [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [formatter setMaximumFractionDigits:1];
-
+    
     if (sizeinBytes < 1e3) {
         NSString *formattedNumber = [formatter stringFromNumber:[NSNumber numberWithFloat:sizeinBytes]];
         formattedString = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ B", @"OmniUI", OMNI_BUNDLE, @"bytes"), formattedNumber];
@@ -445,28 +409,7 @@ RCS_ID("$Id$")
         return;
     }
     
-    OFSFileManager *fileManager = [[OUIWebDAVConnection sharedConnection] fileManager];
-    if (!fileManager) {
-        if ([[OUIWebDAVConnection sharedConnection] validConnection]) {
-            fileManager = [[OUIWebDAVConnection sharedConnection] fileManager];
-        } else {
-            if (![[OUIWebDAVConnection sharedConnection] trustAlertVisible])
-                [self signOut:nil];
-            return;
-        }
-    }
-    
-    NSURL *url = (_address != nil) ? _address : [fileManager baseURL];
-    NSError *outError = nil;
-    // TODO: would be nice if -directoryContentsAtURL was asynchronous
-    NSArray *fileInfos = [fileManager directoryContentsAtURL:url havingExtension:nil options:(OFSDirectoryEnumerationSkipsSubdirectoryDescendants | OFSDirectoryEnumerationSkipsHiddenFiles) error:&outError];
-    if (outError) {
-        OUI_PRESENT_ALERT(outError);
-        return;
-    }
-    
-    [self setFiles:[fileInfos sortedArrayUsingSelector:@selector(compareByName:)]];
-    [self _stopConnectingIndicator];
+    // This should be implemented in subclasses.
 }
 
 - (void)_updateNavigationButtons;
@@ -490,7 +433,7 @@ RCS_ID("$Id$")
     UINavigationController *navigationController = self.navigationController;
     NSArray *viewControllers = navigationController.viewControllers;
     NSUInteger viewIndex = [viewControllers indexOfObjectIdenticalTo:self];
-
+    
     if (viewIndex == 0) {
         UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
         navigationItem.leftBarButtonItem = cancel;
@@ -510,12 +453,12 @@ RCS_ID("$Id$")
 #endif
 }
 
-- (void)_fadeOutDownload:(OUIWebDAVDownloader *)downloader;
+- (void)_fadeOutDownload:(OUISyncDownloader *)downloader;
 {
     for (UITableViewCell *cell in [(UITableView *)self.view visibleCells]) {
         if (cell.accessoryView == downloader.view) {
             
-            [UIView beginAnimations:@"OUIWebDAVController_cancel_download" context:cell];
+            [UIView beginAnimations:@"OUIWebDAVSyncListController_cancel_download" context:cell];
             {
                 cell.accessoryView.alpha = 0;
                 
@@ -540,7 +483,7 @@ RCS_ID("$Id$")
     NSIndexPath *indexPathToEmptyFile = [NSIndexPath indexPathForRow:[_files indexOfObject:emptyFile] inSection:0];
     if ([(UITableView *)self.view cellForRowAtIndexPath:indexPathToEmptyFile] != nil) {
         UITableViewCell *cell = [(UITableView *)self.view cellForRowAtIndexPath:indexPathToEmptyFile];
-        [self _addDownloaderWithURL:exportURL toCell:cell];
+        [self addDownloaderWithURL:exportURL toCell:cell];
     } else {
         [_exportURL release];
         _exportURL = [exportURL retain];
@@ -550,19 +493,6 @@ RCS_ID("$Id$")
         
         [(UITableView *)self.view scrollToRowAtIndexPath:_exportIndexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
     }
-}
-
-- (void)_addDownloaderWithURL:(NSURL *)exportURL toCell:(UITableViewCell *)cell;
-{
-    OUIWebDAVDownloader *downloader = [[OUIWebDAVDownloader alloc] init];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadFinished:) name:OUIWebDAVDownloadFinishedNotification object:downloader];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadCanceled:) name:OUIWebDAVDownloadCanceledNotification object:downloader];
-    
-    cell.accessoryView = downloader.view;
-    
-    [downloader uploadFileWrapper:_exportFileWrapper toURL:exportURL];
-    [downloader release];
 }
 
 - (void)_stopConnectingIndicator;
@@ -575,6 +505,8 @@ RCS_ID("$Id$")
     if (!url)
         return;
     
+    NSString *newTitleName = [OFSFileInfo nameForURL:url];
+    
     switch (_syncType) {
         case OUIiTunesSync:
             self.title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to iTunes", @"OmniUI", OMNI_BUNDLE, @"iTunes export") : NSLocalizedStringFromTableInBundle(@"Copy from iTunes", @"OmniUI", OMNI_BUNDLE, @"iTunes export");
@@ -582,7 +514,7 @@ RCS_ID("$Id$")
         case OUIMobileMeSync:
         case OUIOmniSync:
         case OUIWebDAVSync:
-            self.title = _isExporting ? [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Export to '%@'", @"OmniUI", OMNI_BUNDLE, @"WebDAV export"), [OFSFileInfo nameForURL:url]] :[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Copy from '%@'", @"OmniUI", OMNI_BUNDLE, @"WebDAV export"), [OFSFileInfo nameForURL:url]];
+            self.title = _isExporting ? [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Export to '%@'", @"OmniUI", OMNI_BUNDLE, @"WebDAV export"), newTitleName] :[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Copy from '%@'", @"OmniUI", OMNI_BUNDLE, @"WebDAV export"), newTitleName];
             break;
         default:
             break;
@@ -595,4 +527,3 @@ RCS_ID("$Id$")
 }
 
 @end
-

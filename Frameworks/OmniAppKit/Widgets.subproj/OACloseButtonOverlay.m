@@ -1,4 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,8 @@ RCS_ID("$Id$");
         [[NSColor colorWithCalibratedWhite:0.0f alpha:[window isKeyWindow] ? 0.6f : 0.3f] set];
         
         NSBezierPath *path = [NSBezierPath bezierPath];
-        [path appendBezierPathWithArcWithCenter:NSMakePoint(NSMidX(_bounds), NSMidY(_bounds) + 1.0f) radius:2.5f startAngle:0.0f endAngle:360.0f clockwise:NO];
+        NSRect bounds = self.bounds;
+        [path appendBezierPathWithArcWithCenter:NSMakePoint(NSMidX(bounds), NSMidY(bounds) + 1.0f) radius:2.5f startAngle:0.0f endAngle:360.0f clockwise:NO];
         [path setLineWidth:1.5f];
         [path stroke];
     }

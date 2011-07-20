@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -283,7 +283,7 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
 @implementation ODOEntity (Internal)
 
 #ifdef OMNI_ASSERTIONS_ON
-CFComparisonResult _compareByName(const void *val1, const void *val2, void *context)
+static CFComparisonResult _compareByName(const void *val1, const void *val2, void *context)
 {
     return [(ODOProperty *)val1 compareByName:(ODOProperty *)val2];
 }
@@ -408,8 +408,8 @@ extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString 
         
         
         // Some of the setters may be NULL (eventually) when we support read-only properties.
-        SEL *getters = malloc(sizeof(SEL) * propertyCount);
-        SEL *setters = malloc(sizeof(SEL) * propertyCount);
+        SEL *getters = malloc(sizeof(SEL) * (propertyCount + 1)); // Avoid clang-sa warning about malloc(0)
+        SEL *setters = malloc(sizeof(SEL) * (propertyCount + 1));
         
         for (CFIndex propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
             ODOProperty *property = [entity->_properties objectAtIndex:propertyIndex];

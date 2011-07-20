@@ -20,7 +20,7 @@
 #import "OUIExportOptionsController.h"
 #import "OUIExportOptionsView.h"
 #import "OUIWebDAVConnection.h"
-#import "OUIWebDAVController.h"
+#import "OUIWebDAVSyncListController.h"
 #import "OUIWebDAVSetup.h"
 
 RCS_ID("$Id$")
@@ -72,7 +72,7 @@ RCS_ID("$Id$")
         return;
     }
     
-    self.contentSizeForViewInPopover = CGSizeMake(320, 108); // Make sure we set this before creating our popover
+    self.contentSizeForViewInPopover = CGSizeMake(320, 152); // Make sure we set this before creating our popover
     
     if (!_menuNavigationController) {
         _menuNavigationController = [[UINavigationController alloc] initWithRootViewController:self];
@@ -228,9 +228,9 @@ RCS_ID("$Id$")
             [viewController release];
             return;
         } else {
-            viewController = [[OUIWebDAVController alloc] init];
-            [(OUIWebDAVController *)viewController setSyncType:indexPath.row];
-            [(OUIWebDAVController *)viewController setIsExporting:_isExporting];
+            viewController = [[OUIWebDAVSyncListController alloc] init];
+            [(OUIWebDAVSyncListController *)viewController setSyncType:indexPath.row];
+            [(OUIWebDAVSyncListController *)viewController setIsExporting:_isExporting];
         }
     } else {
         viewController = [[OUIWebDAVSetup alloc] init];

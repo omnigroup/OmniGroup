@@ -86,10 +86,10 @@ RCS_ID("$Id$")
     }
     [aString getCharacters:buffer];
     buffer[length] = '\0';
-    Class trieNodeClass = ((OFTrie *)head)->isa;
+    Class trieNodeClass = [head class];
     if (head->childCount != 0) {
 	while ((to = trieFindChild(attachTo, *ptr))) {
-            if (((OFTrie *)to)->isa != trieNodeClass) {
+            if ([to class] != trieNodeClass) {
 		OFTrieBucket *existingBucket;
 		OFTrieNode *end;
 		unichar *existingPtr;
@@ -184,9 +184,9 @@ RCS_ID("$Id$")
     buffer[length] = 0;
     ptr = buffer;
     currentNode = head;
-    trieNodeClass = ((OFTrie *)head)->isa;
+    trieNodeClass = [head class];
     while ((currentNode = trieFindChild(currentNode, *ptr++))) {
-	if (((OFTrie *)currentNode)->isa != trieNodeClass) {
+	if ([currentNode class] != trieNodeClass) {
 	    OFTrieBucket *test;
 	    unichar *lowerPtr, *upperPtr;
 

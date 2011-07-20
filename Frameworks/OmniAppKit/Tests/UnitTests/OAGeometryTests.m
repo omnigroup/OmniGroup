@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,9 +26,9 @@ RCS_ID("$Id$");
 #define CURVEMATCH_GRAZING_EPSILON 0.5
 #define BOUNDS_EPSILON 1e-4
 
-void checkAtPoint(NSPoint p0, NSPoint p1, double t, NSPoint p)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void checkAtPoint(NSPoint p0, NSPoint p1, double t, NSPoint p)
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
     double tfrom1 = 1 - t;
     
     OBASSERT(t >= 0);
@@ -42,13 +42,12 @@ void checkAtPoint(NSPoint p0, NSPoint p1, double t, NSPoint p)
 
     OBASSERT(fabs(px - p.x) < INTERSECTION_EPSILON);
     OBASSERT(fabs(py - p.y) < INTERSECTION_EPSILON);
-#endif
 }
+#endif
 
-BOOL rectsAreApproximatelyEqual(NSRect r1, NSRect r2, float epsilon, int line)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static BOOL rectsAreApproximatelyEqual(NSRect r1, NSRect r2, float epsilon, int line)
 {
-    return YES;
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
     BOOL fail;
     
     fail = NO;
@@ -59,10 +58,11 @@ BOOL rectsAreApproximatelyEqual(NSRect r1, NSRect r2, float epsilon, int line)
     testRectPart(r1.size.height, r2.size.height);
 
     return ! fail;
-#endif
 }
+#endif
 
-const char *straspect(enum OAIntersectionAspect a)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static const char *straspect(enum OAIntersectionAspect a)
 {
     switch(a) {
         case intersectionEntryLeft: return "left";
@@ -71,8 +71,10 @@ const char *straspect(enum OAIntersectionAspect a)
         default:                    return "bogus";
     }
 }
+#endif
 
-void checkOneLineLineIntersection(NSPoint p00, NSPoint p01, NSPoint p10, NSPoint p11, NSPoint intersection, enum OAIntersectionAspect aspect)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void checkOneLineLineIntersection(NSPoint p00, NSPoint p01, NSPoint p10, NSPoint p11, NSPoint intersection, enum OAIntersectionAspect aspect)
 {
     NSPoint l1[2], l2[2];
     struct intersectionInfo r;
@@ -94,8 +96,10 @@ void checkOneLineLineIntersection(NSPoint p00, NSPoint p01, NSPoint p10, NSPoint
     OBASSERT(r.leftEntryAspect == aspect);
     OBASSERT(r.leftExitAspect == aspect);
 }
+#endif
 
-void checkOneLineLineOverlap(NSPoint p00, NSPoint p01, NSPoint p10, NSPoint p11, NSPoint intersectionStart, NSPoint intersectionEnd)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void checkOneLineLineOverlap(NSPoint p00, NSPoint p01, NSPoint p10, NSPoint p11, NSPoint intersectionStart, NSPoint intersectionEnd)
 {
     NSPoint l1[2], l2[2];
     struct intersectionInfo r;
@@ -118,8 +122,10 @@ void checkOneLineLineOverlap(NSPoint p00, NSPoint p01, NSPoint p10, NSPoint p11,
     OBASSERT(r.leftEntryAspect == intersectionEntryAt);
     OBASSERT(r.leftExitAspect == intersectionEntryAt);
 }
+#endif
 
-void linesShouldNotIntersect(float x00, float y00, float x01, float y01, float x10, float y10, float x11, float y11)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void linesShouldNotIntersect(float x00, float y00, float x01, float y01, float x10, float y10, float x11, float y11)
 {
     NSPoint l1[2], l2[2];
     struct intersectionInfo r[1];
@@ -178,8 +184,10 @@ void linesShouldNotIntersect(float x00, float y00, float x01, float y01, float x
     intersectionsBetweenLineAndLine(l2, l1, r);
     OBASSERT(count == 0);
 }
+#endif
 
-void linesDoIntersect(float x00, float y00, float x01, float y01, float x10, float y10, float x11, float y11, float xi, float yi, enum OAIntersectionAspect aspect)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void linesDoIntersect(float x00, float y00, float x01, float y01, float x10, float y10, float x11, float y11, float xi, float yi, enum OAIntersectionAspect aspect)
 {
     NSPoint p00 = { x00, y00 };
     NSPoint p01 = { x01, y01 };
@@ -192,8 +200,10 @@ void linesDoIntersect(float x00, float y00, float x01, float y01, float x10, flo
     checkOneLineLineIntersection(p01, p00, p10, p11, i, -aspect); 
     checkOneLineLineIntersection(p01, p00, p11, p10, i, aspect); 
 }
+#endif
 
-void linesDoOverlap(float x00, float y00, float x01, float y01, float x10, float y10, float x11, float y11, float xi0, float yi0, float xi1, float yi1)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void linesDoOverlap(float x00, float y00, float x01, float y01, float x10, float y10, float x11, float y11, float xi0, float yi0, float xi1, float yi1)
 {
     NSPoint p00 = { x00, y00 };
     NSPoint p01 = { x01, y01 };
@@ -207,10 +217,11 @@ void linesDoOverlap(float x00, float y00, float x01, float y01, float x10, float
     checkOneLineLineOverlap(p01, p00, p10, p11, i1, i0); 
     checkOneLineLineOverlap(p01, p00, p11, p10, i1, i0); 
 }
+#endif
 
 - (void)testLineLineIntersections
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     // Oblique misses, all permutations of pdet/vdet/p'det
     linesShouldNotIntersect(2, 2, 4, 4, 0, 3.5, 3,   3.9);
     linesShouldNotIntersect(2, 2, 4, 4, 0, 3.5, 4.7, 4.2);
@@ -250,7 +261,8 @@ void linesDoOverlap(float x00, float y00, float x01, float y01, float x10, float
 #endif
 }
 
-void dumpFoundIntersections(int foundCount,
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void dumpFoundIntersections(int foundCount,
                             const char *leftname, const char *rightname,
                             const NSPoint *leftCoeff, const NSPoint *rightCoeff,
                             struct intersectionInfo *r)
@@ -285,9 +297,10 @@ void dumpFoundIntersections(int foundCount,
     }
     
 }
+#endif
 
-
-void dumpExpectedIntersections(int expectedCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *aentry, const enum OAIntersectionAspect *aexit, BOOL invertAspects)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void dumpExpectedIntersections(int expectedCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *aentry, const enum OAIntersectionAspect *aexit, BOOL invertAspects)
 {
     int ix;
     
@@ -303,11 +316,11 @@ void dumpExpectedIntersections(int expectedCount, const NSPoint *i, const double
     }
     
 }
+#endif
 
-BOOL checkOneLineCurve(const NSPoint *cparams, const NSPoint *lparams, int count, const NSPoint *i, const enum OAIntersectionAspect *a, BOOL invertAspects)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static BOOL checkOneLineCurve(const NSPoint *cparams, const NSPoint *lparams, int count, const NSPoint *i, const enum OAIntersectionAspect *a, BOOL invertAspects)
 {
-    return NO;
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
     struct intersectionInfo r[3];
     int ix;
     
@@ -359,10 +372,11 @@ BOOL checkOneLineCurve(const NSPoint *cparams, const NSPoint *lparams, int count
     }
     
     return success;
-#endif
 }
+#endif
 
-void checkLineCurve(const NSPoint *c, const NSPoint *l, int count, ...)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void checkLineCurve(const NSPoint *c, const NSPoint *l, int count, ...)
 /*
                     NSPoint i1, enum OAIntersectionAspect a1i, enum OAIntersectionAspect a1o,
                     NSPoint i2, enum OAIntersectionAspect a2i, enum OAIntersectionAspect a2o,
@@ -410,6 +424,7 @@ void checkLineCurve(const NSPoint *c, const NSPoint *l, int count, ...)
         OBASSERT_NOT_REACHED("Line/Curve intersection tests fail");
     }
 }
+#endif
 
 #if 0
 static NSPoint pointOnCurve(const NSPoint *pts, float t)
@@ -443,7 +458,7 @@ static NSPoint pointOnCurve(const NSPoint *pts, float t)
 
 - (void)testLineCurveIntersections
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     NSPoint l1[2] = { {1, 2}, {2, 6} };
     NSPoint l2[2] = { {1, 2}, {-1, -1} };
     NSPoint l3[2] = { {1, -1}, {1, 1} };
@@ -499,16 +514,17 @@ static NSPoint pointOnCurve(const NSPoint *pts, float t)
 #endif
 }
 
-void logparams(NSString *name, const NSPoint *c)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void logparams(NSString *name, const NSPoint *c)
 {
     NSLog(@"%@ px: %g %g %g %g", name, c[0].x, c[1].x, c[2].x, c[3].x);
     NSLog(@"%@ py: %g %g %g %g", name, c[0].y, c[1].y, c[2].y, c[3].y);
 }
+#endif
 
-BOOL checkOneCurveCurve(const NSPoint *leftPoints, const NSPoint *rightPoints, int intersectionCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *entryAspects, const enum OAIntersectionAspect *exitAspects, BOOL invertAspects, BOOL looseAspects)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static BOOL checkOneCurveCurve(const NSPoint *leftPoints, const NSPoint *rightPoints, int intersectionCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *entryAspects, const enum OAIntersectionAspect *exitAspects, BOOL invertAspects, BOOL looseAspects)
 {
-    return NO;
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
     struct intersectionInfo r[MAX_INTERSECTIONS_PER_ELT_PAIR];
     int ix, found;
     
@@ -597,8 +613,8 @@ BOOL checkOneCurveCurve(const NSPoint *leftPoints, const NSPoint *rightPoints, i
     }
     
     return YES;
-#endif
 }
+#endif
 
 typedef struct expect {
     NSPoint pt;
@@ -607,7 +623,8 @@ typedef struct expect {
     BOOL justTouches;
 } expect;
 
-BOOL checkCurveCurve_(BOOL looseAspects, const NSPoint *left, const NSPoint *right, int intersectionCount, ...)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static BOOL checkCurveCurve_(BOOL looseAspects, const NSPoint *left, const NSPoint *right, int intersectionCount, ...)
 {
     NSPoint pts[intersectionCount];
     double lens[intersectionCount];
@@ -650,11 +667,11 @@ BOOL checkCurveCurve_(BOOL looseAspects, const NSPoint *left, const NSPoint *rig
 }
 #define checkCurveCurve(...) STAssertTrue(checkCurveCurve_(NO, __VA_ARGS__), nil)
 #define checkCurveCurveLoose(...) STAssertTrue(checkCurveCurve_(YES, __VA_ARGS__), nil)
+#endif
 
-BOOL checkOneCurveSelf(const NSPoint *p, NSPoint i, double t1, double t2,  enum OAIntersectionAspect expectedAspect)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static BOOL checkOneCurveSelf(const NSPoint *p, NSPoint i, double t1, double t2,  enum OAIntersectionAspect expectedAspect)
 {
-    return YES;
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
     NSPoint c[4];
     _parameterizeCurve(c, p[0], p[3], p[1], p[2]);
     struct intersectionInfo r[MAX_INTERSECTIONS_PER_ELT_PAIR];
@@ -719,10 +736,11 @@ BOOL checkOneCurveSelf(const NSPoint *p, NSPoint i, double t1, double t2,  enum 
     } else {
         return YES;
     }
-#endif
 }
+#endif
 
-BOOL checkCurveSelf_(const NSPoint *p, NSPoint i, double t1, double t2,  enum OAIntersectionAspect expectedAspect)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static BOOL checkCurveSelf_(const NSPoint *p, NSPoint i, double t1, double t2,  enum OAIntersectionAspect expectedAspect)
 {
     BOOL forwards, backwards;
     
@@ -738,12 +756,12 @@ BOOL checkCurveSelf_(const NSPoint *p, NSPoint i, double t1, double t2,  enum OA
     
     return forwards && backwards;
 }
-
 #define checkCurveSelf(...) STAssertTrue(checkCurveSelf_(__VA_ARGS__), nil)
+#endif
 
 - (void)testCurveCurveIntersections1
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     const float R = ( (M_SQRT2 - 1.) * 4. / 3. );
     NSPoint arc1[4] = { {0,0}, {0, R}, { 1-R, 1 }, {1, 1} };  // Quarter-circle of radius 1 centered at (1,0)
     NSPoint arc2[4] = { {-0.1,0}, {-0.1, 1.1*R}, { 1- (1.1*R), 1.1 }, {1, 1.1} }; // Quarter-circle of radius 1.1 centered at (1,0)
@@ -791,7 +809,7 @@ BOOL checkCurveSelf_(const NSPoint *p, NSPoint i, double t1, double t2,  enum OA
 
 - (void)testCurveCurveIntersections3
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     float d = 0.1;
     NSPoint ess1[4] = { {-1, d}, {5, d}, {-5, -d}, {1, -d} };
     NSPoint ess2[4] = { {-d, 1}, {-d, -5}, {d, 5}, {d, -1} };
@@ -830,7 +848,7 @@ BOOL checkCurveSelf_(const NSPoint *p, NSPoint i, double t1, double t2,  enum OA
 
 - (void)testCurveCurveGrazing
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     NSPoint bulge1[4] = { {0,0}, {-8,5}, {32, 5}, {24, 0} };
     NSPoint bulge2[4] = { {-0.5,0}, {-8.833,5}, {32.833, 5}, {24.5, 0} };
     NSPoint bulge3[4] = { {-1,0}, {4,4}, {33, 5}, {23, -1} };
@@ -863,7 +881,7 @@ BOOL checkCurveSelf_(const NSPoint *p, NSPoint i, double t1, double t2,  enum OA
 
 - (void)testCurveSelfIntersection
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     NSPoint bow1[4] = { {0, 1}, {2, -2}, { 2, 2}, {0, -1} }; // Self-intersecting curve
     NSPoint bow2[4] = { {0, 1}, {2, -2}, {-1, 0}, {1,  0} }; // Asymmetrical self-intersecting curve
 
@@ -873,9 +891,9 @@ BOOL checkCurveSelf_(const NSPoint *p, NSPoint i, double t1, double t2,  enum OA
 #endif
 }
 
-void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line, NSRect expected, NSPoint s, NSPoint c1, NSPoint c2, NSPoint e, CGFloat halfwidth)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line, NSRect expected, NSPoint s, NSPoint c1, NSPoint c2, NSPoint e, CGFloat halfwidth)
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
     NSRect buf;
     BOOL modified;
 #define checkDidMod(want) if (modified != want) \
@@ -921,12 +939,12 @@ void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line, NSRect
     modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
     checkDidMod(YES);
     checkCloseRect(buf2, expected);    
-#endif
 }
+#endif
 
 - (void)testTightCubicBounds
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
                       (NSRect){ {0, 0}, {10, 10} },
                       (NSPoint){ 0, 0 },
@@ -959,7 +977,7 @@ void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line, NSRect
 
 - (void)testTightCubicBoundsWithClearance
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
                       (NSRect){ {-10, 0}, {0.75 + 0.1, 2 / sqrt(12) + 0.1} },
                       (NSPoint){ -10, 0 },
@@ -991,7 +1009,8 @@ void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line, NSRect
 }
 
 
-void checkClockwise_(OAGeometryTests *self, NSBezierPath *p, BOOL cw, const char *file, int line)
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+static void checkClockwise_(OAGeometryTests *self, NSBezierPath *p, BOOL cw, const char *file, int line)
 {
     BOOL val;
 #define checkCW(expr, want) val = [expr isClockwise]; if (val != want) \
@@ -1022,10 +1041,11 @@ void checkClockwise_(OAGeometryTests *self, NSBezierPath *p, BOOL cw, const char
     [mirroredPath release];
 }
 #define checkClockwise(path, expect) checkClockwise_(self, path, expect, __FILE__, __LINE__)
+#endif
 
 - (void)testPathClockwise
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts; build with gcc-4.2
+#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     NSBezierPath *p;
     float i;
     

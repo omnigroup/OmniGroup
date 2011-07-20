@@ -1,4 +1,4 @@
-// Copyright 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,10 @@
 #import <Foundation/NSObjCRuntime.h>
 #import <objc/runtime.h>
 #import <objc/message.h>
+
+#ifndef __has_feature
+        #define __has_feature(x) 0 // Compatibility with non-clang compilers.
+#endif
 
 // These aren't defined in iPhone OS 3.2, but we want to use them unconditionally.
 #if !defined(NS_RETURNS_RETAINED)
@@ -29,5 +33,13 @@
         #define CF_RETURNS_RETAINED __attribute__((cf_returns_retained))
     #else
         #define CF_RETURNS_RETAINED
+    #endif
+#endif
+
+#if !defined(CF_CONSUMED)
+    #if __has_feature(attribute_cf_consumed)
+        #define CF_CONSUMED __attribute__((cf_consumed))
+    #else
+        #define CF_CONSUMED
     #endif
 #endif

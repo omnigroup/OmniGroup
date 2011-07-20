@@ -65,16 +65,21 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
     }
 }
 
-- (OUIInspectorSegmentedControlButton *)addSegmentWithImageNamed:(NSString *)imageName representedObject:(id)representedObject;
+- (OUIInspectorSegmentedControlButton *)addSegmentWithImage:(UIImage *)image representedObject:(id)representedObject;
 {
     OUIInspectorSegmentedControlButton *segment = [OUIInspectorSegmentedControlButton buttonWithType:UIButtonTypeCustom];
     segment.dark = self.dark;
-    segment.image = [UIImage imageNamed:imageName];
+    segment.image = image;
     segment.representedObject = representedObject;
     [segment addTarget:self action:@selector(_segmentPressed:)];
     [_segments addObject:segment];
     [self setNeedsLayout];
     return segment;
+}
+
+- (OUIInspectorSegmentedControlButton *)addSegmentWithImageNamed:(NSString *)imageName representedObject:(id)representedObject;
+{
+    return [self addSegmentWithImage:[UIImage imageNamed:imageName] representedObject:representedObject];
 }
 
 - (OUIInspectorSegmentedControlButton *)addSegmentWithImageNamed:(NSString *)imageName;

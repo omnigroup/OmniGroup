@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -120,9 +120,10 @@ static NSComparisonResult compareBasedOnArray(id object1, id object2, void *orde
     flags.needsReload = 0;
     flags.needsLayout = 1;
     
-    BOOL oldAutodisplay = [_window isAutodisplay];
-    [_window setAutodisplay: NO];
-    [_window disableFlushWindow];
+    NSWindow *window = [self window];    
+    BOOL oldAutodisplay = [window isAutodisplay];
+    [window setAutodisplay: NO];
+    [window disableFlushWindow];
     
     NS_DURING {
         NSArray *subviews = [dataSource subviewsForStackView: self];
@@ -171,10 +172,10 @@ static NSComparisonResult compareBasedOnArray(id object1, id object2, void *orde
         NSLog(@"Exception ignored during -[OAStackView _loadSubviews]: %@", localException);
     } NS_ENDHANDLER;
     
-    [_window setAutodisplay: oldAutodisplay];
+    [window setAutodisplay: oldAutodisplay];
     if (oldAutodisplay)
-        [_window setViewsNeedDisplay: YES];
-    [_window enableFlushWindow];
+        [window setViewsNeedDisplay: YES];
+    [window enableFlushWindow];
 }
 
 /*"
@@ -188,13 +189,13 @@ Goes through the subviews and finds the first subview that is willing to stretch
         return;
         
     flags.needsLayout = 0;
-
+    NSWindow *window = [self window];    
     NSRect spaceLeft = [self bounds];
     //NSLog(@"total bounds = %@", NSStringFromRect(spaceLeft));
     
-    BOOL oldAutodisplay = [_window isAutodisplay];
-    [_window setAutodisplay: NO];
-    [_window disableFlushWindow];
+    BOOL oldAutodisplay = [window isAutodisplay];
+    [window setAutodisplay: NO];
+    [window disableFlushWindow];
     
     NS_DURING {
         NSArray *currentSubviews = [self subviews];
@@ -245,10 +246,10 @@ Goes through the subviews and finds the first subview that is willing to stretch
         NSLog(@"Exception ignored during -[OAStackView _layoutSubviews]: %@", localException);
     } NS_ENDHANDLER;
     
-    [_window setAutodisplay: oldAutodisplay];
+    [window setAutodisplay: oldAutodisplay];
     if (oldAutodisplay)
-        [_window setViewsNeedDisplay: YES];
-    [_window enableFlushWindow];
+        [window setViewsNeedDisplay: YES];
+    [window enableFlushWindow];
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldSize;

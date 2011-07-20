@@ -10,6 +10,7 @@
 #import <OmniFileStore/OFSFileFileManager.h>
 #import <OmniFileStore/OFSDAVFileManager.h>
 #import <OmniFileStore/Errors.h>
+#import <OmniFoundation/NSString-OFSimpleMatching.h>
 
 #import "OFSFileOperation.h"
 #import "OFSFileInfo.h"
@@ -121,6 +122,8 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
     
     NSString *extension = [baseName pathExtension];
     
+    BOOL shouldContainExtension = ![NSString isEmptyString:extension];
+    
     NSString *name;
     NSUInteger counter;
     NSString *urlName = [baseName stringByDeletingPathExtension];
@@ -131,7 +134,17 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
     while (!result) {
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         
-        NSString *fileName = [[NSString alloc] initWithFormat:@"%@.%@", name, extension];
+        
+        NSString *fileName = nil;
+        if (shouldContainExtension) {
+            fileName = [[NSString alloc] initWithFormat:@"%@.%@", name, extension];
+        }
+        else {
+            fileName = [[NSString alloc] initWithString:name];
+        }
+        
+        NSLog(@"%@", fileName);
+        
         NSURL *urlCheck = isFileURL ? OFSFileURLRelativeToDirectoryURL(directoryURL, fileName) : OFSURLRelativeToDirectoryURL(directoryURL, [fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
         [fileName release];
 
@@ -149,7 +162,13 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
             if (counter == 0)
                 counter = 2; // First duplicate should be "Foo 2".
             
-            fileName = [[NSString alloc] initWithFormat:@"%@ %d.%@", name, counter, extension];
+            if (shouldContainExtension) {
+                fileName = [[NSString alloc] initWithFormat:@"%@ %d.%@", name, counter, extension];
+            }
+            else {
+                fileName = [[NSString alloc] initWithFormat:@"%@ %d", name, counter];
+            }
+            
             counter++;
             
             urlCheck = isFileURL ? OFSFileURLRelativeToDirectoryURL(directoryURL, fileName) : OFSURLRelativeToDirectoryURL(directoryURL, [fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);

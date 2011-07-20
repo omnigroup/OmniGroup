@@ -1,4 +1,4 @@
-// Copyright 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -131,6 +131,8 @@ RCS_ID("$Id$");
     [_availableItemController bind:NSContentArrayBinding toObject:self withKeyPath:OSUAvailableUpdateControllerAvailableItemsBinding options:nil];
     [self didChangeValueForKey:OSUAvailableUpdateControllerMessageBinding];
 
+    _minimumAlertPaneHeight = [_itemAlertPane frame].size.height;
+    
     [self _resizeInterface:YES];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_adjustViewLayout:) name:NSViewFrameDidChangeNotification object:[_messageTextField superview]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_refreshSelectedItem:) name:OSUTrackInformationChangedNotification object:nil];
@@ -532,6 +534,8 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
 
 #define INTER_ELEMENT_GAP (12.0f)
 
+#define TEXT_BUTTONS_GAP (6.0f)
+
 - (void)_resizeInterface:(BOOL)resetDividerPosition;
 {
     if (![self isWindowLoaded])
@@ -598,6 +602,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     if (_displayingWarningPane) {
         NSView *interView = [_itemsAndReleaseNotesSplitView subviewContainingView:_itemAlertPane];
         NSView *borderView = [interView subviewContainingView:_releaseNotesWebView];
+        NSButton *ignoreMostTracks = [_itemAlertPane viewWithTag:itemAlertPane_IgnoreAllTracksTag];
         
         if (!interView || !borderView) {
             NSLog(@"Can't find child of splitview.");
@@ -609,13 +614,27 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
         NSRect boundary = [interView bounds];
         alertFrame.origin = boundary.origin;
         alertFrame.size.width = boundary.size.width;
+        
+        [_itemAlertPane setFrame:alertFrame]; // Resize the alert pane, and therefore its content views
+        NSRect textFrame = [_itemAlertMessage frame];
+        NSSize textFullSize = [_itemAlertMessage desiredFrameSize:NSViewHeightSizable];
+        // Consider adjusting the alert pane to make the message text meet the tops of the buttons
+        NSRect buttonFrame = [ignoreMostTracks frame];
+        CGFloat newAlertPaneHeight = ceil(alertFrame.size.height + ( NSMaxY(buttonFrame) - floor(NSMaxY(textFrame) - textFullSize.height- TEXT_BUTTONS_GAP) ));
+        if(newAlertPaneHeight < _minimumAlertPaneHeight)
+            newAlertPaneHeight = _minimumAlertPaneHeight;
+        if (newAlertPaneHeight != alertFrame.size.height) {
+            alertFrame.size.height = newAlertPaneHeight;
+            [_itemAlertPane setFrame:alertFrame];
+        }
+        
         notesFrame.origin.x = boundary.origin.x;
         notesFrame.origin.y = NSMaxY(alertFrame);
         notesFrame.size.width = boundary.size.width;
         notesFrame.size.height = NSMaxY(boundary) - notesFrame.origin.y;
         
-        [_itemAlertPane setFrame:alertFrame];
         [borderView setFrame:notesFrame];
+        
         [_itemAlertPane setHidden:NO];
         
         NSButton *ignoreSelectedTrack = [_itemAlertPane viewWithTag:itemAlertPane_IgnoreOneTrackTag];
@@ -656,6 +675,8 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     
     [self setValue:item forKey:OSUAvailableUpdateControllerSelectedItemBinding];
     
+    BOOL shouldResizeUI = NO;
+    
     BOOL shouldDisplayStabilityWarning;
     if (!item)
         shouldDisplayStabilityWarning = NO;
@@ -675,14 +696,20 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
                                                         @"OmniSoftwareUpdate", OMNI_BUNDLE,
                                                         @"The version you have selected may be less stable than the version you are running.",
                                                         "title of new versions available dialog, when in the process of checking for updates - text is name of application - only used if this downgrade does not have a more specific warning message available");
-        [_itemAlertMessage setStringValue:msgText];
+        if (![[_itemAlertMessage stringValue] isEqual:msgText]) {
+            [_itemAlertMessage setStringValue:msgText];
+            shouldResizeUI = YES;
+        }
     }
     
     if (shouldDisplayStabilityWarning != _displayingWarningPane) {
         _displayingWarningPane = shouldDisplayStabilityWarning;
-        [self _resizeInterface:NO];
+        shouldResizeUI = YES;
     }
-                                        
+    
+    if (shouldResizeUI)
+        [self _resizeInterface:NO];
+    
     [self _refreshDefaultAction];
     [self _loadReleaseNotes];
 }

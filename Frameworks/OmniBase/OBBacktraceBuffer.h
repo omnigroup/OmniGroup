@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,7 @@
  This is an internal header for OmniBase and OmniCrashCatcher to communicate information about the backtrace buffer. Other code shouldn't need to see it.
 */
 
-/* These can be adjusted as needed */
+/* These can be adjusted as needed - CrashCatcher reads their values from the crashed process's OBBacktraceBufferInfo */
 #define OBBacktraceBufferAddressCount 16    /* Max depth of stack to record per trace */
 #define OBBacktraceBufferTraceCount 8       /* Number of recent traces to retain */
 

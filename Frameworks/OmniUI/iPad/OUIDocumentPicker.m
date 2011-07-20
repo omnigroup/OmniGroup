@@ -31,6 +31,7 @@
 #import <OmniQuartz/CALayer-OQExtensions.h>
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniUnzip/OUZipArchive.h>
+#import <OmniUI/OUISingleDocumentAppController.h>
 #import <sys/stat.h> // For S_IWUSR
 
 #import "OUIDocumentPickerView.h"
@@ -41,6 +42,7 @@
 #import "OUISyncMenuController.h"
 
 RCS_ID("$Id$");
+
 
 #if 0 && defined(DEBUG)
     #define PICKER_DEBUG(format, ...) NSLog(@"PICKER: " format, ## __VA_ARGS__)
@@ -63,6 +65,12 @@ static NSString * const ProxiesBinding = @"proxies";
 - (void)_updateFieldsForSelectedProxy;
 + (OFPreference *)_sortPreference;
 - (void)_updateSort;
+- (void)sendToApp:(id)sender;
+- (BOOL)_canUseOpenInWithProxy:(OUIDocumentProxy *)proxy;
+- (void)_applicationDidEnterBackground;
+
+@property (nonatomic, retain) NSMutableDictionary *openInMapCache;
+
 @end
 
 @implementation OUIDocumentPicker
@@ -182,7 +190,7 @@ static void _addPushAndFadeAnimations(OUIDocumentPicker *self, BOOL fade, Animat
         NSString *documentPath = [userDocumentsDirectory stringByAppendingPathComponent:fileName];
         NSString *documentName = [[documentPath lastPathComponent] stringByDeletingPathExtension];
         
-        NSString *localizedTitle = [[NSBundle mainBundle] localizedStringForKey:documentName value:nil table:@"SampleNames"];
+        NSString *localizedTitle = [self localizedNameForSampleDocumentNamed:documentName];
         if (localizedTitle && ![localizedTitle isEqualToString:documentName]) {
             NSString *extension = [documentPath pathExtension];
             documentPath = [userDocumentsDirectory stringByAppendingPathComponent:localizedTitle];
@@ -197,7 +205,12 @@ static void _addPushAndFadeAnimations(OUIDocumentPicker *self, BOOL fade, Animat
         }
     }
 }
-          
+ 
++ (NSString *)localizedNameForSampleDocumentNamed:(NSString *)documentName;
+{
+    return [[NSBundle mainBundle] localizedStringForKey:documentName value:nil table:@"SampleNames"];
+}
+
 + (NSString *)pathToSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
 {
     CFStringRef extension = UTTypeCopyPreferredTagWithClass((CFStringRef)fileType, kUTTagClassFilenameExtension);
@@ -314,6 +327,7 @@ static id _commonInit(OUIDocumentPicker *self)
 
 - (void)dealloc;
 {
+    [_openInMapCache release];
     [_previewScrollView release];
     [_titleLabel release];
     [_dateLabel release];
@@ -357,6 +371,8 @@ static id _commonInit(OUIDocumentPicker *self)
 @synthesize buttonGroupView = _buttonGroupView;
 
 @synthesize directory = _directory;
+@synthesize openInMapCache = _openInMapCache;
+
 - (void)setDirectory:(NSString *)directory;
 {
     if (OFISEQUAL(directory, _directory))
@@ -371,6 +387,8 @@ static id _commonInit(OUIDocumentPicker *self)
 @synthesize proxyTappedTarget = _proxyTappedTarget;
 @synthesize proxyTappedAction = _proxyTappedAction;
 
+#pragma mark -
+#pragma mark API
 
 - (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL;
 {
@@ -870,6 +888,94 @@ static id _commonInit(OUIDocumentPicker *self)
     return imageExportTypes;
 }
 
+// Helper method for -availableDocuentInteractionExportTypesForProxy:
+- (BOOL)_canUseOpenInWithExportType:(NSString *)exportType;
+{
+    NSLog(@"self.openInMapCache: %@", self.openInMapCache);
+    NSNumber *value = [self.openInMapCache objectForKey:exportType];
+    if (value) {
+        // We have a cached value, so immediately return it.
+        return [value boolValue];
+    }
+    
+    // We don't have a cache for this exportType. We need to do our Doc Interaction hack to find out if this export type has an available app to send to.
+    OUISingleDocumentAppController *sharedAppDelegate = (OUISingleDocumentAppController *)[UIApplication sharedApplication].delegate;
+    UIWindow *mainWindow = sharedAppDelegate.window;
+    
+    NSString *tempDirectory = NSTemporaryDirectory();
+    
+    NSError *error = nil;
+    OFSFileManager *tempFileManager = [[[OFSFileManager alloc] initWithBaseURL:[NSURL fileURLWithPath:tempDirectory isDirectory:YES] error:&error] autorelease];
+    if (error) {
+        OUI_PRESENT_ERROR(error);
+        return NO;
+    }
+
+    NSString *dummyPath = [tempDirectory stringByAppendingPathComponent:@"dummy"];
+    BOOL isDirectory = YES;
+    if (!UTTypeConformsTo((CFStringRef)exportType, kUTTypeDirectory)) {
+        isDirectory = NO;
+        NSString *owned_UTIExtension = (NSString *)UTTypeCopyPreferredTagWithClass((CFStringRef)exportType, kUTTagClassFilenameExtension);
+        
+        if (owned_UTIExtension) {
+            dummyPath = [dummyPath stringByAppendingPathExtension:owned_UTIExtension];
+        }
+        
+        [owned_UTIExtension release];
+    }
+    
+    // First check to see if the dummyURL already exists.
+    NSURL *dummyURL = [NSURL fileURLWithPath:dummyPath isDirectory:isDirectory];
+    OFSFileInfo *dummyInfo = [tempFileManager fileInfoAtURL:dummyURL error:&error];
+    if (error) {
+        OUI_PRESENT_ERROR(error);
+        return NO;
+    }
+    if ([dummyInfo exists] == NO) {
+        if (isDirectory) {
+            // Create dummy dir.
+            [tempFileManager createDirectoryAtURL:dummyURL attributes:nil error:&error];
+            if (error) {
+                OUI_PRESENT_ERROR(error);
+                return NO;
+            }
+        }
+        else {
+            // Create dummy file.
+            [tempFileManager writeData:nil toURL:dummyURL atomically:YES error:&error];
+            if (error) {
+                OUI_PRESENT_ERROR(error);
+                return NO;
+            }
+        }
+    }
+    
+    // Try to popup UIDocumentInteractionController
+    UIDocumentInteractionController *documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:dummyURL];
+    BOOL success = [documentInteractionController presentOpenInMenuFromRect:CGRectZero inView:mainWindow animated:YES];
+    if (success == YES) {
+        [documentInteractionController dismissMenuAnimated:NO];
+    }
+    
+    // Time to cache the result.
+    [self.openInMapCache setObject:[NSNumber numberWithBool:success] forKey:exportType];
+    
+    return success;
+}
+- (NSArray *)availableDocumentInteractionExportTypesForProxy:(OUIDocumentProxy *)proxy;
+{
+    NSMutableArray *docInteractionExportTypes = [NSMutableArray array];
+    
+
+    NSArray *exportTypes = [self availableExportTypesForProxy:proxy];
+    for (NSString *exportType in exportTypes) {
+        if ([self _canUseOpenInWithExportType:exportType]) {
+            [docInteractionExportTypes addObject:exportType];
+        }
+    }
+    
+    return docInteractionExportTypes;
+}
 - (OFFileWrapper *)exportFileWrapperOfType:(NSString *)exportType forProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
 {
     if ([_nonretained_delegate respondsToSelector:@selector(documentPicker:exportFileWrapperOfType:forProxy:error:)])
@@ -1070,6 +1176,7 @@ static id _commonInit(OUIDocumentPicker *self)
     NSArray *availableImageExportTypes = [self availableImageExportTypesForProxy:proxy];
     BOOL canSendToCameraRoll = [_nonretained_delegate respondsToSelector:@selector(documentPicker:cameraRollImageForProxy:)];
     BOOL canPrint = NO;
+    BOOL canUseOpenIn = [self _canUseOpenInWithProxy:[self selectedProxy]];
     
     if ([_nonretained_delegate respondsToSelector:@selector(documentPicker:printProxy:fromButton:)])
         if (NSClassFromString(@"UIPrintInteractionController") != nil)
@@ -1086,6 +1193,11 @@ static id _commonInit(OUIDocumentPicker *self)
     if (canExport) {
         [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Export", @"OmniUI", OMNI_BUNDLE, @"Menu option in the document picker view")];
         [_actionSheetInvocations addObject:[NSInvocation invocationWithTarget:self action:(availableExportTypes.count > 0 ? @selector(exportDocumentChoice:) : @selector(exportDocument:))]];
+    }
+    
+    if (canUseOpenIn) {
+        [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Send to App", @"OmniUI", OMNI_BUNDLE, @"Menu option in the document picker view")];
+        [_actionSheetInvocations addObject:[NSInvocation invocationWithTarget:self action:@selector(sendToApp:)]];
     }
     
     if (availableImageExportTypes.count > 0) {
@@ -1133,23 +1245,34 @@ static id _commonInit(OUIDocumentPicker *self)
     return ![_nonretained_delegate respondsToSelector:@selector(documentPicker:canUseEmailBodyForType:)] || [_nonretained_delegate documentPicker:self canUseEmailBodyForType:exportType];
 }
 
-- (void)emailExportType:(NSString *)exportType;
+- (OFFileWrapper *)fileWrapperForExportType:(NSString *)exportType;
 {
     OUIDocumentProxy *documentProxy = self.selectedProxy;
     if (!documentProxy) {
         OBASSERT_NOT_REACHED("button should have been disabled");
-        return;
+        return nil;
     }
     
     if (OFISNULL(exportType)) {
         [self emailDocument:nil];
-        return;
+        return nil;
     }
-
+    
     NSError *error = nil;
     OFFileWrapper *fileWrapper = [self exportFileWrapperOfType:exportType forProxy:documentProxy error:&error];
     if (fileWrapper == nil) {
         OUI_PRESENT_ERROR(error);
+        return nil;
+    }
+    
+    return fileWrapper;
+}
+
+- (void)sendEmailWithFileWrapper:(OFFileWrapper *)fileWrapper forExportType:(NSString *)exportType;
+{
+    OUIDocumentProxy *documentProxy = self.selectedProxy;
+    if (!documentProxy) {
+        OBASSERT_NOT_REACHED("button should have been disabled");
         return;
     }
     
@@ -1176,7 +1299,7 @@ static id _commonInit(OUIDocumentPicker *self)
             }
         }
     }
-
+    
     NSData *emailData;
     NSString *emailType;
     NSString *emailName;
@@ -1184,7 +1307,7 @@ static id _commonInit(OUIDocumentPicker *self)
         emailName = fileWrapper.preferredFilename;
         emailType = exportType;
         emailData = [fileWrapper regularFileContents];
-
+        
         NSString *emailType = [OFSFileInfo UTIForFilename:fileWrapper.preferredFilename];
         if (UTTypeConformsTo((CFStringRef)emailType, kUTTypePlainText)) {
             // Plain text? Let's send that as the message body
@@ -1197,6 +1320,7 @@ static id _commonInit(OUIDocumentPicker *self)
             }
         }
     } else {
+        NSError *error = nil;
         emailName = [fileWrapper.preferredFilename stringByAppendingPathExtension:@"zip"];
         emailType = [OFSFileInfo UTIForFilename:emailName];
         NSString *zipPath = [NSTemporaryDirectory() stringByAppendingPathComponent:emailName];
@@ -1210,6 +1334,12 @@ static id _commonInit(OUIDocumentPicker *self)
     }
     
     [self _sendEmailWithSubject:[documentProxy name] messageBody:nil isHTML:NO attachmentName:emailName data:emailData fileType:emailType];
+}
+
+- (void)emailExportType:(NSString *)exportType;
+{
+    OFFileWrapper *fileWrapper = [self fileWrapperForExportType:exportType];
+    [self sendEmailWithFileWrapper:fileWrapper forExportType:exportType];
 }
 
 - (void)exportDocumentChoice:(id)sender;
@@ -1234,6 +1364,17 @@ static id _commonInit(OUIDocumentPicker *self)
     
     [navigationController release];
     [exportController release];
+}
+
+- (void)sendToApp:(id)sender;
+{
+    OUIExportOptionsController *exportOptionsController = [[OUIExportOptionsController alloc] initWithExportType:OUIExportOptionsSendToApp];
+    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:[exportOptionsController autorelease]];
+    navController.modalPresentationStyle = UIModalPresentationFormSheet;
+    navController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+    
+    [self presentModalViewController:navController animated:YES];
+    [navController release];
 }
 
 - (void)printDocument:(id)sender;
@@ -1330,8 +1471,12 @@ static id _commonInit(OUIDocumentPicker *self)
         _titleEditingField.textAlignment = UITextAlignmentCenter;
         _titleEditingField.borderStyle = UITextBorderStyleRoundedRect;
         _titleEditingField.clearButtonMode = UITextFieldViewModeWhileEditing;
+        _titleEditingField.autocorrectionType = UITextAutocorrectionTypeNo;
+        _titleEditingField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+
         
         _titleEditingField.delegate = self;
+        
         
         [self.view addSubview:_titleEditingField];
     }
@@ -1651,6 +1796,26 @@ static id _commonInit(OUIDocumentPicker *self)
     [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
 }
 
+- (void)_applicationDidEnterBackground;
+{
+    // Reset openInMapCache incase someone adds or delets an app.
+    [self.openInMapCache removeAllObjects];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_applicationDidEnterBackground)
+                                                 name:UIApplicationDidEnterBackgroundNotification
+                                               object:nil];
+}
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+                                                    name:UIApplicationDidEnterBackgroundNotification 
+                                                  object:nil];
+}
+
 #pragma mark -
 #pragma mark UIActionSheetDelegate
 
@@ -1735,6 +1900,9 @@ static id _commonInit(OUIDocumentPicker *self)
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidHideNotification object:nil];    
+
+    [[NSNotificationCenter defaultCenter] removeObserver:_applicationDidBecomeActiveObserver];
+    _applicationDidBecomeActiveObserver = nil;
 }
 
 - (void)willBecomeInnerToolbarController:(OUIToolbarViewController *)toolbarViewController animated:(BOOL)animated;
@@ -1778,6 +1946,11 @@ static id _commonInit(OUIDocumentPicker *self)
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
+    
+    // If a user drags a document into iTunes while we're running, we get this notification after the document syncs over. Fixes <bug:///72626>.
+    _applicationDidBecomeActiveObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil queue:nil usingBlock:^(NSNotification *note) { 
+        [self rescanDocuments]; 
+    }];
 
     _isInnerController = YES;
     
@@ -2348,6 +2521,28 @@ typedef struct {
 - (void)_updateSort;
 {
     self.previewScrollView.proxySort = [[[self class] _sortPreference] enumeratedValue];
+}
+
+- (NSMutableDictionary *)openInMapCache;
+{
+    if (_openInMapCache == nil) {
+        _openInMapCache = [[NSMutableDictionary dictionary] retain];
+    }
+    
+    return _openInMapCache;
+}
+
+- (BOOL)_canUseOpenInWithProxy:(OUIDocumentProxy *)proxy;
+{
+    // Check current type.
+    NSString *proxyType = [OFSFileInfo UTIForURL:proxy.url];
+    BOOL canUseOpenInWithCurrentType = [self _canUseOpenInWithExportType:proxyType];
+    if (canUseOpenInWithCurrentType) {
+        return YES;
+    }
+    
+    NSArray *types = [self availableDocumentInteractionExportTypesForProxy:proxy];
+    return ([types count] > 0) ? YES : NO;
 }
 
 @end

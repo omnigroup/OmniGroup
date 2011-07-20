@@ -184,5 +184,8 @@ See also: - debugDictionary
 
 CFStringRef OBNSObjectCopyShortDescription(const void *value)
 {
-    return (CFStringRef)[[(id)value shortDescription] retain];
+    CFStringRef str = (CFStringRef)[(id)value shortDescription];
+    if (str)
+        CFRetain(str);
+    return str;
 }

@@ -54,7 +54,7 @@ RCS_ID("$Id$");
 - (void)viewDidLoad;
 {
     [super viewDidLoad];
-    self.textWell.showNavigationArrow = YES;
+    [self.textWell setNavigationArrowRightView];
 }
 
 @end

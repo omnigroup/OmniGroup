@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,18 +28,15 @@ RCS_ID("$Id$")
 
 - (void)drawRect:(NSRect)aRect;
 {
-    NSImage *image;
-    NSSize imageSize;
-    NSPoint imagePoint;
-
-//    NSDrawGrayBezel(_bounds, _bounds);
-
-    if (!(image = [self imageForFiles]))
+    NSImage *image = [self imageForFiles];
+    if (image == nil)
         return;
-    imageSize = [image size];
 
-    imagePoint.x = _bounds.origin.x + (_bounds.size.width - imageSize.width) / 2.0f;
-    imagePoint.y = _bounds.origin.y + (_bounds.size.height - imageSize.height) / 2.0f;
+    NSSize imageSize = [image size];
+    NSRect bounds = self.bounds;
+    NSPoint imagePoint;
+    imagePoint.x = bounds.origin.x + (bounds.size.width - imageSize.width) / 2.0f;
+    imagePoint.y = bounds.origin.y + (bounds.size.height - imageSize.height) / 2.0f;
     [image compositeToPoint:imagePoint operation:NSCompositeSourceOver];
 }
 

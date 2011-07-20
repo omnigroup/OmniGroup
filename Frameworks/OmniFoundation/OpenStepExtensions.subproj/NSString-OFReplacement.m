@@ -22,7 +22,7 @@ RCS_ID("$Id$");
     NSRange aRange = [self rangeOfString:prefix options:NSAnchoredSearch];
     if ((aRange.length == 0) || (aRange.location != 0))
         return [[self retain] autorelease];
-    return [self substringFromIndex:aRange.location + aRange.length];
+    return [self substringFromIndex:aRange.length];
 }
 
 - (NSString *)stringByRemovingSuffix:(NSString *)suffix;

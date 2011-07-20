@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,12 +18,71 @@
 #import <Foundation/NSAttributedString.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFNull.h>
+#import <OmniFoundation/OFExtent.h>
 
 #import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
+#if 0 && defined(DEBUG)
+    #define DEBUG_EDITOR_FRAME_ENABLED
+#endif
+
+#ifdef DEBUG_EDITOR_FRAME_ENABLED
+    #define DEBUG_EDITOR_FRAME(format, ...) NSLog(@"EDITOR: " format, ## __VA_ARGS__)
+#else
+    #define DEBUG_EDITOR_FRAME(format, ...)
+#endif
+
+@interface OUIInspectorTextWellEditor : OUIEditableFrame
+@property(nonatomic,assign) CGRect clipRect;
+@end
+@implementation OUIInspectorTextWellEditor
+
+@synthesize clipRect = _clipRect;
+- (void)setClipRect:(CGRect)clipRect;
+{
+    if (CGRectEqualToRect(_clipRect, clipRect))
+        return;
+    _clipRect = clipRect;
+    [self setNeedsDisplay];
+}
+
+- (void)drawRect:(CGRect)rect;
+{
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextSaveGState(ctx);
+    {
+#ifdef DEBUG_EDITOR_FRAME_ENABLED
+        // avoid clipping and just draw the rect that would be the clip
+        CGContextAddRect(ctx, CGRectInset(_clipRect, 0.5, 0.5));
+        [[UIColor blueColor] set];
+        CGContextStrokePath(ctx);
+#else
+        CGContextAddRect(ctx, _clipRect);
+        CGContextClip(ctx);
+#endif
+        
+        [super drawRect:rect];
+    }
+    CGContextRestoreGState(ctx);
+}
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
+{
+    UIView *hitView = [super hitTest:point withEvent:event];
+    
+    // We extent beyond what the user can see with our clipping rect hiding this. Don't let touches happen outside our unclipped area (unless they are some other view, like the text system autocorrection widgets).
+    if (hitView == self && !CGRectContainsPoint(_clipRect, point))
+        return nil;
+    
+    return hitView;
+}
+
+@end
+
 @interface OUIInspectorTextWell (/*Private*/) <OUIEditableFrameDelegate>
+@property(nonatomic,readonly) CTTextAlignment effectiveTextAlignment;
 @property(readonly) OUIEditableFrame *editor; // returns nil unless editable is YES
 - (NSAttributedString *)_defaultStyleFormattedText;
 - (OUITextLayout *)_labelTextLayout;
@@ -31,6 +90,7 @@ RCS_ID("$Id$");
 - (void)_drawAttributedString:(NSAttributedString *)attributedString inRect:(CGRect)textRect;
 - (void)_drawTextLayout:(OUITextLayout *)textLayout inRect:(CGRect)textRect;
 - (void)_tappedTextWell:(id)sender;
+- (void)_updateEditorFrame;
 @end
 
 @implementation OUIInspectorTextWell
@@ -48,6 +108,7 @@ static id _commonInit(OUIInspectorTextWell *self)
     self.keyboardType = UIKeyboardTypeDefault;
     
     self->_style = OUIInspectorTextWellStyleDefault;
+    self->_textAlignment = UITextAlignmentCenter;
     
     return self;
 }
@@ -70,6 +131,7 @@ static id _commonInit(OUIInspectorTextWell *self)
 {
     _editor.delegate = nil;
     [_editor release];
+    [_editorContainerView release];
     [_text release];
     [_textColor release];
     [_font release];
@@ -110,7 +172,7 @@ static id _commonInit(OUIInspectorTextWell *self)
     return;
 }
 
-                  
+
 @synthesize editable = _editable;
 - (void)setEditable:(BOOL)editable;
 {
@@ -123,6 +185,10 @@ static id _commonInit(OUIInspectorTextWell *self)
         _editor.delegate = nil;
         [_editor release];
         _editor = nil;
+
+        [_editorContainerView removeFromSuperview];
+        [_editorContainerView release];
+        _editorContainerView = nil;
     }
     
     _editable = editable;
@@ -135,7 +201,21 @@ static id _commonInit(OUIInspectorTextWell *self)
 
 - (BOOL)editing;
 {
-    return (_editor.superview == self);
+    return (_editor && _editorContainerView && _editor.superview == _editorContainerView);
+}
+
+static CTTextAlignment _ctAlignemntForAlignment(UITextAlignment align)
+{    
+    // UITextAlignment only has three options and they aren't identical values to the CT version... maybe our property should be a CTTextAlignment
+    switch (align) {
+        case UITextAlignmentRight:
+            return kCTRightTextAlignment;
+        case UITextAlignmentCenter:
+            return kCTCenterTextAlignment;
+        case UITextAlignmentLeft:
+        default:
+            return kCTLeftTextAlignment;
+    }
 }
 
 typedef enum {
@@ -203,6 +283,12 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     UIColor *textColor = textType == TextTypePlaceholder ? [OUIInspector disabledLabelTextColor] : [self textColor];
     _setAttr(attributedText, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
     
+    OBASSERT(_editor); // use the paragraph style already set up when the editor was created
+    CTParagraphStyleRef pgStyle = _editor.defaultCTParagraphStyle;
+    if (pgStyle) {
+        _setAttr(attributedText, (id)kCTParagraphStyleAttributeName, (id)pgStyle);
+    }
+    
     [attributedText autorelease];
     
     return attributedText;
@@ -225,14 +311,43 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
 @synthesize autocorrectionType = _autocorrectionType;
 @synthesize keyboardType = _keyboardType;
 
+- (CTTextAlignment)effectiveTextAlignment
+{
+    return _style == OUIInspectorTextWellStyleSeparateLabelAndText ? kCTRightTextAlignment : _ctAlignemntForAlignment(_textAlignment);
+}
+
 - (OUIEditableFrame *)editor;
 {
     if (_editable && !_editor) {
-        _editor = [[OUIEditableFrame alloc] initWithFrame:CGRectZero];
+        _editor = [[OUIInspectorTextWellEditor alloc] initWithFrame:CGRectZero];
         _editor.delegate = self;
         _editor.textColor = [self textColor];
+        
+        // Set up the default paragraph alignment for when the editor's text storage is empty. Also, when we make editing text, this will be used for the alignment.
+        {
+            CTTextAlignment align = self.effectiveTextAlignment;
+            CTParagraphStyleSetting setting = {
+                kCTParagraphStyleSpecifierAlignment, sizeof(align), &align
+            };
+            
+            CTParagraphStyleRef pgStyle = CTParagraphStyleCreate(&setting, 1);
+            _editor.defaultCTParagraphStyle = pgStyle;
+            CFRelease(pgStyle);
+        }
     }
     return _editor;
+}
+
+@synthesize textAlignment = _textAlignment;
+- (void)setTextAlignment:(UITextAlignment)textAlignment;
+{
+    if (_textAlignment == textAlignment)
+        return;
+    
+    _textAlignment = textAlignment;
+    OBASSERT(!self.editing); // could need to mess with the editor's contents
+
+    [self setNeedsDisplay];
 }
 
 - (NSString *)text;
@@ -392,8 +507,13 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
         case OUIInspectorTextWellStyleDefault:
             // Draw the text if we aren't editing. If we are, the text field subview will be drawing it.
             if (!self.editing) {
-                // Center the text across the whole bounds, even if we have a nav arrow chopping off part of it
-                [self _drawAttributedString:[self _defaultStyleFormattedText] inRect:self.bounds];
+                // Center the text across the whole bounds, even if we have a nav arrow chopping off part of it. But if we are right or left aligned just use the contents rect (since we are probably trying to avoid a left/right view.
+                CGRect drawRect;
+                if (_textAlignment == UITextAlignmentCenter)
+                    drawRect = self.bounds;
+                else
+                    drawRect = self.contentsRect;
+                [self _drawAttributedString:[self _defaultStyleFormattedText] inRect:drawRect];
             }
             break;
     }
@@ -426,6 +546,19 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
         }
         [self setNeedsDisplay];
     }
+
+    [self _updateEditorFrame];
+    [self sendActionsForControlEvents:UIControlEventEditingChanged];
+}
+
+- (void)textViewSelectionChanged:(OUIEditableFrame *)textView;
+{
+    // Make sure the selection is on screen if the contents are too wide to all fit at the same time
+    if (textView.window == nil) {
+        // Not on screen yet -- just getting set up. Don't ask layout questions until the rest of the setup is done.
+    } else {
+        [self _updateEditorFrame];
+    }
 }
 
 - (BOOL)textView:(OUIEditableFrame *)textView shouldInsertText:(NSString *)text;
@@ -439,6 +572,9 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
         // <bug:///72342> (Tapping return when autocomplete is up appends the substitution after your typed string)
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             [_editor resignFirstResponder];
+            
+            // TODO: This means we'll end up sending both UIControlEventEditingDidEnd and UIControlEventEditingDidEndOnExit. Does UITextField?
+            [self sendActionsForControlEvents:UIControlEventEditingDidEndOnExit];
         }];
 
         return NO;
@@ -456,6 +592,10 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     _editor.delegate = nil;
     [_editor autorelease]; // Do NOT call -release here or we'll zombie if the editor is first responder in a popover when the popover is closed. They have a pointer to the view up the call stack from here.
     _editor = nil;
+    
+    [_editorContainerView removeFromSuperview];
+    [_editorContainerView release];
+    _editorContainerView = nil;
     
     // Let subclasses validate the text and provide a replacement. We should probably have a delegate with an optional -textWell:willCommitEditingText: too.
     text = [self willCommitEditingText:text];
@@ -479,11 +619,6 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     TextType textType;
     NSString *text = _getText(self, _text, &textType);
 
-    if ([NSString isEmptyString:text] && _label == nil) {
-        // Make sure we don't end up with nothing at all
-        text = @"–";
-    }
-    
     NSMutableAttributedString *attrText = [[NSMutableAttributedString alloc] initWithString:text attributes:nil];
     {
         CTFontRef font = _copyFont(self, _font, textType);
@@ -510,15 +645,17 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     UIColor *textColor = textType == TextTypePlaceholder ? [OUIInspector disabledLabelTextColor] : [self textColor];
     _setAttr(attrText, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
     
-    
-    // Center the text horizontally.
+    // Align the text horizontally and truncate instead of wrapping.
     {
-        CTTextAlignment centered = kCTCenterTextAlignment;
-        CTParagraphStyleSetting setting = {
-            kCTParagraphStyleSpecifierAlignment, sizeof(centered), &centered
+        CTTextAlignment ctAlignment = self.effectiveTextAlignment;
+        CTLineBreakMode lineBreak = kCTLineBreakByTruncatingTail;
+
+        CTParagraphStyleSetting setting[] = {
+            {kCTParagraphStyleSpecifierAlignment, sizeof(ctAlignment), &ctAlignment},
+            {kCTParagraphStyleSpecifierLineBreakMode, sizeof(lineBreak), &lineBreak},
         };
         
-        CTParagraphStyleRef pgStyle = CTParagraphStyleCreate(&setting, 1);
+        CTParagraphStyleRef pgStyle = CTParagraphStyleCreate(setting, sizeof(setting)/sizeof(*setting));
         _setAttr(attrText, (id)kCTParagraphStyleAttributeName, (id)pgStyle);
         CFRelease(pgStyle);
     }
@@ -643,6 +780,9 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
         editor.defaultCTFont = NULL;
     }
 
+    _editorContainerView = [[UIView alloc] init];
+    //_editorContainerView.clipsToBounds = YES; Can't do this since it lops off the UITextInput correction dingus.
+    
     TextType textType;
     _getText(self, _text, &textType);
     _shouldDisplayPlaceholderText = (textType == TextTypePlaceholder);
@@ -652,42 +792,114 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     editor.opaque = NO;
     editor.backgroundColor = nil;
     
-    // Align the text
-    {
-        CTTextAlignment align = _style == OUIInspectorTextWellStyleSeparateLabelAndText ? kCTRightTextAlignment : kCTCenterTextAlignment;
-        CTParagraphStyleSetting setting = {
-            kCTParagraphStyleSpecifierAlignment, sizeof(align), &align
-        };
-        
-        CTParagraphStyleRef pgStyle = CTParagraphStyleCreate(&setting, 1);
-        editor.defaultCTParagraphStyle = pgStyle;
-        CFRelease(pgStyle);
-    }
-    
     editor.attributedText = [self _attributedStringForEditingString:_text];
     
-    CGRect valueRect;
-    if (_style == OUIInspectorTextWellStyleSeparateLabelAndText) {
-        OUIInspectorTextWellLayout layout = _layout(self);
-        valueRect = layout.valueRect;
-    } else {
-        valueRect = self.contentsRect;
-    }
+    [_editorContainerView addSubview:editor];
+    [self addSubview:_editorContainerView];
     
-    editor.textLayoutSize = CGSizeMake(CGRectGetWidth(valueRect), OUITextLayoutUnlimitedSize);
-    
-    CGSize usedSize = editor.viewUsedSize;
-    CGRect editorFrame;
-    
-    editorFrame.origin.y = floor(CGRectGetMinY(valueRect) + 0.5 * (CGRectGetHeight(valueRect) - usedSize.height));
-    editorFrame.origin.x = valueRect.origin.x;
-    editorFrame.size.width = valueRect.size.width;
-    editorFrame.size.height = ceil(usedSize.height);
-    editor.frame = editorFrame;
-    
-    [self addSubview:editor];
+    [self _updateEditorFrame];
     
     [editor becomeFirstResponder];
+
+    [self sendActionsForControlEvents:UIControlEventEditingDidBegin];
+}
+
+- (void)_updateEditorFrame;
+{
+    OBPRECONDITION(_editor);
+    
+    // Hacky constants...
+    static const CGFloat kEditorInsetX = 3; // Give room to avoid clipping the insertion point at the extreme left/right edge.
+    static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little extra since the insertion point goes above/below the glyphs.
+
+    // Position/size our containing clip view
+    {
+        CGRect valueRect;
+        if (_style == OUIInspectorTextWellStyleSeparateLabelAndText) {
+            OUIInspectorTextWellLayout layout = _layout(self);
+            valueRect = layout.valueRect;
+        } else {
+            valueRect = self.contentsRect;
+        }
+        
+        _editorContainerView.frame = CGRectInset(valueRect, -kEditorInsetX, -kEditorInsetY);
+        _editor.textInset = UIEdgeInsetsMake(kEditorInsetY/*top*/, kEditorInsetX/*left*/, kEditorInsetY/*bottom*/, kEditorInsetX/*right*/); // TODO: Assumes zero scale
+    }
+    
+#ifdef DEBUG_EDITOR_FRAME_ENABLED
+    _editorContainerView.layer.borderColor = [[UIColor colorWithRed:0.5 green:1 blue:0.5 alpha:0.75] CGColor];
+    _editorContainerView.layer.borderWidth = 1;
+    DEBUG_EDITOR_FRAME(@"_editorContainerView = %@", _editorContainerView);
+    
+    _editor.backgroundColor = [UIColor colorWithRed:1 green:0.5 blue:0.5 alpha:0.25];
+    
+    DEBUG_EDITOR_FRAME(@"_editor = %@", _editor);
+#endif
+    
+    /*
+     Position the editor w/in the clip view.
+
+     Right alignment won't work if we use unlimited width layout size on the editor and if the editor frame isn't tightly packing the text. The issue is that 'unlimited' means OUIEditableFrame/OUITextLayout gives CoreText a huge width, lay out in that, and then layout again with the right width. Thus, the text will be right-aligned within the _used width_, but with only a single line this isn't apparent. So, we have to do the major positioning of the frame here with the guts possibly doing some fine positioning.
+     But, tightly bounding the used size doesn't work EITHER since then the autocorrection dingus wants to only be as wide as the text view (so the corrections come up truncated since the dingus is too narrow).
+     
+     So: we set the layout size to unlimited, figure out how much size was used and then turn the limit back on and use at least the clip width.
+     
+     */
+    _editor.textLayoutSize = CGSizeMake(OUITextLayoutUnlimitedSize, OUITextLayoutUnlimitedSize); // No real reason to limit the height, but we could if needed...
+    CGSize usedSize = _editor.viewUsedSize;
+    _editor.textLayoutSize = CGSizeMake(0, 0); // default of current width, infinite height
+    DEBUG_EDITOR_FRAME(@"usedSize = %@", NSStringFromCGSize(usedSize));
+    
+    CGRect clipBounds = _editorContainerView.bounds;
+    
+    CGRect editorFrame;
+    editorFrame.origin.x = clipBounds.origin.x;
+    editorFrame.origin.y = floor(CGRectGetMinY(clipBounds) + 0.5 * (CGRectGetHeight(clipBounds) - usedSize.height));
+    editorFrame.size.width = MAX(clipBounds.size.width, ceil(usedSize.width));
+    editorFrame.size.height = ceil(usedSize.height);
+    
+    // Provisionally assign the nominal frame (w/o the offset) so the rect conversions below give us something predictable.
+    _editor.frame = editorFrame;
+
+    // Shift the frame so that the first selection rect will be in view. If it is too big to all fit, we may want to prefer the left/right edge based on the text direction at the first point (or whatever).
+    // Also, try to keep the same offset if possible, but if the text has gotten shorter (deleting text), we may want to readjust to make sure we are showing as much of the editor as possible.
+    
+    if (editorFrame.size.width > clipBounds.size.width) {
+        CGRect selectionRect = [_editorContainerView convertRect:[_editor firstRectForRange:[_editor selectedTextRange]] fromView:_editor];
+        OBASSERT(!CGRectIsNull(selectionRect));
+        DEBUG_EDITOR_FRAME(@"selectionRect = %@", NSStringFromCGRect(selectionRect));
+        
+        CGFloat leftOffset = CGRectGetMinX(selectionRect) - (CGRectGetMinX(clipBounds) + kEditorInsetX); // aligns left edge of selection with left edge of frame
+        CGFloat rightOffset = MAX(0, CGRectGetMaxX(selectionRect) - (CGRectGetMaxX(clipBounds) - kEditorInsetX)); // aligns right edge of selection with right edge of frame
+        DEBUG_EDITOR_FRAME(@"leftOffset %f, rightOffset %f", leftOffset, rightOffset);
+        
+        // We should only shift the editor to the left -- if you move the cursor to the visually right-most position in the editor should just have bounds.origin.x = 0.
+        OBASSERT(leftOffset >= 0);
+        OBASSERT(rightOffset >= 0);
+        
+        if (CGRectGetMaxX(editorFrame) - _editorXOffset < CGRectGetMaxX(clipBounds)) {
+            // We're wider than our clip area, but our right edge is leaving some clip area uncovered by our editor. Maybe the user deleted some text at the end after having scrolled over.
+            _editorXOffset = rightOffset;
+        }
+        
+        OFExtent allowedOffsetExtent = OFExtentFromLocations(leftOffset, rightOffset);
+        DEBUG_EDITOR_FRAME(@"allowedOffsetExtent %@", OFExtentToString(allowedOffsetExtent));
+        
+        // Shift as little as possible
+        _editorXOffset = OFExtentClampValue(allowedOffsetExtent, _editorXOffset);
+        OBASSERT(_editorXOffset >= 0);
+    } else {
+        // The entire view will fit. The normal text alignment will handle it.
+        _editorXOffset = 0;
+    }
+    DEBUG_EDITOR_FRAME(@"_editorXOffset = %f", _editorXOffset);
+
+    editorFrame.origin.x = round(editorFrame.origin.x - _editorXOffset);
+    DEBUG_EDITOR_FRAME(@"editorFrame = %@", NSStringFromCGRect(editorFrame));
+
+    _editor.frame = editorFrame;
+    _editor.clipRect = [_editor convertRect:clipBounds fromView:_editorContainerView];
+    DEBUG_EDITOR_FRAME(@"_editor.clipRect = %@", NSStringFromCGRect(_editor.clipRect));
 }
 
 @end

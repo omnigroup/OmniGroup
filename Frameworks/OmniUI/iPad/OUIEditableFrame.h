@@ -12,17 +12,19 @@
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIEditableFrameDelegate.h>
 #import <OmniUI/OUILoupeOverlaySubject.h>
+#import <OmniUI/OUIScrollNotifier.h>
 #import <OmniUI/OUITextLayout.h>
 #import <OmniAppKit/OATextStorage.h>
 
 @class NSMutableAttributedString;
 
 @class OUEFTextPosition, OUEFTextRange, OUITextCursorOverlay, OUILoupeOverlay;
-@class OUIEditableFrame, OUITextThumb;
+@class OUITextThumb;
+@class OUIEditMenuController;
 
 @class CALayer, CAShapeLayer;
 
-@interface OUIEditableFrame : OUIScalingView <UIKeyInput, UITextInputTraits, UITextInput, OATextStorageDelegate, OUIInspectorDelegate, OUILoupeOverlaySubject>
+@interface OUIEditableFrame : OUIScalingView <UIKeyInput, UITextInputTraits, UITextInput, OATextStorageDelegate, OUIInspectorDelegate, OUIScrollNotifierDelegate, OUILoupeOverlaySubject>
 {
 @private
     /* The data model: a text storage and a selection range. */
@@ -72,19 +74,16 @@
         // Our current state
         unsigned textNeedsUpdate:1;
         unsigned solidCaret:1;
-        unsigned showingEditMenu:1;
         
         // Cached information about our OUIEditableFrameDelegate
         unsigned delegateRespondsToLayoutChanged:1;
         unsigned delegateRespondsToContentsChanged:1;
-        unsigned delegateRespondsToCanShowContextMenu:1;
         unsigned delegateRespondsToShouldInsertText:1;
         unsigned delegateRespondsToShouldDeleteBackwardsFromIndex:1;
         unsigned delegateRespondsToSelectionChanged:1;
         
         // Features which can be enabled or disabled
         unsigned showSelectionThumbs:1;  // Effectively disables range selection
-        unsigned showsInspector:1;       // Whether the inspector is offered
         unsigned shouldTryToCenterFirstLine:1; // Whether to attempt to center the first line at _firstLineCenterTarget
 
         unsigned isEditing:1; // We allow being 'editing' while not first responder.
@@ -101,23 +100,28 @@
     NSTimer *_solidityTimer;
     OUILoupeOverlay *_loupe;
     OUIInspector *_textInspector; // TODO: This probably shouldn't live on the editor.
-    
-    UIMenuController *_selectionContextMenu;
-    
+        
     /* Gesture recognizers: we hold on to these so we can enable and disable them when we gain/lose first responder status */
     UIGestureRecognizer *focusRecognizer;
 #define EF_NUM_ACTION_RECOGNIZERS 4
     UIGestureRecognizer *actionRecognizers[EF_NUM_ACTION_RECOGNIZERS];
     
+    UITextInputStringTokenizer *tokenizer;
+    
+    BOOL isRegisteredForScrollNotifications; // Just used for assertions that we're following the registration protocol.
+    
+    OUIEditMenuController *editMenu;
+
+@protected
     /* A system-provided input delegate is assigned when the system is interested in input changes. */
     id <UITextInputDelegate> inputDelegate;
-    UITextInputStringTokenizer *tokenizer;
 }
 
 + (Class)textStorageClass; // Controls the class used to create the built-in text storage
 
 @property (nonatomic, retain) OATextStorage *textStorage; // Set this if you want have your text storage directly edited. Otherwise, you can use 'attributedText' to replace the contents of the built-in text storage.
 
+@property (nonatomic, readonly) OUEFTextRange *selection;
 @property (nonatomic, readwrite, retain) UIColor *selectionColor;
 @property (nonatomic, copy) NSDictionary *typingAttributes;
 @property (nonatomic, copy) NSAttributedString *attributedText;
@@ -144,17 +148,28 @@
 @property (nonatomic) UITextAutocorrectionType autocorrectionType;  // defaults to UITextAutocorrectionTypeNo
 @property (nonatomic) UITextAutocapitalizationType autocapitalizationType; // defaults to UITextAutocapitalizationTypeNone
 @property (nonatomic) UITextGranularity tapSelectionGranularity;
-@property (nonatomic, readwrite) BOOL showingEditMenu;
-
-- (void)setupCustomMenuItemsForMenuController:(UIMenuController *)menuController;
 
 - (OUEFTextRange *)rangeOfLineContainingPosition:(OUEFTextPosition *)posn;
 - (UITextRange *)selectionRangeForPoint:(CGPoint)p granularity:(UITextGranularity)granularity;
 - (UITextRange *)selectionRangeForPoint:(CGPoint)p wordSelection:(BOOL)selectWords;
 - (UITextPosition *)tappedPositionForPoint:(CGPoint)point;
+- (unichar)characterAtIndex:(NSUInteger)index;
 - (id)attribute:(NSString *)attributeName atPosition:(UITextPosition *)position effectiveRange:(UITextRange **)outRange;
 
 - (CGRect)boundsOfRange:(UITextRange *)range; // May return CGRectZero
+
+// Allow clients to programmatically control selection without necessarily putting up a selection menu
+- (void)setSelectedTextRange:(UITextRange *)newRange showingMenu:(BOOL)show;
+- (void)selectAll:(id)sender showingMenu:(BOOL)show;
+
+- (void)extendSelectionToSurroundingWhitespaceWithNotifyDelegate:(BOOL)shouldNotify;
+- (NSAttributedString *)attributedTextOfSelection;
+
+// Edit menu callbacks
+- (BOOL)shouldSuppressEditMenu;
+- (CGRect)targetRectangleForEditMenu;
+- (BOOL)canPerformMainMenuAction:(SEL)action withSender:(id)sender;
+- (BOOL)canSuperclassPerformAction:(SEL)action withSender:(id)sender;
 
 /* These are the interface from the thumbs to our selection machinery */
 - (void)thumbBegan:(OUITextThumb *)thumb;
@@ -168,9 +183,6 @@
 
 - (BOOL)hasTouchesForEvent:(UIEvent *)event;
 - (BOOL)hasTouchByGestureRecognizer:(UIGestureRecognizer *)recognizer;
-
-// Controls whether the text style inspector is offered in the selection context menu. Not recommended since adjusting the text attributes can change text layout and make the position of inspector look bad.
-@property(nonatomic,assign) BOOL showsInspector OB_DEPRECATED_ATTRIBUTE;
 
 - (NSArray *)inspectableTextSpans;    // returns set of OUEFTextSpans 
 - (void)inspectSelectedTextFromBarButtonItem:(UIBarButtonItem *)barButtonItem;

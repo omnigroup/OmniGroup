@@ -30,5 +30,9 @@
 - (NSAttributedString *)readAttributedStringFromPasteboard:(UIPasteboard *)pasteboard forTextView:(OUIEditableFrame *)textView;
 - (BOOL)writeAttributedStringFromTextRange:(UITextRange *)textRange toPasteboard:(UIPasteboard *)pasteboard forTextView:(OUIEditableFrame *)textView;
 
+- (NSArray *)customMenuItemsForTextView:(OUIEditableFrame *)textView;
+    // Returns an array of all possible UIMenuItems that should be added to the main contextual menu of the delegator. At main menu display time, canPerformEditingAction:forTextView:withSender: is called for each selector to see whether it should be displayed in the current state.
+- (BOOL)canPerformEditingAction:(SEL)action forTextView:(OUIEditableFrame *)textView withSender:(id)sender;
+
 @end
 

@@ -247,7 +247,7 @@ static BOOL OFMessageQueueDebug = NO;
 
     queueCount = [queue count];
     if (weaklyRetainedDelegate != nil && queueCount == 0)
-        retainedDelegate = [(NSObject *)weaklyRetainedDelegate retain];
+        retainedDelegate = [weaklyRetainedDelegate retain];
     entryIndex = queueCount;
     if (flags.schedulesBasedOnPriority) {
         // Figure out priority

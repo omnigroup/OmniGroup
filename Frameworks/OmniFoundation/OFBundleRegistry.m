@@ -18,6 +18,7 @@
 #import <OmniFoundation/NSUserDefaults-OFExtensions.h>
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniFoundation/OFVersionNumber.h>
 
 RCS_ID("$Id$")
 
@@ -71,6 +72,29 @@ static NSArray *oldDisabledBundleNames;
     softwareVersionDictionary = [[NSMutableDictionary alloc] init];
     knownBundles = [[NSMutableArray alloc] init];
     additionalBundleDescriptions = nil;  // Lazily create this one since not all apps use it
+    
+#ifdef OMNI_ASSERTIONS_ON
+    do {
+        if ([[NSBundle mainBundle] bundleIdentifier] == nil)
+            // This *could* possibly be a horribly misconfigured app, but you aren't going to get very far if so. The most likely case is that this is a command line tool which doesn't have a real Info.plist.
+            break;
+        
+        // Sanity check the main bundle's Info.plist. In particular, this helps make sure we detect if the InfoPlist.h scheme we use gets broken by using Xcode's plist editor.
+        NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    
+        OBASSERT([[[OFVersionNumber alloc] initWithVersionString:[infoDictionary objectForKey:(id)kCFBundleVersionKey]] autorelease]);
+        OBASSERT([[[OFVersionNumber alloc] initWithVersionString:[infoDictionary objectForKey:(id)CFSTR("CFBundleShortVersionString")]] autorelease]);
+        
+        NSString *copyright = [infoDictionary objectForKey:@"NSHumanReadableCopyright"];
+        NSCharacterSet *decimalDigits = [NSCharacterSet decimalDigitCharacterSet];
+        NSUInteger yearStart = [copyright rangeOfCharacterFromSet:decimalDigits].location; // just returns the first character
+        OBASSERT(yearStart != NSNotFound);
+        if (yearStart != NSNotFound) {
+            NSString *year = [copyright substringWithRange:NSMakeRange(yearStart, 4)];
+            OBASSERT([year rangeOfCharacterFromSet:[decimalDigits invertedSet]].location == NSNotFound);
+        }
+    } while (0);
+#endif
 }
 
 + (void)didLoad;
@@ -614,8 +638,10 @@ static BOOL OFBundleRegistryDebug = NO;
         registrationPath = [registrationPath stringByReplacingKeysInDictionary:environmentDictionary startingDelimiter:@"$(" endingDelimiter:@")"];
         registrationPath = [registrationPath stringByExpandingTildeInPath];
         registrationDictionary = [[NSDictionary alloc] initWithContentsOfFile:registrationPath];
-        if (registrationDictionary)
+        if (registrationDictionary) {
             [self registerDictionary:registrationDictionary forBundle:nil];
+            [registrationDictionary release];
+        }
     }
 }
 

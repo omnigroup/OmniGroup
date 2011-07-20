@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,9 @@ typedef enum _OATableViewRowVisibility {
 
 @end
 
-@interface NSObject (NSTableViewOAExtendedDataSource)
+@protocol OAExtendedTableViewDataSource <NSTableViewDataSource>
+
+@optional
 
 // Searching
 - (BOOL)tableView:(NSTableView *)tableView itemAtRow:(NSInteger)row matchesPattern:(id <OAFindPattern>)pattern;

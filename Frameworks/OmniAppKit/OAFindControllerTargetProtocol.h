@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,24 +9,11 @@
 
 #import <Foundation/NSObject.h>
 #import <Foundation/NSRange.h>
+#import <OmniAppKit/OAFindPattern.h>
 
 @class NSView;
 @class NSString;
 @class OFRegularExpression;
-
-@protocol OAFindPattern <NSObject>
-- (BOOL)findInString:(NSString *)aString foundRange:(NSRangePointer)rangePtr;
-- (BOOL)findInRange:(NSRange)range ofString:(NSString *)aString foundRange:(NSRangePointer)rangePtr;
-
-- (void)setReplacementString:(NSString *)aString;
-- (NSString *)replacementStringForLastFind;
-
-// Allow the caller to inspect the contents of the find pattern (very helpful when they cannot efficiently reduce their target content to a string)
-- (NSString *)findPattern;
-- (BOOL)isCaseSensitive;
-- (BOOL)isBackwards;
-- (BOOL)isRegularExpression;
-@end
 
 @protocol OAFindControllerTarget
 - (BOOL)findPattern:(id <OAFindPattern>)pattern backwards:(BOOL)backwards wrap:(BOOL)wrap;

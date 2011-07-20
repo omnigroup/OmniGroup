@@ -602,7 +602,7 @@ RCS_ID("$Id$");
 #if 0 // NOT implementing this since our precondition in -appendChild: is easier this way.
 - (BOOL)appendXML:(struct _OFXMLBuffer *)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
 {
-    OBRejectUnusedImplementation(isa, _cmd);
+    OBRejectUnusedImplementation([self class], _cmd);
 }
 #endif
 

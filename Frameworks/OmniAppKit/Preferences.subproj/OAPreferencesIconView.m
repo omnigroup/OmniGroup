@@ -289,8 +289,9 @@ static const CGFloat iconBaseline = 36;
     [[NSColor controlLightHighlightColor] set];
     NSRectFill(rect);
     [[NSColor windowFrameColor] set];
-    NSRectFill(NSMakeRect(NSMinX(_bounds), NSMinY(_bounds), NSWidth(_bounds), 1.0f));
-    NSRectFill(NSMakeRect(NSMinX(_bounds), NSMaxY(_bounds)-1, NSWidth(_bounds), 1.0f));
+    NSRect bounds = self.bounds;
+    NSRectFill(NSMakeRect(NSMinX(bounds), NSMinY(bounds), NSWidth(bounds), 1.0f));
+    NSRectFill(NSMakeRect(NSMinX(bounds), NSMaxY(bounds)-1, NSWidth(bounds), 1.0f));
 }
 
 - (void)_sizeToFit;
@@ -298,7 +299,7 @@ static const CGFloat iconBaseline = 36;
     if (![self preferenceClientRecords])
         return;
         
-    [self setFrameSize:NSMakeSize(NSWidth(_bounds), NSMaxY([self _boundsForIndex:[self _numberOfIcons]-1]))];
+    [self setFrameSize:NSMakeSize(NSWidth(self.bounds), NSMaxY([self _boundsForIndex:[self _numberOfIcons]-1]))];
 }
 
 - (BOOL)_dragIconIndex:(NSUInteger)index event:(NSEvent *)event;
@@ -320,11 +321,7 @@ static const CGFloat iconBaseline = 36;
 
 - (BOOL)_dragIconImage:(NSImage *)iconImage andName:(NSString *)name andIdentifier:(NSString *)identifier event:(NSEvent *)event;
 {
-    NSImage *dragImage;
-    NSPasteboard *pasteboard;
-    NSPoint dragPoint, startPoint;
-
-    dragImage = [[NSImage alloc] initWithSize:buttonSize];
+    NSImage *dragImage = [[[NSImage alloc] initWithSize:buttonSize] autorelease];
     [dragImage lockFocus]; {
         [iconImage drawInRect:NSMakeRect(buttonSize.width / 2.0f - iconSize.width / 2.0f, iconBaseline, iconSize.width, iconSize.height) fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
         
@@ -332,13 +329,13 @@ static const CGFloat iconBaseline = 36;
         [preferenceTitleCell drawWithFrame:NSMakeRect(0, 0, buttonSize.width, titleCellHeight) inView:self];
     } [dragImage unlockFocus];
        
-    pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+    NSPasteboard *pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
     [pasteboard declareTypes:[NSArray arrayWithObject:@"NSToolbarIndividualItemDragType"] owner:nil];
     [pasteboard setString:identifier forType:@"NSToolbarItemIdentifierPboardType"];
     [pasteboard setString:identifier forType:@"NSToolbarItemIdentiferPboardType"]; // Apple misspelled this type in 10.1
     
-    dragPoint = [self convertPoint:[event locationInWindow] fromView:nil];
-    startPoint = NSMakePoint(dragPoint.x - buttonSize.width / 2.0f, dragPoint.y + buttonSize.height / 2.0f);
+    NSPoint dragPoint = [self convertPoint:[event locationInWindow] fromView:nil];
+    NSPoint startPoint = NSMakePoint(dragPoint.x - buttonSize.width / 2.0f, dragPoint.y + buttonSize.height / 2.0f);
     [self dragImage:dragImage at:startPoint offset:NSZeroSize event:event pasteboard:pasteboard source:self slideBack:NO];
     
     return YES;

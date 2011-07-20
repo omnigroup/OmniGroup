@@ -112,10 +112,10 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 
 - (CGFloat)paddingToInspectorBottom;
 {
-    return 8 - _borderOffsetFromEdge(self.view, CGRectMaxYEdge);
+    return 10 - _borderOffsetFromEdge(self.view, CGRectMaxYEdge);
 }
 
-- (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice;
+- (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice remainingHeight:(CGFloat)remainingHeight;
 {
     OBPRECONDITION(previousSlice);
     return 14 - _borderOffsetFromEdge(self.view, CGRectMinYEdge) - _borderOffsetFromEdge(previousSlice.view, CGRectMaxYEdge);

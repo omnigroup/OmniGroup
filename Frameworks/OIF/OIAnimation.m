@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,12 +31,10 @@ static NSString *animationContentName = nil;
 
 - initWithSourceContent:(OWContent *)someContent loopCount:(unsigned int)aLoopCount;
 {
-    NSZone *zone;
-
-    if (![super initWithName:animationContentName])
+    if (!(self = [super initWithName:animationContentName]))
         return nil;
 
-    zone = [self zone];
+    NSZone *zone = [self zone];
     sourceContent = [someContent retain];
     frames = [[NSMutableArray allocWithZone:zone] init];
 

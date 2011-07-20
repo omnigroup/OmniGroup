@@ -21,20 +21,10 @@ RCS_ID("$Id$");
 
 @interface OUIFontInspectorSlice (/*Private*/)
 - (IBAction)_showFontFamilies:(id)sender;
+- (NSString *)_formatFontSize:(CGFloat)fontSize;
 @end
 
 @implementation OUIFontInspectorSlice
-
-- (void)dealloc;
-{
-    [_fontFamilyTextWell release];
-
-    [_fontSizeDecreaseStepperButton release];
-    [_fontSizeIncreaseStepperButton release];
-    [_fontSizeTextWell release];
-    [_fontFacesPane release];
-    [super dealloc];
-}
 
 @synthesize fontFamilyTextWell = _fontFamilyTextWell;
 @synthesize fontSizeDecreaseStepperButton = _fontSizeDecreaseStepperButton;
@@ -42,8 +32,27 @@ RCS_ID("$Id$");
 @synthesize fontSizeTextWell = _fontSizeTextWell;
 @synthesize fontFacesPane = _fontFacesPane;
 
+// TODO: should these be ivars?
 static const CGFloat kMinimumFontSize = 2;
 static const CGFloat kMaximumFontSize = 128;
+static const CGFloat kPrecision = 1000.0f;
+    // Font size will be rounded to nearest 1.0f/kPrecision
+static const NSString *kDigitsPrecision = @"###";
+    // Number of hashes here should match the number of digits after the decimal point in the decimal representation of  1.0f/kPrecision.
+
+static CGFloat _normalizeFontSize(CGFloat fontSize)
+{
+    CGFloat result = fontSize;
+
+    result = rint(result * kPrecision) / kPrecision;
+    
+    if (result < kMinimumFontSize)
+        result = kMinimumFontSize;
+    else if (result > kMaximumFontSize)
+        result = kMaximumFontSize;
+    
+    return result;
+}
 
 static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL relative)
 {
@@ -54,18 +63,12 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
             OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self];
             if (fontDescriptor) {
                 CGFloat newSize = relative? ( [fontDescriptor size] + fontSize ) : fontSize;
-                if (newSize < kMinimumFontSize)
-                    newSize = kMinimumFontSize;
-                else if (newSize > kMaximumFontSize)
-                    newSize = kMaximumFontSize;
+                newSize = _normalizeFontSize(newSize);
                 fontDescriptor = [fontDescriptor newFontDescriptorWithSize:newSize];
             } else {
                 UIFont *font = [UIFont systemFontOfSize:[UIFont labelFontSize]];
                 CGFloat newSize = relative? ( font.pointSize + fontSize ) : fontSize;
-                if (newSize < kMinimumFontSize)
-                    newSize = kMinimumFontSize;
-                else if (newSize > kMaximumFontSize)
-                    newSize = kMaximumFontSize;
+                newSize = _normalizeFontSize(newSize);
                 fontDescriptor = [[OAFontDescriptor alloc] initWithFamily:font.familyName size:newSize];
             }
             [object setFontDescriptor:fontDescriptor fromInspectorSlice:self];
@@ -73,6 +76,39 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
         }
     }
     [inspector didEndChangingInspectedObjects];
+}
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
+{
+    if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
+        return nil;
+    
+    NSString *baseFormat = @"#,##0";
+    
+    _wholeNumberFormatter = [[NSNumberFormatter alloc] init];
+    [_wholeNumberFormatter setPositiveFormat:baseFormat];
+    
+    NSString *decimalFormat = [[NSString alloc] initWithFormat:@"%@.%@", baseFormat, kDigitsPrecision];
+    
+    _fractionalNumberFormatter = [[NSNumberFormatter alloc] init];
+    [_fractionalNumberFormatter setPositiveFormat:decimalFormat];
+    
+    [decimalFormat release];
+    
+    return self;
+}
+
+- (void)dealloc;
+{
+    [_fontFamilyTextWell release];
+    
+    [_fontSizeDecreaseStepperButton release];
+    [_fontSizeIncreaseStepperButton release];
+    [_fontSizeTextWell release];
+    [_fontFacesPane release];
+    [_wholeNumberFormatter release];
+    [_fractionalNumberFormatter release];
+    [super dealloc];
 }
 
 - (IBAction)increaseFontSize:(id)sender;
@@ -173,10 +209,21 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
             _fontSizeTextWell.text = nil;
             break;
         case 1:
-            _fontSizeTextWell.text = [NSString stringWithFormat:@"%d", (int)rint(OFExtentMin(fontSizeExtent))];
+            _fontSizeTextWell.text = [self _formatFontSize:OFExtentMin(fontSizeExtent)];
             break;
         default:
-            _fontSizeTextWell.text = [NSString stringWithFormat:@"%d\u2013%d", (int)floor(OFExtentMin(fontSizeExtent)), (int)ceil(OFExtentMax(fontSizeExtent))]; /* Two numbers, en-dash */
+            {
+                CGFloat minSize = floor(OFExtentMin(fontSizeExtent));
+                CGFloat maxSize = ceil(OFExtentMax(fontSizeExtent));
+
+                // If either size is fractional, slap a ~ on the front.
+                NSString *format = nil;
+                if (minSize != OFExtentMin(fontSizeExtent) || maxSize != OFExtentMax(fontSizeExtent)) 
+                    format = @"~ %@\u2013%@";  /* tilde, two numbers, en-dash */
+                else
+                    format = @"%@\u2013%@";  /* two numbers, en-dash */
+                _fontSizeTextWell.text = [NSString stringWithFormat:format, [self _formatFontSize:minSize], [self _formatFontSize:maxSize]];
+            }
             break;
     }
 }
@@ -254,6 +301,16 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
     [self.inspector pushPane:familyPane];
 }
 
-
+- (NSString *)_formatFontSize:(CGFloat)fontSize;
+{
+    CGFloat displaySize = _normalizeFontSize(fontSize);
+    NSNumberFormatter *formatter = nil;
+    if (rint(displaySize) != displaySize)
+        formatter = _fractionalNumberFormatter;
+    else
+        formatter = _wholeNumberFormatter;
+    
+    return [formatter stringFromNumber:[NSNumber numberWithDouble:displaySize]];
+}
 @end
 

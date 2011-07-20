@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -241,7 +241,8 @@ static IMP originalTableColumnWithIdentifier;
 
 - (void)_setupColumnsAndMenu;
 {
-    if (_dataSource == nil || ![self _columnConfigurationEnabled])
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    if (dataSource == nil || ![self _columnConfigurationEnabled])
         return;
     
     BOOL loadingAutosavedColumns = NO;
@@ -350,10 +351,12 @@ static IMP originalTableColumnWithIdentifier;
     for (rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
         id objectValue;
         
-        if (isOutlineView)
-            objectValue = [_delegate outlineView:(NSOutlineView *)self objectValueForTableColumn:tableColumn byItem:[(NSOutlineView *)self itemAtRow:rowIndex]];
-        else
-            objectValue = [_delegate tableView:self objectValueForTableColumn:tableColumn row:rowIndex];
+        if (isOutlineView) {
+            NSOutlineView *outlineView = (NSOutlineView *)self;
+            objectValue = [outlineView.dataSource outlineView:outlineView objectValueForTableColumn:tableColumn byItem:[(NSOutlineView *)self itemAtRow:rowIndex]];
+        } else {
+            objectValue = [self.dataSource tableView:self objectValueForTableColumn:tableColumn row:rowIndex];
+        }
         
         [dataCell setObjectValue:objectValue];
         NSSize cellSize = [dataCell cellSize];
@@ -371,15 +374,17 @@ static IMP originalTableColumnWithIdentifier;
 
 - (BOOL)_columnConfigurationEnabled;
 {
-    return [_dataSource respondsToSelector:@selector(tableViewDefaultColumnIdentifiers:)];
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    return [dataSource respondsToSelector:@selector(tableViewDefaultColumnIdentifiers:)];
 }
 
 - (NSArray *)_defaultColumnIdentifiers;
 {
-    if ([_dataSource respondsToSelector:@selector(tableViewDefaultColumnIdentifiers:)]) {
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableViewDefaultColumnIdentifiers:)]) {
         NSArray *identifiers;
 
-        identifiers = [_dataSource tableViewDefaultColumnIdentifiers:self];
+        identifiers = [dataSource tableViewDefaultColumnIdentifiers:self];
         if ([identifiers count] < 1)
             [NSException raise:NSInvalidArgumentException format:@"-tableViewDefaultColumnIdentifiers: must return at least one valid column identifier"];
         else
@@ -393,58 +398,66 @@ static IMP originalTableColumnWithIdentifier;
 
 - (NSString *)_menuStringForColumn:(NSTableColumn *)column;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:menuStringForColumn:)])
-        return [_dataSource tableView:self menuStringForColumn:column];
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:menuStringForColumn:)])
+        return [dataSource tableView:self menuStringForColumn:column];
     else
         return [[column headerCell] stringValue];
 }
 
 - (BOOL)_shouldAllowTogglingColumn:(NSTableColumn *)column;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:shouldAllowTogglingColumn:)])
-        return [_dataSource tableView:self shouldAllowTogglingColumn:column];
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:shouldAllowTogglingColumn:)])
+        return [dataSource tableView:self shouldAllowTogglingColumn:column];
     else
         return YES;
 }
 
 - (BOOL)_allowsAutoresizing;
 {
-    if ([_dataSource respondsToSelector:@selector(tableViewAllowsColumnAutosizing:)])
-        return [_dataSource tableViewAllowsColumnAutosizing:self];
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableViewAllowsColumnAutosizing:)])
+        return [dataSource tableViewAllowsColumnAutosizing:self];
     else
         return NO;
 }
 
 - (BOOL)_shouldAddMenuSeparatorAfterColumn:(NSTableColumn *)column;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:shouldAddMenuSeparatorAfterColumn:)])
-        return [_dataSource tableView:self shouldAddMenuSeparatorAfterColumn:column];
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:shouldAddMenuSeparatorAfterColumn:)])
+        return [dataSource tableView:self shouldAddMenuSeparatorAfterColumn:column];
     else
         return NO;
 }
 
 - (void)_willActivateColumn:(NSTableColumn *)column;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:willActivateColumn:)])
-        [_dataSource tableView:self willActivateColumn:column];
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:willActivateColumn:)])
+        [dataSource tableView:self willActivateColumn:column];
 }
 
 - (void)_didActivateColumn:(NSTableColumn *)column;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:didActivateColumn:)])
-        [_dataSource tableView:self didActivateColumn:column];
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:didActivateColumn:)])
+        [dataSource tableView:self didActivateColumn:column];
 }
 
 - (void)_willDeactivateColumn:(NSTableColumn *)column;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:willDeactivateColumn:)])
-        [_dataSource tableView:self willDeactivateColumn:column];
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:willDeactivateColumn:)])
+        [dataSource tableView:self willDeactivateColumn:column];
 }
 
 - (void)_didDeactivateColumn:(NSTableColumn *)column;
 {
-    if ([_dataSource respondsToSelector:@selector(tableView:didDeactivateColumn:)])
-        [_dataSource tableView:self didDeactivateColumn:column];
+    id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:didDeactivateColumn:)])
+        [dataSource tableView:self didDeactivateColumn:column];
 }
 
 @end

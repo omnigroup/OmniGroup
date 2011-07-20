@@ -129,13 +129,13 @@ static NSImage *CautionIcon = nil;
                 exceptionCount = 0;
             }
             if (localException) {
-                if (_appFlags._hasBeenRun)
+                if ([self isRunning])
                     [self handleRunException:localException];
                 else
                     [self handleInitException:localException];
             }
         } NS_ENDHANDLER;
-    } while (_appFlags._hasBeenRun);
+    } while ([self isRunning]);
 }
 
 // This is for the benefit of -miniaturizeWindows: below.

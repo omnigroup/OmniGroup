@@ -28,6 +28,9 @@ typedef struct {
     OUIInspectorTextWell *_fontSizeTextWell;
     
     OUIFontInspectorPane *_fontFacesPane;
+    
+    NSNumberFormatter *_wholeNumberFormatter;
+    NSNumberFormatter *_fractionalNumberFormatter;
 }
 
 @property(retain) IBOutlet OUIInspectorTextWell *fontFamilyTextWell;
