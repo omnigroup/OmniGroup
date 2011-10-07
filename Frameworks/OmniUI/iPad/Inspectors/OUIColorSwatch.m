@@ -100,8 +100,6 @@ static id _commonInit(OUIColorSwatch *self)
     
     _color = [color retain];
 
-    [self addTarget:nil action:@selector(changeColor:) forControlEvents:UIControlEventTouchDown];
-
     return self;
 }
 

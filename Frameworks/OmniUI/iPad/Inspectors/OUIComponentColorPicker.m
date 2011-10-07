@@ -315,7 +315,7 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
     self.selectionValue = [[[OUIInspectorSelectionValue alloc] initWithValue:updatedColor] autorelease];
     free(components);
     
-    if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:nil from:self forEvent:nil])
+    if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:self.target from:self forEvent:nil])
         OBASSERT_NOT_REACHED("Showing a color picker, but not interested in the result?");
 }
 

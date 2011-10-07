@@ -117,6 +117,7 @@ RCS_ID("$Id$");
     
     OBASSERT(_swatchPicker == nil);
     _swatchPicker = [[OUIColorSwatchPicker alloc] initWithFrame:CGRectMake(0, yOffset, kWidth, 0)];
+    _swatchPicker.target = self;
     [_swatchPicker sizeHeightToFit];
     _swatchPicker.wraps = NO;
     _swatchPicker.showsNavigationSwatch = YES;

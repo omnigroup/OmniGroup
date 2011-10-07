@@ -102,6 +102,14 @@ static id _commonInit(OUIColorSwatchPicker *self)
     self.colors = [NSArray arrayWithObjects:color, nil];
 }
 
+@synthesize target = _nonretained_target;
+- (void)setTarget:(id)target;
+{
+    OBPRECONDITION(!target || [target respondsToSelector:@selector(changeColor:)]); // Later we could make the action configurable too...
+    
+    _nonretained_target = target;
+}
+
 @synthesize showsSingleSwatch = _showsSingleSwatch;
 - (void)setShowsSingleSwatch:(BOOL)showsSingleSwatch;
 {
@@ -230,9 +238,18 @@ static void _configureSwatchView(OUIColorSwatchPicker *self, UIView *swatchView,
 static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CGPoint *offset, CGSize size)
 {
     OUIColorSwatch *swatch = [(OUIColorSwatch *)[OUIColorSwatch alloc] initWithColor:color];
+    
+    [swatch addTarget:self action:@selector(_swatchTouchDown:) forControlEvents:UIControlEventTouchDown];
+    
     swatch.selected = _colorsMatch(color, self->_swatchSelectionColor);
     _configureSwatchView(self, swatch, offset, size);
     return swatch;
+}
+
+- (void)_swatchTouchDown:(OUIColorSwatch *)swatch;
+{
+    if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:_nonretained_target from:swatch forEvent:nil])
+        NSLog(@"Unable to find target for -changeColor: on color swatch tap.");
 }
 
 - (void)layoutSubviews;

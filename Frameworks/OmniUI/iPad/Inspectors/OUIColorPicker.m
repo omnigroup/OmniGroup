@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIColorPicker.h>
 
+#import <OmniUI/OUIColorValue.h>
+
 RCS_ID("$Id$");
 
 @implementation OUIColorPicker
@@ -15,6 +17,14 @@ RCS_ID("$Id$");
 {
     [_selectionValue release];
     [super dealloc];
+}
+
+@synthesize target = _nonretained_target;
+- (void)setTarget:(id)target;
+{
+    OBPRECONDITION(!target || [target respondsToSelector:@selector(changeColor:)]); // Later we could make the action configurable too...
+    
+    _nonretained_target = target;
 }
 
 @synthesize selectionValue = _selectionValue;
@@ -37,6 +47,15 @@ RCS_ID("$Id$");
 - (void)wasSelectedInColorInspectorPane:(OUIColorInspectorPane *)pane;
 {
     // for subclasses
+}
+
+#pragma mark -
+#pragma mark OUIColorSwatchPicker target
+
+- (void)changeColor:(id <OUIColorValue>)colorValue;
+{
+    if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:_nonretained_target from:colorValue forEvent:nil])
+        NSLog(@"Unable to find target for -changeColor: on color picker.");
 }
 
 @end

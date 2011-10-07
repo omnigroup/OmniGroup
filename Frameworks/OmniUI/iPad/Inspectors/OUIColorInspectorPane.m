@@ -160,7 +160,7 @@ RCS_ID("$Id$");
     OBASSERT(slice);
     if (slice.allowsNone)
         [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorNoneSegment.png" representedObject:_noneColorPicker];
-    
+
     [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorPaletteSegment.png" representedObject:_paletteColorPicker];
     [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorHSVSegment.png" representedObject:_hsvColorPicker];
     [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorRGBSegment.png" representedObject:_rgbColorPicker];
@@ -168,6 +168,13 @@ RCS_ID("$Id$");
     
     _colorTypeSegmentedControl.selectedSegment = [_colorTypeSegmentedControl segmentAtIndex:_colorTypeIndex];
     [self _setSelectedColorTypeIndex:_colorTypeIndex];
+    
+    // Needed to chain -changeColor: up to us from the color pickers.
+    NSUInteger segmentIndex = [_colorTypeSegmentedControl segmentCount];
+    while (segmentIndex--) {
+        OUIColorPicker *picker = [_colorTypeSegmentedControl segmentAtIndex:segmentIndex].representedObject;
+        picker.target = self;
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated;

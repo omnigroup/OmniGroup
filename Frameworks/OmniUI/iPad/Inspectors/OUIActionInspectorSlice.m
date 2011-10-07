@@ -73,7 +73,7 @@ RCS_ID("$Id$");
     _textWell.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _textWell.rounded = YES;
     
-    [_textWell addTarget:nil action:_action forControlEvents:UIControlEventTouchUpInside|UIControlEventValueChanged];
+    [_textWell addTarget:self action:_action forControlEvents:UIControlEventTouchUpInside|UIControlEventValueChanged];
     
     OUIInspectorTextWellStyle style = [[self class] textWellStyle];
     _textWell.style = style;

@@ -165,6 +165,7 @@ RCS_ID("$Id$");
         
         {
             OUIColorSwatchPicker *swatchPicker = [[OUIColorSwatchPicker alloc] initWithFrame:CGRectMake(xOffset, yOffset, viewBounds.size.width - xOffset, 0)];
+            swatchPicker.target = self;
             swatchPicker.wraps = YES;
             swatchPicker.colors = theme.colors;
             [swatchPicker sizeHeightToFit];

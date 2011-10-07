@@ -53,7 +53,7 @@ RCS_ID("$Id$")
     _textWell.rounded = YES;
     _textWell.label = self.title;
     
-    [_textWell addTarget:nil action:@selector(showDetails:) forControlEvents:UIControlEventTouchUpInside];
+    [_textWell addTarget:self action:@selector(showDetails:) forControlEvents:UIControlEventTouchUpInside];
     
     self.view = _textWell;
 }
