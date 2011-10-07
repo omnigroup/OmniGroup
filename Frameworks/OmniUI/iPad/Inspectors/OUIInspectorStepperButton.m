@@ -106,11 +106,11 @@ static id _commonInit(OUIInspectorStepperButton *self)
     [self _rebuildImage];
 }
 
-- (UIFont *)titleFont;
+- (UIFont *)titleLabelFont;
 {
     return _label.font;
 }
-- (void)setTitleFont:(UIFont *)font;
+- (void)setTitleLabelFont:(UIFont *)font;
 {
     if (!_label)
         [self _makeLabel];

@@ -32,7 +32,7 @@
 @property(assign,nonatomic) BOOL repeats;
 
 @property(copy,nonatomic) NSString *title;
-@property(retain,nonatomic) UIFont *titleFont;
+@property(retain,nonatomic) UIFont *titleLabelFont;
 @property(retain,nonatomic) UIColor *titleColor;
 @property(retain,nonatomic) UIImage *image;
 
