@@ -51,7 +51,8 @@ OTHER_MFLAGS = $(value) -Wselector -Wstrict-selector-match -Wundeclared-selector
 // GCC_WARN_64_TO_32_BIT_CONVERSION only handles 64->32 and only for integers in clang (gcc warns on both)
 // We could use this to get warning about unichar->char, OSStatus->OSErr, int->BOOL.
 // Sadly, this produces tons of false positives (such as CFIndex<->NSUInteger changing signedness)
-// OTHER_CFLAGS = $(value) -Wconversion
+// Greg Parker reports something about this flag is usable clang with the sign conversion noise turned off (NSUInteger vs CFIndex), <https://twitter.com/#!/gparker/status/78039974372573184>
+// OTHER_CFLAGS = $(value) -Wconversion -Wno-sign-conversion
 
 ZERO_LINK = NO
 INSTALL_MODE_FLAG = a+rX
@@ -73,6 +74,8 @@ HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR" "$CONFIGURATION_BUILD
 // Unlike gcc and llvm-gcc, clang emits ObjC runtime info for class extensions conforming to protocols. Also, clang has more warning checks than gcc.
 //GCC_VERSION = com.apple.compilers.llvmgcc42
 GCC_VERSION = com.apple.compilers.llvm.clang.1_0
+//CC[sdk=iphonesimulator*]=/Volumes/Space/Users/bungi/Source/LLVM/llvm/Release+Asserts/bin/clang
+//CC[sdk=macos*]=/Volumes/Space/Users/bungi/Source/LLVM/llvm/Release+Asserts/bin/clang
 
 RUN_CLANG_STATIC_ANALYZER = YES
 
