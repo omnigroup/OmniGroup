@@ -21,6 +21,7 @@ RCS_ID("$Id$");
 {
     if (!(self = [super initWithContentRect:contentRect styleMask:aStyle backing:bufferingType defer:flag]))
         return nil;
+    [self setAutorecalculatesKeyViewLoop:YES];
     [self setHasShadow:YES];
     [self useOptimizedDrawing:YES];
     [self setLevel:NSFloatingWindowLevel];

@@ -9,6 +9,7 @@
 
 #import <UIKit/UITableView.h>
 #import <OmniFoundation/OFExtent.h>
+#import <OmniQuartz/OQColor.h>
 
 @interface UITableView (OUIExtensions)
 @property(readonly,nonatomic) UIEdgeInsets borderEdgeInsets; // Overridden from UIView(OUIExtensions)
@@ -38,6 +39,17 @@ extern void OUITableViewFinishedReactingToSelectionWithPredicate(UITableView *ta
  */
 extern void OUITableViewCellShowSelection(UITableViewCell *tableViewCell, OUITableViewCellSelectionType type, BOOL selected);
 
+// For cases where you want to set the cell to show no selecton/highlight color of its own and control it yourself.
+typedef struct {
+    OSHSV normal;
+    OSHSV selected;
+    OSHSV highlighted;
+} OUITableViewCellBackgroundColors;
+extern const OUITableViewCellBackgroundColors OUITableViewCellDefaultBackgroundColors;
+
+extern OQColor *OUITableViewCellBackgroundColorForControlState(const OUITableViewCellBackgroundColors *colors, UIControlState state);
+extern OQColor *OUITableViewCellBackgroundColorForCurrentState(const OUITableViewCellBackgroundColors *colors, UITableViewCell *cell);
+
 // For use when embedding a table view in another scroll view. The containing scroll view should be the scrolling agent, not this table view. Assumes the table view has current contents.
 extern void OUITableViewAdjustHeightToFitContents(UITableView *tableView);
 
@@ -45,3 +57,4 @@ extern void OUITableViewAdjustHeightToFitContents(UITableView *tableView);
  Assumes the table view is height stretchable. Adjusts the tableView's superview so that the contents of the table view won't be scrollable. Assumes the table view has current contents.
  */
 extern void OUITableViewAdjustContainingViewHeightToFitContents(UITableView *tableView);
+

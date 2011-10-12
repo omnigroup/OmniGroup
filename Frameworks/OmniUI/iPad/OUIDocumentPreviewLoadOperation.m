@@ -7,37 +7,45 @@
 
 #import "OUIDocumentPreviewLoadOperation.h"
 
-#import <OmniUI/OUIDocumentProxy.h>
-#import <OmniUI/OUIDocumentProxyView.h>
+#import <OmniUI/OUIDocumentPickerItemView.h>
+#import <OmniUI/OUIDocumentPreview.h>
+#import <OmniUI/OUIDocumentStoreFileItem.h>
+#import <OmniUI/OUIDocument.h>
+
+#import "OUIDocumentPickerItemView-Internal.h"
 
 RCS_ID("$Id$");
 
 @implementation OUIDocumentPreviewLoadOperation
-
-- initWithProxy:(OUIDocumentProxy *)proxy size:(CGSize)size;
 {
-#ifdef IPAD_RETAIL_DEMO
-    // Terrible terrible hack--I mean, this is the best!
-    // Hack to fix <bug://bugs/61625> (Modifying welcome doc on first launch and going to picker only loads low-res preview)
-    // For now, if we get the bogus small previous size let's just use a previous size of 584x730 instead (which is the largest preview size we're asked to render for the Welcome document).
-    if (size.width == 444.0f && size.height == 345.0f) {
-        size.width = 584.0f;
-        size.height = 730.0f;
-    }
-#endif
+    OUIDocumentPickerItemView *_view;
+    Class _documentClass;
+    OUIDocumentStoreFileItem *_fileItem;
+    BOOL _landscape;
+}
+
+- initWithView:(OUIDocumentPickerItemView *)view documentClass:(Class)documentClass fileItem:(OUIDocumentStoreFileItem *)fileItem landscape:(BOOL)landscape;
+{
+    OBPRECONDITION(view);
+    OBPRECONDITION(OBClassIsSubclassOfClass(documentClass, [OUIDocument class]));
+    OBPRECONDITION(fileItem);
+    OBPRECONDITION(fileItem.ready);
     
     if (!(self = [super init]))
         return nil;
     
-    _proxy = [proxy retain];
-    _size = size;
+    _view = [view retain];
+    _documentClass = documentClass;
+    _fileItem = [fileItem retain];
+    _landscape = landscape;
     
     return self;
 }
 
 - (void)dealloc;
 {
-    [_proxy release];
+    [_view release];
+    [_fileItem release];
     [super dealloc];
 }
 
@@ -45,11 +53,11 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(![NSThread isMainThread]);
     
-    id <NSObject, OUIDocumentPreview> preview = nil;
+    OUIDocumentPreview *preview = nil;
     NSError *error = nil;
 
     OMNI_POOL_START {
-        preview = [(id)[_proxy makePreviewOfSize:_size error:&error] retain];
+        preview = [[_documentClass loadPreviewForFileItem:_fileItem withLandscape:_landscape error:&error] retain];
     } OMNI_POOL_END;
         
 #if 0 && defined(DEBUG)
@@ -57,12 +65,21 @@ RCS_ID("$Id$");
 #endif
 
     if (preview == nil) {
-        NSLog(@"Unable to load preview from %@: %@", _proxy.url, [error toPropertyList]);
-        [_proxy performSelectorOnMainThread:@selector(previewDidLoad:) withObject:error waitUntilDone:NO];
-    } else {
-        [_proxy performSelectorOnMainThread:@selector(previewDidLoad:) withObject:preview waitUntilDone:NO];
-        [preview release];
+        NSLog(@"Unable to load preview from %@: %@", _fileItem.fileURL, [error toPropertyList]);
+
+        UIImage *image = [[_fileItem class] placeholderPreviewImageForFileItem:_fileItem landscape:_landscape];
+        if (image)
+            preview = [[[OUIDocumentPreview alloc] initWithFileItem:_fileItem date:_fileItem.date image:image landscape:_landscape type:OUIDocumentPreviewTypePlaceholder] autorelease];
+        else {
+            OBASSERT_NOT_REACHED("No placeholder image");
+            preview = nil;
+        }
     }
+    
+    main_async(^{
+        [_view previewLoadOperation:self loadedPreview:preview];
+        [preview release];
+    });
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -336,6 +336,7 @@ static NSData *formatKeychainInteger(id value)
 }
 #endif
 
+#if 0
 static SecKeychainAttribute *KeychainAttributesFromDictionary(NSDictionary *params, UInt32 *returnAttributeCount, FourCharCode *returnItemClass)
 {
     OBFinishPorting; // 64->32 warnings -- if we even keep this framework
@@ -403,9 +404,12 @@ static SecKeychainAttribute *KeychainAttributesFromDictionary(NSDictionary *para
     return attributes;
 #endif
 }
+#endif
 
 OWF_PRIVATE_EXTERN OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictionary *params, SecKeychainSearchRef *grepstate)
 {
+    OBFinishPorting; // Uses keychain API that was deprecated in 10.7
+#if 0
     SecKeychainAttributeList attributeList;
 
     if (!params || ![params count]) {
@@ -421,6 +425,7 @@ OWF_PRIVATE_EXTERN OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictiona
         free(attributeList.attr);
         return keychainStatus;
     }
+#endif
 }
 
 OWF_PRIVATE_EXTERN OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSString *realm, NSString *username, int portNumber, OSType protocol, OSType authType, NSData *passwordData)

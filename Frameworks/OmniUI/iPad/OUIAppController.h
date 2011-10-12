@@ -9,8 +9,10 @@
 
 #import <OmniFoundation/OFObject.h>
 #import <MessageUI/MFMailComposeViewController.h>
-#import <OmniUI/OUIDocumentPickerDelegate.h>
+#import <OmniUI/OUISpecialURLActionSheet.h>
+#import <OmniUI/OUIDocumentStoreDelegate.h>
 #import <OmniUI/OUIFeatures.h>
+#import <OmniUI/OUIActionSheet.h>
 
 @class UIBarButtonItem;
 @class OUIAppMenuController, OUIDocumentPicker, OUISyncMenuController;
@@ -22,7 +24,7 @@
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) file:__FILE__ line:__LINE__]
 
-@interface OUIAppController : OFObject <UIApplicationDelegate, MFMailComposeViewControllerDelegate, OUIDocumentPickerDelegate>
+@interface OUIAppController : OFObject <UIApplicationDelegate, MFMailComposeViewControllerDelegate, OUIDocumentStoreDelegate>
 {
 @private
     OUIDocumentPicker *_documentPicker;
@@ -37,11 +39,10 @@
     OUISoftwareUpdateController *_softwareUpdateController;
 #endif
     
+    dispatch_once_t _roleByFileTypeOnce;
     NSDictionary *_roleByFileType;
-    NSArray *_editableFileTypes;
     
-    UIPopoverController *_possiblyVisiblePopoverController;
-    UIBarButtonItem *_possiblyTappedButtonItem;
+    NSArray *_editableFileTypes;
 }
 
 + (id)controller;
@@ -64,7 +65,9 @@
 - (void)hideActivityIndicator;
 
 // NSObject (OUIAppMenuTarget)
+- (NSString *)aboutMenuTitle;
 - (NSString *)feedbackMenuTitle;
+- (NSString *)aboutMenuTitle;
 - (void)sendFeedback:(id)sender;
 - (void)showAppMenu:(id)sender;
 - (void)showSyncMenu:(id)sender;
@@ -76,16 +79,30 @@
 - (void)dismissPopover:(UIPopoverController *)popover animated:(BOOL)animated; // If the popover in question is not visible, does nothing. DOES send the 'did' delegate method, unlike the plain UIPopoverController method (see the implementation for reasoning)
 - (void)dismissPopoverAnimated:(BOOL)animated; // Calls -dismissPopover:animated: with whatever popover is visible
 
+// Action Sheet Helpers
+- (void)showActionSheet:(OUIActionSheet *)actionSheet fromSender:(id)sender animated:(BOOL)animated;
+
+- (void)dismissActionSheetAndPopover:(BOOL)animated;
+
 // Special URL handling
 - (BOOL)isSpecialURL:(NSURL *)url;
 - (BOOL)handleSpecialURL:(NSURL *)url;
+- (OUISpecialURLHandler)debugURLHandler;
+    // subclass should override to provide handler for app-specific debug URLs
 
 // UIApplicationDelegate methods that we implement
 - (void)applicationWillTerminate:(UIApplication *)application;
+- (void)applicationDidEnterBackground:(UIApplication *)application;
+- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
+
+// Optional OUIDocumentStoreDelegate that we implement
+- (NSArray *)documentStoreEditableDocumentTypes:(OUIDocumentStore *)store;
 
 // Subclass responsibility
 @property(readonly) UIViewController *topViewController;
+@property(readonly) NSString *applicationName;
 
+- (void)resetKeychain;
 @end
 
 extern BOOL OUIShouldLogPerformanceMetrics;

@@ -35,20 +35,13 @@ static void _logTouchDescription(UITouch *aTouch)
         return nil;
     
     // Defaults
-    _hysteresisAngle = 5;  
+    _hysteresisAngle = 15;  
     _overcameHysteresis = NO;
     _rotation = 0;
     
     self.numberOfTouchesRequired = 2;
     
     return self;
-}
-
-- (void)dealloc;
-{
-    [_capturedTouches release];
-    
-    [super dealloc];
 }
 
 #pragma mark -

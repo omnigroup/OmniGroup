@@ -14,9 +14,8 @@
 
 RCS_ID("$Id$");
 
-OBDEPRECATED_METHODS(OUIUndoBarButtonItemTarget)
-- (void)undoBarButtonItemWillShowPopover; // Use the OUIAppController single-popover helper instead.
-@end
+// OUIUndoBarButtonItemTarget
+OBDEPRECATED_METHOD(-undoBarButtonItemWillShowPopover); // Use the OUIAppController single-popover helper instead.
 
 NSString * const OUIUndoPopoverWillShowNotification = @"OUIUndoPopoverWillShowNotification";
 

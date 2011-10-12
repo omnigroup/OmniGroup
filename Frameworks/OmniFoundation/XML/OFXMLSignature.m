@@ -778,7 +778,7 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
 /*" Creates and returns a verification context for a given cryptographic algorithm. This method is also in charge of retrieving the key, if any. This is available for subclassing, but this implementation handles DSS-SHA1, HMAC-SHA1/MD5, and RSA-SHA1. "*/
 - (id <OFDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError;
 {
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
     CSSM_ALGORITHMS pk_keytype = CSSM_ALGID_NONE;
     CSSM_ALGORITHMS pk_signature_alg = CSSM_ALGID_NONE;
     if (xmlStrcmp(signatureAlgorithm, XMLPKSignatureDSS) == 0) {
@@ -973,7 +973,7 @@ static const SecAsn1Template dsaSignatureTemplate[] =
     return signatureValue;
 }
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 - (OFCDSAModule *)cspForKey:(OFCSSMKey *)aKey;
 {
     OFCDSAModule *keyCSP = [aKey csp];
@@ -1648,7 +1648,7 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
         return [[OFMD5DigestContext alloc] init];
     }
     
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
     id <OFDigestionContext, NSObject> result;
     CSSM_ALGORITHMS cssm_algid;
     
@@ -1830,7 +1830,7 @@ static xmlNode *singleNodeFromXptrExpression(const xmlChar *expr, xmlDocPtr inDo
  The key methods are completely stubbed because they really have two responsibilities: one is to find the key, and the other is to evaluate whether it should be trusted for this particular application. I don't envision any use cases where it's useful to distinguish between "this was signed with an untrusted key" and "this was signed with an unknown key", so I'm conflating those here. The trust issue is entirely application-dependent, so the generic superclass defaults to trusting nothing.
 */
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 /*" Subclassers must implement this to find and return the specified asymmetric (RSA or DSA) key. "*/
 - (OFCSSMKey *)getPublicKey:(xmlNode *)keyInfo algorithm:(CSSM_ALGORITHMS)algid error:(NSError **)outError
 {

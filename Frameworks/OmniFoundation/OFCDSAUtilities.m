@@ -32,7 +32,7 @@ static const struct {
     { 0, nil }
 };
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 /* The original motivation for OFStringFromCSSMReturn() was that we had to weak-link both cssmErrorString() (for 10.4) and SecCopyErrorMessageString() (for later OS revisions), but nw it's mostly a cover on SecCopyErrorMessageString(). However, it's still handy to have a guaranteed non-nil result that's at least minimally informative. */
 NSString *OFStringFromCSSMReturn(CSSM_RETURN code)
 {
@@ -93,7 +93,7 @@ static inline NSString *NSStringFromCSSMGUID(CSSM_GUID uid)
 
 #pragma mark Cryptographic Service Provider handle
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 @implementation OFCDSAModule
 
 static void *cssmLibcMalloc(CSSM_SIZE size, void *allocref)
@@ -238,7 +238,7 @@ static const CSSM_VERSION callingApiVersion = {2,0};
 
 #pragma mark Key reference
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 @implementation OFCSSMKey
 
 - initWithCSP:(OFCDSAModule *)cryptographicServiceProvider
@@ -403,7 +403,7 @@ static const CSSM_VERSION callingApiVersion = {2,0};
 
 #pragma mark Cryptographic contexts of various sorts
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSString *function)
 {
     if (errcode == CSSM_OK)
@@ -625,53 +625,9 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
 }
 
 @end
-#endif // OF_ENABLE_CSSM
+#endif // OF_ENABLE_CDSA
 
-#if OF_ENABLE_CSSM
-NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputFormat_, NSError **outError)
-{
-    NSData *pemFile = [[NSData alloc] initWithContentsOfFile:path options:0 error:outError];
-    if (!pemFile)
-        return nil;
-    
-    SecExternalFormat inputFormat;
-    SecExternalItemType itemType;
-    SecKeyImportExportParameters  keyParams = (SecKeyImportExportParameters){
-        .version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION,
-        .flags = 0,
-        .passphrase = NULL,
-        .alertTitle = NULL,
-        .alertPrompt = NULL,
-        .accessRef = NULL,
-        .keyUsage = CSSM_KEYUSE_VERIFY,
-        .keyAttributes = CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_RETURN_DATA
-    };
-    CFArrayRef outItems;
-    
-    inputFormat = inputFormat_;
-    itemType = kSecItemTypeCertificate;
-    
-    OSStatus err = SecKeychainItemImport((CFDataRef)pemFile, (CFStringRef)path,
-                                         &inputFormat, &itemType, 0, &keyParams, NULL, &outItems);
-    
-    [pemFile release];
-    
-    if (err != noErr) {
-        if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, @"SecKeychainItemImport", @"function", nil]];
-        return nil;
-    }
-    
-    
-    if (!outItems)
-        return [NSArray array];
-    NSArray *nsRef = [[(id)outItems retain] autorelease];
-    CFRelease(outItems);
-    return nsRef;
-}
-#endif
-
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 NSData *OFGetAppleKeyDigest(const CSSM_KEY *pkey, CSSM_CC_HANDLE ccontext, NSError **outError)
 {
     CSSM_RETURN cssmerr;

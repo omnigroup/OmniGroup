@@ -26,7 +26,12 @@ RCS_ID("$Id$");
 #define CURVEMATCH_GRAZING_EPSILON 0.5
 #define BOUNDS_EPSILON 1e-4
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+/* CGFloat isn't type-compatible with a floating-point literal. Use these macros when you know an explicit cast is OK --- for example, if you have a float literal or an analytical expression (sqrt, etc.). If you're getting values from elsewhere, it's probably better to leave the explicit cast at the test case instead of using this macro, so that its presence is obvious. */
+#define F(x) ((CGFloat)(x))
+#define Pt(x,y) (NSPoint){(CGFloat)(x), (CGFloat)(y)}
+#define Rct(x, y, w, h) (NSRect){{(CGFloat)(x), (CGFloat)(y)},{(CGFloat)(w),(CGFloat)(h)}}
+
+/* Test that the point at 't' on the line p0-p1 is equal to p (within INTERSECTION_EPSILON) */
 static void checkAtPoint(NSPoint p0, NSPoint p1, double t, NSPoint p)
 {
     double tfrom1 = 1 - t;
@@ -34,8 +39,8 @@ static void checkAtPoint(NSPoint p0, NSPoint p1, double t, NSPoint p)
     OBASSERT(t >= 0);
     OBASSERT(t <= 1);
     
-    float px = tfrom1 * p0.x + t * p1.x;
-    float py = tfrom1 * p0.y + t * p1.y;
+    double px = tfrom1 * p0.x + t * p1.x;
+    double py = tfrom1 * p0.y + t * p1.y;
     
     if ((fabs(px - p.x) >= INTERSECTION_EPSILON) || (fabs(py - p.y) >= INTERSECTION_EPSILON))
         NSLog(@"   Intersection point t=%g  (%g,%g)   expecting (%g,%g)  delta=(%g,%g)", t, px, py, p.x, p.y, px - p.x, py - p.y);
@@ -43,15 +48,13 @@ static void checkAtPoint(NSPoint p0, NSPoint p1, double t, NSPoint p)
     OBASSERT(fabs(px - p.x) < INTERSECTION_EPSILON);
     OBASSERT(fabs(py - p.y) < INTERSECTION_EPSILON);
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-static BOOL rectsAreApproximatelyEqual(NSRect r1, NSRect r2, float epsilon, int line)
+static BOOL rectsAreApproximatelyEqual(NSRect r1, NSRect r2, double epsilon, int line)
 {
     BOOL fail;
     
     fail = NO;
-#define testRectPart(a, b) if (fabsf(a - b) > epsilon) { NSLog(@"    Unequal rects: %s (%g) != %s (%g) [delta=%g], caller line %d", #a, a, #b, b, a - b, line); fail = YES; }
+#define testRectPart(a, b) if (fabs(a - b) > epsilon) { NSLog(@"    Unequal rects: %s (%g) != %s (%g) [delta=%g], caller line %d", #a, a, #b, b, a - b, line); fail = YES; }
     testRectPart(r1.origin.x, r2.origin.x);
     testRectPart(r1.origin.y, r2.origin.y);
     testRectPart(r1.size.width, r2.size.width);
@@ -59,9 +62,8 @@ static BOOL rectsAreApproximatelyEqual(NSRect r1, NSRect r2, float epsilon, int 
 
     return ! fail;
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+/* return the string name of an OAIntersectionAspect */
 static const char *straspect(enum OAIntersectionAspect a)
 {
     switch(a) {
@@ -71,9 +73,8 @@ static const char *straspect(enum OAIntersectionAspect a)
         default:                    return "bogus";
     }
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+/* verify that the intersection between the lines p00-p01 and p10-p11 is at intersection and has aspect aspect */
 static void checkOneLineLineIntersection(NSPoint p00, NSPoint p01, NSPoint p10, NSPoint p11, NSPoint intersection, enum OAIntersectionAspect aspect)
 {
     NSPoint l1[2], l2[2];
@@ -96,9 +97,7 @@ static void checkOneLineLineIntersection(NSPoint p00, NSPoint p01, NSPoint p10, 
     OBASSERT(r.leftEntryAspect == aspect);
     OBASSERT(r.leftExitAspect == aspect);
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
 static void checkOneLineLineOverlap(NSPoint p00, NSPoint p01, NSPoint p10, NSPoint p11, NSPoint intersectionStart, NSPoint intersectionEnd)
 {
     NSPoint l1[2], l2[2];
@@ -122,17 +121,15 @@ static void checkOneLineLineOverlap(NSPoint p00, NSPoint p01, NSPoint p10, NSPoi
     OBASSERT(r.leftEntryAspect == intersectionEntryAt);
     OBASSERT(r.leftExitAspect == intersectionEntryAt);
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-static void linesShouldNotIntersect(float x00, float y00, float x01, float y01, float x10, float y10, float x11, float y11)
+static void linesShouldNotIntersect(double x00, double y00, double x01, double y01, double x10, double y10, double x11, double y11)
 {
     NSPoint l1[2], l2[2];
     struct intersectionInfo r[1];
 
     // Both lines forward
-    _parameterizeLine(l1, (NSPoint){x00, y00}, (NSPoint){x01, y01});
-    _parameterizeLine(l2, (NSPoint){x10, y10}, (NSPoint){x11, y11});
+    _parameterizeLine(l1, Pt(x00, y00), Pt(x01, y01));
+    _parameterizeLine(l2, Pt(x10, y10), Pt(x11, y11));
 #ifdef OMNI_ASSERTIONS_ON
     NSInteger count;
     count = 
@@ -146,7 +143,7 @@ static void linesShouldNotIntersect(float x00, float y00, float x01, float y01, 
     OBASSERT(count == 0);
 
     // l1 forward, l2 reverse
-    _parameterizeLine(l2, (NSPoint){x11, y11}, (NSPoint){x10, y10});
+    _parameterizeLine(l2, Pt(x11, y11), Pt(x10, y10));
 #ifdef OMNI_ASSERTIONS_ON
     count = 
 #endif
@@ -159,7 +156,7 @@ static void linesShouldNotIntersect(float x00, float y00, float x01, float y01, 
     OBASSERT(count == 0);
 
     // Both lines reverse
-    _parameterizeLine(l1, (NSPoint){x01, y01}, (NSPoint){x00, y00});
+    _parameterizeLine(l1, Pt(x01, y01), Pt(x00, y00));
 #ifdef OMNI_ASSERTIONS_ON
     count = 
 #endif
@@ -172,7 +169,7 @@ static void linesShouldNotIntersect(float x00, float y00, float x01, float y01, 
     OBASSERT(count == 0);
 
     // l1 reverse, l2 forward
-    _parameterizeLine(l2, (NSPoint){x10, y10}, (NSPoint){x11, y11});
+    _parameterizeLine(l2, Pt(x10, y10), Pt(x11, y11));
 #ifdef OMNI_ASSERTIONS_ON
     count = 
 #endif
@@ -184,26 +181,23 @@ static void linesShouldNotIntersect(float x00, float y00, float x01, float y01, 
     intersectionsBetweenLineAndLine(l2, l1, r);
     OBASSERT(count == 0);
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-static void linesDoIntersect(float x00, float y00, float x01, float y01, float x10, float y10, float x11, float y11, float xi, float yi, enum OAIntersectionAspect aspect)
+static void linesDoIntersect(double x00, double y00, double x01, double y01, double x10, double y10, double x11, double y11, double xi, double yi, enum OAIntersectionAspect aspect)
 {
-    NSPoint p00 = { x00, y00 };
-    NSPoint p01 = { x01, y01 };
-    NSPoint p10 = { x10, y10 };
-    NSPoint p11 = { x11, y11 };
-    NSPoint i = { xi, yi };
+    /* This routine notionally takes CGFloats, since it's testing code that operates on values taken directly from an NSBezierPath. But we take doubles and cast to CGFloat to avoid having to sprinkle all the call sites with casts. This should be OK, as long as CGFloats don't have more precision than doubles. */
+    NSPoint p00 = { (CGFloat)x00, (CGFloat)y00 };
+    NSPoint p01 = { (CGFloat)x01, (CGFloat)y01 };
+    NSPoint p10 = { (CGFloat)x10, (CGFloat)y10 };
+    NSPoint p11 = { (CGFloat)x11, (CGFloat)y11 };
+    NSPoint i   = { (CGFloat)xi,  (CGFloat)yi };
 
     checkOneLineLineIntersection(p00, p01, p10, p11, i, aspect); 
     checkOneLineLineIntersection(p00, p01, p11, p10, i, -aspect); 
     checkOneLineLineIntersection(p01, p00, p10, p11, i, -aspect); 
     checkOneLineLineIntersection(p01, p00, p11, p10, i, aspect); 
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-static void linesDoOverlap(float x00, float y00, float x01, float y01, float x10, float y10, float x11, float y11, float xi0, float yi0, float xi1, float yi1)
+static void linesDoOverlap(CGFloat x00, CGFloat y00, CGFloat x01, CGFloat y01, CGFloat x10, CGFloat y10, CGFloat x11, CGFloat y11, CGFloat xi0, CGFloat yi0, CGFloat xi1, CGFloat yi1)
 {
     NSPoint p00 = { x00, y00 };
     NSPoint p01 = { x01, y01 };
@@ -217,11 +211,9 @@ static void linesDoOverlap(float x00, float y00, float x01, float y01, float x10
     checkOneLineLineOverlap(p01, p00, p10, p11, i1, i0); 
     checkOneLineLineOverlap(p01, p00, p11, p10, i1, i0); 
 }
-#endif
 
 - (void)testLineLineIntersections
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     // Oblique misses, all permutations of pdet/vdet/p'det
     linesShouldNotIntersect(2, 2, 4, 4, 0, 3.5, 3,   3.9);
     linesShouldNotIntersect(2, 2, 4, 4, 0, 3.5, 4.7, 4.2);
@@ -251,18 +243,17 @@ static void linesDoOverlap(float x00, float y00, float x01, float y01, float x10
     
     // Collinear intersecting lines
     linesDoOverlap(2, 2, 4, 6, 3, 4, 5, 8, 3, 4, 4, 6);           // two lines with an overlap in the middle
-    linesDoOverlap(4, 6, 2, 2, 3, 4, 3.5, 5, 3.5, 5, 3, 4);       // one line fully contained by the other
+    linesDoOverlap(4, 6, 2, 2, 3, 4, (CGFloat)3.5, 5, (CGFloat)3.5, 5, 3, 4);       // one line fully contained by the other
     linesDoOverlap(1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4);           // same line
     
     // A line touching a zero-length line
     linesDoOverlap(1, 2, 3, 4, 2, 3, 2, 3, 2, 3, 2, 3);
     // A point and its dog^H^H^H^Helf
     linesDoOverlap(8, 3, 8, 3, 8, 3, 8, 3, 8, 3, 8, 3);
-#endif
 }
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-static void dumpFoundIntersections(int foundCount,
+static
+void dumpFoundIntersections(int foundCount,
                             const char *leftname, const char *rightname,
                             const NSPoint *leftCoeff, const NSPoint *rightCoeff,
                             struct intersectionInfo *r)
@@ -297,10 +288,9 @@ static void dumpFoundIntersections(int foundCount,
     }
     
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-static void dumpExpectedIntersections(int expectedCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *aentry, const enum OAIntersectionAspect *aexit, BOOL invertAspects)
+static
+void dumpExpectedIntersections(int expectedCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *aentry, const enum OAIntersectionAspect *aexit, BOOL invertAspects)
 {
     int ix;
     
@@ -316,9 +306,8 @@ static void dumpExpectedIntersections(int expectedCount, const NSPoint *i, const
     }
     
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+/* Verify that the line/curve intersection code finds intersections at the expected location with the expected aspects. */
 static BOOL checkOneLineCurve(const NSPoint *cparams, const NSPoint *lparams, int count, const NSPoint *i, const enum OAIntersectionAspect *a, BOOL invertAspects)
 {
     struct intersectionInfo r[3];
@@ -330,10 +319,15 @@ static BOOL checkOneLineCurve(const NSPoint *cparams, const NSPoint *lparams, in
 
     BOOL success = YES;
 
-    ix = intersectionsBetweenCurveAndLine(cparams, lparams, r);
+    // ifdeffed to silence unused assignment warning
+#ifdef OMNI_ASSERTIONS_ON
+    ix = 
+#endif
+    intersectionsBetweenCurveAndLine(cparams, lparams, r);
     OBASSERT(ix == count);
     
     
+#if defined(DEBUG_wiml) // Disabled until Wim gets a chance to look at this it (accesses to r[ix] are out of bounds if count > 3)
     for(ix = 0; ix < count; ix++) {
         OBASSERT(r[ix].leftParameter >= -EPSILON);
         OBASSERT(r[ix].leftParameter <= 1+EPSILON);
@@ -352,10 +346,10 @@ static BOOL checkOneLineCurve(const NSPoint *cparams, const NSPoint *lparams, in
         //OBASSERT(r[ix].leftAspect == expectedAspect);
         NSPoint curvepos, linepos;
         double t = r[ix].leftParameter;
-        curvepos.x = cparams[0].x + cparams[1].x * t + cparams[2].x * t * t + cparams[3].x * t * t * t;
-        curvepos.y = cparams[0].y + cparams[1].y * t + cparams[2].y * t * t + cparams[3].y * t * t * t;
-        linepos.x = lparams[0].x + r[ix].rightParameter * lparams[1].x;
-        linepos.y = lparams[0].y + r[ix].rightParameter * lparams[1].y;
+        curvepos.x = F(cparams[0].x + cparams[1].x * t + cparams[2].x * t * t + cparams[3].x * t * t * t);
+        curvepos.y = F(cparams[0].y + cparams[1].y * t + cparams[2].y * t * t + cparams[3].y * t * t * t);
+        linepos.x =  F(lparams[0].x + r[ix].rightParameter * lparams[1].x);
+        linepos.y =  F(lparams[0].y + r[ix].rightParameter * lparams[1].y);
         
         if (fabs(i[ix].x - curvepos.x) > CURVEMATCH_EPSILON ||
             fabs(i[ix].y - curvepos.y) > CURVEMATCH_EPSILON ||
@@ -370,13 +364,13 @@ static BOOL checkOneLineCurve(const NSPoint *cparams, const NSPoint *lparams, in
             success = NO;
         }
     }
-    
+#endif   
     return success;
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-static void checkLineCurve(const NSPoint *c, const NSPoint *l, int count, ...)
+/* Call checkOneLineCurve(), testing that it still returns the expected results if you reverse the direction of the curve and/or line. */
+static
+void checkLineCurve(const NSPoint *c, const NSPoint *l, int count, ...)
 /*
                     NSPoint i1, enum OAIntersectionAspect a1i, enum OAIntersectionAspect a1o,
                     NSPoint i2, enum OAIntersectionAspect a2i, enum OAIntersectionAspect a2o,
@@ -424,10 +418,8 @@ static void checkLineCurve(const NSPoint *c, const NSPoint *l, int count, ...)
         OBASSERT_NOT_REACHED("Line/Curve intersection tests fail");
     }
 }
-#endif
 
-#if 0
-static NSPoint pointOnCurve(const NSPoint *pts, float t)
+static NSPoint pointOnCurve(const NSPoint *pts, double t)
 {
     // Using the geometric construction here, instead of the polynomial, for variety...
     
@@ -450,25 +442,23 @@ static NSPoint pointOnCurve(const NSPoint *pts, float t)
     qy = ny * t1 + oy * t;
     
     return (NSPoint){
-        .x = px * t1 + qx * t,
-        .y = py * t1 + qy * t
+        .x = (CGFloat)(px * t1 + qx * t),
+        .y = (CGFloat)(py * t1 + qy * t)
     };
 }
-#endif
 
 - (void)testLineCurveIntersections
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     NSPoint l1[2] = { {1, 2}, {2, 6} };
     NSPoint l2[2] = { {1, 2}, {-1, -1} };
     NSPoint l3[2] = { {1, -1}, {1, 1} };
-    NSPoint l4[2] = { {1.1, 2.4}, {1.9, 5.6} };
-    NSPoint l5[2] = { {1.1, 2.4}, {2.1, 6.4} };
-    NSPoint l6[2] = { {-1024, 0}, {1024, 0} };
-    NSPoint l7[2] = { {1.5, -2}, {1.5, 0.2} };
+    NSPoint l4[2] = { Pt(1.1, 2.4), Pt(1.9, 5.6) };
+    NSPoint l5[2] = { Pt(1.1, 2.4), Pt(2.1, 6.4) };
+    NSPoint l6[2] = { Pt(-1024, 0), Pt(1024,  0) };
+    NSPoint l7[2] = { Pt(1.5,  -2), Pt(1.5, 0.2) };
     
     // Nonintersecting squiggle
-    NSPoint c1[4] = { {1, 3}, {1.5, 4}, {1, 4}, {2, 6.5} };
+    NSPoint c1[4] = { Pt(1, 3), Pt(1.5, 4), Pt(1, 4), Pt(2, 6.5) };
     checkLineCurve(c1, l1, 0);
     checkLineCurve(c1, l2, 0);
     
@@ -481,49 +471,46 @@ static NSPoint pointOnCurve(const NSPoint *pts, float t)
     // S whose endpoints match the line's endpoints
     NSPoint c3[4] = { {1,2}, {2,2}, {1,6}, {2,6} };
     checkLineCurve(c3, l1, 3,
-                   (NSPoint){1,2}, intersectionEntryRight, intersectionEntryRight,
-                   (NSPoint){1.5, 4}, intersectionEntryLeft, intersectionEntryLeft,
-                   (NSPoint){2,6}, intersectionEntryRight, intersectionEntryRight);
+                   Pt(1,2), intersectionEntryRight, intersectionEntryRight,
+                   Pt(1.5, 4), intersectionEntryLeft, intersectionEntryLeft,
+                   Pt(2,6), intersectionEntryRight, intersectionEntryRight);
     checkLineCurve(c3, l4, 1,
-                   (NSPoint){1.5, 4}, intersectionEntryLeft, intersectionEntryLeft);
+                   Pt(1.5, 4), intersectionEntryLeft, intersectionEntryLeft);
     checkLineCurve(c3, l5, 2,
-                   (NSPoint){1.5, 4}, intersectionEntryLeft, intersectionEntryLeft,
-                   (NSPoint){2,6}, intersectionEntryRight, intersectionEntryRight);
+                   Pt(1.5, 4), intersectionEntryLeft, intersectionEntryLeft,
+                   Pt(2,6), intersectionEntryRight, intersectionEntryRight);
     
     // Self-intersecting curve
     NSPoint c4[4] = { {0, 1}, {2, -2}, {2, 2}, {0, -1} };
     checkLineCurve(c4, l3, 2,
-                   (NSPoint){1, -0.0962251}, intersectionEntryRight, intersectionEntryRight,
-                   (NSPoint){1, 0.0962251}, intersectionEntryLeft, intersectionEntryLeft);
+                   Pt(1, -0.0962251), intersectionEntryRight, intersectionEntryRight,
+                   Pt(1, 0.0962251), intersectionEntryLeft, intersectionEntryLeft);
     checkLineCurve(c4, l6, 3,
-                   (NSPoint){0.857143, 0}, intersectionEntryRight, intersectionEntryRight,
-                   (NSPoint){1.5, 0}, intersectionEntryLeft, intersectionEntryLeft,
-                   (NSPoint){0.857143, 0}, intersectionEntryRight, intersectionEntryRight);
+                   Pt(0.857143, 0), intersectionEntryRight, intersectionEntryRight,
+                   Pt(1.5, 0), intersectionEntryLeft, intersectionEntryLeft,
+                   Pt(0.857143, 0), intersectionEntryRight, intersectionEntryRight);
     checkLineCurve(c4, l7, 1,
-                   (NSPoint){1.5, 0}, intersectionEntryRight, intersectionEntryLeft);  // Osculation (a double root in solveCubic())
+                   Pt(1.5, 0), intersectionEntryRight, intersectionEntryLeft);  // Osculation (a double root in solveCubic())
     
     // Another S, with carefully-contrived coordinates
     NSPoint c5[4] = { {0,0}, {0,3}, {125,-4}, {125,4} };
     checkLineCurve(c5, l6, 2,
-                   (NSPoint){0,0}, intersectionEntryLeft, intersectionEntryLeft,
-                   (NSPoint){81, 0}, intersectionEntryRight, intersectionEntryLeft);  // One crossing and an osculation (1 single and 1 double root)
+                   Pt(0,0), intersectionEntryLeft, intersectionEntryLeft,
+                   Pt(81, 0), intersectionEntryRight, intersectionEntryLeft);  // One crossing and an osculation (1 single and 1 double root)
     
     NSPoint c6[4] = { {-1,-1}, {-1,1}, {1,-1}, {1,1} };
     checkLineCurve(c6, l6, 1,
-                   (NSPoint){0,0}, intersectionEntryLeft, intersectionEntryLeft);  // A triple root in solveCubic()
-#endif
+                   Pt(0,0), intersectionEntryLeft, intersectionEntryLeft);  // A triple root in solveCubic()
 }
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
 static void logparams(NSString *name, const NSPoint *c)
 {
     NSLog(@"%@ px: %g %g %g %g", name, c[0].x, c[1].x, c[2].x, c[3].x);
     NSLog(@"%@ py: %g %g %g %g", name, c[0].y, c[1].y, c[2].y, c[3].y);
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-static BOOL checkOneCurveCurve(const NSPoint *leftPoints, const NSPoint *rightPoints, int intersectionCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *entryAspects, const enum OAIntersectionAspect *exitAspects, BOOL invertAspects, BOOL looseAspects)
+static
+BOOL checkOneCurveCurve(const NSPoint *leftPoints, const NSPoint *rightPoints, int intersectionCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *entryAspects, const enum OAIntersectionAspect *exitAspects, BOOL invertAspects, BOOL looseAspects)
 {
     struct intersectionInfo r[MAX_INTERSECTIONS_PER_ELT_PAIR];
     int ix, found;
@@ -614,16 +601,14 @@ static BOOL checkOneCurveCurve(const NSPoint *leftPoints, const NSPoint *rightPo
     
     return YES;
 }
-#endif
 
 typedef struct expect {
     NSPoint pt;
     enum OAIntersectionAspect entryAspect;
-    float len1, len2;
+    double len1, len2;
     BOOL justTouches;
 } expect;
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
 static BOOL checkCurveCurve_(BOOL looseAspects, const NSPoint *left, const NSPoint *right, int intersectionCount, ...)
 {
     NSPoint pts[intersectionCount];
@@ -667,9 +652,8 @@ static BOOL checkCurveCurve_(BOOL looseAspects, const NSPoint *left, const NSPoi
 }
 #define checkCurveCurve(...) STAssertTrue(checkCurveCurve_(NO, __VA_ARGS__), nil)
 #define checkCurveCurveLoose(...) STAssertTrue(checkCurveCurve_(YES, __VA_ARGS__), nil)
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+#if defined(DEBUG_wiml) // Disabled until Wim gets a chance to at this it
 static BOOL checkOneCurveSelf(const NSPoint *p, NSPoint i, double t1, double t2,  enum OAIntersectionAspect expectedAspect)
 {
     NSPoint c[4];
@@ -720,14 +704,17 @@ static BOOL checkOneCurveSelf(const NSPoint *p, NSPoint i, double t1, double t2,
         printf("%s:  Mismatch in intersection aspect\n", __func__);
     }
     
-    if (fabs(r[0].leftParameter - t1) > EPSILON ||
-        fabs(r[0].rightParameter - t2) > EPSILON) {
+    if (fabs(r[0].leftParameter - t1) > EPSILON) {
         mismatch = 1;
-        printf("%s:  Mismatch in intersection parameter\n", __func__);
+        printf("%s:  Mismatch in left intersection parameter (off by %+g)\n", __func__, fabs(r[0].leftParameter - t1));
+    }    
+    if (fabs(r[0].rightParameter - t2) > EPSILON) {
+        mismatch = 1;
+        printf("%s:  Mismatch in right intersection parameter (off by %+g)\n", __func__, fabs(r[0].rightParameter - t2));
     }    
     
     if (mismatch) {
-        NSLog(@"  Expected point (%g,%g) t=%g or %g (%s-%s aspect)\n Found Left t=%g (%g,%g)    Right t=%g (%g,%g)  aspect=%s-%s",
+        printf("  Expected point (%g,%g) t=%g or %g (%s-%s aspect)\n  Found Left t=%g (%g,%g)    Right t=%g (%g,%g)  aspect=%s-%s\n",
               i.x, i.y, t1, t2, straspect(expectedAspect), straspect(expectedAspect),
               r[0].leftParameter, leftpos.x, leftpos.y,
               r[0].rightParameter, rightpos.x, rightpos.y, straspect(r[0].leftEntryAspect), straspect(r[0].leftExitAspect));
@@ -737,214 +724,218 @@ static BOOL checkOneCurveSelf(const NSPoint *p, NSPoint i, double t1, double t2,
         return YES;
     }
 }
-#endif
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-static BOOL checkCurveSelf_(const NSPoint *p, NSPoint i, double t1, double t2,  enum OAIntersectionAspect expectedAspect)
+static BOOL checkCurveSelf_backwards(const NSPoint *p, NSPoint i, double t1, double t2,  enum OAIntersectionAspect expectedAspect)
 {
-    BOOL forwards, backwards;
-    
-    forwards = checkOneCurveSelf(p, i, t1, t2, expectedAspect);
-    
     NSPoint rev[4];
     rev[0] = p[3];
     rev[1] = p[2];
     rev[2] = p[1];
     rev[3] = p[0];
     
-    backwards = checkOneCurveSelf(rev, i, 1-t2, 1-t1, - expectedAspect);
-    
-    return forwards && backwards;
+    return checkOneCurveSelf(rev, i, 1-t2, 1-t1, - expectedAspect);
 }
-#define checkCurveSelf(...) STAssertTrue(checkCurveSelf_(__VA_ARGS__), nil)
+
+/* Check a given curve forwards and backwards */
+#define checkCurveSelf(...) STAssertTrue(checkOneCurveSelf(__VA_ARGS__), nil); STAssertTrue(checkCurveSelf_backwards(__VA_ARGS__), nil); 
 #endif
 
 - (void)testCurveCurveIntersections1
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-    const float R = ( (M_SQRT2 - 1.) * 4. / 3. );
-    NSPoint arc1[4] = { {0,0}, {0, R}, { 1-R, 1 }, {1, 1} };  // Quarter-circle of radius 1 centered at (1,0)
-    NSPoint arc2[4] = { {-0.1,0}, {-0.1, 1.1*R}, { 1- (1.1*R), 1.1 }, {1, 1.1} }; // Quarter-circle of radius 1.1 centered at (1,0)
-    NSPoint arc3[4] = { {1,0}, {1, R}, {R, 1}, {0, 1} }; // Quarter-circle of radius 1 centered at (0,0)
-    NSPoint arc4[4] = { {-0.1, 0.1}, {R - 0.1, 0.1}, {0.9, 1.1 - R}, {0.9, 1.1} }; // Quarter-circle of radius 1 centered at (-0.1, 1.1)
-    NSPoint ellarc1[4] = { {0,0}, {0, 1.1*R}, { 1-R, 1.1 }, {1, 1.1} }; // arc1, stretched vertically
-    NSPoint ellarc2[4] = { {-0.1,0}, {-0.1, R}, { 1- (1.1*R), 1 }, {1, 1} }; // arc2, compressed vertically
+    const double R = ( (M_SQRT2 - 1.) * 4. / 3. );
+    NSPoint arc1[4] = { Pt(0,0), Pt(0, R), Pt( 1-R, 1 ), Pt(1, 1) };  // Quarter-circle of radius 1 centered at (1,0)
+    NSPoint arc2[4] = { Pt(-0.1,0), Pt(-0.1, 1.1*R), Pt( 1- (1.1*R), 1.1 ), Pt(1, 1.1) }; // Quarter-circle of radius 1.1 centered at (1,0)
+    NSPoint arc3[4] = { Pt(1,0), Pt(1, R), Pt(R, 1), Pt(0, 1) }; // Quarter-circle of radius 1 centered at (0,0)
+    NSPoint arc4[4] = { Pt(-0.1, 0.1), Pt(R - 0.1, 0.1), Pt(0.9, 1.1 - R), Pt(0.9, 1.1) }; // Quarter-circle of radius 1 centered at (-0.1, 1.1)
+    NSPoint ellarc1[4] = { Pt(0,0), Pt(0, 1.1*R), Pt( 1-R, 1.1 ), Pt(1, 1.1) }; // arc1, stretched vertically
+    NSPoint ellarc2[4] = { Pt(-0.1,0), Pt(-0.1, R), Pt( 1- (1.1*R), 1 ), Pt(1, 1) }; // arc2, compressed vertically
     
     checkCurveCurve(arc1, arc2, 0);
     
-    float fudge = 0.00018;  // Fudge factor. The expected value of the test (below) is the point where a pair of circular arcs would intersect. The cubic-Bezier approximation of a quarter-circle is off by 0.05% at the farthest point, and in this case the lines are close enough to parallel to magnify the error. So the intersection point of the cubics is a bit farther up than the intersection of the arcs they approximate.
-    checkCurveCurve(arc1, arc3, 1, (expect){{0.5, sqrt(0.75) + fudge}, intersectionEntryRight});
+    double fudge = 0.00018;  // Fudge factor. The expected value of the test (below) is the point where a pair of circular arcs would intersect. The cubic-Bezier approximation of a quarter-circle is off by 0.05% at the farthest point, and in this case the lines are close enough to parallel to magnify the error. So the intersection point of the cubics is a bit farther up than the intersection of the arcs they approximate.
+    checkCurveCurve(arc1, arc3, 1, (expect){Pt(0.5, sqrt(0.75) + fudge), intersectionEntryRight});
     
     checkCurveCurve(arc1, arc4, 2,
-                    (expect){{0.00559027913422057, 0.10559027913422056}, intersectionEntryLeft},
-                    (expect){{0.89440972086577941, 0.99440972086577939}, intersectionEntryRight});
-#ifdef DEBUG_wiml
-    checkCurveCurve(ellarc1, ellarc2, 1, (NSPoint){ 1 - sqrt(121./221.), sqrt(121./221.) }, intersectionEntryLeft);
-#endif
-#endif
+                    (expect){Pt(0.00559027913422057, 0.10559027913422056), intersectionEntryLeft},
+                    (expect){Pt(0.89440972086577941, 0.99440972086577939), intersectionEntryRight});
+    checkCurveCurve(ellarc1, ellarc2, 1, (expect){Pt( 1 - sqrt(121./221.), sqrt(121./221.) ), intersectionEntryLeft});
 }
 
 - (void)testCurveCurveIntersections2
 {
-#ifdef DEBUG_wiml // Fails in x86_64
     NSPoint bow1[4] = { {0, 1}, {2, -2}, {2, 2}, {0, -1} }; // Self-intersecting curve
     NSPoint bow2[4] = { {1, 1}, {-1, -2}, {-1, 2}, {1, -1} }; // Same as bow1, reflected about x=.5
     NSPoint bow3[4] = { {2, 1}, {0, -2}, {0, 2}, {2, -1} }; // Same as bow1, reflected about x=1
 
     checkCurveCurve(bow1, bow2, 2,
-                    (expect){{0.5,  5. / sqrt(216)}, intersectionEntryLeft},
-                    (expect){{0.5, -5. / sqrt(216)}, intersectionEntryRight});
+                    (expect){Pt(0.5,  5. / sqrt(216)), intersectionEntryLeft},
+                    (expect){Pt(0.5, -5. / sqrt(216)), intersectionEntryRight});
     
     checkCurveCurve(bow1, bow3, 6,
                     // some of these intersections are too much of a pain to find analytically, so I just found them numerically
-                    (expect){{0.65007289,  0.18184824}, intersectionEntryRight},  // t = 0.123629812969579
-                    (expect){{1.0,     sqrt(3) / -18.}, intersectionEntryLeft},   // t = 0.211324865405187 = 0.5 - sqrt(1/12)
-                    (expect){{1.34992711, -0.18184824}, intersectionEntryLeft},   // t = 0.341847703205571
-                    (expect){{1.34992711,  0.18184824}, intersectionEntryRight},  // t = 0.658152296794429
-                    (expect){{1.0,     sqrt(3) /  18.}, intersectionEntryRight},  // t = 0.788675134594812 = 0.5 + sqrt(1/12)
-                    (expect){{0.65007289, -0.18184824}, intersectionEntryLeft});  // t = 0.876370187030421
-#endif
+                    (expect){Pt(0.65007289,  0.18184824), intersectionEntryRight},  // t = 0.123629812969579
+                    (expect){Pt(1.0,     sqrt(3) / -18.), intersectionEntryLeft},   // t = 0.211324865405187 = 0.5 - sqrt(1/12)
+                    (expect){Pt(1.34992711, -0.18184824), intersectionEntryLeft},   // t = 0.341847703205571
+                    (expect){Pt(1.34992711,  0.18184824), intersectionEntryRight},  // t = 0.658152296794429
+                    (expect){Pt(1.0,     sqrt(3) /  18.), intersectionEntryRight},  // t = 0.788675134594812 = 0.5 + sqrt(1/12)
+                    (expect){Pt(0.65007289, -0.18184824), intersectionEntryLeft});  // t = 0.876370187030421
 }
 
 
 - (void)testCurveCurveIntersections3
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-    float d = 0.1;
-    NSPoint ess1[4] = { {-1, d}, {5, d}, {-5, -d}, {1, -d} };
-    NSPoint ess2[4] = { {-d, 1}, {-d, -5}, {d, 5}, {d, -1} };
-    NSPoint ess3[4] = { {-d/2, d}, {6-d/2, d}, {-4-d/2, -d}, {2-d/2, -d} };  // ess1, shifted to the right by (1-d/2) to miss one leg of ess1
-    NSPoint gently[4] = { {-1, 0}, {25, 1}, {75, 1}, {100, 0} };
+    double d = 0.1;
+    NSPoint ess1[4] = { Pt(-1, d), Pt(5, d), Pt(-5, -d), Pt(1, -d) };
+    NSPoint ess2[4] = { Pt(-d, 1), Pt(-d, -5), Pt(d, 5), Pt(d, -1) };
+    NSPoint ess3[4] = { Pt(-d/2, d), Pt(6-d/2, d), Pt(-4-d/2, -d), Pt(2-d/2, -d) };  // ess1, shifted to the right by (1-d/2) to miss one leg of ess1
+    NSPoint gently[4] = { Pt(-1, 0), Pt(25, 1), Pt(75, 1), Pt(100, 0) };
 
     // All of these intersections were found by the algorithm itself, so this isn't a good test of intersection placement. What we're testing here is the case of many intersections, and the correct ordering of the intersections we get back, and some special cases with endpoints.
     
     // The exact symmetry of this test also triggers a wacky subdivision roundoff case in intersectionsBetweenCurveAndCurveMonotonic()+mergeSortIntersectionInfo().
     checkCurveCurve(ess1, ess2, 9,
-                    (expect){{-0.09799,  0.09799}, intersectionEntryLeft},
-                    (expect){{ 0.00488,  0.09740}, intersectionEntryRight},
-                    (expect){{ 0.09677,  0.09677}, intersectionEntryLeft},
-                    (expect){{ 0.09740,  0.00488}, intersectionEntryRight},
-                    (expect){{ 0,        0      }, intersectionEntryLeft},
-                    (expect){{-0.09740, -0.00488}, intersectionEntryRight},
-                    (expect){{-0.09677, -0.09677}, intersectionEntryLeft},
-                    (expect){{-0.00488, -0.09740}, intersectionEntryRight},
-                    (expect){{ 0.09799, -0.09799}, intersectionEntryLeft});
+                    (expect){Pt(-0.09799,  0.09799), intersectionEntryLeft},
+                    (expect){Pt( 0.00488,  0.09740), intersectionEntryRight},
+                    (expect){Pt( 0.09677,  0.09677), intersectionEntryLeft},
+                    (expect){Pt( 0.09740,  0.00488), intersectionEntryRight},
+                    (expect){Pt( 0,        0      ), intersectionEntryLeft},
+                    (expect){Pt(-0.09740, -0.00488), intersectionEntryRight},
+                    (expect){Pt(-0.09677, -0.09677), intersectionEntryLeft},
+                    (expect){Pt(-0.00488, -0.09740), intersectionEntryRight},
+                    (expect){Pt( 0.09799, -0.09799), intersectionEntryLeft});
 
     // This tests an odd case in the recursion of intersectionsBetweenCurveAndCurveMonotonic.
     checkCurveCurve(gently, ess2, 3,
-                    (expect){{-0.09763, 0.03394}, intersectionEntryLeft},
-                    (expect){{ 0.00188, 0.03762}, intersectionEntryRight},
-                    (expect){{ 0.09716, 0.04109}, intersectionEntryLeft});
+                    (expect){Pt(-0.09763, 0.03394), intersectionEntryLeft},
+                    (expect){Pt( 0.00188, 0.03762), intersectionEntryRight},
+                    (expect){Pt( 0.09716, 0.04109), intersectionEntryLeft});
     
     checkCurveCurve(ess2, ess3, 6,
-                    (expect){{-0.00389,-0.07778}, intersectionEntryLeft},
-                    (expect){{-0.00289,-0.05788}, intersectionEntryRight},
-                    (expect){{ 0.00500, 0.10000}, intersectionEntryLeft},
-                    (expect){{ 0.09675, 0.09997}, intersectionEntryRight},
-                    (expect){{ 0.09772,-0.04817}, intersectionEntryLeft},
-                    (expect){{ 0.09791,-0.08374}, intersectionEntryRight});
-#endif
+                    (expect){Pt(-0.00389,-0.07778), intersectionEntryLeft},
+                    (expect){Pt(-0.00289,-0.05788), intersectionEntryRight},
+                    (expect){Pt( 0.00500, 0.10000), intersectionEntryLeft},
+                    (expect){Pt( 0.09675, 0.09997), intersectionEntryRight},
+                    (expect){Pt( 0.09772,-0.04817), intersectionEntryLeft},
+                    (expect){Pt( 0.09791,-0.08374), intersectionEntryRight});
 }
 
 - (void)testCurveCurveGrazing
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
-    NSPoint bulge1[4] = { {0,0}, {-8,5}, {32, 5}, {24, 0} };
-    NSPoint bulge2[4] = { {-0.5,0}, {-8.833,5}, {32.833, 5}, {24.5, 0} };
-    NSPoint bulge3[4] = { {-1,0}, {4,4}, {33, 5}, {23, -1} };
-    NSPoint ess1[4]   = { {-4, 4}, { 4, 4}, {-4, -4}, { 4, -4} };
-    NSPoint ess2[4]   = { { 4, 4}, {-4, 4}, { 4, -4}, {-4, -4} };
-    NSPoint esslet[4] = { {-4, 4}, { 0, 4}, { 0,  2}, { 0,  0} };
+    NSPoint bulge1[4] = { Pt(0,0), Pt(-8,5), Pt(32, 5), Pt(24, 0) };
+    NSPoint bulge2[4] = { Pt(-0.5,0), Pt(-8.833,5), Pt(32.833, 5), Pt(24.5, 0) };
+    NSPoint bulge3[4] = { Pt(-1,0), Pt(4,4), Pt(33, 5), Pt(23, -1) };
+    NSPoint ess1[4]   = { Pt(-4, 4), Pt( 4, 4), Pt(-4, -4), Pt( 4, -4) };
+    NSPoint ess2[4]   = { Pt( 4, 4), Pt(-4, 4), Pt( 4, -4), Pt(-4, -4) };
+    NSPoint esslet[4] = { Pt(-4, 4), Pt( 0, 4), Pt( 0,  2), Pt( 0,  0) };
     
     // A symmetric case of two similar curves, one slightly stretched wrt the other, and osculating in the middle
     checkCurveCurve(bulge1, bulge2, 1,
-                    (expect){{12, 3.75}, intersectionEntryLeft, 0.2, 0.2, YES});
+                    (expect){Pt(12, 3.75), intersectionEntryLeft, 0.2, 0.2, YES});
     
     // An asymmetric case; one curve oscillates back and forth across the other a few times, and crosses at an angle elsewhere
     checkCurveCurve(bulge1, bulge3, 2,
-                    (expect){{-0.491551, 0.349019 }, intersectionEntryLeft, 0, 0},
-                    (expect){{19.3,      3.2      }, intersectionEntryRight, 0.4, 0.4});
+                    (expect){Pt(-0.491551, 0.349019 ), intersectionEntryLeft, 0, 0},
+                    (expect){Pt(19.3,      3.2      ), intersectionEntryRight, 0.4, 0.4});
     
     // Esses crossing and running briefly parallel
     checkCurveCurve(ess1, ess2, 1,
-                    (expect){{0,0}, intersectionEntryLeft, 0.1, 0.1});
+                    (expect){Pt(0,0), intersectionEntryLeft, 0.1, 0.1});
     
     // One curve is a section of another curve
     checkCurveCurveLoose(ess1, esslet, 1,
-                         (expect){{-0.5,2.75}, intersectionEntryAt, 0.51, 1.0});
+                         (expect){Pt(-0.5,2.75), intersectionEntryAt, 0.51, 1.0});
     
     // The same curve
     checkCurveCurveLoose(ess1, ess1, 1,
-                         (expect){{0, 0}, intersectionEntryAt, 1.0, 1.0});
-#endif
+                         (expect){Pt(0, 0), intersectionEntryAt, 1.0, 1.0});
 }
 
 - (void)testCurveSelfIntersection
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+#if defined(DEBUG_wiml) // Disabled until Wim gets a chance to at this it
     NSPoint bow1[4] = { {0, 1}, {2, -2}, { 2, 2}, {0, -1} }; // Self-intersecting curve
     NSPoint bow2[4] = { {0, 1}, {2, -2}, {-1, 0}, {1,  0} }; // Asymmetrical self-intersecting curve
 
-    checkCurveSelf(bow1, (NSPoint){6./7., 0.0}, 0.5 - sqrt(3./28.), 0.5 + sqrt(3./28.), intersectionEntryLeft);
+    checkCurveSelf(bow1, Pt(6./7., 0.0),             0.5 - sqrt(3./28.),    0.5 + sqrt(3./28.),    intersectionEntryLeft);
     
-    checkCurveSelf(bow2, (NSPoint){403./675., -128./3375.}, 8./15. - sqrt(11./75), 8./15. + sqrt(11./75), intersectionEntryRight); 
+    checkCurveSelf(bow2, Pt(403./675., -128./3375.), 8./15. - sqrt(11./75), 8./15. + sqrt(11./75), intersectionEntryRight); 
 #endif
 }
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
 static void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line, NSRect expected, NSPoint s, NSPoint c1, NSPoint c2, NSPoint e, CGFloat halfwidth)
 {
     NSRect buf;
     BOOL modified;
-#define checkDidMod(want) if (modified != want) \
+
+    /*
+     tightBoundsOfCurveTo() is returning YES in some cases where it should(?) return NO: it computes the answer in double-precision, and sets the modified flag because it extends outside the given rectangle, but when the result is cast to CGFloat to be returned it's equal to the original again.
+     
+     This shouldn't be a problem in the specific uses we have for tightBoundsOfCurveTo(), where the return value just enables some optimizations, so I've disabled that test here: we no longer fail if tightBounds... spuriously returns YES when we expect NO.
+     
+     To be absolutely strictly correct, I think tightBoundsOfCurve() should extend the bounds rectangle (using nextafter() or the like) if necessary when casting its results back to CGFloat. That's a greater level of care than we need though. (Alternatively, it could return its answers in doubles...)
+     */
+#if 0
+#define checkDidNotModify() if (modified) \
     [self failWithException:[NSException failureInCondition: @"modified" \
                                                      isTrue: modified \
                                                      inFile: (NSString *)file \
                                                      atLine: line \
-                                            withDescription: [NSString stringWithFormat:@"Specific check failed at line %d", __LINE__]]]
-
-#define checkCloseRect(got, want) if (!rectsAreApproximatelyEqual(got, want, BOUNDS_EPSILON, __LINE__)) \
-    [self failWithException:[NSException failureInCondition: [NSString stringWithFormat:@"%s == %s", #got, #want] \
+                                            withDescription: [NSString stringWithFormat:@"Specific check failed at line %d", __LINE__]]];
+#else
+#define checkDidNotModify()   (void)modified;
+#endif
+    
+#define checkDidModify(after) if (!modified) \
+    [self failWithException:[NSException failureInCondition: @"modified" \
+                                                     isTrue: modified \
+                                                     inFile: (NSString *)file \
+                                                     atLine: line \
+                                            withDescription: [NSString stringWithFormat:@"Specific check failed at line %d: rect is %@", __LINE__, NSStringFromRect(after)]]]
+    
+#define checkCloseRect(got, want, exact) if (!rectsAreApproximatelyEqual(got, want, exact? 0 : BOUNDS_EPSILON, __LINE__)) \
+    [self failWithException:[NSException failureInCondition: [NSString stringWithFormat:@"%s == %s (%s)", #got, #want, exact?"exact":"within epsilon"] \
                                                      isTrue: 0 \
                                                      inFile: (NSString *)file \
                                                      atLine: line \
-                                            withDescription: [NSString stringWithFormat:@"got=%@ want=%@ line: %d", NSStringFromRect(got), NSStringFromRect(want), __LINE__]]]
+                                            withDescription: [NSString stringWithFormat:@"%s=%@ %s=%@ (specific check at line %d)", #got, NSStringFromRect(got), #want, NSStringFromRect(want), __LINE__]]]
     
     buf = NSZeroRect;
     modified = tightBoundsOfCurveTo(&buf, s, c1, c2, e, halfwidth);
-    checkDidMod(YES);
-    checkCloseRect(buf, expected);
+    checkDidModify(buf);
+    checkCloseRect(buf, expected, NO);
     
     NSRect buf2 = buf;
+    NSRect buf2_before = buf2;
     modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
-    checkDidMod(NO);
+    checkDidNotModify();
+    checkCloseRect(buf2_before, buf2, YES);
     
     buf2 = NSInsetRect(buf, 1, 1);
     modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
-    checkDidMod(YES);
-    checkCloseRect(buf2, expected);
+    checkDidModify(buf);
+    checkCloseRect(buf2, expected, NO);
     
     buf2 = NSInsetRect(buf, -1, -1);
+    buf2_before = buf2;
     modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
-    checkDidMod(NO);
+    checkDidNotModify();
+    checkCloseRect(buf2_before, buf2, YES);
     
     buf2 = buf;
     buf2.size.width -= 1;
     modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
-    checkDidMod(YES);
-    checkCloseRect(buf2, expected);
+    checkDidModify(buf2);
+    checkCloseRect(buf2, expected, NO);
     
     buf2 = buf;
     buf2.size.height -= 1;
     modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
-    checkDidMod(YES);
-    checkCloseRect(buf2, expected);    
+    checkDidModify(buf2);
+    checkCloseRect(buf2, expected, NO);    
 }
-#endif
 
 - (void)testTightCubicBounds
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
                       (NSRect){ {0, 0}, {10, 10} },
                       (NSPoint){ 0, 0 },
@@ -953,63 +944,67 @@ static void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line,
                       (NSPoint){ 10, 10 }, 0);
     
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
-                      (NSRect){ {0, 0}, {7.5, 10} },
+                      Rct(0, 0,
+                          7.5, 10),
                       (NSPoint){ 0, 0 },
                       (NSPoint){ 10, 0 },
                       (NSPoint){ 10, 10 },
                       (NSPoint){ 0, 10 }, 0);
     
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
-                      (NSRect){ {0, 0}, {20./9., 20./9.} },
+                      Rct(0, 0,
+                          20./9., 20./9.),
                       (NSPoint){ 0, 0 },
                       (NSPoint){ 5, 0 },
                       (NSPoint){ 0, 5 },
                       (NSPoint){ 0, 0 }, 0);
 
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
-                      (NSRect){ {30, -10 - 10 / sqrt(12)}, {10, 20 / sqrt(12)} },
+                      Rct(30, -10 - 10 / sqrt(12),
+                          10, 20 / sqrt(12)),
                       (NSPoint){ 30, -10 },
                       (NSPoint){ 30,   0 },
                       (NSPoint){ 40, -20 },
                       (NSPoint){ 40, -10 }, 0);
-#endif
 }
 
 - (void)testTightCubicBoundsWithClearance
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
-                      (NSRect){ {-10, 0}, {0.75 + 0.1, 2 / sqrt(12) + 0.1} },
-                      (NSPoint){ -10, 0 },
-                      (NSPoint){ -9, 0.5  },
-                      (NSPoint){ -9, 1  },
-                      (NSPoint){ -10, 0 }, 0.1);
+                      Rct(-10, 0,
+                          0.75 + 0.1, 2 / sqrt(12) + 0.1),
+                      Pt( -10, 0   ),
+                      Pt(  -9, 0.5 ),
+                      Pt(  -9, 1   ),
+                      Pt( -10, 0   ), F(0.1));
     
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
-                      (NSRect){ {-10, 0}, {0.75 + 0.15, 2 / sqrt(12) + 0.15} },
-                      (NSPoint){ -10, 0 },
-                      (NSPoint){ -9, 0.5  },
-                      (NSPoint){ -9, 1  },
-                      (NSPoint){ -10, 0 }, 0.15);    
+                      Rct(-10, 0,
+                          0.75 + 0.15, 2 / sqrt(12) + 0.15),
+                      Pt( -10, 0   ),
+                      Pt(  -9, 0.5 ),
+                      Pt(  -9, 1   ),
+                      Pt( -10, 0   ), F(0.15));
     
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
-                      (NSRect){ {10, 10}, {1, 1} },
-                      (NSPoint){ 10, 10 },
-                      (NSPoint){ 11, 10.1  },
-                      (NSPoint){ 10.9, 11  },
-                      (NSPoint){ 11, 11 }, 0.3);    
+                      Rct(10, 10,
+                          1, 1),
+                      Pt( 10,   10   ),
+                      Pt( 11,   10.1 ),
+                      Pt( 10.9, 11   ),
+                      Pt( 11,   11   ), F(0.3));
     
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
-                      (NSRect){ {10 - 0.75 - 0.2, 10}, {0.75 + 0.2, 3} },
-                      (NSPoint){ 10, 10 },
-                      (NSPoint){  9, 11 },
-                      (NSPoint){  9, 12 },
-                      (NSPoint){ 10, 13 }, 0.2);
-#endif
+                      Rct(10 - 0.75 - 0.2, 10,
+                          0.75 + 0.2, 3),
+                      Pt( 10, 10 ),
+                      Pt(  9, 11 ),
+                      Pt(  9, 12 ),
+                      Pt( 10, 13 ), F(0.2));
 }
 
 
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+#if defined(DEBUG_wiml) // Disabled until Wim gets a chance to at this it
 static void checkClockwise_(OAGeometryTests *self, NSBezierPath *p, BOOL cw, const char *file, int line)
 {
     BOOL val;
@@ -1045,103 +1040,93 @@ static void checkClockwise_(OAGeometryTests *self, NSBezierPath *p, BOOL cw, con
 
 - (void)testPathClockwise
 {
-#ifdef DEBUG_wiml // Implicit 64->32 casts which may be important for loss of precision
+#if defined(DEBUG_wiml) // Disabled until Wim gets a chance to at this it
     NSBezierPath *p;
-    float i;
+    double i;
     
     p = [NSBezierPath bezierPath];
-    [p moveToPoint:(NSPoint){1, 2}];
-    [p lineToPoint:(NSPoint){2, 3}];
-    [p lineToPoint:(NSPoint){3, 1}];
+    [p moveToPoint:Pt(1, 2)];
+    [p lineToPoint:Pt(2, 3)];
+    [p lineToPoint:Pt(3, 1)];
     [p closePath];
     checkClockwise(p, YES);
     
     p = [NSBezierPath bezierPath];
-    [p moveToPoint:(NSPoint){1, 1}];
+    [p moveToPoint:Pt(1, 1)];
     for(i = 1.1; i < 2; i += 0.1)
-        [p lineToPoint:(NSPoint){0.9, i}];
-    [p lineToPoint:(NSPoint){1, 2}];
+        [p lineToPoint:Pt(0.9, i)];
+    [p lineToPoint:Pt(1, 2)];
     [p closePath];
     checkClockwise(p, YES);
 
     p = [NSBezierPath bezierPath];
-    [p moveToPoint:(NSPoint){1, 1}];
+    [p moveToPoint:Pt(1, 1)];
     for(i = 1.1; i < 2; i += 0.1)
-        [p lineToPoint:(NSPoint){0.9, i}];
-    [p lineToPoint:(NSPoint){1, 2}];
-    [p lineToPoint:(NSPoint){0.92, 1.5}];
+        [p lineToPoint:Pt(0.9, i)];
+    [p lineToPoint:Pt(1, 2)];
+    [p lineToPoint:Pt(0.92, 1.5)];
     [p closePath];
     checkClockwise(p, YES);
 
     p = [NSBezierPath bezierPath];
-    [p moveToPoint:(NSPoint){1, 1}];
+    [p moveToPoint:Pt(1, 1)];
     for(i = 1.1; i < 2; i += 0.1)
-        [p lineToPoint:(NSPoint){0.9, i}];
-    [p lineToPoint:(NSPoint){1, 2}];
-    [p lineToPoint:(NSPoint){100, 1.5}];
+        [p lineToPoint:Pt(0.9, i)];
+    [p lineToPoint:Pt(1, 2)];
+    [p lineToPoint:Pt(100, 1.5)];
     [p closePath];
     checkClockwise(p, YES);
 
     p = [NSBezierPath bezierPath];
-    [p moveToPoint:(NSPoint){1, 1}];
+    [p moveToPoint:Pt(1, 1)];
     for(i = 1.1; i < 2; i += 0.05)
-        [p lineToPoint:(NSPoint){0.9, i}];
-    [p lineToPoint:(NSPoint){1, 2}];
-    [p lineToPoint:(NSPoint){0.85, 2}];
-    [p lineToPoint:(NSPoint){0.85, 1}];
+        [p lineToPoint:Pt(0.9, i)];
+    [p lineToPoint:Pt(1, 2)];
+    [p lineToPoint:Pt(0.85, 2)];
+    [p lineToPoint:Pt(0.85, 1)];
     [p closePath];
     checkClockwise(p, NO);
 
     p = [NSBezierPath bezierPath];
-    [p moveToPoint:(NSPoint){1, 1}];
+    [p moveToPoint:Pt(1, 1)];
     for(i = 1.1; i < 2; i += 0.05)
-        [p lineToPoint:(NSPoint){0.9, i}];
-    [p lineToPoint:(NSPoint){1, 2}];
-    [p lineToPoint:(NSPoint){0.91, 1.90}];
-    [p lineToPoint:(NSPoint){0.91, 1.10}];
+        [p lineToPoint:Pt(0.9, i)];
+    [p lineToPoint:Pt(1, 2)];
+    [p lineToPoint:Pt(0.91, 1.90)];
+    [p lineToPoint:Pt(0.91, 1.10)];
     [p closePath];
     checkClockwise(p, YES);
     
     p = [NSBezierPath bezierPath];
-    [p moveToPoint: (NSPoint){-1, 0}];
-    [p curveToPoint:(NSPoint){ 1, 0} controlPoint1:(NSPoint){-0.5, 1.0} controlPoint2:(NSPoint){ 0.5, 1.0}];
-    [p curveToPoint:(NSPoint){-1, 0} controlPoint1:(NSPoint){ 0.5, 0.9} controlPoint2:(NSPoint){-0.5, 0.9}];
-#ifdef DEBUG_wiml
+    [p moveToPoint: Pt(-1, 0)];
+    [p curveToPoint:Pt( 1, 0) controlPoint1:Pt(-0.5, 1.0) controlPoint2:Pt( 0.5, 1.0)];
+    [p curveToPoint:Pt(-1, 0) controlPoint1:Pt( 0.5, 0.9) controlPoint2:Pt(-0.5, 0.9)];
     checkClockwise(p, YES);
-#endif
     [p closePath];
-#ifdef DEBUG_wiml
     checkClockwise(p, YES);
-#endif
 
     p = [NSBezierPath bezierPath];
-    [p moveToPoint: (NSPoint){-1, 0}];
-    [p curveToPoint:(NSPoint){ 1, 0} controlPoint1:(NSPoint){-0.5, 0.9} controlPoint2:(NSPoint){ 0.5, 0.9}];
-    [p curveToPoint:(NSPoint){-1, 0} controlPoint1:(NSPoint){ 0.5, 1.0} controlPoint2:(NSPoint){-0.5, 1.0}];
-#ifdef DEBUG_wiml
+    [p moveToPoint: Pt(-1, 0)];
+    [p curveToPoint:Pt( 1, 0) controlPoint1:Pt(-0.5, 0.9) controlPoint2:Pt( 0.5, 0.9)];
+    [p curveToPoint:Pt(-1, 0) controlPoint1:Pt( 0.5, 1.0) controlPoint2:Pt(-0.5, 1.0)];
     checkClockwise(p, NO);
-#endif
     [p closePath];
-#ifdef DEBUG_wiml
     checkClockwise(p, NO);
-#endif
     
     p = [NSBezierPath bezierPath];
-    [p moveToPoint: (NSPoint){-2, 0}];
+    [p moveToPoint: Pt(-2, 0)];
     // Note that all the endpoint tangents here are 45 degrees.
-    [p curveToPoint:(NSPoint){ 2, 0} controlPoint1:(NSPoint){-1.0, 1.0} controlPoint2:(NSPoint){ 1.0,-1.0}];
-    [p curveToPoint:(NSPoint){-2, 0} controlPoint1:(NSPoint){ 0.8,-1.2} controlPoint2:(NSPoint){-1.2, 0.8}];
-#ifdef DEBUG_wiml
+    [p curveToPoint:Pt( 2, 0) controlPoint1:Pt(-1.0, 1.0) controlPoint2:Pt( 1.0,-1.0)];
+    [p curveToPoint:Pt(-2, 0) controlPoint1:Pt( 0.8,-1.2) controlPoint2:Pt(-1.2, 0.8)];
     checkClockwise(p, YES);
-#endif
     
     p = [NSBezierPath bezierPath];
-    [p moveToPoint: (NSPoint){1, 0}];
-    [p lineToPoint: (NSPoint){2, -2}];
-    [p lineToPoint: (NSPoint){-1, 0}];
-    [p lineToPoint: (NSPoint){-2, 0}];
-    [p lineToPoint: (NSPoint){0, 2}];
-    [p lineToPoint: (NSPoint){0, 0}];
+    [p moveToPoint: Pt(1, 0)];
+    [p lineToPoint: Pt(2, -2)];
+    [p lineToPoint: Pt(-1, 0)];
+    [p lineToPoint: Pt(-2, 0)];
+    [p lineToPoint: Pt(0, 2)];
+    [p lineToPoint: Pt(0, 0)];
     [p closePath];
     checkClockwise(p, YES);
 #endif

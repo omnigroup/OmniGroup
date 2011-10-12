@@ -116,7 +116,6 @@ void OFDiffData(SenTestCase *testCase, NSData *expected, NSData *actual)
 
 #endif
 
-#ifdef NS_BLOCKS_AVAILABLE
 static BOOL _addRelativePaths(NSMutableSet *relativePaths, NSString *base, OFDiffFilesPathFilter pathFilter, NSError **outError)
 {
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:base error:outError];
@@ -212,5 +211,4 @@ void OFDiffFiles(SenTestCase *self, NSString *path1, NSString *path2, OFDiffFile
         }
     }
 }
-#endif
 

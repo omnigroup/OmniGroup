@@ -12,9 +12,14 @@
 
 RCS_ID("$Id$");
 
+//#define SHOW_ABOUT_MENU_ITEM 1
+
 enum {
 #ifdef SEPARATE_SAMPLE_DOCUMENTS
     ToggleSampleDocuments,
+#endif
+#ifdef SHOW_ABOUT_MENU_ITEM
+    AboutApp,
 #endif
     OnlineHelp,
     SendFeedback,
@@ -145,6 +150,13 @@ static NSUInteger MenuItemCount = NormalMenuItemCount;
             break;
         }
 #endif
+#ifdef SHOW_ABOUT_MENU_ITEM
+        case AboutApp:
+            //title = [[OUIAppController controller] aboutMenuTitle];
+            title = NSLocalizedStringFromTableInBundle(@"About", @"OmniUI", OMNI_BUNDLE, @"App menu item title");
+            image = [UIImage imageNamed:@"OUIMenuItemAbout.png"];
+            break;
+#endif
         case OnlineHelp:
             title = [[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"] table:@"InfoPlist"];
             image = [UIImage imageNamed:@"OUIMenuItemHelp.png"];
@@ -202,6 +214,11 @@ static NSUInteger MenuItemCount = NormalMenuItemCount;
             action = @selector(_toggleSampleDocuments:);
             break;
 #endif
+#ifdef SHOW_ABOUT_MENU_ITEM
+        case AboutApp:
+            action = @selector(showAboutPanel:);
+            break;
+#endif
         case OnlineHelp:
             action = @selector(showOnlineHelp:);
             break;
@@ -248,9 +265,11 @@ static NSUInteger MenuItemCount = NormalMenuItemCount;
 
 - (void)_toggleSampleDocuments:(id)sender;
 {
+    OBFinishPorting; // Need to switch to filtering the metadata query
+#if 0
     OUIAppController *controller = [OUIAppController controller];
     OUIDocumentPicker *picker = controller.documentPicker;
-    
+
     if (OFISEQUAL(picker.directory, [OUIDocumentPicker userDocumentsDirectory]))
         picker.directory = [OUIDocumentPicker sampleDocumentsDirectory];
     else
@@ -259,6 +278,7 @@ static NSUInteger MenuItemCount = NormalMenuItemCount;
 
     // We can't do this reload here since it would be visible while the popover is animating away
     _needsReloadOfDocumentsItem = YES;
+#endif
 }
 
 - (void)_discardMenu;

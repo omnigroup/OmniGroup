@@ -9,9 +9,8 @@
 
 #import <OmniFoundation/OFObject.h>
 
+@class NSFileWrapper;
 @class OUZipArchive;
-
-#import <OmniFoundation/OFFileWrapper.h>
 
 @interface OUZipMember : OFObject
 {
@@ -20,8 +19,8 @@
     NSDate *_date;
 }
 
-- initWithFileWrapper:(OFFileWrapper *)fileWrapper; // Returns an instance of the appropriate subclass
-- (OFFileWrapper *)fileWrapperRepresentation; // Returns a new autoreleased file wrapper; won't return the same wrapper on multiple calls
+- initWithFileWrapper:(NSFileWrapper *)fileWrapper; // Returns an instance of the appropriate subclass
+- (NSFileWrapper *)fileWrapperRepresentation; // Returns a new autoreleased file wrapper; won't return the same wrapper on multiple calls
 
 - initWithPath:(NSString *)path fileManager:(NSFileManager *)fileManager;
 

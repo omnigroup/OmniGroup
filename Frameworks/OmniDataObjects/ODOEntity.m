@@ -408,8 +408,8 @@ extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString 
         
         
         // Some of the setters may be NULL (eventually) when we support read-only properties.
-        SEL *getters = malloc(sizeof(SEL) * (propertyCount + 1)); // Avoid clang-sa warning about malloc(0)
-        SEL *setters = malloc(sizeof(SEL) * (propertyCount + 1));
+        SEL *getters = malloc(sizeof(SEL) * MAX(propertyCount, 1)); // Avoid clang-sa warning about malloc(0)
+        SEL *setters = malloc(sizeof(SEL) * MAX(propertyCount, 1));
         
         for (CFIndex propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
             ODOProperty *property = [entity->_properties objectAtIndex:propertyIndex];

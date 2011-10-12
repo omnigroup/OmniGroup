@@ -78,17 +78,22 @@ do {						\
     #define NSLocalizedStringFromTable Use_NSBundle_methods_if_you_really_want_to_look_up_strings_in_the_main_bundle
 #endif
 
-// Hack to define a protocol for OBPostLoader to check for deprecated dataSource/delegate methods where _implementing_ a method with a given name is considered wrong (likely the method has been removed from the protocol or renamed).  The inline is enough to trick the compiler into emitting the protocol into the .o file, though this seems fragile.  OBPostLoader will use this macro itself once and will assert that at least one such deprecated protocol is found, just to make sure this hack keeps working.
+// Hack to define a protocol for OBPerformRuntimeChecks() to check for deprecated dataSource/delegate methods where _implementing_ a method with a given name is considered wrong (likely the method has been removed from the protocol or renamed). The inline is enough to trick the compiler into emitting the protocol into the .o file, though this seems fragile.  OBPostLoader will use this macro itself once and will assert that at least one such deprecated protocol is found, just to make sure this hack keeps working. This macro is intended to be used in a .m file; otherwise the hack function defined would get multiple definitions.
 // Since these protocols are only examied when assertions are enabled, this should be wrapped in a OMNI_ASSERTIONS_ON check.
 #import <OmniBase/assertions.h> // Since we want you to use OMNI_ASSERTIONS_ON, make sure it is imported
 #ifdef OMNI_ASSERTIONS_ON
-    #define OBDEPRECATED_METHODS(name) \
-    @protocol name ## Deprecated; \
-    static void name ## DeprecatedHack(void) __attribute__((constructor)); \
-    static void name ## DeprecatedHack(void) { Protocol *p = @protocol(name ## Deprecated); OBASSERT(p); } \
-    @protocol name ## Deprecated
+    extern void OBRuntimeCheckRegisterDeprecatedMethodWithName(const char *name);
+
+    #define OBDEPRECATED_METHOD__(name, line) \
+    static void OBRuntimeCheckRegisterDeprecated_ ## line(void) __attribute__((constructor)); \
+    static void OBRuntimeCheckRegisterDeprecated_ ## line(void) { \
+        OBRuntimeCheckRegisterDeprecatedMethodWithName(#name); \
+    }
+
+    #define OBDEPRECATED_METHOD_(name, line) OBDEPRECATED_METHOD__(name, line)
+    #define OBDEPRECATED_METHOD(name) OBDEPRECATED_METHOD_(name, __LINE__)
 #else
-    #define OBDEPRECATED_METHODS(name)     @protocol name ## Deprecated
+    #define OBDEPRECATED_METHOD(name)
 #endif
 
 /*

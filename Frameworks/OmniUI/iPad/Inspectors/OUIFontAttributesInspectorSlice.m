@@ -88,7 +88,7 @@ RCS_ID("$Id$");
     _fontAttributeSegmentedControl = [[OUIInspectorSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 100, [OUIInspectorSegmentedControl buttonHeight])];
     
     _fontAttributeSegmentedControl.sizesSegmentsToFit = YES;
-    _fontAttributeSegmentedControl.allowsMulitpleSelection = YES;
+    _fontAttributeSegmentedControl.allowsMultipleSelection = YES;
     
     _boldFontAttributeButton = [[_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Bold.png"] retain];
     [_boldFontAttributeButton addTarget:self action:@selector(_toggleBold:)];

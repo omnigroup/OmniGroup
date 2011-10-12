@@ -30,33 +30,8 @@ static NSBundle *OWF_Bundle = nil;
 
 + (NSString *)HMSStringFromTimeInterval:(NSTimeInterval)interval;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
-    unsigned int seconds;
-    const unsigned int roundUpSeconds = 20;
-
     ASSERT_IN_MAIN_THREAD(@"NSLocalized... is not threadsafe");
-    
-    seconds = rint(interval / 5.0f) * 5;
-    if (seconds < 1)
-        return nil;
-
-    if (seconds < 60)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d seconds", @"OWF", OWF_Bundle, @"task seconds time interval since start"), seconds];
-        
-    seconds = rint(interval / 30.0f) * 30;
-    if (seconds < 2 * 60 - roundUpSeconds)
-        return NSLocalizedStringFromTableInBundle(@"about a minute", @"OWF", OWF_Bundle, @"task one minute time interval since start");
-
-    if (seconds < 3600)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d minutes", @"OWF", OWF_Bundle, @"task minutes time interval since start"), (seconds + roundUpSeconds)/60];
-
-    if (seconds < 3600 + 360)
-        return NSLocalizedStringFromTableInBundle(@"about an hour", @"OWF", OWF_Bundle, @"task one hour time interval since start");
-        
-    return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %.1f hours", @"OWF", OWF_Bundle, @"task hours time interval since start"), seconds/3600.0];
-#endif
+    return [NSString approximateStringForTimeInterval:interval]; /* Moved to OmniFoundation */
 }
 
 

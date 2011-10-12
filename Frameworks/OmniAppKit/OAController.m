@@ -20,6 +20,9 @@ RCS_ID("$Id$")
 
 @implementation OAController
 
+#pragma mark -
+#pragma mark OFController subclass
+
 - (void)gotPostponedTerminateResult:(BOOL)isReadyToTerminate;
 {
     if ([self status] == OFControllerPostponingTerminateStatus)
@@ -77,15 +80,11 @@ RCS_ID("$Id$")
     if (!feedbackAddress) {
         NSRunAlertPanel(@"Unable to send feedback email.", @"No support email address configured in this applications.", @"Cancel", nil, nil);
     } else {
-#if OA_INTERNET_CONFIG_ENABLED
         OAInternetConfig *internetConfig = [[[OAInternetConfig alloc] init] autorelease];
         
         NSError *error = nil;
         if (![internetConfig launchMailTo:feedbackAddress carbonCopy:nil subject:subjectLine body:body error:&error])
             [NSApp presentError:error];
-#else
-        OBFinishPorting;
-#endif
     }
 }
 
@@ -94,6 +93,40 @@ RCS_ID("$Id$")
     NSString *feedbackAddress, *subjectLine;
     [self getFeedbackAddress:&feedbackAddress andSubject:&subjectLine];
     [self sendFeedbackEmailTo:feedbackAddress subject:subjectLine body:body];
+}
+
+#pragma mark -
+#pragma mark NSApplicationDelegate protocol
+
+- (void)applicationWillFinishLaunching:(NSNotification *)notification;
+{
+    [self didInitialize];
+}
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notification;
+{
+    [self startedRunning];
+}
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
+{
+    OFControllerTerminateReply controllerResponse = [self requestTermination];
+    switch (controllerResponse) {
+        case OFControllerTerminateCancel:
+            return NSTerminateCancel;
+        case OFControllerTerminateLater:
+            return NSTerminateLater;
+        default:
+            OBASSERT_NOT_REACHED("Unknown termination reply");
+            // fall through
+        case OFControllerTerminateNow:
+            return NSTerminateNow;
+    }
+}
+
+- (void)applicationWillTerminate:(NSNotification *)notification;
+{
+    [self willTerminate];
 }
 
 #pragma mark -

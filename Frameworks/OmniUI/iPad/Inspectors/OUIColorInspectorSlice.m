@@ -12,9 +12,8 @@
 
 RCS_ID("$Id$");
 
-OBDEPRECATED_METHODS(OUIColorInspection)
-- (NSSet *)colorsForInspectorSlice:(OUIInspectorSlice *)inspector; // -> -colorForInspectorSlice:
-@end
+// OUIColorInspection
+OBDEPRECATED_METHOD(-colorsForInspectorSlice:); // -> -colorForInspectorSlice:
 
 @implementation OUIColorInspectorSlice
 

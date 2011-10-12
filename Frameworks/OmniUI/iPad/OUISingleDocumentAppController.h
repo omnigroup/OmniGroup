@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,44 +9,53 @@
 
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIUndoBarButtonItem.h>
+#import <OmniUI/OUIDocumentStoreDelegate.h>
 
-@class OUIDocument, OUIToolbarViewController, OUIBarButtonItem;
+@class OUIDocumentStoreFileItem, OUIDocument, OUIMainViewController, OUIBarButtonItem;
+@class OUIShieldView;
 
-@interface OUISingleDocumentAppController : OUIAppController <UITextFieldDelegate, OUIUndoBarButtonItemTarget>
+@interface OUISingleDocumentAppController : OUIAppController <UITextFieldDelegate, OUIUndoBarButtonItemTarget, OUIDocumentStoreDelegate>
 {
 @private
-    
     UIWindow *_window;
-    OUIToolbarViewController *_toolbarViewController;
+    OUIMainViewController *_mainViewController;
     
-    // UIBarButtonItem *_appTitleToolbarItem;
-    UIButton *_appTitleToolbarButton;
-    
-    OUIBarButtonItem *_closeDocumentBarButtonItem;
+    UIBarButtonItem *_closeDocumentBarButtonItem;
     UITextField *_documentTitleTextField;
     UIBarButtonItem *_documentTitleToolbarItem;
     OUIUndoBarButtonItem *_undoBarButtonItem;
-    OUIBarButtonItem *_infoBarButtonItem;
+    UIBarButtonItem *_infoBarButtonItem;
     OUIDocument *_document;
     
-    BOOL _openAnimated;
+    OUIShieldView *_shieldView;
+    BOOL _didFinishLaunching;
 }
 
 @property(nonatomic,retain) IBOutlet UIWindow *window;
-@property(nonatomic,retain) IBOutlet OUIToolbarViewController *toolbarViewController;
+@property(nonatomic,retain) IBOutlet OUIMainViewController *mainViewController;
 @property(nonatomic,retain) IBOutlet UITextField *documentTitleTextField;
 @property(nonatomic,retain) IBOutlet UIBarButtonItem *documentTitleToolbarItem;
 
-@property(nonatomic,retain) UIButton *appTitleToolbarButton;
-@property(readonly) OUIBarButtonItem *closeDocumentBarButtonItem;
+@property(readonly) UIBarButtonItem *closeDocumentBarButtonItem;
 @property(readonly) OUIUndoBarButtonItem *undoBarButtonItem;
-@property(readonly) OUIBarButtonItem *infoBarButtonItem;
+@property(readonly) UIBarButtonItem *infoBarButtonItem;
 
 - (NSString *)documentTypeForURL:(NSURL *)url;
-- (BOOL)createNewDocumentAtURL:(NSURL *)url error:(NSError **)outError;
+- (void)createNewDocumentAtURL:(NSURL *)url completionHandler:(void (^)(NSURL *url, NSError *error))completionHandler;
 - (IBAction)makeNewDocument:(id)sender;
+- (IBAction)closeDocument:(id)sender;
+
+// Returns the width the _documentTitleTextField should be set to while editing. A different width can be returned depending on isLandscape.
+// If overridden in sub-class, don't call super.
+- (CGFloat)titleTextFieldWidthForOrientation:(UIInterfaceOrientation)orientation;
 
 @property(readonly) OUIDocument *document;
+
+// Sample documents
+- (NSURL *)sampleDocumentsDirectoryURL;
+- (void)copySampleDocumentsToUserDocuments;
+- (NSString *)localizedNameForSampleDocumentNamed:(NSString *)documentName;
+- (NSURL *)URLForSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
 
 // UIApplicationDelegate methods we implement (see OUIAppController too)
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
@@ -58,5 +67,5 @@
 - (UIView *)pickerAnimationViewForTarget:(OUIDocument *)document;
 - (NSArray *)toolbarItemsForDocument:(OUIDocument *)document;
 - (void)showInspectorFromBarButtonItem:(UIBarButtonItem *)item;
-
+- (void)mainThreadFinishedLoadingDocument:(OUIDocument *)document;  // For handling any loading that can't be done in a thread
 @end

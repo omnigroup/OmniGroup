@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,11 +32,22 @@ static BOOL _failOnIndirectTouch(UIGestureRecognizer *self, NSSet *touches, UIEv
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 {
+    if ([self state] == UIGestureRecognizerStatePossible && CGPointEqualToPoint(_firstTapLocation, CGPointZero))
+        _firstTapLocation = [[touches anyObject] locationInView:self.view];
+ 
     if (_failOnIndirectTouch(self, touches, event))
         return;
     [super touchesBegan:touches withEvent:event];
 }
 
+- (void)reset;
+{
+    _firstTapLocation = CGPointZero;
+    
+    [super reset];
+}
+
+@synthesize firstTapLocation = _firstTapLocation;
 @end
 
 @implementation OUIDirectLongPressGestureRecognizer

@@ -76,6 +76,17 @@ RCS_ID("$Id$");
         [self close];
 }
 
+- (IBAction)showMoreInformation:(id)sender;
+{
+    NSURL *infoURL = [NSURL URLWithString:[[self selectedItem] sourceLocation]];
+    if (!infoURL) {
+        NSBeep();
+        return;  // Shouldn't happen; button should be disabled.
+    }
+    
+    [[NSWorkspace sharedWorkspace] openURL:infoURL];
+}
+
 #pragma mark -
 #pragma mark NSWindowController subclass
 
@@ -106,7 +117,18 @@ RCS_ID("$Id$");
 - (void)windowDidLoad;
 {
     [super windowDidLoad];
+
+    _minimumAlertPaneHeight = [_itemAlertPane frame].size.height;
     
+    {
+        NSRect oldFrame = [_installButton frame];
+        [_installButton sizeToFit];
+        NSRect newFrame = [_installButton frame];
+        _buttonExtraSize.width = oldFrame.size.width - newFrame.size.width;
+        _buttonExtraSize.height = oldFrame.size.height - newFrame.size.height;
+        [_installButton setFrame:oldFrame];
+    }
+        
     // If running on 10.6+, use the "pane splitter" style instead of the "thick divider" style (they're *almost* identical...)
     if (NSAppKitVersionNumber >= OAAppKitVersionNumber10_6) {
 #if defined(MAX_OS_X_VERSION_10_6) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAX_OS_X_VERSION_10_6
@@ -131,8 +153,6 @@ RCS_ID("$Id$");
     [_availableItemController bind:NSContentArrayBinding toObject:self withKeyPath:OSUAvailableUpdateControllerAvailableItemsBinding options:nil];
     [self didChangeValueForKey:OSUAvailableUpdateControllerMessageBinding];
 
-    _minimumAlertPaneHeight = [_itemAlertPane frame].size.height;
-    
     [self _resizeInterface:YES];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_adjustViewLayout:) name:NSViewFrameDidChangeNotification object:[_messageTextField superview]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_refreshSelectedItem:) name:OSUTrackInformationChangedNotification object:nil];
@@ -245,14 +265,29 @@ RCS_ID("$Id$");
     _availableItems = [[NSArray alloc] initWithArray:items];
     [self didChangeValueForKey:OSUAvailableUpdateControllerAvailableItemsBinding];
     
-    [self _resizeInterface:NO];
+    /* The code below adjusts some ui state according to _availableItems, so we need to make sure the nib has been loaded. Our callers try not to even create us if our window won't be shown, so this bit of non-laziness shouldn't incur any extra cost. */
+    [self window];
     
-    /* In the special (but common) case that there's exactly one update available, and it's free, go ahead and select it by default */
+    /* The price column should be visible only if there's anything in it. */
+    BOOL haveAnyPrices = NO;
+    OFForEachInArray(_availableItems, OSUItem *, anItem, { if([anItem price] != nil) haveAnyPrices = YES; });
+    [[_itemTableView tableColumnWithIdentifier:@"price"] setHidden:([_availableItems count] > 0 && !haveAnyPrices)];
+    
+    /* We do a bit of extra setup if we're updated while not visible. Or, equivalently, we avoid messing with the selection if we're updated while visible. */
+    BOOL bringingOnscreen = ![[self window] isVisible];
+    
+    [self _resizeInterface:bringingOnscreen];
+    
+    NSArray *initialSelection = nil;
+    /* In the special (but common) case that there's exactly one update available, *and* it's free, go ahead and select it by default */
     NSArray *nonIgnoredItems = [_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededOrIgnoredPredicate]];
     if ([nonIgnoredItems count] == 1) {
         OSUItem *theItem = [nonIgnoredItems objectAtIndex:0];
         if ([theItem isFree] && [theItem available] && ![theItem superseded])
-            [_availableItemController setSelectedObjects:nonIgnoredItems];
+            initialSelection = nonIgnoredItems;
+    }
+    if (initialSelection || bringingOnscreen) {
+        [_availableItemController setSelectedObjects: (initialSelection? initialSelection : [NSArray array])];
     }
     
     [self _refreshSelectedItem:nil];
@@ -438,11 +473,12 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
 
 static CGFloat minHeightOfItemTableView(NSTableView *itemTableView)
 {
-    // TODO: This is returning bounds coordinates but the caller is using it as frame coordinates.  Unlikely this will be scaled relative to its superview, but still...
-    NSInteger rowsHigh = [itemTableView numberOfRows];
+    // Note- This is returning bounds coordinates but the caller is using it as frame coordinates.  Unlikely this will be scaled relative to its superview, but still...
+    CGFloat rowsHigh = [itemTableView numberOfRows];
     // We want at least 3 rows shown so that the scroller doesn't get smooshed.
+    // We include a half-row to make it super extra obvious that there's something there if you scroll down.
     if (rowsHigh > 3)
-        rowsHigh = 3;
+        rowsHigh = (CGFloat)3.5;
     if (rowsHigh < 1)
         rowsHigh = 3;
     return rowsHigh * ([itemTableView rowHeight] + [itemTableView intercellSpacing].height);
@@ -453,7 +489,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     NSScrollView *scrollView = [itemTableView enclosingScrollView];
     NSSize contentSize;
     contentSize.width = 100;
-    contentSize.height = minHeightOfItemTableView(itemTableView);
+    contentSize.height = ceil(minHeightOfItemTableView(itemTableView));
     
     NSSize frame = [NSScrollView frameSizeForContentSize:contentSize hasHorizontalScroller:[scrollView hasHorizontalScroller] hasVerticalScroller:[scrollView hasVerticalScroller] borderType:[scrollView borderType]];
     return frame.height;
@@ -501,7 +537,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
 - (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMaximumPosition ofSubviewAt:(NSInteger)dividerIndex;
 {
     if (dividerIndex == 0) {
-        CGFloat minimumHeight = 5; // Don't let them completely hide the release-notes pane
+        CGFloat minimumHeight = 10; // Don't let them completely hide the release-notes pane
         if (_displayingWarningPane)
             minimumHeight += NSHeight([_itemAlertPane frame]);
         return proposedMaximumPosition - minimumHeight;
@@ -518,14 +554,13 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
         return MAX(proposedPosition, minHeightOfItemTableScrollView(_itemTableView));
     return proposedPosition;
 }
- */
 
 - (void)splitView:(NSSplitView *)splitView resizeSubviewsWithOldSize:(NSSize)oldSize;
 {
     CGFloat tableViewHeight = NSHeight([[_itemTableView enclosingScrollView] frame]);
     [self _resizeSplitViewViewsWithTablePaneExistingHeight:tableViewHeight];
 }
-
+*/
 @end
 
 #pragma mark -
@@ -661,6 +696,25 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     } else {
         [self _resizeSplitViewViewsWithTablePaneExistingHeight:oldTablePaneHeight];
     }
+    
+    // Make room for title of install/info button
+    {
+        NSRect oldFrame = [_installButton frame];
+        [_installButton sizeToFit];
+        NSRect newFrame = [_installButton frame];
+        newFrame.size.width += _buttonExtraSize.width;
+        newFrame.size.height += _buttonExtraSize.height;
+        newFrame.origin.x = NSMaxX(oldFrame) - newFrame.size.width;
+        [_installButton setFrame:newFrame];
+        CGFloat delta = newFrame.origin.x - oldFrame.origin.x;
+        if (fabs(delta) > 0.9) {
+            NSRect oldCancelFrame = [_cancelButton frame];
+            oldCancelFrame.origin.x += delta;
+            [_cancelButton setFrameOrigin:oldCancelFrame.origin];
+            [_cancelButton setNeedsDisplay:YES];
+        }
+        [_installButton setNeedsDisplay:YES];
+    }
 }
 
 - (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
@@ -707,6 +761,27 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
         shouldResizeUI = YES;
     }
     
+    NSString *installButtonTitle;
+    SEL installButtonAction;
+    if (item && ![item downloadURL] && [item sourceLocation]) {
+        installButtonTitle = NSLocalizedStringWithDefaultValue(@"More Information...",
+                                                               @"OmniSoftwareUpdate", OMNI_BUNDLE,
+                                                               @"More Information\\U2026",
+                                                               "button title - display more information about the selected update");
+        installButtonAction = @selector(showMoreInformation:);
+    } else {
+        installButtonTitle = NSLocalizedStringWithDefaultValue(@"Install",
+                                                               @"OmniSoftwareUpdate", OMNI_BUNDLE,
+                                                               @"Install",
+                                                               "button title - (download and) install the selected update");
+        installButtonAction = @selector(installSelectedItem:);
+    }
+    if (![installButtonTitle isEqual:[_installButton title]] || !sel_isEqual(installButtonAction, [_installButton action])) {
+        [_installButton setTitle:installButtonTitle];
+        [_installButton setAction:installButtonAction];
+        shouldResizeUI = YES;
+    }
+    
     if (shouldResizeUI)
         [self _resizeInterface:NO];
     
@@ -723,7 +798,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
 
     if ([visibleItems count] == 0 && !_checkInProgress) {
         [[self window] setDefaultButtonCell:[_cancelButton cell]];
-    } else if (_displayingWarningPane) {
+    } else if (_displayingWarningPane && !sel_isEqual([_installButton action], @selector(showMoreInformation:))) {
         [[self window] setDefaultButtonCell:nil];
     } else {
         [[self window] setDefaultButtonCell:[_installButton cell]];

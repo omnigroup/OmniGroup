@@ -197,6 +197,17 @@ static id _commonInit(OUIToolbarButton *self)
 }
 
 #pragma mark -
+#pragma mark UIButton subclass
+- (void)sizeToFit;
+{
+    [super sizeToFit];
+    
+    CGRect frame = self.frame;
+    frame.size.height = 30; // Standard Bar Button Items are 30px high.
+    self.frame = frame;
+}
+
+#pragma mark -
 #pragma mark UIView subclass
 
 - (CGSize)sizeThatFits:(CGSize)size;

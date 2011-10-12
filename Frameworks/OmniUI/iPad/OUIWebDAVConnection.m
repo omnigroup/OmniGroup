@@ -43,11 +43,10 @@ static OUIWebDAVConnection *_sharedConnection;
     [super dealloc];
 }
 
-
-- (BOOL)validConnection;
+- (OUIWebDAVConnectionValidity)validateConnection;
 {
     if (!_address || [NSString isEmptyString:_username])
-        return NO;  // dont want to display an alert in this case since we are not even setup
+        return OUIWebDAVConnectionNotConfigured;  // dont want to display an alert in this case since we are not even setup
     
     NSError *outError = nil;
     [OFSDAVFileManager setAuthenticationDelegate:self];
@@ -56,20 +55,23 @@ static OUIWebDAVConnection *_sharedConnection;
     _fileManager = nil;
     if (!newFileManager || outError) {
         OUI_PRESENT_ALERT(outError);    
-        return NO;
+        return OUIWebDAVOtherConnectionError;
     }
     
     // TODO: simpler, quicker way to authenticate?
     [newFileManager fileInfoAtURL:_address error:&outError];    // just here to tickle authentication
     if (_certAlert) {
-        return NO;
+        return OUIWebDAVCertificateTrustIssue;
     } else if (outError) {
         OUI_PRESENT_ALERT(outError);
-        return NO;
+        if (outError.domain == NSURLErrorDomain && outError.code == NSURLErrorNotConnectedToInternet)
+            return OUIWebDAVNoInternetConnection;
+        else
+            return OUIWebDAVOtherConnectionError;
     }
     
     _fileManager = [newFileManager retain];
-    return YES;
+    return OUIWebDAVConnectionValid;
 }
 
 - (void)close;

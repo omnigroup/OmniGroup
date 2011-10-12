@@ -85,6 +85,20 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
     return isLater;
 }
 
++ (BOOL)isOperatingSystemiOS50OrLater; // iOS 5.0
+{
+    static BOOL initialized = NO;
+    static BOOL isLater;
+    
+    if (!initialized) {
+        isLater = isOperatingSystemLaterThanVersionString(@"5.0");
+        initialized = YES;
+    }
+    
+    return isLater;
+}
+
+
 #else
 
 + (BOOL)isOperatingSystemLeopardOrLater; // 10.5

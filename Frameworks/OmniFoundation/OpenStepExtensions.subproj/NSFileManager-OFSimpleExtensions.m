@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -155,13 +155,85 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark Changing file access/update timestamps.
 
-- (void)touchFile:(NSString *)filePath;
+- (BOOL)touchItemAtURL:(NSURL *)url error:(NSError **)outError;
 {
-    NSDictionary *attributes;
-    
-    attributes = [[NSDictionary alloc] initWithObjectsAndKeys:[NSDate date], NSFileModificationDate, nil];
-    [self setAttributes:attributes ofItemAtPath:filePath error:NULL];
+    NSDictionary *attributes = [[NSDictionary alloc] initWithObjectsAndKeys:[NSDate date], NSFileModificationDate, nil];
+    BOOL rc = [self setAttributes:attributes ofItemAtPath:[[url absoluteURL] path] error:outError];
     [attributes release];
+    return rc;
 }
+
+#pragma mark -
+#pragma mark Debugging
+
+#ifdef DEBUG
+
+static void _appendPermissions(NSMutableString *str, NSUInteger perms, NSUInteger readMask, NSUInteger writeMask, NSUInteger execMask)
+{
+    [str appendString:(perms & readMask) ? @"r" : @"-"];
+    [str appendString:(perms & writeMask) ? @"w" : @"-"];
+    [str appendString:(perms & execMask) ? @"x" : @"-"];
+}
+
+// This just does very, very basic file info for now, not setuid/inode/xattr or whatever.
+static void _appendPropertiesOfTreeAtURL(NSFileManager *self, NSMutableString *str, NSURL *url, NSUInteger indent)
+{
+    NSError *error = nil;
+    NSDictionary *attributes = [self attributesOfItemAtPath:[[url absoluteURL] path] error:&error];
+    if (!attributes) {
+        NSLog(@"Unable to get attributes of %@: %@", [url absoluteString], [error toPropertyList]);
+        return;
+    }
+    
+    BOOL isDirectory = NO;
+    NSString *fileType = [attributes fileType];
+    if ([fileType isEqualToString:NSFileTypeDirectory]) {
+        isDirectory = YES;
+        [str appendString:@"d"];
+    } else if ([fileType isEqualToString:NSFileTypeSymbolicLink]) {
+        [str appendString:@"l"];
+    } else {
+        OBASSERT([fileType isEqualToString:NSFileTypeRegular]); // could add more cases if ever needed
+        [str appendString:@"-"];
+    }
+    
+    NSUInteger perms = [attributes filePosixPermissions];
+    _appendPermissions(str, perms, S_IRUSR, S_IWUSR, S_IXUSR);
+    _appendPermissions(str, perms, S_IRGRP, S_IWGRP, S_IXGRP);
+    _appendPermissions(str, perms, S_IROTH, S_IWOTH, S_IXOTH);
+    
+    for (NSUInteger level = 0; level < indent + 1; level++)
+        [str appendString:@"  "];
+    
+    [str appendString:[url lastPathComponent]];
+    
+    if (isDirectory)
+        [str appendString:@"/"];
+    [str appendString:@"\n"];
+    
+    if (isDirectory) {
+        error = nil;
+        NSArray *children = [self contentsOfDirectoryAtURL:url includingPropertiesForKeys:nil options:NSDirectoryEnumerationSkipsSubdirectoryDescendants error:&error];
+        if (!children) {
+            NSLog(@"Unable to get children of %@: %@", [url absoluteString], [error toPropertyList]);
+            return;
+        }
+        
+        for (NSURL *child in children) {
+            _appendPropertiesOfTreeAtURL(self, str, child, indent + 1);
+        }
+    }
+}
+
+- (void)logPropertiesOfTreeAtURL:(NSURL *)url;
+{
+    NSMutableString *str = [[NSMutableString alloc] init];
+    _appendPropertiesOfTreeAtURL(self, str, url, 0);
+    
+    NSLog(@"%@:\n%@\n", [url absoluteString], str);
+    [str release];
+}
+
+#endif
 
 @end

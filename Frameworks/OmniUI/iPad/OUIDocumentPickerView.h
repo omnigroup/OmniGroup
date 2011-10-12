@@ -9,18 +9,5 @@
 
 #import <UIKit/UIView.h>
 
-@class UIToolbar;
-
 @interface OUIDocumentPickerView : UIView
-{
-@private
-    UIToolbar *_bottomToolbar;
-    BOOL _bottomToolbarHidden;
-}
-
-@property(nonatomic,retain) IBOutlet UIToolbar *bottomToolbar;
-
-@property(nonatomic,assign) BOOL bottomToolbarHidden;
-- (void)setBottomToolbarHidden:(BOOL)bottomToolbarHidden animated:(BOOL)animated;
-
 @end

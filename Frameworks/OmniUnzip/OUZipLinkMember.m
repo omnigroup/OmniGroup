@@ -40,15 +40,12 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark OUZipMember subclass
 
-- (OFFileWrapper *)fileWrapperRepresentation;
+- (NSFileWrapper *)fileWrapperRepresentation;
 {
-    OBFinishPorting; // <bug:///72886> (OFFileWrapper is missing -initSymbolicLinkWithDestination:)
-#if 0
-    OFFileWrapper *wrapper = [[[OFFileWrapper alloc] initSymbolicLinkWithDestination:_destination] autorelease];
+    NSFileWrapper *wrapper = [[[NSFileWrapper alloc] initSymbolicLinkWithDestinationURL:[NSURL fileURLWithPath:_destination]] autorelease];
     [wrapper setFilename:[self name]];
     [wrapper setPreferredFilename:[self name]];
     return wrapper;
-#endif
 }
 
 #pragma mark -

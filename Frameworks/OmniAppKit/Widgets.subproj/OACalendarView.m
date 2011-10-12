@@ -641,24 +641,22 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 	    // UNDONE
 	    break;
 	case OACalendarViewSelectByWeek: {
-            NSDateComponents *selectedWeekComponents = [calendar components:NSWeekCalendarUnit | NSWeekdayCalendarUnit fromDate:[self selectedDay]];
-            NSDateComponents *visibleWeekComponents = [calendar components:NSWeekCalendarUnit fromDate:visibleMonth];
-            NSInteger selectedWeek = [selectedWeekComponents week] - [visibleWeekComponents week] + 1;
+            NSDateComponents *thisDayComponents = [calendar components:NSWeekdayCalendarUnit fromDate:visibleMonth];
+            NSInteger columnOfFirstOfMonth = ([thisDayComponents weekday] - 1) - displayFirstDayOfWeek;
+
+            if (columnOfFirstOfMonth < 0)
+                columnOfFirstOfMonth += 7;
+
+            NSInteger dayOfMonthInLastColumn = OACalendarViewNumDaysPerWeek - columnOfFirstOfMonth;
+            NSDateComponents *selectedComponents = [calendar components:NSDayCalendarUnit|NSMonthCalendarUnit fromDate:[self selectedDay]];
+            NSInteger dayOfMonthOfSelectedDay = [selectedComponents day];
+            NSInteger selectedRow = (dayOfMonthOfSelectedDay - dayOfMonthInLastColumn + (OACalendarViewNumDaysPerWeek-1)) / OACalendarViewNumDaysPerWeek;
+
 	    NSRect weekRect; 
-	    
-	    // If we happen to be clicking on the last week in December we may end up getting week 0 of the new year as the result for selectedWeekComponents, so selectedWeek ends up negative, and adding 52 weeks from the previous year fixes things.
-	    if (selectedWeek < 0)
-		selectedWeek += 52;
-            
-            NSDateComponents *visibleMonthComponents = [calendar components:NSWeekdayCalendarUnit fromDate:visibleMonth];
-            if (displayFirstDayOfWeek > [visibleMonthComponents weekday])
-                selectedWeek++;
-	    if ([selectedWeekComponents weekday] < displayFirstDayOfWeek)
-                selectedWeek--;
 	    weekRect.size.height = rowHeight;
 	    weekRect.size.width = rect.size.width;
 	    weekRect.origin.x = rect.origin.x;
-	    weekRect.origin.y = rect.origin.x + ((selectedWeek+1) * rowHeight);
+	    weekRect.origin.y = rect.origin.y + (selectedRow * rowHeight);
 	    
 	    [[NSColor selectedTextBackgroundColor] set];
 	    [NSBezierPath fillRect:weekRect];
@@ -866,7 +864,10 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
         return nil;
 
     NSDateComponents *thisDayComponents = [calendar components:NSWeekdayCalendarUnit fromDate:visibleMonth];
-    NSInteger firstDayOfWeek = ([thisDayComponents weekday] - 1) - displayFirstDayOfWeek;
+    NSInteger columnOfFirstOfMonth = ([thisDayComponents weekday] - 1) - displayFirstDayOfWeek;
+    
+    if (columnOfFirstOfMonth < 0)
+        columnOfFirstOfMonth += 7;
 
     offset = NSMakePoint(targetPoint.x - gridBodyRect.origin.x, targetPoint.y - gridBodyRect.origin.y);
     // if they exactly hit the grid between days, treat that as a miss
@@ -878,10 +879,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     hitRow = (NSInteger)(offset.y / rowHeight);
     hitColumn = (NSInteger)(offset.x / columnWidth);
     
-    if ([thisDayComponents weekday] < displayFirstDayOfWeek)
-        hitRow--;
-
-    targetDayOfMonth = (hitRow * OACalendarViewNumDaysPerWeek) + hitColumn - firstDayOfWeek + 1;
+    targetDayOfMonth = (hitRow * OACalendarViewNumDaysPerWeek) + hitColumn - columnOfFirstOfMonth + 1;
     NSRange rangeOfDaysInMonth = [calendar rangeOfUnit:NSDayCalendarUnit inUnit:NSMonthCalendarUnit forDate:visibleMonth];
     if (selectionType == OACalendarViewSelectByWeek) {
         if (targetDayOfMonth < 1)

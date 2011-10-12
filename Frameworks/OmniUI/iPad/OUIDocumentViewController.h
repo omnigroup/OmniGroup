@@ -18,7 +18,7 @@
 - (void)documentDidOpenUndoGroup;
 - (void)documentWillCloseUndoGroup;
 
-// should commit any partial edits to be included in the autosave
-- (void)documentWillAutosave;
+// should commit any partial edits to be included in the save
+- (void)documentWillSave;
 
 @end

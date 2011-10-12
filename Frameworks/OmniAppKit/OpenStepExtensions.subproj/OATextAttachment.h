@@ -7,23 +7,22 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFFileWrapper.h> // For #define of OFFileWrapper, if needed
-
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <OmniFoundation/OFObject.h>
 
+@class NSFileWrapper;
 @protocol OATextAttachmentCell;
 
 @interface OATextAttachment : OFObject
 {
 @private
-    OFFileWrapper *_fileWrapper;
+    NSFileWrapper *_fileWrapper;
     id <OATextAttachmentCell> _cell;
 }
 
-- initWithFileWrapper:(OFFileWrapper *)fileWrapper;
+- initWithFileWrapper:(NSFileWrapper *)fileWrapper;
 
-@property(nonatomic,retain) OFFileWrapper *fileWrapper;
+@property(nonatomic,retain) NSFileWrapper *fileWrapper;
 @property(nonatomic,retain) id <OATextAttachmentCell> attachmentCell;
 
 @end

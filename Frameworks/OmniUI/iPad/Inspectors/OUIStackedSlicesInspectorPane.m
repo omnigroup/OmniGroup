@@ -15,14 +15,65 @@
 
 RCS_ID("$Id$");
 
+#if 0 && defined(DEBUG_curt) && defined(DEBUG)
+    #define DEBUG_ANIM(format, ...) NSLog(@"ANIM: " format, ## __VA_ARGS__)
+#else
+    #define DEBUG_ANIM(format, ...)
+#endif
+
+
+static CGFloat _setSliceSizes(UIView *self, NSArray *_slices, NSSet *slicesToPostponeFrameSetting)
+{
+    CGFloat yOffset = 0.0;
+    CGRect bounds = self.bounds;
+
+    if ([_slices count] == 0)
+        return yOffset;
+    
+    // Spacing between the header of the popover and the first slice (our slice nibs have their content jammed to the top, typically).
+    yOffset += [[_slices objectAtIndex:0] paddingToInspectorTop];
+    
+    OUIInspectorSlice *previousSlice = nil;
+    for (OUIInspectorSlice *slice in _slices) {
+        // Don't fiddle with slices that have been stolen by embedding inspectors (OmniGraffle).
+        UIView *sliceView = slice.view;
+        if (sliceView.superview != self)
+            continue;
+        
+        if (previousSlice)
+            yOffset += [slice paddingToPreviousSlice:previousSlice remainingHeight:bounds.size.height - yOffset];
+        
+        CGFloat sideInset = [slice paddingToInspectorSides];
+        
+        // If we have exactly one slice and it is marked height-sizable, give it our full bounds. This is useful for cases where we have a slice wrapper for something that normally wouldn't be a slice but is to make other things work more easily (like the columns tab of the contents inspector in OO/iPad). May revisit this later.
+        CGFloat sliceHeight;
+        if ([_slices count] == 1 && (sliceView.autoresizingMask & UIViewAutoresizingFlexibleHeight)) {
+            sliceHeight = bounds.size.height - ([slice paddingToInspectorTop] + [slice paddingToInspectorBottom]);
+        } else {
+            // Otherwise the slice should be a fixed height and we should use it.
+            sliceHeight = CGRectGetHeight(sliceView.frame);
+        }
+        
+        if (!slicesToPostponeFrameSetting || [slicesToPostponeFrameSetting member:slice] == nil)
+            sliceView.frame = CGRectMake(CGRectGetMinX(bounds) + sideInset, yOffset, CGRectGetWidth(bounds) - 2*sideInset, sliceHeight);
+
+        yOffset += sliceHeight;
+        
+        previousSlice = slice;
+    }
+    
+    yOffset += [[_slices lastObject] paddingToInspectorBottom];
+    
+    return yOffset;
+}
+
 @interface OUIStackedSlicesInspectorPaneContentView : UIScrollView
 {
 @private
-    CGFloat _backgroundHeight;
     OUIInspectorBackgroundView *_backgroundView;
     NSArray *_slices;
 }
-@property(nonatomic,assign) CGFloat backgroundHeight;
+
 @property(nonatomic,copy) NSArray *slices;
 @end
 
@@ -56,7 +107,6 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     [super dealloc];
 }
 
-@synthesize backgroundHeight = _backgroundHeight;
 @synthesize slices = _slices;
 - (void)setSlices:(NSArray *)slices;
 {
@@ -81,61 +131,14 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     }
     
     const CGRect bounds = self.bounds;
-    const CGFloat width = CGRectGetWidth(bounds);
     
-    CGFloat yOffset = 0;
-    
-    // Spacing between the header of the popover and the first slice (our slice nibs have their content jammed to the top, typically).
-    yOffset += [[_slices objectAtIndex:0] paddingToInspectorTop];
-    
-    OUIInspectorSlice *previousSlice = nil;
-    for (OUIInspectorSlice *slice in _slices) {
-        // Don't fiddle with slices that have been stolen by embedding inspectors (OmniGraffle).
-        UIView *sliceView = slice.view;
-        if (sliceView.superview != self)
-            continue;
-        
-        if (previousSlice)
-            yOffset += [slice paddingToPreviousSlice:previousSlice remainingHeight:bounds.size.height - yOffset];
-        
-        CGFloat sideInset = [slice paddingToInspectorSides];
-        
-        // If we have exactly one slice and it is marked height-sizable, give it our full bounds. This is useful for cases where we have a slice wrapper for something that normally wouldn't be a slice but is to make other things work more easily (like the columns tab of the contents inspector in OO/iPad). May revisit this later.
-        CGFloat sliceHeight;
-        if (sliceCount == 1 && (sliceView.autoresizingMask & UIViewAutoresizingFlexibleHeight)) {
-            sliceHeight = bounds.size.height - ([slice paddingToInspectorTop] + [slice paddingToInspectorBottom]);
-        } else {
-            // Otherwise the slice should be a fixed height and we should use it.
-            sliceHeight = CGRectGetHeight(sliceView.frame);
-        }
-        
-        sliceView.frame = CGRectMake(CGRectGetMinX(bounds) + sideInset, yOffset, width - 2*sideInset, sliceHeight);
-        yOffset += sliceHeight;
-        
-        previousSlice = slice;
-    }
-    
-    yOffset += [[_slices lastObject] paddingToInspectorBottom];
-    
-    if (CGRectGetHeight(bounds) >= yOffset) {
-        // Have been resized by UIPopoverController yet
-        for (OUIInspectorSlice *slice in _slices) {
-            // Don't fiddle with slices that have been stolen by embedding inspectors (OmniGraffle).
-            UIView *sliceView = slice.view;
-            if (sliceView.superview != self)
-                continue;
-        }
-    }
+    CGFloat yOffset = _setSliceSizes(self, _slices, nil);
     
     self.contentSize = CGSizeMake(bounds.size.width, yOffset);
     self.scrollEnabled = yOffset > bounds.size.height;
 
     // Have to do this after the previous adjustments or the background view can get stuck scrolled part way down when we become unscrollable.
-    CGRect backgroundFrame = self.bounds;
-    if (_backgroundHeight > 0)
-        backgroundFrame.size.height = _backgroundHeight;
-    
-    _backgroundView.frame = backgroundFrame;
+    _backgroundView.frame = self.bounds;
     
     // Terrible, but none of the other callbacks are timed so that the slices can alter the scroll position (since the content size isn't updated yet).
     for (OUIInspectorSlice *slice in _slices)
@@ -208,51 +211,112 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 
 static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesInspectorPaneContentView *view, OUIInspectorSlice *slice)
 {
-    [self removeChildViewController:slice animated:NO];
+    [slice willMoveToParentViewController:nil];
     if ([slice isViewLoaded] && slice.view.superview == view) {
         [slice.view removeFromSuperview]; // Only remove it if it is loaded and wasn't stolen by an embedding inspector (OmniGraffle).
     }
-    slice.containingPane = nil;
+    [slice removeFromParentViewController];
 }
 
 @synthesize slices = _slices;
 - (void)setSlices:(NSArray *)slices;
 {
+    DEBUG_ANIM(@"In setSlices on thread %@", [NSThread currentThread]);
+    // TODO: Might want an 'animate' variant later. 
     if (OFISEQUAL(_slices, slices))
         return;
     
+    // Terrible hack to delay change until previous animation completes
+    if (_isAnimating) {
+        [self performSelector:@selector(setSlices:) withObject:slices afterDelay:0];
+        return;
+    }
+    
     OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.view;
 
+    BOOL unembeddedSlices = [[slices lastObject] isViewLoaded] && [(OUIInspectorSlice *)([slices lastObject]) view].superview != view;
+
+    // Establish view and view controller containment
     NSSet *oldSlices = [NSSet setWithArray:_slices];
     NSSet *newSlices = [NSSet setWithArray:slices];
-    
-    // TODO: Might want an 'animate' variant later.
-    for (OUIInspectorSlice *slice in _slices) {
-        if ([newSlices member:slice] == nil) {
-            _removeSlice(self, view, slice);
-        }
-    }
+    NSMutableSet *toBeOrphanedSlices = [NSMutableSet setWithSet:oldSlices];
+    [toBeOrphanedSlices minusSet:newSlices];
+    NSMutableSet *toBeAdoptedSlices = [NSMutableSet setWithSet:newSlices];
+    [toBeAdoptedSlices minusSet:oldSlices];
 
     [_slices release];
     _slices = [[NSArray alloc] initWithArray:slices];
 
-    for (OUIInspectorSlice *slice in _slices) {
-        if ([oldSlices member:slice] == nil) {
-            slice.containingPane = self;
-            
+    if (!unembeddedSlices) {
+        for (OUIInspectorSlice *slice in toBeOrphanedSlices) {
+            [slice willMoveToParentViewController:nil];
+        }
+    }
+
+    // Don't completely zero the alphas, or some slices will expect to be skipped when setting slice sizes.
+    CGFloat newSliceInitialAlpha = [oldSlices count] > 0 ? 0.01 : 1.0; // Don't fade in on first display.
+    for (OUIInspectorSlice *slice in toBeAdoptedSlices) {
+        if (!unembeddedSlices) {
+            [self addChildViewController:slice];
             // Add this once up front, but only if an embedding inspector hasn't stolen it from us (OmniGraffle). Not pretty, but that's how it is right now.
-            if (slice.view.superview == nil)
+            if (slice.view.superview == nil) {
+                slice.view.alpha = newSliceInitialAlpha;
                 [view addSubview:slice.view];
-            
-            [self addChildViewController:slice animated:NO];
+            }
         }
     }
     
-    view.slices = slices;
+    _setSliceSizes(self.view, _slices, oldSlices); // any slices that are sticking around keep their old frames, so we can animate them to their new positions
+    
+    // Telling the view about the slices triggers [view setNeedsLayout]. The view's layoutSubviews loops over the slices in order and sets their frames.
+    view.slices = _slices;
+        
+    void (^animationHandler)(void) = ^{
+        DEBUG_ANIM(@"enqueuing began");
+        _isAnimating = YES;
+
+        // animate position of slices that were already showing (whose frames were left unchanged above)
+        _setSliceSizes(self.view, _slices, nil);
+
+        for (OUIInspectorSlice *slice in toBeOrphanedSlices) {
+            if ([slice isViewLoaded] && slice.view.superview == view)
+                slice.view.alpha = 0.0;
+        }
+        for (OUIInspectorSlice *slice in toBeAdoptedSlices) {
+            slice.view.alpha = 1.0;
+        }
+    };
+    
+    void (^completionHandler)(BOOL finished) = ^(BOOL finished){
+        for (OUIInspectorSlice *slice in toBeOrphanedSlices) {
+            if ([slice isViewLoaded] && slice.view.superview == view) {
+                [slice.view removeFromSuperview]; // Only remove it if it is loaded and wasn't stolen by an embedding inspector (OmniGraffle).
+            }
+            [slice removeFromParentViewController];
+        }
+        
+        if (!unembeddedSlices) {
+            for (OUIInspectorSlice *slice in toBeAdoptedSlices) {
+                [slice didMoveToParentViewController:self];
+            }
+        }
+        
+        _isAnimating = NO;
+        DEBUG_ANIM(@"Animation completed");
+    };
+    
+    if ([_slices count] > 0) {
+        UIViewAnimationOptions options = UIViewAnimationOptionTransitionNone |UIViewAnimationOptionAllowAnimatedContent;
+        [UIView animateWithDuration:OUICrossFadeDuration delay:0 options:options animations:animationHandler completion:completionHandler];
+    } else {
+        animationHandler();
+        completionHandler(NO);
+    }
 }
 
 - (void)sliceSizeChanged:(OUIInspectorSlice *)slice;
 {
+    // TODO: It seems like we should be able to animate the resizing to avoid jumpy transitions.
     [self.view setNeedsLayout];
 }
 
@@ -275,10 +339,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 - (void)inspectorWillShow:(OUIInspector *)inspector;
 {
     [super inspectorWillShow:inspector];
-    
-    // Force the background to always be the same height. This avoids issues with it shrinking and being flickery when we gain/lose a bottom toolbar.
-    OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.view;
-    view.backgroundHeight = inspector.height;
     
     // This gets called earlier than -updateInterfaceFromInspectedObjects:. Might want to switch to just calling -updateInterfaceFromInspectedObjects: here instead of in -viewWillAppear:
     [self _updateSlices];
@@ -361,6 +421,8 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 
 - (void)viewDidUnload;
 {
+    DEBUG_ANIM(@"viewDidUnload");
+    
     OBPRECONDITION(self.visibility == OUIViewControllerVisibilityHidden);
 
     [super viewDidUnload];

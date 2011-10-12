@@ -110,19 +110,34 @@ static void OUIViewPerformPosing(void)
 
 #endif
 
-- (UIImage *)snapshotImage;
+- (UIImage *)snapshotImageWithScale:(CGFloat)scale;
 {
-    UIImage *image;
-    CGRect bounds = self.bounds;
+    [self layoutIfNeeded];
     
-    OUIGraphicsBeginImageContext(bounds.size);
+    UIImage *image;
+    
+    CGRect bounds = self.bounds;
+    CGSize imageSize = CGSizeMake(ceil(bounds.size.width * scale),
+                                  ceil(bounds.size.height * scale));
+    
+    OUIGraphicsBeginImageContext(imageSize);
     {
-        [self drawRect:bounds];
+        CGContextRef ctx = UIGraphicsGetCurrentContext();
+        CGContextTranslateCTM(ctx, -bounds.origin.x, -bounds.origin.y);
+        CGContextScaleCTM(ctx, scale, scale);
+        
+        [[self layer] renderInContext:ctx];
+        
         image = UIGraphicsGetImageFromCurrentImageContext();
     }
     OUIGraphicsEndImageContext();
     
     return image;
+}
+
+- (UIImage *)snapshotImage;
+{
+    return [self snapshotImageWithScale:1.0];
 }
 
 - (id)containingViewOfClass:(Class)cls; // can return self
@@ -448,6 +463,14 @@ void OUIWithAppropriateLayerAnimations(void (^actions)(void))
     [CATransaction setValue:shouldAnimate ? (id)kCFBooleanFalse : (id)kCFBooleanTrue forKey:kCATransactionDisableActions];
     actions();
     [CATransaction commit];
+}
+
+// A (hopefully) rarely needed hack, given a name here to make it a bit more clear what is happening.
+void OUIDisplayNeededViews(void)
+{
+    // The view/layer rendering trigger is registered as run loop observer on the main thread. Poke it.
+    OBPRECONDITION([NSThread isMainThread]);
+    [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantPast]];
 }
 
 #endif

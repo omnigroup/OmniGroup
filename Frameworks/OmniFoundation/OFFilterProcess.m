@@ -129,6 +129,7 @@ static void logdescriptors(const char *where)
     commandPath = [[filterParameters objectForKey:OFFilterProcessCommandPathKey] copy];
     arguments = [[filterParameters objectForKey:OFFilterProcessArgumentsKey] copy];
     subprocStdinBytes = [[filterParameters objectForKey:OFFilterProcessInputDataKey] retain];
+    subprocStdinWriter = [[filterParameters objectForKey:OFFilterProcessInputBlockKey] copy];
     
     /* Parameters we don't store in an instance variable */
     NSString *workingDirectoryPath = [filterParameters objectForKey:OFFilterProcessWorkingDirectoryPathKey];
@@ -154,12 +155,14 @@ static void logdescriptors(const char *where)
     if ([NSString isEmptyString:commandPath] || !arguments)
         OBRejectInvalidCall(self, _cmd, @"command path or arguments are missing");
     
+    if (subprocStdinBytes && subprocStdinWriter)
+        OBRejectInvalidCall(self, _cmd, @"OFFilterProcessInputDataKey and OFFilterProcessInputBlockKey are mutually exclusive");
+    
     NSError *errorBuf = nil;
     
     /* Create the pipes */
-    
     struct OFPipe input = {-1, -1}, output = {-1, -1}, errors = {-1, -1};
-    if (subprocStdinBytes && [subprocStdinBytes length]) {
+    if ((subprocStdinBytes && [subprocStdinBytes length]) || subprocStdinWriter) {
         if (!OFPipeCreate(&input, &errorBuf))
             goto fail_early;
         fcntl(input.write, F_SETFD, 1);  // Set close-on-exec
@@ -380,7 +383,15 @@ static void logdescriptors(const char *where)
     }
     
     state = OFFilterProcess_Started;
-    subprocStdinFd = input.write;
+    if (subprocStdinWriter) {
+        NSLog(@"Calling subrocStdinWriter(%@) with fd=%d", subprocStdinWriter, input.write);
+        (subprocStdinWriter)(input.write);
+        subprocStdinFd = -1;  // Closing that fd is the block's responsibility
+        [subprocStdinWriter release]; // We don't need the block any more, either
+        subprocStdinWriter = NULL;
+    } else {
+        subprocStdinFd = input.write;
+    }
     init_copyout(&stdoutCopyBuf, output.read, stdoutStream);
     init_copyout(&stderrCopyBuf, errors.read, stderrStream);
     
@@ -459,6 +470,7 @@ static void logdescriptors(const char *where)
 {
     [self invalidate];
     [subprocStdinBytes release];
+    [subprocStdinWriter release];
     [commandPath release];
     [arguments release];
     [error autorelease];

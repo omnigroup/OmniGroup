@@ -7,6 +7,7 @@
 
 #import "OUIWebDAVSetup.h"
 
+#import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniFoundation/OFPreference.h>
@@ -14,9 +15,7 @@
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
-#import <OmniUI/OUIDocumentProxy.h>
-
-#import <MobileCoreServices/MobileCoreServices.h>
+#import <OmniUI/OUIDocumentStoreFileItem.h>
 
 #import "OUICredentials.h"
 #import "OUIEditableLabeledValueCell.h"
@@ -180,7 +179,7 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
     sharedConnection.username = _nonretainedUsernameField.text;
     sharedConnection.password = _nonretainedPasswordField.text;
     
-    if ([sharedConnection validConnection]) {
+    if ([sharedConnection validateConnection] == OUIWebDAVConnectionValid) {
         UIViewController *viewController = nil;
         if (_isExporting) {
             viewController = [[OUIExportOptionsController alloc] initWithExportType:OUIExportOptionsExport];

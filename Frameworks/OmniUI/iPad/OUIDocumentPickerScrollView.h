@@ -9,83 +9,56 @@
 
 #import <UIKit/UIView.h>
 
-extern NSString * const OUIDocumentPickerScrollViewProxiesBinding;
+extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 
 @class OFPreference;
-@class OUIDocumentProxy, OUIDocumentPickerScrollView;
-@class OUIDocumentSlider;
-
-typedef struct {
-    NSTimer *timer;
-    CGFloat x0;
-    CGFloat v0;
-    CGFloat a;
-    CFTimeInterval t0;
-    BOOL bouncing;
-} OUIDocumentPickerScrollViewSmoothScroll;
+@class OUIDocumentStoreItem, OUIDocumentStoreFileItem, OUIDocumentPickerItemView, OUIDocumentPickerFileItemView, OUIDocumentPickerScrollView;
 
 typedef enum {
-    OUIDocumentProxySortByDate,
-    OUIDocumentProxySortByName,
-} OUIDocumentProxySort;
+    OUIDocumentPickerItemSortByDate,
+    OUIDocumentPickerItemSortByName,
+} OUIDocumentPickerItemSort;
+
+typedef enum {
+    OUIDocumentPickerItemViewTapAreaPreview,
+    OUIDocumentPickerItemViewTapAreaLabelAndDetails,
+} OUIDocumentPickerItemViewTapArea;
 
 @protocol OUIDocumentPickerScrollViewDelegate <UIScrollViewDelegate>
-- (void)documentPickerView:(OUIDocumentPickerScrollView *)pickerView didSelectProxy:(OUIDocumentProxy *)proxy;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView inArea:(OUIDocumentPickerItemViewTapArea)area;
 @end
 
 @interface OUIDocumentPickerScrollView : UIScrollView
-{
-@protected
-    OUIDocumentPickerScrollViewSmoothScroll _smoothScroll;  // need to get at this from Graffle to know if it is safe to re-center after loading a preview - will move it to private if we can find another way
-
-@private
-    BOOL _disableLayout;
-    CGFloat _bottomGap;
-    NSMutableSet *_proxies;
-    NSArray *_sortedProxies;
-
-    NSArray *_proxyViews;
-    
-    CGPoint _contentOffsetOnPanStart;
-
-    struct {
-        unsigned int needsRecentering:1;
-        unsigned int isRotating:1;
-    } _flags;
-    
-    BOOL _disableScroll;     // we are turning off UIScrollView scrolling already, needed a different flag
-    BOOL _disableRotationDisplay;
-
-    IBOutlet OUIDocumentSlider *_documentSlider;
-    
-    OUIDocumentProxySort _proxySort;
-}
 
 @property(nonatomic,assign) id <OUIDocumentPickerScrollViewDelegate> delegate;
 
-@property(nonatomic,assign) BOOL disableLayout;
-@property(nonatomic,assign) CGFloat bottomGap;
-@property(nonatomic,retain) NSSet *proxies;
-@property(nonatomic,readonly) NSArray *sortedProxies;
+// The size of the document prevew grid in items. That is, if gridSize.width = 4, then 4 items will be shown across the width.
+// The width must be at least one and integral. The height must be at least one, but may be non-integral if you want to have a row of itemss peeking out.
+- (void)setLandscape:(BOOL)landscape gridSize:(CGSize)gridSize;
+@property(nonatomic,readonly) CGSize gridSize;
 
-@property(readonly,nonatomic) OUIDocumentProxy *firstProxy;
-@property(readonly,nonatomic) OUIDocumentProxy *lastProxy;
-@property(readonly,nonatomic) OUIDocumentProxy *proxyClosestToCenter;
-- (OUIDocumentProxy *)proxyToLeftOfProxy:(OUIDocumentProxy *)proxy;
-- (OUIDocumentProxy *)proxyToRightOfProxy:(OUIDocumentProxy *)proxy;
+@property(nonatomic,retain) NSSet *items;
+@property(nonatomic,readonly) NSArray *sortedItems;
+@property(nonatomic,retain) id draggingDestinationItem;
 
-- (void)snapToProxy:(OUIDocumentProxy *)proxy animated:(BOOL)animated;
-- (void)sortProxies;
+- (void)scrollItemToVisible:(OUIDocumentStoreItem *)item animated:(BOOL)animated;
+- (void)sortItems;
 
-@property(readonly,nonatomic) OUIDocumentProxy *selectedProxy;
+- (OUIDocumentPickerItemView *)itemViewForItem:(OUIDocumentStoreItem *)item;
+- (OUIDocumentPickerFileItemView *)fileItemViewForFileItem:(OUIDocumentStoreFileItem *)fileItem;
+- (OUIDocumentPickerItemView *)itemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
+- (OUIDocumentPickerFileItemView *)fileItemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
+
+- (void)previewsUpdatedForFileItem:(OUIDocumentStoreFileItem *)fileItem;
+
+- (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 
 - (void)willRotate;
 - (void)didRotate;
 
-@property(assign) BOOL disableScroll;
-@property(assign) BOOL disableRotationDisplay;
+@property(nonatomic) OUIDocumentPickerItemSort itemSort;
 
-- (IBAction)documentSliderAction:(OUIDocumentSlider *)slider;
+- (void)prepareToDeleteFileItems:(NSSet *)fileItems;
+- (void)finishedDeletingFileItems:(NSSet *)fileItems;
 
-@property(nonatomic) OUIDocumentProxySort proxySort;
 @end

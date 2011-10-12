@@ -17,7 +17,7 @@ RCS_ID("$Id$");
 
 @implementation OATextAttachment
 
-- initWithFileWrapper:(OFFileWrapper *)fileWrapper;
+- initWithFileWrapper:(NSFileWrapper *)fileWrapper;
 {
     if (!(self = [super init]))
         return nil;

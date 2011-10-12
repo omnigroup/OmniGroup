@@ -8,6 +8,8 @@
 
 #import <OmniUI/OUIEditMenuController.h>
 
+#import <UIKit/UIView.h>
+
 #import <OmniUI/OUIEditableFrameDelegate.h>
 #import <OmniUI/OUIEditableFrame.h>
 #import <OmniFoundation/NSArray-OFExtensions.h>
@@ -29,6 +31,7 @@ NSString * const OUIKeyboardAnimationInhibition = @"OUIKeyboardAnimationInhibiti
 - (NSArray *)_extraMenuItemsForCurrentState;
 - (void)_setSharedMenuIsVisible:(BOOL)visible;
 - (void)_menuDidHideHandler:(NSNotification *)notification;
+- (CGRect)_clippedRectForTargetRect:(CGRect)targetRect;
 - (void)_keyboardWillAnimate:(NSNotification *)notification;
 - (void)_keyboardDidAnimate:(NSNotification *)notification;
 @end
@@ -198,10 +201,15 @@ NSString * const OUIKeyboardAnimationInhibition = @"OUIKeyboardAnimationInhibiti
     }
 
     if (shouldBeVisible) {
-        [menuController setTargetRect:[unretained_editor targetRectangleForEditMenu] inView:unretained_editor];
-        if (![menuController.menuItems isEqualToArray:[self _extraMenuItemsForCurrentState]]) {
-            [menuController setMenuVisible:NO animated:NO];
-            menuController.menuItems = [self _extraMenuItemsForCurrentState];            
+        CGRect targetRect = [self _clippedRectForTargetRect:[unretained_editor targetRectangleForEditMenu]];
+        if (CGRectIsEmpty(targetRect)) {
+            shouldBeVisible = NO;
+        } else {
+            [menuController setTargetRect:targetRect inView:unretained_editor];
+            if (![menuController.menuItems isEqualToArray:[self _extraMenuItemsForCurrentState]]) {
+                [menuController setMenuVisible:NO animated:NO];
+                menuController.menuItems = [self _extraMenuItemsForCurrentState];            
+            }
         }
     }
 
@@ -217,6 +225,23 @@ NSString * const OUIKeyboardAnimationInhibition = @"OUIKeyboardAnimationInhibiti
         needsToShowMainMenuAfterCurrentMenuFinishesHiding = NO;
         [self performSelector:@selector(showMainMenu) withObject:nil afterDelay:0];
     }
+}
+
+- (CGRect)_clippedRectForTargetRect:(CGRect)targetRect;
+{
+    // Intersects the target rectangle for the menu with all the clipping views above us, then converts back to the editor's coordinate system for passing to the menu controller.
+    CGRect result = targetRect;
+    UIView *currentView = unretained_editor;
+    for (;;) {
+        if ([currentView clipsToBounds])
+            result = CGRectIntersection(result, currentView.bounds);
+        UIView *nextView = currentView.superview;
+        if (nextView == nil)
+            break;
+        result = [currentView convertRect:result toView:nextView];
+        currentView = nextView;
+    }
+    return [currentView convertRect:result toView:unretained_editor];
 }
 
 - (void)_keyboardWillAnimate:(NSNotification *)notification;

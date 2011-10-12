@@ -226,10 +226,14 @@ RCS_ID("$Id$")
 // Make sure we go bycopy or byref as appropriate
 - (id) replacementObjectForPortCoder: (NSPortCoder *) encoder;
 {
+    // -[NSPortCoder connection] was deprecated in 10.7. I don't know that we use this any more (sending stuff across DO) and I'm not going to spend the time right now to fix this.
+    OBFinishPorting;
+#if 0
     if ([encoder isByref])
         return [NSDistantObject proxyWithLocal: self connection: [encoder connection]];
     else
         return self;
+#endif
 }
 
 //

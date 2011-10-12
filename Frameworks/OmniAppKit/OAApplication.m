@@ -21,6 +21,7 @@
 #import "OAAppKitQueueProcessor.h"
 #import "OAPreferenceController.h"
 #import "OASheetRequest.h"
+#import "NSEvent-OAExtensions.h"
 
 RCS_ID("$Id$")
 
@@ -29,7 +30,7 @@ NSString * const OAFlagsChangedQueuedNotification = @"OAFlagsChangedNotification
 
 @interface OAApplication (/*Private*/)
 + (void)_setupOmniApplication;
-+ (NSUInteger)_currentModifierFlags;
++ (NSUInteger)_currentModifierFlags DEPRECATED_ATTRIBUTE;
 - (void)processMouseButtonsChangedEvent:(NSEvent *)event;
 + (void)_activateFontsFromAppWrapper;
 - (void)_scheduleModalPanelWithInvocation:(NSInvocation *)modalInvocation;
@@ -51,7 +52,7 @@ BOOL OATargetSelectionEnabled(void)
 {
     OBINITIALIZE;
 
-    launchModifierFlags = [self _currentModifierFlags];
+    launchModifierFlags = [NSEvent modifierFlags];
 }
 
 static NSImage *HelpIcon = nil;
@@ -356,7 +357,10 @@ BOOL OADebugTargetSelection = NO;
     if (![super applyToResponderChain:applier])
         return NO;
     
+    // <bug:///75437> (Revisit OATargetSelection in light of new Lion API). We might expect that we'll get the app delegate in applier via NSApplications supplementalTargetForAction:sender:, but we do not in 10.7.
     id delegate = (id)self.delegate;
+    if (delegate)
+        DEBUG_TARGET_SELECTION(@"---> checking OAApplication delegate ");
     if (delegate && ![delegate applyToResponderChain:applier])
         return NO;
     
@@ -366,25 +370,31 @@ BOOL OADebugTargetSelection = NO;
 // Does the full search documented for -targetForAction:to:from:
 static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, id sender, OAResponderChainApplier applier)
 {
-    // Follow the normal set of fallbacks as documented for this method on NSApplication.  Terminate if the applier stops (which might be due to finding a target or might be due to one of the candidates claiming the action but refusing to do it).
+    NSWindow *mainWindow = [self mainWindow];
     NSWindow *keyWindow = [self keyWindow];
-    if (keyWindow.firstResponder && ![keyWindow.firstResponder applyToResponderChain:applier])
+    
+    // a modal key window should go through its responder chain, self, and delegate, but not the mainWindow, application or document controller.
+    if (keyWindow && keyWindow == [self modalWindow]) {
+        [keyWindow.firstResponder applyToResponderChain:applier]; 
+        return;
+    }    
+
+    // Try *just* the first responder on the key window, if it is different from the main window.
+    if (keyWindow.firstResponder && keyWindow != mainWindow && !applier(keyWindow.firstResponder))
         return;
 
-    // NSApp class reference: "If the delegate cannot handle the message and the main window is different from the key window, NSApp begins searching again with the first responder in the main window".  Experimentally, this is not true if the key window is a sheet.  That makes sense since if the sheet is key, the window it covers is the mainWindow and the sheet conceptually blocks actions to it.
-    if (![keyWindow isSheet] && ![self modalWindow]) {
-        NSWindow *mainWindow = [self mainWindow];
-        if (keyWindow != mainWindow) {
-            if (mainWindow.firstResponder && ![mainWindow.firstResponder applyToResponderChain:applier])
-                return;
-        }
-    } else if (keyWindow == [self modalWindow]) {
+    // NSApp class reference: "If the delegate cannot handle the message and the main window is different from the key window, NSApp begins searching again with the first responder in the main window".  Experimentally, this is not true if the key window is a sheet.  That makes sense since if the sheet is key, the window it covers is the mainWindow and the sheet conceptually blocks actions to it.  However with super's implementation, mainWindow is the chosen target for toggleUsingSmallToolbarIcons:.  NSWindow responds to toggleUsingSmallToolbarIcons by sending its toolbar a setSizeMode:. The NSToolbarConfigSheet is a window but does not _have_ a toolbar. It is key but not main. Therefore the keywindow's responder chain must not be responsible if it's a sheet. However, if the keyWindow has a first responder that's, say, a text field, paste: must be valid.  So here we try the sheets' firstResponder, then the mainWindow itself (_not_ its responder chain), then the keyWindow's responder chain, and if nobody has eaten it by then, the main window's first responder chain (then the document controller and the app itself)..
+    if (keyWindow != mainWindow && [keyWindow isSheet] && ![self modalWindow] && !applier(mainWindow)) {
         return;
-    } else {
-        // Sheet is still key when NSWindowDidEndSheetNotification is sent and [toolbar _restoreToolbarItemsAfterSheet]. To make sure we're understanding all the cases where the mainWindow isn't participating, document them here...
-        // - keyWindow is a sheet attached to the mainWindow (like the save panel) or a sheet attached to a sheet attached...
-        // - there is a modal window. It may not be key ("Go to the folder:" from the open panel may)
-        OBASSERT(![keyWindow isVisible] || [[self mainWindow] attachedSheet] || [self modalWindow]);
+    }
+    
+    // Follow the normal set of fallbacks as documented for this method on NSApplication.  Terminate if the applier stops (which might be due to finding a target or might be due to one of the candidates claiming the action but refusing to do it).
+    if (keyWindow.firstResponder && ![keyWindow.firstResponder applyToResponderChain:applier])
+        return;
+    
+    if (keyWindow != mainWindow) {
+         if (![keyWindow isSheet] && ![self modalWindow] && mainWindow.firstResponder && ![mainWindow.firstResponder applyToResponderChain:applier])
+            return;
     }
 
     // This isn't ideal since this forces an NSDocumentController to be created.  AppKit presumably has some magic to avoid this...  We could avoid this if there are no registered document types, if that becomes an issue.
@@ -402,13 +412,25 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     
     __block id target = nil;
     
-    DEBUG_TARGET_SELECTION(@"looking for target: %@ to:%@ from:%@ (key1:%@, main1:%@)", NSStringFromSelector(theAction), [theTarget shortDescription], [sender shortDescription], [[[self keyWindow] firstResponder] shortDescription], [[[self mainWindow] firstResponder] shortDescription]);
-
+    DEBUG_TARGET_SELECTION(@"looking for target for action: %@ given\n   target:%@\n    sender:%@\n    keyWindow first responder:%@\n    mainWindow first responder:%@)", NSStringFromSelector(theAction), [theTarget shortDescription], [sender shortDescription], [[[self keyWindow] firstResponder] shortDescription], [[[self mainWindow] firstResponder] shortDescription]);
+    
     OAResponderChainApplier applier = ^(id object){
         DEBUG_TARGET_SELECTION(@" ... trying %@", [object shortDescription]);
         id responsible = [object responsibleTargetForAction:theAction sender:sender];
+        
+        // <bug:///75437> (Revisit OATargetSelection in light of new Lion API). Only do this on 10.7:
+        // Use the supplementalTargetForAction mechanism that was introduced in 10.7 to look for delegates and other helper objects attached to responders, but still use our OATargetSelection approach of requiring objects to override responsibleTargetForAction if they wish to terminate the search.
+//        if (!responsible && [object isKindOfClass:[NSResponder class]]) {
+//            // Hrmm. Does the implementation of supplementalTargetForAction chase the responder chain if the delegate or controller is an NSResponder?
+//            responsible = [(NSResponder *)object supplementalTargetForAction:theAction sender:sender];
+//            if (responsible)
+//                DEBUG_TARGET_SELECTION(@"      ... got supplementalTarget: %@", [responsible shortDescription]);
+//            responsible = [responsible responsibleTargetForAction:theAction sender:sender];
+//        }
+        
         if (responsible) {
             // Someone claimed to be responsible for the action.  The sender will re-validate with any appropriate means and might still get refused, but we should stop iterating.
+            DEBUG_TARGET_SELECTION(@"      ... got responsible target: %@", responsible);
             target = responsible;
             return NO;
         }
@@ -576,11 +598,13 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 - (NSUInteger)currentModifierFlags;
 {
+    OBFinishPortingLater("This method is deprecated. It returns the out-of-stream modifier flags. Make sure that's what you want, then replace your call to this method with one to +[NSEvent modifierFlags].");
     return [[self class] _currentModifierFlags];
 }
 
 - (BOOL)checkForModifierFlags:(NSUInteger)flags;
 {
+    OBFinishPortingLater("This method returns the out-of-stream modifier flags. Make sure that's what you want, then replace your call to this method with one to +[NSEvent(OAExtensions) checkForAnyModifierFlags:]");
     return ([self currentModifierFlags] & flags) != 0;
 }
 
@@ -851,6 +875,7 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
 
 + (NSUInteger)_currentModifierFlags;
 {
+    OB_WARN_OBSOLETE_METHOD; // Replaced by +[NSEvent modifierFlags], which also includes device-dependent flags
     NSUInteger flags = 0;
     UInt32 currentKeyModifiers = GetCurrentKeyModifiers();
     if (currentKeyModifiers & cmdKey)
@@ -916,7 +941,7 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
 
 - (id)responsibleTargetForAction:(SEL)action sender:(id)sender;
 {
-    //NSLog(@"   ... can has %@ handle %@ from %@?", [self shortDescription], NSStringFromSelector(action), [sender shortDescription]);
+//    DEBUG_TARGET_SELECTION(@"   ... can has %@ handle %@ from %@?", [self shortDescription], NSStringFromSelector(action), [sender shortDescription]);
     
     if (![self respondsToSelector:action])
         return nil;
@@ -936,7 +961,7 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
         }
     }
 
-    //NSLog(@"%@ is responsible", [self shortDescription]);
+//    DEBUG_TARGET_SELECTION(@"%@ is responsible", [self shortDescription]);
     
     return self;
 }
@@ -953,6 +978,8 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
         return NO;
     
     NSResponder *next = self.nextResponder;
+    if (next)
+        DEBUG_TARGET_SELECTION(@"---> checking nextResponder ");
     if (next && ![next applyToResponderChain:applier])
         return NO;
 
@@ -970,11 +997,18 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
     if (![super applyToResponderChain:applier])
         return NO;
     
+    // <bug:///75437> (Revisit OATargetSelection in light of new Lion API). Should we skip this in 10.7 and greater.
+    // At a first approximation, the delegate is returned via supplementalTargetForAction:sender:. Actually, if the delegate is an NSResponder, then NSWindow seems to chase the responder chain and return the first object the implements the action.
     id delegate = (id)self.delegate;
+    if (delegate)
+        DEBUG_TARGET_SELECTION(@"---> checking NSWindow delegate ");
     if (delegate && ![delegate applyToResponderChain:applier])
         return NO;
     
+    // <bug:///75437> (Revisit OATargetSelection in light of new Lion API). Typically we'd get the windowController in the normal responder chain, but I suppose it's possible that the windowController wasn't added to the chain.
     id windowController = self.windowController;
+    if (windowController)
+        DEBUG_TARGET_SELECTION(@"---> checking NSWindow windowController ");
     if (windowController && windowController != delegate && ![windowController applyToResponderChain:applier])
         return NO;
     
@@ -992,7 +1026,10 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
     if (![super applyToResponderChain:applier])
         return NO;
 
+    // <bug:///75437> (Revisit OATargetSelection in light of new Lion API). We might expect that we'd get the document from supplementalTargetForAction:sender: in applier if it's applicable, but that doesn't seem to be the case in 10.7
     NSDocument *document = self.document;
+    if (document)
+        DEBUG_TARGET_SELECTION(@"---> checking NSWindowController document ");
     if (document && ![document applyToResponderChain:applier])
         return NO;
     

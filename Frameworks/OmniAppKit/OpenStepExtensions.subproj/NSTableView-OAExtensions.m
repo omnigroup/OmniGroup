@@ -17,12 +17,9 @@
 
 RCS_ID("$Id$")
 
-OBDEPRECATED_METHODS(OAExtendedTableViewDataSource)
-- (void)tableView:(NSTableView *)tableView deleteRows:(NSArray *)rows; // Use -tableView:deleteRowsAtIndexes:
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard; // deprecated by the OS, but let's warn if anyone implements it.  Use the indexes version.
-- (NSTableColumn *)tableViewTypeAheadSelectionColumn:(NSTableView *)tableView;  // NSTableView automagically has this is 10.5 and later (see any number of type select delegate methods in the NSTableView header)
-
-@end
+OBDEPRECATED_METHOD(-tableView:deleteRows:); // Use -tableView:deleteRowsAtIndexes:
+OBDEPRECATED_METHOD(-tableView:writeRows:toPasteboard:); // deprecated by the OS, but let's warn if anyone implements it.  Use the indexes version.
+OBDEPRECATED_METHOD(-tableViewTypeAheadSelectionColumn:); // NSTableView automagically has this is 10.5 and later (see any number of type select delegate methods in the NSTableView header)
 
 @interface NSTableView (OAExtensionsPrivate)
 - (BOOL)_copyToPasteboard:(NSPasteboard *)pasteboard;

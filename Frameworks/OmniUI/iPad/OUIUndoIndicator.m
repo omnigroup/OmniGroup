@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2011 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,17 @@ RCS_ID("$Id$");
 - (void)bounce;
 @end
 
+@interface OUIUndoIndicator ()
+- (void)_update;
+@end
+
 @implementation OUIUndoIndicator
+{
+@private
+    UIView *_parentView;
+    NSUInteger _groupingLevel;
+    BOOL _hasUnsavedChanges;
+}
 
 - initWithParentView:(UIView *)parentView;
 {
@@ -23,7 +33,7 @@ RCS_ID("$Id$");
         return nil;
     
     _parentView = [parentView retain];
-    
+
     return self;
 }
 
@@ -33,20 +43,45 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-- (void)show;
+@synthesize groupingLevel = _groupingLevel;
+- (void)setGroupingLevel:(NSUInteger)groupingLevel;
 {
-    OBPRECONDITION([_parentView window]);
-    
-    OUIUndoIndicatorView *view = (OUIUndoIndicatorView *)self.view;
-    if (view.superview != _parentView)
-        [_parentView addSubview:view];
-    [view bounce];
+    if (_groupingLevel == groupingLevel)
+        return;
+
+    _groupingLevel = groupingLevel;
+    [self _update];
 }
 
-- (void)hide;
+@synthesize hasUnsavedChanges = _hasUnsavedChanges;
+- (void)setHasUnsavedChanges:(BOOL)hasUnsavedChanges;
 {
-    if ([self isViewLoaded])
-        [self.view removeFromSuperview];
+    if (_hasUnsavedChanges == hasUnsavedChanges)
+        return;
+    
+    _hasUnsavedChanges = hasUnsavedChanges;
+    [self _update];
+}
+
+- (void)_update;
+{
+    if (_groupingLevel > 0 || _hasUnsavedChanges) {
+        OUIUndoIndicatorView *view = (OUIUndoIndicatorView *)self.view;
+        if (view.superview != _parentView)
+            [_parentView addSubview:view];
+        
+        if (_hasUnsavedChanges)
+            view.backgroundColor = [UIColor redColor];
+        else
+            view.backgroundColor = [UIColor greenColor];
+        
+        CGFloat size = 20 + 10*_groupingLevel;
+        view.frame = CGRectMake(0, 0, size, size);
+    } else if ([self isViewLoaded]) {
+        OUIUndoIndicatorView *view = (OUIUndoIndicatorView *)self.view;
+        if (view.superview)
+            [view removeFromSuperview];
+    }
 }
 
 #pragma mark -
@@ -54,7 +89,7 @@ RCS_ID("$Id$");
 
 - (void)loadView;
 {
-    OUIUndoIndicatorView *view = [[OUIUndoIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
+    OUIUndoIndicatorView *view = [[OUIUndoIndicatorView alloc] init];
     view.layer.zPosition = CGFLOAT_MAX;
     self.view = view;
     [view release];
@@ -79,12 +114,6 @@ RCS_ID("$Id$");
     anim.autoreverses = YES;
     
     [layer addAnimation:anim forKey:[[NSDate date] description]]; // stack these up to allow them to assumulate
-}
-
-- (void)drawRect:(CGRect)r;
-{
-    [[UIColor greenColor] set];
-    UIRectFill(self.bounds);
 }
 
 @end

@@ -258,8 +258,8 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
     // If we have a valid non-expiring license, then the price should be shown as free (that is, you can update to this version w/o paying any money since you already did).
     NSString *licenseType = [checker licenseType];
     
-    if (OFISEQUAL(licenseType, OSULicenseTypeExpiring)) {
-        // Display *nothing* in the price column.  This might be a built-in demo license for a beta or a site license.  In lieu of displaying the right thing, let's display nothing instead of something possibly wrong ("free").  See <bug://43521>
+    if (OFISEQUAL(licenseType, OSULicenseTypeExpiring) || OFISEQUAL(licenseType, OSULicenseTypeTrial)) {
+        // Display *nothing* in the price column.  This might be a built-in demo license for a beta or a site license.  In lieu of displaying the right thing, let's display nothing instead of something possibly wrong ("free").  See <bug://43521> and <bug:///73711>
         [_price release];
         _price = nil;
     } else if (OFNOTEQUAL(licenseType, OSULicenseTypeUnset) && OFNOTEQUAL(licenseType, OSULicenseTypeNone) && ([_marketingVersion componentAtIndex:0] == [[checker applicationMarketingVersion] componentAtIndex:0])) {
@@ -272,7 +272,7 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
         NSArray *enclosureNodes = _requireNodes(element, nil, @"enclosure", outError);
         if (!enclosureNodes) {
             if (OSUItemDebug)
-                NSLog(@"Ignoring item without enclosurs:\n%@", element);
+                NSLog(@"Ignoring item without enclosures:\n%@", element);
             [self release];
             return nil;
         }
@@ -388,18 +388,6 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
     [super dealloc];
 }
 
-+ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key;
-{
-    if ([key isEqualToString:OSUItemAvailableBinding])
-        return NO;
-    if ([key isEqualToString:OSUItemSupersededBinding])
-        return NO;
-    if ([key isEqualToString:OSUItemIgnoredBinding])
-        return NO;
-    
-    return [super automaticallyNotifiesObserversForKey:key];
-}
-
 + (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)aKey
 {
     if ([aKey isEqualToString:@"displayFont"] || [aKey isEqualToString:@"displayColor"])
@@ -410,40 +398,16 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
 
 #pragma mark Item attributes
 
-- (OFVersionNumber *)buildVersion;
-{
-    return _buildVersion;
-}
+@synthesize buildVersion = _buildVersion;
+@synthesize marketingVersion = _marketingVersion;
+@synthesize minimumSystemVersion = _minimumSystemVersion;
 
-- (OFVersionNumber *)marketingVersion;
-{
-    return _marketingVersion;
-}
-
-- (OFVersionNumber *)minimumSystemVersion;
-{
-    return _minimumSystemVersion;
-}
-
-- (NSString *)title;
-{
-    return _title;
-}
-
-- (NSString *)track;
-{
-    return _track;
-}
+@synthesize title = _title;
+@synthesize track = _track;
+@synthesize price = _price;
 
 - (NSString *)displayName;
 {
-#if 0 // The appcast now appends the build version for the sneakypeak feed.
-    // If we are on the release track, just display our title.  Otherwise, we want to include the exact bundle version as well.
-    if ([NSString isEmptyString:_track] || [_track isEqualToString:@"release"])
-        return _title;
-    
-    return [NSString stringWithFormat:@"%@ (v%@)", _title, [_buildVersion cleanVersionString]];
-#endif
     return _title;
 }
 
@@ -463,15 +427,8 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
         return [NSColor controlTextColor];
 }
 
-- (NSURL *)downloadURL;
-{
-    return _downloadURL;
-}
-
-- (NSString *)sourceLocation;
-{
-    return _notionalItemOrigin;
-}
+@synthesize downloadURL = _downloadURL;
+@synthesize sourceLocation = _notionalItemOrigin;
 
 - (NSURL *)releaseNotesURL;
 {
@@ -525,24 +482,9 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
 
 #pragma mark Item state
 
-- (BOOL)available;
-{
-    return _available;
-}
+@synthesize available = _available;
 
-- (BOOL)isIgnored;
-{
-    return _ignored;
-}
-
-- (void)setAvailable:(BOOL)available;
-{
-    if (_available == available)
-        return;
-    [self willChangeValueForKey:OSUItemAvailableBinding];
-    _available = available;
-    [self didChangeValueForKey:OSUItemAvailableBinding];
-}
+@synthesize isIgnored = _ignored;
 
 - (void)setAvailablityBasedOnSystemVersion:(OFVersionNumber *)systemVersion;
 {
@@ -557,19 +499,7 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
     [self setAvailable:available];
 }
 
-- (BOOL)superseded;
-{
-    return _superseded;
-}
-
-- (void)setSuperseded:(BOOL)superseded;
-{
-    if (_superseded == superseded)
-        return;
-    [self willChangeValueForKey:OSUItemSupersededBinding];
-    _superseded = superseded;
-    [self didChangeValueForKey:OSUItemSupersededBinding];
-}
+@synthesize superseded = _superseded;
 
 - (BOOL)supersedes:(OSUItem *)peer;
 {

@@ -193,8 +193,11 @@ static NSSize calendarImageSize;
     
     // bind the date picker to our local object value 
     [datePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:NSAllowsEditingMultipleValuesSelectionBindingOption]];
+    [datePicker setTarget:self];
+    [datePicker setAction:@selector(datePickerAction:)];
+
     [timePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:NSAllowsEditingMultipleValuesSelectionBindingOption]];
-        
+
     [self setDatePickerObjectValue:_datePickerObjectValue];
     [datePicker setClicked:NO];
     /* Finally, place the editor window on-screen */
@@ -260,6 +263,13 @@ static NSSize calendarImageSize;
     return datePicker;
 }
 
+- (IBAction)datePickerAction:(id)sender;
+{
+    if (_boundObject && ![_boundObject valueForKeyPath:_boundObjectKeyPath]) {
+        [_boundObject setValue:[datePicker objectValue] forKeyPath:_boundObjectKeyPath];
+    }
+}
+
 - (void)setWindow:(NSWindow *)window;
 {
     NSView *contentView = [window contentView];
@@ -282,14 +292,15 @@ static NSSize calendarImageSize;
 - (void)setDatePickerObjectValue:(id)newObjectValue;
 {
     if (_datePickerObjectValue == newObjectValue)
-	return;
+        return;
     
     [_datePickerObjectValue release];
     _datePickerObjectValue = [newObjectValue retain];
-
+    
+    
     // update the object
     if (_boundObject) {
-	[_boundObject setValue:_datePickerObjectValue forKeyPath:_boundObjectKeyPath];
+        [_boundObject setValue:_datePickerObjectValue forKeyPath:_boundObjectKeyPath];
     }
 }
 
@@ -307,13 +318,13 @@ static NSSize calendarImageSize;
     
     NSEvent *currentEvent = [NSApp currentEvent];
     if (([currentEvent type] == NSKeyDown) && ([[NSApp currentEvent] keyCode] == 53)) { 
-	if (_startedWithNilDate) {
-	    _datePickerObjectValue = nil;
-	    [_control setObjectValue:nil];
-	} else if (!_startedWithNilDate && _datePickerOriginalValue) {
-	    _datePickerObjectValue = _datePickerOriginalValue;
-	    [_control setObjectValue:_datePickerOriginalValue];
-	}
+        if (_startedWithNilDate) {
+            _datePickerObjectValue = nil;
+            [_control setObjectValue:nil];
+        } else if (!_startedWithNilDate && _datePickerOriginalValue) {
+            _datePickerObjectValue = _datePickerOriginalValue;
+            [_control setObjectValue:_datePickerOriginalValue];
+        }
     } 
     
     if ([_boundObject respondsToSelector:@selector(datePicker:willUnbindFromKeyPath:)])
@@ -326,6 +337,9 @@ static NSSize calendarImageSize;
     _boundObject = nil;
     [_boundObjectKeyPath release];
     _boundObjectKeyPath = nil;
+    
+    [_control release];
+    _control = nil;
 }
 
 - (void)_parentWindowWillClose:(NSNotification *)note;

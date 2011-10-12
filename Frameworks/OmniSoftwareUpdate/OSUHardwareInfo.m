@@ -8,6 +8,7 @@
 #import "OSUHardwareInfo.h"
 #import "OSURunTime.h"
 #import <OmniBase/rcsid.h>
+#import <OmniFoundation/NSString-OFExtensions.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     #define OSU_IPHONE 1
@@ -224,8 +225,8 @@ static void setStringValue(CFMutableDictionaryRef info, CFStringRef key, CFStrin
 }
 
 #ifdef CL_VERSION_1_0
-#define CL_BUF_SIZE 128
-static NSString *clGetPlatformString(cl_platform_id plat, cl_platform_info what);
+static NSString *clGetPlatformInfoString(cl_platform_id plat, cl_platform_info what);
+static NSString *clGetDeviceInfoString(cl_device_id device, cl_device_info what);
 #endif /* CL_VERSION_1_0 */
 
 CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collectHardwareInformation, NSString *licenseType, bool reportMode)
@@ -566,9 +567,6 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
                 
                 CFStringRef format = reportMode ? CFSTR("%@x%@, %@ bits, %@Hz") : CFSTR("%@,%@,%@,%@");
                 CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, format, width, height, pixelEncoding, refreshRate);
-                
-                CFRelease(mode);
-                CFRelease(pixelEncoding);
 #endif
                 CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("display%d"), displayIndex);
                 CFDictionarySetValue(info, key, value);
@@ -707,12 +705,12 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
         }
         if (clErr == CL_SUCCESS) {
             for (cl_uint platformIndex = 0; platformIndex < platformCount; platformIndex ++) {
-                NSString *platNameString = clGetPlatformString(platforms[platformIndex], CL_PLATFORM_NAME);
-                NSString *platVersString = clGetPlatformString(platforms[platformIndex], CL_PLATFORM_VERSION);
+                NSString *platNameString = clGetPlatformInfoString(platforms[platformIndex], CL_PLATFORM_NAME);
+                NSString *platVersString = clGetPlatformInfoString(platforms[platformIndex], CL_PLATFORM_VERSION);
                 NSString *platInfo = [NSString stringWithFormat:@"%@ %@", platNameString, platVersString];
                 setStringValue(info, (CFStringRef)[NSString stringWithFormat:@"cl%u", platformIndex], (CFStringRef)platInfo);
                 
-                NSString *extensions = clGetPlatformString(platforms[platformIndex], CL_PLATFORM_EXTENSIONS);
+                NSString *extensions = clGetPlatformInfoString(platforms[platformIndex], CL_PLATFORM_EXTENSIONS);
                 if (extensions && [extensions length])
                     setStringValue(info, (CFStringRef)[NSString stringWithFormat:@"cl%u_ext", platformIndex], (CFStringRef)extensions);
                 
@@ -731,8 +729,6 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
                         cl_uint cores;
                         cl_uint mhz;
                         cl_ulong globalmem, localmem, maxalloc;
-                        char extensionsBuf[CL_BUF_SIZE];
-                        size_t extensionsLen;
                         
                         if (CL_SUCCESS == clGetDeviceInfo(devices[deviceIndex], CL_DEVICE_TYPE, sizeof(devType), &devType, NULL)) {
                             if (devType & CL_DEVICE_TYPE_DEFAULT) [devInfo appendString:@"d"];
@@ -764,16 +760,9 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
                             [devInfo appendFormat:@" - "];
                         }
                         
-                        extensionsLen = 0;
-                        if (CL_SUCCESS == clGetDeviceInfo(devices[deviceIndex], CL_DEVICE_EXTENSIONS, CL_BUF_SIZE, extensionsBuf, &extensionsLen)) {
-                            if (extensionsLen > 0 && extensionsBuf[extensionsLen-1] == 0)
-                                extensionsLen --;
-                            if (extensionsLen) {
-                                NSString *s = [[NSString alloc] initWithBytes:extensionsBuf length:extensionsLen encoding:NSISOLatin1StringEncoding];
-                                [devInfo appendString:s];
-                                [s release];
-                            }
-                        }
+                        NSString *deviceExtensions = clGetDeviceInfoString(devices[deviceIndex], CL_DEVICE_EXTENSIONS);
+                        if (![NSString isEmptyString:deviceExtensions])
+                            [devInfo appendString:deviceExtensions];
                         
                         setStringValue(info,
                                        (CFStringRef)[NSString stringWithFormat:@"cl%u.%u_dev", platformIndex, deviceIndex],
@@ -796,21 +785,57 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
 }
 
 #ifdef CL_VERSION_1_0
-static NSString *clGetPlatformString(cl_platform_id plat, cl_platform_info what)
+
+#define MAX_CL_STRING_LEN 64*1024  /* Arbitrary limit; longer strings than this are assumed to be a bug somehow */
+
+static NSString *clGetPlatformInfoString(cl_platform_id plat, cl_platform_info what)
 {
-    char buf[CL_BUF_SIZE];
-    size_t bufUsed = 0;
+    size_t param_value_size;
     cl_int clErr;
     
-    clErr = clGetPlatformInfo(plat, what, CL_BUF_SIZE, buf, &bufUsed);
-    if (clErr != CL_SUCCESS)
-        return [NSString stringWithFormat:@"<err %d>", (int)clErr];
+    param_value_size = 0;
+    clErr = clGetPlatformInfo(plat, what, 0, NULL, &param_value_size);
+    if (clErr == CL_SUCCESS) {
+        if (param_value_size > MAX_CL_STRING_LEN)
+            return [NSString stringWithFormat:@"<%lu bytes>", (unsigned long)param_value_size];
+        char *buf = malloc(param_value_size);
+        size_t buf_used = 0;
+        clErr = clGetPlatformInfo(plat, what, param_value_size, buf, &buf_used);
+        if (clErr == CL_SUCCESS && buf_used <= param_value_size) {
+            if (buf_used > 0 && buf[buf_used] == 0)
+                buf_used --;
+            NSString *str = [[NSString alloc] initWithBytesNoCopy:buf length:buf_used encoding:NSISOLatin1StringEncoding freeWhenDone:YES];
+            return [str autorelease];
+        }
+        free(buf);
+    }
     
-    if (bufUsed > 0 && buf[bufUsed-1] == 0)
-        bufUsed --;
-    
-    NSString *str = [[NSString alloc] initWithBytes:buf length:bufUsed encoding:NSISOLatin1StringEncoding];
-    [str autorelease];
-    return str;
+    return [NSString stringWithFormat:@"<err %d>", (int)clErr];
 }
+
+static NSString *clGetDeviceInfoString(cl_device_id device, cl_device_info what)
+{
+    size_t param_value_size;
+    cl_int clErr;
+    
+    param_value_size = 0;
+    clErr = clGetDeviceInfo(device, what, 0, NULL, &param_value_size);
+    if (clErr == CL_SUCCESS) {
+        if (param_value_size > MAX_CL_STRING_LEN)
+            return [NSString stringWithFormat:@"<%lu bytes>", (unsigned long)param_value_size];
+        char *buf = malloc(param_value_size);
+        size_t buf_used = 0;
+        clErr = clGetDeviceInfo(device, what, param_value_size, buf, &buf_used);
+        if (clErr == CL_SUCCESS && buf_used <= param_value_size) {
+            if (buf_used > 0 && buf[buf_used] == 0)
+                buf_used --;
+            NSString *str = [[NSString alloc] initWithBytesNoCopy:buf length:buf_used encoding:NSISOLatin1StringEncoding freeWhenDone:YES];
+            return [str autorelease];
+        }
+        free(buf);
+    }
+    
+    return [NSString stringWithFormat:@"<err %d>", (int)clErr];
+}
+
 #endif /* CL_VERSION_1_0 */

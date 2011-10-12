@@ -6,17 +6,19 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIAnimationSequence.h>
+
 #import <UIKit/UIView.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 RCS_ID("$Id$");
-
-#ifdef NS_BLOCKS_AVAILABLE
 
 #if 0 && defined(DEBUG_bungi)
     #define DEBUG_SEQ(format, ...) NSLog(@"SEQ: " format, ## __VA_ARGS__)
 #else
     #define DEBUG_SEQ(format, ...)
 #endif
+
+const NSTimeInterval OUIAnimationSequenceDefaultDuration = 0.2;
 
 @implementation OUIAnimationSequence
 
@@ -57,11 +59,17 @@ RCS_ID("$Id$");
     }
     
     void (^oneAction)(void) = (typeof(oneAction))obj;
-    [UIView animateWithDuration:_duration > 0 ? _duration : 0.2
-                     animations:oneAction
-                     completion:^(BOOL finished){
-                         [self _runNextStep];
-                     }];
+    
+    // We used to interpret a zero duration as meaing a default of 0.2, but now we treat it as meaning we should run that block w/o animation enabled.
+    if (_duration == 0) {
+        OUIWithoutAnimating(oneAction);
+        [self _runNextStep];
+    } else {
+        [UIView animateWithDuration:_duration animations:oneAction
+                         completion:^(BOOL finished){
+                             [self _runNextStep];
+                         }];
+    }
 }
 
 - (void)_run;
@@ -120,5 +128,3 @@ RCS_ID("$Id$");
 
 
 @end
-
-#endif

@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -88,7 +88,6 @@ static void insertionSort(const void *anObject, void *_context)
     CFSetApplyFunction((CFSetRef)self, applier, context);
 }
 
-#ifdef NS_BLOCKS_AVAILABLE
 - (id)any:(OFPredicateBlock)predicate;
 {
     for (id obj in self) {
@@ -97,6 +96,14 @@ static void insertionSort(const void *anObject, void *_context)
     }
     return nil;
 }
-#endif
+
+- (NSSet *)select:(OFPredicateBlock)predicate;
+{
+    NSMutableSet *matches = [NSMutableSet set];
+    for (id obj in self)
+        if (predicate(obj))
+            [matches addObject:obj];
+    return matches;
+}
 
 @end

@@ -33,6 +33,7 @@ extern NSString * const OSUAvailableUpdateControllerCheckInProgressBinding;
     IBOutlet NSView *_itemAlertPane;
     IBOutlet NSTextField *_itemAlertMessage;
     CGFloat _minimumAlertPaneHeight;
+    CGSize _buttonExtraSize;
     
     BOOL _displayingWarningPane;
 

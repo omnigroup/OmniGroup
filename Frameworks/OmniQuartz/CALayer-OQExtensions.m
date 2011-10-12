@@ -529,9 +529,10 @@ static void _writeString(NSString *str)
             CGContextClip(ctx);
             DEBUG_RENDER(@"  mask to bounds");
         }
-        CGColorRef backgroundColor = GET_VALUE(backgroundColor) ;
+        CGColorRef backgroundColor = GET_VALUE(backgroundColor);
+        CGColorRef borderColor = GET_VALUE(borderColor);
         
-        if (backgroundColor && !CGColorEqualToColor(backgroundColor, CGColorGetConstantColor(kCGColorClear))) {
+        if ((self.borderWidth && borderColor) || backgroundColor) {
 #if DEBUG_RENDER_ON
             {
                 CGRect clip = CGContextGetClipBoundingBox(ctx);
@@ -548,13 +549,15 @@ static void _writeString(NSString *str)
             }
 #endif
             
-            CGContextSetFillColorWithColor(ctx, backgroundColor);
-
             if (self.cornerRadius != 0.0f) {
                 OQAppendRoundedRect(ctx, localBounds, self.cornerRadius);
-                CGContextFillPath(ctx);
             } else
-                CGContextFillRect(ctx, localBounds);
+                CGContextAddRect(ctx, localBounds);
+
+            if (backgroundColor && !CGColorEqualToColor(backgroundColor, CGColorGetConstantColor(kCGColorClear))) {
+                CGContextSetFillColorWithColor(ctx, backgroundColor);
+                CGContextFillPath(ctx);
+            }
         }
         
         // We require that the delegate implement the CGContextRef path, not just -displayLayer:.
@@ -580,6 +583,13 @@ static void _writeString(NSString *str)
             }
         }
         
+        if (self.borderWidth && borderColor && !CGColorEqualToColor(borderColor, CGColorGetConstantColor(kCGColorClear))) {
+            // the clipping & path was already set above while doing the background
+            CGContextSetLineWidth(ctx, self.borderWidth);
+            CGContextSetStrokeColorWithColor(ctx, borderColor);
+            CGContextStrokePath(ctx);
+        }
+
         NSArray *sublayers = self.sublayers;
         if ([sublayers count] > 0) {
             CATransform3D sublayerTransform = self.sublayerTransform;
@@ -715,6 +725,7 @@ static CGImageRef (*pCABackingStoreGetCGImage)(void *backingStore) = NULL;
 @end
 
 @implementation CAMediaTimingFunction (OQExtensions)
+
 + (id)functionCompatibleWithDefault;
 {
     // Determined empircally.
@@ -724,4 +735,31 @@ static CGImageRef (*pCABackingStoreGetCGImage)(void *backingStore) = NULL;
     return function;
     
 }
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
++ (CAMediaTimingFunction *)mediaTimingFunctionForUIViewAnimationCurve:(UIViewAnimationCurve)uiViewAnimationCurve;
+{
+    NSString *mediaTimingFunctionName = nil;
+    switch (uiViewAnimationCurve) {
+        case UIViewAnimationCurveEaseInOut:
+            mediaTimingFunctionName = kCAMediaTimingFunctionEaseInEaseOut;
+            break;
+        case UIViewAnimationCurveEaseIn:
+            mediaTimingFunctionName = kCAMediaTimingFunctionEaseIn;
+            break;
+        case UIViewAnimationCurveEaseOut:
+            mediaTimingFunctionName = kCAMediaTimingFunctionEaseOut;
+            break;
+        case UIViewAnimationCurveLinear:
+            mediaTimingFunctionName = kCAMediaTimingFunctionLinear;
+            break;
+        default:
+            OBASSERT_NOT_REACHED("Unknown curve");
+            mediaTimingFunctionName = kCAMediaTimingFunctionLinear;
+            break;
+    }
+    return [self functionWithName:mediaTimingFunctionName];
+}
+#endif
+
 @end

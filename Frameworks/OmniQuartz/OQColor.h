@@ -30,6 +30,10 @@ typedef struct {
     CGFloat r, g, b, a;
 } OQLinearRGBA;
 
+typedef struct {
+    CGFloat w, a;
+} OQWhiteAlpha;
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 extern OQLinearRGBA OQGetColorComponents(NSColor *c);
 #else

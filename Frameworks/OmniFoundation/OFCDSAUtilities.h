@@ -11,10 +11,13 @@
 #import <Security/Security.h>
 #import <OmniFoundation/OFDigestUtilities.h>
 
+/* In 10.7, Apple deprecated all existing crypto APIs and replaced them with new, completely different APIs which aren't available on previous versions (and which aren't as functional). */
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
-    #define OF_ENABLE_CSSM 0
+    #define OF_ENABLE_CDSA 0
+    #define OF_SECTRANSFORM_AVAILABLE 1
 #else
-    #define OF_ENABLE_CSSM 1
+    #define OF_ENABLE_CDSA 1
+    #define OF_SECTRANSFORM_AVAILABLE 0
 #endif
 
 /*
@@ -25,18 +28,17 @@
  The MAC and Signature objects conform to some common protocols, allowing the caller to ignore some minor differences in the way they behave.
 */
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 NSString *OFStringFromCSSMReturn(CSSM_RETURN code);
 BOOL OFErrorFromCSSMReturn(NSError **outError, CSSM_RETURN errcode, NSString *function);
-NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputFormat_, NSError **outError);
 NSData *OFGetAppleKeyDigest(const CSSM_KEY *pkey, CSSM_CC_HANDLE optionalContext, NSError **outError);
 #endif
 NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext);
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage, CFTypeRef anchors, SecPolicyRef policy, NSError **outError);
 #endif
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 @interface OFCDSAModule : NSObject
 {
     CSSM_MODULE_HANDLE hdl;
@@ -132,5 +134,5 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 @property (readonly, nonatomic) NSData *result;
 
 @end
-#endif // OF_ENABLE_CSSM
+#endif // OF_ENABLE_CDSA
 

@@ -7,37 +7,23 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <UIKit/UIDocument.h>
 
 #import <OmniFoundation/OFSaveType.h>
-#import <OmniUI/OUIDocumentProtocol.h>
 
-@class OUIDocumentProxy, OUIUndoIndicator, OUIDocumentViewController;
+@class OUIDocumentStoreFileItem, OUIDocumentViewController, OUIDocumentPreview;
+
 @protocol OUIDocumentViewController;
 
-@interface OUIDocument : OFObject <OUIDocument>
-{
-@private
-    OUIDocumentProxy *_proxy;
-    NSURL *_url;
-    
-    NSUndoManager *_undoManager;
-    UIViewController <OUIDocumentViewController> *_viewController;
-    OUIUndoIndicator *_undoIndicator;
-    
-    NSTimer *_saveTimer;
-    BOOL _hasUndoGroupOpen;
-    BOOL _hasDoneAutosave;
-}
+@interface OUIDocument : UIDocument
 
-+ (CFTimeInterval)autosaveTimeInterval;
 + (BOOL)shouldShowAutosaveIndicator;
 
-- initWithExistingDocumentProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
+- initWithExistingFileItem:(OUIDocumentStoreFileItem *)fileItem error:(NSError **)outError;
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 
-@property(readonly) NSURL *url;
-@property(readonly) NSUndoManager *undoManager;
+@property(readonly, nonatomic) OUIDocumentStoreFileItem *fileItem;
+
 @property(readonly) UIViewController <OUIDocumentViewController> *viewController;
 
 - (BOOL)saveAsNewDocumentToURL:(NSURL *)url error:(NSError **)outError;
@@ -46,19 +32,15 @@
 - (IBAction)undo:(id)sender;
 - (IBAction)redo:(id)sender;
 
-- (BOOL)hasUnsavedChanges;
-- (BOOL)saveForClosing:(NSError **)outError;
 - (void)scheduleAutosave; // Will happen automatically for undoable changes, but for view stat changes that you want to be saved, you can call this.
-- (void)willAutosave;
+- (void)willClose;
 
 // Subclass responsibility
 
 /*
- self.proxy, self.url and self.undoManager will be set appropriately when this is called. If proxy is nil, this is a new document. The URL will be set no matter what.
+ self.fileItem and self.undoManager will be set appropriately when this is called. If fileItem is nil, this is a new document, but the UIDocument's fileURL will be set no matter what.
  */
-- (BOOL)loadDocumentContents:(NSError **)outError;
 - (UIViewController <OUIDocumentViewController> *)makeViewController;
-- (BOOL)writeToURL:(NSURL *)url forSaveType:(OFSaveType)saveType error:(NSError **)outError;
 
 // Optional subclass methods
 - (void)willFinishUndoGroup;
@@ -67,5 +49,21 @@
 - (void)didUndo;
 - (void)didRedo;
 - (UIView *)viewToMakeFirstResponderWhenInspectorCloses;
+
+- (NSString *)alertTitleForIncomingEdit;
+
+// When we get an incoming change from iCloud, OUIDocument discards the view controller it got from -makeViewController and makes a new one. These can be subclassed to help tear down the view controller and to transition view state from the old to the new, if appropriate.
+- (id)willRebuildViewController;
+- (void)didRebuildViewController:(id)state;
+
+// Support for previews
++ (CGSize)previewSizeForTargetSize:(CGSize)targetSize aspectRatio:(CGFloat)aspectRatio;
++ (NSURL *)fileURLForPreviewOfFileItem:(OUIDocumentStoreFileItem *)fileItem withLandscape:(BOOL)landscape;
++ (OUIDocumentPreview *)loadPreviewForFileItem:(OUIDocumentStoreFileItem *)fileItem withLandscape:(BOOL)landscape error:(NSError **)outError;
++ (UIImage *)placeholderPreviewImageForFileItem:(OUIDocumentStoreFileItem *)fileItem landscape:(BOOL)landscape;
++ (BOOL)writePreviewsForDocument:(OUIDocument *)document error:(NSError **)outError;
+
+// Camera roll
++ (UIImage *)cameraRollImageForFileItem:(OUIDocumentStoreFileItem *)fileItem;
 
 @end

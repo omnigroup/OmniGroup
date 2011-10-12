@@ -9,6 +9,7 @@
 
 #import <OmniBase/OBUtilities.h>
 #import <OmniBase/rcsid.h>
+#import <OmniBase/macros.h>
 #import <OmniBase/assertions.h>
 #import <dlfcn.h>
 
@@ -20,6 +21,10 @@ RCS_ID("$Id$");
 #endif
 
 #ifdef OMNI_ASSERTIONS_ON
+
+// Do this once here to make sure the hack works. This can also serve as a template for copying to make your own deperecation protocol.
+OBDEPRECATED_METHOD(-deprecatedInstanceMethod);
+OBDEPRECATED_METHOD(+deprecatedClassMethod);
 
 // Avoid unknown selector warnings from -Wundeclared-selector.  The selectors we are checking are often in other frameworks.
 #define FIND_SEL(x) sel_getUid(#x)
@@ -158,7 +163,7 @@ static NSString *describeMethod(Method m, BOOL *nonSystem)
             [buf appendString:path];
         }
         
-        if (![path hasPrefix:@"/System/"] && ![path hasPrefix:@"/Library/"] && ![path hasPrefix:@"/usr/lib/"] && ![path hasSuffix:@"FBAccess"])
+        if (![path hasPrefix:@"/System/"] && ![path hasPrefix:@"/Library/"] && ![path hasPrefix:@"/usr/lib/"] && ![path hasPrefix:@"/Developer/Platforms/"] && ![path hasSuffix:@"FBAccess"])
             *nonSystem = YES;
     }
     
@@ -529,58 +534,40 @@ static void _checkForDeprecatedMethodsInClass(Class cls, CFSetRef deprecatedSele
     free(methods);
 }
 
+static CFMutableSetRef DeprecatedInstanceSelectors = NULL;
+static CFMutableSetRef DeprecatedClassSelectors = NULL;
+
+// name should be either "+foo:bar:" or "-foo:bar:".
+void OBRuntimeCheckRegisterDeprecatedMethodWithName(const char *name)
+{
+    OBPRECONDITION(name[0] == '+' || name[0] == '-');
+    
+    if (!DeprecatedInstanceSelectors) {
+        CFSetCallBacks callbacks;
+        memset(&callbacks, 0, sizeof(callbacks));
+        DeprecatedInstanceSelectors = CFSetCreateMutable(kCFAllocatorDefault, 0, &callbacks);
+        DeprecatedClassSelectors = CFSetCreateMutable(kCFAllocatorDefault, 0, &callbacks);
+    }
+    
+    BOOL isClassMethod = (name[0] == '+');
+    SEL sel = sel_getUid(&name[1]);
+    OBASSERT(sel);
+    
+    if (isClassMethod)
+        CFSetAddValue(DeprecatedClassSelectors, sel);
+    else
+        CFSetAddValue(DeprecatedInstanceSelectors, sel);
+}
+    
 static void _checkForMethodsInDeprecatedProtocols(void)
 {
     // Reset this to zero to avoid double-counting errors if we get called again due to bundle loading.
     DeprecatedMethodImplementationCount = 0;
     
-    // Build an index of all the deprecated instance and class methods.
-    CFSetCallBacks callbacks;
-    memset(&callbacks, 0, sizeof(callbacks));
-    CFMutableSetRef deprecatedInstanceSelectors = CFSetCreateMutable(kCFAllocatorDefault, 0, &callbacks);
-    CFMutableSetRef deprecatedClassSelectors = CFSetCreateMutable(kCFAllocatorDefault, 0, &callbacks);
-    
-    BOOL oneDeprecatedProtocolFound = NO;
-    unsigned int protocolIndex = 0;
-    Protocol * const *protocols = objc_copyProtocolList(&protocolIndex);
-    if (protocols) {
-        while (protocolIndex--) {
-            Protocol *protocol = protocols[protocolIndex];
-            if (strstr(protocol_getName(protocol), "Deprecated") == NULL)
-                continue;
-            
-            //NSLog(@"Indexing deprecation protocol '%s'...", protocol_getName(protocol));
-            oneDeprecatedProtocolFound = YES;
-            
-            unsigned int descIndex;
-            struct objc_method_description *descs;
-            
-            // All the deprecated methods should in the required segment of the protocol.
-            descs = protocol_copyMethodDescriptionList(protocol, NO/*isRequired*/, YES/*isInstaceMethod*/, &descIndex);
-            OBASSERT(descs == NULL);
-            descs = protocol_copyMethodDescriptionList(protocol, NO/*isRequired*/, NO/*isInstaceMethod*/, &descIndex);
-            OBASSERT(descs == NULL);
-            
-            descIndex = 0;
-            if ((descs = protocol_copyMethodDescriptionList(protocol, YES/*isRequired*/, YES/*isInstanceMethod*/, &descIndex))) {
-                while (descIndex--)
-                    CFSetAddValue(deprecatedInstanceSelectors, descs[descIndex].name);
-                free(descs);
-            }
-            
-            descIndex = 0;
-            if ((descs = protocol_copyMethodDescriptionList(protocol, YES/*isRequired*/, NO/*isInstanceMethod*/, &descIndex))) {
-                while (descIndex--)
-                    CFSetAddValue(deprecatedClassSelectors, descs[descIndex].name);
-                free(descs);
-            }
-        }
-        free((void *)protocols);
-    }
-    
-    // Make sure the OBDEPRECATED_METHODS macro is forcing the otherwise unused protocols to be emitted
-    OBASSERT(oneDeprecatedProtocolFound);
-    
+    // Check that the macro actually worked and that (at least some of) the __attribute__((constructor)) invocations have run.
+    OBASSERT(DeprecatedClassSelectors && CFSetGetCount(DeprecatedClassSelectors) > 0);
+    OBASSERT(DeprecatedInstanceSelectors && CFSetGetCount(DeprecatedInstanceSelectors) > 0);
+        
     // Check that classes don't implement any of the deprecated methods.
     int classIndex, classCount = 0, newClassCount;
     Class *classes = NULL;
@@ -607,13 +594,11 @@ static void _checkForMethodsInDeprecatedProtocols(void)
             strcmp(name, "QCPatchActor") == 0)
 	    continue;
         
-        _checkForDeprecatedMethodsInClass(cls, deprecatedInstanceSelectors, NO/*isClassMethod*/);
-        _checkForDeprecatedMethodsInClass(object_getClass(cls), deprecatedClassSelectors, YES/*isClassMethod*/);
+        _checkForDeprecatedMethodsInClass(cls, DeprecatedInstanceSelectors, NO/*isClassMethod*/);
+        _checkForDeprecatedMethodsInClass(object_getClass(cls), DeprecatedClassSelectors, YES/*isClassMethod*/);
     }
     
     free(classes);
-    CFRelease(deprecatedInstanceSelectors);
-    CFRelease(deprecatedClassSelectors);
     
     OBASSERT(DeprecatedMethodImplementationCount == 0);
 }

@@ -817,6 +817,8 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     
 - (BOOL)getPasswordFromKeychain:(NSDictionary *)useParameters;
 {
+    OBFinishPorting; // Uses keychain API that was deprecated in 10.7
+#if 0
     NSMutableDictionary *search;
     NSString *realm = nil;
     NSString *scheme;
@@ -984,6 +986,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     } while (tryAgain);
     
     return foundAnything;
+#endif
 }
 
 @end

@@ -313,7 +313,7 @@ NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len)
 
 #pragma mark X.509 Certificate Utilities
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 static NSData *getSKI(CSSM_CL_HANDLE cl, const CSSM_DATA *cert)
 {
     uint32 fieldCount;
@@ -353,6 +353,7 @@ static NSData *getSKI(CSSM_CL_HANDLE cl, const CSSM_DATA *cert)
     
     return result;
 }
+#endif
 
 static void osError(NSMutableDictionary *into, OSStatus code, NSString *function)
 {
@@ -368,6 +369,33 @@ static void osError(NSMutableDictionary *into, OSStatus code, NSString *function
 
 static BOOL certificateMatchesSKI(SecCertificateRef aCert, NSData *subjectKeyIdentifier)
 {
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+    const void *desiredAttributeOIDs_[1] = { kSecOIDSubjectKeyIdentifier };
+    CFArrayRef desiredAttributeOIDs = CFArrayCreate(kCFAllocatorDefault, desiredAttributeOIDs_, 1, &kCFTypeArrayCallBacks);
+    CFDictionaryRef parsedCertificate = SecCertificateCopyValues(aCert, desiredAttributeOIDs, NULL);
+    CFRelease(desiredAttributeOIDs);
+    
+    if (parsedCertificate != NULL) {
+        BOOL result;
+        CFDictionaryRef skiValueInfo = NULL;
+        
+        if (CFDictionaryGetValueIfPresent(parsedCertificate, kSecOIDSubjectKeyIdentifier, (const void **)&skiValueInfo) &&
+            CFEqual(CFDictionaryGetValue(skiValueInfo, kSecPropertyKeyType), kSecPropertyTypeData)) {
+            result = [subjectKeyIdentifier isEqualToData:(NSData *)CFDictionaryGetValue(skiValueInfo, kSecPropertyKeyValue)];
+        } else {
+            result = NO;
+        }
+        
+        CFRelease(parsedCertificate);
+        
+        return result;
+    }
+#if OF_ENABLE_CDSA
+    OSStatus err = errKCNotAvailable;
+#endif
+#else
+    /* On 10.6 and earlier, we use SecKeychainItemCopyAttributesAndData() */
+    OSStatus err;
     static const UInt32 desiredAttributeTags[1] = { kSecSubjectKeyIdentifierItemAttr };
     static const UInt32 desiredAttributeFormats[1] = { CSSM_DB_ATTRIBUTE_FORMAT_BLOB };
     static const SecKeychainAttributeInfo desiredAtts = {
@@ -379,7 +407,7 @@ static BOOL certificateMatchesSKI(SecCertificateRef aCert, NSData *subjectKeyIde
     SecKeychainAttributeList *retrievedAtts = NULL;
     
     SecKeychainItemRef asKCItem = (SecKeychainItemRef)aCert; // Superclass, but the compiler doesn't know that for CFTypes
-    OSStatus err = SecKeychainItemCopyAttributesAndData(asKCItem, (SecKeychainAttributeInfo *)&desiredAtts, NULL, &retrievedAtts, NULL, NULL);
+    err = SecKeychainItemCopyAttributesAndData(asKCItem, (SecKeychainAttributeInfo *)&desiredAtts, NULL, &retrievedAtts, NULL, NULL);
     
     if (err == noErr) {
         BOOL result;
@@ -396,7 +424,11 @@ static BOOL certificateMatchesSKI(SecCertificateRef aCert, NSData *subjectKeyIde
         SecKeychainItemFreeAttributesAndData(retrievedAtts, NULL);
         
         return result;
-    } else if (err == errKCNotAvailable) {
+    }
+#endif
+    
+#if OF_ENABLE_CDSA
+    if (err == errKCNotAvailable) {
         // Huh. I guess we have to use CSSM directly here.
         
         CSSM_DATA buf = { 0, 0 };
@@ -416,17 +448,16 @@ static BOOL certificateMatchesSKI(SecCertificateRef aCert, NSData *subjectKeyIde
         NSData *foundSKI = getSKI(cl, &buf);
         // NSLog(@"extracted SKI %@", foundSKI);
         return [subjectKeyIdentifier isEqualToData:foundSKI];
-    } else {
-        // Not a fatal error, or even unexpected; this might just be an intermediate cert
-        return NO;
-    } 
-}
+    }
 #endif
+    
+    // Not a fatal error, or even unexpected; this might just be an intermediate cert
+    return NO;
+}
 
 /*" Given a <KeyInfo> element, this function attempts to find the X.509 certificate(s) corresponding to the key specified by the element's <X509Foo> children. All certificates supplied by the element are appended to auxiliaryCertificates, which may also contain externally supplied certificates which are used to satisfy <X509SKI> patterns. (In the future this function may also support SubjectKeyidentifier lookups, as well as Apple Keychain searches.) "*/
 NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef auxiliaryCertificates, NSMutableDictionary *errorInfo)
 {
-#if OF_ENABLE_CSSM
     unsigned int nodeCount, nodeIndex;
     xmlNode **x509Nodes = OFLibXMLChildrenNamed(keyInfoNode, "X509Data", XMLSignatureNamespace, &nodeCount);
     
@@ -471,9 +502,14 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
     // Re-use any CertificateRefs from auxiliaryCertificates --- don't create new ones.
     for(CFIndex inputCertIndex = 0; inputCertIndex < CFArrayGetCount(auxiliaryCertificates); inputCertIndex ++) {
         SecCertificateRef aCert = (SecCertificateRef)CFArrayGetValueAtIndex(auxiliaryCertificates, inputCertIndex);
+#if !defined(MAC_OS_X_VERSION_10_6) || MAC_OS_X_VERSION_10_6 > MAC_OS_X_VERSION_MIN_REQUIRED
         CSSM_DATA bufReference = { 0, 0 };
         if (SecCertificateGetData(aCert, &bufReference) == noErr) {
             NSData *knownBlob = [[NSData alloc] initWithBytesNoCopy:bufReference.Data length:bufReference.Length freeWhenDone:NO];
+#else
+        NSData *knownBlob = NSMakeCollectable(SecCertificateCopyData(aCert));
+        if (knownBlob != NULL) {
+#endif
             [certBlobs removeObject:knownBlob];
             if (fallbackBlob && [fallbackBlob isEqualToData:knownBlob])
                 [testCertificates addObject:(id)aCert];
@@ -483,17 +519,27 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
     
     // Create SecCertificateRefs from any remaining (non-duplicate) data blobs.
     OFForEachObject([certBlobs objectEnumerator], NSData *, aBlob) {
+#if !defined(MAC_OS_X_VERSION_10_6) || MAC_OS_X_VERSION_10_6 > MAC_OS_X_VERSION_MIN_REQUIRED
         CSSM_DATA blob = { .Data = (void *)[aBlob bytes], .Length = [aBlob length] };
         SecCertificateRef certReference = NULL;
         OSStatus err = SecCertificateCreateFromData(&blob, CSSM_CERT_X_509v3, CSSM_CERT_ENCODING_BER, &certReference);
         if (err != noErr) {
             osError(errorInfo, err, @"SecCertificateCreateFromData");
-        } else {
-            CFArrayAppendValue(auxiliaryCertificates, certReference);
-            if (fallbackBlob && [fallbackBlob isEqualToData:aBlob])
-                [testCertificates addObject:(id)certReference];
-            CFRelease(certReference);
+            continue;
         }
+#else
+        SecCertificateRef certReference = SecCertificateCreateWithData(kCFAllocatorDefault, (CFDataRef)aBlob);
+        if (!certReference) {
+            // RADAR 10057193: There's no way to know why SecCertificateCreateWithData() failed.
+            osError(errorInfo, paramErr, @"SecCertificateCreateWithData");
+            continue;
+        }
+#endif
+        
+        CFArrayAppendValue(auxiliaryCertificates, certReference);
+        if (fallbackBlob && [fallbackBlob isEqualToData:aBlob])
+            [testCertificates addObject:(id)certReference];
+        CFRelease(certReference);
     }
     
     // Run through all entries we've stashed in desiredKeys and try to find a corresponding certificate in auxiliaryCertificates.
@@ -515,9 +561,6 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
     [errorInfo setUnsignedIntValue:(unsigned)auxCertCount forKey:@"auxCertCount"];
     
     return testCertificates;
-#else
-    OBFinishPorting;
-#endif
 }
 
 static const struct { SecTrustResultType code; NSString *display; } results[] = {
@@ -532,6 +575,8 @@ static const struct { SecTrustResultType code; NSString *display; } results[] = 
     { 0, nil }
 };
 
+#if OF_ENABLE_CDSA
+    
 static const struct { CSSM_TP_APPLE_CERT_STATUS bit; NSString *display; } statusBits[] = {
     { CSSM_CERT_STATUS_EXPIRED, @"EXPIRED" },
     { CSSM_CERT_STATUS_NOT_VALID_YET, @"NOT_VALID_YET" },
@@ -550,7 +595,6 @@ static const struct { CSSM_TP_APPLE_CERT_STATUS bit; NSString *display; } status
 
 NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext)
 {
-#if OF_ENABLE_CSSM
     SecTrustResultType trustResult;
     CFArrayRef chain = NULL;
     CSSM_TP_APPLE_EVIDENCE_INFO *stats = NULL;
@@ -588,16 +632,47 @@ NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext)
     CFRelease(chain);
     
     return buf;
-#else
-    OBFinishPorting;
-#endif
 }
+    
+#else
+
+NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext)
+{
+    OSStatus err;
+    SecTrustResultType trustResult;
+    
+    err = SecTrustGetTrustResult(evaluationContext, &trustResult);
+    if (err != noErr) {
+        return [NSString stringWithFormat:@"[SecTrustGetTrustResult failure: %@]", OFOSStatusDescription(err)];
+    }
+    
+    NSMutableString *buf = [NSMutableString stringWithFormat:@"Trust result = %d", (int)trustResult];
+    for(int i = 0; results[i].display; i++) {
+        if(results[i].code == trustResult) {
+            [buf appendFormat:@" (%@)", results[i].display];
+        }
+    }
+ 
+    CFArrayRef certProperties = SecTrustCopyProperties(evaluationContext);
+    for(CFIndex i = 0; i < CFArrayGetCount(certProperties); i++) {
+        NSDictionary *c = (NSDictionary *)CFArrayGetValueAtIndex(certProperties, i);
+        [buf appendFormat:@"\n  "];
+        for (NSString *k in c) {
+            [buf appendFormat:@" %s=%s", k, [[c objectForKey:k] description]];
+        }
+    }
+    CFRelease(certProperties);
+    
+    return buf;
+}
+
+#endif
 
 #pragma mark Keys from excplicit key information
 
 /* These key-conversion routines are really only used for the unit tests and for a command-line test utility. Maybe they should be moved out of the framework? */
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 OFCSSMKey *OFXMLSigGetKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError)
 {
     unsigned int count;
@@ -634,7 +709,7 @@ OFCSSMKey *OFXMLSigGetKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError)
     NSMutableData *pkcs1Bytes = OFASN1CreateForTag(BER_TAG_SEQUENCE | CLASS_CONSTRUCTED, [modulusData length] + [exponentData length]);
     [pkcs1Bytes appendData:modulusData];
     [pkcs1Bytes appendData:exponentData];
-    
+
     OFCSSMKey *key = [[OFCSSMKey alloc] initWithCSP:nil];
     [key autorelease];
     
@@ -655,7 +730,9 @@ OFCSSMKey *OFXMLSigGetKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError)
     
     return key;
 }
-
+#endif
+    
+#if OF_ENABLE_CDSA
 static
 NSData *derIntegerFromNodeChild(xmlNode *parent, const char *childName, NSError **outError)
 {
@@ -670,7 +747,7 @@ NSData *derIntegerFromNodeChild(xmlNode *parent, const char *childName, NSError 
     return OFASN1IntegerFromBignum(OFLibXMLNodeBase64Content(integerNode));
 }
 #endif
-
+    
 #define dssOidByteCount 9
 static const unsigned char dssOidBytes[dssOidByteCount] = {
 /* tag = OBJECT IDENTIFIER */
@@ -681,7 +758,7 @@ static const unsigned char dssOidBytes[dssOidByteCount] = {
     0x2a, 0x86, 0x48, 0xce, 0x38, 0x04, 0x01
 };
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
 {
     unsigned int count;
@@ -733,6 +810,7 @@ OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
     [algorithmId appendData:pData];
     [algorithmId appendData:qData];
     [algorithmId appendData:gData];
+    [paramSeq release];
     
     /* The wrapped Y-value, subjectPublicKey BIT STRING */
     NSMutableData *pubKey = OFASN1CreateForTag(BER_TAG_BIT_STRING, 1 + [yData length]);
@@ -743,6 +821,8 @@ OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
     NSMutableData *fullKey = OFASN1CreateForTag(BER_TAG_SEQUENCE | CLASS_CONSTRUCTED, [algorithmId length] + [pubKey length]);
     [fullKey appendData:algorithmId];
     [fullKey appendData:pubKey];
+    [algorithmId release];
+    [pubKey release];
     
     OFCSSMKey *key = [[OFCSSMKey alloc] initWithCSP:nil];
     [key autorelease];
@@ -760,11 +840,67 @@ OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
     
     [key setKeyHeader:&keyHeader data:fullKey];
     
-    [paramSeq release];
-    [algorithmId release];
-    [pubKey release];
     [fullKey release];
     
     return key;
 }
 #endif
+    
+NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputFormat_, NSError **outError)
+{
+    NSData *pemFile = [[NSData alloc] initWithContentsOfFile:path options:0 error:outError];
+    if (!pemFile)
+        return nil;
+    
+    SecExternalFormat inputFormat;
+    SecExternalItemType itemType;
+    
+    /* Oh Apple, why do you hate us so? */
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+    SecItemImportExportKeyParameters keyParams = (SecItemImportExportKeyParameters){
+#else
+    SecKeyImportExportParameters keyParams = (SecKeyImportExportParameters){
+#endif
+        .version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION,  /* Yes, both versions have the same version number */
+        .flags = 0,
+        .passphrase = NULL,
+        .alertTitle = NULL,  /* undocumentedly does nothing: see RADAR #7530393 */
+        .alertPrompt = NULL,
+        .accessRef = NULL,
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+        .keyUsage = (CFArrayRef)[NSArray arrayWithObject:(id)kSecAttrCanVerify],
+        /* The docs say to use CSSM_KEYATTR_EXTRACTABLE here, but that's clearly wrong--- apparently nobody updated the docs after updating the API to purge all references to CSSM. kSecKeyExtractable exists, but it's the wrong type and is deprecated. Anyway, certificates are generally extractable, so I guess we can rely on the default behavior being what we want here, but it would be nice if Lion's crypto were a little less half-baked.
+         Update: According to the libsecurity sources, the only thing accepted in keyAttributes is kSecAttrIsPermanent. SecItemImport() just converts the strings to CSSM_FOO flags and calls SecKeychainItemImport().
+         */
+        .keyAttributes = NULL
+#else
+        .keyUsage = CSSM_KEYUSE_VERIFY,
+        .keyAttributes = CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_RETURN_DATA
+#endif
+    };
+    CFArrayRef outItems;
+    
+    inputFormat = inputFormat_;
+    itemType = kSecItemTypeCertificate;
+    
+    OSStatus err = 
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+                   SecItemImport(
+#else
+                   SecKeychainItemImport(
+#endif    
+                                         (CFDataRef)pemFile, (CFStringRef)path,
+                                         &inputFormat, &itemType, 0, &keyParams, NULL, &outItems);
+    
+    [pemFile release];
+    
+    if (err != noErr) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, @"SecKeychainItemImport", @"function", nil]];
+        return nil;
+    }
+    
+    if (!outItems)
+        return [NSArray array];
+    return [NSMakeCollectable(outItems) autorelease];
+}

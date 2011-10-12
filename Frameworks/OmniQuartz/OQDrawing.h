@@ -36,6 +36,7 @@ static inline void OQFlipVerticallyInRect(CGContextRef ctx, CGRect rect)
 }
 
 extern CGRect OQCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter);
+extern CGRect OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter);
 
 #if TARGET_OS_IPHONE
 extern void OQDrawImageCenteredInRect(CGContextRef ctx, UIImage *image, CGRect rect);

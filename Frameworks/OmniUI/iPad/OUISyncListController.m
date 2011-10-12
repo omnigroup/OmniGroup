@@ -9,7 +9,6 @@
 
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManager.h>
-#import <OmniFoundation/OFFileWrapper.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
@@ -38,29 +37,24 @@ RCS_ID("$Id$");
 
 @implementation OUISyncListController
 
-@synthesize syncType = _syncType;
-@synthesize address = _address;
 @synthesize connectingView = _connectingView;
 @synthesize connectingProgress = _connectingProgress;
 @synthesize connectingLabel = _connectingLabel;
-@synthesize files = _files;
+
+@synthesize syncType = _syncType;
+@synthesize address = _address;
 @synthesize isExporting = _isExporting;
 @synthesize exportFileWrapper = _exportFileWrapper;
 
 @synthesize downloader = _downloader;
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
-{
-    return [super initWithNibName:@"OUISyncListController" bundle:OMNI_BUNDLE];
-}
-
 - (void)dealloc;
 {
-    [_address release];
-    [_files release];
     [_connectingView release];
     [_connectingProgress release];
     [_connectingLabel release];
+    
+    [_address release];
     
     [_exportFileWrapper release];
     
@@ -75,12 +69,47 @@ RCS_ID("$Id$");
 {
     [super viewDidLoad];
     
+    // Build Connecting View
+    _connectingView = [[UIView alloc] initWithFrame:(CGRect){ 
+        .origin.x = 0, 
+        .origin.y = 0,
+        .size.width = 160,
+        .size.height = 32
+    }];
+    
+    _connectingProgress = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    _connectingProgress.frame = (CGRect){
+        .origin.x = 2,
+        .origin.y = 6,
+        .size.width = _connectingProgress.frame.size.width,
+        .size.height = _connectingProgress.frame.size.height
+    };
+    [_connectingView addSubview:_connectingProgress];
+    
+    _connectingLabel = [[UILabel alloc] initWithFrame:(CGRect){
+        .origin.x = 28,
+        .origin.y = 0,
+        .size.width = 132,
+        .size.height = 32
+    }];
+    _connectingLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.0];
+    _connectingLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:20.0];
+    _connectingLabel.textColor = [UIColor colorWithWhite:0.47 alpha:1.0];
+    [_connectingView addSubview:_connectingLabel];
+    
     [self _updateNavigationButtons];
 }
 
 - (void)viewDidUnload;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    [_connectingView release];
+    _connectingView = nil;
+    [_connectingProgress release];
+    _connectingProgress = nil;
+    [_connectingLabel release];
+    _connectingLabel = nil;
     
     [_exportFileWrapper release];
     _exportFileWrapper = nil;
@@ -90,13 +119,6 @@ RCS_ID("$Id$");
     
     [_exportIndexPath release];
     _exportIndexPath = nil;
-    
-    [_connectingView release];
-    _connectingView = nil;
-    [_connectingProgress release];
-    _connectingProgress = nil;
-    [_connectingLabel release];
-    _connectingLabel = nil;
 }
 
 - (void)viewDidAppear:(BOOL)animated;
@@ -106,20 +128,15 @@ RCS_ID("$Id$");
     self.navigationItem.titleView = _connectingView;
     [_connectingProgress startAnimating];
     
+    _connectingLabel.text = NSLocalizedStringFromTableInBundle(@"Connecting", @"OmniUI", OMNI_BUNDLE, @"webdav connecting label");
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_loadFiles) name:OUICertificateTrustUpdated object:nil];
     [self performSelector:@selector(_loadFiles) withObject:nil afterDelay:0];
-    
-    _connectingLabel.text = NSLocalizedStringFromTableInBundle(@"Connecting", @"OmniUI", OMNI_BUNDLE, @"webdav connecting label");
 }
 
 - (void)viewDidDisappear:(BOOL)animated;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:OUICertificateTrustUpdated object:nil];
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
-{
-    return YES;
 }
 
 #pragma mark -
@@ -176,14 +193,6 @@ RCS_ID("$Id$");
     [[OUIWebDAVConnection sharedConnection] close];
 }
 
-- (void)setFiles:(NSArray *)newFiles;
-{
-    [_files release];
-    _files = [newFiles retain];
-    
-    [(UITableView *)self.view reloadData];
-}
-
 - (void)downloadFinished:(NSNotification *)notification;
 {
     OUISyncDownloader *downloader = [notification object];
@@ -191,19 +200,19 @@ RCS_ID("$Id$");
     [[NSNotificationCenter defaultCenter] removeObserver:self name:OUISyncDownloadFinishedNotification object:downloader];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:OUISyncDownloadCanceledNotification object:downloader];
     
+    NSURL *downloadURL = [[notification userInfo] objectForKey:OUISyncDownloadURL];
+
+    [self _fadeOutDownload:downloader];
     
     if (_isExporting) {
         _isExporting = NO;
-        [self.navigationController performSelector:@selector(dismissModalViewControllerAnimated:) withObject:[NSNumber numberWithBool:YES] afterDelay:0.5];        
+        [[[OUIAppController controller] documentPicker] exportedDocumentToURL:downloadURL];
     } else if (_isDownloading) {
-        [self _fadeOutDownload:downloader];
-        [self.navigationController dismissModalViewControllerAnimated:YES];
-        
-        NSURL *downloadURL = [[notification userInfo] objectForKey:OUISyncDownloadURL];
-        [[[OUIAppController controller] documentPicker] addDocumentFromURL:downloadURL];
-        
         _isDownloading = NO;
+        [[[OUIAppController controller] documentPicker] addDocumentFromURL:downloadURL];
     }
+
+    [self.navigationController performSelector:@selector(dismissModalViewControllerAnimated:) withObject:[NSNumber numberWithBool:YES] afterDelay:0.5];
 }
 
 - (void)downloadCanceled:(NSNotification *)notification;
@@ -262,111 +271,12 @@ RCS_ID("$Id$");
     }
 }
 
-#pragma mark -
-#pragma mark Table view data source
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
-{
-    return [_files count];
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    
-    static NSString *CellIdentifier = @"Cell";
-    
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier] autorelease];
-    }
-    
-    OFSFileInfo *fileInfo = [_files objectAtIndex:indexPath.row];
-    cell.textLabel.text = [[fileInfo name] stringByDeletingPathExtension];
-    cell.accessoryType = (![self _canOpenFile:fileInfo] && [fileInfo isDirectory]) ? UITableViewCellAccessoryDisclosureIndicator : UITableViewCellAccessoryNone;
-    
-    BOOL canOpenFile = ([fileInfo isDirectory] || [self _canOpenFile:fileInfo] || _isExporting) && [fileInfo exists];
-    cell.textLabel.textColor = canOpenFile ? [UIColor blackColor] : [UIColor grayColor];
-    
-    if (![fileInfo isDirectory] || [self _canOpenFile:fileInfo]) {
-        NSDate *lastModifiedDate = [fileInfo lastModifiedDate];
-        if (lastModifiedDate) {
-            NSLog(@"%@", fileInfo.name);
-            NSLog(@"%@", fileInfo.lastModifiedDate);
-            
-            
-            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-            [formatter setDateStyle:NSDateFormatterMediumStyle];
-            [formatter setLocale:[NSLocale currentLocale]];
-            cell.detailTextLabel.text = [formatter stringFromDate:lastModifiedDate];
-            [formatter release];
-        }
-    }
-    else {
-        cell.detailTextLabel.text = nil;
-    }
-    
-    UIImage *icon = nil;
-    if ([self _canOpenFile:fileInfo]) {
-        OUIDocumentPicker *picker = [[OUIAppController controller] documentPicker];
-        icon = [picker iconForUTI:[fileInfo UTI]];
-    } else if ([fileInfo isDirectory]) {
-        icon = [UIImage imageNamed:@"OUIFolder.png"];
-    } else {
-        icon = [UIImage imageNamed:@"OUIDocument.png"];
-    }
-    
-    cell.imageView.image = icon;
-    
-    return cell;
-}
-
-
-#pragma mark -
-#pragma mark Table view delegate
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
-{
-    // TODO: This should be handled in the subclass.
-}
-
-- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
-{
-    if (_isDownloading)
-        return nil;
-    
-    OFSFileInfo *fileInfo = [_files objectAtIndex:indexPath.row];
-    if (![self _canOpenFile:fileInfo] && [fileInfo isDirectory])
-        return indexPath;
-    
-    if (_isExporting)
-        return nil;
-    
-    return [self _canOpenFile:fileInfo] ? indexPath : nil;
-}
-
-- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath;
-{
-    if (!_isExporting || indexPath.row != _exportIndexPath.row || _exportURL == nil)
-        return;
-    
-    [self addDownloaderWithURL:_exportURL toCell:cell];
-    
-    [_exportURL release];
-    _exportURL = nil;
-    
-    [_exportIndexPath release];
-    _exportIndexPath = nil;
-}
-
 #pragma mark private
 - (void)_displayDuplicateFileAlertForFile:(NSURL *)fileURL;
 {
     OBASSERT(_replaceDocumentAlert == nil); // this should never happen
     _replaceDocumentAlert = [[OUIReplaceDocumentAlert alloc] initWithDelegate:self documentURL:fileURL];
     [_replaceDocumentAlert show];
-}
-- (BOOL)_canOpenFile:(OFSFileInfo *)fileInfo;
-{
-    return [[OUIAppController controller] canViewFileTypeWithIdentifier:[fileInfo UTI]];
 }
 
 - (void)_cancelDownloadEffectDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
@@ -526,4 +436,46 @@ RCS_ID("$Id$");
     [self.navigationController popViewControllerAnimated:YES];
 }
 
+#pragma mark -
+#pragma mark UITableViewDataSource
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [super tableView:tableView cellForRowAtIndexPath:indexPath];
+    
+    if (_isExporting) {
+        cell.textLabel.textColor = [UIColor blackColor];
+    }
+    
+    return cell;
+}
+
+#pragma mark -
+#pragma mark UITableViewDelegate
+- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    if (_isDownloading)
+        return nil;
+    
+    OFSFileInfo *fileInfo = [self.files objectAtIndex:indexPath.row];
+    if (![self _canOpenFile:fileInfo] && [fileInfo isDirectory])
+        return indexPath;
+    
+    if (_isExporting)
+        return nil;
+    
+    return [self _canOpenFile:fileInfo] ? indexPath : nil;
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    if (!_isExporting || indexPath.row != _exportIndexPath.row || _exportURL == nil)
+        return;
+    
+    [self addDownloaderWithURL:_exportURL toCell:cell];
+    
+    [_exportURL release];
+    _exportURL = nil;
+    
+    [_exportIndexPath release];
+    _exportIndexPath = nil;
+}
 @end

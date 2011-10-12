@@ -54,7 +54,7 @@ NSString * const OUISyncDownloadCanceledNotification = @"OUISyncDownloadCanceled
     // Should be overridden in subclass.
 }
 
-- (void)uploadFileWrapper:(OFFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
+- (void)uploadFileWrapper:(NSFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
 {
     // Should be overridden in subclass.
 }
@@ -132,7 +132,7 @@ NSString * const OUISyncDownloadCanceledNotification = @"OUISyncDownloadCanceled
 
 - (void)uploadData:(NSData *)data toURL:(NSURL *)targetURL;
 {
-    [self uploadFileWrapper:[OFFileWrapper fileWrapperWithFilename:nil contents:data] toURL:targetURL];
+    [self uploadFileWrapper:[NSFileWrapper fileWrapperWithFilename:nil contents:data] toURL:targetURL];
 }
 
 @end

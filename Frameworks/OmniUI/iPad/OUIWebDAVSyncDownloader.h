@@ -12,6 +12,7 @@
 
 @protocol OFSAsynchronousOperation;
 
+@class NSFileWrapper;
 @class OFSFIleInfo;
 
 @interface OUIWebDAVSyncDownloader : OUISyncDownloader <OFSFileManagerAsynchronousOperationTarget>
@@ -33,6 +34,6 @@
 
 - (void)download:(OFSFileInfo *)aFile;
 - (IBAction)cancelDownload:(id)sender;
-- (void)uploadFileWrapper:(OFFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
+- (void)uploadFileWrapper:(NSFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
 
 @end

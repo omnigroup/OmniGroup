@@ -85,10 +85,11 @@ RCS_ID("$Id$");
 @property(nonatomic,readonly) CTTextAlignment effectiveTextAlignment;
 @property(readonly) OUIEditableFrame *editor; // returns nil unless editable is YES
 - (NSAttributedString *)_defaultStyleFormattedText;
+- (CGFloat)_calculateTextBaselineForLayout:(OUITextLayout *)layout inRect:(CGRect)textRect;
 - (OUITextLayout *)_labelTextLayout;
 - (OUITextLayout *)_valueTextLayoutForWidth:(CGFloat)valueWidth;
 - (void)_drawAttributedString:(NSAttributedString *)attributedString inRect:(CGRect)textRect;
-- (void)_drawTextLayout:(OUITextLayout *)textLayout inRect:(CGRect)textRect;
+- (void)_drawTextLayout:(OUITextLayout *)layout xPosition:(CGFloat)xPosition baseline:(CGFloat)baseline;
 - (void)_tappedTextWell:(id)sender;
 - (void)_updateEditorFrame;
 @end
@@ -105,6 +106,9 @@ static id _commonInit(OUIInspectorTextWell *self)
     // Same defaults as for UITextInputTraits
     self.autocapitalizationType = UITextAutocapitalizationTypeSentences;
     self.autocorrectionType = UITextAutocorrectionTypeDefault;
+#if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
+    self.spellCheckingType = UITextSpellCheckingTypeDefault;
+#endif
     self.keyboardType = UIKeyboardTypeDefault;
     
     self->_style = OUIInspectorTextWellStyleDefault;
@@ -309,6 +313,9 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
 
 @synthesize autocapitalizationType = _autocapitalizationType;
 @synthesize autocorrectionType = _autocorrectionType;
+#if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
+@synthesize spellCheckingType = _spellCheckingType;
+#endif
 @synthesize keyboardType = _keyboardType;
 
 - (CTTextAlignment)effectiveTextAlignment
@@ -496,12 +503,14 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     switch (_style) {
         case OUIInspectorTextWellStyleSeparateLabelAndText: {
             OUIInspectorTextWellLayout layout = _layout(self);
+            
+            CGFloat baseline = [self _calculateTextBaselineForLayout:[self _labelTextLayout] inRect:layout.labelRect];
                         
-            [self _drawTextLayout:[self _labelTextLayout] inRect:layout.labelRect];
+            [self _drawTextLayout:[self _labelTextLayout] xPosition:layout.labelRect.origin.x baseline:baseline];
             
             if (!self.editing || _shouldDisplayPlaceholderText)
-                [self _drawTextLayout:[self _valueTextLayoutForWidth:layout.valueRect.size.width] inRect:layout.valueRect];
-            
+                [self _drawTextLayout:[self _valueTextLayoutForWidth:layout.valueRect.size.width] xPosition:layout.valueRect.origin.x baseline:baseline];
+
             break;
         }
         case OUIInspectorTextWellStyleDefault:
@@ -733,24 +742,34 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     return _valueTextLayout;
 }
 
+- (CGFloat)_calculateTextBaselineForLayout:(OUITextLayout *)layout inRect:(CGRect)textRect;
+{
+    CGSize usedSize = layout.usedSize;
+    
+    // We center the text vertically, but let the attributedString's paragraph style control horizontal alignment.
+    textRect.origin.y += 0.5 * (CGRectGetHeight(textRect) - usedSize.height);
+    textRect.origin.y = floor(textRect.origin.y);
+    
+    return CGRectGetMinY(textRect) + [layout firstLineAscent];
+}
+
 - (void)_drawAttributedString:(NSAttributedString *)attributedString inRect:(CGRect)textRect;
 {
     OUITextLayout *layout = [[OUITextLayout alloc] initWithAttributedString:attributedString constraints:CGSizeMake(CGRectGetWidth(textRect), OUITextLayoutUnlimitedSize)];
-    [self _drawTextLayout:layout inRect:textRect];
+    [self _drawTextLayout:layout xPosition:textRect.origin.x baseline:[self _calculateTextBaselineForLayout:layout inRect:textRect]];
     [layout release];
 }
 
-- (void)_drawTextLayout:(OUITextLayout *)layout inRect:(CGRect)textRect;
+- (void)_drawTextLayout:(OUITextLayout *)layout xPosition:(CGFloat)xPosition baseline:(CGFloat)baseline;
 {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGRect textRect;
 
-    CGSize usedSize = layout.usedSize;
-        
-    // We center the text vertically, but let the attributedString's parapgraph style control horizontal alignment.
-    if (usedSize.height < CGRectGetHeight(textRect)) {
-        textRect.origin.y += 0.5 * (CGRectGetHeight(textRect) - usedSize.height);
-        textRect.origin.y = floor(textRect.origin.y);
-    }
+    // figure out where the baseline was when we did this for the label text & align w/ the baseline for the value text.
+    textRect.origin.y = baseline - [layout firstLineAscent];
+    textRect.origin.x = xPosition;
+    textRect.size.width = 0;
+    textRect.size.height = 0;
     
     [layout drawFlippedInContext:ctx bounds:textRect];
 }
@@ -788,6 +807,9 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     _shouldDisplayPlaceholderText = (textType == TextTypePlaceholder);
     editor.autocapitalizationType = self.autocapitalizationType;
     editor.autocorrectionType = self.autocorrectionType;
+#if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
+    editor.spellCheckingType = self.spellCheckingType;
+#endif
     editor.keyboardType = self.keyboardType;
     editor.opaque = NO;
     editor.backgroundColor = nil;

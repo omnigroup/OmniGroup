@@ -73,10 +73,10 @@ static const CGFloat kIndicatorSize = 20;
     {
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
 
-        CGFloat shadowComponents[] = {kOUIInspectorWellInnerShadowGrayAlpha.v, kOUIInspectorWellInnerShadowGrayAlpha.a};
+        CGFloat shadowComponents[] = {kOUIInspectorWellInnerShadowWhiteAlpha.w, kOUIInspectorWellInnerShadowWhiteAlpha.a};
         CGColorRef shadowColor = CGColorCreate(colorSpace, shadowComponents);
         
-        CGFloat strokeComponents[] = {kOUIInspectorWellInnerShadowGrayAlpha.v, kOUIInspectorWellInnerShadowGrayAlpha.a};
+        CGFloat strokeComponents[] = {kOUIInspectorWellInnerShadowWhiteAlpha.w, kOUIInspectorWellInnerShadowWhiteAlpha.a};
         CGColorRef strokeColor = CGColorCreate(colorSpace, strokeComponents);
         
         CGColorSpaceRelease(colorSpace);

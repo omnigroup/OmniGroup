@@ -91,7 +91,7 @@ enum OFXMLSignatureOperation {
 - (id <OFDigestionContext, NSObject>)newDigestContextForMethod:(xmlNode *)digestMethodNode error:(NSError **)outError;
 - (NSData *)signatureForStoredValue:(NSData *)raw algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError;
 - (NSData *)storedValueForSignature:(NSData *)signatureValue algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError;
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 - (OFCDSAModule *)cspForKey:(OFCSSMKey *)aKey;
 
 - (OFCSSMKey *)getPublicKey:(xmlNode *)keyInfo algorithm:(CSSM_ALGORITHMS)algid error:(NSError **)outError;
@@ -119,10 +119,12 @@ NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len); // Textual 
 /* Routines for extracting key information from an XML signature */
 NSDictionary *OFXMLSigParseX509DataNode(xmlNode *x509Data);
 NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef auxiliaryCertificates, NSMutableDictionary *errorInfo);
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 OFCSSMKey *OFXMLSigGetKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError);
 OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError);
 #endif
+
+NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputFormat_, NSError **outError);
 
 /* More more */
 

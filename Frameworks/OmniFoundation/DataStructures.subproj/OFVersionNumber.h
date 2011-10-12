@@ -25,6 +25,7 @@
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 + (BOOL)isOperatingSystemiOS32OrLater; // iOS 3.2
 + (BOOL)isOperatingSystemiOS40OrLater; // iOS 4.0
++ (BOOL)isOperatingSystemiOS50OrLater; // iOS 5.0
 #else
 + (BOOL)isOperatingSystemLeopardOrLater; // 10.5
 + (BOOL)isOperatingSystemSnowLeopardOrLater; // 10.6

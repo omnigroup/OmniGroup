@@ -9,6 +9,7 @@
 
 #import <OmniUnzip/OUZipArchive.h>
 #import <OmniUnzip/OUErrors.h>
+#import <OmniFoundation/OFFileWrapper.h>
 
 RCS_ID("$Id$");
 
@@ -52,9 +53,9 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark OUZipMember subclass
 
-- (OFFileWrapper *)fileWrapperRepresentation;
+- (NSFileWrapper *)fileWrapperRepresentation;
 {
-    OFFileWrapper *wrapper = [[[OFFileWrapper alloc] initRegularFileWithContents:[self contents]] autorelease];
+    NSFileWrapper *wrapper = [[[NSFileWrapper alloc] initRegularFileWithContents:[self contents]] autorelease];
     [wrapper setFilename:[self name]];
     [wrapper setPreferredFilename:[self name]];
     return wrapper;

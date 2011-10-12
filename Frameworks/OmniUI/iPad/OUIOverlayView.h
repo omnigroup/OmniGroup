@@ -55,6 +55,7 @@ typedef enum {
 - (void)useSuggestedSize;
 
 - (void)resetDefaults;
+- (void)applyDefaultTextAttributes;
 
 @property(assign,nonatomic) NSString *text;     // not retained - sets up NSAttributedString with default font and color
 @property(retain,nonatomic) NSAttributedString *attributedText;

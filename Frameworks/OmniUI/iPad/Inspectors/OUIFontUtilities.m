@@ -155,7 +155,7 @@ OUIFontSelection OUICollectFontSelection(OUIInspectorSlice *self, id <NSFastEnum
         OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self];
         OBASSERT(fontDescriptor);
         
-        if (fontDescriptor && [fontDescriptorSet member:fontDescriptor] == nil) {
+        if ([fontDescriptorSet member:fontDescriptor] == nil) {
             [fontDescriptorSet addObject:fontDescriptor];
             [collectedFontDescriptors addObject:fontDescriptor];
         }

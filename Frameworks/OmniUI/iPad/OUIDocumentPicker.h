@@ -7,138 +7,77 @@
 //
 // $Id$
 
-#import <UIKit/UIViewController.h>
+#import <OmniUI/OUIViewController.h>
 
 #import <OmniUI/OUIDocumentPickerScrollView.h>
 #import <OmniUI/OUIReplaceDocumentAlert.h>
 
-@class OFFileWrapper, OFSetBinding;
-@class OUIDocumentProxy, OUIDocumentProxyView, OUIDocumentPickerScrollView;
+@class NSFileWrapper;
+@class OFSetBinding;
+@class OUIDocumentStore, OUIDocumentStoreItem, OUIDocumentStoreFileItem, OUIDocumentPickerScrollView, OUIDocumentRenameViewController;
+
 @protocol OUIDocumentPickerDelegate;
 
-@interface OUIDocumentPicker : UIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate, UITextFieldDelegate, OUIReplaceDocumentAlertDelegate>
-{
-@private
-    id <OUIDocumentPickerDelegate> _nonretained_delegate;
-    
-    OUIDocumentPickerScrollView *_previewScrollView;
-    OUIDocumentProxy *_nonretainedDisplayedProxy;
-    UIButton *_titleLabel;
-    UILabel *_dateLabel;
-    UIView *_buttonGroupView;
-    UIButton *_favoriteButton;
-    UIButton *_exportButton;
-    UIButton *_addDocumentButton;
-    UIButton *_deleteButton;
-    UITextField *_titleEditingField;
-    
-    NSString *_directory;
-    NSSet *_proxies;
-    OFSetBinding *_proxiesBinding;
-    id _proxyTappedTarget;
-    SEL _proxyTappedAction;
-    NSMutableArray *_actionSheetInvocations;
-    
-    OUIDocumentProxy *_selectedProxy;
-    BOOL _trackPickerView;
-    NSURL *_editingProxyURL;
-    
-    UIActionSheet *_nonretainedActionSheet;
-    UIPopoverController *_filterPopoverController;
-    BOOL _editingTitle;
-    BOOL _keyboardIsShowing;
-    BOOL _isRevealingNewDocument;
-    BOOL _isInnerController;
-    
-    OUIReplaceDocumentAlert *_replaceDocumentAlert;
-    
-    id _applicationDidBecomeActiveObserver;
-    
-    BOOL _loadingFromNib;
-    
-    // Used to map between an exportType (UTI string) and BOOL indicating if an app exists that we can send it to via Document Interaction.
-    NSMutableDictionary *_openInMapCache;
-}
+@interface OUIDocumentPicker : OUIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate, OUIReplaceDocumentAlertDelegate>
 
-+ (NSString *)userDocumentsDirectory;
-+ (NSString *)sampleDocumentsDirectory;
-+ (void)copySampleDocumentsToUserDocuments;
-+ (NSString *)localizedNameForSampleDocumentNamed:(NSString *)documentName;
-
-+ (NSString *)pathToSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
-+ (NSString *)availablePathInDirectory:(NSString *)dir baseName:(NSString *)baseName extension:(NSString *)extension counter:(NSUInteger *)ioCounter;
-
-- (OUIDocumentProxy *)proxyByInstantiatingSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
-
+@property(nonatomic,retain) OUIDocumentStore *documentStore;
 @property(assign, nonatomic) IBOutlet id <OUIDocumentPickerDelegate> delegate;
 
-@property(retain) IBOutlet OUIDocumentPickerScrollView *previewScrollView;
-@property(retain) IBOutlet UIButton *titleLabel;
-@property(retain) IBOutlet UILabel *dateLabel;
-@property(retain) IBOutlet UIView *buttonGroupView;
-@property(retain) IBOutlet UIButton *favoriteButton;
-@property(retain) IBOutlet UIButton *exportButton;
-@property(retain) IBOutlet UIButton *addDocumentButton;
-@property(retain) IBOutlet UIButton *deleteButton;
+@property(retain) IBOutlet UIToolbar *toolbar;
+@property(retain) IBOutlet OUIDocumentPickerScrollView *mainScrollView;
+@property(retain) IBOutlet OUIDocumentPickerScrollView *groupScrollView;
 
-@property(readonly) UITextField *titleEditingField;
-@property(copy, nonatomic) NSString *directory;
-@property(retain) id proxyTappedTarget;
-@property(assign) SEL proxyTappedAction;
+@property(nonatomic,readonly) OUIDocumentPickerScrollView *activeScrollView;
 
-@property(assign) BOOL editingTitle;
+@property(retain) id fileItemTappedTarget;
+@property(assign) SEL fileItemTappedAction;
+
+@property(nonatomic, assign) CGSize filterViewContentSize;
+
+- (CGSize)gridSizeForOrientation:(UIInterfaceOrientation)orientation;
 
 - (void)rescanDocuments;
 - (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL;
 - (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL animated:(BOOL)animated;
-- (BOOL)hasDocuments;
 
-- (void)revealAndActivateNewDocumentAtURL:(NSURL *)newDocumentURL;
+@property(readonly,nonatomic) NSSet *selectedFileItems;
+- (void)clearSelection;
+@property(readonly,nonatomic) OUIDocumentStoreFileItem *singleSelectedFileItem;
+- (BOOL)canEditFileItem:(OUIDocumentStoreFileItem *)fileItem;
 
-@property(retain, nonatomic) OUIDocumentProxy *selectedProxy;
-- (void)setSelectedProxy:(OUIDocumentProxy *)proxy scrolling:(BOOL)shouldScroll animated:(BOOL)animated;
-@property(readonly,nonatomic) OUIDocumentProxyView *viewForSelectedProxy;
-- (OUIDocumentProxy *)proxyWithURL:(NSURL *)url;
-- (OUIDocumentProxy *)proxyNamed:(NSString *)documentName;
-- (BOOL)canEditProxy:(OUIDocumentProxy *)proxy;
-- (BOOL)deleteDocumentWithoutPrompt:(OUIDocumentProxy *)proxy error:(NSError **)outError;
-- (NSURL *)renameProxy:(OUIDocumentProxy *)proxy toName:(NSString *)name type:(NSString *)documentUTI;
-
-@property(readonly,nonatomic) NSString *documentTypeForNewFiles;
-
-- (NSURL *)urlForNewDocumentOfType:(NSString *)documentUTI;
-- (NSURL *)urlForNewDocumentWithName:(NSString *)name ofType:(NSString *)documentUTI;
 - (void)addDocumentFromURL:(NSURL *)url;
+- (void)exportedDocumentToURL:(NSURL *)url;
+    // For exports to iTunes, it's possible that we'll want to show the result of the export in our document picker, e.g., Outliner can export to OPML or plain text, but can also work with those document types. This method is called after a successful export to give the picker a chance to update if necessary.
 
-- (NSString *)editNameForDocumentURL:(NSURL *)url;
-- (NSString *)displayNameForDocumentURL:(NSURL *)url;
+- (BOOL)isExportThreadSafe;  // Graffle has a subclass that returns NO, default is YES
 
-- (NSArray *)availableExportTypesForProxy:(OUIDocumentProxy *)proxy;
-- (NSArray *)availableImageExportTypesForProxy:(OUIDocumentProxy *)proxy;
-- (NSArray *)availableDocumentInteractionExportTypesForProxy:(OUIDocumentProxy *)proxy;
-- (OFFileWrapper *)exportFileWrapperOfType:(NSString *)exportType forProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
+- (NSArray *)availableExportTypesForFileItem:(OUIDocumentStoreFileItem *)fileItem;
+- (NSArray *)availableImageExportTypesForFileItem:(OUIDocumentStoreFileItem *)fileItem;
+- (NSArray *)availableDocumentInteractionExportTypesForFileItem:(OUIDocumentStoreFileItem *)fileItem;
+- (void)exportFileWrapperOfType:(NSString *)exportType forFileItem:(OUIDocumentStoreFileItem *)fileItem withCompletionHandler:(void (^)(NSFileWrapper *fileWrapper, NSError *error))completionHandler;
 
 - (UIImage *)iconForUTI:(NSString *)fileUTI;
 - (UIImage *)exportIconForUTI:(NSString *)fileUTI;
 - (NSString *)exportLabelForUTI:(NSString *)fileUTI;
 
-- (void)scrollToProxy:(OUIDocumentProxy *)proxy animated:(BOOL)animated;
-- (void)showButtonsAfterEditing;
+- (void)scrollToTopAnimated:(BOOL)animated;
+- (void)scrollItemToVisible:(OUIDocumentStoreItem *)item animated:(BOOL)animated;
 
 - (BOOL)okayToOpenMenu;
 
-- (IBAction)favorite:(id)sender;
-- (IBAction)newDocumentMenu:(id)sender;
 - (IBAction)newDocument:(id)sender;
 - (IBAction)duplicateDocument:(id)sender;
 - (IBAction)deleteDocument:(id)sender;
 - (IBAction)export:(id)sender;
 - (IBAction)emailDocument:(id)sender;
 - (void)emailExportType:(NSString *)exportType;
-- (OFFileWrapper *)fileWrapperForExportType:(NSString *)exportType;
-- (void)sendEmailWithFileWrapper:(OFFileWrapper *)fileWrapper forExportType:(NSString *)exportType;
-- (IBAction)editTitle:(id)sender;
-- (IBAction)documentSliderAction:(OUIDocumentSlider *)slider;
+- (void)sendEmailWithFileWrapper:(NSFileWrapper *)fileWrapper forExportType:(NSString *)exportType;
 - (IBAction)filterAction:(UIView *)sender;
+
++ (OFPreference *)sortPreference;
+- (void)updateSort;
+
+- (NSString *)mainToolbarTitle;
+- (void)updateTitle;
 
 @end

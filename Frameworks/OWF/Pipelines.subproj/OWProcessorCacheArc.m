@@ -684,7 +684,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
             [info setObject:object forKey:OWCacheArcObjectNotificationInfoKey];
         [info setObject:self forKey:@"arc"];
 
-        NSArray *observerSnapshot = [[NSArray alloc] initWithArray:observers];
+        NSArray *observerSnapshot = [[NSArray alloc] initWithArray:(NSArray *)observers];
 
         [lock unlock];
 
@@ -1289,7 +1289,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
         [lock unlock];
         return;
     } else {
-        NSArray *observerSnapshot = [[NSArray alloc] initWithArray:observers];
+        NSArray *observerSnapshot = [[NSArray alloc] initWithArray:(NSArray *)observers];
         [lock unlock];
         if (statusInfo == nil)
             statusInfo = [NSMutableDictionary dictionary];

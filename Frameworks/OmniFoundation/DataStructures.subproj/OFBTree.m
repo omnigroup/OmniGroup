@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -805,7 +805,6 @@ void OFBTreeEnumerate(const OFBTree *tree, OFBTreeEnumeratorCallback callback, v
     _OFBTreeEnumerateNode(tree, tree->root, callback, arg, tree->height);
 }
 
-#ifdef NS_BLOCKS_AVAILABLE
 static void _invokeBlock(const struct _OFBTree *tree, void *element, void *arg)
 {
     ((OFBTreeEnumeratorBlock)arg)(tree, element);
@@ -814,7 +813,6 @@ void OFBTreeEnumerateBlock(const OFBTree *tree, OFBTreeEnumeratorBlock callback)
 {
     _OFBTreeEnumerateNode(tree, tree->root, _invokeBlock, callback, tree->height);
 }
-#endif
 
 static void *_OFBTreeCursorLesserValue(const OFBTree *btree, OFBTreeCursor *cursor);
 static void *_OFBTreeCursorGreaterValue(const OFBTree *btree, OFBTreeCursor *cursor);

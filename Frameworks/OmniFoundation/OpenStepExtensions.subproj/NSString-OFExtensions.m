@@ -169,6 +169,32 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
         return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ ago", @"OmniFoundation", [OFObject bundle], @"humanReadableStringForTimeInterval"), intervalString];
 }
 
++ (NSString *)approximateStringForTimeInterval:(NSTimeInterval)interval;
+{
+    /* Copied from OWF/Pipelines.subproj/OWTask.m's +HMSStringFromTimeInterval: */
+    float rounded;
+    const unsigned int roundUpSeconds = 20;
+    
+    rounded = rintf((float)interval / 5.0f) * 5;
+    if (rounded < 1)
+        return nil;
+    
+    if (rounded < 60)
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d seconds", @"OmniFoundation", [OFObject bundle], @"approximate time interval: seconds since start or until finish"), (int)rounded];
+    
+    if (rounded < 2 * 60 - roundUpSeconds)
+        return NSLocalizedStringFromTableInBundle(@"about a minute", @"OmniFoundation", [OFObject bundle], @"approximate time interval: one minute");
+    
+    rounded = rintf((float)interval / 30.0f) * 30;
+    if (rounded < 3600)
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d minutes", @"OmniFoundation", [OFObject bundle], @"approximate time interval: some minutes since start or until finish"), (rounded + roundUpSeconds)/60];
+    
+    if (rounded < 3600 + 360)
+        return NSLocalizedStringFromTableInBundle(@"about an hour", @"OmniFoundation", [OFObject bundle], @"approximate time interval: one hour");
+    
+    return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %.1f hours", @"OmniFoundation", [OFObject bundle], @"approximate time interval: more than one hour"), rounded/3600.0];
+}
+
 + (NSString *)spacesOfLength:(NSUInteger)aLength;
 {
     static NSMutableString *spaces = nil;

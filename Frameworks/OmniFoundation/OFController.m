@@ -132,8 +132,14 @@ static void _OFControllerCheckTerminated(void)
     
     if (self != sharedController) {
         // Nib loading calls +alloc/-init directly.  Make sure that it gets the shared instance.
+        //
+        // N.B. Create the shared instance before releasing ourselves. This ensures that the address isn't re-used. Subclasses rely in detecting whether self has been reassigned in order to determine if they should do their own init. If we release first, the allocator may (and does!) reuse that block, and we end up re-initializing the shared instance.
+        //
+        // An alternate solution would be to ensure that subclasses do not override init, and provide an overridable method such as -initializeSharedInstance where they can set up their private state.  
+        
+        id sharedInstance = [OFController sharedController];
 	[self release];
-	return [[OFController sharedController] retain];
+	return [sharedInstance retain];
     }
         
     // We are setting up the shared instance in +sharedController
@@ -183,6 +189,10 @@ static void _OFControllerCheckTerminated(void)
     OBPRECONDITION(observer != nil);
     
     [observerLock lock];
+    
+    // Adding the same observer twice is very likely a bug. Let's assert that we aren't.
+    // On more modern versions of Foundation, we may want to use an NSOrderedSet here.
+    OBASSERT(![observers containsObject:observer]); 
     
     [observers addObject:observer];
     [observer incrementWeakRetainCount];

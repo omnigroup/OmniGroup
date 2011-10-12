@@ -7,20 +7,19 @@
 //
 // $Id$
 
-#import <OmniUI/OUIParentViewController.h>
+#import <OmniUI/OUIViewController.h>
 #import <OmniUI/OUIInspectorUpdateReason.h>
 #import <UIKit/UINibDeclarations.h>
 
 @class OUIInspector, OUIInspectorPane, OUIStackedSlicesInspectorPane;
 
-@interface OUIInspectorSlice : OUIParentViewController
+@interface OUIInspectorSlice : OUIViewController
 {
 @private
-    OUIStackedSlicesInspectorPane *_nonretained_containingPane;
     OUIInspectorPane *_detailPane;
 }
 
-@property(assign,nonatomic) OUIStackedSlicesInspectorPane *containingPane; // Set by the containing inspector pane
+@property(readonly,nonatomic) OUIStackedSlicesInspectorPane *containingPane; // Set by the containing inspector pane
 @property(readonly,nonatomic) OUIInspector *inspector;
 
 + (void)configureTableViewBackground:(UITableView *)tableView;

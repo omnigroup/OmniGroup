@@ -33,7 +33,7 @@
                 <string>OmniText-72.png</string>
         </array>
         <key>CFBundleIdentifier</key>
-        <string>com.yourcompany.${PRODUCT_NAME:rfc1034identifier}</string>
+        <string>${OMNI_BUNDLE_IDENTIFIER}</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleName</key>
@@ -44,10 +44,14 @@
         <string>????</string>
         <key>CFBundleVersion</key>
         <string>1.0</string>
+		<key>CFBundleShortVersionString</key>
+		<string>1.0</string>
         <key>LSRequiresIPhoneOS</key>
         <true/>
         <key>NSMainNibFile</key>
         <string>MainWindow</string>
+		<key>NSHumanReadableCopyright</key>
+		<string>© 2010-2011 The Omni Group</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
         <key>OFRegistrations</key>
@@ -74,6 +78,10 @@
                         </dict>
                 </dict>
         </dict>
+        <key>OUIApplicationCloudID</key>
+        <string>34YW5XSRB7</string>
+	<key>OUIApplicationCloudContainerID</key>
+	<string>com.omnigroup.OmniTextEdit.iPad</string>
         <key>UISupportedInterfaceOrientations</key>
         <array>
                 <string>UIInterfaceOrientationPortrait</string>

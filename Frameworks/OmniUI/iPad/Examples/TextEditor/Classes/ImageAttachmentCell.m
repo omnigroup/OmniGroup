@@ -51,7 +51,7 @@ RCS_ID("$Id$");
     if (_image)
         return;
     
-    OFFileWrapper *fileWrapper = self.attachment.fileWrapper;
+    NSFileWrapper *fileWrapper = self.attachment.fileWrapper;
     OBASSERT(fileWrapper);
     OBASSERT([fileWrapper isRegularFile]);
     

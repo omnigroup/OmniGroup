@@ -48,6 +48,9 @@ typedef enum {
     
     UITextAutocapitalizationType _autocapitalizationType;
     UITextAutocorrectionType _autocorrectionType;
+#if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
+    UITextSpellCheckingType _spellCheckingType;
+#endif
     UIKeyboardType _keyboardType;
 }
 
@@ -59,6 +62,9 @@ typedef enum {
 // Subset of UITextInputTraits
 @property(nonatomic) UITextAutocapitalizationType autocapitalizationType; // default is UITextAutocapitalizationTypeSentences
 @property(nonatomic) UITextAutocorrectionType autocorrectionType;         // default is UITextAutocorrectionTypeDefault
+#if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
+@property(nonatomic) UITextSpellCheckingType spellCheckingType;           // default is UITextSpellCheckingTypeDefault;
+#endif
 @property(nonatomic) UIKeyboardType keyboardType;                         // default is UIKeyboardTypeDefault
 
 @property(assign,nonatomic) BOOL editable;

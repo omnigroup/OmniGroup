@@ -457,7 +457,10 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
     return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02dT%02d%02d%02dZ", NO);
 }
 
-
+- (NSString *)omnifocusSyncTransactionDateString;
+{
+    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02d%02d%02d%02d", NO);
+}
 
 @end
 

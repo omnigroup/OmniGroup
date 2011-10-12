@@ -1,4 +1,4 @@
-// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,12 +18,6 @@ RCS_ID("$Id$")
     #define POSTLOADER_DEBUG(format, ...) fprintf(stderr, format, ## __VA_ARGS__)
 #else
     #define POSTLOADER_DEBUG(format, ...) do {} while (0)
-#endif
-
-// As promised, do this once here to make sure the hack works. This can also serve as a template for copying to make your own deperecation protocol.
-#ifdef OMNI_ASSERTIONS_ON
-OBDEPRECATED_METHODS(OBPostLoaderTestHack)
-@end
 #endif
 
 static NSRecursiveLock *lock = nil;

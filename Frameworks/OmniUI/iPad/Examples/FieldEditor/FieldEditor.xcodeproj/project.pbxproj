@@ -330,7 +330,7 @@
 		34ECCBCF121476C500BE430C /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		34ECCBD91214773400BE430C /* OUIAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIAppController.h; sourceTree = "<group>"; };
 		34ECCBDA1214773400BE430C /* OUISingleDocumentAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISingleDocumentAppController.h; sourceTree = "<group>"; };
-		34ECCBDB1214773400BE430C /* OUIToolbarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIToolbarViewController.h; sourceTree = "<group>"; };
+		34ECCBDB1214773400BE430C /* OUIMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIMainViewController.h; sourceTree = "<group>"; };
 		34ECCBDC1214773400BE430C /* OUIDocumentPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentPicker.h; sourceTree = "<group>"; };
 		34ECCBDD1214773400BE430C /* OUIScalingScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIScalingScrollView.h; sourceTree = "<group>"; };
 		34ECCBDE1214773400BE430C /* OUIScalingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIScalingView.h; sourceTree = "<group>"; };
@@ -531,7 +531,7 @@
 			children = (
 				34ECCBD91214773400BE430C /* OUIAppController.h */,
 				34ECCBDA1214773400BE430C /* OUISingleDocumentAppController.h */,
-				34ECCBDB1214773400BE430C /* OUIToolbarViewController.h */,
+				34ECCBDB1214773400BE430C /* OUIMainViewController.h */,
 				34ECCBDC1214773400BE430C /* OUIDocumentPicker.h */,
 				34ECCBDD1214773400BE430C /* OUIScalingScrollView.h */,
 				34ECCBDE1214773400BE430C /* OUIScalingView.h */,

@@ -13,7 +13,8 @@
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
-#import <OmniUI/OUIDocumentProxy.h>
+#import <OmniUI/OUIDocumentStore.h>
+#import <OmniUI/OUIDocumentStoreFileItem.h>
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
@@ -22,13 +23,25 @@
 #import "OUIWebDAVConnection.h"
 #import "OUIWebDAVSyncListController.h"
 #import "OUIWebDAVSetup.h"
+#import "OUIRestoreSampleDocumentListController.h"
 
 RCS_ID("$Id$")
+
+
+static NSString * const ResetSampleDocumentReuseIdentifier = @"ResetSampleDocumentReuseIdentifier";
+static NSString * const ImportDocumentReuseIdentifier = @"ImportDocumentReuseIdentifier";
 
 @interface OUISyncMenuController (/*Private*/)
 + (NSURL *)_urlFromPreference:(OFPreference *)preference;
 - (void)_discardMenu;
 @end
+
+enum {
+    ImportDocumentSection,
+    ResetSampleDocumentSection,
+    
+    ImportDocumnetSectionCount,
+};
 
 @implementation OUISyncMenuController
 
@@ -72,7 +85,7 @@ RCS_ID("$Id$")
         return;
     }
     
-    self.contentSizeForViewInPopover = CGSizeMake(320, 152); // Make sure we set this before creating our popover
+    self.contentSizeForViewInPopover = CGSizeMake(320, 176); // Make sure we set this before creating our popover
     
     if (!_menuNavigationController) {
         _menuNavigationController = [[UINavigationController alloc] initWithRootViewController:self];
@@ -125,48 +138,85 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark UITableView dataSource
 
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
+{
+    if (_isExporting) {
+        return 1;
+    }
+    else {
+        return 2;
+    }
+}
+
 - (NSInteger)tableView:(UITableView *)table numberOfRowsInSection:(NSInteger)section;
 {
-    return _isExporting ? OUINumberSyncChoices : (OUINumberSyncChoices-1 /* no importing from iTunes */);
+    if (section == ImportDocumentSection) {
+        return _isExporting ? OUINumberSyncChoices : (OUINumberSyncChoices-1 /* no importing from iTunes */);
+    }
+    else if (section == ResetSampleDocumentSection) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    // Returning a nil cell will cause UITableView to throw an exception
-    if (indexPath.section != 0)
-        return [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
-    
+    NSString *reuseIdentifier = nil;
     NSString *title = nil;
     NSString *description = nil;
-    switch (indexPath.row) {
-        case OUIiTunesSync:
-            title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to iTunes", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from iTunes", @"OmniUI", OMNI_BUNDLE, @"Import document title");
-            description = NSLocalizedStringFromTableInBundle(@"Documents", @"OmniUI", OMNI_BUNDLE, @"Export document desciption");
-            break;
-        case OUIMobileMeSync:
-            title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to iDisk", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from iDisk", @"OmniUI", OMNI_BUNDLE, @"Import document title");
-            description = [[OFPreference preferenceForKey:OUIMobileMeUsername] stringValue];
-            break;
-        case OUIOmniSync:
-            title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to Omni Sync", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from Omni Sync", @"OmniUI", OMNI_BUNDLE, @"Import document title");
-            description = [[OFPreference preferenceForKey:OUIOmniSyncUsername] stringValue];
-            break;
-        case OUIWebDAVSync:
-            title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUI", OMNI_BUNDLE, @"Import document title");
-            description = [[[self class] _urlFromPreference:[OFPreference preferenceForKey:OUIWebDAVLocation]] absoluteString];
-            break;
-        default:
-            break;
+    
+    if (indexPath.section == ResetSampleDocumentSection) {
+        reuseIdentifier = ResetSampleDocumentReuseIdentifier;
+        title = NSLocalizedStringFromTableInBundle(@"Restore Sample Document", @"OmniUI", OMNI_BUNDLE, @"Restore Sample Document Title");
+    }
+    else {
+        reuseIdentifier = ImportDocumentReuseIdentifier;
+        
+        switch (indexPath.row) {
+            case OUIiTunesSync:
+                title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to iTunes", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from iTunes", @"OmniUI", OMNI_BUNDLE, @"Import document title");
+                description = NSLocalizedStringFromTableInBundle(@"Documents", @"OmniUI", OMNI_BUNDLE, @"Export document desciption");
+                break;
+            case OUIMobileMeSync:
+                title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to iDisk", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from iDisk", @"OmniUI", OMNI_BUNDLE, @"Import document title");
+                description = [[OFPreference preferenceForKey:OUIMobileMeUsername] stringValue];
+                break;
+            case OUIOmniSync:
+                title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to Omni Sync", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from Omni Sync", @"OmniUI", OMNI_BUNDLE, @"Import document title");
+                description = [[OFPreference preferenceForKey:OUIOmniSyncUsername] stringValue];
+                break;
+            case OUIWebDAVSync:
+                title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUI", OMNI_BUNDLE, @"Import document title");
+                description = [[[self class] _urlFromPreference:[OFPreference preferenceForKey:OUIWebDAVLocation]] absoluteString];
+                break;
+            default:
+                break;
+        }
     }
     
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:title];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
     if (!cell) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:title] autorelease];
+        if ([reuseIdentifier isEqualToString:ResetSampleDocumentReuseIdentifier]) {
+            cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier] autorelease];
+        }
+        else if ([reuseIdentifier isEqualToString:ImportDocumentReuseIdentifier]) {
+            cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:reuseIdentifier] autorelease];
+        }
+        
         cell.backgroundColor = [UIColor whiteColor];
         cell.opaque = YES;
         
         [cell sizeToFit];
     }
+    
+    // Returning a nil cell will cause UITableView to throw an exception
+    if (!cell) {
+        return [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
+    }
+    
+    OBASSERT_NOTNULL(cell);
     
     UILabel *label = cell.textLabel;
     label.text = title;
@@ -183,61 +233,64 @@ RCS_ID("$Id$")
 {
     [_menuPopoverController dismissPopoverAnimated:YES];
     [self _discardMenu]; // -popoverControllerDidDismissPopover: is only called when user action causes the popover to auto-dismiss 
-    
-    // looking for a previous connection
-    NSURL *previousConnectionLocation = nil;
-    NSString *previousConnectionUsername = nil;
-    switch (indexPath.row) {
-        case OUIMobileMeSync:
-            previousConnectionUsername = [[OFPreference preferenceForKey:OUIMobileMeUsername] stringValue];
-            NSURL *mobileMe = [NSURL URLWithString:@"https://idisk.me.com/"];
-            previousConnectionLocation = OFSURLRelativeToDirectoryURL(mobileMe, [previousConnectionUsername stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
-            break;
-        case OUIOmniSync:
-            previousConnectionUsername = [[OFPreference preferenceForKey:OUIOmniSyncUsername] stringValue];
-            previousConnectionLocation = [NSURL URLWithString:[@"https://sync.omnigroup.com/" stringByAppendingPathComponent:previousConnectionUsername]];
-            break;
-        case OUIWebDAVSync:
-            previousConnectionLocation = [[self class] _urlFromPreference:[OFPreference preferenceForKey:OUIWebDAVLocation]];
-            previousConnectionUsername = [[OFPreference preferenceForKey:OUIWebDAVUsername] stringValue];
-            break;
-        case OUIiTunesSync:
-        {
-            // iTunes only allows interaction with the top Documents directory 
-            NSString *inboxPath = [[OUIDocumentPicker userDocumentsDirectory] stringByExpandingTildeInPath];
-            previousConnectionLocation = [NSURL fileURLWithPath:inboxPath];
-            previousConnectionUsername = @"local";   // OUIWebDAVConnection likes having a username so that it knows that it is setup correctly
-            break;
-        }
-            
-        default:
-            break;
-    }
-    
     UIViewController *viewController = nil;
     
-    OUIWebDAVConnection *connection = [OUIWebDAVConnection sharedConnection];
-    connection.address = OFSURLWithTrailingSlash(previousConnectionLocation);
-    connection.username = previousConnectionUsername;
-    
-    if ((previousConnectionLocation && ![NSString isEmptyString:previousConnectionUsername]) || (indexPath.row == OUIiTunesSync)) {
-        if (_isExporting) {
-            viewController = [[OUIExportOptionsController alloc] initWithExportType:OUIExportOptionsExport];
-            [(OUIExportOptionsController *)viewController setSyncType:indexPath.row];
-            [self.navigationController pushViewController:viewController animated:YES];
-            [viewController release];
-            return;
-        } else {
-            viewController = [[OUIWebDAVSyncListController alloc] init];
-            [(OUIWebDAVSyncListController *)viewController setSyncType:indexPath.row];
-            [(OUIWebDAVSyncListController *)viewController setIsExporting:_isExporting];
+    if (indexPath.section == ImportDocumentSection) {
+        // looking for a previous connection
+        NSURL *previousConnectionLocation = nil;
+        NSString *previousConnectionUsername = nil;
+        switch (indexPath.row) {
+            case OUIMobileMeSync:
+                previousConnectionUsername = [[OFPreference preferenceForKey:OUIMobileMeUsername] stringValue];
+                NSURL *mobileMe = [NSURL URLWithString:@"https://idisk.me.com/"];
+                previousConnectionLocation = OFSURLRelativeToDirectoryURL(mobileMe, [previousConnectionUsername stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
+                break;
+            case OUIOmniSync:
+                previousConnectionUsername = [[OFPreference preferenceForKey:OUIOmniSyncUsername] stringValue];
+                previousConnectionLocation = [NSURL URLWithString:[@"https://sync.omnigroup.com/" stringByAppendingPathComponent:previousConnectionUsername]];
+                break;
+            case OUIWebDAVSync:
+                previousConnectionLocation = [[self class] _urlFromPreference:[OFPreference preferenceForKey:OUIWebDAVLocation]];
+                previousConnectionUsername = [[OFPreference preferenceForKey:OUIWebDAVUsername] stringValue];
+                break;
+            case OUIiTunesSync:
+            {
+                // iTunes only allows interaction with the top Documents directory 
+                previousConnectionLocation = [OUIDocumentStore userDocumentsDirectoryURL];
+                previousConnectionUsername = @"local";   // OUIWebDAVConnection likes having a username so that it knows that it is setup correctly
+                break;
+            }
+                
+            default:
+                break;
         }
-    } else {
-        viewController = [[OUIWebDAVSetup alloc] init];
-        [(OUIWebDAVSetup *)viewController setSyncType:indexPath.row];
-        [(OUIWebDAVSetup *)viewController setIsExporting:_isExporting];
-    }
         
+        OUIWebDAVConnection *connection = [OUIWebDAVConnection sharedConnection];
+        connection.address = OFSURLWithTrailingSlash(previousConnectionLocation);
+        connection.username = previousConnectionUsername;
+        
+        if ((previousConnectionLocation && ![NSString isEmptyString:previousConnectionUsername]) || (indexPath.row == OUIiTunesSync)) {
+            if (_isExporting) {
+                viewController = [[OUIExportOptionsController alloc] initWithExportType:OUIExportOptionsExport];
+                [(OUIExportOptionsController *)viewController setSyncType:indexPath.row];
+                [self.navigationController pushViewController:viewController animated:YES];
+                [viewController release];
+                return;
+            } else {
+                viewController = [[OUIWebDAVSyncListController alloc] init];
+                [(OUIWebDAVSyncListController *)viewController setSyncType:indexPath.row];
+                [(OUIWebDAVSyncListController *)viewController setIsExporting:_isExporting];
+            }
+        } else {
+            viewController = [[OUIWebDAVSetup alloc] init];
+            [(OUIWebDAVSetup *)viewController setSyncType:indexPath.row];
+            [(OUIWebDAVSetup *)viewController setIsExporting:_isExporting];
+        }
+    }
+    else if (indexPath.section == ResetSampleDocumentSection) {
+        viewController = [[OUIRestoreSampleDocumentListController alloc] init];
+    }
+    
     [self.navigationController dismissModalViewControllerAnimated:YES];
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
     navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
@@ -268,11 +321,11 @@ RCS_ID("$Id$")
     NSString *locationString = [preference stringValue];
     if ([NSString isEmptyString:locationString])
         return nil;
-
+    
     NSURL *url = [NSURL URLWithString:locationString];
     if (url != nil)
         return url;
-
+    
     return [NSURL URLWithString:[locationString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 }
 

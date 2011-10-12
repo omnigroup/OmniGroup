@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,8 +13,8 @@
 
 // Convenience functions
 @class NSMutableArray;
-extern NSMutableArray *OFCreateNonOwnedPointerArray(void) NS_RETURNS_RETAINED;
-extern NSMutableArray *OFCreateIntegerArray(void) NS_RETURNS_RETAINED;
+extern CFMutableArrayRef OFCreateNonOwnedPointerArray(void) CF_RETURNS_RETAINED;
+extern CFMutableArrayRef OFCreateIntegerArray(void) CF_RETURNS_RETAINED;
 
 // Conveniences for when the value is an integer
 // Making these inline functions (rather than macros) means that the compiler will handle any integer width conversions for us

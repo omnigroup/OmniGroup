@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <UIKit/UIViewController.h>
+#import <OmniUI/OUIViewController.h>
 #import <OmniUI/OUIScrollNotifier.h>
 
 #define OUI_SNAP_TO_ZOOM_PERCENT (0.1)
@@ -15,7 +15,7 @@
 @class OUIScalingScrollView, OUIOverlayView;
 @protocol UIScrollViewDelegate;
 
-@interface OUIScalingViewController : UIViewController <UIScrollViewDelegate, OUIScrollNotifier>
+@interface OUIScalingViewController : OUIViewController <UIScrollViewDelegate, OUIScrollNotifier>
 {
 @private
     OUIScalingScrollView *_scrollView;
@@ -36,7 +36,9 @@
 // Mostly internal methods. Need to work more on a good public subclass API for this class
 - (void)adjustScaleBy:(CGFloat)scale;
 - (void)adjustScaleTo:(CGFloat)effectiveScale;
+- (void)adjustScaleToExactly:(CGFloat)scale;
 - (CGFloat)fullScreenScale;
+- (CGSize)fullScreenSize;
 - (void)adjustContentInset;
 - (void)sizeInitialViewSizeFromCanvasSize;
 

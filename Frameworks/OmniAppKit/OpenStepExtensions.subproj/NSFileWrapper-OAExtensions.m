@@ -15,11 +15,11 @@
 
 RCS_ID("$Id$");
 
-@implementation OFFileWrapper (OAExtensions)
+@implementation NSFileWrapper (OAExtensions)
 
-+ (OFFileWrapper *)fileWrapperWithFilename:(NSString *)filename contents:(NSData *)data;
++ (NSFileWrapper *)fileWrapperWithFilename:(NSString *)filename contents:(NSData *)data;
 {
-    OFFileWrapper *fileWrapper = [[OFFileWrapper alloc] initRegularFileWithContents:data];
+    NSFileWrapper *fileWrapper = [[NSFileWrapper alloc] initRegularFileWithContents:data];
     fileWrapper.filename = filename;
     fileWrapper.preferredFilename = filename;
     return [fileWrapper autorelease];
@@ -52,13 +52,13 @@ RCS_ID("$Id$");
 #endif
 
 // This adds the argument to the receiver.  But, if the receiver already has a file wrapper for the preferred file name of the argument, this method attempts to move the old value aside (thus hopefully yielding the name to the argument wrapper).
-- (void)addFileWrapperMovingAsidePreviousWrapper:(OFFileWrapper *)wrapper;
+- (void)addFileWrapperMovingAsidePreviousWrapper:(NSFileWrapper *)wrapper;
 {
     NSString *name = [wrapper preferredFilename];
     OBASSERT(![NSString isEmptyString:name]);
     
     NSDictionary *wrappers = [self fileWrappers];
-    OFFileWrapper *oldWrapper = [wrappers objectForKey:name];
+    NSFileWrapper *oldWrapper = [wrappers objectForKey:name];
     if (oldWrapper) {
         [[oldWrapper retain] autorelease];
         [self removeFileWrapper:oldWrapper];

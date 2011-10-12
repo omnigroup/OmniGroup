@@ -1,4 +1,4 @@
-// Copyright 2005-2007, 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2007, 2009, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,6 +47,41 @@ RCS_ID("$Id$");
     } else {
         return nil;
     }
+}
+
+static BOOL _checkModifierFlags(NSUInteger current, NSUInteger desired, NSUInteger prohibited, BOOL requireAll)
+{
+    OBPRECONDITION((desired & prohibited) == 0);
+    
+    current = current & NSDeviceIndependentModifierFlagsMask; // Mask off extra info that gets stuffed into the modifier flags
+    
+    if (current & prohibited)
+        return NO;
+    
+    if (requireAll)
+        return (current & desired) == desired;
+    else
+        return (current & desired) != 0;
+}
+
+- (BOOL)checkForAnyModifierFlags:(NSUInteger)desiredFlags without:(NSUInteger)prohibitedFlags;
+{
+    return _checkModifierFlags([self modifierFlags], desiredFlags, prohibitedFlags, NO);
+}
+
++ (BOOL)checkForAnyModifierFlags:(NSUInteger)desiredFlags without:(NSUInteger)prohibitedFlags;
+{
+    return _checkModifierFlags([self modifierFlags], desiredFlags, prohibitedFlags, NO);
+}
+
+- (BOOL)checkForAllModifierFlags:(NSUInteger)desiredFlags without:(NSUInteger)prohibitedFlags;
+{
+    return _checkModifierFlags([self modifierFlags], desiredFlags, prohibitedFlags, YES);
+}
+
++ (BOOL)checkForAllModifierFlags:(NSUInteger)desiredFlags without:(NSUInteger)prohibitedFlags;
+{
+    return _checkModifierFlags([self modifierFlags], desiredFlags, prohibitedFlags, YES);
 }
 
 @end

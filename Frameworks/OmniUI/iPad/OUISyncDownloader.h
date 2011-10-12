@@ -9,7 +9,7 @@
 
 #import <UIKit/UIViewController.h>
 
-@class OFFileWrapper;
+@class NSFileWrapper;
 @class OFSFileInfo;
 
 extern NSString * const OUISyncDownloadFinishedNotification;
@@ -31,7 +31,7 @@ extern NSString * const OUISyncDownloadCanceledNotification;
 // All following methods should be overridden in Subclasses.
 - (void)download:(OFSFileInfo *)aFile;
 - (IBAction)cancelDownload:(id)sender;
-- (void)uploadFileWrapper:(OFFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
+- (void)uploadFileWrapper:(NSFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
 // End Subclass Overriding.
 
 - (void)uploadData:(NSData *)data toURL:(NSURL *)targetURL;

@@ -27,10 +27,10 @@ static void OUIInspectorWellInitialize(void)
     
     CGColorSpaceRef grayColorSpace = CGColorSpaceCreateDeviceGray();
     
-    CGFloat innerShadowComponents[] = {kOUIInspectorWellInnerShadowGrayAlpha.v, kOUIInspectorWellInnerShadowGrayAlpha.a};
+    CGFloat innerShadowComponents[] = {kOUIInspectorWellInnerShadowWhiteAlpha.w, kOUIInspectorWellInnerShadowWhiteAlpha.a};
     InnerShadowColor = CGColorCreate(grayColorSpace, innerShadowComponents);
     
-    CGFloat outerShadowComponents[] = {kOUIInspectorWellOuterShadowGrayAlpha.v, kOUIInspectorWellOuterShadowGrayAlpha.a};
+    CGFloat outerShadowComponents[] = {kOUIInspectorWellOuterShadowWhiteAlpha.w, kOUIInspectorWellOuterShadowWhiteAlpha.a};
     OuterShadowColor = CGColorCreate(grayColorSpace, outerShadowComponents);
     
     CFRelease(grayColorSpace);
@@ -140,8 +140,8 @@ static void _OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect i
         static CGGradientRef borderGradient = NULL;
         if (!borderGradient) {
             NSArray *colors = [NSArray arrayWithObjects:
-                               (id)[[UIColor colorWithWhite:kOUIInspectorWellBorderGradientStartGrayAlpha.v alpha:kOUIInspectorWellBorderGradientStartGrayAlpha.a] CGColor],
-                               (id)[[UIColor colorWithWhite:kOUIInspectorWellBorderGradientEndGrayAlpha.v alpha:kOUIInspectorWellBorderGradientEndGrayAlpha.a] CGColor],
+                               (id)[[UIColor colorWithWhite:kOUIInspectorWellBorderGradientStartWhiteAlpha.w alpha:kOUIInspectorWellBorderGradientStartWhiteAlpha.a] CGColor],
+                               (id)[[UIColor colorWithWhite:kOUIInspectorWellBorderGradientEndWhiteAlpha.w alpha:kOUIInspectorWellBorderGradientEndWhiteAlpha.a] CGColor],
                                nil
                                ];
             CGFloat locations[] = {0, 1.0};

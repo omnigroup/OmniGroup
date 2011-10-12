@@ -52,13 +52,10 @@
 - (NSArray *)arrayByPerformingSelector:(SEL)aSelector withObject:(id)anObject;
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
 
-#ifdef NS_BLOCKS_AVAILABLE
 - (NSArray *)arrayByPerformingBlock:(OFObjectToObjectBlock)blk;
 - (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)blk;
 - (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
-#endif
 
-#ifdef NS_BLOCKS_AVAILABLE
 - (NSArray *)select:(OFPredicateBlock)predicate;
 - (NSArray *)reject:(OFPredicateBlock)predicate;
 
@@ -68,7 +65,6 @@
 - (id)last:(OFPredicateBlock)predicate;
 - (id)lastInRange:(NSRange)range that:(OFPredicateBlock)predicate;
 
-#endif
 
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector;
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector withObject:(id)anObject;
@@ -76,6 +72,7 @@
 
 - (BOOL)anyObjectSatisfiesCondition:(SEL)sel;
 - (BOOL)anyObjectSatisfiesCondition:(SEL)sel withObject:(id)object;
+- (BOOL)anyObjectSatisfiesPredicate:(OFPredicateBlock)pred;
 
 - (NSMutableArray *)deepMutableCopy NS_RETURNS_RETAINED;
 

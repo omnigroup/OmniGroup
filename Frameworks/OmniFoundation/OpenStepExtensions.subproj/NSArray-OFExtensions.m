@@ -275,7 +275,6 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
-#ifdef NS_BLOCKS_AVAILABLE
 - (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
 {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] initWithCapacity:[self count]];
@@ -290,7 +289,6 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     [dict release];
     return result;
 }
-#endif
 
 - (NSArray *)arrayByPerformingSelector:(SEL)aSelector;
 {
@@ -341,8 +339,6 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     else
         return [NSSet set];
 }
-
-#ifdef NS_BLOCKS_AVAILABLE
 
 - (NSArray *)arrayByPerformingBlock:(OFObjectToObjectBlock)blk;
 {
@@ -454,8 +450,6 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return nil;
 }
 
-#endif
-
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector;
 {
     // objc_msgSend won't bother passing the nil argument to the method implementation because of the selector signature.
@@ -486,6 +480,15 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
             return YES;
     }
     
+    return NO;
+}
+
+- (BOOL)anyObjectSatisfiesPredicate:(OFPredicateBlock)pred;
+{
+    for (id element in self) {
+        if (pred(element))
+            return YES;
+    }
     return NO;
 }
 

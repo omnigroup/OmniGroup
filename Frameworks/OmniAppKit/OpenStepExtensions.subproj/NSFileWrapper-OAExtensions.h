@@ -9,12 +9,14 @@
 
 #import <OmniFoundation/OFFileWrapper.h>
 
-@interface OFFileWrapper (OAExtensions)
-+ (OFFileWrapper *)fileWrapperWithFilename:(NSString *)filename contents:(NSData *)data;
+#if (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE) && defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    #import <AppKit/NSFileWrapperExtensions.h>
+#endif
+
+@interface NSFileWrapper (OAExtensions)
++ (NSFileWrapper *)fileWrapperWithFilename:(NSString *)filename contents:(NSData *)data;
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSString *)fileType:(BOOL *)isHFSType;
 #endif
-- (void)addFileWrapperMovingAsidePreviousWrapper:(OFFileWrapper *)wrapper;
+- (void)addFileWrapperMovingAsidePreviousWrapper:(NSFileWrapper *)wrapper;
 @end
-
-

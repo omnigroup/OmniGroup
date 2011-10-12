@@ -18,6 +18,7 @@
     NSArray *_availableSlices;
     NSArray *_slices;
     id<OUIScrollNotifier> _scrollNotifier;
+    BOOL _isAnimating;
 }
 
 - (NSArray *)makeAvailableSlices; // For subclasses (though the delegate hook can also be used)

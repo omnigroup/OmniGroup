@@ -371,6 +371,7 @@
 		345956BE119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DocumentPreviewPlaceholder.png; sourceTree = "<group>"; };
 		3459571211949F6100ECB2B6 /* RTFDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTFDocument.h; sourceTree = "<group>"; };
 		3459571311949F6100ECB2B6 /* RTFDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RTFDocument.m; sourceTree = "<group>"; };
+		346F552E1434EF1300D27428 /* TextEditor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = TextEditor.entitlements; path = ../TextEditor.entitlements; sourceTree = "<group>"; };
 		34717BED11949466003360DE /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		34717BF211949476003360DE /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		34717BF811949485003360DE /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
@@ -382,7 +383,7 @@
 		347BCED0120DDA9000E967FE /* OUIScalingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIScalingView.h; sourceTree = "<group>"; };
 		347BCED1120DDA9000E967FE /* OUIScalingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIScalingViewController.h; sourceTree = "<group>"; };
 		347BCED9120DDAC900E967FE /* OUISingleDocumentAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISingleDocumentAppController.h; sourceTree = "<group>"; };
-		347BCEDA120DDAC900E967FE /* OUIToolbarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIToolbarViewController.h; sourceTree = "<group>"; };
+		347BCEDA120DDAC900E967FE /* OUIMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIMainViewController.h; sourceTree = "<group>"; };
 		347BCEE2120DDAF700E967FE /* OUIAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIAppController.h; sourceTree = "<group>"; };
 		34CDFE6C12691EE0005B04A7 /* OmniFileStore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFileStore.xcodeproj; path = ../../../../OmniFileStore/OmniFileStore.xcodeproj; sourceTree = SOURCE_ROOT; };
 		34CDFE8412691F12005B04A7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -481,6 +482,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				346F552E1434EF1300D27428 /* TextEditor.entitlements */,
 				345956AB1194982600ECB2B6 /* Samples */,
 				28AD733E0D9D9553002E5188 /* MainWindow.xib */,
 				34D990061194AB820029EFE3 /* TextViewController.xib */,
@@ -632,7 +634,7 @@
 			children = (
 				347BCEE2120DDAF700E967FE /* OUIAppController.h */,
 				347BCED9120DDAC900E967FE /* OUISingleDocumentAppController.h */,
-				347BCEDA120DDAC900E967FE /* OUIToolbarViewController.h */,
+				347BCEDA120DDAC900E967FE /* OUIMainViewController.h */,
 				347BCECE120DDA9000E967FE /* OUIDocumentPicker.h */,
 				347BCECF120DDA9000E967FE /* OUIScalingScrollView.h */,
 				347BCED0120DDA9000E967FE /* OUIScalingView.h */,
@@ -1053,6 +1055,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 342721491194802E00B39788 /* Touch-Application-Debug.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TextEditor.entitlements;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SDKROOT)$(DEVELOPER_FRAMEWORKS_DIR)\"",
@@ -1062,7 +1065,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
 				);
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniText;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniTextEdit.iPad;
 				PRODUCT_NAME = TextEditor;
 				TARGETED_DEVICE_FAMILY = 2;
 			};
@@ -1072,6 +1075,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3427214A1194802E00B39788 /* Touch-Application-Release.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TextEditor.entitlements;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SDKROOT)$(DEVELOPER_FRAMEWORKS_DIR)\"",
@@ -1081,7 +1085,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
 				);
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniText;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniTextEdit.iPad;
 				PRODUCT_NAME = TextEditor;
 				TARGETED_DEVICE_FAMILY = 2;
 				VALIDATE_PRODUCT = YES;
@@ -1093,6 +1097,7 @@
 			baseConfigurationReference = 3427213B1194802E00B39788 /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;

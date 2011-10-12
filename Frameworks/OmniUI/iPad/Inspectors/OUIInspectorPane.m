@@ -15,9 +15,8 @@
 
 RCS_ID("$Id$");
 
-OBDEPRECATED_METHODS(OUIInspectorPane)
-- (void)updateInterfaceFromInspectedObjects; // -> -updateInterfaceFromInspectedObjects:
-@end
+// OUIInspectorPane
+OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfaceFromInspectedObjects:
 
 @implementation OUIInspectorPane
 

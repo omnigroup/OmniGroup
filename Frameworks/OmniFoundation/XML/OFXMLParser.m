@@ -416,7 +416,7 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     
     memset(&state, 0, sizeof(state));
     state.parser = self;
-    state.whitespaceBehaviorStack = OFCreateIntegerArray();
+    state.whitespaceBehaviorStack = (NSMutableArray *)OFCreateIntegerArray();
     state.nonWhitespaceCharacterSet = [[[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet] copy];
     state.loadWarnings = [[NSMutableArray alloc] init];
     state.whitespaceBehavior = whitespaceBehavior;

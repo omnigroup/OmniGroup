@@ -67,26 +67,36 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     return [_scrollView fullScreenScaleForCanvasSize:[self canvasSize]];
 }
 
+- (CGSize)fullScreenSize;
+{
+    CGSize canvasSize = [self canvasSize];
+    CGFloat fullScreenScale = [self fullScreenScale];
+    
+    return CGSizeMake(canvasSize.width*fullScreenScale, canvasSize.height*fullScreenScale);
+}
+
 - (CGFloat)snapZoomScale:(CGFloat)scale;
 {
     // Check if the zoom scale is close to 100%.
-    CGFloat one = 1.0;
-    CGFloat diff = fabs(scale - one);
-    BOOL snapToOne = (diff/one < OUI_SNAP_TO_ZOOM_PERCENT);
+    CGFloat one = 1;
+    CGFloat oneDiff = fabs(scale - one);
+    BOOL snapToOne = (oneDiff/one < OUI_SNAP_TO_ZOOM_PERCENT);
     
     // Check if the zoom scale is close to the full screen scale.
     CGFloat fullScreenScale = [self fullScreenScale];
-    diff = fabs(scale - fullScreenScale);
-    BOOL snapToFullScreen = (diff/fullScreenScale < OUI_SNAP_TO_ZOOM_PERCENT);
+    CGFloat fullDiff = fabs(scale - fullScreenScale);
+    BOOL snapToFullScreen = (fullDiff/fullScreenScale < OUI_SNAP_TO_ZOOM_PERCENT);
     
     // If the caller passes in a non-positive number, snap to fit the screen
     if (scale <= 0) {
         return fullScreenScale;
     }
     
-    // If the zoom scale is near both 100% and fitting the screen, use whichever is smaller.  That way, you never get into a situation where you can't see the whole canvas.
+    // If the zoom scale is near both 100% and fitting the screen, use whichever is closer.
     if (snapToOne && snapToFullScreen) {
-        return MIN(one, fullScreenScale);
+        if (fullDiff < oneDiff)
+            return fullScreenScale;
+        return one;
     }
     
     // Snap to 100%.
@@ -117,6 +127,21 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     [self adjustScaleTo:view.scale * scale];
 }
 
+- (void)adjustScaleToExactly:(CGFloat)scale;
+{
+    if (!_scrollView)
+        return; // just bail if UI not loaded yet
+    
+    OUIScalingView *view = _scalingView(self);
+    if (!view)
+        return;
+    
+    CGSize canvasSize = self.canvasSize;
+    [_scrollView adjustScaleTo:scale canvasSize:canvasSize];
+    
+    _lastScaleWasFullScale = (view.scale == [self fullScreenScale]);
+}
+
 - (void)adjustScaleTo:(CGFloat)effectiveScale;
 {
     if (!_scrollView)
@@ -128,10 +153,7 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     
     effectiveScale = [self snapZoomScale:effectiveScale];
     
-    CGSize canvasSize = self.canvasSize;
-    [_scrollView adjustScaleTo:effectiveScale canvasSize:canvasSize];
-    
-    _lastScaleWasFullScale = (view.scale == [self fullScreenScale]);
+    [self adjustScaleToExactly:effectiveScale];
 }
 
 - (void)adjustContentInset;

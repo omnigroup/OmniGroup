@@ -25,7 +25,7 @@ RCS_ID("$Id$");
 - (void)_downloadFile:(OFSFileInfo *)aFile;
 - (NSString *)_downloadLocation;
 - (void)_readAndQueueContentsOfDirectory:(OFSFileInfo *)aDirectory;
-- (BOOL)_queueUploadFileWrapper:(OFFileWrapper *)fileWrapper atomically:(BOOL)atomically toURL:(NSURL *)targetURL usingFileManager:(OFSFileManager *)fileManager error:(NSError **)outError;
+- (BOOL)_queueUploadFileWrapper:(NSFileWrapper *)fileWrapper atomically:(BOOL)atomically toURL:(NSURL *)targetURL usingFileManager:(OFSFileManager *)fileManager error:(NSError **)outError;
 
 @end
 
@@ -80,7 +80,7 @@ RCS_ID("$Id$");
     [[NSNotificationCenter defaultCenter] postNotificationName:OUISyncDownloadCanceledNotification object:self];
 }
 
-- (void)uploadFileWrapper:(OFFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
+- (void)uploadFileWrapper:(NSFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
 {
     _totalDataLength = 0;
     _uploadOperations = [[NSMutableArray alloc] init];
@@ -282,7 +282,7 @@ RCS_ID("$Id$");
             [_fileQueue addObject:fileInfo];
 }
 
-- (BOOL)_queueUploadFileWrapper:(OFFileWrapper *)fileWrapper atomically:(BOOL)atomically toURL:(NSURL *)targetURL usingFileManager:(OFSFileManager *)fileManager error:(NSError **)outError;
+- (BOOL)_queueUploadFileWrapper:(NSFileWrapper *)fileWrapper atomically:(BOOL)atomically toURL:(NSURL *)targetURL usingFileManager:(OFSFileManager *)fileManager error:(NSError **)outError;
 {
 #ifdef DEBUG_kc
     NSLog(@"DEBUG: Queueing upload to %@", [targetURL absoluteString]);
@@ -305,7 +305,7 @@ RCS_ID("$Id$");
         
         NSDictionary *childWrappers = [fileWrapper fileWrappers];
         for (NSString *childName in childWrappers) {
-            OFFileWrapper *childWrapper = [childWrappers objectForKey:childName];
+            NSFileWrapper *childWrapper = [childWrappers objectForKey:childName];
             NSURL *childURL = OFSFileURLRelativeToDirectoryURL(parentURL, childName);;
             if (![self _queueUploadFileWrapper:childWrapper atomically:NO toURL:childURL usingFileManager:fileManager error:outError])
                 return NO;
@@ -313,6 +313,7 @@ RCS_ID("$Id$");
     } else if ([fileWrapper isRegularFile]) {
         NSData *data = [fileWrapper regularFileContents];
         _totalDataLength += [data length];
+        _baseURL = [targetURL retain];
         id <OFSAsynchronousOperation> uploadOperation = [fileManager asynchronousWriteData:data toURL:targetURL atomically:NO withTarget:self];
         [_uploadOperations addObject:uploadOperation];
     } else {

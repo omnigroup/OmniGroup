@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,12 +12,16 @@
 
 @class NSArray, NSData, NSDictionary, NSError, NSInputStream, NSOutputStream, NSStream, NSRunLoop;
 
+typedef void (^OFFilterProcessFdAcceptor)(int fd);
+/* If OFFilterProcessInputBlockKey is set, it must be a block of type OFFilterProcessFdAcceptor. It is called once with the file descriptor opened to which the child's stdin should be written. It's the acceptor's responsibility to schedule further asynchronous activity if needed, close the descriptor when done, etc. */
+
 @interface OFFilterProcess : OFObject
 {
     /* Parameters set before launch */
     NSString *commandPath;
     NSArray *arguments;
     NSData *subprocStdinBytes;
+    OFFilterProcessFdAcceptor subprocStdinWriter;
     
     /* Set at launch time */
     int subprocStdinFd;
@@ -58,6 +62,7 @@
 #define OFFilterProcessWorkingDirectoryPathKey      (@"chdir")       /* NSString */
 #define OFFilterProcessInputDataKey                 (@"input-data")  /* NSData */
 /* #define OFFilterProcessInputDataKey              (@"input-stream")  NSStream is too buggy to implement this yet (RADAR 5177472 / 5177598) */
+#define OFFilterProcessInputBlockKey                (@"input-writer")  /* OFFilterProcessFdAcceptor block */
 #define OFFilterProcessReplacementEnvironmentKey    (@"envp")        /* NSDictionary of NSString->NSString or NSData */
 #define OFFilterProcessAdditionalEnvironmentKey     (@"setenv")      /* NSDictionary of NSString->NSString or NSData */
 #define OFFilterProcessAdditionalPathEntryKey       (@"+PATH")       /* NSString */

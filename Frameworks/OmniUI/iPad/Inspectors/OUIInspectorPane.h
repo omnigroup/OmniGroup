@@ -7,12 +7,12 @@
 //
 // $Id$
 
-#import <OmniUI/OUIParentViewController.h>
+#import <OmniUI/OUIViewController.h>
 #import <OmniUI/OUIInspectorUpdateReason.h>
 
 @class OUIInspector, OUIInspectorSlice;
 
-@interface OUIInspectorPane : OUIParentViewController
+@interface OUIInspectorPane : OUIViewController
 {
 @private
     OUIInspector *_nonretained_inspector; // the main inspector

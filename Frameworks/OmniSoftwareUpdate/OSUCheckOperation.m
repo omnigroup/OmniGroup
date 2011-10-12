@@ -193,7 +193,7 @@ static BOOL OSUCheckReachability(NSString *hostname, NSError **outError)
     Boolean reachable = ((flags & kSCNetworkReachabilityFlagsReachable) != 0);
     
     if (!reachable) {
-        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%s is not reachable.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description"), hostname];
+        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%s is not reachable.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - the host from which we retrieve updates is unreachable"), hostname];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, suggestion, NSLocalizedRecoverySuggestionErrorKey, nil];
         if (outError)
             *outError = [NSError errorWithDomain:OSUErrorDomain code:OSULocalNetworkFailure userInfo:userInfo];

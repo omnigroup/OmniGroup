@@ -10,7 +10,7 @@
 /* title of new versions available dialog, when no updates are available - text is name of application */
 "%1$@ is up to date." = "%1$@ is up to date.";
 
-/* error description */
+/* error description - the host from which we retrieve updates is unreachable */
 "%s is not reachable." = "%s is not reachable.";
 
 /* error description when trying to start a download when one is already in progress */
@@ -103,7 +103,7 @@
 /* details panel string - name of video card driver */
 "Hardware Driver" = "Hardware Driver";
 
-/* error reason */
+/* error reason - we downloaded a .DMG, but were unable to mount it using hdiutil */
 "hdiutil failed to attach the disk image" = "hdiutil failed to attach the disk image";
 
 /* details panel string - accumulated number of hours the program has been running */
@@ -111,6 +111,9 @@
 
 /* button title to allow user to stop being notified of releases on a particular track (eg, 'rc', 'beta', 'sneakypeek') - used in stability downgrade warning pane */
 "Ignore \\U201C%@\\U201D Releases" = "Ignore “%@” Releases";
+
+/* button title - (download and) install the selected update */
+"Install" = "Install";
 
 /* error reason */
 "Install script exited due to signal %d." = "Install script exited due to signal %d.";
@@ -128,13 +131,16 @@
    details panel string - column header for OpenCL device memory sizes */
 "Memory" = "Memory";
 
+/* button title - display more information about the selected update */
+"More Information..." = "More Information…";
+
 /* error reason - we downloaded an update, and it has more than one application in it */
 "More than one application found in update (%@)" = "More than one application found in update (%@)";
 
 /* status message */
 "Mounting disk image\\U2026" = "Mounting disk image…";
 
-/* error reason */
+/* error reason - the disk image contained several partitions - unexpected */
 "Multiple mount points found in hdiutil results." = "Multiple mount points found in hdiutil results.";
 
 /* error reason - we downloaded an update, but it doesn't seem to contain a new application */
@@ -263,15 +269,16 @@
 /* error description - will be followed by more detailed error reason */
 "Unable to fetch software update information." = "Unable to fetch software update information.";
 
-/* error description
-   error description - could not copy from disk image to destination filesystem
+/* error description - could not copy from disk image to destination filesystem
    error description - could not move application into place during install
    error description - could not process .tar.bz2 file
+   error description - OSUInstaller.sh is missing
    error description - we downloaded an update, but it doesn't seem to be valid
    error description - we downloaded an update, but there seems to be something wrong with the application it contained */
 "Unable to install update" = "Unable to install update";
 
-/* error description */
+/* error description
+   error description - we downloaded a .DMG, but were unable to mount it using hdiutil */
 "Unable to mount disk image" = "Unable to mount disk image";
 
 /* error description */

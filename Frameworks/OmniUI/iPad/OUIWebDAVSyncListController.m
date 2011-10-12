@@ -10,7 +10,6 @@
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFoundation/OFFileWrapper.h>
 
 #import "OUIWebDAVConnection.h"
 #import "OUIWebDAVSyncDownloader.h"
@@ -54,11 +53,10 @@ RCS_ID("$Id$");
     
     NSURL *directoryURL = (self.address != nil) ? self.address : [fileManager baseURL];
     NSURL *fileURL = nil;
-    if ([directoryURL isFileURL])
-        fileURL = OFSFileURLRelativeToDirectoryURL(directoryURL, self.exportFileWrapper.preferredFilename);
-    else
-        fileURL = OFSURLRelativeToDirectoryURL(directoryURL, [self.exportFileWrapper.preferredFilename stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
-    
+    // gotta use the CF version, beacuse it allows us to specify extra character's to escape, in this case '?'
+    CFStringRef tempString = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef )self.exportFileWrapper.preferredFilename, NULL, CFSTR("?"), kCFStringEncodingUTF8);
+    fileURL = OFSURLRelativeToDirectoryURL(directoryURL, (NSString *)tempString);
+    CFRelease(tempString);
     NSError *error = nil;
     OFSFileInfo *fileCheck = [fileManager fileInfoAtURL:fileURL error:&error];
     if (!fileCheck) {
@@ -84,12 +82,16 @@ RCS_ID("$Id$");
     
     OFSFileManager *fileManager = [[OUIWebDAVConnection sharedConnection] fileManager];
     if (!fileManager) {
-        if ([[OUIWebDAVConnection sharedConnection] validConnection]) {
-            fileManager = [[OUIWebDAVConnection sharedConnection] fileManager];
-        } else {
-            if (![[OUIWebDAVConnection sharedConnection] trustAlertVisible])
+        switch ([[OUIWebDAVConnection sharedConnection] validateConnection]) {
+            case OUIWebDAVConnectionValid:
+                fileManager = [[OUIWebDAVConnection sharedConnection] fileManager];
+                break;
+            case OUIWebDAVNoInternetConnection:
+            case OUIWebDAVCertificateTrustIssue:
+                return; // without invalidating credentials
+            default:
                 [self signOut:nil];
-            return;
+                return;
         }
     }
     

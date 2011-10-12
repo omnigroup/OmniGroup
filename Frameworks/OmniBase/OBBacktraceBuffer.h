@@ -12,7 +12,7 @@
 */
 
 /* These can be adjusted as needed - CrashCatcher reads their values from the crashed process's OBBacktraceBufferInfo */
-#define OBBacktraceBufferAddressCount 16    /* Max depth of stack to record per trace */
+#define OBBacktraceBufferAddressCount 24    /* Max depth of stack to record per trace */
 #define OBBacktraceBufferTraceCount 8       /* Number of recent traces to retain */
 
 struct OBBacktraceBuffer {

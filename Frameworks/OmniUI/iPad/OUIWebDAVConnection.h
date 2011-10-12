@@ -13,6 +13,14 @@
 
 extern NSString * const OUICertificateTrustUpdated;
 
+typedef enum {
+    OUIWebDAVConnectionValid,
+    OUIWebDAVConnectionNotConfigured,
+    OUIWebDAVNoInternetConnection,
+    OUIWebDAVCertificateTrustIssue,
+    OUIWebDAVOtherConnectionError
+} OUIWebDAVConnectionValidity;
+
 @class OFSFileManager;
 @interface OUIWebDAVConnection : NSObject <OFSDAVFileManagerAuthenticationDelegate, OUICertificateTrustAlertDelegate> {
 @private 
@@ -26,7 +34,7 @@ extern NSString * const OUICertificateTrustUpdated;
 }
 
 + (OUIWebDAVConnection *)sharedConnection;
-- (BOOL)validConnection;
+- (OUIWebDAVConnectionValidity)validateConnection;
 - (void)close;
 - (BOOL)trustAlertVisible;
 

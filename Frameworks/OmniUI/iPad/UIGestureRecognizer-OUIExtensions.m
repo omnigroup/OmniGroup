@@ -34,6 +34,12 @@ static void _replacement_setState(UIGestureRecognizer *self, SEL _cmd, UIGesture
     
     NSLog(@"%@ recognizer %@", name, [self shortDescription]);
     original_setState(self, _cmd, state);
+    
+    UIGestureRecognizerState acceptedState = self.state;
+    if (acceptedState != state) {
+        // The delegate gets called in -setState:UIGestureRecognizerStateBegan and can refuse to begin.
+        NSLog(@"%@ recognizer %@", name, [self shortDescription]);
+    }
 }
 
 static void (*original_setEnabled)(UIGestureRecognizer *self, SEL _cmd, BOOL enabled);

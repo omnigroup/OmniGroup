@@ -17,6 +17,7 @@
 @class UIBarButtonItem, UINavigationController, UIPopoverController;
 
 extern const CGFloat OUIInspectorContentWidth;
+extern const NSTimeInterval OUICrossFadeDuration;
 
 extern NSString * const OUIInspectorDidPresentNotification;
 
@@ -39,7 +40,7 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
     BOOL _keyboardShownWhilePopoverVisible;
 }
 
-+ (OUIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
++ (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 
 + (UIColor *)disabledLabelTextColor;
 + (UIColor *)labelTextColor;

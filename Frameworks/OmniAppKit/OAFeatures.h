@@ -7,10 +7,10 @@
 //
 // $Id$
 
-#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
+#import <Availability.h>
+
+#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
     #define OA_USE_COLOR_MANAGER 1
-    #define OA_INTERNET_CONFIG_ENABLED 1
 #else
     #define OA_USE_COLOR_MANAGER 0 // Deprecated in 10.7
-    #define OA_INTERNET_CONFIG_ENABLED 0
 #endif

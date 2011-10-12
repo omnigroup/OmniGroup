@@ -1,4 +1,4 @@
-// Copyright 2003-2005,2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005,2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,7 +39,7 @@ NSString * const OAColorWellDidDeactivate = @"OAColorWellDidDeactivate";
     OBINITIALIZE;
 
     // Don't want to retain them and prevent them from being deallocated (and thus deactivated)!
-    activeColorWells = OFCreateNonOwnedPointerArray();
+    activeColorWells = (NSMutableArray *)OFCreateNonOwnedPointerArray();
     OAColorWellInactiveColor = [[NSColor colorWithCalibratedWhite:0.9f alpha:1.0f] retain];
 }
 
@@ -67,11 +67,15 @@ NSString * const OAColorWellDidDeactivate = @"OAColorWellDidDeactivate";
 - (void)deactivate;
 {
     [super deactivate];
-    [activeColorWells removeObjectIdenticalTo:self];
-    
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     [center removeObserver:self name:NSWindowWillCloseNotification object:[self window]];
-    [center postNotificationName:OAColorWellDidDeactivate object:self];
+
+    CFIndex idx = [activeColorWells indexOfObjectIdenticalTo:self];
+    
+    if (idx != NSNotFound) {    
+        CFArrayRemoveValueAtIndex((CFMutableArrayRef)activeColorWells, idx);
+        [center postNotificationName:OAColorWellDidDeactivate object:self];
+    }
 }
 
 - (void)activate:(BOOL)exclusive;

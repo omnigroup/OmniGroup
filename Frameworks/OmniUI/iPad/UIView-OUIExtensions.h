@@ -13,7 +13,10 @@
 @class UIView, UIImage;
 
 @interface UIView (OUIExtensions)
+
+- (UIImage *)snapshotImageWithScale:(CGFloat)scale;
 - (UIImage *)snapshotImage;
+
 - (id)containingViewOfClass:(Class)cls; // can return self
 
 // Defaults to zeros, but subclasses can return spacing offsets for where their border appears to be relative to where their actual view edge is.
@@ -59,5 +62,7 @@ extern void OUIWithoutAnimating(void (^actions)(void));
 // Need a better name for this. This checks if +[UIView areAnimationsEnabled]. If not, then it performs the block inside a CATransation that disables implicit animations.
 // Useful for when a setter on your UI view adjusts animatable properties on its layer.
 extern void OUIWithAppropriateLayerAnimations(void (^actions)(void));
+
+extern void OUIDisplayNeededViews(void);
 
 #endif

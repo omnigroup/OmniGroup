@@ -45,7 +45,7 @@ RCS_ID("$Id$");
         OBASSERT(outError == NULL || *outError != nil);
         return NO;
     }
-    for (OFFileWrapper *fileWrapper in fileWrappers) {
+    for (NSFileWrapper *fileWrapper in fileWrappers) {
         OUZipMember *zipMember = [[OUZipMember alloc] initWithFileWrapper:fileWrapper];
         if (zipMember == nil)
             continue;

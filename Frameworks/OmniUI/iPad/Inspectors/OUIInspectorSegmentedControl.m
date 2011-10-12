@@ -104,15 +104,15 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
     return [self addSegmentWithText:text representedObject:nil];
 }
 
-@synthesize allowsMulitpleSelection = _allowsMulitpleSelection;
+@synthesize allowsMultipleSelection = _allowsMultipleSelection;
 - (void)setAllowsMulitpleSelection:(BOOL)flag;
 {
-    if (_allowsMulitpleSelection == flag)
+    if (_allowsMultipleSelection == flag)
         return;
     
-    _allowsMulitpleSelection = flag;
+    _allowsMultipleSelection = flag;
     
-    if (!_allowsMulitpleSelection) {
+    if (!_allowsMultipleSelection) {
         // Clear any extra selected items after the first
         OUIInspectorSegmentedControlButton *firstSelectedSegment = self.selectedSegment;
         for (OUIInspectorSegmentedControlButton *segment in _segments)
@@ -285,7 +285,7 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
 
 - (void)_segmentPressed:(OUIInspectorSegmentedControlButton *)segment;
 {
-    if (_allowsMulitpleSelection) {
+    if (_allowsMultipleSelection) {
         segment.selected = !segment.selected;
     } else if (_allowsEmptySelection && self.selectedSegment == segment) {
         self.selectedSegment = nil;

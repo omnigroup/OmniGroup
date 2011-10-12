@@ -1,4 +1,4 @@
-// Copyright 2004-2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2007, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,7 @@ static inline OFBindingPoint OFBindingPointMake(id object, NSString *keyPath)
 
 extern BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b);
 
+// Reifies a dependency between a source field and a destination field. Changes to the source are detected via KVO and propagated to the destination by KVC. This much is similar to dependent keys in stock KVO. Additional features here are that the binding is reified as an object for which propagation of changes can be disable, reenabled, or forced (for example if we are disabled but want to force an update).
 @interface OFBinding : NSObject
 {
 @protected

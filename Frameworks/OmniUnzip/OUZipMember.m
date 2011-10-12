@@ -10,12 +10,13 @@
 #import <OmniUnzip/OUZipFileMember.h>
 #import <OmniUnzip/OUZipDirectoryMember.h>
 #import <OmniUnzip/OUZipLinkMember.h>
+#import <OmniFoundation/OFFileWrapper.h>
 
 RCS_ID("$Id$");
 
 @implementation OUZipMember
 
-- (id)_initWithFileWrapper:(OFFileWrapper *)fileWrapper name:(NSString *)name;
+- (id)_initWithFileWrapper:(NSFileWrapper *)fileWrapper name:(NSString *)name;
 {
     // This shouldn't be called on a concrete class.  That would imply the caller knew the type of the file wrapper, which it shouldn't bother with.
     OBPRECONDITION([self class] == [OUZipMember class]);
@@ -26,7 +27,7 @@ RCS_ID("$Id$");
         return [[OUZipFileMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] contents:[fileWrapper regularFileContents]];
     } else if ([fileWrapper isSymbolicLink]) {
         [self release];
-        return [[OUZipLinkMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] destination:[fileWrapper symbolicLinkDestination]];
+        return [[OUZipLinkMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] destination:[[fileWrapper symbolicLinkDestinationURL] path]];
     } else if ([fileWrapper isDirectory]) {
         [self release];
 
@@ -35,7 +36,7 @@ RCS_ID("$Id$");
         NSArray *childKeys = [[childWrappers allKeys] sortedArrayUsingSelector:@selector(compare:)];
         
         for (NSString *childKey in childKeys) {
-            OFFileWrapper *childWrapper = [childWrappers objectForKey:childKey];
+            NSFileWrapper *childWrapper = [childWrappers objectForKey:childKey];
             // Note: this loses the preferred filenames of our children, but zip files don't have a notion of preferred filename vs. actual filename the way file wrappers do
             OUZipMember *child = [[OUZipMember alloc] _initWithFileWrapper:childWrapper name:childKey];
             [directory addChild:child];
@@ -48,13 +49,13 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- initWithFileWrapper:(OFFileWrapper *)fileWrapper;
+- initWithFileWrapper:(NSFileWrapper *)fileWrapper;
 {
     return [self _initWithFileWrapper:fileWrapper name:[fileWrapper preferredFilename]];
 }
 
 // Returns a new autoreleased file wrapper; won't return the same wrapper on multiple calls
-- (OFFileWrapper *)fileWrapperRepresentation;
+- (NSFileWrapper *)fileWrapperRepresentation;
 {
     OBRequestConcreteImplementation(self, _cmd);
     return nil;

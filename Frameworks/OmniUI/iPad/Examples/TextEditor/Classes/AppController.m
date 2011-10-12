@@ -75,16 +75,19 @@ RCS_ID("$Id$")
 }
 
 #pragma mark -
-#pragma mark OUIDocumentPickerDelegate
+#pragma mark OUIDocumentStoreDelegate
 
-- (NSString *)documentPickerDocumentTypeForNewFiles:(OUIDocumentPicker *)picker;
+- (NSString *)documentStoreDocumentTypeForNewFiles:(OUIDocumentStore *)store;
 {
     return (NSString *)kUTTypeRTF;
 }
 
-- (NSData *)documentPicker:(OUIDocumentPicker *)picker PDFDataForProxy:(OUIDocumentProxy *)proxy error:(NSError **)outError;
+#pragma mark -
+#pragma mark OUIDocumentPickerDelegate
+
+- (NSData *)documentPicker:(OUIDocumentPicker *)picker PDFDataForFileItem:(OUIDocumentStoreFileItem *)fileItem error:(NSError **)outError;
 {
-    RTFDocument *doc = [[RTFDocument alloc] initWithExistingDocumentProxy:proxy error:outError];
+    RTFDocument *doc = [[RTFDocument alloc] initWithExistingFileItem:fileItem error:outError];
     if (!doc)
         return nil;
     

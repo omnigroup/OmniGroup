@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		007E767810C8469F00313878 /* OABoxSeparator.h in Headers */ = {isa = PBXBuildFile; fileRef = 007E767610C8469F00313878 /* OABoxSeparator.h */; };
 		007E767910C8469F00313878 /* OABoxSeparator.m in Sources */ = {isa = PBXBuildFile; fileRef = 007E767710C8469F00313878 /* OABoxSeparator.m */; };
+		008AB54814032D2B001F29CD /* OATinyPopUpButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 008AB54614032D2B001F29CD /* OATinyPopUpButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		008AB54914032D2B001F29CD /* OATinyPopUpButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 008AB54714032D2B001F29CD /* OATinyPopUpButton.m */; };
+		008AB54C14032D67001F29CD /* OADropDownTriangle.png in Resources */ = {isa = PBXBuildFile; fileRef = 008AB54B14032D67001F29CD /* OADropDownTriangle.png */; };
 		3401161611E516C10016ADB3 /* OATextStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3401161411E516C10016ADB3 /* OATextStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3401161711E516C10016ADB3 /* OATextStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3401161511E516C10016ADB3 /* OATextStorage.m */; };
 		3401161811E516C10016ADB3 /* OATextStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3401161411E516C10016ADB3 /* OATextStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -485,6 +488,9 @@
 		000303DE014E0AC13997A12D /* NSDocumentController-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDocumentController-OAExtensions.m"; sourceTree = "<group>"; };
 		007E767610C8469F00313878 /* OABoxSeparator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OABoxSeparator.h; sourceTree = "<group>"; };
 		007E767710C8469F00313878 /* OABoxSeparator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OABoxSeparator.m; sourceTree = "<group>"; };
+		008AB54614032D2B001F29CD /* OATinyPopUpButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATinyPopUpButton.h; sourceTree = "<group>"; };
+		008AB54714032D2B001F29CD /* OATinyPopUpButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATinyPopUpButton.m; sourceTree = "<group>"; };
+		008AB54B14032D67001F29CD /* OADropDownTriangle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADropDownTriangle.png; sourceTree = "<group>"; };
 		00E51EF4FE8AB2E911C9CC38 /* OAAppKitQueueProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAppKitQueueProcessor.m; sourceTree = "<group>"; };
 		00E51EF5FE8AB2E911C9CC38 /* OAApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAApplication.m; sourceTree = SOURCE_ROOT; };
 		00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorPalette.m; sourceTree = SOURCE_ROOT; };
@@ -1545,6 +1551,9 @@
 			children = (
 				00E51F8EFE8AB2E911C9CC38 /* OAPopUpButton.h */,
 				00E51F7CFE8AB2E911C9CC38 /* OAPopUpButton.m */,
+				008AB54614032D2B001F29CD /* OATinyPopUpButton.h */,
+				008AB54714032D2B001F29CD /* OATinyPopUpButton.m */,
+				008AB54B14032D67001F29CD /* OADropDownTriangle.png */,
 			);
 			name = NSPopUpButton;
 			sourceTree = "<group>";
@@ -2348,6 +2357,7 @@
 				4A785F630B040CF500B513F3 /* OADatePickerTextField.h in Headers */,
 				4A785F670B040D2E00B513F3 /* OASteppableTextField.h in Headers */,
 				3431F1300B1B7847002B728E /* OADatePickerTextFieldCell.h in Headers */,
+				008AB54814032D2B001F29CD /* OATinyPopUpButton.h in Headers */,
 				A27039C30B9E006600C1D4A7 /* OATextFieldBinder.h in Headers */,
 				9FFB676D0C18A44000910EEF /* OADatePicker.h in Headers */,
 				345E74250C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h in Headers */,
@@ -2614,6 +2624,7 @@
 				34F0995809322EA30001D0D5 /* OAAboutPanel.nib in Resources */,
 				4AA05CC70B0414F400EDED39 /* OAPopupDatePicker.nib in Resources */,
 				4A785F8B0B040E5500B513F3 /* smallcalendar.png in Resources */,
+				008AB54C14032D67001F29CD /* OADropDownTriangle.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2895,6 +2906,7 @@
 				3401161911E516C10016ADB3 /* OATextStorage.m in Sources */,
 				344B6E4A12A4D3DC00D876CD /* OATextAttachment.m in Sources */,
 				3451254C12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */,
+				008AB54914032D2B001F29CD /* OATinyPopUpButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

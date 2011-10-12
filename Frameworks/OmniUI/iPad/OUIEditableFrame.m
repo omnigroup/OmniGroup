@@ -207,6 +207,7 @@ static NSString *_positionDescription(OUIEditableFrame *self, OUEFTextPosition *
 }
 #endif
 
+#ifdef DEBUG
 static void btrace(void)
 {
 #define NUMB 24
@@ -214,6 +215,7 @@ static void btrace(void)
     int numb = backtrace(fps, NUMB);
     backtrace_symbols_fd(fps + 1, numb - 1, 2);
 }
+#endif
 
 + (Class)textStorageClass;
 {
@@ -231,6 +233,9 @@ static id do_init(OUIEditableFrame *self)
     
     self->_autocorrectionType = UITextAutocorrectionTypeDefault;
     self->_autocapitalizationType = UITextAutocapitalizationTypeSentences;
+#if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
+    self->_spellCheckingType = UITextSpellCheckingTypeDefault;
+#endif
     self->_keyboardType = UIKeyboardTypeDefault;
 
     self->generation = 1;
@@ -240,6 +245,7 @@ static id do_init(OUIEditableFrame *self)
     self->flags.textNeedsUpdate = 1;
     self->flags.delegateRespondsToLayoutChanged = 0;
     self->flags.showSelectionThumbs = 1;
+    self->flags.loadingFromNib = 0;
     self->selectionDirtyRect = CGRectNull;
     self->markedTextDirtyRect = CGRectNull;
     
@@ -276,7 +282,9 @@ static id do_init(OUIEditableFrame *self)
 {
     if (!(self = [super initWithCoder:aDecoder]))
         return nil;
-    return do_init(self);
+    id result = do_init(self);
+    flags.loadingFromNib = YES;
+    return result;
 }
 
 #pragma mark -
@@ -946,6 +954,7 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
     [_markedRangeBackgroundColor release];
     
     [editMenu release];
+    [_textInspector release];
     
     [super dealloc];
 }
@@ -1535,6 +1544,8 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
     [self setNeedsDisplay];
 }
 
+// This needs to use hitTest:withEvent: if it is going to work with autocorrection/substitution views
+#if 0
 static BOOL _eventTouchesView(UIEvent *event, UIView *view)
 {
     if (view.hidden || !view.superview)
@@ -1551,21 +1562,31 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
     // Thumbs extent outside our bounds, so check them too
     return _eventTouchesView(event, self) || _eventTouchesView(event, startThumb) || _eventTouchesView(event, endThumb);
 }
+#endif
 
-static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view)
+- (BOOL)hasTouch:(UITouch *)touch;
 {
-    if (view.hidden || !view.superview)
+    if (!self.window || self.window != touch.window) {
         return NO;
+    }
     
-    return CGRectContainsPoint(view.bounds, [recognizer locationInView:view]);
+    UIView *hitView = [self hitTest:[touch locationInView:self] withEvent:nil];
+    OBASSERT(!hitView || hitView.hidden == NO);
+    return (hitView != nil);
 }
 
 - (BOOL)hasTouchByGestureRecognizer:(UIGestureRecognizer *)recognizer;
 {
     OBPRECONDITION(recognizer);
     
-    // Thumbs extent outside our bounds, so check them too
-    return _recognizerTouchedView(recognizer, self) || _recognizerTouchedView(recognizer, startThumb) || _recognizerTouchedView(recognizer, endThumb);
+    if (!self.window) {
+        return NO;
+    }
+    
+    // Thumbs and autocorrection/substitution views can extend outside our bounds. All are subviews, so just use our -hitTest:
+    UIView *hitView = [self hitTest:[recognizer locationInView:self] withEvent:nil];
+    OBASSERT(!hitView || hitView.hidden == NO);
+    return (hitView != nil);
 }
 
 #pragma mark -
@@ -1779,7 +1800,8 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
 {
     [super didMoveToSuperview];
     DEBUG_SCROLL(@"%s with superview: %@–%p", __func__, [self.superview class], self.superview);
-    isRegisteredForScrollNotifications = OUIRegisterForScrollNotificationsAboveView(self);
+    if (!flags.loadingFromNib) // delay if loading from nib
+        isRegisteredForScrollNotifications = OUIRegisterForScrollNotificationsAboveView(self);
 }
 
 - (void)didMoveToWindow
@@ -1799,6 +1821,12 @@ static BOOL _recognizerTouchedView(UIGestureRecognizer *recognizer, UIView *view
 
     if (!_content)
         [self setAttributedText:nil]; // Triggers all our sanity-ensuring checks
+    
+    if (flags.loadingFromNib) {        
+        // was delayed if loading from nib
+        isRegisteredForScrollNotifications = OUIRegisterForScrollNotificationsAboveView(self);
+        flags.loadingFromNib = NO;
+    }
 }
 
 - (void)setFrame:(CGRect)newFrame
@@ -2435,8 +2463,19 @@ enum {
 #pragma mark UITextInputTraits protocol
 
 @synthesize autocapitalizationType = _autocapitalizationType;
+#if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
+@synthesize spellCheckingType = _spellCheckingType;
+#endif
 
 @synthesize autocorrectionType = _autocorrectionType;
+#if 1 && defined(DEBUG) && defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED) && TARGET_IPHONE_SIMULATOR
+// Try to avoid -[AppleSpell init] crasher <https://devforums.apple.com/message/412228> in iOS 5 betas
+- (UITextAutocorrectionType)autocorrectionType;
+{
+    return UITextAutocorrectionTypeNo;
+}
+#endif
+
 @synthesize keyboardType = _keyboardType;
 
 - (UIKeyboardAppearance)keyboardAppearance;
@@ -2923,9 +2962,9 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
     if (direction == OUITextLayoutDirectionForward || direction == OUITextLayoutDirectionBackward) {
         if (direction == OUITextLayoutDirectionBackward)
             offset = -offset;
-        
-        if (offset < 0 && (NSUInteger)(-offset) >= pos)
-            result = 0;
+        // if the selection would run off the beginning of the selection, return nil. The text system (the auto-capitalization system specifically), seems to depend on this behavior
+        if (offset < 0 && (NSUInteger)(-offset) > pos)
+            return nil;
         else
             result = pos + offset;
     } else if (direction == UITextLayoutDirectionLeft || direction == UITextLayoutDirectionRight) {
@@ -3176,9 +3215,13 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
 
 - (UITextRange *)characterRangeByExtendingPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction;
 {
-    /* TODO: Implement this */
+#ifdef DEBUG
+    OBASSERT_NOT_REACHED("Don't know how to make this happen yet, but let's not intentionally crash release builds if it does...");
     btrace();
     abort();
+#endif
+    
+    return nil;
 }
 
 /* Not part of the official UITextInput protocol, but useful */
@@ -3220,16 +3263,21 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
 /* Writing direction */
 - (UITextWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction;
 {
-    /* TODO: Implement this */
+    // This gets called in iOS 5 b6. Let's not intentionally crash release builds; for now we'll ignore the change.
+#ifdef DEBUG
     btrace();
-    abort();    
+    OBFinishPortingLater("Stop ignoring writing direction changes.");
+#endif
+    return UITextWritingDirectionNatural;
 }
 
 - (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)range;
 {
-    /* TODO: Implement this */
+    // This gets called in iOS 5 b6. Let's not intentionally crash release builds; for now we'll ignore the change.
+#ifdef DEBUG
     btrace();
-    abort();
+    OBFinishPortingLater("Stop ignoring writing direction changes.");
+#endif
 }    
 
 /* Geometry used to provide, for example, a correction rect. */
@@ -3344,17 +3392,24 @@ CGRect OUITextLayoutFirstRectForRange(CTFrameRef frame, NSRange characterRange)
         return nil;
     
     OUEFTextPosition *pos = (OUEFTextPosition *)position;
-    NSUInteger index = pos.index;
     
     NSDictionary *ctStyles;
-    
-    if (selection && [selection isEmpty] && ((OUEFTextPosition *)selection.start).index == index)
-        // Return typingAttributes, if position is the same as the insertion point. Otherwise, if the insertion point is at the end and we type a character, on the next blink of the caret we'll get an assertion trying to index past the end of our OATextStorage.
-        ctStyles = [self typingAttributes];
-    else if (direction == UITextStorageDirectionBackward && index > 0)
-        ctStyles = [_content attributesAtIndex:index-1 effectiveRange:NULL];
-    else
-        ctStyles = [_content attributesAtIndex:index effectiveRange:NULL];
+    {
+        NSUInteger stylePosition = pos.index;
+        if (!selection || ([selection isEmpty] && ((OUEFTextPosition *)selection.start).index == stylePosition))
+            // Return typingAttributes, if position is the same as the insertion point. Otherwise, if the insertion point is at the end and we type a character, on the next blink of the caret we'll get an assertion trying to index past the end of our OATextStorage.
+            ctStyles = [self typingAttributes];
+        else if (direction == UITextStorageDirectionBackward && stylePosition > 0)
+            ctStyles = [_content attributesAtIndex:stylePosition-1 effectiveRange:NULL];
+        else {
+            // If the selection encompasses the end of the text with forwards affinity
+            if (stylePosition >= [_content length]) {
+                OBASSERT(stylePosition > 0);
+                stylePosition--;
+            }
+            ctStyles = [_content attributesAtIndex:stylePosition effectiveRange:NULL];
+        }
+    }
     
 
     NSMutableDictionary *uiStyles = [ctStyles mutableCopy];
@@ -3366,6 +3421,9 @@ CGRect OUITextLayoutFirstRectForRange(CTFrameRef frame, NSRange characterRange)
         CFStringRef fontName = CTFontCopyPostScriptName(ctFont);
         /* There's no way to tell the text input system that we're displaying a zoomed UI, but we can at least scale up the text in the correction rect. */
         UIFont *uif = [UIFont fontWithName:(id)fontName size:CTFontGetSize(ctFont) * MAX(1.0, [self scale])];
+        if (!uif) // we can get into situations where there are fonts the iPad is happy to render (GillSans-Light for example) but will not let us look up with UIFont. if we hit one of these, or otherwise fail, fall back to Helvetica Neue. I'm told it's fixed in iOS5
+            uif = [UIFont fontWithName:@"Helvetica Neue" size:CTFontGetSize(ctFont) * MAX(1.0, [self scale])];
+        
         CFRelease(fontName);
         [uiStyles setObject:uif forKey:UITextInputTextFontKey];
     }

@@ -7,30 +7,31 @@
 
 #import <OmniUI/OUIAppController.h>
 
-#import "OUIAppMenuController.h"
-#import "OUIEventBlockingView.h"
-#import "OUIParameters.h"
-#import "OUISyncMenuController.h"
-#import "OUISoftwareUpdateController.h"
-
-#import <OmniUI/OUIBarButtonItem.h>
-#import <OmniUI/OUIChangePreferencesActionSheet.h>
-#import <OmniUI/OUIDocumentPicker.h>
-#import <OmniUI/OUIDocumentProxy.h>
-#import <OmniUI/OUIWebViewController.h>
-#import <OmniUI/UIView-OUIExtensions.h>
-#import <OmniAppKit/OAFontDescriptor.h>
-
 #import <MessageUI/MFMailComposeViewController.h>
-#import <OmniFoundation/NSString-OFURLEncoding.h>
-#import "UIViewController-OUIExtensions.h"
-
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <MobileCoreServices/UTType.h>
-
-#import <SenTestingKit/SenTestSuite.h>
+#import <OmniAppKit/OAFontDescriptor.h>
+#import <OmniBase/OBRuntimeCheck.h>
 #import <OmniBase/system.h>
+#import <OmniFoundation/NSString-OFURLEncoding.h>
+#import <OmniUI/OUIAboutPanel.h>
+#import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUI/OUIDocumentPicker.h>
+#import <OmniUI/OUIDocumentStoreFileItem.h>
+#import <OmniUI/OUISpecialURLActionSheet.h>
+#import <OmniUI/OUIWebViewController.h>
+#import <OmniUI/UIView-OUIExtensions.h>
+#import <SenTestingKit/SenTestSuite.h>
+
 #import <sys/sysctl.h>
+
+#import "OUIAppMenuController.h"
+#import "OUICredentials.h"
+#import "OUIEventBlockingView.h"
+#import "OUIParameters.h"
+#import "OUISoftwareUpdateController.h"
+#import "OUISyncMenuController.h"
+#import "UIViewController-OUIExtensions.h"
 
 RCS_ID("$Id$");
 
@@ -39,8 +40,16 @@ RCS_ID("$Id$");
 @end
 
 @implementation OUIAppController
+{
+    UIPopoverController *_possiblyVisiblePopoverController;
+    UIPopoverArrowDirection _possiblyVisiblePopoverControllerArrowDirections;
+    UIBarButtonItem *_possiblyTappedButtonItem;
+    
+    OUIActionSheet *_possiblyVisibleActionSheet;
+}
 
 BOOL OUIShouldLogPerformanceMetrics;
+
 
 // This should be called right at the top of main() to meausre the time spent in the kernel, dyld, C++ constructors, etc.
 // Since we don't have iOS kernel source, we don't know exactly when p_starttime gets set, so this may miss/include extra stuff.
@@ -81,7 +90,11 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
     if (OUIShouldLogPerformanceMetrics)
         NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
     
-    [UIViewController installOUIExtensions];
+    [UIViewController installOUIViewControllerExtensions];
+    
+#ifdef OMNI_ASSERTIONS_ON
+    OBPerformRuntimeChecks();
+#endif
 }
 
 + (id)controller;
@@ -127,6 +140,7 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
     return _editableFileTypes;
 }
 
+// This must be thread-safe since it is called from a background thread by OUIDocumentStore item scanning, via our -documentStore:shouldIncludeFileItemWithFileType:
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 {
     OBPRECONDITION(!uti || [uti isEqualToString:[uti lowercaseString]]); // our cache uses lowercase keys.
@@ -134,25 +148,25 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
     if (uti == nil)
         return NO;
     
-    if (!_roleByFileType) {
-        static NSMutableDictionary *contentTypeRoles = nil;
-        if (contentTypeRoles == nil) {
-            // Make a fast index of all our declared UTIs
-            contentTypeRoles = [[NSMutableDictionary alloc] init];
-            NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
-            for (NSDictionary *documentType in documentTypes) {
-                NSString *role = [documentType objectForKey:@"CFBundleTypeRole"];
-                if (![role isEqualToString:@"Editor"] && ![role isEqualToString:@"Viewer"])
-                    continue;
-
-                NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
-                for (NSString *contentType in contentTypes)
-                    [contentTypeRoles setObject:role forKey:[contentType lowercaseString]];
-            }
+    dispatch_once(&_roleByFileTypeOnce, ^{
+        // Make a fast index of all our declared UTIs
+        NSMutableDictionary *contentTypeRoles = [[NSMutableDictionary alloc] init];
+        NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
+        for (NSDictionary *documentType in documentTypes) {
+            NSString *role = [documentType objectForKey:@"CFBundleTypeRole"];
+            if (![role isEqualToString:@"Editor"] && ![role isEqualToString:@"Viewer"])
+                continue;
+            
+            NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
+            for (NSString *contentType in contentTypes)
+                [contentTypeRoles setObject:role forKey:[contentType lowercaseString]];
         }
+        
         _roleByFileType = [contentTypeRoles copy];
-    }
-    
+        [contentTypeRoles release];
+    });
+    OBASSERT(_roleByFileType);
+
     
     for (NSString *candidateUTI in _roleByFileType) {
         if (UTTypeConformsTo((CFStringRef)uti, (CFStringRef)candidateUTI))
@@ -227,10 +241,15 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
         
         UIImage *appMenuImage = [UIImage imageNamed:imageName];
         OBASSERT(appMenuImage);
-        _appMenuBarItem = [[OUIBarButtonItem alloc] initWithImage:appMenuImage style:UIBarButtonItemStyleBordered target:self action:@selector(showAppMenu:)];
+        _appMenuBarItem = [[UIBarButtonItem alloc] initWithImage:appMenuImage style:UIBarButtonItemStylePlain target:self action:@selector(showAppMenu:)];
     }
     
     return _appMenuBarItem;
+}
+
+- (void)resetKeychain;
+{
+    OUIDeleteAllCredentials();
 }
 
 @synthesize documentPicker = _documentPicker;
@@ -244,6 +263,17 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
     return nil;
 }
 
+- (NSString *)applicationName;
+{
+    // The kCFBundleNameKey is often in the format "AppName-iPad".  If so, define an OUIApplicationName key in Info.plist and provide a better human-readable name, such as "AppName" or "AppName for iPad".
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *appName = [infoDictionary objectForKey:@"OUIApplicationName"];
+    if (!appName) {
+        appName = [infoDictionary objectForKey:(NSString *)kCFBundleNameKey];
+    }
+    return appName;
+}
+
 #pragma mark -
 #pragma mark NSObject (OUIAppMenuTarget)
 
@@ -251,6 +281,12 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 {
     OBASSERT_NOT_REACHED("Should be subclassed to provide something nicer.");
     return @"HALP ME!";
+}
+
+- (NSString *)aboutMenuTitle;
+{
+    NSString *format = NSLocalizedStringFromTableInBundle(@"About %@", @"OmniUI", OMNI_BUNDLE, @"Default title for the About menu item");
+    return [NSString stringWithFormat:format, self.applicationName];
 }
 
 // Invoked by the app menu
@@ -392,6 +428,11 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
     [self _showWebViewWithPath:indexPath title:webViewTitle];
 }
 
+- (void)showAboutPanel:(id)sender;
+{
+    [OUIAboutPanel displayInSheet];
+}
+
 - (void)runTests:(id)sender;
 {
     Class cls = NSClassFromString(@"SenTestSuite");
@@ -403,8 +444,6 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 
 - (void)showAppMenu:(id)sender;
 {
-    [self dismissPopoverAnimated:YES];
-    
     if (!_appMenuController)
         _appMenuController = [[OUIAppMenuController alloc] init];
 
@@ -415,8 +454,6 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 - (void)showSyncMenu:(id)sender;
 // aka "import from webDAV"
 {
-    [self dismissPopoverAnimated:YES];
-    
     if (!_syncMenuController)
         _syncMenuController = [[OUISyncMenuController alloc] init];
     
@@ -433,6 +470,7 @@ static void _forgetPossiblyVisiblePopoverIfAlreadyHidden(OUIAppController *self)
         // The user may have tapped outside the popover and dismissed it automatically (or it could have been dismissed in code without going through code). We'd have to interpose ourselves as the delegate to tell the difference to assert about it. Really, it seems like too much trouble since we just want to make sure multiple popovers aren't visible.
         [self->_possiblyVisiblePopoverController release];
         self->_possiblyVisiblePopoverController = nil;
+        self->_possiblyVisiblePopoverControllerArrowDirections = UIPopoverArrowDirectionUnknown;
     }
 }
 
@@ -465,7 +503,8 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
         
         UIPopoverController *dismissingPopover = [possiblyVisblePopover autorelease];
         self->_possiblyVisiblePopoverController = nil;
-        
+        self->_possiblyVisiblePopoverControllerArrowDirections = UIPopoverArrowDirectionUnknown;
+
         _performDismissPopover(dismissingPopover, animated);
     }
     
@@ -475,7 +514,8 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     if (_possiblyTappedButtonItem && _possiblyVisiblePopoverController.popoverVisible) {
-        [self presentPopover:_possiblyVisiblePopoverController fromBarButtonItem:_possiblyTappedButtonItem permittedArrowDirections:[_possiblyVisiblePopoverController popoverArrowDirection] animated:NO];
+        // Hiding a popover sets its allowed arrow directions to UIPopoverArrowDirectionUnknown under iOS 5, which causes an exception here on representation. So, we now remember the original argument passed in ourselves rather than calling -arrowDirections on the popover.
+        [self presentPopover:_possiblyVisiblePopoverController fromBarButtonItem:_possiblyTappedButtonItem permittedArrowDirections:_possiblyVisiblePopoverControllerArrowDirections animated:NO];
     }
 }
 
@@ -484,11 +524,17 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 {
     OBPRECONDITION(popover);
     
+    // If _possiblyVisibleActionSheet is not nil, then we have a visable actionSheet. Dismiss it.
+    if (_possiblyVisibleActionSheet) {
+        [self dismissActionSheetAndPopover:YES];
+    }
+    
     if (!_dismissVisiblePopoverInFavorOfPopover(self, popover, animated))
         return NO;
     
     OBASSERT(_possiblyVisiblePopoverController == nil);
     _possiblyVisiblePopoverController = [popover retain];
+    _possiblyVisiblePopoverControllerArrowDirections = arrowDirections;
     
     [popover presentPopoverFromRect:rect inView:view permittedArrowDirections:arrowDirections animated:animated];
     return YES;
@@ -497,6 +543,11 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 - (BOOL)presentPopover:(UIPopoverController *)popover fromBarButtonItem:(UIBarButtonItem *)item permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
 {
     OBPRECONDITION(popover);
+
+    // If _possiblyVisibleActionSheet is not nil, then we have a visable actionSheet. Dismiss it.
+    if (_possiblyVisibleActionSheet) {
+        [self dismissActionSheetAndPopover:YES];
+    }
     
     if (!_dismissVisiblePopoverInFavorOfPopover(self, popover, animated))
         return NO;
@@ -504,9 +555,11 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     if (_possiblyVisiblePopoverController != popover) { // Might be re-displaying a popover after an orientation change.
         OBASSERT(_possiblyVisiblePopoverController == nil);
         _possiblyVisiblePopoverController = [popover retain];
+        _possiblyVisiblePopoverControllerArrowDirections = arrowDirections;
     }
 
     // This is here to fix <bug:///69210> (Weird alignment between icon and popover arrow for the contents popover).  When we have a UIBarButtonItem with a custom view the arrow on the popup does not align correctly.  A radar #9293627 has been filed against this.  When we have a UIBarButtonItem with a custom view we present it using presentPopoverFromRect:inView:permittedArrowDirections:animated: instead of the standard presentPopoverFromBarButtonItem:permittedArrowDirections:animated:, which will align the popover arrow in the correct place.  We have to adjust the rect height to get the popover to appear in the correct place, since our buttons view size is for the toolbar height and not the actual button.
+#define kOUIToolbarEdgePadding (5.0f)
     if (item.customView) {
         CGRect rect = [item.customView convertRect:item.customView.bounds toView:[item.customView superview]];
         rect.size.height -= kOUIToolbarEdgePadding;
@@ -532,13 +585,52 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     
     UIPopoverController *dismissingPopover = [_possiblyVisiblePopoverController autorelease];
     _possiblyVisiblePopoverController = nil;
-    
+    _possiblyVisiblePopoverControllerArrowDirections = UIPopoverArrowDirectionUnknown;
+
     _performDismissPopover(dismissingPopover, animated);
 }
 
 - (void)dismissPopoverAnimated:(BOOL)animated;
 {
     [self dismissPopover:_possiblyVisiblePopoverController animated:animated];
+}
+
+// Action Sheet Helpers
+- (void)showActionSheet:(OUIActionSheet *)actionSheet fromSender:(id)sender animated:(BOOL)animated;
+{
+    // Test to see if the user is trying to show the same actionSheet that is already visible. If so, dismiss it and return.
+    if (_possiblyVisibleActionSheet &&
+        [actionSheet.identifier isEqualToString:_possiblyVisibleActionSheet.identifier]) {
+        [self dismissActionSheetAndPopover:YES];
+        return;
+    }
+    
+    [self dismissActionSheetAndPopover:YES];
+    
+
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(actionSheetDidDismiss:)
+                                                 name:OUIActionSheetDidDismissNotification
+                                               object:actionSheet];
+    
+    if ([sender isKindOfClass:[UIView class]])
+        [actionSheet showFromRect:[sender frame] inView:[sender superview] animated:animated];
+    else {
+        OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]);
+        [actionSheet showFromBarButtonItem:sender animated:animated];
+    }
+    
+    _possiblyVisibleActionSheet = actionSheet;
+}
+
+- (void)dismissActionSheetAndPopover:(BOOL)animated;
+{
+    [self dismissPopover:_possiblyVisiblePopoverController animated:animated];
+    
+    if (_possiblyVisibleActionSheet) {
+        [_possiblyVisibleActionSheet dismissWithClickedButtonIndex:_possiblyVisibleActionSheet.cancelButtonIndex animated:animated];
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIActionSheetDidDismissNotification object:_possiblyVisibleActionSheet];        
+    }
 }
 
 #pragma mark -
@@ -560,22 +652,48 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 
 - (BOOL)handleSpecialURL:(NSURL *)url;
 {
-    if (![self isSpecialURL:url])
-        return NO;
+    OBPRECONDITION([self isSpecialURL:url]);
+
+    UIViewController *activeController = [self _activeController];
+    UIView *activeView = activeController.view;
+    if (activeView == nil)
+        return NO; 
 
     NSString *path = [url path];
+    UIActionSheet *actionSheet = nil;
+    
     if ([path isEqualToString:@"/change-preference"]) {
-        UIViewController *activeController = [self _activeController];
-        UIView *activeView = activeController.view;
-        if (activeView != nil) {
-            OUIChangePreferencesActionSheet *actionSheet = [[OUIChangePreferencesActionSheet alloc] initWithChangePreferenceURL:url];
-            // [actionSheet showFromRect:[_exportButton frame] inView:[_exportButton superview] animated:YES];
-            [actionSheet showInView:activeView]; // returns immediately
-            [actionSheet release];
-        }
+        NSString *titleFormat = NSLocalizedStringFromTableInBundle(@"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?", @"OmniUI", OMNI_BUNDLE, @"alert message");
+        actionSheet = [[OUISpecialURLActionSheet alloc] initWithURL:url titleFormat:titleFormat handler:OUIChangePreferenceURLHandler];
+    } else if ([path isEqualToString:@"/debug"]) {
+        NSString *titleFormat = NSLocalizedStringFromTableInBundle(@"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Ninjas, please don’t.\nDo you wish to run this command?", @"OmniUI", OMNI_BUNDLE, @"debug setting alert message");
+        actionSheet = [[OUISpecialURLActionSheet alloc] initWithURL:url titleFormat:titleFormat handler:[self debugURLHandler]];
+    }
+    
+    if (actionSheet) {
+        [actionSheet showInView:activeView]; // returns immediately
+        [actionSheet release];
     }
 
     return YES;
+}
+
+- (OUISpecialURLHandler)debugURLHandler;
+{
+    // subclass should override to provide handler for app-specific debug URLs of format [appName]:///debug?command, e.g. omnioutliner:///debug?reset-keychain
+    return [[^(NSURL *url){ return NO; } copy] autorelease];
+}
+
+- (void)actionSheetDidDismiss:(NSNotification *)notification;
+{
+    OUIActionSheet *actionSheet = (OUIActionSheet *)notification.object;
+    
+    // The user could be switching between action sheets. When it's dismissed with animation, we may have already reassigned _nonretaind_actionSheet. So we don't always want to set it to nil. If the user is actually just dismissing it, the _possiblyVisibleActionSheet should still match actionSheet, so we're good to set it to nil.
+    if (actionSheet == _possiblyVisibleActionSheet) {
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIActionSheetDidDismissNotification object:_possiblyVisibleActionSheet];
+
+        _possiblyVisibleActionSheet = nil;
+    }
 }
 
 #pragma mark -
@@ -583,6 +701,11 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 
 // For when running on iOS 3.2.
 - (void)applicationWillTerminate:(UIApplication *)application;
+{
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application;
 {
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
@@ -603,19 +726,29 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 }
 
 #pragma mark -
-#pragma mark OUIDocumentPickerDelegate
+#pragma mark OUIDocumentStoreDelegate
 
-- (Class)documentPicker:(OUIDocumentPicker *)picker proxyClassForURL:(NSURL *)proxyURL;
+- (Class)documentStore:(OUIDocumentPicker *)picker fileItemClassForURL:(NSURL *)fileURL;
 {
-    return [OUIDocumentProxy class];
+    return [OUIDocumentStoreFileItem class];
 }
 
-- (NSString *)documentPickerBaseNameForNewFiles:(OUIDocumentPicker *)picker;
+- (BOOL)documentStore:(OUIDocumentStore *)store shouldIncludeFileItemWithFileType:(NSString *)fileType;
+{
+    return [self canViewFileTypeWithIdentifier:fileType];
+}
+
+- (NSString *)documentStoreBaseNameForNewFiles:(OUIDocumentStore *)store;
 {
     return NSLocalizedStringFromTableInBundle(@"My Document", @"OmniUI", OMNI_BUNDLE, @"Base name for newly created documents. This will have an number appended to it to make it unique.");
 }
 
-- (BOOL)createNewDocumentAtURL:(NSURL *)url error:(NSError **)outError;
+- (NSArray *)documentStoreEditableDocumentTypes:(OUIDocumentStore *)store;
+{
+    return [self editableFileTypes];
+}
+
+- (void)createNewDocumentAtURL:(NSURL *)url completionHandler:(void (^)(NSURL *url, NSError *error))completionHandler;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }

@@ -37,7 +37,7 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *where)
 {
     NSDictionary *userInfo;
@@ -51,7 +51,7 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
 }
 #endif
 
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
 // API
 - (OFCSSMKey *)getPublicKey:(xmlNode *)keyInfo algorithm:(CSSM_ALGORITHMS)keytype error:(NSError **)outError;
 {
@@ -185,7 +185,7 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
 
 NSArray *OSUGetSignedPortionsOfAppcast(NSData *xmlData, NSString *pemFile, NSError **outError)
 {
-#if OF_ENABLE_CSSM
+#if OF_ENABLE_CDSA
     NSArray *trusts = OFReadCertificatesFromFile(pemFile, kSecFormatPEMSequence, outError);
     if (!trusts)
         return nil;

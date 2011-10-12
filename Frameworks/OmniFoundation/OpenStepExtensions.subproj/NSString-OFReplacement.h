@@ -46,13 +46,12 @@ typedef NSString *(*OFSubstringReplacementFunction)(NSString *, NSRange *, void 
                                       range:(NSRange)touchMe;
 - (NSString *)stringByPerformingReplacement:(OFSubstringReplacementFunction)replacer
                                onCharacters:(NSCharacterSet *)replaceMe;
-#ifdef NS_BLOCKS_AVAILABLE
+
 typedef NSString *(^OFSubstringReplacementBlock)(NSString *, NSRange *);
 - (NSString *)stringByPerformingReplacement:(OFSubstringReplacementBlock)replacer
                                onCharacters:(NSCharacterSet *)replaceMe
                                     options:(NSStringCompareOptions)options
                                       range:(NSRange)touchMe;
-#endif
 
 @end
 

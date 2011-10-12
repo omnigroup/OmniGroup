@@ -5,35 +5,21 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OAInternetConfig.h"
+#import <OmniAppKit/OAInternetConfig.h>
 
-#if OA_INTERNET_CONFIG_ENABLED
-
-#import <AppKit/NSPanel.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
-#import <Carbon/Carbon.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$")
 
+@interface OAInternetConfig ()
 
-// The InternetConfig documentation can be found at http://www.quinn.echidna.id.au/Quinn/Config/.
-
-@interface OAInternetConfig (Private)
-
-typedef struct _OAInternetConfigInfo {
-    BOOL valid;
-    NSString *applicationName;
-} OAInternetConfigInfo;
-
-- (NSString *)_helperKeyNameForScheme:(NSString *)scheme;
 - (void)sendMailViaEntourageTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body;
 - (void)sendMailViaAppleScriptWithApplication:(NSString *)mailApp mailtoURL:(NSString *)url codedBody:(NSString *)body;
 - (NSString *)mailtoURLWithTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject;
 
-static NSString *OANameForInternetConfigErrorCode(OSStatus errorCode);
 static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
 
 @end
@@ -56,130 +42,32 @@ static NSString *helperKeyPrefix = nil;
 
 + (FourCharCode)applicationSignature;
 {
-    NSString *bundleSignature;
-    NSData *signatureBytes;
-
-    bundleSignature = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleSignature"];
+    NSString *bundleSignature = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleSignature"];
     if (!bundleSignature)
         return FOUR_CHAR_CODE('????');
     
-    signatureBytes = [bundleSignature dataUsingEncoding:[NSString defaultCStringEncoding]];
+    NSData *signatureBytes = [bundleSignature dataUsingEncoding:[NSString defaultCStringEncoding]];
     if (!signatureBytes || ([signatureBytes length] < 4))
         return FOUR_CHAR_CODE('????');
     
     return *(const OSType *)[signatureBytes bytes];
 }
 
-// Init and dealloc
-
-- init;
-{
-    ICInstance anInstance;
-
-    if (!(self = [super init]))
-        return nil;
-    
-    if (ICStart(&anInstance, [[self class] applicationSignature]) != noErr)
-        return nil;
-    internetConfigInstance = anInstance;
-    return self;
-}
-
-- (void)dealloc;
-{
-    ICStop(internetConfigInstance);
-    [super dealloc];
-}
-
-//
-
-- (NSString *)iToolsAccountName:(NSError **)outError;
-{
-    NSData *iToolsAccountPreferenceValue = [self dataForPreferenceKey:@"IToolsAccountName" error:outError];
-    
-    if (iToolsAccountPreferenceValue == nil)
-        return nil;
-    
-    NSString *result = (NSString *)CFStringCreateWithPascalString(NULL, [iToolsAccountPreferenceValue bytes], kCFStringEncodingMacRoman);
-    return [result autorelease];
-}
-
 - (NSString *)helperApplicationForScheme:(NSString *)scheme;
 {
-    // Check Launch Services
-    {
-        OSStatus status;
-        CFURLRef schemeURL, helperApplicationURL;
+    CFURLRef schemeURL = (CFURLRef)[NSURL URLWithString:[scheme stringByAppendingString:@":"]];
+    CFURLRef helperApplicationURL;
+    OSStatus status = LSGetApplicationForURL(schemeURL, kLSRolesAll, NULL, &helperApplicationURL);
+    if (status == noErr) {
+        NSString *helperApplicationPath, *helperApplicationName;
 
-        schemeURL = (CFURLRef)[NSURL URLWithString:[scheme stringByAppendingString:@":"]];
-        status = LSGetApplicationForURL(schemeURL, kLSRolesAll, NULL, &helperApplicationURL);
-        if (status == noErr) {
-            NSString *helperApplicationPath, *helperApplicationName;
-
-            // Check to make sure the registered helper application isn't us
-            helperApplicationPath = [(NSURL *)helperApplicationURL path];
-            helperApplicationName = [[helperApplicationPath lastPathComponent] stringByDeletingPathExtension];
-            return helperApplicationName;
-        }
+        // Check to make sure the registered helper application isn't us
+        helperApplicationPath = [(NSURL *)helperApplicationURL path];
+        helperApplicationName = [[helperApplicationPath lastPathComponent] stringByDeletingPathExtension];
+        return helperApplicationName;
     }
 
-    // Check Internet Config
-    {
-        NSString *helperKeyString;
-        Str255 helperKeyPascalString;
-        ICAppSpec helperApplication;
-        ICAttr attribute;
-        long helperApplicationSize;
-        OSStatus error;
-
-        helperKeyString = [self _helperKeyNameForScheme:scheme];
-        CFStringGetPascalString((CFStringRef)helperKeyString, helperKeyPascalString, sizeof(helperKeyPascalString) - 1, kCFStringEncodingMacRoman);
-
-        helperApplicationSize = sizeof(helperApplication);
-        error = ICGetPref(internetConfigInstance, helperKeyPascalString, &attribute, &helperApplication, &helperApplicationSize);
-        switch (error) {
-            case noErr:
-                return [(NSString *)CFStringCreateWithPascalString(NULL, helperApplication.name, kCFStringEncodingMacRoman) autorelease];
-                break;
-            case icPrefNotFoundErr:
-#ifdef DEBUG
-                NSLog(@"OAInternetConfig: ICGetPref found no helper application for %@", scheme);
-#endif
-                return nil;
-            default:
-                NSLog(@"OAInternetConfig: ICGetPref returned an error while getting key %@: %@", helperKeyString, OANameForInternetConfigErrorCode(error));
-                return nil;
-        }
-    }
-}
-
-- (BOOL)setApplicationCreatorCode:(FourCharCode)applicationCreatorCode name:(NSString *)applicationName forScheme:(NSString *)scheme error:(NSError **)outError;
-{
-    Str255 helperKeyPascalString;
-    NSString *helperKeyString = [self _helperKeyNameForScheme:scheme];
-    CFStringGetPascalString((CFStringRef)helperKeyString, helperKeyPascalString, sizeof(helperKeyPascalString) - 1, kCFStringEncodingMacRoman);
-    
-    ICAppSpec helperApplication;
-    helperApplication.fCreator = applicationCreatorCode;
-    CFStringGetPascalString((CFStringRef)applicationName, helperApplication.name, sizeof(helperApplication.name) - 1, kCFStringEncodingMacRoman);
-    long helperApplicationSize = sizeof(helperApplication);
-    
-    OSStatus error = ICSetPref(internetConfigInstance, helperKeyPascalString, kICAttrNoChange, &helperApplication, helperApplicationSize);
-    
-    if (error == noErr)
-        return YES;
-    
-    NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to set '%@' to be owner for url scheme '%@'.", @"OmniAppKit", OMNI_BUNDLE, @"internet config error"), applicationName, scheme];
-    NSString *reason;
-    
-    if (error == icPermErr)
-        reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"ICSetPref returned permissions when attempting setting key %@", @"OmniAppKit", [OAInternetConfig bundle], "internet config error"), helperKeyString];
-    else
-        reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"ICSetPref returned an error while setting key %@: %@", @"OmniAppKit", [OAInternetConfig bundle], "internet config error"), helperKeyString, OANameForInternetConfigErrorCode(error)];
-    NSDictionary  *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
-    if (outError)
-        *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:error userInfo:userInfo];
-    return NO;
+    return nil;
 }
 
 - (BOOL)launchURL:(NSString *)urlString error:(NSError **)outError;
@@ -202,134 +90,6 @@ static NSString *helperKeyPrefix = nil;
         *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:error userInfo:userInfo];
 
     return NO;
-}
-
-// Mappings between type/creator codes and filename extensions
-
-- (NSArray *)mapEntries;
-{
-    // TODO: -mapEntries not finished
-    return nil;
-}
-
-- (OAInternetConfigMapEntry *)mapEntryForFilename:(NSString *)filename;
-{
-    OSStatus error;
-    ICMapEntry mapEntry;
-    Str255 filenamePascalString;
-
-    CFStringGetPascalString((CFStringRef)filename, filenamePascalString, sizeof(filenamePascalString) - 1, kCFStringEncodingMacRoman);
-    error = ICMapFilename(internetConfigInstance, filenamePascalString, &mapEntry);
-    if (error != noErr)
-        [NSException raise:@"OAInternetConfigException" format:NSLocalizedStringFromTableInBundle(@"ICMapFilename returned an error for file %@: %@", @"OmniAppKit", [OAInternetConfig bundle], "internet config error"), filename, OANameForInternetConfigErrorCode(error)];
-    // TODO: -mapEntryForFilename: not finished
-    return nil;
-}
-
-- (OAInternetConfigMapEntry *)mapEntryForTypeCode:(long)fileTypeCode creatorCode:(long)fileCreatorCode hintFilename:(NSString *)filename;
-{
-    // TODO: -mapEntryForTypeCode:creatorCode:hintFilename: not finished
-    return nil;
-}
-
-- (void)editPreferencesFocusOnKey:(NSString *)keyString;
-{
-    OSStatus error;
-    Str255 keyPascalString;
-
-    if (keyString == nil)
-        keyString = @"";
-    CFStringGetPascalString((CFStringRef)keyString, keyPascalString, sizeof(keyPascalString) - 1, kCFStringEncodingMacRoman);
-    error = ICEditPreferences(internetConfigInstance, keyPascalString);
-    if (error != noErr)
-        [NSException raise:@"OAInternetConfigException" format:NSLocalizedStringFromTableInBundle(@"Error editing InternetConfig preferences for key %@: %@", @"OmniAppKit", [OAInternetConfig bundle], "internet config error"), keyString, OANameForInternetConfigErrorCode(error)];
-}
-
-// Low-level access
-
-- (void)beginReadOnlyAccess;
-{
-    OSStatus error;
-
-    error = ICBegin(internetConfigInstance, icReadOnlyPerm);
-    if (error != noErr)
-        [NSException raise:@"OAInternetConfigException" format:NSLocalizedStringFromTableInBundle(@"Error opening InternetConfig for read-only access: %@", @"OmniAppKit", [OAInternetConfig bundle], "internet config error"), OANameForInternetConfigErrorCode(error)];
-}
-
-- (void)beginReadWriteAccess;
-{
-    OSStatus error;
-
-    error = ICBegin(internetConfigInstance, icReadWritePerm);
-    if (error != noErr)
-        [NSException raise:@"OAInternetConfigException" format:NSLocalizedStringFromTableInBundle(@"Error opening InternetConfig for read-write access: %@", @"OmniAppKit", [OAInternetConfig bundle], "internet config error"), OANameForInternetConfigErrorCode(error)];
-}
-
-- (void)endAccess;
-{
-    OSStatus error;
-
-    error = ICEnd(internetConfigInstance);
-    if (error != noErr)
-        [NSException raise:@"OAInternetConfigException" format:NSLocalizedStringFromTableInBundle(@"ICEnd returned an error: %@", @"OmniAppKit", [OAInternetConfig bundle], "internet config error"), OANameForInternetConfigErrorCode(error)];
-}
-
-- (NSArray *)allPreferenceKeys;
-{
-    OSStatus error;
-    NSMutableArray *keys;
-    long preferenceIndex, preferenceCount;
-
-    [self beginReadOnlyAccess];
-    error = ICCountPref(internetConfigInstance, &preferenceCount);
-    if (error != noErr)
-        [NSException raise:@"OAInternetConfigException" format:NSLocalizedStringFromTableInBundle(@"ICCountPref returned an error: %@", @"OmniAppKit", [OAInternetConfig bundle], "internet config error"), OANameForInternetConfigErrorCode(error)];
-    keys = [NSMutableArray arrayWithCapacity:preferenceCount];
-    for (preferenceIndex = 0; preferenceIndex < preferenceCount; preferenceIndex++) {
-        Str255 keyPascalString;
-        NSString *keyString;
-
-        error = ICGetIndPref(internetConfigInstance, preferenceIndex + 1, keyPascalString);
-        if (error != noErr)
-            [NSException raise:@"OAInternetConfigException" format:NSLocalizedStringFromTableInBundle(@"ICGetIndPref %d/%d returned an error: %@", @"OmniAppKit", [OAInternetConfig bundle], "internet config error"), preferenceIndex + 1, preferenceCount, OANameForInternetConfigErrorCode(error)];
-        keyString = (NSString *)CFStringCreateWithPascalString(NULL, keyPascalString, kCFStringEncodingMacRoman);
-        [keys addObject:keyString];
-        [keyString release];
-    }
-    [self endAccess];
-    return keys;
-}
-
-- (NSData *)dataForPreferenceKey:(NSString *)preferenceKey error:(NSError **)outError;
-{
-    if (preferenceKey == nil || ([preferenceKey length] == 0))
-        [NSException raise:NSInvalidArgumentException format:@"preferenceKey may not be nil or empty"];
-
-    Str255 keyPascalString;
-    CFStringGetPascalString((CFStringRef)preferenceKey, keyPascalString, sizeof(keyPascalString) - 1, kCFStringEncodingMacRoman);
-    
-    ICAttr itemAttributes;
-    Handle itemDataHandle = NewHandle(256);
-    OSStatus error = ICFindPrefHandle(internetConfigInstance, keyPascalString, &itemAttributes, itemDataHandle);
-
-    NSData *itemData = nil;
-    if (error == noErr) {
-        HLock(itemDataHandle);
-        itemData = [NSData dataWithBytes:*itemDataHandle length:GetHandleSize(itemDataHandle)];
-        HUnlock(itemDataHandle);
-        DisposeHandle(itemDataHandle);
-        
-        return itemData;
-    } else {
-        DisposeHandle(itemDataHandle);
-        
-        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Error reading InternetConfig preference for key %@", @"OmniAppKit", OMNI_BUNDLE, "internet config error"), preferenceKey];
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"ICFindPrefHandle returned %d -- %@", @"OmniAppKit", OMNI_BUNDLE, "internet config error"), error, OANameForInternetConfigErrorCode(error)];
-        NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, nil];
-        if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:error userInfo:userInfo];
-        return nil;
-    }
 }
 
 // LaunchServices won't pass URLs larger than 1K.
@@ -502,14 +262,8 @@ static BOOL _executeScript(NSString *source)
     return _executeScript(script);
 }
 
-@end
-
-@implementation OAInternetConfig (Private)
-
-- (NSString *)_helperKeyNameForScheme:(NSString *)scheme;
-{
-    return [helperKeyPrefix stringByAppendingString:scheme];
-}
+#pragma mark -
+#pragma mark Private
 
 - (void)sendMailViaEntourageTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body;
 {
@@ -650,25 +404,4 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string)
     return fragmentedString;
 }
 
-static NSString *OANameForInternetConfigErrorCode(OSStatus errorCode)
-{
-    switch (errorCode) {
-        case icPrefNotFoundErr: return @"icPrefNotFoundErr";
-        case icPermErr: return @"icPermErr";
-        case icPrefDataErr: return @"icPrefDataErr";
-        case icInternalErr: return @"icInternalErr";
-        case icTruncatedErr: return @"icTruncatedErr";
-        case icNoMoreWritersErr: return @"icNoMoreWritersErr";
-        case icNothingToOverrideErr: return @"icNothingToOverrideErr";
-        case icNoURLErr: return @"icNoURLErr";
-        case icConfigNotFoundErr: return @"icConfigNotFoundErr";
-        case icConfigInappropriateErr: return @"icConfigInappropriateErr";
-        case icProfileNotFoundErr: return @"icProfileNotFoundErr";
-        case icTooManyProfilesErr: return @"icTooManyProfilesErr";
-        default: return [NSString stringWithFormat:@"<error code %d>", errorCode];
-    }
-}
-
 @end
-
-#endif // OA_INTERNET_CONFIG_ENABLED

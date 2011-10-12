@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007, 2010-2011 Omni Development, Inc.All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,14 +43,15 @@ static NSMutableArray *dataSources = nil;
 + (void)addDataSource:(id <OAWindowCascadeDataSource>)newValue;
 {
     if (dataSources == nil) {
-        dataSources = OFCreateNonOwnedPointerArray();
+        dataSources = (NSMutableArray *)OFCreateNonOwnedPointerArray();
     }
     [dataSources addObject:newValue];
 }
 
 + (void)removeDataSource:(id <OAWindowCascadeDataSource>)oldValue;
 {
-    [dataSources removeObjectIdenticalTo:oldValue];
+    CFIndex idx = [dataSources indexOfObjectIdenticalTo:oldValue];
+    CFArrayRemoveValueAtIndex((CFMutableArrayRef)dataSources, idx);
 }
 
 static BOOL avoidFontPanel = NO;

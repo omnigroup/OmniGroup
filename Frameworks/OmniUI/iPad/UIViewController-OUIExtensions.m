@@ -5,55 +5,89 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "UIViewController-OUIExtensions.h"
-
 #import <OmniBase/OBUtilities.h>
+#import "UIViewController-OUIExtensions.h"
 
 RCS_ID("$Id$");
 
-//#ifdef DEBUG_correia
-//    #define DEBUG_VIEW_CONTROLLER_EXTESIONS
-//#endif
+#ifdef DEBUG_correia
+    #define DEBUG_VIEW_CONTROLLER_EXTESIONS
+#endif
 
-static void (*original_dealloc)(id self, SEL _cmd) = NULL;
+static void (*original_viewWillAppear)(id self, SEL _cmd, BOOL animated) = NULL;
+static void (*original_viewDidAppear)(id self, SEL _cmd, BOOL animated) = NULL;
+static void (*original_viewWillDisappear)(id self, SEL _cmd, BOOL animated) = NULL;
+static void (*original_viewDidDisappear)(id self, SEL _cmd, BOOL animated) = NULL;
 static void (*original_presentModalViewControllerAnimated)(id self, SEL _cmd, UIViewController *viewController, BOOL animated) = NULL;
 static void (*original_dismissModalViewControllerAnimated)(id self, SEL _cmd, BOOL animated) = NULL;
 
-static NSMutableDictionary *_extraMap;
+const NSTimeInterval OUIViewControllerExtraModalViewControllerPollInterval = 0.05;
+
 @class OUIViewControllerExtra;
+
 @interface UIViewController (OUIExtensionsPrivate)
 
-+ (OUIViewControllerExtra *)extraForInstance:(UIViewController *)instance;
-+ (void)setExtra:(OUIViewControllerExtra *)extra forInstance:(UIViewController *)instance;
++ (OUIViewControllerExtra *)viewControllerExtraForInstance:(UIViewController *)instance;
++ (void)setViewControllerExtra:(OUIViewControllerExtra *)extra forInstance:(UIViewController *)instance;
 
-@property (nonatomic, readonly) OUIViewControllerExtra *ouiExtra;
-- (OUIViewControllerExtra *)extraCreateIfNecessary:(BOOL)createIfNecessary;
+@property (nonatomic, readonly) OUIViewControllerExtra *viewControllerExtra;
+
+- (void)replacement_viewWillAppear:(BOOL)animated;
+- (void)replacement_viewDidAppear:(BOOL)animated;
+
+- (void)replacement_viewWillDisappear:(BOOL)animated;
+- (void)replacement_viewDidDisappear:(BOOL)animated;
 
 - (void)replacement_presentModalViewController:(UIViewController *)viewController animated:(BOOL)animated;
 - (void)replacement_dismissModalViewControllerAnimated:(BOOL)animated;
 
+- (void)OUI_processModalViewControllerQueue;
+- (void)OUI_checkForQueuedModalViewControllers;
+
 @end
+
+#ifdef DEBUG_VIEW_CONTROLLER_EXTESIONS
+
+static NSString * NSStringFromOUIViewControllerState(OUIViewControllerState state)
+{
+    switch (state) {
+        case OUIViewControllerStateOffscreen:
+            return @"OUIViewControllerStateOffscreen";
+
+        case OUIViewControllerStateAppearing:
+            return @"OUIViewControllerStateAppearing";
+
+        case OUIViewControllerStateDisappearing:
+            return @"OUIViewControllerStateDisappearing";
+
+        case OUIViewControllerStateOnscreen:
+            return @"OUIViewControllerStateOnscreen";
+    }
+
+    OBASSERT_NOT_REACHED("Unknown OUIViewControllerState enum.");
+    return nil;
+}
+
+#endif
 
 #pragma mark -
 
 @interface OUIViewControllerExtra : NSObject {
   @private
      UIViewController *_owner;
+     OUIViewControllerState _viewControllerState;
      BOOL _dismissingModalViewControllerAnimated;
-     BOOL _isPollingChildModalViewController;
      NSMutableArray *_modalViewControllerQueue;
 }
 
 - (id)initWithViewController:(UIViewController *)viewController;
 
 @property (nonatomic, readonly) UIViewController *owner;
+@property (nonatomic) OUIViewControllerState viewControllerState;
 @property (nonatomic, getter=isDismissingModalViewControllerAnimated) BOOL dismissingModalViewControllerAnimated;
 
-- (void)enqueueModalViewController:(UIViewController *)viewController presentAnimated:(BOOL)animated;
+- (void)enqueuePresentModalViewController:(UIViewController *)viewController animated:(BOOL)animated;
 - (UIViewController *)dequeueModalViewControllerShouldPresentAnimated:(BOOL *)outPresentAnimated;
-
-- (void)startPollingChildModalViewController;
-- (void)pollChildModalViewControllerCallback;
 
 @end
 
@@ -63,10 +97,10 @@ static NSMutableDictionary *_extraMap;
 
 + (void)performPosing;
 {
-    [self installOUIExtensions];
+    [self installOUIViewControllerExtensions];
 }
 
-+ (void)installOUIExtensions;
++ (void)installOUIViewControllerExtensions;
 {
     static BOOL _installed = NO;
     if (_installed)
@@ -74,27 +108,47 @@ static NSMutableDictionary *_extraMap;
     
     _installed = YES;
 
-    original_dealloc = (typeof(original_dealloc))OBReplaceMethodImplementationWithSelector(self, @selector(dealloc), @selector(replacement_dealloc));
-    original_presentModalViewControllerAnimated = (typeof(original_presentModalViewControllerAnimated))OBReplaceMethodImplementationWithSelector(self, @selector(presentModalViewController:animated:), @selector(replacement_presentModalViewController:animated:));
+    original_viewWillAppear = (typeof(original_viewWillAppear))OBReplaceMethodImplementationWithSelector(self, @selector(viewWillAppear:), @selector(replacement_viewWillAppear:));
+    original_viewDidAppear = (typeof(original_viewDidAppear))OBReplaceMethodImplementationWithSelector(self, @selector(viewDidAppear:), @selector(replacement_viewDidAppear:));
 
+    original_viewWillDisappear = (typeof(original_viewWillDisappear))OBReplaceMethodImplementationWithSelector(self, @selector(viewWillDisappear:), @selector(replacement_viewWillDisappear:));
+    original_viewDidDisappear = (typeof(original_viewDidDisappear))OBReplaceMethodImplementationWithSelector(self, @selector(viewDidDisappear:), @selector(replacement_viewDidDisappear:));
+
+    original_presentModalViewControllerAnimated = (typeof(original_presentModalViewControllerAnimated))OBReplaceMethodImplementationWithSelector(self, @selector(presentModalViewController:animated:), @selector(replacement_presentModalViewController:animated:));
     original_dismissModalViewControllerAnimated = (typeof(original_dismissModalViewControllerAnimated))OBReplaceMethodImplementationWithSelector(self, @selector(dismissModalViewControllerAnimated:), @selector(replacement_dismissModalViewControllerAnimated:));
 }
 
-- (void)enqueueModalViewController:(UIViewController *)viewController presentAnimated:(BOOL)animated;
+- (void)enqueuePresentModalViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
-    OBASSERT(viewController);
+    OBPRECONDITION(viewController);
     
-    if (!self.modalViewController) {
-        [self presentModalViewController:viewController animated:animated];
+    if (self.OUI_viewControllerState != OUIViewControllerStateOnscreen) {
+        [[self viewControllerExtra] enqueuePresentModalViewController:viewController animated:animated];
     } else {
-        [[self extraCreateIfNecessary:YES] enqueueModalViewController:viewController presentAnimated:animated];
+        [self presentModalViewController:viewController animated:animated];
     }
+}
+
+- (BOOL)OUI_defaultShouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+{
+    // iPad default
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+        return YES;
+    
+    return interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
 }
 
 #pragma mark -
 
 - (UIViewController *)modalParentViewController;
 {
+    // What we really want here is the view controller which presented us, which iOS 5 happy tells us
+    
+    if ([self respondsToSelector:@selector(presentingViewController)])
+        return self.presentingViewController;
+    
+    // Otherwise on iOS 4 and earlier, we do it the hard way by walking the parent view controller chain
+
     UIViewController *modalParent = self.parentViewController;
 
     do {
@@ -105,103 +159,107 @@ static NSMutableDictionary *_extraMap;
     return nil;
 }
 
+- (OUIViewControllerState)OUI_viewControllerState;
+{
+    OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
+    return viewControllerExtra.viewControllerState;
+}
+
+- (BOOL)OUI_isDismissingModalViewControllerAnimated;
+{
+    OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
+    if (viewControllerExtra)
+        return [viewControllerExtra isDismissingModalViewControllerAnimated];
+    
+    return NO;
+}
+
 @end
 
 @implementation UIViewController (OUIExtensionsPrivate)
 
-+ (OUIViewControllerExtra *)extraForInstance:(UIViewController *)instance;
-{
-    // WTB objc_getAssociatedObject, but this doesn't appear in the simulator SDK headers, and is not exported.
+static void *OUIViewControllerExtraAssociatedObjectKey = &OUIViewControllerExtraAssociatedObjectKey;
 
-    OBPRECONDITION(instance != nil);
-    if (_extraMap == nil)
-        return nil;
-        
-    NSValue *key = [NSValue valueWithPointer:instance];
-    return [_extraMap objectForKey:key];
++ (OUIViewControllerExtra *)viewControllerExtraForInstance:(UIViewController *)instance;
+{
+    return objc_getAssociatedObject(instance, OUIViewControllerExtraAssociatedObjectKey);
 }
 
-+ (void)setExtra:(OUIViewControllerExtra *)extra forInstance:(UIViewController *)instance;
++ (void)setViewControllerExtra:(OUIViewControllerExtra *)extra forInstance:(UIViewController *)instance;
 {
-    // WTB objc_setAssociatedObject, but this doesn't appear in the simulator SDK headers, and is not exported.
-
     OBPRECONDITION(instance != nil);
-    NSValue *key = [NSValue valueWithPointer:instance];
+    OBPRECONDITION(extra != nil);
+
+    objc_setAssociatedObject(instance, OUIViewControllerExtraAssociatedObjectKey, extra, OBJC_ASSOCIATION_RETAIN);
+}
+
+- (OUIViewControllerExtra *)viewControllerExtra;
+{
+    OUIViewControllerExtra *extra = [[self class] viewControllerExtraForInstance:self];
 
     if (extra == nil) {
-        [_extraMap removeObjectForKey:key];
-    } else {
-        if (_extraMap == nil)
-            _extraMap = [[NSMutableDictionary alloc] initWithCapacity:0];
-        [_extraMap setObject:extra forKey:key];
-    }
-}
-
-- (OUIViewControllerExtra *)ouiExtra;
-{
-    return [[self class] extraForInstance:self];
-}
-
-- (OUIViewControllerExtra *)extraCreateIfNecessary:(BOOL)createIfNecessary;
-{
-    OUIViewControllerExtra *extra = [[self class] extraForInstance:self];
-
-    if (extra == nil && createIfNecessary) {
         extra = [[[OUIViewControllerExtra alloc] initWithViewController:self] autorelease];
-        [[self class] setExtra:extra forInstance:self];
+        [[self class] setViewControllerExtra:extra forInstance:self];
     }
     
     return extra;
 }
 
-- (void)replacement_dealloc;
+- (void)replacement_viewWillAppear:(BOOL)animated;
 {
-    [UIViewController setExtra:nil forInstance:self];
+    original_viewWillAppear(self, _cmd, animated);
+    
+    OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
+    viewControllerExtra.viewControllerState = OUIViewControllerStateAppearing;
+}
 
-    original_dealloc(self, _cmd);
+- (void)replacement_viewDidAppear:(BOOL)animated;
+{
+    original_viewDidAppear(self, _cmd, animated);
+
+    OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
+    viewControllerExtra.viewControllerState = OUIViewControllerStateOnscreen;
+}
+
+- (void)replacement_viewWillDisappear:(BOOL)animated;
+{
+    original_viewWillDisappear(self, _cmd, animated);
+
+    OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
+    viewControllerExtra.viewControllerState = OUIViewControllerStateDisappearing;
+}
+
+- (void)replacement_viewDidDisappear:(BOOL)animated;
+{
+    original_viewDidDisappear(self, _cmd, animated);
+
+    OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
+    viewControllerExtra.viewControllerState = OUIViewControllerStateOffscreen;
 }
 
 - (void)replacement_presentModalViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
-    OUIViewControllerExtra *extra = [self ouiExtra];
-    if (extra && [extra isDismissingModalViewControllerAnimated]) {
-#ifdef DEBUG_VIEW_CONTROLLER_EXTESIONS
-        NSLog(@"Will defer -presentModalViewController:animated: for self=%p, viewController=%p; current view controller is animating out.", self, viewController);
-#endif
-        [extra enqueueModalViewController:viewController presentAnimated:animated];
-        return;
-    }
+    BOOL shouldEnqueue = [self OUI_isDismissingModalViewControllerAnimated];
     
-    if (self.modalViewController) {
-        // Presenting a modal view controller on a view controller which already has a modal child view controller does not do anything.
-        // Assert so we can catch and fix call sites which do this.
-        OBASSERT_NOT_REACHED("Presenting modal view controller on a view controller which already has a modal child view controller.");
-#ifdef DEBUG
-        NSLog(@"----------\n");
-        NSLog(@"Presenting modal view controller on a view controller which already has a modal child view controller.");
-        NSLog(@"   Current modal view controller: %@", self.modalViewController);
-        if ([self.modalViewController isKindOfClass:[UINavigationController class]])
-            NSLog(@"      Top view controller: %@", [(id)self.modalViewController topViewController]);
-        NSLog(@"   New modal view controller: %@", viewController);
-        if ([viewController isKindOfClass:[UINavigationController class]])
-            NSLog(@"      Top view controller: %@", [(id)viewController topViewController]);
-        NSLog(@"----------\n");
-#endif        
+    if (shouldEnqueue) {
+        OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
+        [viewControllerExtra enqueuePresentModalViewController:viewController animated:animated];
+#ifdef DEBUG_VIEW_CONTROLLER_EXTESIONS
+        NSLog(@"Automatically deferring -presentModalViewController:animated: on parent controller %@ with current view state: %@", self, NSStringFromOUIViewControllerState(self.OUI_viewControllerState));
+#endif
+    } else {
+        original_presentModalViewControllerAnimated(self, _cmd, viewController, animated);
     }
-
-    original_presentModalViewControllerAnimated(self, _cmd, viewController, animated);
 }
 
 - (void)replacement_dismissModalViewControllerAnimated:(BOOL)animated;
 {
     UIViewController *modalParent = (self.modalViewController ? self : self.modalParentViewController);
     if (modalParent && animated) {
-        OUIViewControllerExtra *extra = [modalParent extraCreateIfNecessary:YES];
+        OUIViewControllerExtra *extra = [modalParent viewControllerExtra];
         OBASSERT(extra);
-        if (![extra isDismissingModalViewControllerAnimated]) {
-            [extra setDismissingModalViewControllerAnimated:YES];
-            [extra startPollingChildModalViewController];
-        }    
+        extra.dismissingModalViewControllerAnimated = YES;
+        [modalParent performSelector:@selector(OUI_checkForQueuedModalViewControllers) withObject:nil afterDelay:OUIViewControllerExtraModalViewControllerPollInterval];
 #ifdef DEBUG_VIEW_CONTROLLER_EXTESIONS
         NSLog(@"Recording isDismissingModalViewControllerAnimated=YES for %p.", self);
 #endif
@@ -210,11 +268,39 @@ static NSMutableDictionary *_extraMap;
     original_dismissModalViewControllerAnimated(self, _cmd, animated);
 }
 
+- (void)OUI_processModalViewControllerQueue;
+{
+    OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
+    if (viewControllerExtra.viewControllerState != OUIViewControllerStateOnscreen)
+        return;
+
+    // Dequeue and present any pending modal view controller now
+    BOOL presentAnimated = NO;
+    UIViewController *viewController = [viewControllerExtra dequeueModalViewControllerShouldPresentAnimated:&presentAnimated];
+    if (viewController)
+        [self presentModalViewController:viewController animated:presentAnimated];
+}
+
+- (void)OUI_checkForQueuedModalViewControllers;
+{
+    OUIViewControllerExtra *extra = [self viewControllerExtra];
+    OBASSERT(extra);
+    OBASSERT(extra.dismissingModalViewControllerAnimated);
+    
+    if (extra.dismissingModalViewControllerAnimated) {
+        UIViewController *modalChildViewController = [self modalViewController];
+        if (!modalChildViewController) {
+            extra.dismissingModalViewControllerAnimated = NO;
+            [self performSelector:@selector(OUI_processModalViewControllerQueue) withObject:nil afterDelay:0];
+        } else {
+            [self performSelector:_cmd withObject:nil afterDelay:OUIViewControllerExtraModalViewControllerPollInterval];
+        }
+    }
+}
+
 @end
 
 #pragma mark -
-
-const CGFloat MODAL_VIEW_CONTROLLER_POLL_INTERVAL = 0.1;
 
 @implementation OUIViewControllerExtra
 
@@ -232,6 +318,12 @@ const CGFloat MODAL_VIEW_CONTROLLER_POLL_INTERVAL = 0.1;
         return nil;
     
     _owner = viewController;
+
+    if ([_owner isViewLoaded])
+        _viewControllerState = _owner.view.window ? OUIViewControllerStateOnscreen : OUIViewControllerStateOffscreen;
+    else
+        _viewControllerState = OUIViewControllerStateOffscreen;
+
     return self;
 }
 
@@ -242,9 +334,10 @@ const CGFloat MODAL_VIEW_CONTROLLER_POLL_INTERVAL = 0.1;
 }
 
 @synthesize owner = _owner;
+@synthesize viewControllerState = _viewControllerState;
 @synthesize dismissingModalViewControllerAnimated = _dismissingModalViewControllerAnimated;
 
-- (void)enqueueModalViewController:(UIViewController *)viewController presentAnimated:(BOOL)animated;
+- (void)enqueuePresentModalViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
     if (!_modalViewControllerQueue)
         _modalViewControllerQueue = [[NSMutableArray alloc] init];
@@ -270,36 +363,6 @@ const CGFloat MODAL_VIEW_CONTROLLER_POLL_INTERVAL = 0.1;
         *outPresentAnimated = [[dictionary objectForKey:@"animated"] boolValue];
     
     return [dictionary objectForKey:@"viewController"];
-}
-
-- (void)startPollingChildModalViewController;
-{
-    if (_isPollingChildModalViewController)
-        return;
-        
-    [self performSelector:@selector(pollChildModalViewControllerCallback) withObject:nil afterDelay:MODAL_VIEW_CONTROLLER_POLL_INTERVAL];
-}
-
-- (void)pollChildModalViewControllerCallback;
-{
-    // Sadly, UIViewController doesn't change this in a KVO compliant way so we are reduced to polling.
-    // At least the ugliness is encapsulated in one place.
-    
-    if (_owner.modalViewController) {
-        [self performSelector:_cmd withObject:nil afterDelay:MODAL_VIEW_CONTROLLER_POLL_INTERVAL];
-        return;
-    }
-        
-#ifdef DEBUG_VIEW_CONTROLLER_EXTESIONS
-    NSLog(@"Finished polling for modal view controller animation completion for %p.", _owner);
-#endif
-
-    [self setDismissingModalViewControllerAnimated:NO];
-    
-    BOOL animated = NO;
-    UIViewController *viewController = [self dequeueModalViewControllerShouldPresentAnimated:&animated];
-    if (viewController)
-        [_owner presentModalViewController:viewController animated:animated];
 }
 
 @end

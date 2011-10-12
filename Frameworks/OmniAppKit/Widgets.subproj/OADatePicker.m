@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,11 +27,11 @@ RCS_ID("$Id$");
     if (theAction == @selector(_clockAndCalendarReturnToHomeMonth:)
 	|| theAction == @selector(_clockAndCalendarRetreatMonth:)
 	|| theAction == @selector(_clockAndCalendarAdvanceMonth:) ) {
-	_lastDate = [[self dateValue] retain];
-	ignoreNextDateRequest = YES;
-	sentAction = YES;
+        _lastDate = [[self dateValue] retain];
+        ignoreNextDateRequest = YES;
+        sentAction = YES;
     } else
-	ignoreNextDateRequest = NO;
+        ignoreNextDateRequest = NO;
 
     return [super sendAction:theAction to:theTarget];
 }

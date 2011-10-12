@@ -8,6 +8,7 @@
 #import <tgmath.h>
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniFoundation/OFExtent.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -143,6 +144,47 @@ CGRect OQCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter)
     pt.y = ceil(pt.y);
     
     return CGRectMake(pt.x, pt.y, toCenter.width, toCenter.height);
+}
+
+CGRect OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter)
+{
+    CGFloat xRatio = enclosingRect.size.width / toCenter.width;
+    CGFloat yRatio = enclosingRect.size.height / toCenter.height;
+    
+    // Make sure we have an exact match on the min/max edge on the fitting axis
+    if (xRatio == yRatio)
+        return enclosingRect; // same size already
+    
+    CGRect result;
+    if (xRatio < yRatio) {
+        CGFloat x = enclosingRect.origin.x;
+        CGFloat width = enclosingRect.size.width;
+        
+        CGFloat height = floor(toCenter.height * xRatio);
+        CGFloat y = round(enclosingRect.origin.y + 0.5f * (enclosingRect.size.height - height));
+        
+        result = CGRectMake(x, y, width, height);
+    } else {
+        CGFloat y = enclosingRect.origin.y;
+        CGFloat height = enclosingRect.size.height;
+
+        CGFloat width = floor(toCenter.width * yRatio);
+        CGFloat x = round(enclosingRect.origin.x + 0.5f * (enclosingRect.size.width - width));
+        
+        result = CGRectMake(x, y, width, height);
+    }
+    
+    // Make sure we really did snap exactly to one pair of sides
+    OBASSERT(OFExtentsEqual(OFExtentFromRectXRange(enclosingRect), OFExtentFromRectXRange(result)) ||
+             OFExtentsEqual(OFExtentFromRectYRange(enclosingRect), OFExtentFromRectYRange(result)));
+    
+    // Make sure we don't overflow on nearly identical rects or whatever
+    OBASSERT(CGRectContainsRect(enclosingRect, result));
+    
+    // If we use this in a hi dpi context, we'll want to perform this operation in device space, or pass in a context and do the conversion here
+    OBASSERT(CGRectEqualToRect(result, CGRectIntegral(result)));
+    
+    return result;
 }
 
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED

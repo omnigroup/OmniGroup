@@ -1,4 +1,4 @@
-// Copyright 2004-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2008, 2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,9 +11,10 @@
 
 @class OAAboutPanelController;
 
+#import <AppKit/NSApplication.h> // For NSApplicationDelegate
 #import <AppKit/NSNibDeclarations.h> // For IBAction and IBOutlet
 
-@interface OAController : OFController
+@interface OAController : OFController <NSApplicationDelegate>
 {
 @private
     OAAboutPanelController *aboutPanelController;
@@ -28,5 +29,11 @@
 - (void)getFeedbackAddress:(NSString **)feedbackAddress andSubject:(NSString **)subjectLine;
 - (void)sendFeedbackEmailTo:(NSString *)feedbackAddress subject:(NSString *)subjectLine body:(NSString *)body;
 - (void)sendFeedbackEmailWithBody:(NSString *)body;
+
+// OAController has concrete implementations of the following NSApplicationDelegate methods. They're responsible for driving the OFController behavior at appropriate times during the app's lifecycle. If you override these methods, be sure to call super's implementation.
+- (void)applicationWillFinishLaunching:(NSNotification *)notification;
+- (void)applicationDidFinishLaunching:(NSNotification *)notification;
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
+- (void)applicationWillTerminate:(NSNotification *)notification;
 
 @end

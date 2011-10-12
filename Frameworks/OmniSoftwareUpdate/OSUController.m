@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -174,7 +174,7 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
 
 - (void)checker:(OSUChecker *)checker newVersionsAvailable:(NSArray *)versionInfos fromCheck:(OSUCheckOperation *)op;
 {
-    /* In the common case, there are no new versions available, and we don't want to create the ... for nothing. */
+    /* In the common case, there are no new versions available, and we don't want to create the OSUAvailableUpdateController (and all its GUI goo) for nothing. */
     BOOL quiet = YES;
     
     // If this is an asynchronous run (not prompted by the user), and there are no items that would be displayed with the default predicate, don't call the target/action.

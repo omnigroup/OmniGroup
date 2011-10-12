@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUIEditableFrame.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUISingleDocumentAppController.h>
 
 #import <QuartzCore/QuartzCore.h>
 #import <AssetsLibrary/AssetsLibrary.h>
@@ -22,9 +23,15 @@
 RCS_ID("$Id$");
 
 @interface TextViewController () <UINavigationControllerDelegate, UIImagePickerControllerDelegate>
+- (void)_updateEditorFrame;
 @end
 
 @implementation TextViewController
+{
+    UIToolbar *_toolbar;
+}
+
+@synthesize toolbar = _toolbar;
 
 - init;
 {
@@ -33,6 +40,7 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
+    [_toolbar release];
     [_editor release];
     [super dealloc];
 }
@@ -60,6 +68,8 @@ RCS_ID("$Id$");
 {
     [super viewDidLoad];
 
+    _toolbar.items = [[OUISingleDocumentAppController controller] toolbarItemsForDocument:self.document];
+    
 #if 0
     self.view.layer.borderColor = [[UIColor blueColor] CGColor];
     self.view.layer.borderWidth = 2;
@@ -72,7 +82,7 @@ RCS_ID("$Id$");
     _editor.delegate = self;
     
     _editor.attributedText = _nonretained_document.text;
-    [self textViewContentsChanged:_editor];
+    [self _updateEditorFrame];
     
     [self adjustScaleTo:1];
     [self adjustContentInset];
@@ -80,8 +90,20 @@ RCS_ID("$Id$");
 
 - (void)viewDidUnload;
 {
+    self.toolbar = nil;
     self.editor = nil;
     [super viewDidUnload];
+}
+
+#pragma mark -
+#pragma mark UIViewController (OUIMainViewControllerExtensions)
+
+- (UIToolbar *)toolbarForMainViewController;
+{
+    if (!_toolbar)
+        [self view]; // It's in our xib
+    OBASSERT(_toolbar);
+    return _toolbar;
 }
 
 #pragma mark OUIEditableFrameDelegate
@@ -90,12 +112,8 @@ static CGFloat kPageWidth = (72*8.5); // Vaguely something like 8.5x11 width.
 
 - (void)textViewContentsChanged:(OUIEditableFrame *)textView;
 {
-    CGFloat usedHeight = _editor.viewUsedSize.height;
-    _editor.frame = CGRectMake(0, 0, kPageWidth, usedHeight);
-}
-
-- (void)textViewDidEndEditing:(OUIEditableFrame *)textView;
-{
+    [self _updateEditorFrame];
+    
     // We need more of a text storage model so that selection changes can participate in undo.
     _nonretained_document.text = textView.attributedText;
 }
@@ -150,7 +168,7 @@ static CGFloat kPageWidth = (72*8.5); // Vaguely something like 8.5x11 width.
     if ([rep getBytes:[data mutableBytes] fromOffset:0 length:[rep size] error:&error] == 0) {
         NSLog(@"error getting asset data %@", [error toPropertyList]);
     } else {
-        OFFileWrapper *wrapper = [[[OFFileWrapper alloc] initRegularFileWithContents:data] autorelease];
+        NSFileWrapper *wrapper = [[[NSFileWrapper alloc] initRegularFileWithContents:data] autorelease];
         wrapper.filename = [[rep url] lastPathComponent];
         
         // a real implementation would really check that the UTI inherits from public.image here (we could get movies any maybe PDFs in the future) and would provide an appropriate cell class for the type (or punt and not create an attachment).
@@ -199,6 +217,15 @@ static CGFloat kPageWidth = (72*8.5); // Vaguely something like 8.5x11 width.
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker;
 {
     [[OUIAppController controller] dismissPopoverAnimated:YES];
+}
+
+#pragma mark -
+#pragma mark Private
+
+- (void)_updateEditorFrame;
+{
+    CGFloat usedHeight = _editor.viewUsedSize.height;
+    _editor.frame = CGRectMake(0, 0, kPageWidth, usedHeight);
 }
 
 @end

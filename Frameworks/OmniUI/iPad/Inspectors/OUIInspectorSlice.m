@@ -15,9 +15,8 @@
 
 RCS_ID("$Id$");
 
-OBDEPRECATED_METHODS(OUIInspectorSlice)
-- (void)updateInterfaceFromInspectedObjects; // -> -updateInterfaceFromInspectedObjects:
-@end
+// OUIInspectorSlice
+OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfaceFromInspectedObjects:
 
 @implementation OUIInspectorSlice
 
@@ -61,15 +60,14 @@ OBDEPRECATED_METHODS(OUIInspectorSlice)
     [super dealloc];
 }
 
-@synthesize containingPane = _nonretained_containingPane;
-- (void)setContainingPane:(OUIStackedSlicesInspectorPane *)pane;
+- (OUIStackedSlicesInspectorPane *)containingPane;
 {
-    _nonretained_containingPane = pane;
+    return (OUIStackedSlicesInspectorPane *) self.parentViewController;
 }
 
 - (OUIInspector *)inspector;
 {
-    OUIInspector *inspector = _nonretained_containingPane.inspector;
+    OUIInspector *inspector = self.containingPane.inspector;
     OBASSERT(inspector);
     return inspector;
 }
@@ -129,7 +127,7 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 
 - (void)sizeChanged;
 {
-    [_nonretained_containingPane sliceSizeChanged:self];
+    [self.containingPane sliceSizeChanged:self];
 }
 
 @synthesize detailPane = _detailPane;
@@ -164,11 +162,11 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 
 - (NSArray *)appropriateObjectsForInspection;
 {
-    OBPRECONDITION(_nonretained_containingPane);
+    OBPRECONDITION(self.containingPane);
     
     NSMutableArray *objects = nil;
     
-    for (id object in _nonretained_containingPane.inspectedObjects) {
+    for (id object in self.containingPane.inspectedObjects) {
         if ([self isAppropriateForInspectedObject:object]) {
             if (!objects)
                 objects = [NSMutableArray array];
@@ -182,9 +180,9 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 #ifdef NS_BLOCKS_AVAILABLE
 - (void)eachAppropriateObjectForInspection:(void (^)(id obj))action;
 {
-    OBPRECONDITION(_nonretained_containingPane);
+    OBPRECONDITION(self.containingPane);
         
-    for (id object in _nonretained_containingPane.inspectedObjects) {
+    for (id object in self.containingPane.inspectedObjects) {
         if ([self isAppropriateForInspectedObject:object])
             action(object);
     }
@@ -296,15 +294,27 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 - (void)didReceiveMemoryWarning;
 {
     // We do nothing here. We let our stacked slices inspector handle it so it can perform an orderly teardown.
-    if (_nonretained_containingPane)
+    if (self.containingPane)
         return;
     [self fakeDidReceiveMemoryWarning];
 }
 
 - (void)viewWillAppear:(BOOL)animated;
 {
-    OBPRECONDITION(_nonretained_containingPane != nil);
+    OBPRECONDITION(self.containingPane != nil);
     [super viewWillAppear:animated];
+}
+
+- (void)willMoveToParentViewController:(UIViewController *)parent;
+{
+    OBPRECONDITION(parent == nil || [parent isKindOfClass:[OUIStackedSlicesInspectorPane class]]);
+    [super willMoveToParentViewController:parent];
+}
+
+- (void)didMoveToParentViewController:(UIViewController *)parent;
+{
+    OBPRECONDITION(parent == nil || [parent isKindOfClass:[OUIStackedSlicesInspectorPane class]]);
+    [super didMoveToParentViewController:parent];
 }
 
 @end

@@ -46,6 +46,14 @@ static inline Boolean _OFMightBeGzipCompressedData(const unsigned char *bytes, N
     return (length >= 10 && bytes[0] == 0x1F && bytes[1] == 0x8B);
 }
 
+static inline Boolean _OFMightBeLZMACompressedData(const unsigned char *bytes, NSUInteger length)
+{
+    /* 6-byte magic number */
+    static const char lzma_magic[6] = { 0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00 };
+    /* Check the magic number as well as the "reserved, must be 0, may change the format of subsequent fields" parts of the Stream Flags word. */
+    return (length >= 22 && memcmp(bytes, lzma_magic, 6) == 0 && ((bytes[6] & 0xF0) == 0) && (bytes[7] == 0));
+}
+
 /*" Returns TRUE if the receiver looks like it might be compressed data that -decompressedData can handle.  Note that if this returns TRUE, it merely looks like the receiver is compressed, not that it is.  This is a simply intended to be a quick check to filter out obviously uncompressed data. "*/
 Boolean OFDataMightBeCompressed(CFDataRef data)
 {
@@ -55,6 +63,7 @@ Boolean OFDataMightBeCompressed(CFDataRef data)
 #ifdef HAVE_BZIP2
         || _OFMightBeBzipCompressedData(bytes, length)
 #endif
+        || _OFMightBeLZMACompressedData(bytes, length)
     ;
 }
 

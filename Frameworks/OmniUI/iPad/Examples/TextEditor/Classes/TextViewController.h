@@ -21,6 +21,7 @@
     OUIEditableFrame *_editor;
 }
 
+@property(retain,nonatomic) IBOutlet UIToolbar *toolbar;
 @property(retain,nonatomic) IBOutlet OUIEditableFrame *editor;
 
 @end

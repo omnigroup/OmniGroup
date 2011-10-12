@@ -1,4 +1,4 @@
-// Copyright 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,28 +67,28 @@ enum OSUTrackComparison {
 
 - initWithRSSElement:(NSXMLElement *)element error:(NSError **)outError;
 
-- (OFVersionNumber *)buildVersion;
-- (OFVersionNumber *)marketingVersion;
-- (OFVersionNumber *)minimumSystemVersion;
+@property (readonly,nonatomic) OFVersionNumber *buildVersion;
+@property (readonly,nonatomic) OFVersionNumber *marketingVersion;
+@property (readonly,nonatomic) OFVersionNumber *minimumSystemVersion;
 
-- (NSString *)title;
-- (NSString *)track;
-- (NSURL *)downloadURL;
-- (NSURL *)releaseNotesURL;
-- (NSString *)sourceLocation;
+@property (readonly,nonatomic) NSString *title;
+@property (readonly,nonatomic) NSString *track;
+@property (readonly,nonatomic) NSURL *downloadURL;
+@property (readonly,nonatomic) NSURL *releaseNotesURL;
+@property (readonly,nonatomic) NSString *sourceLocation;
+@property (readonly,nonatomic) NSString *displayName;
+@property (readonly,nonatomic) NSFont *displayFont;
+@property (readonly,nonatomic) NSColor *displayColor;
+@property (readonly,nonatomic) NSString *downloadSizeString;
 
-- (BOOL)isFree;
-- (NSAttributedString *)priceAttributedString;
+@property (readonly,nonatomic) NSNumber *price;
+@property (readonly,nonatomic) BOOL isFree;
+@property (readonly,nonatomic) NSAttributedString *priceAttributedString;
 
-- (BOOL)available;
-- (void)setAvailable:(BOOL)available;
+@property (readwrite,nonatomic) BOOL available;
 - (void)setAvailablityBasedOnSystemVersion:(OFVersionNumber *)systemVersion;
-
-- (BOOL)isIgnored;
-
-- (BOOL)superseded;
-- (void)setSuperseded:(BOOL)superseded;
-
+@property (readonly,nonatomic) BOOL isIgnored;
+@property (readwrite,nonatomic) BOOL superseded;
 - (BOOL)supersedes:(OSUItem *)peer;
 
 - (NSString *)verifyFile:(NSString *)local;

@@ -52,8 +52,8 @@ static void OUIDrawingInitialize(void)
 {
     if (OUILightContentOnDarkBackgroundShadowColor)
         return;
-    OUILightContentOnDarkBackgroundShadowColor = [[UIColor colorWithWhite:kOUILightContentOnDarkBackgroundShadowGrayAlpha.v alpha:kOUILightContentOnDarkBackgroundShadowGrayAlpha.a] retain];
-    OUIDarkContentOnLightBackgroundShadowColor = [[UIColor colorWithWhite:kOUIDarkContentOnLightBackgroundShadowGrayAlpha.v alpha:kOUIDarkContentOnLightBackgroundShadowGrayAlpha.a] retain];
+    OUILightContentOnDarkBackgroundShadowColor = [[UIColor colorWithWhite:kOUILightContentOnDarkBackgroundShadowWhiteAlpha.w alpha:kOUILightContentOnDarkBackgroundShadowWhiteAlpha.a] retain];
+    OUIDarkContentOnLightBackgroundShadowColor = [[UIColor colorWithWhite:kOUIDarkContentOnLightBackgroundShadowWhiteAlpha.w alpha:kOUIDarkContentOnLightBackgroundShadowWhiteAlpha.a] retain];
 }
 
 CGSize OUIShadowOffset(OUIShadowType type)

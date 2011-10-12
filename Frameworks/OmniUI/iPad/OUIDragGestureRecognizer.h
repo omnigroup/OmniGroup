@@ -8,13 +8,15 @@
 // $Id$
 
 #import <UIKit/UIGestureRecognizerSubclass.h>
-#import "OUIGestureRecognizer.h"
+#import <OmniUI/OUIGestureRecognizer.h>
 
 @interface OUIDragGestureRecognizer : OUIGestureRecognizer
 {
 @private
     CGFloat hysteresisDistance;
     BOOL overcameHysteresis;
+    
+    BOOL requiresHoldToComplete;
     
     // Points stored in window coordinates
     CGPoint firstTouchPoint;
@@ -25,6 +27,7 @@
 
 // Settings
 @property (nonatomic) CGFloat hysteresisDistance;
+@property (nonatomic) BOOL requiresHoldToComplete;
 
 // Actions
 - (void)resetHysteresis;

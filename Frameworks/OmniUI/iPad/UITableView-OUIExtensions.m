@@ -8,6 +8,7 @@
 #import <OmniUI/UITableView-OUIExtensions.h>
 
 #import <OmniUI/OUIImages.h>
+#import <OmniQuartz/OQColor.h>
 
 RCS_ID("$Id$");
 
@@ -78,6 +79,40 @@ void OUITableViewCellShowSelection(UITableViewCell *cell, OUITableViewCellSelect
             OBASSERT_NOT_REACHED("Unknown selection display type");
             break;
     }
+}
+
+const OUITableViewCellBackgroundColors OUITableViewCellDefaultBackgroundColors = {
+    .normal = ((OSHSV){0.0/360.0, 0.0, 1.0, 1.0}),
+    .selected = ((OSHSV){216.0/360.0, 0.12, 1.0, 1.0}),
+    .highlighted = ((OSHSV){216.0/360.0, 0.18, 1.0, 1.0})
+};
+
+// For cases where you want to set the cell to show no selecton/highlight color of its own and control it yourself.
+OQColor *OUITableViewCellBackgroundColorForControlState(const OUITableViewCellBackgroundColors *colors, UIControlState state)
+{
+    switch (state) {
+        case UIControlStateHighlighted:
+            return [OQColor colorWithCalibratedHue:colors->highlighted.h saturation:colors->highlighted.s brightness:colors->highlighted.v alpha:colors->highlighted.a];
+        case UIControlStateSelected:
+            return [OQColor colorWithCalibratedHue:colors->selected.h saturation:colors->selected.s brightness:colors->selected.v alpha:colors->selected.a];
+        default:
+            OBASSERT_NOT_REACHED("Unknown control state");
+            // fall through
+        case UIControlStateNormal:
+            return [OQColor colorWithCalibratedHue:colors->normal.h saturation:colors->normal.s brightness:colors->normal.v alpha:colors->normal.a];
+    }
+}
+
+OQColor *OUITableViewCellBackgroundColorForCurrentState(const OUITableViewCellBackgroundColors *colors, UITableViewCell *cell)
+{
+    // table view cells aren't controls... our use for this doesn't want both flags set
+    UIControlState controlState = UIControlStateNormal;
+    if (cell.highlighted)
+        controlState = UIControlStateHighlighted;
+    else if (cell.selected)
+        controlState = UIControlStateSelected;
+
+    return OUITableViewCellBackgroundColorForControlState(colors, controlState);
 }
 
 // Assumes the table view has current contents

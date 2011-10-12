@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIDragGestureRecognizer.h"
+#import <OmniUI/OUIDragGestureRecognizer.h>
 
 RCS_ID("$Id$");
 
@@ -20,6 +20,7 @@ RCS_ID("$Id$");
     self.hysteresisDistance = 9;  // In pixels.  9 pixels is the empirically-determined value that always beats out the scrollview's pan gesture recognizers.
     overcameHysteresis = NO;
     self.numberOfTouchesRequired = 1;
+    requiresHoldToComplete = NO;
     
     return self;
 }
@@ -59,6 +60,11 @@ RCS_ID("$Id$");
             return;
         
         overcameHysteresis = YES;
+    }
+    
+    if (requiresHoldToComplete && !self.completedHold) {
+        self.likelihood = 0;
+        self.state = UIGestureRecognizerStateFailed;
     }
     
     if (self.state == UIGestureRecognizerStatePossible) {
@@ -103,7 +109,7 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark Class methods
 
-@synthesize hysteresisDistance, overcameHysteresis, wasATap;
+@synthesize hysteresisDistance, overcameHysteresis, requiresHoldToComplete, wasATap;
 
 - (BOOL)touchIsDown;
 {

@@ -263,25 +263,36 @@ RCS_ID("$Id$");
     _cachedSuggestedSize = CGSizeZero;
 }
 
+- (void)applyDefaultTextAttributes;
+{
+    NSAttributedString *aString = self.attributedText;
+    if (!aString)
+        return;
+    
+    // setting defaults on nsattributedstring
+    NSMutableAttributedString *mutableText = [aString mutableCopy];
+    [mutableText addAttribute:(id)kCTForegroundColorAttributeName value:(id)[[UIColor whiteColor] CGColor] range:NSMakeRange(0, [mutableText length])];
+    
+    CTFontRef defaultFont = CTFontCreateWithName(CFSTR("Helvetica"), 16, NULL);
+    [mutableText addAttribute:(id)kCTFontAttributeName value:(id)defaultFont range:NSMakeRange(0, [mutableText length])];
+    if (defaultFont)
+        CFRelease(defaultFont);
+    
+    self.attributedText = mutableText;
+    [mutableText release];
+}
+
 @synthesize text = _text;
 @synthesize attributedText = _attributedText;
 @synthesize textLayout = _textLayout;
 
 - (void)setText:(NSString *)aString;
 {
-    if (aString) {
-        // setting defaults on nsattributedstring
-        NSMutableAttributedString *mutableText = [[NSMutableAttributedString alloc] initWithString:aString];
-        [mutableText addAttribute:(id)kCTForegroundColorAttributeName value:(id)[[UIColor whiteColor] CGColor] range:NSMakeRange(0, [mutableText length])];
-        
-        CTFontRef defaultFont = CTFontCreateWithName(CFSTR("Helvetica"), 16, NULL);
-        [mutableText addAttribute:(id)kCTFontAttributeName value:(id)defaultFont range:NSMakeRange(0, [mutableText length])];
-        if (defaultFont)
-            CFRelease(defaultFont);
-        
-        self.attributedText = mutableText;
-        [mutableText release];
-    }
+    if (!aString)
+        return;
+    
+    self.attributedText = [[[NSAttributedString alloc] initWithString:aString] autorelease];
+    [self applyDefaultTextAttributes];
 }
 
 - (void)setAttributedText:(NSAttributedString *)attString;
@@ -293,8 +304,18 @@ RCS_ID("$Id$");
     _attributedText = [attString retain];
     
     [_textLayout release];
-    if (_attributedText)
-        _textLayout = [[OUITextLayout alloc] initWithAttributedString:_attributedText constraints:CGSizeMake(OUITextLayoutUnlimitedSize, OUITextLayoutUnlimitedSize)];
+    _textLayout = nil;
+    if (_attributedText) {
+        // Apply superscript and other fix-ups
+        NSAttributedString *transformedString = OUICreateTransformedAttributedString(attString, nil);
+        if (!transformedString)
+            transformedString = [attString copy];
+        
+        // Create an OUITextLayout
+         _textLayout = [[OUITextLayout alloc] initWithAttributedString:transformedString constraints:CGSizeMake(OUITextLayoutUnlimitedSize, OUITextLayoutUnlimitedSize)];
+        
+        [transformedString release];
+    }
     
     _cachedSuggestedSize = CGSizeZero;
     [self setNeedsDisplay];
