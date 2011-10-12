@@ -2905,6 +2905,9 @@
 /* Begin PBXProject section */
 		00E51C5BFE8AAEA611C9CC38 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
 			buildConfigurationList = 4AD1C16408A9803A00C087FE /* Build configuration list for PBXProject "OmniFoundation" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
