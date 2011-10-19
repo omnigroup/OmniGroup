@@ -15,11 +15,6 @@
 @class OUIEditableFrame;
 
 @interface TextViewController : OUIScalingViewController <OUIDocumentViewController, OUIEditableFrameDelegate>
-{
-@private
-    RTFDocument *_nonretained_document;
-    OUIEditableFrame *_editor;
-}
 
 @property(retain,nonatomic) IBOutlet UIToolbar *toolbar;
 @property(retain,nonatomic) IBOutlet OUIEditableFrame *editor;
