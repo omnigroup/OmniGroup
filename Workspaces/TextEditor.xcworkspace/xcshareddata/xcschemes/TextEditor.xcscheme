@@ -55,6 +55,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34E20FC9119314D200ECA875"
+               BuildableName = "libOmniUnzip.a"
+               BlueprintName = "OmniUnzipTouch"
+               ReferencedContainer = "container:../Frameworks/OmniUnzip/OmniUnzip.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "34D06C53125D202500CA3963"
                BuildableName = "libOmniFileStore.a"
                BlueprintName = "OmniFileStoreTouch"
@@ -87,20 +101,6 @@
                BuildableName = "libOmniQuartz.a"
                BlueprintName = "OmniQuartzTouch"
                ReferencedContainer = "container:../Frameworks/OmniQuartz/OmniQuartz.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34E20FC9119314D200ECA875"
-               BuildableName = "libOmniUnzip.a"
-               BlueprintName = "OmniUnzipTouch"
-               ReferencedContainer = "container:../Frameworks/OmniUnzip/OmniUnzip.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
