@@ -725,12 +725,8 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 #endif
 
     @synchronized(self) {
-	if (_value == unset) {
-	    [_value release];
-	    _value = newValue;
-	} else {
-	    [newValue release];
-	}
+        [_value release];
+        _value = newValue;
 	if (_generation != newGeneration) {
 	    [_defaultValue release];
 	    _defaultValue = nil;

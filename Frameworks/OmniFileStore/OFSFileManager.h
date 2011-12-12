@@ -79,5 +79,5 @@ typedef NSUInteger OFSDirectoryEnumerationOptions;
 @interface OFSFileManager (OFSConcreteFileManager) <OFSConcreteFileManager>
 @end
 
-extern void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outName, NSUInteger *outCounter);
+extern void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outName, NSUInteger *outCounter); // just calls -[NSString splitName:andCounter:]
 

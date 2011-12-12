@@ -26,4 +26,11 @@
 
 - (void)sliceSizeChanged:(OUIInspectorSlice *)slice;
 
+// these two classes are here so that OG can get at them in a sub-class to avoid letting us control their viewHierarchy.
+- (void)setSlices:(NSArray *)slices maintainViewHierarchy:(BOOL)maintainHierachy;
+- (NSArray *)appropriateSlicesForInspectedObjects;
+
+// The default implementation just sets the value of the slices property.  OG will want to instead call setSlices:newSlices maintainViewHierarchy:NO.
+- (void)updateSlices;
+
 @end

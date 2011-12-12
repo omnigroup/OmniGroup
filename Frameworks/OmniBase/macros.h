@@ -117,3 +117,5 @@ do {						\
 #endif
 #endif
 
+/* For doing retain-and-assign or copy-and-assign with CF objects */
+#define OB_ASSIGN_CFRELEASE(lval, rval) { __typeof__(lval) new_ ## lval = (rval); if (lval != NULL) { CFRelease(lval); } lval = new_ ## lval; }

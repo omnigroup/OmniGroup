@@ -8,7 +8,6 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
-
 #import <OmniFoundation/OFXMLWhitespaceBehavior.h>
 
 @class NSArray, NSMutableArray, NSDate, NSData, NSMutableDictionary, NSMutableString, NSError;

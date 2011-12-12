@@ -11,6 +11,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniBase/macros.h>
 #import <OmniFoundation/OmniFoundation.h>
 
 #import <OmniAppKit/NSString-OAExtensions.h>
@@ -264,7 +265,7 @@ static NSFont *labelFont = nil;
     NSPoint mousePoint = [self convertPoint:[event locationInWindow] fromView:nil];
     NSUInteger row = MAX(0, mousePoint.y / cellSize.height);
     NSUInteger column = (mousePoint.x - horizontalMargin/2) / (horizontalMargin + cellSize.width);
-    column = MIN(MAX(0U, column), columnCount-1);
+    column = CLAMP(column, 0, columnCount-1);
     
     NSUInteger thumbnailIndex = row * columnCount + column;
     if (thumbnailIndex >= [provider thumbnailCount])

@@ -74,4 +74,5 @@
 #define kOUIDocumentPreviewViewBorderSelectionWhiteAlpha ((OQWhiteAlpha){0.0, 0.5})
 #define kOUIDocumentPreviewSelectionTouchBounceScale (0.96)
 #define kOUIDocumentPreviewSelectionTouchBounceDuration (0.17)
+#define kOUIDocumentPreviewHighlightAlpha (0.33)
 

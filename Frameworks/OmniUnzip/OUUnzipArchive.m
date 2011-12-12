@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,8 @@
 #import <OmniUnzip/OUErrors.h>
 #import <OmniBase/system.h> // S_IFMT, etc
 #import "unzip.h"
+
+#import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 
 #if 0 && defined(DEBUG)
     #define DEBUG_UNZIP_ENTRY(format, ...) NSLog((format), ## __VA_ARGS__)
@@ -281,6 +283,56 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
 - (NSData *)dataForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
 {
     return [self dataForEntry:entry raw:NO error:outError];
+}
+
+- (NSURL *)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)topLevelEntryName error:(NSError **)outError;
+{
+    NSArray *entries = [self entriesWithNamePrefix:topLevelEntryName];
+    NSFileManager *defaultManager = [NSFileManager defaultManager];    
+    NSString *writePath = [defaultManager temporaryPathForWritingToPath:[NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_temp", 
+                                                                                                                         [topLevelEntryName stringByDeletingPathExtension],
+                                                                                                                         nil]]
+                                                 allowOriginalDirectory:YES
+                                                                 create:NO
+                                                                  error:outError];
+    if (!writePath) {
+        return nil;
+    }
+    
+    NSURL *writeURL = [NSURL fileURLWithPath:writePath isDirectory:YES];
+
+    if (![defaultManager createDirectoryAtURL:writeURL withIntermediateDirectories:NO attributes:nil error:outError]) {
+        return nil;
+    }
+
+    
+    for (OUUnzipEntry *entry in entries) {
+        NSString *entryName = [entry name];
+        NSURL *entryTempURL = [writeURL URLByAppendingPathComponent:entryName];
+        
+        // We need to check [entry name] here instead of entryTempPath because the trailing / will be lost when using -stringByAppendingPathComponent:
+        if (([entryName hasSuffix:@"/"] && ([entry uncompressedSize] == 0))) {
+            // This entry is a folder, let's make sure it exists in our temp path.
+            if (![defaultManager fileExistsAtPath:[entryTempURL path]]) {
+                if (![defaultManager createDirectoryAtURL:entryTempURL withIntermediateDirectories:YES attributes:nil error:outError]) {
+                    return nil;
+                }
+            }
+        }
+        else {
+            // Entry is a file, write it to entryTempURL.
+            NSData *entryData = [self dataForEntry:entry error:outError];
+            if (!entryData) {
+                return nil;
+            }
+            
+            if (![entryData writeToURL:entryTempURL options:0 error:outError]) {
+                return nil;
+            }
+        }
+    }
+    
+    return [writeURL URLByAppendingPathComponent:topLevelEntryName];
 }
 
 @end

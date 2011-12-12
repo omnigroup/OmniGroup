@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2009-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,10 +13,12 @@ typedef struct _OFRandomState OFRandomState;
 
 extern OFRandomState *OFRandomStateCreate(void); // Creates a state with a seed array based on /dev/urandom, the time and possibly other factors
 extern OFRandomState *OFRandomStateCreateWithSeed32(const uint32_t *seed, uint32_t count);
+extern OFRandomState *OFRandomStateDuplicate(OFRandomState *oldstate);
 extern void OFRandomStateDestroy(OFRandomState *state);
 
 extern uint32_t OFRandomNextState32(OFRandomState *state);
 extern uint64_t OFRandomNextState64(OFRandomState *state);
+extern unsigned int OFRandomNextStateN(OFRandomState *state, unsigned int n);
 extern double OFRandomNextStateDouble(OFRandomState *state);
 
 // Version that use a global shared state. Not thread-safe.

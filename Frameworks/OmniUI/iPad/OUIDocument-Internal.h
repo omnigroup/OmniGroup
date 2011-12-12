@@ -10,5 +10,5 @@
 #import <OmniUI/OUIDocument.h>
 
 @interface OUIDocument (/*Internal*/)
-- (void)_writePreviewsIfNeeded:(BOOL)onlyIfNeeded;
+- (void)_writePreviewsIfNeeded:(BOOL)onlyIfNeeded onlyPlaceholders:(BOOL)onlyPlaceholders;
 @end

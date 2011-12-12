@@ -25,9 +25,17 @@ extern void OQAddRoundedRect(CGMutablePathRef path, CGRect rect, CGFloat radius)
 
 // These all assume a flipped coordinate system (top == CGRectGetMinY, bottom == CGRectGetMaxY)
 extern void OQAppendRectWithRoundedTop(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom);
+extern void OQAppendRectWithRoundedTopRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom);
+extern void OQAppendRectWithRoundedTopLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom);
+
 extern void OQAppendRectWithRoundedBottom(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop);
+extern void OQAppendRectWithRoundedBottomLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop);
+extern void OQAppendRectWithRoundedBottomRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop);
+
 extern void OQAppendRectWithRoundedLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeRight);
+
 extern void OQAppendRectWithRoundedRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeLeft);
+
 
 // Updates the CTM so that the lower/upper edges of the rect are swapped.
 static inline void OQFlipVerticallyInRect(CGContextRef ctx, CGRect rect)

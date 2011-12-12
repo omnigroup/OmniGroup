@@ -110,21 +110,24 @@ static void OUIViewPerformPosing(void)
 
 #endif
 
-- (UIImage *)snapshotImageWithScale:(CGFloat)scale;
+- (UIImage *)snapshotImageWithSize:(CGSize)imageSize;
 {
+    OBPRECONDITION(imageSize.width >= 1);
+    OBPRECONDITION(imageSize.height >= 1);
+    
     [self layoutIfNeeded];
     
     UIImage *image;
     
     CGRect bounds = self.bounds;
-    CGSize imageSize = CGSizeMake(ceil(bounds.size.width * scale),
-                                  ceil(bounds.size.height * scale));
+    OBASSERT(bounds.size.width >= 1);
+    OBASSERT(bounds.size.height >= 1);
     
     OUIGraphicsBeginImageContext(imageSize);
     {
         CGContextRef ctx = UIGraphicsGetCurrentContext();
         CGContextTranslateCTM(ctx, -bounds.origin.x, -bounds.origin.y);
-        CGContextScaleCTM(ctx, scale, scale);
+        CGContextScaleCTM(ctx, imageSize.width / bounds.size.width, imageSize.height / bounds.size.height);
         
         [[self layer] renderInContext:ctx];
         
@@ -133,6 +136,15 @@ static void OUIViewPerformPosing(void)
     OUIGraphicsEndImageContext();
     
     return image;
+}
+
+- (UIImage *)snapshotImageWithScale:(CGFloat)scale;
+{
+    CGRect bounds = self.bounds;
+    CGSize imageSize = CGSizeMake(ceil(bounds.size.width * scale),
+                                  ceil(bounds.size.height * scale));
+    
+    return [self snapshotImageWithSize:imageSize];
 }
 
 - (UIImage *)snapshotImage;
@@ -455,14 +467,26 @@ void OUIWithoutAnimating(void (^actions)(void))
     }
 }
 
+void OUIWithoutLayersAnimating(void (^actions)(void))
+{
+    [CATransaction begin];
+    [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
+    actions();
+    [CATransaction commit];
+}
+
+void OUIWithLayerAnimationsDisabled(BOOL disabled, void (^actions)(void))
+{
+    if (disabled)
+        OUIWithoutLayersAnimating(actions);
+    else
+        actions();
+}
+
 void OUIWithAppropriateLayerAnimations(void (^actions)(void))
 {
     BOOL shouldAnimate = [UIView areAnimationsEnabled];
-    
-    [CATransaction begin];
-    [CATransaction setValue:shouldAnimate ? (id)kCFBooleanFalse : (id)kCFBooleanTrue forKey:kCATransactionDisableActions];
-    actions();
-    [CATransaction commit];
+    OUIWithLayerAnimationsDisabled(shouldAnimate == NO, actions);
 }
 
 // A (hopefully) rarely needed hack, given a name here to make it a bit more clear what is happening.

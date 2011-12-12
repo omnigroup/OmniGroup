@@ -7,6 +7,8 @@
 //
 // $Id$
 
+// Consider using an OUIDragGestureRecognizer instead, with -requiresHoldToComplete set to YES and holdDuration set to 0.5.
+
 #import "OUIGestureRecognizer.h"
 
 @interface OUILongPressGestureRecognizer : OUIGestureRecognizer {

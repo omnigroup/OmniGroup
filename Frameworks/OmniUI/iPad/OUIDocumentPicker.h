@@ -9,18 +9,19 @@
 
 #import <OmniUI/OUIViewController.h>
 
+#import <OmniUI/OUISyncTypes.h>
 #import <OmniUI/OUIDocumentPickerScrollView.h>
 #import <OmniUI/OUIReplaceDocumentAlert.h>
 
 @class NSFileWrapper;
 @class OFSetBinding;
-@class OUIDocumentStore, OUIDocumentStoreItem, OUIDocumentStoreFileItem, OUIDocumentPickerScrollView, OUIDocumentRenameViewController;
+@class OFSDocumentStore, OFSDocumentStoreItem, OFSDocumentStoreFileItem, OUIDocumentPickerScrollView, OUIDocumentRenameViewController;
 
 @protocol OUIDocumentPickerDelegate;
 
 @interface OUIDocumentPicker : OUIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate, OUIReplaceDocumentAlertDelegate>
 
-@property(nonatomic,retain) OUIDocumentStore *documentStore;
+@property(nonatomic,retain) OFSDocumentStore *documentStore;
 @property(assign, nonatomic) IBOutlet id <OUIDocumentPickerDelegate> delegate;
 
 @property(retain) IBOutlet UIToolbar *toolbar;
@@ -29,21 +30,16 @@
 
 @property(nonatomic,readonly) OUIDocumentPickerScrollView *activeScrollView;
 
-@property(retain) id fileItemTappedTarget;
-@property(assign) SEL fileItemTappedAction;
-
 @property(nonatomic, assign) CGSize filterViewContentSize;
-
-- (CGSize)gridSizeForOrientation:(UIInterfaceOrientation)orientation;
 
 - (void)rescanDocuments;
 - (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL;
 - (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL animated:(BOOL)animated;
 
 @property(readonly,nonatomic) NSSet *selectedFileItems;
-- (void)clearSelection;
-@property(readonly,nonatomic) OUIDocumentStoreFileItem *singleSelectedFileItem;
-- (BOOL)canEditFileItem:(OUIDocumentStoreFileItem *)fileItem;
+- (void)clearSelection:(BOOL)shouldEndEditing;
+@property(readonly,nonatomic) OFSDocumentStoreFileItem *singleSelectedFileItem;
+- (BOOL)canEditFileItem:(OFSDocumentStoreFileItem *)fileItem;
 
 - (void)addDocumentFromURL:(NSURL *)url;
 - (void)exportedDocumentToURL:(NSURL *)url;
@@ -51,17 +47,16 @@
 
 - (BOOL)isExportThreadSafe;  // Graffle has a subclass that returns NO, default is YES
 
-- (NSArray *)availableExportTypesForFileItem:(OUIDocumentStoreFileItem *)fileItem;
-- (NSArray *)availableImageExportTypesForFileItem:(OUIDocumentStoreFileItem *)fileItem;
-- (NSArray *)availableDocumentInteractionExportTypesForFileItem:(OUIDocumentStoreFileItem *)fileItem;
-- (void)exportFileWrapperOfType:(NSString *)exportType forFileItem:(OUIDocumentStoreFileItem *)fileItem withCompletionHandler:(void (^)(NSFileWrapper *fileWrapper, NSError *error))completionHandler;
+- (NSArray *)availableExportTypesForFileItem:(OFSDocumentStoreFileItem *)fileItem withSyncType:(OUISyncType)syncType exportOptionsType:(OUIExportOptionsType)exportOptionsType;
+- (NSArray *)availableImageExportTypesForFileItem:(OFSDocumentStoreFileItem *)fileItem;
+- (void)exportFileWrapperOfType:(NSString *)exportType forFileItem:(OFSDocumentStoreFileItem *)fileItem withCompletionHandler:(void (^)(NSFileWrapper *fileWrapper, NSError *error))completionHandler;
 
 - (UIImage *)iconForUTI:(NSString *)fileUTI;
 - (UIImage *)exportIconForUTI:(NSString *)fileUTI;
 - (NSString *)exportLabelForUTI:(NSString *)fileUTI;
 
 - (void)scrollToTopAnimated:(BOOL)animated;
-- (void)scrollItemToVisible:(OUIDocumentStoreItem *)item animated:(BOOL)animated;
+- (void)scrollItemToVisible:(OFSDocumentStoreItem *)item animated:(BOOL)animated;
 
 - (BOOL)okayToOpenMenu;
 

@@ -7,23 +7,18 @@
 
 #import <OmniUI/OUIDocument.h>
 
-#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
+#import <OmniFileStore/OFSDocumentStore.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniUI/OUIAlertView.h>
-#import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIDocumentPreview.h>
-#import <OmniUI/OUIDocumentStoreFileItem.h>
 #import <OmniUI/OUIDocumentViewController.h>
-#import <OmniUI/OUIErrors.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIMainViewController.h>
 #import <OmniUI/OUISingleDocumentAppController.h>
 #import <OmniUI/OUIUndoIndicator.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
-#import "OUIDocumentStore-Internal.h"
-#import "OUIDocumentStoreFileItem-Internal.h"
 #import "OUIDocument-Internal.h"
-#import <OmniFileStore/OFSFileManager.h>
 
 RCS_ID("$Id$");
 
@@ -40,12 +35,18 @@ OBDEPRECATED_METHOD(-writeToURL:forSaveType:error:); // -[UIDocument contentsFor
 OBDEPRECATED_METHOD(-willAutosave);
 OBDEPRECATED_METHOD(-initWithExistingDocumentProxy:error:); // -initWithExistingFileItem:error:
 
+OBDEPRECATED_METHOD(-fileURLForPreviewOfFileItem:withLandscape:);
+OBDEPRECATED_METHOD(-loadPreviewForFileItem:withLandscape:error:);
+OBDEPRECATED_METHOD(-placeholderPreviewImageForFileItem:landscape:);
+OBDEPRECATED_METHOD(+previewSizeForTargetSize:aspectRatio:);
+OBDEPRECATED_METHOD(+loadPreviewForFileURL:date:withLandscape:error:);
+OBDEPRECATED_METHOD(+placeholderPreviewImageForFileURL:landscape:); // +placeholderPreviewImageNameForFileURL:landscape:
+
 // OUIDocumentViewController
 OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
 
 @interface OUIDocument (/*Private*/)
-+ (NSURL *)_previewDirectoryURL;
-- _initWithFileItem:(OUIDocumentStoreFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
+- _initWithFileItem:(OFSDocumentStoreFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
 - (void)_willSave;
 - (void)_updateUndoIndicator;
 - (void)_undoManagerDidUndo:(NSNotification *)note;
@@ -58,13 +59,14 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
 @implementation OUIDocument
 {
 @private
-    OUIDocumentStoreFileItem *_fileItem;
+    OFSDocumentStoreFileItem *_fileItem;
     
     UIViewController <OUIDocumentViewController> *_viewController;
     OUIUndoIndicator *_undoIndicator;
     
     BOOL _hasUndoGroupOpen;
     BOOL _isClosing;
+    BOOL _forPreviewGeneration;
     
     id _rebuildingViewControllerState;
 }
@@ -75,7 +77,7 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
 }
 
 // existing document
-- initWithExistingFileItem:(OUIDocumentStoreFileItem *)fileItem error:(NSError **)outError;
+- initWithExistingFileItem:(OFSDocumentStoreFileItem *)fileItem error:(NSError **)outError;
 {
     OBPRECONDITION(fileItem);
     OBPRECONDITION(fileItem.fileURL);
@@ -86,17 +88,11 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 {
     OBPRECONDITION(url);
-    
-    if (!(self = [self _initWithFileItem:nil url:url error:outError]))
-        return nil;
-    
-    // Mark ourselves as needing saving
-    [self updateChangeCount:UIDocumentChangeDone];
-    
-    return self;
+
+    return [self _initWithFileItem:nil url:url error:outError];
 }
 
-- _initWithFileItem:(OUIDocumentStoreFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
+- _initWithFileItem:(OFSDocumentStoreFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
 {
     OBPRECONDITION(fileItem || url);
     OBPRECONDITION(!fileItem || [fileItem.fileURL isEqual:url]);
@@ -166,8 +162,8 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
 }
 
 @synthesize fileItem = _fileItem;
-
 @synthesize viewController = _viewController;
+@synthesize forPreviewGeneration = _forPreviewGeneration;
 
 - (BOOL)saveAsNewDocumentToURL:(NSURL *)url error:(NSError **)outError;
 {
@@ -269,7 +265,9 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
 
 - (id)changeCountTokenForSaveOperation:(UIDocumentSaveOperation)saveOperation;
 {
-    OBPRECONDITION([NSThread isMainThread]);
+    // New documents get created and saved on a background thread, but normal documents should be on the main thread
+    OBPRECONDITION((_fileItem == nil) ^ [NSThread isMainThread]);
+    
     //OBPRECONDITION(saveOperation == UIDocumentSaveForOverwriting); // UIDocumentSaveForCreating for saving when we get getting saved to the ".ubd" dustbin during -accommodatePresentedItemDeletionWithCompletionHandler:
     
     id token = [super changeCountTokenForSaveOperation:saveOperation];
@@ -280,6 +278,7 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
 
 - (void)updateChangeCountWithToken:(id)changeCountToken forSaveOperation:(UIDocumentSaveOperation)saveOperation;
 {
+    // This always gets called on the main thread, even when saving new documents on the background
     OBPRECONDITION([NSThread isMainThread]);
     
     DEBUG_DOCUMENT(@"%@ %@ updateChangeCountWithToken:%@ forSaveOperation:%ld", [self shortDescription], NSStringFromSelector(_cmd), changeCountToken, saveOperation);
@@ -385,7 +384,7 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
             _fileItem.date = self.fileModificationDate;
             
             // The date refresh is asynchronous, so we'll force preview loading in the case that we know we should consider the previews out of date.
-            [self _writePreviewsIfNeeded:(hadChanges == NO)];
+            [self _writePreviewsIfNeeded:(hadChanges == NO) onlyPlaceholders:NO];
         }
         
         OBASSERT(_isClosing == YES);
@@ -426,7 +425,7 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
 {
     DEBUG_DOCUMENT(@"Save with operation %ld to %@", saveOperation, [url absoluteString]);
     
-    OBASSERT(![[[[url path] stringByDeletingLastPathComponent] lastPathComponent] isEqualToString:@"Inbox"]);
+    OBASSERT(![OFSDocumentStore isURLInInbox:url]);
     
     [super saveToURL:url forSaveOperation:saveOperation completionHandler:^(BOOL success){
         DEBUG_DOCUMENT(@"  save success %d", success);
@@ -461,7 +460,10 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
 {
     DEBUG_DOCUMENT(@"Handle error with user interaction:%d: %@", userInteractionPermitted, [error toPropertyList]);
 
-    if (userInteractionPermitted)
+    if (_forPreviewGeneration) {
+        // Just log it instead of popping up an alert for something the user didn't actually poke to open anyway.
+        NSLog(@"Error while generating preview for %@: %@", [self.fileURL absoluteString], [error toPropertyList]);
+    } else if (userInteractionPermitted)
         OUI_PRESENT_ALERT(error);
     [self finishedHandlingError:error recovered:NO];
 }
@@ -523,7 +525,7 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
                 NSString *messageFormat = NSLocalizedStringFromTableInBundle(@"Last edited on %@.", @"OmniUI", OMNI_BUNDLE, @"Message format for alert informing user that the document has been reloaded with iCloud edits from another device");
                 NSString *message = [NSString stringWithFormat:messageFormat, currentVersion.localizedNameOfSavingComputer];
                 
-                message = [message stringByAppendingFormat:@"\n%@", [OUIDocumentStoreFileItem displayStringForDate:currentVersion.modificationDate]];
+                message = [message stringByAppendingFormat:@"\n%@", [OFSDocumentStoreFileItem displayStringForDate:currentVersion.modificationDate]];
                 
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:[self alertTitleForIncomingEdit]
                                                                 message:message delegate:message cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -629,114 +631,12 @@ OBDEPRECATED_METHOD(-documentWillAutosave); // -documentWillSave
 #pragma mark -
 #pragma mark Preview support
 
-static BOOL _isValidPreviewURL(NSURL *url, NSDate *fileDate)
+static BOOL _previewsValidForDate(Class self, NSURL *fileURL, NSDate *date)
 {
-    if (!url)
-        return NO; // New document or otherwise don't know where to put the preview.
-    
-    NSError *error = nil;
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[url path] error:&error];
-    if (!attributes) {
-        if (![error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT])
-            NSLog(@"Unable to get attributes of %@: %@", [url absoluteString], [error toPropertyList]);
-        return NO;
-    }
-    
-    // We treat zero-length preview files as 'valid' so that we don't try to regenerate previews for files that cause the app to crash when generating previews. Still might crash each time we open/edit/close them in this edge case, though...
-    return OFISEQUAL([attributes fileType], NSFileTypeRegular) && ([[attributes fileModificationDate] compare:fileDate] != NSOrderedAscending);
+    return [OUIDocumentPreview hasPreviewForFileURL:fileURL date:date withLandscape:YES] && [OUIDocumentPreview hasPreviewForFileURL:fileURL date:date withLandscape:NO];
 }
 
-static BOOL _previewsValidForDate(Class self, OUIDocumentStoreFileItem *fileItem, NSDate *date)
-{
-    return _isValidPreviewURL([self fileURLForPreviewOfFileItem:fileItem withLandscape:YES], date) && _isValidPreviewURL([self fileURLForPreviewOfFileItem:fileItem withLandscape:NO], date);
-}
-
-+ (CGSize)previewSizeForTargetSize:(CGSize)targetSize aspectRatio:(CGFloat)aspectRatio;
-{
-    // Aspect radio is w/h. Assume the preview has h=1, then its width is the aspect ratio. We can then figure out the max scale factor in each direction.
-    CGFloat previewWidth = aspectRatio;
-    CGFloat previewHeight = 1;
-    
-    CGFloat widthScale = targetSize.width/previewWidth;
-    CGFloat heightScale = targetSize.height/previewHeight;
-    CGFloat scale = MIN(widthScale, heightScale);
-    
-    CGSize size = CGSizeMake(previewWidth * scale, previewHeight * scale);
-    
-    return size;
-}
-
-+ (NSURL *)fileURLForPreviewOfFileItem:(OUIDocumentStoreFileItem *)fileItem withLandscape:(BOOL)landscape;
-{
-    OBPRECONDITION(fileItem);
-
-    NSURL *directoryURL = [self _previewDirectoryURL];
-    
-    NSURL *fileURL = fileItem.fileURL;
-    if (!fileURL)
-        return nil; // New documents won't have this.
-    
-    // We need to keep the file extension here! We could have Foo.oo3 and Foo.opml and they might have different previews
-    NSString *fileName = [fileItem.fileURL lastPathComponent];
-    
-    fileName = [fileName stringByAppendingPathExtension:landscape ? @"landscape" : @"portrait"];
-    fileName = [fileName stringByAppendingPathExtension:@"png"];
-    
-    return [[directoryURL URLByAppendingPathComponent:fileName] absoluteURL];
-}
-
-+ (OUIDocumentPreview *)loadPreviewForFileItem:(OUIDocumentStoreFileItem *)fileItem withLandscape:(BOOL)landscape error:(NSError **)outError;
-{
-    UIImage *image = nil;
-    NSDate *date = nil;
-    OUIDocumentPreviewType type = OUIDocumentPreviewTypeEmpty;
-    
-    do {
-        NSURL *previewURL = [self fileURLForPreviewOfFileItem:fileItem withLandscape:landscape];
-        if (!previewURL)
-            break;
-        
-        NSError *error = nil;
-        NSData *data = [[NSData alloc] initWithContentsOfURL:previewURL options:NSDataReadingUncached error:&error];
-        if (!data) {
-            if ([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT])
-                type = OUIDocumentPreviewTypePlaceholder;
-            else
-                NSLog(@"Unable to load preview for %@: %@", [self shortDescription], [error toPropertyList]);
-            break;
-        }
-        if (![data length]) {
-            // Placeholder marker written to avoid repeated crashing
-            [data release];
-            break;
-        }
-        
-        NSError *resourceError = nil;
-        if (![previewURL getResourceValue:&date forKey:NSURLContentModificationDateKey error:&resourceError]) {
-            NSLog(@"Error getting modification date for %@: %@", [previewURL absoluteString], [resourceError toPropertyList]);
-            date = [NSDate date];
-        }
-        
-        image = [[[UIImage alloc] initWithData:data] autorelease];
-        [data release];
-        if (!image) {
-            NSLog(@"Unable to create preview image from contents of %@", previewURL);
-            break;
-        }
-        
-        type = OUIDocumentPreviewTypeRegular;
-    } while (0);
-    
-    if (!image) {
-        image = [self placeholderPreviewImageForFileItem:fileItem landscape:landscape];
-        date = [fileItem date];
-        OBASSERT(image); // Probably not worth adding an OmniUI global default image; the preview view can just draw a white square
-    }
-    
-    return [[[OUIDocumentPreview alloc] initWithFileItem:fileItem date:date image:image landscape:landscape type:type] autorelease];
-}
-
-+ (UIImage *)placeholderPreviewImageForFileItem:(OUIDocumentStoreFileItem *)fileItem landscape:(BOOL)landscape;
++ (NSString *)placeholderPreviewImageNameForFileURL:(NSURL *)fileURL landscape:(BOOL)landscape;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }
@@ -747,8 +647,7 @@ static BOOL _previewsValidForDate(Class self, OUIDocumentStoreFileItem *fileItem
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-
-+ (UIImage *)cameraRollImageForFileItem:(OUIDocumentStoreFileItem *)fileItem;
++ (UIImage *)cameraRollImageForFileItem:(OFSDocumentStoreFileItem *)fileItem;
 {
     OBFinishPorting;
 #if 0
@@ -808,71 +707,48 @@ static BOOL _previewsValidForDate(Class self, OUIDocumentStoreFileItem *fileItem
 #pragma mark -
 #pragma mark Internal
 
-static void _writeEmptyPreview(OUIDocument *self, BOOL landscape)
+static void _writeEmptyPreview(NSURL *fileURL, NSDate *date, BOOL landscape)
 {
-    NSURL *previewURL = [[self class] fileURLForPreviewOfFileItem:self.fileItem withLandscape:landscape];
+    NSURL *previewURL = [OUIDocumentPreview fileURLForPreviewOfFileURL:fileURL date:date withLandscape:landscape];
     NSError *error = nil;
     if (![[NSData data] writeToURL:previewURL options:0 error:&error])
         NSLog(@"Error writing empty data for preview to %@: %@", previewURL, [error toPropertyList]);
 }
 
-- (void)_writePreviewsIfNeeded:(BOOL)onlyIfNeeded;
+- (void)_writePreviewsIfNeeded:(BOOL)onlyIfNeeded onlyPlaceholders:(BOOL)onlyPlaceholders;
 {
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(_fileItem);
+    
     // This doesn't work -- what we want is 'has been opened and has reasonable content'. When writing previews when closing and edited document, this will be UIDocumentStateClosed, but when writing previews due to an incoming iCloud change or document dragged in from iTunes, this will be UIDocumentStateNormal.
     //OBPRECONDITION(self.documentState == UIDocumentStateNormal);
     
-    if (onlyIfNeeded && _previewsValidForDate([self class], _fileItem, _fileItem.date))
+    if (onlyIfNeeded && _previewsValidForDate([self class], _fileItem.fileURL, _fileItem.date))
         return;
     
     // First, write an empty data file each preview, in case preview writing fails.
-    _writeEmptyPreview(self, YES);
-    _writeEmptyPreview(self, NO);
+    NSURL *fileURL = _fileItem.fileURL;
+    NSDate *date = _fileItem.date;
+    _writeEmptyPreview(fileURL, date, YES);
+    _writeEmptyPreview(fileURL, date, NO);
+    
+    if (onlyPlaceholders)
+        return;
     
     PREVIEW_DEBUG(@"'%@' Writing previews", _fileItem.name);
     NSError *previewError = nil;
     if (![[self class] writePreviewsForDocument:self error:&previewError]) {
         NSLog(@"Error writing preview while closing %@: %@", [_fileItem.fileURL absoluteString], [previewError toPropertyList]);
-    } else {
-        // TODO: Remove the previews otherwise? Add timestamp validation when loading the previews?
+        // Register the empty previews with the cache so we don't try to rebuild them.
+        [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage){
+            cacheImage(NULL, [OUIDocumentPreview fileURLForPreviewOfFileURL:fileURL date:date withLandscape:YES]);
+            cacheImage(NULL, [OUIDocumentPreview fileURLForPreviewOfFileURL:fileURL date:date withLandscape:NO]);
+        }];
     }
 }
 
 #pragma mark -
 #pragma mark Private
-
-+ (NSURL *)_previewDirectoryURL;
-{
-    static NSURL *previewDirectoryURL = nil;
-    static dispatch_once_t onceToken;
-    
-    dispatch_once(&onceToken, ^{
-        NSError *error = nil;
-        
-        NSFileManager *manager = [NSFileManager defaultManager];
-        NSURL *caches = [manager URLForDirectory:NSCachesDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
-        if (caches) {
-            previewDirectoryURL = [[caches URLByAppendingPathComponent:@"DocumentPreviews"] retain];
-            
-            if (![manager directoryExistsAtPath:[[previewDirectoryURL absoluteURL] path]]) {
-                if (![manager createDirectoryAtURL:previewDirectoryURL withIntermediateDirectories:NO attributes:nil error:&error]) {
-                    [previewDirectoryURL release];
-                    previewDirectoryURL = nil;
-                }
-            }
-        }
-        
-        // TODO: Validate the previews vs. the version number of the app, or maybe a preview version number? Might be nice to rebuild the previews in the case that the app gets a new look. OTOH, maybe iTunes will torch our caches directory automatically on a version update.
-        
-        if (!previewDirectoryURL) {
-            OBASSERT_NOT_REACHED("Unable to create caches directory!");
-            NSLog(@"Unable to create preview image directory: %@", [error toPropertyList]);
-        }
-    });
-    
-    return previewDirectoryURL;
-}
 
 - (void)_willSave;
 {

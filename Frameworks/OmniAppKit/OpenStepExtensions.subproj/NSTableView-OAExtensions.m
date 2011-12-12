@@ -39,6 +39,7 @@ OBDEPRECATED_METHOD(-tableViewTypeAheadSelectionColumn:); // NSTableView automag
 
 static IMP originalTextDidEndEditing;
 static NSImage *(*originalDragImageForRows)(NSTableView *self, SEL _cmd, NSIndexSet *dragRows, NSArray *tableColumns, NSEvent *dragEvent, NSPointPointer dragImageOffset);
+static NSDragOperation (*originalDraggingSourceOperationMaskForLocal)(id self, SEL _cmd, BOOL flag);
 
 static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 // you'd think this should be instance-specific, but it doesn't have to be -- only one drag can be happening at a time.
@@ -48,6 +49,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 {
     originalTextDidEndEditing = OBReplaceMethodImplementationWithSelector(self, @selector(textDidEndEditing:), @selector(_replacementTextDidEndEditing:));
     originalDragImageForRows = (typeof(originalDragImageForRows))OBReplaceMethodImplementationWithSelector(self, @selector(dragImageForRowsWithIndexes:tableColumns:event:offset:), @selector(_replacement_dragImageForRowsWithIndexes:tableColumns:event:offset:));
+    originalDraggingSourceOperationMaskForLocal = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(originalDraggingSourceOperationMaskForLocal:), @selector(_replacementDraggingSourceOperationMaskForLocal:));
 }
 
 
@@ -434,6 +436,14 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 
 // NSDraggingSource
+
+- (NSDragOperation)_replacementDraggingSourceOperationMaskForLocal:(BOOL)flag;
+{
+    if ([_dataSource respondsToSelector:@selector(tableView:draggingSourceOperationMaskForLocal:)])
+        return [_dataSource tableView:self draggingSourceOperationMaskForLocal:flag]; // We should deprecate this in favor of -[NSTableView setDraggingSourceOperationMask:forLocal:]
+    else
+        return originalDraggingSourceOperationMaskForLocal(self, _cmd, flag);
+}
 
 - (void)draggedImage:(NSImage *)image endedAt:(NSPoint)screenPoint operation:(NSDragOperation)operation;
 {

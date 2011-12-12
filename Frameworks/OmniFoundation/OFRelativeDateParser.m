@@ -13,6 +13,7 @@
 #import <Foundation/NSDateFormatter.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSMutableArray-OFExtensions.h>
+#import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 
 #import <OmniFoundation/OFRegularExpression.h>
@@ -26,6 +27,7 @@ RCS_ID("$Id$");
 static NSDictionary *relativeDateNames;
 static NSDictionary *specialCaseTimeNames;
 static NSDictionary *codes;
+static NSDictionary *englishCodes;
 static NSDictionary *modifiers;
 
 static const unsigned unitFlags = NSSecondCalendarUnit | NSMinuteCalendarUnit | NSHourCalendarUnit | NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit | NSEraCalendarUnit;
@@ -36,7 +38,9 @@ static OFRelativeDateParser *sharedParser;
 static NSArray *englishWeekdays;
 static NSArray *englishShortdays;
 
-//#define DEBUG_date (1)
+//#ifdef DEBUG_correia
+//    #define DEBUG_date (1)
+//#endif
 
 typedef enum {
     DPHour = 0,
@@ -74,6 +78,24 @@ static NSCalendar *_defaultCalendar(void)
 - (NSDate *)_parseDateNaturalLangauge:(NSString *)dateString withDate:(NSDate *)date timeSpecific:(BOOL *)timeSpecific useEndOfDuration:(BOOL)useEndOfDuration calendar:(NSCalendar *)calendar error:(NSError **)error;
 - (BOOL)_stringMatchesTime:(NSString *)firstString optionalSecondString:(NSString *)secondString withTimeFormat:(NSString *)timeFormat;
 - (BOOL)_stringIsNumber:(NSString *)string;
+
+// This group of methods (class and instance) normalize strings for scanning and matching user input.
+// We use this to normalize localized strings and user input so that users can type ASCII-equivalent values and still get the benefit of the natural language parser
+// See <bug:///73212>
+
+enum {
+    OFRelativeDateParserNormalizeOptionsDefault = (OFStringNormlizationOptionLowercase | OFStringNormilzationOptionStripCombiningMarks),
+    OFRelativeDateParserNormalizeOptionsAbbreviations = (OFRelativeDateParserNormalizeOptionsDefault | OFStringNormilzationOptionStripPunctuation)
+};
+
++ (NSDictionary *)_dictionaryByNormalizingKeysInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options locale:(NSLocale *)locale;;
++ (NSDictionary *)_dictionaryByNormalizingValuesInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options locale:(NSLocale *)locale;;
++ (NSArray *)_arrayByNormalizingValuesInArray:(NSArray *)array options:(NSUInteger)options locale:(NSLocale *)locale;;
+
+- (NSDictionary *)_dictionaryByNormalizingKeysInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options;
+- (NSDictionary *)_dictionaryByNormalizingValuesInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options;
+- (NSArray *)_arrayByNormalizingValuesInArray:(NSArray *)array options:(NSUInteger)options;
+
 @end
 
 @implementation OFRelativeDateParser
@@ -95,11 +117,13 @@ static NSCalendar *_defaultCalendar(void)
 + (void)initialize;
 {
     OBINITIALIZE;
-    specialCaseTimeNames = [[NSDictionary alloc] initWithObjectsAndKeys:
-			    @"$(START_END_OF_THIS_WEEK)", NSLocalizedStringFromTableInBundle(@"this week", @"OFDateProcessing", OMNI_BUNDLE, @"time"),
-			    @"$(START_END_OF_NEXT_WEEK)", NSLocalizedStringFromTableInBundle(@"next week", @"OFDateProcessing", OMNI_BUNDLE, @"time"),
-			    @"$(START_END_OF_LAST_WEEK)", NSLocalizedStringFromTableInBundle(@"last week", @"OFDateProcessing", OMNI_BUNDLE, @"time"),
+    specialCaseTimeNames = [NSDictionary dictionaryWithObjectsAndKeys:
+			    @"$(START_END_OF_THIS_WEEK)", NSLocalizedStringFromTableInBundle(@"this week", @"OFDateProcessing", OMNI_BUNDLE, @"time, used for scanning user input"),
+			    @"$(START_END_OF_NEXT_WEEK)", NSLocalizedStringFromTableInBundle(@"next week", @"OFDateProcessing", OMNI_BUNDLE, @"time, used for scanning user input"),
+			    @"$(START_END_OF_LAST_WEEK)", NSLocalizedStringFromTableInBundle(@"last week", @"OFDateProcessing", OMNI_BUNDLE, @"time, used for scanning user input"),
 			    nil];
+    specialCaseTimeNames = [[self _dictionaryByNormalizingKeysInDictionary:specialCaseTimeNames options:OFRelativeDateParserNormalizeOptionsDefault locale:[NSLocale currentLocale]] retain];
+
     // TODO: Can't do seconds offsets for day math due to daylight savings
     // TODO: Make this a localized .plist where it looks something like:
     /*
@@ -107,66 +131,86 @@ static NSCalendar *_defaultCalendar(void)
      "avant-hier" = {day:-2}
      */
     // array info: Code, Number, Relativitity, timeSpecific, monthSpecific, daySpecific
-    relativeDateNames = [[NSDictionary alloc] initWithObjectsAndKeys:
+    relativeDateNames = [NSDictionary dictionaryWithObjectsAndKeys:
 			 /* Specified Time, Use Current Time */
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"now", @"OFDateProcessing", OMNI_BUNDLE, @"now"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"now", @"OFDateProcessing", OMNI_BUNDLE, @"now, used for scanning user input"), 
 			 /* Specified Time*/
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPHour], [NSNumber numberWithInt:12], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"noon", @"OFDateProcessing", OMNI_BUNDLE, @"noon"), 
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPHour], [NSNumber numberWithInt:23], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tonight", @"OFDateProcessing", OMNI_BUNDLE, @"tonight"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPHour], [NSNumber numberWithInt:12], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"noon", @"OFDateProcessing", OMNI_BUNDLE, @"noon, used for scanning user input"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPHour], [NSNumber numberWithInt:23], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tonight", @"OFDateProcessing", OMNI_BUNDLE, @"tonight, used for scanning user input"), 
 			 /* Use default time */
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"today", @"OFDateProcessing", OMNI_BUNDLE, @"today"), 
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tod", @"OFDateProcessing", OMNI_BUNDLE, @"\"tod\" this should be an abbreviation for \"today\" that makes sense for the given language"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"today", @"OFDateProcessing", OMNI_BUNDLE, @"today, used for scanning user input"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tod", @"OFDateProcessing", OMNI_BUNDLE, @"\"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input"), 
 			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tomorrow", @"OFDateProcessing", OMNI_BUNDLE, @"tomorrow"), 
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tom", @"OFDateProcessing", OMNI_BUNDLE, @"\"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language"), 
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"yesterday", @"OFDateProcessing", OMNI_BUNDLE, @"yesterday"), 
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"yes", @"OFDateProcessing", OMNI_BUNDLE, @"\"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tom", @"OFDateProcessing", OMNI_BUNDLE, @"\"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"yesterday", @"OFDateProcessing", OMNI_BUNDLE, @"yesterday, used for scanning user input"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"yes", @"OFDateProcessing", OMNI_BUNDLE, @"\"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input"), 
 			 /* use default day */
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"this month", @"OFDateProcessing", OMNI_BUNDLE, @"this month"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"next month", @"OFDateProcessing", OMNI_BUNDLE, @"next month"), 
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"last month", @"OFDateProcessing", OMNI_BUNDLE, @"last month"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPYear], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"this year", @"OFDateProcessing", OMNI_BUNDLE, @"this year"), 
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPYear], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"next year", @"OFDateProcessing", OMNI_BUNDLE, @"next year"), 
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPYear], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"last year", @"OFDateProcessing", OMNI_BUNDLE, @"last year"),
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"this month", @"OFDateProcessing", OMNI_BUNDLE, @"this month, used for scanning user input"),
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"next month", @"OFDateProcessing", OMNI_BUNDLE, @"next month, used for scanning user input"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"last month", @"OFDateProcessing", OMNI_BUNDLE, @"last month, used for scanning user input"),
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPYear], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"this year", @"OFDateProcessing", OMNI_BUNDLE, @"this year, used for scanning user input"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPYear], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"next year", @"OFDateProcessing", OMNI_BUNDLE, @"next year, used for scanning user input"), 
+			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPYear], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"last year", @"OFDateProcessing", OMNI_BUNDLE, @"last year, used for scanning user input"),
 			 
 			 nil];
+    relativeDateNames = [[self _dictionaryByNormalizingKeysInDictionary:relativeDateNames options:OFRelativeDateParserNormalizeOptionsDefault locale:[NSLocale currentLocale]] retain];
     
     // short hand codes
-    codes = [[NSDictionary alloc] initWithObjectsAndKeys:
-	     [NSNumber numberWithInt:DPHour], NSLocalizedStringFromTableInBundle(@"h", @"OFDateProcessing", OMNI_BUNDLE, @"the first letter of \"hour\""), 
-	     [NSNumber numberWithInt:DPHour], NSLocalizedStringFromTableInBundle(@"hour", @"OFDateProcessing", OMNI_BUNDLE, @"hours"), 
-	     [NSNumber numberWithInt:DPHour], NSLocalizedStringFromTableInBundle(@"hours", @"OFDateProcessing", OMNI_BUNDLE, @"hours"), 
-	     [NSNumber numberWithInt:DPDay], NSLocalizedStringFromTableInBundle(@"d", @"OFDateProcessing", OMNI_BUNDLE, @"the first letter of \"day\""), 
-	     [NSNumber numberWithInt:DPDay], NSLocalizedStringFromTableInBundle(@"day", @"OFDateProcessing", OMNI_BUNDLE, @"days"), 
-	     [NSNumber numberWithInt:DPDay], NSLocalizedStringFromTableInBundle(@"days", @"OFDateProcessing", OMNI_BUNDLE, @"days"), 
-	     [NSNumber numberWithInt:DPWeek], NSLocalizedStringFromTableInBundle(@"w", @"OFDateProcessing", OMNI_BUNDLE, @"weeks"), 
-	     [NSNumber numberWithInt:DPWeek], NSLocalizedStringFromTableInBundle(@"week", @"OFDateProcessing", OMNI_BUNDLE, @"weeks"), 
-	     [NSNumber numberWithInt:DPWeek], NSLocalizedStringFromTableInBundle(@"weeks", @"OFDateProcessing", OMNI_BUNDLE, @"weeks"), 
-	     [NSNumber numberWithInt:DPMonth],NSLocalizedStringFromTableInBundle(@"m", @"OFDateProcessing", OMNI_BUNDLE, @"the first letter of \"month\""), 
-	     [NSNumber numberWithInt:DPMonth], NSLocalizedStringFromTableInBundle(@"month", @"OFDateProcessing", OMNI_BUNDLE, @"month"), 
-	     [NSNumber numberWithInt:DPMonth], NSLocalizedStringFromTableInBundle(@"months", @"OFDateProcessing", OMNI_BUNDLE, @"months"), 
-	     [NSNumber numberWithInt:DPYear], NSLocalizedStringFromTableInBundle(@"y", @"OFDateProcessing", OMNI_BUNDLE, @"the first letter of \"year\""), 
-	     [NSNumber numberWithInt:DPYear], NSLocalizedStringFromTableInBundle(@"year", @"OFDateProcessing", OMNI_BUNDLE, @"years"), 
-	     [NSNumber numberWithInt:DPYear], NSLocalizedStringFromTableInBundle(@"years", @"OFDateProcessing", OMNI_BUNDLE, @"years"),  
+    codes = [NSDictionary dictionaryWithObjectsAndKeys:
+	     [NSNumber numberWithInt:DPHour], NSLocalizedStringFromTableInBundle(@"h", @"OFDateProcessing", OMNI_BUNDLE, @"one-letter abbreviation for hour or hours, for scanning user input"), 
+	     [NSNumber numberWithInt:DPHour], NSLocalizedStringFromTableInBundle(@"hour", @"OFDateProcessing", OMNI_BUNDLE, @"hour, singular, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPHour], NSLocalizedStringFromTableInBundle(@"hours", @"OFDateProcessing", OMNI_BUNDLE, @"hours, plural, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPDay], NSLocalizedStringFromTableInBundle(@"d", @"OFDateProcessing", OMNI_BUNDLE, @"one-letter abbreviation for day or days, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPDay], NSLocalizedStringFromTableInBundle(@"day", @"OFDateProcessing", OMNI_BUNDLE, @"day, singular, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPDay], NSLocalizedStringFromTableInBundle(@"days", @"OFDateProcessing", OMNI_BUNDLE, @"days, plural, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPWeek], NSLocalizedStringFromTableInBundle(@"w", @"OFDateProcessing", OMNI_BUNDLE, @"one-letter abbreviation for week or weeks, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPWeek], NSLocalizedStringFromTableInBundle(@"week", @"OFDateProcessing", OMNI_BUNDLE, @"week, singular, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPWeek], NSLocalizedStringFromTableInBundle(@"weeks", @"OFDateProcessing", OMNI_BUNDLE, @"weeks, plural, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPMonth],NSLocalizedStringFromTableInBundle(@"m", @"OFDateProcessing", OMNI_BUNDLE, @"one-letter abbreviation for month or months, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPMonth], NSLocalizedStringFromTableInBundle(@"month", @"OFDateProcessing", OMNI_BUNDLE, @"month, singular, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPMonth], NSLocalizedStringFromTableInBundle(@"months", @"OFDateProcessing", OMNI_BUNDLE, @"months, plural, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPYear], NSLocalizedStringFromTableInBundle(@"y", @"OFDateProcessing", OMNI_BUNDLE, @"one-letter abbreviation for year or years, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPYear], NSLocalizedStringFromTableInBundle(@"year", @"OFDateProcessing", OMNI_BUNDLE, @"year, singular, used for scanning user input"), 
+	     [NSNumber numberWithInt:DPYear], NSLocalizedStringFromTableInBundle(@"years", @"OFDateProcessing", OMNI_BUNDLE, @"years, plural, used for scanning user input"),  
 	     nil];
+    codes = [[self _dictionaryByNormalizingKeysInDictionary:codes options:OFRelativeDateParserNormalizeOptionsDefault locale:[NSLocale currentLocale]] retain];
+
+    englishCodes = [[NSDictionary alloc] initWithObjectsAndKeys:
+                    [NSNumber numberWithInt:DPHour], @"h",
+                    [NSNumber numberWithInt:DPHour], @"hour",
+                    [NSNumber numberWithInt:DPHour], @"hours",
+                    [NSNumber numberWithInt:DPDay], @"d",
+                    [NSNumber numberWithInt:DPDay], @"day",
+                    [NSNumber numberWithInt:DPDay], @"days",
+                    [NSNumber numberWithInt:DPWeek], @"w",
+                    [NSNumber numberWithInt:DPWeek], @"week",
+                    [NSNumber numberWithInt:DPWeek], @"weeks",
+                    [NSNumber numberWithInt:DPMonth],@"m",
+                    [NSNumber numberWithInt:DPMonth], @"month",
+                    [NSNumber numberWithInt:DPMonth], @"months",
+                    [NSNumber numberWithInt:DPYear], @"y",
+                    [NSNumber numberWithInt:DPYear], @"year",
+                    [NSNumber numberWithInt:DPYear], @"years",
+                    nil];
     
     // time modifiers
-    modifiers = [[NSDictionary alloc] initWithObjectsAndKeys:
-		 [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], NSLocalizedStringFromTableInBundle(@"+", @"OFDateProcessing", OMNI_BUNDLE, @"modifier"), 
-		 [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], NSLocalizedStringFromTableInBundle(@"next", @"OFDateProcessing", OMNI_BUNDLE, @"modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\""),  
-		 [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], NSLocalizedStringFromTableInBundle(@"-", @"OFDateProcessing", OMNI_BUNDLE, @"modifier"), 
-		 [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], NSLocalizedStringFromTableInBundle(@"last", @"OFDateProcessing", OMNI_BUNDLE, @"modifier"), 
-		 [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], NSLocalizedStringFromTableInBundle(@"~", @"OFDateProcessing", OMNI_BUNDLE, @"modifier"), 
-		 [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], NSLocalizedStringFromTableInBundle(@"this", @"OFDateProcessing", OMNI_BUNDLE, @"modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\""), 
+    modifiers = [NSDictionary dictionaryWithObjectsAndKeys:
+		 [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], NSLocalizedStringFromTableInBundle(@"+", @"OFDateProcessing", OMNI_BUNDLE, @"modifier, used for scanning user input"), 
+		 [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], NSLocalizedStringFromTableInBundle(@"next", @"OFDateProcessing", OMNI_BUNDLE, @"modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input"),  
+		 [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], NSLocalizedStringFromTableInBundle(@"-", @"OFDateProcessing", OMNI_BUNDLE, @"modifier, used for scanning user input"), 
+		 [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], NSLocalizedStringFromTableInBundle(@"last", @"OFDateProcessing", OMNI_BUNDLE, @"modifier, used for scanning user input"), 
+		 [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], NSLocalizedStringFromTableInBundle(@"~", @"OFDateProcessing", OMNI_BUNDLE, @"modifier, used for scanning user input"), 
+		 [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], NSLocalizedStringFromTableInBundle(@"this", @"OFDateProcessing", OMNI_BUNDLE, @"modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input"), 
 		 nil];
+    modifiers = [[self _dictionaryByNormalizingKeysInDictionary:modifiers options:OFRelativeDateParserNormalizeOptionsDefault locale:[NSLocale currentLocale]] retain];
     
     // english 
     NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease]; 
     OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4);
     NSLocale *en_US = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
     [formatter setLocale:en_US];
-    
-    englishWeekdays = [[formatter weekdaySymbols] copy];
-    englishShortdays = [[formatter shortWeekdaySymbols] copy];
+    englishWeekdays = [[self _arrayByNormalizingValuesInArray:[formatter weekdaySymbols] options:OFRelativeDateParserNormalizeOptionsDefault locale:en_US] retain];
+    englishShortdays = [[self _arrayByNormalizingValuesInArray:[formatter shortWeekdaySymbols] options:OFRelativeDateParserNormalizeOptionsDefault locale:en_US] retain];    
     [en_US release];
 }
 
@@ -183,8 +227,10 @@ static NSCalendar *_defaultCalendar(void)
     [_locale release];
     [_weekdays release];
     [_shortdays release];
+    [_alternateShortdays release];
     [_months release];
     [_shortmonths release];
+    [_alternateShortmonths release];
     
     [super dealloc];
 }
@@ -207,16 +253,22 @@ static NSCalendar *_defaultCalendar(void)
 	[formatter setLocale:locale];
 	
 	[_weekdays release];
-	_weekdays = [[formatter weekdaySymbols] copy];
+        _weekdays = [[self _arrayByNormalizingValuesInArray:[formatter weekdaySymbols] options:OFRelativeDateParserNormalizeOptionsDefault] retain];
 	
 	[_shortdays release];
-	_shortdays = [[formatter shortWeekdaySymbols] copy];
+        _shortdays = [[self _arrayByNormalizingValuesInArray:[formatter shortWeekdaySymbols] options:OFRelativeDateParserNormalizeOptionsDefault] retain];
 	
+        [_alternateShortdays release];
+        _alternateShortdays = [[self _arrayByNormalizingValuesInArray:[formatter shortWeekdaySymbols] options:OFRelativeDateParserNormalizeOptionsAbbreviations] retain];
+        
 	[_months release];
-	_months = [[formatter monthSymbols] copy];
+        _months = [[self _arrayByNormalizingValuesInArray:[formatter monthSymbols] options:OFRelativeDateParserNormalizeOptionsDefault] retain];
 	
 	[_shortmonths release];
-	_shortmonths = [[formatter shortMonthSymbols] copy];
+        _shortmonths = [[self _arrayByNormalizingValuesInArray:[formatter shortMonthSymbols] options:OFRelativeDateParserNormalizeOptionsDefault] retain];
+
+	[_alternateShortmonths release];
+        _alternateShortmonths = [[self _arrayByNormalizingValuesInArray:[formatter shortMonthSymbols] options:OFRelativeDateParserNormalizeOptionsAbbreviations] retain];
     }
     
 }
@@ -447,9 +499,15 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     if (timeString != nil)  
 	*date = [calendar dateFromComponents:[self _parseTime:timeString withDate:*date withTimeFormat:timeFormat calendar:calendar]];
     else {
-	static OFRegularExpression *hourCodeRegex;
-	if (!hourCodeRegex)
-	    hourCodeRegex = [[OFRegularExpression alloc] initWithString:@"\\dh"];
+	static OFRegularExpression *hourCodeRegex = nil;
+	if (!hourCodeRegex) {
+            NSString *shortHourString = NSLocalizedStringFromTableInBundle(@"h", @"OFDateProcessing", OMNI_BUNDLE, @"one-letter abbreviation for hour or hours, used for scanning user input");
+            NSString *hourString = NSLocalizedStringFromTableInBundle(@"hour", @"OFDateProcessing", OMNI_BUNDLE, @"hour, singular, used for scanning user input");
+            NSString *pluralHourString = NSLocalizedStringFromTableInBundle(@"hours", @"OFDateProcessing", OMNI_BUNDLE, @"hours, plural, used for scanning user input");
+            NSString *patternString = [NSString stringWithFormat:@"\\d+(%@|%@|%@|h|hour|hours)", shortHourString, hourString, pluralHourString];
+	    hourCodeRegex = [[OFRegularExpression alloc] initWithString:patternString];
+        }
+
 	OFRegularExpressionMatch *hourCode = [hourCodeRegex matchInString:string];
 	if (!hourCode && *date && !timeSpecific) {
 	    //NSLog(@"no date information, and no hour codes, set to midnight");
@@ -850,6 +908,13 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		dateSet.month = [self _monthIndexForString:match];
 	    }
 	}
+	NSEnumerator *alternateShortmonthEnum = [_alternateShortmonths objectEnumerator];
+	while ((match = [alternateShortmonthEnum nextObject]) && dateSet.month == -1) {
+	    match = [match lowercaseString];
+	    if ([match isEqualToString:monthName]) {
+		dateSet.month = [self _monthIndexForString:match];
+	    }
+	}
 	
 	if (dateSet.month == -1 )
 	    dateSet.month = [monthName intValue];
@@ -958,8 +1023,15 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 - (NSDate *)_parseDateNaturalLangauge:(NSString *)dateString withDate:(NSDate *)date timeSpecific:(BOOL *)timeSpecific useEndOfDuration:(BOOL)useEndOfDuration calendar:(NSCalendar *)calendar error:(NSError **)error;
 {
 #ifdef DEBUG_date
-    NSLog(@"Parse Natural Language Date String: \"%@\"", dateString );
+    NSLog(@"Parse Natural Language Date String (before normalization): \"%@\"", dateString );
 #endif
+    
+    dateString = [dateString stringByNormalizingWithOptions:OFRelativeDateParserNormalizeOptionsDefault locale:[self locale]];
+
+#ifdef DEBUG_date
+    NSLog(@"Parse Natural Language Date String (after normalization): \"%@\"", dateString );
+#endif
+
     OFRelativeDateParserRelativity modifier = OFRelativeDateParserNoRelativity; // look for a modifier as the first part of the string
     NSDateComponents *currentComponents = [calendar components:unitFlags fromDate:date]; // the given date as components
     
@@ -999,7 +1071,20 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
                 [sortedKeyArray reverse];
 		for(NSString *name in sortedKeyArray) {
 		    NSString *match;
+                    NSUInteger savedScanLocation = [scanner scanLocation];
 		    if ([scanner scanString:name intoString:&match]) {
+                        // This is pretty terrible. We frontload parsing of relative day names, but we shouldn't consume 'dom' (Italian) if the user entered 'Domenica'.
+                        // If we are in the middle of a word, don't consume the match.
+                        // When we clean up this code (rewrite the parsing loop?) we should probably make it so that we have a flattened list of words and associated quanitites that we parse all at once, preferring longest match.
+                        if (![scanner isAtEnd]) {
+                            unichar ch = [[scanner string] characterAtIndex:[scanner scanLocation]];
+                            if ([[NSCharacterSet lowercaseLetterCharacterSet] characterIsMember:ch]) {
+                                [scanner setScanLocation:savedScanLocation];
+                                continue;
+                            }
+                        }
+                    
+                    
 			// array info: Code, Number, Relativitity, timeSpecific, monthSpecific, daySpecific
 			NSArray *dateOffset = [relativeDateNames objectForKey:match];
 #ifdef DEBUG_date
@@ -1098,78 +1183,40 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	    } 
 	    
 	    // test for month names
-	    if (month == -1) {
-		NSEnumerator *monthEnum = [_months objectEnumerator];
-		while ((name = [monthEnum nextObject])) {
-		    NSString *match;
-		    if ([scanner scanString:name intoString:&match]) {
-			month = [self _monthIndexForString:match];
-			scanned = YES;
+            if (month == -1) {
+                NSArray *monthArrays = [NSArray arrayWithObjects:_months, _shortmonths, _alternateShortmonths, nil];
+                NSUInteger i, numberOfMonthArrays = [monthArrays count];
+                
+                for (i = 0; i < numberOfMonthArrays; i++) {
+                    NSEnumerator *monthEnum = [[monthArrays objectAtIndex:i] objectEnumerator];
+                    while ((name = [monthEnum nextObject])) {
+                        NSString *match;
+                        NSUInteger savedScanLocation = [scanner scanLocation];
+                        if ([scanner scanString:name intoString:&match]) {
+
+                            // don't consume a partial match
+                            if (![scanner isAtEnd]) {
+                                unichar ch = [[scanner string] characterAtIndex:[scanner scanLocation]];
+                                if ([[NSCharacterSet lowercaseLetterCharacterSet] characterIsMember:ch]) {
+                                    [scanner setScanLocation:savedScanLocation];
+                                    continue;
+                                }
+                            }
+
+                            month = [self _monthIndexForString:match];
+                            scanned = YES;
 #ifdef DEBUG_date
-			NSLog(@"matched name: %@ to match: %@", name, match);
+                            NSLog(@"matched name: %@ to match: %@", name, match);
 #endif
-		    }
-		}
-	    }
-	    [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
-	    
-	    if (month == -1) {
-		NSEnumerator *shortMonthEnum = [_shortmonths objectEnumerator];
-		while ((name = [shortMonthEnum nextObject])) {
-		    NSString *match;
-		    if ([scanner scanString:name intoString:&match]) {
-			month = [self _monthIndexForString:match];
-			scanned = YES;
-#ifdef DEBUG_date
-			NSLog(@"matched name: %@ to match: %@", name, match);
-#endif
-		    }
-		}
-	    }
-	    [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
-	    
-	    // test for weekday names
-	    if (weekday == -1) {
-		NSEnumerator *weekdaysEnum = [_weekdays objectEnumerator];
-		while ((name = [weekdaysEnum nextObject])) {
-		    NSString *match;
-		    if ([scanner scanString:name intoString:&match]) {
-			weekday = [self _weekdayIndexForString:match];
-			daySpecific = YES;
-			scanned = YES;
-#ifdef DEBUG_date
-			NSLog(@"matched name: %@ to match: %@ weekday: %d", name, match, weekday);
-#endif
-		    }
-		}
-	    }
-	    [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
-	    
-	    // test for english weekday names
-	    if (weekday == -1) {
-		NSEnumerator *weekdaysEnum = [englishWeekdays objectEnumerator];
-		while ((name = [weekdaysEnum nextObject])) {
-		    NSString *match;
-		    if ([scanner scanString:name intoString:&match]) {
-			weekday = [self _weekdayIndexForString:match];
-			daySpecific = YES;
-			scanned = YES;
-#ifdef DEBUG_date
-			NSLog(@"ENGLISH matched name: %@ to match: %@ weekday: %d", name, match, weekday);
-#endif
-		    }
-		}
-	    }
-	    [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
-	    
-	    if (weekday != -1) {
-		date = [self _modifyDate:date withWeekday:weekday withModifier:modifier calendar:calendar];
-		currentComponents = [calendar components:unitFlags fromDate:date];
-		weekday = -1;
-		modifier = 0;
-		multiplier = [self _multiplierForModifer:modifier];
-	    }
-	    
+                            break;
+                        }
+                    }
+
+                    if (month != -1)
+                        break;
+                }            
+            }
+
 	    //look for a year '
 	    if ([scanner scanString:@"'" intoString:NULL]) {
 		isYear = YES;
@@ -1241,12 +1288,26 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		    year +=2000;
 	    }
 	}
-	
+
+        // scan weekday names
+        if (weekday == -1) {
+            for (NSString *name in _weekdays) {
+                NSString *match;
+                if ([scanner scanString:name intoString:&match]) {
+                    weekday = [self _weekdayIndexForString:match];
+                    daySpecific = YES;
+                    scanned = YES;
+#ifdef DEBUG_date
+                    NSLog(@"matched name: %@ to match: %@ weekday: %d", name, match, weekday);
+#endif
+                }
+            }
+        }
+        [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
+
 	// scan short weekdays after codes to allow for months to be read instead of mon
 	if (weekday == -1) {
-	    NSEnumerator *shortdaysEnum = [_shortdays objectEnumerator];
-	    NSString *name;
-	    while ((name = [shortdaysEnum nextObject])) {
+            for (NSString *name in _shortdays) {
 		NSString *match;
 		if ([scanner scanString:name intoString:&match]) {
 		    weekday = [self _weekdayIndexForString:match];
@@ -1259,6 +1320,52 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	    }
 	}
 	[scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
+        
+        // scan the alternate short weekdays (stripped of punctuation)
+	if (weekday == -1) {
+            for (NSString *name in _alternateShortdays) {
+		NSString *match;
+		if ([scanner scanString:name intoString:&match]) {
+		    weekday = [self _weekdayIndexForString:match];
+		    daySpecific = YES;
+		    scanned = YES;
+#ifdef DEBUG_date
+		    NSLog(@"matched name: %@ to match: %@", name, match);
+#endif
+		}
+	    }
+	}
+	[scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
+
+        // scan short month names after scanning full weekday names
+        if (month == -1) {
+            for (NSString *name in _shortmonths) {
+                NSString *match;
+                if ([scanner scanString:name intoString:&match]) {
+                    month = [self _monthIndexForString:match];
+                    scanned = YES;
+#ifdef DEBUG_date
+                    NSLog(@"matched name: %@ to match: %@", name, match);
+#endif
+                }
+            }
+        }
+        [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
+
+        // scan the alternate short month names (stripped of punctuation)
+        if (month == -1) {
+            for (NSString *name in _alternateShortmonths) {
+                NSString *match;
+                if ([scanner scanString:name intoString:&match]) {
+                    month = [self _monthIndexForString:match];
+                    scanned = YES;
+#ifdef DEBUG_date
+                    NSLog(@"matched name: %@ to match: %@", name, match);
+#endif
+                }
+            }
+        }
+        [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
 	// scan english short weekdays after codes to allow for months to be read instead of mon
 	if (weekday == -1) {
 	    NSEnumerator *shortdaysEnum = [englishShortdays objectEnumerator];
@@ -1388,7 +1495,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     // return the the value of the month according to its position on the array, or -1 if nothing matches.
     NSUInteger monthIndex = [_months count];
     while (monthIndex--) {
-	if ([token isEqualToString:[[_shortmonths objectAtIndex:monthIndex] lowercaseString]] || [token isEqualToString:[[_months objectAtIndex:monthIndex] lowercaseString]]) {
+	if ([token isEqualToString:[_shortmonths objectAtIndex:monthIndex]] || [token isEqualToString:[_alternateShortmonths objectAtIndex:monthIndex]] || [token isEqualToString:[_months objectAtIndex:monthIndex]]) {
 	    return monthIndex;
 	}
     }
@@ -1406,12 +1513,15 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	if (dayIndex >= 0)
 	    NSLog(@"token: %@, weekdays: %@, short: %@, Ewdays: %@, EShort: %@", token, [[_weekdays objectAtIndex:dayIndex] lowercaseString], [[_shortdays objectAtIndex:dayIndex] lowercaseString], [[englishWeekdays objectAtIndex:dayIndex] lowercaseString], [[englishShortdays objectAtIndex:dayIndex] lowercaseString]);
 #endif
-	if ([token isEqualToString:[[_shortdays objectAtIndex:dayIndex] lowercaseString]] || [token isEqualToString:[[_weekdays objectAtIndex:dayIndex] lowercaseString]])
+	if ([token isEqualToString:[_alternateShortdays objectAtIndex:dayIndex]] ||
+            [token isEqualToString:[_shortdays objectAtIndex:dayIndex]] ||
+            [token isEqualToString:[_weekdays objectAtIndex:dayIndex]]) {
 	    return dayIndex;
+        }
 	
 	// test the english weekdays
-	if ([token isEqualToString:[[englishShortdays objectAtIndex:dayIndex] lowercaseString]] || [token isEqualToString:[[englishWeekdays objectAtIndex:dayIndex] lowercaseString]])
-		    return dayIndex;
+	if ([token isEqualToString:[englishShortdays objectAtIndex:dayIndex]] || [token isEqualToString:[englishWeekdays objectAtIndex:dayIndex]])
+            return dayIndex;
     }
 
 #ifdef DEBUG_date
@@ -1565,6 +1675,70 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	    break;
     }
 }
+
++ (NSDictionary *)_dictionaryByNormalizingKeysInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options locale:(NSLocale *)locale;
+{
+    OBPRECONDITION(dictionary);
+    
+    NSMutableDictionary *normalizedDictionary = [NSMutableDictionary dictionary];
+    NSEnumerator *keyEnumerator = [dictionary keyEnumerator];
+    NSString *key = nil;
+    
+    while (nil != (key = [keyEnumerator nextObject])) {
+        NSString *newKey = [key stringByNormalizingWithOptions:options locale:locale];
+        NSString *value = [dictionary objectForKey:key];
+        [normalizedDictionary setObject:value forKey:newKey];
+    }
+
+    return [[normalizedDictionary copy] autorelease];
+}
+
++ (NSDictionary *)_dictionaryByNormalizingValuesInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options locale:(NSLocale *)locale;
+{
+    OBPRECONDITION(dictionary);
+    
+    NSMutableDictionary *normalizedDictionary = [NSMutableDictionary dictionary];
+    NSEnumerator *keyEnumerator = [dictionary keyEnumerator];
+    NSString *key = nil;
+    
+    while (nil != (key = [keyEnumerator nextObject])) {
+        NSString *value = [[dictionary objectForKey:key] stringByNormalizingWithOptions:options locale:locale];
+        [normalizedDictionary setObject:value forKey:key];
+    }
+
+    return [[normalizedDictionary copy] autorelease];
+}
+
++ (NSArray *)_arrayByNormalizingValuesInArray:(NSArray *)array options:(NSUInteger)options locale:(NSLocale *)locale;
+{
+    OBPRECONDITION(array);
+    
+    NSMutableArray *normalizedArray = [NSMutableArray array];
+    
+    NSUInteger i, count = [array count];
+    for (i = 0; i < count; i++) {
+        NSString *string = [[array objectAtIndex:i] stringByNormalizingWithOptions:options locale:locale];
+        [normalizedArray addObject:string];
+    }
+    
+    return [[normalizedArray mutableCopy] autorelease];
+}
+
+- (NSDictionary *)_dictionaryByNormalizingKeysInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options;
+{
+    return [[self class] _dictionaryByNormalizingKeysInDictionary:dictionary options:options locale:[self locale]];
+}
+
+- (NSDictionary *)_dictionaryByNormalizingValuesInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options;
+{
+    return [[self class] _dictionaryByNormalizingValuesInDictionary:dictionary options:options locale:[self locale]];
+}
+
+- (NSArray *)_arrayByNormalizingValuesInArray:(NSArray *)array options:(NSUInteger)options;
+{
+    return [[self class] _arrayByNormalizingValuesInArray:array options:options locale:[self locale]];
+}
+
 @end
 
 @implementation OFRelativeDateParser (OFInternalAPI)

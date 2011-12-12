@@ -52,6 +52,8 @@ typedef enum {
     UITextSpellCheckingType _spellCheckingType;
 #endif
     UIKeyboardType _keyboardType;
+    UIView *_inputView;
+    UIView *_inputAccessoryView;
 }
 
 + (UIFont *)defaultLabelFont;
@@ -66,6 +68,8 @@ typedef enum {
 @property(nonatomic) UITextSpellCheckingType spellCheckingType;           // default is UITextSpellCheckingTypeDefault;
 #endif
 @property(nonatomic) UIKeyboardType keyboardType;                         // default is UIKeyboardTypeDefault
+@property(nonatomic, readwrite, retain) UIView *inputView;
+@property(nonatomic, readwrite, retain) UIView *inputAccessoryView;
 
 @property(assign,nonatomic) BOOL editable;
 @property(readonly) BOOL editing;

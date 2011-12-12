@@ -8,14 +8,29 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
+#import <OmniFoundation/OFDigestUtilities.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
 #import <OmniBase/objc.h>
+#if OF_ENABLE_CDSA
+#import <Security/cssmtype.h>
+#endif
+
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+#define OFXMLSigGetKeyAsCSSM 0
+#else
+#define OFXMLSigGetKeyAsCSSM 1
+#endif
 
 #include <libxml/tree.h>
+
+@class NSArray, NSMutableArray;
+@class NSData, NSMutableData;
 
 /* Namespace */
 #define XMLSignatureNamespace                 ((const xmlChar *)"http://www.w3.org/2000/09/xmldsig#")
 #define XMLExclusiveCanonicalizationNamespace ((const xmlChar *)"http://www.w3.org/2001/10/xml-exc-c14n#")
+#define XMLSignature11Namespace               ((const xmlChar *)"http://www.w3.org/2009/xmldsig11#")
+#define XMLSignatureMoreNamespace             ((const xmlChar *)"http://www.w3.org/2001/04/xmldsig-more#") /* RFC 4050 */
 
 /* Non-cryptographic transform identifiers */
 #define XMLEncodingBase64            ((const xmlChar *)"http://www.w3.org/2000/09/xmldsig#base64")
@@ -41,15 +56,18 @@
 #define XMLSKSignatureHMAC_MD5       ((const xmlChar *)"http://www.w3.org/2001/04/xmldsig-more#hmac-md5")
 #define XMLSKSignatureHMAC_RIPEMD160 ((const xmlChar *)"http://www.w3.org/2001/04/xmldsig-more#hmac-ripemd160")
 #define XMLPKSignatureDSS            ((const xmlChar *)"http://www.w3.org/2000/09/xmldsig#dsa-sha1")
+#define XMLPKSignatureDSS_SHA256     ((const xmlChar *)"http://www.w3.org/2009/xmldsig11#dsa-sha256") /* not implemented */
 #define XMLPKSignaturePKCS1_v1_5     ((const xmlChar *)"http://www.w3.org/2000/09/xmldsig#rsa-sha1")
 #define XMLPKSignatureRSA_SHA256     ((const xmlChar *)"http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
 #define XMLPKSignatureRSA_SHA384     ((const xmlChar *)"http://www.w3.org/2001/04/xmldsig-more#rsa-sha384")
 #define XMLPKSignatureRSA_SHA512     ((const xmlChar *)"http://www.w3.org/2001/04/xmldsig-more#rsa-sha512")
 #define XMLPKSignatureRSA_RIPEMD160  ((const xmlChar *)"http://www.w3.org/2001/04/xmldsig-more/rsa-ripemd160") /* sic! */
+#define XMLPKSignatureECDSA_SHA1     ((const xmlChar *)"http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1")
 #define XMLPKSignatureECDSA_SHA256   ((const xmlChar *)"http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256")
+#define XMLPKSignatureECDSA_SHA512   ((const xmlChar *)"http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512")
       /* See RFC4051 for more identifiers if needed */
 
-extern NSString *OFXMLSignatureErrorDomain; /* This is the same as the OmniFoundation error domain */
+#define OFXMLSignatureErrorDomain (OFErrorDomain) /* This is the same as the OmniFoundation error domain */
 
 enum OFXMLSignatureOperation {
     OFXMLSignature_Sign = 1,
@@ -86,18 +104,19 @@ enum OFXMLSignatureOperation {
 - (NSData *)verifiedReferenceAtIndex:(NSUInteger)nodeIndex error:(NSError **)outError;
 - (BOOL)isLocalReferenceAtIndex:(NSUInteger)nodeIndex;
 
-/* Subclass opportunuties */
-- (id <OFDigestionContext, NSObject>)newVerificationContextForAlgorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError NS_RETURNS_RETAINED;
+/* Subclass opportunities */
+- (id <OFDigestionContext, NSObject>)newVerificationContextForMethod:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError NS_RETURNS_RETAINED;
 - (id <OFDigestionContext, NSObject>)newDigestContextForMethod:(xmlNode *)digestMethodNode error:(NSError **)outError;
 - (NSData *)signatureForStoredValue:(NSData *)raw algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError;
 - (NSData *)storedValueForSignature:(NSData *)signatureValue algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError;
-#if OF_ENABLE_CDSA
-- (OFCDSAModule *)cspForKey:(OFCSSMKey *)aKey;
 
-- (OFCSSMKey *)getPublicKey:(xmlNode *)keyInfo algorithm:(CSSM_ALGORITHMS)algid error:(NSError **)outError;
-- (OFCSSMKey *)getPrivateKey:(xmlNode *)keyInfo algorithm:(CSSM_ALGORITHMS)algid error:(NSError **)outError;
-- (OFCSSMKey *)getHMACKey:(xmlNode *)keyInfo algorithm:(CSSM_ALGORITHMS)algid error:(NSError **)outError;
-#endif
+/* The default implementation of -newVerificationContextForMethod:... calls these methods to get a key */
+- (SecKeyRef)copySecKeyForMethod:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError CF_RETURNS_RETAINED;
+#if OF_ENABLE_CDSA
+/* -newVerificationContextForAlgorithm:method:keyInfo:operation:error: will call this if the CDSA APIs are available */
+- (OFCSSMKey *)getCSSMKeyForMethod:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError;
+#endif /* OF_ENABLE_CDSA */
+
 - (BOOL)writeReference:(NSString *)externalReference type:(NSString *)referenceType to:(xmlOutputBuffer *)stream error:(NSError **)outError;
 - (BOOL)computeReferenceDigests:(NSError **)outError;
 
@@ -119,12 +138,27 @@ NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len); // Textual 
 /* Routines for extracting key information from an XML signature */
 NSDictionary *OFXMLSigParseX509DataNode(xmlNode *x509Data);
 NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef auxiliaryCertificates, NSMutableDictionary *errorInfo);
-#if OF_ENABLE_CDSA
+#if OFXMLSigGetKeyAsCSSM
 OFCSSMKey *OFXMLSigGetKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError);
 OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError);
+OFCSSMKey *OFXMLSigGetKeyFromEllipticKeyValue(xmlNode *keyInfo, NSError **outError);
+#else
+SecKeyRef OFXMLSigCopyKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError) CF_RETURNS_RETAINED;
+SecKeyRef OFXMLSigCopyKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError) CF_RETURNS_RETAINED;
+SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyInfo, NSError **outError) CF_RETURNS_RETAINED;
 #endif
 
-NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputFormat_, NSError **outError);
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+BOOL OFXMLSigGetKeyAttributes(NSMutableDictionary *keyusage, xmlNode *signatureMethod, enum OFXMLSignatureOperation op);
+#endif
+#if OF_ENABLE_CDSA
+CSSM_ALGORITHMS OFXMLCSSMKeyTypeForAlgorithm(xmlNode *signatureMethod);
+#endif
 
 /* More more */
+
+NSString *OFSecItemDescription(CFTypeRef t);
+NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputFormat_, NSError **outError);
+
+
 

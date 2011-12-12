@@ -71,7 +71,6 @@
 		4A40EBF308AB009A00E1769D /* OSUPreferences.png in Resources */ = {isa = PBXBuildFile; fileRef = BF3171E6062F41550097A147 /* OSUPreferences.png */; };
 		4A40EBF608AB009A00E1769D /* Preferences.strings in Resources */ = {isa = PBXBuildFile; fileRef = BF3171EC062F41740097A147 /* Preferences.strings */; };
 		4A40EBF808AB009A00E1769D /* HardwareDescription.html in Resources */ = {isa = PBXBuildFile; fileRef = 3482205506342C1E0097A113 /* HardwareDescription.html */; };
-		4A40EBF908AB009A00E1769D /* OSUController.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34AF861B0637796C0097A113 /* OSUController.nib */; };
 		4A40EBFB08AB009A00E1769D /* OSUController.m in Sources */ = {isa = PBXBuildFile; fileRef = BF3171DF062F410E0097A147 /* OSUController.m */; };
 		4A40EBFC08AB009A00E1769D /* OSUPreferenceClient.m in Sources */ = {isa = PBXBuildFile; fileRef = BF3171E1062F410E0097A147 /* OSUPreferenceClient.m */; };
 		4A40EBFD08AB009A00E1769D /* OSUChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 34821EFF0634074F0097A113 /* OSUChecker.m */; };
@@ -89,16 +88,17 @@
 		4A6474D30CE50D0C00F6EE03 /* OAController-OSUExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6474D10CE50D0C00F6EE03 /* OAController-OSUExtensions.h */; };
 		4A6474D40CE50D0C00F6EE03 /* OAController-OSUExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6474D20CE50D0C00F6EE03 /* OAController-OSUExtensions.m */; };
 		4A64766C0CE518C500F6EE03 /* OSUMessageOfTheDay.nib in Resources */ = {isa = PBXBuildFile; fileRef = 4A6474C70CE50BBD00F6EE03 /* OSUMessageOfTheDay.nib */; };
+		4AA5E8F7148D5F7F00633311 /* OSUDownloadController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AA5E8F5148D5F7F00633311 /* OSUDownloadController.xib */; };
+		4AA5E8FB148D601500633311 /* OSUAvailableUpdateController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AA5E8F9148D601500633311 /* OSUAvailableUpdateController.xib */; };
+		4AA5E8FE148D608F00633311 /* OSUController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AA5E8FC148D608F00633311 /* OSUController.xib */; };
 		6A93324E0C6141A0002DC78C /* OSUDownloadController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6A93324C0C6141A0002DC78C /* OSUDownloadController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6A93324F0C6141A0002DC78C /* OSUDownloadController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6A93324D0C6141A0002DC78C /* OSUDownloadController.m */; };
-		6A9332C90C6146C6002DC78C /* OSUDownloadController.nib in Resources */ = {isa = PBXBuildFile; fileRef = 6A9332C70C6146C5002DC78C /* OSUDownloadController.nib */; };
 		6A950E4F0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 6A950E4D0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h */; };
 		6A950E500C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 6A950E4E0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m */; };
 		6AC963510C6A756600256B9C /* OSUThinBorderView.h in Headers */ = {isa = PBXBuildFile; fileRef = 6AC9634F0C6A756600256B9C /* OSUThinBorderView.h */; };
 		6AC963520C6A756600256B9C /* OSUThinBorderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC963500C6A756600256B9C /* OSUThinBorderView.m */; };
 		6ACC21370C67DC7B001633C1 /* OSUAvailableUpdateController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6ACC21350C67DC7B001633C1 /* OSUAvailableUpdateController.h */; };
 		6ACC21380C67DC7B001633C1 /* OSUAvailableUpdateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6ACC21360C67DC7B001633C1 /* OSUAvailableUpdateController.m */; };
-		6ACC21420C67DCC0001633C1 /* OSUAvailableUpdateController.nib in Resources */ = {isa = PBXBuildFile; fileRef = 6ACC21400C67DCC0001633C1 /* OSUAvailableUpdateController.nib */; };
 		A28CF96B0F953213002F72C6 /* OSUChooseLocationErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = A28CF9690F953213002F72C6 /* OSUChooseLocationErrorRecovery.h */; };
 		A28CF96C0F953213002F72C6 /* OSUChooseLocationErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = A28CF96A0F953213002F72C6 /* OSUChooseLocationErrorRecovery.m */; };
 		A2D3F52C0FF9841A001AB2C5 /* OSUAppcastSignature.m in Sources */ = {isa = PBXBuildFile; fileRef = A2D3F52A0FF9841A001AB2C5 /* OSUAppcastSignature.m */; };
@@ -176,7 +176,6 @@
 		3483BE870CCE6B1800232DF2 /* OSUExtract.rb */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.ruby; path = OSUExtract.rb; sourceTree = "<group>"; };
 		348AC9F80CC9F66400A04318 /* OSUExtract-tbz2.sh */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.sh; path = "OSUExtract-tbz2.sh"; sourceTree = SOURCE_ROOT; };
 		34ADD3F90E80484100FE1418 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniSoftwareUpdate.strings; sourceTree = "<group>"; };
-		34AF861C0637796C0097A113 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OSUController.nib; sourceTree = "<group>"; };
 		34B627C50C6A5B9F00A34AA2 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = English; path = English.lproj/NoReleaseNotesAvailable.html; sourceTree = "<group>"; };
 		34BC777F0C6BAEBF006EFE2E /* OSUItemTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUItemTableView.h; sourceTree = "<group>"; };
 		34BC77800C6BAEBF006EFE2E /* OSUItemTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUItemTableView.m; sourceTree = "<group>"; };
@@ -221,6 +220,9 @@
 		4A6474C70CE50BBD00F6EE03 /* OSUMessageOfTheDay.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = OSUMessageOfTheDay.nib; sourceTree = "<group>"; };
 		4A6474D10CE50D0C00F6EE03 /* OAController-OSUExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAController-OSUExtensions.h"; sourceTree = "<group>"; };
 		4A6474D20CE50D0C00F6EE03 /* OAController-OSUExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OAController-OSUExtensions.m"; sourceTree = "<group>"; };
+		4AA5E8F6148D5F7F00633311 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/OSUDownloadController.xib; sourceTree = "<group>"; };
+		4AA5E8FA148D601500633311 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/OSUAvailableUpdateController.xib; sourceTree = "<group>"; };
+		4AA5E8FD148D608F00633311 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/OSUController.xib; sourceTree = "<group>"; };
 		4AB8F42908AD27BF00DBB061 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AB8F42A08AD27BF00DBB061 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AB8F42B08AD27BF00DBB061 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
@@ -229,14 +231,12 @@
 		4AB8F42E08AD27BF00DBB061 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
 		6A93324C0C6141A0002DC78C /* OSUDownloadController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUDownloadController.h; sourceTree = "<group>"; };
 		6A93324D0C6141A0002DC78C /* OSUDownloadController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUDownloadController.m; sourceTree = "<group>"; };
-		6A9332C80C6146C5002DC78C /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OSUDownloadController.nib; sourceTree = "<group>"; };
 		6A950E4D0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUSendFeedbackErrorRecovery.h; sourceTree = "<group>"; };
 		6A950E4E0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUSendFeedbackErrorRecovery.m; sourceTree = "<group>"; };
 		6AC9634F0C6A756600256B9C /* OSUThinBorderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUThinBorderView.h; sourceTree = "<group>"; };
 		6AC963500C6A756600256B9C /* OSUThinBorderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUThinBorderView.m; sourceTree = "<group>"; };
 		6ACC21350C67DC7B001633C1 /* OSUAvailableUpdateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUAvailableUpdateController.h; sourceTree = "<group>"; };
 		6ACC21360C67DC7B001633C1 /* OSUAvailableUpdateController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUAvailableUpdateController.m; sourceTree = "<group>"; };
-		6ACC21410C67DCC0001633C1 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OSUAvailableUpdateController.nib; sourceTree = "<group>"; };
 		A21752F910278B0A0017D6D6 /* OmniPrivateCA.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniPrivateCA.pem; sourceTree = "<group>"; };
 		A28CF9690F953213002F72C6 /* OSUChooseLocationErrorRecovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUChooseLocationErrorRecovery.h; sourceTree = "<group>"; };
 		A28CF96A0F953213002F72C6 /* OSUChooseLocationErrorRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUChooseLocationErrorRecovery.m; sourceTree = "<group>"; };
@@ -345,13 +345,13 @@
 			children = (
 				34B627C40C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html */,
 				3482205506342C1E0097A113 /* HardwareDescription.html */,
-				34AF861B0637796C0097A113 /* OSUController.nib */,
+				4AA5E8FC148D608F00633311 /* OSUController.xib */,
 				BF3171E6062F41550097A147 /* OSUPreferences.png */,
 				34D5FE661264EFD700FDFEBB /* OSUPreferences.xib */,
 				34ADD3F80E80484100FE1418 /* OmniSoftwareUpdate.strings */,
 				BF3171EC062F41740097A147 /* Preferences.strings */,
-				6A9332C70C6146C5002DC78C /* OSUDownloadController.nib */,
-				6ACC21400C67DCC0001633C1 /* OSUAvailableUpdateController.nib */,
+				4AA5E8F5148D5F7F00633311 /* OSUDownloadController.xib */,
+				4AA5E8F9148D601500633311 /* OSUAvailableUpdateController.xib */,
 				A21752F910278B0A0017D6D6 /* OmniPrivateCA.pem */,
 			);
 			name = Resources;
@@ -725,14 +725,14 @@
 				4A40EBF308AB009A00E1769D /* OSUPreferences.png in Resources */,
 				4A40EBF608AB009A00E1769D /* Preferences.strings in Resources */,
 				4A40EBF808AB009A00E1769D /* HardwareDescription.html in Resources */,
-				4A40EBF908AB009A00E1769D /* OSUController.nib in Resources */,
-				6A9332C90C6146C6002DC78C /* OSUDownloadController.nib in Resources */,
-				6ACC21420C67DCC0001633C1 /* OSUAvailableUpdateController.nib in Resources */,
 				34B627C60C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html in Resources */,
 				34EFFFED0CCA75CC002B3B07 /* OSUInstaller.sh in Resources */,
 				4A64766C0CE518C500F6EE03 /* OSUMessageOfTheDay.nib in Resources */,
 				34ADD3FA0E80484100FE1418 /* OmniSoftwareUpdate.strings in Resources */,
 				34D5FE681264EFD700FDFEBB /* OSUPreferences.xib in Resources */,
+				4AA5E8F7148D5F7F00633311 /* OSUDownloadController.xib in Resources */,
+				4AA5E8FB148D601500633311 /* OSUAvailableUpdateController.xib in Resources */,
+				4AA5E8FE148D608F00633311 /* OSUController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -867,14 +867,6 @@
 			name = OmniSoftwareUpdate.strings;
 			sourceTree = "<group>";
 		};
-		34AF861B0637796C0097A113 /* OSUController.nib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				34AF861C0637796C0097A113 /* English */,
-			);
-			name = OSUController.nib;
-			sourceTree = "<group>";
-		};
 		34B627C40C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -899,20 +891,28 @@
 			name = OSUTestApp.nib;
 			sourceTree = "<group>";
 		};
-		6A9332C70C6146C5002DC78C /* OSUDownloadController.nib */ = {
+		4AA5E8F5148D5F7F00633311 /* OSUDownloadController.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				6A9332C80C6146C5002DC78C /* English */,
+				4AA5E8F6148D5F7F00633311 /* English */,
 			);
-			name = OSUDownloadController.nib;
+			name = OSUDownloadController.xib;
 			sourceTree = "<group>";
 		};
-		6ACC21400C67DCC0001633C1 /* OSUAvailableUpdateController.nib */ = {
+		4AA5E8F9148D601500633311 /* OSUAvailableUpdateController.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				6ACC21410C67DCC0001633C1 /* English */,
+				4AA5E8FA148D601500633311 /* English */,
 			);
-			name = OSUAvailableUpdateController.nib;
+			name = OSUAvailableUpdateController.xib;
+			sourceTree = "<group>";
+		};
+		4AA5E8FC148D608F00633311 /* OSUController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4AA5E8FD148D608F00633311 /* English */,
+			);
+			name = OSUController.xib;
 			sourceTree = "<group>";
 		};
 		BF3171EC062F41740097A147 /* Preferences.strings */ = {

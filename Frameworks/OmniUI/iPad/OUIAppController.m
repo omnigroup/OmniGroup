@@ -14,10 +14,14 @@
 #import <OmniBase/OBRuntimeCheck.h>
 #import <OmniBase/system.h>
 #import <OmniFoundation/NSString-OFURLEncoding.h>
+#import <OmniFoundation/OFBundleRegistry.h>
+#import <OmniFoundation/OFPreference.h>
+#import <OmniFileStore/OFSDocumentStore.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniUI/OUIAboutPanel.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
-#import <OmniUI/OUIDocumentStoreFileItem.h>
+#import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUISpecialURLActionSheet.h>
 #import <OmniUI/OUIWebViewController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
@@ -25,7 +29,6 @@
 
 #import <sys/sysctl.h>
 
-#import "OUIAppMenuController.h"
 #import "OUICredentials.h"
 #import "OUIEventBlockingView.h"
 #import "OUIParameters.h"
@@ -41,6 +44,23 @@ RCS_ID("$Id$");
 
 @implementation OUIAppController
 {
+    OUIDocumentPicker *_documentPicker;
+    UIBarButtonItem *_appMenuBarItem;
+    OUIMenuController *_appMenuController;
+    OUISyncMenuController *_syncMenuController;
+    
+    UIActivityIndicatorView *_activityIndicator;
+    UIView *_eventBlockingView;
+    
+#if OUI_SOFTWARE_UPDATE_CHECK
+    OUISoftwareUpdateController *_softwareUpdateController;
+#endif
+    
+    dispatch_once_t _roleByFileTypeOnce;
+    NSDictionary *_roleByFileType;
+    
+    NSArray *_editableFileTypes;
+
     UIPopoverController *_possiblyVisiblePopoverController;
     UIPopoverArrowDirection _possiblyVisiblePopoverControllerArrowDirections;
     UIBarButtonItem *_possiblyTappedButtonItem;
@@ -85,6 +105,18 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 {
     OBINITIALIZE;
 
+    // Poke OFPreference to get default values registered
+#ifdef DEBUG
+    NSDictionary *defaults = [NSDictionary dictionaryWithObjectsAndKeys:
+                              [NSNumber numberWithBool:YES], @"NSShowNonLocalizableStrings",
+                              [NSNumber numberWithBool:YES], @"NSShowNonLocalizedStrings",
+                              nil
+                              ];
+    [[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
+#endif
+    [OFBundleRegistry registerKnownBundles];
+    [OFPreference class];
+    
     OUIShouldLogPerformanceMetrics = [[NSUserDefaults standardUserDefaults] boolForKey:@"LogPerformanceMetrics"];
 
     if (OUIShouldLogPerformanceMetrics)
@@ -140,7 +172,7 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
     return _editableFileTypes;
 }
 
-// This must be thread-safe since it is called from a background thread by OUIDocumentStore item scanning, via our -documentStore:shouldIncludeFileItemWithFileType:
+// This must be thread-safe since it is called from a background thread by OFSDocumentStore item scanning, via our -documentStore:shouldIncludeFileItemWithFileType:
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 {
     OBPRECONDITION(!uti || [uti isEqualToString:[uti lowercaseString]]); // our cache uses lowercase keys.
@@ -191,8 +223,11 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
         NSLog(@"Error source file:%s line:%d", file, line);
     NSLog(@"%@", [error toPropertyList]);
     
-    UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:[error localizedDescription] message:[error localizedRecoverySuggestion] delegate:self cancelButtonTitle:cancelButtonTitle otherButtonTitles:nil] autorelease];
-    [alert show];
+    // This delayed presentation avoids the "wait_fences: failed to receive reply: 10004003" lag/timeout which can happen depending on the context we start the reporting from.
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:[error localizedDescription] message:[error localizedRecoverySuggestion] delegate:nil cancelButtonTitle:cancelButtonTitle otherButtonTitles:nil] autorelease];
+        [alert show];
+    }];
 }
 
 + (void)presentError:(NSError *)error file:(const char *)file line:(int)line;
@@ -445,7 +480,7 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 - (void)showAppMenu:(id)sender;
 {
     if (!_appMenuController)
-        _appMenuController = [[OUIAppMenuController alloc] init];
+        _appMenuController = [[OUIMenuController alloc] initWithDelegate:self];
 
     OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
     [_appMenuController showMenuFromBarItem:sender];
@@ -726,24 +761,24 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 }
 
 #pragma mark -
-#pragma mark OUIDocumentStoreDelegate
+#pragma mark OFSDocumentStoreDelegate
 
-- (Class)documentStore:(OUIDocumentPicker *)picker fileItemClassForURL:(NSURL *)fileURL;
+- (Class)documentStore:(OFSDocumentStore *)store fileItemClassForURL:(NSURL *)fileURL;
 {
-    return [OUIDocumentStoreFileItem class];
+    return [OFSDocumentStoreFileItem class];
 }
 
-- (BOOL)documentStore:(OUIDocumentStore *)store shouldIncludeFileItemWithFileType:(NSString *)fileType;
+- (BOOL)documentStore:(OFSDocumentStore *)store shouldIncludeFileItemWithFileType:(NSString *)fileType;
 {
     return [self canViewFileTypeWithIdentifier:fileType];
 }
 
-- (NSString *)documentStoreBaseNameForNewFiles:(OUIDocumentStore *)store;
+- (NSString *)documentStoreBaseNameForNewFiles:(OFSDocumentStore *)store;
 {
     return NSLocalizedStringFromTableInBundle(@"My Document", @"OmniUI", OMNI_BUNDLE, @"Base name for newly created documents. This will have an number appended to it to make it unique.");
 }
 
-- (NSArray *)documentStoreEditableDocumentTypes:(OUIDocumentStore *)store;
+- (NSArray *)documentStoreEditableDocumentTypes:(OFSDocumentStore *)store;
 {
     return [self editableFileTypes];
 }
@@ -751,6 +786,64 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 - (void)createNewDocumentAtURL:(NSURL *)url completionHandler:(void (^)(NSURL *url, NSError *error))completionHandler;
 {
     OBRequestConcreteImplementation(self, _cmd);
+}
+
+#pragma mark - OUIMenuControllerDelegate
+
+//#define SHOW_ABOUT_MENU_ITEM 1
+
+- (NSArray *)menuControllerOptions:(OUIMenuController *)menu;
+{
+    if (menu == _appMenuController) {
+        NSMutableArray *options = [NSMutableArray array];
+        OUIMenuOption *option;
+
+#ifdef SHOW_ABOUT_MENU_ITEM
+        option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(showAboutPanel:)
+                                                                   title:NSLocalizedStringFromTableInBundle(@"About", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
+                                                                   image:[UIImage imageNamed:@"OUIMenuItemAbout.png"]];
+        [options addObject:option];
+#endif
+        
+        if ([OFSDocumentStore canPromptForUbiquityAccess]) {
+            // -_setupCloud: is on OUISingleDocumentAppController. Perhaps its iCloud support should be merged up, or split into a OUIDocumentController...
+            option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(_setupCloud:)
+                                                                       title:NSLocalizedStringFromTableInBundle(@"Set Up iCloud", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
+                                                                       image:[UIImage imageNamed:@"OUIMenuItemCloudSetUp.png"]];
+            [options addObject:option];
+        }
+        
+        option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(showOnlineHelp:)
+                                                                   title:[[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"] table:@"InfoPlist"]
+                                                                   image:[UIImage imageNamed:@"OUIMenuItemHelp.png"]];
+        [options addObject:option];
+        
+        option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(sendFeedback:)
+                                                                   title:[[OUIAppController controller] feedbackMenuTitle]
+                                                                   image:[UIImage imageNamed:@"OUIMenuItemSendFeedback.png"]];
+        [options addObject:option];
+        
+        option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(showReleaseNotes:)
+                                                                   title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
+                                                                   image:[UIImage imageNamed:@"OUIMenuItemReleaseNotes.png"]];
+        [options addObject:option];
+#if defined(DEBUG)
+        BOOL includedTestsMenu = YES;
+#else
+        BOOL includedTestsMenu = [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIIncludeTestsMenu"];
+#endif
+        if (includedTestsMenu && NSClassFromString(@"SenTestSuite")) {
+            option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(runTests:)
+                                                                       title:NSLocalizedStringFromTableInBundle(@"Run Tests", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
+                                                                       image:[UIImage imageNamed:@"OUIMenuItemRunTests.png"]];
+            [options addObject:option];
+        }
+        
+        return options;
+    }
+    
+    OBASSERT_NOT_REACHED("Unknown menu");
+    return nil;
 }
 
 #pragma mark -

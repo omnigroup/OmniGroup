@@ -21,12 +21,16 @@
 @property(nonatomic,readonly) NSSet *previewedFileItems; // Subclasses need to implemenent to return the file items for which they need previews
 - (void)previewedFileItemsChanged; // ... and call this when that answer changes
 
-- (void)startLoadingPreviews;
-- (void)stopLoadingPreviewsAndDiscardCurrentPreviews:(BOOL)discardPreviews;
+- (void)loadPreviews;
+- (void)discardCurrentPreviews;
 - (void)previewsUpdated;
+- (NSArray *)loadedPreviews;
 
 - (OUIDocumentPreview *)currentPreview;
-- (void)previewLoadOperation:(OUIDocumentPreviewLoadOperation *)operation loadedPreview:(OUIDocumentPreview *)preview;
+
+@property(nonatomic,assign) BOOL highlighted;
+
+@property(nonatomic,assign) BOOL shrunken; // Only for files
 
 @end
 

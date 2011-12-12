@@ -13,11 +13,12 @@
 #import <OmniAppKit/NSFileWrapper-OAExtensions.h>
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManager.h>
+#import <OmniFoundation/OFUTI.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
-#import <OmniUI/OUIDocumentStoreFileItem.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 
 #import "OUICredentials.h"
 #import "OUIExportOptionsView.h"
@@ -36,6 +37,9 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
 - (void)_setInterfaceDisabledWhileExporting:(BOOL)shouldDisable;
 - (void)_foreground_disableInterfaceForExportConversion;
 - (void)_foreground_enableInterfaceAfterExportConversion;
+- (void)_foreground_exportDocumentOfType:(NSString *)fileType;
+- (void)_foreground_emailExportOfType:(NSString *)exportType;
+- (void)_foreground_finishBackgroundEmailExportWithExportType:(NSString *)exportType fileWrapper:(NSFileWrapper *)fileWrapper;
 @end
 
 
@@ -97,35 +101,35 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     [_exportFileTypes release];
     _exportFileTypes = [[NSMutableArray alloc] init];
     
-    OUIDocumentStoreFileItem *fileItem = picker.singleSelectedFileItem;
-    
-    if (_syncType != OUIiTunesSync) {
-        NSURL *documentURL = fileItem.fileURL;
-        NSString *documentExtension = [[documentURL path] pathExtension];
-        NSString *fileUTI = [OFSFileInfo UTIForURL:documentURL];
-        UIImage *iconImage = [picker exportIconForUTI:fileUTI];
+    OFSDocumentStoreFileItem *fileItem = picker.singleSelectedFileItem;
         
-        NSString *nativeFileTypeLabel = [picker exportLabelForUTI:fileUTI];
-        if (nativeFileTypeLabel == nil)
-            nativeFileTypeLabel = documentExtension;
-        
-        // NOTE: Adding the native type first with a null (instead of a its non-null actual type) is important for doing exports of documents exactly as they are instead of going through the exporter. Ideally both cases would be the same, but in OO/iPad the OO3 "export" path (as opposed to normal "save") has the ability to strip hidden columns, sort sorts, calculate summary values and so on for the benefit of the XSL-based exporters. If we want "export" to the OO file format to not perform these transformations, we'll need to add flags on the OOXSLPlugin to say whether the target wants them pre-applied or not.
-        [_exportFileTypes addObject:[NSNull null]];
-        [_exportView addChoiceWithImage:iconImage label:nativeFileTypeLabel target:self selector:@selector(_performActionForExportOptionButton:)];
-    }
-    
-    NSArray *exportTypes = nil;
-    if (_exportType == OUIExportOptionsSendToApp) {
-        exportTypes = [picker availableDocumentInteractionExportTypesForFileItem:fileItem];
-    }
-    else {
-        exportTypes = [picker availableExportTypesForFileItem:fileItem];
-    }
-    
+    NSArray *exportTypes = [picker availableExportTypesForFileItem:fileItem withSyncType:_syncType exportOptionsType:_exportType];
     for (NSString *exportType in exportTypes) {
-        UIImage *iconImage = [picker exportIconForUTI:exportType];
+        
+        UIImage *iconImage = nil;
+        NSString *label = nil;
+        
+        
+        if (OFISNULL(exportType)) {
+            // NOTE: Adding the native type first with a null (instead of a its non-null actual type) is important for doing exports of documents exactly as they are instead of going through the exporter. Ideally both cases would be the same, but in OO/iPad the OO3 "export" path (as opposed to normal "save") has the ability to strip hidden columns, sort sorts, calculate summary values and so on for the benefit of the XSL-based exporters. If we want "export" to the OO file format to not perform these transformations, we'll need to add flags on the OOXSLPlugin to say whether the target wants them pre-applied or not.
+            NSURL *documentURL = fileItem.fileURL;
+            OBFinishPortingLater("<bug:///75843> (Add a UTI property to OFSDocumentStoreFileItem)");
+            NSString *fileUTI = OFUTIForFileExtensionPreferringNative([documentURL pathExtension], NO); // NSString *fileUTI = [OFSFileInfo UTIForURL:documentURL];
+            iconImage = [picker exportIconForUTI:fileUTI];
+            
+            label = [picker exportLabelForUTI:fileUTI];
+            if (label == nil) {
+                label = [[documentURL path] pathExtension];
+            }
+        }
+        else {
+            iconImage = [picker exportIconForUTI:exportType];
+            label = [picker exportLabelForUTI:exportType];
+        }
+        
+        
         [_exportFileTypes addObject:exportType];
-        [_exportView addChoiceWithImage:iconImage label:[picker exportLabelForUTI:exportType] target:self selector:@selector(_performActionForExportOptionButton:)];
+        [_exportView addChoiceWithImage:iconImage label:label target:self selector:@selector(_performActionForExportOptionButton:)];
     }
     
     [_exportView layoutSubviews];
@@ -148,7 +152,7 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     [super viewWillAppear:animated];
 
     OUIDocumentPicker *picker = [[OUIAppController controller] documentPicker];
-    OUIDocumentStoreFileItem *fileItem = picker.singleSelectedFileItem;
+    OFSDocumentStoreFileItem *fileItem = picker.singleSelectedFileItem;
     OBASSERT(fileItem != nil);
     NSString *docName = fileItem.name;
     
@@ -281,7 +285,7 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
 
 - (void)_foreground_exportFileWrapper:(NSFileWrapper *)fileWrapper;
 {
-    OBASSERT([NSThread isMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     
     if (_exportType != OUIExportOptionsSendToApp) {
         [self exportFileWrapper:fileWrapper];
@@ -332,22 +336,20 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     [self.documentInteractionController presentOpenInMenuFromRect:_rectForExportOptionButtonChosen inView:_exportView animated:YES];
 }
 
-- (void)_background_exportDocumentOfType:(NSString *)fileType;
+- (void)_foreground_exportDocumentOfType:(NSString *)fileType;
 {
+    OBPRECONDITION([NSThread isMainThread]);
     OMNI_POOL_START {
-        // OBASSERT(![NSThread isMainThread]); 
-        // Sometimes not run in the background in graffle because graffle's drawing is not thread safe
-        
         OUIDocumentPicker *documentPicker = [[OUIAppController controller] documentPicker];
-        OUIDocumentStoreFileItem *fileItem = documentPicker.singleSelectedFileItem;
+        OFSDocumentStoreFileItem *fileItem = documentPicker.singleSelectedFileItem;
         if (!fileItem) {
             OBASSERT_NOT_REACHED("no selected document");
-            [self performSelectorOnMainThread:@selector(_foreground_enableInterfaceAfterExportConversion) withObject:nil waitUntilDone:YES];
+            [self _foreground_enableInterfaceAfterExportConversion];
             return;
         }
         
-        NSError *error = nil;
-        NSFileWrapper *fileWrapper;
+        __block NSError *error = nil;
+        __block NSFileWrapper *fileWrapper;
         
         // Using a block here so that we can easily execute the same code no matter how we get the fileWrapper below.
         void (^handler)(NSFileWrapper *fileWrapper, NSError *error) = ^(NSFileWrapper *fileWrapper, NSError *error) {
@@ -365,10 +367,15 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
         if (OFISNULL(fileType)) {
             // The 'nil' type is always first in our list of types, so we can eport the original file as is w/o going through any app specific exporter.
             // NOTE: This is important for OO3 where the exporter has the ability to rewrite the document w/o hidden columns, in sorted order, with summary values (and eventually maybe with filtering). If we want to support untransformed exporting through the OO XML exporter, it will need to be configurable via settings on the OOXSLPlugin it uses. For now it assumes all 'exports' want all the transformations.
-            fileWrapper = [[[NSFileWrapper alloc] initWithURL:fileItem.fileURL options:0 error:&error] autorelease];
-            if (handler) {
-                handler(fileWrapper, error);
-            }
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
+                           ^{
+                               fileWrapper = [[[NSFileWrapper alloc] initWithURL:fileItem.fileURL options:0 error:&error] autorelease];
+                               
+                               if (handler) {
+                                   handler(fileWrapper, error);
+                               }
+
+                           });
         } else {
             [documentPicker exportFileWrapperOfType:fileType forFileItem:fileItem withCompletionHandler:handler];
         }
@@ -409,33 +416,25 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
 
 - (void)_foreground_disableInterfaceForExportConversion;
 {
-    OBASSERT([NSThread isMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     [self _setInterfaceDisabledWhileExporting:YES];
 }
 - (void)_foreground_enableInterfaceAfterExportConversion;
 {
-    OBASSERT([NSThread isMainThread]);
+    OBPRECONDITION([NSThread isMainThread]);
     [self _setInterfaceDisabledWhileExporting:NO];
 }
 
 - (void)_beginBackgroundExportDocumentOfType:(NSString *)fileType;
 {
     [self _foreground_disableInterfaceForExportConversion];
-    
-    OUIDocumentPicker *documentPicker = [[OUIAppController controller] documentPicker];
-    if ([documentPicker isExportThreadSafe])
-        [self performSelectorInBackground:@selector(_background_exportDocumentOfType:) withObject:fileType];
-    else
-        [self _background_exportDocumentOfType:fileType];
+    [self _foreground_exportDocumentOfType:fileType];
 }
 
-- (void)_foreground_finishBackgroundEmailExportWithInfo:(NSDictionary *)info;
+- (void)_foreground_finishBackgroundEmailExportWithExportType:(NSString *)exportType fileWrapper:(NSFileWrapper *)fileWrapper;
 {
-    OBASSERT([NSThread isMainThread]);
-    [self performSelectorOnMainThread:@selector(_foreground_enableInterfaceAfterExportConversion) withObject:nil waitUntilDone:YES];
-    
-    NSString *exportType = [info objectForKey:OUIExportInfoExportType];
-    NSFileWrapper *fileWrapper = [info objectForKey:OUIExportInfoFileWrapper];
+    OBPRECONDITION([NSThread isMainThread]);
+    [self _foreground_enableInterfaceAfterExportConversion];
     
     if (fileWrapper) {
         [self.navigationController dismissModalViewControllerAnimated:YES];
@@ -444,37 +443,33 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     }
 }
 
-- (void)_background_emailExportOfType:(NSString *)exportType;
+- (void)_foreground_emailExportOfType:(NSString *)exportType;
 {
+    OBPRECONDITION([NSThread isMainThread]);
+    
     OMNI_POOL_START {
         if (OFISNULL(exportType)) {
             // The fileType being null means that the user selected the OO3 file. This does not require a conversion.
-            main_async(^{
-                [self.navigationController dismissModalViewControllerAnimated:YES];
-                [[[OUIAppController controller] documentPicker] emailDocument:nil];
-            });
+            [self.navigationController dismissModalViewControllerAnimated:YES];
+            [[[OUIAppController controller] documentPicker] emailDocument:nil];
             return;
         }
         
         OUIDocumentPicker *documentPicker = [[OUIAppController controller] documentPicker];
-        OUIDocumentStoreFileItem *fileItem = documentPicker.singleSelectedFileItem;
+        OFSDocumentStoreFileItem *fileItem = documentPicker.singleSelectedFileItem;
         if (!fileItem) {
             OBASSERT_NOT_REACHED("no selected document");
-            [self performSelectorOnMainThread:@selector(_foreground_enableInterfaceAfterExportConversion) withObject:nil waitUntilDone:YES];
+            [self _foreground_enableInterfaceAfterExportConversion];
             return;
         }
         
         [documentPicker exportFileWrapperOfType:exportType forFileItem:fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
             if (fileWrapper == nil) {
                 OUI_PRESENT_ERROR(error);
-                [self performSelectorOnMainThread:@selector(_foreground_enableInterfaceAfterExportConversion) withObject:nil waitUntilDone:YES];
+                [self _foreground_enableInterfaceAfterExportConversion];
             }
             else {
-                [self performSelectorOnMainThread:@selector(_foreground_finishBackgroundEmailExportWithInfo:) 
-                                       withObject:[NSDictionary dictionaryWithObjectsAndKeys:exportType, OUIExportInfoExportType,
-                                                   fileWrapper, OUIExportInfoFileWrapper,
-                                                   nil]
-                                    waitUntilDone:YES];
+                [self _foreground_finishBackgroundEmailExportWithExportType:exportType fileWrapper:fileWrapper];
             }
         }];
     } OMNI_POOL_END;
@@ -490,11 +485,7 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     
     if (_exportType == OUIExportOptionsEmail) {
         [self _foreground_disableInterfaceForExportConversion];   
-        OUIDocumentPicker *documentPicker = [[OUIAppController controller] documentPicker];
-        if ([documentPicker isExportThreadSafe])
-            [self performSelectorInBackground:@selector(_background_emailExportOfType:) withObject:fileType];
-        else 
-            [self _background_emailExportOfType:fileType];
+        [self _foreground_emailExportOfType:fileType];
     } else {
         [self _beginBackgroundExportDocumentOfType:fileType];
     }

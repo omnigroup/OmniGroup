@@ -94,8 +94,13 @@ static NSSize calendarImageSize;
         return nil;
 
     NSWindow *window = [self window];
-    if ([window respondsToSelector:@selector(setCollectionBehavior:)])
-	[window setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];   
+    if ([window respondsToSelector:@selector(setCollectionBehavior:)]) {
+        unsigned int collectionBehavior = NSWindowCollectionBehaviorMoveToActiveSpace;
+        if ([OFVersionNumber isOperatingSystemLionOrLater])
+            collectionBehavior |= NSWindowCollectionBehaviorFullScreenAuxiliary;
+    	[window setCollectionBehavior:collectionBehavior];  
+    }
+
 
     [OFPreference addObserver:self selector:@selector(_firstDayOfTheWeekDidChange:) forPreference:[OFPreference preferenceForKey:@"FirstDayOfTheWeek"]];
     [self _firstDayOfTheWeekDidChange:nil];

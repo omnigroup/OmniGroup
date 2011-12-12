@@ -359,6 +359,121 @@ do { \
     }
 }
 
+- (void)testFrench;
+{
+    NSLocale *savedLocale = [[[[OFRelativeDateParser sharedParser] locale] retain] autorelease];
+
+    NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"fr"];
+    [[OFRelativeDateParser sharedParser] setLocale:locale];
+    [locale release];
+
+    NSDate *baseDate = nil;
+    NSDate *expectedDate = nil;
+        
+    // We have to test French "tomorrow" as "tomorrow", not "demain", because we don't have localized resources
+    baseDate = _dateFromYear(2011, 7, 15, 0, 0, 0, calendar);
+    expectedDate = _dateFromYear(2011, 7, 16, 0, 0, 0, calendar);
+    parseDate( @"tomorrow", expectedDate, baseDate, nil, nil ); 
+    
+    baseDate = _dateFromYear(2011, 7, 15, 0, 0, 0, calendar);
+    expectedDate = _dateFromYear(2012, 12, 29, 0, 0, 0, calendar);
+    parseDate( @"29 dec. 2012", expectedDate, baseDate, nil, nil ); 
+
+    NSString *dateString = [NSString stringWithFormat:@"29 d%Cc. 2012", 0xE9];
+    parseDate( dateString, expectedDate, baseDate, nil, nil ); 
+
+    [[OFRelativeDateParser sharedParser] setLocale:savedLocale];
+}
+
+- (void)testSpanish;
+{
+    NSLocale *savedLocale = [[[[OFRelativeDateParser sharedParser] locale] retain] autorelease];
+
+    NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"es"];
+    [[OFRelativeDateParser sharedParser] setLocale:locale];
+    [locale release];
+
+    // We expected to get tuesday, not "mar"=>March/Marzo then nil because of the extra input
+    // See <bug:///73211> (OFRelativeDateParser doesn't use localized string/abbreviation when parsing out hours)
+    
+    NSDate *baseDate = nil;
+    NSDate *expectedDate = nil;
+    
+    baseDate = _dateFromYear(2011, 6, 29, 0, 0, 0, calendar);
+    expectedDate = _dateFromYear(2011, 7, 5, 0, 0, 0, calendar);
+    parseDate( @"martes", expectedDate, baseDate, nil, nil ); 
+    
+    // We expect to be able to use either miercoles for miŽrcoles for wednesday and have it work
+    
+    baseDate = _dateFromYear(2011, 7, 5, 0, 0, 0, calendar);
+    expectedDate = _dateFromYear(2011, 7, 6, 0, 0, 0, calendar);
+    parseDate( @"miercoles", expectedDate, baseDate, nil, nil ); 
+
+    NSString *dateString = [NSString stringWithFormat:@"mi%Crcoles", 0xE9];
+    parseDate( dateString, expectedDate, baseDate, nil, nil ); 
+    
+
+    [[OFRelativeDateParser sharedParser] setLocale:savedLocale];
+}
+
+- (void)testItalian;
+{
+    NSLocale *savedLocale = [[[[OFRelativeDateParser sharedParser] locale] retain] autorelease];
+
+    NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"it"];
+    [[OFRelativeDateParser sharedParser] setLocale:locale];
+    [locale release];
+
+    // We expected to get tuesday, not "mar"=>March/Marzo then nil because of the extra input
+    // See <bug:///68115> (Italian localization for Sunday doesn't parse in cells [natural language, Domenica])
+    
+    NSDate *baseDate = nil;
+    NSDate *expectedDate = nil;
+    NSString *dateString = nil;
+    
+    baseDate = _dateFromYear(2011, 6, 29, 0, 0, 0, calendar);
+    expectedDate = _dateFromYear(2011, 7, 5, 0, 0, 0, calendar);
+    dateString = [NSString stringWithFormat:@"marted%C", 0xEC];
+    parseDate( dateString, expectedDate, baseDate, nil, nil ); 
+
+    baseDate = _dateFromYear(2011, 7, 5, 0, 0, 0, calendar);
+    expectedDate = _dateFromYear(2011, 7, 10, 0, 0, 0, calendar);
+    dateString = @"domenica";
+    parseDate( dateString, expectedDate, baseDate, nil, nil ); 
+
+    [[OFRelativeDateParser sharedParser] setLocale:savedLocale];
+}
+
+- (void)testGerman;
+{
+    NSLocale *savedLocale = [[[[OFRelativeDateParser sharedParser] locale] retain] autorelease];
+
+    NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"de"];
+    [[OFRelativeDateParser sharedParser] setLocale:locale];
+    [locale release];
+
+    NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+    [dateFormatter setLocale:locale];
+
+    // We expect to be able to get dates back for German days of the week whether or not we include punctuation at the end of the abbreviated day name
+
+    NSDate *baseDate = _dateFromYear(2011, 7, 3, 0, 0, 0, calendar);;
+    NSDate *expectedDate = nil;
+
+    NSUInteger i, count = [[dateFormatter shortWeekdaySymbols] count];
+    for (i = 0; i < count; i++) {
+        NSString *dayName = [[dateFormatter shortWeekdaySymbols] objectAtIndex: i];
+        
+        expectedDate = _dateFromYear(2011, 7, 3 + i, 0, 0, 0, calendar);
+        parseDate( dayName, expectedDate, baseDate, nil, nil ); 
+
+        dayName = [dayName stringByReplacingCharactersInSet:[NSCharacterSet punctuationCharacterSet] withString:@""];
+        parseDate( dayName, expectedDate, baseDate, nil, nil ); 
+    }
+
+    [[OFRelativeDateParser sharedParser] setLocale:savedLocale];
+}
+
 - (void)testRandomCases;
 {
     NSString *timeFormat = @"HH:mm";
@@ -647,7 +762,7 @@ do { \
 	NSArray *weekdays = [formatter weekdaySymbols];
 	NSDate *baseDate = _dateFromYear(2001, 1, 10, 0, 0, 0, calendar);
 	NSDateComponents *components = [calendar components:NSWeekdayCalendarUnit fromDate:baseDate];
-	
+
 	// test with all different formats
 	NSUInteger dateIndex = [dateFormats count];
 	while (dateIndex--) {
@@ -677,6 +792,7 @@ do { \
 			addToWeek = 7;
 		    else 
 			addToWeek = 0;
+                        
 		    parseDate( [weekdays objectAtIndex:dayIndex], 
 			      _dateFromYear(2001, 1, (10 + addToWeek + (dayIndex - weekday)), 0, 0, 0, calendar),
 			      baseDate, dateFormat, timeFormat);
@@ -706,6 +822,8 @@ do { \
 	NSArray *months = [formatter monthSymbols];
 	NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
 	
+        NSArray *shortdays = [NSSet setWithArray:[formatter shortWeekdaySymbols]];
+
 	NSDateComponents *components = [calendar components:NSMonthCalendarUnit fromDate:baseDate];
 	
 	NSUInteger dateIndex = [dateFormats count];
@@ -723,6 +841,11 @@ do { \
 			addToMonth = 12;
 		    else 
 			addToMonth = 0;
+                        
+                    // If the short month symbol is also a short day symbol, skip it. We prioritize days
+                    if ([shortdays containsObject:[months objectAtIndex:monthIndex]])
+                        continue;
+
 		    parseDate( [months objectAtIndex:monthIndex], 
 			      _dateFromYear(2001, (1 + addToMonth + (monthIndex - month)), 1, 0, 0, 0, calendar),
 			      baseDate,  dateFormat, timeFormat );
@@ -737,6 +860,11 @@ do { \
 			addToMonth = 12;
 		    else 
 			addToMonth = 0;
+
+                    // If the short month symbol is also a short day symbol, skip it. We prioritize days
+                    if ([shortdays containsObject:[months objectAtIndex:monthIndex]])
+                        continue;
+
 		    parseDate( [months objectAtIndex:monthIndex], 
 			      _dateFromYear(2001, (1 + addToMonth + (monthIndex - month)), 1, 0, 0, 0, calendar),
 			      baseDate,  dateFormat, timeFormat );

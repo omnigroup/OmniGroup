@@ -11,7 +11,7 @@
 
 #import <OmniFoundation/OFSaveType.h>
 
-@class OUIDocumentStoreFileItem, OUIDocumentViewController, OUIDocumentPreview;
+@class OFSDocumentStoreFileItem, OUIDocumentViewController, OUIDocumentPreview;
 
 @protocol OUIDocumentViewController;
 
@@ -19,10 +19,13 @@
 
 + (BOOL)shouldShowAutosaveIndicator;
 
-- initWithExistingFileItem:(OUIDocumentStoreFileItem *)fileItem error:(NSError **)outError;
+- initWithExistingFileItem:(OFSDocumentStoreFileItem *)fileItem error:(NSError **)outError;
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 
-@property(readonly, nonatomic) OUIDocumentStoreFileItem *fileItem;
+// Can set this before opening a document to tell it that it is being opened for preview generation. Later we might want more control of how errors are captured for off-screen document work, but for now this just makes errors get logged instead of presented to the user. The document view controller may also opt to load less data or otherwise speed up its work by only doing what is necessary for preview generation.
+@property(nonatomic) BOOL forPreviewGeneration;
+
+@property(readonly, nonatomic) OFSDocumentStoreFileItem *fileItem;
 
 @property(readonly) UIViewController <OUIDocumentViewController> *viewController;
 
@@ -57,13 +60,10 @@
 - (void)didRebuildViewController:(id)state;
 
 // Support for previews
-+ (CGSize)previewSizeForTargetSize:(CGSize)targetSize aspectRatio:(CGFloat)aspectRatio;
-+ (NSURL *)fileURLForPreviewOfFileItem:(OUIDocumentStoreFileItem *)fileItem withLandscape:(BOOL)landscape;
-+ (OUIDocumentPreview *)loadPreviewForFileItem:(OUIDocumentStoreFileItem *)fileItem withLandscape:(BOOL)landscape error:(NSError **)outError;
-+ (UIImage *)placeholderPreviewImageForFileItem:(OUIDocumentStoreFileItem *)fileItem landscape:(BOOL)landscape;
++ (NSString *)placeholderPreviewImageNameForFileURL:(NSURL *)fileURL landscape:(BOOL)landscape;
 + (BOOL)writePreviewsForDocument:(OUIDocument *)document error:(NSError **)outError;
 
 // Camera roll
-+ (UIImage *)cameraRollImageForFileItem:(OUIDocumentStoreFileItem *)fileItem;
++ (UIImage *)cameraRollImageForFileItem:(OFSDocumentStoreFileItem *)fileItem;
 
 @end

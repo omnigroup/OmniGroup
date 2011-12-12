@@ -9,6 +9,7 @@
 
 #import <Foundation/NSPropertyList.h>
 #import <OmniBase/system.h>
+#import <OmniBase/macros.h>
 #import <OmniBase/NSError-OBExtensions.h>
 
 #import <OmniFoundation/NSProcessInfo-OFExtensions.h>

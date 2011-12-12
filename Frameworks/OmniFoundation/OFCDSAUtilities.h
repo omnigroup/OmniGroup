@@ -14,10 +14,8 @@
 /* In 10.7, Apple deprecated all existing crypto APIs and replaced them with new, completely different APIs which aren't available on previous versions (and which aren't as functional). */
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
     #define OF_ENABLE_CDSA 0
-    #define OF_SECTRANSFORM_AVAILABLE 1
 #else
     #define OF_ENABLE_CDSA 1
-    #define OF_SECTRANSFORM_AVAILABLE 0
 #endif
 
 /*
@@ -29,14 +27,13 @@
 */
 
 #if OF_ENABLE_CDSA
+extern NSString * const OFCDSAErrorDomain;
 NSString *OFStringFromCSSMReturn(CSSM_RETURN code);
 BOOL OFErrorFromCSSMReturn(NSError **outError, CSSM_RETURN errcode, NSString *function);
 NSData *OFGetAppleKeyDigest(const CSSM_KEY *pkey, CSSM_CC_HANDLE optionalContext, NSError **outError);
 #endif
 NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext);
-#if OF_ENABLE_CDSA
 CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage, CFTypeRef anchors, SecPolicyRef policy, NSError **outError);
-#endif
 
 #if OF_ENABLE_CDSA
 @interface OFCDSAModule : NSObject
@@ -72,6 +69,8 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 @property (readwrite, assign) const CSSM_ACCESS_CREDENTIALS *credentials;
 
 - (void)setKeyHeader:(const CSSM_KEYHEADER *)hdr data:(NSData *)blobContents;
+
+- (id <NSObject,OFDigestionContext>)newVerificationContextForAlgorithm:(CSSM_ALGORITHMS)pk_signature_alg error:(NSError **)outError;
 
 @end
 

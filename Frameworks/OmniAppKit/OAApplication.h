@@ -86,6 +86,7 @@ typedef BOOL (^OAResponderChainApplier)(id target);
 extern BOOL OATargetSelectionEnabled(void);
 
 @interface NSObject (OATargetSelection)
+// Return NO to stop the traversal, YES to continue
 - (BOOL)applyToResponderChain:(OAResponderChainApplier)applier;
 - (id)responsibleTargetForAction:(SEL)action sender:(id)sender;
 @end

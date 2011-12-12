@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ BOOL OSURunTimeHasHandledApplicationTermination(void)
     return (OSURunTimeHasRunningSession == NO);
 }
 
-void OSURunTimeApplicationStarted(void)
+void OSURunTimeApplicationActivated(void)
 {
     OBPRECONDITION(OSURunTimeHasRunningSession == NO);
     OSURunTimeHasRunningSession = YES;
@@ -55,7 +55,7 @@ void OSURunTimeApplicationStarted(void)
     [defaults synchronize]; // Make sure we save in case we crash before -autoSynchronize would fire
 }
 
-static NSDictionary *_OSURunTimeUpdateStatisticsScope(NSDictionary *oldScope, NSString *version, NSNumber *startTimeNumber, NSTimeInterval now, BOOL crashed)
+static NSDictionary *_OSURunTimeUpdateStatisticsScope(NSDictionary *oldScope, NSString *version, NSNumber *startTimeNumber, NSTimeInterval now, BOOL crashed, BOOL newRun)
 {
     if (oldScope && ![oldScope isKindOfClass:[NSDictionary class]]) {
         OBASSERT([oldScope isKindOfClass:[NSDictionary class]]);
@@ -99,8 +99,10 @@ static NSDictionary *_OSURunTimeUpdateStatisticsScope(NSDictionary *oldScope, NS
             OBASSERT([runCountNumber isKindOfClass:[NSNumber class]]);
             runCountNumber = nil;
         }
+        unsigned int runCount = [runCountNumber unsignedIntValue];
         
-        unsigned int runCount = [runCountNumber unsignedIntValue] + 1;
+        if (newRun) 
+            runCount += 1;
         [newScope setObject:[NSNumber numberWithUnsignedInt:runCount] forKey:OSUNumberOfRunsKey];
     }
     
@@ -125,7 +127,7 @@ static NSDictionary *_OSURunTimeUpdateStatisticsScope(NSDictionary *oldScope, NS
 
 // This takes a bundle identifier so that the OmniCrashCatcher app can invoke this for us when we crash.
 // Add (now - start) to our total run duration and remove the defaults for the start time.
-void OSURunTimeApplicationTerminated(NSString *appIdentifier, NSString *bundleVersion, BOOL crashed)
+void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleVersion, BOOL crashed)
 {
     OBPRECONDITION(appIdentifier);
     OBPRECONDITION(bundleVersion);
@@ -149,8 +151,10 @@ void OSURunTimeApplicationTerminated(NSString *appIdentifier, NSString *bundleVe
     NSDictionary *statistics = statisticsValue ? [[statisticsValue copy] autorelease] : [NSDictionary dictionary];
 
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-    NSDictionary *all = _OSURunTimeUpdateStatisticsScope([statistics objectForKey:OSURunTimeStatisticsAllVersionsScopeKey], nil/*version*/, startTimeNumber, now, crashed);
-    NSDictionary *current = _OSURunTimeUpdateStatisticsScope([statistics objectForKey:OSURunTimeStatisticsCurrentVersionsScopeKey], bundleVersion, startTimeNumber, now, crashed);
+    static BOOL firstCallForThisRun = YES;
+    
+    NSDictionary *all = _OSURunTimeUpdateStatisticsScope([statistics objectForKey:OSURunTimeStatisticsAllVersionsScopeKey], nil/*version*/, startTimeNumber, now, crashed, firstCallForThisRun);
+    NSDictionary *current = _OSURunTimeUpdateStatisticsScope([statistics objectForKey:OSURunTimeStatisticsCurrentVersionsScopeKey], bundleVersion, startTimeNumber, now, crashed, firstCallForThisRun);
     
     statistics = [[NSDictionary alloc] initWithObjectsAndKeys:all, OSURunTimeStatisticsAllVersionsScopeKey, current, OSURunTimeStatisticsCurrentVersionsScopeKey, nil];
     CFPreferencesSetAppValue((CFStringRef)OSURunTimeStatisticsKey, (CFDictionaryRef)statistics, (CFStringRef)appIdentifier);
@@ -159,6 +163,7 @@ void OSURunTimeApplicationTerminated(NSString *appIdentifier, NSString *bundleVe
     CFPreferencesSetAppValue((CFStringRef)OSULastRunStartIntervalKey, NULL, (CFStringRef)appIdentifier);
 
     CFPreferencesAppSynchronize((CFStringRef)appIdentifier);
+    firstCallForThisRun = NO;
 }
 
 // This gets called from within a short-lived tool.  We'll feel free to leak.

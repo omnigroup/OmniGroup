@@ -385,6 +385,31 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     return [[self stringByRemovingString:[match matchString]] stringByRemovingRegularExpression:regularExpression];
 }
 
+- (NSString *)stringByNormalizingWithOptions:(NSUInteger)options locale:(NSLocale *)locale;
+{
+    NSMutableString *mutableString = [[self mutableCopy] autorelease];
+    
+    if (!locale)
+        locale = [NSLocale currentLocale];
+
+    if ((options & OFStringNormlizationOptionLowercase) != 0)
+        CFStringLowercase((CFMutableStringRef)mutableString, (CFLocaleRef)locale);
+
+    if ((options & OFStringNormlizationOptionUppercase) != 0)
+        CFStringUppercase((CFMutableStringRef)mutableString, (CFLocaleRef)locale);
+    
+    if ((options & OFStringNormilzationOptionStripCombiningMarks) != 0)
+        CFStringTransform((CFMutableStringRef)mutableString, NULL, kCFStringTransformStripCombiningMarks, NO);
+        
+    if ((options & OFStringNormilzationOptionStripPunctuation) != 0) 
+        [mutableString replaceAllOccurrencesOfCharactersInSet:[NSCharacterSet punctuationCharacterSet] withString:@""];
+
+    if (![self isEqualToString:mutableString])
+        return mutableString;
+        
+    return self;
+}
+
 - (NSString *)stringByPaddingToLength:(NSUInteger)aLength;
 {
     NSUInteger currentLength = [self length];

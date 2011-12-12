@@ -11,6 +11,7 @@
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
+#import <OmniFoundation/OFUTI.h>
 #import <OmniFoundation/OFNull.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -20,8 +21,6 @@
 RCS_ID("$Id$");
 
 @implementation OFSFileInfo
-
-static NSMutableDictionary *_NativeUTIForFileExtension;
 
 + (NSString *)nameForURL:(NSURL *)url;
 {
@@ -36,44 +35,6 @@ static NSMutableDictionary *_NativeUTIForFileExtension;
         decodedName = [NSString decodeURLString:name];
     }
     return name;
-}
-
-static NSString *UTIForFileExtension(NSString *fileExtension)
-{
-    if (fileExtension == nil)
-        return nil;
-
-    NSString *nativeUTI = [_NativeUTIForFileExtension objectForKey:fileExtension];
-    if (nativeUTI != nil)
-        return nativeUTI;
-
-    // Not a registered native UTI; try asking LaunchServices
-    CFStringRef fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)fileExtension, NULL);
-    return [NSMakeCollectable(fileUTI) autorelease];
-}
-
-+ (NSString *)UTIForFilename:(NSString *)filename;
-{
-    NSString *fileExtension = [filename pathExtension];
-    NSString *fileUTI = UTIForFileExtension(fileExtension);
-    if (fileUTI != nil && UTTypeConformsTo((CFStringRef)fileUTI, kUTTypeArchive)) {    // only supporting zip files including an extension that we recognize (so, if user uses Finder to compress, will end up with 'filename.graffle.zip') 
-        NSString *unarchivedFilename = [filename stringByDeletingPathExtension];
-        fileUTI = UTIForFileExtension([unarchivedFilename pathExtension]);
-    }
-    return fileUTI;
-}
-
-+ (NSString *)UTIForURL:(NSURL *)url;
-{
-    return [self UTIForFilename:[self nameForURL:url]];
-}
-
-+ (void)registerNativeUTI:(NSString *)UTI forFileExtension:(NSString *)fileExtension;
-{
-    if (_NativeUTIForFileExtension == nil)
-        _NativeUTIForFileExtension = [[NSMutableDictionary alloc] init];
-
-    [_NativeUTIForFileExtension setObject:UTI forKey:fileExtension];
 }
 
 - initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date;
@@ -142,7 +103,7 @@ static NSString *UTIForFileExtension(NSString *fileExtension)
 
 - (NSString *)UTI;
 {
-    return [OFSFileInfo UTIForFilename:_name];
+    return OFUTIForFileExtensionPreferringNative([_name pathExtension], _directory);
 }
 
 - (NSComparisonResult)compareByURLPath:(OFSFileInfo *)otherInfo;

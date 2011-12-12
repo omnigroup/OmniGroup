@@ -12,10 +12,10 @@
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFRegularExpression.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
-#import <OmniUI/OUIDocumentStoreFileItem.h>
 
 #import "OUICredentials.h"
 #import "OUIEditableLabeledValueCell.h"
@@ -110,6 +110,8 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 
 - (void)viewWillAppear:(BOOL)animated;
 {
+    [super viewWillAppear:animated];
+
     switch (_syncType) {
         case OUIWebDAVSync:
             [_nonretainedAddressField becomeFirstResponder];
@@ -127,6 +129,8 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 
 - (void)viewDidDisappear:(BOOL)animated;
 {
+    [super viewDidDisappear:animated];
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self name:OUICertificateTrustUpdated object:nil];
 }
 
@@ -394,6 +398,8 @@ const CGFloat OUIWebDAVSetupFooterHeight = 50;
 
 - (void)viewDidUnload;
 {
+    [super viewDidUnload];
+
     [[NSNotificationCenter defaultCenter] removeObserver:self name:OUICertificateTrustUpdated object:nil];
 }
 

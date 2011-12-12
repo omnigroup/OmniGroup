@@ -76,6 +76,30 @@ RCS_ID("$Id$")
     return suite;
 } 
 
+- (NSString *)name
+{
+    /* For the specific case of -testSomething:(NSString *)what, include the value of what in the test's name. */
+    NSInvocation *inv = [self invocation];
+    NSMethodSignature *signature = [inv methodSignature];
+    if (signature && [signature numberOfArguments] == 3) {
+        const char *argt = [signature getArgumentTypeAtIndex:2];
+        if (argt && (argt[0] == _C_ID)) {
+            id argv = nil;
+            NSString *argstr;
+            [inv getArgument:&argv atIndex:2];
+            if (!argv) {
+                argstr = @"nil";
+            } else if ([argv isKindOfClass:[NSString class]]) {
+                argstr = [NSString stringWithFormat:@"@\"%@\"", argv];
+            } else {
+                return [super name];
+            }
+            return [NSString stringWithFormat:@"-[%@ %@%@]", NSStringFromClass([self class]), NSStringFromSelector([inv selector]), argstr];
+        }
+    }
+    return [super name];
+}
+
 @end
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE

@@ -167,7 +167,8 @@ RCS_ID("$Id$")
     if (duringMouseDown) {
         NSUInteger partial = [prefix length];
         [windowTitleAttributedstring setAttributes:textAttributes range:NSMakeRange(0, partial)];
-        NSDictionary *italicAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[NSFont userFontOfSize:[NSFont labelFontSize]] toHaveTrait:NSItalicFontMask], NSFontAttributeName, nil];
+        // NSFont's +systemFontOfSize: does not have an italic variant.  So I'm just using Helvetica.  Using +userFontOfSize: is not a good option because the userFont can be changed for other reasons by apps.
+        NSDictionary *italicAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[[NSFontManager sharedFontManager] convertFont:[NSFont systemFontOfSize:[NSFont labelFontSize]] toFamily:@"Helvetica"] toHaveTrait:NSItalicFontMask], NSFontAttributeName, nil];
         [windowTitleAttributedstring setAttributes:italicAttributes range:NSMakeRange(partial, [[windowTitleAttributedstring string] length] - partial)];
     } else {
         [windowTitleAttributedstring setAttributes:textAttributes range:NSMakeRange(0, [[windowTitleAttributedstring string] length])];

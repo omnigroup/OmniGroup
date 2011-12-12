@@ -9,22 +9,16 @@
 
 #import <OmniUI/OUIDocumentPreviewView.h>
 #import <OmniUI/OUIDocumentPreview.h>
-#import <OmniUI/OUIDocumentStoreFileItem.h>
 #import <OmniUI/OUISingleDocumentAppController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniFoundation/OFBinding.h>
 #import <OmniFoundation/OFRandom.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 
-#import "OUIDocumentStore-Internal.h"
-#import "OUIDocumentStoreItem-Internal.h"
-#import "OUIDocumentStoreFileItem-Internal.h"
 #import "OUIDocumentPickerItemView-Internal.h"
-#import "OUIDocumentPreviewLoadOperation.h"
 #import "OUIParameters.h"
 
 RCS_ID("$Id$");
-
-static NSOperationQueue *PreviewLoadOperationQueue = nil;
 
 NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDocumentPickerItemViewPreviewsDidLoadNotification";
 
@@ -36,28 +30,20 @@ NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDoc
 
 @implementation OUIDocumentPickerItemView
 {
+    BOOL _animatingRotationChange;
     BOOL _landscape;
-    OUIDocumentStoreItem *_item;
+    OFSDocumentStoreItem *_item;
     UILabel *_nameLabel;
     UILabel *_dateLabel;
     
     OUIDocumentPreviewView *_previewView;
-    NSMutableArray *_previewLoadOperations;
 
     OUIDocumentPickerItemViewDraggingState _draggingState;
     
+    BOOL _highlighted;
     BOOL _renaming;
+    BOOL _deleting;
 }
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    PreviewLoadOperationQueue = [[NSOperationQueue alloc] init];
-    PreviewLoadOperationQueue.name = @"OUIDocumentPicker preview loading";
-    // Our previews are fairly small now; allow loading multiples on multicore devices.
-    //[PreviewLoadOperationQueue setMaxConcurrentOperationCount:1];
-};
 
 static void _configureLabel(UILabel *label, CGFloat fontSize)
 {
@@ -108,10 +94,6 @@ static id _commonInit(OUIDocumentPickerItemView *self)
 
 - (void)dealloc;
 {
-    for (OUIDocumentPreviewLoadOperation *operation in _previewLoadOperations)
-        [operation cancel];
-    [_previewLoadOperations release];
-    
     [self stopObservingItem:_item];
     
     [_item release];
@@ -127,7 +109,10 @@ static id _commonInit(OUIDocumentPickerItemView *self)
 {
     OBPRECONDITION(_item == nil); // Set this up first
     _landscape = landscape;
+    _previewView.landscape = landscape;
 }
+
+@synthesize animatingRotationChange = _animatingRotationChange;
 
 @synthesize item = _item;
 - (void)setItem:(id)item;
@@ -151,43 +136,32 @@ static unsigned ItemContext;
 
 - (void)startObservingItem:(id)item;
 {
-    [item addObserver:self forKeyPath:OUIDocumentStoreItemNameBinding options:0 context:&ItemContext];
-    [item addObserver:self forKeyPath:OUIDocumentStoreItemDateBinding options:0 context:&ItemContext];
-    [item addObserver:self forKeyPath:OUIDocumentStoreItemReadyBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemNameBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemDateBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemReadyBinding options:0 context:&ItemContext];
     
-    [item addObserver:self forKeyPath:OUIDocumentStoreItemHasUnresolvedConflictsBinding options:0 context:&ItemContext];
-    [item addObserver:self forKeyPath:OUIDocumentStoreItemIsDownloadedBinding options:0 context:&ItemContext];
-    [item addObserver:self forKeyPath:OUIDocumentStoreItemIsDownloadingBinding options:0 context:&ItemContext];
-    [item addObserver:self forKeyPath:OUIDocumentStoreItemIsUploadedBinding options:0 context:&ItemContext];
-    [item addObserver:self forKeyPath:OUIDocumentStoreItemIsUploadingBinding options:0 context:&ItemContext];
-    [item addObserver:self forKeyPath:OUIDocumentStoreItemPercentDownloadedBinding options:0 context:&ItemContext];
-    [item addObserver:self forKeyPath:OUIDocumentStoreItemPercentUploadedBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemHasUnresolvedConflictsBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemIsDownloadedBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemIsDownloadingBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemIsUploadedBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemIsUploadingBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemPercentDownloadedBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemPercentUploadedBinding options:0 context:&ItemContext];
 }
 
 - (void)stopObservingItem:(id)item;
 {
-    [item removeObserver:self forKeyPath:OUIDocumentStoreItemNameBinding context:&ItemContext];
-    [item removeObserver:self forKeyPath:OUIDocumentStoreItemDateBinding context:&ItemContext];
-    [item removeObserver:self forKeyPath:OUIDocumentStoreItemReadyBinding context:&ItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemNameBinding context:&ItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemDateBinding context:&ItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemReadyBinding context:&ItemContext];
 
-    [item removeObserver:self forKeyPath:OUIDocumentStoreItemHasUnresolvedConflictsBinding context:&ItemContext];
-    [item removeObserver:self forKeyPath:OUIDocumentStoreItemIsDownloadedBinding context:&ItemContext];
-    [item removeObserver:self forKeyPath:OUIDocumentStoreItemIsDownloadingBinding context:&ItemContext];
-    [item removeObserver:self forKeyPath:OUIDocumentStoreItemIsUploadedBinding context:&ItemContext];
-    [item removeObserver:self forKeyPath:OUIDocumentStoreItemIsUploadingBinding context:&ItemContext];
-    [item removeObserver:self forKeyPath:OUIDocumentStoreItemPercentDownloadedBinding context:&ItemContext];
-    [item removeObserver:self forKeyPath:OUIDocumentStoreItemPercentUploadedBinding context:&ItemContext];
-}
-
-- (BOOL)isLoadingPreviews;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    
-    // We don't know what previews to load until we are ready, so just claim to be loading until we are ready.
-    if (!_item.ready)
-        return YES;
-        
-    return [_previewLoadOperations count] > 0;
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemHasUnresolvedConflictsBinding context:&ItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemIsDownloadedBinding context:&ItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemIsDownloadingBinding context:&ItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemIsUploadedBinding context:&ItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemIsUploadingBinding context:&ItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemPercentDownloadedBinding context:&ItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemPercentUploadedBinding context:&ItemContext];
 }
 
 @synthesize draggingState = _draggingState;
@@ -198,6 +172,16 @@ static unsigned ItemContext;
     
     _draggingState = draggingState;
     [self setNeedsLayout];
+}
+
+@synthesize highlighted = _highlighted;
+- (void)setHighlighted:(BOOL)highlighted;
+{
+    if (_highlighted == highlighted)
+        return;
+    
+    _highlighted = highlighted;
+    _previewView.highlighted = highlighted;
 }
 
 @synthesize renaming = _renaming;
@@ -247,6 +231,49 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
         //[layer addAnimation:group forKey:EditingAnimationKey];
         [layer addAnimation:jitter forKey:EditingAnimationKey];
     }
+    
+    _previewView.needsAntialiasingBorder = editing;
+}
+
+@synthesize shrunken = _shrunken;
+- (void)setShrunken:(BOOL)shrunken;
+{
+    if (_shrunken == shrunken)
+        return;
+    
+    _shrunken = shrunken;
+
+    static NSString * const kShrunkenTransformKey = @"shrunkenTransform";
+
+    CALayer *layer = self.layer;
+    if (!_shrunken && [UIView areAnimationsEnabled] == NO) {
+        [layer removeAnimationForKey:kShrunkenTransformKey];
+        self.alpha = 1;
+        return;
+    }
+    
+    CATransform3D shrunkenTransform = CATransform3DMakeScale(0.001, 0.001, 1.0);
+    
+    // We currently assume that we aren't interrupting the animation partway through
+    if (_shrunken) {
+        CABasicAnimation *anim = [CABasicAnimation animationWithKeyPath:@"transform"];
+        anim.fromValue = [NSValue valueWithCATransform3D:CATransform3DIdentity];
+        anim.toValue = [NSValue valueWithCATransform3D:shrunkenTransform];
+        anim.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        anim.fillMode = kCAFillModeForwards;
+        [layer addAnimation:anim forKey:kShrunkenTransformKey];
+        
+        self.alpha = 0;
+    } else {
+        CABasicAnimation *anim = [CABasicAnimation animationWithKeyPath:@"transform"];
+        anim.fromValue = [NSValue valueWithCATransform3D:shrunkenTransform];
+        anim.toValue = [NSValue valueWithCATransform3D:CATransform3DIdentity];
+        anim.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        anim.removedOnCompletion = YES;
+        [layer addAnimation:anim forKey:kShrunkenTransformKey];
+        
+        self.alpha = 1;
+    }
 }
 
 #pragma mark -
@@ -257,10 +284,9 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     NSSet *previewedFileItems = nil;
 
     if (newWindow && [(previewedFileItems = self.previewedFileItems) count] > 0) {
-        if (!self.loadingPreviews)
-            [self startLoadingPreviews];
+        [self loadPreviews];
     } else {
-        [self stopLoadingPreviewsAndDiscardCurrentPreviews:YES];
+        [self discardCurrentPreviews];
     }
     
     [super willMoveToWindow:newWindow];
@@ -270,48 +296,53 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    CGRect bounds = self.bounds;
-    
-    CGRect previewFrame = bounds;
-    
-    {
-        CGSize dateSize = [_dateLabel sizeThatFits:bounds.size];
-        dateSize.height = floor(dateSize.height);
+    // Newly appearing item views shouldn't animate their guts.
+    // Sadly there is no good place to put this on the normal rotation path (after the rotation has started AND the top view frame has been changed, but before the rotation has finished).
+    OUIWithAnimationsDisabled(_animatingRotationChange, ^{
         
-        previewFrame.size.height -= dateSize.height;
-        _dateLabel.frame = CGRectMake(CGRectGetMinX(previewFrame), CGRectGetMaxY(previewFrame),
-                                      CGRectGetWidth(previewFrame), dateSize.height);
-    }
-    
-    previewFrame.size.height -= kOUIDocumentPickerItemViewNameToDatePadding;
-    
-    {
-        CGSize nameSize = [_nameLabel sizeThatFits:bounds.size];
-        nameSize.height = floor(nameSize.height);
+        CGRect bounds = self.bounds;
         
-        previewFrame.size.height -= nameSize.height;
-        _nameLabel.frame = CGRectMake(CGRectGetMinX(previewFrame), CGRectGetMaxY(previewFrame),
-                                      CGRectGetWidth(previewFrame), nameSize.height);
-    }
-    
-    previewFrame.size.height -= kOUIDocumentPickerItemViewNameToPreviewPadding;
-    
-    BOOL draggingSource = (_draggingState == OUIDocumentPickerItemViewSourceDraggingState);
-    _nameLabel.hidden = draggingSource;
-    _dateLabel.hidden = draggingSource;
-    _previewView.draggingSource = draggingSource;
-    
-    previewFrame = [_previewView previewRectInFrame:previewFrame];
-    if (CGRectEqualToRect(previewFrame, CGRectNull)) {
-        _previewView.hidden = YES;
-    } else {
-        _previewView.frame = previewFrame;
+        CGRect previewFrame = bounds;
         
-        if (_renaming)
+        {
+            CGSize dateSize = [_dateLabel sizeThatFits:bounds.size];
+            dateSize.height = floor(dateSize.height);
+            
+            previewFrame.size.height -= dateSize.height;
+            _dateLabel.frame = CGRectMake(CGRectGetMinX(previewFrame), CGRectGetMaxY(previewFrame),
+                                          CGRectGetWidth(previewFrame), dateSize.height);
+        }
+        
+        previewFrame.size.height -= kOUIDocumentPickerItemViewNameToDatePadding;
+        
+        {
+            CGSize nameSize = [_nameLabel sizeThatFits:bounds.size];
+            nameSize.height = floor(nameSize.height);
+            
+            previewFrame.size.height -= nameSize.height;
+            _nameLabel.frame = CGRectMake(CGRectGetMinX(previewFrame), CGRectGetMaxY(previewFrame),
+                                          CGRectGetWidth(previewFrame), nameSize.height);
+        }
+        
+        previewFrame.size.height -= kOUIDocumentPickerItemViewNameToPreviewPadding;
+        
+        BOOL draggingSource = (_draggingState == OUIDocumentPickerItemViewSourceDraggingState);
+        _nameLabel.hidden = draggingSource;
+        _dateLabel.hidden = draggingSource;
+        _previewView.draggingSource = draggingSource;
+        
+        previewFrame = [_previewView previewRectInFrame:previewFrame];
+        if (CGRectEqualToRect(previewFrame, CGRectNull)) {
             _previewView.hidden = YES;
-        else
-            _previewView.hidden = NO;
-    }
+        } else {
+            _previewView.frame = previewFrame;
+            
+            if (_renaming)
+                _previewView.hidden = YES;
+            else
+                _previewView.hidden = NO;
+        }
+    });
 }
 
 #pragma mark -
@@ -322,7 +353,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 - (void)itemChanged;
 {
     // Don't keep the preview around unless the picker view wants us to display (or speculatively display) something.
-    [self stopLoadingPreviewsAndDiscardCurrentPreviews:YES];
+    [self discardCurrentPreviews];
 
     [self _nameChanged];
     [self _dateChanged];
@@ -331,7 +362,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     if (_item) {
         // We do NOT start a new preview load here if we aren't in the window, but delay that until we move into view. In some cases we want to make a file item view and manually give it a preview that we already have on hand. As long as we do that before it goes on screen we'll avoid a duplicate load.
         if (self.window)
-            [self startLoadingPreviews];
+            [self loadPreviews];
     }
 }
 
@@ -348,14 +379,12 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)previewedFileItemsChanged;
 {
-    [self stopLoadingPreviewsAndDiscardCurrentPreviews:NO];
-    [self startLoadingPreviews];
+    [self loadPreviews];
 }
 
-- (void)startLoadingPreviews;
+- (void)loadPreviews;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(_previewLoadOperations == nil); // should stop loading previews before restarting, or we can get duplicate operations
     
     PREVIEW_DEBUG(@"%s %p, item %@", __PRETTY_FUNCTION__, self, [_item shortDescription]);
     
@@ -382,8 +411,10 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     
     OBFinishPortingLater("If we get called twice before previews finish loading, we'll load them twice. Would be nice to check our running operations too.");
     
-    for (OUIDocumentStoreFileItem *fileItem in previewedFileItems) {
-        OBASSERT([fileItem isKindOfClass:[OUIDocumentStoreFileItem class]]);
+    NSMutableArray *loadedPreviews = nil;
+    
+    for (OFSDocumentStoreFileItem *fileItem in previewedFileItems) {
+        OBASSERT([fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
         
         OUIDocumentPreview *suitablePreview = [existingPreviews first:^(id obj){
             OUIDocumentPreview *preview = obj;
@@ -391,13 +422,9 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
             if (preview.superseded)
                 return NO;
             
-            if (preview.fileItem != fileItem)
+            // The fileURL should contain the date and landscape-ness of the preview.
+            if (OFNOTEQUAL(preview.fileURL, fileItem.fileURL))
                 return NO;
-            
-            if (preview.landscape ^ _landscape) {
-                PREVIEW_DEBUG(@"  new preview needed -- existing is wrong orientation (wanted %s)", _landscape ? "landscape" : "portrait");
-                return NO;
-            }
             
             // Keep using the old preview until the new version of a file is down downloading
             if (fileItem.isDownloaded && [preview.date compare:fileItem.date] == NSOrderedAscending) {
@@ -408,41 +435,40 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
         }];
         
         if (suitablePreview == nil) {
-            PREVIEW_DEBUG(@"  starting op for %@", [_item shortDescription]);
-            
-            // Load the preview in the background.
-            if (!_previewLoadOperations)
-                _previewLoadOperations = [[NSMutableArray alloc] init];
+            PREVIEW_DEBUG(@"  loading op for %@", [_item shortDescription]);
             
             Class documentClass = [[OUISingleDocumentAppController controller] documentClassForURL:fileItem.fileURL];
+
+            if (!loadedPreviews)
+                loadedPreviews = [NSMutableArray array];
+            OUIDocumentPreview *preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:fileItem.fileURL date:fileItem.date withLandscape:_landscape];
             
-            OUIDocumentPreviewLoadOperation *operation = [[OUIDocumentPreviewLoadOperation alloc] initWithView:self documentClass:documentClass fileItem:fileItem landscape:_landscape];
-            [operation setQueuePriority:NSOperationQueuePriorityLow];
-            
-            [_previewLoadOperations addObject:operation];
-            [PreviewLoadOperationQueue addOperation:operation];
-            [operation release];
+            // Don't explode if the preview fails to load and there is no default.
+            if (preview)
+                [loadedPreviews addObject:preview];
         } else {
             PREVIEW_DEBUG(@"  already had suitable preview %@", [suitablePreview shortDescription]);
         }
     }
+    
+    if (loadedPreviews) {
+        OUIWithLayerAnimationsDisabled(![UIView areAnimationsEnabled] || (self.window == nil), ^{
+            for (OUIDocumentPreview *preview in loadedPreviews) {
+                PREVIEW_DEBUG(@"%s add preview:%@ view:%p current size:%@", __PRETTY_FUNCTION__, [preview shortDescription], self, NSStringFromCGSize(self.frame.size));
+                [_previewView addPreview:preview];
+            }
+            [_previewView layoutIfNeeded];
+        });
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:OUIDocumentPickerItemViewPreviewsDidLoadNotification object:self userInfo:nil];
+    }
 }
 
-- (void)stopLoadingPreviewsAndDiscardCurrentPreviews:(BOOL)discardPreviews;
+- (void)discardCurrentPreviews;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    if (_previewLoadOperations) {
-        PREVIEW_DEBUG(@"%s", __PRETTY_FUNCTION__);
-    
-        for (OUIDocumentPreviewLoadOperation *operation in _previewLoadOperations)
-            [operation cancel];
-        [_previewLoadOperations release];
-        _previewLoadOperations = nil;
-    }
-    
-    if (discardPreviews)
-        [_previewView discardPreviews];
+    [_previewView discardPreviews];
 }
 
 - (void)previewsUpdated;
@@ -452,8 +478,12 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     for (OUIDocumentPreview *preview in _previewView.previews)
         preview.superseded = YES;
     
-    [self stopLoadingPreviewsAndDiscardCurrentPreviews:NO];
-    [self startLoadingPreviews];
+    [self loadPreviews];
+}
+
+- (NSArray *)loadedPreviews;
+{
+    return [NSArray arrayWithArray:_previewView.previews];
 }
 
 - (OUIDocumentPreview *)currentPreview;
@@ -463,63 +493,26 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     return [previews lastObject];
 }
 
-- (void)previewLoadOperation:(OUIDocumentPreviewLoadOperation *)operation loadedPreview:(OUIDocumentPreview *)preview;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(preview); // should be a default, at least
-    
-    if (!_previewLoadOperations || [_previewLoadOperations indexOfObjectIdenticalTo:operation] == NSNotFound) {
-        // Operation that was started and then cancelled too late so that it actually fired.
-        return;
-    }
-
-    PREVIEW_DEBUG(@"%s add preview:%@ view:%p current size:%@", __PRETTY_FUNCTION__, [preview shortDescription], self, NSStringFromCGSize(self.frame.size));
-
-    // Don't explode if the preview fails to load and there is no default.
-    if (preview) {
-        // If our previewed items changed, then we should have cancelled our existing load operations
-        OBASSERT([[self previewedFileItems] member:preview.fileItem] == preview.fileItem);
-        
-        [_previewView addPreview:preview];
-    }
-    
-    [_previewLoadOperations removeObject:operation];
-    if ([_previewLoadOperations count] == 0) {
-        [_previewLoadOperations release];
-        _previewLoadOperations = nil;
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:OUIDocumentPickerItemViewPreviewsDidLoadNotification object:self];
-    }
-    
-    // If the preview was a placeholder, start generating a real preview.
-    if (preview.type == OUIDocumentPreviewTypePlaceholder) {
-        OBFinishPortingLater("If we got a zero-length preview file, we shouldn't do this. Need to know why the preview is a placeholder so we avoid spinning.");
-        
-        // Fake a content change to regenerate a preview
-        [_item.documentStore _fileItemContentsChanged:preview.fileItem];
-    }
-}
-
 #pragma mark -
 #pragma mark NSObject (NSKeyValueObserving)
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
 {
     if (context == &ItemContext) {
-        if (OFISEQUAL(keyPath, OUIDocumentStoreItemNameBinding))
+        if (OFISEQUAL(keyPath, OFSDocumentStoreItemNameBinding))
             [self _nameChanged];
-        else if (OFISEQUAL(keyPath, OUIDocumentStoreItemDateBinding))
+        else if (OFISEQUAL(keyPath, OFSDocumentStoreItemDateBinding))
             [self _dateChanged];
-        else if (OFISEQUAL(keyPath, OUIDocumentStoreItemReadyBinding)) {
+        else if (OFISEQUAL(keyPath, OFSDocumentStoreItemReadyBinding)) {
             if (self.window)
-                [self startLoadingPreviews];
-        } else if (OFISEQUAL(keyPath, OUIDocumentStoreItemHasUnresolvedConflictsBinding) ||
-                 OFISEQUAL(keyPath, OUIDocumentStoreItemIsDownloadedBinding) ||
-                 OFISEQUAL(keyPath, OUIDocumentStoreItemIsDownloadingBinding) ||
-                 OFISEQUAL(keyPath, OUIDocumentStoreItemIsUploadedBinding) ||
-                 OFISEQUAL(keyPath, OUIDocumentStoreItemIsUploadingBinding) ||
-                 OFISEQUAL(keyPath, OUIDocumentStoreItemPercentDownloadedBinding) ||
-                 OFISEQUAL(keyPath, OUIDocumentStoreItemPercentUploadedBinding)) {
+                [self loadPreviews];
+        } else if (OFISEQUAL(keyPath, OFSDocumentStoreItemHasUnresolvedConflictsBinding) ||
+                 OFISEQUAL(keyPath, OFSDocumentStoreItemIsDownloadedBinding) ||
+                 OFISEQUAL(keyPath, OFSDocumentStoreItemIsDownloadingBinding) ||
+                 OFISEQUAL(keyPath, OFSDocumentStoreItemIsUploadedBinding) ||
+                 OFISEQUAL(keyPath, OFSDocumentStoreItemIsUploadingBinding) ||
+                 OFISEQUAL(keyPath, OFSDocumentStoreItemPercentDownloadedBinding) ||
+                 OFISEQUAL(keyPath, OFSDocumentStoreItemPercentUploadedBinding)) {
             [self _updateStatus];
         }
         else
@@ -586,6 +579,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
         showProgress = NO;
     }
     
+    _previewView.downloading = _item.isDownloading;
     _previewView.showsProgress = showProgress;
     _previewView.progress = percent / 100;
 }

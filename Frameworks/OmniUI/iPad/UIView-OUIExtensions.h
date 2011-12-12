@@ -14,6 +14,7 @@
 
 @interface UIView (OUIExtensions)
 
+- (UIImage *)snapshotImageWithSize:(CGSize)imageSize;
 - (UIImage *)snapshotImageWithScale:(CGFloat)scale;
 - (UIImage *)snapshotImage;
 
@@ -55,9 +56,14 @@ extern void OUIViewLayoutShadowEdges(UIView *self, NSArray *shadowEdges, BOOL fl
 } while (0)
 
 #ifdef NS_BLOCKS_AVAILABLE
-extern void OUIWithAnimationsDisabled(BOOL disabled, void (^actions)(void));
 
+// Fiddles the UIView animation enabledness
+extern void OUIWithAnimationsDisabled(BOOL disabled, void (^actions)(void));
 extern void OUIWithoutAnimating(void (^actions)(void));
+
+// Fiddles the CALayer animation enabledness
+extern void OUIWithoutLayersAnimating(void (^actions)(void));
+extern void OUIWithLayerAnimationsDisabled(BOOL disabled, void (^actions)(void));
 
 // Need a better name for this. This checks if +[UIView areAnimationsEnabled]. If not, then it performs the block inside a CATransation that disables implicit animations.
 // Useful for when a setter on your UI view adjusts animatable properties on its layer.

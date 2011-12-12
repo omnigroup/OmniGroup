@@ -11,7 +11,7 @@
 
 extern NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification;
 
-@class OUIDocumentStoreItem;
+@class OFSDocumentStoreItem;
 
 typedef enum {
     OUIDocumentPickerItemViewNoneDraggingState,
@@ -25,9 +25,9 @@ typedef enum {
 @interface OUIDocumentPickerItemView : UIView
 
 @property(assign,nonatomic) BOOL landscape;
-@property(retain,nonatomic) OUIDocumentStoreItem *item; // either a file or group
+@property(retain,nonatomic) OFSDocumentStoreItem *item; // either a file or group
 
-@property(readonly,nonatomic,getter=isLoadingPreviews) BOOL loadingPreviews;
+@property(assign,nonatomic) BOOL animatingRotationChange;
 
 @property(assign,nonatomic) OUIDocumentPickerItemViewDraggingState draggingState;
 

@@ -8,28 +8,15 @@
 // $Id$
 
 #import <UIKit/UIViewController.h>
+#import <OmniUI/OUISyncTypes.h>
 
-enum {
-    OUIMobileMeSync,
-    OUIWebDAVSync,
-    OUIiTunesSync,
-    OUINumberSyncChoices,
-    
-    OUIOmniSync, /* still in beta */
-}; 
-typedef NSUInteger OUISyncType;
 
-@interface OUISyncMenuController : UIViewController <UIPopoverControllerDelegate, UIActionSheetDelegate>
-{
-@private
-    UIPopoverController *_menuPopoverController;
-    UINavigationController *_menuNavigationController;
-    BOOL _isExporting;
-}
+@interface OUISyncMenuController : UIViewController
 
 + (void)displayInSheet;
 
 - (void)showMenuFromBarItem:(UIBarButtonItem *)barItem;
 
 @property (nonatomic, assign) BOOL isExporting;
+
 @end

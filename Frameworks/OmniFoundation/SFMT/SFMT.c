@@ -659,3 +659,12 @@ void init_by_array(SFMTState *state, const uint32_t *init_key, int key_length) {
     period_certification(state);
     initialized = 1;
 }
+
+// OmniFoundation
+#undef sfmt
+#undef psfmt32
+#undef psfmt64
+#undef idx
+#undef initialized
+#undef parity
+

@@ -513,6 +513,7 @@ static void _writeString(NSString *str)
     OBASSERT(CATransform3DIsAffine(GET_VALUE(transform)));
     OBASSERT(CATransform3DIsAffine(GET_VALUE(sublayerTransform)));
     
+    
     DEBUG_RENDER(@"  render %@ %@ anim:%d", self.name, [self shortDescription], useAnimatedValues);
     CGContextSaveGState(ctx);
     {
@@ -529,10 +530,42 @@ static void _writeString(NSString *str)
             CGContextClip(ctx);
             DEBUG_RENDER(@"  mask to bounds");
         }
+        
         CGColorRef backgroundColor = GET_VALUE(backgroundColor);
         CGColorRef borderColor = GET_VALUE(borderColor);
-        
-        if ((self.borderWidth && borderColor) || backgroundColor) {
+        if ([self isKindOfClass:[CAShapeLayer class]]) {
+#define SHAPE_LAYER_GET_VALUE(x) (((CAShapeLayer *)self).x)
+
+            OBASSERT(!useAnimatedValues);
+            OBASSERT(SHAPE_LAYER_GET_VALUE(cornerRadius) == 0.0);
+            OBASSERT([SHAPE_LAYER_GET_VALUE(lineCap) isEqualToString:kCALineCapButt]);
+            OBASSERT([SHAPE_LAYER_GET_VALUE(lineJoin) isEqualToString:kCALineJoinMiter]);
+            OBASSERT(SHAPE_LAYER_GET_VALUE(lineDashPhase) == 0.0);
+            OBASSERT(SHAPE_LAYER_GET_VALUE(lineDashPattern) == nil);
+            
+            CGColorRef fillColor = SHAPE_LAYER_GET_VALUE(fillColor);
+            CGColorRef strokeColor = SHAPE_LAYER_GET_VALUE(strokeColor);
+            CGFloat lineWidth = SHAPE_LAYER_GET_VALUE(lineWidth);
+            CGPathRef path = SHAPE_LAYER_GET_VALUE(path);
+            
+            if (path != NULL)
+                path = CGPathCreateCopy(path);
+            else 
+                path = CGPathCreateWithRect(localBounds, NULL);
+
+            if (fillColor != NULL) {
+                CGContextAddPath(ctx, path);
+                CGContextSetFillColorWithColor(ctx, fillColor);
+                CGContextFillPath(ctx);
+            }
+            if (strokeColor != NULL) {
+                CGContextAddPath(ctx, path);
+                CGContextSetStrokeColorWithColor(ctx, strokeColor);
+                CGContextSetLineWidth(ctx, lineWidth);
+                CGContextStrokePath(ctx);
+            }
+            CGPathRelease(path);
+        } else if ((self.borderWidth && borderColor) || backgroundColor) {
 #if DEBUG_RENDER_ON
             {
                 CGRect clip = CGContextGetClipBoundingBox(ctx);

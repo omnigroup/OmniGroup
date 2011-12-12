@@ -7,7 +7,7 @@
 
 #import "OUIDocumentConflictResolutionTableViewCell.h"
 
-#import <OmniUI/OUIDocumentStoreFileItem.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 #import <OmniQuartz/OQColor.h>
 #import <OmniQuartz/OQDrawing.h>
@@ -78,7 +78,7 @@ RCS_ID("$Id$");
     _hostNameLabel.text = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Modified on %@", @"OmniUI", OMNI_BUNDLE, @"table view cell title for file conflict resolution"), _fileVersion.localizedNameOfSavingComputer];
     
     OBASSERT(_modificationDateLabel);
-    _modificationDateLabel.text = [OUIDocumentStoreFileItem displayStringForDate:_fileVersion.modificationDate];
+    _modificationDateLabel.text = [OFSDocumentStoreFileItem displayStringForDate:_fileVersion.modificationDate];
 }
 
 #pragma mark -

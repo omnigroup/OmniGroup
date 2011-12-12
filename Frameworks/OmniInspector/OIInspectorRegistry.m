@@ -965,7 +965,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
                     [(id <OIInspectableController>)target addInspectedObjects:inspectionSet];
                 }
             }
-            return YES;
+            return YES; // continue searching
         };
         
         if (!addInspectedObjects(target)) {
@@ -983,8 +983,11 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     registryFlags.isInspectionQueued = NO;
 
     // Don't calculate inspection set if it would be pointless
-    if (onlyIfVisible && ![self hasVisibleInspector])
+    if (onlyIfVisible && ![self hasVisibleInspector]) {
+        [inspectionSet release];
+        inspectionSet = nil;
         return;
+    }
     
     [self _getInspectedObjects];
     if (updateInspectors)

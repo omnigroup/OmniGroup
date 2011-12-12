@@ -36,6 +36,12 @@ RCS_ID("$Id$");
     [(UITableView *)self.view reloadData];
 }
 
+// for subclasses
+- (NSString *)localizedNameForFileName:(NSString *)fileName;
+{
+    return fileName;
+}
+
 #pragma mark -
 #pragma mark Private
 - (BOOL)_canOpenFile:(OFSFileInfo *)fileInfo;
@@ -61,7 +67,11 @@ RCS_ID("$Id$");
     }
     
     OFSFileInfo *fileInfo = [_files objectAtIndex:indexPath.row];
-    cell.textLabel.text = [[fileInfo name] stringByDeletingPathExtension];
+    NSString *localizedFileName = [self localizedNameForFileName:[[fileInfo name] stringByDeletingPathExtension]];
+    if (!localizedFileName)
+        localizedFileName = [fileInfo name];
+    
+    cell.textLabel.text = localizedFileName;
     cell.accessoryType = (![self _canOpenFile:fileInfo] && [fileInfo isDirectory]) ? UITableViewCellAccessoryDisclosureIndicator : UITableViewCellAccessoryNone;
     
     BOOL canOpenFile = ([fileInfo isDirectory] || [self _canOpenFile:fileInfo]) && [fileInfo exists];

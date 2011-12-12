@@ -7,10 +7,10 @@
 
 #import <OmniUI/OUIDocumentPickerGroupItemView.h>
 
+#import <OmniFileStore/OFSDocumentStoreGroupItem.h>
 #import <OmniUI/OUIDocumentPreviewView.h>
 
 #import "OUIDocumentPickerItemView-Internal.h"
-#import "OUIDocumentStoreGroupItem.h"
 
 RCS_ID("$Id$");
 
@@ -49,19 +49,19 @@ static unsigned GroupItemContext;
 - (void)startObservingItem:(id)item;
 {
     [super startObservingItem:item];
-    [item addObserver:self forKeyPath:OUIDocumentStoreGroupItemFileItemsBinding options:0 context:&GroupItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreGroupItemFileItemsBinding options:0 context:&GroupItemContext];
 }
 
 - (void)stopObservingItem:(id)item;
 {
     [super stopObservingItem:item];
-    [item removeObserver:self forKeyPath:OUIDocumentStoreGroupItemFileItemsBinding context:&GroupItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreGroupItemFileItemsBinding context:&GroupItemContext];
 }
 
 - (NSSet *)previewedFileItems;
 {
-    OUIDocumentStoreGroupItem *item = (OUIDocumentStoreGroupItem *)self.item;
-    OBASSERT(!item || [item isKindOfClass:[OUIDocumentStoreGroupItem class]]);
+    OFSDocumentStoreGroupItem *item = (OFSDocumentStoreGroupItem *)self.item;
+    OBASSERT(!item || [item isKindOfClass:[OFSDocumentStoreGroupItem class]]);
     return item.fileItems;
 }
 
@@ -71,7 +71,7 @@ static unsigned GroupItemContext;
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
 {
     if (context == &GroupItemContext) {
-        if (OFISEQUAL(keyPath, OUIDocumentStoreGroupItemFileItemsBinding))
+        if (OFISEQUAL(keyPath, OFSDocumentStoreGroupItemFileItemsBinding))
             [self previewedFileItemsChanged];
         else
             OBASSERT_NOT_REACHED("Unknown KVO keyPath");

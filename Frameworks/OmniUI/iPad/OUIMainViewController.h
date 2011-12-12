@@ -31,7 +31,8 @@ typedef void (^OUIMainViewControllerGetAnimationRegion)(UIView **outView, CGRect
 - (void)setInnerViewController:(UIViewController *)viewController animated:(BOOL)animated
                     fromRegion:(OUIMainViewControllerGetAnimationRegion)fromRegion
                       toRegion:(OUIMainViewControllerGetAnimationRegion)toRegion
-              transitionAction:(void (^)(void))transitionAction;
+              transitionAction:(void (^)(void))transitionAction
+              completionAction:(void (^)(void))completionAction;
 - (void)setInnerViewController:(UIViewController *)viewController animated:(BOOL)animated fromView:(UIView *)fromView toView:(UIView *)toView;
 
 @property(nonatomic,assign) BOOL resizesToAvoidKeyboard;

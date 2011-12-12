@@ -7,10 +7,11 @@
 
 #import "OUIDocumentConflictResolutionViewController.h"
 
+#import <OmniFileStore/OFSShared_Prefix.h>
+#import <OmniFileStore/OFSDocumentStore.h>
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIGradientView.h>
-#import <OmniUI/OUIDocumentStore.h>
 
 #import "OUIDocumentConflictResolutionTableViewCell.h"
 #import "OUIParameters.h"
@@ -38,7 +39,7 @@ RCS_ID("$Id$");
 
 @implementation OUIDocumentConflictResolutionViewController
 {
-    OUIDocumentStore *_documentStore;
+    OFSDocumentStore *_documentStore;
     NSArray *_fileVersions;
     
     NSOperationQueue *_notificationQueue;
@@ -81,7 +82,7 @@ RCS_ID("$Id$");
     [_tableView reloadData];
 }
 
-- initWithDocumentStore:(OUIDocumentStore *)documentStore fileURL:(NSURL *)fileURL delegate:(id <OUIDocumentConflictResolutionViewControllerDelegate>)delegate;
+- initWithDocumentStore:(OFSDocumentStore *)documentStore fileURL:(NSURL *)fileURL delegate:(id <OUIDocumentConflictResolutionViewControllerDelegate>)delegate;
 {
     if (!(self = [super initWithNibName:@"OUIDocumentConflictResolutionViewController" bundle:nil]))
         return nil;
@@ -365,7 +366,7 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
         
         NSURL *originalContainerURL = [_fileURL URLByDeletingLastPathComponent];
         
-        OBFinishPortingLater("Make sure that the either our counter parameter is a minimum allowed version to use and increment it each time, or that OUIDocumentStore rescans each time through");
+        OBFinishPortingLater("Make sure that the either our counter parameter is a minimum allowed version to use and increment it each time, or that OFSDocumentStore rescans each time through");
 #ifdef OMNI_ASSERTIONS_ON
         NSMutableSet *usedFileNames = [NSMutableSet set];
 #endif

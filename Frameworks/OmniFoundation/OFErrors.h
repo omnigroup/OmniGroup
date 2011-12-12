@@ -39,6 +39,7 @@ enum {
     OFXMLSignatureValidationError,    // Signature information could not be parsed
     OFXMLSignatureValidationFailure,  // Signature information could be parsed, but did not validate
     OFASN1Error,                      // Problem parsing an ASN.1 BER or DER encoded value
+    OFKeyNotAvailable,
 };
 
 

@@ -10,6 +10,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniBase/macros.h>
 #import <OmniFoundation/OmniFoundation.h>
 
 #import "OAApplication.h"
@@ -364,7 +365,7 @@ static IMP originalTableColumnWithIdentifier;
             largestCellWidth = cellSize.width;
     }
     
-    largestCellWidth = MIN([tableColumn maxWidth], MAX([tableColumn minWidth], largestCellWidth));
+    largestCellWidth = CLAMP(largestCellWidth, [tableColumn minWidth], [tableColumn maxWidth]);
     [tableColumn setWidth:largestCellWidth];
 }
 

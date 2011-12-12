@@ -56,9 +56,9 @@ RCS_ID("$Id$");
     return [[[TextViewController alloc] init] autorelease];
 }
 
-+ (UIImage *)placeholderPreviewImageForFileItem:(OUIDocumentStoreFileItem *)item landscape:(BOOL)landscape;
++ (NSString *)placeholderPreviewImageNameForFileURL:(NSURL *)fileURL landscape:(BOOL)landscape;
 {
-    return [UIImage imageNamed:@"DocumentPreviewPlaceholder.png"];
+    return @"DocumentPreviewPlaceholder.png";
 }
 
 + (BOOL)writePreviewsForDocument:(OUIDocument *)document error:(NSError **)outError;

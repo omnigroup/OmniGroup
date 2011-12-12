@@ -225,6 +225,24 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     return version;
 }
 
+#pragma mark -
+#pragma mark Activation / Deactivation
+
++ (void)applicationDidBecomeActive:(NSNotification *)notification;
+{
+    if (OSURunTimeHasHandledApplicationTermination())
+        OSURunTimeApplicationActivated();
+}
+
++ (void)applicationDidResignActive:(NSNotification *)notification;
+{
+    NSBundle *bundle = [NSBundle mainBundle];
+    OSURunTimeApplicationDeactivated([bundle bundleIdentifier], OSUBundleVersionForBundle(bundle), NO/*crashed*/);
+}
+
+#pragma mark -
+#pragma mark Start / Terminate
+
 + (void)startWithTarget:(id <OSUCheckerTarget>)target;
 {
 #ifdef OSU_DEBUG
@@ -278,7 +296,15 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_significantTimeChangeNotification:) name:UIApplicationSignificantTimeChangeNotification object:nil];
 #endif
     
-    OSURunTimeApplicationStarted();
+    OSURunTimeApplicationActivated();
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidResignActive:) name:UIApplicationWillResignActiveNotification object:nil];
+#else
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:NSApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidResignActive:) name:NSApplicationDidResignActiveNotification object:nil];
+#endif
     
     if ([target respondsToSelector:@selector(checkerDidStart:)])
         [target checkerDidStart:checker];
@@ -302,7 +328,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     [checker setTarget:nil];
     
     NSBundle *bundle = [NSBundle mainBundle];
-    OSURunTimeApplicationTerminated([bundle bundleIdentifier], OSUBundleVersionForBundle(bundle), NO/*crashed*/);
+    OSURunTimeApplicationDeactivated([bundle bundleIdentifier], OSUBundleVersionForBundle(bundle), NO/*crashed*/);
 }
 
 - (OFVersionNumber *)applicationMarketingVersion
@@ -439,6 +465,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 {
     [self shutdown];
 }
+
 #endif
 
 #pragma mark -

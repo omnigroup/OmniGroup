@@ -102,6 +102,8 @@ RCS_ID("$Id$");
 
 - (void)viewDidUnload;
 {
+    [super viewDidUnload];
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     [_connectingView release];
@@ -136,6 +138,7 @@ RCS_ID("$Id$");
 
 - (void)viewDidDisappear:(BOOL)animated;
 {
+    [super viewDidDisappear:animated];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:OUICertificateTrustUpdated object:nil];
 }
 

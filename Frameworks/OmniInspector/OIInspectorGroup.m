@@ -764,6 +764,10 @@ This method iterates over the inspectors controllers in each visible inspector g
 
 - (void)_showGroup;
 {
+    OBASSERT([_inspectors count]);
+    if (![_inspectors count])
+        return;
+    
     NSUInteger index, count = [_inspectors count];
 
     _inspectorGroupFlags.isShowing = YES;

@@ -8,14 +8,15 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
+#import <OmniFileStore/OFSDocumentStoreDelegate.h>
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniUI/OUISpecialURLActionSheet.h>
-#import <OmniUI/OUIDocumentStoreDelegate.h>
 #import <OmniUI/OUIFeatures.h>
 #import <OmniUI/OUIActionSheet.h>
+#import <OmniUI/OUIMenuController.h>
 
 @class UIBarButtonItem;
-@class OUIAppMenuController, OUIDocumentPicker, OUISyncMenuController;
+@class OUIDocumentPicker;
 
 #if OUI_SOFTWARE_UPDATE_CHECK
 @class OUISoftwareUpdateController;
@@ -24,26 +25,7 @@
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) file:__FILE__ line:__LINE__]
 
-@interface OUIAppController : OFObject <UIApplicationDelegate, MFMailComposeViewControllerDelegate, OUIDocumentStoreDelegate>
-{
-@private
-    OUIDocumentPicker *_documentPicker;
-    UIBarButtonItem *_appMenuBarItem;
-    OUIAppMenuController *_appMenuController;
-    OUISyncMenuController *_syncMenuController;
-    
-    UIActivityIndicatorView *_activityIndicator;
-    UIView *_eventBlockingView;
-    
-#if OUI_SOFTWARE_UPDATE_CHECK
-    OUISoftwareUpdateController *_softwareUpdateController;
-#endif
-    
-    dispatch_once_t _roleByFileTypeOnce;
-    NSDictionary *_roleByFileType;
-    
-    NSArray *_editableFileTypes;
-}
+@interface OUIAppController : OFObject <UIApplicationDelegate, MFMailComposeViewControllerDelegate, OFSDocumentStoreDelegate, OUIMenuControllerDelegate>
 
 + (id)controller;
 
@@ -95,14 +77,23 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application;
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
 
-// Optional OUIDocumentStoreDelegate that we implement
-- (NSArray *)documentStoreEditableDocumentTypes:(OUIDocumentStore *)store;
+// Optional OFSDocumentStoreDelegate that we implement
+- (NSArray *)documentStoreEditableDocumentTypes:(OFSDocumentStore *)store;
 
 // Subclass responsibility
 @property(readonly) UIViewController *topViewController;
 @property(readonly) NSString *applicationName;
 
 - (void)resetKeychain;
+@end
+
+
+// These currently must all be implemented somewhere in the responder chain.
+@interface NSObject (OUIAppMenuTarget)
+- (void)showOnlineHelp:(id)sender;
+- (void)sendFeedback:(id)sender;
+- (void)showReleaseNotes:(id)sender;
+- (void)runTests:(id)sender;
 @end
 
 extern BOOL OUIShouldLogPerformanceMetrics;

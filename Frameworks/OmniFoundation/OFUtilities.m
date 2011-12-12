@@ -363,20 +363,59 @@ NSString *OFHostName(void)
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     return @"localhost";
 #else
-    static NSString *cachedHostname = nil;
 
-    if (cachedHostname == nil) {
-        char hostnameBuffer[MAXHOSTNAMELEN + 1];
-        if (gethostname(hostnameBuffer, MAXHOSTNAMELEN) == 0) {
-            hostnameBuffer[MAXHOSTNAMELEN] = '\0'; // Ensure that the C string is NUL terminated
-            cachedHostname = [[NSString alloc] initWithCString:hostnameBuffer encoding:NSASCIIStringEncoding];
-        } else {
-            cachedHostname = @"localhost";
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    NSString *hostname = nil;
+    SCDynamicStoreRef dynamicStore = SCDynamicStoreCreate(kCFAllocatorDefault, (CFStringRef)OMNI_BUNDLE_IDENTIFIER, NULL, NULL);
+    CFStringRef hostnameKey = SCDynamicStoreKeyCreateHostNames(kCFAllocatorDefault);
+    
+    if (dynamicStore && hostnameKey) {
+        CFPropertyListRef value = SCDynamicStoreCopyValue(dynamicStore, hostnameKey);
+        if (value) {
+            OBASSERT(CFGetTypeID(value) == CFDictionaryGetTypeID());
+            if (CFGetTypeID(value) == CFDictionaryGetTypeID()) {
+                NSDictionary *dictionary = (NSDictionary *)value;
+                hostname = [[[dictionary objectForKey:@"HostName"] copy] autorelease];
+                if (!hostname) {
+                    hostname = [dictionary objectForKey:@"LocalHostName"];
+                    if (hostname) {
+                        OBASSERT(![hostname hasSuffix:@".local"]);
+                        hostname = [NSString stringWithFormat:@"%@.local", hostname];
+                    }
+                }
+            }       
+        
+            CFRelease(value);
         }
     }
+    
+    if (dynamicStore) CFRelease(dynamicStore);
+    if (hostnameKey) CFRelease(hostnameKey);
 
-    return cachedHostname;
+    return hostname ? hostname : @"localhost";
+#else
+    NSString *hostname = nil;
+    char hostnameBuffer[MAXHOSTNAMELEN + 1];
+    if (gethostname(hostnameBuffer, MAXHOSTNAMELEN) == 0) {
+        hostnameBuffer[MAXHOSTNAMELEN] = '\0'; // Ensure that the C string is NUL terminated
+        hostname = [[NSString alloc] initWithCString:hostnameBuffer encoding:NSASCIIStringEncoding];
+    } else {
+        hostname = @"localhost";
+    }
+
+    return hostname;
 #endif
+#endif
+}
+
+NSString *OFLocalHostName(void)
+{
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    CFStringRef localHostName = SCDynamicStoreCopyLocalHostName(NULL);
+    return [(id)CFMakeCollectable(localHostName) autorelease];
+#else
+    return 
+#endif    
 }
 
 static inline char _toHex(unsigned int i)

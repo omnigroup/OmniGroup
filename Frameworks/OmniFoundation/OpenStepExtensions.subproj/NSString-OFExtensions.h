@@ -73,6 +73,15 @@ Currently the only way to create strings with deferred bytes/characters is using
 - (NSString *)stringByRemovingReturns;
 - (NSString *)stringByRemovingRegularExpression:(OFRegularExpression *)regularExpression;
 
+enum {
+    OFStringNormlizationOptionLowercase = 0x01,
+    OFStringNormlizationOptionUppercase = 0x02,
+    OFStringNormilzationOptionStripCombiningMarks = 0x04,
+    OFStringNormilzationOptionStripPunctuation = 0x08
+};
+
+- (NSString *)stringByNormalizingWithOptions:(NSUInteger)options locale:(NSLocale *)locale;
+
 - (NSString *)stringByNormalizingPath;
     // Normalizes a path like /a/b/c/../../d to /a/d.
     // Note: Does not work properly on Windows at the moment because it is hardcoded to use forward slashes rather than using the native path separator.

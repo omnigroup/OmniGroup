@@ -18,6 +18,8 @@
 
 @property (nonatomic, retain) NSArray *files;
 
+- (NSString *)localizedNameForFileName:(NSString *)fileName;
+
 // Private
 - (BOOL)_canOpenFile:(OFSFileInfo *)fileInfo;
 

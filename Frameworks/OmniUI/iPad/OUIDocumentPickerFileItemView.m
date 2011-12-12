@@ -8,8 +8,8 @@
 #import <OmniUI/OUIDocumentPickerFileItemView.h>
 
 #import <OmniUI/OUIDocumentPreviewView.h>
-#import <OmniUI/OUIDocumentStoreFileItem.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniFoundation/OFBinding.h>
 
 #import "OUIDocumentPickerItemView-Internal.h"
@@ -85,19 +85,19 @@ static unsigned FileItemContext;
 - (void)startObservingItem:(id)item;
 {
     [super startObservingItem:item];
-    [item addObserver:self forKeyPath:OUIDocumentStoreFileItemSelectedBinding options:0 context:&FileItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreFileItemSelectedBinding options:0 context:&FileItemContext];
 }
 
 - (void)stopObservingItem:(id)item;
 {
     [super stopObservingItem:item];
-    [item removeObserver:self forKeyPath:OUIDocumentStoreFileItemSelectedBinding context:&FileItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreFileItemSelectedBinding context:&FileItemContext];
 }
 
 - (NSSet *)previewedFileItems;
 {
-    OUIDocumentStoreFileItem *fileItem = (OUIDocumentStoreFileItem *)self.item;
-    OBASSERT(!fileItem || [fileItem isKindOfClass:[OUIDocumentStoreFileItem class]]);
+    OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)self.item;
+    OBASSERT(!fileItem || [fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
 
     if (fileItem)
         return [NSSet setWithObject:fileItem];
@@ -121,7 +121,7 @@ static unsigned FileItemContext;
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
 {
     if (context == &FileItemContext) {
-        if (OFISEQUAL(keyPath, OUIDocumentStoreFileItemSelectedBinding))
+        if (OFISEQUAL(keyPath, OFSDocumentStoreFileItemSelectedBinding))
             [self _selectedChanged];
         else
             OBASSERT_NOT_REACHED("Unknown KVO keyPath");
@@ -135,8 +135,8 @@ static unsigned FileItemContext;
 
 - (void)_selectedChanged;
 {
-    OUIDocumentStoreFileItem *fileItem = (OUIDocumentStoreFileItem *)self.item;
-    OBASSERT(!fileItem || [fileItem isKindOfClass:[OUIDocumentStoreFileItem class]]);
+    OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)self.item;
+    OBASSERT(!fileItem || [fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
     
     OUIDocumentPreviewView *previewView = self.previewView;
     

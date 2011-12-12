@@ -18,7 +18,7 @@
 
 /* OFDigestionContext protocol
  
- The caller should call methods either in the seqience verifyInit/processBuffer/verifyFinal or generateInit/processBuffer/generateFinal.
+ The caller should call methods either in the sequence verifyInit/processBuffer/verifyFinal or generateInit/processBuffer/generateFinal.
  
  (For the simple message-digest classes in this file there isn't much of a difference; verify simply generates a digest and compares it to the supplied digest. For some algorithms there is a difference.)
  
@@ -38,6 +38,7 @@
 @interface OFCCDigestContext : NSObject <OFDigestionContext>
 {
     NSData *result;
+    unsigned int outputLength;
 }
 
 - (BOOL)verifyInit:(NSError **)outError;
@@ -49,6 +50,8 @@
 - (BOOL)processBuffer:(const uint8_t *)buffer length:(size_t)length error:(NSError **)outError;
 
 @property (readonly, nonatomic) NSData *result;
+@property (readwrite, nonatomic) unsigned int outputLength;
++ (unsigned int)outputLength;
 
 @end
 

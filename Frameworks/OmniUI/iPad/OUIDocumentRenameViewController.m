@@ -7,7 +7,9 @@
 
 #import "OUIDocumentRenameViewController.h"
 
-#import <OmniFileStore/OFSFileInfo.h>
+#import <OmniFoundation/OFUTI.h>
+#import <OmniFileStore/OFSDocumentStore.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniUI/OUIAnimationSequence.h>
 #import <OmniUI/OUIDocumentPickerDelegate.h>
@@ -15,8 +17,6 @@
 #import <OmniUI/OUIDocumentPickerFileItemView.h>
 #import <OmniUI/OUIDocumentPreview.h>
 #import <OmniUI/OUIDocumentPreviewView.h>
-#import <OmniUI/OUIDocumentStore.h>
-#import <OmniUI/OUIDocumentStoreFileItem.h>
 #import <OmniUI/OUISingleDocumentAppController.h>
 #import <OmniUI/OUIMainViewController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
@@ -44,7 +44,7 @@ RCS_ID("$Id$");
 @implementation OUIDocumentRenameViewController
 {
     OUIDocumentPicker *_picker;
-    OUIDocumentStoreFileItem *_fileItem;
+    OFSDocumentStoreFileItem *_fileItem;
     
     NSOperationQueue *_filePresenterQueue;
     NSURL *_presentedFileURL; // Remember the original file URL in case there is an incoming rename; we want to be able to respond to NSFilePresenter -presentedItemURL correctly in this case.
@@ -53,11 +53,12 @@ RCS_ID("$Id$");
     BOOL _keyboardVisible;
     BOOL _registeredForNotifications;
     BOOL _renameStarted;
+    BOOL _hasAttemptedRename;
     OUIDocumentPreviewView *_previewView;
     UITextField *_nameTextField;
 }
 
-- initWithDocumentPicker:(OUIDocumentPicker *)picker fileItem:(OUIDocumentStoreFileItem *)fileItem;
+- initWithDocumentPicker:(OUIDocumentPicker *)picker fileItem:(OFSDocumentStoreFileItem *)fileItem;
 {
     OBPRECONDITION(picker);
     OBPRECONDITION(fileItem);
@@ -140,11 +141,11 @@ RCS_ID("$Id$");
     view.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
     
     _previewView = [[OUIDocumentPreviewView alloc] initWithFrame:CGRectZero];
+    _previewView.landscape = UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
     
     // Pre-populate the preview to avoid reloading it.
     {
         OUIDocumentPickerFileItemView *fileItemView = [_picker.activeScrollView fileItemViewForFileItem:_fileItem];
-        OBASSERT(!fileItemView.loadingPreviews);
         
         NSArray *previews = fileItemView.previewView.previews;
         OBASSERT([previews count] == 1);
@@ -309,6 +310,13 @@ RCS_ID("$Id$");
     _nameTextField.frame = editingFrame;
 }
 
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;
+{
+    [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
+    
+    _previewView.landscape = UIInterfaceOrientationIsLandscape(toInterfaceOrientation);
+}
+
 #pragma mark -
 #pragma mark UITextField delegate
 
@@ -332,24 +340,26 @@ RCS_ID("$Id$");
     }
 }
 
-- (void)textFieldDidEndEditing:(UITextField *)textField;
+- (BOOL)textFieldShouldEndEditing:(UITextField *)textField;
 {
-    RENAME_DEBUG(@"textFieldDidEndEditing:");
-    
-    OBFinishPortingLater("Actually do some renaming and make sure that we scroll the renamed file item to visible (or check whether iWork bothers)");
-    
-    
+    RENAME_DEBUG(@"textFieldShouldEndEditing:");
+
+    // We need an extra BOOL here to let us know we should really go ahead and end the rename.
+    // The rename operation doesn't call our completion block until the file presenter queue has performed the -presentedItemDidMoveToURL:, but in that case the file item will have only updated its _filePresenterURL (which must update immediately and which can be accessed from any thead) and has only enqueued a main thread operation to update its _displayedFileURL (which is what sources the -name method below). The ordering of operations will still be correct since our completion block will still get called on the main thread after the display name is updated, but we can't tell that here.
     NSString *newName = [textField text];
-    if ([NSString isEmptyString:newName] || [newName isEqualToString:_fileItem.name]) {
+    if (_hasAttemptedRename || [NSString isEmptyString:newName] || [newName isEqualToString:_fileItem.name]) {
+        RENAME_DEBUG(@"Bail on empty/same name");
         OBFinishPortingLater("What should we do about disabling rotation while renaming? Probably nothing and disableRotationDisplay should be removed.");
         //_activeScrollView.disableRotationDisplay = NO;
         //_activeScrollView.disableScroll = NO;
         [self _performEndingAnimationIfNeeded];
-        return;
+        return YES;
     }
     
+    // Otherwise, start the rename and return NO for now, but remember that we've tried already.
+    _hasAttemptedRename = YES;
     NSURL *currentURL = _fileItem.fileURL;
-    NSString *uti = [OFSFileInfo UTIForURL:currentURL];
+    NSString *uti = OFUTIForFileExtensionPreferringNative([currentURL pathExtension], NO);
     OBASSERT(uti);
     
     // We have no open documents at this point, so we don't need to synchronize with UIDocument autosaving via -performAsynchronousFileAccessUsingBlock:. We do want to prevent other documents from opening, though.
@@ -365,8 +375,17 @@ RCS_ID("$Id$");
             NSError *err = [[NSError alloc] initWithDomain:NSURLErrorDomain code:0 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:msg, NSLocalizedDescriptionKey, msg, NSLocalizedFailureReasonErrorKey, nil]];
             OUI_PRESENT_ERROR(err);
             [err release];
+            
+            OBFinishPortingLater("Need a way to abort the rename anyway");
+        } else {
+            [_picker _didPerformRename];
         }
+        
+        // Stop the rename attempt either way.
+        [self.view endEditing:YES];
     }];
+    
+    return NO;
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
@@ -451,6 +470,8 @@ RCS_ID("$Id$");
 
 - (void)_cancel;
 {
+    RENAME_DEBUG(@"_cancel");
+
     // Clear the text field (which will be interpreted as leaving the name alone) and pretend the Done button was tapped
     _nameTextField.text = @"";
     [self _done:nil];
@@ -466,7 +487,6 @@ RCS_ID("$Id$");
     [_nameTextField resignFirstResponder];
 }
 
-// We'll need to factor out a public -stopRenaming for use by OUIDocumentPicker when it wants to abort a rename (incoming iCloud change involving the file item).
 - (void)_startRenameStateChange:(BOOL)renaming withDuration:(NSTimeInterval)animationInterval curve:(UIViewAnimationCurve)animationCurve;
 {
     RENAME_DEBUG(@"_startRenameStateChange:%d withDuration:%f curve:%d", renaming, animationInterval, animationCurve);
@@ -486,6 +506,8 @@ RCS_ID("$Id$");
 
 - (void)_finishRenameAfterHidingKeyboard;
 {
+    RENAME_DEBUG(@"_finishRenameAfterHidingKeyboard");
+
     OBPRECONDITION(_keyboardVisible == NO);
     
     OBASSERT(_isRegisteredAsFilePresenter);

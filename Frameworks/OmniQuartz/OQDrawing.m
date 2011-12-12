@@ -78,6 +78,40 @@ void OQAppendRectWithRoundedTop(CGContextRef ctx, CGRect rect, CGFloat radius, B
         CGContextClosePath(ctx);
 }
 
+void OQAppendRectWithRoundedTopLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom)
+{
+    CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
+    CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
+    CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
+    CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
+    
+    CGContextMoveToPoint(ctx, bottomRight.x, bottomRight.y);
+    CGContextAddLineToPoint(ctx, topRight.x, topRight.y);
+    CGContextAddLineToPoint(ctx, topLeft.x + radius, topLeft.y);
+    CGContextAddArcToPoint(ctx, topLeft.x, topLeft.y, topLeft.x, topLeft.y + radius, radius);
+    CGContextAddLineToPoint(ctx, bottomLeft.x, bottomLeft.y);
+    
+    if (closeBottom)
+        CGContextClosePath(ctx);
+}
+
+void OQAppendRectWithRoundedTopRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom)
+{
+    CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
+    CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
+    CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
+    CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
+    
+    CGContextMoveToPoint(ctx, bottomLeft.x, bottomLeft.y);
+    CGContextAddLineToPoint(ctx, topLeft.x, topLeft.y);
+    CGContextAddLineToPoint(ctx, topRight.x - radius, topRight.y);
+    CGContextAddArcToPoint(ctx, topRight.x, topRight.y, topRight.x, topRight.y + radius, radius);
+    CGContextAddLineToPoint(ctx, bottomRight.x, bottomRight.y);
+    
+    if (closeBottom)
+        CGContextClosePath(ctx);
+}
+
 void OQAppendRectWithRoundedBottom(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop)
 {
     CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
@@ -88,6 +122,40 @@ void OQAppendRectWithRoundedBottom(CGContextRef ctx, CGRect rect, CGFloat radius
     CGContextMoveToPoint(ctx, topLeft.x, topLeft.y);
     CGContextAddLineToPoint(ctx, bottomLeft.x, bottomLeft.y - radius);
     CGContextAddArcToPoint(ctx, bottomLeft.x, bottomLeft.y, bottomLeft.x + radius, bottomLeft.y, radius);
+    CGContextAddLineToPoint(ctx, bottomRight.x - radius, bottomRight.y);
+    CGContextAddArcToPoint(ctx, bottomRight.x, bottomRight.y, bottomRight.x, bottomRight.y - radius, radius);
+    CGContextAddLineToPoint(ctx, topRight.x, topRight.y);
+    
+    if (closeTop)
+        CGContextClosePath(ctx);
+}
+
+void OQAppendRectWithRoundedBottomLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop)
+{
+    CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
+    CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
+    CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
+    CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
+    
+    CGContextMoveToPoint(ctx, topLeft.x, topLeft.y);
+    CGContextAddLineToPoint(ctx, bottomLeft.x, bottomLeft.y - radius);
+    CGContextAddArcToPoint(ctx, bottomLeft.x, bottomLeft.y, bottomLeft.x + radius, bottomLeft.y, radius);
+    CGContextAddLineToPoint(ctx, bottomRight.x, bottomRight.y);
+    CGContextAddLineToPoint(ctx, topRight.x, topRight.y);
+    
+    if (closeTop)
+        CGContextClosePath(ctx);
+}
+
+void OQAppendRectWithRoundedBottomRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop)
+{
+    CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
+    CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
+    CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
+    CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
+    
+    CGContextMoveToPoint(ctx, topLeft.x, topLeft.y);
+    CGContextAddLineToPoint(ctx, bottomLeft.x, bottomLeft.y);
     CGContextAddLineToPoint(ctx, bottomRight.x - radius, bottomRight.y);
     CGContextAddArcToPoint(ctx, bottomRight.x, bottomRight.y, bottomRight.x, bottomRight.y - radius, radius);
     CGContextAddLineToPoint(ctx, topRight.x, topRight.y);

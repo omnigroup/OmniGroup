@@ -1,4 +1,4 @@
-// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniBase/macros.h>
 #import <OmniFoundation/OmniFoundation.h>
 
 #import <OmniAppKit/NSFont-OAExtensions.h>
@@ -301,7 +302,7 @@ static unsigned int scrollEntriesCount = 0;
         scrollPosition.y = (NSMinY(documentVisibleRect) - NSMinY(bounds)) / (NSHeight(bounds) - NSHeight(documentVisibleRect));
         if (![self isFlipped])
             scrollPosition.y = 1.0f - scrollPosition.y;
-        scrollPosition.y = MIN(MAX(scrollPosition.y, 0.0f), 1.0f);
+        scrollPosition.y = CLAMP(scrollPosition.y, 0, 1);
     }
 
     // Horizontal position
@@ -309,7 +310,7 @@ static unsigned int scrollEntriesCount = 0;
         scrollPosition.x = 0.0f; // We're completely visible
     } else {
         scrollPosition.x = (NSMinX(documentVisibleRect) - NSMinX(bounds)) / (NSWidth(bounds) - NSWidth(documentVisibleRect));
-        scrollPosition.x = MIN(MAX(scrollPosition.x, 0.0f), 1.0f);
+        scrollPosition.x = CLAMP(scrollPosition.x, 0, 1);
     }
 
     return scrollPosition;
@@ -357,7 +358,7 @@ static unsigned int scrollEntriesCount = 0;
     CGFloat fraction = (NSMinY(visibleRect) - NSMinY(bounds)) / (NSHeight(bounds) - NSHeight(visibleRect));
     if (![self isFlipped])
         fraction = 1.0f - fraction;
-    return MIN(MAX(fraction, 0.0f), 1.0f);
+    return CLAMP(fraction, 0, 1);
 }
 
 - (void)setFraction:(CGFloat)fraction;
@@ -367,7 +368,7 @@ static unsigned int scrollEntriesCount = 0;
     if (NSHeight(desiredRect) >= NSHeight(bounds))
         return; // We're entirely visible
 
-    fraction = MIN(MAX(fraction, 0.0f), 1.0f);
+    fraction = CLAMP(fraction, 0, 1);
     if (![self isFlipped])
         fraction = 1.0f - fraction;
     desiredRect.origin.y = NSMinY(bounds) + fraction * (NSHeight(bounds) - NSHeight(desiredRect));

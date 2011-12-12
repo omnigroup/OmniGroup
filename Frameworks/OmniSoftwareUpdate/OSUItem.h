@@ -89,7 +89,7 @@ enum OSUTrackComparison {
 - (void)setAvailablityBasedOnSystemVersion:(OFVersionNumber *)systemVersion;
 @property (readonly,nonatomic) BOOL isIgnored;
 @property (readwrite,nonatomic) BOOL superseded;
-- (BOOL)supersedes:(OSUItem *)peer;
+- (BOOL)supersedesItem:(OSUItem *)peer;
 
 - (NSString *)verifyFile:(NSString *)local;
 

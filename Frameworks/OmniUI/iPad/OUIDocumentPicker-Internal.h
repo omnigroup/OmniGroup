@@ -12,6 +12,6 @@
 @interface OUIDocumentPicker (/*Internal*/)
 @property(readonly,nonatomic) OUIMainViewController *mainViewController;
 
-- (void)_previewsUpdatedForFileItem:(OUIDocumentStoreFileItem *)fileItem;
+- (void)_previewsUpdatedForFileItem:(OFSDocumentStoreFileItem *)fileItem;
 
 @end

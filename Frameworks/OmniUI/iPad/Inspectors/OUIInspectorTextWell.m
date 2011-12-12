@@ -317,6 +317,8 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
 @synthesize spellCheckingType = _spellCheckingType;
 #endif
 @synthesize keyboardType = _keyboardType;
+@synthesize inputView = _inputView;
+@synthesize inputAccessoryView = _inputAccessoryView;
 
 - (CTTextAlignment)effectiveTextAlignment
 {
@@ -496,6 +498,10 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     return layout;
 }
 
+// Hacky constants...
+static const CGFloat kEditorInsetX = 3; // Give room to avoid clipping the insertion point at the extreme left/right edge.
+static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little extra since the insertion point goes above/below the glyphs.
+
 - (void)drawRect:(CGRect)rect;
 {
     [super drawRect:rect]; // The background
@@ -518,9 +524,18 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
             if (!self.editing) {
                 // Center the text across the whole bounds, even if we have a nav arrow chopping off part of it. But if we are right or left aligned just use the contents rect (since we are probably trying to avoid a left/right view.
                 CGRect drawRect;
-                if (_textAlignment == UITextAlignmentCenter)
-                    drawRect = self.bounds;
-                else
+                if (_textAlignment == UITextAlignmentCenter) {
+                    CGFloat leftRightInset = kEditorInsetX;
+                    
+                    // The left/right views are currently expected to have built-in padding.
+                    if (self.leftView) 
+                        leftRightInset = CGRectGetMaxX(self.leftView.frame);
+                    if (self.rightView) 
+                        leftRightInset = MAX(leftRightInset, CGRectGetMaxX(self.frame) - CGRectGetMinX(self.rightView.frame));
+                    
+                    UIEdgeInsets insets = UIEdgeInsetsMake(0, leftRightInset, kEditorInsetY, leftRightInset); // TODO: Assumes zero scale
+                    drawRect = UIEdgeInsetsInsetRect(self.bounds, insets);
+                } else
                     drawRect = self.contentsRect;
                 [self _drawAttributedString:[self _defaultStyleFormattedText] inRect:drawRect];
             }
@@ -813,6 +828,8 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
     editor.keyboardType = self.keyboardType;
     editor.opaque = NO;
     editor.backgroundColor = nil;
+    editor.inputView = self.inputView;
+    editor.inputAccessoryView = self.inputAccessoryView;
     
     editor.attributedText = [self _attributedStringForEditingString:_text];
     
@@ -830,10 +847,6 @@ static OUIInspectorTextWellLayout _layout(OUIInspectorTextWell *self)
 {
     OBPRECONDITION(_editor);
     
-    // Hacky constants...
-    static const CGFloat kEditorInsetX = 3; // Give room to avoid clipping the insertion point at the extreme left/right edge.
-    static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little extra since the insertion point goes above/below the glyphs.
-
     // Position/size our containing clip view
     {
         CGRect valueRect;

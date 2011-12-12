@@ -8,14 +8,11 @@
 // $Id$
 
 #import <UIKit/UIBarButtonItem.h>
+#import "OUIBarButtonItemBackgroundType.h"
 
-typedef enum {
-    OUIAppearanceTypeClear
-} OUIAppearanceType;
 
 @interface UIBarButtonItem (OUITheming)
 
-- (void)applyAppearance:(OUIAppearanceType)appearance;
-
+- (void)applyAppearanceWithBackgroundType:(OUIBarButtonItemBackgroundType)backgroundType;
 
 @end

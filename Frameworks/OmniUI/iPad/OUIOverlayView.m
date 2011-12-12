@@ -439,7 +439,7 @@ RCS_ID("$Id$");
     CGFloat horizontalCenter = CGRectGetMidX(superBounds);
     CGFloat left = horizontalCenter - suggestedSize.width/2;
     
-    CGFloat top = OUIOverlayViewDistanceFromTopEdge;
+    CGFloat top = CGRectGetMinY(superBounds) + OUIOverlayViewDistanceFromTopEdge;
     switch (alignment) {
         case OUIOverlayViewAlignmentMidCenter:
             top = CGRectGetMidY(superBounds);

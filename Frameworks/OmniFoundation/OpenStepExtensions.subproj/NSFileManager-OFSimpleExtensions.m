@@ -185,6 +185,9 @@ static void _appendPropertiesOfTreeAtURL(NSFileManager *self, NSMutableString *s
         return;
     }
     
+    OBASSERT(sizeof(ino_t) == sizeof(unsigned long long));
+    [str appendFormat:@"% 7d  ", [[attributes objectForKey:NSFileSystemFileNumber] unsignedLongLongValue]];
+    
     BOOL isDirectory = NO;
     NSString *fileType = [attributes fileType];
     if ([fileType isEqualToString:NSFileTypeDirectory]) {

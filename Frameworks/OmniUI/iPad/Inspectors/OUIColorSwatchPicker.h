@@ -38,7 +38,7 @@ extern NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey;
 @property(copy,nonatomic) NSArray *colors;
 @property(retain,nonatomic) OQColor *color; // Simple cover for 'colors' when using a single color
 
-@property(assign,nonatomic) id target; // We'll send -changeColor: to this when swatches are tapped
+@property(assign,nonatomic) id target; // We'll send -changeColor: (or to changeDetails: if showsSingleSwatch or if tap is on navigation swatch) to this when swatches are tapped
 
 @property(assign,nonatomic) BOOL showsSingleSwatch; // If set, the entire view area shows just the first color and navigation to the detail is enabled.
 @property(assign,nonatomic) BOOL wraps; // If set, and there are more than one row's worth of colors, wrap to following rows

@@ -9,19 +9,44 @@
 
 RCS_ID("$Id$");
 
+OBDEPRECATED_METHOD(-applyAppearance:); // -> -applyAppearanceWithBackgroundType:
+
 @implementation UIBarButtonItem (OUITheming)
 
-- (void)applyAppearance:(OUIAppearanceType)appearance;
+- (void)applyAppearanceWithBackgroundType:(OUIBarButtonItemBackgroundType)backgroundType;
 {
+    if (backgroundType == OUIBarButtonItemBackgroundTypeNone) {
+        // No need to do anything, just return.
+        return;
+    }
+    
     NSString *backgroundNormalImageName = nil;
     NSString *backgroundHighlightedImageName = nil;
     
-    switch (appearance) {
-        case OUIAppearanceTypeClear:
+    switch (backgroundType) {
+        case OUIBarButtonItemBackgroundTypeNone:
+            OBASSERT_NOT_REACHED("No need to do anything. Should have returned above.");
+            break;
+        case OUIBarButtonItemBackgroundTypeBlack:
+            backgroundNormalImageName = @"OUIToolbarButton-Black-Normal.png";
+            backgroundHighlightedImageName = @"OUIToolbarButton-Black-Highlighted.png";
+            break;
+        case OUIBarButtonItemBackgroundTypeRed:
+            backgroundNormalImageName = @"OUIToolbarButton-Red-Normal.png";
+            backgroundHighlightedImageName = @"OUIToolbarButton-Red-Highlighted.png";
+            break;
+        case OUIBarButtonItemBackgroundTypeBlue:
+            backgroundNormalImageName = @"OUIToolbarButton-Blue-Normal.png";
+            backgroundHighlightedImageName = @"OUIToolbarButton-Blue-Highlighted.png";
+            break;
+        case OUIBarButtonItemBackgroundTypeClear:
             backgroundNormalImageName = @"OUIToolbarButton-Clear-Normal.png";
             backgroundHighlightedImageName = @"OUIToolbarButton-Clear-Highlighted.png";
             break;
-            
+        case OUIBarButtonItemBackgroundTypeBack: // Left-pointing arrow.
+            backgroundNormalImageName = @"OUIToolbarBackButton-Black-Normal.png";
+            backgroundHighlightedImageName = @"OUIToolbarBackButton-Black-Highlighted.png";
+            break;
         default:
             OBASSERT_NOT_REACHED("Should always have a valid OUIThemeBackgroundType.");
             break;
@@ -30,18 +55,36 @@ RCS_ID("$Id$");
     OBASSERT_NOTNULL(backgroundNormalImageName);
     OBASSERT_NOTNULL(backgroundHighlightedImageName);
     
-    UIEdgeInsets standardInsets = (UIEdgeInsets){
+    // Set standard inset.
+    UIEdgeInsets imageInset = (UIEdgeInsets){
         .top = 0,
         .right = 6,
         .bottom = 0,
         .left = 6
     };
     
-    UIImage *resizeableBackgroundNormalImage = [[UIImage imageNamed:backgroundNormalImageName] resizableImageWithCapInsets:standardInsets];
-    UIImage *resizeableBackgroundHighlightedImage = [[UIImage imageNamed:backgroundHighlightedImageName] resizableImageWithCapInsets:standardInsets];
+    // Set custom inset as needed.
+    if (backgroundType == OUIBarButtonItemBackgroundTypeBack) {
+        imageInset = (UIEdgeInsets){
+            .top = 0,
+            .right = 6,
+            .bottom = 0,
+            .left = 14
+        };
+    }
     
-    [self setBackgroundImage:resizeableBackgroundNormalImage forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-    [self setBackgroundImage:resizeableBackgroundHighlightedImage forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+    // Build the resizable background images.
+    UIImage *resizeableBackgroundNormalImage = [[UIImage imageNamed:backgroundNormalImageName] resizableImageWithCapInsets:imageInset];
+    UIImage *resizeableBackgroundHighlightedImage = [[UIImage imageNamed:backgroundHighlightedImageName] resizableImageWithCapInsets:imageInset];
+    
+    if (backgroundType == OUIBarButtonItemBackgroundTypeBack) {
+        [self setBackButtonBackgroundImage:resizeableBackgroundNormalImage forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+        [self setBackButtonBackgroundImage:resizeableBackgroundHighlightedImage forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+    }
+    else {
+        [self setBackgroundImage:resizeableBackgroundNormalImage forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+        [self setBackgroundImage:resizeableBackgroundHighlightedImage forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+    }
 }
 
 @end

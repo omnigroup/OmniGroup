@@ -2045,6 +2045,13 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
     [super willMoveToSuperview:newSuperview];
 }
 
+// iOS 5 Undo/Redo keyboard button looks through first responders for an undo manager. Returning nil here means that the button does nothing. No support for text undos yet:
+// <bug:///75879> (First edit into a text cell doesn't create an undo group / Undo not supported inside rows) and <bug:///64547> (Set undoManager of undo bar button items to the text editor's undo manager when it is active)
+- (NSUndoManager *)undoManager;
+{
+    return nil;
+}
+ 
 #pragma mark UIResponderStandardEditActions
 
 - (void)copy:(id)sender;
@@ -2499,6 +2506,9 @@ enum {
 {
     return NO;
 }
+
+@synthesize inputView = _inputView;
+@synthesize inputAccessoryView = _inputAccessoryView;
 
 #pragma mark -
 #pragma mark UITextInput protocol
@@ -4694,7 +4704,7 @@ void OUITextLayoutDrawExtraRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFram
     
     for(;;) {
         UIView *parentView = [aView superview];
-        if (!parentView || [parentView isKindOfClass:[UIWindow class]])
+        if (!parentView || [parentView isKindOfClass:[UIWindow class]] || [parentView isKindOfClass:[UIScrollView class]])
             return aView;
         aView = parentView;
     }

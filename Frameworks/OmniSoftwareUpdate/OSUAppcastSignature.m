@@ -7,7 +7,6 @@
 
 #import "OSUAppcastSignature.h"
 
-#import <OmniFoundation/OFCDSAUtilities.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/OFXMLSignature.h>
@@ -37,7 +36,6 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-#if OF_ENABLE_CDSA
 static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *where)
 {
     NSDictionary *userInfo;
@@ -49,14 +47,12 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
     
     [errorInfo setObject:[NSError errorWithDomain:NSOSStatusErrorDomain code:code userInfo:userInfo] forKey:NSUnderlyingErrorKey];
 }
-#endif
 
-#if OF_ENABLE_CDSA
 // API
-- (OFCSSMKey *)getPublicKey:(xmlNode *)keyInfo algorithm:(CSSM_ALGORITHMS)keytype error:(NSError **)outError;
+- (SecKeyRef)copySecKeyForMethod:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError;
 {
-    if (![trustedKeys count])
-        return [super getPublicKey:keyInfo algorithm:keytype error:outError];
+    if (![trustedKeys count] || op != OFXMLSignature_Verify)
+        return [super copySecKeyForMethod:signatureMethod keyInfo:keyInfo operation:op error:outError];
     
     CFMutableArrayRef auxCertificates = CFArrayCreateMutableCopy(kCFAllocatorDefault, 0, (CFArrayRef)trustedKeys);
     NSMutableDictionary *errorInfo = [NSMutableDictionary dictionary];
@@ -95,7 +91,7 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
     
     // Now we have some certificates and a trust policy, we can check whether we trust any of the certificates.
     
-    OFCSSMKey *resultKey = nil;
+    SecKeyRef resultKey = NULL;
     
     CFIndex auxCertCount = CFArrayGetCount(auxCertificates);
     OFForEachObject([testCertificates objectEnumerator], id, certReference) {
@@ -155,14 +151,16 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
                 // Keep going, in case another key works
             } else {
                 errorInfo = nil; // Suppress overwrite of *outError
-                resultKey = [OFCSSMKey keyFromKeyRef:trustedSigningKey error:outError];
-                CFRelease(trustedSigningKey);
+                resultKey = trustedSigningKey;
             }
         } else {
             [errorInfo setObject:OFSummarizeTrustResult(evaluationContext) forKey:@"trustResult"];
         }
         
         CFRelease(evaluationContext);
+        
+        if (resultKey)
+            break;
     }
     
     if (!resultKey) {
@@ -179,13 +177,11 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
 
     return resultKey;
 }
-#endif
 
 @end
 
 NSArray *OSUGetSignedPortionsOfAppcast(NSData *xmlData, NSString *pemFile, NSError **outError)
 {
-#if OF_ENABLE_CDSA
     NSArray *trusts = OFReadCertificatesFromFile(pemFile, kSecFormatPEMSequence, outError);
     if (!trusts)
         return nil;
@@ -259,8 +255,5 @@ NSArray *OSUGetSignedPortionsOfAppcast(NSData *xmlData, NSString *pemFile, NSErr
         return nil;
     } else 
         return results;
-#else
-    OBFinishPorting;
-#endif
 }
 

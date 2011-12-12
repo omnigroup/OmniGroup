@@ -18,10 +18,10 @@ RCS_ID("$Id$");
         return nil;
     
     _capturedTouches = [[NSMutableArray alloc] init];
-    _numberOfTouchesRequired = 1;
+    _likelihood = 0;
     
     // Defaults
-    _likelihood = 0;
+    _numberOfTouchesRequired = 1;
     
     return self;
 }

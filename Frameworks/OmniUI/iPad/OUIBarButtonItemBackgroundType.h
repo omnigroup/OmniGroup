@@ -13,6 +13,6 @@ typedef enum {
     OUIBarButtonItemBackgroundTypeRed,
     OUIBarButtonItemBackgroundTypeBlue,
     OUIBarButtonItemBackgroundTypeClear,
-    OUIBarButtonItemBackgroundTypeBack, // Left-pointing arrow.
+    OUIBarButtonItemBackgroundTypeBack, // Left-pointing arrow. When used with -applyAppearanceWithBackgroundType: it expects the UIBarButtonItem will be set as the back button and not just added as a normal bar button item.
 } OUIBarButtonItemBackgroundType;
 

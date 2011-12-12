@@ -8,28 +8,14 @@
 // $Id$
 
 #import <OmniUI/OUIAppController.h>
+
+#import <OmniFileStore/OFSDocumentStoreDelegate.h>
 #import <OmniUI/OUIUndoBarButtonItem.h>
-#import <OmniUI/OUIDocumentStoreDelegate.h>
+#import <OmniUI/OUIBarButtonItemBackgroundType.h>
 
-@class OUIDocumentStoreFileItem, OUIDocument, OUIMainViewController, OUIBarButtonItem;
-@class OUIShieldView;
+@class OFSDocumentStoreFileItem, OUIDocument, OUIMainViewController, OUIBarButtonItem;
 
-@interface OUISingleDocumentAppController : OUIAppController <UITextFieldDelegate, OUIUndoBarButtonItemTarget, OUIDocumentStoreDelegate>
-{
-@private
-    UIWindow *_window;
-    OUIMainViewController *_mainViewController;
-    
-    UIBarButtonItem *_closeDocumentBarButtonItem;
-    UITextField *_documentTitleTextField;
-    UIBarButtonItem *_documentTitleToolbarItem;
-    OUIUndoBarButtonItem *_undoBarButtonItem;
-    UIBarButtonItem *_infoBarButtonItem;
-    OUIDocument *_document;
-    
-    OUIShieldView *_shieldView;
-    BOOL _didFinishLaunching;
-}
+@interface OUISingleDocumentAppController : OUIAppController <UITextFieldDelegate, OUIUndoBarButtonItemTarget, OFSDocumentStoreDelegate>
 
 @property(nonatomic,retain) IBOutlet UIWindow *window;
 @property(nonatomic,retain) IBOutlet OUIMainViewController *mainViewController;
@@ -49,9 +35,12 @@
 // If overridden in sub-class, don't call super.
 - (CGFloat)titleTextFieldWidthForOrientation:(UIInterfaceOrientation)orientation;
 
+- (OUIBarButtonItemBackgroundType)defaultBarButtonBackgroundType;
+
 @property(readonly) OUIDocument *document;
 
 // Sample documents
+- (NSString *)sampleDocumentsDirectoryTitle;
 - (NSURL *)sampleDocumentsDirectoryURL;
 - (void)copySampleDocumentsToUserDocuments;
 - (NSString *)localizedNameForSampleDocumentNamed:(NSString *)documentName;
@@ -60,7 +49,12 @@
 // UIApplicationDelegate methods we implement (see OUIAppController too)
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
+- (void)applicationWillEnterForeground:(UIApplication *)application;
 - (void)applicationDidEnterBackground:(UIApplication *)application;
+
+// OUIDocumentPickerDelegate methods we implement
+- (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(OFSDocumentStoreFileItem *)fileItem;
+- (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(OFSDocumentStoreFileItem *)fileItem;
 
 // Subclass responsibility
 - (Class)documentClassForURL:(NSURL *)url;

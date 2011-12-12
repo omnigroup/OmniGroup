@@ -9,6 +9,7 @@
 
 #import <OmniFoundation/OFNull.h> // For OFISEQUAL()
 #import <OmniBase/OBObject.h>
+#import <OmniBase/macros.h>
 
 //#define DEBUG_KVO 1
 

@@ -11,6 +11,7 @@
 #import <OmniFileStore/OFSDAVFileManager.h>
 #import <OmniFileStore/Errors.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
+#import <OmniFoundation/NSString-OFPathExtensions.h>
 
 #import "OFSFileOperation.h"
 #import "OFSFileInfo.h"
@@ -23,21 +24,7 @@ NSInteger OFSFileManagerDebug = 0;
 // If the file name ends in a number, we are likely dealing with a duplicate.
 void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outName, NSUInteger *outCounter)
 {
-    NSString *name = originalName;
-    NSUInteger counter = 0;
-    NSRange notNumberRange = [name rangeOfCharacterFromSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet] options:NSBackwardsSearch];
-    
-    // Has at least one digit at the end and isn't all digits?
-    if (notNumberRange.length > 0 && NSMaxRange(notNumberRange) < [name length]) {
-        // Is there a space before the digits?
-        if ([name characterAtIndex:NSMaxRange(notNumberRange) - 1] == ' ') {
-            counter = [[name substringFromIndex:NSMaxRange(notNumberRange)] intValue];
-            name = [name substringToIndex:NSMaxRange(notNumberRange) - 1];
-        }
-    }
-    
-    *outName = name;
-    *outCounter = counter;
+    [originalName splitName:outName andCounter:outCounter];
 }
 
 @implementation OFSFileManager

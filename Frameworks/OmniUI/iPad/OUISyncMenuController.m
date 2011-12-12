@@ -10,11 +10,12 @@
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniFileStore/OFSDocumentStore.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
-#import <OmniUI/OUIDocumentStore.h>
-#import <OmniUI/OUIDocumentStoreFileItem.h>
+#import <OmniUI/UITableView-OUIExtensions.h>
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
@@ -24,6 +25,7 @@
 #import "OUIWebDAVSyncListController.h"
 #import "OUIWebDAVSetup.h"
 #import "OUIRestoreSampleDocumentListController.h"
+#import "OUISingleDocumentAppController.h"
 
 RCS_ID("$Id$")
 
@@ -31,7 +33,7 @@ RCS_ID("$Id$")
 static NSString * const ResetSampleDocumentReuseIdentifier = @"ResetSampleDocumentReuseIdentifier";
 static NSString * const ImportDocumentReuseIdentifier = @"ImportDocumentReuseIdentifier";
 
-@interface OUISyncMenuController (/*Private*/)
+@interface OUISyncMenuController (/*Private*/) <UIPopoverControllerDelegate, UIActionSheetDelegate, UITableViewDelegate, UITableViewDataSource>
 + (NSURL *)_urlFromPreference:(OFPreference *)preference;
 - (void)_discardMenu;
 @end
@@ -44,6 +46,11 @@ enum {
 };
 
 @implementation OUISyncMenuController
+{
+    UIPopoverController *_menuPopoverController;
+    UINavigationController *_menuNavigationController;
+    BOOL _isExporting;
+}
 
 + (void)displayInSheet;
 {
@@ -65,11 +72,6 @@ enum {
     [navigationController release];
 }
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
-{
-    return [super initWithNibName:@"OUISyncMenu" bundle:OMNI_BUNDLE];
-}
-
 - (void)dealloc;
 {
     [_menuNavigationController release];
@@ -85,7 +87,12 @@ enum {
         return;
     }
     
-    self.contentSizeForViewInPopover = CGSizeMake(320, 176); // Make sure we set this before creating our popover
+    UITableView *tableView = (UITableView *)self.view;
+    [tableView reloadData];
+    OUITableViewAdjustHeightToFitContents(tableView);
+    tableView.scrollEnabled = NO;
+    
+    self.contentSizeForViewInPopover = self.view.frame.size; // Make sure we set this before creating our popover
     
     if (!_menuNavigationController) {
         _menuNavigationController = [[UINavigationController alloc] initWithRootViewController:self];
@@ -98,11 +105,11 @@ enum {
     }
     
     [[OUIAppController controller] presentPopover:_menuPopoverController fromBarButtonItem:barItem permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
-    [(UITableView *)self.view reloadData];
 }
 
 #pragma mark -
 #pragma mark Sheet specific stuff
+
 - (void)cancel:(id)sender;
 {
     [self.navigationController dismissModalViewControllerAnimated:YES];
@@ -111,6 +118,15 @@ enum {
 
 #pragma mark -
 #pragma mark UIViewController subclass
+
+- (void)loadView;
+{
+    UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, 0) style:UITableViewStyleGrouped];
+    tableView.delegate = self;
+    tableView.dataSource = self;
+    self.view = tableView;
+    [tableView release];
+}
 
 - (void)viewDidLoad;
 {
@@ -169,7 +185,7 @@ enum {
     
     if (indexPath.section == ResetSampleDocumentSection) {
         reuseIdentifier = ResetSampleDocumentReuseIdentifier;
-        title = NSLocalizedStringFromTableInBundle(@"Restore Sample Document", @"OmniUI", OMNI_BUNDLE, @"Restore Sample Document Title");
+        title = [[OUISingleDocumentAppController controller] sampleDocumentsDirectoryTitle];
     }
     else {
         reuseIdentifier = ImportDocumentReuseIdentifier;
@@ -256,7 +272,7 @@ enum {
             case OUIiTunesSync:
             {
                 // iTunes only allows interaction with the top Documents directory 
-                previousConnectionLocation = [OUIDocumentStore userDocumentsDirectoryURL];
+                previousConnectionLocation = [OFSDocumentStore userDocumentsDirectoryURL];
                 previousConnectionUsername = @"local";   // OUIWebDAVConnection likes having a username so that it knows that it is setup correctly
                 break;
             }

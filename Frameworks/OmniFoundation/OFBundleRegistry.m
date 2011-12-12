@@ -501,6 +501,28 @@ static NSString *_normalizedPath(NSString *path)
     
     bundlePath = bundle ? [bundle bundlePath] : NSLocalizedStringFromTableInBundle(@"local configuration file", @"OmniFoundation", [OFBundleRegistry bundle], @"local bundle path readable string");
 
+    // To facilitate sharing default registrations between Mac frameworks and iOS apps that link them as static libraries (but don't get the Info.plist), we allow putting the shared defaults in *.defaults resources.
+    // We do this before the entries from the bundle infoDictionary so that the main app can override defaults from static libraries.
+    for (NSString *path in [bundle pathsForResourcesOfType:@"defaults" inDirectory:nil]) {
+        NSError *error = nil;
+        
+        CFPropertyListRef plist = OFCreatePropertyListFromFile((CFStringRef)path, kCFPropertyListImmutable, (CFErrorRef *)&error);
+        if (!plist) {
+            NSLog(@"Unable to parse %@ as a property list: %@", path, [error toPropertyList]);
+            [error release];
+            continue;
+        }
+        
+        if (![(id)plist isKindOfClass:[NSDictionary class]]) {
+            NSLog(@"Contents of %@ is not a dictionary.", path);
+            CFRelease(plist);
+            continue;
+        }
+        
+        [NSUserDefaults registerItemName:OFUserDefaultsRegistrationItemName bundle:bundle description:(NSDictionary *)plist];
+        CFRelease(plist);
+    }
+
     for (NSString *registrationClassName in registrationClassToOptionsDictionary) {
         NSDictionary *registrationDictionary = [registrationClassToOptionsDictionary objectForKey:registrationClassName];
         Class registrationClass = NSClassFromString(registrationClassName);
@@ -522,28 +544,7 @@ static NSString *_normalizedPath(NSString *path)
                 NSLog(@"+[%@ registerItemName:%@ bundle:%@ description:%@]: %@", [registrationClass description], [itemName description], [bundle description], [descriptionDictionary description], [exc reason]);
             };
         }
-    }
-    
-    // To facilitate sharing default registrations between Mac frameworks and iOS apps that link them as static libraries (but don't get the Info.plist), we allow putting the shared defaults in *.defaults resources.
-    for (NSString *path in [bundle pathsForResourcesOfType:@"defaults" inDirectory:nil]) {
-        NSError *error = nil;
-        
-        CFPropertyListRef plist = OFCreatePropertyListFromFile((CFStringRef)path, kCFPropertyListImmutable, (CFErrorRef *)&error);
-        if (!plist) {
-            NSLog(@"Unable to parse %@ as a property list: %@", path, [error toPropertyList]);
-            [error release];
-            continue;
-        }
-        
-        if (![(id)plist isKindOfClass:[NSDictionary class]]) {
-            NSLog(@"Contents of %@ is not a dictionary.", path);
-            CFRelease(plist);
-            continue;
-        }
-        
-        [NSUserDefaults registerItemName:OFUserDefaultsRegistrationItemName bundle:bundle description:(NSDictionary *)plist];
-        CFRelease(plist);
-    }
+    }    
 }
 
 + (void)registerBundles:(NSArray *)bundleDescriptions

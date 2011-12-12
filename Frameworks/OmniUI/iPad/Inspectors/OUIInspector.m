@@ -85,15 +85,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 {
     UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png"];
     OBASSERT(image);
-
-    // Noticed that the inspector image wasn't quite lined up with the buttons around it so I moved it down 2 px. Maybe this should have been done in the png?
     UIBarButtonItem *item = [[[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action] autorelease];
-    item.imageInsets = (UIEdgeInsets){
-        .top = 2,
-        .right = 0,
-        .bottom = -2,
-        .left = 0
-    };
     return item;
 }
 

@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/OAApplication.h>
+#import <OmniAppKit/OAVersion.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -357,7 +358,6 @@ BOOL OADebugTargetSelection = NO;
     if (![super applyToResponderChain:applier])
         return NO;
     
-    // <bug:///75437> (Revisit OATargetSelection in light of new Lion API). We might expect that we'll get the app delegate in applier via NSApplications supplementalTargetForAction:sender:, but we do not in 10.7.
     id delegate = (id)self.delegate;
     if (delegate)
         DEBUG_TARGET_SELECTION(@"---> checking OAApplication delegate ");
@@ -418,23 +418,23 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         DEBUG_TARGET_SELECTION(@" ... trying %@", [object shortDescription]);
         id responsible = [object responsibleTargetForAction:theAction sender:sender];
         
-        // <bug:///75437> (Revisit OATargetSelection in light of new Lion API). Only do this on 10.7:
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_10_7 >= MAC_OS_X_VERSION_MIN_REQUIRED
         // Use the supplementalTargetForAction mechanism that was introduced in 10.7 to look for delegates and other helper objects attached to responders, but still use our OATargetSelection approach of requiring objects to override responsibleTargetForAction if they wish to terminate the search.
-//        if (!responsible && [object isKindOfClass:[NSResponder class]]) {
-//            // Hrmm. Does the implementation of supplementalTargetForAction chase the responder chain if the delegate or controller is an NSResponder?
-//            responsible = [(NSResponder *)object supplementalTargetForAction:theAction sender:sender];
-//            if (responsible)
-//                DEBUG_TARGET_SELECTION(@"      ... got supplementalTarget: %@", [responsible shortDescription]);
-//            responsible = [responsible responsibleTargetForAction:theAction sender:sender];
-//        }
+        if (!responsible && [object isKindOfClass:[NSResponder class]]) {
+            responsible = [(NSResponder *)object supplementalTargetForAction:theAction sender:sender];
+            if (responsible)
+                DEBUG_TARGET_SELECTION(@"      ... got supplementalTarget: %@", [responsible shortDescription]);
+            responsible = [responsible responsibleTargetForAction:theAction sender:sender];
+        }
+#endif
         
         if (responsible) {
             // Someone claimed to be responsible for the action.  The sender will re-validate with any appropriate means and might still get refused, but we should stop iterating.
             DEBUG_TARGET_SELECTION(@"      ... got responsible target: %@", responsible);
             target = responsible;
-            return NO;
+            return NO; // stop the search
         }
-        return YES;
+        return YES; // continue searching
     };
     
     // The caller had a specific target in mind.  Start there and follow the responder chain.  The documentation states that if the target is non-nil, it is returned (which is silly since why would you call this method then?)
@@ -857,6 +857,78 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
     return [OFPreference preferenceForKey:identifier];
 }
 
+- (BOOL)_shouldFilterWindowFromOrderedWindows:(NSWindow *)window;
+{
+    static BOOL hasComputedSignatures = NO;
+    static NSData *fullScreenToolbarWindowSignature = nil;
+    static NSData *fullScreenBackdropWindowSignature = nil;
+
+    // We have to filter these windows by private classname. Since the private classname cannot appear in our App Store binary, we do it by sha1 hash.
+
+    if (!hasComputedSignatures) {
+        hasComputedSignatures = YES;
+    
+        unsigned char toolbarSignatureBytes[] = {0x69, 0x20, 0xef, 0xa7, 0x58, 0xa2, 0x8c, 0xc3, 0x20, 0xa1, 0xb8, 0xcd, 0x75, 0x46, 0x40, 0xfc, 0x05, 0xae, 0x61, 0x0a};
+        fullScreenToolbarWindowSignature = [[NSData alloc] initWithBytes:toolbarSignatureBytes length:sizeof(toolbarSignatureBytes) / sizeof(unsigned char)];
+
+        unsigned char backdropSignatureBytes[] = {0x35, 0xc2, 0x5e, 0x22, 0xd0, 0x4b, 0x59, 0x4a, 0xfe, 0xc7, 0xb2, 0x0c, 0xb5, 0x8d, 0x07, 0x4b, 0xee, 0x4a, 0x35, 0x52};
+        fullScreenBackdropWindowSignature = [[NSData alloc] initWithBytes:backdropSignatureBytes length:sizeof(backdropSignatureBytes) / sizeof(unsigned char)];
+
+#ifdef DEBUG
+        // Make sure we didn't botch the static sha1 signatures above
+        NSData *signature = nil;
+        
+        signature = [[@"NSToolbarFullScreenWindow" dataUsingEncoding:NSUTF8StringEncoding] sha1Signature];
+        OBASSERT([signature isEqualToData:fullScreenToolbarWindowSignature]);
+
+        signature = [[@"_NSFullScreenUnbufferedWindow" dataUsingEncoding:NSUTF8StringEncoding] sha1Signature];
+        OBASSERT([signature isEqualToData:fullScreenBackdropWindowSignature]);
+#endif
+    }
+
+    NSData *signature = [[NSStringFromClass([window class]) dataUsingEncoding:NSUTF8StringEncoding] sha1Signature];
+    
+    if ([signature isEqualToData:fullScreenToolbarWindowSignature])
+        return YES;
+
+    if ([signature isEqualToData:fullScreenBackdropWindowSignature])
+        return YES;
+        
+    return NO;
+}
+
+- (NSArray *)orderedWindows;
+{
+    NSArray *orderedWindows = [super orderedWindows];
+
+    if (NSAppKitVersionNumber >= OAAppKitVersionNumber10_7) {
+        // Workaround for rdar://problem/10262921
+        //
+        // In full-screen mode, the window's toolbar gets hosted in it's own window, and there is a full-screen backdrop window.
+        // These are returned as window 1 and window N.
+        // Both are unexpected, and uninteresting to scripters. 
+        // Worse, it breaks the idiom that the first window is the interesting one to target.
+        // Fixes <bug:///74072> (10.7 / Lion :  Full screened apps don't return the full screened window as window 1, breaking scripts [applescript])
+
+        NSMutableArray *filteredOrderedWindows = [NSMutableArray array];
+        NSEnumerator *enumerator = [orderedWindows objectEnumerator];
+        NSWindow *window = nil;
+        
+        while (nil != (window = [enumerator nextObject])) {
+            // Exclude NSToolbarFullScreenWindow and _NSFullScreenUnbufferedWindow
+            // We must test by hash of the classname so that we don't trigger SPI detection on the Mac App Store
+            if ([self _shouldFilterWindowFromOrderedWindows:window])
+                continue;
+                       
+            [filteredOrderedWindows addObject:window];
+        }
+        
+        orderedWindows = filteredOrderedWindows;
+    }
+
+    return orderedWindows;
+}
+
 #pragma mark -
 #pragma mark Private
 
@@ -931,6 +1003,8 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
 
 @end
 
+#pragma mark -
+#pragma mark OATargetSelection
 
 @implementation NSObject (OATargetSelection)
 
@@ -939,30 +1013,63 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
     return applier(self);
 }
 
+- (BOOL)_stubValidatorMethodJustForItsTypeSignature:(id)sender;
+{
+    return YES;
+}
+
+static BOOL _validates(id self, SEL validateSelector, id sender)
+{
+#ifdef DEBUG
+    static const char *expectedValidatorMethodType = NULL;
+    if (!expectedValidatorMethodType) {
+        expectedValidatorMethodType = method_getTypeEncoding(class_getInstanceMethod([NSObject class], @selector(_stubValidatorMethodJustForItsTypeSignature:)));
+    }
+#endif
+
+    Method validatorMethod = class_getInstanceMethod([self class], validateSelector);
+    if (!validatorMethod) {
+        OBASSERT_NOT_REACHED("validator method not implemented");
+        return NO;
+    }
+        
+#ifdef DEBUG
+    const char *validatorMethodType = method_getTypeEncoding(validatorMethod);
+    if(strcmp(validatorMethodType, expectedValidatorMethodType)) {
+        OBASSERT_NOT_REACHED("implemented validator method is of the wrong type");
+        return NO;
+    }
+#endif
+
+    IMP validatorImplementation = method_getImplementation(validatorMethod);
+    BOOL (*validator)(id self, SEL selector, id sender) = (typeof(validator))validatorImplementation;
+    return validator(self, validateSelector, sender);
+}
+
+static id _selfIfValidElseNil(id self, SEL validateSelector, id sender)
+{
+    if (_validates(self, validateSelector, sender))
+        return self;
+    else
+        return nil;
+}
+
 - (id)responsibleTargetForAction:(SEL)action sender:(id)sender;
 {
-//    DEBUG_TARGET_SELECTION(@"   ... can has %@ handle %@ from %@?", [self shortDescription], NSStringFromSelector(action), [sender shortDescription]);
-    
     if (![self respondsToSelector:action])
         return nil;
     
-    if ([sender isKindOfClass:[NSMenuItem class]] && [self respondsToSelector:@selector(validateMenuItem:)]) {
-        if (![self validateMenuItem:sender]) {
-            return nil;
-        }
-    } else if ([sender isKindOfClass:[NSToolbarItem class]] && [self respondsToSelector:@selector(validateToolbarItem:)]) {
-        if (![self validateToolbarItem:sender]) {
-            return nil;
-        }
-    } else if ([sender conformsToProtocol:@protocol(NSValidatedUserInterfaceItem)] && [self respondsToSelector:@selector(validateUserInterfaceItem:)]) {
-        OBASSERT([self conformsToProtocol:@protocol(NSUserInterfaceValidations)]); // or should we check for conformance...
-        if (![(id <NSUserInterfaceValidations>)self validateUserInterfaceItem:sender]) {
-            return nil;
-        }
-    }
-
-//    DEBUG_TARGET_SELECTION(@"%@ is responsible", [self shortDescription]);
+    SEL validateSpecificItemSelector = NULL;
+    if ([sender isKindOfClass:[NSMenuItem class]])
+        validateSpecificItemSelector = @selector(validateMenuItem:);
+    else if ([sender isKindOfClass:[NSToolbarItem class]])
+        validateSpecificItemSelector = @selector(validateToolbarItem:);
     
+    if (validateSpecificItemSelector != NULL)
+        return _selfIfValidElseNil(self, validateSpecificItemSelector, sender);
+    else if ([sender conformsToProtocol:@protocol(NSValidatedUserInterfaceItem)])
+        return _selfIfValidElseNil(self, @selector(validateUserInterfaceItem:), sender);
+
     return self;
 }
 
@@ -997,15 +1104,13 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
     if (![super applyToResponderChain:applier])
         return NO;
     
-    // <bug:///75437> (Revisit OATargetSelection in light of new Lion API). Should we skip this in 10.7 and greater.
-    // At a first approximation, the delegate is returned via supplementalTargetForAction:sender:. Actually, if the delegate is an NSResponder, then NSWindow seems to chase the responder chain and return the first object the implements the action.
+    // Beginning in 10.7, as a first approximation, the delegate is returned via supplementalTargetForAction:sender:. However, if the delegate is an NSResponder, then NSWindow seems to chase the responder chain and return the first object that implements the action. We apply our mechanism here. It's redundant in some cases, but let's us run the applier against the full chain.
     id delegate = (id)self.delegate;
     if (delegate)
         DEBUG_TARGET_SELECTION(@"---> checking NSWindow delegate ");
     if (delegate && ![delegate applyToResponderChain:applier])
         return NO;
     
-    // <bug:///75437> (Revisit OATargetSelection in light of new Lion API). Typically we'd get the windowController in the normal responder chain, but I suppose it's possible that the windowController wasn't added to the chain.
     id windowController = self.windowController;
     if (windowController)
         DEBUG_TARGET_SELECTION(@"---> checking NSWindow windowController ");
@@ -1026,7 +1131,6 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
     if (![super applyToResponderChain:applier])
         return NO;
 
-    // <bug:///75437> (Revisit OATargetSelection in light of new Lion API). We might expect that we'd get the document from supplementalTargetForAction:sender: in applier if it's applicable, but that doesn't seem to be the case in 10.7
     NSDocument *document = self.document;
     if (document)
         DEBUG_TARGET_SELECTION(@"---> checking NSWindowController document ");
@@ -1038,3 +1142,150 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
 
 @end
 
+
+#pragma mark -
+#pragma mark OATargetSelectionValidation
+
+@interface NSObject (OATargetSelectionValidation)
+/* 
+ Allows replacing monolithic validateMenuItem:, validateToolbarItem:, and validateUserInterfaceItem: methods with action-specific methods. For example, a toggleRulerView: action can be validated using:
+ 
+        - (BOOL)validateToggleRulerViewMenuItem:(NSMenuItem *)item;
+        - (BOOL)validateToggleRulerViewToolbarItem:(NSToolbarItem *)item;
+
+ depending on the type of the sender. If the sender-type-specific method is missing, then we validate the action using:
+ 
+        - (BOOL)validateToggleRulerView:(id <NSValidatedUserInterfaceItem>)item;
+ 
+ which is useful when the toolbar item and menu item for an action have the same validation logic.
+ 
+ Note well: if the monolithic validateMenuItem:, validateToolbarItem:, and validateUserInterfaceItem: methods exist, they will be used rather than using the action-specific methods. This approach allows us to migrate on a class-by-class basis to using action-specific valiation, since it retains the previous validation behavior for a class until we eliminate the monolithic methods.
+*/
+
+- (BOOL)validateMenuItem:(NSMenuItem *)item;
+- (BOOL)validateToolbarItem:(NSToolbarItem *)item;
+- (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item;
+@end
+
+@implementation NSObject (OATargetSelectionValidation)
+
+typedef enum {
+    OAMenuItemValidatorType,
+    OAToolbarItemValidatorType,
+    OAUserInterfaceItemValidatorType,
+    OAValidatorTypeCount
+} OAValidationType;
+
+static NSMapTable *OAValidatorMaps[OAValidatorTypeCount]; // One SEL --> SEL map for each validator type.
+
+- (SEL)_validatorSelectorFromAction:(SEL)action type:(OAValidationType)type;
+{
+    OBPRECONDITION(action);
+    OBPRECONDITION(type < OAValidatorTypeCount);
+    OBPRECONDITION([NSThread isMainThread]); // Our validator map mutation is not thread safe.
+    
+    static NSString * const OAMenuItemValidatorSuffix = @"MenuItem";
+    static NSString * const OAToolbarItemValidatorSuffix = @"ToolbarItem";
+    static NSString * const OAUserInterfaceItemValidatorSuffix = nil;
+    static BOOL initialized = NO;
+    
+    if (!initialized) {
+        NSPointerFunctionsOptions options = NSPointerFunctionsOpaqueMemory | NSPointerFunctionsOpaquePersonality;
+        int defaultCapacity = 0; // Pointer collections will pick an appropriate small capacity on their own
+        for (int i=0; i < OAValidatorTypeCount; i++) {
+            NSMapTable *map = [[NSMapTable alloc] initWithKeyOptions:options valueOptions:options capacity:defaultCapacity];
+            OAValidatorMaps[i] = map;
+        }
+        initialized = YES;
+    }
+
+    NSMapTable *validators = OAValidatorMaps[type];
+    SEL validator = NSMapGet(validators, action);
+    if (validator != NULL)
+        return validator;
+
+    NSString *suffix;
+    switch (type) {
+        case OAMenuItemValidatorType:
+            suffix = OAMenuItemValidatorSuffix;
+            break;
+        case OAToolbarItemValidatorType:
+            suffix = OAToolbarItemValidatorSuffix;
+            break;
+        default:
+            suffix = OAUserInterfaceItemValidatorSuffix;
+            break;
+    }
+    
+    // e.g., @selector(toggleStatusCheckbox:) --> @"ToggleStatusCheckbox"
+    NSString *selectorString = NSStringFromSelector(action);
+#ifdef OMNI_ASSERTIONS_ON
+    NSRange firstColon = [selectorString rangeOfString:@":"];
+    OBASSERT(firstColon.length == 1 && firstColon.location == [selectorString length] - 1); // sanity check for unary selector
+#endif
+    unichar *buffer = alloca(selectorString.length * sizeof(unichar));
+    [selectorString getCharacters:buffer];
+    if (*buffer >= 'a' && *buffer <= 'z')
+        *buffer += 'A' - 'a';
+
+    NSString *actionName = [[NSString alloc] initWithCharacters:buffer length:selectorString.length - 1];
+    NSString *validatorString = [[NSString alloc] initWithFormat:@"validate%@%@:", actionName, suffix ? suffix : @""];
+    validator = NSSelectorFromString(validatorString);
+    [validatorString release];
+    [actionName release];
+
+    NSMapInsert(validators, action, validator);
+    
+    return validator;
+}
+
+- (BOOL)_invokeValidatorForType:(OAValidationType)type item:(NSObject <NSValidatedUserInterfaceItem> *)item;
+{
+    SEL validator = [self _validatorSelectorFromAction:[item action] type:type];
+    
+    if ([self respondsToSelector:validator])
+        return _validates(self, validator, item);
+    
+    if (type == OAMenuItemValidatorType || type == OAToolbarItemValidatorType) {
+        // We checked for a menu item or toolbar item above and didn't find it, so check for generic user interface item
+        validator = [self _validatorSelectorFromAction:[item action] type:OAUserInterfaceItemValidatorType];
+        if ([self respondsToSelector:validator])
+            return _validates(self, validator, item);
+    }
+    
+    // Validator invocation happens twice. Once during the search for the target object and again for the actual validation decision. We reach this point in the code only when self implements the desired action but does not implement any validation. In that case, self should be the target and should validate the action.
+    return YES;
+}
+
+static BOOL _overridesNSObjectCategoryMethod(id self, SEL validateSelector)
+{
+    Method categoryMethod = class_getInstanceMethod([NSObject class], validateSelector);
+    OBASSERT_NOTNULL(categoryMethod);
+    Method possiblyOverridingMethod = class_getInstanceMethod([self class], validateSelector);
+    OBASSERT_NOTNULL(possiblyOverridingMethod);
+    
+    return possiblyOverridingMethod != categoryMethod;
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)item;
+{
+    // Give priority to subclass overrides of validateUserInterfaceItem. (Already gave priorty to subclass overrides of validateMenuItem, since we wouldn't have gotten here in that case.)
+    if ([item conformsToProtocol:@protocol(NSValidatedUserInterfaceItem)] && _overridesNSObjectCategoryMethod(self, @selector(validateUserInterfaceItem:)))
+        return [self validateUserInterfaceItem:item];
+    return [self _invokeValidatorForType:OAMenuItemValidatorType item:item];
+}
+
+- (BOOL)validateToolbarItem:(NSToolbarItem *)item;
+{
+    // Give priority to subclass overrides of validateUserInterfaceItem. (Already gave priorty to subclass overrides of validateToolbarItem, since we wouldn't have gotten here in that case.)
+    if ([item conformsToProtocol:@protocol(NSValidatedUserInterfaceItem)] && _overridesNSObjectCategoryMethod(self, @selector(validateUserInterfaceItem:)))
+        return [self validateUserInterfaceItem:item];
+    return [self _invokeValidatorForType:OAToolbarItemValidatorType item:item];
+}
+
+- (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item;
+{
+    return [self _invokeValidatorForType:OAUserInterfaceItemValidatorType item:(NSObject <NSValidatedUserInterfaceItem> *)item];
+}
+
+@end

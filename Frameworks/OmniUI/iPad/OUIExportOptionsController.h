@@ -8,15 +8,10 @@
 // $Id$
 
 #import <UIKit/UIViewController.h>
+#import <OmniUI/OUISyncTypes.h>
 
 #import "OUISyncMenuController.h"
 
-enum {
-    OUIExportOptionsExport,
-    OUIExportOptionsEmail,
-    OUIExportOptionsSendToApp,
-}; 
-typedef NSUInteger OUIExportOptionsType;
 
 @class NSFileWrapper;
 @class OUIExportOptionsView, OUIOverlayView;

@@ -12,7 +12,7 @@
 extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 
 @class OFPreference;
-@class OUIDocumentStoreItem, OUIDocumentStoreFileItem, OUIDocumentPickerItemView, OUIDocumentPickerFileItemView, OUIDocumentPickerScrollView;
+@class OFSDocumentStoreItem, OFSDocumentStoreFileItem, OUIDocumentPickerItemView, OUIDocumentPickerFileItemView, OUIDocumentPickerScrollView;
 
 typedef enum {
     OUIDocumentPickerItemSortByDate,
@@ -32,33 +32,37 @@ typedef enum {
 
 @property(nonatomic,assign) id <OUIDocumentPickerScrollViewDelegate> delegate;
 
-// The size of the document prevew grid in items. That is, if gridSize.width = 4, then 4 items will be shown across the width.
-// The width must be at least one and integral. The height must be at least one, but may be non-integral if you want to have a row of itemss peeking out.
-- (void)setLandscape:(BOOL)landscape gridSize:(CGSize)gridSize;
-@property(nonatomic,readonly) CGSize gridSize;
+- (void)willRotate;
+- (void)didRotate;
+@property(nonatomic,assign) BOOL landscape;
 
-@property(nonatomic,retain) NSSet *items;
+@property(nonatomic,readonly) NSSet *items;
+- (void)startAddingItems:(NSSet *)toAdd;
+- (void)finishAddingItems:(NSSet *)toAdd;
+- (void)startRemovingItems:(NSSet *)toRemove;
+- (void)finishRemovingItems:(NSSet *)toRemove;
+
 @property(nonatomic,readonly) NSArray *sortedItems;
 @property(nonatomic,retain) id draggingDestinationItem;
 
-- (void)scrollItemToVisible:(OUIDocumentStoreItem *)item animated:(BOOL)animated;
+- (void)scrollItemToVisible:(OFSDocumentStoreItem *)item animated:(BOOL)animated;
 - (void)sortItems;
 
-- (OUIDocumentPickerItemView *)itemViewForItem:(OUIDocumentStoreItem *)item;
-- (OUIDocumentPickerFileItemView *)fileItemViewForFileItem:(OUIDocumentStoreFileItem *)fileItem;
+- (CGRect)frameForItem:(OFSDocumentStoreItem *)item;
+
+- (OUIDocumentPickerItemView *)itemViewForItem:(OFSDocumentStoreItem *)item;
+- (OUIDocumentPickerFileItemView *)fileItemViewForFileItem:(OFSDocumentStoreFileItem *)fileItem;
 - (OUIDocumentPickerItemView *)itemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
 - (OUIDocumentPickerFileItemView *)fileItemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
 
-- (void)previewsUpdatedForFileItem:(OUIDocumentStoreFileItem *)fileItem;
+- (void)previewsUpdatedForFileItem:(OFSDocumentStoreFileItem *)fileItem;
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 
-- (void)willRotate;
-- (void)didRotate;
 
 @property(nonatomic) OUIDocumentPickerItemSort itemSort;
 
-- (void)prepareToDeleteFileItems:(NSSet *)fileItems;
-- (void)finishedDeletingFileItems:(NSSet *)fileItems;
+- (void)startIgnoringItemForLayout:(OFSDocumentStoreItem *)item;
+- (void)stopIgnoringItemForLayout:(OFSDocumentStoreItem *)item;
 
 @end

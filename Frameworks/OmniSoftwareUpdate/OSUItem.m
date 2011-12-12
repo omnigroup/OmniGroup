@@ -156,7 +156,7 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
             if (item == peer)
                 continue;
             
-            if ([peer available] && [peer supersedes:item]) {
+            if ([peer available] && [peer supersedesItem:item]) {
                 DEBUG_FLAGS(@"\t...is superseded by %@", [peer shortDescription]);
                 [item setSuperseded:YES];
                 break;
@@ -501,11 +501,11 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
 
 @synthesize superseded = _superseded;
 
-- (BOOL)supersedes:(OSUItem *)peer;
+- (BOOL)supersedesItem:(OSUItem *)peer;
 {
-    // One item supersedes another if they are on the same software update track, same major marketing version and same minimum OS version and the peer has an older version number.
+    // One item supersedes another if it's not on a less stable software update track, has same major marketing version (so their license applies equally to both) and same minimum OS version (so it runs on the same systems) and the peer has an older version number.
     
-    if (OFNOTEQUAL(_track, [peer track]) ||
+    if ([[self class] compareTrack:[self track] toTrack:[peer track]] == OSUTrackLessStable ||
         ([_marketingVersion componentAtIndex:0] != [[peer marketingVersion] componentAtIndex:0]) ||
         ([_minimumSystemVersion compareToVersionNumber:[peer minimumSystemVersion]] != NSOrderedSame))
         return NO;

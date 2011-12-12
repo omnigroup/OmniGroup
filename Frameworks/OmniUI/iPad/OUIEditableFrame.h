@@ -53,6 +53,8 @@
     UIEdgeInsets _currentTextInset;
     UITextGranularity tapSelectionGranularity;
     BOOL _autoCorrectDoubleSpaceToPeriodAtSentenceEnd;
+    UIView *_inputView;
+    UIView *_inputAccessoryView;
     
     UITextAutocorrectionType _autocorrectionType;
     UITextAutocapitalizationType _autocapitalizationType;
@@ -155,6 +157,9 @@
 @property (nonatomic) UITextSpellCheckingType spellCheckingType; // default is UITextSpellCheckingTypeDefault;
 #endif
 @property (nonatomic) UITextGranularity tapSelectionGranularity;
+
+@property (nonatomic, readwrite, retain) UIView *inputView;
+@property (nonatomic, readwrite, retain) UIView *inputAccessoryView;
 
 - (OUEFTextRange *)rangeOfLineContainingPosition:(OUEFTextPosition *)posn;
 - (UITextRange *)selectionRangeForPoint:(CGPoint)p granularity:(UITextGranularity)granularity;

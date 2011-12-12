@@ -142,7 +142,8 @@ RCS_ID("$Id$");
 - (void)setInnerViewController:(UIViewController *)viewController animated:(BOOL)animated
                     fromRegion:(OUIMainViewControllerGetAnimationRegion)fromRegion
                       toRegion:(OUIMainViewControllerGetAnimationRegion)toRegion
-              transitionAction:(void (^)(void))transitionAction;
+              transitionAction:(void (^)(void))transitionAction
+              completionAction:(void (^)(void))completionAction;
 {
     OBPRECONDITION([self isViewLoaded]);
     OBPRECONDITION(viewController);
@@ -250,8 +251,8 @@ RCS_ID("$Id$");
         viewController.view.hidden = YES;
         fromView.hidden = YES;
 
-        MAIN_VC_DEBUG(@"  sourcePreviewFrame = %@", NSStringFromCGRect(sourcePreviewFrame));
-        MAIN_VC_DEBUG(@"  targetPreviewFrame = %@", NSStringFromCGRect(targetPreviewFrame));
+        MAIN_VC_DEBUG(@"  sourcePreviewFrame = %@ (window: %@)", NSStringFromCGRect(sourcePreviewFrame), NSStringFromCGRect([view convertRect:sourcePreviewFrame toView:view.window]));
+        MAIN_VC_DEBUG(@"  targetPreviewFrame = %@ (window: %@)", NSStringFromCGRect(targetPreviewFrame), NSStringFromCGRect([view convertRect:targetPreviewFrame toView:view.window]));
     }
         
         
@@ -263,6 +264,9 @@ RCS_ID("$Id$");
         [_innerViewController.view removeFromSuperview];
     }
     
+    // Need to capture scope for this block since call it after firing up the animation and returning from this method
+    completionAction = [[completionAction copy] autorelease];
+    
     [OUIAnimationSequence runWithDuration:duration actions:
      ^{
          [transitionView transitionToFrame:targetPreviewFrame];
@@ -271,43 +275,45 @@ RCS_ID("$Id$");
 //             [backgroundView.toolbar setItems:viewController.toolbarItems animated:YES]; // Otherwise done in the next block
 
      },
-     [NSNumber numberWithDouble:0.0], // Stop animating for last block
      ^{
-         OBASSERT([UIView areAnimationsEnabled] == NO);
+         OUIWithoutAnimating(^{
+             if (_innerViewController) {
+                 MAIN_VC_DEBUG(@"removeFromParentViewController for old inner view %@", [_innerViewController shortDescription]);
+                 [_innerViewController removeFromParentViewController]; // Sends -didMoveToParentViewController:
+                 [_innerViewController release];
+                 _innerViewController = nil;
+             }
+             
+             if (viewController) {
+                 _innerViewController = [viewController retain];
+                 
+                 MAIN_VC_DEBUG(@"add subview for %@", [_innerViewController shortDescription]);
+                 [backgroundView.contentView addSubview:_innerViewController.view];
+                 backgroundView.toolbar = [_innerViewController toolbarForMainViewController];
+                 
+                 [backgroundView.contentView layoutIfNeeded];
+                 viewController.view.hidden = NO;
+                 // if (!animated)
+                 //   [backgroundView.toolbar setItems:_innerViewController.toolbarItems animated:NO]; // Otherwise done in the previous block
+                 backgroundView.editing = _innerViewController.isEditingViewController;
 
-         if (_innerViewController) {
-             MAIN_VC_DEBUG(@"removeFromParentViewController for old inner view %@", [_innerViewController shortDescription]);
-             [_innerViewController removeFromParentViewController]; // Sends -didMoveToParentViewController:
-             [_innerViewController release];
-             _innerViewController = nil;
-         }
+                 MAIN_VC_DEBUG(@"did-move-to for %@", [_innerViewController shortDescription]);
+                 [_innerViewController didMoveToParentViewController:self]; // -addChildViewController: doesn't call this, but does the 'will'
+             }
+             
+             [transitionView removeFromSuperview];
+             [transitionView release];
+             
+             // We hid this when animating, so put it back.
+             OBASSERT(!animated || fromView.hidden == YES);
+             fromView.hidden = NO;
+             
+             // In case someone claims they were going to do an animated switch but then does a non-animated one.
+             [[OUIAppController controller] hideActivityIndicator];
+         });
          
-         if (viewController) {
-             _innerViewController = [viewController retain];
-
-             MAIN_VC_DEBUG(@"add subview for %@", [_innerViewController shortDescription]);
-             [backgroundView.contentView addSubview:_innerViewController.view];
-             backgroundView.toolbar = [_innerViewController toolbarForMainViewController];
-
-             [backgroundView.contentView layoutIfNeeded];
-             viewController.view.hidden = NO;
-//             if (!animated)
-//                 [backgroundView.toolbar setItems:_innerViewController.toolbarItems animated:NO]; // Otherwise done in the previous block
-             backgroundView.editing = _innerViewController.isEditingViewController;
-
-             MAIN_VC_DEBUG(@"did-move-to for %@", [_innerViewController shortDescription]);
-             [_innerViewController didMoveToParentViewController:self]; // -addChildViewController: doesn't call this, but does the 'will'
-         }
-         
-         [transitionView removeFromSuperview];
-         [transitionView release];
-         
-         // We hid this when animating, so put it back.
-         OBASSERT(!animated || fromView.hidden == YES);
-         fromView.hidden = NO;
-         
-         // In case someone claims they were going to do an animated switch but then does a non-animated one.
-         [[OUIAppController controller] hideActivityIndicator];
+         if (completionAction)
+             completionAction();
      },
      nil];
 }
@@ -323,7 +329,7 @@ RCS_ID("$Id$");
                             *outView = toView;
                             *outRect = CGRectZero;
                         }
-                transitionAction:nil];
+                transitionAction:nil completionAction:nil];
 }
 
 @synthesize resizesToAvoidKeyboard = _resizesToAvoidKeyboard;
@@ -538,4 +544,10 @@ OBDEPRECATED_METHOD(-prepareToResignInnerToolbarControllerAndReturnParentViewFor
 {
     return YES;
 }
+
+- (void)finishedBecomingInnerViewController;
+{
+    // For subclasses
+}
+
 @end

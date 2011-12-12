@@ -24,10 +24,6 @@
 }
 
 + (NSString *)nameForURL:(NSURL *)url;
-+ (NSString *)UTIForFilename:(NSString *)name;
-+ (NSString *)UTIForURL:(NSURL *)url;
-+ (void)registerNativeUTI:(NSString *)UTI forFileExtension:(NSString *)fileExtension;
-
 - initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date;
 
 // Accessors

@@ -620,6 +620,8 @@ static inline void _locked_checkCookiesLoaded()
 
 + (void)controllerDidInitialize:(OFController *)controller;
 {
+    OBFinishPortingLater("Not loading cookies");
+#if 0
     [self readDefaults];
     
     [domainLock lock];
@@ -637,6 +639,7 @@ static inline void _locked_checkCookiesLoaded()
     
     if (OWCookiesDebug)
         NSLog(@"COOKIES: Read cookies");
+#endif
 }
 
 + (void)controllerWillTerminate:(OFController *)controller;
@@ -646,7 +649,7 @@ static inline void _locked_checkCookiesLoaded()
 
 + (void)saveCookies;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
+    OBFinishPortingLater("Not saving cookies"); // 64->32 warnings -- if we even keep this framework
 #if 0
     NSString *cookieFilename;
     NSArray *domains;

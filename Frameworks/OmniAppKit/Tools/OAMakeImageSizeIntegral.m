@@ -97,9 +97,9 @@ int main(int argc, char *argv[])
             [newImage release];
 
             totalOriginalImageSize += originalImageSize;
-            totalTIFFSize += MIN(originalImageSize, MIN([lzwData length], [packbitsData length]));
+            totalTIFFSize += MIN3(originalImageSize, [lzwData length], [packbitsData length]);
             totalPNGImageSize += [pngData length];
-            NSUInteger bestSize = MIN(MIN(MIN([lzwData length], [packbitsData length]), [pngData length]), originalImageSize);
+            NSUInteger bestSize = MIN4([lzwData length], [packbitsData length], [pngData length], originalImageSize);
             totalBestImageSize += bestSize;
             if ([pngData length] > bestSize) {
                 NSLog(@"PNG loses for %@ by %lu", imagePath, [pngData length] - bestSize);

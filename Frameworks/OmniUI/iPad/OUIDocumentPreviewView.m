@@ -20,35 +20,48 @@ RCS_ID("$Id$");
 {
     NSMutableArray *_previews;
     
+    BOOL _landscape;
     BOOL _group;
+    BOOL _needsAntialiasingBorder;
     BOOL _selected;
     BOOL _draggingSource;
+    BOOL _highlighted;
+    BOOL _downloading;
     
     NSTimeInterval _animationDuration;
     UIViewAnimationCurve _animationCurve;
 
+    CALayer *_selectionLayer;
+    CALayer *_imageLayer;
     UIImageView *_statusImageView;
     UIProgressView *_transferProgressView;
 }
 
 static id _commonInit(OUIDocumentPreviewView *self)
-{
-    self.opaque = NO;
-    self.clearsContextBeforeDrawing = YES;
-    self.contentMode = UIViewContentModeScaleAspectFit;
+{    
+    self->_imageLayer = [[CALayer alloc] init];
+    self->_imageLayer.opaque = YES;
     
-    self->_statusImageView = [[UIImageView alloc] initWithImage:nil];
-    [self addSubview:self->_statusImageView];
-    self->_statusImageView.hidden = YES;
-    
-    self->_transferProgressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
-    [self addSubview:self->_transferProgressView];
-    self->_transferProgressView.hidden = YES;
-    
-    // Flatten the status image and progress view into our buffer. This means that if we are in Edit mode and the doing a wiggle animation, the progress view (in particular) won't get ugly aliased edges.
-    self.layer.shouldRasterize = YES;
+    [self.layer addSublayer:self->_imageLayer];
     
     return self;
+}
+
+/*
+ 
+ The edgeAntialiasingMask property on CALayer is pretty useless for our needs -- we aren't butting two objects together and it doesn't do edge coverage right (it seems).
+ 
+ Instead, if we have the wiggle-edit animation going, we set shouldRasterize=YES on *our* layer. CALayer attempts to find the smallest rectangle that will enclose the drawing when it flattens the bitmap. Because we have a shadow, this rect extends 1px-ish outside the preview image layer (which has the most visible edge) and we get interior-style linear texture lookup.
+ 
+ When we are selected, though, we don't have a shadow, but we *do* have a sublayer for the border that extends outside the bounds of the image, and the preview image has some exterior alpha. Again, this makes the flattened rasterized image have transparent pixels on the border and do linear texture lookup on the interior.
+ 
+ Another (terrible) hack that we don't use here is to set a mostly transparent background color on this superview. If it is too transparent, CALayer will ignore us for the purposes of computing the size of the area to rasterisze. Another possible trick, that I haven't tried, would be to set a 1x1 transparent image as our content (or nil if we don't want to be rasterized). This seems like it would be less prone to implementation changes in computing how transparent is "too transparent" to include in the rasterization.
+ */
+
+static void _updateShouldRasterize(OUIDocumentPreviewView *self)
+{
+    BOOL shouldRasterize = self->_needsAntialiasingBorder;
+    self.layer.shouldRasterize = shouldRasterize;
 }
 
 - initWithFrame:(CGRect)frame;
@@ -68,9 +81,23 @@ static id _commonInit(OUIDocumentPreviewView *self)
 - (void)dealloc;
 {
     [_previews release];
+    [_imageLayer release];
     [_statusImageView release];
     [_transferProgressView release];
+    [_selectionLayer release];
     [super dealloc];
+}
+
+@synthesize landscape = _landscape;
+- (void)setLandscape:(BOOL)landscape;
+{
+    if (_landscape == landscape)
+        return;
+    
+    _landscape = landscape;
+    
+    [self.superview setNeedsLayout]; // -previewRectInFrame: changes based on the orientation
+    [self setNeedsLayout];
 }
 
 @synthesize group = _group;
@@ -80,7 +107,20 @@ static id _commonInit(OUIDocumentPreviewView *self)
         return;
     
     _group = group;
-    [self setNeedsDisplay];
+    [self setNeedsLayout];
+}
+
+// See commentary by _updateShouldRasterize() for how edge antialiasing works.
+@synthesize needsAntialiasingBorder = _needsAntialiasingBorder;
+- (void)setNeedsAntialiasingBorder:(BOOL)needsAntialiasingBorder;
+{
+    if (_needsAntialiasingBorder == needsAntialiasingBorder)
+        return;
+    
+    _needsAntialiasingBorder = needsAntialiasingBorder;
+    
+    _updateShouldRasterize(self);
+    [self setNeedsLayout];
 }
 
 @synthesize selected = _selected;
@@ -91,8 +131,30 @@ static id _commonInit(OUIDocumentPreviewView *self)
     
     _selected = selected;
     
+    if (_selected && !_selectionLayer) {
+        OUIWithoutAnimating(^{
+            _selectionLayer = [[CALayer alloc] init];
+            _selectionLayer.name = @"selection";
+            
+            UIImage *image = [UIImage imageNamed:@"OUIDocumentPreviewViewSelectedBorder.png"];
+            CGSize imageSize = image.size;
+            
+            _selectionLayer.contents = (id)[image CGImage];
+            _selectionLayer.contentsCenter = CGRectMake(kOUIDocumentPreviewViewBorderEdgeInsets.left/imageSize.width,
+                                                        kOUIDocumentPreviewViewBorderEdgeInsets.top/imageSize.height,
+                                                        (imageSize.width-kOUIDocumentPreviewViewBorderEdgeInsets.left-kOUIDocumentPreviewViewBorderEdgeInsets.right)/imageSize.width,
+                                                        (imageSize.height-kOUIDocumentPreviewViewBorderEdgeInsets.top-kOUIDocumentPreviewViewBorderEdgeInsets.bottom)/imageSize.height);
+        });
+        
+        [self.layer insertSublayer:_selectionLayer below:_imageLayer];
+    } else if (!_selected && _selectionLayer) {
+        [_selectionLayer removeFromSuperlayer];
+        [_selectionLayer release];
+        _selectionLayer = nil;
+    }
+    
     [self.superview setNeedsLayout]; // -previewRectInFrame: changes based on the selection state
-    [self setNeedsDisplay];
+    [self setNeedsLayout];
 }
 
 @synthesize draggingSource = _draggingSource;
@@ -102,8 +164,19 @@ static id _commonInit(OUIDocumentPreviewView *self)
         return;
     
     _draggingSource = draggingSource;
-    [self setNeedsLayout]; // no shadow
-    [self setNeedsDisplay]; // special image
+    
+    [self setNeedsLayout];
+}
+
+@synthesize highlighted = _highlighted;
+- (void)setHighlighted:(BOOL)highlighted;
+{
+    if (_highlighted == highlighted)
+        return;
+    
+    _highlighted = highlighted;
+    
+    [self setNeedsLayout];
 }
 
 @synthesize previews = _previews;
@@ -128,8 +201,7 @@ static id _commonInit(OUIDocumentPreviewView *self)
 
     // Our frame gets set by our superview based on our preview size
     [self.superview setNeedsLayout];
-    
-    [self setNeedsDisplay];
+    [self setNeedsLayout];
 }
 
 - (void)discardPreviews;
@@ -142,7 +214,6 @@ static id _commonInit(OUIDocumentPreviewView *self)
     PREVIEW_DEBUG(@"%p discardPreviews", self);
 
     [_previews removeAllObjects];
-    [self setNeedsDisplay];
 }
 
 #define kOUIDocumentPreviewViewNormalShadowInsets UIEdgeInsetsMake(ceil(kOUIDocumentPreviewViewNormalShadowBlur)/*top*/, ceil(kOUIDocumentPreviewViewNormalShadowBlur)/*left*/, ceil(kOUIDocumentPreviewViewNormalShadowBlur + 1)/*bottom*/, ceil(kOUIDocumentPreviewViewNormalShadowBlur)/*right*/)
@@ -173,12 +244,6 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         insets = kOUIDocumentPreviewViewNormalShadowInsets;
     }
     
-    // space for edge antialiasing    
-    insets.top += 1;
-    insets.bottom += 1;
-    insets.left += 1;
-    insets.right += 1;
-    
     return insets;
 }
 
@@ -191,15 +256,29 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         return CGRectInset(frame, 16, 16); // ... or something
     } else {
         OUIDocumentPreview *preview = [_previews lastObject];
+
+        CGSize previewSize;
+        if (preview && preview.type == OUIDocumentPreviewTypeRegular) {
+            previewSize = preview.size;
+            
+            CGFloat scale = [OUIDocumentPreview previewImageScale];
+            previewSize.width = floor(previewSize.width / scale);
+            previewSize.height = floor(previewSize.height / scale);
+        } else
+            previewSize = [OUIDocumentPreview maximumPreviewSizeForLandscape:_landscape];
         
         CGRect previewFrame;
-        if (preview)
-            previewFrame = OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(frame, preview.size);
-        else
-            previewFrame = frame; // If we return CGRectNull here, and there is a bug where previews never load, you can't select the file to delete it.
+        previewFrame.origin.x = floor(CGRectGetMidX(frame) - previewSize.width / 2);
+        previewFrame.origin.y = floor(CGRectGetMidY(frame) - previewSize.height / 2);
+        previewFrame.size = previewSize;
         
         return _outsetRect(previewFrame, [self _edgeInsets]);
     }
+}
+
+- (CGRect)imageBounds;
+{
+    return UIEdgeInsetsInsetRect(self.bounds, [self _edgeInsets]);
 }
 
 @synthesize animationDuration = _animationDuration;
@@ -214,27 +293,68 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
     if (self.statusImage == image)
         return;
 
-    _statusImageView.image = image;
-    _statusImageView.hidden = (image == nil);
+    if (image) {
+        if (!_statusImageView) {
+            _statusImageView = [[UIImageView alloc] initWithImage:nil];
+            [self addSubview:_statusImageView];
+        }
+        _statusImageView.image = image;
+    } else {
+        if (_statusImageView) {
+            [_statusImageView removeFromSuperview];
+            [_statusImageView release];
+            _statusImageView = nil;
+        }
+    }
+    
+    _updateShouldRasterize(self);
+    [self setNeedsLayout];
+}
+
+@synthesize downloading = _downloading;
+- (void)setDownloading:(BOOL)downloading;
+{
+    if (_downloading == downloading)
+        return;
+    
+    _downloading = downloading;
     
     [self setNeedsLayout];
 }
 
 - (BOOL)showsProgress;
 {
-    return _transferProgressView.hidden == NO;
+    return _transferProgressView != nil;
 }
 - (void)setShowsProgress:(BOOL)showsProgress;
 {
-    _transferProgressView.hidden = (showsProgress == NO);
+    if (showsProgress) {
+        if (_transferProgressView)
+            return;
+        _transferProgressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
+        [self addSubview:self->_transferProgressView];
+    } else {
+        if (_transferProgressView) {
+            [_transferProgressView removeFromSuperview];
+            [_transferProgressView release];
+            _transferProgressView = nil;
+        }
+    }
+    
+    _updateShouldRasterize(self);
+    [self setNeedsLayout];
 }
 
 - (double)progress;
 {
-    return _transferProgressView.progress;
+    if (_transferProgressView)
+        return _transferProgressView.progress;
+    return 0.0;
 }
 - (void)setProgress:(double)progress;
 {
+    OBPRECONDITION(_transferProgressView || progress == 0.0);
+    
     _transferProgressView.progress = progress;
 }
 
@@ -251,8 +371,11 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         OBASSERT([_previews count] <= 1);
         OUIDocumentPreview *preview = [_previews lastObject];
         
-        if (preview.type == OUIDocumentPreviewTypeRegular)
-            return preview.image;
+        if (preview.type == OUIDocumentPreviewTypeRegular) {
+            OBFinishPortingLater("The CGImageRef will be 2x scale from what we want, possibly");
+            OBASSERT(preview.image);
+            return [UIImage imageWithCGImage:preview.image];
+        }
     }
     
     return [super snapshotImage];
@@ -276,33 +399,92 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         return; // Not configured yet.
     
     CGRect previewFrame = UIEdgeInsetsInsetRect(bounds, [self _edgeInsets]);
+    
+    // TODO: Placeholder images -- make the preview generation build pre-composited images
+    OUIWithoutLayersAnimating(^{
+        _imageLayer.frame = previewFrame;
+    });
 
-    UIImage *statusImage = _statusImageView.image;
-    if (statusImage) {
-        CGSize statusImageSize = statusImage.size;
-        CGRect statusFrame = CGRectMake(CGRectGetMaxX(previewFrame) - statusImageSize.width, CGRectGetMinY(previewFrame), statusImageSize.width, statusImageSize.height);
+    // Image
+    if (_group) {
+        // Want to add multiple image layers? Want to force the caller to pre-composite a 3x3 grid of preview images?        
+        OBASSERT(self.superview.hidden);
+    } else {
+        _imageLayer.contents = (id)[[_previews lastObject] image];
+    }
+    
+    // Highlighting (image alpha)
+    {
+        CGFloat alpha = 1;
         
-        OUIWithoutAnimating(^{
-            _statusImageView.frame = statusFrame;
-            _statusImageView.hidden = NO;
+        if (_highlighted)
+            alpha = 0.5;
+        
+        _imageLayer.opacity = alpha;
+    }
+    
+    // Shadow
+    if (_selected || _draggingSource) {
+        // No shadow
+        OUIWithoutLayersAnimating(^{
+            _imageLayer.shadowPath = NULL;
+            _imageLayer.shadowColor = NULL;
+            _imageLayer.shadowOpacity = 0;
         });
     } else {
-        OUIWithoutAnimating(^{
-            _statusImageView.hidden = YES;
+        OUIWithoutLayersAnimating(^{
+            CGPathRef path = CGPathCreateWithRect(CGRectMake(0, 0, previewFrame.size.width, previewFrame.size.height), NULL/*transform*/);
+            _imageLayer.shadowPath = path;
+            CFRelease(path);
+            
+            _imageLayer.shadowOpacity = 1;
+            _imageLayer.shadowRadius = kOUIDocumentPreviewViewNormalShadowBlur;
+            _imageLayer.shadowOffset = CGSizeMake(0, 1);
+            
+            //CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+            //CGFloat shadowComponents[] = {1, 0, 0, 1};
+            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
+            CGFloat shadowComponents[] = {kOUIDocumentPreviewViewNormalShadowWhiteAlpha.w, kOUIDocumentPreviewViewNormalShadowWhiteAlpha.a};
+            CGColorRef shadowColor = CGColorCreate(colorSpace, shadowComponents);
+            CGColorSpaceRelease(colorSpace);
+            _imageLayer.shadowColor = shadowColor;
+            CGColorRelease(shadowColor);
         });
     }
 
-    OUIWithoutAnimating(^{
-        CGRect previewFrameInsetForProgress = CGRectInset(previewFrame, 16, 16);
-        CGRect progressFrame = previewFrameInsetForProgress;
-        
-        progressFrame.size.height = [_transferProgressView sizeThatFits:progressFrame.size].height;
-        progressFrame.origin.y = CGRectGetMaxY(previewFrameInsetForProgress) - progressFrame.size.height;
-        
-        _transferProgressView.frame = progressFrame;
-    });
+    // Selection
+    if (_selectionLayer) {
+        OUIWithoutLayersAnimating(^{
+            _selectionLayer.frame = _outsetRect(previewFrame, kOUIDocumentPreviewViewBorderEdgeInsets);
+        });
+    }
+    
+    if (_statusImageView) {
+        UIImage *statusImage = _statusImageView.image;
+        if (statusImage) {
+            CGSize statusImageSize = statusImage.size;
+            CGRect statusFrame = CGRectMake(CGRectGetMaxX(previewFrame) - statusImageSize.width, CGRectGetMinY(previewFrame), statusImageSize.width, statusImageSize.height);
+            
+            OUIWithoutAnimating(^{
+                _statusImageView.frame = statusFrame;
+            });
+        }
+    }
+
+    if (_transferProgressView) {
+        OUIWithoutAnimating(^{
+            CGRect previewFrameInsetForProgress = CGRectInset(previewFrame, 16, 16);
+            CGRect progressFrame = previewFrameInsetForProgress;
+            
+            progressFrame.size.height = [_transferProgressView sizeThatFits:progressFrame.size].height;
+            progressFrame.origin.y = CGRectGetMaxY(previewFrameInsetForProgress) - progressFrame.size.height;
+            
+            _transferProgressView.frame = progressFrame;
+        });
+    }
 }
 
+#if 0
 - (void)drawRect:(CGRect)rect;
 {
     if (_group) {
@@ -320,6 +502,8 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         
         [[UIColor blackColor] set];
         UIRectFill(bounds);
+        
+        OBFinishPortingLater("Do a gray overlay for highlighting"); // iWork highlights folders as they are opening and on long press (though long press does nothing interesting).
         
         NSUInteger previewCount = [_previews count];
         for (NSUInteger row = 0; row < kPreviewRows; row++) {
@@ -381,19 +565,44 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
                 previewRect = UIEdgeInsetsInsetRect(previewRect, kOUIDocumentPreviewViewNormalShadowInsets);
             }
             
-            if (!preview || preview.type != OUIDocumentPreviewTypeRegular) {
+            BOOL isPlaceholder = (!preview || preview.type != OUIDocumentPreviewTypeRegular);
+            if (isPlaceholder) {
                 [[UIColor whiteColor] set];
                 UIRectFill(previewRect);
+                
+                // In this case the white box has the shadow and we don't want the preview to be shadowed *too*
+                if (drawingShadow) {
+                    CGContextRestoreGState(ctx);
+                    drawingShadow = NO;
+                }
             }
             
-            [preview drawInRect:previewRect];
+            CGRect previewImageRect = previewRect;
+            if (preview && isPlaceholder)
+                previewImageRect = OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(previewRect, preview.size);
+            [preview drawInRect:previewImageRect];
 
             if (drawingShadow) {
+                CGContextRestoreGState(ctx);
+            }
+            
+            if (_highlighted || _downloading) {
+                CGContextSaveGState(ctx);
+                                
+                CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
+                CGContextSetFillColorSpace(ctx, colorSpace);
+                CGColorSpaceRelease(colorSpace);
+
+                CGFloat highlight[] = {0, kOUIDocumentPreviewHighlightAlpha};
+                CGContextSetFillColor(ctx, highlight);
+                
+                CGContextFillRect(ctx, previewRect);
                 CGContextRestoreGState(ctx);
             }
         }
     }
 }
+#endif
 
 @end
 

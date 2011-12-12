@@ -9,6 +9,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
+#import <OSAKit/OSAKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
@@ -33,6 +34,7 @@ RCS_ID("$Id$")
         return nil;
 
     _pathForItemDictionary = [[NSMutableDictionary alloc] init];
+    _cachedScriptInfoDictionaries = [[NSMutableDictionary alloc] init];
 
     return self;
 }
@@ -40,6 +42,7 @@ RCS_ID("$Id$")
 - (void)dealloc;
 {
     [_pathForItemDictionary release];
+    [_cachedScriptInfoDictionaries release];
     [super dealloc];
 }
 
@@ -122,7 +125,32 @@ static NSString *removeScriptSuffix(NSString *string)
     CFRelease(url);
 }
 
-- (void)executeScriptItem:sender;
+- (OSAScript *)_compiledScriptForPath:(NSString *)path errorInfo:(NSDictionary **)errorInfo;
+{
+    static NSString *ScriptInfoCompiledScriptKey = @"ScriptInfoCompiledScriptKey";
+    static NSString *ScriptInfoModificationDateKey = @"ScriptInfoModificationDateKey";
+
+    if (errorInfo != NULL)
+        *errorInfo = nil;
+
+    NSDictionary *scriptFileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
+    NSDate *scriptModificationDate = [scriptFileAttributes fileModificationDate];
+
+    NSDictionary *cachedScriptInfoDictionary = [_cachedScriptInfoDictionaries objectForKey:path];
+    if (cachedScriptInfoDictionary == nil || OFNOTEQUAL(scriptModificationDate, [cachedScriptInfoDictionary objectForKey:ScriptInfoModificationDateKey])) {
+        // We don't have a cached script yet, or the script has been modified since it was cached
+        OSAScript *compiledScript = [[[OSAScript alloc] initWithContentsOfURL:[NSURL fileURLWithPath:path] error:errorInfo] autorelease];
+        NSMutableDictionary *scriptInfoDictionary = [NSMutableDictionary dictionary];
+        [scriptInfoDictionary setObject:compiledScript forKey:ScriptInfoCompiledScriptKey defaultObject:nil];
+        [scriptInfoDictionary setObject:scriptModificationDate forKey:ScriptInfoModificationDateKey defaultObject:nil];
+        [_cachedScriptInfoDictionaries setObject:scriptInfoDictionary forKey:path];
+        cachedScriptInfoDictionary = scriptInfoDictionary;
+    }
+
+    return [cachedScriptInfoDictionary objectForKey:ScriptInfoCompiledScriptKey];
+}
+
+- (void)executeScriptItem:(id)sender;
 {
     OAToolbarItem *toolbarItem = [[sender retain] autorelease];
     
@@ -174,11 +202,11 @@ static NSString *removeScriptSuffix(NSString *string)
 		return;
 	    }
 	    
-	    NSAppleScript *script = [[[NSAppleScript alloc] initWithContentsOfURL:[NSURL fileURLWithPath:scriptFilename] error:&errorDictionary] autorelease];
+	    OSAScript *script = [self _compiledScriptForPath:scriptFilename errorInfo:&errorDictionary];
 	    // throw an error sheet if the script exists, but was not able to be created
-	    if (script == nil) {		
+	    if (script == nil) {
 		NSString *errorText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The script file '%@' could not be opened.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error"), scriptName];
-		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error message"), [errorDictionary objectForKey:NSAppleScriptErrorMessage]];
+		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error message"), [errorDictionary objectForKey:OSAScriptErrorMessage]];
 		NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
 		NSBeginAlertSheet(errorText, okButton, nil, nil, [controller window], self, NULL, NULL, NULL, messageText);                                     
 		return;
@@ -201,13 +229,15 @@ static NSString *removeScriptSuffix(NSString *string)
 
 	    if (result == nil) {		
 		NSString *errorText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The script '%@' could not complete.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error"), scriptName];
-		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error message"), [errorDictionary objectForKey:NSAppleScriptErrorMessage]];
+		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error message"), [errorDictionary objectForKey:OSAScriptErrorMessage]];
 		NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
 		NSString *editButton = NSLocalizedStringFromTableInBundle(@"Edit Script", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
 		NSBeginAlertSheet(errorText, okButton, editButton, nil, [controller window], self, @selector(errorSheetDidEnd:returnCode:contextInfo:), NULL, [scriptFilename retain], messageText);                                     
-		
 		return;
 	    }
+            // This might fail for a variety of reasons, but we don't consider that fatal
+            if ([script isCompiled])
+                [script writeToURL:[NSURL fileURLWithPath:scriptFilename] ofType:nil error:&errorDictionary];
 	}
     } @finally {
 	if ([controller respondsToSelector:@selector(scriptToolbarItemFinishedExecuting:)])

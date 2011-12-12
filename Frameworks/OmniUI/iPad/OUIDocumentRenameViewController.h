@@ -9,12 +9,12 @@
 
 #import <OmniUI/OUIViewController.h>
 
-@class OUIDocumentPicker, OUIDocumentStoreFileItem;
+@class OUIDocumentPicker, OFSDocumentStoreFileItem;
 
 // Helper view controller for rename operations in OUIDocumentPicker
 @interface OUIDocumentRenameViewController : OUIViewController
 
-- initWithDocumentPicker:(OUIDocumentPicker *)picker fileItem:(OUIDocumentStoreFileItem *)fileItem;
+- initWithDocumentPicker:(OUIDocumentPicker *)picker fileItem:(OFSDocumentStoreFileItem *)fileItem;
 
 - (void)startRenaming;
 
@@ -24,5 +24,6 @@
 // Internal callbacks that we expect OUIDocumentPicker to have
 #import <OmniUI/OUIDocumentPicker.h>
 @interface OUIDocumentPicker (/*OUIDocumentRenameViewController*/)
+- (void)_didPerformRename;
 - (void)_didStopRenamingFileItem;
 @end

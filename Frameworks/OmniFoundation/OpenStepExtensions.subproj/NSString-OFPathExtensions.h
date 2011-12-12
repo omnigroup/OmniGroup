@@ -1,4 +1,4 @@
-// Copyright 1999-2006, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2006, 2008, 2011 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,6 +22,8 @@
     // Given absolute file paths like "/applications/omniweb/screenshots/index.html" and "/applications/omniweb/faq/content.html", returns a relative path, "../../faq/content.html". If no relative path is possible (i.e. the paths have no common root), returns otherFilename.
 
 - (NSString *)hfsPathFromPOSIXPath;
+
+- (void)splitName:(NSString **)outName andCounter:(NSUInteger *)outCounter;
 
 // Utility routine also used by -[NSFileManager(OFExtensions) path:isAncestorOfPath:relativePath:]. You can call this directly, but you can also just call -commonRootPathOfFilename:andFilename:.
 NSArray *OFCommonRootPathComponents(NSString *filename, NSString *otherFilename, NSArray **componentsLeft, NSArray **componentsRight);
