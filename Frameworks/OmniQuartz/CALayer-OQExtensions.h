@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,3 +63,10 @@
 - (void)drawLayer:(CALayer *)layer inVectorContext:(CGContextRef)ctx;
 
 @end
+
+//#define OQ_ANIMATION_LOGGING_ENABLED
+#ifdef OQ_ANIMATION_LOGGING_ENABLED
+//#define OQ_LOG_ALL_ANIMATIONS // Enable to unconditionally log animations from all layers
+extern void OQSetAnimationLoggingEnabledForLayer(CALayer *layer, BOOL enabled); // Or only enable it for certain layer trees
+#endif
+

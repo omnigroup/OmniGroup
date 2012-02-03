@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,15 @@
 RCS_ID("$Id$")
 
 
+/*
+ This class will be used for the main thread queue processor by OFRunLoopQueueProcessor if found.
+ */
 @implementation OAAppKitQueueProcessor
+
++ (NSArray *)mainThreadRunLoopModes;
+{
+    return [NSArray arrayWithObjects:NSDefaultRunLoopMode, NSModalPanelRunLoopMode, NSEventTrackingRunLoopMode, nil];
+}
 
 // Give UI events priority over queued messages
 
@@ -52,24 +60,6 @@ RCS_ID("$Id$")
     }
 #endif
     return NO;
-}
-
-@end
-
-//
-// Override key methods in OFRunLoopQueueProcessor to get the correct AppKit
-// behaviour.
-//
-@implementation OFRunLoopQueueProcessor (OFAppkitQueueProcessor)
-
-+ (NSArray *) mainThreadRunLoopModes;
-{
-    return [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSModalPanelRunLoopMode, NSEventTrackingRunLoopMode, nil];
-}
-
-+ (Class) mainThreadRunLoopProcessorClass;
-{
-    return [OAAppKitQueueProcessor class];
 }
 
 @end

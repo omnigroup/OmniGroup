@@ -1,4 +1,4 @@
-// Copyright 1997-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -163,7 +163,11 @@ static NSString *describeMethod(Method m, BOOL *nonSystem)
             [buf appendString:path];
         }
         
-        if (![path hasPrefix:@"/System/"] && ![path hasPrefix:@"/Library/"] && ![path hasPrefix:@"/usr/lib/"] && ![path hasPrefix:@"/Developer/Platforms/"] && ![path hasSuffix:@"FBAccess"])
+        if (![path hasPrefix:@"/System/"] && // System or locally installed vendor framework
+            ![path hasPrefix:@"/Library/"] &&
+            ![path hasPrefix:@"/usr/lib/"] &&
+            ([path rangeOfString:@"/Developer/Platforms/"].location == NSNotFound) && // iPhone simulator
+            ![path hasSuffix:@"FBAccess"]) // Special case for FrontBase framework
             *nonSystem = YES;
     }
     

@@ -1,4 +1,4 @@
-// Copyright 2006-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2011 Omni Development, Inc.  All rights reserved.
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 // $Id$
 
@@ -26,5 +26,5 @@ SKIP_INSTALL = YES
 STRINGS_FILE_OUTPUT_ENCODING = UTF-8
 
 // Don't strip nibs/xibs:  it makes life difficult for our localizers
-IBC_STRIP_NIBS = NO;
-IBC_FLATTEN_NIBS = NO;
+IBC_STRIP_NIBS = NO
+IBC_FLATTEN_NIBS = NO

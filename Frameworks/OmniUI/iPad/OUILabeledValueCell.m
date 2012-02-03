@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -194,12 +194,9 @@ RCS_ID("$Id$");
         valueRect.origin.x = CGRectGetMaxX(valueRect) + 10.0;
         valueRect.size.width = CGRectGetMaxX(self.bounds) - valueRect.origin.x;
     }
-    
-    UIFont *valueFont = [[self class] valueFontForStyle:self.style];
-    CGSize valueSize = [valueString sizeWithFont:valueFont];
-    
-    valueRect.origin.y = CGRectGetMidY(self.bounds) - valueSize.height / 2.0;
-    valueRect.size.height = valueSize.height;
+
+    valueRect.origin.y = CGRectGetMinY(self.bounds);
+    valueRect.size.height = self.bounds.size.height;
     
     return valueRect;
 }

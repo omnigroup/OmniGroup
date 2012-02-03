@@ -1,4 +1,4 @@
-// Copyright 2003-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -555,6 +555,19 @@ static OAFontDescriptor *_newWithFontDescriptorHavingTrait(OAFontDescriptor *sel
     [newAttributes removeObjectForKey:(id)kCTFontNameAttribute];
     [newAttributes removeObjectForKey:(id)kCTFontDisplayNameAttribute];
     [newAttributes removeObjectForKey:(id)kCTFontStyleNameAttribute];
+    
+    // If we don't have traits explicitly listed already, and our original font *did* have traits then add a request. This can happen when the original attributes dictionary had a specific font name ("HelveticaNeue-Bold") instead of a family and traits.
+    if ([[newAttributes objectForKey:(id)kCTFontTraitsAttribute] objectForKey:(id)kCTFontSymbolicTrait] == nil) {
+        CTFontSymbolicTraits oldTraits = _symbolicTraits(self);
+        if (oldTraits) {
+            NSDictionary *traitsDict = [newAttributes objectForKey:(id)kCTFontTraitsAttribute];
+            NSMutableDictionary *newTraitsDict = traitsDict ? [traitsDict mutableCopy] : [[NSMutableDictionary alloc] init];
+            
+            [newTraitsDict setObject:[NSNumber numberWithUnsignedInt:oldTraits] forKey:(id)kCTFontSymbolicTrait];
+            [newAttributes setObject:newTraitsDict forKey:(id)kCTFontTraitsAttribute];
+            [newTraitsDict release];
+        }
+    }
     
     OAFontDescriptor *result = [[OAFontDescriptor alloc] initWithFontAttributes:newAttributes];
     [newAttributes release];

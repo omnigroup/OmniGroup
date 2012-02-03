@@ -1,4 +1,4 @@
-// Copyright 2003-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,11 +45,16 @@ static inline void OQFlipVerticallyInRect(CGContextRef ctx, CGRect rect)
 
 extern CGRect OQCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter);
 extern CGRect OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter);
+extern CGRect OQCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter);
 
 #if TARGET_OS_IPHONE
 extern void OQDrawImageCenteredInRect(CGContextRef ctx, UIImage *image, CGRect rect);
 #endif
 extern void OQDrawCGImageWithScaleCenteredInRect(CGContextRef ctx, CGImageRef image, CGFloat scale, CGRect rect);
+
+extern void OQPreflightImage(CGImageRef image);
+extern CGImageRef OQCopyFlattenedImage(CGImageRef image);
+extern CGImageRef OQCreateImageWithSize(CGImageRef image, CGSize size, CGInterpolationQuality interpolationQuality);
 
 void OQCrosshatchRect(CGContextRef ctxt, CGRect rect, CGFloat lineWidth, CGFloat dx, CGFloat dy);
 

@@ -7,6 +7,7 @@
 
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 
+#import <OmniUI/OUIEditableFrame.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIMinimalScrollNotifierImplementation.h>
@@ -178,13 +179,32 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 @end
 
 @interface OUIStackedSlicesInspectorPane ()
+
 @property(nonatomic,copy) NSArray *slices;
+
+- (void)_stackedSlicesInspectorPane_keyboardWillShow:(NSNotification *)notification;
+- (void)_stackedSlicesInspectorPane_keyboardDidShow:(NSNotification *)notification;
+
+- (void)_stackedSlicesInspectorPane_textFieldTextDidBeginEditing:(NSNotification *)notification;
+- (void)_stackedSlicesInspectorPane_textViewTextDidBeginEditing:(NSNotification *)notification;
+- (void)_stackedSlicesInspectorPane_editableFrameTextdDidBeginEditing:(NSNotification *)notification;
+
+- (void)_scrollFirstResponderIntoView;
+- (UIView *)_findFirstResponderStartingAtView:(UIView *)view;
+
 @end
 
 @implementation OUIStackedSlicesInspectorPane
 
 - (void)dealloc;
 {
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [nc removeObserver:self name:UIKeyboardDidShowNotification object:nil];
+    [nc removeObserver:self name:UITextFieldTextDidBeginEditingNotification object:nil];
+    [nc removeObserver:self name:UITextViewTextDidBeginEditingNotification object:nil];
+    [nc removeObserver:self name:OUIEditableFrameTextDidBeginEditingNotification object:nil];
+
     [_availableSlices release];
     [_slices release];
     [_scrollNotifier release];
@@ -217,8 +237,6 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     // Only fill the _availableSlices once. This allows the delegate/subclass to return an autoreleased array that isn't stored in a static (meaning that they can go away on a low memory warning). If we fill this multiple times, then we'll get confused and replace the slices constantly (since we do pointer equality in -setSlices:.
     if (!_availableSlices) {
         _availableSlices = [[self.inspector makeAvailableSlicesForStackedSlicesPane:self] copy];
-        if (_availableSlices)
-            return _availableSlices;
     }
     
     // TODO: Add support for this style of use in the superclass? There already is in the delegate-based path.
@@ -450,6 +468,15 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     
     self.view = view;
     [view release];
+
+    // It would be nice if we could just observe first responder changes, but there is no API for that.
+    // We could probably swizzling UIResponder, and send out notifications ourselves. For now, just do it the duplicative way for the three common cases.
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(_stackedSlicesInspectorPane_keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [nc addObserver:self selector:@selector(_stackedSlicesInspectorPane_keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
+    [nc addObserver:self selector:@selector(_stackedSlicesInspectorPane_textFieldTextDidBeginEditing:) name:UITextFieldTextDidBeginEditingNotification object:nil];
+    [nc addObserver:self selector:@selector(_stackedSlicesInspectorPane_textViewTextDidBeginEditing:) name:UITextViewTextDidBeginEditingNotification object:nil];
+    [nc addObserver:self selector:@selector(_stackedSlicesInspectorPane_editableFrameTextdDidBeginEditing:) name:OUIEditableFrameTextDidBeginEditingNotification object:nil];
 }
 
 - (void)viewDidUnload;
@@ -477,6 +504,66 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     
     OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.view;
     [view flashScrollIndicators];
+}
+
+#pragma mark -
+#pragma mark Keyboard Interaction
+
+- (void)_stackedSlicesInspectorPane_keyboardWillShow:(NSNotification *)notification;
+{
+    _keyboardIsAppearing = YES;
+}
+
+- (void)_stackedSlicesInspectorPane_keyboardDidShow:(NSNotification *)notification;
+{
+    _keyboardIsAppearing = NO;
+    [self _scrollFirstResponderIntoView];
+}
+
+- (void)_stackedSlicesInspectorPane_textFieldTextDidBeginEditing:(NSNotification *)notification;
+{
+    if (!_keyboardIsAppearing)
+        [self _scrollFirstResponderIntoView];
+}
+
+- (void)_stackedSlicesInspectorPane_textViewTextDidBeginEditing:(NSNotification *)notification;
+{
+    if (!_keyboardIsAppearing)
+        [self _scrollFirstResponderIntoView];
+}
+
+- (void)_stackedSlicesInspectorPane_editableFrameTextdDidBeginEditing:(NSNotification *)notification;
+{
+    if (!_keyboardIsAppearing)
+        [self _scrollFirstResponderIntoView];
+}
+
+- (void)_scrollFirstResponderIntoView;
+{
+    if (![self isViewLoaded] || !self.view.window)
+        return;
+    
+    UIView *firstResponder = [self _findFirstResponderStartingAtView:self.view];
+    if (firstResponder) {
+        const CGFloat MARGIN_SLOP = 20;
+        OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.view;
+        CGRect rect = CGRectInset([view convertRect:firstResponder.bounds fromView:firstResponder], -MARGIN_SLOP, -MARGIN_SLOP);
+        [view scrollRectToVisible:rect animated:YES];
+    }
+}
+
+- (UIView *)_findFirstResponderStartingAtView:(UIView *)view;
+{
+    if ([view isFirstResponder])
+        return view;
+
+    for (UIView *subview in view.subviews) {
+        UIView *firstResponder = [self _findFirstResponderStartingAtView:subview];
+        if (firstResponder)
+            return firstResponder;
+    }
+    
+    return nil;
 }
 
 @end

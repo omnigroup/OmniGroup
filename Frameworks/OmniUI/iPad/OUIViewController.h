@@ -1,4 +1,4 @@
-// Copyright 2011 The Omni Group.  All rights reserved.
+// Copyright 2011-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,15 +21,9 @@ typedef enum {
 } OUIViewControllerVisibility;
 
 @interface OUIViewController : UIViewController
-{
-@private
-    OUIViewControllerVisibility _visibility;
-    BOOL _lastChangeAnimated;
-    UIViewController *_unretained_parent; 
-        // This is not redundant with parentViewController from UIViewController. UIViewController sets parentViewController in addChildViewController: BEFORE calling willMoveToParentViewController. We don't set _unretained_parent until the end of didMoveToParentViewController, so we can check for (a) consistency of the parent across the calls and (b) make sure we move through having no parent before getting a new parent.
-@package
-    UIViewController *_unretained_prospective_parent;
-}
+
+// If set to to a non-empty rect, this rect will be applied to the view in -viewDidLoad. This can be a useful optimization for more complex view controllers that are about to be loaded into a parent view controller.
+@property(nonatomic) CGRect initialFrame;
 
 @property(readonly,nonatomic) OUIViewControllerVisibility visibility;
 

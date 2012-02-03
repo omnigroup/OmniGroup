@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -100,6 +100,8 @@
 // Writing conveniences
 - (OFXMLElement *) pushElement: (NSString *) elementName;
 - (void) popElement;
+- (void) addElement:(NSString *)elementName childBlock:(void (^)(void))block;
+
 - (OFXMLElement *) topElement;
 - (void) appendString: (NSString *) string;
 - (void) appendString: (NSString *) string quotingMask: (unsigned int) quotingMask newlineReplacment: (NSString *) newlineReplacment;

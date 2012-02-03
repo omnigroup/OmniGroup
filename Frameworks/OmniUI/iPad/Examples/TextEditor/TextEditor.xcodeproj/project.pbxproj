@@ -1058,7 +1058,7 @@
 				CODE_SIGN_ENTITLEMENTS = TextEditor.entitlements;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SDKROOT)$(DEVELOPER_FRAMEWORKS_DIR)\"",
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 				);
 				INFOPLIST_FILE = "Resources/TextEditor-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
@@ -1078,7 +1078,7 @@
 				CODE_SIGN_ENTITLEMENTS = TextEditor.entitlements;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SDKROOT)$(DEVELOPER_FRAMEWORKS_DIR)\"",
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 				);
 				INFOPLIST_FILE = "Resources/TextEditor-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
@@ -1097,6 +1097,7 @@
 			baseConfigurationReference = 3427213B1194802E00B39788 /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				GCC_THUMB_SUPPORT = NO;
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 			};
@@ -1107,6 +1108,7 @@
 			baseConfigurationReference = 3427213C1194802E00B39788 /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				GCC_THUMB_SUPPORT = NO;
 				SDKROOT = iphoneos;
 			};
 			name = Release;

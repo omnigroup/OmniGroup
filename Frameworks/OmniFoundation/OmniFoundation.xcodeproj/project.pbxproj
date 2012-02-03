@@ -639,6 +639,8 @@
 		5F0714151461B58E00A2481F /* OFDynamicStoreListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FA495691211DE83006BB2BF /* OFDynamicStoreListener.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5F24DAD8146B09A900A43E30 /* OFDynamicStoreListener.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FA4956A1211DE83006BB2BF /* OFDynamicStoreListener.m */; };
 		5F24DAD9146B09CA00A43E30 /* OFDynamicStoreListenerPrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FA4956C1211DE83006BB2BF /* OFDynamicStoreListenerPrivate.m */; };
+		5F3DCBDA14B78AC8001C56CF /* NSKeyValueObserving-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F3DCBD914B78AC8001C56CF /* NSKeyValueObserving-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5F3DCBDB14B78AC8001C56CF /* NSKeyValueObserving-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F3DCBD914B78AC8001C56CF /* NSKeyValueObserving-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FEC029B1456323D002E9BBF /* OFXMLReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BA6FC0F740AB100329C2F /* OFXMLReader.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FEC029D14563462002E9BBF /* OFXMLReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA6FD0F740AB100329C2F /* OFXMLReader.m */; };
 		6C391FA4114C1B4E0049E917 /* OFNetChangeNotifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C391FA2114C1B4E0049E917 /* OFNetChangeNotifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1307,6 +1309,7 @@
 		4AF8309606A637B400964FAA /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		5A1D8CE10017C8DCC697A1D6 /* OFCharacterSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCharacterSet.h; sourceTree = "<group>"; };
 		5A1D8CE20017C8DCC697A1D6 /* OFCharacterSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCharacterSet.m; sourceTree = "<group>"; };
+		5F3DCBD914B78AC8001C56CF /* NSKeyValueObserving-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSKeyValueObserving-OFExtensions.h"; sourceTree = "<group>"; };
 		5FA495691211DE83006BB2BF /* OFDynamicStoreListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFDynamicStoreListener.h; sourceTree = "<group>"; };
 		5FA4956A1211DE83006BB2BF /* OFDynamicStoreListener.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDynamicStoreListener.m; sourceTree = "<group>"; };
 		5FA4956B1211DE83006BB2BF /* OFDynamicStoreListenerPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFDynamicStoreListenerPrivate.h; sourceTree = "<group>"; };
@@ -1742,6 +1745,7 @@
 				A2C67D820D91A4BB00BD7911 /* NSIndexSet-OFExtensions.m */,
 				00E51D33FE8AAEA611C9CC38 /* NSInvocation-OFExtensions.h */,
 				00E51D16FE8AAEA611C9CC38 /* NSInvocation-OFExtensions.m */,
+				5F3DCBD914B78AC8001C56CF /* NSKeyValueObserving-OFExtensions.h */,
 				00E51D34FE8AAEA611C9CC38 /* NSMutableArray-OFExtensions.h */,
 				00E51D17FE8AAEA611C9CC38 /* NSMutableArray-OFExtensions.m */,
 				34E9110B05FE19A40097A113 /* NSMutableAttributedString-OFExtensions.h */,
@@ -2453,6 +2457,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F3DCBDB14B78AC8001C56CF /* NSKeyValueObserving-OFExtensions.h in Headers */,
 				344D08F71190D4ED00264D89 /* CFArray-OFExtensions.h in Headers */,
 				344D08FA1190D4F900264D89 /* CFData-OFFileIO.h in Headers */,
 				344D08FB1190D4FB00264D89 /* CFData-OFCompression.h in Headers */,
@@ -2562,6 +2567,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F3DCBDA14B78AC8001C56CF /* NSKeyValueObserving-OFExtensions.h in Headers */,
 				4ADA019A093F3EEE00F5F615 /* OFVersionNumber.h in Headers */,
 				4A4E060008AA72B10098FF0F /* OFAddScriptCommand.h in Headers */,
 				4A4E060108AA72B10098FF0F /* OFRemoveScriptCommand.h in Headers */,

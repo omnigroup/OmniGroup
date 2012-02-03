@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,12 +14,6 @@
 typedef void (^OUIMainViewControllerGetAnimationRegion)(UIView **outView, CGRect *outRect);
 
 @interface OUIMainViewController : OUIViewController
-{
-@private
-    CGFloat _lastKeyboardHeight;
-    UIViewController *_innerViewController;
-    BOOL _resizesToAvoidKeyboard;
-}
 
 @property(nonatomic,readonly) CGFloat lastKeyboardHeight;
 
@@ -40,10 +34,16 @@ typedef void (^OUIMainViewControllerGetAnimationRegion)(UIView **outView, CGRect
 @end
 
 @interface UIViewController (OUIMainViewControllerExtensions)
-- (UIToolbar *)toolbarForMainViewController;
+@property(readonly) UIToolbar *toolbarForMainViewController;
 @property(readonly) BOOL isEditingViewController;
+@property(readonly) UIColor *activityIndicatorColorForMainViewController;
 @end
 
-extern NSString * const OUIMainViewControllerResizedForKeyboard;
-extern NSString * const OUIMainViewControllerResizedForKeyboardVisibilityKey; // user data key; Boolean NSNumber value
-extern NSString * const OUIMainViewControllerResizedForKeyboardOriginalUserInfoKey; // user data key; original userInfo dictionary from the keyboard will/did show/hide notification
+// This is posted after the main view controller resizes itself to avoid the keyboard. If you want to match the animation of the keyboard (assuming the software keyboard is on) you should ensure your view is marked as needing display or otherwise sets up animation in its handling of this notification. NOTE: If a hardware keyboard is being used, it sends no show/hide/resize animation when a text input client becomes or resigns first responder. So, you cannot depend on these being sent as your signal for any editing starting/ending.
+extern NSString * const OUIMainViewControllerDidBeginResizingForKeyboard;
+
+// This is posted after the keyboard resizing animation is finished. See the note above about hardware keyboards.
+extern NSString * const OUIMainViewControllerDidFinishResizingForKeyboard;
+
+// The original user data key from the keyboard will/did change frame notification. This can be used to get the animation duration/curve (though in the default case, OUIMainViewController will already have set up an animation context with the proper values applied).
+extern NSString * const OUIMainViewControllerResizedForKeyboardOriginalUserInfoKey;

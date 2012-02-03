@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,10 +11,26 @@
 
 #if OFS_DOCUMENT_STORE_SUPPORTED
 
-typedef enum {
-    OFSDocumentStoreScopeUnknown = -1, // Somewhere else -- iCloud will move deleted documents to a private place before deletion, for example
-    OFSDocumentStoreScopeLocal, // Inside ~/Documents on iPad, for example
-    OFSDocumentStoreScopeUbiquitous, // Inside the applications iCloud container, under Documents.
-} OFSDocumentStoreScope;
+@interface OFSDocumentStoreScope : NSObject <NSCopying> {
+@private
+    NSString *_containerID;
+    NSURL *_url;
+}
+
++ (OFSDocumentStoreScope *)defaultUbiquitousScope;
+
+- (id)initUbiquitousScopeWithContainerID:(NSString *)aContainerID;
+- (id)initLocalScopeWithURL:(NSURL *)aURL;
+
+- (BOOL)isFileInContainer:(NSURL *)fileURL;
+@property(nonatomic,readonly,getter=isUbiquitous) BOOL ubiquitous;
+
+- (NSURL *)containerURL;
+- (NSURL *)documentsURL:(NSError **)outError;
+
+@property (readonly, nonatomic) NSString *containerID;
+@property (readonly, nonatomic) NSURL *url;
+
+@end
 
 #endif // OFS_DOCUMENT_STORE_SUPPORTED

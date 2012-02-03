@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,12 +44,12 @@
 
 @property(readonly) BOOL activityIndicatorVisible;
 - (void)showActivityIndicatorInView:(UIView *)view;
+- (void)showActivityIndicatorInView:(UIView *)view withColor:(UIColor *)color;
 - (void)hideActivityIndicator;
 
 // NSObject (OUIAppMenuTarget)
 - (NSString *)aboutMenuTitle;
 - (NSString *)feedbackMenuTitle;
-- (NSString *)aboutMenuTitle;
 - (void)sendFeedback:(id)sender;
 - (void)showAppMenu:(id)sender;
 - (void)showSyncMenu:(id)sender;
@@ -60,6 +60,8 @@
 - (BOOL)presentPopover:(UIPopoverController *)popover fromBarButtonItem:(UIBarButtonItem *)item permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
 - (void)dismissPopover:(UIPopoverController *)popover animated:(BOOL)animated; // If the popover in question is not visible, does nothing. DOES send the 'did' delegate method, unlike the plain UIPopoverController method (see the implementation for reasoning)
 - (void)dismissPopoverAnimated:(BOOL)animated; // Calls -dismissPopover:animated: with whatever popover is visible
+
+- (void)forgetPossiblyVisiblePopoverIfAlreadyHidden;
 
 // Action Sheet Helpers
 - (void)showActionSheet:(OUIActionSheet *)actionSheet fromSender:(id)sender animated:(BOOL)animated;

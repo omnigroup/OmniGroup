@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,34 @@
 
 RCS_ID("$Id$");
 
+@interface OUIDocumentPreviewImageLayer : CALayer
+@end
+@implementation OUIDocumentPreviewImageLayer
+
+- (id<CAAction>)actionForKey:(NSString *)event;
+{
+    id <CAAction> action;
+    
+    if ([event isEqualToString:@"bounds"] ||
+        [event isEqualToString:@"position"] ||
+        // Let the shadow path resize -- we don't care to animate the color, so don't. Probabliy don't need to animate the opacity either.
+        [event isEqualToString:@"shadowPath"] ||
+        [event isEqualToString:@"shadowOpacity"]) {
+        CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:event];
+        animation.fromValue = [self valueForKey:event];
+        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        animation.fillMode = kCAFillModeBoth;
+        
+        action = animation;
+    } else
+        action = [super actionForKey:event];
+    
+    //NSLog(@"-actionForKey:%@ -> %@", event, action);
+    return action;
+}
+
+@end
+
 @implementation OUIDocumentPreviewView
 {
     NSMutableArray *_previews;
@@ -32,14 +60,14 @@ RCS_ID("$Id$");
     UIViewAnimationCurve _animationCurve;
 
     CALayer *_selectionLayer;
-    CALayer *_imageLayer;
+    OUIDocumentPreviewImageLayer *_imageLayer;
     UIImageView *_statusImageView;
     UIProgressView *_transferProgressView;
 }
 
 static id _commonInit(OUIDocumentPreviewView *self)
 {    
-    self->_imageLayer = [[CALayer alloc] init];
+    self->_imageLayer = [[OUIDocumentPreviewImageLayer alloc] init];
     self->_imageLayer.opaque = YES;
     
     [self.layer addSublayer:self->_imageLayer];
@@ -197,7 +225,7 @@ static void _updateShouldRasterize(OUIDocumentPreviewView *self)
         [_previews removeAllObjects];
     [_previews addObject:preview];
     
-    PREVIEW_DEBUG(@"%p addPreview: %@", self, [(id)preview shortDescription]);
+    DEBUG_PREVIEW_DISPLAY(@"%p addPreview: %@", self, [(id)preview shortDescription]);
 
     // Our frame gets set by our superview based on our preview size
     [self.superview setNeedsLayout];
@@ -211,7 +239,7 @@ static void _updateShouldRasterize(OUIDocumentPreviewView *self)
     if ([_previews count] == 0)
         return;
     
-    PREVIEW_DEBUG(@"%p discardPreviews", self);
+    DEBUG_PREVIEW_DISPLAY(@"%p discardPreviews", self);
 
     [_previews removeAllObjects];
 }
@@ -271,6 +299,28 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         previewFrame.origin.x = floor(CGRectGetMidX(frame) - previewSize.width / 2);
         previewFrame.origin.y = floor(CGRectGetMidY(frame) - previewSize.height / 2);
         previewFrame.size = previewSize;
+        
+        return _outsetRect(previewFrame, [self _edgeInsets]);
+    }
+}
+
+// This version allows the preview to scale up. It would be good to unify this with the other version
+- (CGRect)fitPreviewRectInFrame:(CGRect)frame;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    if (_group) {
+        return CGRectInset(frame, 16, 16); // ... or something
+    } else {
+        OUIDocumentPreview *preview = [_previews lastObject];
+        
+        CGSize previewSize;
+        if (preview && preview.type == OUIDocumentPreviewTypeRegular) {
+            previewSize = preview.size;
+        } else
+            previewSize = [OUIDocumentPreview maximumPreviewSizeForLandscape:_landscape];
+
+        CGRect previewFrame = OQCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(frame, previewSize);
         
         return _outsetRect(previewFrame, [self _edgeInsets]);
     }
@@ -400,8 +450,9 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
     
     CGRect previewFrame = UIEdgeInsetsInsetRect(bounds, [self _edgeInsets]);
     
-    // TODO: Placeholder images -- make the preview generation build pre-composited images
-    OUIWithoutLayersAnimating(^{
+    // We do need this to animate when entering/leaving rename mode in the document picker.
+    //NSLog(@"%p animations UI:%d CA:%d %@", self, [UIView areAnimationsEnabled], ![CATransaction disableActions], NSStringFromCGRect(previewFrame));
+    OUIWithAppropriateLayerAnimations(^{
         _imageLayer.frame = previewFrame;
     });
 
@@ -410,7 +461,7 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         // Want to add multiple image layers? Want to force the caller to pre-composite a 3x3 grid of preview images?        
         OBASSERT(self.superview.hidden);
     } else {
-        _imageLayer.contents = (id)[[_previews lastObject] image];
+        _imageLayer.contents = (id)[(OUIDocumentPreview *)[_previews lastObject] image];
     }
     
     // Highlighting (image alpha)
@@ -426,13 +477,13 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
     // Shadow
     if (_selected || _draggingSource) {
         // No shadow
-        OUIWithoutLayersAnimating(^{
+        OUIWithAppropriateLayerAnimations(^{
             _imageLayer.shadowPath = NULL;
             _imageLayer.shadowColor = NULL;
             _imageLayer.shadowOpacity = 0;
         });
     } else {
-        OUIWithoutLayersAnimating(^{
+        OUIWithAppropriateLayerAnimations(^{
             CGPathRef path = CGPathCreateWithRect(CGRectMake(0, 0, previewFrame.size.width, previewFrame.size.height), NULL/*transform*/);
             _imageLayer.shadowPath = path;
             CFRelease(path);
@@ -464,6 +515,7 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         if (statusImage) {
             CGSize statusImageSize = statusImage.size;
             CGRect statusFrame = CGRectMake(CGRectGetMaxX(previewFrame) - statusImageSize.width, CGRectGetMinY(previewFrame), statusImageSize.width, statusImageSize.height);
+            OB_UNUSED_VALUE(statusFrame); // http://llvm.org/bugs/show_bug.cgi?id=11576 Use in block doesn't count as use to prevent dead store warning
             
             OUIWithoutAnimating(^{
                 _statusImageView.frame = statusFrame;

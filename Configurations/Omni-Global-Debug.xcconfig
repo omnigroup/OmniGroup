@@ -7,6 +7,10 @@
 
 // Common settings for Debug configurations
 GCC_PREPROCESSOR_DEFINITIONS = DEBUG DEBUG_$(USER) $(OMNI_STORE_PREPROCESSOR_DEFINITIONS)
+INFOPLIST_PREPROCESSOR_DEFINITIONS = DEBUG DEBUG_$(USER) $(OMNI_STORE_PREPROCESSOR_DEFINITIONS)
+
+// Explicitly turn off strip for debug builds. Necessary for Xcode 4.3 betas, 10637428: Regression: stripping embedded tool projects fails
+COPY_PHASE_STRIP = NO
 
 // When debugging, it's often helpful to turn off optimizations
 GCC_OPTIMIZATION_LEVEL = 0

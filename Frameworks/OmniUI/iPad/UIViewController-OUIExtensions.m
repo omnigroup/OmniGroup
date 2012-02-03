@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -142,7 +142,7 @@ static NSString * NSStringFromOUIViewControllerState(OUIViewControllerState stat
 
 - (UIViewController *)modalParentViewController;
 {
-    // What we really want here is the view controller which presented us, which iOS 5 happy tells us
+    // What we really want here is the view controller which presented us, which iOS 5 happily tells us
     
     if ([self respondsToSelector:@selector(presentingViewController)])
         return self.presentingViewController;

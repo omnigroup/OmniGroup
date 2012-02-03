@@ -27,39 +27,42 @@ RCS_ID("$Id$");
 
 @implementation OAWorkflow
 
-+ (OAWorkflow *)workflowWithContentsOfFile:(NSString *)path;
++ (OAWorkflow *)workflowWithContentsOfFile:(NSString *)path error:(NSError **)outError;
 {
-    return [[[self alloc] initWithContentsOfFile:path] autorelease];
+    return [[[self alloc] initWithContentsOfFile:path error:outError] autorelease];
 }
 
-+ (OAWorkflow *)workflowWithContentsOfURL:(NSURL *)url;
++ (OAWorkflow *)workflowWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
 {
-    return [[[self alloc] initWithContentsOfURL:url] autorelease];
+    // Cast necessary for <http://llvm.org/bugs/show_bug.cgi?id=11577> "[self alloc]" in a class method not inferred to return an instance of that class
+    // NSAppleScript has this same selector, but with error being 'NSDictionary **'.
+    return [[(OAWorkflow *)[self alloc] initWithContentsOfURL:url error:outError] autorelease];
 }
 
-- (id)initWithContentsOfFile:(NSString *)path;
+- (id)initWithContentsOfFile:(NSString *)path error:(NSError **)outError;
 {
-    NSURL *url = [NSURL fileURLWithPath:path];
-    return [self initWithContentsOfURL:url];
+    return [self initWithContentsOfURL:[NSURL fileURLWithPath:path] error:outError];
 }
 
-- (id)initWithContentsOfURL:(NSURL *)url;
+- (id)initWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
 {
+    OBPRECONDITION([url isFileURL]);
+    
     if (!(self = [super init]))
         return nil;
 
-    OBASSERT([url isFileURL]);
-    
-    if (![[NSFileManager defaultManager] fileExistsAtPath:[url path]]) {
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[url path] traverseLink:YES error:outError];
+    if (!attributes) {
         [self release];
         return nil;
     }
         
     _url = [url retain];
+    
     return self;
 }
 
-- (void)executeWithFiles: (NSArray*)filePaths;
+- (void)executeWithFiles:(NSArray*)filePaths;
 {
     LSLaunchURLSpec spec;
     OSStatus err;

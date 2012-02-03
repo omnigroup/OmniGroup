@@ -199,7 +199,7 @@ RCS_ID("$Id$")
 }
 
 /*" Updates defaults for a modified UI element (the sender). "*/
-- (void)setValueForSender:(id)sender;
+- (IBAction)setValueForSender:(id)sender;
 {
 }
 

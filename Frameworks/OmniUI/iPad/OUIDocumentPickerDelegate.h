@@ -50,4 +50,10 @@
 
 - (NSString *)documentPickerMainToolbarTitle:(OUIDocumentPicker *)picker;
 
+// The file items are provided in case the receiver would return a different format based on the selected file types.
+- (NSString *)documentPickerMainToolbarSelectionFormatForFileItems:(NSSet *)fileItems;
+
+// Only called if there are 2 or more items being duplicated. The return value should be a format string taking one %ld argument. The file items are provided in case the receiver would return a different title based on the file types.
+- (NSString *)documentPickerAlertTitleFormatForDuplicatingFileItems:(NSSet *)fileItems;
+
 @end

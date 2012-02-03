@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,9 @@
     long long _bytesReceived;
     
     BOOL _finished;
-    NSError *_error;
+    BOOL _shouldCollectDetailsForError;
+    NSMutableData *_errorData;
+    NSError *_finalError;
     NSMutableArray *_redirections;
 }
 

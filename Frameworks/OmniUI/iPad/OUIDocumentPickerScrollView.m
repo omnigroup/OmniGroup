@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@
 #import <OmniUI/OUIDocumentPickerFileItemView.h>
 #import <OmniUI/OUIDocumentPickerGroupItemView.h>
 #import <OmniUI/OUIDocumentPreview.h>
+#import <OmniUI/OUIDragGestureRecognizer.h>
 #import <OmniUI/OUIMainViewController.h>
 #import <OmniUI/OUISingleDocumentAppController.h>
 #import <OmniUI/UIGestureRecognizer-OUIExtensions.h>
@@ -82,6 +83,7 @@ static CGPoint _clampContentOffset(CGPoint contentOffset, CGRect bounds, CGSize 
 @interface OUIDocumentPickerScrollView (/*Private*/)
 - (void)_itemViewTapped:(UITapGestureRecognizer *)recognizer;
 + (CGSize)_gridSizeForLandscape:(BOOL)landscape;
+- (void)_startDragRecognizer:(OUIDragGestureRecognizer *)recognizer;
 @end
 
 @implementation OUIDocumentPickerScrollView
@@ -105,6 +107,10 @@ static CGPoint _clampContentOffset(CGPoint contentOffset, CGRect bounds, CGSize 
     NSArray *_itemViewsForPreviousOrientation;
     NSArray *_fileItemViews;
     NSArray *_groupItemViews;
+    
+    OUIDragGestureRecognizer *_startDragRecognizer;
+    
+    NSTimeInterval _rotationDuration;
 }
 
 static id _commonInit(OUIDocumentPickerScrollView *self)
@@ -146,6 +152,10 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
     [_draggingDestinationItem release];
     [_itemsIgnoredForLayout release];
     
+    _startDragRecognizer.delegate = nil;
+    [_startDragRecognizer release];
+    _startDragRecognizer = nil;
+
     [super dealloc];
 }
 
@@ -166,14 +176,15 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
  If this is not called around a call to -setLandscape:, then the change is assumed to be taking place off screen and will be unanimated.
  */
 
-- (void)willRotate;
+- (void)willRotateWithDuration:(NSTimeInterval)duration;
 {
     OBPRECONDITION(self.window); // No point in animating while off screen.
     OBPRECONDITION(_flags.isAnimatingRotationChange == NO);
     
-    DEBUG_LAYOUT(@"willRotate");
+    DEBUG_LAYOUT(@"willRotateWithDuration:%f", duration);
     
     _flags.isAnimatingRotationChange = YES;
+    _rotationDuration = duration;
     
     // Fade out old item views, preparing for a whole new array in the -setGridSize:
     OBASSERT(_itemViewsForPreviousOrientation == nil);
@@ -196,6 +207,8 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
     // ... and fade them out, exposing the new ones
     [UIView beginAnimations:nil context:NULL];
     {
+        if (_rotationDuration > 0)
+            [UIView setAnimationDuration:_rotationDuration];
         for (OUIDocumentPickerItemView *itemView in _itemViewsForPreviousOrientation) {
             if (itemView.hidden == NO)
                 itemView.alpha = 0;
@@ -284,9 +297,12 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
         OBASSERT(_fileItemViews == nil);
         OBASSERT(_groupItemViews == nil);
     } else {
-        // The device was rotated while our view controller was off screen. It doesn't get told about the rotation in that case and we just get a landscape change.
+        // The device was rotated while our view controller was off screen. It doesn't get told about the rotation in that case and we just get a landscape change. We might also have been covered by a modal view controller but are being revealed again.
         OBASSERT(self.window == nil);
     }
+    
+    // Figure out whether we should do the animation outside of the OUIWithoutAnimating block (else +areAnimationsEnabled will be trivially NO).
+    BOOL shouldCrossFade = _flags.isAnimatingRotationChange && [UIView areAnimationsEnabled];
     
     // Make the new views (which will start out hidden).
     OUIWithoutAnimating(^{
@@ -300,7 +316,7 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
         
         // Tell the new views that they shouldn't animate layout, if we are rotating.
         // We do want to fade them in, though.
-        if (_flags.isAnimatingRotationChange) {
+        if (shouldCrossFade) {
             for (OUIDocumentPickerItemView *itemView in _fileItemViews) {
                 itemView.animatingRotationChange = YES;
                 itemView.alpha = 0;
@@ -313,9 +329,11 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     });
     
     // Now fade in the views (at least the ones that have their hidden flag cleared on the next layout).
-    if (_flags.isAnimatingRotationChange && [UIView areAnimationsEnabled]) {
+    if (shouldCrossFade) {
         [UIView beginAnimations:nil context:NULL];
         {
+            if (_rotationDuration > 0)
+                [UIView setAnimationDuration:_rotationDuration];
             for (OUIDocumentPickerItemView *itemView in _fileItemViews) {
                 itemView.alpha = 1;
             }
@@ -348,7 +366,6 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     OBPRECONDITION([toAdd isSubsetOfSet:_items]);
     OBPRECONDITION([toAdd isSubsetOfSet:_itemsBeingAdded]);
 
-    OBFinishPortingLater("Set them up to zoom in");
     [_itemsBeingAdded minusSet:toAdd];
     
     for (OFSDocumentStoreItem *item in toAdd) {
@@ -454,26 +471,36 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
 
 - (void)scrollItemToVisible:(OFSDocumentStoreItem *)item animated:(BOOL)animated;
 {
-    if (!item)
-        return;
-    
+    return [self scrollItemsToVisible:[NSArray arrayWithObjects:item, nil] animated:animated];
+}
+
+- (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated;
+{
     [self layoutIfNeeded];
 
-    CGRect itemFrame = [self frameForItem:item];
-    
     CGPoint contentOffset = self.contentOffset;
     CGRect bounds = self.bounds;
     
     CGRect contentRect;
     contentRect.origin = contentOffset;
     contentRect.size = bounds.size;
+    
+    CGRect itemsFrame = CGRectNull;
+    for (OFSDocumentStoreItem *item in items) {
+        CGRect itemFrame = [self frameForItem:item];
+        if (CGRectIsNull(itemFrame))
+            itemsFrame = itemFrame;
+        else
+            itemsFrame = CGRectUnion(itemsFrame, itemFrame);
+    }
 
-    if (CGRectContainsRect(contentRect, itemFrame))
+    // If all the rects are fully visible, nothing to do.
+    if (CGRectContainsRect(contentRect, itemsFrame))
         return;
-
+    
     CGSize contentSize = self.contentSize;
-    CGPoint clampedContentOffset = _clampContentOffset(_contentOffsetForCenteringItem(self, itemFrame), bounds, contentSize);
-
+    CGPoint clampedContentOffset = _clampContentOffset(_contentOffsetForCenteringItem(self, itemsFrame), bounds, contentSize);
+    
     if (!CGPointEqualToPoint(contentOffset, clampedContentOffset)) {
         [self setContentOffset:clampedContentOffset animated:animated];
         [self setNeedsLayout];
@@ -548,6 +575,9 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
 static OUIDocumentPickerItemView *_itemViewHitInPreviewAreaByRecognizer(NSArray *itemViews, UIGestureRecognizer *recognizer)
 {
     for (OUIDocumentPickerItemView *itemView in itemViews) {
+        // The -hitTest:withEvent: below doesn't consider ancestor isHidden flags.
+        if (itemView.hidden)
+            continue;
         OUIDocumentPreviewView *previewView = itemView.previewView;
         UIView *hitView = [previewView hitTest:[recognizer locationInView:previewView] withEvent:nil];
         if (hitView)
@@ -567,6 +597,48 @@ static OUIDocumentPickerItemView *_itemViewHitInPreviewAreaByRecognizer(NSArray 
 - (OUIDocumentPickerFileItemView *)fileItemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
 {
     return (OUIDocumentPickerFileItemView *)_itemViewHitInPreviewAreaByRecognizer(_fileItemViews, recognizer);
+}
+
+- (OFSDocumentStoreFileItem *)preferredFileItemForNextPreviewUpdate:(NSSet *)fileItemsNeedingPreviewUpdate;
+{
+    // Prefer to update items that are visible, and then among those, do items starting at the top-left.
+    OFSDocumentStoreFileItem *bestFileItem = nil;
+    CGFloat bestVisiblePercentage = 0;
+    CGPoint bestOrigin = CGPointZero;
+
+    CGPoint contentOffset = self.contentOffset;
+    CGRect bounds = self.bounds;
+    
+    CGRect contentRect;
+    contentRect.origin = contentOffset;
+    contentRect.size = bounds.size;
+
+    OFExtent contentYExtent = OFExtentFromRectYRange(contentRect);
+    if (contentYExtent.length <= 1)
+        return nil; // Avoid divide by zero below.
+    
+    for (OUIDocumentPickerFileItemView *fileItemView in _fileItemViews) {
+        OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)fileItemView.item;
+        if ([fileItemsNeedingPreviewUpdate member:fileItem] == nil)
+            continue;
+
+        CGRect itemBounds = fileItemView.bounds;
+        CGPoint itemOrigin = itemBounds.origin;
+        OFExtent itemYExtent = OFExtentFromRectYRange(fileItemView.frame);
+
+        OFExtent itemVisibleYExtent = OFExtentIntersection(itemYExtent, contentYExtent);
+        CGFloat itemVisiblePercentage = itemVisibleYExtent.length / contentYExtent.length;
+        
+        if (itemVisiblePercentage > bestVisiblePercentage ||
+            itemOrigin.y < bestOrigin.y ||
+            (itemOrigin.y == bestOrigin.y && itemOrigin.x < bestOrigin.x)) {
+            bestFileItem = fileItem;
+            bestVisiblePercentage = itemVisiblePercentage;
+            bestOrigin = itemOrigin;
+        }
+    }
+    
+    return bestFileItem;
 }
 
 - (void)previewsUpdatedForFileItem:(OFSDocumentStoreFileItem *)fileItem;
@@ -601,6 +673,28 @@ static OUIDocumentPickerItemView *_itemViewHitInPreviewAreaByRecognizer(NSArray 
 
 #pragma mark -
 #pragma mark UIView
+
+- (void)willMoveToWindow:(UIWindow *)newWindow;
+{
+    [super willMoveToWindow:newWindow];
+    
+    if (newWindow && _startDragRecognizer == nil) {
+        // UIScrollView has recognizers, but doesn't delcare that it is their delegate. Hopefully they are leaving this open for subclassers.
+        OBASSERT([UIScrollView conformsToProtocol:@protocol(UIGestureRecognizerDelegate)] == NO);
+
+        _startDragRecognizer = [[OUIDragGestureRecognizer alloc] initWithTarget:self action:@selector(_startDragRecognizer:)];
+        _startDragRecognizer.delegate = self;
+        _startDragRecognizer.holdDuration = 0.5; // taken from UILongPressGestureRecognizer.h
+        _startDragRecognizer.requiresHoldToComplete = YES;
+        
+        [self addGestureRecognizer:_startDragRecognizer];
+    } else if (newWindow == nil && _startDragRecognizer != nil) {
+        [self removeGestureRecognizer:_startDragRecognizer];
+        _startDragRecognizer.delegate = nil;
+        [_startDragRecognizer release];
+        _startDragRecognizer = nil;
+    }
+}
 
 static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
 {    
@@ -816,6 +910,22 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
 }
 
 #pragma mark -
+#pragma mark UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer;
+{
+    if (gestureRecognizer == _startDragRecognizer) {
+        if (_startDragRecognizer.wasATap)
+            return NO;
+        
+        // Only start editing and float up a preview if we hit a file preview
+        return ([self fileItemViewHitInPreviewAreaByRecognizer:_startDragRecognizer] != nil);
+    }
+    
+    return YES;
+}
+
+#pragma mark -
 #pragma mark Private
 
 - (void)_itemViewTapped:(UITapGestureRecognizer *)recognizer;
@@ -852,6 +962,12 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
         return CGSizeMake(4, 3.2);
     else
         return CGSizeMake(3, 3.175);
+}
+
+- (void)_startDragRecognizer:(OUIDragGestureRecognizer *)recognizer;
+{
+    OBPRECONDITION(recognizer == _startDragRecognizer);
+    [self.delegate documentPickerScrollView:self dragWithRecognizer:_startDragRecognizer];
 }
 
 @end

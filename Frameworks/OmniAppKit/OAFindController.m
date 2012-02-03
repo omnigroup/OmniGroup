@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,50 +23,108 @@ RCS_ID("$Id$")
 // Used for panel frame (auto)save
 static NSString *OAFindPanelTitle = @"Find";
 
-@interface OAFindController (Private)
+@interface OAFindController ()
+
+@property (nonatomic, retain) IBOutlet NSWindow *findPanel;
+@property (nonatomic, retain) IBOutlet NSForm *searchTextForm;
+@property (nonatomic, retain) IBOutlet NSForm *replaceTextForm;
+@property (nonatomic, retain) IBOutlet NSButton *ignoreCaseButton;
+@property (nonatomic, retain) IBOutlet NSButton *wholeWordButton;
+@property (nonatomic, retain) IBOutlet NSButton *findNextButton;
+@property (nonatomic, retain) IBOutlet NSButton *findPreviousButton;
+@property (nonatomic, retain) IBOutlet NSButton *replaceAllButton;
+@property (nonatomic, retain) IBOutlet NSButton *replaceButton;
+@property (nonatomic, retain) IBOutlet NSButton *replaceAndFindButton;
+@property (nonatomic, retain) IBOutlet NSMatrix *findTypeMatrix;
+@property (nonatomic, retain) IBOutlet NSPopUpButton *subexpressionPopUp;
+@property (nonatomic, retain) IBOutlet NSButton *replaceInSelectionCheckbox;
+@property (nonatomic, retain) IBOutlet NSBox *additionalControlsBox;
+@property (nonatomic, retain) IBOutlet NSView *stringControlsView;
+@property (nonatomic, retain) IBOutlet NSView *regularExpressionControlsView;
+
 - (void)loadInterface;
 - (id <OAFindPattern>)currentPatternWithBackwardsFlag:(BOOL)backwardsFlag;
 - (BOOL)findStringWithBackwardsFlag:(BOOL)backwardsFlag;
 - (NSText *)enterSelectionTarget;
+
 @end
 
 @implementation OAFindController
 
 // Init and dealloc
 
-#define WANT_INTERFACE if(findPanel == nil) [self loadInterface];
+static inline void _LoadInterfaceIfNecessary(OAFindController *self)
+{
+    if (!self->_findPanel)
+        [self loadInterface];   
+}
 
 - (void)dealloc;
 {
-    [findPanel release];
-    [currentPattern release];
+    [_findPanel release];
+    [_searchTextForm release];
+    [_replaceTextForm release];
+    [_ignoreCaseButton release];
+    [_wholeWordButton release];
+    [_findNextButton release];
+    [_findPreviousButton release];
+    [_replaceAllButton release];
+    [_replaceButton release];
+    [_replaceAndFindButton release];
+    [_findTypeMatrix release];
+    [_subexpressionPopUp release];
+    [_replaceInSelectionCheckbox release];
+    [_additionalControlsBox release];
+    [_stringControlsView release];
+    [_regularExpressionControlsView release];
+
+    [_currentPattern release];
+
     [super dealloc];
 }
 
+// Outlets
+
+@synthesize findPanel = _findPanel;
+@synthesize searchTextForm = _searchTextForm;
+@synthesize replaceTextForm = _replaceTextForm;
+@synthesize ignoreCaseButton = _ignoreCaseButton;
+@synthesize wholeWordButton = _wholeWordButton;
+@synthesize findNextButton = _findNextButton;
+@synthesize findPreviousButton = _findPreviousButton;
+@synthesize replaceAllButton = _replaceAllButton;
+@synthesize replaceButton = _replaceButton;
+@synthesize replaceAndFindButton = _replaceAndFindButton;
+@synthesize findTypeMatrix = _findTypeMatrix;
+@synthesize subexpressionPopUp = _subexpressionPopUp;
+@synthesize replaceInSelectionCheckbox = _replaceInSelectionCheckbox;
+@synthesize additionalControlsBox = _additionalControlsBox;
+@synthesize stringControlsView = _stringControlsView;
+@synthesize regularExpressionControlsView = _regularExpressionControlsView;
 
 // Menu Actions
 
 - (IBAction)showFindPanel:(id)sender;
 {
-    WANT_INTERFACE;
-    if (!findPanel)
+    _LoadInterfaceIfNecessary(self);
+    if (!_findPanel)
         return;
-    [[searchTextForm cellAtIndex:0] setStringValue:[self restoreFindText]];
-    [findPanel setFrame:[OAWindowCascade unobscuredWindowFrameFromStartingFrame:[findPanel frame] avoidingWindows:nil] display:YES animate:YES];
-    [findPanel makeKeyAndOrderFront:NULL];
-    [searchTextForm selectTextAtIndex:0];
+    [[_searchTextForm cellAtIndex:0] setStringValue:[self restoreFindText]];
+    [_findPanel setFrame:[OAWindowCascade unobscuredWindowFrameFromStartingFrame:[_findPanel frame] avoidingWindows:nil] display:YES animate:YES];
+    [_findPanel makeKeyAndOrderFront:NULL];
+    [_searchTextForm selectTextAtIndex:0];
 }
 
 - (IBAction)findNext:(id)sender;
 {
-    WANT_INTERFACE;
-    [findNextButton performClick:nil];
+    _LoadInterfaceIfNecessary(self);
+    [_findNextButton performClick:nil];
 }
 
 - (IBAction)findPrevious:(id)sender;
 {
-    WANT_INTERFACE;
-    [findPreviousButton performClick:nil];
+    _LoadInterfaceIfNecessary(self);
+    [_findPreviousButton performClick:nil];
 }
 
 - (IBAction)enterSelection:(id)sender;
@@ -93,9 +151,9 @@ static NSString *OAFindPanelTitle = @"Find";
 
 - (IBAction)panelFindNextAndClosePanel:(id)sender;
 {
-    WANT_INTERFACE;
-    [findNextButton performClick:nil];
-    [findPanel orderOut:nil];
+    _LoadInterfaceIfNecessary(self);
+    [_findNextButton performClick:nil];
+    [_findPanel orderOut:nil];
 }
 
 - (IBAction)replaceAll:(id)sender;
@@ -110,10 +168,10 @@ static NSString *OAFindPanelTitle = @"Find";
         NSBeep();
         return;
     }
-    [pattern setReplacementString:[[replaceTextForm cellAtIndex:0] stringValue]];
+    [pattern setReplacementString:[[_replaceTextForm cellAtIndex:0] stringValue]];
     
-    WANT_INTERFACE;
-    if ([replaceInSelectionCheckbox state] && [target respondsToSelector:@selector(replaceAllOfPatternInCurrentSelection:)])
+    _LoadInterfaceIfNecessary(self);
+    if ([_replaceInSelectionCheckbox state] && [target respondsToSelector:@selector(replaceAllOfPatternInCurrentSelection:)])
         [target replaceAllOfPatternInCurrentSelection:pattern];
     else
         [target replaceAllOfPattern:pattern];
@@ -130,10 +188,10 @@ static NSString *OAFindPanelTitle = @"Find";
         return;
     }
     
-    replacement = [[replaceTextForm cellAtIndex:0] stringValue];
-    if (currentPattern) {
-        [currentPattern setReplacementString:replacement];
-        replacement = [currentPattern replacementStringForLastFind];
+    replacement = [[_replaceTextForm cellAtIndex:0] stringValue];
+    if (_currentPattern) {
+        [_currentPattern setReplacementString:replacement];
+        replacement = [_currentPattern replacementStringForLastFind];
     }
 
     [target replaceSelectionWithString:replacement];
@@ -151,48 +209,45 @@ static NSString *OAFindPanelTitle = @"Find";
     NSView *nextKeyView = nil;
     
     // add the new controls
-    switch([[findTypeMatrix selectedCell] tag]) {
+    switch([[_findTypeMatrix selectedCell] tag]) {
     case 0:
-        subview = stringControlsView;
-        [regularExpressionControlsView removeFromSuperview];
-        nextKeyView = ignoreCaseButton;
+        subview = _stringControlsView;
+        [_regularExpressionControlsView removeFromSuperview];
+        nextKeyView = _ignoreCaseButton;
         break;
     case 1:
-        subview = regularExpressionControlsView;
-        [stringControlsView removeFromSuperview];
-        nextKeyView = subexpressionPopUp;
+        subview = _regularExpressionControlsView;
+        [_stringControlsView removeFromSuperview];
+        nextKeyView = _subexpressionPopUp;
         break;
     }
 
     if (subview) {
-        [subview setFrameOrigin:NSMakePoint((CGFloat)floor(([additionalControlsBox frame].size.width - [subview frame].size.width) / 2), 0)];
-        [additionalControlsBox addSubview:subview];
+        [subview setFrameOrigin:NSMakePoint((CGFloat)floor(([_additionalControlsBox frame].size.width - [subview frame].size.width) / 2), 0)];
+        [_additionalControlsBox addSubview:subview];
     }
-    [replaceTextForm setNextKeyView:nextKeyView];
+    [_replaceTextForm setNextKeyView:nextKeyView];
 }
 
 // Updating the selection popup...
 
 - (void)controlTextDidEndEditing:(NSNotification *)aNotification
 {
-    OFRegularExpression *expression;
-    NSString *subexpressionFormatString;
+    NSString *subexpressionFormatString = NSLocalizedStringFromTableInBundle(@"Subexpression #%d", @"OmniAppKit", [OAFindController bundle], "Contents of popup in regular expression find options");
     
-    subexpressionFormatString = NSLocalizedStringFromTableInBundle(@"Subexpression #%d", @"OmniAppKit", [OAFindController bundle], "Contents of popup in regular expression find options");
-    
-    expression = [[OFRegularExpression alloc] initWithString:[[searchTextForm cellAtIndex:0] stringValue]];
-    if (expression) {
+    OFRegularExpression *expression = [[OFRegularExpression alloc] initWithString:[[_searchTextForm cellAtIndex:0] stringValue]];
+    if (expression != nil) {
         unsigned int subexpressionCount = [expression subexpressionCount];
         [expression release];
         
-        NSUInteger numberOfItems = [subexpressionPopUp numberOfItems] - 1;
+        NSUInteger popupItemCount = [_subexpressionPopUp numberOfItems];
         
-        while (numberOfItems > subexpressionCount)
-            [subexpressionPopUp removeItemAtIndex:numberOfItems--];
-        while (subexpressionCount > numberOfItems)
-            [subexpressionPopUp addItemWithTitle:[NSString stringWithFormat:subexpressionFormatString, ++numberOfItems]];
+        while (popupItemCount > 1 + subexpressionCount)
+            [_subexpressionPopUp removeItemAtIndex:--popupItemCount];
+        while (popupItemCount < 1 + subexpressionCount)
+            [_subexpressionPopUp addItemWithTitle:[NSString stringWithFormat:subexpressionFormatString, ++popupItemCount]];
     } else {
-        [findTypeMatrix selectCellWithTag:0];
+        [_findTypeMatrix selectCellWithTag:0];
     }
 }
 
@@ -200,10 +255,10 @@ static NSString *OAFindPanelTitle = @"Find";
 
 - (void)enterSelectionWithString:(NSString *)selectionString;
 {
-    WANT_INTERFACE;
+    _LoadInterfaceIfNecessary(self);
     [self saveFindText:selectionString];
-    [[searchTextForm cellAtIndex:0] setStringValue:selectionString];
-    [searchTextForm selectTextAtIndex:0];
+    [[_searchTextForm cellAtIndex:0] setStringValue:selectionString];
+    [_searchTextForm selectTextAtIndex:0];
 }
 
 - (void)saveFindText:(NSString *)string;
@@ -306,33 +361,30 @@ static NSString *OAFindPanelTitle = @"Find";
 	replaceSelectionEnabled = [target isSelectedTextEditable];
 
     
-    [replaceButton setEnabled:replaceSelectionEnabled];
-    [replaceAndFindButton setEnabled:replaceSelectionEnabled];
-    [replaceAllButton setEnabled:[target respondsToSelector:@selector(replaceAllOfPattern:)]];
+    [_replaceButton setEnabled:replaceSelectionEnabled];
+    [_replaceAndFindButton setEnabled:replaceSelectionEnabled];
+    [_replaceAllButton setEnabled:[target respondsToSelector:@selector(replaceAllOfPattern:)]];
     
     if ([target respondsToSelector:@selector(replaceAllOfPatternInCurrentSelection:)]) {
-        if ([replaceInSelectionCheckbox superview] == nil)
-            [[findPanel contentView] addSubview:replaceInSelectionCheckbox];
-    } else if ([replaceInSelectionCheckbox superview] != nil)
-        [replaceInSelectionCheckbox removeFromSuperview];
+        if ([_replaceInSelectionCheckbox superview] == nil)
+            [[_findPanel contentView] addSubview:_replaceInSelectionCheckbox];
+    } else if ([_replaceInSelectionCheckbox superview] != nil)
+        [_replaceInSelectionCheckbox removeFromSuperview];
 }
 
-@end
-
-@implementation OAFindController (Private)
+#pragma mark Private
 
 // Load our interface
 
 - (void)loadInterface;
 {
-    [[OAFindController bundle] loadNibNamed:@"OAFindPanel.nib" owner:self];
+    [[OAFindController bundle] loadNibNamed:@"OAFindPanel.nib" owner:self options:nil];
     
-    if ([findPanel respondsToSelector:@selector(setCollectionBehavior:)])
-        [findPanel setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
+    if ([_findPanel respondsToSelector:@selector(setCollectionBehavior:)])
+        [_findPanel setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
 
-    [replaceInSelectionCheckbox retain];
-    [findPanel setFrameUsingName:OAFindPanelTitle];
-    [findPanel setFrameAutosaveName:OAFindPanelTitle];
+    [_findPanel setFrameUsingName:OAFindPanelTitle];
+    [_findPanel setFrameAutosaveName:OAFindPanelTitle];
     [self findTypeChanged:self];
 }
 
@@ -341,8 +393,8 @@ static NSString *OAFindPanelTitle = @"Find";
     id <OAFindPattern> pattern;
     NSString *findString;
 
-    if (findPanel && [findPanel isVisible]) {
-        findString = [[searchTextForm cellAtIndex:0] stringValue];
+    if (_findPanel && [_findPanel isVisible]) {
+        findString = [[_searchTextForm cellAtIndex:0] stringValue];
         [self saveFindText:findString];
     } else
         findString = [self restoreFindText];
@@ -350,17 +402,17 @@ static NSString *OAFindPanelTitle = @"Find";
     if (![findString length])
         return nil;
 
-    WANT_INTERFACE;
-    if ([[findTypeMatrix selectedCell] tag] == 0) {
-        pattern = [[OAFindPattern alloc] initWithString:findString ignoreCase:[ignoreCaseButton state] wholeWord:[wholeWordButton state] backwards:backwardsFlag];
+    _LoadInterfaceIfNecessary(self);
+    if ([[_findTypeMatrix selectedCell] tag] == 0) {
+        pattern = [[OAFindPattern alloc] initWithString:findString ignoreCase:[_ignoreCaseButton state] wholeWord:[_wholeWordButton state] backwards:backwardsFlag];
     } else {
-        [self controlTextDidEndEditing:nil]; // make sure the subexpressionPopUp is set correctly
-        NSInteger subexpression = [subexpressionPopUp indexOfSelectedItem] - 1;
+        [self controlTextDidEndEditing:nil]; // make sure the _subexpressionPopUp is set correctly
+        NSInteger subexpression = [_subexpressionPopUp indexOfSelectedItem] - 1;
         pattern = [[OARegExFindPattern alloc] initWithString:findString selectedSubexpression:subexpression backwards:backwardsFlag];
     }
     
-    [currentPattern release];
-    currentPattern = pattern;
+    [_currentPattern release];
+    _currentPattern = pattern;
     return pattern;
 }
 
@@ -381,7 +433,7 @@ static NSString *OAFindPanelTitle = @"Find";
         return NO;
 
     result = [target findPattern:pattern backwards:backwardsFlag wrap:YES];
-    [searchTextForm selectTextAtIndex:0];
+    [_searchTextForm selectTextAtIndex:0];
     return result;
 }
 
@@ -391,7 +443,7 @@ static NSString *OAFindPanelTitle = @"Find";
     NSText *enterSelectionTarget;
 
     selectionWindow = [NSApp keyWindow];
-    if (findPanel != nil && selectionWindow == findPanel)
+    if (_findPanel != nil && selectionWindow == _findPanel)
         selectionWindow = [NSApp mainWindow];
     enterSelectionTarget = (id)[selectionWindow firstResponder];
     

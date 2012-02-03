@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -209,6 +209,9 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
 {
     // TODO: Test renaming a document that has conflicts. It isn't clear if we can even do this.
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        if (OFISEQUAL(_fileURL, newURL))
+            return;
+        
         OBFinishPortingLater("Ignore the new URL if it is in the dead zone");
         
         [_fileURL autorelease];
@@ -358,6 +361,8 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
     
     // Make new files for any other versions to be preserved
     if (pickedVersionCount >= 2) {
+        OBFinishPorting; // If we keep three versions, the 'available file name' method could pick the same name twice due to file items not being updated yet.
+#if 0
         NSString *originalFileName = [_fileURL lastPathComponent];
         NSString *originalBaseName = nil;
         NSUInteger counter;
@@ -387,6 +392,7 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
                     [errors addObject:errorOrNil];
             }];
         }
+#endif
     }
     
     // Now, wait for all the resolution attempts to filter out

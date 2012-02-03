@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,6 +61,7 @@
 #if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
     UITextSpellCheckingType _spellCheckingType;
 #endif
+    UIReturnKeyType _returnKeyType;
     UIKeyboardType _keyboardType;
     
     /* The cached typeset frame. */
@@ -116,7 +117,7 @@
     
     BOOL isRegisteredForScrollNotifications; // Just used for assertions that we're following the registration protocol.
     
-    OUIEditMenuController *editMenu;
+    OUIEditMenuController *_editMenuController;
 
 @protected
     /* A system-provided input delegate is assigned when the system is interested in input changes. */
@@ -156,6 +157,7 @@
 #if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
 @property (nonatomic) UITextSpellCheckingType spellCheckingType; // default is UITextSpellCheckingTypeDefault;
 #endif
+@property (nonatomic) UIReturnKeyType returnKeyType; // default is UIReturnKeyDefault;
 @property (nonatomic) UITextGranularity tapSelectionGranularity;
 
 @property (nonatomic, readwrite, retain) UIView *inputView;
@@ -213,3 +215,6 @@
 
 @end
 
+extern NSString * const OUIEditableFrameTextDidBeginEditingNotification;
+extern NSString * const OUIEditableFrameTextDidEndEditingNotification;
+extern NSString * const OUIEditableFrameTextDidChangeNotification;

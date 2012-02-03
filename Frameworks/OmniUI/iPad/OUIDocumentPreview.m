@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,8 +21,15 @@
 
 RCS_ID("$Id$");
 
+#if 0 && defined(DEBUG)
+    #define DEBUG_PREVIEW_CACHE(format, ...) NSLog(@"PREVIEW: " format, ## __VA_ARGS__)
+#else
+    #define DEBUG_PREVIEW_CACHE(format, ...)
+#endif
+
 @interface OUIDocumentPreview ()
 + (NSURL *)_previewDirectoryURL;
++ (void)_cachePreviewImages:(void (^)(OUIDocumentPreviewCacheImage cacheImage))cachePreviews andWriteImages:(BOOL)writeImages;
 - _initWithFileURL:(NSURL *)fileURL date:(NSDate *)date image:(CGImageRef)image landscape:(BOOL)landscape type:(OUIDocumentPreviewType)type;
 @end
 
@@ -36,7 +43,7 @@ RCS_ID("$Id$");
     BOOL _superseded;
 }
 
-// Concurrent background queue for loading/decoding preview images
+// Concurrent background queue for loading/saving/decoding preview images
 static dispatch_queue_t PreviewCacheQueue;
 
 // A cache of normalized URL -> {CGImageRef, kOUIDocumentPreviewTypeEmptyMarker}. If a preview image file exists but is zero length or can't be read, there will be an entry with a value of kOUIDocumentPreviewTypeEmptyMarker.
@@ -55,6 +62,7 @@ static const CFDictionaryValueCallBacks CFTypeDictionaryValueCallbacks = {
 };
 
 static CFStringRef kOUIDocumentPreviewTypeEmptyMarker = CFSTR("kOUIDocumentPreviewTypeEmptyMarker");
+static CFStringRef kOUIRemoveCacheEntryMarker = CFSTR("kOUIRemoveCacheEntryMarker");
 
 + (void)initialize;
 {
@@ -68,7 +76,11 @@ static CFStringRef kOUIDocumentPreviewTypeEmptyMarker = CFSTR("kOUIDocumentPrevi
 
 static NSURL *_normalizeURL(NSURL *url)
 {
-    // Need consistent mapping of /private/var/mobil vs /var/mobile.
+    // Sadly, this doesn't work if the URL doesn't exist. We could look for an ancestor directory that exists, normalize that, and then tack on the suffix again.
+//    OBPRECONDITION([url isFileURL]);
+//    OBPRECONDITION([[NSFileManager defaultManager] fileExistsAtPath:[url path] isDirectory:NULL]);
+    
+    // Need consistent mapping of /private/var/mobile vs /var/mobile.
     return [[url URLByResolvingSymlinksInPath] URLByStandardizingPath];
 }
 
@@ -104,14 +116,10 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
     }
     
     // Force decoding of the JPEG data up front so that scrolling in the document picker doesn't chug the first time an image comes on screen
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef ctx = CGBitmapContextCreate(NULL, 1, 1, 8/*bitsPerComponent*/, 4/*bytesPerRow*/, colorSpace, kCGImageAlphaNoneSkipFirst);
-    CGColorSpaceRelease(colorSpace);
-    
-    OBASSERT(ctx);
-    if (ctx) {
-        CGContextDrawImage(ctx, CGRectMake(0, 0, 1, 1), image);
-        CGContextRelease(ctx);
+    CGImageRef flattenedImage = OQCopyFlattenedImage(image);
+    if (flattenedImage) {
+        CFRelease(image);
+        image = flattenedImage;
     }
     
     return image;
@@ -189,7 +197,7 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
             PreviewImageByURL = CFDictionaryCreateCopy(kCFAllocatorDefault, updatedPreviewImageByURL);
             CFRelease(updatedPreviewImageByURL);
             
-            PREVIEW_DEBUG(@"Preview image cache now %@", PreviewImageByURL);
+            DEBUG_PREVIEW_CACHE(@"Preview image cache now %@", PreviewImageByURL);
             
             if (completionHandler)
                 completionHandler();
@@ -199,7 +207,7 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
 
 + (void)flushPreviewImageCache;
 {
-    PREVIEW_DEBUG(@"Flushing preview cache");
+    DEBUG_PREVIEW_CACHE(@"Flushing preview cache");
 
     // Make sure any previous cache loading/clear has finished
     dispatch_barrier_async(PreviewCacheQueue, ^{
@@ -220,6 +228,11 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
 // This method lets documents synchronously update the cache with one or more just-generated preview images (rather than doing a full async rescan).
 + (void)cachePreviewImages:(void (^)(OUIDocumentPreviewCacheImage cacheImage))cachePreviews;
 {
+    [self _cachePreviewImages:cachePreviews andWriteImages:YES];
+}
+
++ (void)_cachePreviewImages:(void (^)(OUIDocumentPreviewCacheImage cacheImage))cachePreviews andWriteImages:(BOOL)writeImages;
+{
     OBPRECONDITION(cachePreviews);
     OBPRECONDITION([NSThread isMainThread]);
 
@@ -229,33 +242,84 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
     else
         updatedPreviews = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &CFTypeDictionaryValueCallbacks);
 
-    __block BOOL didAdd = NO;
+    __block BOOL didUpdate = NO;
     
     cachePreviews(^(CGImageRef image, NSURL *previewURL){
+        OBASSERT([NSThread isMainThread]);
         OBASSERT([previewURL isEqual:_normalizeURL(previewURL)]);
 #ifdef OMNI_ASSERTIONS_ON
         {
             // We should either have nothing in our cache, or should have some form of placeholder. We shouldn't be replacing valid previews (those should get a new date and thus a new cache key).
             CFTypeRef existingValue = (CFTypeRef)CFDictionaryGetValue(updatedPreviews, previewURL);
-            OBASSERT(existingValue == NULL || existingValue == kOUIDocumentPreviewTypeEmptyMarker || (BadgedPlaceholderPreviewImageCache && CFDictionaryGetCountOfValue(BadgedPlaceholderPreviewImageCache, existingValue) == 1));
+            OBASSERT(existingValue == NULL || // nothing in the cache
+                     existingValue == kOUIDocumentPreviewTypeEmptyMarker || // negative result cached
+                     (existingValue != NULL && image == (CGImageRef)kOUIRemoveCacheEntryMarker) || // explicitly removing an entry
+                     (BadgedPlaceholderPreviewImageCache && CFDictionaryGetCountOfValue(BadgedPlaceholderPreviewImageCache, existingValue) == 1)); // a cached placeholder
         }
 #endif
         
-        // Allow caching negative results for when there is an error writing previews.
-        if (!image)
-            image = (CGImageRef)kOUIDocumentPreviewTypeEmptyMarker;
+        if (writeImages) {
+            // Do the JPEG compression and writing on a background queue. If there is an error writing the image, this means we will cache the passed in version which won't have been written, though.
+
+            if (image)
+                CFRetain(image); // Nail this down while we wait for the writing to finish
+            
+            dispatch_async(PreviewCacheQueue, ^{
+                NSData *jpgData = nil;
+                if (image) {
+                    UIImage *uiImage = [UIImage imageWithCGImage:image]; // ... could maybe use CGImageIO directly
+                    CFRelease(image);
+                    jpgData = UIImageJPEGRepresentation(uiImage, 0.5/* 0..1 compression */);
+                }
+                if (!jpgData)
+                    jpgData = [NSData data];
+                
+                NSError *writeError = nil;
+                if (![jpgData writeToURL:previewURL options:NSDataWritingAtomic error:&writeError]) {
+                    NSLog(@"Error writing preview to %@: %@", previewURL, [writeError toPropertyList]);
+                }
+            });
+        }
         
-        // CFDictionarySetValue since we might be replacing a placeholder.
-        CFDictionarySetValue(updatedPreviews, previewURL, image);
-        didAdd = YES;
+        // An image of NULL means to cache a "no image" result. kOUIRemoveCacheEntryMarker means to remove the cache entry.
+        if (image == (CGImageRef)kOUIRemoveCacheEntryMarker) {
+            OBASSERT(CFDictionaryGetValue(updatedPreviews, previewURL));
+            CFDictionaryRemoveValue(updatedPreviews, previewURL);
+        } else {
+            // Allow caching negative results for when there is an error generating previews (maybe the document couldn't be read, for example).
+            if (!image)
+                image = (CGImageRef)kOUIDocumentPreviewTypeEmptyMarker;
+            
+            // CFDictionarySetValue since we might be replacing a placeholder.
+            CFDictionarySetValue(updatedPreviews, previewURL, image);
+        }
+        didUpdate = YES;
     });
 
-    if (didAdd) {
+    if (didUpdate) {
         if (PreviewImageByURL)
             CFRelease(PreviewImageByURL);
         PreviewImageByURL = CFDictionaryCreateCopy(kCFAllocatorDefault, updatedPreviews);
     }
     CFRelease(updatedPreviews);
+}
+
++ (void)performAsynchronousPreviewOperation:(void (^)(void))operation;
+{
+    dispatch_async(PreviewCacheQueue, operation);
+}
+
++ (void)afterAsynchronousPreviewOperation:(void (^)(void))block;
+{
+    block = [[block copy] autorelease];
+    
+    NSOperationQueue *queue = [NSOperationQueue currentQueue];
+    OBASSERT(queue);
+    OBASSERT(dispatch_get_current_queue() != PreviewCacheQueue);
+    
+    [self performAsynchronousPreviewOperation:^{
+        [queue addOperationWithBlock:block];
+    }];
 }
 
 + (BOOL)hasPreviewForFileURL:(NSURL *)fileURL date:(NSDate *)date withLandscape:(BOOL)landscape;
@@ -266,6 +330,9 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
     NSURL *previewURL = [self fileURLForPreviewOfFileURL:fileURL date:date withLandscape:landscape];
     
     CFTypeRef value = CFDictionaryGetValue(PreviewImageByURL, previewURL);
+    
+    // Badged placeholders should never make it into the file cache
+    OBASSERT(!BadgedPlaceholderPreviewImageCache || !CFDictionaryContainsKey(BadgedPlaceholderPreviewImageCache, value));
     
     // Return YES even if this is a cached failure (empty file). We don't want to try to redo the preview generation until the file's date changes.
     return value != nil;
@@ -298,7 +365,7 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
             [unusedPreviewURLs removeObject:previewURL];
     }
     
-    PREVIEW_DEBUG(@"Removing unused previews: %@", unusedPreviewURLs);
+    DEBUG_PREVIEW_CACHE(@"Removing unused previews: %@", unusedPreviewURLs);
     
     for (NSURL *unusedPreviewURL in unusedPreviewURLs) {
         NSError *removeError = nil;
@@ -311,14 +378,28 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
 {
     OBPRECONDITION(fileURL);
     OBPRECONDITION(date);
-    
+
     NSURL *directoryURL = [self _previewDirectoryURL];
     
     // We use the full URL here so that we can build previews for documents with the same name. For example, conflict versions will likely have the same path component and possibly the same date (since the date resolution on the iPad is low). Even if we did use the last path component, we would have to use the whole thing (for Foo.oo3 and Foo.opml).
+    // Normalization is too slow to do here, but we can get both /private/mobile and /var/private/mobile.
     NSString *urlString = [fileURL absoluteString];
+    static NSString * const BadVarMobilePrefix = @"file://localhost/private/var/mobile/";
+    static NSString * const GoodVarMobilePrefix = @"file://localhost/var/mobile/";
+    if ([urlString hasPrefix:BadVarMobilePrefix]) {
+        NSMutableString *fixedString = [[urlString mutableCopy] autorelease];
+        [fixedString replaceCharactersInRange:NSMakeRange(0, [BadVarMobilePrefix length]) withString:GoodVarMobilePrefix];
+        urlString = fixedString;
+    }
+
+    // Finally, map directories to the same thing no matter if they have the slash or not.
     if ([urlString hasSuffix:@"/"])
         urlString = [urlString stringByRemovingSuffix:@"/"];
     
+    // Make sure we got all the transformations needed
+    // _normalizeURL() doesn't work on files that don't exist (and this is called after a file has moved).
+    //OBASSERT([urlString isEqual:[[_normalizeURL(fileURL) absoluteString] stringByRemovingSuffix:@"/"]]);
+
     NSString *fileName = [[[urlString dataUsingEncoding:NSUTF8StringEncoding] sha1Signature] unadornedLowercaseHexString];
     
     // Unique it by date and size/landscape
@@ -328,7 +409,7 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
     fileName = [fileName stringByAppendingPathExtension:@"jpg"];
     
     NSURL *previewURL = [[directoryURL URLByAppendingPathComponent:fileName] absoluteURL];
-    PREVIEW_DEBUG(@"fileURL %@ -> previewURL %@", fileURL, previewURL);
+    //DEBUG_PREVIEW_CACHE(@"fileURL %@ -> previewURL %@", fileURL, previewURL);
     
     // The normalization is too slow to do here, but we shouldn't need to since +_previewDirectoryURL returns a normalized base URL and nothing we append should mess it up.
     OBPOSTCONDITION([previewURL isEqual:_normalizeURL(previewURL)]);
@@ -346,7 +427,7 @@ static CGImageRef _cachePlaceholderPreviewImage(Class self, Class documentClass,
         return NULL;
     }
     
-    // First, cache a single copy of the badged placeholder preview image in this orientation
+    // Cache a single copy of the badged placeholder preview image in this orientation
     CGImageRef badgedImage;
     {
         NSString *cacheKey = [NSString stringWithFormat:@"%@-%@", landscape ? @"L" : @"P", placeholderImageName];
@@ -376,9 +457,10 @@ static CGImageRef _cachePlaceholderPreviewImage(Class self, Class documentClass,
                     OBASSERT_NOT_REACHED("No image found for default image name returned");
                 } else {
                     CGSize imageSize = CGSizeMake(CGImageGetWidth(previewImage), CGImageGetHeight(previewImage));
-                    NSLog(@"imageSize = %@", NSStringFromCGSize(imageSize));
+                    imageSize.width = floor(imageSize.width * scale);
+                    imageSize.height = floor(imageSize.height * scale);
                     
-                    CGRect targetImageRect = OQCenteredIntegralRectInRect(paperRect, imageSize);
+                    CGRect targetImageRect = OQCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(paperRect, imageSize);
                 
                     CGContextRef ctx = UIGraphicsGetCurrentContext();
                     CGContextTranslateCTM(ctx, targetImageRect.origin.x, targetImageRect.origin.y);
@@ -398,16 +480,11 @@ static CGImageRef _cachePlaceholderPreviewImage(Class self, Class documentClass,
                 BadgedPlaceholderPreviewImageCache = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &CFTypeDictionaryValueCallbacks);
 
             CFDictionarySetValue(BadgedPlaceholderPreviewImageCache, cacheKey, badgedImage);
-            PREVIEW_DEBUG(@"Built badged placeholder preview image %@ with \"%@\" for %@", badgedImage, cacheKey, previewURL);
+            DEBUG_PREVIEW_CACHE(@"Built badged placeholder preview image %@ with \"%@\" for %@", badgedImage, cacheKey, previewURL);
         } else {
-            PREVIEW_DEBUG(@"Using previously generated badged placeholder preview image with \"%@\" for %@", cacheKey, previewURL);
+            DEBUG_PREVIEW_CACHE(@"Using previously generated badged placeholder preview image with \"%@\" for %@", cacheKey, previewURL);
         }
     }
-    
-    // Then register this badged image as the preview for this specific file (so we can only render the badged preview once).
-    [self cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage) {
-        cacheImage(badgedImage, previewURL);
-    }];
     
     return badgedImage;
 }
@@ -422,15 +499,20 @@ static CGImageRef _cachePlaceholderPreviewImage(Class self, Class documentClass,
     if (PreviewImageByURL)
         previewImage = (CGImageRef)CFDictionaryGetValue(PreviewImageByURL, previewURL);
     
+    // Badged placeholders should never make it into the file cache
+    OBASSERT(!previewImage || !BadgedPlaceholderPreviewImageCache || !CFDictionaryContainsKey(BadgedPlaceholderPreviewImageCache, previewImage));
+
     OUIDocumentPreviewType type;
     if (!previewImage) {
         // No preview known.
         type = OUIDocumentPreviewTypePlaceholder;
         previewImage = _cachePlaceholderPreviewImage(self, documentClass, fileURL, landscape, previewURL);
+        DEBUG_PREVIEW_CACHE(@"Caching badged placeholder for missing %@ %@ %d -- %@", fileURL, [date xmlString], landscape, previewURL);
     } else if (previewImage == (CGImageRef)kOUIDocumentPreviewTypeEmptyMarker) {
         // There is a zero length file or was an error reading the image
         type = OUIDocumentPreviewTypeEmpty;
         previewImage = _cachePlaceholderPreviewImage(self, documentClass, fileURL, landscape, previewURL);
+        DEBUG_PREVIEW_CACHE(@"Caching badged placeholder for empty %@ %@ %d -- %@", fileURL, [date xmlString], landscape, previewURL);
     } else {
         type = OUIDocumentPreviewTypeRegular;
     }
@@ -445,7 +527,7 @@ static void _copyPreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     NSURL *sourcePreviewFileURL = [self fileURLForPreviewOfFileURL:sourceFileURL date:sourceDate withLandscape:landscape];
     NSURL *targetPreviewFileURL = [self fileURLForPreviewOfFileURL:targetFileURL date:targetDate withLandscape:landscape];
     
-    PREVIEW_DEBUG(@"copying preview %@ -> %@", sourcePreviewFileURL, targetPreviewFileURL);
+    DEBUG_PREVIEW_CACHE(@"copying preview %@ -> %@", sourcePreviewFileURL, targetPreviewFileURL);
     
     // Copy the file (if any)
     NSError *copyError = nil;
@@ -458,17 +540,62 @@ static void _copyPreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     CGImageRef image = (CGImageRef)CFDictionaryGetValue(PreviewImageByURL, sourcePreviewFileURL);
     if (image) {
         cacheImage(image, targetPreviewFileURL);
-        PREVIEW_DEBUG(@"  registering image %@", image);
+        DEBUG_PREVIEW_CACHE(@"  registering image %@", image);
     }
 }
 
 + (void)cachePreviewImagesForFileURL:(NSURL *)targetFileURL date:(NSDate *)targetDate
             byDuplicatingFromFileURL:(NSURL *)sourceFileURL date:(NSDate *)sourceDate;
 {
-    [self cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage){
+    DEBUG_PREVIEW_CACHE(@"copying preview %@ / %@ -> %@ / %@", [sourceDate xmlString], sourceFileURL, targetFileURL, [targetDate xmlString]);
+
+    targetFileURL = _normalizeURL(targetFileURL);
+    sourceFileURL = _normalizeURL(sourceFileURL);
+    
+    [self _cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage){
         _copyPreview(self, sourceFileURL, sourceDate, targetFileURL, targetDate, cacheImage, YES/*landscape*/);
         _copyPreview(self, sourceFileURL, sourceDate, targetFileURL, targetDate, cacheImage, NO/*landscape*/);
-    }];
+    } andWriteImages:NO];
+}
+
+static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, NSURL *targetFileURL, NSDate *targetDate, OUIDocumentPreviewCacheImage cacheImage, BOOL landscape)
+{
+    NSURL *sourcePreviewFileURL = [self fileURLForPreviewOfFileURL:sourceFileURL date:sourceDate withLandscape:landscape];
+    NSURL *targetPreviewFileURL = [self fileURLForPreviewOfFileURL:targetFileURL date:targetDate withLandscape:landscape];
+    
+    DEBUG_PREVIEW_CACHE(@"moving preview from %@ %@ -- %@", sourceFileURL, [sourceDate xmlString], sourcePreviewFileURL);
+    DEBUG_PREVIEW_CACHE(@"  to %@ %@ -- %@", targetFileURL, [targetDate xmlString], targetPreviewFileURL);
+    
+    // Move the file (if any)
+    NSError *moveError = nil;
+    if (![[NSFileManager defaultManager] moveItemAtURL:sourcePreviewFileURL toURL:targetPreviewFileURL error:&moveError]) {
+        if (![moveError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) // Preview not written yet -- we might be starting up and the document store has decided to rename files with the same name
+            NSLog(@"Error moving preview from %@ to %@: %@", sourcePreviewFileURL, targetPreviewFileURL, [moveError toPropertyList]);
+    }
+    
+    // Move the CGImageRef in the cache (if any)
+    if (PreviewImageByURL) {
+        CGImageRef image = (CGImageRef)CFDictionaryGetValue(PreviewImageByURL, sourcePreviewFileURL);
+        if (image) {
+            cacheImage(image, targetPreviewFileURL);
+            DEBUG_PREVIEW_CACHE(@"  registering preview at %@", targetPreviewFileURL);
+            
+            // Do this second to avoid deallocing the image...
+            cacheImage((CGImageRef)kOUIRemoveCacheEntryMarker, sourcePreviewFileURL);
+            DEBUG_PREVIEW_CACHE(@"  deregistering preview at %@", sourcePreviewFileURL);
+        }
+    }
+}
+
++ (void)updateCacheAfterFileURL:(NSURL *)sourceFileURL withDate:(NSDate *)sourceDate didMoveToURL:(NSURL *)targetFileURL;
+{
+    sourceFileURL = _normalizeURL(sourceFileURL);
+    targetFileURL = _normalizeURL(targetFileURL);
+    
+    [self _cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage){
+        _movePreview(self, sourceFileURL, sourceDate, targetFileURL, sourceDate, cacheImage, YES/*landscape*/);
+        _movePreview(self, sourceFileURL, sourceDate, targetFileURL, sourceDate, cacheImage, NO/*landscape*/);
+    } andWriteImages:NO];
 }
 
 + (CGSize)maximumPreviewSizeForLandscape:(BOOL)landscape;
@@ -546,7 +673,7 @@ static void _copyPreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
         return;
     }
     
-    PREVIEW_DEBUG(@"Drawing scaled preview %@ -> %@", NSStringFromCGSize(CGSizeMake(width, height)), NSStringFromCGRect(rect));
+    DEBUG_PREVIEW_CACHE(@"Drawing scaled preview %@ -> %@", NSStringFromCGSize(CGSizeMake(width, height)), NSStringFromCGRect(rect));
     
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     CGContextSaveGState(ctx);
@@ -583,7 +710,7 @@ static void _copyPreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
             break;
     }
     
-    return [NSString stringWithFormat:@"<%@:%p item:%@ date:%f image:%p landscape:%d type:%@>", NSStringFromClass([self class]), self, [_fileURL absoluteString], [_date timeIntervalSinceReferenceDate], _image, _landscape, typeString];
+    return [NSString stringWithFormat:@"<%@:%p item:%@ date:%f image:%p landscape:%d type:%@>", NSStringFromClass([self class]), self, [_fileURL absoluteString], [_date xmlString], _image, _landscape, typeString];
 }
 
 #pragma mark -

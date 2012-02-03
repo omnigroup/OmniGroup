@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,6 @@
 @property(readonly) OUIUndoBarButtonItem *undoBarButtonItem;
 @property(readonly) UIBarButtonItem *infoBarButtonItem;
 
-- (NSString *)documentTypeForURL:(NSURL *)url;
 - (void)createNewDocumentAtURL:(NSURL *)url completionHandler:(void (^)(NSURL *url, NSError *error))completionHandler;
 - (IBAction)makeNewDocument:(id)sender;
 - (IBAction)closeDocument:(id)sender;

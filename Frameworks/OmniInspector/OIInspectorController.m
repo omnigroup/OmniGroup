@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -317,8 +317,8 @@ static BOOL animateInspectorToggles;
         
         [currentlyInspectedObjects release];
 	currentlyInspectedObjects = list; // takes ownership of the reference
-        [inspector inspectObjects:currentlyInspectedObjects];
 	list = nil;
+        [inspector inspectObjects:currentlyInspectedObjects];
     } NS_HANDLER {
         NSLog(@"-[%@ %@]: *** %@", [self class], NSStringFromSelector(_cmd), localException);
         [self inspectNothing];
@@ -558,7 +558,8 @@ static BOOL animateInspectorToggles;
         [headingBackground setNeedsDisplay:YES];
     }
     
-    [[OIInspectorRegistry sharedInspector] defaultsDidChange];
+    [[OIInspectorRegistry sharedInspector] configurationsChanged];
+    
     [group setScreenChangesEnabled:YES];
     isSettingExpansion = NO;
 }
@@ -573,6 +574,12 @@ static BOOL animateInspectorToggles;
 }
 
 #pragma mark NSWindow delegate
+
+- (void)windowDidMove:(NSNotification *)notification;
+{
+    OIInspectorRegistry *registry = [OIInspectorRegistry sharedInspector];
+    [registry configurationsChanged]; 
+}
 
 - (void)windowWillClose:(NSNotification *)notification;
 {

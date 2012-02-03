@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,13 +26,41 @@ static NSImage *ledOnImage = nil;
 static NSImage *ledOffImage = nil;
 const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
 
+static NSString * const IndicatorImageStyleLED = @"led";
+static NSString * const IndicatorImageStyleCircleX = @"circlex";
+
 + (void)initialize;
 {
     OBINITIALIZE;
     
     NSBundle *bundle = [NSBundle bundleForClass:[OADefaultSettingIndicatorButton class]];
-    ledOnImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForImageResource:@"OADefaultSettingIndicatorOn"]];
-    ledOffImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForImageResource:@"OADefaultSettingIndicatorOff"]];
+    NSString *imageStyle = [[NSUserDefaults standardUserDefaults] stringForKey:@"OADefaultSettingIndicatorStyle"];
+    
+    if ([imageStyle isEqualToString:IndicatorImageStyleCircleX]) {
+        ledOnImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForImageResource:@"OADefaultSettingIndicatorCircleXOn"]];
+        ledOffImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForImageResource:@"OADefaultSettingIndicatorCircleXOff"]];
+        
+    } else {
+        OBASSERT((imageStyle == nil) || [imageStyle isEqualToString:IndicatorImageStyleLED]);   // Unspecified = the original LED mode
+        ledOnImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForImageResource:@"OADefaultSettingIndicatorOn"]];
+        ledOffImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForImageResource:@"OADefaultSettingIndicatorOff"]];
+    }
+}
+
++ (OADefaultSettingIndicatorButton *)defaultSettingIndicatorWithIdentifier:(id)identifier forView:(NSView *)view delegate:(id)delegate;
+{
+    NSSize buttonSize = [ledOnImage size];
+    OADefaultSettingIndicatorButton *indicator = [[[[self class] alloc] initWithFrame:NSMakeRect(0.0, 0.0, buttonSize.height, buttonSize.width)] autorelease];
+    if (view != nil) {
+        OBASSERT([view superview] != nil);
+        [[view superview] addSubview:indicator];
+        [indicator setSnuggleUpToRightSideOfView:view];
+        [indicator repositionWithRespectToSnuggleViewAllowingResize:NO];
+    }
+    [indicator setIdentifier:identifier];
+    [indicator setDelegate:delegate];
+    
+    return indicator;
 }
 
 - (id)initWithFrame:(NSRect)frame;
@@ -92,10 +120,15 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
 
 - (void)validate;
 {
-    id defaultObjectValue = [self _defaultObjectValue];
-    id objectValue = [self _objectValue];
+    if ([delegate respondsToSelector:@selector(stateForSettingIndicatorButton:)]) {
+        [self setState:[delegate stateForSettingIndicatorButton:self]];
+        
+    } else {
+        id defaultObjectValue = [self _defaultObjectValue];
+        id objectValue = [self _objectValue];
 
-    [self setState:OFNOTEQUAL(defaultObjectValue, objectValue)];
+        [self setState:OFNOTEQUAL(defaultObjectValue, objectValue)];
+    }
 
     if ([delegate respondsToSelector:@selector(toolTipForSettingIndicatorButton:)])
         [self setToolTip:[delegate toolTipForSettingIndicatorButton:self]];
@@ -135,6 +168,11 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
 
 - (void)repositionWithRespectToSnuggleView;
 {
+    [self repositionWithRespectToSnuggleViewAllowingResize:YES];
+}
+
+- (void)repositionWithRespectToSnuggleViewAllowingResize:(BOOL)allowResize;
+{
     
     if (snuggleUpToRightSideOfView == nil)
         return;
@@ -145,7 +183,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
         NSControl *snuggleUpToRightSideOfControl = (id)snuggleUpToRightSideOfView;
         NSCell *cell = [snuggleUpToRightSideOfControl cell];
 
-        if ([cell alignment] == NSLeftTextAlignment &&
+        if (allowResize && [cell alignment] == NSLeftTextAlignment &&
             ![snuggleUpToRightSideOfControl isKindOfClass:[NSSlider class]] && ![snuggleUpToRightSideOfControl isKindOfClass:[NSPopUpButton class]] && 
             !([snuggleUpToRightSideOfControl isKindOfClass:[NSTextField class]] && [(NSTextField *)snuggleUpToRightSideOfControl isEditable]) &&
             ![snuggleUpToRightSideOfControl isKindOfClass:[NSImageView class]]) {

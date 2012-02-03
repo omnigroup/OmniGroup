@@ -167,27 +167,29 @@ static NSString *removeScriptSuffix(NSString *string)
 	NSString *scriptFilename = [[self pathForItem:sender] stringByExpandingTildeInPath];
 
 	if ([@"workflow" isEqualToString:[scriptFilename pathExtension]]) {
-	    OAWorkflow *workflow = [OAWorkflow workflowWithContentsOfFile:scriptFilename];
+        NSError *error = nil;
+	    OAWorkflow *workflow = [OAWorkflow workflowWithContentsOfFile:scriptFilename error:&error];
 	    if (!workflow) {
-		NSBundle *frameworkBundle = [OAScriptToolbarHelper bundle];
-		NSString *errorText = NSLocalizedStringFromTableInBundle(@"Unable to run workflow.", @"OmniAppKit", frameworkBundle, "workflow execution error");
-		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"workflow not found at %@", @"OmniAppKit", frameworkBundle, "script loading error message"), scriptFilename];
-		NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", frameworkBundle, "script error panel button");
-		NSBeginAlertSheet(errorText, okButton, nil, nil, [controller window], self, NULL, NULL, NULL, messageText);                                     
-		return;
+            NSLog(@"Error creating workflow: %@", [error toPropertyList]);
+            NSBundle *frameworkBundle = [OAScriptToolbarHelper bundle];
+            NSString *errorText = NSLocalizedStringFromTableInBundle(@"Unable to run workflow.", @"OmniAppKit", frameworkBundle, "workflow execution error");
+            NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"workflow not found at %@", @"OmniAppKit", frameworkBundle, "script loading error message"), scriptFilename];
+            NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", frameworkBundle, "script error panel button");
+            NSBeginAlertSheet(errorText, okButton, nil, nil, [controller window], self, NULL, NULL, NULL, messageText);                                     
+            return;
 	    }
-	    NSException   *raisedException = nil;
+	    NSException *raisedException = nil;
 	    NS_DURING {
-		[workflow executeWithFiles:nil];
+            [workflow executeWithFiles:nil];
 	    } NS_HANDLER {
-		raisedException = localException;
+            raisedException = localException;
 	    } NS_ENDHANDLER;
 	    if (raisedException) {
-		NSBundle *frameworkBundle = [OAScriptToolbarHelper bundle];
-		NSString *errorText = NSLocalizedStringFromTableInBundle(@"Unable to run workflow.", @"OmniAppKit", frameworkBundle, "workflow execution error");
-		NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The following error was reported:\n%@", @"OmniAppKit", frameworkBundle, "script loading error message"), [raisedException reason]];
-		NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", frameworkBundle, "script error panel button");
-		NSBeginAlertSheet(errorText, okButton, nil, nil, [controller window], self, NULL, NULL, NULL, messageText);                                     
+            NSBundle *frameworkBundle = [OAScriptToolbarHelper bundle];
+            NSString *errorText = NSLocalizedStringFromTableInBundle(@"Unable to run workflow.", @"OmniAppKit", frameworkBundle, "workflow execution error");
+            NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The following error was reported:\n%@", @"OmniAppKit", frameworkBundle, "script loading error message"), [raisedException reason]];
+            NSString *okButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", frameworkBundle, "script error panel button");
+            NSBeginAlertSheet(errorText, okButton, nil, nil, [controller window], self, NULL, NULL, NULL, messageText);                                     
 	    }
 	} else {
 	    NSDictionary *errorDictionary;

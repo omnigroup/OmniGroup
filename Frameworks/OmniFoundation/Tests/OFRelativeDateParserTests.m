@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -220,7 +220,6 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
     // specifically set en_US, to make this pass if the user's current locale is ja_JP.
     [calendar setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
 
-    [NSDateFormatter setDefaultFormatterBehavior:NSDateFormatterBehavior10_4]; 
     dateFormats = [[NSArray alloc] initWithObjects:@"MM/dd/yy", @"MM/dd/yyyy", @"dd/MM/yy", @"dd/MM/yyyy", @"yyyy-MM-dd", @"MM.dd.yy", @"dd.MM.yy", @"d-MMM-yy", nil];
     timeFormats = [[NSArray alloc] initWithObjects:@"hh:mm a", @"hh:mm:ss a", @"HH:mm:ss", @"HH:mm", @"HHmm", @"kk:mm", @"kkmm", nil];
 }

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,8 +11,10 @@
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFoundation/OFUTI.h>
+#import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
+#import <OmniFileStore/OFSDocumentStore.h>
 
 #import "OUIWebDAVConnection.h"
 
@@ -50,9 +52,16 @@ RCS_ID("$Id$");
     [_fileQueue release];
     _fileQueue = nil;
     
+    _baseURL = [[aFile originalURL] retain];
+    // the new uniqued location of our downloaded file.
+    [_downloadTimestamp release]; // should have been cleared at conclusion of last download, but just in case...
+    _downloadTimestamp = nil;
+    NSString *tempPath = [self _downloadLocation];
+    
+    [_downloadPath release];
+    _downloadPath = [tempPath retain];
+
     if ([aFile isDirectory]) {
-        _baseURL = [[aFile originalURL] retain];
-        
         [self _readAndQueueContentsOfDirectory:aFile];
         
         OBASSERT([_fileQueue count]);
@@ -154,15 +163,14 @@ RCS_ID("$Id$");
         }
         
         // all downloads are done, lets do our final cleanup
-        NSString *fileName = (_baseURL ? [[_baseURL path] lastPathComponent] : [_file name]);
-        NSString *localFile = [NSTemporaryDirectory() stringByAppendingPathComponent:fileName];
+        NSString *localFile = _downloadPath;
         NSURL *localFileURL = [NSURL fileURLWithPath:localFile];
         NSError *utiError;
         NSString *fileUTI = OFUTIForFileURLPreferringNative(localFileURL, &utiError);
         if (!fileUTI) {
             localFile = nil;
             OUI_PRESENT_ERROR(utiError);
-        } else if (UTTypeConformsTo((CFStringRef)fileUTI, kUTTypeArchive)) {
+        } else if ([OFSDocumentStore isZipUTI:fileUTI]) {
             NSError *unarchiveError = nil;
             localFile = [self unarchiveFileAtPath:localFile error:&unarchiveError];
             if (!localFile || unarchiveError)
@@ -190,6 +198,12 @@ RCS_ID("$Id$");
 
         if (_uploadTemporaryURL != nil) {
             [fileManager deleteURL:_uploadFinalURL error:NULL]; // Ignore delete errors
+            // we might be replacing a file with a directory, check the verison with and without a slash.
+            NSString *url = [_uploadFinalURL absoluteString];
+            if ([url hasSuffix:@"/"]) {
+                url = [url substringToIndex:[url length] - 1]; // if it's got a trailing slash, trim it.
+                [fileManager deleteURL:[NSURL URLWithString:url] error:NULL];
+            }
             NSError *moveError = nil;
             if (![fileManager moveURL:_uploadTemporaryURL toURL:_uploadFinalURL error:&moveError]) {
                 OUI_PRESENT_ERROR(moveError);
@@ -211,6 +225,21 @@ RCS_ID("$Id$");
     [[NSNotificationCenter defaultCenter] postNotificationName:OUISyncDownloadFinishedNotification object:self userInfo:userInfo];
     [self _cleanupWithSuccess:success];
 }
+
+#pragma mark -
+#pragma mark Debugging
+
+- (NSString *)shortDescription;
+{
+    NSMutableDictionary *properties = [[[NSMutableDictionary alloc] init] autorelease];
+    [properties setObject:_file forKey:@"_file" defaultObject:nil];
+    [properties setObject:_baseURL forKey:@"_baseURL" defaultObject:nil];
+    [properties setObject:_downloadTimestamp forKey:@"_downloadTimestamp" defaultObject:nil];
+    [properties setObject:_downloadPath forKey:@"_downloadPath" defaultObject:nil];
+    [properties setObject:_fileQueue forKey:@"_fileQueue" defaultObject:nil];
+    return [NSString stringWithFormat:@"<%@:%p> %@", NSStringFromClass([self class]), self, properties];
+}
+
 
 #pragma mark -
 #pragma mark Private
@@ -262,20 +291,28 @@ RCS_ID("$Id$");
     _baseURL = nil;
     [_fileQueue release];
     _fileQueue = nil;
+    [_downloadTimestamp release];
+    _downloadTimestamp = nil;
+    [_downloadPath release];
+    _downloadPath = nil;
 }
 
 - (NSString *)_downloadLocation;
 {
+    if (!_downloadTimestamp)
+        _downloadTimestamp = [[[NSDate date] description] retain];
+    
     NSString *fileLocalRelativePath = nil;
     if (_baseURL) {
         NSURL *fileURL = [_file originalURL];
         fileLocalRelativePath = [[fileURL path] stringByRemovingString:[_baseURL path]]; 
         
-        NSString *localBase = [NSTemporaryDirectory() stringByAppendingPathComponent:[[_baseURL path] lastPathComponent]];
+        NSString *localBase = [NSTemporaryDirectory() stringByAppendingPathComponent:_downloadTimestamp];
+        localBase = [localBase stringByAppendingPathComponent:[[_baseURL path] lastPathComponent]];
         return [localBase stringByAppendingPathComponent:fileLocalRelativePath];
     } else {
-        NSString *localBase = [NSTemporaryDirectory() stringByAppendingPathComponent:[_file name]];
-        return localBase;
+        NSString *localBase = [NSTemporaryDirectory() stringByAppendingPathComponent:_downloadTimestamp];
+        return [localBase stringByAppendingPathComponent:[_file name]];
     }
 }
 

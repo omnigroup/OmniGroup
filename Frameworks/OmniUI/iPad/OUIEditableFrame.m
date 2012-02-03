@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,6 @@
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniUI/OUIColorInspectorSlice.h>
 #import <OmniUI/OUIDirectTapGestureRecognizer.h>
-#import <OmniUI/OUIEditMenuController.h>
 #import <OmniUI/OUIFontAttributesInspectorSlice.h>
 #import <OmniUI/OUIFontInspectorSlice.h>
 #import <OmniUI/OUIParagraphStyleInspectorSlice.h>
@@ -33,13 +32,14 @@
 #import <execinfo.h>
 #import <stdlib.h>
 
-#import "OUITextThumb.h"
 #import "OUEFTextPosition.h"
 #import "OUEFTextRange.h"
-#import "OUITextInputStringTokenizer.h"
-#import "OUITextCursorOverlay.h"
-#import "OUILoupeOverlay.h"
 #import "OUEFTextSpan.h"
+#import "OUIEditMenuController.h"
+#import "OUILoupeOverlay.h"
+#import "OUITextCursorOverlay.h"
+#import "OUITextInputStringTokenizer.h"
+#import "OUITextThumb.h"
 
 RCS_ID("$Id$");
 
@@ -91,6 +91,10 @@ RCS_ID("$Id$");
 // clang-2 (at r127704) warns when casting enum types, but UITextLayoutDirection is an extension of UITextStorageDirection which fails to redeclare the forward/backward members. Rather than scatter casts all over, define some constants here.
 #define OUITextLayoutDirectionForward ((UITextLayoutDirection)UITextStorageDirectionForward)
 #define OUITextLayoutDirectionBackward ((UITextLayoutDirection)UITextStorageDirectionBackward)
+
+NSString * const OUIEditableFrameTextDidBeginEditingNotification = @"OUIEditableFrameTextDidBeginEditingNotification";
+NSString * const OUIEditableFrameTextDidEndEditingNotification = @"OUIEditableFrameTextDidEndEditingNotification";
+NSString * const OUIEditableFrameTextDidChangeNotification = @"OUIEditableFrameTextDidChangeNotification";
 
 NSString * const OUIThumbMovementMenuInhibition = @"OUIThumbMovementMenuInhibition";
 NSString * const OUIScrollingMenuInhibition = @"OUIScrollingMenuInhibition";
@@ -236,6 +240,7 @@ static id do_init(OUIEditableFrame *self)
 #if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
     self->_spellCheckingType = UITextSpellCheckingTypeDefault;
 #endif
+    self->_returnKeyType = UIReturnKeyDefault;
     self->_keyboardType = UIKeyboardTypeDefault;
 
     self->generation = 1;
@@ -262,7 +267,7 @@ static id do_init(OUIEditableFrame *self)
 
     self->isRegisteredForScrollNotifications = NO;
     
-    self->editMenu = [[[OUIEditMenuController alloc] initWithEditableFrame:self] retain];
+    self->_editMenuController = [[OUIEditMenuController alloc] initWithEditableFrame:self];
     
     // We lazily initialize some attributes in didMoveToWindow.
     return self;
@@ -812,7 +817,7 @@ static BOOL beforeMutate(OUIEditableFrame *self, SEL _cmd, OUIEditableFrameMutat
     
     // We generally don't want to show the context menu while the user is typing.
     DEBUG_CONTEXT_MENU(@"In %s", __func__);
-    [self->editMenu hideMenu];
+    [self->_editMenuController hideMenu];
     
     if ((options & OUIEditableFrameMutationOptionAttributesOnly) == 0) {
         // If the inspector is visible and this isn't just an attribute change, hide it immediately (iWork does) instead of trying to keep the typing attributes up to date or whatnot (for one thing, we don't want the insertion pointer going behind the inspector). One risk here is if the inspector has some sort of deferred edit (like editing the font size via the keyboard). We'll assert that we are the first responder (so the there should be no editing text field on the inspector). There's still the possibility of some crazy inspector slice committing changes when it loses first responder, so we might want to have a reentrancy check on these mutation hooks...
@@ -860,11 +865,16 @@ static void notifyAfterMutate(OUIEditableFrame *self, SEL _cmd, OUIEditableFrame
         [self->inputDelegate textDidChange:self];
         DEBUG_TEXT(@"<<< textDidChange (%@)", NSStringFromSelector(_cmd));
     }
+
     if (self->flags.delegateRespondsToContentsChanged) {
         DEBUG_TEXT(@">>> textViewContentsChanged (%@)", NSStringFromSelector(_cmd));
         [self->delegate textViewContentsChanged:self];
         DEBUG_TEXT(@"<<< textViewContentsChanged (%@)", NSStringFromSelector(_cmd));
     }
+    
+    DEBUG_TEXT(@">>> OUIEditableFrameTextDidChangeNotification (%@)", NSStringFromSelector(_cmd));
+    [[NSNotificationCenter defaultCenter] postNotificationName:OUIEditableFrameTextDidChangeNotification object:self];
+    DEBUG_TEXT(@"<<< OUIEditableFrameTextDidChangeNotification (%@)", NSStringFromSelector(_cmd));
 }
 
 static void afterContentReplaced(OUIEditableFrame *self)
@@ -953,7 +963,9 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
     [_markedRangeBorderColor release];
     [_markedRangeBackgroundColor release];
     
-    [editMenu release];
+    [_editMenuController invalidate];
+    [_editMenuController release];
+    
     [_textInspector release];
     
     [super dealloc];
@@ -1221,7 +1233,7 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
     flags.delegateRespondsToShouldDeleteBackwardsFromIndex = [newDelegate respondsToSelector:@selector(textView:shouldDeleteBackwardsFromIndex:)];
     flags.delegateRespondsToSelectionChanged = [newDelegate respondsToSelector:@selector(textViewSelectionChanged:)];
     
-    editMenu.delegate = delegate;
+    _editMenuController.delegate = delegate;
 }
 
 @synthesize delegate;
@@ -1292,10 +1304,10 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
     if (newRange != nil && ![newRange isEmpty]) {
         if (show) { // nested so we don't automatically hide the menu when visible is false, we just don't force it to show
             // As of the 4.3 SDK, if this selection change was due to a tap on the Select or Select All menu items, UIKit ignores our request to show the menu again, so instead we defer the showing until the hiding is done: 
-            [editMenu showMainMenuAfterCurrentMenuFinishesHiding];
+            [_editMenuController showMainMenuAfterCurrentMenuFinishesHiding];
         }
     } else 
-        [editMenu hideMenu];
+        [_editMenuController hideMenu];
     
 }
 
@@ -1396,7 +1408,7 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
 - (void)thumbBegan:(OUITextThumb *)thumb;
 {
     DEBUG_CONTEXT_MENU(@"%s: thumb: %@", __func__, thumb);
-    [editMenu inhibitMenuFor:OUIThumbMovementMenuInhibition];
+    [_editMenuController inhibitMenuFor:OUIThumbMovementMenuInhibition];
 
     if (!_loupe) {
         _loupe = [[OUILoupeOverlay alloc] initWithFrame:[self frame]];
@@ -1464,7 +1476,7 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
     DEBUG_CONTEXT_MENU(@"%s: thumb: %@", __func__, thumb);
     _loupe.mode = OUILoupeOverlayNone;
     [self _setSolidCaret:-1];
-    [editMenu uninhibitMenuFor:OUIThumbMovementMenuInhibition];
+    [_editMenuController uninhibitMenuFor:OUIThumbMovementMenuInhibition];
 }
 
 - (NSDictionary *)attributesInRange:(UITextRange *)r;
@@ -1993,6 +2005,10 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
     flags.isEditing = didBecomeFirstResponder;
     
     DEBUG_EDITING(@"<< become first responder");
+    
+    if (didBecomeFirstResponder)
+        [[NSNotificationCenter defaultCenter] postNotificationName:OUIEditableFrameTextDidBeginEditingNotification object:self];
+
     return didBecomeFirstResponder;
 }
 
@@ -2019,7 +2035,9 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
     }
 
     [self endEditing];
-    
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:OUIEditableFrameTextDidEndEditingNotification object:self];
+
     DEBUG_EDITING(@"<< resign first responder");
     return YES;
 }
@@ -2038,7 +2056,7 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
         _cursorOverlay.hidden = YES;
     }
 
-    [editMenu hideMenu];
+    [_editMenuController hideMenu];
     
     [_loupe setMode:OUILoupeOverlayNone];
     
@@ -2167,7 +2185,7 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
 {
-    return [editMenu canPerformAction:action withSender:sender];
+    return [_editMenuController canPerformAction:action withSender:sender];
 }
 
 #pragma mark -
@@ -2193,7 +2211,7 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
         cursor.location = 0;
         
         while (cursor.location < contentLength) {
-            NSDictionary *run = [_content attributesAtIndex:cursor.location effectiveRange:&cursor];
+            NSDictionary *run = [[_content attributesAtIndex:cursor.location effectiveRange:&cursor] copy]; // copy, because mutating the content will destory the run otherwise, so later checks fail.
             
             if (defaultFont && ![run objectForKey:(id)kCTFontAttributeName])
                 [_content addAttribute:(id)kCTFontAttributeName value:(id)defaultFont range:cursor];
@@ -2202,6 +2220,7 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
             if (defaultParagraphStyle && ![run objectForKey:(id)kCTParagraphStyleAttributeName])
                 [_content addAttribute:(id)kCTParagraphStyleAttributeName value:(id)defaultParagraphStyle range:cursor];
 
+            [run release];
             cursor.location += cursor.length;
         }
     }
@@ -2323,6 +2342,12 @@ enum {
 {
     OBPRECONDITION(_content);
 
+    // Don't insert newlines into fields which have non-default return keys. End editing instead.
+    if (self.returnKeyType != UIReturnKeyDefault && [text isEqualToString:@"\n"]) {
+        [self endEditing];
+        return;
+    }
+    
     if (flags.delegateRespondsToShouldInsertText && ![delegate textView:self shouldInsertText:text])
         return;
 
@@ -2404,7 +2429,7 @@ enum {
 #endif
     
     [self unmarkText];
-
+    
     OUIEditableFrameMutationOptions options = 0;
     if (!beforeMutate(self, _cmd, options))
         return;
@@ -2490,10 +2515,7 @@ enum {
     return UIKeyboardAppearanceDefault;
 }
 
-- (UIReturnKeyType)returnKeyType;
-{
-    return UIReturnKeyDefault;
-} 
+@synthesize returnKeyType = _returnKeyType;
 
 - (BOOL)enablesReturnKeyAutomatically;
 {
@@ -3491,12 +3513,12 @@ CGRect OUITextLayoutFirstRectForRange(CTFrameRef frame, NSRange characterRange)
 
 - (void)ancestorScrollViewWillBeginScrolling;
 {
-    [editMenu inhibitMenuFor:OUIScrollingMenuInhibition];
+    [_editMenuController inhibitMenuFor:OUIScrollingMenuInhibition];
 }
 
 - (void)ancestorScrollViewDidEndScrolling;
 {
-    [editMenu uninhibitMenuFor:OUIScrollingMenuInhibition];
+    [_editMenuController uninhibitMenuFor:OUIScrollingMenuInhibition];
 }
 
 #pragma mark -
@@ -4127,7 +4149,7 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
         // See <bug:///72532> (Can't tap out of the suggestions list for Japanese marked text)
         if (r.numberOfTapsRequired == 1 && [newSelection isEqualToRange:selection] && markedRange.location == NSNotFound) {
             DEBUG_CONTEXT_MENU(@"In %s", __func__);
-            [editMenu toggleMenuVisibility];
+            [_editMenuController toggleMenuVisibility];
         } else {
             [self unmarkText];
             [self setSelectedTextRange:newSelection];
@@ -4152,9 +4174,11 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
         if (!_loupe) {
             _loupe = [[OUILoupeOverlay alloc] initWithFrame:[self frame]];
             [_loupe setSubjectView:self];
-            [[self _topmostView] addSubview:_loupe];
+
+            // Moving loupe out to the window's rootViewContoller's view so that it doesn't get clipped by our chrome. Everything else (thumbs...) is still added to the _topmostView so they apear to be inside the text fields. (We can't put this in the window itself because the text in the loupe will render sideways when in landscape.)
+            [[[[self window] rootViewController] view] addSubview:_loupe];
         }
-        [editMenu hideMenu];
+        [_editMenuController hideMenu];
         [self _setSolidCaret:1];
     }
     
@@ -4180,7 +4204,7 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
     if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled) {
         _loupe.mode = OUILoupeOverlayNone;
         DEBUG_CONTEXT_MENU(@"In %s", __func__);
-        [editMenu showMainMenu];
+        [_editMenuController showMainMenu];
         [self _setSolidCaret:-1];
         return;
     }
@@ -4825,6 +4849,11 @@ void OUITextLayoutDrawExtraRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFram
 - (void)inspectorDidDismiss:(OUIInspector *)inspector;
 {
     [self becomeFirstResponder];
+    
+    // We might be able to save some time by keeping this around, but we also want to reset the inspector to its base state if it comes up again. ALSO, this is the easiest hack to get rid of lingering OSTextSelectionStyle objects which have problematic reference behavior. ARC will fix it all, of course.
+    _textInspector.delegate = nil;
+    [_textInspector release];
+    _textInspector = nil;
 }
 
 #pragma mark -

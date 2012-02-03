@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,7 @@
 #import <OmniAppKit/OATextAttachment.h>
 #import <OmniAppKit/OATextStorage.h>
 
+#import "AppController.h"
 #import "RTFDocument.h"
 #import "ImageAttachmentCell.h"
 
@@ -26,6 +27,7 @@ RCS_ID("$Id$");
 @interface TextViewController () <UINavigationControllerDelegate, UIImagePickerControllerDelegate>
 - (void)_updateEditorFrame;
 - (void)_scrollTextSelectionToVisibleWithAnimation:(BOOL)animated;
+- (void)_updateTitleBarButtonItemSizeUsingInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
 @end
 
 @implementation TextViewController
@@ -97,6 +99,22 @@ RCS_ID("$Id$");
     self.toolbar = nil;
     self.editor = nil;
     [super viewDidUnload];
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;
+{
+    [self _updateTitleBarButtonItemSizeUsingInterfaceOrientation:toInterfaceOrientation];
+    
+    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
+}
+
+- (void)willMoveToParentViewController:(UIViewController *)parent;
+{
+    if (parent) {
+        [self _updateTitleBarButtonItemSizeUsingInterfaceOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
+    }
+    
+    [super willMoveToParentViewController:parent];
 }
 
 #pragma mark -
@@ -314,6 +332,24 @@ static void _scrollVerticallyInView(UIScrollView *scrollView, UIView *view, CGRe
         CGRect selectionRect = [_editor boundsOfRange:_editor.selectedTextRange];
         _scrollVerticallyInView(self.scrollView, _editor, selectionRect, animated);
     }
+}
+
+- (void)_updateTitleBarButtonItemSizeUsingInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+{
+    AppController *controller = [AppController controller];    
+    UIBarButtonItem *titleItem = [controller documentTitleToolbarItem];
+    UIView *customView = titleItem.customView;
+    
+    OBASSERT_NOTNULL(customView);
+
+    CGFloat newWidth = UIInterfaceOrientationIsPortrait(interfaceOrientation) ? 400 : 550;
+
+    customView.frame = (CGRect){
+        .origin.x = customView.frame.origin.x,
+        .origin.y = customView.frame.origin.y,
+        .size.width = newWidth,
+        .size.height = customView.frame.size.height
+    };
 }
 
 @end

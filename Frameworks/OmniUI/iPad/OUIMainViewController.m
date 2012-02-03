@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import "OUIParameters.h"
 
+#import <OmniFoundation/OFExtent.h>
+#import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/OUIAnimationSequence.h>
@@ -24,67 +26,92 @@ RCS_ID("$Id$");
     #define MAIN_VC_DEBUG(format, ...)
 #endif
 
+#if 0 && defined(DEBUG)
+    #define DEBUG_KEYBOARD(format, ...) NSLog(@"KEYBOARD: " format, ## __VA_ARGS__)
+#else
+    #define DEBUG_KEYBOARD(format, ...)
+#endif
+
+static BOOL IsPreIOS51 = NO;
+
 @interface _OUIMainViewControllerTransitionView : UIView
-- initWithFromView:(UIView *)fromView toView:(UIView *)toView sourcePreviewFrame:(CGRect)sourcePreviewFrame;
+- initWithFromImage:(UIImage *)fromImage toImage:(UIImage *)toImage sourceFrame:(CGRect)sourceFrame;
+- initWithFromView:(UIView *)fromView toView:(UIView *)toView sourceFrame:(CGRect)sourceFrame;
 - (void)transitionToFrame:(CGRect)targetPreviewFrame;
+#ifdef DEBUG
+- (void)writeImagesWithPrefix:(NSString *)prefix;
+#endif
 @end
 
 @implementation _OUIMainViewControllerTransitionView
 {
+    UIImage *_fromImage;
+    UIImage *_toImage;
     UIView *_innerSnapshotView;
 }
 
-- initWithFromView:(UIView *)fromView toView:(UIView *)toView sourcePreviewFrame:(CGRect)sourcePreviewFrame;
+- initWithFromImage:(UIImage *)fromImage toImage:(UIImage *)toImage sourceFrame:(CGRect)sourceFrame;
 {
-    if (!(self = [super initWithFrame:sourcePreviewFrame]))
+    OBPRECONDITION(fromImage);
+    OBPRECONDITION(toImage);
+    
+    if (!(self = [super initWithFrame:sourceFrame]))
         return nil;
-
+    
+    // We want our transition views above all other peer views.
+    self.layer.zPosition = 1;
+    
+    _fromImage = [fromImage retain];
+    _toImage = [toImage retain];
+    
     // We'll use this view to fade in the new image.
     _innerSnapshotView = [[UIView alloc] initWithFrame:self.bounds];
     [self addSubview:_innerSnapshotView];
     
-    // The animating view should float above other views (like the neighboring item views in the document picker).
-    self.layer.zPosition = 1;
-    
-    // We need to replicate the shadow edges that we expect the from/to views to have.
-    //NSArray *shadowEdges = OUIViewAddShadowEdges(self);
-    //OUIViewLayoutShadowEdges(self, shadowEdges, YES/*flip*/);
-    
-    UIImage *fromImage = [fromView snapshotImage];
-    UIImage *toImage = [toView snapshotImage];
-    
-#if 0 && defined(DEBUG)
-    {
-        NSError *error = nil;
-        if (![UIImagePNGRepresentation(fromImage) writeToFile:[@"~/tmp/from.png" stringByExpandingTildeInPath] options:0 error:&error])
-            NSLog(@"Unable to write PNG: %@", [error toPropertyList]);
-        if (![UIImagePNGRepresentation(toImage) writeToFile:[@"~/tmp/to.png" stringByExpandingTildeInPath] options:0 error:&error])
-            NSLog(@"Unable to write PNG: %@", [error toPropertyList]);
-    }
-#endif
-    
-    self.layer.contents = (id)[fromImage CGImage];
+    self.layer.contents = (id)[_fromImage CGImage];
     self.layer.contentsGravity = kCAGravityResize;
     
-    _innerSnapshotView.layer.contents = (id)[toImage CGImage];
+    _innerSnapshotView.layer.contents = (id)[_toImage CGImage];
     _innerSnapshotView.layer.contentsGravity = kCAGravityResize;
     _innerSnapshotView.alpha = 0;
     
     return self;
 }
 
+- initWithFromView:(UIView *)fromView toView:(UIView *)toView sourceFrame:(CGRect)sourceFrame;
+{
+    return [self initWithFromImage:[fromView snapshotImage]
+                           toImage:[toView snapshotImage]
+                       sourceFrame:sourceFrame];
+}
+
 - (void)transitionToFrame:(CGRect)targetPreviewFrame;
 {
     self.frame = targetPreviewFrame;
     
-    OBFinishPortingLater("What should we do for shadows? Do we even need the inner view now?");
-    //OUIViewLayoutShadowEdges(transitionView, shadowEdges, YES/*flip*/);
     _innerSnapshotView.frame = self.bounds;
     _innerSnapshotView.alpha = 1;
 }
 
+#ifdef DEBUG
+- (void)writeImagesWithPrefix:(NSString *)prefix;
+{
+    NSError *error = nil;
+    
+    NSString *fromPath = [NSString stringWithFormat:@"~/tmp/%@-from.png", prefix];
+    if (![UIImagePNGRepresentation(_fromImage) writeToFile:[fromPath stringByExpandingTildeInPath] options:0 error:&error])
+        NSLog(@"Unable to write PNG to \"%@\": %@", fromPath, [error toPropertyList]);
+    
+    NSString *toPath = [NSString stringWithFormat:@"~/tmp/%@-to.png", prefix];
+    if (![UIImagePNGRepresentation(_toImage) writeToFile:[toPath stringByExpandingTildeInPath] options:0 error:&error])
+        NSLog(@"Unable to write PNG to \"%@\": %@", toPath, [error toPropertyList]);
+}
+#endif
+
 - (void)dealloc;
 {
+    [_fromImage release];
+    [_toImage release];
     [_innerSnapshotView release];
     [super dealloc];
 }
@@ -92,6 +119,21 @@ RCS_ID("$Id$");
 @end
 
 @implementation OUIMainViewController
+{
+    CGFloat _lastKeyboardHeight;
+    UIViewController *_innerViewController;
+    BOOL _resizesToAvoidKeyboard;
+    
+    // Flags for iOS 5.0 bugs
+    BOOL _keyboardVisible;
+}
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    IsPreIOS51 = ![OFVersionNumber isOperatingSystemiOS51OrLater];
+}
 
 - (void)dealloc;
 {
@@ -155,10 +197,9 @@ RCS_ID("$Id$");
     MAIN_VC_DEBUG(@"  animated %d", animated);
     MAIN_VC_DEBUG(@"  fromRegion %@", [fromRegion shortDescription]);
     MAIN_VC_DEBUG(@"  toRegion %@", [toRegion shortDescription]);
-    
-    // Disable further clicks. Our background view has a hack to eat events. Also, animate between an editing and non-editing image.
-    OUIMainViewControllerBackgroundView *backgroundView = (OUIMainViewControllerBackgroundView *)self.view;
-    backgroundView.editing = viewController.isEditingViewController;
+
+    // Tell the background which image it should display for the new controller.
+    OUIMainViewControllerBackgroundView *mainView = (OUIMainViewControllerBackgroundView *)self.view;
     
     // Get the document's view controller properly configured and send the 'will' notifications.
     MAIN_VC_DEBUG(@"Prepare %@ for containment", [viewController shortDescription]);
@@ -173,8 +214,7 @@ RCS_ID("$Id$");
 
     MAIN_VC_DEBUG(@"add-child:%@", [viewController shortDescription]);
     [self addChildViewController:viewController]; // This calls -willMoveToParentViewController:
-    [backgroundView.contentView addSubview:viewController.view];
-    backgroundView.toolbar = [viewController toolbarForMainViewController];
+    [mainView.contentView addSubview:viewController.view];
     
     // Now that we are in the view, provoke any transition action and layout so that the toView/toViewRect can be updated.
     if (transitionAction) {
@@ -198,6 +238,11 @@ RCS_ID("$Id$");
     if (!toView)
         toView = viewController.view;
     
+    MAIN_VC_DEBUG(@"  fromView %@", [fromView shortDescription]);
+    MAIN_VC_DEBUG(@"  fromViewRect %@", NSStringFromCGRect(fromViewRect));
+    MAIN_VC_DEBUG(@"  toView %@", [toView shortDescription]);
+    MAIN_VC_DEBUG(@"  toViewRect %@", NSStringFromCGRect(toViewRect));
+
     OBASSERT((!fromView && !animated) || [fromView isDescendantOfView:_innerViewController.view]); // First setup with have no old view controller and shouldn't be animated
     OBASSERT([toView isDescendantOfView:viewController.view]);
     
@@ -205,7 +250,6 @@ RCS_ID("$Id$");
     OBASSERT(fromView.layer.hidden == NO);
     OBASSERT(toView.layer.hidden == NO);
     
-    UIView *view = self.view;
     CGRect sourcePreviewFrame = CGRectZero;
     CGRect targetPreviewFrame = CGRectZero;
     
@@ -216,8 +260,8 @@ RCS_ID("$Id$");
         if (CGRectIsEmpty(fromViewRect))
             fromViewRect = fromView.bounds;
         
-        sourcePreviewFrame = [fromView convertRect:fromViewRect toView:view];
-        targetPreviewFrame = [toView convertRect:toViewRect toView:view];
+        sourcePreviewFrame = [fromView convertRect:fromViewRect toView:mainView];
+        targetPreviewFrame = [toView convertRect:toViewRect toView:mainView];
       
         // Old code to make sure that we zoomed w/o stretching the preview/content to an incorrect aspect ratio. But we should ensure that our preview images have the right aspect ratio now.
 #if 0
@@ -229,7 +273,7 @@ RCS_ID("$Id$");
         
         // If we are zoomed way in, this animation isn't going to look great and we'll end up crashing trying to build a static image anyway.
         {
-            CGRect bounds = view.bounds;
+            CGRect bounds = mainView.bounds;
             
             if (sourcePreviewFrame.size.width > 2 * bounds.size.width ||
                 sourcePreviewFrame.size.height > 2 * bounds.size.height ||
@@ -239,29 +283,61 @@ RCS_ID("$Id$");
         }
     }
     
-    _OUIMainViewControllerTransitionView *transitionView = nil;
+    // In case someone claims they were going to do an animated switch but then does a non-animated one. Hide this before going any captured transition images.
+    [[OUIAppController controller] hideActivityIndicator];
+
+    _OUIMainViewControllerTransitionView *foregroundTransitionView = nil;
+    _OUIMainViewControllerTransitionView *backgroundTransitionView = nil;
+    UIImage *backgroundFromImage = nil;
     
     NSTimeInterval duration = 0;
     if (animated) {
         duration = 0.3;
-        transitionView = [[_OUIMainViewControllerTransitionView alloc] initWithFromView:fromView toView:toView sourcePreviewFrame:sourcePreviewFrame];
-        [view addSubview:transitionView];
+        foregroundTransitionView = [[_OUIMainViewControllerTransitionView alloc] initWithFromView:fromView toView:toView sourceFrame:sourcePreviewFrame];
         
-        // The 'to' and from views while animating the transition view.
-        viewController.view.hidden = YES;
+        // Hide the 'to' and 'from' views while animating the transition view.
+        toView.hidden = YES;
         fromView.hidden = YES;
 
-        MAIN_VC_DEBUG(@"  sourcePreviewFrame = %@ (window: %@)", NSStringFromCGRect(sourcePreviewFrame), NSStringFromCGRect([view convertRect:sourcePreviewFrame toView:view.window]));
-        MAIN_VC_DEBUG(@"  targetPreviewFrame = %@ (window: %@)", NSStringFromCGRect(targetPreviewFrame), NSStringFromCGRect([view convertRect:targetPreviewFrame toView:view.window]));
+        // Capture the entire rest of the view hierarchy (including the toolbar and background view) for the "from" state.
+        OBASSERT(viewController.view.hidden == NO);
+        viewController.view.hidden = YES;
+        backgroundFromImage = [mainView snapshotImage];
+        viewController.view.hidden = NO;
+
+        MAIN_VC_DEBUG(@"  sourcePreviewFrame = %@ (window: %@)", NSStringFromCGRect(sourcePreviewFrame), NSStringFromCGRect([mainView convertRect:sourcePreviewFrame toView:mainView.window]));
+        MAIN_VC_DEBUG(@"  targetPreviewFrame = %@ (window: %@)", NSStringFromCGRect(targetPreviewFrame), NSStringFromCGRect([mainView convertRect:targetPreviewFrame toView:mainView.window]));
+        
+#if 0 && defined(DEBUG)
+        [foregroundTransitionView writeImagesWithPrefix:@"foreground"];
+#endif
     }
-        
-        
-    // Make sure that if any views in the old inner view controller have been sent -setNeedsDisplay that they won't start trying to fill their layers as the CoreAnimation loop starts running. They are dead!
+
+    // Set up the pattern the background view should use and the new toolbar (this happens between capturing the two background transition images so that the toolbar will be included in the background dissolve).
+    OUIWithoutAnimating(^{
+        mainView.editing = viewController.isEditingViewController;
+        mainView.toolbar = [viewController toolbarForMainViewController];
+    });
+
+    // Make sure that if any views in the old inner view controller have been sent -setNeedsDisplay that they won't start trying to fill their layers as the CoreAnimation loop starts running. This view has been told to go away and might be referencing data that is invalid or that could become invalid soon (seems less likely now that we have UIDocument asynchronous closing, though).
     // Might have been unloaded already -- don't provoke a reload.
     if ([_innerViewController isViewLoaded]) {
-        OBASSERT(_innerViewController.view.superview == backgroundView.contentView);
+        OBASSERT(_innerViewController.view.superview == mainView.contentView);
         MAIN_VC_DEBUG(@"remove subview for %@", [_innerViewController shortDescription]);
         [_innerViewController.view removeFromSuperview];
+    }
+    
+    if (animated) {
+        // Now capture the 'to' background image and add the background transition view        
+        backgroundTransitionView = [[_OUIMainViewControllerTransitionView alloc] initWithFromImage:backgroundFromImage toImage:[mainView snapshotImage] sourceFrame:mainView.bounds];
+                
+        // Add the two transition views after all the capturing is done (don't want to polute one transition with the other's starting or ending image).
+        [mainView addSubview:foregroundTransitionView];
+        [mainView insertSubview:backgroundTransitionView belowSubview:foregroundTransitionView];
+        
+#if 0 && defined(DEBUG)
+        [backgroundTransitionView writeImagesWithPrefix:@"background"];
+#endif
     }
     
     // Need to capture scope for this block since call it after firing up the animation and returning from this method
@@ -269,11 +345,8 @@ RCS_ID("$Id$");
     
     [OUIAnimationSequence runWithDuration:duration actions:
      ^{
-         [transitionView transitionToFrame:targetPreviewFrame];
-         
-//         if (animated)
-//             [backgroundView.toolbar setItems:viewController.toolbarItems animated:YES]; // Otherwise done in the next block
-
+         [foregroundTransitionView transitionToFrame:targetPreviewFrame];
+         [backgroundTransitionView transitionToFrame:mainView.bounds];
      },
      ^{
          OUIWithoutAnimating(^{
@@ -288,28 +361,22 @@ RCS_ID("$Id$");
                  _innerViewController = [viewController retain];
                  
                  MAIN_VC_DEBUG(@"add subview for %@", [_innerViewController shortDescription]);
-                 [backgroundView.contentView addSubview:_innerViewController.view];
-                 backgroundView.toolbar = [_innerViewController toolbarForMainViewController];
+                 [mainView.contentView addSubview:_innerViewController.view];                 
+                 [mainView.contentView layoutIfNeeded];
                  
-                 [backgroundView.contentView layoutIfNeeded];
-                 viewController.view.hidden = NO;
-                 // if (!animated)
-                 //   [backgroundView.toolbar setItems:_innerViewController.toolbarItems animated:NO]; // Otherwise done in the previous block
-                 backgroundView.editing = _innerViewController.isEditingViewController;
-
                  MAIN_VC_DEBUG(@"did-move-to for %@", [_innerViewController shortDescription]);
                  [_innerViewController didMoveToParentViewController:self]; // -addChildViewController: doesn't call this, but does the 'will'
              }
              
-             [transitionView removeFromSuperview];
-             [transitionView release];
+             [foregroundTransitionView removeFromSuperview];
+             [foregroundTransitionView release];
              
-             // We hid this when animating, so put it back.
-             OBASSERT(!animated || fromView.hidden == YES);
+             [backgroundTransitionView removeFromSuperview];
+             [backgroundTransitionView release];
+             
+             // We may have hidden these when animating
              fromView.hidden = NO;
-             
-             // In case someone claims they were going to do an animated switch but then does a non-animated one.
-             [[OUIAppController controller] hideActivityIndicator];
+             toView.hidden = NO;
          });
          
          if (completionAction)
@@ -339,125 +406,217 @@ RCS_ID("$Id$");
         return;
     _resizesToAvoidKeyboard = resizesToAvoidKeyboard;
     
+    // NOTE! The show/hide notifications from the keyboard system are pretty useless since a device rotation causes a hide/show storm rather than just a frame change.
+    // But also note we need them on < 5.1 due to a bug in 5.0.x
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     if (resizesToAvoidKeyboard) {
-        [center addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-        [center addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+        [center addObserver:self selector:@selector(_keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
+        [center addObserver:self selector:@selector(_keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
+        
+        // These notifications typically aren't too useful (at least on 5.1 and later) since device rotations can result in a did hide/show cycle when the keyboard really is staying on screen. But on 5.0.1, if you bring up the keyboard in landscape, hide it, background the app, and then foreground the app, the system throws a spurious UIKeyboardDidChangeFrameNotification that makes us leave a gap at the bottom. This can happen both with rotating to portrait and w/o rotating at all while the app is backgrounded. Ignore this when running on iOS 5.0.x
+        if (IsPreIOS51) {
+            [center addObserver:self selector:@selector(_keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
+            [center addObserver:self selector:@selector(_keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
+        }
     } else {
-        [center removeObserver:self name:UIKeyboardWillShowNotification object:nil];
-        [center removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+        [center removeObserver:self name:UIKeyboardWillChangeFrameNotification object:nil];
+        [center removeObserver:self name:UIKeyboardDidChangeFrameNotification object:nil];
+        
+        if (IsPreIOS51) {
+            [center removeObserver:self name:UIKeyboardDidShowNotification object:nil];
+            [center removeObserver:self name:UIKeyboardDidHideNotification object:nil];
+        }
     }
 }
 
-NSString * const OUIMainViewControllerResizedForKeyboard = @"OUIMainViewControllerResizedForKeyboard";
-NSString * const OUIMainViewControllerResizedForKeyboardVisibilityKey = @"visibility";
+NSString * const OUIMainViewControllerDidBeginResizingForKeyboard = @"OUIMainViewControllerDidBeginResizingForKeyboard";
+NSString * const OUIMainViewControllerDidFinishResizingForKeyboard = @"OUIMainViewControllerDidFinishResizingForKeyboard";
 NSString * const OUIMainViewControllerResizedForKeyboardOriginalUserInfoKey = @"originalInfo";
 
-static void _postVisibility(OUIMainViewController *self, BOOL visibility, NSDictionary *originalInfo)
+static void _postResize(OUIMainViewController *self, NSString *notificationName, NSDictionary *originalInfo)
 {
     NSDictionary *userInfo = [[NSDictionary alloc] initWithObjectsAndKeys:
-                              visibility ? (id)kCFBooleanTrue : (id)kCFBooleanFalse, OUIMainViewControllerResizedForKeyboardVisibilityKey,
                               originalInfo, OUIMainViewControllerResizedForKeyboardOriginalUserInfoKey,
                               nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:OUIMainViewControllerResizedForKeyboard object:self userInfo:userInfo];
+    [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:self userInfo:userInfo];
     [userInfo release];
 }
 
-- (void)keyboardWillShow:(NSNotification *)note;
+/*
+ Notes on split/undocked keyboards:
+ 
+ When transitioning between a normal software keyboard and a split/undocked keyboard, we'll get a UIKeyboardWillChangeFrameNotification with *just* UIKeyboardFrameBeginUserInfoKey and then a UIKeyboardDidChangeFrameNotification with just UIKeyboardFrameEndUserInfoKey. In this case, the keyboard really isn't involved in the animation of the content and doesn't send animation parameters.
+ 
+ The one annoying part of this is that we going back to a docked state, we can't tell in the "will change" notification what the ending frame will be. So, we have the need to start an animation in our "did change" hook and have our own completion support for calling our did.
+
+ */
+
+static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIMainViewController *self, NSNotification *note)
+{
+    OUIMainViewControllerBackgroundView *backgroundView = (OUIMainViewControllerBackgroundView *)self.view;
+    OBASSERT(backgroundView.superview == backgroundView.window);
+    
+    // We should be directly in the window and taking up the whole application-available frame.
+    CGRect appSpaceInBounds = [backgroundView convertRect:backgroundView.window.screen.applicationFrame fromView:nil];
+    //NSLog(@"appSpaceInBounds %@", NSStringFromRect(appSpaceInBounds));
+    
+    NSValue *keyboardEndFrameValue = [[note userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey];
+    if (keyboardEndFrameValue == nil) {
+        DEBUG_KEYBOARD("  using full height due to missing end frame");
+        return 0; // The user is starting a drag of the split keyboard.
+    }
+
+    CGRect keyboardRectInBounds = [backgroundView convertRect:[keyboardEndFrameValue CGRectValue] fromView:nil];
+    //NSLog(@"keyboardRectInBounds = %@", NSStringFromRect(keyboardRectInBounds));
+    
+    OFExtent appSpaceYExtent = OFExtentFromRectYRange(appSpaceInBounds);
+    OFExtent keyboardYExtent = OFExtentFromRectYRange(keyboardRectInBounds);
+    
+    DEBUG_KEYBOARD(@"app %@, keyboard %@", OFExtentToString(appSpaceYExtent), OFExtentToString(keyboardYExtent));
+    
+    // If the keyboard is all the way at the max-y end, then we can use our avoidance. Otherwise, it is split or undocked or something else weird may be going on. There is no good API for us to tell for sure.
+    // We can still get a split keyboard with all the user info keys set if we start editing with the keyboard having previously been left in the split state.
+    if (OFExtentMax(keyboardYExtent) < OFExtentMax(appSpaceYExtent)) {
+        DEBUG_KEYBOARD("  using full height due to keyboard not reaching bottom of screen (%f vs %f)", OFExtentMax(keyboardYExtent), OFExtentMax(appSpaceYExtent));
+        return 0;
+    }
+    
+    // We get notified of the keyboard appearing, but with it fully off screen if the hardware keyboard is enabled. If we don't need to adjust anything, bail.
+    if (!CGRectIntersectsRect(appSpaceInBounds, keyboardRectInBounds)) {
+        DEBUG_KEYBOARD("  using full height due to keyboard being fully off screen");
+        return 0;
+    }
+    
+    // The keyboard will come up out of the bottom. Trim our height so that our max-y avoids it.
+    // Since we can get multiple 'will show' notifications w/o a 'will hide' (when changing international keyboards changes the keyboard height), we can't assume that the contentView's height is the full unmodified height.
+    CGFloat avoidedBottomHeight = CGRectGetMaxY(backgroundView.bounds) - CGRectGetMinY(keyboardRectInBounds);
+    DEBUG_KEYBOARD("  avoiding bottom height of %f", avoidedBottomHeight);
+    return avoidedBottomHeight;
+}
+
+- (BOOL)_handleKeyboardFrameChange:(NSNotification *)note isDid:(BOOL)isDid;
 {
     OBPRECONDITION([self isViewLoaded]);
-    
-    // Documentation, mail or other modal view atop us -- the keyboard isn't for us. This has an implicit assumption that the keyboard will go away before the modal view controller.
-    if (self.modalViewController)
-        return;
     
     // Resize our content view so that it isn't obscured by the keyboard. Our superview is the background view, who has the window as its superview. Window coordinates are in device space (unrotated), but our superview will have orientation correct coordinates. The keyboard will have device coordinates (unrotated).
     OUIMainViewControllerBackgroundView *backgroundView = (OUIMainViewControllerBackgroundView *)self.view;
     OBASSERT(backgroundView.superview == backgroundView.window);
-    
-    //NSLog(@"will show %@", note);
-    NSValue *keyboardEndFrameValue = [[note userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey];
-    OBASSERT(keyboardEndFrameValue);
-    CGRect keyboardRectInBounds = [backgroundView convertRect:[keyboardEndFrameValue CGRectValue] fromView:nil];
-    //NSLog(@"keyboardRectInBounds = %@", NSStringFromRect(keyboardRectInBounds));
-    
-    // We should directly in the window and taking up the whole application-available frame.
-    CGRect appSpaceInBounds = [backgroundView convertRect:backgroundView.window.screen.applicationFrame fromView:nil];
-    //NSLog(@"appSpaceInBounds %@", NSStringFromRect(appSpaceInBounds));
 
-    // We get notified of the keyboard appearing, but with it fully off screen if the hardware keyboard is enabled. If we don't need to adjust anything, bail.
-    if (!CGRectIntersectsRect(appSpaceInBounds, keyboardRectInBounds))
-        return;
+    CGFloat avoidedBottomHeight = _bottomHeightToAvoidForEndingKeyboardFrame(self, note);
     
-    // Since we can get multiple 'will show' notifications w/o a 'will hide' (when changing international keyboards changes the keyboard height), we can't assume that the contentView's height is the full unmodified height.
+    if (_lastKeyboardHeight == avoidedBottomHeight) {
+        DEBUG_KEYBOARD("  same -- bailing");
+        return NO; // No animation started
+    }
     
-    // The keyboard will come up out of the bottom. Trim our height so that our max-y avoids it.
-    CGFloat avoidedBottomHeight = CGRectGetMaxY(backgroundView.bounds) - CGRectGetMinY(keyboardRectInBounds);
     _lastKeyboardHeight = avoidedBottomHeight;
     
-#ifdef OMNI_ASSERTIONS_ON
-//    {
-//        CGRect contentBoundsAvoidingKeyboard = contentBounds;
-//        contentBoundsAvoidingKeyboard.size.height = availableContentHeight;
-//        //NSLog(@"contentBoundsAvoidingKeyboard %@", NSStringFromRect(contentBoundsAvoidingKeyboard));
-//        OBASSERT(!CGRectIntersectsRect(keyboardRectInBounds, contentBoundsAvoidingKeyboard));
-//    }
-#endif
-    
-    [UIView beginAnimations:@"avoid keyboard" context:NULL];
-    {
-        NSDictionary *userInfo = [note userInfo];
-        
-        // Match the keyboard animation time and curve. Also, starting from the current position is very important. If we don't and we are jumping between two editable controls, our view size may bounce.
-        [UIView setAnimationDuration:[[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue]];
-        [UIView setAnimationCurve:[[userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]];
-        [UIView setAnimationBeginsFromCurrentState:YES];
-        
-        backgroundView.avoidedBottomHeight = avoidedBottomHeight;
-        [backgroundView layoutIfNeeded]; // since our notification says we have resized
-
-        _postVisibility(self, YES, userInfo);
-
-        [backgroundView layoutIfNeeded]; // in case the notification moves anything else around
-    }
-    [UIView commitAnimations];
-
-}
-
-- (void)keyboardWillHide:(NSNotification *)note;
-{
-    OUIMainViewControllerBackgroundView *backgroundView = (OUIMainViewControllerBackgroundView *)self.view;
     NSDictionary *userInfo = [note userInfo];
-
-    // Documentation, mail or other modal view atop us -- the keyboard isn't for us. This has an implicit assumption that the keyboard will go away before the modal view controller.
-    // Still, if the keyboard is gone, we need to make clear our avoidance.
+    
     if (self.modalViewController) {
+        // Documentation, mail or other modal view atop us -- the keyboard isn't for us. This has an implicit assumption that the keyboard will go away before the modal view controller.
         OUIWithoutAnimating(^{
-            backgroundView.avoidedBottomHeight = 0;
+            backgroundView.avoidedBottomHeight = avoidedBottomHeight;
             [backgroundView layoutIfNeeded];
             
-            _postVisibility(self, NO, userInfo);
+            _postResize(self, OUIMainViewControllerDidBeginResizingForKeyboard, userInfo);
             [backgroundView layoutIfNeeded]; // in case the notification moves anything else around
         });
-        return;
+        return NO;
+    } else {
+        NSNumber *durationNumber = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+        NSNumber *curveNumber = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
+        BOOL keyboardControllingAnimation = YES;
+        
+        // If specified, match the keyboard animation time and curve. We should get both or neither -- if we get neither, make up our own parameters and pass that along so clients don't have to guess what to do.
+        if (!durationNumber || !curveNumber) {
+            OBASSERT((durationNumber == nil) == (curveNumber == nil));
+            durationNumber = [NSNumber numberWithDouble:0.25];
+            curveNumber = [NSNumber numberWithInt:UIViewAnimationCurveEaseInOut];
+            
+            NSMutableDictionary *updatedInfo = [[NSMutableDictionary alloc] initWithDictionary:userInfo];
+            [updatedInfo setObject:durationNumber forKey:UIKeyboardAnimationDurationUserInfoKey];
+            [updatedInfo setObject:curveNumber forKey:UIKeyboardAnimationCurveUserInfoKey];
+            
+            userInfo = [[updatedInfo copy] autorelease];
+            [updatedInfo release];
+            
+            keyboardControllingAnimation = NO;
+            DEBUG_KEYBOARD("keyboard not controlling animation");
+        }
+
+        void (^completionHandler)(BOOL finished) = nil;
+        if (isDid && !keyboardControllingAnimation) {
+            // The UIKit keyboard won't be animating for us and we're starting an animation in the 'did' but sending OUIMainViewControllerDidBeginResizingForKeyboard. Wait for *our* animation to finish and send the OUIMainViewControllerDidFinishResizingForKeyboard.
+            DEBUG_KEYBOARD("will post did-finish");
+            completionHandler = ^(BOOL finished){
+                DEBUG_KEYBOARD("posting did-finish");
+                _postResize(self, OUIMainViewControllerDidFinishResizingForKeyboard, userInfo);
+            };
+        }
+        
+        [UIView animateWithDuration:[durationNumber doubleValue] animations:
+         ^{
+             [UIView setAnimationCurve:[curveNumber intValue]];
+             
+             // Also, starting from the current position is very important. If we don't and we are jumping between two editable controls, our view size may bounce.
+             [UIView setAnimationBeginsFromCurrentState:YES];
+             
+             backgroundView.avoidedBottomHeight = avoidedBottomHeight;
+             [backgroundView layoutIfNeeded]; // since our notification says we have resized
+             
+             _postResize(self, OUIMainViewControllerDidBeginResizingForKeyboard, userInfo);
+             
+             [backgroundView layoutIfNeeded]; // in case the notification moves anything else around
+         }
+                         completion:completionHandler];
+        
+        return YES;
     }
-
-    // Remove the restriction on the content height
-    [UIView beginAnimations:@"done avoiding keyboard" context:NULL];
-    {
-        // Match the keyboard animation time and curve. Also, starting from the current position is very important. If we don't and we are jumping between two editable controls, our view size may bounce.
-        [UIView setAnimationDuration:[[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue]];
-        [UIView setAnimationCurve:[[userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]];
-        [UIView setAnimationBeginsFromCurrentState:YES];
-
-        backgroundView.avoidedBottomHeight = 0;
-        [backgroundView layoutIfNeeded];
-
-        _postVisibility(self, NO, userInfo);
-        [backgroundView layoutIfNeeded]; // in case the notification moves anything else around
-    }
-    [UIView commitAnimations];
 }
+
+- (void)_keyboardWillChangeFrame:(NSNotification *)note;
+{
+    DEBUG_KEYBOARD("will change frame %@", note);
+    
+    [self _handleKeyboardFrameChange:note isDid:NO];
+}
+
+- (void)_keyboardDidChangeFrame:(NSNotification *)note;
+{
+    DEBUG_KEYBOARD("did change frame %@", note);
+
+    if (IsPreIOS51) {
+        // See note where we subscribe to UIKeyboardDidShowNotification
+        if (!_keyboardVisible) {
+            // Ignore this spurious frame change
+            return;
+        }
+    }
+    
+    if ([self _handleKeyboardFrameChange:note isDid:YES]) {
+        // Animation started from the did -- it will send the OUIMainViewControllerDidFinishResizingForKeyboard
+    } else {
+        // Otherwise they keyboard was driving the animation and it has finished, so we should do it now.
+        NSDictionary *userInfo = [note userInfo];
+        _postResize(self, OUIMainViewControllerDidFinishResizingForKeyboard, userInfo);
+    }
+}
+
+// See note where we subscribe to UIKeyboardDidShowNotification
+- (void)_keyboardDidShow:(NSNotification *)note;
+{
+    OBPRECONDITION(IsPreIOS51);
+    OBPRECONDITION(_keyboardVisible == NO);
+    _keyboardVisible = YES;
+}
+- (void)_keyboardDidHide:(NSNotification *)note;
+{
+    OBPRECONDITION(IsPreIOS51);
+    OBPRECONDITION(_keyboardVisible == YES);
+    _keyboardVisible = NO;
+}
+
 
 - (void)resetToolbarFromMainViewController;
 {
@@ -508,6 +667,7 @@ static void _postVisibility(OUIMainViewController *self, BOOL visibility, NSDict
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation;
 {
     [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
+    
     [[OUIAppController controller] didRotateFromInterfaceOrientation:fromInterfaceOrientation];
 }
 
@@ -545,9 +705,9 @@ OBDEPRECATED_METHOD(-prepareToResignInnerToolbarControllerAndReturnParentViewFor
     return YES;
 }
 
-- (void)finishedBecomingInnerViewController;
+- (UIColor *)activityIndicatorColorForMainViewController;
 {
-    // For subclasses
+    return nil;
 }
 
 @end

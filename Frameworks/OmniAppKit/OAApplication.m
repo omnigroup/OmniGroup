@@ -1,4 +1,4 @@
-// Copyright 1997-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -418,7 +418,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         DEBUG_TARGET_SELECTION(@" ... trying %@", [object shortDescription]);
         id responsible = [object responsibleTargetForAction:theAction sender:sender];
         
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_10_7 >= MAC_OS_X_VERSION_MIN_REQUIRED
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_10_7 <= MAC_OS_X_VERSION_MIN_REQUIRED
         // Use the supplementalTargetForAction mechanism that was introduced in 10.7 to look for delegates and other helper objects attached to responders, but still use our OATargetSelection approach of requiring objects to override responsibleTargetForAction if they wish to terminate the search.
         if (!responsible && [object isKindOfClass:[NSResponder class]]) {
             responsible = [(NSResponder *)object supplementalTargetForAction:theAction sender:sender];

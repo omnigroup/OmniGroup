@@ -1,4 +1,4 @@
-// Copyright 2000-2007, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2007, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,12 +56,11 @@ static void _addFormatter(NSMutableArray *results, NSString *formatString)
 
 - (NSString *)stringForObjectValue:(id)obj;
 {
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5  // Uses API deprecated on 10.5
     NSString *bytesString = @"";
     NSCell *dataCell = [nonretainedTableColumn dataCell];
     double scaledBytes = [obj doubleValue];
     
-    unsigned int formatterIndex, formatterCount = [formatters count];
+    NSUInteger formatterIndex, formatterCount = [formatters count];
     for (formatterIndex = 0; formatterIndex < formatterCount; formatterIndex++) {
         NSNumberFormatter *formatter = [formatters objectAtIndex:formatterIndex];
 
@@ -75,17 +74,16 @@ static void _addFormatter(NSMutableArray *results, NSString *formatString)
         if (scaledBytes < (1024.0 / 10.0)) // if our new value < (1024 / 10), we aren't going to get any skinnier
             return bytesString;
         
-        if ([[dataCell font] widthOfString:bytesString] + 5.0 <= NSWidth([dataCell titleRectForBounds:NSMakeRect(0.0, 0.0, [nonretainedTableColumn width], 30.0)]))
+        NSDictionary *attributes = [NSDictionary dictionaryWithObject:[dataCell font] forKey:NSFontAttributeName];
+        NSSize size = [bytesString sizeWithAttributes:attributes];
+        
+        if (size.width + 5.0 <= NSWidth([dataCell titleRectForBounds:NSMakeRect(0.0, 0.0, [nonretainedTableColumn width], 30.0)]))
             return bytesString;
             
         scaledBytes /= 1024.0;
     }
     
     return bytesString;
-#else
-    OBRequestConcreteImplementation(self, _cmd);
-    return nil;
-#endif
 }
 
 - (NSAttributedString *)attributedStringForObjectValue:(id)obj withDefaultAttributes:(NSDictionary *)attrs;

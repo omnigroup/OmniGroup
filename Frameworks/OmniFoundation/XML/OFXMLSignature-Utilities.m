@@ -26,6 +26,11 @@
 #include <libxml/xpathInternals.h>
 #include <libxml/xpointer.h>
 
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7 && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
+// If we allow 10.7 API but also support 10.6, then we need to weakly import these Security.framework symbols or we won't be able to launch on 10.6.
+extern CFDictionaryRef SecCertificateCopyValues(SecCertificateRef certificate, CFArrayRef keys, CFErrorRef *error) __attribute__((weak_import));
+#endif
+
 RCS_ID("$Id$");
 
 #pragma mark ASN.1 utility routines

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,6 +26,9 @@
 
 // Given a candidate frame, return the frame that should be used for the preview view
 - (CGRect)previewRectInFrame:(CGRect)frame;
+
+// Like -previewRectInFrame:, but this version will return a frame that is about the same sized as the input, not about the same size as the preview (with the preview scale applied).
+- (CGRect)fitPreviewRectInFrame:(CGRect)frame;
 
 // Returns the subrect of the recevier that will be covered by its preview (probably only useful for group==NO).
 @property(readonly,nonatomic) CGRect imageBounds;

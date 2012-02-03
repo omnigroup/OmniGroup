@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,8 +28,6 @@
 @property(readonly, nonatomic) OFSDocumentStoreFileItem *fileItem;
 
 @property(readonly) UIViewController <OUIDocumentViewController> *viewController;
-
-- (BOOL)saveAsNewDocumentToURL:(NSURL *)url error:(NSError **)outError;
 
 - (void)finishUndoGroup;
 - (IBAction)undo:(id)sender;
@@ -61,9 +59,10 @@
 
 // Support for previews
 + (NSString *)placeholderPreviewImageNameForFileURL:(NSURL *)fileURL landscape:(BOOL)landscape;
-+ (BOOL)writePreviewsForDocument:(OUIDocument *)document error:(NSError **)outError;
-
-// Camera roll
-+ (UIImage *)cameraRollImageForFileItem:(OFSDocumentStoreFileItem *)fileItem;
++ (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;
 
 @end
+
+// A helper function to centralize the hack for -openWithCompletionHandler: leaving the document 'open-ish' when it fails.
+// Radar 10694414: If UIDocument -openWithCompletionHandler: fails, it is still a presenter
+extern void OUIDocumentHandleDocumentOpenFailure(OUIDocument *document, void (^completionHandler)(BOOL success));

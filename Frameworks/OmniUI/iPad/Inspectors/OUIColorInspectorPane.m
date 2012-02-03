@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,14 +21,21 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
+    OBPRECONDITION(self.parentViewController == nil);
+
+    [_colorTypeSegmentedControl removeFromSuperview];
+    [_colorTypeSegmentedControl removeAllSegments];
     [_colorTypeSegmentedControl release];
+    
     [_shadowDivider release];
     [_currentColorPicker release];
+
     [_paletteColorPicker release];
     [_hsvColorPicker release];
     [_rgbColorPicker release];
     [_grayColorPicker release];
     [_noneColorPicker release];
+
     [super dealloc];
 }
 
@@ -61,7 +68,7 @@ RCS_ID("$Id$");
     
     OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
     
-    UIViewController *previousColorPicker = _currentColorPicker; // Released below.
+    OUIColorPicker *previousColorPicker = _currentColorPicker; // Released below.
     _currentColorPicker = [colorPicker retain];
     if (previousColorPicker)
         [previousColorPicker willMoveToParentViewController:nil];
@@ -104,6 +111,7 @@ RCS_ID("$Id$");
     };
 
     void (^viewChangeCompletionHandler)(BOOL) = ^(BOOL didComplete){
+        previousColorPicker.selectionValue = nil; // Don't retain objects that we really aren't inspecting.
         if (previousColorPicker)
             [previousColorPicker.view removeFromSuperview];
         [previousColorPicker removeFromParentViewController];

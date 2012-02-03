@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,12 +12,11 @@
 #if OFS_DOCUMENT_STORE_SUPPORTED
 
 #import <OmniFoundation/OFObject.h>
-#import <OmniFileStore/OFSDocumentStoreScope.h>
 
 @class NSOperation;
 
 @protocol OFSDocumentStoreDelegate;
-@class OFSDocumentStoreFileItem, OFSDocumentStoreGroupItem;
+@class OFSDocumentStoreFileItem, OFSDocumentStoreGroupItem, OFSDocumentStoreScope, OFPreference;
 
 typedef enum {
     OFSDocumentStoreAddNormally,
@@ -27,6 +26,8 @@ typedef enum {
 
 extern NSString * const OFSDocumentStoreFileItemsBinding;
 extern NSString * const OFSDocumentStoreTopLevelItemsBinding;
+extern OFPreference *OFSDocumentStoreDisableUbiquityPreference; // Even if ubiquity is enabled, don't ask the user -- just pretend we don't see it.
+extern OFPreference *OFSDocumentStoreUserWantsUbiquityPreference; 
 
 @interface OFSDocumentStore : OFObject
 
@@ -34,6 +35,7 @@ extern NSString * const OFSDocumentStoreTopLevelItemsBinding;
 + (BOOL)canPromptForUbiquityAccess; // iCloud is supported, but the user might have opted out for this app.
 + (void)didPromptForUbiquityAccessWithResult:(BOOL)allowUbiquityAccess;
 + (BOOL)isUbiquityAccessEnabled;
++ (NSArray *)defaultUbiquitousScopes;
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 // Returns yes if url directly points to the Inbox or to a file directly in the Inbox.
@@ -45,24 +47,19 @@ extern NSString * const OFSDocumentStoreTopLevelItemsBinding;
 - (void)applicationWillEnterForegroundWithCompletionHandler:(void (^)(void))completionHandler;
 #endif
 
-- (NSString *)availableFileNameWithBaseName:(NSString *)baseName extension:(NSString *)extension counter:(NSUInteger *)ioCounter;
-- (NSURL *)availableURLInDirectoryAtURL:(NSURL *)directoryURL baseName:(NSString *)baseName extension:(NSString *)extension counter:(NSUInteger *)ioCounter;
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-- (NSURL *)availableURLWithFileName:(NSString *)fileName;
-#endif
 - (BOOL)userFileExistsWithFileNameOfURL:(NSURL *)fileURL;
 
-- initWithDirectoryURL:(NSURL *)directoryURL delegate:(id <OFSDocumentStoreDelegate>)delegate scanCompletionHandler:(void (^)(void))completionHandler;
+- initWithDirectoryURL:(NSURL *)directoryURL containerScopes:(NSArray *)containerScopes delegate:(id <OFSDocumentStoreDelegate>)delegate scanCompletionHandler:(void (^)(void))completionHandler;
 
 - (void)addAfterInitialDocumentScanAction:(void (^)(void))action;
 
 // Allow external objects to synchronize with our operations.
 - (void)performAsynchronousFileAccessUsingBlock:(void (^)(void))block;
+- (void)afterAsynchronousFileAccessFinishes:(void (^)(void))block;
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-- (NSOperation *)addDocumentWithScope:(OFSDocumentStoreScope)scope inFolderNamed:(NSString *)folderName fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
-- (NSOperation *)addDocumentFromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
-#endif
+- (void)addDocumentWithScope:(OFSDocumentStoreScope *)scope inFolderNamed:(NSString *)folderName fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
+- (void)addDocumentFromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
+- (void)moveDocumentFromURL:(NSURL *)fromURL toScope:(OFSDocumentStoreScope *)scope inFolderNamed:(NSString *)folderName completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;    // similar to -addDocumentWithScope only this performs a coordinated move
 
 // The caller should ensure this method is invoked on a thread that won't cause deadload with any registered NSFilePresenters and that will synchronize with other document I/O (see -[UIDocument performAsynchronousFileAccessUsingBlock:])
 - (void)renameFileItem:(OFSDocumentStoreFileItem *)fileItem baseName:(NSString *)baseName fileType:(NSString *)fileType completionQueue:(NSOperationQueue *)completionQueue handler:(void (^)(NSURL *destinationURL, NSError *errorOrNil))completionHandler;
@@ -73,17 +70,20 @@ extern NSString * const OFSDocumentStoreTopLevelItemsBinding;
 #endif
 
 // Call this method on the main thread to asynchronously move a file to the cloud. The completionHandler will be executed on the main thread sometime after this method returns.
-- (void)moveItemsAtURLs:(NSSet *)urls toFolderInCloudWithName:(NSString *)folderNameOrNil completionHandler:(void (^)(NSDictionary *movedURLs, NSDictionary *errorURLs))completionHandler;
+- (void)moveItemsAtURLs:(NSSet *)urls toCloudFolderInScope:(OFSDocumentStoreScope *)ubiquitousScope withName:(NSString *)folderNameOrNil completionHandler:(void (^)(NSDictionary *movedURLs, NSDictionary *errorURLs))completionHandler;
 
 // This does not automatically call -rescanItems
 - (void)deleteItem:(OFSDocumentStoreFileItem *)fileItem completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
-
-@property(copy, nonatomic) NSURL *directoryURL;
 
 @property(nonatomic,readonly) NSSet *fileItems; // All the file items, no matter if they are in a group
 @property(nonatomic,readonly) NSSet *topLevelItems; // The top level file items (ungrouped) and any groups
 
 @property(nonatomic,readonly) BOOL hasFinishedInitialMetdataQuery;
+
+@property (nonatomic, readonly) NSArray *ubiquitousScopes;
+- (OFSDocumentStoreScope *)defaultUbiquitousScope;
+
+@property (nonatomic, readonly) OFSDocumentStoreScope *localScope;
 
 - (void)scanItemsWithCompletionHandler:(void (^)(void))completionHandler;
 
@@ -95,7 +95,7 @@ extern NSString * const OFSDocumentStoreTopLevelItemsBinding;
 - (OFSDocumentStoreFileItem *)fileItemWithURL:(NSURL *)url;
 - (OFSDocumentStoreFileItem *)fileItemNamed:(NSString *)documentName;
 
-- (OFSDocumentStoreScope)scopeForFileURL:(NSURL *)fileURL;
+- (OFSDocumentStoreScope *)scopeForFileURL:(NSURL *)fileURL;
                                                   
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 @property(readonly,nonatomic) NSString *documentTypeForNewFiles;
@@ -104,6 +104,7 @@ extern NSString * const OFSDocumentStoreTopLevelItemsBinding;
 - (void)createNewDocument:(void (^)(OFSDocumentStoreFileItem *createdFileItem, NSError *error))handler;
 
 - (void)moveFileItems:(NSSet *)fileItems toCloud:(BOOL)shouldBeInCloud completionHandler:(void (^)(OFSDocumentStoreFileItem *failingItem, NSError *errorOrNil))completionHandler;
++ (BOOL)isZipUTI:(NSString *)uti;
 - (void)cloneInboxItem:(NSURL *)inboxURL completionHandler:(void (^)(OFSDocumentStoreFileItem *newFileItem, NSError *errorOrNil))completionHandler;
 - (BOOL)deleteInbox:(NSError **)outError;
 #endif

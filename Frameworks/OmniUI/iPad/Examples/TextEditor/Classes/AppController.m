@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,7 @@ RCS_ID("$Id$")
 
 - (UIView *)pickerAnimationViewForTarget:(OUIDocument *)document;
 {
-    return ((TextViewController *)document.viewController).editor;
+    return ((TextViewController *)document.viewController).scrollView;
 }
 
 - (NSArray *)toolbarItemsForDocument:(OUIDocument *)document;

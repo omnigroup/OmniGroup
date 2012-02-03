@@ -27,21 +27,18 @@ static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
 
 + (void)didLoad;
 {
-    Class mainThreadRunLoopProcessorClass;
+    // If OmniAppKit is used, use the subclass that knows about AppKit run loop modes
+    Class processorClass = NSClassFromString(@"OAAppKitQueueProcessor");
+    if (processorClass == Nil)
+        processorClass = self;
     
-    mainThreadRunLoopProcessorClass = [self mainThreadRunLoopProcessorClass];
-    mainThreadProcessor = [[mainThreadRunLoopProcessorClass alloc] initForQueue:[OFMessageQueue mainQueue]];
+    mainThreadProcessor = [[processorClass alloc] initForQueue:[OFMessageQueue mainQueue]];
 
-    // Call the +mainThreadRunLoopModes method so categories (in OmniAppKit, say) can add more modes
+    // Call the +mainThreadRunLoopModes method so the OmniAppKit subclass can add more modes
     if (![NSThread isMainThread])
         [NSException raise:@"OFRunLoopQueueProcessorWrongThread" format:@"Attempted to start the main thread's OFRunLoopQueueProcessor from a thread other than the main thread"];
 
     [mainThreadProcessor runFromCurrentRunLoopInModes:[self mainThreadRunLoopModes]];
-}
-
-+ (Class)mainThreadRunLoopProcessorClass;
-{
-    return self;
 }
 
 + (NSArray *)mainThreadRunLoopModes;

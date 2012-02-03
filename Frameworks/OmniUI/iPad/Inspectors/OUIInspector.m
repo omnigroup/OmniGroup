@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -378,11 +378,16 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
 
 - (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController;
 {
+    OBPRECONDITION(_popoverController == popoverController);
+    
     // NOTE: This method gets called when the dismisal animation starts, not when it is done. So, we defer clearing the inspected objects/views/slices until our UINavigationController's -viewDidDisappear:. Otherwise we'll animate out an empty background.
     
     [self _stopObserving];
 
     [_nonretained_delegate inspectorDidDismiss:self];
+    
+    // Don't keep the popover controller alive needlessly.
+    [[OUIAppController controller] forgetPossiblyVisiblePopoverIfAlreadyHidden];
 }
 
 #pragma mark -

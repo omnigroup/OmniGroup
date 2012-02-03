@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,32 +11,31 @@
 
 #if OFS_DOCUMENT_STORE_SUPPORTED
 
-#import <OmniFileStore/OFSDocumentStoreScope.h>
-
-@class OFSDocumentStore;
+@class OFSDocumentStore, OFSDocumentStoreScope;
 
 @protocol OFSDocumentStoreDelegate <NSObject>
 
 // This must be thread-safe
 - (Class)documentStore:(OFSDocumentStore *)store fileItemClassForURL:(NSURL *)fileURL;
 
-// This must be thread-safe
-- (BOOL)documentStore:(OFSDocumentStore *)store shouldIncludeFileItemWithFileType:(NSString *)fileType;
-
 - (NSString *)documentStoreBaseNameForNewFiles:(OFSDocumentStore *)store;
 
 - (void)createNewDocumentAtURL:(NSURL *)url completionHandler:(void (^)(NSURL *url, NSError *error))completionHandler;
-
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+// probably no one needs to override hte base OUIAppController version of the implementation of this method
+- (BOOL)documentStore:(OFSDocumentStore *)store canViewFileTypeWithIdentifier:(NSString *)uti;
+#endif
 @optional
+- (OFSDocumentStoreScope *)documentStore:(OFSDocumentStore *)store scopeForNewDocumentAtURL:(NSURL *)fileURL;
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 - (NSString *)documentStoreDocumentTypeForNewFiles:(OFSDocumentStore *)store;
-- (OFSDocumentStoreScope)documentStore:(OFSDocumentStore *)store scopeForNewDocumentAtURL:(NSURL *)fileURL;
-
 - (NSArray *)documentStoreEditableDocumentTypes:(OFSDocumentStore *)store;
 #endif
 
 - (void)documentStore:(OFSDocumentStore *)store scannedFileItems:(NSSet *)fileItems;
+
+- (void)documentStore:(OFSDocumentStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date didMoveToURL:(NSURL *)newURL;
 
 @end
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,14 +38,22 @@ static inline void main_sync(void (^block)(void)) {
 }
 
 #if 0 && defined(DEBUG)
-    #define PREVIEW_DEBUG(format, ...) NSLog(@"PREVIEW: " format, ## __VA_ARGS__)
+    #define DEBUG_PREVIEW_DISPLAY(format, ...) NSLog(@"PREVIEW: " format, ## __VA_ARGS__)
 #else
-    #define PREVIEW_DEBUG(format, ...)
+    #define DEBUG_PREVIEW_DISPLAY(format, ...)
 #endif
 
 #if 0 && defined(DEBUG)
+    #define DEBUG_PREVIEW_GENERATION(format, ...) NSLog(@"PREVIEW: " format, ## __VA_ARGS__)
+#else
+    #define DEBUG_PREVIEW_GENERATION(format, ...)
+#endif
+
+#if 0 && defined(DEBUG)
+    #define DEBUG_DOCUMENT_DEFINED 1
     #define DEBUG_DOCUMENT(format, ...) NSLog(@"DOCUMENT: " format, ## __VA_ARGS__)
 #else
+    #define DEBUG_DOCUMENT_DEFINED 0
     #define DEBUG_DOCUMENT(format, ...)
 #endif
 

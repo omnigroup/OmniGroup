@@ -16,7 +16,7 @@ RCS_ID("$Id$");
 @property(nonatomic,retain) IBOutlet UIImageView *backgroundImageView;
 
 - (void)done:(id)sender;
-- (void)switchChanged:(id)sender;
+- (IBAction)switchChanged:(id)sender;
 
 @end
 

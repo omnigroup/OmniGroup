@@ -1,4 +1,4 @@
-// Copyright 2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,6 +37,8 @@
 @property(nonatomic,retain) NSArray *extraMenuItemsSelectors;
 
 - (id)initWithEditableFrame:(OUIEditableFrame *)editableFrame;
+
+- (void)invalidate; // Owning editable frame is discarding us.
 
 - (void)showMainMenu;
     // Display the main menu, calling back to the editor for the target rectangle

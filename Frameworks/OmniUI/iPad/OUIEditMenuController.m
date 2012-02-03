@@ -1,4 +1,4 @@
-// Copyright 2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,7 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
 
-#import <OmniUI/OUIEditMenuController.h>
+#import "OUIEditMenuController.h"
 
 #import <UIKit/UIView.h>
 
@@ -44,7 +44,7 @@ NSString * const OUIKeyboardAnimationInhibition = @"OUIKeyboardAnimationInhibiti
     if (self) {
         // Initialization code here.
         inhibitions = [[NSMutableSet alloc] init];
-        unretained_editor = [editableFrame retain];
+        unretained_editor = editableFrame;
         wantMainMenuDisplay = NO;
         needsToShowMainMenuAfterCurrentMenuFinishesHiding = NO;
         
@@ -66,6 +66,11 @@ NSString * const OUIKeyboardAnimationInhibition = @"OUIKeyboardAnimationInhibiti
     [extraMenuItemsSelectors release];
 
     [super dealloc];
+}
+
+- (void)invalidate;
+{
+    unretained_editor = nil;
 }
 
 - (NSString *)description;

@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,7 +78,8 @@ static BOOL _isRead(OFSDAVOperation *self)
     [_request release];
     [_response release];
     [_resultData release];
-    [_error release];
+    [_errorData release];
+    [_finalError release];
     [_target release];
     [_redirections release];
     [super dealloc];
@@ -201,7 +202,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     // Start the NSURLConnection and then wait for it to finish.
     [self startOperation];
     
-    while (!_finished && !_error) {
+    while (!_finished) {
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.5]];
         [pool release];
@@ -212,74 +213,11 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     }
     
     // Try to upgrade the response to an error if we didn't get an error in the actual attempt but rather received error content from the server.
-    OBASSERT(_response || _error); // Only nil if we got back something other than an http response
-    if (_response && !_error) {
-        NSInteger code = [_response statusCode];
-        OBASSERT(code < 300 || code > 399); // shouldn't have been left with a redirection.
-        OBASSERT(code > 199);   // NSURLConnection should handle 100-Continue.
-        if (code >= 300) {
-            /* We treat 3xx codes as errors here (in addition to the 4xx and 5xx codes) because any redirection should have been handled at a lower level, by NSURLConnection. If we do end up with a 3xx response, we can't treat it as a success anyway, because the response body of a 3xx is not the entity we requested --- it's usually a little server-generated HTML snippet saying "click here if the redirect didn't work". */
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to perform WebDAV operation.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [[_request URL] host], [NSHTTPURLResponse localizedStringForStatusCode:code], code, [_request HTTPMethod], [[_request URL] path]];
-            NSMutableDictionary *info = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedRecoverySuggestionErrorKey, nil];
-            
-            [info setObject:[_response URL] forKey:OFSURLErrorFailingURLErrorKey];
-            
-            /* We don't make use of this yet (and may not ever), but it is handy for debugging */ 
-            NSString *locationHeader = [[_response allHeaderFields] objectForKey:@"Location"];
-            if (locationHeader) {
-                [info setObject:locationHeader forKey:OFSResponseLocationErrorKey];
-            }
-            
-#ifdef DEBUG_wiml
-            NSLog(@"%@ - err = %@", [self shortDescription], [info description]);
-#endif            
-            // Add the error content.  Need to obey the charset specified in the Content-Type header.  And the content type.
-            if (_resultData) {
-                [info setObject:_resultData forKey:@"errorData"];
-                
-                NSString *contentType = [[_response allHeaderFields] objectForKey:@"Content-Type"];
-                do {
-                    if (![contentType isKindOfClass:[NSString class]]) {
-                        NSLog(@"Error Content-Type not a string");
-                        break;
-                    }
-                    
-                    // Record the Content-Type
-                    [info setObject:contentType forKey:@"errorDataContentType"];
-                    OFMultiValueDictionary *parameters = [[[OFMultiValueDictionary alloc] init] autorelease];
-                    [[self class] _parseContentTypeHeaderValue:contentType intoDictionary:parameters valueChars:nil];
-                    NSString *encodingName = [parameters firstObjectForKey:@"charset"];
-                    CFStringEncoding encoding = kCFStringEncodingInvalidId;
-                    if (encodingName != nil)
-                        encoding = CFStringConvertIANACharSetNameToEncoding((CFStringRef)encodingName);
-                    if (encoding == kCFStringEncodingInvalidId)
-                        encoding = kCFStringEncodingWindowsLatin1; // Better a mangled error than no error at all!
-                    
-                    CFStringRef str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)_resultData, encoding);
-                    if (!str) {
-                        // The specified encoding didn't work, let's try Windows Latin 1
-                        str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)_resultData, kCFStringEncodingWindowsLatin1);
-                        if (!str) {
-                            NSLog(@"Error content cannot be turned into string using encoding '%@' (%ld)", encodingName, (long)encoding);
-                            [info setObject:_resultData forKey:@"errorData"];
-                            break;
-                        }
-                    }
-                    
-                    [info setObject:(id)str forKey:@"errorString"];
-                    CFRelease(str);
-                } while (0);
-            }
-            
-            NSError *davError = [NSError errorWithDomain:OFSDAVHTTPErrorDomain code:code userInfo:info];            
-            _error = [[self prettyErrorForDAVError:davError] retain];
-        }
-    }
-    
-    if (_error) {
+    OBASSERT(_response || _finalError); // Only nil if we got back something other than an http response
+
+    if (_finalError != nil) {
         if (outError)
-            *outError = _error;
+            *outError = _finalError;
         return nil;
     }
     
@@ -560,6 +498,63 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         NSLog(@"%@: did cancel challenge %@", [self shortDescription], challenge);
 }
 
+- (NSError *)_generateErrorForResponse;
+{
+    NSInteger statusCode = [_response statusCode];
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to perform WebDAV operation.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [[_request URL] host], [NSHTTPURLResponse localizedStringForStatusCode:statusCode], statusCode, [_request HTTPMethod], [[_request URL] path]];
+    NSMutableDictionary *info = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedRecoverySuggestionErrorKey, nil];
+    
+    [info setObject:[_response URL] forKey:OFSURLErrorFailingURLErrorKey];
+    
+    /* We don't make use of this yet (and may not ever), but it is handy for debugging */ 
+    NSString *locationHeader = [[_response allHeaderFields] objectForKey:@"Location"];
+    if (locationHeader) {
+        [info setObject:locationHeader forKey:OFSResponseLocationErrorKey];
+    }
+    
+    // Add the error content.  Need to obey the charset specified in the Content-Type header.  And the content type.
+    if (_errorData != nil) {
+        [info setObject:_errorData forKey:@"errorData"];
+        
+        NSString *contentType = [[_response allHeaderFields] objectForKey:@"Content-Type"];
+        do {
+            if (![contentType isKindOfClass:[NSString class]]) {
+                NSLog(@"Error Content-Type not a string");
+                break;
+            }
+            
+            // Record the Content-Type
+            [info setObject:contentType forKey:@"errorDataContentType"];
+            OFMultiValueDictionary *parameters = [[[OFMultiValueDictionary alloc] init] autorelease];
+            [[self class] _parseContentTypeHeaderValue:contentType intoDictionary:parameters valueChars:nil];
+            NSString *encodingName = [parameters firstObjectForKey:@"charset"];
+            CFStringEncoding encoding = kCFStringEncodingInvalidId;
+            if (encodingName != nil)
+                encoding = CFStringConvertIANACharSetNameToEncoding((CFStringRef)encodingName);
+            if (encoding == kCFStringEncodingInvalidId)
+                encoding = kCFStringEncodingWindowsLatin1; // Better a mangled error than no error at all!
+            
+            CFStringRef str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)_errorData, encoding);
+            if (!str) {
+                // The specified encoding didn't work, let's try Windows Latin 1
+                str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)_errorData, kCFStringEncodingWindowsLatin1);
+                if (!str) {
+                    NSLog(@"Error content cannot be turned into string using encoding '%@' (%ld)", encodingName, (long)encoding);
+                    [info setObject:_errorData forKey:@"errorData"];
+                    break;
+                }
+            }
+            
+            [info setObject:(id)str forKey:@"errorString"];
+            CFRelease(str);
+        } while (0);
+    }
+
+    NSError *davError = [NSError errorWithDomain:OFSDAVHTTPErrorDomain code:statusCode userInfo:info];
+    return [self prettyErrorForDAVError:davError];
+}
+
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response;
 {
     OBPRECONDITION(_response == nil);
@@ -604,6 +599,13 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
             OFSAddRedirectEntry(_redirections, kOFSRedirectContentLocation, [_response URL], [NSURL URLWithString:location relativeToURL:[_response URL]], responseHeaders);
         }
     }
+
+    OBASSERT(statusCode < 300 || statusCode > 399); // shouldn't have been left with a redirection.
+    OBASSERT(statusCode > 199);   // NSURLConnection should handle 100-Continue.
+    if (statusCode >= 300) {
+        /* We treat 3xx codes as errors here (in addition to the 4xx and 5xx codes) because any redirection should have been handled at a lower level, by NSURLConnection. If we do end up with a 3xx response, we can't treat it as a success anyway, because the response body of a 3xx is not the entity we requested --- it's usually a little server-generated HTML snippet saying "click here if the redirect didn't work". */
+        _shouldCollectDetailsForError = YES;
+    }
     
     OBASSERT(_isRead(self) || statusCode == 201 /* Accepted */ || statusCode == 204 /* No Content */ || statusCode >= 400 /* Some sort of error (e.g. missing file or permission denied) */);
 }
@@ -616,6 +618,15 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     if (OFSFileManagerDebug > 2)
         NSLog(@"%@: did receive data of length %ld", [self shortDescription], [data length]);
     
+    if (_shouldCollectDetailsForError) {
+        // We're collecting details about an HTTP error
+        if (!_errorData)
+            _errorData = [[NSMutableData alloc] initWithData:data];
+        else
+            [_errorData appendData:data];
+        return; // We don't want to send uninterpreted error content to our target
+    }
+
 #ifdef OMNI_ASSERTIONS_ON
     long long bytesReportedSoFar;
 #endif
@@ -672,6 +683,29 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     }
 }
 
+- (void)_finish;
+{
+    OBPRECONDITION(!_finished);
+
+    if (_shouldCollectDetailsForError) {
+        [_finalError release];
+        _finalError = [[self _generateErrorForResponse] retain];
+    }
+
+    if (_finalError != nil) {
+        if (OFSFileManagerDebug > 0)
+            NSLog(@"%@: did fail with error: %@", [self shortDescription], [_finalError toPropertyList]);
+    } else {
+        if (OFSFileManagerDebug > 2)
+            NSLog(@"%@: did finish loading", self);
+    }
+
+    if (_target != nil)
+        [_target fileManager:_nonretained_fileManager operationDidFinish:self withError:_finalError];
+
+    _finished = YES;
+}
+
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection;
 {
 #ifdef OMNI_ASSERTIONS_ON
@@ -679,19 +713,13 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
 #endif
     OBPRECONDITION(expectedContentLength >= 0 || expectedContentLength == NSURLResponseUnknownLength);
     OBPRECONDITION(_target != nil || expectedContentLength == NSURLResponseUnknownLength || [_resultData length] <= (unsigned long long)expectedContentLength); // should have gotten all the content if we are to be considered successfully finised
-    OBPRECONDITION(!_finished);
-    if (OFSFileManagerDebug > 2)
-        NSLog(@"%@: did finish loading", self);
-    _finished = YES;
-    
-    if (_target)
-        [_target fileManager:_nonretained_fileManager operationDidFinish:self withError:nil];
+    [self _finish];
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
 {
     OBPRECONDITION(!_finished);
-    OBPRECONDITION(!_error);
+    OBPRECONDITION(_finalError == nil);
     
     if (OFSFileManagerDebug > 0)
         NSLog(@"%@: did fail with error: %@", [self shortDescription], [error toPropertyList]);
@@ -703,11 +731,9 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         OFSError(&error, OFSDAVFileManagerCannotAuthenticate, desc, reason);
     }
     
-    [_error release];
-    _error = [error copy];
-    
-    if (_target)
-        [_target fileManager:_nonretained_fileManager operationDidFinish:self withError:error];
+    _finalError = [error copy];
+
+    [self _finish];
 }
 
 - (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse;

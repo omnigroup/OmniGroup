@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2009, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2009, 2011-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,6 +56,25 @@ static NSString *blackColorString;
         AttachmentString = [[NSString alloc] initWithCharacters:&c length:1];
     }
     return AttachmentString;
+}
+
+- (void)eachAttachment:(void (^)(OATextAttachment *))applier;
+{
+    NSString *string = [self string];
+    NSString *attachmentString = [NSAttributedString attachmentString];
+    
+    NSUInteger location = 0, end = [self length];
+    while (location < end) {
+        NSRange attachmentRange = [string rangeOfString:attachmentString options:0 range:NSMakeRange(location,end-location)];
+        if (attachmentRange.length == 0)
+            break;
+        
+        OATextAttachment *attachment = [self attribute:OAAttachmentAttributeName atIndex:attachmentRange.location effectiveRange:NULL];
+        OBASSERT(attachment);
+        applier(attachment);
+        
+        location = NSMaxRange(attachmentRange);
+    }
 }
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE

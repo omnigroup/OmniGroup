@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,20 @@ RCS_ID("$Id$");
  
  */
 
+@interface OAPatternColorPicker ()
+
+@property (nonatomic, retain) IBOutlet NSView *view;
+@property (nonatomic, assign) IBOutlet NSImageView *imageView;
+
+@end
+
 @implementation OAPatternColorPicker
+
+- (void)dealloc;
+{
+    [_view release];
+    [super dealloc];
+}
 
 //
 // NSColorPicker subclass
@@ -72,31 +85,39 @@ RCS_ID("$Id$");
 - (NSView *)provideNewView:(BOOL)initialRequest;  // "Yes" on very first call.
 {
     if (initialRequest) {
-        OBASSERT(!view);
-        [[OAPatternColorPicker bundle] loadNibNamed:@"OAPatternColorPicker.nib" owner:self];
+        OBASSERT(!_view);
+        [[OAPatternColorPicker bundle] loadNibNamed:@"OAPatternColorPicker.nib" owner:self options:nil];
     }
-    OBASSERT(view);
-    return view;
+    OBASSERT(_view);
+    return _view;
 }
 
 - (void)setColor:(NSColor *)newColor;
 {
     // This will get called with whatever the currently selected color in the well is when we become the active picker.  The color will NOT necessarily be one a pattern color; we need to check that.  If it isn't a color we like, we should just empty out our UI.
     if (![[newColor colorSpaceName] isEqualToString:NSPatternColorSpace]) {
-        [imageView setImage:nil];
+        [self.imageView setImage:nil];
         return;
     }
 
     NSImage *image = [newColor patternImage];
-    [imageView setImage:image];
+    [self.imageView setImage:image];
 }
+
+//
+// Outlets
+//
+
+@synthesize view = _view;
+@synthesize imageView = _nonretained_imageView;
 
 //
 // Actions
 //
+
 - (IBAction)imageChanged:(id)sender;
 {
-    NSImage *image = [imageView image];
+    NSImage *image = [self.imageView image];
     if (!image)
         return;
 

@@ -51,6 +51,14 @@ RCS_ID("$Id$");
 
 */
 
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7 && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
+// If we allow 10.7 API but also support 10.6, then we need to weakly import these Security.framework symbols or we won't be able to launch on 10.6.
+extern const CFStringRef kSecDigestLengthAttribute __attribute__((weak_import));
+extern const CFStringRef kSecDigestTypeAttribute __attribute__((weak_import));
+extern const CFStringRef kSecDigestSHA1 __attribute__((weak_import));
+extern const CFStringRef kSecDigestSHA2 __attribute__((weak_import));
+#endif
+
 /* Canonicalization algorithm identifiers */
 #define XMLCanonicalization10_OmitComments    ((const xmlChar *)"http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
 #define XMLCanonicalization10_KeepComments    ((const xmlChar *)"http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments")

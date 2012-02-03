@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,6 +29,8 @@
     NSMutableDictionary *workspaceDefaults;
     NSMutableArray *workspaces;
     NSMenu *workspaceMenu;
+    NSTimer *configurationsChangedTimer;
+    
     struct {
 	unsigned int isInspectionQueued:1;
 	unsigned int isListeningForNotifications:1;
@@ -79,6 +81,8 @@
 
 - (OIInspectionSet *)inspectionSet;
 - (void)inspectionSetChanged;
+
+- (void)configurationsChanged;
 
 - (NSMutableDictionary *)workspaceDefaults;
 - (void)defaultsDidChange;

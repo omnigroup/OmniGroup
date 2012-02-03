@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2005, 2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,6 +26,7 @@
 + (BOOL)isOperatingSystemiOS32OrLater; // iOS 3.2
 + (BOOL)isOperatingSystemiOS40OrLater; // iOS 4.0
 + (BOOL)isOperatingSystemiOS50OrLater; // iOS 5.0
++ (BOOL)isOperatingSystemiOS51OrLater; // iOS 5.1
 #else
 + (BOOL)isOperatingSystemLeopardOrLater; // 10.5
 + (BOOL)isOperatingSystemSnowLeopardOrLater; // 10.6

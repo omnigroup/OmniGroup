@@ -1,4 +1,4 @@
-// Copyright 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2011-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,13 +21,10 @@ NSString *OFUTIForFileURLPreferringNative(NSURL *fileURL, NSError **outError)
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Argument to OFUTIForFileURL must be a file URL." userInfo:nil];
     
     NSString *path = [fileURL path];
-    BOOL isDirectory;
-    if (![[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDirectory]) {
-        if (outError)
-            *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError userInfo:[NSDictionary dictionaryWithObject:fileURL forKey:NSURLErrorKey]];
-        
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:outError];
+    if (!attributes)
         return nil;
-    }
+    BOOL isDirectory = [[attributes fileType] isEqualToString:NSFileTypeDirectory];
     
     return OFUTIForFileExtensionPreferringNative([path pathExtension], isDirectory);
 }
@@ -46,7 +43,7 @@ NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tag, CFStr
     NSString *resolvedType = nil;
     
     for (NSString *type in allTypes) {
-        resolvedType = [type retain];
+        resolvedType = type;
         
         NSURL *bundleURL = NSMakeCollectable(UTTypeCopyDeclaringBundleURL((CFStringRef)type));
         if (!bundleURL)
@@ -61,6 +58,10 @@ NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tag, CFStr
             break;
     }
     
+    // Might be owned by the array; so hold onto it.
+    resolvedType = [[resolvedType retain] autorelease];
+    
     [allTypes release];
-    return [resolvedType autorelease];
+    
+    return resolvedType;
 }

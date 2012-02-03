@@ -1,4 +1,4 @@
-// Copyright 2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2005, 2007, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -317,11 +317,11 @@ static const CSSM_VERSION callingApiVersion = {2,0};
     const CSSM_KEY *kcKeyBuffer = NULL;
     OSStatus err = SecKeyGetCSSMKey(keyRef, &kcKeyBuffer);
     if (err != noErr) {
-        NSLog(@"-[%@ %@]: SecKeyGetCSSMKey() returns %d", OBShortObjectDescription(self), _cmd, (int)err);
+        NSLog(@"-[%@ %@]: SecKeyGetCSSMKey() returns %d", OBShortObjectDescription(self), NSStringFromSelector(_cmd), (int)err);
         return;
     }
     if (kcKeyBuffer == NULL) {
-        NSLog(@"-[%@ %@]: SecKeyGetCSSMKey() returns NULL", OBShortObjectDescription(self), _cmd);
+        NSLog(@"-[%@ %@]: SecKeyGetCSSMKey() returns NULL", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
         return;
     }
     

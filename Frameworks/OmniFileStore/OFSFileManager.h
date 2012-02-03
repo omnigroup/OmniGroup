@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,6 +37,11 @@ typedef NSUInteger OFSDirectoryEnumerationOptions;
 
 - (id <OFSAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url withTarget:(id <OFSFileManagerAsynchronousOperationTarget>)target;
 - (id <OFSAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically withTarget:(id <OFSFileManagerAsynchronousOperationTarget>)target;
+
+#if NS_BLOCKS_AVAILABLE
+- (id <OFSAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url receiveDataBlock:(void (^)(NSData *))receiveDataBlock progressBlock:(void (^)(long long))progressBlock completionBlock:(void (^)(NSError *))completionBlock;
+- (id <OFSAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically progressBlock:(void (^)(long long))progressBlock completionBlock:(void (^)(NSError *))completionBlock;
+#endif
 
 - (NSURL *)availableURL:(NSURL *)startingURL;
 

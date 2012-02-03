@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,12 +69,6 @@ static NSString *OAContextMenuLayoutDefaultKey = @"OAContextMenuLayout";
     else if (layout == OASmallContextMenuLayout && [label length] > 30)
         return [[label substringToIndex: 30] stringByAppendingString: [NSString horizontalEllipsisString]];
     return label;
-}
-
-- (void)removeAllItems;
-{
-    while ([self numberOfItems])
-        [self removeItemAtIndex: 0];
 }
 
 - (NSMenuItem *)itemWithAction:(SEL)action;

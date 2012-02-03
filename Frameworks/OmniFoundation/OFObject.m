@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,7 +57,7 @@ RCS_ID("$Id$")
 #if defined(OF_CHECK_INSANE_RETAIN_COUNT)
     if (newExtraRefCount > SaneRetainCount) {
         OBASSERT(newExtraRefCount <= SaneRetainCount);
-        [NSException raise:@"RetainInsane" format:@"-[%@ %s]: Insane retain count! count=%d", OBShortObjectDescription(self), _cmd, newExtraRefCount];
+        [NSException raise:@"RetainInsane" format:@"-[%@ %@]: Insane retain count! count=%d", OBShortObjectDescription(self), NSStringFromSelector(_cmd), newExtraRefCount];
     }
 #endif
 
@@ -89,7 +89,7 @@ RCS_ID("$Id$")
     } else {
 #if defined(OF_CHECK_INSANE_RETAIN_COUNT)
         if (newExtraRefCount > SaneRetainCount) {
-            [NSException raise:@"RetainInsane" format:@"-[%@ %s]: Insane retain count! count=%d", OBShortObjectDescription(self), _cmd, _extraRefCount];
+            [NSException raise:@"RetainInsane" format:@"-[%@ %@]: Insane retain count! count=%d", OBShortObjectDescription(self), NSStringFromSelector(_cmd), _extraRefCount];
         }
 #endif
     }
@@ -122,4 +122,15 @@ id <NSObject> OFCopyObject(OFObject *object, unsigned extraBytes, NSZone *zone)
 }
 #endif
 
-
+#if OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT
+static void OFCheckForInstruments(void) __attribute__((constructor));
+static void OFCheckForInstruments(void)
+{
+    if (getenv("OAAllocationStatisticsOutputMask") || getenv("OAKeepBacktraces")) {
+        // Make sure this is visible in the console amidst all the other noise.
+        for (unsigned i = 0; i < 10; i++)
+            fprintf(stderr, "ERROR: Both OFObject inline ref counting and Instruments's Allocations are enabled.\n");
+        abort();
+    }
+}
+#endif

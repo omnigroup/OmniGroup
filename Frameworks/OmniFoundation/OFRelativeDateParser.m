@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -588,7 +588,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     OFRegularExpressionMatch *dotMatch = [timeDotRegex matchInString:firstString];
     static OFRegularExpression *timeFormatDotRegex = nil;
     if (!timeFormatDotRegex)
-	timeFormatDotRegex = [[OFRegularExpression alloc] initWithString:@"[HhkK]\\.[m]"];
+	timeFormatDotRegex = [[OFRegularExpression alloc] initWithString:@"[HhkK]'?\\.'?[m]"];
     OFRegularExpressionMatch *timeFormatDotMatch = [timeFormatDotRegex matchInString:timeFormat];
     if (dotMatch&&timeFormatDotMatch)
 	return YES;

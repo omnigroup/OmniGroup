@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@
 
 #import "OUIDocumentPickerItemView-Internal.h"
 #import "OUIParameters.h"
+#import "OUIFeatures.h"
 
 RCS_ID("$Id$");
 
@@ -198,6 +199,8 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 {
+    // Since our files can't be picked up yet (grouping support not ready), don't make them look wiggly.
+#if OUI_DOCUMENT_GROUPING
     // iWork jittes the entire item. I find it hard to read the text. Also the jitter is too scary and we'd like a more gentle animation
     CALayer *layer = _previewView.layer;
     
@@ -233,6 +236,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     }
     
     _previewView.needsAntialiasingBorder = editing;
+#endif
 }
 
 @synthesize shrunken = _shrunken;
@@ -386,7 +390,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    PREVIEW_DEBUG(@"%s %p, item %@", __PRETTY_FUNCTION__, self, [_item shortDescription]);
+    DEBUG_PREVIEW_DISPLAY(@"%s %p, item %@", __PRETTY_FUNCTION__, self, [_item shortDescription]);
     
     // Actually, we do need to be able to load previews when we don't have a view yet. In particular, if you are closing a document, we want its preview to start loading but it may never have been assigned a view (if the app launched with the document open and the doc picker has never been shown). We delay the display of the doc picker in this case until the preview has actually loaded.
 #if 0
@@ -398,12 +402,12 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     
     NSSet *previewedFileItems = self.previewedFileItems;
     if ([previewedFileItems count] == 0) {
-        PREVIEW_DEBUG(@"  bail -- no previews desired");
+        DEBUG_PREVIEW_DISPLAY(@"  bail -- no previews desired");
         return;
     }
     
     if (!_item.ready) {
-        PREVIEW_DEBUG(@"  bail -- item isn't ready");
+        DEBUG_PREVIEW_DISPLAY(@"  bail -- item isn't ready");
         return;
     }
     
@@ -428,14 +432,14 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
             
             // Keep using the old preview until the new version of a file is down downloading
             if (fileItem.isDownloaded && [preview.date compare:fileItem.date] == NSOrderedAscending) {
-                PREVIEW_DEBUG(@"  new preview needed -- existing is older (was %@, now %@", preview.date, [fileItem date]);
+                DEBUG_PREVIEW_DISPLAY(@"  new preview needed -- existing is older (was %@, now %@", preview.date, [fileItem date]);
                 return NO;
             }
             return YES;
         }];
         
         if (suitablePreview == nil) {
-            PREVIEW_DEBUG(@"  loading op for %@", [_item shortDescription]);
+            DEBUG_PREVIEW_DISPLAY(@"  loading op for %@", [_item shortDescription]);
             
             Class documentClass = [[OUISingleDocumentAppController controller] documentClassForURL:fileItem.fileURL];
 
@@ -447,17 +451,27 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
             if (preview)
                 [loadedPreviews addObject:preview];
         } else {
-            PREVIEW_DEBUG(@"  already had suitable preview %@", [suitablePreview shortDescription]);
+            DEBUG_PREVIEW_DISPLAY(@"  already had suitable preview %@", [suitablePreview shortDescription]);
         }
     }
     
     if (loadedPreviews) {
-        OUIWithLayerAnimationsDisabled(![UIView areAnimationsEnabled] || (self.window == nil), ^{
+        BOOL disableLayerAnimations = ![UIView areAnimationsEnabled] || (self.window == nil);
+        OUIWithLayerAnimationsDisabled(disableLayerAnimations, ^{
+            if (!disableLayerAnimations) {
+                [CATransaction begin];
+                [CATransaction setAnimationDuration:0.33];
+            }
+            
             for (OUIDocumentPreview *preview in loadedPreviews) {
-                PREVIEW_DEBUG(@"%s add preview:%@ view:%p current size:%@", __PRETTY_FUNCTION__, [preview shortDescription], self, NSStringFromCGSize(self.frame.size));
+                DEBUG_PREVIEW_DISPLAY(@"%s add preview:%@ view:%p current size:%@", __PRETTY_FUNCTION__, [preview shortDescription], self, NSStringFromCGSize(self.frame.size));
                 [_previewView addPreview:preview];
             }
             [_previewView layoutIfNeeded];
+            
+            if (!disableLayerAnimations) {
+                [CATransaction commit];
+            }
         });
         
         [[NSNotificationCenter defaultCenter] postNotificationName:OUIDocumentPickerItemViewPreviewsDidLoadNotification object:self userInfo:nil];

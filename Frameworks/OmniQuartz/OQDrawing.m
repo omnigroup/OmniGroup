@@ -1,4 +1,4 @@
-// Copyright 2003-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -200,6 +200,7 @@ void OQAppendRectWithRoundedRight(CGContextRef ctx, CGRect rect, CGFloat radius,
         CGContextClosePath(ctx);
 }
 
+// No size change -- might even overflow
 CGRect OQCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter)
 {
     CGPoint pt;
@@ -255,6 +256,14 @@ CGRect OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(CGRect enclosing
     return result;
 }
 
+// Shinks if necessary
+CGRect OQCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter)
+{
+    if (toCenter.width <= enclosingRect.size.width && toCenter.height <= enclosingRect.size.height)
+        return OQCenteredIntegralRectInRect(enclosingRect, toCenter);
+    return OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(enclosingRect, toCenter);
+}
+
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
 
 #if __MAC_OS_X_VERSION_MIN_REQUIRED < 40000 /* Apple recommends using literal numbers here instead of version constants */
@@ -283,3 +292,50 @@ void OQDrawCGImageWithScaleCenteredInRect(CGContextRef ctx, CGImageRef image, CG
     
     CGContextDrawImage(ctx, imageRect, image);
 }
+
+void OQPreflightImage(CGImageRef image)
+{
+    // Force decoding of the image data up front. This can be useful when we want to ensure that UI interaction isn't slowed down the first time a image comes on screen.
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef ctx = CGBitmapContextCreate(NULL, 1, 1, 8/*bitsPerComponent*/, 4/*bytesPerRow*/, colorSpace, kCGImageAlphaNoneSkipFirst);
+    CGColorSpaceRelease(colorSpace);
+    
+    OBASSERT(ctx);
+    if (ctx) {
+        CGContextDrawImage(ctx, CGRectMake(0, 0, 1, 1), image);
+        CGContextRelease(ctx);
+    }
+}
+
+CGImageRef OQCopyFlattenedImage(CGImageRef image)
+{
+    return OQCreateImageWithSize(image, CGSizeMake(CGImageGetWidth(image), CGImageGetHeight(image)), kCGInterpolationNone);
+}
+
+CGImageRef OQCreateImageWithSize(CGImageRef image, CGSize size, CGInterpolationQuality interpolationQuality)
+{
+    OBPRECONDITION(image);
+    OBPRECONDITION(size.width == floor(size.width));
+    OBPRECONDITION(size.height == floor(size.height));
+    OBPRECONDITION(size.width >= 1);
+    OBPRECONDITION(size.height >= 1);
+    
+    // Try building a bitmap context with the same settings as the input image.
+    CGColorSpaceRef colorSpace = CGImageGetColorSpace(image);
+    size_t bytesPerPixel = CGImageGetBitsPerPixel(image) / 8; OBASSERT((CGImageGetBitsPerPixel(image) % 8) == 0);
+    CGContextRef ctx = CGBitmapContextCreate(NULL, size.width, size.height, CGImageGetBitsPerComponent(image), bytesPerPixel*size.width, colorSpace, CGImageGetAlphaInfo(image));
+    if (!ctx) {
+        // Fall back to something that CGBitmapContext actually understands
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        ctx = CGBitmapContextCreate(NULL, size.width, size.height, 8/*bitsPerComponent*/, 4*size.width, colorSpace, kCGImageAlphaPremultipliedFirst);
+        CGColorSpaceRelease(colorSpace);
+    }
+
+    CGContextSetInterpolationQuality(ctx, interpolationQuality);
+    CGContextDrawImage(ctx, CGRectMake(0, 0, size.width, size.height), image);
+    CGImageRef newImage = CGBitmapContextCreateImage(ctx);
+    CGContextRelease(ctx);
+    
+    return newImage;
+}
+

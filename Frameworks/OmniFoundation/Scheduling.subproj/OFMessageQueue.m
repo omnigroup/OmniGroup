@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -165,7 +165,7 @@ static BOOL OFMessageQueueDebug = NO;
                 useCurrentInvocation = YES;
 #ifdef DEBUG_kc0
                 if (flags.schedulesBasedOnPriority) {
-                    NSLog(@"-[%@ %s] invocation has no group: %@", OBShortObjectDescription(self), _cmd, [nextInvocation shortDescription]);
+                    NSLog(@"-[%@ %@] invocation has no group: %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [nextInvocation shortDescription]);
                 }
                 OBASSERT(!flags.schedulesBasedOnPriority); // If a message queue schedules based on priority, its invocations really should have priorities!
 #endif

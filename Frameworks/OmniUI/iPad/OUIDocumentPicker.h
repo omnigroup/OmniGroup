@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,7 @@
 
 @class NSFileWrapper;
 @class OFSetBinding;
-@class OFSDocumentStore, OFSDocumentStoreItem, OFSDocumentStoreFileItem, OUIDocumentPickerScrollView, OUIDocumentRenameViewController;
+@class OFSDocumentStore, OFSDocumentStoreItem, OFSDocumentStoreFileItem, OUIDocumentPickerScrollView, OFSDocumentStoreFilter;
 
 @protocol OUIDocumentPickerDelegate;
 
@@ -23,7 +23,7 @@
 
 @property(nonatomic,retain) OFSDocumentStore *documentStore;
 @property(assign, nonatomic) IBOutlet id <OUIDocumentPickerDelegate> delegate;
-
+@property(nonatomic,readonly) OFSDocumentStoreFilter *documentStoreFilter;
 @property(retain) IBOutlet UIToolbar *toolbar;
 @property(retain) IBOutlet OUIDocumentPickerScrollView *mainScrollView;
 @property(retain) IBOutlet OUIDocumentPickerScrollView *groupScrollView;
@@ -57,6 +57,7 @@
 
 - (void)scrollToTopAnimated:(BOOL)animated;
 - (void)scrollItemToVisible:(OFSDocumentStoreItem *)item animated:(BOOL)animated;
+- (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated;
 
 - (BOOL)okayToOpenMenu;
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,8 +7,12 @@
 
 #import "RTFDocument.h"
 
+#import <OmniFileStore/OFSDocumentStoreFileItem.h> // For -fileURL
+#import <OmniQuartz/OQDrawing.h> // For OQCreateImageWithSize()
 #import <OmniUI/OUIRTFReader.h>
 #import <OmniUI/OUIRTFWriter.h>
+#import <OmniUI/OUIDocumentPreview.h>
+#import <OmniUI/UIView-OUIExtensions.h> // For -snapshotImageWithSize:
 
 #import "TextViewController.h"
 
@@ -61,10 +65,62 @@ RCS_ID("$Id$");
     return @"DocumentPreviewPlaceholder.png";
 }
 
-+ (BOOL)writePreviewsForDocument:(OUIDocument *)document error:(NSError **)outError;
+static void _writePreview(Class self, NSURL *fileURL, NSDate *date, UIViewController *viewController, BOOL landscape, void (^completionHandler)(void))
 {
-    OBUserCancelledError(outError);
-    return NO;
+    // We ping pong back and forth between the main queue and the OUIDocumentPreview background queue here a bit. We want to do as much work as possible on the background queue as possible so that the main queue is available to process user events (like scrolling in the document picker) while previews are being generated. Some code, however, must be done on the main thread. In particular our drawing code is UIView-based and so the preview image must be done on the main queue.
+    // One might thing that it would be better to determine the final preview image size and call -snapshotImageWithSize: with that size, but this is (very) wrong. The issue is that the CALayer -renderInContext: method is very slow if it has to scale the layer backing stores, but it is very fast if it can blit them w/o interpolation. So, it is faster to capture a 100% scale image and then do one final scaling operation (which we can also do on the background queue).
+    
+    completionHandler = [[completionHandler copy] autorelease];
+
+    CGRect viewFrame = landscape ? CGRectMake(0.0f, 0.0f, 1024.0f, 768.0f) : CGRectMake(0.0f, 0.0f, 768.0f, 1024.0f);
+    UIView *view = viewController.view;
+    view.frame = viewFrame;
+    [view layoutIfNeeded];
+    UIImage *image = [view snapshotImageWithSize:viewFrame.size];
+
+    // Now we have an image, but it is needs to be scaled down. Do that on the background too.
+    [OUIDocumentPreview performAsynchronousPreviewOperation:^{
+        CGSize size = [OUIDocumentPreview maximumPreviewSizeForLandscape:landscape];
+        CGFloat scale = [OUIDocumentPreview previewImageScale];
+        size.width = floor(size.width * scale);
+        size.height = floor(size.height * scale);
+        NSURL *previewURL = [OUIDocumentPreview fileURLForPreviewOfFileURL:fileURL date:date withLandscape:landscape];
+        CGImageRef scaledImage = OQCreateImageWithSize([image CGImage], size, kCGInterpolationHigh);
+        
+        // Back to the main thread to cache the image!
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage) {
+                cacheImage(scaledImage, previewURL);
+                CFRelease(scaledImage);
+            }];
+
+            // Don't invoke the handler directly -- we want control to return to the runloop to process any pending events/scrolling
+            if (completionHandler)
+                [[NSOperationQueue mainQueue] addOperationWithBlock:completionHandler];
+        }];
+    }];
+}
+
++ (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;
+{
+    // In this particular sample, it is cheaper to reconfigure the existing view controller to the initial view state (scroll to the top). In some other cases, a useful pattern is to make a new view controller that is preconfigured to know that it will only ever be used to generate a preview (by propagating the UIDocument.forPreviewGeneration flag). In this case, the view controller can only load the data necessary to show a preview (data that might not be present in the current view controller if it is scrolled out of view). For example, in OmniOutliner for iPad, we make a new view controller that only loads N rows (based on the minimum row height and orientation).
+    
+    TextViewController *viewController = (TextViewController *)document.viewController;
+    
+    viewController.scrollView.contentOffset = CGPointZero;
+    
+    OFSDocumentStoreFileItem *fileItem = document.fileItem;
+    NSURL *fileURL = fileItem.fileURL;
+    NSDate *date = fileItem.date;
+
+    completionHandler = [[completionHandler copy] autorelease];
+    
+    _writePreview(self, fileURL, date, viewController, NO, ^{
+        _writePreview(self, fileURL, date, viewController, YES, ^{
+            if (completionHandler)
+                completionHandler();
+        });
+    });
 }
 
 #pragma mark -

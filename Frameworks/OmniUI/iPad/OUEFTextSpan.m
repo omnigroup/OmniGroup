@@ -63,6 +63,27 @@ RCS_ID("$Id$");
 }
 #endif
 
+#pragma mark OUIColorInspection
+
+- (OQColor *)colorForInspectorSlice:(OUIInspectorSlice *)inspector;
+{
+    CGColorRef color = (CGColorRef)[frame attribute:(id)kCTForegroundColorAttributeName inRange:self];
+    if (color == NULL) {
+        return nil;
+    }
+    return [OQColor colorWithCGColor:color];
+}
+
+- (void)setColor:(OQColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector;
+{
+    [frame setValue:(id)[[color toColor] CGColor] forAttribute:(id)kCTForegroundColorAttributeName inRange:self];
+}
+
+- (NSString *)preferenceKeyForInspectorSlice:(OUIInspectorSlice *)inspector;
+{
+    return nil;
+}
+
 #pragma mark OUIFontInspection
 
 - (OAFontDescriptor *)fontDescriptorForInspectorSlice:(OUIInspectorSlice *)inspector;

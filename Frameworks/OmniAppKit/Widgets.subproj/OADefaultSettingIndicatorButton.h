@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,8 @@
 - (IBAction)resetDefaultValue:(id)sender;
 
 // API
++ (OADefaultSettingIndicatorButton *)defaultSettingIndicatorWithIdentifier:(id)identifier forView:(NSView *)view delegate:(id)delegate;
+
 - (id)delegate;
 - (void)setDelegate:(id)newDelegate;
 
@@ -41,10 +43,12 @@
 - (void)setSnuggleUpToRightSideOfView:(NSView *)view;
 - (NSView *)snuggleUpToRightSideOfView;
 - (void)repositionWithRespectToSnuggleView;
+- (void)repositionWithRespectToSnuggleViewAllowingResize:(BOOL)allowResize;
 
 @end
 
 @interface NSObject (OADefaultSettingIndicatorButtonDelegate)
+- (NSInteger)stateForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
 - (id)defaultObjectValueForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
 - (id)objectValueForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
 - (void)restoreDefaultObjectValueForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;

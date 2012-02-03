@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -80,7 +80,6 @@ static void (*logging_original_enableUndoRegistration)(id self, SEL _cmd) = NULL
 static void (*logging_original_dealloc)(id self, SEL _cmd) = NULL;
 
 @interface NSUndoManager (OFUndoLogging)
-- (void)logging_replacement_removeAllActions;
 - (void)logging_replacement_removeAllActions;
 - (void)logging_replacement_removeAllActionsWithTarget:(id)target;
 - (void)logging_replacement_registerUndoWithTarget:(id)target selector:(SEL)selector object:(id)anObject;

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,8 @@
     OFSFileInfo *_file;
     NSURL *_baseURL;
     NSMutableArray *_fileQueue;
+    NSString *_downloadTimestamp; // for uniqueing
+    NSString *_downloadPath; // for cleaning up after download is complete
     
     off_t _totalDataLength;
     off_t _totalUploadedBytes;

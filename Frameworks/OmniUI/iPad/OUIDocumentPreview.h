@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,7 @@ typedef enum {
     OUIDocumentPreviewTypeEmpty, // There was a zero-byte preview file, possibly indicating a problem with a previous attempt to generate a preview, so we should not try to generate a new preview
 } OUIDocumentPreviewType;
 
-// Callback to add a single preview URL -> CGImageRef. Can be called multiple times from -cachePreviewImages: (once for landscape and once for portrait, typically).
+// Callback to add a single preview URL -> CGImageRef. Can be called multiple times from -cachePreviewImages: (once for landscape and once for portrait, typically). This will write the image as a JPEG file to the proper URL as well as remembering the CGImageRef for use.
 typedef void (^OUIDocumentPreviewCacheImage)(CGImageRef image, NSURL *previewURL);
 
 /*
@@ -25,10 +25,17 @@ This class maintains an in memory and disk cache of decoded preview images for u
 
 + (void)updatePreviewImageCacheWithCompletionHandler:(void (^)(void))completionHandler;
 + (void)flushPreviewImageCache;
-+ (void)cachePreviewImages:(void (^)(OUIDocumentPreviewCacheImage cacheImage))cachePreviews; // Call from +[OUIDocument writePreviewsForDocument:error:]
++ (void)cachePreviewImages:(void (^)(OUIDocumentPreviewCacheImage cacheImage))cachePreviews; // Call from +[OUIDocument writePreviewsForDocument:completionHandler:]
 
 + (void)cachePreviewImagesForFileURL:(NSURL *)targetFileURL date:(NSDate *)targetDate
             byDuplicatingFromFileURL:(NSURL *)sourceFileURL date:(NSDate *)sourceDate;
+
++ (void)updateCacheAfterFileURL:(NSURL *)sourceFileURL withDate:(NSDate *)sourceDate didMoveToURL:(NSURL *)targetFileURL;
+
+
+// This is provides access to a serial background queue for preview-related operations. Some of OUIDocumentPreview uses this, but none of the OUIDocumentPreview methods should be called within an operation. This is intended for things like thread-safe pre-flighting of document state that will be needed when generating previews, but that can be loaded while we are not on the main thread.
++ (void)performAsynchronousPreviewOperation:(void (^)(void))operation;
++ (void)afterAsynchronousPreviewOperation:(void (^)(void))block;
 
 // The preview might be a cached failure, but that is OK. The next time the date changes on the file item, a new preview will be attempted.
 + (BOOL)hasPreviewForFileURL:(NSURL *)fileURL date:(NSDate *)date withLandscape:(BOOL)landscape;

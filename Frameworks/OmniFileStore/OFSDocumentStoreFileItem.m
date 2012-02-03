@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,7 @@
 #import "OFSShared_Prefix.h"
 #import "OFSDocumentStoreItem-Internal.h"
 #import "OFSDocumentStoreFileItem-Internal.h"
+#import "OFSDocumentStore-Internal.h"
 
 #import <Foundation/NSOperation.h>
 #import <Foundation/NSFileCoordinator.h>
@@ -205,7 +206,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     }
 }
 
-- (OFSDocumentStoreScope)scope;
+- (OFSDocumentStoreScope *)scope;
 {
     // This is derived from fileURL so that when a coordinated move happens and we get a new fileURL, our scope automatically changes.
     return [self.documentStore scopeForFileURL:self.fileURL];
@@ -234,6 +235,8 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 {
     return [NSSet setWithObjects:OFSDocumentStoreFileItemDisplayedFileURLBinding, nil];
 }
+
+@synthesize beingDeleted = _isBeingDeleted;
 
 @synthesize selected = _selected;
 @synthesize draggingSource = _draggingSource;
@@ -351,40 +354,45 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 - (void)presentedItemDidMoveToURL:(NSURL *)newURL;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
-    
+    OBPRECONDITION(newURL);
+    OBPRECONDITION([newURL isFileURL]);
+
     // See -presentedItemURL's documentation about it being called from various threads. This method should only be called from our presenter queue.
     @synchronized(self) {
-        if (OFNOTEQUAL(_filePresenterURL, newURL)) {
-            OBPRECONDITION(newURL);
-            OBPRECONDITION([newURL isFileURL]);
-
-            // This can get called from various threads
-            [_filePresenterURL release];
-            _filePresenterURL = [newURL copy];
-            
-            NSNumber *isDirectory = nil;
-            NSError *resourceError = nil;
-            if (![_filePresenterURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&resourceError]) {
-                NSLog(@"Error getting directory key for %@: %@", _filePresenterURL, [resourceError toPropertyList]);
-            }
-            [_fileType release];
-            _fileType = [OFUTIForFileExtensionPreferringNative([_filePresenterURL pathExtension], [isDirectory boolValue]) copy];
-            OBASSERT(_fileType);
-            
-            // When we get deleted via iCloud, our on-disk representation will get moved into dead zone. Don't present that to the user briefly.
-            if (_isBeingDeleted) {
-                // Try to make sure we actually are getting moved to the ubd dead zone
-                OBASSERT([[newURL absoluteString] containsString:@"/.ubd/"]);
-                OBASSERT([[newURL absoluteString] containsString:@"/dead-"]);
-            } else {
-                // Update KVO on the main thread.
-                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                    [self willChangeValueForKey:OFSDocumentStoreFileItemDisplayedFileURLBinding];
-                    [_displayedFileURL release];
-                    _displayedFileURL = [newURL copy];
-                    [self didChangeValueForKey:OFSDocumentStoreFileItemDisplayedFileURLBinding];
-                }];
-            }
+        if (OFISEQUAL(_filePresenterURL, newURL))
+            return;
+        NSURL *oldURL = [[_filePresenterURL copy] autorelease];
+        NSDate *oldDate = [[_date copy] autorelease];
+        
+        // This can get called from various threads
+        [_filePresenterURL release];
+        _filePresenterURL = [newURL copy];
+        
+        NSNumber *isDirectory = nil;
+        NSError *resourceError = nil;
+        if (![_filePresenterURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&resourceError]) {
+            NSLog(@"Error getting directory key for %@: %@", _filePresenterURL, [resourceError toPropertyList]);
+        }
+        [_fileType release];
+        _fileType = [OFUTIForFileExtensionPreferringNative([_filePresenterURL pathExtension], [isDirectory boolValue]) copy];
+        OBASSERT(_fileType);
+        
+        // When we get deleted via iCloud, our on-disk representation will get moved into dead zone. Don't present that to the user briefly.
+        if (_isBeingDeleted) {
+            // Try to make sure we actually are getting moved to the ubd dead zone
+            OBASSERT([[newURL absoluteString] containsString:@"/.ubd/"]);
+            OBASSERT([[newURL absoluteString] containsString:@"/dead-"]);
+        } else {
+            // Update KVO on the main thread.
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                // On iOS, this lets the document preview be moved.
+                [self.documentStore _fileWithURL:oldURL andDate:oldDate didMoveToURL:newURL];
+                
+                [self willChangeValueForKey:OFSDocumentStoreFileItemDisplayedFileURLBinding];
+                [_displayedFileURL release];
+                _displayedFileURL = [newURL copy];
+                [self didChangeValueForKey:OFSDocumentStoreFileItemDisplayedFileURLBinding];
+            }];
         }
     }
 }
@@ -473,7 +481,7 @@ static void _updatePercent(OFSDocumentStoreFileItem *self, double *ioValue, NSSt
 - (void)_updateWithMetadataItem:(NSMetadataItem *)metdataItem;
 {
     OBPRECONDITION([NSThread isMainThread]); // Fire KVO from the main thread
-    OBPRECONDITION(self.scope == OFSDocumentStoreScopeUbiquitous);
+    OBPRECONDITION([self.scope isUbiquitous]);
     
     NSDate *date = [metdataItem valueForAttribute:NSMetadataItemFSContentChangeDateKey];
     if (!date) {
@@ -527,6 +535,29 @@ static void _updatePercent(OFSDocumentStoreFileItem *self, double *ioValue, NSSt
 #pragma mark -
 #pragma mark Private
 
+// Split out to make sure we only capture the variables we want and they are the non-__block versions so they get retained until the block executes
+static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *modificationDate, NSString *fileType)
+{
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        // -presentedItemDidChange can get called at the end of a rename operation (after -presentedItemDidMoveToURL:). Only send our notification if we "really" changed.
+        BOOL didChange = OFNOTEQUAL(self.date, modificationDate) || OFNOTEQUAL(self.fileType, fileType);
+        if (!didChange)
+            return;
+        
+        // Fire KVO on the main thread
+        self.date = modificationDate;
+        self.fileType = fileType;
+        
+        // We can't shunt the notification to the main thread immediately. There may be other file presenter methods incoming (and importantly, for a file rename there will be one that changes our URL). So, queue this on our presenter queue.
+        [self->_presentedItemOperationQueue addOperationWithBlock:^{
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                NSDictionary *userInfo = [NSDictionary dictionaryWithObject:self forKey:OFSDocumentStoreFileItemInfoKey];
+                [[NSNotificationCenter defaultCenter] postNotificationName:OFSDocumentStoreFileItemContentsChangedNotification object:self.documentStore userInfo:userInfo];
+            }];
+        }];
+    }];
+}
+
 // Asynchronously refreshes the date and sends a OFSDocumentStoreFileItemContentsChangedNotification notification
 - (void)_queueContentsChanged;
 {
@@ -575,19 +606,7 @@ static void _updatePercent(OFSDocumentStoreFileItem *self, double *ioValue, NSSt
         
         OBASSERT(![NSThread isMainThread]);
         
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            // Fire KVO on the main thread
-            self.date = [modificationDate autorelease];
-            self.fileType = [fileType autorelease];
-            
-            // We can't shunt the notification to the main thread immediately. There may be other file presenter methods incoming (and importantly, for a file rename there will be one that changes our URL). So, queue this on our presenter queue.
-            [_presentedItemOperationQueue addOperationWithBlock:^{
-                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                    NSDictionary *userInfo = [NSDictionary dictionaryWithObject:self forKey:OFSDocumentStoreFileItemInfoKey];
-                    [[NSNotificationCenter defaultCenter] postNotificationName:OFSDocumentStoreFileItemContentsChangedNotification object:self.documentStore userInfo:userInfo];
-                }];
-            }];
-        }];
+        _notifyDateAndFileType(self, [modificationDate autorelease], [fileType autorelease]);
     }];
 }
 

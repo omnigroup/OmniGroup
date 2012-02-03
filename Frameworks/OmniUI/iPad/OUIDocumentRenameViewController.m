@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,19 +7,18 @@
 
 #import "OUIDocumentRenameViewController.h"
 
-#import <OmniFoundation/OFUTI.h>
+#import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSDocumentStore.h>
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
-#import <OmniQuartz/OQDrawing.h>
-#import <OmniUI/OUIAnimationSequence.h>
+#import <OmniFoundation/OFUTI.h>
 #import <OmniUI/OUIDocumentPickerDelegate.h>
 #import <OmniUI/OUIDocumentPickerFileItemView.h>
-#import <OmniUI/OUIDocumentPickerFileItemView.h>
-#import <OmniUI/OUIDocumentPreview.h>
 #import <OmniUI/OUIDocumentPreviewView.h>
-#import <OmniUI/OUISingleDocumentAppController.h>
+#import <OmniUI/OUIDocumentPreview.h>
 #import <OmniUI/OUIMainViewController.h>
+#import <OmniUI/OUISingleDocumentAppController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+//#import <OmniQuartz/CALayer-OQExtensions.h>
 
 #import "OUIDocumentPicker-Internal.h"
 #import "OUIDocumentPickerItemView-Internal.h"
@@ -32,13 +31,188 @@ RCS_ID("$Id$");
     #define RENAME_DEBUG(format, ...)
 #endif
 
+/*
+ 
+ With the software keyboard, we need to do our work inside the keyboard resize callbacks so that our transition syncs up with the keyboard. We get notifications like so:
+ 
+ 2012-01-19 13:05:48.782 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x1a8160 {name = UITextFieldTextDidBeginEditingNotification; object = <UITextField: 0x189f10; frame = (20 20; 97 31); text = ''; clipsToBounds = YES; opaque = NO; autoresize = RM+BM; layer = <CALayer: 0x179830>>}
+ 2012-01-19 13:05:48.791 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x1b0220 {name = UIKeyboardWillChangeFrameNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:05:48.793 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0xee90220 {name = UIKeyboardWillShowNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:05:49.073 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0xeeb5c20 {name = UIKeyboardDidChangeFrameNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:05:49.076 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x1ab510 {name = UIKeyboardDidShowNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:05:54.057 KeyboardNotficationTest[1453:707] -done:
+ 2012-01-19 13:05:54.063 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x1952e0 {name = UIKeyboardWillChangeFrameNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:05:54.066 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0xeeb3060 {name = UIKeyboardWillHideNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:05:54.070 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x19e8d0 {name = UITextFieldTextDidEndEditingNotification; object = <UITextField: 0x189f10; frame = (20 20; 97 31); text = ''; clipsToBounds = YES; opaque = NO; autoresize = RM+BM; layer = <CALayer: 0x179830>>}
+ 2012-01-19 13:05:54.327 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x19c8c0 {name = UIKeyboardDidChangeFrameNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:05:54.329 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0xeeb7470 {name = UIKeyboardDidHideNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ }}
+
+ With the software keyboard, on device rotation, we get a storm of hide/show/resize animations. We cannot easily determine that we've started/stopped editing based on the keyboard show/hide (though maybe we could use the UIKeyboardFrameChangedByUserInteraction key, but so far as I see it is undocumented, so we shouldn't).
+ 
+ 2012-01-19 13:07:02.785 KeyboardNotficationTest[1453:707] will rotate
+ 2012-01-19 13:07:02.789 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0xee9d5d0 {name = UIKeyboardWillChangeFrameNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:07:02.792 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0xee9d5d0 {name = UIKeyboardWillHideNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:07:02.813 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x1af2b0 {name = UIKeyboardDidChangeFrameNotification; userInfo = {
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:07:02.816 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x1af2b0 {name = UIKeyboardDidHideNotification; userInfo = {
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {1024, 352}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {512, 592}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {512, 944}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 0}, {352, 1024}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{-352, 0}, {352, 1024}}";
+ }}
+ 2012-01-19 13:07:02.933 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0xeeb1b70 {name = UIKeyboardWillChangeFrameNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {768, 264}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {384, 1156}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {384, 892}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 760}, {768, 264}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{0, 760}, {768, 264}}";
+ }}
+ 2012-01-19 13:07:02.935 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x19d7f0 {name = UIKeyboardWillShowNotification; userInfo = {
+ UIKeyboardAnimationCurveUserInfoKey = 0;
+ UIKeyboardAnimationDurationUserInfoKey = "0.25";
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {768, 264}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {384, 1156}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {384, 892}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 1024}, {768, 264}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{0, 760}, {768, 264}}";
+ }}
+ 2012-01-19 13:07:03.352 KeyboardNotficationTest[1453:707] did rotate
+ 2012-01-19 13:07:03.354 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x195a90 {name = UIKeyboardDidChangeFrameNotification; userInfo = {
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {768, 264}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {384, 1156}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {384, 892}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 1024}, {768, 264}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{0, 760}, {768, 264}}";
+ }}
+ 2012-01-19 13:07:03.357 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x195a90 {name = UIKeyboardDidShowNotification; userInfo = {
+ UIKeyboardBoundsUserInfoKey = "NSRect: {{0, 0}, {768, 264}}";
+ UIKeyboardCenterBeginUserInfoKey = "NSPoint: {384, 1156}";
+ UIKeyboardCenterEndUserInfoKey = "NSPoint: {384, 892}";
+ UIKeyboardFrameBeginUserInfoKey = "NSRect: {{0, 1024}, {768, 264}}";
+ UIKeyboardFrameChangedByUserInteraction = 0;
+ UIKeyboardFrameEndUserInfoKey = "NSRect: {{0, 760}, {768, 264}}";
+ }}
+
+ 
+ With a hardware keyboard attached, we get no notifications about show/hide/resize from the keyboard, so we have to drive the transition ourselves
+ 
+ 2012-01-19 13:02:58.411 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0x19d460 {name = UITextFieldTextDidBeginEditingNotification; object = <UITextField: 0x189f10; frame = (20 20; 97 31); text = ''; clipsToBounds = YES; opaque = NO; autoresize = RM+BM; layer = <CALayer: 0x179830>>}
+ 2012-01-19 13:03:05.448 KeyboardNotficationTest[1453:707] -done:
+ 2012-01-19 13:03:05.457 KeyboardNotficationTest[1453:707] note: NSConcreteNotification 0xeeac530 {name = UITextFieldTextDidEndEditingNotification; object = <UITextField: 0x189f10; frame = (20 20; 97 31); text = ''; clipsToBounds = YES; opaque = NO; autoresize = RM+BM; layer = <CALayer: 0x179830>>}
+
+ */
+
 @interface OUIDocumentRenameViewController () <UITextFieldDelegate, NSFilePresenter>
+- (void)_setupPreviewWithOrientation:(UIInterfaceOrientation)orientation;
 - (void)_cancel;
 - (void)_done:(id)sender;
-- (void)_startRenameStateChange:(BOOL)renaming withDuration:(NSTimeInterval)animationInterval curve:(UIViewAnimationCurve)animationCurve;
+- (void)_prepareToResizeWithDuration:(NSTimeInterval)animationInterval curve:(UIViewAnimationCurve)animationCurve;
 - (void)_finishRenameAfterHidingKeyboard;
-- (void)_resizeForKeyboard:(NSNotification *)note;
-- (void)_keyboardDidHide:(NSNotification *)note;
+- (void)_didBeginResizingForKeyboard:(NSNotification *)note;
+- (void)_didFinishResizingForKeyboard:(NSNotification *)note;
 @end
 
 @implementation OUIDocumentRenameViewController
@@ -50,12 +224,19 @@ RCS_ID("$Id$");
     NSURL *_presentedFileURL; // Remember the original file URL in case there is an incoming rename; we want to be able to respond to NSFilePresenter -presentedItemURL correctly in this case.
     
     BOOL _isRegisteredAsFilePresenter;
-    BOOL _keyboardVisible;
     BOOL _registeredForNotifications;
-    BOOL _renameStarted;
-    BOOL _hasAttemptedRename;
+
+    BOOL _receivedKeyboardWillResize;
+    BOOL _textFieldEditing;
+    BOOL _textFieldIsEndingEditing;
+    BOOL _isAttemptingRename;
+    BOOL _shouldSendFinishRenameAfterKeyboardResizes;
+    
     OUIDocumentPreviewView *_previewView;
     UITextField *_nameTextField;
+    
+    NSTimeInterval _animationDuration;
+    UIViewAnimationCurve _animationCurve;
 }
 
 - initWithDocumentPicker:(OUIDocumentPicker *)picker fileItem:(OFSDocumentStoreFileItem *)fileItem;
@@ -74,7 +255,11 @@ RCS_ID("$Id$");
     _filePresenterQueue = [[NSOperationQueue alloc] init];
     _filePresenterQueue.name = @"OUIDocumentRenameViewController NSFilePresenter notifications";
     _filePresenterQueue.maxConcurrentOperationCount = 1;
-    
+
+    // Load these with some experimentally determined values to match the keyboard animation. If the keyboard does notify us, we'll use whatever it sent for real.
+    _animationDuration = 0.25;
+    _animationCurve = UIViewAnimationCurveEaseInOut;
+
     // This will retain us, so we cannot -removeFilePresenter: in dealloc.
     [NSFileCoordinator addFilePresenter:self];
     _isRegisteredAsFilePresenter = YES;
@@ -84,7 +269,13 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    OBPRECONDITION(_registeredForNotifications == NO);
+    
+    if (_registeredForNotifications) {
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        [center removeObserver:self name:OUIMainViewControllerDidBeginResizingForKeyboard object:nil];
+        [center removeObserver:self name:OUIMainViewControllerDidFinishResizingForKeyboard object:nil];
+    }
     
     [_picker release];
     [_fileItem release];
@@ -100,9 +291,7 @@ RCS_ID("$Id$");
 
 - (void)startRenaming;
 {
-    OBPRECONDITION(_renameStarted == NO);
-    
-    RENAME_DEBUG(@"Starting");
+    RENAME_DEBUG(@"-startRenaming");
     
     // Hide the preview view for the file item that is being renamed. The rename controller will put a view in the same spot on the screen and will animate it into place.
     OUIWithoutAnimating(^{
@@ -115,19 +304,19 @@ RCS_ID("$Id$");
     [self.view setNeedsLayout];
     [self.view layoutIfNeeded];
 
-    // Set up for reconfiguration...
-    _renameStarted = YES;
-    [self.view setNeedsLayout];
-
     // We let the keyboard drive our animation so that we can sync with it.
-    // OUIMainViewController listens for keyboard notifications and publishes OUIMainViewControllerResizedForKeyboard after it has adjusted its content view appropriately.
+    // OUIMainViewController listens for keyboard notifications and publishes OUIMainViewControllerDid{Begin,Finish}ResizingForKeyboard after it has adjusted its content view appropriately.
     [_nameTextField becomeFirstResponder];
-    
-    // We should get notified of the keyboard showing by the time the method above returns, unless it is a hardware keyboard. In that case, the keyboard won't drive the animation and we need to.
-    if (!_keyboardVisible) {
-        [UIView beginAnimations:@"Start renaming animating without keyboard driver" context:NULL];
+    RENAME_DEBUG(@"  becomeFirstResponder returned");
+
+    // If the software keyboard is going to be used, we should have received a notification about its frame changing by now. If we didn't, then a hardware keyboard is being used and we have to drive the animation.
+    if (_receivedKeyboardWillResize == NO) {
+        [UIView beginAnimations:@"Start renaming" context:NULL];
+        [self.view setNeedsLayout];
         [self.view layoutIfNeeded];
         [UIView commitAnimations];
+    } else {
+        _receivedKeyboardWillResize = NO;
     }
 }
 
@@ -138,28 +327,18 @@ RCS_ID("$Id$");
 {
     UIView *view = [[UIView alloc] initWithFrame:CGRectZero];
 
+    //OQSetAnimationLoggingEnabledForLayer(view.layer, YES);
+    
     view.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
     
     _previewView = [[OUIDocumentPreviewView alloc] initWithFrame:CGRectZero];
-    _previewView.landscape = UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
-    
-    // Pre-populate the preview to avoid reloading it.
-    {
-        OUIDocumentPickerFileItemView *fileItemView = [_picker.activeScrollView fileItemViewForFileItem:_fileItem];
-        
-        NSArray *previews = fileItemView.previewView.previews;
-        OBASSERT([previews count] == 1);
-        
-        OUIDocumentPreview *preview = [previews lastObject];
-        if (preview)
-            [_previewView addPreview:preview];
-    }
+    [self _setupPreviewWithOrientation:self.interfaceOrientation];
     
     [view addSubview:_previewView];
     
     _nameTextField = [[UITextField alloc] initWithFrame:CGRectZero];
     _nameTextField.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin; 
-    _nameTextField.font = [UIFont systemFontOfSize:[UIFont labelFontSize]];
+    _nameTextField.font = [UIFont fontWithName:@"Helvetica-Bold" size:20];
     _nameTextField.textColor = [UIColor blackColor];
     _nameTextField.textAlignment = UITextAlignmentCenter;
     _nameTextField.borderStyle = UITextBorderStyleRoundedRect;
@@ -167,10 +346,14 @@ RCS_ID("$Id$");
     _nameTextField.autocorrectionType = UITextAutocorrectionTypeNo;
     _nameTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     _nameTextField.spellCheckingType = UITextSpellCheckingTypeNo;
+    _nameTextField.returnKeyType = UIReturnKeyDone;
     _nameTextField.delegate = self;
     _nameTextField.alpha = 0; // start hidden
     [_nameTextField sizeToFit]; // get the right height
     _nameTextField.text = _fileItem.editingName;
+        
+    //OQSetAnimationLoggingEnabledForLayer(_nameTextField.layer, NO);
+    
     [view addSubview:_nameTextField];
     
     OBFinishPortingLater("Add shield view that only passes through events for the text field.");
@@ -208,11 +391,14 @@ RCS_ID("$Id$");
             UIBarButtonItem *titleItem = [[[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL] autorelease];
             UIBarButtonItem *rightSpace = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease];
             UIBarButtonItem *doneItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_done:)] autorelease];
-            
-            OUIWithoutAnimating(^{
-                _picker.toolbar.items = [NSArray arrayWithObjects:leftSpace, titleItem, rightSpace, doneItem, nil];
-                [_picker.toolbar layoutIfNeeded];
-            });
+
+            OB_UNUSED_VALUE(leftSpace); // http://llvm.org/bugs/show_bug.cgi?id=11576 Use in block doesn't count as use to prevent dead store warning
+            OB_UNUSED_VALUE(titleItem); // http://llvm.org/bugs/show_bug.cgi?id=11576 Use in block doesn't count as use to prevent dead store warning
+            OB_UNUSED_VALUE(rightSpace); // http://llvm.org/bugs/show_bug.cgi?id=11576 Use in block doesn't count as use to prevent dead store warning
+            OB_UNUSED_VALUE(doneItem); // http://llvm.org/bugs/show_bug.cgi?id=11576 Use in block doesn't count as use to prevent dead store warning
+
+            NSArray *items = [NSArray arrayWithObjects:leftSpace, titleItem, rightSpace, doneItem, nil];
+            [_picker.toolbar setItems:items animated:YES];
         }
         
     } else {
@@ -222,10 +408,7 @@ RCS_ID("$Id$");
         OBASSERT([_picker.documentStore.fileItems member:_fileItem] == _fileItem);
 
         // Restore the toolbar. We set its toolbar's items w/o calling -setToolbarItems: on the picker itself.
-        OUIWithoutAnimating(^{
-            _picker.toolbar.items = _picker.toolbarItems;
-            [_picker.toolbar layoutIfNeeded];
-        });
+        [_picker.toolbar setItems:_picker.toolbarItems animated:YES];
     }
     
     [super willMoveToParentViewController:parent];
@@ -240,50 +423,51 @@ RCS_ID("$Id$");
     // Due to a bug in iOS 5, didMoveToParentViewController: currently gets called twice. Don't sign up for notifications extra times.
     if (parent && !_registeredForNotifications) {
         _registeredForNotifications = YES;
-        [center addObserver:self selector:@selector(_resizeForKeyboard:) name:OUIMainViewControllerResizedForKeyboard object:nil];
-        [center addObserver:self selector:@selector(_keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
+        [center addObserver:self selector:@selector(_didBeginResizingForKeyboard:) name:OUIMainViewControllerDidBeginResizingForKeyboard object:nil];
+        [center addObserver:self selector:@selector(_didFinishResizingForKeyboard:) name:OUIMainViewControllerDidFinishResizingForKeyboard object:nil];
     } else if (!parent && _registeredForNotifications) {
         _registeredForNotifications = NO;
-        [center removeObserver:self name:OUIMainViewControllerResizedForKeyboard object:nil];
-        [center removeObserver:self name:UIKeyboardDidHideNotification object:nil];
+        [center removeObserver:self name:OUIMainViewControllerDidBeginResizingForKeyboard object:nil];
+        [center removeObserver:self name:OUIMainViewControllerDidFinishResizingForKeyboard object:nil];
     }
 }
 
-- (void)viewDidAppear:(BOOL)animated;
-{
-    [super viewDidAppear:animated];
-    
-    // Make sure our initial layout is right, at least for the name field, which shouldn't animate frame unless we are rotating
-    [self.view layoutIfNeeded];
-}
-
-- (void)viewDidLayoutSubviews;
+- (void)viewWillLayoutSubviews;
 {
     UIView *view = self.view;
     CGRect bounds = view.bounds;
 
-    // Center the preview in the middle 1/3 of our bounds. Don't constrain the height; just the width. Otherwise, with the keyboard up and aspect ratio preservation on, the preview is too small.
+    BOOL landscape = _previewView.landscape;
+    
+    CGFloat previewToLabelGap = landscape ? 37 : 50;
+    CGFloat nameTextFieldWidth = landscape ? 307 : 340;
+    CGSize targetPreviewSize = landscape ? CGSizeMake(311, 236) : CGSizeMake(197, 254);
+    
+    RENAME_DEBUG(@"Layout with animation enabled %d", [UIView areAnimationsEnabled]);
+
+    CGRect nameTextFieldFrame = _nameTextField.frame;
+    nameTextFieldFrame.size.width = nameTextFieldWidth;
+    
+    CGFloat usedHeight = targetPreviewSize.height + previewToLabelGap + nameTextFieldFrame.size.height;
+
     CGRect targetPreviewFrame;
-    targetPreviewFrame.origin.x = floor(CGRectGetMinX(bounds) + CGRectGetWidth(bounds) / 3.0);
-    targetPreviewFrame.origin.y = CGRectGetMinY(bounds);
-    targetPreviewFrame.size.width = ceil(CGRectGetWidth(bounds) / 3.0);
-    targetPreviewFrame.size.height = CGRectGetHeight(bounds);
+    targetPreviewFrame.origin.x = floor(CGRectGetMidX(bounds) - targetPreviewSize.width / 2);
+    targetPreviewFrame.origin.y = CGRectGetMinY(bounds) + floor((CGRectGetHeight(bounds) - usedHeight) / 2);
+    targetPreviewFrame.size = targetPreviewSize;
 
-    RENAME_DEBUG(@"Layout with rename started %d", _renameStarted);
-
-    CGRect editingFrame = _nameTextField.frame;
-    CGFloat heightMargin = editingFrame.size.height;
     CGRect previewFrame;
-    if (_renameStarted) {
-        // Fade out the other preview views (and the label/details for the renaming file item).
+    if (_textFieldEditing && !_textFieldIsEndingEditing) {
+        RENAME_DEBUG(@"  ... editing mode");
+
         _picker.activeScrollView.alpha = 0;
 
-        targetPreviewFrame.size.height -= (editingFrame.size.height + 3*heightMargin);     // 3 = margin below text field + margin above text field + margin above preview
-        targetPreviewFrame.origin.y += editingFrame.size.height;
-        previewFrame = [_previewView previewRectInFrame:targetPreviewFrame];
+        previewFrame = [_previewView fitPreviewRectInFrame:targetPreviewFrame];
+        //NSLog(@"targetPreviewFrame = %@, previewFrame = %@", NSStringFromCGRect(targetPreviewFrame), NSStringFromCGRect(previewFrame));
         
         _nameTextField.alpha = 1;
     } else {
+        RENAME_DEBUG(@"  ... not editing mode");
+
         _picker.activeScrollView.alpha = 1;
 
         // Put the preview view right over where it would be normally.
@@ -299,45 +483,28 @@ RCS_ID("$Id$");
     _previewView.frame = previewFrame;
     
     // Center the editing field vertically under the preview
-    editingFrame.size.width = ceil(CGRectGetWidth(bounds) / 3.0);
-    editingFrame.origin.x = floor(CGRectGetMidX(bounds) - 0.5 * editingFrame.size.width);
+    nameTextFieldFrame.origin.x = floor(CGRectGetMidX(bounds) - nameTextFieldWidth / 2);
+    nameTextFieldFrame.origin.y = CGRectGetMaxY(targetPreviewFrame) + previewToLabelGap;
+    nameTextFieldFrame.size.width = nameTextFieldWidth;
 
-    CGFloat remainingHeight = CGRectGetMaxY(bounds) - CGRectGetMaxY(previewFrame) - heightMargin;    
-    editingFrame.origin.y = floor(CGRectGetMaxY(previewFrame) + remainingHeight/2 - CGRectGetHeight(editingFrame)/2);
-    if (CGRectGetMaxY(editingFrame) > (CGRectGetMaxY(bounds) - heightMargin - CGRectGetHeight(editingFrame)))   
-        editingFrame.origin.y = CGRectGetMaxY(bounds) - heightMargin - CGRectGetHeight(editingFrame);   // this will at least guarantee that we are not under the keyboard
-
-    _nameTextField.frame = editingFrame;
+    _nameTextField.frame = nameTextFieldFrame;
 }
 
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;
 {
-    [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
+    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
     
-    _previewView.landscape = UIInterfaceOrientationIsLandscape(toInterfaceOrientation);
+    [self _setupPreviewWithOrientation:toInterfaceOrientation];
 }
 
 #pragma mark -
 #pragma mark UITextField delegate
 
-- (void)_performEndingAnimationIfNeeded;
+- (void)textFieldDidBeginEditing:(NSNotification *)note;
 {
-    // If we are renaming and there is no keyboard visibile, we are using a hardware keyboard -- we won't get notified of the keyboard hiding and it can't control the animation, so we must do it ourselves
-    if (_renameStarted && !_keyboardVisible) {
-        static const NSTimeInterval kKeyboardAnimationInterval = 0.25; // experimentally
-        static const UIViewAnimationCurve kKeyboardAnimationCurve = UIViewAnimationCurveEaseInOut;
-        
-        [OUIAnimationSequence runWithDuration:kKeyboardAnimationInterval actions:
-         ^{
-             [UIView setAnimationCurve:kKeyboardAnimationCurve];
-             [self _startRenameStateChange:NO withDuration:kKeyboardAnimationInterval curve:kKeyboardAnimationCurve];
-             [self.view layoutIfNeeded];
-         },
-         ^{
-             [self _finishRenameAfterHidingKeyboard];
-         },
-         nil];
-    }
+    RENAME_DEBUG(@"did begin editing");
+    
+    _textFieldEditing = YES;
 }
 
 - (BOOL)textFieldShouldEndEditing:(UITextField *)textField;
@@ -347,45 +514,62 @@ RCS_ID("$Id$");
     // We need an extra BOOL here to let us know we should really go ahead and end the rename.
     // The rename operation doesn't call our completion block until the file presenter queue has performed the -presentedItemDidMoveToURL:, but in that case the file item will have only updated its _filePresenterURL (which must update immediately and which can be accessed from any thead) and has only enqueued a main thread operation to update its _displayedFileURL (which is what sources the -name method below). The ordering of operations will still be correct since our completion block will still get called on the main thread after the display name is updated, but we can't tell that here.
     NSString *newName = [textField text];
-    if (_hasAttemptedRename || [NSString isEmptyString:newName] || [newName isEqualToString:_fileItem.name]) {
+    BOOL isSameName = [NSString isEmptyString:newName] || [newName isEqualToString:_fileItem.name];
+    if (_isAttemptingRename || isSameName) {
+        _textFieldIsEndingEditing = YES;
+        
+        if (isSameName) {
+            // Unsolicited close of the keyboard (didn't tap the Done button, just pressed the close button on the software keyboard). We're done after this.
+            _shouldSendFinishRenameAfterKeyboardResizes = YES;
+        }
+        
         RENAME_DEBUG(@"Bail on empty/same name");
-        OBFinishPortingLater("What should we do about disabling rotation while renaming? Probably nothing and disableRotationDisplay should be removed.");
-        //_activeScrollView.disableRotationDisplay = NO;
-        //_activeScrollView.disableScroll = NO;
-        [self _performEndingAnimationIfNeeded];
         return YES;
     }
     
     // Otherwise, start the rename and return NO for now, but remember that we've tried already.
-    _hasAttemptedRename = YES;
-    NSURL *currentURL = _fileItem.fileURL;
+    _isAttemptingRename = YES;
+    NSURL *currentURL = [[_fileItem.fileURL copy] autorelease];
+    
     NSString *uti = OFUTIForFileExtensionPreferringNative([currentURL pathExtension], NO);
     OBASSERT(uti);
     
     // We have no open documents at this point, so we don't need to synchronize with UIDocument autosaving via -performAsynchronousFileAccessUsingBlock:. We do want to prevent other documents from opening, though.
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
     
+    // We don't want a "directory changed" notification for the local documents directory.
+    [_picker _beginIgnoringDocumentsDirectoryUpdates];
+    
     [_picker.documentStore renameFileItem:_fileItem baseName:newName fileType:uti completionQueue:[NSOperationQueue mainQueue] handler:^(NSURL *destinationURL, NSError *error){
+        
+        [_picker _endIgnoringDocumentsDirectoryUpdates];
         [[UIApplication sharedApplication] endIgnoringInteractionEvents];
         
         if (!destinationURL) {
             NSLog(@"Error renaming document with URL \"%@\" to \"%@\" with type \"%@\": %@", [currentURL absoluteString], newName, uti, [error toPropertyList]);
-            
-            NSString *msg = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to rename document to %@", @"OmniUI", OMNI_BUNDLE, @"error when renaming a document"), newName];                
-            NSError *err = [[NSError alloc] initWithDomain:NSURLErrorDomain code:0 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:msg, NSLocalizedDescriptionKey, msg, NSLocalizedFailureReasonErrorKey, nil]];
-            OUI_PRESENT_ERROR(err);
-            [err release];
-            
-            OBFinishPortingLater("Need a way to abort the rename anyway");
+            OUI_PRESENT_ERROR(error);
+
+            if ([error hasUnderlyingErrorDomain:OFSErrorDomain code:OFSFilenameAlreadyInUse]) {
+                // Leave the fixed name for the user to try again.
+                _isAttemptingRename = NO;
+            } else {
+                // Some other error which may not be correctable -- bail
+                [self.view endEditing:YES];
+            }
         } else {
-            [_picker _didPerformRename];
+            [_picker _didPerformRenameToFileURL:destinationURL];
+            [self _done:nil];
         }
-        
-        // Stop the rename attempt either way.
-        [self.view endEditing:YES];
     }];
     
     return NO;
+}
+
+- (void)textFieldDidEndEditing:(NSNotification *)note;
+{
+    RENAME_DEBUG(@"did end editing, _receivedKeyboardWillResize:%d", _receivedKeyboardWillResize);
+    
+    _textFieldEditing = NO;
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
@@ -415,7 +599,7 @@ RCS_ID("$Id$");
 
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
     main_async(^{
-        [_nameTextField resignFirstResponder];
+        [self _done:nil];
         [[UIApplication sharedApplication] endIgnoringInteractionEvents];
     });
     
@@ -427,32 +611,49 @@ RCS_ID("$Id$");
 
 - (NSURL *)presentedItemURL;
 {
-    return _presentedFileURL;
+    NSURL *result = nil;
+    
+    @synchronized(self) {
+        result = [[_presentedFileURL retain] autorelease];
+    }
+    
+    return result;
 }
 
 - (NSOperationQueue *)presentedItemOperationQueue;
 {
+    OBPRECONDITION(_filePresenterQueue);
     return _filePresenterQueue;
 }
 
 // We don't currently attempt to reset our in-progress edit of the file name if we see an incoming rename. We just bail
 - (void)presentedItemDidMoveToURL:(NSURL *)newURL;
 {
-    // Acknowledge the change, in case we are asked when we -removeFilePresenter:
-    [_presentedFileURL autorelease];
-    _presentedFileURL = [newURL copy];
+    @synchronized(self) {
+        if (OFISEQUAL(_presentedFileURL, newURL))
+            return;
+
+        // Acknowledge the change, in case we are asked when we -removeFilePresenter:
+        [_presentedFileURL autorelease];
+        _presentedFileURL = [newURL copy];
+    }
     
-    // But then cancel ourselves
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [self _cancel];
-    }];
+    // But then cancel ourselves (unless we are the one doing the rename)
+    if (_isAttemptingRename == NO) {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [self _cancel];
+        }];
+    }
 }
 
 - (void)presentedItemDidChange;
 {
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [self _cancel];
-    }];
+    // This gets spuriously sent after renames sometimes, but if there is an incoming edit from iCloud (or iTunes, once that works again), discard our rename.
+    if (_isAttemptingRename == NO) {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [self _cancel];
+        }];
+    }
 }
 
 - (void)accommodatePresentedItemDeletionWithCompletionHandler:(void (^)(NSError *))completionHandler;
@@ -468,6 +669,18 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark Private
 
+- (void)_setupPreviewWithOrientation:(UIInterfaceOrientation)orientation;
+{
+    BOOL landscape = UIInterfaceOrientationIsLandscape(orientation);
+    Class documentClass = [[OUISingleDocumentAppController controller] documentClassForURL:_fileItem.fileURL];
+    
+    _previewView.landscape = landscape;
+    
+    OUIDocumentPreview *preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:_fileItem.fileURL date:_fileItem.date withLandscape:landscape];
+    [_previewView discardPreviews];
+    [_previewView addPreview:preview];
+}
+
 - (void)_cancel;
 {
     RENAME_DEBUG(@"_cancel");
@@ -479,36 +692,48 @@ RCS_ID("$Id$");
 
 - (void)_done:(id)sender;
 {
-    RENAME_DEBUG(@"_done:");
-
-    OBFinishPortingLater("Do the actual rename. Might want an \"abort\" variant if we get an incoming change that invalidates our items");
-    
     // Let the keyboard drive the animation
-    [_nameTextField resignFirstResponder];
-}
-
-- (void)_startRenameStateChange:(BOOL)renaming withDuration:(NSTimeInterval)animationInterval curve:(UIViewAnimationCurve)animationCurve;
-{
-    RENAME_DEBUG(@"_startRenameStateChange:%d withDuration:%f curve:%d", renaming, animationInterval, animationCurve);
-
-    _previewView.animationDuration = animationInterval;
-    _previewView.animationCurve = animationCurve;
-    
-    if (renaming == NO) {
-        OBASSERT(_renameStarted == YES);
-        _renameStarted = NO;
-    } else {
-        OBASSERT(_renameStarted == YES); // already set
+    RENAME_DEBUG(@"-_done: calling -endEditing:");
+    BOOL rc = [self.view endEditing:NO];
+    if (rc == NO && _isAttemptingRename) {
+        // Our -textFieldShouldEndEditing: call rejected the edit so that we want wait to see if the rename actually worked before ending editing.
+        RENAME_DEBUG(@"Rename is in progress -- waiting for it to finish or fail");
+        return;
     }
     
-    [self.view setNeedsLayout];
+    if (_receivedKeyboardWillResize == NO) {
+        // If we are renaming and there is no keyboard visibile, we are using a hardware keyboard -- we won't get notified of the keyboard hiding and it can't control the animation, so we must do it ourselves
+        // Switched from OUIAnimationSequence to ensure that the call to _finishRenameAfterHidingKeyboard happens outside of a [UIView animateWithDuration:...] call as it was inside of OUIAnimationSequence. This was causing odd animations when -willMoveToParentViewController was calling -setItems:animated: on _picker.toolbar. This way we can take advantage of the default crossfade animation that we get for free. 
+        [UIView animateWithDuration:_animationDuration animations:^{
+            [UIView setAnimationCurve:_animationCurve];
+            [self _prepareToResizeWithDuration:_animationDuration curve:_animationCurve];
+            [self.view setNeedsLayout];
+            [self.view layoutIfNeeded];
+        } completion:^(BOOL finished) {
+            [self _finishRenameAfterHidingKeyboard];
+        }];
+    } else {
+        // We need to wait until the animation is done to finish the rename.
+        _shouldSendFinishRenameAfterKeyboardResizes = YES;
+    }
+}
+
+- (void)_prepareToResizeWithDuration:(NSTimeInterval)animationInterval curve:(UIViewAnimationCurve)animationCurve;
+{
+    RENAME_DEBUG(@"_prepareToResizeWithDuration:%f curve:%d", animationInterval, animationCurve);
+
+    _animationDuration = animationInterval;
+    _animationCurve = animationCurve;
+    
+    _previewView.animationDuration = animationInterval;
+    _previewView.animationCurve = animationCurve;
 }
 
 - (void)_finishRenameAfterHidingKeyboard;
 {
     RENAME_DEBUG(@"_finishRenameAfterHidingKeyboard");
 
-    OBPRECONDITION(_keyboardVisible == NO);
+    OBPRECONDITION(_textFieldEditing == NO);
     
     OBASSERT(_isRegisteredAsFilePresenter);
     if (_isRegisteredAsFilePresenter) {
@@ -523,19 +748,18 @@ RCS_ID("$Id$");
         fileItemView.renaming = NO;
     });
     
+    RENAME_DEBUG(@"Calling _didStopRenamingFileItem");
     [_picker _didStopRenamingFileItem];
 }
 
-- (void)_resizeForKeyboard:(NSNotification *)note;
+- (void)_didBeginResizingForKeyboard:(NSNotification *)note;
 {
-    RENAME_DEBUG(@"_resizeForKeyboard: %@", note);
+    RENAME_DEBUG(@"_didBeginResizingForKeyboard: %@", note);
 
+    // Note that the keyboard is going to drive this animation
+    _receivedKeyboardWillResize = YES;
+    
     [self.view setNeedsLayout];
-    
-    NSNumber *visibility = [[note userInfo] objectForKey:OUIMainViewControllerResizedForKeyboardVisibilityKey];
-    OBASSERT(visibility);
-    
-    _keyboardVisible = [visibility boolValue];
     
     NSDictionary *originalInfo = [[note userInfo] objectForKey:OUIMainViewControllerResizedForKeyboardOriginalUserInfoKey];
     NSNumber *duration = [originalInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
@@ -543,22 +767,21 @@ RCS_ID("$Id$");
     
     OBASSERT(duration);
     OBASSERT(curve);
-    
-    if ([visibility boolValue]) {
-        OBASSERT(_renameStarted); // Should have been set already and then the text field made first responder, causing this notification
-    } else {
-        OBASSERT(_renameStarted); // Should stil be true; this is how we find out that that keyboard is going away and soon (but maybe not yet) the text field will lose first responder status
-    }
-    
-    [self _startRenameStateChange:_keyboardVisible withDuration:[duration doubleValue] curve:[curve intValue]];
+  
+    [self _prepareToResizeWithDuration:[duration doubleValue] curve:[curve intValue]];
 }
 
-- (void)_keyboardDidHide:(NSNotification *)note;
+- (void)_didFinishResizingForKeyboard:(NSNotification *)note;
 {
-    RENAME_DEBUG(@"_keyboardDidHide: %@", note);
-
-    _keyboardVisible = NO;
-    [self _finishRenameAfterHidingKeyboard];
+    RENAME_DEBUG(@"_didFinishResizingForKeyboard: %@", note);
+    
+    if (_shouldSendFinishRenameAfterKeyboardResizes) {
+        // The keyboard drove the animation and now it is done.
+        [self _finishRenameAfterHidingKeyboard];
+    }
+    
+    // Reset this in case the user it just toggling the hardware keyboard while editing.
+    _receivedKeyboardWillResize = NO;
 }
 
 @end
