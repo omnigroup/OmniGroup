@@ -77,7 +77,7 @@ static void _addFormatter(NSMutableArray *results, NSString *formatString)
         NSDictionary *attributes = [NSDictionary dictionaryWithObject:[dataCell font] forKey:NSFontAttributeName];
         NSSize size = [bytesString sizeWithAttributes:attributes];
         
-        if (size.width + 5.0 <= NSWidth([dataCell titleRectForBounds:NSMakeRect(0.0, 0.0, [nonretainedTableColumn width], 30.0)]))
+        if (size.width + 5 <= NSWidth([dataCell titleRectForBounds:NSMakeRect(0, 0, [nonretainedTableColumn width], 30)]))
             return bytesString;
             
         scaledBytes /= 1024.0;

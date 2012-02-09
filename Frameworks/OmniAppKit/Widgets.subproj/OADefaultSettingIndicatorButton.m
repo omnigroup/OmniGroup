@@ -50,7 +50,7 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
 + (OADefaultSettingIndicatorButton *)defaultSettingIndicatorWithIdentifier:(id)identifier forView:(NSView *)view delegate:(id)delegate;
 {
     NSSize buttonSize = [ledOnImage size];
-    OADefaultSettingIndicatorButton *indicator = [[[[self class] alloc] initWithFrame:NSMakeRect(0.0, 0.0, buttonSize.height, buttonSize.width)] autorelease];
+    OADefaultSettingIndicatorButton *indicator = [[[[self class] alloc] initWithFrame:NSMakeRect(0, 0, buttonSize.height, buttonSize.width)] autorelease];
     if (view != nil) {
         OBASSERT([view superview] != nil);
         [[view superview] addSubview:indicator];
