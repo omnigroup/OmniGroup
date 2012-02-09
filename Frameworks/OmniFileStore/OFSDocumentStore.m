@@ -121,6 +121,10 @@ static NSString *_folderFilename(NSURL *fileURL)
 }
 
 static NSString *_availableName(NSSet *usedFileNames, NSString *baseName, NSString *extension, NSUInteger *ioCounter);
+#if defined(OMNI_ASSERTIONS_ON) || !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+static OFSDocumentStoreScope *_scopeForFileURL(NSDictionary *scopeToContainerURL, NSURL *fileURL);
+static NSDictionary *_scopeToContainerURL(OFSDocumentStore *docStore);
+#endif
 
 @interface OFSDocumentStore ()
 + (NSURL *)_ubiquityContainerURL;
@@ -1424,11 +1428,14 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
                         NSUInteger metadataItemCount = [_metadataQuery resultCount];
                         DEBUG_METADATA(@"%ld items found via query", metadataItemCount);
                         
+#ifdef OMNI_ASSERTIONS_ON
+                        NSDictionary *scopeToContainerURL = _scopeToContainerURL(self);
+#endif
                         for (NSUInteger metadataItemIndex = 0; metadataItemIndex < metadataItemCount; metadataItemIndex++) {
                             NSMetadataItem *item = [_metadataQuery resultAtIndex:metadataItemIndex];
                             
                             NSURL *fileURL = [item valueForAttribute:NSMetadataItemURLKey];
-                            OBASSERT([[self scopeForFileURL:fileURL] isUbiquitous]);
+                            OBASSERT([_scopeForFileURL(scopeToContainerURL, fileURL) isUbiquitous]);
                             
                             DEBUG_METADATA(@"item %@ %@", item, [fileURL absoluteString]);
                             DEBUG_METADATA(@"  %@", [item valuesForAttributes:[NSArray arrayWithObjects:NSMetadataUbiquitousItemHasUnresolvedConflictsKey, NSMetadataUbiquitousItemIsDownloadedKey, NSMetadataUbiquitousItemIsDownloadingKey, NSMetadataUbiquitousItemIsUploadedKey, NSMetadataUbiquitousItemIsUploadingKey, NSMetadataUbiquitousItemPercentDownloadedKey, NSMetadataUbiquitousItemPercentUploadedKey, NSMetadataItemFSContentChangeDateKey, NSMetadataItemFSSizeKey, nil]]);
@@ -2334,7 +2341,7 @@ static NSString *_availableName(NSSet *usedFileNames, NSString *baseName, NSStri
             candidateName = [[NSString alloc] initWithFormat:@"%@.%@", baseName, extension];
             counter = 2; // First duplicate should be "Foo 2".
         } else {
-            candidateName = [[NSString alloc] initWithFormat:@"%@ %d.%@", baseName, counter, extension];
+            candidateName = [[NSString alloc] initWithFormat:@"%@ %lu.%@", baseName, counter, extension];
             counter++;
         }
         
@@ -2439,6 +2446,39 @@ static NSString *_availableName(NSSet *usedFileNames, NSString *baseName, NSStri
     return [[currentURL URLByDeletingLastPathComponent] URLByAppendingPathComponent:fileName];
 }
 
+#if defined(OMNI_ASSERTIONS_ON) || !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+// calls to -[OFSDocumentStoreScope containerURL], which is called by -scopeForFileURL, can be expensive since it uses -[NSFileManager URLForUbiquityContainerIdentifier:] so the following two convenience methods 'cache' the containerURL
+static OFSDocumentStoreScope *_scopeForFileURL(NSDictionary *scopeToContainerURL, NSURL *fileURL)
+{
+    __block OFSDocumentStoreScope *scope = nil;
+    [scopeToContainerURL enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        OBASSERT([(NSObject *)key isKindOfClass:[OFSDocumentStoreScope class]]);
+        OBASSERT([(NSObject *)obj isKindOfClass:[NSURL class]]);
+        
+        if ([OFSDocumentStoreScope isFile:fileURL inContainer:(NSURL *)obj]) {
+            scope = (OFSDocumentStoreScope *)key;
+            *stop = YES;
+        }
+    }];
+    
+    return scope;
+}
+
+static NSDictionary *_scopeToContainerURL(OFSDocumentStore *docStore)
+{
+    NSMutableDictionary *scopeToContainerURL = [[NSMutableDictionary alloc] init];
+    if (docStore->_localScope)
+        [scopeToContainerURL setObject:docStore->_localScope forKey:scopeToContainerURL];
+    for (OFSDocumentStoreScope *ubiquitousScope in docStore->_ubiquitousScopes) {
+        NSURL *containerURL = [ubiquitousScope containerURL];
+        if (containerURL)
+            [scopeToContainerURL setObject:containerURL forKey:ubiquitousScope];
+    }
+    
+    return [scopeToContainerURL autorelease];
+}
+#endif
+
 - (void)_checkFileItemsForUniqueFileNames;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -2446,6 +2486,10 @@ static NSString *_availableName(NSSet *usedFileNames, NSString *baseName, NSStri
     // A previous set of rename operations is still enqueued.
     if (_isRenamingFileItemsToHaveUniqueFileNames)
         return;
+    
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    NSDictionary *scopeToContainerURL = _scopeToContainerURL(self);
+#endif
     
     NSMutableDictionary *nameToFileItems = [[NSMutableDictionary alloc] init];
     
@@ -2475,7 +2519,9 @@ static NSString *_availableName(NSSet *usedFileNames, NSString *baseName, NSStri
         NSMutableDictionary *fileItemsByScope = [[NSMutableDictionary alloc] init];
         
         for (OFSDocumentStoreFileItem *fileItem in fileItems) {
-            OFSDocumentStoreScope *fileItemScope = [self scopeForFileURL:fileItem.fileURL];
+            OFSDocumentStoreScope *fileItemScope = _scopeForFileURL(scopeToContainerURL, fileItem.fileURL);
+            if (!fileItemScope)
+                fileItemScope = [self _defaultScope];
             OBASSERT([fileItemScope isUbiquitous]);
             NSMutableArray *items = [fileItemsByScope objectForKey:fileItemScope];
             if (!items) {

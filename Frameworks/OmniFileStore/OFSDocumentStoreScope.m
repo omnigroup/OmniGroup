@@ -13,6 +13,8 @@ RCS_ID("$Id$");
 
 #if OFS_DOCUMENT_STORE_SUPPORTED
 
+static BOOL _urlContainedByURL(NSURL *url, NSURL *containerURL);
+
 @implementation OFSDocumentStoreScope
 
 + (OFSDocumentStoreScope *)defaultUbiquitousScope;
@@ -41,6 +43,11 @@ RCS_ID("$Id$");
     });
     
     return defaultScope;
+}
+
++ (BOOL)isFile:(NSURL *)fileURL inContainer:(NSURL *)containerURL;
+{
+    return _urlContainedByURL(fileURL, containerURL);
 }
 
 - (id)initUbiquitousScopeWithContainerID:(NSString *)aContainerID;

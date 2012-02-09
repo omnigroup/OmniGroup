@@ -18,11 +18,13 @@
 }
 
 + (OFSDocumentStoreScope *)defaultUbiquitousScope;
++ (BOOL)isFile:(NSURL *)fileURL inContainer:(NSURL *)containerURL;
 
 - (id)initUbiquitousScopeWithContainerID:(NSString *)aContainerID;
 - (id)initLocalScopeWithURL:(NSURL *)aURL;
 
 - (BOOL)isFileInContainer:(NSURL *)fileURL;
+
 @property(nonatomic,readonly,getter=isUbiquitous) BOOL ubiquitous;
 
 - (NSURL *)containerURL;

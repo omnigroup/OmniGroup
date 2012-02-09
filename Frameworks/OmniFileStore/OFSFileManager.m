@@ -187,10 +187,10 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
                 counter = 2; // First duplicate should be "Foo 2".
             
             if (shouldContainExtension) {
-                fileName = [[NSString alloc] initWithFormat:@"%@ %d.%@", name, counter, extension];
+                fileName = [[NSString alloc] initWithFormat:@"%@ %lu.%@", name, counter, extension];
             }
             else {
-                fileName = [[NSString alloc] initWithFormat:@"%@ %d", name, counter];
+                fileName = [[NSString alloc] initWithFormat:@"%@ %lu", name, counter];
             }
             
             counter++;

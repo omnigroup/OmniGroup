@@ -482,7 +482,7 @@ static void _updatePercent(OFSDocumentStoreFileItem *self, double *ioValue, NSSt
 - (void)_updateWithMetadataItem:(NSMetadataItem *)metdataItem;
 {
     OBPRECONDITION([NSThread isMainThread]); // Fire KVO from the main thread
-    OBPRECONDITION([self.scope isUbiquitous]);
+//  OBPRECONDITION([self.scope isUbiquitous]); // this is an expensive call and the only place this is called from - [OFSDocumentStore scanItemsWithCompletionHandler:] - already checks the scope's isUbiquitous, so commenting out
     
     NSDate *date = [metdataItem valueForAttribute:NSMetadataItemFSContentChangeDateKey];
     if (!date) {
