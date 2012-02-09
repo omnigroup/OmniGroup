@@ -74,8 +74,9 @@ HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR" "$CONFIGURATION_BUILD
 // Unlike gcc and llvm-gcc, clang emits ObjC runtime info for class extensions conforming to protocols. Also, clang has more warning checks than gcc.
 //GCC_VERSION = com.apple.compilers.llvmgcc42
 GCC_VERSION = com.apple.compilers.llvm.clang.1_0
-//CC[sdk=iphonesimulator*]=/Volumes/Space/Users/bungi/Source/LLVM/llvm/Release+Asserts/bin/clang
-//CC[sdk=macos*]=/Volumes/Space/Users/bungi/Source/LLVM/llvm/Release+Asserts/bin/clang
+//CC[sdk=iphone*]=/Users/bungi/Source/LLVM/llvm/Release+Asserts/bin/clang
+//CC[sdk=iphonesimulator*]=/Users/bungi/Source/LLVM/llvm/Release+Asserts/bin/clang
+//CC[sdk=macos*]=/Users/bungi/Source/LLVM/llvm/Release+Asserts/bin/clang
 
 RUN_CLANG_STATIC_ANALYZER = YES
 
