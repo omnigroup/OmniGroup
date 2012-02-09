@@ -395,7 +395,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 @synthesize preferenceBox = _nonretained_preferenceBox;
 @synthesize globalControlsView = _globalControlsView;
-@synthesize helpButton = _helpButton;
+@synthesize helpButton = _nonretained_helpButton;
 @synthesize returnToOriginalValuesButton = _nonretained_returnToOriginalValuesButton;
 
 // Actions
