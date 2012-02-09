@@ -413,7 +413,8 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     
     return colorProfile;
 #else
-    OBFinishPorting;
+    OBFinishPortingLater("deprecated");
+    return nil;
 #endif
 }
 
