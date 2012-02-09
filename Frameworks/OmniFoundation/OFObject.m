@@ -130,7 +130,9 @@ static void OFCheckForInstruments(void)
         // Make sure this is visible in the console amidst all the other noise.
         for (unsigned i = 0; i < 10; i++)
             fprintf(stderr, "ERROR: Both OFObject inline ref counting and Instruments's Allocations are enabled.\n");
+#ifdef DEBUG // We want QA to be able to run Instruments, and they don't necessarily need the full ref count log, just a list of leaked objects.
         abort();
+#endif
     }
 }
 #endif
