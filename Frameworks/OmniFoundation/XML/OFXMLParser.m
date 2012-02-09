@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,10 +11,10 @@
 #import <libxml/parser.h>
 #import <OmniFoundation/CFArray-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/OFXMLError.h>
 #import <OmniFoundation/OFXMLInternedStringTable.h>
 #import <OmniFoundation/OFXMLQName.h>
 #import <OmniBase/assertions.h>
-#import "OFXMLError.h"
 
 RCS_ID("$Id$");
 

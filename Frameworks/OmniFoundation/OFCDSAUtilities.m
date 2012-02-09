@@ -5,11 +5,11 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OFCDSAUtilities.h"
+#import <OmniFoundation/OFCDSAUtilities.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
-#import "NSMutableDictionary-OFExtensions.h"
+#import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <Security/Security.h>
 
 
