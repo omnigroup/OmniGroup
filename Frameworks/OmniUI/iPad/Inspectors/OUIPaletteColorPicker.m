@@ -87,6 +87,7 @@ RCS_ID("$Id$");
                 CGRect rect = [view convertRect:swatchPicker.bounds fromView:swatchPicker];
                 rect = CGRectInset(rect, 0, -16); // UIScrollView scrolls as little as needed; include some padding.
                 [view scrollRectToVisible:rect animated:animate];
+                return;     // Once we found the first swatch that matches, exit the loop
             }
         }
     }

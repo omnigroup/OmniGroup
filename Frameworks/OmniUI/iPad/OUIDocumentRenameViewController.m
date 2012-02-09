@@ -304,6 +304,9 @@ RCS_ID("$Id$");
     [self.view setNeedsLayout];
     [self.view layoutIfNeeded];
 
+    // Make sure this isn't spuriously set by a software keyboard being toggled in/out with a hardware keyboard attached
+    _receivedKeyboardWillResize = NO;
+    
     // We let the keyboard drive our animation so that we can sync with it.
     // OUIMainViewController listens for keyboard notifications and publishes OUIMainViewControllerDid{Begin,Finish}ResizingForKeyboard after it has adjusted its content view appropriately.
     [_nameTextField becomeFirstResponder];
@@ -568,6 +571,10 @@ RCS_ID("$Id$");
 - (void)textFieldDidEndEditing:(NSNotification *)note;
 {
     RENAME_DEBUG(@"did end editing, _receivedKeyboardWillResize:%d", _receivedKeyboardWillResize);
+    RENAME_DEBUG(@"  _textFieldEditing %d", _textFieldEditing);
+    RENAME_DEBUG(@"  _textFieldIsEndingEditing %d", _textFieldIsEndingEditing);
+    RENAME_DEBUG(@"  _isAttemptingRename %d", _isAttemptingRename);
+    RENAME_DEBUG(@"  _shouldSendFinishRenameAfterKeyboardResizes %d", _shouldSendFinishRenameAfterKeyboardResizes);
     
     _textFieldEditing = NO;
 }
@@ -694,6 +701,12 @@ RCS_ID("$Id$");
 {
     // Let the keyboard drive the animation
     RENAME_DEBUG(@"-_done: calling -endEditing:");
+    RENAME_DEBUG(@"  _isAttemptingRename %d", _receivedKeyboardWillResize);
+    RENAME_DEBUG(@"  _receivedKeyboardWillResize %d", _receivedKeyboardWillResize);
+
+    // Make sure this isn't spuriously set by a software keyboard being toggled in/out with a hardware keyboard attached
+    _receivedKeyboardWillResize = NO;
+
     BOOL rc = [self.view endEditing:NO];
     if (rc == NO && _isAttemptingRename) {
         // Our -textFieldShouldEndEditing: call rejected the edit so that we want wait to see if the rename actually worked before ending editing.
@@ -701,6 +714,10 @@ RCS_ID("$Id$");
         return;
     }
     
+    RENAME_DEBUG(@"-_done:, after -endEditing:...");
+    RENAME_DEBUG(@"  _isAttemptingRename %d", _receivedKeyboardWillResize);
+    RENAME_DEBUG(@"  _receivedKeyboardWillResize %d", _receivedKeyboardWillResize);
+
     if (_receivedKeyboardWillResize == NO) {
         // If we are renaming and there is no keyboard visibile, we are using a hardware keyboard -- we won't get notified of the keyboard hiding and it can't control the animation, so we must do it ourselves
         // Switched from OUIAnimationSequence to ensure that the call to _finishRenameAfterHidingKeyboard happens outside of a [UIView animateWithDuration:...] call as it was inside of OUIAnimationSequence. This was causing odd animations when -willMoveToParentViewController was calling -setItems:animated: on _picker.toolbar. This way we can take advantage of the default crossfade animation that we get for free. 
@@ -715,6 +732,7 @@ RCS_ID("$Id$");
     } else {
         // We need to wait until the animation is done to finish the rename.
         _shouldSendFinishRenameAfterKeyboardResizes = YES;
+        RENAME_DEBUG(@"-_done: Set _shouldSendFinishRenameAfterKeyboardResizes");
     }
 }
 
@@ -780,7 +798,7 @@ RCS_ID("$Id$");
         [self _finishRenameAfterHidingKeyboard];
     }
     
-    // Reset this in case the user it just toggling the hardware keyboard while editing.
+    // Reset this in case the user is just toggling the hardware keyboard while editing.
     _receivedKeyboardWillResize = NO;
 }
 

@@ -81,6 +81,7 @@ typedef enum {
 - (void)_stopConflictResolutionWithCompletion:(void (^)(void))completion;
 
 - (void)_fileItemContentsChangedNotification:(NSNotification *)note;
+- (void)_fileItemFinishedDownloadingNotification:(NSNotification *)note;
 
 - (void)_setupGesturesOnTitleTextField;
 
@@ -642,8 +643,9 @@ typedef enum {
         DEBUG_LAUNCH(@"Creating document store");
         
         _documentStore = [[OFSDocumentStore alloc] initWithDirectoryURL:[OFSDocumentStore userDocumentsDirectoryURL] containerScopes:[OFSDocumentStore defaultUbiquitousScopes] delegate:self scanCompletionHandler:nil];
-                     
+        
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileItemContentsChangedNotification:) name:OFSDocumentStoreFileItemContentsChangedNotification object:_documentStore];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileItemFinishedDownloadingNotification:) name:OFSDocumentStoreFileItemFinishedDownloadingNotification object:_documentStore];
         
         OUIDocumentPicker *documentPicker = self.documentPicker;
         documentPicker.documentStore = _documentStore;
@@ -668,14 +670,12 @@ typedef enum {
         [[NSNotificationCenter defaultCenter] addObserverForName:OUIDocumentPickerItemViewPreviewsDidLoadNotification object:nil queue:nil usingBlock:^(NSNotification *note){
             OUIDocumentPickerItemView *itemView = [note object];
             for (OUIDocumentPreview *preview in itemView.loadedPreviews) {
+                // Only do the update if we have a placeholder (no preview on disk). If we have a "empty" preview (meaning there was an error), don't redo the error-provoking work.
                 if (preview.type == OUIDocumentPreviewTypePlaceholder) {
-                    OBFinishPortingLater("If we got a zero-length preview file, we shouldn't do this. Need to know why the preview is a placeholder so we avoid spinning.");
-                    
-                    // Fake a content change to regenerate a preview
                     OFSDocumentStoreFileItem *fileItem = [_documentStore fileItemWithURL:preview.fileURL];
                     OBASSERT(fileItem);
                     if (fileItem)
-                        [_previewGenerator fileItemContentsChanged:fileItem];
+                        [_previewGenerator fileItemNeedsPreviewUpdate:fileItem];
                 }
             }
         }];
@@ -762,7 +762,10 @@ typedef enum {
 {
     if (_wasInBackground) {
         [_documentStore applicationWillEnterForegroundWithCompletionHandler:^{
-            [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:_documentStore.fileItems];
+            // Make sure we find the existing previews before we check if there are documents that need previews updated
+            [OUIDocumentPreview updatePreviewImageCacheWithCompletionHandler:^{
+                [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:_documentStore.fileItems];
+            }];
         }];
         _wasInBackground = NO;
     }
@@ -802,6 +805,10 @@ typedef enum {
 
     [_previewGenerator applicationDidEnterBackground];
     
+    // Clean up unused previews
+    [OUIDocumentPreview deletePreviewsNotUsedByFileItems:[_documentStore fileItems]];
+    [OUIDocumentPreview flushPreviewImageCache];
+
     [super applicationDidEnterBackground:application];
 }
 
@@ -1302,16 +1309,24 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     }];
 }
 
-- (void)_fileItemContentsChangedNotification:(NSNotification *)note;
+static void _updatePreviewForFileItem(OUISingleDocumentAppController *self, NSNotification *note)
 {
-    OBPRECONDITION([note object] == _documentStore);
+    OBPRECONDITION([note object] == self->_documentStore);
 
-    // We'll want to have an operation queue / interlock with opening documents so that we only have one document opening at a time (between the preview updating and real document opening).
-    // Doing something hacky for some to have something to improve upon.
     OFSDocumentStoreFileItem *fileItem = [[note userInfo] objectForKey:OFSDocumentStoreFileItemInfoKey];
     OBASSERT([fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
-    
-    [_previewGenerator fileItemContentsChanged:fileItem];
+
+    [self->_previewGenerator fileItemNeedsPreviewUpdate:fileItem];
+}
+
+- (void)_fileItemContentsChangedNotification:(NSNotification *)note;
+{
+    _updatePreviewForFileItem(self, note);
+}
+
+- (void)_fileItemFinishedDownloadingNotification:(NSNotification *)note;
+{
+    _updatePreviewForFileItem(self, note);
 }
 
 - (void)_showInspector:(id)sender;

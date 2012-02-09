@@ -41,7 +41,7 @@
 @property(nonatomic,readonly) OFSDocumentStoreFileItem *fileItemToOpenAfterCurrentPreviewUpdateFinishes;
 - (BOOL)shouldOpenDocumentWithFileItem:(OFSDocumentStoreFileItem *)fileItem; // sets -fileItemToOpenAfterCurrentPreviewUpdateFinishes and returns NO if a preview is being generate
 
-- (void)fileItemContentsChanged:(OFSDocumentStoreFileItem *)fileItem;
+- (void)fileItemNeedsPreviewUpdate:(OFSDocumentStoreFileItem *)fileItem;
 - (void)documentClosed;
 
 @end

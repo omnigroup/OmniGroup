@@ -104,7 +104,7 @@ RCS_ID("$Id$");
     return NO;
 }
 
-- (void)fileItemContentsChanged:(OFSDocumentStoreFileItem *)fileItem;
+- (void)fileItemNeedsPreviewUpdate:(OFSDocumentStoreFileItem *)fileItem;
 {
     OBPRECONDITION([NSThread isMainThread]);
     

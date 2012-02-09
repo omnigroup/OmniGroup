@@ -28,12 +28,14 @@
 @property(readonly, nonatomic) OFSDocumentStoreFileItem *fileItem;
 
 @property(readonly) UIViewController <OUIDocumentViewController> *viewController;
+@property(readonly) BOOL editingEnabled;
 
 - (void)finishUndoGroup;
 - (IBAction)undo:(id)sender;
 - (IBAction)redo:(id)sender;
 
-- (void)scheduleAutosave; // Will happen automatically for undoable changes, but for view stat changes that you want to be saved, you can call this.
+- (void)viewStateChanged; // Marks the document as dirty w/o logging an undo. If the app is backgrounded or the document closed it will be saved, but it won't be saved if the editor state change is the only change.
+- (void)beganUncommittedDataChange; // Can be used when the user has started a change (like editing a value in a text field) to request that the value be autosaved eventually. This requires that the document subclass knows how to save the partial edits and that the act of doing so makes a real undoable change. Calling this for editor state changes can result in taps to Undo resulting in data loss in the case that you make UIDocument think it is back to its last saved state.
 - (void)willClose;
 
 // Subclass responsibility

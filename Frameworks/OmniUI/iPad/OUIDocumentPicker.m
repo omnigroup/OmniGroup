@@ -112,7 +112,6 @@ static NSString * const OpenGroupItemsBinding = @"openGroupItems";
 - (void)moveOutOfCloud:(id)sender;
 - (BOOL)_canUseOpenInWithExportType:(NSString *)exportType;
 - (BOOL)_canUseOpenInWithFileItem:(OFSDocumentStoreFileItem *)fileItem;
-- (void)_applicationWillEnterForeground:(NSNotification *)note;
 - (void)_applicationDidEnterBackground:(NSNotification *)note;
 - (void)_previewsUpdateForFileItemNotification:(NSNotification *)note;
 - (void)_startRenamingFileItem:(OFSDocumentStoreFileItem *)fileItem;
@@ -1020,10 +1019,20 @@ static id _commonInit(OUIDocumentPicker *self)
                                           [self moveToCloud:self];
                                       }];
             } else {
-                [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Move out of iCloud", @"OmniUI", OMNI_BUNDLE, @"Menu option in the document picker view")
-                                      forAction:^{
-                                          [self moveOutOfCloud:self];
-                                      }];
+                // We only want to display the 'Move out of iCloud' option if the file has been fully downloaded locally.
+                NSNumber *isDownloadedValue = nil;
+                NSError *error = nil;
+                if (![url getResourceValue:&isDownloadedValue forKey:NSURLUbiquitousItemIsDownloadedKey error:&error]) {
+                    NSLog(@"Failed to query URL for NSURLUbiquitousItemIsDownloadedKey: %@", [error toPropertyList]);
+                    isDownloadedValue = [NSNumber numberWithBool:NO]; // Don't show the option if we don't know for sure.
+                }
+                
+                if ([isDownloadedValue boolValue]) {
+                    [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Move out of iCloud", @"OmniUI", OMNI_BUNDLE, @"Menu option in the document picker view")
+                                          forAction:^{
+                                              [self moveOutOfCloud:self];
+                                          }];
+                }
             }
         }
     }
@@ -1502,11 +1511,6 @@ static void _setSelectedDocumentsInCloud(OUIDocumentPicker *self, BOOL toCloud)
     }
     
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(_applicationWillEnterForeground:)
-                                                 name:UIApplicationWillEnterForegroundNotification
-                                               object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(_applicationDidEnterBackground:)
                                                  name:UIApplicationDidEnterBackgroundNotification
                                                object:nil];
@@ -1516,7 +1520,6 @@ static void _setSelectedDocumentsInCloud(OUIDocumentPicker *self, BOOL toCloud)
 {
     [super viewWillDisappear:animated];
     
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
 }
 
@@ -2031,18 +2034,6 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     
     // Reset openInMapCache incase someone adds or delets an app.
     [self.openInMapCache removeAllObjects];
-    
-    // Clean up unused previews
-    [OUIDocumentPreview deletePreviewsNotUsedByFileItems:[_documentStore fileItems]];
-    [OUIDocumentPreview flushPreviewImageCache];
-}
-
-- (void)_applicationWillEnterForeground:(NSNotification *)note;
-{
-    OBPRECONDITION(self.visibility == OUIViewControllerVisibilityVisible); // We only subscribe when we are visible
-    
-    // OBFinishPorting: If you activate the app and immediately start scrolling the previews for newly exposed items might not be loaded yet.
-    [OUIDocumentPreview updatePreviewImageCacheWithCompletionHandler:nil];
 }
 
 - (void)_previewsUpdateForFileItemNotification:(NSNotification *)note;

@@ -74,8 +74,12 @@ static int32_t OUIDocumentInstanceCount = 0;
     BOOL _hasUndoGroupOpen;
     BOOL _isClosing;
     BOOL _forPreviewGeneration;
+    BOOL _editingEnabled;
     
     id _rebuildingViewControllerState;
+    
+    NSUInteger _requestedViewStateChangeCount; // Used to augment the normal autosave.
+    NSUInteger _savedViewStateChangeCount;
 }
 
 #if DEBUG_DOCUMENT_DEFINED
@@ -197,6 +201,7 @@ static int32_t OUIDocumentInstanceCount = 0;
 @synthesize fileItem = _fileItem;
 @synthesize viewController = _viewController;
 @synthesize forPreviewGeneration = _forPreviewGeneration;
+@synthesize editingEnabled = _editingEnabled;
 
 - (void)finishUndoGroup;
 {
@@ -250,8 +255,17 @@ static int32_t OUIDocumentInstanceCount = 0;
     [self didRedo];
 }
 
-- (void)scheduleAutosave;
+- (void)viewStateChanged;
 {
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    _requestedViewStateChangeCount++;
+}
+
+- (void)beganUncommittedDataChange;
+{
+    // Unlike view state, here we do eventually plan to make a data change, but haven't done so yet.
+    // This can be useful when an in-progress text field change is made and we want to periodically autosave the edits.
     [self updateChangeCount:UIDocumentChangeDone];
 }
 
@@ -265,8 +279,13 @@ static int32_t OUIDocumentInstanceCount = 0;
 
 - (BOOL)hasUnsavedChanges;
 {
-    BOOL result = [super hasUnsavedChanges];
-    DEBUG_DOCUMENT(@"%@ %@ hasUnsavedChanges -> %d", [self shortDescription], NSStringFromSelector(_cmd), result);
+    // This gets called on the background queue as part of autosaving. This is read-only, but presumably UIDocument needs to deal with possible races with edits happening on the main queue.
+    //OBPRECONDITION([NSThread isMainThread]);
+
+    BOOL hasUnsavedViewState = (_requestedViewStateChangeCount != _savedViewStateChangeCount);
+    BOOL hasUnsavedData = [super hasUnsavedChanges];
+    BOOL result = hasUnsavedViewState || hasUnsavedData;
+    DEBUG_DOCUMENT(@"%@ %@ hasUnsavedChanges -> %d (view:%d data:%d)", [self shortDescription], NSStringFromSelector(_cmd), result, hasUnsavedViewState, hasUnsavedData);
     return result;
 }
 
@@ -286,6 +305,9 @@ static int32_t OUIDocumentInstanceCount = 0;
     [self _updateUndoIndicator];
 }
 
+static NSString * const ViewStateChangeTokenKey = @"viewStateChangeCount";
+static NSString * const OriginalChangeTokenKey = @"originalToken";
+
 - (id)changeCountTokenForSaveOperation:(UIDocumentSaveOperation)saveOperation;
 {
     // New documents get created and saved on a background thread, but normal documents should be on the main thread
@@ -293,7 +315,15 @@ static int32_t OUIDocumentInstanceCount = 0;
     
     //OBPRECONDITION(saveOperation == UIDocumentSaveForOverwriting); // UIDocumentSaveForCreating for saving when we get getting saved to the ".ubd" dustbin during -accommodatePresentedItemDeletionWithCompletionHandler:
     
-    id token = [super changeCountTokenForSaveOperation:saveOperation];
+    // The normal token from UIDocument is a private class NSDocumentDifferenceSizeTriple which records "dueToRecentChangesBeforeSaving", "betweenPreservingPreviousVersionAndSaving" and "betweenPreviousSavingAndSaving", but that could change. UIDocument says we can return anything we want, though and seems to just use -isEqual: (there is no -compare: on the private class as of 5.1 beta 3). We want to also record editor state when asked.
+    
+    id originalToken = [super changeCountTokenForSaveOperation:saveOperation];
+    OBASSERT(originalToken);
+    
+    NSDictionary *token = [NSDictionary dictionaryWithObjectsAndKeys:
+                           [NSNumber numberWithUnsignedInteger:_requestedViewStateChangeCount], ViewStateChangeTokenKey,
+                           originalToken, OriginalChangeTokenKey,
+                           nil];
     
     DEBUG_DOCUMENT(@"%@ %@ changeCountTokenForSaveOperation:%ld -> %@ %@", [self shortDescription], NSStringFromSelector(_cmd), saveOperation, [token class], token);
     return token;
@@ -306,7 +336,17 @@ static int32_t OUIDocumentInstanceCount = 0;
     
     DEBUG_DOCUMENT(@"%@ %@ updateChangeCountWithToken:%@ forSaveOperation:%ld", [self shortDescription], NSStringFromSelector(_cmd), changeCountToken, saveOperation);
     
-    [super updateChangeCountWithToken:changeCountToken forSaveOperation:saveOperation];
+    OBASSERT([changeCountToken isKindOfClass:[NSDictionary class]]); // Since we returned one...
+    OBASSERT([changeCountToken count] == 2); // the two keys we put in
+    
+    NSNumber *editorStateCount = [changeCountToken objectForKey:ViewStateChangeTokenKey];
+    OBASSERT(editorStateCount);
+    _savedViewStateChangeCount = [editorStateCount unsignedIntegerValue];
+    
+    id originalToken = [changeCountToken objectForKey:OriginalChangeTokenKey];
+    OBASSERT(originalToken);
+    
+    [super updateChangeCountWithToken:originalToken forSaveOperation:saveOperation];
 }
 
 - (void)openWithCompletionHandler:(void (^)(BOOL success))completionHandler;
@@ -492,6 +532,7 @@ static int32_t OUIDocumentInstanceCount = 0;
     OBPRECONDITION(_rebuildingViewControllerState == nil);
     
     DEBUG_DOCUMENT(@"Disable editing");
+    _editingEnabled = NO;
     
     // Incoming edit from iCloud, most likely. We should have been asked to save already via the coordinated write (might produce a conflict). Still, lets make sure we aren't editing.
     [_viewController.view endEditing:YES];
@@ -504,6 +545,7 @@ static int32_t OUIDocumentInstanceCount = 0;
     OBPRECONDITION([NSThread isMainThread]);
     
     DEBUG_DOCUMENT(@"Enable editing");
+    _editingEnabled = YES;
 
     [[UIApplication sharedApplication] endIgnoringInteractionEvents];
 }
@@ -549,6 +591,9 @@ static int32_t OUIDocumentInstanceCount = 0;
 
     // Incoming edit from iCloud, most likely. We should have been asked to save already via the coordinated write (might produce a conflict). Still, lets abort editing.
     [_viewController.view endEditing:YES];
+    
+    // Dismiss any open Popovers
+    [[OUISingleDocumentAppController controller] dismissPopoverAnimated:NO];
 
     // Forget our view controller since UIDocument's reloading will call -openWithCompletionHandler: again and we'll make a new view controller
     // Note; doing a view controller rebuild via -relinquishPresentedItemToWriter: seems hard/impossible not only due to the crazy spaghetti mess of blocks but also because it is invoked on UIDocument's background thread, while we need to mess with UIViews.

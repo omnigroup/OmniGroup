@@ -504,6 +504,14 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIMainViewController 
 
     CGFloat avoidedBottomHeight = _bottomHeightToAvoidForEndingKeyboardFrame(self, note);
     
+    if (IsPreIOS51) {
+        // See note where we subscribe to UIKeyboardDidShowNotification
+        if (!_keyboardVisible) {
+            // Spurious keyboard change notification, possibly. But we need to treat it as height zero in the case of a split software keyboard being toggled on/off while in a document rename.
+            avoidedBottomHeight = 0;
+        }
+    }
+    
     if (_lastKeyboardHeight == avoidedBottomHeight) {
         DEBUG_KEYBOARD("  same -- bailing");
         return NO; // No animation started
@@ -586,14 +594,6 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIMainViewController 
 {
     DEBUG_KEYBOARD("did change frame %@", note);
 
-    if (IsPreIOS51) {
-        // See note where we subscribe to UIKeyboardDidShowNotification
-        if (!_keyboardVisible) {
-            // Ignore this spurious frame change
-            return;
-        }
-    }
-    
     if ([self _handleKeyboardFrameChange:note isDid:YES]) {
         // Animation started from the did -- it will send the OUIMainViewControllerDidFinishResizingForKeyboard
     } else {
