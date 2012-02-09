@@ -1,4 +1,4 @@
-// Copyright 2008, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2011-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@ RCS_ID("$Id$")
         case 0:
             return @"";
         case 1:
-            return [NSString stringWithFormat:@"%u", [self firstIndex]];
+            return [NSString stringWithFormat:@"%lu", [self firstIndex]];
     }
     
     NSMutableString *buf = [NSMutableString string];
@@ -34,9 +34,9 @@ RCS_ID("$Id$")
         if (!first)
             [buf appendLongCharacter:','];
         if (span.length == 1)
-            [buf appendFormat:@"%u", span.location];
+            [buf appendFormat:@"%lu", span.location];
         else
-            [buf appendFormat:@"%u-%u", span.location, span.location + (span.length - 1)];
+            [buf appendFormat:@"%lu-%lu", span.location, span.location + (span.length - 1)];
         cursor = span.location + span.length;
         first = NO;
     }

@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -153,8 +153,7 @@ static struct pointInfo getLinePoint(const NSPoint *a, CGFloat position) {
         if (element == NSMoveToBezierPathElement)
             return points[0];
         else
-#warning 64BIT: Check formatting arguments
-            [NSException raise:NSInternalInconsistencyException format:@"Segment %d has no currentpoint", i];
+            [NSException raise:NSInternalInconsistencyException format:@"Segment %ld has no currentpoint", i];
     }
     
     element = [self elementAtIndex:i-1 associatedPoints:points];
@@ -166,8 +165,7 @@ static struct pointInfo getLinePoint(const NSPoint *a, CGFloat position) {
         case NSLineToBezierPathElement:
             return points[0];
         default:
-#warning 64BIT: Check formatting arguments
-            [NSException raise:NSInternalInconsistencyException format:@"Segment %d has no currentpoint", i];
+            [NSException raise:NSInternalInconsistencyException format:@"Segment %ld has no currentpoint", i];
     }
     
     /* NOTREACHED */
@@ -584,10 +582,14 @@ static BOOL subsequent(struct OABezierPathIntersectionHalf *one, struct OABezier
         }
     }
     
+    // Trim the list down if there is much wasted space
     if (listSize - intersectionCount > 8) {
         listSize = intersectionCount;
-#warning 64BIT: Inspect use of sizeof
-        intersections = realloc(intersections, sizeof(*intersections) * listSize);
+
+        // clang-sa warngs on possible zero size passed to realloc() (possibly because some implementations return NULL, others non-NULL?)
+        // We could free() the list and fill out NULL in the return struct, but all callers would need to be updated to expect that eventuality.
+        if (listSize != 0)
+            intersections = realloc(intersections, sizeof(*intersections) * listSize);
     }
 
     return (struct OABezierPathIntersectionList){ intersectionCount, intersections };
@@ -957,8 +959,7 @@ void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
                     break;
             }
             if (element != NSMoveToBezierPathElement)
-#warning 64BIT: Check formatting arguments
-                [NSException raise:NSInternalInconsistencyException format:@"Segment %d has no preceding moveto", pos.segment];
+                [NSException raise:NSInternalInconsistencyException format:@"Segment %ld has no preceding moveto", pos.segment];
             /* FALL THROUGH to lineto cxase */
         }
         case NSMoveToBezierPathElement:// PENDING: should probably skip this one
@@ -972,8 +973,7 @@ void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
         }
     }
     
-#warning 64BIT: Check formatting arguments
-    [NSException raise:NSInternalInconsistencyException format:@"Segment %d has unexpected element type %d", pos.segment, element];
+    [NSException raise:NSInternalInconsistencyException format:@"Segment %ld has unexpected element type %ld", pos.segment, element];
     return (NSPoint){ nanf(""), nanf("") };
 }
 

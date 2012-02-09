@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,7 +67,7 @@ RCS_ID("$Id$");
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"%lu%c/%lu", (unsigned long)index, affinity == UITextStorageDirectionForward ? '+' : '-', (unsigned int)generation];
+    return [NSString stringWithFormat:@"%lu%c/%lu", index, affinity == UITextStorageDirectionForward ? '+' : '-', generation];
 }
 
 @end

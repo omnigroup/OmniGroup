@@ -1,4 +1,4 @@
-// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -264,7 +264,7 @@ NSString *OFOldDateFormatStringForFormatString(NSString *newFormat)
                 if (characterCount >= 3)
                     [result appendString:@"%j"];
                 else
-                    [result appendFormat:@"%%%dj", characterCount];
+                    [result appendFormat:@"%%%luj", characterCount];
                 break;
             case 'E': // day name of week
                 if (characterCount <= 3)

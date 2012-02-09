@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -92,9 +92,9 @@ RCS_ID("$Id$")
 
     NSMutableString *result = [NSMutableString string];
     subexpressionCount = [expression subexpressionCount];
-    [result appendFormat:@"Match:%d-%d%c", matchRange.location, NSMaxRange(matchRange)-1, subexpressionCount ? '(' : ' '];
+    [result appendFormat:@"Match:%lu-%lu%c", matchRange.location, NSMaxRange(matchRange)-1, subexpressionCount ? '(' : ' '];
     for (subexpressionIndex = 0; subexpressionIndex < subexpressionCount; subexpressionIndex++) {
-        [result appendFormat:@"%d-%d%c", subExpressionMatches[subexpressionIndex].location, NSMaxRange(subExpressionMatches[subexpressionIndex]) - 1, subexpressionIndex == subexpressionCount - 1 ? ')' : ','];
+        [result appendFormat:@"%lu-%lu%c", subExpressionMatches[subexpressionIndex].location, NSMaxRange(subExpressionMatches[subexpressionIndex]) - 1, subexpressionIndex == subexpressionCount - 1 ? ')' : ','];
     }
     return result;
 }

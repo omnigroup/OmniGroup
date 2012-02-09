@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ BOOL _OFCheckClass(id *input, Class cls, const char *name)
             NSScriptCommand *command = [NSScriptCommand currentCommand];
             OBASSERT(command);
             [command setScriptErrorNumber:NSArgumentEvaluationScriptError];
-            [command setScriptErrorString:[NSString stringWithFormat:@"Unable to evaluate specifier %@ (%d %@)", spec, [spec evaluationErrorNumber], [spec evaluationErrorSpecifier]]];
+            [command setScriptErrorString:[NSString stringWithFormat:@"Unable to evaluate specifier %@ (%ld %@)", spec, [spec evaluationErrorNumber], [spec evaluationErrorSpecifier]]];
             return NO;
         }
     }

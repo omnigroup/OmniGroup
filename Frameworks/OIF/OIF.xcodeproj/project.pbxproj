@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4A1F65E108B37D04007C9742 /* FrameworkDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E521DBFE8AB4D111C9CC38 /* FrameworkDefines.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4A1F65E208B37D04007C9742 /* OIAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E521DEFE8AB4D111C9CC38 /* OIAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A1F65E308B37D04007C9742 /* OIAnimationFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E521DFFE8AB4D111C9CC38 /* OIAnimationFrame.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A1F65E408B37D04007C9742 /* OIAnimationInstance.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E521E0FE8AB4D111C9CC38 /* OIAnimationInstance.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -49,7 +48,6 @@
 		00E521D7FE8AB4D111C9CC38 /* OIBitmapImageProcessor.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIBitmapImageProcessor.m; sourceTree = "<group>"; };
 		00E521D8FE8AB4D111C9CC38 /* OIImage.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIImage.m; sourceTree = "<group>"; };
 		00E521D9FE8AB4D111C9CC38 /* OIImageProcessor.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIImageProcessor.m; sourceTree = "<group>"; };
-		00E521DBFE8AB4D111C9CC38 /* FrameworkDefines.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = FrameworkDefines.h; sourceTree = "<group>"; };
 		00E521DCFE8AB4D111C9CC38 /* NSBitmapImageRep-OIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = "NSBitmapImageRep-OIExtensions.h"; sourceTree = "<group>"; };
 		00E521DEFE8AB4D111C9CC38 /* OIAnimation.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIAnimation.h; sourceTree = "<group>"; };
 		00E521DFFE8AB4D111C9CC38 /* OIAnimationFrame.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIAnimationFrame.h; sourceTree = "<group>"; };
@@ -201,7 +199,6 @@
 			children = (
 				4A1F660808B37D04007C9742 /* Info.plist */,
 				00E521E3FE8AB4D111C9CC38 /* OIF.h */,
-				00E521DBFE8AB4D111C9CC38 /* FrameworkDefines.h */,
 				8B270C7A01ECE8AA1397A146 /* OIF.strings */,
 				00E521E5FE8AB4D111C9CC38 /* OIImageObserverProtocol.h */,
 				00E521E4FE8AB4D111C9CC38 /* OIImage.h */,
@@ -236,7 +233,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A1F65E108B37D04007C9742 /* FrameworkDefines.h in Headers */,
 				4A1F65E208B37D04007C9742 /* OIAnimation.h in Headers */,
 				4A1F65E308B37D04007C9742 /* OIAnimationFrame.h in Headers */,
 				4A1F65E408B37D04007C9742 /* OIAnimationInstance.h in Headers */,

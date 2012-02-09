@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -731,10 +731,10 @@ static inline BOOL unicodeSubstring(unichar *substring, unichar *string)
     NSMutableString *result = [NSMutableString string];
     
     while (operator != OpEnd) {
-        [result appendFormat:@"%2d:%@", state - program, [self descriptionOfState:state]];
+        [result appendFormat:@"%2td:%@", state - program, [self descriptionOfState:state]];
         next = nextState(state);
         if (next)
-            [result appendFormat:@"(%d)", next - program];
+            [result appendFormat:@"(%td)", next - program];
         else
             [result appendString:@"(0)"];
         operator = state->opCode;

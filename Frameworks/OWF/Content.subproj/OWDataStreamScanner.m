@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -158,8 +158,8 @@ RCS_ID("$Id$")
 
     if (buffer) {
         [debugDictionary setObject:[NSString stringWithCharacters:inputBuffer length:scanEnd - inputBuffer] forKey:@"inputString"];
-        [debugDictionary setObject:[NSString stringWithFormat:@"%d", bufferLength] forKey:@"bufferLength"];
-        [debugDictionary setObject:[NSString stringWithFormat:@"%d", bufferOffset] forKey:@"bufferOffset"];
+        [debugDictionary setObject:[NSString stringWithFormat:@"%lu", bufferLength] forKey:@"bufferLength"];
+        [debugDictionary setObject:[NSString stringWithFormat:@"%lu", bufferOffset] forKey:@"bufferOffset"];
     }
     [debugDictionary setObject:streamCursor forKey:@"streamCursor"];
 

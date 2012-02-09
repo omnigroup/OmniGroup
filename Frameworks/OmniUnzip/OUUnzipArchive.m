@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -288,10 +288,10 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
 - (NSURL *)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)topLevelEntryName error:(NSError **)outError;
 {
     NSArray *entries = [self entriesWithNamePrefix:topLevelEntryName];
-    NSFileManager *defaultManager = [NSFileManager defaultManager];    
-    NSString *writePath = [defaultManager temporaryPathForWritingToPath:[NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_temp", 
-                                                                                                                         [topLevelEntryName stringByDeletingPathExtension],
-                                                                                                                         nil]]
+    NSFileManager *defaultManager = [NSFileManager defaultManager];
+    
+    NSString *writeFileName = [NSString stringWithFormat:@"%@_temp", [topLevelEntryName stringByDeletingPathExtension]];
+    NSString *writePath = [defaultManager temporaryPathForWritingToPath:[NSTemporaryDirectory() stringByAppendingPathComponent:writeFileName]
                                                  allowOriginalDirectory:YES
                                                                  create:NO
                                                                   error:outError];

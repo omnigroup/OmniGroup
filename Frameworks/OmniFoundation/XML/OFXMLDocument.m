@@ -625,7 +625,7 @@ RCS_ID("$Id$");
 
     [debugDictionary setObject: _rootElement forKey: @"_rootElement"];
 
-    [debugDictionary setObject: [NSString stringWithFormat: @"0x%08x", _stringEncoding] forKey: @"_stringEncoding"];
+    [debugDictionary setObject: [NSString stringWithFormat: @"0x%08lx", (unsigned long)_stringEncoding] forKey: @"_stringEncoding"];
 
     if (_whitespaceBehavior)
         [debugDictionary setObject: _whitespaceBehavior forKey: @"_whitespaceBehavior"];

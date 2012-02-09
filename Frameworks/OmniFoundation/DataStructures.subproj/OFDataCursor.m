@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -106,7 +106,7 @@ static OFByteSet *endOfLineByteSet;
 
 #define ENSURE_ENOUGH_DATA(count)					\
     if (currentPosition + count > endPosition)			        \
-	[NSException raise:NSRangeException format:@"Attempted read past end of data.  Current position is %d, count is %d, end position is %d.", currentPosition, count, endPosition];
+	[NSException raise:NSRangeException format:@"Attempted read past end of data.  Current position is %p, count is %ld, end position is %p.", currentPosition, count, endPosition];
 
 #define START_READ_DATA(readValue)					\
     ENSURE_ENOUGH_DATA(sizeof(readValue));				\

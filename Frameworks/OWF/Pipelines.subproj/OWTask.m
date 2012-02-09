@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -211,7 +211,7 @@ static NSBundle *OWF_Bundle = nil;
     if (activeChildCount == 0)
         return compositeTypeString;
     else
-        return [NSString stringWithFormat:@"%@ (%d)", compositeTypeString, activeChildCount]; // Display active children count for headers on progress panel
+        return [NSString stringWithFormat:@"%@ (%lu)", compositeTypeString, activeChildCount]; // Display active children count for headers on progress panel
 }
 
 - (void)calculateDeadPipelines:(NSUInteger *)deadPipelines totalPipelines:(NSUInteger *)totalPipelines;

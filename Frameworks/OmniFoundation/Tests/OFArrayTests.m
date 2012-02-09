@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -311,33 +311,33 @@ RCS_ID("$Id$");
         NSUInteger aix, bix, cix;
         
         aix = [a indexOfObject:[NSNumber numberWithInt:nums[ix]] inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %u", nums[ix], [a description], aix]));
+        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix], [a description], aix]));
         should([[a objectAtIndex:aix] intValue] == nums[ix]);
         aix = [a indexOfObjectIdenticalTo:objs[ix] inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %u", objs[ix], [a description], aix]));
+        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", objs[ix], [a description], aix]));
         should([a objectAtIndex:aix] == objs[ix]);
         bix = [a indexOfObject:[NSNumber numberWithInt:nums[ix] + 1000] inArraySortedUsingSelector:@selector(compare:)];
-        should1(bix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %u", nums[ix] + 1000, [a description], bix]));
+        should1(bix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix] + 1000, [a description], bix]));
         cix = [a indexOfObject:[NSNumber numberWithInt:nums[ix] - 1000] inArraySortedUsingSelector:@selector(compare:)];
-        should1(cix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %u", nums[ix] - 1000, [a description], cix]));
+        should1(cix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix] - 1000, [a description], cix]));
     }
     for(ix = 0; ix < NNUM; ix++) {
         NSUInteger aix, bix, cix;
         NSString *obj = [NSString stringWithFormat:@"%+015d", nums[ix]];
         
         aix = [b indexOfObject:obj inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %u", nums[ix], [b description], aix]));
+        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix], [b description], aix]));
         should([[b objectAtIndex:aix] intValue] == nums[ix]);
         aix = [b indexOfObjectIdenticalTo:obj inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix == NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %u", dobjs[ix], [b description], aix]));
+        should1(aix == NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix]));
         shouldBeEqual(obj, dobjs[ix]);
         aix = [b indexOfObjectIdenticalTo:dobjs[ix] inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %u", dobjs[ix], [b description], aix]));
+        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix]));
         should([b objectAtIndex:aix] == dobjs[ix]);
         bix = [b indexOfObject:[NSString stringWithFormat:@"%+015d", nums[ix] + 1000] inArraySortedUsingSelector:@selector(compare:)];
-        should1(bix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %u", nums[ix] + 1000, [b description], bix]));
+        should1(bix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix] + 1000, [b description], bix]));
         cix = [b indexOfObject:[NSString stringWithFormat:@"%+015d", nums[ix] - 1000] inArraySortedUsingSelector:@selector(compare:)];
-        should1(cix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %u", nums[ix] - 1000, [b description], cix]));
+        should1(cix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix] - 1000, [b description], cix]));
     }
     
     // Modify objects in-place: append some stuff, and prepend some stuff. The stuff we append/prepend is constant except for case.
@@ -365,17 +365,17 @@ RCS_ID("$Id$");
         shouldnt([obj compare:dobjs[ix]] == NSOrderedSame);
 
         aix = [b indexOfObject:obj inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %u", nums[ix], [b description], aix]));
+        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix], [b description], aix]));
         should(([[[b objectAtIndex:aix] substringWithRange:(NSRange){5,15}] intValue]) == nums[ix]);
         
         aix = [b indexOfObjectIdenticalTo:obj inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)];
-        should1(aix == NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %u", dobjs[ix], [b description], aix]));
+        should1(aix == NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix]));
         
         aix = [b indexOfObject:obj inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix == NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %u", dobjs[ix], [b description], aix]));
+        should1(aix == NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix]));
         
         aix = [b indexOfObjectIdenticalTo:dobjs[ix] inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %u", dobjs[ix], [b description], aix]));
+        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix]));
         should([b objectAtIndex:aix] == dobjs[ix]);
     }
     

@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,7 @@ RCS_ID("$Id$")
 		should(match != nil); \
                 if (match) { \
                     should1(NSEqualRanges([match matchRange], (NSRange){(loc),(len)}), \
-                    ([NSString stringWithFormat:@"Got match range={%d,%d}, should be range={%d,%d}", \
+                    ([NSString stringWithFormat:@"Got match range={%ld,%ld}, should be range={%d,%d}", \
                                                                             [match matchRange].location, [match matchRange].length, (loc), (len)])); \
                                                                             shouldBeEqual([match matchString], (matchText)); \
                 } \

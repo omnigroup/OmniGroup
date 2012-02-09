@@ -5,9 +5,6 @@
    error - socket is unxepectedly closed, not connected, or not listening for connections */
 "Attempted write to a non-connected socket" = "Attempted write to a non-connected socket";
 
-/* error - resource is missing from framework bundle */
-"Cannot find the ONGetHostEntry tool" = "Cannot find the ONGetHostEntry tool";
-
 /* error - user (or other event) canceled attempt to connect to remote host */
 "Connect aborted" = "Connect aborted";
 

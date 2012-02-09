@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -349,7 +349,7 @@ OFDataBufferAppendString(OFDataBuffer *dataBuffer, CFStringRef string, CFStringE
     CFIndex charactersWritten = CFStringGetBytes(string, CFRangeMake(0, characterCount), encoding, 0/*lossByte*/, false/*isExternalRepresentation*/, ptr, 4 * characterCount, &usedBufLen);
     if (charactersWritten != characterCount) {
         [NSException raise: NSInternalInconsistencyException
-                    format: @"OFDataBufferAppendString was supposed to write %d characters but only wrote %d", characterCount, charactersWritten];
+                    format: @"OFDataBufferAppendString was supposed to write %ld characters but only wrote %ld", characterCount, charactersWritten];
     }
     
     OFDataBufferDidAppend(dataBuffer, usedBufLen);
@@ -367,7 +367,7 @@ OFDataBufferAppendBytecountedUTF8String(OFDataBuffer *dataBuffer, OFDataBuffer *
     charactersWritten = CFStringGetBytes(string, CFRangeMake(0, stringLength), kCFStringEncodingUTF8, 0/*lossByte*/, false/*isExternalRepresentation*/, bytePointer, maximumLength, &stringLengthInBuffer);
     if (charactersWritten != stringLength)
         [NSException raise: NSInternalInconsistencyException
-                    format: @"OFDataBufferAppendBytecountedUTF8String was supposed to write %d characters but only wrote %d", stringLength, charactersWritten];
+                    format: @"OFDataBufferAppendBytecountedUTF8String was supposed to write %ld characters but only wrote %ld", stringLength, charactersWritten];
     OFDataBufferAppendCompressedLongInt(dataBuffer, stringLengthInBuffer);
     OFDataBufferAppendBytes(dataBuffer, bytePointer, stringLengthInBuffer);
 }
@@ -383,7 +383,7 @@ OFDataBufferAppendUnicodeString(OFDataBuffer *dataBuffer, CFStringRef string)
     CFIndex charactersWritten = CFStringGetBytes(string, CFRangeMake(0, characterCount), kCFStringEncodingUnicode, 0/*lossByte*/, false/*isExternalRepresentation*/, ptr, sizeof(unichar) * characterCount, &usedBufLen);
     if (charactersWritten != characterCount) {
         [NSException raise: NSInternalInconsistencyException
-                    format: @"OFDataBufferAppendUnicodeString was supposed to write %d characters but only wrote %d", characterCount, charactersWritten];
+                    format: @"OFDataBufferAppendUnicodeString was supposed to write %ld characters but only wrote %ld", characterCount, charactersWritten];
     }
 
     OFDataBufferDidAppend(dataBuffer, usedBufLen);

@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,7 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
 
 #define RAT(num, denom) ((struct OFRationalNumberStruct){ .numerator = labsl(num), .denominator = denom, .negative = lsign(num), .lop = 0 })
 
-#define shouldBeEqualRat(expr_, num, den, xlop) do{ struct OFRationalNumberStruct expr = (expr_); should1(eqrat(expr, num, den, xlop), ([NSString stringWithFormat:@"%s == %@, should be %ld/%lu", #expr_, parts(expr), num, den])); }while(0)
+#define shouldBeEqualRat(expr_, num, den, xlop) do{ struct OFRationalNumberStruct expr = (expr_); should1(eqrat(expr, num, den, xlop), ([NSString stringWithFormat:@"%s == %@, should be %d/%u", #expr_, parts(expr), num, den])); }while(0)
 
 @implementation OFRationalTests
 

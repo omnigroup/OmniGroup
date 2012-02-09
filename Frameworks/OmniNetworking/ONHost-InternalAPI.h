@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,6 @@
 
 #import "ONHost.h"
 
-// If none of the options above are defined, ONHost will use the ONGetHostByName tool to perform hostname lookups in a separate task.
-
 @interface ONHost (ONInternalAPI)
 + (void)_raiseExceptionForHostErrorNumber:(int)hostErrorNumber hostname:(NSString *)hostname;
 + (NSException *)_exceptionForExtendedHostErrorNumber:(int)eaiError hostname:(NSString *)name;
@@ -19,7 +17,6 @@
 
 - (BOOL)isExpired;
 
-- (void)_lookupHostInfoByPipe;
 - (void)_lookupHostInfoUsingGetaddrinfo;
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -136,9 +136,9 @@ static OFIndexPath *emptyIndexPath = nil;
         for (indexIndex = 0; indexIndex < indexCount; indexIndex++) {
             NSUInteger indexValue = indexes[indexIndex];
             if (indexIndex == 0)
-                [description appendFormat:@"%u", indexValue];
+                [description appendFormat:@"%lu", indexValue];
             else
-                [description appendFormat:@".%u", indexValue];
+                [description appendFormat:@".%lu", indexValue];
         }
     }
     return description;

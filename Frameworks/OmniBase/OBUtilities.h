@@ -170,7 +170,7 @@ static inline Class OBClassForPointer(id object)
     if (OBPointerIsClass(object))
 	return object;
     else
-	return object->isa;
+	return object_getClass(object);
 }
 
 static inline BOOL OBClassIsSubclassOfClass(Class subClass, Class superClass)
@@ -260,14 +260,18 @@ __private_extern__ const char *_OBGeometryAdjustedSignature(const char *sig);
 #define PRIxNS PRI_NSInteger_LENGTH_MODIFIER "x"
 #define PRIXNS PRI_NSInteger_LENGTH_MODIFIER "X"
 
-// OSStatus is SInt32, which is int on 64-bit and long on 32-bit
+// OSStatus is SInt32, which is int on 64-bit and long on 32-bit. Similar problems hit CFStringEncoding and UnicodeScalarValue
 // note this is unaffected by NS_BUILD_32_LIKE_64, etc.
 #if __LP64__
     // On these platforms, UInt32 and SInt32 are (unsigned) int, and therefore so is OSStatus
     #define PRI_OSStatus "d"
+    #define PRI_CFStringEncoding "u"
+    #define PRI_UnicodeScalarValue "u"
 #else
     // On these platforms, UInt32 and SInt32 are (unsigned) long, and therefore so is OSStatus
     #define PRI_OSStatus "ld"
+    #define PRI_CFStringEncoding "lu"
+    #define PRI_UnicodeScalarValue "lu"
 #endif
     
 /* CFIndex is always a signed long as far as I know */

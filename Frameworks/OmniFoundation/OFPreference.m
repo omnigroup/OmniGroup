@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -571,7 +571,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 
 - (NSInteger) enumeratedValue
 {
-    [NSException raise:NSInvalidArgumentException format:@"-%s called on non-enumerated %@ (%@)", _cmd, [self shortDescription], _key];
+    [NSException raise:NSInvalidArgumentException format:@"-%@ called on non-enumerated %@ (%@)", NSStringFromSelector(_cmd), [self shortDescription], _key];
     return INT_MIN; // unreached; and unlikely to be a valid enumeration value
 }
 
@@ -656,7 +656,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 
 - (void)setEnumeratedValue:(NSInteger)value;
 {
-    [NSException raise:NSInvalidArgumentException format:@"-%s called on non-enumerated %@ (%@)", _cmd, [self shortDescription], _key];
+    [NSException raise:NSInvalidArgumentException format:@"-%@ called on non-enumerated %@ (%@)", NSStringFromSelector(_cmd), [self shortDescription], _key];
 }
 
 #pragma mark AppleScript support
@@ -762,7 +762,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
         return defaultValue;
 }
 
-#define BAD_TYPE_IMPL(x) { [NSException raise:NSInvalidArgumentException format:@"-%s called on enumerated %@ (%@)", _cmd, [self shortDescription], _key]; x; }
+#define BAD_TYPE_IMPL(x) { [NSException raise:NSInvalidArgumentException format:@"-%@ called on enumerated %@ (%@)", NSStringFromSelector(_cmd), [self shortDescription], _key]; x; }
 
 - (NSString *)stringValue;            BAD_TYPE_IMPL(return nil)
 - (NSArray *)arrayValue;              BAD_TYPE_IMPL(return nil)

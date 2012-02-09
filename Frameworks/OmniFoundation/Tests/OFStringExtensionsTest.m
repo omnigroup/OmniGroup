@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -511,7 +511,7 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     
     NSError *error = nil;
     
-    NSString *scratchMe = [@"/tmp" stringByAppendingPathComponent:[NSString stringWithFormat:@"test-%@-%u-%u", NSUserName(), getpid(), time(NULL)]];
+    NSString *scratchMe = [@"/tmp" stringByAppendingPathComponent:[NSString stringWithFormat:@"test-%@-%u-%ld", NSUserName(), getpid(), time(NULL)]];
     OBShouldNotError([fm createDirectoryAtPath:scratchMe withIntermediateDirectories:NO attributes:nil error:&error]);
     NSString *sc0 = [scratchMe stringByAppendingPathComponent:@"zik"];
     OBShouldNotError([fm createDirectoryAtPath:sc0 withIntermediateDirectories:NO attributes:nil error:&error]);

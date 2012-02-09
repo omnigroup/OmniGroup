@@ -1,4 +1,4 @@
-// Copyright 1997-2007, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2007, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,8 +48,6 @@ static BOOL ONHostOnlyResolvesIPv4Addresses = NO; /* This doesn't actually have 
 static enum {
     /* getaddrinfo() is threadable and versatile, but triggers a bug in the name servers used by a couple of high-profile websites whose names I will not mention here. */
     Resolver_getaddrinfo,
-    /* The tool uses gethostbyname(), which is not threadable (hence the tool) and not as versatile, but doesn't confuse the badly-written nameservers out there. */
-    Resolver_pipe,
     /* Or, of course, we could just not look stuff up at all. */
     Resolver_none
 } ONHostResolverAPI = Resolver_getaddrinfo;
@@ -102,10 +100,6 @@ static void locked_disconnectFromSysConfig(void);
 {
     if ([resolverType isEqualToString:@"getaddrinfo"])
         ONHostResolverAPI = Resolver_getaddrinfo;
-    else if ([resolverType isEqualToString:@"pipe"])
-        ONHostResolverAPI = Resolver_pipe;
-    else if ([resolverType isEqualToString:@"gethostbyname"])
-        ONHostResolverAPI = Resolver_pipe;
     else if ([resolverType isEqualToString:@"none"])
         ONHostResolverAPI = Resolver_none;
     else {
@@ -817,9 +811,6 @@ static void locked_disconnectFromSysConfig(void)
             case Resolver_getaddrinfo:
                 [self _lookupHostInfoUsingGetaddrinfo];
                 break;
-            case Resolver_pipe:
-                [self _lookupHostInfoByPipe];
-                break;
             default:
                 addresses = [[NSArray alloc] init];
                 break;
@@ -839,164 +830,6 @@ static void locked_disconnectFromSysConfig(void)
 {
     return [expirationDate timeIntervalSinceNow] < 0.0;
 }
-
-// The normal gethostbyname() function is not thread-safe.  Additionally, if the name ends up being unregistered, a long timeout period will take effect during which we can do no other host name lookups, assuming that we were to solve this problem by simply putting a lock around our calls to gethostbyname().
-
-// Instead, we have a tool subproject that executes the call to gethostbyname() in its own process.  Under NEXTSTEP and Rhapsody, this will cause two calls to the lookupd process which will in turn contact DNS, NetInfo, NIS and possibly other services (LDAP) in the future in order to resolve the name.  Since lookupd itself is multi-threaded, this will allow two namelookups to proceed in parallel.
-
-// Other operating systems should also support parallel name lookups at this level and if they don't then there probably isn't much that we could do about it.
-
-// This method invokes the ONGetHostByName tool.  If there is an error looking up the addresses for the hostname, it will be returned in the exit status.  Otherwise, the network addresses for the host will be output as raw bytes in the byte order that they would have been returned to us from gethostbyname().  This allows us to easily parse the ints and stick them in a in_addr struct.
-
-static uint32_t getUint32(NSData *outputData, NSRange *range)
-{
-    NSRange from = *range;
-    if (from.length < 4) {
-        [NSException raise:NSRangeException format:@"Need 4 bytes, only have %u", from.length];
-    }
-    from.length = 4;
-    
-    uint32_t v = ~0;
-    [outputData getBytes:&v range:from];
-    
-    range->location = from.location + 4;
-    range->length -= 4;
-    
-    return ntohl(v);
-}
-
-- (void)_lookupHostInfoByPipe;
-{
-    static NSString *ONGetHostByNamePath;
-    int addressFamily, addressLength;
-    NSData *addressData;
-    NSUInteger canonicalHostnameLength, hostnameLength;
-    NSRange nextRange;
-    NSData *outputData;
-
-    OBPRECONDITION(addresses == nil);
-    
-    if (!ONGetHostByNamePath) {
-        NSBundle *thisBundle = [NSBundle bundleForClass:[ONHost class]];
-        NSString *toolExtension = @"";
-
-        ONGetHostByNamePath = [[thisBundle pathForResource:@"ONGetHostEntry" ofType:toolExtension] retain];
-        if (!ONGetHostByNamePath) {
-            NSString *noONGetHostEntryMsg = NSLocalizedStringFromTableInBundle(@"Cannot find the ONGetHostEntry tool", @"OmniNetworking", thisBundle, @"error - resource is missing from framework bundle");
-            [[NSException exceptionWithName:ONGetHostByNameNotFoundExceptionName reason:noONGetHostEntryMsg userInfo:nil] raise];
-        }
-    }
-
-    {
-        int pipeReadDescriptor, pipeWriteDescriptor;
-        {
-            int pipeFD[2];
-    
-            if (pipe(pipeFD) != 0) {
-                [NSException raise:ONHostNameLookupErrorExceptionName posixErrorNumber:OMNI_ERRNO() format:NSLocalizedStringFromTableInBundle(@"Error looking up host %@: %s", @"OmniNetworking", [NSBundle bundleForClass:[ONHost class]], @"gethostbyname error - other errors - specific cause of error is not known"), hostname, strerror(OMNI_ERRNO())];
-            }
-            pipeReadDescriptor = pipeFD[0];
-            pipeWriteDescriptor = pipeFD[1];
-        }
-
-        const char *toolPath = [[NSFileManager defaultManager] fileSystemRepresentationWithPath:ONGetHostByNamePath];
-        const char *hostnameParameter = [[self IDNEncodedHostname] UTF8String]; // The result should be ASCII, but -UTF8String is a superset and there is no ASCII variant.
-        pid_t child = vfork();
-        switch (child) {
-            case -1: // Error
-                close(pipeReadDescriptor);
-                close(pipeWriteDescriptor);
-                [NSException raise:ONHostNameLookupErrorExceptionName posixErrorNumber:OMNI_ERRNO() format:NSLocalizedStringFromTableInBundle(@"Error looking up host %@: %s", @"OmniNetworking", [NSBundle bundleForClass:[ONHost class]], @"gethostbyname error - other errors - specific cause of error is not known"), hostname, strerror(OMNI_ERRNO())];
-                OBASSERT_NOT_REACHED("Raising an exception should not return");
-    
-            case 0: // Child
-                close(pipeReadDescriptor); // Close the parent's half of the pipe
-    
-                if (dup2(pipeWriteDescriptor, STDOUT_FILENO) != STDOUT_FILENO)
-                    _exit(NETDB_INTERNAL); // Use _exit() not exit(): don't flush the parent's file buffers
-    
-                close(pipeWriteDescriptor); // We've copied it to STDOUT_FILENO, we can close the other descriptor now
-                close(STDIN_FILENO); // The child doesn't need stdin
-                close(STDERR_FILENO); // The child doesn't need stderr
-    
-                execl(toolPath, toolPath, "name", hostnameParameter, NULL);
-                _exit(NETDB_INTERNAL); // Use _exit() not exit(): don't flush the parent's file buffers
-                OBASSERT_NOT_REACHED("_exit() should not return");
-    
-            default: // Parent
-                break;
-        }
-
-        size_t offset = 0, capacity = 8192;
-        int childStatus;
-
-        close(pipeWriteDescriptor); // Close the child's half of the pipe
-
-        NSMutableData *readData = [NSMutableData dataWithLength:capacity];
-        void *bytes = [readData mutableBytes];
-        while (YES) {
-            ssize_t length = read(pipeReadDescriptor, bytes + offset, capacity - offset);
-
-            if (length == 0)
-                break;
-
-            if (length == -1) {
-                if (OMNI_ERRNO() == EINTR)
-                    continue;
-
-                close(pipeReadDescriptor);
-                waitpid(child, &childStatus, 0);
-                [NSException raise:ONHostNameLookupErrorExceptionName posixErrorNumber:OMNI_ERRNO() format:NSLocalizedStringFromTableInBundle(@"Error looking up host %@: %s", @"OmniNetworking", [NSBundle bundleForClass:[ONHost class]], @"gethostbyname error - other errors - specific cause of error is not known"), hostname, strerror(OMNI_ERRNO())];
-            }
-    
-            offset += length;
-            if (offset == capacity) {
-                capacity += capacity;
-                [readData setLength:capacity];
-                bytes = [readData mutableBytes];
-            }
-        }
-    
-        [readData setLength:offset];
-        outputData = readData;
-        close(pipeReadDescriptor);
-        do {
-            waitpid(child, &childStatus, 0);
-        } while (!WIFEXITED(childStatus));
-        unsigned int terminationStatus = WEXITSTATUS(childStatus);
-        if (terminationStatus != 0)
-            [ONHost _raiseExceptionForHostErrorNumber:terminationStatus hostname:hostname];
-    }
-
-
-    nextRange = NSMakeRange(0, [outputData length]);
-    canonicalHostnameLength = getUint32(outputData, &nextRange);
-    hostnameLength = MIN(canonicalHostnameLength, nextRange.length);
-    nextRange.length = hostnameLength;
-    canonicalHostname = [[NSString alloc] initWithData:[outputData subdataWithRange:nextRange] encoding:[NSString defaultCStringEncoding]];
-    nextRange = NSMakeRange(NSMaxRange(nextRange), [outputData length] - NSMaxRange(nextRange));
-    addressFamily = getUint32(outputData, &nextRange);
-    addressLength = getUint32(outputData, &nextRange);
-    addressData = [outputData subdataWithRange:nextRange];
-    
-    unsigned long int addressCount = [addressData length] / addressLength;
-    OBASSERT(([addressData length] % addressLength) == 0);
-    
-    if (addressCount == 0)
-        [ONHost _raiseExceptionForHostErrorNumber:NO_DATA hostname:hostname];
-    else {
-        const unsigned char *addressBytes = [addressData bytes];
-        ONHostAddress **addressIds = malloc(addressCount * sizeof(*addressIds));
-        for (unsigned long int addressIndex = 0; addressIndex < addressCount; addressIndex ++) {
-            addressIds[addressIndex] = [ONHostAddress hostAddressWithInternetAddress:addressBytes family:addressFamily];
-            addressBytes += addressLength;
-        }
-        addresses = [[NSArray alloc] initWithObjects:addressIds count:addressCount];
-        free(addressIds);
-    }
-}
-
-// Somebody out there has finally twigged to the fact that it would be nice to be able to resolve host information in multiple threads; the getaddrinfo() API is threadsafe, and the implementation in Darwin is nearly-threadsafe as of MacOS 10.2, according to the Darwin CVS repository. By "nearly threadsafe" I mean that it's approximately as threadsafe as our lookupd hack (in fact, it has pretty much the same problem we used to have: a race condition when linking to the lookupd process). 
 
 - (void)_lookupHostInfoUsingGetaddrinfo;
 {
@@ -1386,4 +1219,3 @@ fail:
 NSString *ONHostNotFoundExceptionName = @"ONHostNotFoundExceptionName";
 NSString *ONHostNameLookupErrorExceptionName = @"ONHostNameLookupErrorExceptionName";
 NSString *ONHostHasNoAddressesExceptionName = @"ONHostHasNoAddressesExceptionName";
-NSString *ONGetHostByNameNotFoundExceptionName = @"ONGetHostByNameNotFoundExceptionName";

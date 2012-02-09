@@ -4696,7 +4696,10 @@ void OUITextLayoutDrawExtraRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFram
     } else {
         // Select the beginning or end of the range
         // TODO: Appropriately map right/left to start/end based on text direction
-        switch (direction) {
+        
+        // Radar 9138543: Make UITextLayoutDirection compatible with new clang-2 warning
+        // The cast below is needed to avoid a warning from newer clang builds that notice that the extra cases below are not in the enumerated type.
+        switch ((UITextDirection)direction) {
             case OUITextLayoutDirectionForward:
             case UITextLayoutDirectionRight:
             case UITextLayoutDirectionDown:

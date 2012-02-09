@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,6 @@
 /* Determines whether ONHost tries to look up 'AAAA' records as well as 'A' records. At the moment this has no effect on the actual lookup, but prevents non-IPv4 addresses from being returned by ONHost's -addresses method. */
 + (void)setOnlyResolvesIPv4Addresses:(BOOL)v4Only;
 + (BOOL)onlyResolvesIPv4Addresses;
-+ (void)setResolverType:(NSString *)resolverType;  // Kludge to allow selecting different resolver APIs.
 
 - (NSString *)hostname;
 - (NSArray *)addresses;
@@ -68,4 +67,3 @@
 OmniNetworking_EXTERN NSString *ONHostNotFoundExceptionName;
 OmniNetworking_EXTERN NSString *ONHostNameLookupErrorExceptionName;
 OmniNetworking_EXTERN NSString *ONHostHasNoAddressesExceptionName;
-OmniNetworking_EXTERN NSString *ONGetHostByNameNotFoundExceptionName;

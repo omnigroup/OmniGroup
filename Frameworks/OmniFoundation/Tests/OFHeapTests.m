@@ -1,4 +1,4 @@
-// Copyright 2002-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2009, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,7 +68,7 @@ RCS_ID("$Id$");
         NSUInteger element = groups[group].generator;
         for (NSUInteger elementCount = 0; elementCount < (groups[group].field-1); elementCount ++) {
             should([heap count] == elementCount);
-            [heap addObject:[NSString stringWithFormat:@"%06d in (%d,%d)", element, groups[group].field, groups[group].generator]];
+            [heap addObject:[NSString stringWithFormat:@"%06lu in (%ld,%ld)", element, groups[group].field, groups[group].generator]];
             element = (element * groups[group].generator ) % groups[group].field;
         }
 

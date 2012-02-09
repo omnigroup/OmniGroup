@@ -1,4 +1,4 @@
-// Copyright 2005-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1083,16 +1083,16 @@ NSString *OFDescribeKevent(const struct kevent *ev)
     switch(ev->filter) {
         case EVFILT_PROC:
             ;
-            NSString *s = [NSString stringWithFormat:@"filter=PROC pid=%d flags=%04x %04x", ev->ident, ev->flags, ev->fflags];
+            NSString *s = [NSString stringWithFormat:@"filter=PROC pid=%lu flags=%04x %04x", ev->ident, ev->flags, ev->fflags];
             if (ev->data)
                 s = [s stringByAppendingFormat:@" data=%ld", (long)(ev->data)];
             return s;
         case EVFILT_READ:
-            return [NSString stringWithFormat:@"filter=READ fd=%d flags=%04x %04x data=%ld", ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
+            return [NSString stringWithFormat:@"filter=READ fd=%lu flags=%04x %04x data=%ld", ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
         case EVFILT_WRITE:
-            return [NSString stringWithFormat:@"filter=WRITE fd=%d flags=%04x %04x data=%ld", ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
+            return [NSString stringWithFormat:@"filter=WRITE fd=%lu flags=%04x %04x data=%ld", ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
         default:
-            return [NSString stringWithFormat:@"filter=%d ident=%d flags=%04x %04x data=%ld", ev->filter, ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
+            return [NSString stringWithFormat:@"filter=%d ident=%lu flags=%04x %04x data=%ld", ev->filter, ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
     }
 }
 

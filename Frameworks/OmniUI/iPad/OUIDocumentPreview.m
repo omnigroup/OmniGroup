@@ -710,7 +710,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
             break;
     }
     
-    return [NSString stringWithFormat:@"<%@:%p item:%@ date:%f image:%p landscape:%d type:%@>", NSStringFromClass([self class]), self, [_fileURL absoluteString], [_date xmlString], _image, _landscape, typeString];
+    return [NSString stringWithFormat:@"<%@:%p item:%@ date:%@ image:%p landscape:%d type:%@>", NSStringFromClass([self class]), self, [_fileURL absoluteString], [_date xmlString], _image, _landscape, typeString];
 }
 
 #pragma mark -

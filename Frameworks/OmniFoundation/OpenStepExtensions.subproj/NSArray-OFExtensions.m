@@ -1,4 +1,4 @@
-// Copyright 1997-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -227,7 +227,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     for (arrayIndex = 0; arrayIndex < arrayCount; arrayIndex++) {
         id value = [self objectAtIndex:arrayIndex];
         NSString *valueDescription = objc_msgSend(value, aSelector);
-        [result addObject:[NSString stringWithFormat:@"%d. %@", arrayIndex, valueDescription]];
+        [result addObject:[NSString stringWithFormat:@"%lu. %@", arrayIndex, valueDescription]];
     }
 
     return result;

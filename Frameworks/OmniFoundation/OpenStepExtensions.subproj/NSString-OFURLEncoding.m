@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -131,7 +131,7 @@ static NSString *hexPairInserter(NSString *string, NSRange *defRange, void *cont
 {
     unichar deferential = [string characterAtIndex:defRange->location];
     defRange->length = 1;
-    return [NSString stringWithFormat:@"%%02X", OFByteForDeferredDecodedCharacter(deferential)];
+    return [NSString stringWithFormat:@"%%%02X", OFByteForDeferredDecodedCharacter(deferential)];
 }
 
 + (NSString *)decodeURLString:(NSString *)encodedString encoding:(CFStringEncoding)thisUrlEncoding;

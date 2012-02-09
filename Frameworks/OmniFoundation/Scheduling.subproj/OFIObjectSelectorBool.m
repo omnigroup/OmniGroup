@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2011-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -74,7 +74,7 @@ static Class myClass;
 
 - (NSString *)shortDescription;
 {
-    return [NSString stringWithFormat:@"-[%@ %@%d]", OBShortObjectDescription(object), NSStringFromSelector(selector), theBool ? @"YES" : @"NO"];
+    return [NSString stringWithFormat:@"-[%@ %@:%@]", OBShortObjectDescription(object), NSStringFromSelector(selector), theBool ? @"YES" : @"NO"];
 }
 
 @end

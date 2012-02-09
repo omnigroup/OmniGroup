@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -253,11 +253,11 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
         
         // OS Version
         OFVersionNumber *version = [OFVersionNumber userVisibleOperatingSystemVersionNumber];
-        NSMutableString *versionString = [NSMutableString stringWithFormat:@"%u", [version componentAtIndex:0]];
+        NSMutableString *versionString = [NSMutableString stringWithFormat:@"%lu", [version componentAtIndex:0]];
         NSUInteger countIndex;
         if ([version componentCount] > 1) {
             for (countIndex = 1; countIndex < [version componentCount]; countIndex++)
-                [versionString appendFormat:@"_%u", [version componentAtIndex:countIndex]];
+                [versionString appendFormat:@"_%lu", [version componentAtIndex:countIndex]];
         }
         
         //architecture
@@ -1466,9 +1466,9 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
     }  
     
     if (desiredRange.length)
-        return [isa stringForHeader:@"Range" value:[NSString stringWithFormat:@"bytes=%d-%d", desiredRange.location, desiredRange.location + desiredRange.length - 1]];
+        return [isa stringForHeader:@"Range" value:[NSString stringWithFormat:@"bytes=%lu-%lu", desiredRange.location, desiredRange.location + desiredRange.length - 1]];
     else if (desiredRange.location)
-        return [isa stringForHeader:@"Range" value:[NSString stringWithFormat:@"bytes=%d-", desiredRange.location]];
+        return [isa stringForHeader:@"Range" value:[NSString stringWithFormat:@"bytes=%lu-", desiredRange.location]];
     else
         return @"";
 }

@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2007, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -162,7 +162,7 @@ Sets the contents of the instance to zeros.  This is the only time when OFFastMu
 {
     if (offset > _currentLength)
         [NSException raise:NSInvalidArgumentException
-                    format:@"Offset of %d is greater than length of %d", offset, _currentLength];
+                    format:@"Offset of %lu is greater than length of %lu", offset, _currentLength];
     
     // figure out the old end of the data
     void *end = _currentBytes + _currentLength;

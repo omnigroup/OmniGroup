@@ -1,4 +1,4 @@
-// Copyright 1998-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,7 +52,7 @@ NSString *OFCopySymbolicBacktraceForNumericBacktrace(NSString *numericTrace)
     unsigned int frameIndex;
     NSMutableString *symbolicBacktrace = [[NSMutableString alloc] init];
     for (frameIndex = 0; frameIndex < frameCount; frameIndex++) {
-        [symbolicBacktrace appendFormat:@"%08u -- %s\n", callstack[frameIndex], symbols[frameIndex]];
+        [symbolicBacktrace appendFormat:@"%p -- %s\n", callstack[frameIndex], symbols[frameIndex]];
 #ifdef DEBUG
         printf("%s\n", symbols[frameIndex]);
 #endif

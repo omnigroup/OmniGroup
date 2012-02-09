@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -50,13 +50,13 @@ RCS_ID("$Id$");
         if (thisLength > 0)
             memset([mutable mutableBytes], (int)byte, thisLength);
         NSString *encoded = [mutable performSelector:encodeSelector];
-        shouldBeEqual1(encoded, [results objectAtIndex:thisLength], ([NSString stringWithFormat:@"%d-byte-long buffer containing 0x%02x", thisLength, byte]));
+        shouldBeEqual1(encoded, [results objectAtIndex:thisLength], ([NSString stringWithFormat:@"%ld-byte-long buffer containing 0x%02x", thisLength, byte]));
         
         NSError *error = nil;
         NSData *immutable = [objc_msgSend(objc_msgSend([NSData class], @selector(alloc)), decodeSelector, encoded, &error) autorelease];
         OBShouldNotError(immutable != nil);
 
-        shouldBeEqual1(mutable, immutable, ([NSString stringWithFormat:@"%d-byte-long buffer containing 0x%02x", thisLength, byte]));
+        shouldBeEqual1(mutable, immutable, ([NSString stringWithFormat:@"%ld-byte-long buffer containing 0x%02x", thisLength, byte]));
     }
 }
 

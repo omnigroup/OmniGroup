@@ -1,4 +1,4 @@
-// Copyright 2002-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -96,7 +96,7 @@ The implementation does not currently assume anything about the range of the enu
     
     if (!CFDictionaryGetValueIfPresent(_enumToName, (const void *)enumValue, (const void **)&name)) {
         // Since the enumeration values are internal, we expect that we know all of them and all are registered.
-        [NSException raise: NSInvalidArgumentException format: @"Attempted to get name for unregistered enum value %d", enumValue];
+        [NSException raise: NSInvalidArgumentException format: @"Attempted to get name for unregistered enum value %ld", enumValue];
     }
     OBASSERT(name);
     return name;
@@ -110,7 +110,7 @@ The implementation does not currently assume anything about the range of the enu
 
     if (!CFDictionaryGetValueIfPresent(_enumToDisplayName, (const void *)enumValue, (const void **)&name)) {
         // Since the enumeration values are internal, we expect that we know all of them and all are registered.
-        [NSException raise: NSInvalidArgumentException format: @"Attempted to get display name for unregistered enum value %d", enumValue];
+        [NSException raise: NSInvalidArgumentException format: @"Attempted to get display name for unregistered enum value %ld", enumValue];
     }
     OBASSERT(name);
     return name;

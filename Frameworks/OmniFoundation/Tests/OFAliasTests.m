@@ -1,4 +1,4 @@
-// Copyright 2004-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2008, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ RCS_ID("$Id$")
     if (!path)
         return;
     
-    should([[NSData data] writeToFile:path atomically:NO]);
+    should([[NSData data] writeToFile:path options:0 error:NULL]);
     
     OFAlias *originalAlias = [[OFAlias alloc] initWithPath:path];
     NSString *resolvedPath = [originalAlias path];

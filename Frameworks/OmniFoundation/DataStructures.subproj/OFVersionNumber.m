@@ -188,7 +188,7 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
             // Failed to scan integer
             break;
 
-        [cleanVersionString appendFormat: _componentCount ? @".%u" : @"%u", component];
+        [cleanVersionString appendFormat: _componentCount ? @".%lu" : @"%lu", component];
 
         _componentCount++;
         if (_componentCount*sizeof(*_components) > componentsBufSize) {

@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -182,7 +182,7 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
     if (![rhs _appendSQL:sql entity:entity constants:constants error:outError])
         return NO;
     
-    [sql appendFormat:@", %d)", [self options]];
+    [sql appendFormat:@", %ld)", [self options]];
     return YES;
 }
 

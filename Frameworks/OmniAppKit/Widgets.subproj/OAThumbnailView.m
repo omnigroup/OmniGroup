@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -136,7 +136,7 @@ static NSFont *labelFont = nil;
 	    if (thumbnailsAreNumbered) {
                 rect = NSMakeRect(x, point.y + LABEL_PADDING + LABEL_OVERLAP_WITH_BOTTOM_PADDING - 3, cellSize.width, LABEL_FONT_SIZE);
 
-		[[NSString stringWithFormat:@"%d", thumbnailIndex + 1] drawWithFont:labelFont color:(isSelected ? [NSColor selectedControlTextColor] : [NSColor controlTextColor]) alignment:NSCenterTextAlignment rectangle:rect];
+		[[NSString stringWithFormat:@"%lu", thumbnailIndex + 1] drawWithFont:labelFont color:(isSelected ? [NSColor selectedControlTextColor] : [NSColor controlTextColor]) alignment:NSCenterTextAlignment rectangle:rect];
 	    }
 	
             NSImage *image = [provider thumbnailImageAtIndex:thumbnailIndex];

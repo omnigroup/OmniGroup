@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,7 @@ RCS_ID("$Id$");
         NSIndexSet *orig = [[NSIndexSet alloc] initWithIndex:ix];
         NSString *r = [orig rangeString];
         
-        STAssertEqualObjects(r, ([NSString stringWithFormat:@"%u", ix]), nil);
+        STAssertEqualObjects(r, ([NSString stringWithFormat:@"%lu", ix]), nil);
         
         NSIndexSet *roundtrip1 = [[NSIndexSet alloc] initWithRangeString:r];
         STAssertEquals([roundtrip1 count], (NSUInteger)1, nil);
@@ -70,7 +70,7 @@ RCS_ID("$Id$");
     for(aRange.location = 0; aRange.location < 3; aRange.location ++) {
         for (aRange.length = 2; aRange.length < 5; aRange.length ++) {
             NSIndexSet *st = [[NSIndexSet alloc] initWithIndexesInRange:aRange];
-            NSString *rs = [NSString stringWithFormat:@"%u-%u", aRange.location, aRange.location + aRange.length - 1];
+            NSString *rs = [NSString stringWithFormat:@"%lu-%lu", aRange.location, aRange.location + aRange.length - 1];
             
             STAssertEqualObjects([st rangeString], rs, nil);
             STAssertEqualObjects([NSIndexSet indexSetWithRangeString:rs], st, nil);
@@ -91,9 +91,9 @@ RCS_ID("$Id$");
             for(len = 1; len < 515; len ++) {
                 NSMutableString *buf = [NSMutableString string];
                 if (len == 1)
-                    [buf appendFormat:@"%u,%u", starts[startIx], starts[startIx] + 1 + gaps[gapIx]];
+                    [buf appendFormat:@"%lu,%lu", starts[startIx], starts[startIx] + 1 + gaps[gapIx]];
                 else
-                    [buf appendFormat:@"%u-%u,%u-%u",
+                    [buf appendFormat:@"%lu-%lu,%lu-%lu",
                      starts[startIx], starts[startIx] + len - 1,
                      starts[startIx] + len + gaps[gapIx], starts[startIx] + len + gaps[gapIx] + len - 1];
                 
@@ -107,7 +107,7 @@ RCS_ID("$Id$");
                 STAssertEqualObjects(ris, st, nil);
                 STAssertEquals([ris count], (NSUInteger)(2 * len), nil);
                 
-                [buf appendFormat:@",%u", starts[startIx] + len + gaps[gapIx] + len + 1];
+                [buf appendFormat:@",%lu", starts[startIx] + len + gaps[gapIx] + len + 1];
                 [st addIndex:starts[startIx] + len + gaps[gapIx] + len + 1];
                 
                 STAssertEqualObjects([st rangeString], buf, nil);

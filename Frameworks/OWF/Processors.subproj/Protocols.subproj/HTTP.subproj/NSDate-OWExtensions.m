@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2005, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,7 +95,7 @@ static NSTimeZone *gmtTimeZone;
         date = [NSCalendarDate calendarDate];
     } else if (scannerPeekCharacter(scanner) == '-' && [aString isEqualToString:@"-1"]) {
         // "-1" is a non-standard format for a date, but statse.webtrendslive.com (referenced by www.apple.com) seems to use it in the Expires header to mean "-1 seconds from now" (maybe?) so that's how we'll interpret it (rather than logging an error about it being a non-standard date).
-        date = [[NSCalendarDate calendarDate] addTimeInterval:-1.0];
+        date = [[NSCalendarDate calendarDate] dateByAddingTimeInterval:-1.0];
     } else {
         // Standard date formats usually begin with a weekday
         // If the first character is a letter, scan the weekday

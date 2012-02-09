@@ -351,8 +351,8 @@ static void _writeString(NSString *str)
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
         if ([delegate isKindOfClass:[NSView class]]) {
             NSView *view = delegate;
-            [str appendFormat:@" redraw:%d", view.layerContentsRedrawPolicy];
-            [str appendFormat:@" placement:%d", view.layerContentsPlacement];
+            [str appendFormat:@" redraw:%ld", view.layerContentsRedrawPolicy];
+            [str appendFormat:@" placement:%ld", view.layerContentsPlacement];
         }
 #endif
     }

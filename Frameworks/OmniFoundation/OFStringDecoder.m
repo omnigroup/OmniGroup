@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -275,7 +275,7 @@ struct OFCharacterScanResult OFScanCharactersIntoBuffer(struct OFStringDecoderSt
             }
     }
     
-    [NSException raise:NSInvalidArgumentException format:@"Unsupported character encoding in fast string decoder: %d (%@)", state.encoding, CFStringGetNameOfEncoding(state.encoding)];
+    [NSException raise:NSInvalidArgumentException format:@"Unsupported character encoding in fast string decoder: %"@PRI_CFStringEncoding" (%@)", state.encoding, CFStringGetNameOfEncoding(state.encoding)];
     /* NOT REACHED */
     return (struct OFCharacterScanResult){ };
 }
@@ -324,7 +324,7 @@ struct OFStringDecoderState OFInitialStateForEncoding(CFStringEncoding anEncodin
         return result;
     }
     
-    [NSException raise:NSInvalidArgumentException format:@"Unsupported character encoding in fast string decoder: %d (%@)", anEncoding, CFStringGetNameOfEncoding(anEncoding)];
+    [NSException raise:NSInvalidArgumentException format:@"Unsupported character encoding in fast string decoder: %"@PRI_CFStringEncoding" (%@)", anEncoding, CFStringGetNameOfEncoding(anEncoding)];
     /* NOT REACHED */
     return (struct OFStringDecoderState){ };
 }
