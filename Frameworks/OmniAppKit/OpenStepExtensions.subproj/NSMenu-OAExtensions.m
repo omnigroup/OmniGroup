@@ -79,4 +79,10 @@ static NSString *OAContextMenuLayoutDefaultKey = @"OAContextMenuLayout";
     return nil;
 }
 
+- (void)addSeparatorIfNeeded;
+{
+    if ([self numberOfItems] && ![[self itemAtIndex:[self numberOfItems] - 1] isSeparatorItem])
+        [self addItem:[NSMenuItem separatorItem]];
+}
+
 @end

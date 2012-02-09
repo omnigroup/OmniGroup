@@ -28,5 +28,6 @@ typedef enum _OAContextMenuLayout {
 + (NSString *) lengthAdjustedContextMenuLabel: (NSString *) label layout: (OAContextMenuLayout) layout;
 
 - (NSMenuItem *)itemWithAction:(SEL)action;
+- (void)addSeparatorIfNeeded;
 
 @end
