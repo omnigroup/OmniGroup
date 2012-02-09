@@ -22,6 +22,7 @@ extern NSString * const OFSDocumentStoreFileItemFilePresenterURLBinding;
 extern NSString * const OFSDocumentStoreFileItemSelectedBinding;
 
 extern NSString * const OFSDocumentStoreFileItemContentsChangedNotification;
+extern NSString * const OFSDocumentStoreFileItemFinishedDownloadingNotification;
 extern NSString * const OFSDocumentStoreFileItemInfoKey;
 
 @interface OFSDocumentStoreFileItem : OFSDocumentStoreItem <NSFilePresenter, OFSDocumentStoreItem, NSCopying>

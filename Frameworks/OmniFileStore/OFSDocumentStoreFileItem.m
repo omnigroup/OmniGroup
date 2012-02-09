@@ -65,6 +65,7 @@ static NSString * const OFSDocumentStoreFileItemDisplayedFileURLBinding = @"disp
 #define kOFSDocumentStoreFileItemDefault_PercentUploaded (100)
 
 NSString * const OFSDocumentStoreFileItemContentsChangedNotification = @"OFSDocumentStoreFileItemContentsChanged";
+NSString * const OFSDocumentStoreFileItemFinishedDownloadingNotification = @"OFSDocumentStoreFileItemFinishedDownloading";
 NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 
 @implementation OFSDocumentStoreFileItem
@@ -506,6 +507,10 @@ static void _updatePercent(OFSDocumentStoreFileItem *self, double *ioValue, NSSt
     if (!wasDownloaded && nowDownloaded) {
         // The downloading process sends -presentedItemDidChange a couple times during downloading, but not right at the end, sadly.
         [self _queueContentsChanged];
+
+        // The file type and modification date stored in this file item may not have changed (since undownloaded file items know those). So, -_queueContentsChanged may end up posting no notification. Rather than forcing it to do so in this case, we have a specific notification for a download finishing.
+        NSDictionary *userInfo = [NSDictionary dictionaryWithObject:self forKey:OFSDocumentStoreFileItemInfoKey];
+        [[NSNotificationCenter defaultCenter] postNotificationName:OFSDocumentStoreFileItemFinishedDownloadingNotification object:self.documentStore userInfo:userInfo];
     }
 }
 
