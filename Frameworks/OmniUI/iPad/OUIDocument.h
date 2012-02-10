@@ -28,7 +28,7 @@
 @property(readonly, nonatomic) OFSDocumentStoreFileItem *fileItem;
 
 @property(readonly) UIViewController <OUIDocumentViewController> *viewController;
-@property(readonly) BOOL editingEnabled;
+@property(readonly) BOOL editingDisabled;
 
 - (void)finishUndoGroup;
 - (IBAction)undo:(id)sender;

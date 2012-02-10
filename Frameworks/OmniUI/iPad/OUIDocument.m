@@ -74,7 +74,7 @@ static int32_t OUIDocumentInstanceCount = 0;
     BOOL _hasUndoGroupOpen;
     BOOL _isClosing;
     BOOL _forPreviewGeneration;
-    BOOL _editingEnabled;
+    BOOL _editingDisabled;
     
     id _rebuildingViewControllerState;
     
@@ -201,7 +201,7 @@ static int32_t OUIDocumentInstanceCount = 0;
 @synthesize fileItem = _fileItem;
 @synthesize viewController = _viewController;
 @synthesize forPreviewGeneration = _forPreviewGeneration;
-@synthesize editingEnabled = _editingEnabled;
+@synthesize editingDisabled = _editingDisabled;
 
 - (void)finishUndoGroup;
 {
@@ -530,9 +530,10 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 {
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(_rebuildingViewControllerState == nil);
+    OBPRECONDITION(_editingDisabled == NO);
     
     DEBUG_DOCUMENT(@"Disable editing");
-    _editingEnabled = NO;
+    _editingDisabled = YES;
     
     // Incoming edit from iCloud, most likely. We should have been asked to save already via the coordinated write (might produce a conflict). Still, lets make sure we aren't editing.
     [_viewController.view endEditing:YES];
@@ -543,9 +544,10 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 - (void)enableEditing;
 {
     OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(_editingDisabled == YES);
     
     DEBUG_DOCUMENT(@"Enable editing");
-    _editingEnabled = YES;
+    _editingDisabled = NO;
 
     [[UIApplication sharedApplication] endIgnoringInteractionEvents];
 }
