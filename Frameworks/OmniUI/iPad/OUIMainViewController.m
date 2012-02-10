@@ -415,7 +415,9 @@ static BOOL IsPreIOS51 = NO;
         
         // These notifications typically aren't too useful (at least on 5.1 and later) since device rotations can result in a did hide/show cycle when the keyboard really is staying on screen. But on 5.0.1, if you bring up the keyboard in landscape, hide it, background the app, and then foreground the app, the system throws a spurious UIKeyboardDidChangeFrameNotification that makes us leave a gap at the bottom. This can happen both with rotating to portrait and w/o rotating at all while the app is backgrounded. Ignore this when running on iOS 5.0.x
         if (IsPreIOS51) {
+            [center addObserver:self selector:@selector(_keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
             [center addObserver:self selector:@selector(_keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
+            [center addObserver:self selector:@selector(_keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
             [center addObserver:self selector:@selector(_keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
         }
     } else {
@@ -423,7 +425,9 @@ static BOOL IsPreIOS51 = NO;
         [center removeObserver:self name:UIKeyboardDidChangeFrameNotification object:nil];
         
         if (IsPreIOS51) {
+            [center removeObserver:self name:UIKeyboardWillShowNotification object:nil];
             [center removeObserver:self name:UIKeyboardDidShowNotification object:nil];
+            [center removeObserver:self name:UIKeyboardWillHideNotification object:nil];
             [center removeObserver:self name:UIKeyboardDidHideNotification object:nil];
         }
     }
@@ -604,16 +608,38 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIMainViewController 
 }
 
 // See note where we subscribe to UIKeyboardDidShowNotification
+- (void)_keyboardWillShow:(NSNotification *)note;
+{
+    OBPRECONDITION(IsPreIOS51);
+
+    DEBUG_KEYBOARD("will show %@", note);
+    _keyboardVisible = YES;
+    
+    if (IsPreIOS51)
+        // Without this, the view updates OK, but the animation of the inner view controller lags behind that of the keyboard.
+        [self _handleKeyboardFrameChange:note isDid:NO];
+}
+
 - (void)_keyboardDidShow:(NSNotification *)note;
 {
     OBPRECONDITION(IsPreIOS51);
     OBPRECONDITION(_keyboardVisible == NO);
-    _keyboardVisible = YES;
+
+    DEBUG_KEYBOARD("did show %@", note);
+}
+
+- (void)_keyboardWillHide:(NSNotification *)note;
+{
+    OBPRECONDITION(IsPreIOS51);
+    
+    DEBUG_KEYBOARD("will hide %@", note);
 }
 - (void)_keyboardDidHide:(NSNotification *)note;
 {
     OBPRECONDITION(IsPreIOS51);
     OBPRECONDITION(_keyboardVisible == YES);
+
+    DEBUG_KEYBOARD("did hide %@", note);
     _keyboardVisible = NO;
 }
 
