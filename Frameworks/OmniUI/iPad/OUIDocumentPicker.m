@@ -1673,8 +1673,12 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
 
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView inArea:(OUIDocumentPickerItemViewTapArea)area;
 {
-    OBPRECONDITION(_renameViewController == nil); // Can't be renaming right now, so need to try to stop
-        
+    //OBPRECONDITION(_renameViewController == nil); // Can't be renaming right now, so need to try to stop
+    
+    // Actually, if you touch two view names at the same time we can get here... UIGestureRecognizer actions seem to be sent asynchronously via queued block, so other events can trickle in and cause another recognizer to fire before the first queued action has run.
+    if (_renameViewController)
+        return;
+
     OBFinishPortingLater("Use the shielding view to avoid having to explicitly end editing here"); // also, if we zoom in on a preview to rename like iWork this may change
     
     if ([itemView isKindOfClass:[OUIDocumentPickerFileItemView class]]) {
@@ -2046,8 +2050,9 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
 
 - (void)_startRenamingFileItem:(OFSDocumentStoreFileItem *)fileItem;
 {
-    // We can't be editing it already (since all the normal items are hidden if we are). We might be in Edit mode, though.
+    // Higher level code should have already checked this.
     OBPRECONDITION(_renameViewController == nil);
+    
     OBPRECONDITION(fileItem);
 
     // Get the rename controller into its initial state
