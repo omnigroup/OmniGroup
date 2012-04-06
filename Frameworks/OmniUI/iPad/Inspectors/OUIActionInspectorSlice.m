@@ -10,7 +10,7 @@
 #import <OmniUI/OUIInspectorTextWell.h>
 #import "OUIParameters.h"
 
-RCS_ID("$Id$");
+RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Frameworks/OmniUI/iPad/Inspectors/OUIActionInspectorSlice.m 165130 2012-04-06 19:59:29Z bungi $");
 
 @implementation OUIActionInspectorSlice
 

@@ -10,6 +10,7 @@
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniUI/OUIDocument.h>
 #import <OmniUI/OUIDocumentPreview.h>
+#import <OmniFoundation/NSDate-OFExtensions.h>
 
 #import "OUIDocument-Internal.h"
 
@@ -48,6 +49,19 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
+static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, OFSDocumentStoreFileItem *fileItem, NSURL *fileURL, NSDate *date)
+{
+    if (![OUIDocumentPreview hasPreviewForFileURL:fileURL date:date withLandscape:YES] ||
+        ![OUIDocumentPreview hasPreviewForFileURL:fileURL date:date withLandscape:NO]) {
+        
+        if (!self->_fileItemsNeedingUpdatedPreviews)
+            self->_fileItemsNeedingUpdatedPreviews = [[NSMutableSet alloc] init];
+        [self->_fileItemsNeedingUpdatedPreviews addObject:fileItem];
+        return YES;
+    }
+    return NO;
+}
+
 - (void)enqueuePreviewUpdateForFileItemsMissingPreviews:(id <NSFastEnumeration>)fileItems;
 {
     OBPRECONDITION(_nonretained_delegate);
@@ -59,15 +73,17 @@ RCS_ID("$Id$");
         if ([_nonretained_delegate previewGenerator:self isFileItemCurrentlyOpen:fileItem])
             continue; // Ignore this one. The process of closing a document will update its preview and once we become visible we'll check for other previews that need to be updated.
         
-        NSURL *fileURL = fileItem.fileURL;
-        NSDate *date = fileItem.date;
+        if (_addFileItemIfPreviewMissing(self, fileItem, fileItem.fileURL, fileItem.date))
+            continue;
         
-        if (![OUIDocumentPreview hasPreviewForFileURL:fileURL date:date withLandscape:YES] ||
-            ![OUIDocumentPreview hasPreviewForFileURL:fileURL date:date withLandscape:NO]) {
-            
-            if (!_fileItemsNeedingUpdatedPreviews)
-                _fileItemsNeedingUpdatedPreviews = [[NSMutableSet alloc] init];
-            [_fileItemsNeedingUpdatedPreviews addObject:fileItem];
+        OBFinishPortingLater("If a file item gains conflict versions we'll need to get called again");
+        if (fileItem.hasUnresolvedConflicts) {
+            // Request preview generation for the conflict versions. The conflict resolution UI might not be run, but it probably will, and it'll be nice to have them generated and ready to go.
+            OBFinishPortingLater("Also need to mark these as used when looking for unused preview files");
+            for (NSFileVersion *fileVersion in [NSFileVersion unresolvedConflictVersionsOfItemAtURL:fileItem.fileURL]) {
+                if (_addFileItemIfPreviewMissing(self, fileItem, fileVersion.URL, fileVersion.modificationDate))
+                    break;
+            }
         }
     }
     
@@ -121,8 +137,9 @@ RCS_ID("$Id$");
         [_fileItemsNeedingUpdatedPreviews addObject:fileItem];
         
         if (![_nonretained_delegate previewGeneratorHasOpenDocument:self]) { // Start updating previews immediately if there is no open document. Otherwise, queue them until the document is closed
-            DEBUG_PREVIEW_GENERATION(@"Some document is open, not generating previews");
             [self _continueUpdatingPreviewsOrOpenDocument];
+        } else {
+            DEBUG_PREVIEW_GENERATION(@"Some document is open, not generating previews");
         }
     }
 }
@@ -134,6 +151,84 @@ RCS_ID("$Id$");
 }
 
 #pragma mark - Private
+
+static void _writePreviewsForFileVersions(OUIDocumentPreviewGenerator *self, NSMutableArray *fileVersions)
+{
+    if ([fileVersions count] == 0) {
+        // All done with the versions for this file item
+        [self _finishedUpdatingPreview];
+        return;
+    }
+    
+    NSFileVersion *fileVersion = [[[fileVersions lastObject] retain] autorelease];
+    [fileVersions removeLastObject];
+    
+    // Be careful to use the modification date we'd get otherwise for the current version. They should be the same, but...
+    NSURL *fileURL;
+    NSDate *date;
+    if (fileVersion.conflict) {
+        fileURL = fileVersion.URL;
+        date = fileVersion.modificationDate;
+    } else {
+        fileURL = self->_currentPreviewUpdatingFileItem.fileURL;
+        date = self->_currentPreviewUpdatingFileItem.date;
+        OBASSERT([date isEqual:fileVersion.modificationDate]);
+        fileVersion = nil; // pass nil for the conflict version below
+    }
+    
+    Class cls = [self->_nonretained_delegate previewGenerator:self documentClassForFileURL:fileURL];
+    OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
+    if (!cls) {
+        _writePreviewsForFileVersions(self, fileVersions); // continue or finish up
+        return;
+    }
+    
+    NSError *error = nil;
+    OUIDocument *document = [[cls alloc] initWithExistingFileItem:self->_currentPreviewUpdatingFileItem conflictFileVersion:fileVersion error:&error];
+    if (!document) {
+        NSLog(@"Error opening document at %@ to rebuild its preview: %@", fileURL, [error toPropertyList]);
+    }
+    
+    // We have to figure out the the URL to figure out the class to make a document. Make sure we calculated the URL/date to preview the same way it did.
+    OBASSERT([document.fileVersionURL isEqual:fileURL]);
+    OBASSERT([document.fileVersionModificationDate isEqual:date]);
+    DEBUG_PREVIEW_GENERATION(@"Starting preview update of %@ / %@ fileVersion:%@", [fileURL lastPathComponent], [date xmlString], fileVersion);
+
+    // Let the document know that it is only going to be used to generate previews.
+    document.forPreviewGeneration = YES;
+    
+    // Write blank previews before we start the opening process in case it crashes. Without this we could get into a state where launching the app would crash over and over. Now we should only crash once per bad document (still bad, but recoverable for the user). In addition to caching placeholder previews, this will write the empty marker preview files too.
+    [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage) {
+        cacheImage(NULL, [OUIDocumentPreview fileURLForPreviewOfFileURL:fileURL date:date withLandscape:YES]);
+        cacheImage(NULL, [OUIDocumentPreview fileURLForPreviewOfFileURL:fileURL date:date withLandscape:NO]);
+    }];
+    
+    [document openWithCompletionHandler:^(BOOL success){
+        OBASSERT([NSThread isMainThread]);
+        
+        if (success) {
+            [document _writePreviewsIfNeeded:NO /* have to pass NO since we just write bogus previews */ withCompletionHandler:^{
+                OBASSERT([NSThread isMainThread]);
+                
+                [document closeWithCompletionHandler:^(BOOL success){
+                    OBASSERT([NSThread isMainThread]);
+                    
+                    [document willClose];
+                    [document release];
+                    
+                    DEBUG_PREVIEW_GENERATION(@"Finished preview update of %@ (version %@)", fileURL, fileVersion);
+                    
+                    // Wait until the close is done to end our background task (in case we are being backgrounded, we don't want an open document alive that might point at a document the user might delete externally).
+                    _writePreviewsForFileVersions(self, fileVersions); // continue or finish up
+                }];
+            }];
+        } else {
+            OUIDocumentHandleDocumentOpenFailure(document, ^(BOOL success){
+                _writePreviewsForFileVersions(self, fileVersions); // continue or finish up
+            });
+        }
+    }];
+}
 
 - (void)_continueUpdatingPreviewsOrOpenDocument;
 {
@@ -192,54 +287,29 @@ RCS_ID("$Id$");
     }];
     OBASSERT(_previewUpdatingBackgroundTaskIdentifier != UIBackgroundTaskInvalid);
     
-    DEBUG_PREVIEW_GENERATION(@"Starting preview update of %@", _currentPreviewUpdatingFileItem.fileURL);
-    Class cls = [_nonretained_delegate previewGenerator:self documentClassForFileItem:_currentPreviewUpdatingFileItem];
-    OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
-    if (!cls)
-        return;
+    OBASSERT(_currentPreviewUpdatingFileItem.beingDeleted == NO);
+    NSURL *fileURL = _currentPreviewUpdatingFileItem.fileURL;
+    NSFileVersion *fileVersion = [NSFileVersion currentVersionOfItemAtURL:fileURL];
     
-    NSError *error = nil;
-    OUIDocument *document = [[cls alloc] initWithExistingFileItem:_currentPreviewUpdatingFileItem error:&error];
-    if (!document) {
-        NSLog(@"Error opening document at %@ to rebuild its preview: %@", _currentPreviewUpdatingFileItem.fileURL, [error toPropertyList]);
+    if (!fileVersion) {
+        // The file was deleted while it was queued up for preview generation.
+#ifdef OMNI_ASSERTIONS_ON
+        NSError *availableError = nil;
+        OBASSERT(![fileURL checkResourceIsReachableAndReturnError:&availableError]);
+        OBASSERT([availableError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]);
+#endif
+        [self _finishedUpdatingPreview];
+        return;
     }
     
-    // Let the document know that it is only going to be used to generate previews.
-    document.forPreviewGeneration = YES;
+    OBASSERT([fileVersion.modificationDate isEqual:_currentPreviewUpdatingFileItem.date]); // since we use the date in the file name, we need to be consistent
+              
+    NSMutableArray *fileVersions = [NSMutableArray arrayWithObjects: fileVersion, nil];
+    [fileVersions addObjectsFromArray:[NSFileVersion unresolvedConflictVersionsOfItemAtURL:fileURL]];
     
-    // Write blank previews before we start the opening process in case it crashes. Without this we could get into a state where launching the app would crash over and over. Now we should only crash once per bad document (still bad, but recoverable for the user). In addition to caching placeholder previews, this will write the empty marker preview files too.
-    [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage) {
-        NSURL *fileURL = _currentPreviewUpdatingFileItem.fileURL;
-        NSDate *date = _currentPreviewUpdatingFileItem.date;
-        cacheImage(NULL, [OUIDocumentPreview fileURLForPreviewOfFileURL:fileURL date:date withLandscape:YES]);
-        cacheImage(NULL, [OUIDocumentPreview fileURLForPreviewOfFileURL:fileURL date:date withLandscape:NO]);
-    }];
-
-    [document openWithCompletionHandler:^(BOOL success){
-        OBASSERT([NSThread isMainThread]);
-        
-        if (success) {
-            [document _writePreviewsIfNeeded:NO /* have to pass NO since we just write bogus previews */ withCompletionHandler:^{
-                OBASSERT([NSThread isMainThread]);
-                [document closeWithCompletionHandler:^(BOOL success){
-                    OBASSERT([NSThread isMainThread]);
-                    if (success) {
-                        [document willClose];
-                        [document release];
-                        
-                        DEBUG_PREVIEW_GENERATION(@"Finished preview update of %@", _currentPreviewUpdatingFileItem.fileURL);
-                    }
-                    
-                    // Wait until the close is done to end our background task (in case we are being backgrounded, we don't want an open document alive that might point at a document the user might delete externally).
-                    [self _finishedUpdatingPreview];
-                }];
-            }];
-        } else {
-            OUIDocumentHandleDocumentOpenFailure(document, ^(BOOL success){
-                [self _finishedUpdatingPreview];
-            });
-        }
-    }];
+    DEBUG_PREVIEW_GENERATION(@"Starting preview update for %@ at %@ (%ld versions)", fileURL, [_currentPreviewUpdatingFileItem.date xmlString], [fileVersions count]);
+    
+    _writePreviewsForFileVersions(self, fileVersions);
 }
 
 - (void)_finishedUpdatingPreview;

@@ -59,12 +59,6 @@ RCS_ID("$Id$")
     return [self directoryExistsAtPath:path traverseLink:NO];
 }
 
-- (BOOL)createPath:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
-// Creates any directories needed to be able to create a file at the specified path.  Raises an exception on failure.
-{
-    return [self createDirectoryAtPath:path withIntermediateDirectories:YES attributes:attributes error:outError];
-}
-
 - (BOOL)createPathToFile:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
 // Creates any directories needed to be able to create a file at the specified path.  Returns NO on failure.
 {

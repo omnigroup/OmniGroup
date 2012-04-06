@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,5 @@
 
 - (void)appendLongCharacter:(UnicodeScalarValue)aCharacter; // This handles >16 bits characters, encoding with with surrogate pairs
 - (void)appendStrings: (NSString *)first, ... NS_REQUIRES_NIL_TERMINATION;
-
-- (void)removeSurroundingWhitespace OB_DEPRECATED_ATTRIBUTE;
 
 @end

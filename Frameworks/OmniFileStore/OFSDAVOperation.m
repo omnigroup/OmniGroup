@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OFSDAVOperation.h"
+#import <OmniFileStore/OFSDAVOperation.h>
 
 #import <OmniFileStore/OFSDAVFileManager.h>
 #import <OmniFileStore/OFSFileInfo.h>
@@ -506,7 +506,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     NSMutableDictionary *info = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedRecoverySuggestionErrorKey, nil];
     
     [info setObject:[_response URL] forKey:OFSURLErrorFailingURLErrorKey];
-    
+    [info setObject:[_request allHTTPHeaderFields] forKey:@"headers"];
     /* We don't make use of this yet (and may not ever), but it is handy for debugging */ 
     NSString *locationHeader = [[_response allHeaderFields] objectForKey:@"Location"];
     if (locationHeader) {
@@ -773,7 +773,7 @@ void OFSAddRedirectEntry(NSMutableArray *entries, NSString *type, NSURL *from, N
     
     if ([entries count]) {
         // Our redirect chain should be continuous --- actually we'll cope fine if it isn't, but if there's some situation where it isn't, I'd like to know about it in case we rely on it in the future.
-        OBASSERT([from isEqual:[[entries lastObject] objectForKey:kOFSRedirectedTo]]);
+        OBASSERT([from isEqual:[(NSDictionary *)[entries lastObject] objectForKey:kOFSRedirectedTo]]);
     }
     
     if (responseHeaders) {

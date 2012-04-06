@@ -16,6 +16,7 @@
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
 
 #import "OUIDocumentPickerItemView-Internal.h"
+#import "OUIDocumentPickerItemNameAndDateView.h"
 #import "OUIParameters.h"
 #import "OUIFeatures.h"
 
@@ -23,21 +24,15 @@ RCS_ID("$Id$");
 
 NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDocumentPickerItemViewPreviewsDidLoadNotification";
 
-@interface OUIDocumentPickerItemView ()
-- (void)_nameChanged;
-- (void)_dateChanged;
-- (void)_updateStatus;
-@end
-
 @implementation OUIDocumentPickerItemView
 {
     BOOL _animatingRotationChange;
     BOOL _landscape;
+    BOOL _ubiquityEnabled;
     OFSDocumentStoreItem *_item;
-    UILabel *_nameLabel;
-    UILabel *_dateLabel;
     
     OUIDocumentPreviewView *_previewView;
+    OUIDocumentPickerItemNameAndDateView *_nameAndDateView;
 
     OUIDocumentPickerItemViewDraggingState _draggingState;
     
@@ -46,37 +41,24 @@ NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDoc
     BOOL _deleting;
 }
 
-static void _configureLabel(UILabel *label, CGFloat fontSize)
-{
-    label.shadowColor = [UIColor colorWithWhite:kOUIDocumentPickerItemViewLabelShadowWhiteAlpha.w alpha:kOUIDocumentPickerItemViewLabelShadowWhiteAlpha.a];
-    label.shadowOffset = CGSizeMake(0, 1);
-    label.backgroundColor = nil;
-    label.opaque = NO;
-    label.textAlignment = UITextAlignmentCenter;
-    label.font = [UIFont boldSystemFontOfSize:fontSize];
-    label.numberOfLines = 1;
-}
-
 static id _commonInit(OUIDocumentPickerItemView *self)
 {
-    self->_nameLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    _configureLabel(self->_nameLabel, kOUIDocumentPickerItemViewNameLabelFontSize);
-    self->_nameLabel.textColor = [UIColor colorWithWhite:kOUIDocumentPickerItemViewNameLabelWhiteAlpha.w alpha:kOUIDocumentPickerItemViewNameLabelWhiteAlpha.a];
-    
-    self->_dateLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    _configureLabel(self->_dateLabel, kOUIDocumentPickerItemViewDetailLabelFontSize);
-    self->_dateLabel.textColor = [UIColor colorWithWhite:kOUIDocumentPickerItemViewDetailLabelWhiteAlpha.w alpha:kOUIDocumentPickerItemViewDetailLabelWhiteAlpha.a];
-    
+    self.isAccessibilityElement = YES;
     self->_previewView = [[OUIDocumentPreviewView alloc] initWithFrame:CGRectZero];
+    self->_nameAndDateView = [[OUIDocumentPickerItemNameAndDateView alloc] initWithFrame:CGRectZero];
     
     [self addSubview:self->_previewView];
-    [self addSubview:self->_nameLabel];
-    [self addSubview:self->_dateLabel];
+    [self addSubview:self->_nameAndDateView];
     
 //    self.layer.borderColor = [[UIColor blueColor] CGColor];
 //    self.layer.borderWidth = 1;
     
     return self;
+}
+
+- (NSString *)accessibilityLabel;
+{
+    return self.item.name;
 }
 
 - (id)initWithFrame:(CGRect)frame;
@@ -98,9 +80,8 @@ static id _commonInit(OUIDocumentPickerItemView *self)
     [self stopObservingItem:_item];
     
     [_item release];
-    [_nameLabel release];
-    [_dateLabel release];
     [_previewView release];
+    [_nameAndDateView release];
     
     [super dealloc];
 }
@@ -111,6 +92,15 @@ static id _commonInit(OUIDocumentPickerItemView *self)
     OBPRECONDITION(_item == nil); // Set this up first
     _landscape = landscape;
     _previewView.landscape = landscape;
+}
+
+@synthesize ubiquityEnabled = _ubiquityEnabled;
+- (void)setUbiquityEnabled:(BOOL)ubiquityEnabled;
+{
+    if (_ubiquityEnabled == ubiquityEnabled)
+        return;
+    _ubiquityEnabled = ubiquityEnabled;
+    [self ubiquityChanged];
 }
 
 @synthesize animatingRotationChange = _animatingRotationChange;
@@ -309,30 +299,18 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
         CGRect previewFrame = bounds;
         
         {
-            CGSize dateSize = [_dateLabel sizeThatFits:bounds.size];
-            dateSize.height = floor(dateSize.height);
+            CGSize nameAndDateSize = [_nameAndDateView sizeThatFits:bounds.size];
+            nameAndDateSize.height = floor(nameAndDateSize.height);
             
-            previewFrame.size.height -= dateSize.height;
-            _dateLabel.frame = CGRectMake(CGRectGetMinX(previewFrame), CGRectGetMaxY(previewFrame),
-                                          CGRectGetWidth(previewFrame), dateSize.height);
-        }
-        
-        previewFrame.size.height -= kOUIDocumentPickerItemViewNameToDatePadding;
-        
-        {
-            CGSize nameSize = [_nameLabel sizeThatFits:bounds.size];
-            nameSize.height = floor(nameSize.height);
-            
-            previewFrame.size.height -= nameSize.height;
-            _nameLabel.frame = CGRectMake(CGRectGetMinX(previewFrame), CGRectGetMaxY(previewFrame),
-                                          CGRectGetWidth(previewFrame), nameSize.height);
+            previewFrame.size.height -= nameAndDateSize.height;
+            _nameAndDateView.frame = CGRectMake(CGRectGetMinX(previewFrame), CGRectGetMaxY(previewFrame),
+                                                CGRectGetWidth(previewFrame), nameAndDateSize.height);
         }
         
         previewFrame.size.height -= kOUIDocumentPickerItemViewNameToPreviewPadding;
         
         BOOL draggingSource = (_draggingState == OUIDocumentPickerItemViewSourceDraggingState);
-        _nameLabel.hidden = draggingSource;
-        _dateLabel.hidden = draggingSource;
+        _nameAndDateView.hidden = draggingSource;
         _previewView.draggingSource = draggingSource;
         
         previewFrame = [_previewView previewRectInFrame:previewFrame];
@@ -353,6 +331,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 #pragma mark Internal
 
 @synthesize previewView = _previewView;
+@synthesize nameAndDateView = _nameAndDateView;
 
 - (void)itemChanged;
 {
@@ -362,12 +341,18 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     [self _nameChanged];
     [self _dateChanged];
     [self _updateStatus];
+    [self ubiquityChanged];
     
     if (_item) {
         // We do NOT start a new preview load here if we aren't in the window, but delay that until we move into view. In some cases we want to make a file item view and manually give it a preview that we already have on hand. As long as we do that before it goes on screen we'll avoid a duplicate load.
         if (self.window)
             [self loadPreviews];
     }
+}
+
+- (void)ubiquityChanged;
+{
+    // For subclasses
 }
 
 - (void)prepareForReuse;
@@ -545,7 +530,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     if (!name)
         name = @"";
     
-    _nameLabel.text = name;
+    _nameAndDateView.name = name;
     
     [self setNeedsLayout];
 }
@@ -560,7 +545,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     else
         dateString = @"";
         
-    _dateLabel.text = dateString;
+    _nameAndDateView.dateString = dateString;
     
     [self setNeedsLayout];
 }
@@ -584,14 +569,13 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     double percent = 0;
     
     if (_item.isDownloading) {
-        showProgress = YES;
         percent = _item.percentDownloaded;
     } else if (_item.isUploading) {
-        showProgress = YES;
         percent = _item.percentUploaded;
-    } else {
-        showProgress = NO;
     }
+
+    // The metadata returned by the system can be pretty poorly consistent. The isUploading flag can get stuck on in files with conflicts with the uploaded percent stuck at zero percent (when no uploading is actually going on, it seems).
+    showProgress = (percent > 0) && (percent < 100);
     
     _previewView.downloading = _item.isDownloading;
     _previewView.showsProgress = showProgress;

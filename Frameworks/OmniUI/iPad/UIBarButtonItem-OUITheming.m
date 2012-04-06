@@ -58,16 +58,16 @@ OBDEPRECATED_METHOD(-applyAppearance:); // -> -applyAppearanceWithBackgroundType
     // Set standard inset.
     UIEdgeInsets imageInset = (UIEdgeInsets){
         .top = 0,
-        .right = 6,
+        .right = 7,
         .bottom = 0,
-        .left = 6
+        .left = 7
     };
     
     // Set custom inset as needed.
     if (backgroundType == OUIBarButtonItemBackgroundTypeBack) {
         imageInset = (UIEdgeInsets){
             .top = 0,
-            .right = 6,
+            .right = 7,
             .bottom = 0,
             .left = 14
         };

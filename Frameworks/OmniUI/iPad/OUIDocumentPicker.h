@@ -34,14 +34,14 @@
 
 - (void)rescanDocuments;
 - (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL;
-- (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL animated:(BOOL)animated;
+- (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL animated:(BOOL)animated completionHandler:(void (^)(void))completionHandler;
 
 @property(readonly,nonatomic) NSSet *selectedFileItems;
 - (void)clearSelection:(BOOL)shouldEndEditing;
 @property(readonly,nonatomic) OFSDocumentStoreFileItem *singleSelectedFileItem;
-- (BOOL)canEditFileItem:(OFSDocumentStoreFileItem *)fileItem;
 
 - (void)addDocumentFromURL:(NSURL *)url;
+- (void)addSampleDocumentFromURL:(NSURL *)url;
 - (void)exportedDocumentToURL:(NSURL *)url;
     // For exports to iTunes, it's possible that we'll want to show the result of the export in our document picker, e.g., Outliner can export to OPML or plain text, but can also work with those document types. This method is called after a successful export to give the picker a chance to update if necessary.
 

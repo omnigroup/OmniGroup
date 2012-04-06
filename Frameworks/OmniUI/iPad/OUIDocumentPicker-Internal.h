@@ -12,6 +12,8 @@
 @interface OUIDocumentPicker (/*Internal*/)
 @property(readonly,nonatomic) OUIMainViewController *mainViewController;
 
+- (void)_applicationWillOpenDocument;
+
 - (void)_beginIgnoringDocumentsDirectoryUpdates;
 - (void)_endIgnoringDocumentsDirectoryUpdates;
 

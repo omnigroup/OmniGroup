@@ -12,9 +12,18 @@
 # Run the right version from our PWD's OmniGroup/Scripts directory if we find this in /usr/omni/bin/Scripts
 OMNI_SCRIPT_EXEC_ORIGINAL=$0 . $0:h/OmniScriptsReexec
 
-# Xcode's unit test running script will silently bail unless ACTION is "build".
-# Presumably this is to avoid running tests when doing "clean" builds, but it
-# also makes "install" builds not run tests. So, we use this script in our build
-# phases and lie to the Xcode script about the ACTION.
+# Xcode's unit test running script will silently bail unless ACTION is "build"
+# and TEST_AFTER_BUILD is "YES". Presumably this is to avoid running tests
+# when doing "clean" builds, but it also makes "install" builds not run tests.
+# So, we use this script in our build phases and lie to the Xcode script
+# about the ACTION.
+# We want tests to run when manually requested in Xcode (cmd-u -> sets
+# TEST_AFTER_BUILD) or when building for release (tinderbox builds use install
+# and local Release builds).
 
-ACTION=build "${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests"
+if [ "$ACTION" = "install" -o "$CONFIGURATION" = "Release" ]; then
+	export ACTION=build
+	export TEST_AFTER_BUILD=YES
+fi
+
+"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests"

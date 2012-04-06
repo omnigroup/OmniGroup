@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 
 #import <CoreFoundation/CFArray.h>
 #import <OmniDataObjects/ODOFeatures.h>
+#import <OmniBase/macros.h>
 
 @class NSString, NSArray, NSMutableDictionary, NSError, NSSet, NSMutableSet;
 @class ODOEntity, ODOEditingContext, ODOObjectID, ODOProperty, ODORelationship;
@@ -22,7 +23,7 @@
     ODOObjectID *_objectID;
     void *_observationInfo;
 
-    id *_valueStorage; // One for each -snapshotProperty on the ODOEntity.
+    OB_STRONG id *_valueStorage; // One for each -snapshotProperty on the ODOEntity.
     
     struct {
         unsigned int isFault : 1;

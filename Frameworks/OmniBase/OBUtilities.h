@@ -223,6 +223,29 @@ extern CFStringRef const OBBuildByCompilerVersion;
 #define DEFINE_NSSTRING(name) \
 	NSString * const name = NSSTRINGIFY(name)
 
+// Iterators over C arrays and literals. Useful for iterating over collections known at compile-time, like when (un)registering KVO keypaths. Syntax is similar to a regular for(.. in ..) statement; the first argument is a variable name that is visible within the scope of the block controlled by the OB_FOR_ALL or OB_FOR_IN statement. The subsequent arguments vary.
+
+// Helper macro that drives iteration of the variable named by OB_FOR_var_name over the array named by OB_FOR_array_name.
+#define OB_FOR_exprs(OB_FOR_var_name, OB_FOR_array_name) \
+        *OB_FOR_IN_end = &OB_FOR_array_name[sizeof(OB_FOR_array_name)/sizeof(OB_FOR_array_name[0])], /* Points one past the end of the array */ \
+        *OB_FOR_IN_curr = &OB_FOR_array_name[0], \
+        OB_FOR_var_name = OB_FOR_array_name[0]; \
+    OB_FOR_IN_curr < OB_FOR_IN_end ? (OB_FOR_var_name = *OB_FOR_IN_curr, 1) : 0; /* Avoid dereferencing pointer one past the end of the array, even if we never use it */ \
+    OB_FOR_IN_curr++
+    
+// OB_FOR_ALL takes a variable number of arguments (at least two) and iterates over all of them.
+// Ex:
+//     OB_FOR_ALL(i, 1, 2, 3)
+//       printf("%d", i);
+#define OB_FOR_ALL(var, one, ...) for(typeof(one) OB_FOR_ALL_array[] = { one, __VA_ARGS__ }, OB_FOR_exprs(var, OB_FOR_ALL_array))
+    
+// OB_FOR_IN takes a single array variable as an argument and iterates over its members.
+// Ex:
+//     int nums[] = {1, 2, 3};
+//     OB_FOR_IN(i, nums)
+//       printf("%d", i);
+#define OB_FOR_IN(var, array) for (typeof(array[0]) OB_FOR_exprs(var, array))
+
 // Emits a warning indicating that an obsolete method has been called.
 
 #define OB_WARN_OBSOLETE_METHOD \

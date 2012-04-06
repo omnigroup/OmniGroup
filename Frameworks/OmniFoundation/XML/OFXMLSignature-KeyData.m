@@ -1,4 +1,4 @@
-// Copyright 2009-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,8 +68,8 @@ static xmlChar *getPropOrFail(xmlNode *element, const char *attrName, NSError **
 }
 
 /* Helper functions for elliptic-curve keys */
-static NSData *getPublicKeyFromRFC4050KeyValue(xmlNode *keyvalue, NSError **outError);
-static NSData *getPublicKeyFromDSIG11KeyValue(xmlNode *keyvalue, NSError **outError);
+static NSData *getPublicKeyFromRFC4050KeyValue(xmlNode *keyvalue, int *log2_p, NSError **outError);
+static NSData *getPublicKeyFromDSIG11KeyValue(xmlNode *keyvalue, int *log2_p, NSError **outError);
 
 #if !OFXMLSigGetKeyAsCSSM
 
@@ -375,6 +375,7 @@ SecKeyRef OFXMLSigCopyKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
     keyHeader.KeyUsage = CSSM_KEYUSE_ANY;
     
     [key setKeyHeader:&keyHeader data:fullKey];
+    [key setGroupOrder:160]; /* DSA has a fixed group size of 160 bits */
 #else
     SecKeyRef key = copyKeyRefFromEncodedKey(kSecFormatOpenSSL, "DSA ", fullKey, outError);
 #endif
@@ -385,9 +386,9 @@ SecKeyRef OFXMLSigCopyKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
 }
 
 #if OFXMLSigGetKeyAsCSSM
-OFCSSMKey *OFXMLSigGetKeyFromEllipticKeyValue(xmlNode *keyvalue, NSError **outError)
+OFCSSMKey *OFXMLSigGetKeyFromEllipticKeyValue(xmlNode *keyvalue, int *outOrder, NSError **outError)
 #else
-SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyvalue, NSError **outError)
+SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyvalue, int *outOrder, NSError **outError)
 #endif
 {
     NSData *derv = nil;
@@ -396,13 +397,13 @@ SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyvalue, NSError **outEr
     
     nv = OFLibXMLChildNamed(keyvalue, "ECDSAKeyValue", XMLSignatureMoreNamespace, &count);
     if (count == 1) {
-        derv = getPublicKeyFromRFC4050KeyValue(nv, outError);
+        derv = getPublicKeyFromRFC4050KeyValue(nv, outOrder, outError);
         if (!derv)
             return NULL;
     } else if (count == 0) {
         nv = OFLibXMLChildNamed(keyvalue, "ECKeyValue", XMLSignature11Namespace, &count);
         if (count == 1) {
-            derv = getPublicKeyFromDSIG11KeyValue(nv, outError);
+            derv = getPublicKeyFromDSIG11KeyValue(nv, outOrder, outError);
             if (!derv)
                 return NULL;
         }
@@ -413,7 +414,7 @@ SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyvalue, NSError **outEr
             *outError = [NSError errorWithDomain:OFXMLSignatureErrorDomain code:OFXMLSignatureValidationError userInfo:[NSDictionary dictionaryWithObject:@"No <ECKeyValue> or <ECDSAKeyValue>" forKey:NSLocalizedDescriptionKey]];
         return NULL;
     }
-    
+
 #if OFXMLSigGetKeyAsCSSM
     OFCSSMKey *key = [[OFCSSMKey alloc] initWithCSP:nil];
     [key autorelease];
@@ -430,6 +431,8 @@ SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyvalue, NSError **outEr
     keyHeader.KeyUsage = CSSM_KEYUSE_ANY;
     
     [key setKeyHeader:&keyHeader data:derv];
+    if (*outOrder > 0)
+        [key setGroupOrder:*outOrder];
 #else
     SecKeyRef key = copyKeyRefFromEncodedKey(kSecFormatOpenSSL, "ECDSA ", derv, outError);
 #endif
@@ -437,57 +440,62 @@ SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyvalue, NSError **outEr
     return key;
 }
 
-static NSData *getNamedCurve(const xmlChar *curveName, unsigned *log256_p_out, NSError **outError)
-{
-    NSData *curveOID;
-    unsigned log256_p; /* number of bytes needed to represent a value in the key's field */
-    
-    /* Hardcode the handful of named curves we'll see rather than parsing the OID and DER-encoding it */
-    /* (we need to have a list of them anyway in order to know log256_p) */
-    if (xmlStrcmp(curveName, (xmlChar *)"urn:oid:1.2.840.10045.3.1.7") == 0) {
 #define secp256r1OidByteCount 10
-        static const unsigned char secp256r1OidBytes[secp256r1OidByteCount] = {
-            /* tag = OBJECT IDENTIFIER */
-            0x06,
-            /* length = 8 */
-            0x08,
-            /* iso(1) member-body(2) us(840) ansi-x9-62(10045) curves(3) prime(1) secp256r1(7) */
-            0x2a, 0x86, 0x48, 0xce, 0x3D, 0x03, 0x01, 0x07
-        };
-        curveOID = [NSData dataWithBytesNoCopy:(void *)secp256r1OidBytes length:secp256r1OidByteCount freeWhenDone:NO];
-        log256_p = 32; /* 256-bit generator --> 32 bytes to hold a point coordinate */
-    } else if (xmlStrcmp(curveName, (xmlChar *)"urn:oid:1.3.132.0.34") == 0) {
+static const unsigned char secp256r1OidBytes[secp256r1OidByteCount] = {
+    /* tag = OBJECT IDENTIFIER */
+    0x06,
+    /* length = 8 */
+    0x08,
+    /* iso(1) member-body(2) us(840) ansi-x9-62(10045) curves(3) prime(1) secp256r1(7) */
+    0x2a, 0x86, 0x48, 0xce, 0x3D, 0x03, 0x01, 0x07
+};
+
 #define secp384r1OidByteCount 7
-        static const unsigned char secp384r1OidBytes[secp384r1OidByteCount] = {
-            /* tag = OBJECT IDENTIFIER */
-            0x06,
-            /* length = 5 */
-            0x05,
-            /* iso(1) identified-organization(3) certicom(132) curve(0) secp384r1(34) */
-            0x2b, 0x81, 0x04, 0x00, 0x22
-        };
-        curveOID = [NSData dataWithBytesNoCopy:(void *)secp384r1OidBytes length:secp384r1OidByteCount freeWhenDone:NO];
-        log256_p = 48; /* 384-bit generator --> 48 bytes to hold a point coordinate */
-    } else if (xmlStrcmp(curveName, (xmlChar *)"urn:oid:1.3.132.0.35") == 0) {
+static const unsigned char secp384r1OidBytes[secp384r1OidByteCount] = {
+    /* tag = OBJECT IDENTIFIER */
+    0x06,
+    /* length = 5 */
+    0x05,
+    /* iso(1) identified-organization(3) certicom(132) curve(0) secp384r1(34) */
+    0x2b, 0x81, 0x04, 0x00, 0x22
+};
+
 #define secp521r1OidByteCount 7
-        static const unsigned char secp521r1OidBytes[secp521r1OidByteCount] = {
-            /* tag = OBJECT IDENTIFIER */
-            0x06,
-            /* length = 5 */
-            0x05,
-            /* iso(1) identified-organization(3) certicom(132) curve(0) secp521r1(35) */
-            0x2b, 0x81, 0x04, 0x00, 0x23
-        };
-        curveOID = [NSData dataWithBytesNoCopy:(void *)secp521r1OidBytes length:secp521r1OidByteCount freeWhenDone:NO];
-        log256_p = 66; /* 521-bit generator --> 66 bytes to hold a point coordinate (65 bytes and 1 bit) */
-    } else {
-        if (outError)
-            *outError = [NSError errorWithDomain:OFXMLSignatureErrorDomain code:OFKeyNotAvailable userInfo:[NSDictionary dictionaryWithObject:[NSString stringWithFormat:@"Unknown NamedCurve \"%s\"", curveName] forKey:NSLocalizedDescriptionKey]];
-        return nil;
+static const unsigned char secp521r1OidBytes[secp521r1OidByteCount] = {
+    /* tag = OBJECT IDENTIFIER */
+    0x06,
+    /* length = 5 */
+    0x05,
+    /* iso(1) identified-organization(3) certicom(132) curve(0) secp521r1(35) */
+    0x2b, 0x81, 0x04, 0x00, 0x23
+};
+
+/* Hardcode the handful of named curves we'll see rather than parsing the OID and DER-encoding it */
+/* (we need to have a list of them anyway in order to know log2_p) */
+static const struct namedCurveInfo {
+    const char *urn;                      /* URN of this curve */
+    const unsigned char *derOid;          /* DER-encoded OID of this curve */
+    short derOidLength;                   /* Byte length of the above */
+    short generatorSize;                  /* number of bits needed to represent a value in the key's field */
+} namedCurves[] = {
+    { "urn:oid:1.2.840.10045.3.1.7", secp256r1OidBytes, secp256r1OidByteCount, 256 },
+    { "urn:oid:1.3.132.0.34",        secp384r1OidBytes, secp384r1OidByteCount, 384 },
+    { "urn:oid:1.3.132.0.35",        secp521r1OidBytes, secp521r1OidByteCount, 521 },
+    { NULL,                          0,                 0,                     0   }
+};
+
+static NSData *getNamedCurve(const xmlChar *curveName, int *log2_p_out, NSError **outError)
+{
+    for(const struct namedCurveInfo *cursor = namedCurves; cursor->urn; cursor++) {
+        if (xmlStrcmp(curveName, (xmlChar *)(cursor->urn)) == 0) {
+            *log2_p_out = cursor->generatorSize;
+            return [NSData dataWithBytesNoCopy:(void *)(cursor->derOid) length:(cursor->derOidLength) freeWhenDone:NO];
+        }
     }
-    
-    *log256_p_out = log256_p;
-    return curveOID;
+
+    if (outError)
+        *outError = [NSError errorWithDomain:OFXMLSignatureErrorDomain code:OFKeyNotAvailable userInfo:[NSDictionary dictionaryWithObject:[NSString stringWithFormat:@"Unknown NamedCurve \"%s\"", curveName] forKey:NSLocalizedDescriptionKey]];
+    return nil;
 }
 
 static NSData *composeECPublicKeyInfo(NSData *curveName, NSData *pubkeyBitString)
@@ -536,7 +544,7 @@ static NSData *composeECPublicKeyInfo(NSData *curveName, NSData *pubkeyBitString
 }
 
 /* The RFC4050 syntax for ECDSA keys is not great. See, for example, <http://lists.w3.org/Archives/Public/public-xmlsec/2008Nov/0018.html>. However, we have it here so we can test our interoperability with other peoples' test vectors. */
-static NSData *getPublicKeyFromRFC4050KeyValue(xmlNode *keyvalue, NSError **outError)
+static NSData *getPublicKeyFromRFC4050KeyValue(xmlNode *keyvalue, int *log2_p, NSError **outError)
 {
     xmlNode *parameters = singleChildOrFail(keyvalue, "DomainParameters", XMLSignatureMoreNamespace, outError);
     if (!parameters)
@@ -552,14 +560,15 @@ static NSData *getPublicKeyFromRFC4050KeyValue(xmlNode *keyvalue, NSError **outE
     if (!pk)
         return nil;
     
-    unsigned int log256_p;
     xmlChar *urn = getPropOrFail(ncurve, "URN", outError);
     if (!urn)
         return nil;
-    NSData *curveName = getNamedCurve(urn, &log256_p, outError);
+    NSData *curveName = getNamedCurve(urn, log2_p, outError);
     xmlFree(urn);
     if (!curveName)
         return nil;
+    
+    unsigned int log256_p = ( *log2_p + 7 ) / 8;
     
     /* extract the X- and Y-values. */
     NSData *xData = rawIntegerFromNodeAttribute(pk, "X", XMLSignatureMoreNamespace, log256_p, outError);
@@ -586,7 +595,7 @@ static NSData *getPublicKeyFromRFC4050KeyValue(xmlNode *keyvalue, NSError **outE
 }
 
 /* The DSIG-1.1 syntax for ECDSA keys is a bit better. */
-static NSData *getPublicKeyFromDSIG11KeyValue(xmlNode *keyvalue, NSError **outError)
+static NSData *getPublicKeyFromDSIG11KeyValue(xmlNode *keyvalue, int *log2_p, NSError **outError)
 {
     /* The <ECKeyValue> has one of either <ECParameters> or <NamedCurve>. Our test vectors are all NamedCurve, so that's the only element we support. */
     xmlNode *ncurve = singleChildOrFail(keyvalue, "NamedCurve", XMLSignature11Namespace, outError);
@@ -601,15 +610,14 @@ static NSData *getPublicKeyFromDSIG11KeyValue(xmlNode *keyvalue, NSError **outEr
     xmlChar *urn = getPropOrFail(ncurve, "URI", outError);
     if (!urn)
         return nil;
-    unsigned int log256_p;
-    NSData *curveName = getNamedCurve(urn, &log256_p, outError);
+    NSData *curveName = getNamedCurve(urn, log2_p, outError);
     xmlFree(urn);
     if (!curveName)
         return nil;
     
     NSData *ecPoint = OFLibXMLNodeBase64Content(pk);
     
-    OBASSERT([ecPoint length] == 1 + 2*log256_p); /* Only true for uncompressed points, but we're not required to support compressed points */
+    OBASSERT([ecPoint length] == 1 + 2*(unsigned int)( ( *log2_p + 7 ) / 8 )); /* Only true for uncompressed points, but we're not required to support compressed points */
     
     /* The wrapped BIT STRING */
     /* Concatenate X and Y into an uncompressed ECPoint */

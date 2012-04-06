@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,10 +6,13 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/NSProcessInfo-OFExtensions.h>
+#import <Security/SecCode.h> // For SecCodeCopySelf()
+#import <Security/SecRequirement.h> // For SecRequirementCreateWithString()
 
 // This is not included in OmniBase.h since system.h shouldn't be used except when covering OS specific behaviour
 #import <OmniBase/system.h>
 #import <OmniBase/assertions.h>
+#import <OmniFoundation/OFVersionNumber.h>
 
 RCS_ID("$Id$")
 
@@ -33,6 +36,51 @@ static NSString *_replacement_hostName(NSProcessInfo *self, SEL _cmd)
 {
     // Don't assume the pid is 16 bits since it might be 32.
     return [NSNumber numberWithInt:getpid()];
+}
+
+static BOOL _isCurrentProcessSandboxed(void)
+{
+    if (![OFVersionNumber isOperatingSystemLionOrLater])
+        return NO;
+
+    // Test for sandbox entitlement
+    const BOOL uncertainResult = YES; // If we can't tell, then we will assume we're sandboxed
+    SecCodeRef applicationCode = NULL;
+    SecCodeCopySelf(kSecCSDefaultFlags, &applicationCode);
+    OBASSERT(applicationCode != NULL);
+    if (applicationCode == NULL)
+        return uncertainResult;
+
+    SecRequirementRef sandboxRequirement = NULL;
+    SecRequirementCreateWithString(CFSTR("entitlement[\"com.apple.security.app-sandbox\"] exists"), kSecCSDefaultFlags, &sandboxRequirement);
+    OBASSERT(sandboxRequirement != NULL);
+    if (sandboxRequirement == NULL)
+        return uncertainResult;
+
+    OSStatus sandboxStatus = SecCodeCheckValidity(applicationCode, kSecCSDefaultFlags, sandboxRequirement);
+    switch (sandboxStatus) {
+        case errSecSuccess:
+            return YES;
+        case errSecCSUnsigned: // We're unsigned
+        case errSecCSReqFailed: // Our signature doesn't have the sandbox requirement
+            return NO;
+        default:
+            OBASSERT_NOT_REACHED("_isCurrentProcessSandboxed() encountered an unexpected return code from SecCodeCheckValidity()");
+#ifdef DEBUG
+            NSLog(@"_isCurrentProcessSandboxed() should explicitly handle the %"PRI_OSStatus" return code from SecCodeCheckValidity()", sandboxStatus);
+#endif
+            return uncertainResult;
+    }
+}
+
+- (BOOL)isSandboxed;
+{
+    static BOOL isSandboxed;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        isSandboxed = _isCurrentProcessSandboxed();
+    });
+    return isSandboxed;
 }
 
 @end

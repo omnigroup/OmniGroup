@@ -200,7 +200,7 @@ enum {
                 description = [[OFPreference preferenceForKey:OUIMobileMeUsername] stringValue];
                 break;
             case OUIOmniSync:
-                title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to Omni Sync", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from Omni Sync", @"OmniUI", OMNI_BUNDLE, @"Import document title");
+                title = _isExporting ? NSLocalizedStringFromTableInBundle(@"Export to Omni Sync Server", @"OmniUI", OMNI_BUNDLE, @"Export document title") : NSLocalizedStringFromTableInBundle(@"Copy from Omni Sync Server", @"OmniUI", OMNI_BUNDLE, @"Import document title");
                 description = [[OFPreference preferenceForKey:OUIOmniSyncUsername] stringValue];
                 break;
             case OUIWebDAVSync:
@@ -245,6 +245,23 @@ enum {
     return cell;
 }
 
+- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    if ([[OUIAppController controller] isRunningRetailDemo]) {
+#ifdef DEBUG_rachael
+        NSLog(@"no import for you!");
+#endif
+
+        UIAlertView *replaceDocumentAlert = [[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Feature not enabled for this demo", @"OmniUI", OMNI_BUNDLE, @"disabled for demo") message:nil delegate:nil cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"Done") otherButtonTitles:nil];
+        [replaceDocumentAlert show];
+        [replaceDocumentAlert release];
+        
+        return nil;
+    }
+    
+    return indexPath;
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     [_menuPopoverController dismissPopoverAnimated:YES];
@@ -263,7 +280,7 @@ enum {
                 break;
             case OUIOmniSync:
                 previousConnectionUsername = [[OFPreference preferenceForKey:OUIOmniSyncUsername] stringValue];
-                previousConnectionLocation = [NSURL URLWithString:[@"https://sync.omnigroup.com/" stringByAppendingPathComponent:previousConnectionUsername]];
+                previousConnectionLocation = [[NSURL URLWithString:@"https://sync.omnigroup.com/"] URLByAppendingPathComponent:[previousConnectionUsername stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] isDirectory:YES];
                 break;
             case OUIWebDAVSync:
                 previousConnectionLocation = [[self class] _urlFromPreference:[OFPreference preferenceForKey:OUIWebDAVLocation]];

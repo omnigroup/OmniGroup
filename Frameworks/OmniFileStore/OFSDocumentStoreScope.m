@@ -22,6 +22,12 @@ static BOOL _urlContainedByURL(NSURL *url, NSURL *containerURL);
     // Hidden preference to totally disable iCloud support until Apple fixes some edge case bugs.
     if ([OFSDocumentStoreDisableUbiquityPreference boolValue])
         return nil; // return a local documents directory?
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    // iCloud on 5.1 fixes some important bugs.
+    if ([OFVersionNumber isOperatingSystemiOS51OrLater] == NO)
+        return nil;
+#endif
     
     static NSString *fullContainerID = nil;
     static OFSDocumentStoreScope *defaultScope = nil;

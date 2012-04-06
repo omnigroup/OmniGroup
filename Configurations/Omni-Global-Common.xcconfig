@@ -44,9 +44,12 @@ GCC_WARN_SIGN_COMPARE = YES
 GCC_WARN_ABOUT_MISSING_NEWLINE = YES
 // GCC_WARN_PROTOTYPE_CONVERSION = YES // This produces a lot of false positives (passing int as unsigned, for example)
 // GCC_WARN_SHADOW = YES
-
-// Other warning flags that don't have Xcode names.
-OTHER_MFLAGS = $(value) -Wselector -Wstrict-selector-match -Wundeclared-selector
+// GCC_WARN_STRICT_SELECTOR_MATCH = YES // Lots of false positives. NSNotificationCenter vs NSDistributedNotificationCenter due to redeclaration of -addObserver:name:selector:object. NSDictionary vs NSUserDefaults to to redeclaration of -objectForKey:
+GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = YES
+//GCC_WARN_UNDECLARED_SELECTOR = YES // This finds real bugs -- slowly updating our code to build with it.
+//GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES // This is -Wselector, apparently. This has lots of false positives... http://llvm.org/bugs/show_bug.cgi?id=12322 -Wselector incorrectly warns about unimplemented selectors
+//CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES
+CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES
 
 // GCC_WARN_64_TO_32_BIT_CONVERSION only handles 64->32 and only for integers in clang (gcc warns on both)
 // We could use this to get warning about unichar->char, OSStatus->OSErr, int->BOOL.

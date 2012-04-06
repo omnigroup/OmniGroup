@@ -90,7 +90,9 @@ static UIImage *_imageForEditing(OUIDocumentPickerBackgroundView *self, BOOL edi
     [CATransaction begin];
     [CATransaction setValue:(id)kCFBooleanFalse forKey:(id)kCATransactionDisableActions];
     {
-        layer.contents = (id)[_imageForEditing(self, _editing) CGImage];
+        UIImage *image = _imageForEditing(self, _editing);
+        layer.contents = (id)[image CGImage];
+        layer.contentsScale = [image scale];
     }
     [CATransaction commit];
 }

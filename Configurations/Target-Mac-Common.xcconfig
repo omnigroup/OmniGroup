@@ -28,3 +28,6 @@ STRINGS_FILE_OUTPUT_ENCODING = UTF-8
 // Don't strip nibs/xibs:  it makes life difficult for our localizers
 IBC_STRIP_NIBS = NO
 IBC_FLATTEN_NIBS = NO
+
+// For Xcode builds, we sign our applications using our individual development certificates ("Mac Developer: [Person]"). For distribution builds, our build scripts will re-sign as "Developer ID Application: [Company]" (for direct downloads) or "3rd Party Mac Developer Application: [Company]" (for Mac App Store submissions).
+OMNI_MAC_CODE_SIGN_IDENTITY = Mac Developer:

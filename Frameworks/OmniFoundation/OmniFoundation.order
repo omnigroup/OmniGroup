@@ -73,7 +73,6 @@ OFIObjectSelectorObjectObjectObject.o:___rcs_id_hack
 OFImplementationHolder.o:___rcs_id_hack
 OFInvocation.o:___rcs_id_hack
 OFKnownKeyDictionaryTemplate.o:___rcs_id_hack
-OFLowercaseStringCache.o:___rcs_id_hack
 OFMach.o:___rcs_id_hack
 OFMatrix.o:___rcs_id_hack
 OFMessageQueue.o:___rcs_id_hack

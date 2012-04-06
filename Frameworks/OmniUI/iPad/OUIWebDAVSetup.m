@@ -62,13 +62,22 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 
 
 @implementation OUIWebDAVSetup
+{
+    NSString *_OSSaccountInfoString;
+    NSString *_OSSaccountSignUpString;
+}
 
 #pragma mark -
 #pragma mark Initialization
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
-    return [super initWithNibName:@"OUIWebDAVSetup" bundle:OMNI_BUNDLE];
+    self = [super initWithNibName:@"OUIWebDAVSetup" bundle:OMNI_BUNDLE];
+    if (self) {
+        _OSSaccountInfoString = [NSLocalizedStringFromTableInBundle(@"Account Info", @"OmniUI", OMNI_BUNDLE, @"Omni Sync Server account info button title") copy];
+        _OSSaccountSignUpString = [NSLocalizedStringFromTableInBundle(@"Sign Up For a New Account", @"OmniUI", OMNI_BUNDLE, @"Omni Sync Server sign up button title") copy];
+    }
+    return self;
 }
 
 
@@ -96,7 +105,7 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
             self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"MobileMe", @"OmniUI", OMNI_BUNDLE, @"MobileMe");
             break;
         case OUIOmniSync:
-            self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Omni Sync", @"OmniUI", OMNI_BUNDLE, @"Omni Sync");
+            self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Omni Sync Server Account", @"OmniUI", OMNI_BUNDLE, @"Omni Sync");
             break;
         case OUIWebDAVSync:
             self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"WebDAV", @"OmniUI", OMNI_BUNDLE, @"WebDAV");
@@ -104,7 +113,7 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
         default:
             break;
     }
-    
+        
     [self _validateSignInButton:nil shouldChangeCharactersInRange:(NSRange){0,0} replacementString:nil];
 }
 
@@ -233,7 +242,7 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
 {
-    return (_syncType == OUIWebDAVSync) ? 2 : 1;
+    return ((_syncType == OUIWebDAVSync) || (_syncType == OUIOmniSync)) ? 2 : 1;
 }
 
 
@@ -248,8 +257,15 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
             else
                 numberRows = 2;
             break;
-        case OUIMobileMeSync:
         case OUIOmniSync:
+            if (section == 0) {
+                numberRows = 2;
+            }
+            else {
+                numberRows = 1;
+            }
+            break;
+        case OUIMobileMeSync:
         default:
             numberRows = 2;   // no server address section for mobile me or omni sync
     }
@@ -262,79 +278,93 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     static NSString *CellIdentifier = @"Cell";
+    static NSString *ButtonCellIdentifier = @"ButtonCell";
     
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil] autorelease];
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-        
-        OUIEditableLabeledValueCell *contents = [[OUIEditableLabeledValueCell alloc] initWithFrame:cell.contentView.bounds];
-        contents.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        contents.valueField.autocorrectionType = UITextAutocorrectionTypeNo;
-        contents.valueField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-        contents.delegate = self;
-        
-        NSString *savedAddress = nil;
-        NSString *savedUsername = nil;
-        switch (_syncType) {
-            case OUIMobileMeSync:
-                savedUsername = [[OFPreference preferenceForKey:OUIMobileMeUsername] stringValue];
-                break;
-            case OUIOmniSync:
-                savedUsername = [[OFPreference preferenceForKey:OUIOmniSyncUsername] stringValue];
-                break;
-            case OUIWebDAVSync:
-                savedAddress = [[OFPreference preferenceForKey:OUIWebDAVLocation] stringValue];
-                savedUsername = [[OFPreference preferenceForKey:OUIWebDAVUsername] stringValue];
-                break;
-            default:
-                break;
-            
+    if ((_syncType == OUIOmniSync) && (indexPath.section == 1)) {
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ButtonCellIdentifier];
+        if (cell == nil) {
+            cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ButtonCellIdentifier] autorelease];
+            cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+            cell.textLabel.text = _OSSaccountSignUpString;
+            cell.textLabel.textAlignment = UITextAlignmentCenter;
         }
         
-        NSUInteger fieldIndex = indexPath.row;
-        if (_syncType == OUIWebDAVSync)
-            fieldIndex += indexPath.section;
-        else
-            fieldIndex++;   // address field is hidden for mobile me and omni sync
-            
-        switch (fieldIndex) {
-            case WedDAVAddress:
-                contents.label = NSLocalizedStringFromTableInBundle(@"Address", @"OmniUI", OMNI_BUNDLE, @"for WebDAV address edit field");
-                contents.value = savedAddress;
-                contents.valueField.placeholder = @"https://example.com/user/";
-                _nonretainedAddressField = contents.valueField;
-                contents.valueField.keyboardType = UIKeyboardTypeURL;
-
-                break;
-            case WebDAVUsername:
-                contents.label = NSLocalizedStringFromTableInBundle(@"User Name", @"OmniUI", OMNI_BUNDLE, @"for WebDAV username edit field");
-                contents.value = savedUsername;
-                contents.valueField.placeholder = NSLocalizedStringFromTableInBundle(@"username", @"OmniUI", OMNI_BUNDLE, @"default for WebDAV username edit field");
-                _nonretainedUsernameField = contents.valueField;
-                contents.valueField.keyboardType = UIKeyboardTypeDefault;
-
-                break;
-            case WebDAVPassword:
-                contents.label = NSLocalizedStringFromTableInBundle(@"Password", @"OmniUI", OMNI_BUNDLE, @"for WebDAV password edit field");
-                contents.valueField.placeholder = NSLocalizedStringFromTableInBundle(@"p@ssword", @"OmniUI", OMNI_BUNDLE, @"default for WebDAV password edit field");
-                contents.valueField.secureTextEntry = YES;
-                _nonretainedPasswordField = contents.valueField;
-                contents.valueField.keyboardType = UIKeyboardTypeDefault;
-
-                break;
-            default:
-                break;
-        }
-        
-        contents.valueField.returnKeyType = UIReturnKeyGo;
-        contents.valueField.enablesReturnKeyAutomatically = YES;
-	
-        [cell.contentView addSubview:contents];
-        [contents release];
+        return cell;
     }
-    
-    return cell;
+    else {
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+        if (cell == nil) {
+            cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil] autorelease];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            
+            OUIEditableLabeledValueCell *contents = [[OUIEditableLabeledValueCell alloc] initWithFrame:cell.contentView.bounds];
+            contents.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+            contents.valueField.autocorrectionType = UITextAutocorrectionTypeNo;
+            contents.valueField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+            contents.delegate = self;
+            
+            NSString *savedAddress = nil;
+            NSString *savedUsername = nil;
+            switch (_syncType) {
+                case OUIMobileMeSync:
+                    savedUsername = [[OFPreference preferenceForKey:OUIMobileMeUsername] stringValue];
+                    break;
+                case OUIOmniSync:
+                    savedUsername = [[OFPreference preferenceForKey:OUIOmniSyncUsername] stringValue];
+                    break;
+                case OUIWebDAVSync:
+                    savedAddress = [[OFPreference preferenceForKey:OUIWebDAVLocation] stringValue];
+                    savedUsername = [[OFPreference preferenceForKey:OUIWebDAVUsername] stringValue];
+                    break;
+                default:
+                    break;
+                    
+            }
+            
+            NSUInteger fieldIndex = indexPath.row;
+            if (_syncType == OUIWebDAVSync)
+                fieldIndex += indexPath.section;
+            else
+                fieldIndex++;   // address field is hidden for mobile me and omni sync
+            
+            switch (fieldIndex) {
+                case WedDAVAddress:
+                    contents.label = NSLocalizedStringFromTableInBundle(@"Address", @"OmniUI", OMNI_BUNDLE, @"for WebDAV address edit field");
+                    contents.value = savedAddress;
+                    contents.valueField.placeholder = @"https://example.com/user/";
+                    _nonretainedAddressField = contents.valueField;
+                    contents.valueField.keyboardType = UIKeyboardTypeURL;
+                    
+                    break;
+                case WebDAVUsername:
+                    contents.label = NSLocalizedStringFromTableInBundle(@"User Name", @"OmniUI", OMNI_BUNDLE, @"for WebDAV username edit field");
+                    contents.value = savedUsername;
+                    contents.valueField.placeholder = NSLocalizedStringFromTableInBundle(@"username", @"OmniUI", OMNI_BUNDLE, @"default for WebDAV username edit field");
+                    _nonretainedUsernameField = contents.valueField;
+                    contents.valueField.keyboardType = UIKeyboardTypeDefault;
+                    
+                    break;
+                case WebDAVPassword:
+                    contents.label = NSLocalizedStringFromTableInBundle(@"Password", @"OmniUI", OMNI_BUNDLE, @"for WebDAV password edit field");
+                    contents.valueField.placeholder = NSLocalizedStringFromTableInBundle(@"p@ssword", @"OmniUI", OMNI_BUNDLE, @"default for WebDAV password edit field");
+                    contents.valueField.secureTextEntry = YES;
+                    _nonretainedPasswordField = contents.valueField;
+                    contents.valueField.keyboardType = UIKeyboardTypeDefault;
+                    
+                    break;
+                default:
+                    break;
+            }
+            
+            contents.valueField.returnKeyType = UIReturnKeyGo;
+            contents.valueField.enablesReturnKeyAutomatically = YES;
+            
+            [cell.contentView addSubview:contents];
+            [contents release];
+        }
+        
+        return cell;
+    }
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section;
@@ -347,12 +377,20 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 }
 
 const CGFloat OUIWebDAVSetupHeaderHeight = 40;
+const CGFloat OUIOmniSyncSetupHeaderHeight = 60;
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
 {
-    if (section == 0 && _syncType == OUIWebDAVSync) {
-        UILabel *header = [self _sectionLabelWithFrame:CGRectMake(150, 0, tableView.bounds.size.width-150, OUIWebDAVSetupHeaderHeight)];
-        header.text = NSLocalizedStringFromTableInBundle(@"Enter the location of your WebDAV space.", @"OmniUI", OMNI_BUNDLE, @"webdav help");
-        return header;
+    if (section == 0) {
+        if (_syncType == OUIWebDAVSync) {
+            UILabel *header = [self _sectionLabelWithFrame:CGRectMake(150, 0, tableView.bounds.size.width-150, OUIWebDAVSetupHeaderHeight)];
+            header.text = NSLocalizedStringFromTableInBundle(@"Enter the location of your WebDAV space.", @"OmniUI", OMNI_BUNDLE, @"webdav help");
+            return header;
+        }
+        else if (_syncType == OUIOmniSync) {
+            UILabel *header = [self _sectionLabelWithFrame:CGRectMake(150, 0, tableView.bounds.size.width - 150, OUIWebDAVSetupHeaderHeight)];
+            header.text = NSLocalizedStringFromTableInBundle(@"Omni Sync Server is a free service for sharing data between Omni applications on your Mac and iOS devices.", @"OmniUI", OMNI_BUNDLE, @"omni sync server setup help");
+            return header;
+        }
     }
     
     return nil;
@@ -360,8 +398,14 @@ const CGFloat OUIWebDAVSetupHeaderHeight = 40;
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    if (section == 0 && _syncType == OUIWebDAVSync)
-        return OUIWebDAVSetupHeaderHeight;
+    if (section == 0) {
+        if (_syncType == OUIWebDAVSync) {
+            return OUIWebDAVSetupHeaderHeight;
+        }
+        else if (_syncType == OUIOmniSync) {
+            return OUIOmniSyncSetupHeaderHeight;
+        }
+    }
     
     return tableView.sectionHeaderHeight;
 }
@@ -386,6 +430,15 @@ const CGFloat OUIWebDAVSetupFooterHeight = 50;
     return tableView.sectionFooterHeight;
 }
 
+#pragma mark - UITableViewDelegate
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    if ((indexPath.section == 1) && (_syncType == OUIOmniSync)) {
+        [tableView deselectRowAtIndexPath:indexPath animated:NO]; // Animation is a little odd so I've turned it off.
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://www.omnigroup.com/sync/"]];
+    }
+}
+
 #pragma mark -
 #pragma mark Memory management
 
@@ -405,6 +458,9 @@ const CGFloat OUIWebDAVSetupFooterHeight = 50;
 
 
 - (void)dealloc {
+    [_OSSaccountInfoString release];
+    [_OSSaccountSignUpString release];
+    
     [super dealloc];
 }
 
@@ -472,11 +528,19 @@ const CGFloat OUIWebDAVSetupFooterHeight = 50;
         {
             NSString *username = _nonretainedUsernameField.text;
             NSString *password = _nonretainedPasswordField.text;
+            
             if (textField == _nonretainedUsernameField)
                 username = [username stringByReplacingCharactersInRange:range withString:string];
             else if (textField == _nonretainedPasswordField)
                 password = [password stringByReplacingCharactersInRange:range withString:string];
+            
+            // Validate Sign In button
             signInButton.enabled = (![NSString isEmptyString:password] && ![NSString isEmptyString:username]);
+            
+            // Validate Account 'button'
+            UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]];
+            OBASSERT_NOTNULL(cell);
+            cell.textLabel.text = (![NSString isEmptyString:username]) ? _OSSaccountInfoString : _OSSaccountSignUpString;
             break;
         }
         default:

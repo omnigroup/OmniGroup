@@ -11,7 +11,7 @@
 
 #if OFS_DOCUMENT_STORE_SUPPORTED
 
-@class OFSDocumentStore, OFSDocumentStoreScope;
+@class OFSDocumentStore, OFSDocumentStoreScope, OFSDocumentStoreFileItem;
 
 @protocol OFSDocumentStoreDelegate <NSObject>
 
@@ -26,7 +26,6 @@
 - (BOOL)documentStore:(OFSDocumentStore *)store canViewFileTypeWithIdentifier:(NSString *)uti;
 #endif
 @optional
-- (OFSDocumentStoreScope *)documentStore:(OFSDocumentStore *)store scopeForNewDocumentAtURL:(NSURL *)fileURL;
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 - (NSString *)documentStoreDocumentTypeForNewFiles:(OFSDocumentStore *)store;
@@ -36,6 +35,9 @@
 - (void)documentStore:(OFSDocumentStore *)store scannedFileItems:(NSSet *)fileItems;
 
 - (void)documentStore:(OFSDocumentStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date didMoveToURL:(NSURL *)newURL;
+- (void)documentStore:(OFSDocumentStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)oldDate didCopyToURL:(NSURL *)newURL andDate:(NSDate *)newDate;
+
+- (void)documentStore:(OFSDocumentStore *)store fileItem:(OFSDocumentStoreFileItem *)fileItem didGainVersion:(NSFileVersion *)fileVersion;
 
 @end
 

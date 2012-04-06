@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniBase/OBObject.h>
 
+#import <OmniBase/macros.h>
 #import <Foundation/NSString.h> // For unichar
 
 @interface OFTrieNode : OBObject
@@ -16,7 +17,7 @@
 @public
     unsigned int childCount;
     unichar *characters;
-    id *children;
+    OB_STRONG id *children;
 }
 
 - (void)addChild:(id)aChild withCharacter:(unichar)aCharacter;

@@ -125,7 +125,9 @@ void OUITableViewAdjustHeightToFitContents(UITableView *tableView)
     OBASSERT(contentSize.height > 0); // No rows?
     
     CGRect frame = tableView.frame;
-    frame.size.height = contentSize.height;
+    
+    // Seems to be a UIKit bug that tableView.contentSize is 1 pixel too high. This little hack will cover up the extra pixel of white that shows just under the last cell. This is only noticeable when the cell is selected (non-white). 
+    frame.size.height = contentSize.height - 1;
     
     tableView.frame = frame;
     tableView.scrollEnabled = NO;

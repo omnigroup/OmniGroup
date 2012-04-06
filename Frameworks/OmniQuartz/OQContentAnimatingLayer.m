@@ -1,4 +1,4 @@
-// Copyright 2008-2011 The Omni Group.  All rights reserved.
+// Copyright 2008-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -208,13 +208,6 @@ static CFHashCode _hashString(const void *value)
 }
 
 #pragma mark API
-
-// This does not return the right answer between the time that the animation is created and added and the time that -animationDidStart: fires.
-// This can let an frame of animation through where this returns the wrong answer and where it would instead be better to ask for -animationForKey: instead.
-- (BOOL)hasContentAnimations;
-{
-    return [_activeContentAnimations count] > 0;
-}
 
 - (BOOL)isContentAnimation:(CAAnimation *)anim;
 {

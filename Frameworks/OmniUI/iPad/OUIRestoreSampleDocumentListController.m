@@ -69,7 +69,7 @@ RCS_ID("$Id$");
         
         return [fileInfo1LocalizedName compare:fileInfo2LocalizedName];
     }];
-
+    
     self.files = sampleFiles;
 }
 
@@ -77,16 +77,10 @@ RCS_ID("$Id$");
 #pragma mark UITableViewDeletage
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    // Get Source Path
-    NSURL *sampleDocumentsDirectoryURL = [[OUISingleDocumentAppController controller] sampleDocumentsDirectoryURL];
+    // Get fileInfo
     OFSFileInfo *fileInfo = [self.files objectAtIndex:indexPath.row];
-    BOOL isDirectory = [fileInfo isDirectory];
-    NSString *fileName = [fileInfo name];
-    NSURL *sampleDocumentURL = [sampleDocumentsDirectoryURL URLByAppendingPathComponent:fileName isDirectory:isDirectory];
     
-    OUIAppController *appController = [OUIAppController controller];
-    OUIDocumentPicker *documentPicker = appController.documentPicker;
-    [documentPicker addDocumentFromURL:sampleDocumentURL];
+    [[[OUISingleDocumentAppController controller] documentPicker] addSampleDocumentFromURL:[fileInfo originalURL]];
     
     [self dismissModalViewControllerAnimated:YES];
 }

@@ -106,6 +106,8 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
 
 - (void)removeAllSegments;
 {
+    for (UIView *view in _segments)
+        [view removeFromSuperview];
     [_segments removeAllObjects];
     [self setNeedsLayout];
 }

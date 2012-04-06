@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -183,29 +183,37 @@ typedef struct {
 static void _dictionaryStringComponentAdder(id container, NSString *key, double component)
 {
     OBPRECONDITION([container isKindOfClass:[NSMutableDictionary class]]);
+    NSMutableDictionary *dict = container;
+    
     NSString *str = [[NSString alloc] initWithFormat:@"%g", component];
-    [container setObject:str forKey:key];
+    [dict setObject:str forKey:key];
     [str release];
 }
 
 static void _dictionaryNumberComponentAdder(id container, NSString *key, double component)
 {
     OBPRECONDITION([container isKindOfClass:[NSMutableDictionary class]]);
+    NSMutableDictionary *dict = container;
+
     NSNumber *num = [[NSNumber alloc] initWithDouble:component];
-    [container setObject:num forKey:key];
+    [dict setObject:num forKey:key];
     [num release];
 }
 
 static void _dictionaryStringAdder(id container, NSString *key, NSString *string)
 {
     OBPRECONDITION([container isKindOfClass:[NSMutableDictionary class]]);
-    [container setObject:string forKey:key];
+    NSMutableDictionary *dict = container;
+
+    [dict setObject:string forKey:key];
 }
 
 static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
 {
     OBPRECONDITION([container isKindOfClass:[NSMutableDictionary class]]);
-    [container setObject:data forKey:key];
+    NSMutableDictionary *dict = container;
+
+    [dict setObject:data forKey:key];
 }
 
 // Allow for including default values, particular for scripting so that users don't have to check for missing values

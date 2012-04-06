@@ -10,6 +10,7 @@
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
+#import "OAVersion.h"
 
 RCS_ID("$Id$")
 
@@ -195,11 +196,12 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
     }
     
     NSRect controlFrame = [snuggleUpToRightSideOfView frame];
-    
-    NSPoint origin = NSMakePoint((CGFloat)rint(NSMaxX(controlFrame) + horizontalSpaceFromSnuggleView), (CGFloat)rint(NSMinY(controlFrame) + (NSHeight(controlFrame) - iconSize.height) / 2.0f));
+
+    CGFloat xEdge = NSMaxX(controlFrame);
+    OA_LION_ONLY( xEdge -= [snuggleUpToRightSideOfView alignmentRectInsets].right; );
+    NSPoint origin = NSMakePoint((CGFloat)rint(xEdge + horizontalSpaceFromSnuggleView), (CGFloat)rint(NSMinY(controlFrame) + (NSHeight(controlFrame) - iconSize.height) / 2.0f));
     
     [self setFrame:(NSRect){origin, iconSize}];
-    
 }
 
 // NSObject (NSNibAwaking)

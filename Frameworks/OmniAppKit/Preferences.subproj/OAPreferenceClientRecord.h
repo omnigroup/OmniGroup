@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,6 +58,7 @@
 - (void)setDefaultsArray:(NSArray *)newDefaultsArray;
 
 - (NSComparisonResult)compare:(OAPreferenceClientRecord *)other;
+- (NSComparisonResult)compareOrdering:(OAPreferenceClientRecord *)other;
 
 - (OAPreferenceClient *)newClientInstanceInController:(OAPreferenceController *)controller;
 

@@ -1,4 +1,4 @@
-// Copyright 2001-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -451,28 +451,47 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
     return (_price != nil && [[NSDecimalNumber zero] isEqual:_price]);
 }
 
-- (NSAttributedString *)priceAttributedString;
+- (NSString *)priceString;
 {
     if (!_price)
         return nil;
     
     if ([[NSDecimalNumber zero] isEqual:_price]) {
-        static NSAttributedString *freeAttributedString = nil;
-        if (!freeAttributedString)
-            freeAttributedString = [[NSAttributedString alloc] initWithString:NSLocalizedStringFromTableInBundle(@"free!", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"free upgrade price string - displayed in price column") attributes:FreeAttributes];
-        return freeAttributedString;
+        return NSLocalizedStringFromTableInBundle(@"free!", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"free upgrade price string - displayed in price column");
     }
     
-    // Make sure that we display the feed's specified currency according to the user's specified locale.  For example, if the user is Australia, we need to specify that the price is in US dollars instead of just using '$'.
-    NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
-    [formatter autorelease];
-    [formatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
-    [formatter setNumberStyle:NSNumberFormatterCurrencyStyle];
-    [formatter setLocale:[NSLocale currentLocale]];
-    [formatter setCurrencyCode:_currencyCode];
+    if (!_priceFormatter) {
+        // Make sure that we display the feed's specified currency according to the user's specified locale.  For example, if the user is Australia, we need to specify that the price is in US dollars instead of just using '$'.
+        NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+        [formatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
+        [formatter setNumberStyle:NSNumberFormatterCurrencyStyle];
+        [formatter setLocale:[NSLocale currentLocale]];
+        [formatter setCurrencyCode:_currencyCode];
+        _priceFormatter = formatter;
+    }
     
-    NSString *priceString = [formatter stringFromNumber:_price];
-    return [[[NSAttributedString alloc] initWithString:priceString attributes:PaidAttributes] autorelease];
+    return [_priceFormatter stringFromNumber:_price];
+}
+
+- (NSDictionary *)priceAttributesForStyle:(NSBackgroundStyle)cellStyle;
+{
+    if (!_price)
+        return nil;
+    
+    NSDictionary *attributes;
+    
+    if ([[NSDecimalNumber zero] isEqual:_price]) {
+        attributes = FreeAttributes;
+    } else {
+        attributes = PaidAttributes;
+    }
+    
+    if (cellStyle == NSBackgroundStyleDark) {
+        // Don't colorize text in highlighted rows --- it's too dark to read.
+        attributes = [attributes dictionaryWithObject:[NSColor selectedControlTextColor] forKey:NSForegroundColorAttributeName];
+    }
+    
+    return attributes;
 }
 
 - (NSString *)downloadSizeString;

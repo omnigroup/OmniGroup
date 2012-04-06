@@ -1,4 +1,4 @@
-// Copyright 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2011-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -82,4 +82,8 @@
 }
 
 @end
+
+/* There are two common representations for discrete-logarithm schemes like DSA and ECDSA: most APIs use an ASN.1 SEQUENCE of two INTEGERs encoded using DER, but the DSIG specification uses the (very slightly more compact) representation of two fixed-length integers concatenated with no headers. These functions help convert. */
+NSData *OFDigestConvertDLSigToPacked(NSData *der, int integerWidthBits, NSError **outError);
+NSData *OFDigestConvertDLSigToDER(NSData *packed, int integerWidthBits, NSError **outError);
 

@@ -19,8 +19,8 @@
 		274525A214523183006AB544 /* OFSDocumentStoreItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 2745259514523183006AB544 /* OFSDocumentStoreItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		274525A314523183006AB544 /* OFSDocumentStoreItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 2745259614523183006AB544 /* OFSDocumentStoreItem.m */; };
 		274525A414523183006AB544 /* OFSDocumentStoreScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 2745259714523183006AB544 /* OFSDocumentStoreScope.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		274525A514523183006AB544 /* OFSShared_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = 2745259814523183006AB544 /* OFSShared_Prefix.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		274525A714523190006AB544 /* OFSShared_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = 2745259814523183006AB544 /* OFSShared_Prefix.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		274525A514523183006AB544 /* OFSShared_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = 2745259814523183006AB544 /* OFSShared_Prefix.h */; settings = {ATTRIBUTES = (); }; };
+		274525A714523190006AB544 /* OFSShared_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = 2745259814523183006AB544 /* OFSShared_Prefix.h */; settings = {ATTRIBUTES = (); }; };
 		274525A81452319B006AB544 /* OFSDocumentStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 2745258C14523183006AB544 /* OFSDocumentStore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		274525A9145231A0006AB544 /* OFSDocumentStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 2745258D14523183006AB544 /* OFSDocumentStore.m */; };
 		274525AA145231AD006AB544 /* OFSDocumentStoreScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 2745259714523183006AB544 /* OFSDocumentStoreScope.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -81,7 +81,7 @@
 		34D06C71125D208700CA3963 /* OFSDAVFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B05D0F71FFFF005CFD59 /* OFSDAVFileManager.m */; };
 		34D06C72125D208700CA3963 /* OFSDAVFileManagerDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 3469F2F610FD8F2400FF0307 /* OFSDAVFileManagerDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D06C73125D208800CA3963 /* OFSDAVOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B05F0F71FFFF005CFD59 /* OFSDAVOperation.m */; };
-		34D06C74125D208800CA3963 /* OFSDAVOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B05E0F71FFFF005CFD59 /* OFSDAVOperation.h */; };
+		34D06C74125D208800CA3963 /* OFSDAVOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B05E0F71FFFF005CFD59 /* OFSDAVOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D06C75125D208900CA3963 /* OFSFileFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0600F71FFFF005CFD59 /* OFSFileFileManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D06C76125D208A00CA3963 /* OFSFileFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0610F71FFFF005CFD59 /* OFSFileFileManager.m */; };
 		34D06C77125D208A00CA3963 /* OFSFileInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0620F71FFFF005CFD59 /* OFSFileInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -535,7 +535,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0430;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniFileStore" */;
 			compatibilityVersion = "Xcode 3.2";

@@ -323,6 +323,11 @@ RCS_ID("$Id$");
     }
 }
 
+- (void)cancelRenaming;
+{
+    [self _cancel];
+}
+
 #pragma mark -
 #pragma mark UIViewController subclass
 
@@ -524,6 +529,9 @@ RCS_ID("$Id$");
         if (isSameName) {
             // Unsolicited close of the keyboard (didn't tap the Done button, just pressed the close button on the software keyboard). We're done after this.
             _shouldSendFinishRenameAfterKeyboardResizes = YES;
+            
+            // The keyboard might not cause our view to resize if it is undocked/split. Our layout method is what animates the preview back into place, and importantly, puts the alpha back on the document picker's scroll view.
+            [self.view setNeedsLayout];
         }
         
         RENAME_DEBUG(@"Bail on empty/same name");
@@ -765,6 +773,10 @@ RCS_ID("$Id$");
         OBASSERT(fileItemView);
         fileItemView.renaming = NO;
     });
+    
+    // We should have restored this already, but the user will be locked out if some keyboard animstion snafu prevents our layout from doing it.
+    OBASSERT(_picker.activeScrollView.alpha == 1);
+    _picker.activeScrollView.alpha = 1;
     
     RENAME_DEBUG(@"Calling _didStopRenamingFileItem");
     [_picker _didStopRenamingFileItem];

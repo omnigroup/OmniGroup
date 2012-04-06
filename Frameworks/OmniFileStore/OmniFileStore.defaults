@@ -6,5 +6,7 @@
 	<string>query</string>
 	<key>OFSDocumentStoreDisableUbiquity</key>
 	<false/>
+	<key>OFSDocumentStoreMaximumAutomaticDownloadSize</key>
+	<integer>262144</integer>
 </dict>
 </plist>

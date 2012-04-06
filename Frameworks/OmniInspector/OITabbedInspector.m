@@ -22,6 +22,10 @@
 
 RCS_ID("$Id$")
 
+@interface NSColor (PrivateAPI)
++ (NSColor *)toolbarBackgroundColor;
+@end
+
 @interface OITabbedInspector (/*Private*/)
 - (void)_selectTabBasedOnObjects:(NSArray *)objects;
 - (OIInspectorTabController *)_tabWithIdentifier:(NSString *)identifier;

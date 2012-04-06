@@ -25,6 +25,7 @@ typedef enum {
 @interface OUIDocumentPickerItemView : UIView
 
 @property(assign,nonatomic) BOOL landscape;
+@property(nonatomic,assign) BOOL ubiquityEnabled;
 @property(retain,nonatomic) OFSDocumentStoreItem *item; // either a file or group
 
 @property(assign,nonatomic) BOOL animatingRotationChange;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,15 +12,9 @@
 @class NSColor;
 
 @interface OAColorPalette : OFObject
-{
-}
 
 + (NSColor *)colorForString:(NSString *)colorString colorSpace:(NSColorSpace *)space;
-+ (NSColor *)colorForString:(NSString *)colorString gamma:(double)gamma    OB_DEPRECATED_ATTRIBUTE;
-+ (NSColor *)colorForString:(NSString *)colorString                        OB_DEPRECATED_ATTRIBUTE;
 + (NSString *)stringForColor:(NSColor *)color colorSpace:(NSColorSpace *)space;
-+ (NSString *)stringForColor:(NSColor *)color gamma:(double)gamma          OB_DEPRECATED_ATTRIBUTE;
-+ (NSString *)stringForColor:(NSColor *)color                              OB_DEPRECATED_ATTRIBUTE;
 
 @end
 

@@ -7,16 +7,18 @@
 //
 // $Id$
 
-@class OUIDocumentPreview, OUIDocumentPreviewView, OUIDocumentPreviewLoadOperation;
+@class OUIDocumentPreview, OUIDocumentPreviewView, OUIDocumentPreviewLoadOperation, OUIDocumentPickerItemNameAndDateView;
 
 @interface OUIDocumentPickerItemView (/*Internal*/)
 
 @property(readonly,nonatomic) OUIDocumentPreviewView *previewView;
+@property(readonly,nonatomic) OUIDocumentPickerItemNameAndDateView *nameAndDateView;
 
 - (void)startObservingItem:(id)item;
 - (void)stopObservingItem:(id)item;
 
 - (void)itemChanged;
+- (void)ubiquityChanged;
 
 @property(nonatomic,readonly) NSSet *previewedFileItems; // Subclasses need to implemenent to return the file items for which they need previews
 - (void)previewedFileItemsChanged; // ... and call this when that answer changes

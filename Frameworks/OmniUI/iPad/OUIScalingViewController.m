@@ -183,6 +183,11 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 //    NSLog(@"initial offset = %@, inset %@", NSStringFromPoint(_scrollView.contentOffset), NSStringFromUIEdgeInsets(_scrollView.contentInset));
 }
 
+- (BOOL)isZooming;
+{
+    return _isZooming;
+}
+
 // Subclasses need to return the nominal size of the canvas; the size in CoreGraphics coordinates.
 - (CGSize)canvasSize;
 {

@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,7 @@
 
 #import "OFSDAVFileManager-Reachability.h"
 #import "OFSDAVFileManager-Network.h"
-#import "OFSDAVOperation.h"
-
+#import <OmniFileStore/OFSDAVOperation.h>
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSFileInfo.h>
 
@@ -326,7 +325,8 @@ static id <OFSDAVFileManagerAuthenticationDelegate> AuthenticationDelegate = nil
         return nil;
     }
 
-    NSURL *expectedDirectoryURL = ( redirections && [redirections count] )? [[redirections lastObject] objectForKey:kOFSRedirectedTo] : nil;
+    NSDictionary *lastRedirect = [redirections lastObject];
+    NSURL *expectedDirectoryURL = [lastRedirect objectForKey:kOFSRedirectedTo];
     if (!expectedDirectoryURL)
         expectedDirectoryURL = url;
         
@@ -640,7 +640,8 @@ static NSString * const DAVNamespaceString = @"DAV:";
         NSArray *redirs = [ranOperation redirects];
         if ([redirs count]) {
             [redirections addObjectsFromArray:redirs];  // Our caller may also be interested in redirects.
-            resultsBaseURL = [[redirs lastObject] objectForKey:kOFSRedirectedTo];
+            NSDictionary *lastRedirect = [redirs lastObject];
+            resultsBaseURL = [lastRedirect objectForKey:kOFSRedirectedTo];
         }
     }
     

@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,6 +35,7 @@ extern CFStringRef OFUnsignedIntegerCopyDescription(const void *ptr);
 #import <CoreFoundation/CFArray.h>
 extern const CFArrayCallBacks OFNonOwnedPointerArrayCallbacks;
 extern const CFArrayCallBacks OFNSObjectArrayCallbacks;
+extern const CFArrayCallBacks OFPointerEqualObjectArrayCallbacks;
 extern const CFArrayCallBacks OFIntegerArrayCallbacks;
 
 #import <CoreFoundation/CFDictionary.h>

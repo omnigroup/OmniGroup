@@ -257,7 +257,7 @@ static CGGradientRef HighlightedGradient = NULL;
 
 - (BOOL)shouldDrawHighlighted;
 {
-    return !self.enabled || (self.highlighted && ([self allControlEvents] != 0));
+    return self.highlighted && ([self allControlEvents] != 0);
 }
 
 @synthesize backgroundType = _backgroundType;

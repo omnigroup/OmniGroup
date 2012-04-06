@@ -1,4 +1,4 @@
-// Copyright 2009-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,10 +12,12 @@
 #import <OmniFoundation/OFDigestUtilities.h>
 
 /* In 10.7, Apple deprecated all existing crypto APIs and replaced them with new, completely different APIs which aren't available on previous versions (and which aren't as functional). */
+#ifndef OF_ENABLE_CDSA
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
     #define OF_ENABLE_CDSA 0
 #else
     #define OF_ENABLE_CDSA 1
+#endif
 #endif
 
 /*
@@ -58,6 +60,8 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
     NSData *keyBlob;
     SecKeyRef keyReference;
     const CSSM_ACCESS_CREDENTIALS *credentials;
+    
+    int groupOrder;
 }
 
 + (OFCSSMKey *)keyFromCertificateData:(const CSSM_DATA *)cert library:(OFCDSAModule *)x509CL error:(NSError **)outError;
@@ -67,10 +71,11 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 @property (readonly, nonatomic) OFCDSAModule *csp;
 @property (readonly, nonatomic) const CSSM_KEY *key;
 @property (readwrite, assign) const CSSM_ACCESS_CREDENTIALS *credentials;
+@property (readwrite, nonatomic) int groupOrder;
 
 - (void)setKeyHeader:(const CSSM_KEYHEADER *)hdr data:(NSData *)blobContents;
 
-- (id <NSObject,OFDigestionContext>)newVerificationContextForAlgorithm:(CSSM_ALGORITHMS)pk_signature_alg error:(NSError **)outError;
+- (id <NSObject,OFDigestionContext>)newVerificationContextForAlgorithm:(CSSM_ALGORITHMS)pk_signature_alg packDigest:(int)bitsPerInteger error:(NSError **)outError;
 
 @end
 
@@ -104,8 +109,11 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 
 @interface OFCSSMSignatureContext : OFCSSMCryptographicContext <OFDigestionContext>
 {
+    int generatorGroupOrderLog2;
     BOOL signing;
 }
+
+- (void)setPackDigestsWithGroupOrder:(int)sizeInBits;
 
 - (BOOL)verifyInit:(NSError **)outError;
 - (BOOL)verifyFinal:(NSData *)digest error:(NSError **)outError;

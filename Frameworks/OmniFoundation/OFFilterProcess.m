@@ -22,6 +22,14 @@
 
 RCS_ID("$Id$")
 
+struct copy_out_state {
+    int fd;
+    char *buffer;
+    size_t buffer_contents_start, buffer_contents_length, buffer_size;
+    NSOutputStream *nsstream;
+    BOOL filterEnabled, streamReady;
+};
+
 @interface OFFilterProcess (Private)
 
 enum handleKeventsHow {
@@ -142,8 +150,11 @@ static void logdescriptors(const char *where)
     /* Initialize ivars */
     /* In particular, make sure that all our fds are -1 instead of 0, so that if we dealloc early we don't end up closing stdin by accident */
     subprocStdinFd = -1;
-    clear_copyout(&stdoutCopyBuf);
-    clear_copyout(&stderrCopyBuf);
+    
+    stdoutCopyBuf = calloc(sizeof(*stdoutCopyBuf), 1);
+    stderrCopyBuf = calloc(sizeof(*stderrCopyBuf), 1);
+    clear_copyout(stdoutCopyBuf);
+    clear_copyout(stderrCopyBuf);
     child = -1;
     error = nil;
     bzero(&child_rusage, sizeof(child_rusage));
@@ -392,8 +403,8 @@ static void logdescriptors(const char *where)
     } else {
         subprocStdinFd = input.write;
     }
-    init_copyout(&stdoutCopyBuf, output.read, stdoutStream);
-    init_copyout(&stderrCopyBuf, errors.read, stderrStream);
+    init_copyout(stdoutCopyBuf, output.read, stdoutStream);
+    init_copyout(stderrCopyBuf, errors.read, stderrStream);
     
     /* Set up the kevent filters */
     
@@ -402,13 +413,13 @@ static void logdescriptors(const char *where)
     
     if (subprocStdinFd != -1)
         EV_SET(&(pending_changes[num_pending_changes++]), subprocStdinFd, EVFILT_WRITE, EV_ADD|EV_ENABLE, 0, 0, NULL);
-    if (stdoutCopyBuf.fd != -1) {
-        EV_SET(&(pending_changes[num_pending_changes++]), stdoutCopyBuf.fd, EVFILT_READ, EV_ADD|EV_ENABLE, 0, 0, NULL);
-        stdoutCopyBuf.filterEnabled = YES;
+    if (stdoutCopyBuf->fd != -1) {
+        EV_SET(&(pending_changes[num_pending_changes++]), stdoutCopyBuf->fd, EVFILT_READ, EV_ADD|EV_ENABLE, 0, 0, NULL);
+        stdoutCopyBuf->filterEnabled = YES;
     }
-    if (stderrCopyBuf.fd != -1) {
-        EV_SET(&(pending_changes[num_pending_changes++]), stderrCopyBuf.fd, EVFILT_READ, EV_ADD|EV_ENABLE, 0, 0, NULL);
-        stderrCopyBuf.filterEnabled = YES;
+    if (stderrCopyBuf->fd != -1) {
+        EV_SET(&(pending_changes[num_pending_changes++]), stderrCopyBuf->fd, EVFILT_READ, EV_ADD|EV_ENABLE, 0, 0, NULL);
+        stderrCopyBuf->filterEnabled = YES;
     }
     
     EV_SET(&(pending_changes[num_pending_changes++]), child, EVFILT_PROC, EV_ADD|EV_ENABLE, NOTE_EXIT, 0, NULL);
@@ -459,8 +470,8 @@ static void logdescriptors(const char *where)
         child = -1;
     }
     
-    free_copyout(&stdoutCopyBuf);
-    free_copyout(&stderrCopyBuf);
+    free_copyout(stdoutCopyBuf);
+    free_copyout(stderrCopyBuf);
     if (subprocStdinFd >= 0)
         close(subprocStdinFd);
 
@@ -529,15 +540,15 @@ static void logdescriptors(const char *where)
     CFRunLoopAddSource(cfLoop, kevent_cfrunloop, (CFStringRef)mode);
     
     /* Add our streams to the run loop as well */
-    if (stdoutCopyBuf.nsstream) {
+    if (stdoutCopyBuf->nsstream) {
         /* TODO: We should set ourselves as the stream's delegate, so that we can respond to NSStreamEventHasSpaceAvailable, etc, and avoid spinning */
         /* NB: Despite what the documentation says, -[NSCFOutputStream delegate] ininitally returns nil */
-        [stdoutCopyBuf.nsstream scheduleInRunLoop:aRunLoop forMode:mode];
+        [stdoutCopyBuf->nsstream scheduleInRunLoop:aRunLoop forMode:mode];
     }
-    if (stderrCopyBuf.nsstream) {
+    if (stderrCopyBuf->nsstream) {
         /* TODO: We should set ourselves as the stream's delegate, so that we can respond to NSStreamEventHasSpaceAvailable, etc, and avoid spinning */
         /* NB: Despite what the documentation says, -[NSCFOutputStream delegate] ininitally returns nil */
-        [stderrCopyBuf.nsstream scheduleInRunLoop:aRunLoop forMode:mode];
+        [stderrCopyBuf->nsstream scheduleInRunLoop:aRunLoop forMode:mode];
     }
     
     /* Make sure to push any pending kevent filter changes to the kernel before we wait for them */
@@ -572,10 +583,10 @@ static void logdescriptors(const char *where)
     
     CFRunLoopRemoveSource(cfLoop, kevent_cfrunloop, (CFStringRef)mode);
 
-    if (stdoutCopyBuf.nsstream)
-        [stdoutCopyBuf.nsstream removeFromRunLoop:aRunLoop forMode:mode];
-    if (stderrCopyBuf.nsstream)
-        [stderrCopyBuf.nsstream removeFromRunLoop:aRunLoop forMode:mode];
+    if (stdoutCopyBuf->nsstream)
+        [stdoutCopyBuf->nsstream removeFromRunLoop:aRunLoop forMode:mode];
+    if (stderrCopyBuf->nsstream)
+        [stderrCopyBuf->nsstream removeFromRunLoop:aRunLoop forMode:mode];
 }
 
 + (BOOL)runWithParameters:(NSDictionary *)filterParameters inMode:(NSString *)runLoopMode standardOutput:(NSData **)stdoutStreamData standardError:(NSData **)stderrStreamData  error:(NSError **)errorPtr;
@@ -785,6 +796,9 @@ static void clear_copyout(struct copy_out_state *into)
 
 static void free_copyout(struct copy_out_state *into)
 {
+    if (!into)
+        return;
+    
     if (into->nsstream) {
         /* TODO: When we handle stream events, remember to un-set ourselves as the stream's delegate here */
         [into->nsstream release];
@@ -800,6 +814,8 @@ static void free_copyout(struct copy_out_state *into)
         free(into->buffer);
         into->buffer = NULL;
     }
+    
+    free(into);
 }
 
 - (void)_pushq:(uintptr_t)ident filter:(short)evfilter flags:(unsigned short)flags;
@@ -823,10 +839,10 @@ static void free_copyout(struct copy_out_state *into)
     /* RADAR #6618025 / #6460269: on some architectures, kevent() tries to write to its (const *) timeout parameter */
     /* static const */ struct timespec zeroTimeout = { 0, 0 };
     
-    if (stdoutCopyBuf.nsstream)
-        copy_to_stream(&stdoutCopyBuf, self);
-    if (stderrCopyBuf.nsstream)
-        copy_to_stream(&stderrCopyBuf, self);
+    if (stdoutCopyBuf->nsstream)
+        copy_to_stream(stdoutCopyBuf, self);
+    if (stderrCopyBuf->nsstream)
+        copy_to_stream(stderrCopyBuf, self);
     
 #if 0
     for(int i = 0; i < num_pending_changes; i++)
@@ -898,10 +914,10 @@ static void free_copyout(struct copy_out_state *into)
                     subprocStdinFd = -1;
                     /* Don't need to set deleteThis because EVFILT_READ/WRITE are automatically removed when their fd is closed */
                 }
-            } else if ((int)ev->ident == stdoutCopyBuf.fd) {
-                copy_from_subprocess(ev, &stdoutCopyBuf, self);
-            } else if ((int)ev->ident == stderrCopyBuf.fd) {
-                copy_from_subprocess(ev, &stderrCopyBuf, self);
+            } else if ((int)ev->ident == stdoutCopyBuf->fd) {
+                copy_from_subprocess(ev, stdoutCopyBuf, self);
+            } else if ((int)ev->ident == stderrCopyBuf->fd) {
+                copy_from_subprocess(ev, stderrCopyBuf, self);
             } else {
                 NSLog(@"%@: unexpected kevent %@", OBShortObjectDescription(self), OFDescribeKevent(ev));
                 deleteThis = YES;
@@ -917,7 +933,7 @@ static void free_copyout(struct copy_out_state *into)
     }
     
     // printf("<%p> stdoutCopyBuf.fd == %d && stderrCopyBuf.fd == %d && child == %d\n", self, stdoutCopyBuf.fd, stderrCopyBuf.fd, child);
-    if (stdoutCopyBuf.fd == -1 && stderrCopyBuf.fd == -1 && child < 0) {
+    if (stdoutCopyBuf->fd == -1 && stderrCopyBuf->fd == -1 && child < 0) {
         [self willChangeValueForKey:@"isRunning"];
         state = OFFilterProcess_Finished;
         [self didChangeValueForKey:@"isRunning"];

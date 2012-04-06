@@ -338,6 +338,16 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
     return value != nil;
 }
 
+static void _removeUsedPreviewFileURLs(Class self, NSMutableSet *unusedPreviewURLs, NSURL *fileURL, NSDate *date)
+{
+    NSURL *previewURL;
+    
+    if ((previewURL = [self fileURLForPreviewOfFileURL:fileURL date:date withLandscape:YES]))
+        [unusedPreviewURLs removeObject:previewURL];
+    if ((previewURL = [self fileURLForPreviewOfFileURL:fileURL date:date withLandscape:NO]))
+        [unusedPreviewURLs removeObject:previewURL];
+}
+
 + (void)deletePreviewsNotUsedByFileItems:(id <NSFastEnumeration>)fileItems;
 {
     NSError *error = nil;
@@ -354,15 +364,12 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
     }
     
     for (OFSDocumentStoreFileItem *fileItem in fileItems) {
-        NSURL *fileURL = fileItem.fileURL;
-        NSDate *date = fileItem.date;
+        // Keep previews for the document itself
+        _removeUsedPreviewFileURLs(self, unusedPreviewURLs, fileItem.fileURL, fileItem.date);
         
-        NSURL *previewURL;
-        
-        if ((previewURL = [self fileURLForPreviewOfFileURL:fileURL date:date withLandscape:YES]))
-            [unusedPreviewURLs removeObject:previewURL];
-        if ((previewURL = [self fileURLForPreviewOfFileURL:fileURL date:date withLandscape:NO]))
-            [unusedPreviewURLs removeObject:previewURL];
+        // ... and any conflict versions.
+        for (NSFileVersion *fileVersion in [NSFileVersion unresolvedConflictVersionsOfItemAtURL:fileItem.fileURL])
+            _removeUsedPreviewFileURLs(self, unusedPreviewURLs, fileVersion.URL, fileVersion.modificationDate);
     }
     
     DEBUG_PREVIEW_CACHE(@"Removing unused previews: %@", unusedPreviewURLs);
@@ -444,7 +451,7 @@ static CGImageRef _cachePlaceholderPreviewImage(Class self, Class documentClass,
             size.width = floor(size.width * scale);
             size.height = floor(size.height * scale);
 
-            UIGraphicsBeginImageContext(size);
+            UIGraphicsBeginImageContextWithOptions(size, YES/*opaque*/, 0);
             {
                 CGRect paperRect = CGRectMake(0, 0, size.width, size.height);
                 
@@ -537,7 +544,7 @@ static void _copyPreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     }
     
     // Register the CGImageRef (if any)
-    CGImageRef image = (CGImageRef)CFDictionaryGetValue(PreviewImageByURL, sourcePreviewFileURL);
+    CGImageRef image = PreviewImageByURL ? (CGImageRef)CFDictionaryGetValue(PreviewImageByURL, sourcePreviewFileURL) : NULL;
     if (image) {
         cacheImage(image, targetPreviewFileURL);
         DEBUG_PREVIEW_CACHE(@"  registering image %@", image);
@@ -609,7 +616,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
 // Returns the scale at which the preview image should be rendered when saving to disk. It's on screen size must fit within +maximumPreviewSizeForLandscape:, but the image should be scaled up by this amount (and will be descaled when rendered at the normal magnification in the document picker).
 + (CGFloat)previewImageScale;
 {
-    return 2.0;
+    return 2.0 * [[UIScreen mainScreen] scale];
 }
 
 - _initWithFileURL:(NSURL *)fileURL date:(NSDate *)date image:(CGImageRef)image landscape:(BOOL)landscape type:(OUIDocumentPreviewType)type;

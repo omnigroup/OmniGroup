@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -50,7 +50,7 @@ static OADragController *sharedDragController;
 
 // Starting the drag
 
-- (void)startDragFromView:(NSView *)view image:(NSImage *)image atPoint:(NSPoint)location offset:(NSPoint)offset event:(NSEvent *)event slideBack:(BOOL)slideBack pasteboardHelper:(OAPasteboardHelper *)newPasteboardHelper delegate:newDelegate;
+- (void)startDragFromView:(NSView *)view image:(NSImage *)image atPoint:(NSPoint)location offset:(NSPoint)offset event:(NSEvent *)event slideBack:(BOOL)slideBack pasteboardHelper:(OAPasteboardHelper *)newPasteboardHelper;
 {
     if (draggingFromView != view) {
         [draggingFromView release];
@@ -60,10 +60,6 @@ static OADragController *sharedDragController;
         [pasteboardHelper absolvePasteboardResponsibility];
         [pasteboardHelper release];
         pasteboardHelper = [newPasteboardHelper retain];
-    }
-    if (delegate != newDelegate) {
-        [delegate release];
-        delegate = [newDelegate retain];
     }
 
     [draggingFromView dragImage:image at:location offset:NSMakeSize(offset.x, offset.y) event:event pasteboard:draggingPasteboard source:self slideBack:slideBack];
@@ -81,11 +77,8 @@ static OADragController *sharedDragController;
     return NSDragOperationAll;
 }
 
-- (void)draggedImage:(NSImage *)image endedAt:(NSPoint)screenPoint deposited:(BOOL)didDeposit;
-{
-    if ([delegate respondsToSelector:@selector(draggedImage:endedAt:deposited:)])
-	[delegate draggedImage:image endedAt:screenPoint deposited:didDeposit];
-
+- (void)draggedImage:(NSImage *)image endedAt:(NSPoint)screenPoint operation:(NSDragOperation)operation;
+{    
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(flushPasteboard) object:nil];
     [self performSelector:@selector(flushPasteboard) withObject:nil afterDelay:30.0];
 }
@@ -119,8 +112,6 @@ OFWeakRetainConcreteImplementation_NULL_IMPLEMENTATION
     pasteboardHelper = nil;
     [draggingFromView autorelease];
     draggingFromView = nil;
-    [delegate autorelease];
-    delegate = nil;
 }
 
 @end

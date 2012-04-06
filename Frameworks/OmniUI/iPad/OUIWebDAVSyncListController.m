@@ -64,6 +64,9 @@ RCS_ID("$Id$");
         return;
     }
     
+    // to account for any redirecty goodness that we might've enjoyed.
+    fileURL = [fileCheck originalURL];
+    
     if ([fileCheck exists]) {
         [self _displayDuplicateFileAlertForFile:fileURL];
         
@@ -90,7 +93,12 @@ RCS_ID("$Id$");
             case OUIWebDAVCertificateTrustIssue:
                 return; // without invalidating credentials
             default:
-                [self signOut:nil];
+                OBASSERT_NOT_REACHED("Unexpected OUIWebDAVConnectionValidity.");
+                NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                                          NSLocalizedStringFromTableInBundle(@"Error connecting to the WebDAV server.", @"OmniUI", OMNI_BUNDLE, @"Generic error for connecting to WebDAV."), NSLocalizedDescriptionKey,
+                                          nil];
+                NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError userInfo:userInfo];
+                OUI_PRESENT_ERROR(error);
                 return;
         }
     }

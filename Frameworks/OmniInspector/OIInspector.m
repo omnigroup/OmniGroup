@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,26 +108,26 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 
     {
 	// Ensure that deprecated methods from the old OIGroupedInspector protocol aren't around
-	OBASSERT(![self respondsToSelector:@selector(inspectorName)]);
-	OBASSERT(![self respondsToSelector:@selector(defaultDisplayGroupNumber)]);
-	OBASSERT(![self respondsToSelector:@selector(defaultDisplayOrderInGroup)]);
-	OBASSERT(![self respondsToSelector:@selector(defaultGroupVisibility)]);
-	OBASSERT(![self respondsToSelector:@selector(keyEquivalent)]);
-	OBASSERT(![self respondsToSelector:@selector(keyEquivalentModifierMask)]);
-	OBASSERT(![self respondsToSelector:@selector(imageName)]);
+        OBASSERT_NOT_IMPLEMENTED(self, inspectorName);
+	OBASSERT_NOT_IMPLEMENTED(self, defaultDisplayGroupNumber);
+	OBASSERT_NOT_IMPLEMENTED(self, defaultDisplayOrderInGroup);
+	OBASSERT_NOT_IMPLEMENTED(self, defaultGroupVisibility);
+	OBASSERT_NOT_IMPLEMENTED(self, keyEquivalent);
+	OBASSERT_NOT_IMPLEMENTED(self, keyEquivalentModifierMask);
+	OBASSERT_NOT_IMPLEMENTED(self, imageName);
 	
 	// ... or deprecated methods from the OITabbedInspector protocol
-	OBASSERT(![self respondsToSelector:@selector(tabGroupName)]);
-	OBASSERT(![self respondsToSelector:@selector(tabGroupImage)]);
-	OBASSERT(![self respondsToSelector:@selector(tabImageName)]);
+	OBASSERT_NOT_IMPLEMENTED(self, tabGroupName);
+	OBASSERT_NOT_IMPLEMENTED(self, tabGroupImage);
+	OBASSERT_NOT_IMPLEMENTED(self, tabImageName);
 	
 	// ... or deprecated methods from NSObject (OIInspectorOptionalMethods)
-	OBASSERT(![self respondsToSelector:@selector(inspectorWillResizeToSize:)]); // Now called -inspectorWillResizeToHeight:
-	OBASSERT(![self respondsToSelector:@selector(inspectorMinimumSize)]); // Now called -inspectorMinimumHeight
-	OBASSERT(![self respondsToSelector:@selector(inspectorDesiredWidth)]); // Totally deprecated
+	OBASSERT_NOT_IMPLEMENTED(self, inspectorWillResizeToSize:); // Now called -inspectorWillResizeToHeight:
+	OBASSERT_NOT_IMPLEMENTED(self, inspectorMinimumSize); // Now called -inspectorMinimumHeight
+	OBASSERT_NOT_IMPLEMENTED(self, inspectorDesiredWidth); // Totally deprecated
         
         // Or other vanished methods
-	OBASSERT(![self respondsToSelector:@selector(initWithDictionary:)]); // Now called -initWithDictionary:bundle:
+	OBASSERT_NOT_IMPLEMENTED(self, initWithDictionary:); // Now called -initWithDictionary:bundle:
     }
     
     resourceBundle = sourceBundle;
@@ -317,7 +317,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     if (predicate)
         return [predicate evaluateWithObject:object];
     
-    return YES;
+    return NO;
 }
 
 - (NSPredicate *)shouldBeUsedForObjectPredicate;

@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2005, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -85,7 +85,7 @@ RCS_ID("$Id$")
     where = [self convertPoint:[event locationInWindow] fromView:nil];
     helper = [OAPasteboardHelper helperWithPasteboardNamed:NSDragPboard];
     [helper declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:self];
-    [[OADragController sharedDragController] startDragFromView:self image:dragImage atPoint:where offset:NSZeroPoint event:event slideBack:NO pasteboardHelper:helper delegate:nil];
+    [[OADragController sharedDragController] startDragFromView:self image:dragImage atPoint:where offset:NSZeroPoint event:event slideBack:NO pasteboardHelper:helper];
 }
 
 - (void)pasteboard:(NSPasteboard *)pasteboard provideDataForType:(NSString *)type;

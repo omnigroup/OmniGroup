@@ -9,18 +9,14 @@
 
 #import <OmniUI/OUIViewController.h>
 
-@class OFSDocumentStore, OUIDocumentConflictResolutionViewController;
-
-@protocol OUIDocumentConflictResolutionViewControllerDelegate <NSObject>
-- (void)conflictResolutionCancelled:(OUIDocumentConflictResolutionViewController *)conflictResolution;
-- (void)conflictResolutionFinished:(OUIDocumentConflictResolutionViewController *)conflictResolution;
-@end
+@class OFSDocumentStore, OFSDocumentStoreFileItem, OUIDocumentConflictResolutionViewController;
+@protocol OUIDocumentConflictResolutionViewControllerDelegate;
 
 @interface OUIDocumentConflictResolutionViewController : OUIViewController
 
-- initWithDocumentStore:(OFSDocumentStore *)documentStore fileURL:(NSURL *)fileURL delegate:(id <OUIDocumentConflictResolutionViewControllerDelegate>)delegate;
+- initWithDocumentStore:(OFSDocumentStore *)documentStore fileItem:(OFSDocumentStoreFileItem *)fileItem delegate:(id <OUIDocumentConflictResolutionViewControllerDelegate>)delegate;
 
-@property(nonatomic,readonly) NSURL *fileURL;
+@property(nonatomic,readonly) OFSDocumentStoreFileItem *fileItem;
 @property(nonatomic,readonly,assign) id <OUIDocumentConflictResolutionViewControllerDelegate> delegate;
 
 @end

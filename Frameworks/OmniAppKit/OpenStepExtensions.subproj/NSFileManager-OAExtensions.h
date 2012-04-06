@@ -1,4 +1,4 @@
-// Copyright 2002-2005,2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005,2009-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,6 @@
 @class NSImage;
 
 @interface NSFileManager (OAExtensions)
-- (void)setIconImage:(NSImage *)newImage forPath:(NSString *)path OB_DEPRECATED_ATTRIBUTE;
 - (void)setComment:(NSString *)aComment forPath:(NSString *)path;
     // This implementation is dependent on AppleScript, which we don't have in Foundation
 - (void)updateForFileAtPath:(NSString *)path;
@@ -23,8 +22,5 @@
     // This method is dependent on NSWorkspace, which is an AppKit class
 
 - (BOOL)deleteFileUsingFinder:(NSString *)path;
-
-- (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
-- (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError;
 
 @end

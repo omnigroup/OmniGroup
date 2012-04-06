@@ -1,4 +1,4 @@
-// Copyright 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2007, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,8 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/OmniAppKit.h>
+
+#import <OmniInspector/OITabbedInspector.h>
 
 #import "OIInspectorController.h"
 #import "OIInspectorRegistry.h"

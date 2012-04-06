@@ -1212,9 +1212,8 @@
 			baseConfigurationReference = 34A5E1270D89940F0006DF9F /* Omni-Bundle-Debug.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_DIR)/Library/Frameworks",
 					"$(value)",
-					/Developer/Library/Frameworks,
-					/Library/Frameworks,
 				);
 				GCC_PREFIX_HEADER = OmniDataObjects.h;
 				INFOPLIST_FILE = "Tests/ODOTests-Info.plist";
@@ -1229,9 +1228,8 @@
 			baseConfigurationReference = 34A5E1280D89940F0006DF9F /* Omni-Bundle-Release.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_DIR)/Library/Frameworks",
 					"$(value)",
-					/Developer/Library/Frameworks,
-					/Library/Frameworks,
 				);
 				GCC_PREFIX_HEADER = OmniDataObjects.h;
 				INFOPLIST_FILE = "Tests/ODOTests-Info.plist";
@@ -1347,9 +1345,8 @@
 			baseConfigurationReference = 34A5E1260D89940F0006DF9F /* Omni-Bundle-Coverage.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_DIR)/Library/Frameworks",
 					"$(value)",
-					/Developer/Library/Frameworks,
-					/Library/Frameworks,
 				);
 				GCC_PREFIX_HEADER = OmniDataObjects.h;
 				INFOPLIST_FILE = "Tests/ODOTests-Info.plist";

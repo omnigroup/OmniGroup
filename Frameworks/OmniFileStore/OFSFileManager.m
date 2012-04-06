@@ -8,13 +8,13 @@
 #import <OmniFileStore/OFSFileManager.h>
 
 #import <OmniFileStore/OFSFileFileManager.h>
+#import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSDAVFileManager.h>
 #import <OmniFileStore/Errors.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 
 #import "OFSFileOperation.h"
-#import "OFSFileInfo.h"
 
 RCS_ID("$Id$");
 

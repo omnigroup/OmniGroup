@@ -21,7 +21,6 @@
 #import <OmniUI/OUIAboutPanel.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
-#import <OmniUI/OUIDocumentPreview.h>
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUISpecialURLActionSheet.h>
 #import <OmniUI/OUIWebViewController.h>
@@ -36,6 +35,7 @@
 #import "OUISoftwareUpdateController.h"
 #import "OUISyncMenuController.h"
 #import "UIViewController-OUIExtensions.h"
+#import "OUISingleDocumentAppController-Internal.h" // Terrible -- for _setupCloud:
 
 RCS_ID("$Id$");
 
@@ -220,7 +220,7 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
         return;
     
     if (file)
-        NSLog(@"Error source file:%s line:%d", file, line);
+        NSLog(@"Error reported from %s:%d", file, line);
     NSLog(@"%@", [error toPropertyList]);
     
     // This delayed presentation avoids the "wait_fences: failed to receive reply: 10004003" lag/timeout which can happen depending on the context we start the reporting from.
@@ -287,6 +287,8 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
         UIImage *appMenuImage = [UIImage imageNamed:imageName];
         OBASSERT(appMenuImage);
         _appMenuBarItem = [[UIBarButtonItem alloc] initWithImage:appMenuImage style:UIBarButtonItemStylePlain target:self action:@selector(showAppMenu:)];
+        
+        _appMenuBarItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Help and Settings", @"OmniUI", OMNI_BUNDLE, @"Help and Settings toolbar item accessibility label.");
     }
     
     return _appMenuBarItem;
@@ -757,6 +759,14 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     }
 }
 
+- (BOOL)isRunningRetailDemo;
+{
+#ifdef DEBUG_rachael
+    NSLog(@"demo mode = %d", [[OFPreference preferenceForKey:@"IPadRetailDemo"] boolValue]);
+#endif
+    return [[OFPreference preferenceForKey:@"IPadRetailDemo"] boolValue];
+}
+
 #pragma mark -
 #pragma mark UIApplicationDelegate
 
@@ -812,11 +822,6 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 - (BOOL)documentStore:(OFSDocumentStore *)store canViewFileTypeWithIdentifier:(NSString *)uti;
 {
     return [self canViewFileTypeWithIdentifier:uti];
-}
-
-- (void)documentStore:(OFSDocumentStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date didMoveToURL:(NSURL *)newURL;
-{
-    [OUIDocumentPreview updateCacheAfterFileURL:oldURL withDate:date didMoveToURL:newURL];
 }
 
 #pragma mark - OUIMenuControllerDelegate

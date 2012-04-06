@@ -13,6 +13,8 @@
 		342CD98B08D21501009D42C3 /* OmniInspector.strings in Resources */ = {isa = PBXBuildFile; fileRef = 342CD98908D21501009D42C3 /* OmniInspector.strings */; };
 		346DEF3209992425008F5B5F /* OIInspectorTabController.h in Headers */ = {isa = PBXBuildFile; fileRef = 346DEF3009992425008F5B5F /* OIInspectorTabController.h */; settings = {ATTRIBUTES = (); }; };
 		346DEF3309992425008F5B5F /* OIInspectorTabController.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DEF3109992425008F5B5F /* OIInspectorTabController.m */; };
+		346E4371151A9550001C7496 /* OIInspectorGroup-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E4370151A954F001C7496 /* OIInspectorGroup-Internal.h */; };
+		346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E4373151A95EA001C7496 /* OIInspectorController-Internal.h */; };
 		34A652370D0A0A7D003F4D4C /* OISectionedInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A652350D0A0A7D003F4D4C /* OISectionedInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A652380D0A0A7D003F4D4C /* OISectionedInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */; };
 		34A6524A0D0A0B0B003F4D4C /* OISectionedInspector.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34A652490D0A0B0B003F4D4C /* OISectionedInspector.nib */; };
@@ -109,6 +111,8 @@
 		342CD98A08D21501009D42C3 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniInspector.strings; sourceTree = "<group>"; };
 		346DEF3009992425008F5B5F /* OIInspectorTabController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorTabController.h; sourceTree = "<group>"; };
 		346DEF3109992425008F5B5F /* OIInspectorTabController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorTabController.m; sourceTree = "<group>"; };
+		346E4370151A954F001C7496 /* OIInspectorGroup-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OIInspectorGroup-Internal.h"; sourceTree = "<group>"; };
+		346E4373151A95EA001C7496 /* OIInspectorController-Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OIInspectorController-Internal.h"; sourceTree = "<group>"; };
 		34A652350D0A0A7D003F4D4C /* OISectionedInspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OISectionedInspector.h; sourceTree = "<group>"; };
 		34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OISectionedInspector.m; sourceTree = "<group>"; };
 		34A652490D0A0B0B003F4D4C /* OISectionedInspector.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = OISectionedInspector.nib; sourceTree = "<group>"; };
@@ -293,8 +297,10 @@
 				34E221EC0932A28300087E32 /* OIInspector.h */,
 				34E221ED0932A28300087E32 /* OIInspector.m */,
 				34B2543108D0DCEE00DD2070 /* OIInspectorController.h */,
+				346E4373151A95EA001C7496 /* OIInspectorController-Internal.h */,
 				34B2543208D0DCEE00DD2070 /* OIInspectorController.m */,
 				34B2543308D0DCEE00DD2070 /* OIInspectorGroup.h */,
+				346E4370151A954F001C7496 /* OIInspectorGroup-Internal.h */,
 				34B2543408D0DCEE00DD2070 /* OIInspectorGroup.m */,
 				34B2543708D0DCEE00DD2070 /* OIInspectorHeaderView.h */,
 				34B2543808D0DCEE00DD2070 /* OIInspectorHeaderView.m */,
@@ -458,6 +464,8 @@
 				A2F8617C0C961A4800BE4827 /* OIInspectorHeaderBackground.h in Headers */,
 				34A652370D0A0A7D003F4D4C /* OISectionedInspector.h in Headers */,
 				34C4FA900D19B3BE0009E860 /* OIInspectorSection.h in Headers */,
+				346E4371151A9550001C7496 /* OIInspectorGroup-Internal.h in Headers */,
+				346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -489,7 +497,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0430;
 			};
 			buildConfigurationList = 34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */;
 			compatibilityVersion = "Xcode 3.2";

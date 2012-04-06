@@ -205,6 +205,11 @@ static BOOL noKeyError(NSError **err, enum OFXMLSignatureOperation op)
     if (!err)
         return NO;
     
+    if ([[*err domain] isEqualToString:OFXMLSignatureErrorDomain] &&
+        [*err code] == OFKeyNotAvailable) {
+        return NO;
+    }
+    
     NSMutableDictionary *uinfo = [NSMutableDictionary dictionary];
     
     switch(op) {
@@ -756,13 +761,10 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
                 goto failed;
             
             if (op == OFXMLSignature_Verify) {
-                NSData *alteredSignatureValue = [self signatureForStoredValue:signatureValue algorithm:signatureAlgorithm method:signatureMethod error:err];
-                if (!alteredSignatureValue)
-                    goto failed;
                 success =
                     [verifier verifyInit:err] &&
                     [verifier processBuffer:canonicalSignedInfoBuf->buffer->content length:canonicalSignedInfoBuf->buffer->use error:err] &&
-                    [verifier verifyFinal:alteredSignatureValue error:err];
+                    [verifier verifyFinal:signatureValue error:err];
             } else if (op == OFXMLSignature_Sign) {
                 
                 if (![verifier generateInit:err])
@@ -774,15 +776,9 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
                 NSData *generatedSignature = [verifier generateFinal:err];
                 if (!generatedSignature)
                     goto failed;
-                
-                NSData *storedSignature = [self storedValueForSignature:generatedSignature algorithm:signatureAlgorithm method:signatureMethod error:err];
-                if (!storedSignature)
-                    goto failed;
-                
-                OBASSERT([generatedSignature isEqual:[self signatureForStoredValue:storedSignature algorithm:signatureAlgorithm method:signatureMethod error:err]]);
-                
+
                 success = YES;
-                setNodeContentToString(signatureValueNode, [storedSignature base64String]);
+                setNodeContentToString(signatureValueNode, [generatedSignature base64String]);
             } else {
                 signatureStructuralFailure(err, @"(bad op %d at line %u)", op, (unsigned)__LINE__);
                 success = NO;
@@ -830,6 +826,8 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
  Apple's CDSA contains a number of vendor extensions to the standard: CSSM_ALGID_SHA256WithRSA, CSSM_ALGID_SHA512WithRSA, CSSM_ALGID_SHA256WithECDSA, CSSM_ALGID_SHA512WithECDSA.
 
  SHA1 only has one digest length, so it's specified as 0 in this table (don't want to risk confusing the high-strung Lion crypto APIs with extra information).
+ 
+ The DSA and ECDSA formats require us to know the size of the curve the key uses; for DSA this is fixed at 160 bits, but for EC analogues we need to retrieve it with the key.
 */
 static const 
 struct algorithmParameter {
@@ -856,20 +854,22 @@ struct algorithmParameter {
 #endif
     unsigned short       secDigestLength;   /* Length of digest. Use is undocumented except in headers; assuming it's the digest output size in bits, to distinguish the SHA2 family hashes. */
     
+    short                fixedWidthSig;     /* 0 if unneeded; >0 for DSA-like algos with a known sig order; <0 for cases where we need to retrieve order with key */
+    
     BOOL isHMAC;
 } algorithmParameters[] = {
-#define PKCALG(name, keyType, cssmUse, hashType, hashLen) { (const xmlChar *)name, PKCALG1( keyType, cssmUse ) PKCALG2( keyType, hashType ) hashLen, NO }
-#define MACALG(name, cssmType, digType, digLen)           { (const xmlChar *)name, MACALG1( cssmType ) MACALG2( digType ) digLen, YES }
+#define PKCALG(name, keyType, fws, cssmUse, hashType, hashLen) { (const xmlChar *)name, PKCALG1( keyType, cssmUse ) PKCALG2( keyType, hashType ) hashLen, fws, NO }
+#define MACALG(name, cssmType, digType, digLen)                { (const xmlChar *)name, MACALG1( cssmType ) MACALG2( digType ) digLen, 0, YES }
 
-    PKCALG(XMLPKSignatureDSS,          DSA,   SHA1WithDSA,      SHA1, 0),
+    PKCALG(XMLPKSignatureDSS,          DSA,   160, SHA1WithDSA,      SHA1, 0),
     
-    PKCALG(XMLPKSignaturePKCS1_v1_5,   RSA,   SHA1WithRSA,      SHA1, 0),
-    PKCALG(XMLPKSignatureRSA_SHA256,   RSA,   SHA256WithRSA,    SHA2, 256),
-    PKCALG(XMLPKSignatureRSA_SHA512,   RSA,   SHA512WithRSA,    SHA2, 512),
+    PKCALG(XMLPKSignaturePKCS1_v1_5,   RSA,     0, SHA1WithRSA,      SHA1, 0),
+    PKCALG(XMLPKSignatureRSA_SHA256,   RSA,     0, SHA256WithRSA,    SHA2, 256),
+    PKCALG(XMLPKSignatureRSA_SHA512,   RSA,     0, SHA512WithRSA,    SHA2, 512),
     
-    PKCALG(XMLPKSignatureECDSA_SHA1,   ECDSA, SHA1WithECDSA,    SHA1, 0),
-    PKCALG(XMLPKSignatureECDSA_SHA256, ECDSA, SHA256WithECDSA,  SHA2, 256),
-    PKCALG(XMLPKSignatureECDSA_SHA512, ECDSA, SHA512WithECDSA,  SHA2, 512),
+    PKCALG(XMLPKSignatureECDSA_SHA1,   ECDSA,  -1, SHA1WithECDSA,    SHA1, 0),
+    PKCALG(XMLPKSignatureECDSA_SHA256, ECDSA,  -1, SHA256WithECDSA,  SHA2, 256),
+    PKCALG(XMLPKSignatureECDSA_SHA512, ECDSA,  -1, SHA512WithECDSA,  SHA2, 512),
     
     /* TODO: Is CSSM_ALGID_RIPEMAC the same algorithm as HMAC-RIPEMD160 ? Check. */
     MACALG(XMLSKSignatureHMAC_SHA1,    SHA1HMAC,    HMACSHA1, 160),
@@ -906,6 +906,8 @@ struct algorithmParameter {
     
     xmlFree(signatureAlgorithm);
     
+    int sigorder = cursor->fixedWidthSig;
+    
     /* Okay, we recognize the algorithm. We can create a verification context for it if we can get a key to use. */
     
     /* First, try to get a SecKeyRef. We can use these with both the 10.4-10.6 and 10.7+ APIs. */
@@ -916,12 +918,22 @@ struct algorithmParameter {
         goto key_find_failure;
     }
     
+    if (keyRef && (sigorder < 0)) {
+        // We have a SecKeyRef, and we know we need to know its group order, but we don't. It turns out that SecKeyGetBlockSize() will return this value, although the documentation is unclear (the documentation for SecKeyGetBlockSize() is kind of incoherent)
+        size_t blocksize = SecKeyGetBlockSize(keyRef);
+        if (blocksize > 0 && blocksize <= 16*1024 /* sanity check to avoid crashing securityd */ ) {
+            sigorder = (int)blocksize;
+        }
+    }
+    
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (keyRef != NULL && OFSecSignTransformAvailable()) {
         OFSecSignTransform *result = [[OFSecSignTransform alloc] initWithKey:keyRef];
         CFRelease(keyRef);
         result.digestType = *(cursor->secDigestType);
         result.digestLength = cursor->secDigestLength;
+        if (sigorder)
+            [result setPackDigestsWithGroupOrder:sigorder];
         return result; // We are NS_RETURNS_RETAINED
     }
 #endif /* Lion APIs */
@@ -935,18 +947,23 @@ struct algorithmParameter {
             return nil;
         }
         
-        const CSSM_ACCESS_CREDENTIALS *creds;
-        OSStatus oserr = SecKeyGetCredentials(keyRef, CSSM_ACL_AUTHORIZATION_SIGN, kSecCredentialTypeNoUI, &creds);
-        if (oserr != noErr) {
-            OFErrorFromCSSMReturn(outError, oserr, @"SecKeyGetCredentials");
-            CFRelease(keyRef);
-            return nil;
+        if (op == OFXMLSignature_Sign) {
+            const CSSM_ACCESS_CREDENTIALS *creds;
+            OSStatus oserr = SecKeyGetCredentials(keyRef, CSSM_ACL_AUTHORIZATION_SIGN, kSecCredentialTypeDefault, &creds);
+            if (oserr != noErr) {
+                OFErrorFromCSSMReturn(outError, oserr, @"SecKeyGetCredentials");
+                CFRelease(keyRef);
+                return nil;
+            }
+            [cssmKey setCredentials:creds];
         }
-        [cssmKey setCredentials:creds];
         
         CFRelease(keyRef);
         
-        return [cssmKey newVerificationContextForAlgorithm:cursor->pk_signature_alg error:outError];
+        if (sigorder < 0)
+            sigorder = [cssmKey groupOrder];
+        
+        return [cssmKey newVerificationContextForAlgorithm:cursor->pk_signature_alg packDigest:sigorder error:outError];
     }
 #endif
     
@@ -961,7 +978,9 @@ struct algorithmParameter {
     if (!key) {
         goto key_find_failure;
     }
-    return [key newVerificationContextForAlgorithm:cursor->pk_signature_alg error:outError];
+    if (sigorder < 0)
+        sigorder = [key groupOrder];
+    return [key newVerificationContextForAlgorithm:cursor->pk_signature_alg packDigest:sigorder error:outError];
 #endif
     
 key_find_failure:
@@ -983,10 +1002,10 @@ static NSData *padInteger(NSData *i, unsigned toLength, NSError **outError)
         return nil;
     NSUInteger iLength = [i length];
     if (iLength < toLength) {
-        unsigned char buf[toLength];
+        unsigned char *buf = malloc(toLength);
         memset(buf, 0, toLength);
         [i getBytes:(buf + toLength - iLength)];
-        return [NSData dataWithBytes:buf length:toLength];
+        return [NSData dataWithBytesNoCopy:buf length:toLength freeWhenDone:YES];
     } else if (iLength == toLength) {
         return i;
     } else {
@@ -1030,104 +1049,68 @@ static const SecAsn1Template dsaSignatureTemplate[] =
 
 #endif
 
-static int dsaSigWidth(const xmlChar *signatureAlgorithm) {
-    /* This is bad: in order to compute the padding width of a DSS signature, we need to know the size of the key's generator. For (normal) DSS, that's always 20 bytes / 160 bits. For the elliptic-curve variants, I think we need to extract the curve parameters from the key. Argh! Maybe -signatureForStoredValue: etc. should be methods on the verifier instead of on OFXMLSignature? */
+#pragma mark Discrete-log signature format conversions
+
+NSData *OFDigestConvertDLSigToPacked(NSData *signatureValue, int integerWidthBits, NSError **outError)
+{
+    OBASSERT(integerWidthBits > 0);
     
-    if (xmlStrcmp(signatureAlgorithm, XMLPKSignatureDSS) == 0) {
-        return 40; /* Magic number 40, from xmldsig-core [6.4.1] */
-    } else if (xmlStrcmp(signatureAlgorithm, XMLPKSignatureECDSA_SHA1) == 0 ||
-               xmlStrcmp(signatureAlgorithm, XMLPKSignatureECDSA_SHA256) == 0 ||
-               xmlStrcmp(signatureAlgorithm, XMLPKSignatureECDSA_SHA512) == 0) {
-        /* Conversion is needed, but we don't know the width. We can guess, with a possibility of guessing wrong. */
-        return -1;
+    NSUInteger where = OFASN1UnwrapSequence(signatureValue, outError);
+    if (where == ~(NSUInteger)0)
+        return nil;
+    
+    NSData *int1, *int2;
+    
+    int1 = OFASN1UnwrapUnsignedInteger(signatureValue, &where, outError);
+    if (!int1)
+        return nil;
+    int2 = OFASN1UnwrapUnsignedInteger(signatureValue, &where, outError);
+    if (!int2)
+        return nil;
+    if (where != [signatureValue length]) {
+        signatureStructuralFailure(outError, @"Invalid DSA signature (extra data at end of SEQUENCE)");
+        return nil;
+    }
+    
+    int integerWidthBytes = ( integerWidthBits + 7 ) / 8;
+    
+    int1 = padInteger(int1, integerWidthBytes, outError);
+    if (!int1)
+        return nil;
+    int2 = padInteger(int2, integerWidthBytes, outError);
+    if (!int2)
+        return nil;
+    
+    return [int1 dataByAppendingData:int2];
+}
+
+NSData *OFDigestConvertDLSigToDER(NSData *packedSignature, int integerWidthBits, NSError **outError)
+{
+    NSUInteger blobLength = [packedSignature length];
+    NSUInteger integerWidthBytes;
+    
+    if (integerWidthBits < 0) {
+        /* Not sure how long it should be, but both halves should be the same length */
+        if (blobLength & 1) {
+            signatureStructuralFailure(outError, @"Invalid DSA signature (length=%u bytes, must be even)", (unsigned int)blobLength);
+            return nil;
+        }
+        integerWidthBytes = blobLength / 2;
     } else {
-        /* Other algorithms don't need this conversion */
-        return 0;
-    }
-}
-
-/*" This method converts the signatureValue from the form it appears in an XML signature to the form expected by the verification object's -verifyFinal:error: method. (It's a no-op for algorithms other than DSS-SHA1 and ECDSA, but subclassers may have other behavior.) "*/
-- (NSData *)signatureForStoredValue:(NSData *)signatureValue algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError
-{
-    int sigwidth;
-    
-    // The only algorithm for which XML DSIG varies from the CDSA format is DSS.
-    // We support four variants of DSA--- the original discrete-logarithm algorithm, and elliptic-curve DSA with various hash lengths.
-    if ( (sigwidth = dsaSigWidth(signatureAlgorithm)) != 0 ) {
-        NSUInteger blobLength = [signatureValue length];
-        
-        if (sigwidth < 0) {
-            /* Not sure how long it should be without having the key (maybe we should pass the key into this method?), but both halves should be the same length */
-            if (blobLength & 1) {
-                signatureStructuralFailure(outError, @"Invalid ECDSA signature (length=%u bytes, must be even)", (unsigned int)blobLength);
-                return nil;
-            }
-        } else if (blobLength != (unsigned)sigwidth) { /* Magic number 40, from xmldsig-core [6.4.1] */
-            /* The XML-DSIG signature value is simply the concatenation of two RFC2437/PKCS#1 20-byte integers. CDSA expects a BER-encoded SEQUENCE of two INTEGERs. */
-            signatureStructuralFailure(outError, @"Invalid DSS signature (length=%u bytes, must be %d)", (unsigned int)blobLength, sigwidth);
+        integerWidthBytes = ( integerWidthBits + 7 ) / 8;
+        if (blobLength != 2*integerWidthBytes) {
+            /* The XML-DSIG signature value is simply the concatenation of two RFC2437/PKCS#1 20-byte integers, or other widths for the elliptic-curve analogues. CDSA expects a BER-encoded SEQUENCE of two INTEGERs. */
+            signatureStructuralFailure(outError, @"Invalid DSA signature (length=%u bytes, must be %u)", (unsigned int)blobLength, 2*(unsigned)integerWidthBytes);
             return nil;
         }
-        
-        NSUInteger half = blobLength / 2;
-        NSData *result = [OFASN1CreateForSequence(OFASN1IntegerFromBignum([signatureValue subdataWithRange:(NSRange){   0, half}]),
-                                                  OFASN1IntegerFromBignum([signatureValue subdataWithRange:(NSRange){half, half}]),
-                                                  nil) autorelease];
-        
-        OBASSERT([signatureValue isEqual:[self storedValueForSignature:result algorithm:signatureAlgorithm method:signatureMethod error:NULL]]);
-        
-        return result;        
     }
     
-    return signatureValue;
-}
-
-/*" This method converts the signatureValue from the form it's returned in from -generateFinal: into the form in which it should be stored in an XML signature. (It's the inverse of -signatureForStoredValue:algorithm:method:error:.) "*/
-- (NSData *)storedValueForSignature:(NSData *)signatureValue algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError
-{
-    int sigwidth;
+    NSUInteger half = integerWidthBytes;
+    NSData *result = [OFASN1CreateForSequence(OFASN1IntegerFromBignum([packedSignature subdataWithRange:(NSRange){   0, half}]),
+                                              OFASN1IntegerFromBignum([packedSignature subdataWithRange:(NSRange){half, half}]),
+                                              nil) autorelease];
     
-    // The only algorithm for which XML DSIG varies from the CDSA format is DSS.
-    if ( (sigwidth = dsaSigWidth(signatureAlgorithm)) != 0 ) {
-        /* The XML-DSIG signature value is simply the concatenation of two RFC2437/PKCS#1 20-byte integers. CDSA produces a BER-encoded SEQUENCE of two BER-encoded INTEGERs. */
-        
-        NSUInteger where = OFASN1UnwrapSequence(signatureValue, outError);
-        if (where == ~(NSUInteger)0)
-            return nil;
-        
-        NSData *int1, *int2;
-        
-        int1 = OFASN1UnwrapUnsignedInteger(signatureValue, &where, outError);
-        if (!int1)
-            return nil;
-        int2 = OFASN1UnwrapUnsignedInteger(signatureValue, &where, outError);
-        if (!int2)
-            return nil;
-        if (where != [signatureValue length]) {
-            signatureStructuralFailure(outError, @"Invalid DSS signature (extra data at end of SEQUENCE)");
-            return nil;
-        }
-        
-        unsigned toLength; 
-        if (sigwidth < 0) {
-            /* Unknown sigwidth. Guess. */
-            toLength = (int)MAX([int1 length], [int2 length]);
-        } else {
-            toLength = sigwidth / 2;
-        }
-        
-        int1 = padInteger(int1, toLength, outError);
-        if (!int1)
-            return nil;
-        int2 = padInteger(int2, toLength, outError);
-        if (!int2)
-            return nil;
-        
-        // NSLog(@"%@ -> %@, %@", signatureValue, int1, int2);
-        
-        return [int1 dataByAppendingData:int2];
-    }
-    
-    return signatureValue;
+    return result;        
 }
 
 /*" If -processSignatureElement: returns success, this method indicates the number of references found in the signed information. "*/

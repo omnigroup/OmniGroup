@@ -1,4 +1,4 @@
-// Copyright 1997-2005,2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2009, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,10 +10,11 @@
 #import <OmniFoundation/OFObject.h>
 
 #import <Foundation/NSObjCRuntime.h> // for NSComparator
+#import <OmniBase/macros.h>
 
 @interface OFHeap : OFObject
 {
-    id *_objects;
+    OB_STRONG id *_objects;
     NSUInteger _count, _capacity;
     NSComparator _comparator;
 }

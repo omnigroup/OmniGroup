@@ -22,15 +22,16 @@ RCS_ID("$Id$");
 
 enum {
     UseICloudOption,
-    MoveExistingDocumentsToICloudOption,
+    MigrateExistingDocumentsOption,
     OptionCount,
 } Options;
 
 @implementation OUIDocumentStoreSetupViewController
 {
     void (^_dismissAction)(BOOL cancelled);
+    BOOL _originalUseICloud;
     BOOL _useICloud;
-    BOOL _moveExistingDocumentsToICloud;
+    BOOL _shouldMigrateExistingDocuments;
     
     UIImage *_optionBackgroundImage;
 }
@@ -40,7 +41,7 @@ enum {
 @synthesize tableView = _tableView;
 @synthesize backgroundImageView = _backgroundImageView;
 @synthesize useICloud = _useICloud;
-@synthesize moveExistingDocumentsToICloud = _moveExistingDocumentsToICloud;
+@synthesize shouldMigrateExistingDocuments = _shouldMigrateExistingDocuments;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
@@ -49,16 +50,18 @@ enum {
     return nil;
 }
 
-- initWithDismissAction:(void (^)(BOOL cancelled))dismissAction;
+- initWithOriginalState:(BOOL)originalUseICloud dismissAction:(void (^)(BOOL cancelled))dismissAction;
 {    
     if (!(self = [super initWithNibName:@"OUIDocumentStoreSetupViewController" bundle:OMNI_BUNDLE]))
         return nil;
 
     _dismissAction = [dismissAction copy];
     
+    _originalUseICloud = originalUseICloud;
+
     // Good default choices.
     _useICloud = YES;
-    _moveExistingDocumentsToICloud = YES;
+    _shouldMigrateExistingDocuments = YES;
     
     self.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     self.modalPresentationStyle = UIModalPresentationFormSheet;
@@ -113,17 +116,17 @@ enum {
                 _useICloud = on;
                 
                 [_tableView beginUpdates];
-                if (_useICloud) {
-                    _moveExistingDocumentsToICloud = YES;
-                    [_tableView insertSections:[NSIndexSet indexSetWithIndex:MoveExistingDocumentsToICloudOption] withRowAnimation:UITableViewRowAnimationAutomatic];
+                if (_originalUseICloud ^ _useICloud) {
+                    _shouldMigrateExistingDocuments = YES;
+                    [_tableView insertSections:[NSIndexSet indexSetWithIndex:MigrateExistingDocumentsOption] withRowAnimation:UITableViewRowAnimationAutomatic];
                 } else
-                    [_tableView deleteSections:[NSIndexSet indexSetWithIndex:MoveExistingDocumentsToICloudOption] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [_tableView deleteSections:[NSIndexSet indexSetWithIndex:MigrateExistingDocumentsOption] withRowAnimation:UITableViewRowAnimationAutomatic];
                 [_tableView endUpdates];
             }
             break;
         }
-        case MoveExistingDocumentsToICloudOption:
-            _moveExistingDocumentsToICloud = switchView.on;
+        case MigrateExistingDocumentsOption:
+            _shouldMigrateExistingDocuments = switchView.on;
             break;
         default:
             OBASSERT_NOT_REACHED("Unknown option");
@@ -158,7 +161,7 @@ enum {
     {
         UIImage *image = [UIImage imageNamed:@"OUIDocumentStoreSetupOptionBackground.png"];
         
-        _optionBackgroundImage = [[image stretchableImageWithLeftCapWidth:10 topCapHeight:0] retain];
+        _optionBackgroundImage = [[image stretchableImageWithLeftCapWidth:12 topCapHeight:0] retain];
         OBASSERT(_optionBackgroundImage);
     }
     
@@ -195,10 +198,11 @@ enum {
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
 {
-    if (_useICloud)
+    // Only show the migration option if we are changing the preference.
+    if (_originalUseICloud ^ _useICloud)
         return OptionCount;
-    else
-        return OptionCount - 1;
+
+    return OptionCount - 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
@@ -239,10 +243,15 @@ enum {
             subtitle = NSLocalizedStringFromTableInBundle(@"New documents will be automatically added to iCloud.", @"OmniUI", OMNI_BUNDLE, @"Option subtitle for iCloud setup sheet.");
             state = _useICloud;
             break;
-        case MoveExistingDocumentsToICloudOption:
-            title = NSLocalizedStringFromTableInBundle(@"Move Existing Documents to iCloud", @"OmniUI", OMNI_BUNDLE, @"Option title for iCloud setup sheet.");
-            subtitle = NSLocalizedStringFromTableInBundle(@"You can also manually move your documents one by one.", @"OmniUI", OMNI_BUNDLE, @"Option subtitle for iCloud setup sheet.");
-            state = _moveExistingDocumentsToICloud;
+        case MigrateExistingDocumentsOption:
+            if (_useICloud) {
+                title = NSLocalizedStringFromTableInBundle(@"Move Existing Documents to iCloud", @"OmniUI", OMNI_BUNDLE, @"Option title for iCloud setup sheet.");
+                subtitle = NSLocalizedStringFromTableInBundle(@"You can also manually move your documents one by one.", @"OmniUI", OMNI_BUNDLE, @"Option subtitle for iCloud setup sheet.");
+            } else {
+                title = NSLocalizedStringFromTableInBundle(@"Keep Copies on iPad", @"OmniUI", OMNI_BUNDLE, @"Option title for iCloud setup sheet.");
+                subtitle = NSLocalizedStringFromTableInBundle(@"Make a local copy of each document before disconnecting.", @"OmniUI", OMNI_BUNDLE, @"Option subtitle for iCloud setup sheet.");
+            }
+            state = _shouldMigrateExistingDocuments;
             break;
         default:
             OBASSERT_NOT_REACHED("Unknown option");

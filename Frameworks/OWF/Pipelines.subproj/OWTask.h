@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFObject.h>
 
-@class NSCountedSet, NSDate, NSLock, NSMutableArray;
+@class NSCountedSet, NSDate, NSLock, NSMutableArray, NSRecursiveLock;
 @class OWAddress, OWContentInfo;
 
 #import <Foundation/NSDate.h> // For NSTimeInterval

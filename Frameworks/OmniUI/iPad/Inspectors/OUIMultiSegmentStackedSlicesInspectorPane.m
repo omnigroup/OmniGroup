@@ -47,9 +47,10 @@ RCS_ID("$Id$");
         
     // Layout in the full width, divvying up fractional pixels.
     NSUInteger segmentCount = [_segments count];
+    CGFloat totalWidth = OUIInspectorContentWidth - (segmentCount - 1); // remove space taken by the 1px separators between each segment
     for (NSUInteger segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++) {
-        CGFloat left = ceil(segmentIndex * OUIInspectorContentWidth / segmentCount);
-        CGFloat right = ceil((segmentIndex + 1) * OUIInspectorContentWidth / segmentCount);
+        CGFloat left = ceil(segmentIndex * totalWidth / segmentCount);
+        CGFloat right = ceil((segmentIndex + 1) * totalWidth / segmentCount);
         [_titleSegmentedControl setWidth:right - left forSegmentAtIndex:segmentIndex];
     }
     

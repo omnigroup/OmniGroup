@@ -103,7 +103,7 @@ RCS_ID("$Id$");
 
 - (NSString *)UTI;
 {
-    return OFUTIForFileExtensionPreferringNative([_name pathExtension], _directory);
+    return OFUTIForFileExtensionPreferringNative([_name pathExtension], [NSNumber numberWithBool:_directory]);
 }
 
 - (NSComparisonResult)compareByURLPath:(OFSFileInfo *)otherInfo;
@@ -143,6 +143,9 @@ RCS_ID("$Id$");
 
 NSURL *OFSURLRelativeToDirectoryURL(NSURL *baseURL, NSString *quotedFileName)
 {
+    if (!baseURL || !quotedFileName)
+        return nil;
+    
     NSMutableString *urlString = [[baseURL absoluteString] mutableCopy];
     NSRange pathRange = OFSURLRangeOfPath(urlString);
     

@@ -1,4 +1,4 @@
-// Copyright 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2011-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
 #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
 // If we allow 10.7 API but also support 10.6, then we need to weakly import these Security.framework symbols or we won't be able to launch on 10.6.
+// (RADAR #10575268)
 extern const CFStringRef kSecDigestLengthAttribute __attribute__((weak_import));
 extern const CFStringRef kSecDigestTypeAttribute __attribute__((weak_import));
 extern CFStringRef kSecInputIsAttributeName __attribute__((weak_import));
@@ -51,6 +52,11 @@ RCS_ID("$Id$");
     OB_ASSIGN_CFRELEASE(digestType, newDigestType? CFStringCreateCopy(kCFAllocatorDefault, newDigestType) : NULL);
 }
 @synthesize digestType, digestLength;
+- (void)setPackDigestsWithGroupOrder:(int)sizeInBits;
+{
+    OBASSERT(sizeInBits > 0);
+    generatorGroupOrderLog2 = sizeInBits;
+}
 
 - (BOOL)verifyInit:(NSError **)outError;
 {
@@ -134,6 +140,14 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     if (!writebuffer || !verifying)
         OBRejectInvalidCall(self, _cmd, @"Called out of sequence");
     
+    if (generatorGroupOrderLog2) {
+        NSData *unpacked = OFDigestConvertDLSigToDER(digest, generatorGroupOrderLog2, outError);
+        if (!unpacked)
+            return NO;
+        OBINVARIANT([OFDigestConvertDLSigToPacked(unpacked, generatorGroupOrderLog2, NULL) isEqual:digest]);
+        digest = unpacked;
+    }
+    
     CFErrorRef cfError = NULL;
     SecTransformRef vrfy;
     CFTypeRef result;
@@ -203,11 +217,21 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     }
     
     // Result is presumably kept alive by the SecTransform we got it from at this point; retain+autorelease for our caller.
-    NSData *nsResult = [[(id)result retain] autorelease];
+    NSData *nsResult = [(id)result retain];
     
     CFRelease(gen);
     
-    return nsResult;
+    
+    if (generatorGroupOrderLog2) {
+        NSData *packed = OFDigestConvertDLSigToPacked(nsResult, generatorGroupOrderLog2, outError);
+        if (packed != nil) {
+            OBINVARIANT([OFDigestConvertDLSigToDER(packed, generatorGroupOrderLog2, NULL) isEqual:nsResult]);
+        }
+        [nsResult release];
+        return packed; // May be nil, if OFDigestConvertDLSigToPacked() failed
+    } else {
+        return [nsResult autorelease];
+    }
     
     if (0) {
     errorOut:

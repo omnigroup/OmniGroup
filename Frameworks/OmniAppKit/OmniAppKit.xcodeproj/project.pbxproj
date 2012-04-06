@@ -275,10 +275,10 @@
 		4AA1E76108AA764600E2FF6B /* CharsetCategories.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2D7993406DD0F730097A11C /* CharsetCategories.plist */; };
 		4AA1E76208AA764600E2FF6B /* OAGear.png in Resources */ = {isa = PBXBuildFile; fileRef = 3450579A06F203F40097A113 /* OAGear.png */; };
 		4AA1E76908AA764600E2FF6B /* OAInternetConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 683A0C7A0033CCD0CD999A52 /* OAInternetConfig.m */; };
-		4AA1E76B08AA764600E2FF6B /* NSColor-ColorSyncExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57E60416D63300E7FE1C /* NSColor-ColorSyncExtensions.m */; };
-		4AA1E76C08AA764600E2FF6B /* NSImage-ColorSyncExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57EB0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.m */; };
-		4AA1E76D08AA764600E2FF6B /* OAColorProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = F5AC9DBC032D12E201B4A65D /* OAColorProfile.m */; };
-		4AA1E76E08AA764600E2FF6B /* OACompositeColorProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57E20416D5B800E7FE1C /* OACompositeColorProfile.m */; };
+		4AA1E76B08AA764600E2FF6B /* NSColor-ColorSyncExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57E60416D63300E7FE1C /* NSColor-ColorSyncExtensions.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations"; }; };
+		4AA1E76C08AA764600E2FF6B /* NSImage-ColorSyncExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57EB0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations"; }; };
+		4AA1E76D08AA764600E2FF6B /* OAColorProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = F5AC9DBC032D12E201B4A65D /* OAColorProfile.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations"; }; };
+		4AA1E76E08AA764600E2FF6B /* OACompositeColorProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57E20416D5B800E7FE1C /* OACompositeColorProfile.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations"; }; };
 		4AA1E77A08AA764600E2FF6B /* OAAppKitQueueProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF4FE8AB2E911C9CC38 /* OAAppKitQueueProcessor.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
 		4AA1E77B08AA764600E2FF6B /* OAApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF5FE8AB2E911C9CC38 /* OAApplication.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
 		4AA1E77C08AA764600E2FF6B /* OAColorPalette.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
@@ -2553,7 +2553,7 @@
 		00E51EF1FE8AB2E911C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0430;
 			};
 			buildConfigurationList = 4A4E085608AA75E90098FF0F /* Build configuration list for PBXProject "OmniAppKit" */;
 			compatibilityVersion = "Xcode 3.2";

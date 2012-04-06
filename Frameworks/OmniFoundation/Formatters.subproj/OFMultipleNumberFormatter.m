@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,20 +59,20 @@ static NSCharacterSet *nonDigitOrSpaceSet;
 
 - (BOOL)isPartialStringValid:(NSString *)partialString newEditingString:(NSString **)newString errorDescription:(NSString **)error;
 {
-    BOOL didCopy = NO;
+    NSMutableString *newEditingString = nil;
     NSRange range;
     
     while ((range = [partialString rangeOfCharacterFromSet:nonDigitOrSpaceSet]).length) {
-        if (!didCopy) {
-            partialString = [partialString mutableCopy];
-            didCopy = YES;
-        }
-        [(NSMutableString *)partialString deleteCharactersInRange:range];
+        if (newEditingString == nil)
+            newEditingString = [[partialString mutableCopy] autorelease];
+        [newEditingString deleteCharactersInRange:range];
     }
 
-    if (didCopy)
-        *newString = [partialString autorelease];
-    return !didCopy;
+    if (newEditingString == nil)
+        return YES;
+
+    *newString = newEditingString;
+    return NO;
 }
 
 @end

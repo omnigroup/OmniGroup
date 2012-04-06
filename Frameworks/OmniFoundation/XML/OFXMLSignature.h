@@ -1,4 +1,4 @@
-// Copyright 2009-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -107,8 +107,6 @@ enum OFXMLSignatureOperation {
 /* Subclass opportunities */
 - (id <OFDigestionContext, NSObject>)newVerificationContextForMethod:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError NS_RETURNS_RETAINED;
 - (id <OFDigestionContext, NSObject>)newDigestContextForMethod:(xmlNode *)digestMethodNode error:(NSError **)outError;
-- (NSData *)signatureForStoredValue:(NSData *)raw algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError;
-- (NSData *)storedValueForSignature:(NSData *)signatureValue algorithm:(const xmlChar *)signatureAlgorithm method:(xmlNode *)signatureMethod error:(NSError **)outError;
 
 /* The default implementation of -newVerificationContextForMethod:... calls these methods to get a key */
 - (SecKeyRef)copySecKeyForMethod:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError CF_RETURNS_RETAINED;
@@ -141,11 +139,11 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
 #if OFXMLSigGetKeyAsCSSM
 OFCSSMKey *OFXMLSigGetKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError);
 OFCSSMKey *OFXMLSigGetKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError);
-OFCSSMKey *OFXMLSigGetKeyFromEllipticKeyValue(xmlNode *keyInfo, NSError **outError);
+OFCSSMKey *OFXMLSigGetKeyFromEllipticKeyValue(xmlNode *keyvalue, int *outOrder, NSError **outError);
 #else
 SecKeyRef OFXMLSigCopyKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError) CF_RETURNS_RETAINED;
 SecKeyRef OFXMLSigCopyKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError) CF_RETURNS_RETAINED;
-SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyInfo, NSError **outError) CF_RETURNS_RETAINED;
+SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyvalue, int *outOrder, NSError **outError) CF_RETURNS_RETAINED;
 #endif
 
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7

@@ -9,17 +9,14 @@
 
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniUI/OUIDocumentPreview.h>
+//#import <OmniQuartz/OQColor.h>
 #import <OmniQuartz/OQDrawing.h>
 
 RCS_ID("$Id$");
 
 @interface OUIDocumentConflictResolutionTableViewCell ()
-@property(nonatomic,retain) IBOutlet UIImageView *selectionImageView;
-@property(nonatomic,retain) IBOutlet UIImageView *previewImageView;
-@property(nonatomic,retain) IBOutlet UILabel *hostNameLabel;
-@property(nonatomic,retain) IBOutlet UILabel *modificationDateLabel;
-
+- (void)_updateBackgroundColor;
 - (void)_updateSelectionImage;
 @end
 
@@ -27,22 +24,41 @@ RCS_ID("$Id$");
 {
     UIImageView *_selectionImageView;
     UIImageView *_previewImageView;
-    
     UILabel *_hostNameLabel;
     UILabel *_modificationDateLabel;
-    
-    NSFileVersion *_fileVersion;
+    BOOL _previewHasChanged;
 }
 
-@synthesize selectionImageView = _selectionImageView;
-@synthesize previewImageView = _previewImageView;
-@synthesize hostNameLabel = _hostNameLabel;
-@synthesize modificationDateLabel = _modificationDateLabel;
+@synthesize preview = _preview;
+@synthesize fileVersion = _fileVersion;
 
-- (void)awakeFromNib;
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier;
 {
-    [super awakeFromNib];
+    if (!(self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]))
+        return nil;
+    
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    UIView *contentView = self.contentView;
+    
+    _selectionImageView = [[UIImageView alloc] init];
+    [contentView addSubview:_selectionImageView];
+    
+    _previewImageView = [[UIImageView alloc] init];
+    [contentView addSubview:_previewImageView];
+    
+    _hostNameLabel = [[UILabel alloc] init];
+    _hostNameLabel.font = [UIFont boldSystemFontOfSize:16];
+    [contentView addSubview:_hostNameLabel];
+    
+    _modificationDateLabel = [[UILabel alloc] init];
+    _modificationDateLabel.font = [UIFont systemFontOfSize:14];
+    _modificationDateLabel.textColor = [UIColor grayColor];
+    [contentView addSubview:_modificationDateLabel];
+    
     [self _updateSelectionImage];
+    
+    return self;
 }
 
 - (void)dealloc;
@@ -51,21 +67,23 @@ RCS_ID("$Id$");
     [_previewImageView release];
     [_hostNameLabel release];
     [_modificationDateLabel release];
+    [_preview release];
     [_fileVersion release];
     [super dealloc];
 }
 
-- (UIImage *)previewImage;
+- (void)setPreview:(OUIDocumentPreview *)preview;
 {
-    return _previewImageView.image;
-}
-- (void)setPreviewImage:(UIImage *)previewImage;
-{
-    OBPRECONDITION(_previewImageView);
-    _previewImageView.image = previewImage;
+    if (_preview == preview)
+        return;
+    
+    [_preview release];
+    _preview = [preview retain];
+    
+    _previewHasChanged = YES;
+    [self setNeedsLayout];
 }
 
-@synthesize fileVersion = _fileVersion;
 - (void)setFileVersion:(NSFileVersion *)fileVersion;
 {
     if (_fileVersion == fileVersion)
@@ -81,6 +99,17 @@ RCS_ID("$Id$");
     _modificationDateLabel.text = [OFSDocumentStoreFileItem displayStringForDate:_fileVersion.modificationDate];
 }
 
+@synthesize landscape = _landscape;
+- (void)setLandscape:(BOOL)landscape;
+{
+    if (_landscape == landscape)
+        return;
+    
+    _landscape = landscape;
+    
+    [self setNeedsLayout];
+}
+
 #pragma mark -
 #pragma mark UITableViewCell subclass
 
@@ -89,15 +118,13 @@ RCS_ID("$Id$");
     [super setSelected:selected animated:animated];
 
     [self _updateSelectionImage];
-    
-    self.backgroundColor = [OUITableViewCellBackgroundColorForCurrentState(&OUITableViewCellDefaultBackgroundColors, self) toColor];
+    [self _updateBackgroundColor];
 }
 
 -(void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated;
 {
     [super setHighlighted:highlighted animated:animated];
-    
-    self.backgroundColor = [OUITableViewCellBackgroundColorForCurrentState(&OUITableViewCellDefaultBackgroundColors, self) toColor];
+    [self _updateBackgroundColor];
 }
 
 #pragma mark -
@@ -107,42 +134,90 @@ RCS_ID("$Id$");
 {
     [super layoutSubviews];
     
-    CGRect remaining = self.bounds;
+    CGRect bounds = self.contentView.bounds;
+    OBASSERT(CGPointEqualToPoint(bounds.origin, CGPointZero));
+    
+    const CGFloat kTitleLeftX = 159;
+    const CGFloat kSelectionImageViewCenterX = 35;
+    
     
     // selection image
+    CGFloat previewFrameLeftX;
     {
-        CGRect selectionImageFrame;
-        CGRectDivide(remaining, &selectionImageFrame, &remaining, 70, CGRectMinXEdge);
-        
         UIImage *image = _selectionImageView.image;
         OBASSERT(image);
-        _selectionImageView.frame = OQCenteredIntegralRectInRect(selectionImageFrame, image.size);
+        CGSize imageSize = image.size;
+        
+        CGRect selectionImageFrame = CGRectMake(floor(kSelectionImageViewCenterX - imageSize.width/2), floor((bounds.size.height - imageSize.height)/2), imageSize.width, imageSize.height);
+        
+        selectionImageFrame.origin.y -= 2; // shadow offset makes the image taller than it would be otherwise
+        
+        _selectionImageView.frame = selectionImageFrame;
+        previewFrameLeftX = CGRectGetMaxX(selectionImageFrame);
     }
 
     // preview image
     {
-        CGRect previewImageFrame;
-        CGRectDivide(remaining, &previewImageFrame, &remaining, 70, CGRectMinXEdge);
+        OBASSERT(_preview); // ... even if it is a placeholder (might want to add a spinning indicator in that case, though).
+
+        const CGFloat kPreviewVerticalPadding = _landscape ? 16 : 7;
+
+        CGRect previewImageFrame = CGRectMake(previewFrameLeftX, kPreviewVerticalPadding, kTitleLeftX - previewFrameLeftX, bounds.size.height - 2*kPreviewVerticalPadding);
+
+        CGSize previewSize = _preview.size;
+        CGRect previewImageViewFrame = OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(previewImageFrame, previewSize);
         
-        UIImage *image = _previewImageView.image;
-        if (image) {
-            _previewImageView.frame = OQCenteredIntegralRectInRect(previewImageFrame, image.size);
-            _previewImageView.hidden = NO;
-        } else {
-            _previewImageView.hidden = YES;
+        if (_previewHasChanged && !CGSizeEqualToSize(previewImageViewFrame.size, _previewImageView.frame.size)) {
+            // Build a high quality scaled image of this size, but only if we have to.
+            CGImageRef originalImage = _preview.image;
+            if (originalImage == NULL) {
+                _previewImageView.image = nil;
+            } else {
+                CGImageRef scaledImage = OQCreateImageWithSize(originalImage, previewImageViewFrame.size, kCGInterpolationHigh);
+                _previewImageView.image = scaledImage ? [UIImage imageWithCGImage:scaledImage] : nil;
+                CGImageRelease(scaledImage);
+            }
         }
+        _previewImageView.frame = previewImageViewFrame;
+
+        CALayer *previewImageLayer = _previewImageView.layer;
+        previewImageLayer.shadowColor = [[UIColor blackColor] CGColor];
+        previewImageLayer.shadowOffset = CGSizeMake(0, 1);
+        previewImageLayer.shadowRadius = 3;
+        previewImageLayer.shadowOpacity = 0.4;
+        
+        CGPathRef shadowPath = CGPathCreateWithRect(previewImageLayer.bounds, NULL);
+        previewImageLayer.shadowPath = shadowPath;
+        CFRelease(shadowPath);
+        
+        //previewImageLayer.borderColor = [[UIColor redColor] CGColor];
+        //previewImageLayer.borderWidth = 1;
     }
     
-    // Title/subtitle; just set their x extent
-    remaining.origin.x += 8;
-    remaining.size.width -= 8;
+    // Title/subtitle; vertically center them w/in their total height (with some padding between).
+    OFExtent titleXExtent = OFExtentMake(kTitleLeftX, CGRectGetMaxX(bounds) - kTitleLeftX);
     
-    _hostNameLabel.frame = OFExtentsToRect(OFExtentFromRectXRange(remaining), OFExtentFromRectYRange(_hostNameLabel.frame));
-    _modificationDateLabel.frame = OFExtentsToRect(OFExtentFromRectXRange(remaining), OFExtentFromRectYRange(_modificationDateLabel.frame));
+    [_hostNameLabel sizeToFit];
+    [_modificationDateLabel sizeToFit];
+
+    const CGFloat kNameToDatePadding = 0;
+    CGFloat usedHeight = CGRectGetHeight(_hostNameLabel.frame) + kNameToDatePadding + CGRectGetHeight(_modificationDateLabel.frame);
+    CGFloat topPadding = ceil((CGRectGetHeight(bounds) - usedHeight)/2);
+    
+    _hostNameLabel.frame = CGRectMake(titleXExtent.location, topPadding, titleXExtent.length, _hostNameLabel.frame.size.height);
+    _modificationDateLabel.frame = CGRectMake(titleXExtent.location, CGRectGetMaxY(_hostNameLabel.frame) + kNameToDatePadding, titleXExtent.length, _modificationDateLabel.frame.size.height);
 }
 
 #pragma mark -
 #pragma mark Private
+
+- (void)_updateBackgroundColor;
+{
+    UIColor *backgroundColor = [OUITableViewCellBackgroundColorForCurrentState(&OUITableViewCellDefaultBackgroundColors, self) toColor];
+    self.backgroundColor = backgroundColor;
+    _hostNameLabel.backgroundColor = backgroundColor;
+    _modificationDateLabel.backgroundColor = backgroundColor;
+}
 
 - (void)_updateSelectionImage;
 {

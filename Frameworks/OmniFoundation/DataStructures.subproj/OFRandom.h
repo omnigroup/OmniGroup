@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2009-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2009-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <stdint.h>
 
 typedef struct _OFRandomState OFRandomState;
 

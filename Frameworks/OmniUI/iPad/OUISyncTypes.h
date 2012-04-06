@@ -8,12 +8,12 @@
 // $Id$
 
 enum {
-    OUIMobileMeSync,
+    OUIOmniSync,
     OUIWebDAVSync,
+    OUIMobileMeSync,
     OUIiTunesSync,
     OUINumberSyncChoices,
     
-    OUIOmniSync, /* still in beta */
     OUISyncTypeNone, /* not used for syncing. used for getting a rough idea of how many export types are available */
 }; 
 typedef NSUInteger OUISyncType;

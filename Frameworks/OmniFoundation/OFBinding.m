@@ -8,6 +8,7 @@
 #import <OmniFoundation/OFBinding.h>
 
 #import <OmniFoundation/NSKeyValueObserving-OFExtensions.h> // For HAS_REMOVEOBSERVER_FORKEYPATH_CONTEXT
+#import <OmniFoundation/OFBindingPoint.h>
 #import <OmniFoundation/OFNull.h> // For OFISEQUAL()
 #import <OmniBase/OBObject.h>
 #import <OmniBase/macros.h>
@@ -20,12 +21,6 @@ OBDEPRECATED_METHOD(-humanReadableDescriptionForKey:); // Use the key path varia
 OBDEPRECATED_METHOD(-shortHumanReadableDescriptionForKey:);
 
 static unsigned int _OFBindingObservationContext; 
-
-BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b)
-{
-    // Requires identical objects, not -isEqual:!
-    return a.object == b.object && [a.keyPath isEqualToString:b.keyPath];
-}
 
 @interface OFBinding (Private)
 - (void)_register;
@@ -65,7 +60,7 @@ BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b)
     return self;
 }
 
-- initWithSourcePoint:(OFBindingPoint)sourcePoint destinationPoint:(OFBindingPoint)destinationPoint;
+- initWithSourcePoint:(OFBindingPoint *)sourcePoint destinationPoint:(OFBindingPoint *)destinationPoint;
 {
     return [self initWithSourceObject:sourcePoint.object sourceKeyPath:sourcePoint.keyPath destinationObject:destinationPoint.object destinationKeyPath:destinationPoint.keyPath];
 }
@@ -135,7 +130,7 @@ BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b)
     [_sourceObject reset];
 }
 
-- (OFBindingPoint)sourcePoint;
+- (OFBindingPoint *)sourcePoint;
 {
     return OFBindingPointMake(_sourceObject, _sourceKeyPath);
 }
@@ -150,7 +145,7 @@ BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b)
     return _sourceKeyPath;
 }
 
-- (OFBindingPoint)destinationPoint;
+- (OFBindingPoint *)destinationPoint;
 {
     return OFBindingPointMake(_nonretained_destinationObject, _destinationKeyPath);
 }

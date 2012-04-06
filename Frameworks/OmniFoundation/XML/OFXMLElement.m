@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,15 +72,13 @@ RCS_ID("$Id$");
         newElement->_attributes = [_attributes mutableCopy];	// don't need a deep copy because all the attributes are non-mutable strings, but we don need a unique copy of the attributes dictionary
 
     for (id child in _children) {
-        BOOL copied = NO;
-
         if ([child isKindOfClass:[OFXMLElement class]]) {
-            child = [child deepCopy];
-            copied = YES;
+            id copiedChild = [child deepCopy];
+            [newElement appendChild:copiedChild];
+            [copiedChild release];
+        } else {
+            [newElement appendChild:child];
         }
-        [newElement appendChild:child];
-        if (copied)
-            [child release];
     }
 
     return newElement;

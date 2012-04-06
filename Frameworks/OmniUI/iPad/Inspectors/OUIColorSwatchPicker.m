@@ -8,6 +8,7 @@
 #import <OmniUI/OUIColorSwatchPicker.h>
 
 #import "OUIColorSwatch.h"
+#import "OUIInspectorSlice.h" // -showDetails:
 
 #import <OmniQuartz/OQColor.h>
 
@@ -18,6 +19,9 @@ RCS_ID("$Id$");
 NSString * const OUIColorSwatchPickerTextBackgroundPalettePreferenceKey = @"OUIColorSwatchPickerTextBackgroundPalette";
 NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey = @"OUIColorSwatchPickerTextColorPalette";
 
+@interface OUIColorSwatchPicker ()
+- (IBAction)_swatchTouchDown:(id)sender;
+@end
 
 @implementation OUIColorSwatchPicker
 

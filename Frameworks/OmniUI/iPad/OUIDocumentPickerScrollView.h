@@ -37,6 +37,7 @@ typedef enum {
 - (void)willRotateWithDuration:(NSTimeInterval)duration;
 - (void)didRotate;
 @property(nonatomic,assign) BOOL landscape;
+@property(nonatomic,assign) BOOL ubiquityEnabled;
 
 @property(nonatomic,readonly) NSSet *items;
 - (void)startAddingItems:(NSSet *)toAdd;

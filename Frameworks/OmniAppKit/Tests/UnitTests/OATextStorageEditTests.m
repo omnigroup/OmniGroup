@@ -1,4 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,6 +58,8 @@ static NSString * const Attribute1 = @"1";
 
 - (void)tearDown;
 {
+    [super tearDown];
+
     _textStorage.delegate = nil;
     [_textStorage release];
     _textStorage = nil;

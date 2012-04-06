@@ -1,4 +1,4 @@
-// Copyright 2004-2007, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2007, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,23 +9,9 @@
 
 #import <Foundation/NSObject.h>
 #import <OmniBase/macros.h>
+#import <OmniFoundation/OFBindingPoint.h>
 
 @class NSSet, NSMutableSet, NSMutableArray;
-
-typedef struct {
-    id object;
-    NSString *keyPath;
-} OFBindingPoint;
-
-static inline OFBindingPoint OFBindingPointMake(id object, NSString *keyPath)
-{
-    OFBindingPoint p;
-    p.object = object;
-    p.keyPath = keyPath;
-    return p;
-}
-
-extern BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b);
 
 // Reifies a dependency between a source field and a destination field. Changes to the source are detected via KVO and propagated to the destination by KVC. This much is similar to dependent keys in stock KVO. Additional features here are that the binding is reified as an object for which propagation of changes can be disable, reenabled, or forced (for example if we are disabled but want to force an update).
 @interface OFBinding : NSObject
@@ -42,7 +28,7 @@ extern BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b);
 - initWithSourceObject:(id)sourceObject sourceKeyPath:(NSString *)sourceKeyPath
      destinationObject:(id)destinationObject destinationKeyPath:(NSString *)destinationKeyPath; // designated initializer for now...
 
-- initWithSourcePoint:(OFBindingPoint)sourcePoint destinationPoint:(OFBindingPoint)destinationPoint;
+- initWithSourcePoint:(OFBindingPoint *)sourcePoint destinationPoint:(OFBindingPoint *)destinationPoint;
 
 - (void)invalidate;
 
@@ -52,11 +38,11 @@ extern BOOL OFBindingPointsEqual(OFBindingPoint a, OFBindingPoint b);
 
 - (void)reset;
 
-- (OFBindingPoint)sourcePoint;
+- (OFBindingPoint *)sourcePoint;
 - (id)sourceObject;
 - (NSString *)sourceKeyPath;
 
-- (OFBindingPoint)destinationPoint;
+- (OFBindingPoint *)destinationPoint;
 - (id)destinationObject;
 - (NSString *)destinationKeyPath;
 

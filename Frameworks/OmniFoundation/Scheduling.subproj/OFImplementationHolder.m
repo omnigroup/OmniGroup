@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2011-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,7 +51,7 @@ getImplementationForClass(OFImplementationHolder *self, Class newClass)
 {
     voidIMP localImplementation;
     
-    localImplementation = getImplementationForClass(self, *((Class *)anObject));
+    localImplementation = getImplementationForClass(self, object_getClass(anObject));
     localImplementation(anObject, selector);
 }
 
@@ -59,7 +59,7 @@ getImplementationForClass(OFImplementationHolder *self, Class newClass)
 {
     voidIMP localImplementation;
     
-    localImplementation = getImplementationForClass(self, *((Class *) anObject));
+    localImplementation = getImplementationForClass(self, object_getClass(anObject));
     localImplementation(anObject, selector, withObject);
 }
 
@@ -68,7 +68,7 @@ getImplementationForClass(OFImplementationHolder *self, Class newClass)
 {
     voidIMP localImplementation;
     
-    localImplementation = getImplementationForClass(self, *((Class *) anObject));
+    localImplementation = getImplementationForClass(self, object_getClass(anObject));
     localImplementation(anObject, selector, withObject, anotherObject);
 }
 
@@ -76,7 +76,7 @@ getImplementationForClass(OFImplementationHolder *self, Class newClass)
 {
     IMP localImplementation;
     
-    localImplementation = (IMP)getImplementationForClass(self, *((Class *) anObject));
+    localImplementation = (IMP)getImplementationForClass(self, object_getClass(anObject));
     return localImplementation(anObject, selector, withObject);
 }
 

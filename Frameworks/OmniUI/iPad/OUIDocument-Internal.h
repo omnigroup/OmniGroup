@@ -12,5 +12,6 @@
 __private_extern__ NSString * const OUIDocumentPreviewsUpdatedForFileItemNotification;
 
 @interface OUIDocument (/*Internal*/)
+- (void)_willBeRenamedLocally;
 - (void)_writePreviewsIfNeeded:(BOOL)onlyIfNeeded withCompletionHandler:(void (^)(void))completionHandler;
 @end

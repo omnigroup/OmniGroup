@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -371,7 +371,7 @@ static void _makeValuesPerformSelectorApplier(const void *key, const void *value
     for (id aKey in self) {
 	id anObject = [newDictionary objectForKey:aKey];
         if ([anObject respondsToSelector:@selector(deepMutableCopy)]) {
-            anObject = [anObject deepMutableCopy];
+            anObject = [(NSDictionary *)anObject deepMutableCopy];
             [newDictionary setObject:anObject forKey:aKey];
             [anObject release];
         } else if ([anObject conformsToProtocol:@protocol(NSMutableCopying)]) {

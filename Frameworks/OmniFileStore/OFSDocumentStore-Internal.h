@@ -11,4 +11,5 @@
 
 @interface OFSDocumentStore ()
 - (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date didMoveToURL:(NSURL *)newURL;
+- (void)_fileItem:(OFSDocumentStoreFileItem *)fileItem didGainVersion:(NSFileVersion *)fileVersion;
 @end

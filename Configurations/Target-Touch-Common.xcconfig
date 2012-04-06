@@ -19,3 +19,6 @@ GCC_THUMB_SUPPORT = NO
 
 // Unlike gcc and llvm-gcc, clang emits ObjC runtime info for class extensions conforming to protocols. Also, clang has more warning checks than gcc.
 GCC_VERSION = com.apple.compilers.llvm.clang.1_0
+
+// For Xcode builds, we sign our applications using our individual development certificates ("iPhone Developer: [Person]"). For distribution builds, our build scripts will re-sign as "iPhone Distribution: [Company]" (for App Store submissions).
+CODE_SIGN_IDENTITY = iPhone Developer:

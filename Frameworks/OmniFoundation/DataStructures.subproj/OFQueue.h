@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+#import <OmniBase/macros.h>
 
 #import <pthread.h> // For pthread_mutex_t, pthread_cond_t
 
@@ -15,7 +16,7 @@
 {
 @private
     BOOL closed;
-    id *objects;
+    OB_STRONG id *objects;
     NSUInteger max, count, head, tail;
     pthread_mutex_t mutex;
     pthread_cond_t condition;

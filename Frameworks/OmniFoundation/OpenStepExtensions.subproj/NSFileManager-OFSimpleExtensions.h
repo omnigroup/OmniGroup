@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,6 @@
 
 - (BOOL)createPathToFile:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
 // Creates any directories needed to be able to create a file at the specified path.
-- (BOOL)createPath:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError OB_DEPRECATED_ATTRIBUTE; /* Replace with createDirectoryAtPath:withIntermediateDirectories:attributes:error: */
 
 // Creates any directories needed to be able to create a file at the specified path.  Returns NO on failure.
 - (BOOL)createPathComponents:(NSArray *)components attributes:(NSDictionary *)attributes error:(NSError **)outError;

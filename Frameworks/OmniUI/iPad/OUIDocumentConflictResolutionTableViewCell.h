@@ -9,11 +9,13 @@
 
 #import <UIKit/UITableViewCell.h>
 
+@class OUIDocumentPreview;
 @class NSFileVersion;
 
 @interface OUIDocumentConflictResolutionTableViewCell : UITableViewCell
 
-@property(nonatomic,retain) UIImage *previewImage;
+@property(nonatomic,retain) OUIDocumentPreview *preview;
 @property(nonatomic,retain) NSFileVersion *fileVersion;
+@property(nonatomic,assign) BOOL landscape;
 
 @end

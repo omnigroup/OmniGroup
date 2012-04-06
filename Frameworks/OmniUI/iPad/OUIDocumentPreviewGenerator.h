@@ -24,7 +24,8 @@
 
 - (OFSDocumentStoreFileItem *)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator preferredFileItemForNextPreviewUpdate:(NSSet *)fileItems;
 
-- (Class)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator documentClassForFileItem:(OFSDocumentStoreFileItem *)fileItem;
+// Takes a fileURL instead of the fileItem since (hypothetically) the file type could change between two different conflict versions (rtf -> rtfd, for example).
+- (Class)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator documentClassForFileURL:(NSURL *)fileURL;
 
 @end
 

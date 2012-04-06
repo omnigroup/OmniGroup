@@ -17,6 +17,7 @@
 - initWithDocumentPicker:(OUIDocumentPicker *)picker fileItem:(OFSDocumentStoreFileItem *)fileItem;
 
 - (void)startRenaming;
+- (void)cancelRenaming;
 
 @end
 

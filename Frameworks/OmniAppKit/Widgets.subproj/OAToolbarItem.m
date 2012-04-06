@@ -17,14 +17,6 @@
 
 RCS_ID("$Id$");
 
-@interface OAToolbarItem (Private)
-- (void)_swapImage;
-- (void)_swapLabel;
-- (void)_swapToolTip;
-- (void)_swapAction;
-- (void)_tintsDidChange:(id)sender;
-@end
-
 @implementation OAToolbarItem
 
 #define TINT_PREFERENCE ([OFPreference preferenceForKey:OAToolbarItemTintOverridePreference enumeration:[NSImage tintNameEnumeration]])
@@ -139,9 +131,7 @@ RCS_ID("$Id$");
     return copy;
 }
 
-@end
-
-@implementation OAToolbarItem (NotificationsDelegatesDatasources)
+#pragma mark - NotificationsDelegatesDatasources
 
 - (void)modifierFlagsChanged:(NSNotification *)note;
 {
@@ -163,9 +153,7 @@ RCS_ID("$Id$");
     } 
 }
 
-@end
-
-@implementation OAToolbarItem (Private)
+#pragma mark - Private
 
 - (void)_swapImage;
 {

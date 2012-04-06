@@ -378,6 +378,7 @@
 			baseConfigurationReference = 4A1F65C608B37C9D007C9742 /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OIF;
 				PRODUCT_NAME = OIF;
 			};
 			name = Debug;
@@ -387,6 +388,7 @@
 			baseConfigurationReference = 4A1F65C708B37C9D007C9742 /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OIF;
 				PRODUCT_NAME = OIF;
 			};
 			name = Release;
@@ -396,6 +398,7 @@
 			baseConfigurationReference = 4A1F65C508B37C9D007C9742 /* Omni-Framework-Coverage.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OIF;
 				PRODUCT_NAME = OIF;
 			};
 			name = Coverage;

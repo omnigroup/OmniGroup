@@ -12,10 +12,17 @@
 #import <OmniFileStore/OFSDocumentStoreDelegate.h>
 #import <OmniUI/OUIUndoBarButtonItem.h>
 #import <OmniUI/OUIBarButtonItemBackgroundType.h>
+#import <OmniUI/OUIDocumentConflictResolutionViewControllerDelegate.h>
 
-@class OFSDocumentStoreFileItem, OUIDocument, OUIMainViewController, OUIBarButtonItem;
+@class OFSDocumentStoreFileItem, OFSDocumentStoreScope;
+@class OUIDocument, OUIMainViewController, OUIBarButtonItem;
 
-@interface OUISingleDocumentAppController : OUIAppController <UITextFieldDelegate, OUIUndoBarButtonItemTarget, OFSDocumentStoreDelegate>
+typedef enum {
+    OUIDocumentAnimationTypeZoom,
+    OUIDocumentAnimationTypeDissolve,
+} OUIDocumentAnimationType;
+
+@interface OUISingleDocumentAppController : OUIAppController <UITextFieldDelegate, OUIUndoBarButtonItemTarget, OFSDocumentStoreDelegate, OUIDocumentConflictResolutionViewControllerDelegate>
 
 @property(nonatomic,retain) IBOutlet UIWindow *window;
 @property(nonatomic,retain) IBOutlet OUIMainViewController *mainViewController;
@@ -25,10 +32,14 @@
 @property(readonly) UIBarButtonItem *closeDocumentBarButtonItem;
 @property(readonly) OUIUndoBarButtonItem *undoBarButtonItem;
 @property(readonly) UIBarButtonItem *infoBarButtonItem;
+@property(readonly) BOOL shouldOpenWelcomeDocumentOnFirstLaunch;
 
 - (void)createNewDocumentAtURL:(NSURL *)url completionHandler:(void (^)(NSURL *url, NSError *error))completionHandler;
 - (IBAction)makeNewDocument:(id)sender;
 - (IBAction)closeDocument:(id)sender;
+- (void)closeDocumentWithAnimationType:(OUIDocumentAnimationType)animation completionHandler:(void (^)(void))completionHandler;
+
+- (void)documentDidDisableEnditing:(OUIDocument *)document; // Incoming iCloud edit on an open document
 
 // Returns the width the _documentTitleTextField should be set to while editing. A different width can be returned depending on isLandscape.
 // If overridden in sub-class, don't call super.
@@ -41,7 +52,10 @@
 // Sample documents
 - (NSString *)sampleDocumentsDirectoryTitle;
 - (NSURL *)sampleDocumentsDirectoryURL;
-- (void)copySampleDocumentsToUserDocuments;
+- (void)copySampleDocumentsToUserDocumentsWithCompletionHandler:(void (^)(NSDictionary *nameToURL))completionHandler;
+- (void)copySampleDocumentsFromDirectoryURL:(NSURL *)sampleDocumentsDirectoryURL toScope:(OFSDocumentStoreScope *)scope stringTableName:(NSString *)stringTableName completionHandler:(void (^)(NSDictionary *nameToURL))completionHandler;
+
+- (NSString *)stringTableNameForSampleDocuments;
 - (NSString *)localizedNameForSampleDocumentNamed:(NSString *)documentName;
 - (NSURL *)URLForSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
 

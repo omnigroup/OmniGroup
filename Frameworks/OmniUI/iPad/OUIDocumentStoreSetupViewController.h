@@ -13,10 +13,10 @@
 
 @interface OUIDocumentStoreSetupViewController : OUIViewController <UITableViewDelegate, UITableViewDataSource>
 
-- initWithDismissAction:(void (^)(BOOL cancelled))dismissAction;
+- initWithOriginalState:(BOOL)originalUseICloud dismissAction:(void (^)(BOOL cancelled))dismissAction;
 
-@property(readonly,nonatomic) BOOL useICloud;
-@property(readonly,nonatomic) BOOL moveExistingDocumentsToICloud;
+@property(nonatomic) BOOL useICloud;
+@property(nonatomic) BOOL shouldMigrateExistingDocuments; // Move when going into iCloud, copy when migrating out.
 
 - (void)cancel;
 

@@ -337,7 +337,9 @@ static void _addShadowEdge(UIView *self, const OUILoadedImage *imageInfo, NSMuta
     edge.layer.needsDisplayOnBoundsChange = NO;
     [self addSubview:edge];
     
-    edge.layer.contents = (id)[imageInfo->image CGImage];
+    UIImage *image = imageInfo->image;
+    edge.layer.contents = (id)[image CGImage];
+    edge.layer.contentsScale = [image scale];
     
     // Exactly one dimension should have an odd pixel count. This center column or row will get stretched via the contentsCenter property on the layer.
 #ifdef OMNI_ASSERTIONS_ON

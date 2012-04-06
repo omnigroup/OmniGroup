@@ -23,6 +23,10 @@ RCS_ID("$Id$");
 #endif
 
 #if 0 && defined(DEBUG)
+#define LOG_RENDER_IN_CONTEXT_TIME
+#endif
+
+#if 0 && defined(DEBUG)
 #define WARN_OF_MIXING_ANIMATED_AND_IMMEDIATE_DISPLAY
 #endif
 
@@ -170,6 +174,18 @@ static void replacement_drawInContext(CALayer *self, SEL _cmd, CGContextRef ctx)
 }
 #endif
 
+#if defined(LOG_RENDER_IN_CONTEXT_TIME)
+static void (*original_renderInContext)(CALayer *self, SEL _cmd, CGContextRef ctx) = NULL;
+static void replacement_renderInContext(CALayer *self, SEL _cmd, CGContextRef ctx)
+{
+    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
+    original_renderInContext(self, _cmd, ctx);
+    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
+
+    NSLog(@"%@=%@ renderInContext:%p delegate:%@ %f", self.name, [self shortDescription], ctx, [[self delegate] shortDescription], end - start);
+}
+#endif
+
 // No OBPostLoader on our iPhone OS builds, so splitting this out.
 static void OQEnableAnimationLogging(void) __attribute__((constructor));
 static void OQEnableAnimationLogging(void)
@@ -181,8 +197,17 @@ static void OQEnableAnimationLogging(void)
 #endif
 }
 
+static void OQEnableRenderInContextLogging(void) __attribute__((constructor));
+static void OQEnableRenderInContextLogging(void)
+{
+#if defined(LOG_RENDER_IN_CONTEXT_TIME)
+    if (original_renderInContext)
+        return;
+    original_renderInContext = (typeof(original_renderInContext))OBReplaceMethodImplementation([CALayer class], @selector(renderInContext:), (IMP)replacement_renderInContext);
+#endif
+}
 
-#if defined(OQ_ANIMATION_LOGGING_ENABLED) || defined(LOG_CONTENT_FILLING) || defined(OMNI_ASSERTIONS_ON)
+#if defined(OQ_ANIMATION_LOGGING_ENABLED) || defined(LOG_CONTENT_FILLING) || defined(LOG_RENDER_IN_CONTEXT_TIME) || defined(OMNI_ASSERTIONS_ON)
 + (void)performPosing;
 {
 #if defined(OMNI_ASSERTIONS_ON)
@@ -202,6 +227,9 @@ static void OQEnableAnimationLogging(void)
 #endif
 #if defined(LOG_CONTENT_FILLING)
     original_drawInContext = (typeof(original_drawInContext))OBReplaceMethodImplementation(self, @selector(drawInContext:), (IMP)replacement_drawInContext);
+#endif
+#if defined(LOG_RENDER_IN_CONTEXT_TIME)
+    OQEnableRenderInContextLogging();
 #endif
 }
 #endif
@@ -490,18 +518,11 @@ static void _writeString(NSString *str)
     return self == self.modelLayer;
 }
 
-// Deprecated since -presentationLayer always returns a new autoreleased copy. Wasteful!
-- (BOOL)isPresentationLayer;
-{
-    return self == self.presentationLayer;
-}
-
 - (BOOL)drawInVectorContext:(CGContextRef)ctx;
 {
     return NO;
 }
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (void)renderInContextIgnoringCache:(CGContextRef)ctx;
 {
     [self renderInContextIgnoringCache:ctx useAnimatedValues:YES];
@@ -532,7 +553,7 @@ static void _writeString(NSString *str)
     //OBASSERT(GET_VALUE(geometryFlipped) == NO); // Need to flip the CTM ourselves for this property added in 10.6
     OBASSERT(GET_VALUE(isDoubleSided)); // Not handling back face culling.
     OBASSERT(GET_VALUE(mask) == nil); // Not handling mask layers or any filters
-    OBASSERT(NSEqualRects(GET_VALUE(contentsRect), NSMakeRect(0, 0, 1, 1))); // Should be showing the full content
+    OBASSERT(CGRectEqualToRect(GET_VALUE(contentsRect), CGRectMake(0, 0, 1, 1))); // Should be showing the full content
     OBASSERT(GET_VALUE(borderWidth) == 0.0);
     OBASSERT(GET_VALUE(compositingFilter) == nil);
     OBASSERT([GET_VALUE(filters) count] == 0);
@@ -615,7 +636,7 @@ static void _writeString(NSString *str)
             } else
                 CGContextAddRect(ctx, localBounds);
 
-            if (backgroundColor && !CGColorEqualToColor(backgroundColor, CGColorGetConstantColor(kCGColorClear))) {
+            if (backgroundColor && CGColorGetAlpha(borderColor) != 0.0f) {
                 CGContextSetFillColorWithColor(ctx, backgroundColor);
                 CGContextFillPath(ctx);
             }
@@ -644,7 +665,7 @@ static void _writeString(NSString *str)
             }
         }
         
-        if (self.borderWidth && borderColor && !CGColorEqualToColor(borderColor, CGColorGetConstantColor(kCGColorClear))) {
+        if (self.borderWidth && borderColor && CGColorGetAlpha(borderColor) != 0.0f) {
             // the clipping & path was already set above while doing the background
             CGContextSetLineWidth(ctx, self.borderWidth);
             CGContextSetStrokeColorWithColor(ctx, borderColor);
@@ -706,6 +727,8 @@ static void _writeString(NSString *str)
     }
     CGContextRestoreGState(ctx);
 }
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 
 - (NSImage *)imageForRect:(NSRect)rect useAnimatedValues:(BOOL)useAnimatedValues;
 {

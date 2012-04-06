@@ -38,6 +38,7 @@
 @property(assign,nonatomic) UIViewAnimationCurve animationCurve;
 
 @property(nonatomic,retain) UIImage *statusImage;
+@property(assign,nonatomic) BOOL downloadRequested;
 @property(assign,nonatomic) BOOL downloading;
 @property(nonatomic,assign) BOOL showsProgress;
 @property(nonatomic,assign) double progress;

@@ -11,6 +11,18 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/macros.h>
 #import <OmniBase/assertions.h>
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+// Define the signature for these methos for -Wselector
+@interface NSObject (OBPostLoaderMethods)
++ (void)didLoad;
++ (void)performPosing;
++ (void)becomingMultiThreaded;
+@end
+#else
+#import <OmniBase/OBPostLoader.h>
+#endif
+
 #import <dlfcn.h>
 
 RCS_ID("$Id$");
@@ -194,9 +206,15 @@ static void  __attribute__((unused)) _checkSignaturesWithinClass(Class cls, Meth
     
     for(unsigned int methodIndex = 0; methodIndex < methodCount; methodIndex ++) {
         SEL msel = method_getName(methods[methodIndex]);
-        /* There are some methods that we expect to be multiply defined */
-        if (class_isMetaClass(cls) && (sel_isEqual(msel, @selector(didLoad)) || sel_isEqual(msel, @selector(performPosing)) || sel_isEqual(msel, @selector(becomingMultiThreaded))))
+        
+        /* There are some methods that we expect to be multiply defined. On iOS, however, we don't expect them to be defined at all (OBPostLoader not built there) */
+        if (class_isMetaClass(cls) && (sel_isEqual(msel, @selector(didLoad)) || sel_isEqual(msel, @selector(performPosing)) || sel_isEqual(msel, @selector(becomingMultiThreaded)))) {
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+            NSLog(@"Class \"%@\" defines OBPostLoader related selector %@ on iOS, but OBPostLoader is not supported on iOS.", NSStringFromClass(cls), NSStringFromSelector(msel));
+#endif
             continue;
+        }
+        
         sorted[checkedMethodCount++] = (struct sorted_sel_info){
             .meth = methods[methodIndex],
             .mname = sel_getName(msel)
@@ -473,7 +491,8 @@ static void _validateMethodSignatures(void)
         if (strncmp(clsName, "NS", 2) == 0 ||
             strncmp(clsName, "_NS", 3) == 0 ||
             strncmp(clsName, "__NS", 4) == 0 ||
-            strncmp(clsName, "__CF", 4) == 0) {
+            strncmp(clsName, "__CF", 4) == 0 ||
+            strcmp(clsName, "DRDevice") == 0) {
             /* In particular, _NS[View]Animator chokes in this case. But we don't really need to check any _NS classes. */
             continue;
         }

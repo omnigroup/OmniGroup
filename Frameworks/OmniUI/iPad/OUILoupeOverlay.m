@@ -192,12 +192,13 @@ RCS_ID("$Id$");
             case OUILoupeOverlayCircle:
             {
                 loupeFrameImage = [[UIImage imageNamed:@"OUITextSelectionOverlay.png"] retain];
+                CGSize loupeImageSize = [loupeFrameImage size];
+
                 CGMutablePathRef ring = CGPathCreateMutable();
-                CGSize loupeImageSize;
-                loupeImageSize = [loupeFrameImage size];
                 CGPathAddEllipseInRect(ring, NULL, CGRectInset((CGRect){{0, 0}, loupeImageSize}, 4, 4));
                 loupeClipPath = CGPathCreateCopy(ring);
                 CFRelease(ring);
+                
                 loupeFramePosition.size = loupeImageSize;
                 loupeFramePosition.origin.x = loupeImageSize.width / 2;
                 loupeFramePosition.origin.y = loupeImageSize.height;  // + 30;
@@ -315,6 +316,14 @@ RCS_ID("$Id$");
             // Convert the rect to the coordinate system seen by -drawScaledContent:
             drawRect = CGRectApplyAffineTransform(drawRect, CGAffineTransformInvert(loupeTransform));
             
+            
+#if 0 && defined(DEBUG)
+            // Fill the content area with red to help make sure the opaque edge of the loupe image will cover the edge of the clip path
+            CGContextSaveGState(ctx);
+            [[UIColor redColor] set];
+            CGContextFillRect(ctx, drawRect);
+            CGContextRestoreGState(ctx);
+#else
             if (!subject.opaque) {
                 if ([subject respondsToSelector:@selector(drawLoupeOverlayBackgroundInRect:)])
                     [subject drawLoupeOverlayBackgroundInRect:drawRect];
@@ -333,6 +342,7 @@ RCS_ID("$Id$");
             }
             
             [subject drawScaledContent:[subject convertRectToRenderingSpace:drawRect]];
+#endif
         }
     }
     CGContextRestoreGState(ctx);

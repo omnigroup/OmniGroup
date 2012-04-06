@@ -89,6 +89,7 @@ static CGPoint _clampContentOffset(CGPoint contentOffset, CGRect bounds, CGSize 
 @implementation OUIDocumentPickerScrollView
 {
     BOOL _landscape;
+    BOOL _ubiquityEnabled;
     
     NSMutableSet *_items;
     NSArray *_sortedItems;
@@ -264,6 +265,7 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     while (neededItemViewCount--) {
         OUIDocumentPickerItemView *itemView = [[itemViewClass alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
         itemView.landscape = self->_landscape;
+        itemView.ubiquityEnabled = self->_ubiquityEnabled;
         
         [itemViews addObject:itemView];
         
@@ -347,6 +349,20 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     [self setNeedsLayout];
 }
 
+@synthesize ubiquityEnabled = _ubiquityEnabled;
+- (void)setUbiquityEnabled:(BOOL)ubiquityEnabled;
+{
+    if (_ubiquityEnabled == ubiquityEnabled)
+        return;
+    
+    _ubiquityEnabled = ubiquityEnabled;
+    
+    for (OUIDocumentPickerItemView *itemView in _fileItemViews)
+        itemView.ubiquityEnabled = _ubiquityEnabled;
+    for (OUIDocumentPickerItemView *itemView in _groupItemViews)
+        itemView.ubiquityEnabled = _ubiquityEnabled;
+}
+
 @synthesize items = _items;
 
 - (void)startAddingItems:(NSSet *)toAdd;
@@ -373,6 +389,8 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
         OBASSERT(!itemView || itemView.shrunken);
         itemView.shrunken = NO;
     }
+    
+    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
 }
 
 - (void)startRemovingItems:(NSSet *)toRemove;
@@ -399,6 +417,8 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     [self sortItems]; // The order hasn't changed, but w/o this the sorted array would still have the removed items
     
     [self setNeedsLayout];
+    
+    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
 }
 
 - (NSArray *)_sortDescriptors;
@@ -539,6 +559,7 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
     }
     
     if (positionIndex == NSNotFound) {
+        OBASSERT([_items member:item] == nil); // If we didn't find the positionIndex it should mean that the item isn't in _items or _sortedItems. If the item is in _items but not _sortedItems, its probably becase we havn't yet called -sortItems.
         OBASSERT_NOT_REACHED("Asking for the frame of an item that is unknown/ignored");
         return CGRectZero;
     }

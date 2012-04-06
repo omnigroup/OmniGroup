@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -243,15 +243,15 @@ static NSString * const OAPreferenceClientRecordIconNameAppPrefix = @"app:"; // 
 
     Class clientClass = [OFBundledClass classNamed:className];
 
-    // Check for old initializers that are not valid anymore
-    OBASSERT(![clientClass instancesRespondToSelector:@selector(initWithTitle:defaultsArray:)]);
-    OBASSERT(![clientClass instancesRespondToSelector:@selector(initWithTitle:defaultsArray:defaultKeySuffix:)]);
-    
-    // This method was replaced by -willBecomeCurrentPreferenceClient (and the -did variant was added)
-    OBASSERT(![clientClass instancesRespondToSelector:@selector(becomeCurrentPreferenceClient)]);
-	
     OAPreferenceClient *clientInstance =  [[clientClass alloc] initWithPreferenceClientRecord:self controller:controller];
 
+    // Check for old initializers that are not valid anymore
+    OBASSERT_NOT_IMPLEMENTED(clientInstance, initWithTitle:defaultsArray:);
+    OBASSERT_NOT_IMPLEMENTED(clientInstance, initWithTitle:defaultsArray:defaultKeySuffix:);
+    
+    // This method was replaced by -willBecomeCurrentPreferenceClient (and the -did variant was added)
+    OBASSERT_NOT_IMPLEMENTED(clientInstance, becomeCurrentPreferenceClient);
+    
     return clientInstance;
 }
 

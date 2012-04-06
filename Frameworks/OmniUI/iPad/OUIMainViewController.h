@@ -31,6 +31,10 @@ typedef void (^OUIMainViewControllerGetAnimationRegion)(UIView **outView, CGRect
 
 @property(nonatomic,assign) BOOL resizesToAvoidKeyboard;
 
+// Maintains a local counter and disables interaction on just this view controller's view and subviews (not the whole app)
+- (void)beginIgnoringInteractionEvents;
+- (void)endIgnoringInteractionEvents;
+
 @end
 
 @interface UIViewController (OUIMainViewControllerExtensions)

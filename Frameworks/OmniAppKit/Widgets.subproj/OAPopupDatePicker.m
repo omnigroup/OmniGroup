@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,7 @@
 #import "NSImage-OAExtensions.h"
 #import "OAWindowCascade.h"
 #import "OADatePicker.h"
+#import "OAVersion.h"
 
 RCS_ID("$Id$");
 
@@ -96,11 +97,9 @@ static NSSize calendarImageSize;
     NSWindow *window = [self window];
     if ([window respondsToSelector:@selector(setCollectionBehavior:)]) {
         unsigned int collectionBehavior = NSWindowCollectionBehaviorMoveToActiveSpace;
-        if ([OFVersionNumber isOperatingSystemLionOrLater])
-            collectionBehavior |= NSWindowCollectionBehaviorFullScreenAuxiliary;
+        OA_LION_ONLY( collectionBehavior |= NSWindowCollectionBehaviorFullScreenAuxiliary; );
     	[window setCollectionBehavior:collectionBehavior];  
     }
-
 
     [OFPreference addObserver:self selector:@selector(_firstDayOfTheWeekDidChange:) forPreference:[OFPreference preferenceForKey:@"FirstDayOfTheWeek"]];
     [self _firstDayOfTheWeekDidChange:nil];

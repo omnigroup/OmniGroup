@@ -218,3 +218,7 @@
 extern NSString * const OUIEditableFrameTextDidBeginEditingNotification;
 extern NSString * const OUIEditableFrameTextDidEndEditingNotification;
 extern NSString * const OUIEditableFrameTextDidChangeNotification;
+
+@interface UIResponder (OUIEditableFrameLoupeParentView)
+- (UIView *)parentViewForEditableFrameLoupe:(OUIEditableFrame *)frame;
+@end

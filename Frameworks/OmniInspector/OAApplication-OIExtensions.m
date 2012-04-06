@@ -37,8 +37,15 @@ RCS_ID("$Id$")
     SEL action = [item action];
     
     if (action == @selector(toggleInspectorPanel:)) {
-        NSString *showString = NSLocalizedStringFromTableInBundle(@"Show Inspector", @"OmniInspector", [OIInspectorRegistry bundle], "menu title");
-        NSString *hideString = NSLocalizedStringFromTableInBundle(@"Hide Inspector", @"OmniInspector", [OIInspectorRegistry bundle], "menu title");
+        NSString *showString = nil;
+        NSString *hideString = nil;
+        if ([[OIInspectorRegistry sharedInspector] hasSingleInspector]) {
+            showString = NSLocalizedStringFromTableInBundle(@"Show Inspector", @"OmniInspector", [OIInspectorRegistry bundle], "menu title");
+            hideString = NSLocalizedStringFromTableInBundle(@"Hide Inspector", @"OmniInspector", [OIInspectorRegistry bundle], "menu title");
+        } else {
+            showString = NSLocalizedStringFromTableInBundle(@"Show Inspectors", @"OmniInspector", [OIInspectorRegistry bundle], "menu title");
+            hideString = NSLocalizedStringFromTableInBundle(@"Hide Inspectors", @"OmniInspector", [OIInspectorRegistry bundle], "menu title");
+        }
 	
         if ([[OIInspectorGroup visibleGroups] count] > 0) {
             [item setTitle:hideString];

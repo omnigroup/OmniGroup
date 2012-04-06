@@ -58,6 +58,7 @@
 - (void)signOut:(id)sender;
 - (void)addDownloaderWithURL:(NSURL *)exportURL toCell:(UITableViewCell *)cell;
 - (void)downloadFinished:(NSNotification *)notification;
+- (void)downloadCanceled:(NSNotification *)notification;
 
 // Private
 - (void)_loadFiles;

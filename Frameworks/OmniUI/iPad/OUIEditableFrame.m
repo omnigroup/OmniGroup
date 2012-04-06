@@ -4175,8 +4175,12 @@ static BOOL includeRectsInBound(CGPoint p, CGFloat width, CGFloat trailingWS, CG
             _loupe = [[OUILoupeOverlay alloc] initWithFrame:[self frame]];
             [_loupe setSubjectView:self];
 
-            // Moving loupe out to the window's rootViewContoller's view so that it doesn't get clipped by our chrome. Everything else (thumbs...) is still added to the _topmostView so they apear to be inside the text fields. (We can't put this in the window itself because the text in the loupe will render sideways when in landscape.)
-            [[[[self window] rootViewController] view] addSubview:_loupe];
+            // We need to parent the loupe high enough up the view hierarchy so that is doesn't get clipped by ancestor views. See the implementations of -parentViewForEditableFrameLoupe:.
+            // Everything else (thumbs...) is still added to the _topmostView so they apear to be inside the text fields.
+            UIView *loupeParentView = [self parentViewForEditableFrameLoupe:self];
+            if (!loupeParentView)
+                loupeParentView = [[[self window] rootViewController] view];
+            [loupeParentView addSubview:_loupe];
         }
         [_editMenuController hideMenu];
         [self _setSolidCaret:1];
@@ -4891,3 +4895,35 @@ void OUITextLayoutDrawExtraRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFram
 
 @end
 
+@implementation UIResponder (OUIEditableFrameLoupeParentView)
+
+// This will traverse up the view hierarchy and parent view controller chain.
+- (UIView *)parentViewForEditableFrameLoupe:(OUIEditableFrame *)frame;
+{
+    return [self.nextResponder parentViewForEditableFrameLoupe:frame];
+}
+
+@end
+
+@implementation UIView (OUIEditableFrameLoupeParentView)
+
+// If we are the highest eligible view, then it is our job to host the loupe
+- (UIView *)parentViewForEditableFrameLoupe:(OUIEditableFrame *)frame;
+{
+    UIView *parentView = [super parentViewForEditableFrameLoupe:frame];
+    if (parentView)
+        return parentView;
+    return self;
+}
+
+@end
+
+@implementation UIWindow (OUIEditableFrameLoupeParentView)
+
+// ... but we can't put the loupe in the UIWindow because then the device orientation transform won't be applied to it and the text in the loupe will render sideways when in landscape.)
+- (UIView *)parentViewForEditableFrameLoupe:(OUIEditableFrame *)frame;
+{
+    return nil;
+}
+
+@end

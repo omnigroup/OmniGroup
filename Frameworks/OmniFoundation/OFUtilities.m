@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -190,15 +190,18 @@ uint32_t OFLocalIPv4Address(void)
                 continue;
         }
 
-        CFArrayRef ipAddresses;
+        CFArrayRef ipAddresses = NULL;
         {
             CFStringRef ipv4Key = SCDynamicStoreKeyCreateNetworkInterfaceEntity(NULL, kSCDynamicStoreDomainState, (CFStringRef)interfaceName, kSCEntNetIPv4);
             CFDictionaryRef ipv4Dictionary = SCDynamicStoreCopyValue(store, ipv4Key);
-            ipAddresses = CFDictionaryGetValue(ipv4Dictionary, kSCPropNetIPv4Addresses);
-            if (ipAddresses)
-                CFRetain(ipAddresses);
-            CFRelease(ipv4Key);
-            CFRelease(ipv4Dictionary);
+            if (ipv4Dictionary != NULL) {
+                ipAddresses = CFDictionaryGetValue(ipv4Dictionary, kSCPropNetIPv4Addresses);
+                if (ipAddresses)
+                    CFRetain(ipAddresses);
+                CFRelease(ipv4Dictionary);
+            }
+            if (ipv4Key)
+                CFRelease(ipv4Key);
         }
 
         if (ipAddresses != NULL && CFArrayGetCount(ipAddresses) != 0) {

@@ -5,6 +5,9 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+#define OF_ENABLE_CDSA 1
+#pragma clang diagnostic ignored "-Wdeprecated-declarations" // TODO: Avoid using deprecated CSSM API
+
 #import <OmniFoundation/OFCDSAUtilities.h>
 
 #import <Foundation/Foundation.h>
@@ -16,6 +19,8 @@
 RCS_ID("$Id$");
 
 #pragma mark Utility functions
+
+#if OF_ENABLE_CDSA
 
 static const struct {
     int moduleBase;
@@ -32,7 +37,6 @@ static const struct {
     { 0, nil }
 };
 
-#if OF_ENABLE_CDSA
 /* The original motivation for OFStringFromCSSMReturn() was that we had to weak-link both cssmErrorString() (for 10.4) and SecCopyErrorMessageString() (for later OS revisions), but nw it's mostly a cover on SecCopyErrorMessageString(). However, it's still handy to have a guaranteed non-nil result that's at least minimally informative. */
 NSString *OFStringFromCSSMReturn(CSSM_RETURN code)
 {
@@ -86,9 +90,9 @@ static inline NSString *NSStringFromCSSMGUID(CSSM_GUID uid)
     const uint8 *data1overlay = (void *)&(uid.Data1);
     const uint8 *data2overlay = (void *)&(uid.Data2);
     const uint8 *data3overlay = (void *)&(uid.Data3);
-    return [NSString stringWithFormat:@"{%02x%02x%02x%02x-%02x%02x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
+    return [NSString stringWithFormat:@"{%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
             data1overlay[0], data1overlay[1], data1overlay[2], data1overlay[3],
-            data2overlay[0], data2overlay[1], data3overlay[2], data3overlay[3],
+            data2overlay[0], data2overlay[1], data3overlay[0], data3overlay[1],
             uid.Data4[0], uid.Data4[1], uid.Data4[2], uid.Data4[3], 
             uid.Data4[4], uid.Data4[5], uid.Data4[6], uid.Data4[7]];
 }
@@ -332,6 +336,7 @@ static const CSSM_VERSION callingApiVersion = {2,0};
 }
 
 @synthesize credentials;
+@synthesize groupOrder;
 
 static inline BOOL isMACAlg(CSSM_ALGORITHMS algid)
 {
@@ -345,7 +350,7 @@ static inline BOOL isMACAlg(CSSM_ALGORITHMS algid)
     }
 }
 
-- (id <NSObject,OFDigestionContext>)newVerificationContextForAlgorithm:(CSSM_ALGORITHMS)pk_signature_alg error:(NSError **)outError
+- (id <NSObject,OFDigestionContext>)newVerificationContextForAlgorithm:(CSSM_ALGORITHMS)pk_signature_alg packDigest:(int)bitsPerInteger error:(NSError **)outError
 {
     OFCDSAModule *thisCSP = [self csp];
     
@@ -360,7 +365,10 @@ static inline BOOL isMACAlg(CSSM_ALGORITHMS algid)
             return nil;
         }
         
-        return [[OFCSSMSignatureContext alloc] initWithCSP:thisCSP cc:context];
+        OFCSSMSignatureContext *ctxt = [[OFCSSMSignatureContext alloc] initWithCSP:thisCSP cc:context];
+        if (bitsPerInteger)
+            [ctxt setPackDigestsWithGroupOrder:bitsPerInteger];
+        return ctxt;
     } else {
         CSSM_CC_HANDLE context = CSSM_INVALID_HANDLE;
         CSSM_RETURN err = CSSM_CSP_CreateMacContext([thisCSP handle], pk_signature_alg, [self key], &context);
@@ -544,6 +552,11 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
 
 @implementation OFCSSMSignatureContext
 
+- (void)setPackDigestsWithGroupOrder:(int)sizeInBits;
+{
+//    OBASSERT(sizeInBits > 0);
+    generatorGroupOrderLog2 = sizeInBits;
+}
 - (BOOL)verifyInit:(NSError **)outError;
 {
     signing = NO;
@@ -565,6 +578,14 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
 
 - (BOOL)verifyFinal:(NSData *)check error:(NSError **)outError;
 {
+    if (generatorGroupOrderLog2) {
+        NSData *unpacked = OFDigestConvertDLSigToDER(check, generatorGroupOrderLog2, outError);
+        if (!unpacked)
+            return NO;
+        OBINVARIANT([OFDigestConvertDLSigToPacked(unpacked, generatorGroupOrderLog2, NULL) isEqual:check]);
+        check = unpacked;
+    }
+    
     CSSM_DATA buf;
     buf.Data = (void *)[check bytes];
     buf.Length = [check length];
@@ -592,7 +613,16 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
         return nil;
     
     // Note: We're relying again here on knowing that the memory API callbacks passed to the module were the libc allocators.
-    return [NSData dataWithBytesNoCopy:buf.Data length:buf.Length freeWhenDone:YES];
+    NSData *result = [NSData dataWithBytesNoCopy:buf.Data length:buf.Length freeWhenDone:YES];
+    
+    if (generatorGroupOrderLog2) {
+        NSData *packed = OFDigestConvertDLSigToPacked(result, generatorGroupOrderLog2, outError);
+        if (!packed)
+            return nil;
+        OBINVARIANT([OFDigestConvertDLSigToDER(packed, generatorGroupOrderLog2, NULL) isEqual:result]);
+        return packed;
+    } else
+        return result;
 }
 
 @end

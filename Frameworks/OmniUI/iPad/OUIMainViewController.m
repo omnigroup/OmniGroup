@@ -126,6 +126,8 @@ static BOOL IsPreIOS51 = NO;
     
     // Flags for iOS 5.0 bugs
     BOOL _keyboardVisible;
+    
+    NSUInteger _interactionIgnoreCount;
 }
 
 + (void)initialize;
@@ -300,7 +302,10 @@ static BOOL IsPreIOS51 = NO;
         fromView.hidden = YES;
 
         // Capture the entire rest of the view hierarchy (including the toolbar and background view) for the "from" state.
+#ifdef DEBUG_bungi
+        // This will fail if viewController.view == toView, which it always does in OP-iPad when opening an existing document (The OpenDocumentAnimationZoom case in OUISingleDocumentppController). Need an || in here?
         OBASSERT(viewController.view.hidden == NO);
+#endif
         viewController.view.hidden = YES;
         backgroundFromImage = [mainView snapshotImage];
         viewController.view.hidden = NO;
@@ -378,6 +383,9 @@ static BOOL IsPreIOS51 = NO;
              fromView.hidden = NO;
              toView.hidden = NO;
          });
+         
+         // Let VoiceOver know the entire screen has changed.
+         UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nil);
          
          if (completionAction)
              completionAction();
@@ -517,7 +525,7 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIMainViewController 
     }
     
     if (_lastKeyboardHeight == avoidedBottomHeight) {
-        DEBUG_KEYBOARD("  same -- bailing");
+        DEBUG_KEYBOARD("  same (%f) -- bailing", _lastKeyboardHeight);
         return NO; // No animation started
     }
     
@@ -648,6 +656,35 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIMainViewController 
 {
     OUIMainViewControllerBackgroundView *view = (OUIMainViewControllerBackgroundView *)self.view;
     view.toolbar = [_innerViewController toolbarForMainViewController];
+}
+
+// Maintains a local counter and disables interaction on just this view controller's view and subviews (not the whole app)
+- (void)beginIgnoringInteractionEvents;
+{
+    if (_interactionIgnoreCount == 0) {
+        UIView *view = self.view;
+        OBASSERT(view.userInteractionEnabled == YES); // No one else should twiddle this
+        view.userInteractionEnabled = NO;
+    }
+    _interactionIgnoreCount++;
+}
+
+- (void)endIgnoringInteractionEvents;
+{
+    if (_interactionIgnoreCount == 0) {
+        OBASSERT_NOT_REACHED("Mismatched -beginIgnoringInteractionEvents and -endIgnoringInteractionEvents?");
+        OBASSERT(self.view.userInteractionEnabled == YES);
+        return;
+    }
+    
+    _interactionIgnoreCount--;
+    if (_interactionIgnoreCount == 0) {
+        UIView *view = self.view;
+        OBASSERT(view.userInteractionEnabled == NO); // No one else should twiddle this
+        view.userInteractionEnabled = YES;
+    } else {
+        OBASSERT(self.view.userInteractionEnabled == NO);
+    }
 }
 
 #pragma mark -

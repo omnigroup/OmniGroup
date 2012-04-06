@@ -1,4 +1,4 @@
-// Copyright 1997-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -119,3 +119,16 @@ do {						\
 
 /* For doing retain-and-assign or copy-and-assign with CF objects */
 #define OB_ASSIGN_CFRELEASE(lval, rval) { __typeof__(lval) new_ ## lval = (rval); if (lval != NULL) { CFRelease(lval); } lval = new_ ## lval; }
+
+
+// ARC/MRR support
+
+#if defined(__has_feature) && __has_feature(objc_arc)
+    #define OB_STRONG __strong
+    #define OB_BRIDGE __bridge
+    #define OB_AUTORELEASING __autoreleasing
+#else
+    #define OB_STRONG
+    #define OB_BRIDGE
+    #define OB_AUTORELEASING
+#endif

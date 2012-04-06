@@ -20,7 +20,7 @@
 #import "OIInspectionSet.h"
 #import "OIInspector.h"
 #import "OIInspectorController.h"
-#import "OIInspectorGroup.h"
+#import "OIInspectorGroup-Internal.h"
 #import "OITabbedInspector.h"
 
 

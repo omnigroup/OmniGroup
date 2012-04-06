@@ -42,6 +42,29 @@ RCS_ID("$Id$");
     return action;
 }
 
+// This significantly lowers the time needed to build the animation images for OUIMainViewController when entering/leaving the document picker. kCGInterpolationNone might be overkill -- can see the aliasing change if you know to look for it.
+- (void)renderInContext:(CGContextRef)ctx;
+{
+    CGImageRef contents = (CGImageRef)self.contents;
+    if (contents == NULL)
+        return;
+    if (CFGetTypeID(contents) != CGImageGetTypeID()) {
+        OBASSERT_NOT_REACHED("contents isn't an image");
+        [super renderInContext:ctx];
+        return;
+    }
+    
+    CGContextSaveGState(ctx);
+    {
+        CGRect bounds = self.bounds;
+        
+        CGContextSetInterpolationQuality(ctx, kCGInterpolationLow);
+        OQFlipVerticallyInRect(ctx, bounds);
+        CGContextDrawImage(ctx, bounds, contents);
+    }
+    CGContextRestoreGState(ctx);
+}
+
 @end
 
 @implementation OUIDocumentPreviewView
@@ -54,6 +77,7 @@ RCS_ID("$Id$");
     BOOL _selected;
     BOOL _draggingSource;
     BOOL _highlighted;
+    BOOL _downloadRequested;
     BOOL _downloading;
     
     NSTimeInterval _animationDuration;
@@ -90,6 +114,7 @@ static void _updateShouldRasterize(OUIDocumentPreviewView *self)
 {
     BOOL shouldRasterize = self->_needsAntialiasingBorder;
     self.layer.shouldRasterize = shouldRasterize;
+    self.layer.rasterizationScale = [[UIScreen mainScreen] scale];
 }
 
 - initWithFrame:(CGRect)frame;
@@ -168,6 +193,7 @@ static void _updateShouldRasterize(OUIDocumentPreviewView *self)
             CGSize imageSize = image.size;
             
             _selectionLayer.contents = (id)[image CGImage];
+            _selectionLayer.contentsScale = [image scale];
             _selectionLayer.contentsCenter = CGRectMake(kOUIDocumentPreviewViewBorderEdgeInsets.left/imageSize.width,
                                                         kOUIDocumentPreviewViewBorderEdgeInsets.top/imageSize.height,
                                                         (imageSize.width-kOUIDocumentPreviewViewBorderEdgeInsets.left-kOUIDocumentPreviewViewBorderEdgeInsets.right)/imageSize.width,
@@ -361,6 +387,17 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
     [self setNeedsLayout];
 }
 
+@synthesize downloadRequested = _downloadRequested;
+- (void)setDownloadRequested:(BOOL)downloadRequested;
+{
+    if (_downloadRequested == downloadRequested)
+        return;
+    
+    _downloadRequested = downloadRequested;
+
+    [self setNeedsLayout];
+}
+
 @synthesize downloading = _downloading;
 - (void)setDownloading:(BOOL)downloading;
 {
@@ -403,7 +440,7 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
 }
 - (void)setProgress:(double)progress;
 {
-    OBPRECONDITION(_transferProgressView || progress == 0.0);
+    OBPRECONDITION(_transferProgressView || progress == 0.0 || progress == 1.0);
     
     _transferProgressView.progress = progress;
 }
@@ -468,7 +505,7 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
     {
         CGFloat alpha = 1;
         
-        if (_highlighted)
+        if (_highlighted || _downloadRequested)
             alpha = 0.5;
         
         _imageLayer.opacity = alpha;

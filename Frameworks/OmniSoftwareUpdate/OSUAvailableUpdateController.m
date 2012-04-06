@@ -1,4 +1,4 @@
-// Copyright 2007-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,7 @@ NSString * const OSUAvailableUpdateControllerLoadingReleaseNotesBinding = @"load
 
 RCS_ID("$Id$");
 
-@interface OSUAvailableUpdateController (Private)
+@interface OSUAvailableUpdateController ()
 - (void)_resizeInterface:(BOOL)resetDividerPosition;
 - (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
 - (void)_refreshDefaultAction;
@@ -546,7 +546,6 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     return proposedMaximumPosition;
 }
 
-
 /*
 - (CGFloat)splitView:(NSSplitView *)splitView constrainSplitPosition:(CGFloat)proposedPosition ofSubviewAt:(NSInteger)dividerIndex;
 {
@@ -561,11 +560,26 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     [self _resizeSplitViewViewsWithTablePaneExistingHeight:tableViewHeight];
 }
 */
-@end
+
+#pragma mark NSTableView Delegate
+
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell_ forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row;
+{
+    NSTextFieldCell *cell = cell_;
+    
+    if (tableView == _itemTableView && [[tableColumn identifier] isEqualToString:@"price"]) {
+        OSUItem *rowItem = [[_availableItemController arrangedObjects] objectAtIndex:row];
+        NSDictionary *attributes = [rowItem priceAttributesForStyle:[cell backgroundStyle]];
+        NSLog(@"attrs = %@", attributes);
+        NSColor *fgColor = [attributes objectForKey:NSForegroundColorAttributeName];
+        if (fgColor)
+            [cell setTextColor:fgColor];
+        [cell setFont:[attributes objectForKey:NSFontAttributeName]];
+    }
+}
 
 #pragma mark -
-
-@implementation OSUAvailableUpdateController (Private)
+#pragma mark Private
 
 #define INTER_ELEMENT_GAP (12.0f)
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -176,7 +176,7 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
         secondFraction = (NSTimeInterval)fractionNumerator / (NSTimeInterval)fractionDenominator;
     }
     
-    BOOL releaseCalendar = NO;
+    void (^releaseCalendarBlock)(void) = NULL;
     NSCalendar *calendar;
     if (buf[offset] == 'Z') { // RFC 3339 allows 'z' here too, but we don't right now.
         if (buf[offset + 1] != 0)
@@ -193,8 +193,10 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
         READ_2UINT(tzMinute);
         
         // This isn't going to perform as well as the Z case.
-        releaseCalendar = YES;
         calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+        releaseCalendarBlock = ^{
+            [calendar release];
+        };
         
         NSInteger tzOffset = tzHour*3600+tzMinute*60;
         if (negate)
@@ -211,8 +213,8 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
     CFAbsoluteTime absoluteTime;
     const char *components = "yMdHms";
     Boolean success = CFCalendarComposeAbsoluteTime((CFCalendarRef)calendar, &absoluteTime, components, year, month, day, hour, minute, 0/*seconds*/);
-    if (releaseCalendar)
-        [calendar release];
+    if (releaseCalendarBlock != NULL)
+        releaseCalendarBlock();
     if (!success)
         BAD_INIT; // Bad components, most likely?  Month of 13 or the like.
     

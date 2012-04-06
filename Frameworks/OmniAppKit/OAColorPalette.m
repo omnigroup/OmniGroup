@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -125,25 +125,6 @@ static inline NSColor *colorForNamedColorString(NSString *colorString, NSColorSp
     }
 }
 
-static const CGFloat d65WhitePoint[3] = { (CGFloat)95.04, (CGFloat)100.00, (CGFloat)108.88 };
-
-static NSColorSpace *colorSpaceForGamma(double gammaValue)
-{
-    CGFloat gammaValues[3] = { (CGFloat)gammaValue, (CGFloat)gammaValue, (CGFloat)gammaValue };
-    
-    CGColorSpaceRef gammaSpace = CGColorSpaceCreateCalibratedRGB(d65WhitePoint, NULL, gammaValues, NULL);
-    
-    NSColorSpace *space = [[NSColorSpace alloc] initWithCGColorSpace:gammaSpace];
-    CFRelease(gammaSpace);
-    
-    return [space autorelease];
-}
-
-+ (NSColor *)colorForString:(NSString *)colorString gamma:(double)gammaValue;
-{
-    return [self colorForString:colorString colorSpace:colorSpaceForGamma(gammaValue)];
-}
-
 + (NSColor *)colorForString:(NSString *)colorString colorSpace:(NSColorSpace *)space;
 {
     if ([space colorSpaceModel] != NSRGBColorSpaceModel) {
@@ -177,11 +158,6 @@ static NSColorSpace *colorSpaceForGamma(double gammaValue)
     }
 }
 
-+ (NSColor *)colorForString:(NSString *)colorString;
-{
-    return [self colorForString:colorString gamma:1.0f];
-}
-
 static NSString *stringForColor(NSColor *color, double gammaValue)
 {
     CGFloat red = 0.0f, green = 0.0f, blue = 0.0f, alpha = 0.0f;
@@ -198,16 +174,6 @@ static NSString *stringForColor(NSColor *color, double gammaValue)
         blue = (CGFloat)pow(blue, 1.0 / gammaValue);
     }
     return [NSString stringWithFormat:@"#%02x%02x%02x", ((int)rint(red * 255.0f)),  ((int)rint(green * 255.0f)), ((int)rint(blue * 255.0f))];
-}
-
-+ (NSString *)stringForColor:(NSColor *)color gamma:(double)gammaValue;
-{
-    return stringForColor([color colorUsingColorSpaceName:NSCalibratedRGBColorSpace], gammaValue);
-}
-
-+ (NSString *)stringForColor:(NSColor *)color;
-{
-    return [self stringForColor:color gamma:1.0f];
 }
 
 + (NSString *)stringForColor:(NSColor *)color colorSpace:(NSColorSpace *)space;

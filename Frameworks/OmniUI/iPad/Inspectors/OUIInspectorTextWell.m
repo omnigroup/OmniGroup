@@ -203,12 +203,24 @@ static id _commonInit(OUIInspectorTextWell *self)
         [self removeTarget:self action:@selector(_tappedTextWell:) forControlEvents:UIControlEventTouchUpInside];
 }
 
+- (void)setEnabled:(BOOL)enabled;
+{
+    [super setEnabled:enabled];
+    
+    [_labelTextLayout release];
+    _labelTextLayout = nil;
+    
+    [_valueTextLayout release];
+    _valueTextLayout = nil;
+    [self setNeedsDisplay];
+}
+
 - (BOOL)editing;
 {
     return (_editor && _editorContainerView && _editor.superview == _editorContainerView);
 }
 
-static CTTextAlignment _ctAlignemntForAlignment(UITextAlignment align)
+static CTTextAlignment _ctAlignmentForAlignment(UITextAlignment align)
 {    
     // UITextAlignment only has three options and they aren't identical values to the CT version... maybe our property should be a CTTextAlignment
     switch (align) {
@@ -264,7 +276,9 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
         if ([NSString isEmptyString:text])
             text = @"";
         textType = TextTypePlaceholder;
-    }
+    } else if (!self.enabled)
+        textType = TextTypePlaceholder;
+    
     if (outType)
         *outType = textType;
     return text;
@@ -317,12 +331,11 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
 @synthesize spellCheckingType = _spellCheckingType;
 #endif
 @synthesize keyboardType = _keyboardType;
-@synthesize inputView = _inputView;
-@synthesize inputAccessoryView = _inputAccessoryView;
+@synthesize customKeyboard = _customKeyboard;
 
 - (CTTextAlignment)effectiveTextAlignment
 {
-    return _style == OUIInspectorTextWellStyleSeparateLabelAndText ? kCTRightTextAlignment : _ctAlignemntForAlignment(_textAlignment);
+    return _style == OUIInspectorTextWellStyleSeparateLabelAndText ? kCTRightTextAlignment : _ctAlignmentForAlignment(_textAlignment);
 }
 
 - (OUIEditableFrame *)editor;
@@ -633,9 +646,6 @@ static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little ext
     [self setNeedsDisplay];
 }
 
-#pragma mark -
-#pragma mark Private
-
 - (NSAttributedString *)_defaultStyleFormattedText;
 {
     OBPRECONDITION(_style == OUIInspectorTextWellStyleDefault);
@@ -700,7 +710,7 @@ static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little ext
         _setAttr(attrLabel, (id)kCTFontAttributeName, (id)font);
         CFRelease(font);
         
-        UIColor *textColor = [self textColor];
+        UIColor *textColor = self.enabled ? [self textColor] : [OUIInspector disabledLabelTextColor];
         _setAttr(attrLabel, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
         
         _labelTextLayout = [[OUITextLayout alloc] initWithAttributedString:attrLabel constraints:CGSizeMake(OUITextLayoutUnlimitedSize, OUITextLayoutUnlimitedSize)];
@@ -789,6 +799,35 @@ static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little ext
     [layout drawFlippedInContext:ctx bounds:textRect];
 }
 
+- (BOOL)canBecomeFirstResponder;
+{
+    return _customKeyboard && ![_customKeyboard shouldUseTextEditor];
+}
+
+- (UIView *)inputView;
+{
+    return _customKeyboard.inputView;
+}
+
+- (UIView *)inputAccessoryView;
+{
+    return _customKeyboard.inputAccessoryView;
+}
+
+- (BOOL)resignFirstResponder;
+{
+    if ([self isFirstResponder]) {
+        [self sendActionsForControlEvents:UIControlEventValueChanged];
+        [self setNeedsDisplay];
+    }
+    return [super resignFirstResponder];
+}
+
+- (BOOL)shouldDrawHighlighted;
+{
+    return [self isFirstResponder] || [super shouldDrawHighlighted];
+}
+
 - (void)_tappedTextWell:(id)sender;
 {
     // Can tap the area above/below the text field. Don't restart editing if that happens.
@@ -800,45 +839,50 @@ static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little ext
     
     // turn off display while editing.
     [self setNeedsDisplay];
-        
-    OUIEditableFrame *editor = self.editor; // creates if needed
-
-    // Set this as the default instead of on the attributed string in case we start out with zero length text.
-    UIFont *font = [self font] ? [self font] : [UIFont systemFontOfSize:[OUIInspectorTextWell fontSize]];
-    if (font) {
-        CTFontRef ctFont = CTFontCreateWithName((CFStringRef)font.fontName, font.pointSize, NULL);
-        editor.defaultCTFont = ctFont;
-        if (ctFont)
-            CFRelease(ctFont);
+    
+    if (_customKeyboard != nil && ![_customKeyboard shouldUseTextEditor]) {
+        [self becomeFirstResponder];
+        [_customKeyboard editInspectorTextWell:self];
     } else {
-        editor.defaultCTFont = NULL;
-    }
+        OUIEditableFrame *editor = self.editor; // creates if needed
 
-    _editorContainerView = [[UIView alloc] init];
-    //_editorContainerView.clipsToBounds = YES; Can't do this since it lops off the UITextInput correction dingus.
-    
-    TextType textType;
-    _getText(self, _text, &textType);
-    _shouldDisplayPlaceholderText = (textType == TextTypePlaceholder);
-    editor.autocapitalizationType = self.autocapitalizationType;
-    editor.autocorrectionType = self.autocorrectionType;
-#if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
-    editor.spellCheckingType = self.spellCheckingType;
-#endif
-    editor.keyboardType = self.keyboardType;
-    editor.opaque = NO;
-    editor.backgroundColor = nil;
-    editor.inputView = self.inputView;
-    editor.inputAccessoryView = self.inputAccessoryView;
-    
-    editor.attributedText = [self _attributedStringForEditingString:_text];
-    
-    [_editorContainerView addSubview:editor];
-    [self addSubview:_editorContainerView];
-    
-    [self _updateEditorFrame];
-    
-    [editor becomeFirstResponder];
+        // Set this as the default instead of on the attributed string in case we start out with zero length text.
+        UIFont *font = [self font] ? [self font] : [UIFont systemFontOfSize:[OUIInspectorTextWell fontSize]];
+        if (font) {
+            CTFontRef ctFont = CTFontCreateWithName((CFStringRef)font.fontName, font.pointSize, NULL);
+            editor.defaultCTFont = ctFont;
+            if (ctFont)
+                CFRelease(ctFont);
+        } else {
+            editor.defaultCTFont = NULL;
+        }
+
+        _editorContainerView = [[UIView alloc] init];
+        //_editorContainerView.clipsToBounds = YES; Can't do this since it lops off the UITextInput correction dingus.
+        
+        TextType textType;
+        _getText(self, _text, &textType);
+        _shouldDisplayPlaceholderText = (textType == TextTypePlaceholder);
+        editor.autocapitalizationType = self.autocapitalizationType;
+        editor.autocorrectionType = self.autocorrectionType;
+    #if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
+        editor.spellCheckingType = self.spellCheckingType;
+    #endif
+        editor.keyboardType = self.keyboardType;
+        editor.opaque = NO;
+        editor.backgroundColor = nil;
+        editor.inputView = self.inputView;
+        editor.inputAccessoryView = self.inputAccessoryView;
+        
+        editor.attributedText = [self _attributedStringForEditingString:_text];
+        
+        [_editorContainerView addSubview:editor];
+        [self addSubview:_editorContainerView];
+        
+        [self _updateEditorFrame];
+        
+        [editor becomeFirstResponder];
+    }
 
     [self sendActionsForControlEvents:UIControlEventEditingDidBegin];
 }

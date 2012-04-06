@@ -756,6 +756,7 @@
 					"STEnableDeprecatedAssertionMacros=1",
 				);
 				INFOPLIST_FILE = "Info-ONUnitTests.plist";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
 				WRAPPER_EXTENSION = otest;
@@ -775,6 +776,7 @@
 					"STEnableDeprecatedAssertionMacros=1",
 				);
 				INFOPLIST_FILE = "Info-ONUnitTests.plist";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
 				SKIP_INSTALL = YES;
@@ -795,6 +797,7 @@
 					"STEnableDeprecatedAssertionMacros=1",
 				);
 				INFOPLIST_FILE = "Info-ONUnitTests.plist";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
 				WRAPPER_EXTENSION = otest;

@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <OmniFoundation/OFXMLDocument.h>
 #import <OmniFoundation/OFXMLWhitespaceBehavior.h>
 #import <OmniFoundation/OFXMLBuffer.h>
+#import <OmniFoundation/OFXMLQName.h>
 
 RCS_ID("$Id$")
 

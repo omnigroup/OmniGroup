@@ -27,7 +27,7 @@
     NSMutableArray         *_processingInstructions;
     
     // DTD declaration
-    __strong CFURLRef _dtdSystemID;
+    CFURLRef _dtdSystemID;
     NSString *_dtdPublicID;
     
     // Main document content

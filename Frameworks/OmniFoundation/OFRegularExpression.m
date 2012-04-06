@@ -124,14 +124,14 @@ static inline void setNextPointer(ExpressionState *scan, const ExpressionState *
     while ((temp = nextState(scan)))
         scan = temp;
     
-    ptrdiff_t nextState;
+    ptrdiff_t nextStateIndex;
     if (scan->opCode == OpBack)
-        nextState = scan - value;
+        nextStateIndex = scan - value;
     else
-        nextState = value - scan;
+        nextStateIndex = value - scan;
     
-    OBASSERT(nextState < (1<<16));
-    scan->nextState = (unsigned)nextState;
+    OBASSERT(nextStateIndex < (1<<16));
+    scan->nextState = (unsigned)nextStateIndex;
 }
 
 static inline void setNextPointerOnArgument(ExpressionState *scan, const ExpressionState *value)

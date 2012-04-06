@@ -116,13 +116,19 @@ static NSMutableDictionary *_makeItemForFont(UIFont *font, BOOL isFaceName)
 
 static NSComparisonResult _compareDisplayName(id obj1, id obj2, void *context)
 {
-    return [[obj1 objectForKey:ItemDisplayName] localizedCaseInsensitiveCompare:[obj2 objectForKey:ItemDisplayName]];
+    NSDictionary *dict1 = obj1;
+    NSDictionary *dict2 = obj2;
+    
+    return [[dict1 objectForKey:ItemDisplayName] localizedCaseInsensitiveCompare:[dict2 objectForKey:ItemDisplayName]];
 }
 static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
 {
+    NSDictionary *dict1 = obj1;
+    NSDictionary *dict2 = obj2;
+
     // The base face should be first
-    BOOL base1 = [[obj1 objectForKey:ItemIsBase] boolValue];
-    BOOL base2 = [[obj2 objectForKey:ItemIsBase] boolValue];
+    BOOL base1 = [[dict1 objectForKey:ItemIsBase] boolValue];
+    BOOL base2 = [[dict2 objectForKey:ItemIsBase] boolValue];
     
     if (base1 ^ base2) {
         if (base1)

@@ -557,7 +557,7 @@ static OAFontDescriptor *_newWithFontDescriptorHavingTrait(OAFontDescriptor *sel
     [newAttributes removeObjectForKey:(id)kCTFontStyleNameAttribute];
     
     // If we don't have traits explicitly listed already, and our original font *did* have traits then add a request. This can happen when the original attributes dictionary had a specific font name ("HelveticaNeue-Bold") instead of a family and traits.
-    if ([[newAttributes objectForKey:(id)kCTFontTraitsAttribute] objectForKey:(id)kCTFontSymbolicTrait] == nil) {
+    if ([(NSDictionary *)[newAttributes objectForKey:(id)kCTFontTraitsAttribute] objectForKey:(id)kCTFontSymbolicTrait] == nil) {
         CTFontSymbolicTraits oldTraits = _symbolicTraits(self);
         if (oldTraits) {
             NSDictionary *traitsDict = [newAttributes objectForKey:(id)kCTFontTraitsAttribute];

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -186,13 +186,11 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
 
 static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRef changedKeys, void *info)
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
 #ifdef DEBUG_kc
     NSLog(@"OWProxyServerDynamicStoreCallBack(): changedKeys=%@", [(NSArray *)changedKeys description]);
 #endif
 
-    unsigned int changedKeyCount = [(NSArray *)changedKeys count];
+    NSUInteger changedKeyCount = [(NSArray *)changedKeys count];
     if (changedKeyCount == 0)
         return; // I'm not sure why they've called us since there are no changed keys, but I have seen this happen
 
@@ -202,7 +200,6 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
     CFRelease(proxiesKey);
     [OWProxyServer _updateProxySettingsFromDictionary:proxySettingsDictionary];
     [proxySettingsDictionary release];
-#endif
 }
 
 @end

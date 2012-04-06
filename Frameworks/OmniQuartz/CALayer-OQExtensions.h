@@ -36,12 +36,11 @@
 - (void)recursivelyRemoveAllAnimations;
 
 - (BOOL)isModelLayer;
-- (BOOL)isPresentationLayer OB_DEPRECATED_ATTRIBUTE;
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (void)renderInContextIgnoringCache:(CGContextRef)ctx;
 - (void)renderInContextIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
 - (void)renderInContextIgnoringHiddenIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSImage *)imageForRect:(NSRect)rect useAnimatedValues:(BOOL)useAnimatedValues;
 - (void)writeImagesAndOpen;
 #endif

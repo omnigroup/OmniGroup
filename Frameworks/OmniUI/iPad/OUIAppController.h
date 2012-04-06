@@ -87,6 +87,7 @@
 @property(readonly) NSString *applicationName;
 
 - (void)resetKeychain;
+- (BOOL)isRunningRetailDemo;
 @end
 
 

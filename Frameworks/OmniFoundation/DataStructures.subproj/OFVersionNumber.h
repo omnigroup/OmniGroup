@@ -31,6 +31,7 @@
 + (BOOL)isOperatingSystemLeopardOrLater; // 10.5
 + (BOOL)isOperatingSystemSnowLeopardOrLater; // 10.6
 + (BOOL)isOperatingSystemLionOrLater; // 10.7
++ (BOOL)isOperatingSystemMountainLionOrLater; // 10.8
 #endif
 
 - initWithVersionString:(NSString *)versionString;

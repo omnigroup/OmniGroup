@@ -23,6 +23,7 @@
     NSDate *expirationDate;
 }
 
++ (void)setResolverType:(NSString *)resolverType;
 
 /* Calling this method causes ONHost to track changes to the host's name and domain name (as returned by +domainName and +localHostname). ONHost will register in the calling thread's run loop the first time this method is called. Calling it multiple times has no effect. */
 + (void)listenForNetworkChanges;

@@ -1,4 +1,4 @@
-// Copyright 2009-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -173,8 +173,12 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
                 return OFXMLSigCopyKeyFromDSAKeyValue(keyvalue, outError);
             if ([keytype isEqual:(id)kSecAttrKeyTypeRSA])
                 return OFXMLSigCopyKeyFromRSAKeyValue(keyvalue, outError);
-            if ([keytype isEqual:(id)kSecAttrKeyTypeECDSA])
-                return OFXMLSigCopyKeyFromEllipticKeyValue(keyvalue, outError);
+            if ([keytype isEqual:(id)kSecAttrKeyTypeECDSA]) {
+                int sigorder = -1;
+                SecKeyRef retval = OFXMLSigCopyKeyFromEllipticKeyValue(keyvalue, &sigorder, outError);
+                OBASSERT(sigorder >= 0 && (size_t)sigorder == SecKeyGetBlockSize(retval));
+                return retval;
+            }
         }
     }
 #endif
@@ -227,8 +231,10 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
                 return OFXMLSigGetKeyFromDSAKeyValue(keyvalue, outError);
             if (keytype == CSSM_ALGID_RSA)
                 return OFXMLSigGetKeyFromRSAKeyValue(keyvalue, outError);
-            if (keytype == CSSM_ALGID_ECDSA)
-                return OFXMLSigGetKeyFromEllipticKeyValue(keyvalue, outError);
+            if (keytype == CSSM_ALGID_ECDSA) {
+                int sigorder = -1;
+                return OFXMLSigGetKeyFromEllipticKeyValue(keyvalue, &sigorder, outError);
+            }
         }
     }
 #endif

@@ -269,6 +269,16 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34EE20D014F0354300722491"
+               BuildableName = "OBUnitTests.octest"
+               BlueprintName = "OBUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniBase/OmniBase.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "4AA1E7FA08AA764600E2FF6B"
                BuildableName = "OAUnitTests.octest"
                BlueprintName = "OAUnitTests"
@@ -296,6 +306,15 @@
             </BuildableReference>
          </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "8DD76F740486A8DE00D96B5E"
+            BuildableName = "FixStringsFile"
+            BlueprintName = "FixStringsFile"
+            ReferencedContainer = "container:../Tools/FixStringsFile/FixStringsFile.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </TestAction>
    <LaunchAction
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
@@ -303,7 +322,8 @@
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Debug"
-      debugDocumentVersioning = "YES">
+      debugDocumentVersioning = "YES"
+      allowLocationSimulation = "YES">
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"

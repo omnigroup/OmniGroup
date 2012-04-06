@@ -28,6 +28,10 @@ enum {
     
     // DAV
     OFSDAVFileManagerCannotAuthenticate,
+    
+    // iCloud
+    OFSUbiquitousItemNotDownloaded,
+    OFSUbiquitousItemInConflict
 };
 
 extern NSString * const OFSErrorDomain;

@@ -27,7 +27,6 @@
 RCS_ID("$Id$");
 
 @interface OIInspectorController (/*Private*/) <OIInspectorHeaderViewDelegateProtocol>
-- (void)toggleVisibleAction:sender;
 - (void)_buildHeadingView;
 - (void)_buildWindow;
 - (NSView *)_inspectorView;
@@ -368,10 +367,9 @@ static BOOL animateInspectorToggles;
     return result;
 }
 
-#pragma mark -
-#pragma mark Private
+#pragma mark - Internal
 
-- (void)toggleVisibleAction:sender;
+- (IBAction)toggleVisibleAction:(id)sender;
 {
     BOOL didExpand = NO;
     if (!isExpanded) {
@@ -391,6 +389,8 @@ static BOOL animateInspectorToggles;
         }
     }
 }
+
+#pragma mark - Private
 
 - (void)_buildHeadingView;
 {

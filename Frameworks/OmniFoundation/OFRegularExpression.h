@@ -1,4 +1,4 @@
-// Copyright 1997-2005,2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005,2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,10 +31,10 @@ typedef union __attribute__((packed)) {
     NSString *_patternString;
     unichar startCharacter;
     BOOL matchStartsLine;
-    __strong unichar *matchString;
+    unichar *matchString;
     unsigned int subExpressionCount;
-    __strong ExpressionState *program;
-    __strong unichar *stringBuffer;
+    ExpressionState *program;
+    unichar *stringBuffer;
 }
 
 - initWithString:(NSString *)string;

@@ -11,20 +11,21 @@
 
 #if OFS_DOCUMENT_STORE_SUPPORTED
 
-#import <OmniFoundation/OFNull.h>
-#import <OmniFoundation/OFUTI.h>
-#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
-#import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
-#import <OmniFoundation/NSSet-OFExtensions.h>
-#import <OmniFoundation/OFCFCallbacks.h>
-#import <OmniFoundation/NSString-OFReplacement.h>
-#import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFileStore/OFSDocumentStoreDelegate.h>
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniFileStore/OFSDocumentStoreGroupItem.h>
+#import <OmniFileStore/Errors.h>
+#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
+#import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
+#import <OmniFoundation/NSSet-OFExtensions.h>
+#import <OmniFoundation/NSString-OFPathExtensions.h>
+#import <OmniFoundation/NSString-OFReplacement.h>
+#import <OmniFoundation/OFCFCallbacks.h>
+#import <OmniFoundation/OFNetReachability.h>
+#import <OmniFoundation/OFNull.h>
+#import <OmniFoundation/OFUTI.h>
 #import <OmniUnzip/OUUnzipArchive.h>
 
-#import "Errors.h"
 #import "OFSShared_Prefix.h"
 #import "OFSDocumentStoreItem-Internal.h"
 #import "OFSDocumentStoreFileItem-Internal.h"
@@ -93,9 +94,14 @@ RCS_ID("$Id$");
 
 OBDEPRECATED_METHOD(-documentStore:proxyClassForURL:); // -documentStore:fileItemClassForURL:
 OBDEPRECATED_METHOD(-documentStore:scannedProxies:); // -documentStore:scannedFileItems:
+OBDEPRECATED_METHOD(-documentStore:scopeForNewDocumentAtURL:); // New documents are always adds to default scope. Restored sample documents are always added to local scope. Pass in nil to one of the -addDocumentWithScope:... methods for the default scope. 
 OBDEPRECATED_METHOD(-documentStore:shouldIncludeFileItemWithFileType:); // should instead set a predicate on your documentPicker's DocumentStoreFilter when it's created to narrow which files are displayed.
+OBDEPRECATED_METHOD(-userFileExistsWithFileNameOfURL:); // Instead use -scopeForFileName:inFolder:. If nil, then the file diesn't exist.
+OBDEPRECATED_METHOD(-addDocumentFromURL:option:completionHandler:); // Should use a method that allows scope to be passed in. (ex. -addDocumentWithScope:inFolderNamed:baseName:fromURL:option:completionHandler: or -addDocumentWithScope:inFolderNamed:fromURL:option:completionHandler:)
 
 static NSOperationQueue *NotificationCompletionQueue = nil;
+
+NSString * const OFSDocumentStoreUbiquityEnabledChangedNotification = @"OFSDocumentStoreUbiquityEnabledChanged";
 
 NSString * const OFSDocumentStoreFileItemsBinding = @"fileItems";
 NSString * const OFSDocumentStoreTopLevelItemsBinding = @"topLevelItems";
@@ -171,11 +177,16 @@ static NSDictionary *_scopeToContainerURL(OFSDocumentStore *docStore);
     // NOTE: There is no setter for this; we currently make some calls to the delegate from a background queue and just use the ivar.
     id <OFSDocumentStoreDelegate> _nonretained_delegate;
     
+    BOOL _lastNotifiedUbiquityEnabled;
+    
     NSMetadataQuery *_metadataQuery;
     BOOL _metadataInitialScanFinished;
     NSMutableArray *_afterInitialDocumentScanActions;
-
+    NSMutableArray *_afterMetadataUpdateActions;
+    NSUInteger _metadataUpdateVersionNumber;
+    
     BOOL _isScanningItems;
+    NSUInteger _deferScanRequestCount;
     NSMutableArray *_deferredScanCompletionHandlers;
     
     BOOL _isRenamingFileItemsToHaveUniqueFileNames;
@@ -189,10 +200,14 @@ static NSDictionary *_scopeToContainerURL(OFSDocumentStore *docStore);
     
     NSArray *_ubiquitousScopes;
     OFSDocumentStoreScope *_localScope;
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    OFNetReachability *_netReachability; // Only set up if we have a metadata query running.
+#endif
 }
 
 OFPreference *OFSDocumentStoreDisableUbiquityPreference = nil; // Even if ubiquity is enabled, don't ask the user -- just pretend we don't see it.
-OFPreference *OFSDocumentStoreUserWantsUbiquityPreference = nil; // If ubiquity is on, the user still might want to not use it, but have the option to turn it on later.
+static OFPreference *OFSDocumentStoreUserWantsUbiquityPreference = nil; // If ubiquity is on, the user still might want to not use it, but have the option to turn it on later.
 
 + (void)initialize;
 {
@@ -228,7 +243,7 @@ OFPreference *OFSDocumentStoreUserWantsUbiquityPreference = nil; // If ubiquity 
     return ([self _ubiquityContainerURL] != nil);
 }
 
-+ (void)didPromptForUbiquityAccessWithResult:(BOOL)allowUbiquityAccess;
++ (void)didPromptForUbiquityAccessWithResult:(BOOL)allowUbiquityAccess
 {
     // Instances listen for changes to this preference and will start/stop their metadata query appropriately.
     [OFSDocumentStoreUserWantsUbiquityPreference setBoolValue:allowUbiquityAccess];
@@ -293,21 +308,44 @@ OFPreference *OFSDocumentStoreUserWantsUbiquityPreference = nil; // If ubiquity 
     completionHandler = [[completionHandler copy] autorelease];
     
     [self _startMetadataQuery];
-    [self scanItemsWithCompletionHandler:^{
+    
+    [self _postUbiquityEnabledChangedIfNeeded];
+    
+    void (^scanFinished)(void) = ^{
         for (OFSDocumentStoreFileItem *fileItem in _fileItems)
             [fileItem _resumeFilePresenter];
         
         if (completionHandler)
             completionHandler();
-    }];
+    };
+    
+    if (_metadataQuery) {
+        // We'll get a scan provoked by NSMetadataQueryDidFinishGatheringNotification 
+        [self addAfterInitialDocumentScanAction:scanFinished];
+    } else {
+        [self scanItemsWithCompletionHandler:scanFinished];
+    }
 }
 
 #endif
 
-- (BOOL)userFileExistsWithFileNameOfURL:(NSURL *)fileURL;
+- (OFSDocumentStoreScope *)scopeForFileName:(NSString *)fileName inFolder:(NSString *)folder;
 {
-    //files from graffletopia (and maybe elsewhere) can be named "Foo.gstencil.zip". Both extensions need stripped. the second call will do nothing if there's no extension.
-    return [self fileItemNamed:[[[fileURL lastPathComponent] stringByDeletingPathExtension] stringByDeletingPathExtension]] != nil;
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    // Look through _fileItems for file with fileName in folder.
+    for (OFSDocumentStoreFileItem *fileItem in _fileItems) {
+        NSString *itemFileName = [fileItem.fileURL lastPathComponent];
+        NSString *itemFolderName = [self folderNameForFileURL:fileItem.fileURL];
+        
+        // Check fileName and folder.
+        if (([itemFolderName localizedCaseInsensitiveCompare:folder] == NSOrderedSame) &&
+            ([itemFileName localizedCaseInsensitiveCompare:fileName] == NSOrderedSame)) {
+            return fileItem.scope;
+        }
+    }
+    
+    return nil;
 }
 
 - init;
@@ -343,7 +381,9 @@ OFPreference *OFSDocumentStoreUserWantsUbiquityPreference = nil; // If ubiquity 
     [OFPreference addObserver:self selector:@selector(_ubiquityAllowedPreferenceChanged:) forPreference:OFSDocumentStoreUserWantsUbiquityPreference];
     
     [self _startMetadataQuery];
-    
+                                    
+    _lastNotifiedUbiquityEnabled = [[self class] isUbiquityAccessEnabled]; // Initial state
+
     // The metadata query, if started, will provoke our initial scan at some point in the future. We don't want to call the passed in completion handler until then since the scan would be incomplete.
     if (_metadataQuery) {
         if (completionHandler)
@@ -368,12 +408,28 @@ OFPreference *OFSDocumentStoreUserWantsUbiquityPreference = nil; // If ubiquity 
     [self _flushAfterInitialDocumentScanActions];
 }
 
+- (NSUInteger)metadataUpdateVersionNumber;
+{
+    return _metadataUpdateVersionNumber;
+}
+
+- (void)addAfterMetadataUpdateAction:(void (^)(void))action;
+{
+    if (!_afterMetadataUpdateActions)
+        _afterMetadataUpdateActions = [[NSMutableArray alloc] init];
+    [_afterMetadataUpdateActions addObject:[[action copy] autorelease]];
+}
+
 - (void)dealloc;
 {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 #endif
-        
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    [_netReachability release];
+#endif
+
     [_metadataQuery release];
     
     for (OFSDocumentStoreFileItem *fileItem in _fileItems)
@@ -467,60 +523,50 @@ static BOOL _performAdd(NSURL *fromURL, NSURL *toURL, OFSDocumentStoreScope *sco
         }
     }
     
-    if ([scope isUbiquitous]) {
-        // -setUbiquitous:... does its own file coordination and is documented to not be good to call on the main thread (since we may have file presenters that would cause deadlock).
-        OBASSERT(![NSThread isMainThread]); // -setUbiquitous:... is documented to not be good to call on the main thread.
-        
-        if (![[NSFileManager defaultManager] setUbiquitous:YES itemAtURL:temporaryURL destinationURL:toURL error:outError]) {
-            NSLog(@"Error from setUbiquitous:YES %@ -> %@: %@", temporaryURL, toURL, [*outError toPropertyList]);
-            return NO;
-        }
-    } else {
-        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-        __block BOOL success = NO;
-        __block NSError *innerError = nil;
-        NSError *error = nil;
-        
-        [coordinator coordinateReadingItemAtURL:fromURL options:0
-                               writingItemAtURL:toURL options:NSFileCoordinatorWritingForReplacing
-                                          error:&error byAccessor:
-         ^(NSURL *newReadingURL, NSURL *newWritingURL) {
-             NSFileManager *manager = [NSFileManager defaultManager];
-             
-             if (isReplacing) {
-                 NSError *removeError = nil;
-                 if (![manager removeItemAtURL:newWritingURL error:&removeError]) {
-                     if (![removeError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) {
-                         innerError = [removeError retain];
-                         NSLog(@"Error removing %@: %@", toURL, [removeError toPropertyList]);
-                         return;
-                     }
+    NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+    __block BOOL success = NO;
+    __block NSError *innerError = nil;
+    NSError *error = nil;
+    
+    [coordinator coordinateReadingItemAtURL:fromURL options:0
+                           writingItemAtURL:toURL options:NSFileCoordinatorWritingForReplacing
+                                      error:&error byAccessor:
+     ^(NSURL *newReadingURL, NSURL *newWritingURL) {
+         NSFileManager *manager = [NSFileManager defaultManager];
+         
+         if (isReplacing) {
+             NSError *removeError = nil;
+             if (![manager removeItemAtURL:newWritingURL error:&removeError]) {
+                 if (![removeError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) {
+                     innerError = [removeError retain];
+                     NSLog(@"Error removing %@: %@", toURL, [removeError toPropertyList]);
+                     return;
                  }
              }
-             
-             NSError *moveError = nil;
-             if (![manager moveItemAtURL:temporaryURL toURL:toURL error:&moveError]) {
-                 NSLog(@"Error moving %@ -> %@: %@", temporaryURL, toURL, [moveError toPropertyList]);
-                 innerError = [moveError retain];
-                 return;
-             }
-             
-             success = YES;
-         }];
+         }
+         
+         NSError *moveError = nil;
+         if (![manager moveItemAtURL:temporaryURL toURL:toURL error:&moveError]) {
+             NSLog(@"Error moving %@ -> %@: %@", temporaryURL, toURL, [moveError toPropertyList]);
+             innerError = [moveError retain];
+             return;
+         }
+         
+         success = YES;
+     }];
+    
+    [coordinator release];
+    
+    if (!success) {
+        OBASSERT(error || innerError);
+        if (innerError)
+            error = [innerError autorelease];
+        *outError = error;
         
-        [coordinator release];
+        // Clean up the temporary copy
+        [[NSFileManager defaultManager] removeItemAtURL:temporaryURL error:NULL];
         
-        if (!success) {
-            OBASSERT(error || innerError);
-            if (innerError)
-                error = [innerError autorelease];
-            *outError = error;
-            
-            // Clean up the temporary copy
-            [[NSFileManager defaultManager] removeItemAtURL:temporaryURL error:NULL];
-            
-            return NO;
-        }
+        return NO;
     }
     
     return YES;
@@ -608,13 +654,17 @@ static void _addItemAndNotifyHandler(OFSDocumentStore *self, void (^handler)(OFS
         handler(fileItem, error);
 }
 
+- (void)addDocumentWithScope:(OFSDocumentStoreScope *)scope inFolderNamed:(NSString *)folderName fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
+{
+    [self addDocumentWithScope:scope inFolderNamed:folderName baseName:nil fromURL:fromURL option:option completionHandler:completionHandler];
+}
 
 // Explicit scope version is useful if, for example, the document picker has an open directory and restores a sample document (which would have unknown scope), we should probably put it in that open folder with the default scope.
 // Enqueues an operationon the document store's background serial action queue. The completion handler will be called with the resulting file item, nil file item and an error.
-- (void)addDocumentWithScope:(OFSDocumentStoreScope *)scope inFolderNamed:(NSString *)folderName fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
+- (void)addDocumentWithScope:(OFSDocumentStoreScope *)scope inFolderNamed:(NSString *)folderName baseName:(NSString *)baseName fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]); // We'll invoke the completion handler on the main thread
-
+    
     // Don't copy in random files that the user tapped on in the WebDAV browser or that higher level UI didn't filter out.
     BOOL canView = ([_nonretained_delegate documentStore:self fileItemClassForURL:fromURL] != Nil);
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -651,18 +701,19 @@ static void _addItemAndNotifyHandler(OFSDocumentStore *self, void (^handler)(OFS
     };
     callCompletaionHandlerOnMainQueue = [[callCompletaionHandlerOnMainQueue copy] autorelease];
     
-    if (!scope)
+    if (![scope documentsURL:NULL])
         scope = [self _defaultScope];
     
     // We cannot decide on the destination URL w/o synchronizing with the action queue. In particular, if you try to duplicate "A" and "A 2", both operations could pick "A 3".
     [self performAsynchronousFileAccessUsingBlock:^{
         NSURL *toURL = nil;
+        NSString *toFileName = (baseName) ? [baseName stringByAppendingPathExtension:[[fromURL lastPathComponent] pathExtension]] : [fromURL lastPathComponent];
         BOOL isReplacing = NO;
         
         if (option == OFSDocumentStoreAddNormally) {
             // Use the given file name.
             NSError *error = nil;
-            toURL = [self _urlForScope:scope folderName:folderName fileName:[fromURL lastPathComponent] error:&error];
+            toURL = [self _urlForScope:scope folderName:folderName fileName:toFileName error:&error];
             if (!toURL) {
                 callCompletaionHandlerOnMainQueue(nil, error);
                 return;
@@ -670,15 +721,14 @@ static void _addItemAndNotifyHandler(OFSDocumentStore *self, void (^handler)(OFS
         }
         else if (option == OFSDocumentStoreAddByRenaming) {
             // Generate a new file name.
-            NSString *fileName = [fromURL lastPathComponent];
-            NSString *baseName = nil;
+            NSString *toBaseName = nil;
             NSUInteger counter;
-            [[fileName stringByDeletingPathExtension] splitName:&baseName andCounter:&counter];
+            [[toFileName stringByDeletingPathExtension] splitName:&toBaseName andCounter:&counter];
             
-            fileName = [self _availableFileNameWithBaseName:baseName extension:[fileName pathExtension] counter:&counter scope:scope];
+            toFileName = [self _availableFileNameWithBaseName:toBaseName extension:[toFileName pathExtension] counter:&counter scope:scope];
             
             NSError *error = nil;
-            toURL = [self _urlForScope:scope folderName:folderName fileName:fileName error:&error];
+            toURL = [self _urlForScope:scope folderName:folderName fileName:toFileName error:&error];
             if (!toURL) {
                 callCompletaionHandlerOnMainQueue(nil, error);
                 return;
@@ -687,7 +737,7 @@ static void _addItemAndNotifyHandler(OFSDocumentStore *self, void (^handler)(OFS
         else if (option == OFSDocumentStoreAddByReplacing) {
             // Use the given file name, but ensure that it does not exist in the documents directory.
             NSError *error = nil;
-            toURL = [self _urlForScope:scope folderName:folderName fileName:[fromURL lastPathComponent] error:&error];
+            toURL = [self _urlForScope:scope folderName:folderName fileName:toFileName error:&error];
             if (!toURL) {
                 callCompletaionHandlerOnMainQueue(nil, error);
                 return;
@@ -715,20 +765,6 @@ static void _addItemAndNotifyHandler(OFSDocumentStore *self, void (^handler)(OFS
     }];
 }
 
-- (void)addDocumentFromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
-{
-    OFSDocumentStoreScope *scope = nil;
-    if ([_nonretained_delegate respondsToSelector:@selector(documentStore:scopeForNewDocumentAtURL:)])
-        scope = [_nonretained_delegate documentStore:self scopeForNewDocumentAtURL:fromURL];
-    
-    if (!scope)
-        scope = [self scopeForFileURL:fromURL];
-    if (!scope)
-        scope = [self _defaultScope];
-    
-    [self addDocumentWithScope:scope inFolderNamed:_folderFilename(fromURL) fromURL:fromURL option:option completionHandler:completionHandler];
-}
-
 - (void)moveDocumentFromURL:(NSURL *)fromURL toScope:(OFSDocumentStoreScope *)scope inFolderNamed:(NSString *)folderName completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]); // We'll invoke the completion handler on the main thread
@@ -749,7 +785,7 @@ static void _addItemAndNotifyHandler(OFSDocumentStore *self, void (^handler)(OFS
     };
     callCompletionHandlerOnMainQueue = [[callCompletionHandlerOnMainQueue copy] autorelease];
     
-    if (!scope)
+    if (![scope documentsURL:NULL])
         scope = [self _defaultScope];
     
     // We cannot decide on the destination URL w/o synchronizing with the action queue. In particular, if you try to duplicate "A" and "A 2", both operations could pick "A 3".
@@ -1260,11 +1296,44 @@ bail:
 
 static NSString *_fileItemCacheKeyForURL(NSURL *url)
 {
+    OBPRECONDITION(url);
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    // NSFileManager will return /private/var URLs even when passed a standardized (/var) URL. Our cache keys should always be in one space.
+    // -URLByStandardizingPath only works if the URL exists, so we could only normalize the parent URL (which should be a longer-lived container) and then append the last path component (so that /var/mobile vs /var/private/mobile differences won't hurt).
+    // But, even easier is to drop everything before "/mobile/", leaving the application sandbox or the ubiquity container.
+    NSString *urlString = [url absoluteString];
+    
+    NSUInteger urlStringLength = [urlString length];
+    OBASSERT(urlStringLength > 0);
+    NSRange cacheKeyRange = NSMakeRange(0, urlStringLength);
+
+    NSRange mobileRange = [urlString rangeOfString:@"/mobile/"];
+    OBASSERT(mobileRange.length > 0);
+    if (mobileRange.length > 0) {
+        cacheKeyRange = NSMakeRange(NSMaxRange(mobileRange), urlStringLength - NSMaxRange(mobileRange));
+        OBASSERT(NSMaxRange(cacheKeyRange) == urlStringLength);
+    }
+        
+    // NSMetadataItem passes non-directory URLs when the really are directories. Trim the trailing slash if it is there.
+    if ([urlString characterAtIndex:urlStringLength - 1] == '/')
+        cacheKeyRange.length--;
+    
+    NSString *cacheKey = [urlString substringWithRange:cacheKeyRange];
+    
+    OBASSERT([cacheKey hasSuffix:@"/"] == NO);
+    OBASSERT([cacheKey containsString:@"/private/var"] == NO);
+
+    return cacheKey;
+#else
+    OBFinishPortingLater("Figure out how to build cache keys on the Mac"); // have the old version here that doesn't work right for NSURLs that don't currently exist
+    
     // NSFileManager will return /private/var URLs even when passed a standardized (/var) URL. Our cache keys should always be in one space.
     url = [url URLByStandardizingPath];
     
     // NSMetadataItem passes URLs w/o the trailing slash when the really are directories. Use strings for keys instead of URLs and trim the trailing slash if it is there.
     return [[url absoluteString] stringByRemovingSuffix:@"/"];
+#endif
 }
 
 // We no longer use an NSFileCoordinator when scanning the documents directory. NSFileCoordinator doesn't make writers of documents wait if there is a coordinator of their containing directory, so this doesn't help. We *could*, as we find documents, do a coordinated read on each document to make sure we get its most recent timestamp, but this seems wasteful in most cases.
@@ -1289,7 +1358,7 @@ static void _scanDirectoryURL(OFSDocumentStore *self, NSURL *directoryURL, void 
         }
         
         for (NSURL *fileURL in fileURLs) {
-            NSError *error;
+            NSError *error = nil;
             
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
             // We never want to acknowledge files in the inbox directly. Instead they'll be dealt with when they're handed to us via document interaction and moved.
@@ -1360,6 +1429,21 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
 #endif
 }
 
+static NSDate *_modificationDateForFileURL(NSFileManager *fileManager, NSURL *fileURL)
+{
+    NSError *attributesError = nil;
+    NSDate *modificationDate = nil;
+    NSDictionary *attributes = [fileManager attributesOfItemAtPath:[fileURL path]  error:&attributesError];
+    if (!attributes)
+        NSLog(@"Error getting attributes for %@ -- %@", [fileURL absoluteString], [attributesError toPropertyList]);
+    else
+        modificationDate = [attributes fileModificationDate];
+    if (!modificationDate)
+        modificationDate = [NSDate date]; // Default to now if we can't get the attributes or they are bogus for some reason.
+    
+    return modificationDate;
+}
+
 - (void)scanItemsWithCompletionHandler:(void (^)(void))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -1370,7 +1454,14 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
     // Capture state
     completionHandler = [[completionHandler copy] autorelease];
     
-    if (_isScanningItems) {
+    if (_isScanningItems || _deferScanRequestCount > 0) {
+        DEBUG_STORE(@"Deferring scan, _isScanningItems:%d _deferScanRequestCount:%lu completionHandler:%@", _isScanningItems, _deferScanRequestCount, completionHandler);
+        
+        if (_deferScanRequestCount > 0 && completionHandler == nil) {
+            // Can totally skip this one. We'll do a scan when the counter goes to zero
+            return;
+        }
+        
         // There is an in-flight scan already. We want to get its state back before we start another scanning operaion.
         if (!_deferredScanCompletionHandlers)
             _deferredScanCompletionHandlers = [[NSMutableArray alloc] init];
@@ -1390,15 +1481,7 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
         NSMutableDictionary *urlToModificationDate = [[NSMutableDictionary alloc] init];
         
         void (^itemBlock)(NSFileManager *fileManager, NSURL *fileURL) = ^(NSFileManager *fileManager, NSURL *fileURL){
-            NSError *attributesError = nil;
-            NSDate *modificationDate = nil;
-            NSDictionary *attributes = [fileManager attributesOfItemAtPath:[fileURL path]  error:&attributesError];
-            if (!attributes)
-                NSLog(@"Error getting attributes for %@ -- %@", [fileURL absoluteString], [attributesError toPropertyList]);
-            else
-                modificationDate = [attributes fileModificationDate];
-            if (!modificationDate)
-                modificationDate = [NSDate date]; // Default to now if we can't get the attributes or they are bogus for some reason.
+            NSDate *modificationDate = _modificationDateForFileURL(fileManager, fileURL);
             
             // Files in our ubiquity container, found by directory scan, won't get sent a metadata item here, but will below (if they are in the query).
             [urlToModificationDate setObject:modificationDate forKey:fileURL];
@@ -1420,7 +1503,7 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
             {
                 // Apply metadata to the scanned items. The results of NSMetadataQuery can lag behind the filesystem operations, particularly if they are invoked locally.
                 // If you poke at the NSMetadataQuery before it sends out its initial 'finished scan' notification it will usually report zero results.
-                NSMutableSet *fileItemsWithMetadataUpdatedModificationDates = [[NSMutableSet alloc] init];
+                NSMutableDictionary *cacheKeyToMetadataItem = [[NSMutableDictionary alloc] init];
                 if (_metadataQuery && _metadataInitialScanFinished) {
                     [_metadataQuery disableUpdates];
                     @try {
@@ -1437,17 +1520,20 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
                             NSURL *fileURL = [item valueForAttribute:NSMetadataItemURLKey];
                             OBASSERT([_scopeForFileURL(scopeToContainerURL, fileURL) isUbiquitous]);
                             
+                            // NOTE: The NSMetadataItem ubiquity related keys are not reliable.
+                            // Radar 10957039: Missing NSMetadataQuery updates when downloading changes to ubiquitous document
+                            // The final update can be missing; for flat files the download percent can get stuck < 100% and for wrappers the 'downloaded' flag can get stuck on NO.
+                            // For non-downloaded items, we do want the size/date attributes, though, since our local file might just be a stub.
+                            // See -[OFSDocumentStoreFileItem _updateWithMetadataItem:] also, were we need to ignore these attributes on the metadata item.
                             DEBUG_METADATA(@"item %@ %@", item, [fileURL absoluteString]);
                             DEBUG_METADATA(@"  %@", [item valuesForAttributes:[NSArray arrayWithObjects:NSMetadataUbiquitousItemHasUnresolvedConflictsKey, NSMetadataUbiquitousItemIsDownloadedKey, NSMetadataUbiquitousItemIsDownloadingKey, NSMetadataUbiquitousItemIsUploadedKey, NSMetadataUbiquitousItemIsUploadingKey, NSMetadataUbiquitousItemPercentDownloadedKey, NSMetadataUbiquitousItemPercentUploadedKey, NSMetadataItemFSContentChangeDateKey, NSMetadataItemFSSizeKey, nil]]);
                             
-                            // May be nil if we are in the process of a delete.
-                            OFSDocumentStoreFileItem *fileItem = [cacheKeyToFileItem objectForKey:_fileItemCacheKeyForURL(fileURL)];
-                            [fileItem _updateWithMetadataItem:item];
+                            NSString *cacheKey = _fileItemCacheKeyForURL(fileURL);
                             
-                            // avoid throwing an exception if fileItem is nil
-                            if (fileItem)
-                                // We get the modification date from the NSMetadataItem. Don't update it below.
-                                [fileItemsWithMetadataUpdatedModificationDates addObject:fileItem];
+                            // -_updateUbiquitousItemWithMetadataItem: will get called below for every scanned item (those in urlToModificationDate) that also has a metadata item (which we are registering here). Don't redundantly call -_updateUbiquitousItemWithMetadataItem: here.
+                            // We might find a metadata item for something that is about to be deleted, so we can't easily assert that the metadata item we find has a matching entry in urlToModificationDate.
+                            
+                            [cacheKeyToMetadataItem setObject:item forKey:cacheKey];
                         }
                     } @finally {
                         [_metadataQuery enableUpdates];
@@ -1456,26 +1542,40 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
                 
                 // Update or create file items
                 for (NSURL *fileURL in urlToModificationDate) {
-                    OFSDocumentStoreFileItem *fileItem = [cacheKeyToFileItem objectForKey:_fileItemCacheKeyForURL(fileURL)];
+                    NSString *cacheKey = _fileItemCacheKeyForURL(fileURL);
+                    OFSDocumentStoreFileItem *fileItem = [cacheKeyToFileItem objectForKey:cacheKey];
+                    
+                    NSMetadataItem *metadataItem = [cacheKeyToMetadataItem objectForKey:cacheKey];
                     NSDate *modificationDate = [urlToModificationDate objectForKey:fileURL];
+                    
+                    BOOL isNewItem = NO;
+                    
                     if (!fileItem) {
                         fileItem = [self _newFileItemForURL:fileURL date:modificationDate];
                         [updatedFileItems addObject:fileItem];
                         [fileItem release];
+                        isNewItem = YES;
                     } else {
-                        if ([fileItemsWithMetadataUpdatedModificationDates member:fileItem] == nil)
-                            fileItem.date = modificationDate;
                         [updatedFileItems addObject:fileItem];
                     }
+                    
+                    DEBUG_METADATA(@"Updating metadata properties on file item %@", [fileItem shortDescription]);
+                    if (metadataItem) {
+                        [fileItem _updateUbiquitousItemWithMetadataItem:metadataItem]; // Use the date in the NSMetadataItem (as well as other info) instead of the local filesystem modification date
+                        
+                        if (isNewItem)
+                            [self _possiblyRequestDownloadOfNewlyAddedUbiquitousFileItem:fileItem metadataItem:metadataItem];
+                    } else
+                        [fileItem _updateLocalItemWithModificationDate:modificationDate];
                 }
                 [urlToModificationDate release];
-                [fileItemsWithMetadataUpdatedModificationDates release];
+                [cacheKeyToMetadataItem release];
             }
             
             // Invalidate the old file items that are no longer found.
             for (OFSDocumentStoreFileItem *fileItem in _fileItems) {
                 if ([updatedFileItems member:fileItem] == nil) {
-                    DEBUG_STORE(@"File item %@ has disappeared, invalidating %@", cacheKey, [fileItem shortDescription]);
+                    DEBUG_STORE(@"File item %@ has disappeared, invalidating", [fileItem shortDescription]);
                     [fileItem _invalidate];
                 }
             }            
@@ -1542,7 +1642,7 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
                 [_groupItemByName release];
                 _groupItemByName = [groupByName copy];
                 DEBUG_STORE(@"Scanned groups %@", _groupItemByName);
-                DEBUG_STORE(@"Scanned top level items %@", _topLevelItems);
+                DEBUG_STORE(@"Scanned top level items %@", [[_topLevelItems allObjects] arrayByPerformingSelector:@selector(shortDescription)]);
                 
                 if (OFNOTEQUAL(_topLevelItems, topLevelItems)) {
                     [self willChangeValueForKey:OFSDocumentStoreTopLevelItemsBinding];
@@ -1567,7 +1667,7 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
             // We are done scanning -- see if any other scan requests have piled up while we were running and start one if so.
             // We do need to rescan (rather than just calling all the queued completion handlers) since the caller might have queued more filesystem changing operations between the two scan requests.
             _isScanningItems = NO;
-            if ([_deferredScanCompletionHandlers count] > 0) {
+            if (_deferScanRequestCount == 0 && [_deferredScanCompletionHandlers count] > 0) {
                 void (^nextCompletionHandler)(void) = [[[_deferredScanCompletionHandlers objectAtIndex:0] retain] autorelease];
                 [_deferredScanCompletionHandlers removeObjectAtIndex:0];
                 [self scanItemsWithCompletionHandler:nextCompletionHandler];
@@ -1579,33 +1679,95 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
     }];
 }
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-// Moves all the existing local documents to iCloud, preserving their folder structure.
-- (void)moveLocalDocumentsToCloudWithCompletionHandler:(void (^)(NSDictionary *movedURLs, NSDictionary *errorURLs))completionHandler;
+- (void)startDeferringScanRequests;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OFSDocumentStoreScope *ubiquitousScope = [self defaultUbiquitousScope];
+    
+    _deferScanRequestCount++;
+    DEBUG_STORE(@"_deferScanRequestCount = %ld", _deferScanRequestCount);
+}
+
+- (void)stopDeferringScanRequests:(void (^)(void))completionHandler;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(_deferScanRequestCount > 0);
+    
+    if (_deferScanRequestCount == 0) {
+        OBASSERT_NOT_REACHED("Underflow scan defer count");
+        if (completionHandler)
+            completionHandler();
+    }
+    
+    _deferScanRequestCount--;
+    DEBUG_STORE(@"_deferScanRequestCount = %ld", _deferScanRequestCount);
+
+    if (_deferScanRequestCount == 0) {
+        [self scanItemsWithCompletionHandler:completionHandler];
+    }
+}
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+
+static BOOL _getBoolResourceValue(NSURL *url, NSString *key, BOOL *outValue, NSError **outError)
+{
+    NSError *error = nil;
+    NSNumber *numberValue = nil;
+    if (![url getResourceValue:&numberValue forKey:key error:&error]) {
+        NSLog(@"Error getting resource key %@ for %@: %@", key, url, [error toPropertyList]);
+        if (outError)
+            *outError = error;
+        return NO;
+    }
+    
+    *outValue = [numberValue boolValue];
+    return YES;
+}
+
+
+// Migrates all the existing documents in one scope to another (either by copying or moving), preserving their folder structure.
+- (void)migrateDocumentsInScope:(OFSDocumentStoreScope *)sourceScope toScope:(OFSDocumentStoreScope *)destinationScope byMoving:(BOOL)shouldMove completionHandler:(void (^)(NSDictionary *migratedURLs, NSDictionary *errorURLs))completionHandler;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(sourceScope);
+    OBPRECONDITION(destinationScope);
+    OBPRECONDITION(sourceScope != destinationScope);
     
     completionHandler = [[completionHandler copy] autorelease];
     
-    NSURL *localDirectoryURL = [_localScope documentsURL:NULL];
-    NSURL *ubiquityDocumentsURL = [ubiquitousScope documentsURL:NULL];
-    OBASSERT(localDirectoryURL);
-    OBASSERT(ubiquityDocumentsURL);
+    NSURL *sourceDocumentsURL = [sourceScope documentsURL:NULL];
+    NSURL *destinationDocumentsURL = [destinationScope documentsURL:NULL];
+    OBASSERT(sourceDocumentsURL);
+    OBASSERT(destinationDocumentsURL);
     
     [self performAsynchronousFileAccessUsingBlock:^{
-        DEBUG_STORE(@"Moving local documents (%@) to iCloud (%@)", localDirectoryURL, ubiquityDocumentsURL);
+        DEBUG_STORE(@"Migrating documents from %@ to %@ by %@", sourceDocumentsURL, destinationDocumentsURL, shouldMove ? @"moving" : @"copying");
         
-        NSMutableDictionary *movedURLs = [NSMutableDictionary dictionary]; // sourceURL -> destURL
+        NSMutableDictionary *migratedURLs = [NSMutableDictionary dictionary]; // sourceURL -> destURL
         NSMutableDictionary *errorURLs = [NSMutableDictionary dictionary]; // sourceURL -> error
         
         // Gather the names to avoid (only from the destination).
         NSMutableSet *usedFileNames = [NSMutableSet set];
-        [self _addCurrentlyUsedFileNames:usedFileNames inScope:ubiquitousScope ignoringFileURL:nil];
+        [self _addCurrentlyUsedFileNames:usedFileNames inScope:destinationScope ignoringFileURL:nil];
         DEBUG_STORE(@"  usedFileNames = %@", usedFileNames);
         
         // Process all the local documents, moving them into the ubiquity container.
-        _scanDirectoryURL(self, localDirectoryURL, ^(NSFileManager *fileManager, NSURL *sourceURL){
+        _scanDirectoryURL(self, sourceDocumentsURL, ^(NSFileManager *fileManager, NSURL *sourceURL){
+            // If we are moving from a ubiquitous scope, skip any files that aren't fully downloaded or are in conflict. The higher level code prompts the user (obviously a race condition between the two, but unlikely).
+            if (sourceScope.isUbiquitous) {
+                NSError *error = nil;
+                
+                BOOL downloaded, hasConflicts;
+                
+                if (!_getBoolResourceValue(sourceURL, NSURLUbiquitousItemIsDownloadedKey, &downloaded, &error) ||
+                    !_getBoolResourceValue(sourceURL, NSURLUbiquitousItemHasUnresolvedConflictsKey, &hasConflicts, &error)) {
+                    [errorURLs setObject:error forKey:sourceURL];
+                    return;
+                }
+
+                if (!downloaded || hasConflicts)
+                    return;
+            }
+            
             NSString *sourceFileName = [sourceURL lastPathComponent];
             NSUInteger counter = 0;
             NSString *destinationName = _availableName(usedFileNames, [sourceFileName stringByDeletingPathExtension], [sourceFileName pathExtension], &counter);
@@ -1614,30 +1776,56 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
             if (OFNOTEQUAL([folderName pathExtension], OFSDocumentStoreFolderPathExtension))
                 folderName = nil;
             
-            NSURL *destinationURL = ubiquityDocumentsURL;
+            NSURL *destinationURL = destinationDocumentsURL;
             if (folderName)
                 destinationURL = [destinationURL URLByAppendingPathComponent:folderName];
             destinationURL = [destinationURL URLByAppendingPathComponent:destinationName];
             
-            __block BOOL moveSuccess = NO;
-            __block NSError *moveError = nil;
+            __block BOOL migrateSuccess = NO;
+            __block NSError *migrateError = nil;
 
-            NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+            __block NSDate *sourceDate = nil;
+            __block NSDate *destinationDate = nil;
             
-            [coordinator coordinateWritingItemAtURL:sourceURL options:NSFileCoordinatorWritingForMoving
-                                   writingItemAtURL:destinationURL options:NSFileCoordinatorWritingForReplacing error:&moveError byAccessor:
-             ^(NSURL *newURL1, NSURL *newURL2){
-                 moveSuccess = [fileManager moveItemAtURL:newURL1 toURL:newURL2 error:&moveError];
-             }];
+            NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+
+            if (shouldMove) {
+                [coordinator coordinateWritingItemAtURL:sourceURL options:NSFileCoordinatorWritingForMoving
+                                       writingItemAtURL:destinationURL options:NSFileCoordinatorWritingForReplacing error:&migrateError byAccessor:
+                 ^(NSURL *newURL1, NSURL *newURL2){
+                     migrateSuccess = [fileManager moveItemAtURL:newURL1 toURL:newURL2 error:&migrateError];
+                     
+                     sourceDate = [_modificationDateForFileURL(fileManager, newURL2) retain];
+                     destinationDate = [sourceDate retain];
+                 }];
+            } else {
+                [coordinator coordinateReadingItemAtURL:sourceURL options:0
+                                       writingItemAtURL:destinationURL options:NSFileCoordinatorWritingForReplacing error:&migrateError byAccessor:
+                 ^(NSURL *newURL1, NSURL *newURL2){
+                     migrateSuccess = [fileManager copyItemAtURL:newURL1 toURL:newURL2 error:&migrateError];
+
+                     sourceDate = [_modificationDateForFileURL(fileManager, newURL1) retain];
+                     destinationDate = [_modificationDateForFileURL(fileManager, newURL2) retain];
+                 }];
+            }
             
             [coordinator release];
             
-            if (!moveSuccess) {
-                [errorURLs setObject:moveError forKey:sourceURL];
-                DEBUG_STORE(@"  error moving %@: %@", sourceURL, [moveError toPropertyList]);
+            if (!migrateSuccess) {
+                [errorURLs setObject:migrateError forKey:sourceURL];
+                DEBUG_STORE(@"  error moving %@: %@", sourceURL, [migrateError toPropertyList]);
             } else {
-                [movedURLs setObject:destinationURL forKey:sourceURL];
-                DEBUG_STORE(@"  moved %@ to %@", sourceURL, destinationURL);
+                if (!shouldMove) { // The file item hears about moves via NSFilePresenter and tells us
+                    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                        [self _fileWithURL:sourceURL andDate:[sourceDate autorelease] didCopyToURL:destinationURL andDate:[destinationDate autorelease]];
+                    }];
+                } else {
+                    [sourceDate release];
+                    [destinationDate release];
+                }
+                
+                [migratedURLs setObject:destinationURL forKey:sourceURL];
+                DEBUG_STORE(@"  migrated %@ to %@", sourceURL, destinationURL);
                 
                 // Now we need to avoid this file name.
                 [usedFileNames addObject:[destinationURL lastPathComponent]];
@@ -1647,7 +1835,7 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
         
         if (completionHandler) {
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                completionHandler(movedURLs, errorURLs);
+                completionHandler(migratedURLs, errorURLs);
             }];
         }
     }];
@@ -1712,6 +1900,11 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
     return [self _defaultScope];
 }
  
+- (NSString *)folderNameForFileURL:(NSURL *)fileURL;
+{
+    return _folderFilename(fileURL);
+}
+
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 - (NSString *)documentTypeForNewFiles;
 {
@@ -1780,14 +1973,7 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
             }
             
             // Check if we should move the new document into iCloud, and do so.
-            OFSDocumentStoreScope *scope = nil;
-            if ([_nonretained_delegate respondsToSelector:@selector(documentStore:scopeForNewDocumentAtURL:)])
-                scope = [_nonretained_delegate documentStore:self scopeForNewDocumentAtURL:newDocumentURL];
-            if (!scope)
-                scope = [self scopeForFileURL:newDocumentURL];
-            if (!scope)
-                scope = [self _defaultScope];
-            
+            OFSDocumentStoreScope *scope = [self _defaultScope];
             if ([scope isUbiquitous]) {
                 NSError *containerError = nil;
                 
@@ -1934,7 +2120,7 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
         }
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [self addDocumentFromURL:itemToMoveURL option:OFSDocumentStoreAddByRenaming completionHandler:finishedBlock];
+            [self addDocumentWithScope:[self _defaultScope] inFolderNamed:nil fromURL:itemToMoveURL option:OFSDocumentStoreAddByRenaming completionHandler:finishedBlock];
         }];        
     }];
 }
@@ -1959,6 +2145,94 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
     
     return success;
 }
+
+- (BOOL)_replaceURL:(NSURL *)fileURL withVersion:(NSFileVersion *)version replacing:(BOOL)replacing error:(NSError **)outError;
+{
+    NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+    NSFileCoordinatorWritingOptions options = replacing ? NSFileCoordinatorWritingForReplacing : 0;
+    
+    __block BOOL success = NO;
+    
+    [coordinator coordinateWritingItemAtURL:fileURL options:options error:outError byAccessor:^(NSURL *newURL){
+        // We don't pass NSFileVersionReplacingByMoving, leaving the version in place. It isn't clear if this is correct. We're going to mark it resolved if this all works, but it is unclear if that will clean it up.
+        if (![version replaceItemAtURL:newURL options:0 error:outError]) {
+            NSLog(@"Error replacing %@ with version %@: %@", fileURL, newURL, outError ? [*outError toPropertyList] : @"???");
+            return;
+        }
+        
+        success = YES;
+    }];
+    [coordinator release];
+
+    return success;
+}
+
+- (void)resolveConflictForFileURL:(NSURL *)fileURL keepingFileVersions:(NSArray *)keepFileVersions completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+{
+    completionHandler = [[completionHandler copy] autorelease]; // capture scope
+    
+    void (^callCompletion)(NSError *e) = ^(NSError *e){
+        if (completionHandler)
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{ completionHandler(e); }];
+    };
+    callCompletion = [[callCompletion copy] autorelease];
+    
+    [self performAsynchronousFileAccessUsingBlock:^{
+        NSFileVersion *originalVersion = [NSFileVersion currentVersionOfItemAtURL:fileURL];
+        NSArray *allConflictVersions = [NSFileVersion unresolvedConflictVersionsOfItemAtURL:fileURL];
+        
+        NSUInteger keptFileVersionCount = [keepFileVersions count];
+        NSFileVersion *firstKeptFileVersion = [keepFileVersions objectAtIndex:0];
+        
+        // Can't pointer-compare NSFileVersions since new instances are returned from each call of +currentVersionOfItemAtURL:
+        if (![firstKeptFileVersion isEqual:originalVersion]) {
+            // This version is going to replace the current version. replacing==YES means that the coordinated write will preserve the identity of the file, rather than looking like a delete of the original and a new file being created in its place.
+            NSError *error = nil;
+            if (![self _replaceURL:fileURL withVersion:firstKeptFileVersion replacing:YES error:&error]) {
+                callCompletion(error);
+                return;
+            }
+        }
+        
+        // Make new files for any other versions to be preserved
+        if (keptFileVersionCount >= 2) {
+            NSMutableSet *usedFileNames = [[self _copyCurrentlyUsedFileNames:nil] autorelease];
+            
+            NSString *originalFileName = [fileURL lastPathComponent];
+            NSString *originalBaseName = nil;
+            NSUInteger counter;
+            [[originalFileName stringByDeletingPathExtension] splitName:&originalBaseName andCounter:&counter];
+            NSString *originalPathExtension = [originalFileName pathExtension];
+            
+            NSURL *originalContainerURL = [fileURL URLByDeletingLastPathComponent];
+
+            for (NSUInteger keptVersionIndex = 1; keptVersionIndex < keptFileVersionCount; keptVersionIndex++) {
+                NSFileVersion *pickedVersion = [keepFileVersions objectAtIndex:keptVersionIndex];
+                NSString *fileName = _availableName(usedFileNames, originalBaseName, originalPathExtension, &counter);
+
+                NSURL *replacementURL = [originalContainerURL URLByAppendingPathComponent:fileName];
+                
+                NSError *error = nil;
+                if (![self _replaceURL:replacementURL withVersion:pickedVersion replacing:NO error:&error]) {
+                    callCompletion(error);
+                    return;
+                }
+            }
+        }
+        
+        // Only mark versions resolved if we had no errors.
+        // The documentation makes no claims about whether this is considered an operation that needs file coordination...
+        for (NSFileVersion *fileVersion in allConflictVersions) {
+            OBASSERT(fileVersion != originalVersion);
+            OBASSERT(fileVersion.conflict == YES);
+
+            fileVersion.resolved = YES;
+        }
+
+        callCompletion(nil);
+    }];
+}
+
 #endif
 
 - (OFSDocumentStoreScope *)defaultUbiquitousScope;
@@ -1979,10 +2253,17 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
 
 - (OFSDocumentStoreScope *)_defaultScope;
 {
-    if ([_ubiquitousScopes count] > 0)
-        return [self defaultUbiquitousScope];
+    OFSDocumentStoreScope *scope = nil;
+    
+    if ([OFSDocumentStore isUbiquityAccessEnabled] && 
+        [_ubiquitousScopes count] > 0)
+        scope = [self defaultUbiquitousScope];
+    
+    if (![scope documentsURL:NULL]) {
+        scope = _localScope;
+    }
    
-    return _localScope;
+    return scope;
 }
 
 - (NSArray *)_scanItemsDirectoryURLs;
@@ -1993,12 +2274,15 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
     if (_localScope)
         [directoryURLs addObject:[_localScope documentsURL:NULL]];
     
-    // In addition to scanning our local Documents directory (on iPad, at least), we also scan our ubiquity container directly, if enabled.
-    // Talking to Apple, the top-level entries in the container are intended to be present (and empty directory for a wrapper, for example). The metadata can lag behind the state of the filesystem, particularly for locally invoked operations. We don't want to create items based solely on the presense of a metadata item since then a delete of a file wouldn't produce a remove of the file item until after the metadata update.
-    for (OFSDocumentStoreScope *_scope in _ubiquitousScopes) {
-        NSURL *ubiquityDocumentsURL = [_scope documentsURL:NULL];
-        if  (ubiquityDocumentsURL)
-            [directoryURLs addObject:ubiquityDocumentsURL];
+    // Don't scan the ubiquity directory unless we have NSMetadataItems to match up with them.
+    if ([OFSDocumentStore isUbiquityAccessEnabled] && _metadataInitialScanFinished) {
+        // In addition to scanning our local Documents directory (on iPad, at least), we also scan our ubiquity container directly, if enabled.
+        // Talking to Apple, the top-level entries in the container are intended to be present (and empty directory for a wrapper, for example). The metadata can lag behind the state of the filesystem, particularly for locally invoked operations. We don't want to create items based solely on the presense of a metadata item since then a delete of a file wouldn't produce a remove of the file item until after the metadata update.
+        for (OFSDocumentStoreScope *_scope in _ubiquitousScopes) {
+            NSURL *ubiquityDocumentsURL = [_scope documentsURL:NULL];
+            if  (ubiquityDocumentsURL)
+                [directoryURLs addObject:ubiquityDocumentsURL];
+        }
     }
     
     return directoryURLs;
@@ -2028,8 +2312,44 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
         OFSDocumentStoreScope *ubiquitousScope = [self defaultUbiquitousScope];
         if (!(targetDocumentsURL = [ubiquitousScope documentsURL:outError]))
             return NO;
-    } else
+    } else {
+        // Check to make sure sourceURL is eligible to be moved out of iCloud.
+        NSNumber *sourceIsDownloaded = nil;
+        NSNumber *sourceHasUnresolvedConflicts = nil;
+        NSError *error = nil;
+
+        if (![sourceURL getResourceValue:&sourceIsDownloaded forKey:NSURLUbiquitousItemIsDownloadedKey error:&error]) {
+             NSLog(@"Error checking if source URL %@ is downloaded: %@", [sourceURL absoluteString], [error toPropertyList]);
+        }
+        
+        if ([sourceIsDownloaded boolValue] == NO) {
+            NSLog(@"Source URL %@ is not fully downloaded.", sourceURL);
+            
+            NSString *title =  NSLocalizedStringFromTableInBundle(@"Cannot move item out of iCloud.", @"OmniFileStore", OMNI_BUNDLE, @"error title");
+            NSString *description = NSLocalizedStringFromTableInBundle(@"This item is not fully downloaded and cannot be moved out of iCloud. Tap the document to begin the download.", @"OmniFileStore", OMNI_BUNDLE, @"not fully downloaded error description");
+            
+            OFSError(outError, OFSUbiquitousItemNotDownloaded, title, description);
+            
+            return nil;
+        }
+        
+        if (![sourceURL getResourceValue:&sourceHasUnresolvedConflicts forKey:NSURLUbiquitousItemHasUnresolvedConflictsKey error:&error]) {
+            NSLog(@"Error checking if source URL %@ is has unresolved conflicts: %@", [sourceURL absoluteString], [error toPropertyList]);
+        }
+        
+        if ([sourceHasUnresolvedConflicts boolValue]) {
+            NSLog(@"Source URL %@ has unresolved conflicts.", sourceURL);
+            
+            NSString *title =  NSLocalizedStringFromTableInBundle(@"Cannot move item out of iCloud.", @"OmniFileStore", OMNI_BUNDLE, @"error title");
+            NSString *description = NSLocalizedStringFromTableInBundle(@"This item has unresolved conflicts and cannot be moved out of iCloud.", @"OmniFileStore", OMNI_BUNDLE, @"unresolved conflicts error description");
+            
+            OFSError(outError, OFSUbiquitousItemInConflict, title, description);
+            
+            return nil;
+        }
+        
         targetDocumentsURL = [_localScope documentsURL:outError];
+    }
     
     NSNumber *sourceIsDirectory = nil;
     NSError *resourceError = nil;
@@ -2072,7 +2392,23 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
 {
     [self _stopMetadataQuery];
     [self _startMetadataQuery];
-    [self scanItemsWithCompletionHandler:nil];
+    
+    [self _postUbiquityEnabledChangedIfNeeded];
+
+    if (_metadataQuery) {
+        // Scan will happen when the query finishes
+    } else {
+        [self scanItemsWithCompletionHandler:nil];
+    }
+}
+
+- (void)_postUbiquityEnabledChangedIfNeeded;
+{
+    BOOL ubiquityEnabled = [[self class] isUbiquityAccessEnabled];
+    if (_lastNotifiedUbiquityEnabled ^ ubiquityEnabled) {
+        _lastNotifiedUbiquityEnabled = ubiquityEnabled;
+        [[NSNotificationCenter defaultCenter] postNotificationName:OFSDocumentStoreUbiquityEnabledChangedNotification object:self];
+    }
 }
 
 - (void)_startMetadataQuery;
@@ -2086,6 +2422,12 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
     
     if ([[self class] isUbiquityAccessEnabled] == NO)
         return;
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    if (!_netReachability) {
+        _netReachability = [[OFNetReachability alloc] initWithDefaultRoute:YES/*ignore ad-hoc wi-fi*/];
+    }
+#endif
     
     _metadataQuery = [[NSMetadataQuery alloc] init];
     [_metadataQuery setSearchScopes:[NSArray arrayWithObjects:NSMetadataQueryUbiquitousDocumentsScope, nil]];
@@ -2119,35 +2461,59 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
     _metadataInitialScanFinished = NO;
     [_metadataQuery release];
     _metadataQuery = nil;
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    [_netReachability release];
+    _netReachability = nil;
+#endif
 }
 
 - (void)_metadataQueryDidStartGatheringNotifiction:(NSNotification *)note;
 {
+    OBPRECONDITION([NSThread isMainThread]);
+
     DEBUG_METADATA(@"note %@", note);
     //    NSLog(@"results = %@", [self.metadataQuery results]);
 }
 
 - (void)_metadataQueryDidGatheringProgressNotifiction:(NSNotification *)note;
 {
+    OBPRECONDITION([NSThread isMainThread]);
+
     DEBUG_METADATA(@"note %@", note);
     DEBUG_METADATA(@"results = %@", [_metadataQuery results]);
 }
 
+// We only get this on the first metadata update
 - (void)_metadataQueryDidFinishGatheringNotifiction:(NSNotification *)note;
 {
+    OBPRECONDITION([NSThread isMainThread]);
+
     DEBUG_METADATA(@"note %@", note);
     DEBUG_METADATA(@"results = %@", [_metadataQuery results]);
     
     _metadataInitialScanFinished = YES;
+    _metadataUpdateVersionNumber++;
     
     [self scanItemsWithCompletionHandler:nil];
 }
 
+// ... after the first 'finish gathering', all incremental updates go through here
 - (void)_metadataQueryDidUpdateNotifiction:(NSNotification *)note;
 {
+    OBPRECONDITION([NSThread isMainThread]);
+    
     DEBUG_METADATA(@"note %@", note);
     DEBUG_METADATA(@"results = %@", [_metadataQuery results]);
     
+    _metadataUpdateVersionNumber++;
+    
+    NSArray *actions = [_afterMetadataUpdateActions autorelease];
+    _afterMetadataUpdateActions = nil;
+
+    [self _performActions:actions];
+
+    // Without this, if you tap on a file that isn't downloaded, when the download finishes (or presumably progresses), the file item isn't updated. If this is too slow, maybe we can record notes about which file items need their metadata update applied and only do that here instead of a full scan.
     [self scanItemsWithCompletionHandler:nil];
 }
 
@@ -2156,9 +2522,21 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
     if (!self.hasFinishedInitialMetdataQuery)
         return;
     
-    NSArray *actions = [_afterInitialDocumentScanActions autorelease];
-    _afterInitialDocumentScanActions = nil;
+    if (_afterInitialDocumentScanActions) {
+        NSArray *actions = [_afterInitialDocumentScanActions autorelease];
+        _afterInitialDocumentScanActions = nil;
+        [self _performActions:actions];
+    }
     
+    if (_afterMetadataUpdateActions) {
+        NSArray *actions = [_afterMetadataUpdateActions autorelease];
+        _afterMetadataUpdateActions = nil;
+        [self _performActions:actions];
+    }
+}
+
+- (void)_performActions:(NSArray *)actions;
+{
     // The initial scan may have been *started* due to the metadata query finishing, but we do the scan of the filesystem on a background thread now. So, synchronize with that and then invoke these actions on the main thread.
     [_actionOperationQueue addOperationWithBlock:^{
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
@@ -2199,6 +2577,31 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
     DEBUG_STORE(@"  made new file item %@ for %@", fileItem, fileURL);
 
     return fileItem;
+}
+
+- (void)_possiblyRequestDownloadOfNewlyAddedUbiquitousFileItem:(OFSDocumentStoreFileItem *)fileItem metadataItem:(NSMetadataItem *)metadataItem;
+{
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    // The first time we see an item for a URL (newly created or once at app launch), automatically start downloading it if it is "small" and we are on wi-fi. iWork seems to automatically download files in some cases where normal iCloud apps don't. Unclear what rules they uses.
+    
+    if (fileItem.isDownloaded || !_netReachability.reachable || _netReachability.usingCell)
+        return;
+        
+    NSNumber *size = [metadataItem valueForAttribute:NSMetadataItemFSSizeKey]; // Experimentally, this returns the total size for file wrappers. Nice!
+    OBASSERT(size);
+    if (!size)
+        return;
+    
+    NSUInteger maximumAutomaticDownloadSize = [[OFPreference preferenceForKey:@"OFSDocumentStoreMaximumAutomaticDownloadSize"] unsignedIntegerValue];
+    
+    if ([size unsignedLongLongValue] <= (unsigned long long)maximumAutomaticDownloadSize) {
+        NSError *downloadError = nil;
+        //NSLog(@"Reqesting download of %@ (size %@)", fileItem.fileURL, size);
+        if (![fileItem requestDownload:&downloadError]) {
+            NSLog(@"automatic download request for %@ failed with %@", fileItem.fileURL, [downloadError toPropertyList]);
+        }
+    }
+#endif
 }
 
 - (NSString *)_singleTopLevelEntryNameInArchive:(OUUnzipArchive *)archive directory:(BOOL *)directory error:(NSError **)error;
@@ -2273,7 +2676,7 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
         return nil;
     
     
-    return OFUTIForFileExtensionPreferringNative([topLevelEntryName pathExtension], isDirectory);
+    return OFUTIForFileExtensionPreferringNative([topLevelEntryName pathExtension], [NSNumber numberWithBool:isDirectory]);
 }
 
 - (NSMutableSet *)_copyCurrentlyUsedFileNames:(OFSDocumentStoreScope *)scope ignoringFileURL:(NSURL *)fileURLToIgnore;
@@ -2287,8 +2690,10 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
     // iPad apps always collect the same file names regardless of input scope; but, let's check to make sure things are setup correctly
     OBASSERT(_localScope);
     [self _addCurrentlyUsedFileNames:usedFileNames inScope:_localScope ignoringFileURL:fileURLToIgnore];
-    OBASSERT([_ubiquitousScopes lastObject] == [self defaultUbiquitousScope]);
-    [self _addCurrentlyUsedFileNames:usedFileNames inScope:[self defaultUbiquitousScope] ignoringFileURL:fileURLToIgnore];
+    if ([OFSDocumentStore isUbiquityAccessEnabled]) {
+        OBASSERT([_ubiquitousScopes lastObject] == [self defaultUbiquitousScope]);
+        [self _addCurrentlyUsedFileNames:usedFileNames inScope:[self defaultUbiquitousScope] ignoringFileURL:fileURLToIgnore];
+    }
 #else
     OBASSERT(_localScope == nil);
     OBASSERT([scope isUbiquitous]);
@@ -2307,7 +2712,7 @@ static void _scanDirectoryURLs(OFSDocumentStore *self,
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _actionOperationQueue);
 
-    if (!scope)
+    if (![scope documentsURL:NULL])
         return;
 
     NSError *error = nil;
@@ -2345,7 +2750,17 @@ static NSString *_availableName(NSSet *usedFileNames, NSString *baseName, NSStri
             counter++;
         }
         
-        if ([usedFileNames member:candidateName] == nil) {
+        // Not using -memeber: because it uses -isEqual: which was incorrectly returning nil with some Japanese filenames.
+        NSString *matchedFileName = [usedFileNames any:^BOOL(id object) {
+            NSString *usedFileName = (NSString *)object;
+            if ([usedFileName localizedCaseInsensitiveCompare:candidateName] == NSOrderedSame) {
+                return YES;
+            }
+            
+            return NO;
+        }];
+        
+        if (matchedFileName == nil) {
             *ioCounter = counter; // report how many we used
             return [candidateName autorelease];
         }
@@ -2408,29 +2823,14 @@ static NSString *_availableName(NSSet *usedFileNames, NSString *baseName, NSStri
                 containingFolderName = [[containingFolderURL lastPathComponent] stringByDeletingPathExtension];
         }
         
-        // Try a bunch of heuristics about the best renaming operations.
-        OFSDocumentStoreScope *ubiquitousScope = [self scopeForFileURL:currentURL];
-        if (!ubiquitousScope) {
-            // Move local documents out of the way of iCloud documents
-            NSString *localFileName = [currentURL lastPathComponent];
-            NSString *localSuffix = NSLocalizedStringFromTableInBundle(@"local", @"OmniFileStore", OMNI_BUNDLE, @"Suffix to automatically apply to document having the same name as others, when the document is local");
-            
-            candidate = [localFileName stringByDeletingPathExtension];
-            
-            if (containingFolderName == nil)
-                candidate = [candidate stringByAppendingFormat:@" (%@)", localSuffix];
-            else
-                candidate = [candidate stringByAppendingFormat:@" (%@, %@)", containingFolderName, localSuffix];
-            
-            candidate = [candidate stringByAppendingPathExtension:[localFileName pathExtension]];
-        } else if (containingFolderName) {
+        if (containingFolderName) {
             // Documents with the same name in different folders get the "(foldername)" appended.
             NSString *localFileName = [currentURL lastPathComponent];
             candidate = [localFileName stringByDeletingPathExtension];
             candidate = [candidate stringByAppendingFormat:@" (%@)", containingFolderName];
             candidate = [candidate stringByAppendingPathExtension:[localFileName pathExtension]];
         } else {
-            // Just update the counter
+            // Just update the counter. This might be a local vs. iCloud conflict -- the local copy will get the "not in cloud" badge.
             candidate = [currentURL lastPathComponent];
         }
     }
@@ -2466,16 +2866,28 @@ static OFSDocumentStoreScope *_scopeForFileURL(NSDictionary *scopeToContainerURL
 
 static NSDictionary *_scopeToContainerURL(OFSDocumentStore *docStore)
 {
-    NSMutableDictionary *scopeToContainerURL = [[NSMutableDictionary alloc] init];
-    if (docStore->_localScope)
-        [scopeToContainerURL setObject:docStore->_localScope forKey:scopeToContainerURL];
+    NSMutableDictionary *scopeToContainerURL = [NSMutableDictionary dictionary];
+    
+    if (docStore->_localScope) {
+        NSError *error = nil;
+        NSURL *documentsURL = [docStore->_localScope documentsURL:&error];
+        if (!documentsURL) {
+            NSLog(@"Error requesting documentsURL: %@", [error toPropertyList]);
+            return nil;
+        }
+        
+        OFSDocumentStoreScope *localScope = docStore->_localScope;
+        
+        [scopeToContainerURL setObject:documentsURL forKey:localScope];
+    }
+    
     for (OFSDocumentStoreScope *ubiquitousScope in docStore->_ubiquitousScopes) {
         NSURL *containerURL = [ubiquitousScope containerURL];
         if (containerURL)
             [scopeToContainerURL setObject:containerURL forKey:ubiquitousScope];
     }
     
-    return [scopeToContainerURL autorelease];
+    return scopeToContainerURL;
 }
 #endif
 
@@ -2671,6 +3083,24 @@ static NSDictionary *_scopeToContainerURL(OFSDocumentStore *docStore)
     
     if ([_nonretained_delegate respondsToSelector:@selector(documentStore:fileWithURL:andDate:didMoveToURL:)])
         [_nonretained_delegate documentStore:self fileWithURL:oldURL andDate:date didMoveToURL:newURL];
+}
+
+// Called internally
+- (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date didCopyToURL:(NSURL *)newURL andDate:(NSDate *)newDate;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    if ([_nonretained_delegate respondsToSelector:@selector(documentStore:fileWithURL:andDate:didCopyToURL:andDate:)])
+        [_nonretained_delegate documentStore:self fileWithURL:oldURL andDate:date didCopyToURL:newURL andDate:newDate];
+}
+
+// Called by file items when they gain/lose a version or a conflict version is marked resolved. Dispatch to the delegate to update previews.
+- (void)_fileItem:(OFSDocumentStoreFileItem *)fileItem didGainVersion:(NSFileVersion *)fileVersion;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    if ([_nonretained_delegate respondsToSelector:@selector(documentStore:fileItem:didGainVersion:)])
+        [_nonretained_delegate documentStore:self fileItem:fileItem didGainVersion:fileVersion];
 }
 
 @end

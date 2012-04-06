@@ -1,4 +1,4 @@
-// Copyright 2005-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,7 @@ extern "C" {
 #endif
 
 #import <Foundation/NSObjCRuntime.h>
+#import <OmniBase/macros.h>
 
 @class NSString, NSError;
 
@@ -30,7 +31,7 @@ extern NSError *_OBWrapUnderlyingError(NSError *underlyingError, NSString *domai
 // Clang complains if we have a function that takes NSError ** without returning BOOL/pointer.
 // Bail on a NULL outError. Some Foundation code on 10.4 would crash if you did this, but on 10.5, many methods are documented to allow it. So let's allow it also.
 #define _OBError(outError, domain, code, fileName, line, firstKey, ...) do { \
-    NSError **_outError = (outError); \
+    OB_AUTORELEASING NSError **_outError = (outError); \
     if (_outError) \
         *_outError = _OBWrapUnderlyingError(*_outError, domain, code, fileName, line, firstKey, ## __VA_ARGS__); \
 } while(0)

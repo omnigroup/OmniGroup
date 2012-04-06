@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,22 @@
 RCS_ID("$Id$");
 
 @implementation NSMutableSet (OFExtensions)
+
+- (void)addObjects:(id)firstObject, ...;
+{
+    if (firstObject == nil)
+        return;
+    
+    [self addObject:firstObject];
+    
+    id next;
+    va_list argList;
+    
+    va_start(argList, firstObject);
+    while ((next = va_arg(argList, id)) != nil)
+        [self addObject:next];
+    va_end(argList);
+}
 
 - (void)removeObjectsFromArray:(NSArray *)objects;
 {

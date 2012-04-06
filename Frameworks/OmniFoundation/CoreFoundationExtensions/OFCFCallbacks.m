@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007, 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007, 2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -114,6 +114,14 @@ const CFArrayCallBacks OFNSObjectArrayCallbacks = {
     OFNSObjectRelease,
     OFNSObjectCopyDescription,
     OFNSObjectIsEqual,
+};
+
+const CFArrayCallBacks OFPointerEqualObjectArrayCallbacks = {
+    0,     // version;
+    OFNSObjectRetain,
+    OFNSObjectRelease,
+    OFNSObjectCopyDescription,
+    NULL, // equal
 };
 
 const CFArrayCallBacks OFIntegerArrayCallbacks = {

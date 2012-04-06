@@ -13,7 +13,7 @@
 #import <OmniAppKit/NSWindow-OAExtensions.h>
 #import <OmniAppKit/OAColorWell.h>
 
-#import "OIInspectorController.h"
+#import "OIInspectorController-Internal.h"
 #import "OIInspectorRegistry.h"
 #import "OIInspector.h"
 
@@ -119,7 +119,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
     NSMutableDictionary *inspectorById = [NSMutableDictionary dictionary];
     
     // Obsolete name of a method, make sure nobody's trying to override it
-    OBASSERT(![self respondsToSelector:@selector(_adjustTopLeftDefaultPositioningPoint:)]);
+    OBASSERT_NOT_IMPLEMENTED(self, _adjustTopLeftDefaultPositioningPoint:);
     
     [self clearAllGroups];
     [self updateMenuForControllers:inspectorList];
@@ -755,20 +755,7 @@ This method iterates over the inspectors controllers in each visible inspector g
     return result;
 }
 
-#pragma mark -
-#pragma mark Private
-
-- (void)_hideGroup;
-{
-    [self disconnectWindows];
-    
-    for (OIInspectorController *inspector in _inspectors) {
-        OBASSERT([[inspector window] isReleasedWhenClosed] == NO);
-        [[inspector window] close];
-    }
-    
-    [[OIInspectorRegistry sharedInspector] configurationsChanged];
-}
+#pragma mark - Internal
 
 - (void)_showGroup;
 {
@@ -821,6 +808,20 @@ This method iterates over the inspectors controllers in each visible inspector g
     [self connectWindows];
     _inspectorGroupFlags.isShowing = NO;
 
+    [[OIInspectorRegistry sharedInspector] configurationsChanged];
+}
+
+#pragma mark - Private
+
+- (void)_hideGroup;
+{
+    [self disconnectWindows];
+    
+    for (OIInspectorController *inspector in _inspectors) {
+        OBASSERT([[inspector window] isReleasedWhenClosed] == NO);
+        [[inspector window] close];
+    }
+    
     [[OIInspectorRegistry sharedInspector] configurationsChanged];
 }
 

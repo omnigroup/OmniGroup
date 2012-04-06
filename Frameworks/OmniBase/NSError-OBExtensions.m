@@ -1,4 +1,4 @@
-// Copyright 2005-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
 #import <OmniBase/OBUtilities.h>
+#import <OmniBase/OBObject.h>
 
 #import <Foundation/NSUserDefaults.h>
 #import <Foundation/FoundationErrors.h>
@@ -37,7 +38,7 @@ static id (*original_initWithDomainCodeUserInfo)(NSError *self, SEL _cmd, NSStri
 
 @implementation NSError (OBExtensions)
 
-- (id)logging_initWithDomain:(NSString *)domain code:(NSInteger)code userInfo:(NSDictionary *)dict;
+- (id)init_logging_WithDomain:(NSString *)domain code:(NSInteger)code userInfo:(NSDictionary *)dict;
 {
     self = original_initWithDomainCodeUserInfo(self, _cmd, domain, code, dict);
     if (self)
@@ -48,7 +49,7 @@ static id (*original_initWithDomainCodeUserInfo)(NSError *self, SEL _cmd, NSStri
 + (void)performPosing;
 {
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"OBLogErrorCreations"]) {
-        original_initWithDomainCodeUserInfo = (typeof(original_initWithDomainCodeUserInfo))OBReplaceMethodImplementationWithSelector(self, @selector(initWithDomain:code:userInfo:), @selector(logging_initWithDomain:code:userInfo:));
+        original_initWithDomainCodeUserInfo = (typeof(original_initWithDomainCodeUserInfo))OBReplaceMethodImplementationWithSelector(self, @selector(initWithDomain:code:userInfo:), @selector(init_logging_WithDomain:code:userInfo:));
     }
 }
 
@@ -84,28 +85,19 @@ static id (*original_initWithDomainCodeUserInfo)(NSError *self, SEL _cmd, NSStri
 {    
     if ([self hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSUserCancelledError])
         return YES;
-    
+
+    if ([self hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorUserCancelledAuthentication])
+        return YES;
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     if ([self hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:errAuthorizationCanceled])
+        return YES;
+
+    if ([self hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:userCanceledErr])
         return YES;
 #endif
     
     return NO;
-}
-
-static void _mapPlistValueToUserInfoEntry(const void *key, const void *value, void *context)
-{
-    NSString *keyString = (NSString *)key;
-    id valueObject = (id)value;
-    NSMutableDictionary *mappedUserInfo = (NSMutableDictionary *)context;
-    
-    // This is lossy, but once something is plist-ified, we can't be sure where it came from.
-    if ([keyString isEqualToString:NSUnderlyingErrorKey])
-        valueObject = [[[NSError alloc] initWithPropertyList:valueObject] autorelease];
-    else if ([keyString isEqualToString:NSRecoveryAttempterErrorKey] && [valueObject isKindOfClass:[NSString class]])
-        return; // We can't turn an NSString back into a valid -recoveryAttempter object
-
-    [mappedUserInfo setObject:valueObject forKey:keyString];
 }
 
 - initWithPropertyList:(NSDictionary *)propertyList;
@@ -119,20 +111,26 @@ static void _mapPlistValueToUserInfoEntry(const void *key, const void *value, vo
     NSDictionary *userInfo = [propertyList objectForKey:@"userInfo"];
     if (userInfo) {
         NSMutableDictionary *mappedUserInfo = [NSMutableDictionary dictionary];
-        CFDictionaryApplyFunction((CFDictionaryRef)userInfo, _mapPlistValueToUserInfoEntry, mappedUserInfo);
+        for (NSString *key in userInfo) {
+            id valueObject = [userInfo objectForKey:key];
+            
+            // This is lossy, but once something is plist-ified, we can't be sure where it came from.
+            if ([key isEqualToString:NSUnderlyingErrorKey])
+                valueObject = [[[NSError alloc] initWithPropertyList:valueObject] autorelease];
+            else if ([key isEqualToString:NSRecoveryAttempterErrorKey] && [valueObject isKindOfClass:[NSString class]])
+                continue; // We can't turn an NSString back into a valid -recoveryAttempter object
+            
+            [mappedUserInfo setObject:valueObject forKey:key];
+        }
+
         userInfo = mappedUserInfo;
     }
     
     return [self initWithDomain:domain code:[code intValue] userInfo:userInfo];
 }
 
-static void _addMappedUserInfoValueToArray(const void *value, void *context);
-static void _addMapppedUserInfoValueToDictionary(const void *key, const void *value, void *context);
-
-static id _mapUserInfoValueToPlistValue(const void *value)
+static id _mapUserInfoValueToPlistValue(id valueObject)
 {
-    id valueObject = (id)value;
-
     if (!valueObject)
         return @"<nil>";
     
@@ -144,20 +142,49 @@ static id _mapUserInfoValueToPlistValue(const void *value)
         return [valueObject absoluteString];
     
     // Handle containers explicitly since they might contain non-plist values
-    if ([valueObject isKindOfClass:[NSArray class]]) {
+    // Map sets to arrays since NSSet isn't a plist type.
+    if ([valueObject isKindOfClass:[NSArray class]] || [valueObject isKindOfClass:[NSSet class]]) {
         NSMutableArray *mapped = [NSMutableArray array];
-        CFArrayApplyFunction((CFArrayRef)valueObject, CFRangeMake(0, [valueObject count]), _addMappedUserInfoValueToArray, mapped);
+        for (id unmappedValue in (id <NSFastEnumeration>)valueObject) {
+            id mappedValue = _mapUserInfoValueToPlistValue(unmappedValue);
+            OBASSERT(mappedValue); // mapping returns something for nil
+            [mapped addObject:mappedValue];
+        }
         return mapped;
     }
-    if ([valueObject isKindOfClass:[NSSet class]]) {
-        // Map sets to arrays.
-        NSMutableArray *mapped = [NSMutableArray array];
-        CFSetApplyFunction((CFSetRef)valueObject, _addMappedUserInfoValueToArray, mapped);
-        return mapped;
-    }
+
     if ([valueObject isKindOfClass:[NSDictionary class]]) {
         NSMutableDictionary *mapped = [NSMutableDictionary dictionary];
-        CFDictionaryApplyFunction((CFDictionaryRef)valueObject, _addMapppedUserInfoValueToDictionary, mapped);
+        [(NSDictionary *)valueObject enumerateKeysAndObjectsUsingBlock:^(NSString  *key, id unmappedValue, BOOL *stop) {
+
+            if ([key isEqualToString:NSRecoveryAttempterErrorKey]) {
+                // Convert to a minimal plist value for logging/debugging
+                [mapped setObject:[valueObject shortDescription] forKey:NSRecoveryAttempterErrorKey];
+                return;
+            }
+            
+#if INCLUDE_BACKTRACE_IN_ERRORS
+            if ([key isEqualToString:OBBacktraceAddressesErrorKey]) {
+                // Transform this to symbol names when actually interested in it.
+                NSData *frameData = valueObject;
+                const void* const* frames = [frameData bytes];
+                int frameCount = [frameData length] / sizeof(frames[0]);
+                char **names = backtrace_symbols((void* const* )frames, frameCount);
+                if (names) {
+                    NSMutableArray *namesArray = [NSMutableArray array];
+                    for (int nameIndex = 0; nameIndex < frameCount; nameIndex++)
+                        [namesArray addObject:[NSString stringWithCString:names[nameIndex] encoding:NSUTF8StringEncoding]];
+                    free(names);
+                    
+                    [mappedUserInfo setObject:namesArray forKey:OBBacktraceNamesErrorKey];
+                    return;
+                }
+            }
+#endif
+            
+            id mappedValue = _mapUserInfoValueToPlistValue(unmappedValue);
+            [mapped setObject:mappedValue forKey:key];
+        }];
         return mapped;
     }
     
@@ -170,42 +197,6 @@ static id _mapUserInfoValueToPlistValue(const void *value)
     }
     
     return valueObject;
-}
-
-static void _addMappedUserInfoValueToArray(const void *value, void *context)
-{
-    id valueObject = _mapUserInfoValueToPlistValue(value);
-    OBASSERT(valueObject); // mapping returns something for nil
-    [(NSMutableArray *)context addObject:valueObject];
-}
-
-static void _addMapppedUserInfoValueToDictionary(const void *key, const void *value, void *context)
-{
-    NSString *keyString = (NSString *)key;
-    id valueObject = (id)value;
-    NSMutableDictionary *mappedUserInfo = (NSMutableDictionary *)context;
-
-#if INCLUDE_BACKTRACE_IN_ERRORS
-    if ([keyString isEqualToString:OBBacktraceAddressesErrorKey]) {
-        // Transform this to symbol names when actually interested in it.
-        NSData *frameData = valueObject;
-        const void* const* frames = [frameData bytes];
-        int frameCount = [frameData length] / sizeof(frames[0]);
-        char **names = backtrace_symbols((void* const* )frames, frameCount);
-        if (names) {
-            NSMutableArray *namesArray = [NSMutableArray array];
-            for (int nameIndex = 0; nameIndex < frameCount; nameIndex++)
-                [namesArray addObject:[NSString stringWithCString:names[nameIndex] encoding:NSUTF8StringEncoding]];
-            free(names);
-            
-            [mappedUserInfo setObject:namesArray forKey:OBBacktraceNamesErrorKey];
-            return;
-        }
-    }
-#endif
-
-    valueObject = _mapUserInfoValueToPlistValue(valueObject);
-    [mappedUserInfo setObject:valueObject forKey:keyString];
 }
 
 - (NSDictionary *)toPropertyList;

@@ -20,12 +20,17 @@
 
 extern NSString * const OFSDocumentStoreFileItemFilePresenterURLBinding;
 extern NSString * const OFSDocumentStoreFileItemSelectedBinding;
+extern NSString * const OFSDocumentStoreFileItemIsUbiquitousBinding;
+extern NSString * const OFSDocumentStoreFileItemDownloadRequestedBinding;
 
 extern NSString * const OFSDocumentStoreFileItemContentsChangedNotification;
 extern NSString * const OFSDocumentStoreFileItemFinishedDownloadingNotification;
 extern NSString * const OFSDocumentStoreFileItemInfoKey;
 
 @interface OFSDocumentStoreFileItem : OFSDocumentStoreItem <NSFilePresenter, OFSDocumentStoreItem, NSCopying>
+
++ (NSString *)displayNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
++ (NSString *)editingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 
 - initWithDocumentStore:(OFSDocumentStore *)documentStore fileURL:(NSURL *)fileURL date:(NSDate *)date;
 
@@ -39,6 +44,10 @@ extern NSString * const OFSDocumentStoreFileItemInfoKey;
 @property(readonly,nonatomic) NSString *editingName;
 @property(readonly,nonatomic) NSString *name;
 @property(copy,nonatomic) NSDate *date;
+@property(readonly,nonatomic) BOOL isUbiquitous;
+
+- (BOOL)requestDownload:(NSError **)outError;
+@property(readonly,assign,nonatomic) BOOL downloadRequested;
 
 @property(nonatomic,readonly,getter=isBeingDeleted) BOOL beingDeleted; // YES when this file item has received -accommodatePresentedItemDeletionWithCompletionHandler:.
 

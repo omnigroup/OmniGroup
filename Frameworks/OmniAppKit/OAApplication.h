@@ -1,4 +1,4 @@
-// Copyright 1997-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,8 +35,6 @@
 - (NSTimeInterval)lastEventTimeInterval;
 - (BOOL)mouseButtonIsDownAtIndex:(unsigned int)mouseButtonIndex;
 - (BOOL)scrollWheelButtonIsDown;
-- (NSUInteger)currentModifierFlags DEPRECATED_ATTRIBUTE;
-- (BOOL)checkForModifierFlags:(NSUInteger)flags DEPRECATED_ATTRIBUTE;
 - (NSUInteger)launchModifierFlags;
 
 - (void)scheduleModalPanelForTarget:(id)modalController selector:(SEL)modalSelector userInfo:(id)userInfo;
@@ -68,8 +66,10 @@
 
 @end
 
-@interface NSObject (OAApplicationDelegate)
-- (NSString *)applicationSupportDirectoryName;
+@protocol OAApplicationDelegate <NSApplicationDelegate>
+@optional
+- (NSString *)applicationSupportDirectoryName:(OAApplication *)application;
+- (void)openAddressWithString:(NSString *)urlString;
 @end
 
 @interface NSResponder (OAApplicationEvents)

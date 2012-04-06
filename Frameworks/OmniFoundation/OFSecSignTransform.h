@@ -1,4 +1,4 @@
-// Copyright 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2011-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,10 +28,13 @@ static inline BOOL OFSecSignTransformAvailable()
     SecKeyRef key;
     CFStringRef digestType;
     int digestLength;
+    int generatorGroupOrderLog2;
     BOOL verifying;
 }
 
 - initWithKey:(SecKeyRef)aKey;
+
+- (void)setPackDigestsWithGroupOrder:(int)sizeInBits;
 
 @property (readwrite,nonatomic) CFStringRef digestType;
 @property (readwrite,nonatomic) int digestLength;

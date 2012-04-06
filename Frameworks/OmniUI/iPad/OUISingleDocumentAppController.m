@@ -16,8 +16,12 @@
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
+#import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/OFUTI.h>
+#import <OmniFoundation/OFPreference.h>
+#import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUI/OUIDocumentConflictResolutionViewControllerDelegate.h>
 #import <OmniUI/OUIDocument.h>
 #import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIDocumentPickerFileItemView.h>
@@ -30,6 +34,7 @@
 #import <OmniUI/UIBarButtonItem-OUITheming.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
+#import "OUISingleDocumentAppController-Internal.h"
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentConflictResolutionViewController.h"
 #import "OUIDocumentPicker-Internal.h"
@@ -41,12 +46,8 @@
 
 RCS_ID("$Id$");
 
+static NSString * const WelcomeDocumentName = @"Welcome";
 static NSString * const OpenAction = @"open";
-
-typedef enum {
-    OpenDocumentAnimationZoom,
-    OpenDocumentAnimationDissolve,
-} OpenDocumentAnimation;
 
 #if 0 && defined(DEBUG)
     #define DEBUG_LAUNCH(format, ...) NSLog(@"LAUNCH: " format, ## __VA_ARGS__)
@@ -54,37 +55,14 @@ typedef enum {
     #define DEBUG_LAUNCH(format, ...) do {} while (0)
 #endif
 
-typedef enum {
-    DocumentCopyBehaviorNone,
-    DocumentCopyBehaviorMoveLocalToCloud,
-    // DocumentCopyBehaviorCopyCloudToLocal -- if we add support for this when re-enabling iCloud
-} DocumentCopyBehavior;
+typedef struct {
+    BOOL performChange;
+    BOOL enable;
+    BOOL shouldMigrateExistingDocuments;
+} UbiquityAccessChange;
 
-@interface OUISingleDocumentAppController (/*Private*/) <OUIDocumentConflictResolutionViewControllerDelegate, OUIDocumentPreviewGeneratorDelegate>
-
+@interface OUISingleDocumentAppController (/*Private*/) <OUIDocumentPreviewGeneratorDelegate>
 @property(nonatomic,copy) NSArray *launchAction;
-
-- (void)_delayedFinishLaunchingAllowCopyingSampleDocuments:(BOOL)allowCopyingSampleDocuments
-                                    openingDocumentWithURL:(NSURL *)launchDocumentURL
-                                  orOpeningWelcomeDocument:(BOOL)openWelcomeDocument;
-
-- (void)_fadeInDocumentPickerScrollingToFileItem:(OFSDocumentStoreFileItem *)fileItem;
-- (void)_mainThread_finishedLoadingDocument:(OUIDocument *)document animation:(OpenDocumentAnimation)animation completionHandler:(void (^)(void))completionHandler;
-- (void)_openDocument:(OFSDocumentStoreFileItem *)fileItem animation:(OpenDocumentAnimation)animation;
-- (void)_setDocument:(OUIDocument *)document;
-
-- (void)_promptForUbiquityAccessWithCompletionHandler:(void (^)(DocumentCopyBehavior copyBehavior))completionHandler;
-- (void)_handleUbiquityAccessChangeWithCopyBehavior:(DocumentCopyBehavior)copyBehavior withCompletionHandler:(void (^)(void))completionHandler;
-
-- (void)_documentStateChanged:(NSNotification *)note;
-- (void)_startConflictResolution:(NSURL *)fileURL;
-- (void)_stopConflictResolutionWithCompletion:(void (^)(void))completion;
-
-- (void)_fileItemContentsChangedNotification:(NSNotification *)note;
-- (void)_fileItemFinishedDownloadingNotification:(NSNotification *)note;
-
-- (void)_setupGesturesOnTitleTextField;
-
 @end
 
 @implementation OUISingleDocumentAppController
@@ -111,6 +89,8 @@ typedef enum {
     OUIDocumentPreviewGenerator *_previewGenerator;
     
     OUIDocumentConflictResolutionViewController *_conflictResolutionViewController;
+    BOOL _aboutToStartConflictResolution;
+    
     OUIDocumentStoreSetupViewController *_documentStoreSetupController;
 }
 
@@ -189,6 +169,12 @@ typedef enum {
     return _infoBarButtonItem;
 }
 
+- (BOOL)shouldOpenWelcomeDocumentOnFirstLaunch;
+{
+    // Apps may wish to override this behavior in a subclass
+    return YES;
+}
+
 - (IBAction)makeNewDocument:(id)sender;
 {
     [self.documentPicker newDocument:sender];
@@ -196,16 +182,29 @@ typedef enum {
 
 - (void)closeDocument:(id)sender;
 {
+    [self closeDocumentWithAnimationType:OUIDocumentAnimationTypeZoom completionHandler:nil];
+}
+
+- (void)closeDocumentWithAnimationType:(OUIDocumentAnimationType)animation completionHandler:(void (^)(void))completionHandler;
+{
     OBPRECONDITION(_document);
     
     if (!_document) {
         // Uh. Whatever.
         _mainViewController.innerViewController = self.documentPicker;
+        if (completionHandler)
+            completionHandler();
         return;
     }
     
+    completionHandler = [[completionHandler copy] autorelease]; // capture scope
+    
     // Stop tracking the state from this document's undo manager
     [self undoBarButtonItem].undoManager = nil;
+    
+    // The inspector would animate closed and raise an exception, having detected it was getting deallocated while still visible (but animating away).
+    // This must happen before ending editing below; otherwise the -endEditing: call will look at the popover for the editor and won't go up to any editor in the main view.
+    [self dismissPopoverAnimated:NO];
     
     OUIWithoutAnimating(^{
         [_window endEditing:YES];
@@ -214,9 +213,6 @@ typedef enum {
         // Make sure -setNeedsDisplay calls (provoked by -endEditing:) have a chance to get flushed before we invalidate the document contents
         OUIDisplayNeededViews();
     });
-    
-    // The inspector would animate closed and raise an exception, having detected it was getting deallocated while still visible (but animating away).
-    [self dismissPopoverAnimated:NO];
     
     // Ending editing may have started opened an undo group, with the nested group stuff for autosave (see OUIDocument). Give the runloop a chance to close the nested group.
     if ([_document.undoManager groupingLevel] > 0) {
@@ -245,34 +241,75 @@ typedef enum {
         
         // If the document was saved, it will have already updated *its* previews, if we were launched into a document w/o the document picker ever being visible, we might not have previews loaded for other documents
         [OUIDocumentPreview updatePreviewImageCacheWithCompletionHandler:^{
-            OFSDocumentStoreFileItem *fileItem = _document.fileItem;
             
-            OUIDocumentPicker *documentPicker = self.documentPicker;
-            UIView *documentView = [self pickerAnimationViewForTarget:_document];
-            [_mainViewController setInnerViewController:documentPicker animated:YES
-                                             fromRegion:^(UIView **outView, CGRect *outRect) {
-                                                 *outView = documentView;
-                                                 *outRect = CGRectZero;
-                                             } toRegion:^(UIView **outView, CGRect *outRect) {
-                                                 OUIDocumentPickerFileItemView *fileItemView = [documentPicker.activeScrollView fileItemViewForFileItem:fileItem];
-                                                 OBASSERT(fileItemView != nil);
-                                                 [fileItemView loadPreviews];
-
-                                                 OUIDocumentPreviewView *previewView = fileItemView.previewView;
-                                                 *outView = previewView;
-                                                 *outRect = previewView.imageBounds;
-                                             } transitionAction:^{
-                                                 [documentPicker.activeScrollView sortItems];
-                                                 [documentPicker scrollItemToVisible:fileItem animated:NO];
-                                             } completionAction:^{
-                                                 [[UIApplication sharedApplication] endIgnoringInteractionEvents];
-                                             }];
+            switch (animation) {
+                case OUIDocumentAnimationTypeZoom: {
+                    OFSDocumentStoreFileItem *fileItem = _document.fileItem;
+                    
+                    OUIDocumentPicker *documentPicker = self.documentPicker;
+                    UIView *documentView = [self pickerAnimationViewForTarget:_document];
+                    [_mainViewController setInnerViewController:documentPicker animated:YES
+                                                     fromRegion:^(UIView **outView, CGRect *outRect) {
+                                                         *outView = documentView;
+                                                         *outRect = CGRectZero;
+                                                     } toRegion:^(UIView **outView, CGRect *outRect) {
+                                                         OUIDocumentPickerFileItemView *fileItemView = [documentPicker.activeScrollView fileItemViewForFileItem:fileItem];
+                                                         OBASSERT(fileItemView != nil);
+                                                         [fileItemView loadPreviews];
+                                                         
+                                                         OUIDocumentPreviewView *previewView = fileItemView.previewView;
+                                                         *outView = previewView;
+                                                         *outRect = previewView.imageBounds;
+                                                     } transitionAction:^{
+                                                         [documentPicker.activeScrollView sortItems];
+                                                         [documentPicker scrollItemToVisible:fileItem animated:NO];
+                                                     } completionAction:^{
+                                                         [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+                                                         
+                                                         if (completionHandler)
+                                                             completionHandler();
+                                                     }];
+                    break;
+                }
+                case OUIDocumentAnimationTypeDissolve: {
+                    OUIDocumentPicker *documentPicker = self.documentPicker;
+                    [UIView transitionWithView:_mainViewController.view duration:0.25
+                                       options:UIViewAnimationOptionTransitionCrossDissolve
+                                    animations:^{
+                                        OUIWithoutAnimating(^{ // some animations get added anyway if we specify NO ... avoid a weird jump from the start to end frame
+                                            [_mainViewController setInnerViewController:documentPicker animated:NO fromView:nil toView:nil];
+                                        });
+                                        [_mainViewController.view layoutIfNeeded];
+                                    }
+                                    completion:^(BOOL finished){
+                                        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+                                        
+                                        if (completionHandler)
+                                            completionHandler();
+                                    }];
+                    break;
+                }
+                default:
+                    // this shouldn't happen, but JUST IN CASE...
+                    OBASSERT_NOT_REACHED("Should've specificed a valid OUIDocumentAnimationType");
+                    if (completionHandler)
+                        completionHandler();
+            }
             
             [self _setDocument:nil];
             
             [_previewGenerator documentClosed];
         }];
     }];
+}
+
+- (void)documentDidDisableEnditing:(OUIDocument *)document;
+{
+    OBPRECONDITION(document.editingDisabled == YES); // When we end editing, we'll look at this and ignore the rename request.
+    
+    OUIWithoutAnimating(^{
+        [_documentTitleTextField endEditing:YES];
+    });
 }
 
 - (CGFloat)titleTextFieldWidthForOrientation:(UIInterfaceOrientation)orientation;
@@ -297,7 +334,7 @@ typedef enum {
 
 - (NSString *)sampleDocumentsDirectoryTitle;
 {
-    return NSLocalizedStringFromTableInBundle(@"Restore Sample Document", @"OmniUI", OMNI_BUNDLE, @"Restore Sample Document Title");
+    return NSLocalizedStringFromTableInBundle(@"Restore Sample Documents", @"OmniUI", OMNI_BUNDLE, @"Restore Sample Documents Title");
 }
 
 - (NSURL *)sampleDocumentsDirectoryURL;
@@ -307,45 +344,77 @@ typedef enum {
     return [NSURL fileURLWithPath:samples isDirectory:YES];
 }
 
-- (void)copySampleDocumentsToUserDocuments;
+- (void)copySampleDocumentsToUserDocumentsWithCompletionHandler:(void (^)(NSDictionary *nameToURL))completionHandler;
 {
-    // This should be called as part of an after-scan action. We don't want to re-copy the samples if the user already has some documents, local or in iCloud
-    OBPRECONDITION(_documentStore.self.hasFinishedInitialMetdataQuery);
+    [self copySampleDocumentsFromDirectoryURL:[self sampleDocumentsDirectoryURL] toScope:[_documentStore localScope] stringTableName:[self stringTableNameForSampleDocuments] completionHandler:completionHandler];
+}
+
+- (void)copySampleDocumentsFromDirectoryURL:(NSURL *)sampleDocumentsDirectoryURL toScope:(OFSDocumentStoreScope *)scope stringTableName:(NSString *)stringTableName completionHandler:(void (^)(NSDictionary *nameToURL))completionHandler;
+{
+    // This should be called as part of an after-scan action so we can properly unique names.
+    OBPRECONDITION(_documentStore);
+    OBPRECONDITION(_documentStore.hasFinishedInitialMetdataQuery);
+    
+    completionHandler = [[completionHandler copy] autorelease];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSURL *sampleDocumentsDirectoryURL = [self sampleDocumentsDirectoryURL];
-    NSURL *userDocumentsDirectoryURL = _documentStore.localScope.url;
-    OBASSERT(userDocumentsDirectoryURL);
     
     NSError *error = nil;
     NSArray *sampleURLs = [fileManager contentsOfDirectoryAtURL:sampleDocumentsDirectoryURL includingPropertiesForKeys:nil options:0 error:&error];
     if (!sampleURLs) {
         NSLog(@"Unable to find sample documents at %@: %@", sampleDocumentsDirectoryURL, [error toPropertyList]);
+        if (completionHandler)
+            completionHandler(nil);
         return;
     }
     
+    NSOperationQueue *callingQueue = [NSOperationQueue currentQueue];
+    NSMutableDictionary *nameToURL = [NSMutableDictionary dictionary];
+    
     for (NSURL *sampleURL in sampleURLs) {
-        NSURL *documentURL = [userDocumentsDirectoryURL URLByAppendingPathComponent:[sampleURL lastPathComponent]];
-        NSString *documentName = [[documentURL lastPathComponent] stringByDeletingPathExtension];
+        NSString *sampleName = [[sampleURL lastPathComponent] stringByDeletingPathExtension];
         
-        NSString *localizedTitle = [self localizedNameForSampleDocumentNamed:documentName];
-        if (localizedTitle && ![localizedTitle isEqualToString:documentName]) {
-            documentURL = [userDocumentsDirectoryURL URLByAppendingPathComponent:[localizedTitle stringByAppendingPathExtension:[documentURL pathExtension]]];
+        NSString *localizedTitle = [[NSBundle mainBundle] localizedStringForKey:sampleName value:sampleName table:stringTableName];
+        if ([NSString isEmptyString:localizedTitle]) {
+            OBASSERT_NOT_REACHED("No localization available for sample document name");
+            localizedTitle = sampleName;
         }
-        
-        // Sample documents are regeneratable, so we really shouldn't put them in the cloud.
-        // iWork does create new documents in the cloud if enabled, but those are user-initiated.
-        if (![[NSFileManager defaultManager] copyItemAtURL:sampleURL toURL:documentURL error:&error]) {
-            NSLog(@"Unable to copy %@ to %@: %@", sampleURL, documentURL, [error toPropertyList]);
-        } else if ([[documentName stringByDeletingPathExtension] isEqualToString:@"Welcome"]) {
-            [fileManager touchItemAtURL:documentURL error:NULL];
-        }
+
+        [_documentStore addDocumentWithScope:scope inFolderNamed:nil baseName:localizedTitle fromURL:sampleURL option:OFSDocumentStoreAddByRenaming completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error){
+            if (!duplicateFileItem) {
+                NSLog(@"Failed to copy sample document %@: %@", sampleURL, [error toPropertyList]);
+                return;
+            }
+            [callingQueue addOperationWithBlock:^{
+                OBASSERT([nameToURL objectForKey:sampleName] == nil);
+                [nameToURL setObject:duplicateFileItem.fileURL forKey:sampleName];
+            }];
+        }];
     }
+    
+    // Wait for all the copies to finish
+    [_documentStore afterAsynchronousFileAccessFinishes:^{
+        // Wait for the updates of the nameToURL dictionary
+        [callingQueue addOperationWithBlock:^{
+            // If there is a Welcome document, make it sort to the top by date.
+            NSURL *welcomeURL = [nameToURL objectForKey:WelcomeDocumentName];
+            if (welcomeURL)
+                [fileManager touchItemAtURL:welcomeURL error:NULL];
+            
+            if (completionHandler)
+                completionHandler(nameToURL);
+        }];
+    }];
+}
+
+- (NSString *)stringTableNameForSampleDocuments;
+{
+    return @"SampleNames";
 }
 
 - (NSString *)localizedNameForSampleDocumentNamed:(NSString *)documentName;
 {
-    return [[NSBundle mainBundle] localizedStringForKey:documentName value:documentName table:@"SampleNames"];
+    return [[NSBundle mainBundle] localizedStringForKey:documentName value:documentName table:[self stringTableNameForSampleDocuments]];
 }
 
 - (NSURL *)URLForSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
@@ -460,8 +529,8 @@ typedef enum {
     OBASSERT(originalName);
     
     NSString *newName = [textField text];
-    if (_hasAttemptedRename || [NSString isEmptyString:newName] || [newName isEqualToString:originalName]) {
-        _hasAttemptedRename = NO; // This rename finished; prepare for the next one.
+    if (_hasAttemptedRename || [NSString isEmptyString:newName] || [newName isEqualToString:originalName] || _document.editingDisabled) {
+        _hasAttemptedRename = NO; // This rename finished (or we are going to discard it due to an incoming iCloud edit); prepare for the next one.
         textField.text = originalName;
         return YES;
     }
@@ -477,6 +546,9 @@ typedef enum {
     OUIDocumentPicker *documentPicker = self.documentPicker;
     OFSDocumentStore *documentStore = documentPicker.documentStore;
 
+    // Tell the document that the rename is local
+    [_document _willBeRenamedLocally];
+    
     // Make sure we don't close the document while the rename is happening, or some such. It would probably be OK with the synchronization API, but there is no reason to allow it.
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
     [documentPicker _beginIgnoringDocumentsDirectoryUpdates];
@@ -543,9 +615,9 @@ typedef enum {
 
 - (void)_delayedFinishLaunchingAllowCopyingSampleDocuments:(BOOL)allowCopyingSampleDocuments
                                     openingDocumentWithURL:(NSURL *)launchDocumentURL
-                                  orOpeningWelcomeDocument:(BOOL)openWelcomeDocument;
+                           orOpeningWelcomeDocumentWithURL:(NSURL *)welcomeDocumentURL;
 {
-    DEBUG_LAUNCH(@"Delayed finish launching allowCopyingSamples:%d openURL:%@ orWelcome:%d", allowCopyingSampleDocuments, launchDocumentURL, openWelcomeDocument);
+    DEBUG_LAUNCH(@"Delayed finish launching allowCopyingSamples:%d openURL:%@ orWelcome:%@", allowCopyingSampleDocuments, launchDocumentURL, welcomeDocumentURL);
     
     OUIDocumentPicker *documentPicker = self.documentPicker;
 
@@ -560,21 +632,23 @@ typedef enum {
     
     if (allowCopyingSampleDocuments && launchDocumentURL == nil && ![[NSUserDefaults standardUserDefaults] boolForKey:@"SampleDocumentsHaveBeenCopiedToUserDocuments"]) {
         // Copy in a welcome document if one exists and we haven't done so for first launch yet.
-        [self copySampleDocumentsToUserDocuments];
-        
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"SampleDocumentsHaveBeenCopiedToUserDocuments"];
-        
-        [_documentStore scanItemsWithCompletionHandler:^{
-            // Retry after the scan finished, but this time try opening the Welcome document
-            [self _delayedFinishLaunchingAllowCopyingSampleDocuments:NO // we just did, don't try again
-                                              openingDocumentWithURL:nil // already checked this
-                                            orOpeningWelcomeDocument:YES];
+        [self copySampleDocumentsToUserDocumentsWithCompletionHandler:^(NSDictionary *nameToURL) {
+            NSURL *welcomeURL = self.shouldOpenWelcomeDocumentOnFirstLaunch ? [nameToURL objectForKey:WelcomeDocumentName] : nil;
+            
+            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"SampleDocumentsHaveBeenCopiedToUserDocuments"];
+            
+            [_documentStore scanItemsWithCompletionHandler:^{
+                // Retry after the scan finished, but this time try opening the Welcome document
+                [self _delayedFinishLaunchingAllowCopyingSampleDocuments:NO // we just did, don't try again
+                                                  openingDocumentWithURL:nil // already checked this
+                                         orOpeningWelcomeDocumentWithURL:welcomeURL];
+            }];
         }];
         return;
     }
     
-    if (!launchFileItem && openWelcomeDocument) {
-        launchFileItem = [_documentStore fileItemNamed:[self localizedNameForSampleDocumentNamed:@"Welcome"]];
+    if (!launchFileItem && welcomeDocumentURL) {
+        launchFileItem = [_documentStore fileItemWithURL:welcomeDocumentURL];
         DEBUG_LAUNCH(@"  launchFileItem: %@", [launchFileItem shortDescription]);
     }
 
@@ -639,7 +713,7 @@ typedef enum {
     
     NSURL *launchOptionsURL = [launchOptions objectForKey:UIApplicationLaunchOptionsURLKey];
     
-    void (^moarFinishing)(DocumentCopyBehavior copyBehavior) = ^(DocumentCopyBehavior copyBehavior){
+    void (^moarFinishing)(UbiquityAccessChange ubiquityAccessChange) = ^(UbiquityAccessChange ubiquityAccessChange){
         DEBUG_LAUNCH(@"Creating document store");
         
         _documentStore = [[OFSDocumentStore alloc] initWithDirectoryURL:[OFSDocumentStore userDocumentsDirectoryURL] containerScopes:[OFSDocumentStore defaultUbiquitousScopes] delegate:self scanCompletionHandler:nil];
@@ -657,10 +731,10 @@ typedef enum {
             OBFinishPortingLater("If the user turns iCloud off and then back on, we could still end up moving sample documents into iCloud"); // We could maybe add a custom xattr to sample documents and make sure that doesn't get saved on save (or specifically remove it). Ugly, but then we could avoid moving sample documents into iCloud.
             
             // Now that we know what the existing documents are, possibly move some of them into iCloud (before we possibly create sample documents which should not be moved into iCloud).
-            [self _handleUbiquityAccessChangeWithCopyBehavior:copyBehavior withCompletionHandler:^{
+            [self _handleUbiquityAccessChangeWithCopyBehavior:ubiquityAccessChange withCompletionHandler:^{
                 [self _delayedFinishLaunchingAllowCopyingSampleDocuments:YES
                                                   openingDocumentWithURL:launchOptionsURL
-                                                orOpeningWelcomeDocument:NO]; // Don't always try to open the welcome document; just if we copy samples
+                                         orOpeningWelcomeDocumentWithURL:nil]; // Don't always try to open the welcome document; just if we copy samples
             }];
         }];
         
@@ -692,7 +766,10 @@ typedef enum {
             [self _promptForUbiquityAccessWithCompletionHandler:moarFinishing];
         }];
     } else {
-        moarFinishing(DocumentCopyBehaviorNone);
+        UbiquityAccessChange ubiquityAccessChange = {
+            .performChange = NO
+        };
+        moarFinishing(ubiquityAccessChange);
     }
     
     return YES;
@@ -709,7 +786,7 @@ typedef enum {
 
 - (void)_loadStartupDocument:(OFSDocumentStoreFileItem *)fileItem;
 {
-    [self _openDocument:fileItem animation:OpenDocumentAnimationDissolve];
+    [self _openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve];
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
@@ -721,6 +798,8 @@ typedef enum {
         return [self handleSpecialURL:url];
     }
     
+    [self.documentPicker _applicationWillOpenDocument];
+
     if ([OFSDocumentStore isURLInInbox:url]) {
         OBASSERT(_documentStore);
         [_documentStore cloneInboxItem:url completionHandler:^(OFSDocumentStoreFileItem *newFileItem, NSError *errorOrNil) {
@@ -736,7 +815,7 @@ typedef enum {
                     return;
                 }
                 
-                [self _openDocument:newFileItem animation:OpenDocumentAnimationDissolve];
+                [self _openDocument:newFileItem animation:OUIDocumentAnimationTypeDissolve];
             });
         }];
     } else {
@@ -744,7 +823,7 @@ typedef enum {
         OFSDocumentStoreFileItem *fileItem = [_documentStore fileItemWithURL:url];
         OBASSERT(fileItem);
         if (fileItem)
-            [self _openDocument:fileItem animation:OpenDocumentAnimationDissolve];
+            [self _openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve];
     }
     
     return YES;
@@ -775,8 +854,8 @@ typedef enum {
 {
     // Might be running one already due to launching. Or, iCloud might be enabled while we were backgrounded.
     if (_documentStoreSetupController == nil && [OFSDocumentStore shouldPromptForUbiquityAccess] == YES) {
-        [self _promptForUbiquityAccessWithCompletionHandler:^(DocumentCopyBehavior copyBehavior){
-            [self _handleUbiquityAccessChangeWithCopyBehavior:copyBehavior withCompletionHandler:^{
+        [self _promptForUbiquityAccessWithCompletionHandler:^(UbiquityAccessChange ubiquityAccessChange){
+            [self _handleUbiquityAccessChangeWithCopyBehavior:ubiquityAccessChange withCompletionHandler:^{
                 // We want to avoid the document store rescanning/renaming stuff until after we've moved things into iCloud (if we do). Otherwise, it'll possibly have renamed local files that conflict with iCloud files to have "(local)" and then put them in iCloud.
                 [self _finishedEnteringForeground];
             }];
@@ -819,15 +898,43 @@ typedef enum {
     [super applicationWillTerminate:application];
 }
 
-#pragma mark -
-#pragma mark OUIDocumentPickerDelegate
+#pragma mark - OFSDocumentStoreDelegate
+
+- (void)documentStore:(OFSDocumentStore *)store fileItem:(OFSDocumentStoreFileItem *)fileItem didGainVersion:(NSFileVersion *)fileVersion;
+{
+    if (fileVersion.conflict)
+        [_previewGenerator fileItemNeedsPreviewUpdate:fileItem];
+}
+
+- (void)documentStore:(OFSDocumentStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date didMoveToURL:(NSURL *)newURL;
+{
+    [OUIDocumentPreview updateCacheAfterFileURL:oldURL withDate:date didMoveToURL:newURL];
+}
+
+- (void)documentStore:(OFSDocumentStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)oldDate didCopyToURL:(NSURL *)newURL andDate:(NSDate *)newDate;
+{
+    // If we have valid previews for the old document, copy them to the new. We might not have previews if the old file is a sample document being restored, for example.
+    Class cls = [self documentClassForURL:oldURL];
+    
+    OUIDocumentPreview *landscapePreview = [OUIDocumentPreview makePreviewForDocumentClass:cls fileURL:oldURL date:oldDate withLandscape:YES];
+    if (landscapePreview.type != OUIDocumentPreviewTypeRegular)
+        return;
+    
+    OUIDocumentPreview *portraitPreview = [OUIDocumentPreview makePreviewForDocumentClass:cls fileURL:oldURL date:oldDate withLandscape:NO];
+    if (portraitPreview.type != OUIDocumentPreviewTypeRegular)
+        return;
+
+    [OUIDocumentPreview cachePreviewImagesForFileURL:newURL date:newDate byDuplicatingFromFileURL:oldURL date:oldDate];
+}
+
+#pragma mark - OUIDocumentPickerDelegate
 
 - (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(OFSDocumentStoreFileItem *)fileItem;
 {
     OBPRECONDITION(fileItem);
     
     if (fileItem.hasUnresolvedConflicts) {
-        [self _startConflictResolution:fileItem.fileURL];
+        [self _startConflictResolution:fileItem];
         return;
     }
     
@@ -837,7 +944,7 @@ typedef enum {
     if (![_previewGenerator shouldOpenDocumentWithFileItem:fileItem])
         return;
     
-    [self _openDocument:fileItem animation:OpenDocumentAnimationZoom];
+    [self _openDocument:fileItem animation:OUIDocumentAnimationTypeZoom];
 }
 
 - (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(OFSDocumentStoreFileItem *)fileItem;
@@ -854,7 +961,7 @@ typedef enum {
         return;
 #endif
     
-    [self _openDocument:fileItem animation:OpenDocumentAnimationDissolve];
+    [self _openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve];
 }
 
 #pragma mark -
@@ -874,6 +981,11 @@ typedef enum {
 {
     OBPRECONDITION(_conflictResolutionViewController == conflictResolution);
     [self _stopConflictResolutionWithCompletion:nil];
+}
+
+- (NSString *)conflictResolutionPromptForFileItem:(OFSDocumentStoreFileItem *)fileItem;
+{
+    return NSLocalizedStringFromTableInBundle(@"Modifications aren't in sync. Choose which documents to keep.", @"OmniUI", OMNI_BUNDLE, @"info message while resolving file version conflicts");
 }
 
 #pragma mark - OUIDocumentPreviewGeneratorDelegate delegate
@@ -899,9 +1011,9 @@ typedef enum {
     return [self.documentPicker _preferredFileItemForNextPreviewUpdate:fileItems];
 }
 
-- (Class)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator documentClassForFileItem:(OFSDocumentStoreFileItem *)fileItem;
+- (Class)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator documentClassForFileURL:(NSURL *)fileURL;
 {
-    return [self documentClassForURL:fileItem.fileURL];
+    return [self documentClassForURL:fileURL];
 }
 
 #pragma mark -
@@ -943,8 +1055,7 @@ static unsigned ItemContext;
     [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private
 
 static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
 
@@ -989,7 +1100,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     }];
 }
 
-- (void)_mainThread_finishedLoadingDocument:(OUIDocument *)document animation:(OpenDocumentAnimation)animation completionHandler:(void (^)(void))completionHandler;
+- (void)_mainThread_finishedLoadingDocument:(OUIDocument *)document animation:(OUIDocumentAnimationType)animation completionHandler:(void (^)(void))completionHandler;
 {
     OBASSERT([NSThread isMainThread]);
     [self _setDocument:document];
@@ -1025,7 +1136,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     completionHandler = [[completionHandler copy] autorelease];
     
     switch (animation) {
-        case OpenDocumentAnimationZoom: {
+        case OUIDocumentAnimationTypeZoom: {
             OUIDocumentPickerFileItemView *fileItemView = [self.documentPicker.activeScrollView fileItemViewForFileItem:_document.fileItem];
             OBASSERT(fileItemView);
             OB_UNUSED_VALUE(fileItemView); // http://llvm.org/bugs/show_bug.cgi?id=11576 Use in block doesn't count as use to prevent dead store warning
@@ -1049,7 +1160,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
             [self hideActivityIndicator]; // will be on the item preview view for a document tap initiated load
             break;
         }
-        case OpenDocumentAnimationDissolve:
+        case OUIDocumentAnimationTypeDissolve:
             [UIView transitionWithView:_mainViewController.view duration:0.25
                                options:UIViewAnimationOptionTransitionCrossDissolve
                             animations:^{
@@ -1067,13 +1178,13 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
             break;
         default:
             // this shouldn't happen, but JUST IN CASE...
-            OBASSERT_NOT_REACHED("Should've specificed a valid OpenDocumentAnimation");
+            OBASSERT_NOT_REACHED("Should've specificed a valid OUIDocumentAnimationType");
             if (completionHandler)
                 completionHandler();
     } 
 }
 
-- (void)_openDocument:(OFSDocumentStoreFileItem *)fileItem animation:(OpenDocumentAnimation)animation;
+- (void)_openDocument:(OFSDocumentStoreFileItem *)fileItem animation:(OUIDocumentAnimationType)animation;
 {
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(fileItem);
@@ -1086,18 +1197,24 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     onFail = [[onFail copy] autorelease];
     
     if ([fileItem.scope isUbiquitous]) {
-        // Need to provoke download, and if this is a launch-time open, we need to return NO to let the caller know it should just go to the document picker instead. Maybe we shouldn't actually provoke download in the launch time case, really. The user might want to tap another document and not compete for download bandwidth.
+        // Need to provoke download, and if this is a launch-time open, we need to fall back to the document picker instead. Maybe we shouldn't actually provoke download in the launch time case, really. The user might want to tap another document and not compete for download bandwidth.
         if (!fileItem.isDownloaded) {
             NSError *error = nil;
-            if (![[NSFileManager defaultManager] startDownloadingUbiquitousItemAtURL:fileItem.fileURL error:&error])
+            if (![fileItem requestDownload:&error])
                 OUI_PRESENT_ERROR(error);
+            onFail();
+            return;
+        }
+        
+        // If we were last launched with a document that is now in conflict, don't automatically open it.
+        if (fileItem.hasUnresolvedConflicts) {
             onFail();
             return;
         }
     }
 
     OUIDocumentPickerFileItemView *fileItemView = nil;
-    if (animation == OpenDocumentAnimationZoom) {
+    if (animation == OUIDocumentAnimationTypeZoom) {
         fileItemView = [self.documentPicker.activeScrollView fileItemViewForFileItem:fileItem];
         OBASSERT(fileItemView);
 
@@ -1123,7 +1240,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
         [self dismissPopoverAnimated:YES];
         
         [document openWithCompletionHandler:^(BOOL success){
-            if (animation == OpenDocumentAnimationZoom) {
+            if (animation == OUIDocumentAnimationTypeZoom) {
                 OBASSERT(fileItemView.highlighted);
                 fileItemView.highlighted = NO;
             } else {
@@ -1178,7 +1295,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     [_document release];
     _document = [document retain];
     
-    if (_document) {
+    if (_document) {        
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_documentStateChanged:) name:UIDocumentStateChangedNotification object:_document];
         
         OFSDocumentStoreFileItem *fileItem = _document.fileItem;
@@ -1190,110 +1307,222 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
 // Called from the main app menu
 - (void)_setupCloud:(id)sender;
 {
-    [self _promptForUbiquityAccessWithCompletionHandler:^(DocumentCopyBehavior copyBehavior){
-        [self _handleUbiquityAccessChangeWithCopyBehavior:copyBehavior withCompletionHandler:nil];
+    [self _promptForUbiquityAccessWithCompletionHandler:^(UbiquityAccessChange ubiquityAccessChange){
+        [self _handleUbiquityAccessChangeWithCopyBehavior:ubiquityAccessChange withCompletionHandler:nil];
     }];
 }
 
-- (void)_promptForUbiquityAccessWithCompletionHandler:(void (^)(DocumentCopyBehavior copyBehavior))completionHandler;
+- (void)_promptForUbiquityAccessWithCompletionHandler:(void (^)(UbiquityAccessChange ubiquityAccessChange))completionHandler;
 {
     OBPRECONDITION(_documentStoreSetupController == nil);
     OBPRECONDITION([OFSDocumentStore canPromptForUbiquityAccess]);
-    
+
     completionHandler = [[completionHandler copy] autorelease];
     
     DEBUG_LAUNCH(@"Prompting user for iCloud enabledness");
     
-    _documentStoreSetupController = [[OUIDocumentStoreSetupViewController alloc] initWithDismissAction:^(BOOL cancelled){
+    BOOL originalState = [OFSDocumentStore shouldPromptForUbiquityAccess] ? NO : [OFSDocumentStore isUbiquityAccessEnabled];
+    BOOL showState = [OFSDocumentStore shouldPromptForUbiquityAccess] ? YES : [OFSDocumentStore isUbiquityAccessEnabled];
+    
+    _documentStoreSetupController = [[OUIDocumentStoreSetupViewController alloc] initWithOriginalState:originalState dismissAction:^(BOOL cancelled){
         DEBUG_LAUNCH(@"Prompt completed");
-                
+        
+        UbiquityAccessChange ubiquityAccessChange = {
+            .performChange = NO
+        };
+
+        BOOL updatedState = _documentStoreSetupController.useICloud;
+        
+        ubiquityAccessChange.performChange = !cancelled && (updatedState ^ originalState);
+        ubiquityAccessChange.enable = updatedState;
+        ubiquityAccessChange.shouldMigrateExistingDocuments = ubiquityAccessChange.performChange && _documentStoreSetupController.shouldMigrateExistingDocuments;
+
+        // Even if the user opted out of iCloud, we need to at least set the default (but we won't migrate any documents).
+        if (!ubiquityAccessChange.performChange && [OFSDocumentStore shouldPromptForUbiquityAccess]) {
+            ubiquityAccessChange.performChange = YES;
+        }
+        
+        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+        
         [_mainViewController dismissViewControllerAnimated:YES completion:^{
-            DocumentCopyBehavior copyBehavior = DocumentCopyBehaviorNone;
-            
-            if (!cancelled) {
-                BOOL useICloud = _documentStoreSetupController.useICloud;
-                [OFSDocumentStore didPromptForUbiquityAccessWithResult:useICloud];
-                
-                if (useICloud && _documentStoreSetupController.moveExistingDocumentsToICloud) {
-                    copyBehavior = DocumentCopyBehaviorMoveLocalToCloud;
-                }
-            }
-            
             [_documentStoreSetupController release];
             _documentStoreSetupController = nil;
             
-            if (completionHandler)
-                completionHandler(copyBehavior);
+            [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+
+            void (^performChange)(void) = ^{
+                // Record the actual setting here so that when the OFSDocumentStore is set up on first launch it knows whether to scan the ubiquity container or not.
+                if (ubiquityAccessChange.performChange)
+                    [OFSDocumentStore didPromptForUbiquityAccessWithResult:ubiquityAccessChange.enable];
+                
+                if (completionHandler)
+                    completionHandler(ubiquityAccessChange);
+            };
+            
+            if (ubiquityAccessChange.performChange && ubiquityAccessChange.enable == NO && ubiquityAccessChange.shouldMigrateExistingDocuments) {
+                // If we are turning off iCloud and migrating documents out, check if any of them are not downloaded or in conflict. If so, ask the user about it.
+                
+                BOOL prompt = [_documentStore.fileItems any:^BOOL(OFSDocumentStoreFileItem *fileItem){
+                    return (fileItem.isUbiquitous && (!fileItem.isDownloaded || fileItem.hasUnresolvedConflicts));
+                }] != nil;
+                if (prompt) {
+                    NSString *title = NSLocalizedStringFromTableInBundle(@"Can’t copy all documents", @"OmniUI", OMNI_BUNDLE, @"Title for alert when turning off iCloud and some documents aren't downloaded or have unresolved conflicts");
+                    NSString *message = NSLocalizedStringFromTableInBundle(@"Some documents have not been downloaded, or have conflicting edits. You can resolve this by tapping each document that has a down arrow or alert icon on its corner. If you turn off iCloud anyway, those documents cannot be copied to your iPad.", @"OmniUI", OMNI_BUNDLE, @"Message for alert when turning off iCloud and some documents aren't downloaded or have unresolved conflicts");
+                    NSString *confirmTitle = NSLocalizedStringFromTableInBundle(@"Turn Off iCloud", @"OmniUI", OMNI_BUNDLE, @"Button for alert when turning off iCloud and some documents aren't downloaded or have unresolved conflicts");
+                    
+                    OUIAlert *alert = [[[OUIAlert alloc] initWithTitle:title message:message cancelButtonTitle:@"Cancel" cancelAction:nil] autorelease];
+                    [alert addButtonWithTitle:confirmTitle action:performChange];
+                    [alert show];
+                    return;
+                }
+            }
+
+            performChange();
         }];
-        
     }];
+    
+    _documentStoreSetupController.useICloud = showState;
     [_mainViewController presentViewController:_documentStoreSetupController animated:YES completion:nil];
 }
 
-- (void)_handleUbiquityAccessChangeWithCopyBehavior:(DocumentCopyBehavior)copyBehavior withCompletionHandler:(void (^)(void))completionHandler;
+- (void)_handleUbiquityAccessChangeWithCopyBehavior:(UbiquityAccessChange)ubiquityAccessChange withCompletionHandler:(void (^)(void))completionHandler;
 {
-    switch (copyBehavior) {
-        case DocumentCopyBehaviorNone:
-            if (completionHandler)
-                completionHandler();
-            return;
-        case DocumentCopyBehaviorMoveLocalToCloud:
-            
-            completionHandler = [[completionHandler copy] autorelease]; // capture scope
-            
-            [_documentStore moveLocalDocumentsToCloudWithCompletionHandler:^(NSDictionary *movedURLs, NSDictionary *errorURLs){
-                if (completionHandler)
-                    completionHandler();
-
-                if ([errorURLs count] > 0) {
-                    
-                    NSString *title = NSLocalizedStringFromTableInBundle(@"Error moving to iCloud", @"OmniUI", OMNI_BUNDLE, @"Alert title");
-                    NSString *message;
-                    
-                    if ([movedURLs count] > 0)
-                        message = NSLocalizedStringFromTableInBundle(@"Some files were not moved to iCloud.", @"OmniUI", OMNI_BUNDLE, @"Alert message");
-                    else
-                        message = NSLocalizedStringFromTableInBundle(@"No files were moved to iCloud.", @"OmniUI", OMNI_BUNDLE, @"Alert message");                
-                    
-                    
-                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                    [alert show];
-                    [alert release];
-                }
-            }];
-            return;
+    OBPRECONDITION(_documentStore); // If we are being called as part of app startup, it should be after the document store is created
+    
+    if (ubiquityAccessChange.performChange == NO) {
+        // Nothing to do
+        if (completionHandler)
+            completionHandler();
+        return;
     }
     
-    OBASSERT_NOT_REACHED("Unhandled behavior");
+    if (ubiquityAccessChange.shouldMigrateExistingDocuments == NO) {
+        // The preference was already set before we were called.
+        OBASSERT([OFSDocumentStore isUbiquityAccessEnabled] == ubiquityAccessChange.enable);
+        if (completionHandler)
+            completionHandler();
+        return;
+    }
+    
+    completionHandler = [[completionHandler copy] autorelease]; // capture scope
+    
+    // We'll get a storm of metadata updates and -presentedItemDidChange calls sent to the document picker (since it is registered for ~/Documents).
+    // If we start a scan while the file items are still finding out about their moves, we can get odd animations and end up regenerating previews needlessly.
+    [_documentStore startDeferringScanRequests];
+    
+    [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+    [self showActivityIndicatorInView:_mainViewController.view];
+    
+    NSUInteger metadataUpdateVersionNumber = [_documentStore metadataUpdateVersionNumber];
+
+    OFSDocumentStoreScope *sourceScope, *destinationScope;
+    BOOL shouldMove;
+    {
+        OFSDocumentStoreScope *localScope = [_documentStore localScope];
+        OFSDocumentStoreScope *ubiquitousScope = [_documentStore defaultUbiquitousScope];
+        
+        sourceScope = ubiquityAccessChange.enable ? localScope : ubiquitousScope;
+        destinationScope = ubiquityAccessChange.enable ? ubiquitousScope : localScope;
+        shouldMove = ubiquityAccessChange.enable; // Move when going into iCloud, copy when migrating out
+    }
+    
+    [_documentStore migrateDocumentsInScope:sourceScope toScope:destinationScope byMoving:shouldMove completionHandler:^(NSDictionary *migratedURLs, NSDictionary *errorURLs){
+        
+        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+        [self hideActivityIndicator];
+        
+        void (^metadataUpdateFinished)(void) = ^{
+            [_documentStore stopDeferringScanRequests:^{
+                if (completionHandler)
+                    completionHandler();
+            }];
+        };
+        
+        // If we did some moving, then we expect a metadata update. Wait to stop ignoring scan requests until that has finished. This helps our make sure that we don't scan part way through the move operation and temporarily have two file items with the same file URL, or otherwise get confused and end up rebuilding our previews needlessly or animating the old documents out and new ones back in.
+        // Can't wait for the metadata update when we are turning iCloud off, of course.
+        if (ubiquityAccessChange.enable && [migratedURLs count] > 0 && metadataUpdateVersionNumber == [_documentStore metadataUpdateVersionNumber])
+            [_documentStore addAfterMetadataUpdateAction:metadataUpdateFinished];
+        else
+            metadataUpdateFinished();
+        
+        if ([errorURLs count] > 0) {
+            NSString *title;
+            if (ubiquityAccessChange.enable)
+                title = NSLocalizedStringFromTableInBundle(@"Error moving to iCloud", @"OmniUI", OMNI_BUNDLE, @"Alert title");
+            else
+                title = NSLocalizedStringFromTableInBundle(@"Error copying from iCloud", @"OmniUI", OMNI_BUNDLE, @"Alert title");
+            
+            NSString *message;
+            if (ubiquityAccessChange.enable) {
+                if ([migratedURLs count] > 0)
+                    message = NSLocalizedStringFromTableInBundle(@"Some files were not moved to iCloud.", @"OmniUI", OMNI_BUNDLE, @"Alert message");
+                else
+                    message = NSLocalizedStringFromTableInBundle(@"No files were moved to iCloud.", @"OmniUI", OMNI_BUNDLE, @"Alert message");
+            } else {
+                if ([migratedURLs count] > 0)
+                    message = NSLocalizedStringFromTableInBundle(@"Some files were not copied from iCloud.", @"OmniUI", OMNI_BUNDLE, @"Alert message");
+                else
+                    message = NSLocalizedStringFromTableInBundle(@"No files were copied from iCloud.", @"OmniUI", OMNI_BUNDLE, @"Alert message");
+            }
+
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [alert show];
+                [alert release];
+            }];
+        }
+    }];
 }
 
 - (void)_documentStateChanged:(NSNotification *)note;
 {
     OBPRECONDITION([note object] == _document);
-    
+
     UIDocumentState state = _document.documentState;
     DEBUG_DOCUMENT(@"State changed to %ld", state);
-    
-    // When entering the conflict state, the state will transition from UIDocumentStateNormal to UIDocumentStateEditingDisabled, to UIDocumentStateEditingDisabled|UIDocumentStateInConflict to UIDocumentStateInConflict.
-    if ((state & UIDocumentStateInConflict) && !_conflictResolutionViewController) {
-        [self _startConflictResolution:_document.fileURL];
+
+    // When entering the conflict state, the state will transition from UIDocumentStateNormal to UIDocumentStateEditingDisabled, to UIDocumentStateEditingDisabled|UIDocumentStateInConflict to UIDocumentStateInConflict. The UIDocumentStateEditingDisabled flag means the document is still in the midst of -relinquishPresentedItemToWriter: and will likely be annoyed by us closing it.
+    if ((state & (UIDocumentStateInConflict|UIDocumentStateEditingDisabled)) == UIDocumentStateInConflict && !_conflictResolutionViewController && !_aboutToStartConflictResolution) {
+        // We kick you out of the current document back to the document picker if a conflict happens. This is fairly rare, but iWork does let you resolve the conflict while in the document. On the other hand, iWork syncs around previews in their file wrapper where the iCloud guidelines say not to. We'd need to generate previews for the incoming conflict versions *while* we had the original document open. Our preview generation system tries to avoid making previews while a document is open since we could hit the memory ceiling and crash.
+        
+        DEBUG_DOCUMENT(@"Starting conflict resolution...");
+        _aboutToStartConflictResolution = YES;
+        
+        OFSDocumentStoreFileItem *fileItem = _document.fileItem;
+
+        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+        [self closeDocumentWithAnimationType:OUIDocumentAnimationTypeZoom completionHandler:^{
+            // The default queuing will have only written out the open version of the document, not the conflict version's preview (and we want the document closed before we try that anyway, since we'll need to open the conflict document).
+            [_previewGenerator fileItemNeedsPreviewUpdate:fileItem];
+            
+            // Without the extra delay, if the iPad is held with the home button up we can hit <bug:///78643> (Conflict resolution sheet spins while appearing if document is closing)
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [self _startConflictResolution:fileItem];
+                
+                OBASSERT(_aboutToStartConflictResolution == YES);
+                _aboutToStartConflictResolution = NO;
+                [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+            }];
+        }];
     } else if ((state & UIDocumentStateInConflict) == 0 && _conflictResolutionViewController) {
+        DEBUG_DOCUMENT(@"Stopping conflict resolution...");
         [self _stopConflictResolutionWithCompletion:nil];
     }
 }
 
-- (void)_startConflictResolution:(NSURL *)fileURL;
+- (void)_startConflictResolution:(OFSDocumentStoreFileItem *)fileItem;
 {
     if (_conflictResolutionViewController) {
         OBASSERT_NOT_REACHED("Should have already ended conflict resolution");
         [self _stopConflictResolutionWithCompletion:^{
-            [self _startConflictResolution:fileURL];
+            [self _startConflictResolution:fileItem];
         }];
         return;
     }
     
-    _conflictResolutionViewController = [[OUIDocumentConflictResolutionViewController alloc] initWithDocumentStore:_documentStore fileURL:fileURL delegate:self];
-    [_mainViewController presentViewController:_conflictResolutionViewController animated:YES completion:nil];
+    _conflictResolutionViewController = [[OUIDocumentConflictResolutionViewController alloc] initWithDocumentStore:_documentStore fileItem:fileItem delegate:self];
+    if (_conflictResolutionViewController)
+        [_mainViewController presentViewController:_conflictResolutionViewController animated:YES completion:nil];
 }
 
 - (void)_stopConflictResolutionWithCompletion:(void (^)(void))completion;

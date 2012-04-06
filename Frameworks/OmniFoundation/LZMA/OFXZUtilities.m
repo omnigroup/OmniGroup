@@ -139,7 +139,7 @@ void OFXZDecompressToFdAsync(NSData *compressed, int fd, dispatch_queue_t queue,
         if (out_buf_used > out_buf_written) {
             size_t amount = ( out_buf_used - out_buf_written );
             ssize_t wrote = write(fd, out_buf + out_buf_written, amount);
-            if (amount < 0) {
+            if (wrote < 0) {
                 if (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN) {
                     /* No biggie */
                     return;
@@ -168,10 +168,10 @@ void OFXZDecompressToFdAsync(NSData *compressed, int fd, dispatch_queue_t queue,
         [dataToDecompress release];
         xz_dec_end(decompressor);
         close(fd);
-        dispatch_release(dispatcher);
+        dispatch_release((dispatch_object_t)dispatcher);
     });
     
     /* Dispatch sources are created suspended; now that we've set it up, allow it to run */
-    dispatch_resume(dispatcher);
+    dispatch_resume((dispatch_object_t)dispatcher);
 }
 

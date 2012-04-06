@@ -19,6 +19,15 @@ require 'fileutils'
 # We expect each of the static libraries to copy any resources into this directory, under their product name.
 ResourcesRoot = "#{ENV["CONFIGURATION_BUILD_DIR"]}/Resources"
 
+# Xcode runs its special pngcrush for iOS device builds.
+@@PNGCrush = nil
+if ENV['PLATFORM_NAME'] == 'iphoneos'
+    @@PNGCrush = ENV['PLATFORM_DEVELOPER_BIN_DIR'] + "/pngcrush"
+    if !File.exists?(@@PNGCrush)
+        @@PNGCrush = nil
+    end
+end
+
 # Get the list of static library frameworks linked by this project
 ScriptDir = File.dirname(__FILE__)
 StaticLibraryResourceDirectories = []
@@ -113,6 +122,12 @@ StaticLibraryResourceDirectories.each {|dirname|
       when /\.plist$/, /\.defaults$/
         `set -x; /usr/bin/plutil -convert binary1 "#{source}" -o "#{dest_file}"`
         fail unless $?.exitstatus == 0
+      when /\.png/
+          if @@PNGCrush
+              `set -x; '#{@@PNGCrush}' -q -iphone '#{source}' '#{dest_file}'`
+          else
+              FileUtils.cp_r(source, dest_file)
+          end
       else
         FileUtils.cp_r(source, dest_file)
       end

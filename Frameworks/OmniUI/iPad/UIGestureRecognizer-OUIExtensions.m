@@ -11,6 +11,12 @@
 
 RCS_ID("$Id$");
 
+#if OUI_GESTURE_RECOGNIZER_DEBUG
+@interface UIGestureRecognizer (PrivateAPI)
+- (void)setState:(UIGestureRecognizerState)state;
+@end
+#endif
+
 @implementation UIGestureRecognizer (OUIExtensions)
 
 #if OUI_GESTURE_RECOGNIZER_DEBUG

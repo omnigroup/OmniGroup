@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,13 +27,7 @@ typedef void (^OFFilterProcessFdAcceptor)(int fd);
     int subprocStdinFd;
     NSUInteger subprocStdinBytesWritten;
     
-    struct copy_out_state {
-        int fd;
-        char *buffer;
-        size_t buffer_contents_start, buffer_contents_length, buffer_size;
-        NSOutputStream *nsstream;
-        BOOL filterEnabled, streamReady;
-    } stdoutCopyBuf, stderrCopyBuf;    
+    struct copy_out_state *stdoutCopyBuf, *stderrCopyBuf;
     
     pid_t child;
     

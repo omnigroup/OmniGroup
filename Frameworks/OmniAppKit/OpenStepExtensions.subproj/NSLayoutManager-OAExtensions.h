@@ -1,4 +1,4 @@
-// Copyright 2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006, 2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,9 +15,9 @@
 
 - (NSTextContainer *)textContainerForCharacterIndex:(NSUInteger)characterIndex;
 
-- (NSRect)attachmentFrameAtGlyphIndex:(NSUInteger)glyphIndex;
-- (NSRect)attachmentFrameAtCharacterIndex:(NSUInteger)charIndex;
-- (NSRect)attachmentRectForAttachmentAtCharacterIndex:(NSUInteger)characterIndex inFrame:(NSRect)layoutFrame;
+- (NSRect)attachmentFrameAtGlyphIndex:(NSUInteger)glyphIndex; // in the text view's coordinate system
+- (NSRect)attachmentFrameAtCharacterIndex:(NSUInteger)charIndex; // in the text view's coordinate system
+- (NSRect)attachmentRectForAttachmentAtCharacterIndex:(NSUInteger)characterIndex inFrame:(NSRect)layoutFrame; // in the same coordinate system as layoutFrame, assuming no scaling
 
 - (NSTextAttachment *)attachmentAtPoint:(NSPoint)point inTextContainer:(NSTextContainer *)container;
 

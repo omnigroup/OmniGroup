@@ -15,6 +15,7 @@
 #import "OUIParameters.h"
 
 #import "OUIInspectorBackgroundView.h"
+#import "OUIInspectorSlice-Internal.h"
 
 RCS_ID("$Id$");
 
@@ -38,7 +39,7 @@ static CGFloat _setSliceSizes(UIView *self, NSArray *_slices, NSSet *slicesToPos
 
     // 1) add up the total height requirements of all paddings and slices that aren't UIViewAutoresizingFlexibleHeight
     OUIInspectorSlice *previousSlice = nil;
-    CGFloat totalHeight = yOffset;
+    CGFloat totalHeight = yOffset, totalFlexibleSliceMinimumHeight = 0;
     NSMutableSet *resizableSlices = [NSMutableSet set];
     for (OUIInspectorSlice *slice in _slices) {
         // Don't fiddle with slices that have been stolen by embedding inspectors (OmniGraffle).
@@ -49,9 +50,10 @@ static CGFloat _setSliceSizes(UIView *self, NSArray *_slices, NSSet *slicesToPos
         if (previousSlice)
             totalHeight += [slice paddingToPreviousSlice:previousSlice remainingHeight:bounds.size.height - totalHeight];
 
-        if (sliceView.autoresizingMask & UIViewAutoresizingFlexibleHeight) 
+        if (sliceView.autoresizingMask & UIViewAutoresizingFlexibleHeight) {
             [resizableSlices addObject:slice];
-        else 
+            totalFlexibleSliceMinimumHeight += [slice minimumHeight];
+        } else 
             // Otherwise the slice should be a fixed height and we should use it.
             totalHeight += CGRectGetHeight(sliceView.frame);
         previousSlice = slice;
@@ -62,9 +64,10 @@ static CGFloat _setSliceSizes(UIView *self, NSArray *_slices, NSSet *slicesToPos
     CGFloat remainingHeight = bounds.size.height - totalHeight;
     NSUInteger resizableSliceCount = resizableSlices.count;
 
-    // No support for minimum height constraints, so for now give each slice a min of kOUIInspectorWellHeight (and fail an assertion since we found a case where we care?). see below
-    OBASSERT(!resizableSliceCount || remainingHeight >= kOUIInspectorWellHeight * resizableSliceCount);
-    remainingHeight = MAX(remainingHeight, kOUIInspectorWellHeight * resizableSliceCount);
+    // Make sure we have enough to hand out to the slices that want it.
+    remainingHeight = MAX(remainingHeight, totalFlexibleSliceMinimumHeight);
+    
+    CGFloat extraFlexibleHeight = remainingHeight - totalFlexibleSliceMinimumHeight;
     
     previousSlice = nil;
     for (OUIInspectorSlice *slice in _slices) {
@@ -72,25 +75,25 @@ static CGFloat _setSliceSizes(UIView *self, NSArray *_slices, NSSet *slicesToPos
         if (sliceView.superview != self)
             continue;
         
-        if (previousSlice)
+        CGFloat sliceHeight = CGRectGetHeight(sliceView.frame);
+        if ([resizableSlices member:slice]) {
+            // Rather than sharing the extra height evenly on the resizable slices, we might want to come up with some kind of API to offer them space and let them set min/max constraints and workout how to share amongst themselves.
+            sliceHeight = [slice minimumHeight] + floor(extraFlexibleHeight / resizableSliceCount);
+            remainingHeight -= sliceHeight;
+        } 
+        
+        if (previousSlice && sliceHeight > 0) // OUIEmptyPaddingInspectorSlice can shrink to zero -- don't give it padding.
             yOffset += [slice paddingToPreviousSlice:previousSlice remainingHeight:bounds.size.height - yOffset];
         
         CGFloat sideInset = [slice paddingToInspectorSides];
-        
-        CGFloat sliceHeight = CGRectGetHeight(sliceView.frame);
-        if ([resizableSlices member:slice]) {
-            // Rather than sharing the height evenly on the resizable slices, we might want to come up with some kind of API to offer them space and let them set min/max constraints and workout how to share amongst themselves.
-            sliceHeight = floor(remainingHeight / resizableSliceCount);
-            remainingHeight -= sliceHeight;
-            resizableSliceCount--;
-        } 
         
         if (!slicesToPostponeFrameSetting || [slicesToPostponeFrameSetting member:slice] == nil) 
             sliceView.frame = CGRectMake(CGRectGetMinX(bounds) + sideInset, yOffset, CGRectGetWidth(bounds) - 2*sideInset, sliceHeight);
 
         yOffset += sliceHeight;
         
-        previousSlice = slice;
+        if (sliceHeight > 0)
+            previousSlice = slice;
     }
 
     yOffset += [[_slices lastObject] paddingToInspectorBottom];

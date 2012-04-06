@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -113,6 +113,12 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
         OBInvokeAssertionFailureHandler("NOTREACHED", reason, __FILE__, __LINE__); \
     } while (NO)
 
+    #define OBASSERT_IF(condition, implication)                                 \
+    do {                                                                        \
+        if ((condition) && !(implication))                                      \
+            OBInvokeAssertionFailureHandler("ASSERT_IF", #condition " ==> " #implication, __FILE__, __LINE__); \
+    } while (NO)
+
     #define OBPRECONDITION_EXPENSIVE(expression) do { \
         if (OBEnableExpensiveAssertions) \
             OBPRECONDITION(expression); \
@@ -177,6 +183,7 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
     #define OBINVARIANT(expression) do {} while(0)
     #define OBASSERT(expression) do {} while(0)
     #define OBASSERT_NOT_REACHED(reason) do {} while(0)
+    #define OBASSERT_IF(condition, implication) do {} while(0)
 
     #define OBPRECONDITION_EXPENSIVE(expression) do {} while(0)
     #define OBPOSTCONDITION_EXPENSIVE(expression) do {} while(0)

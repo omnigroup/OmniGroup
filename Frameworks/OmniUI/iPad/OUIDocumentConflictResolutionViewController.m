@@ -7,20 +7,28 @@
 
 #import "OUIDocumentConflictResolutionViewController.h"
 
-#import <OmniFileStore/OFSShared_Prefix.h>
 #import <OmniFileStore/OFSDocumentStore.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIDocumentPreview.h>
 #import <OmniUI/OUIGradientView.h>
+#import <OmniUI/OUISingleDocumentAppController.h>
+#import <OmniUI/OUIDocumentConflictResolutionViewControllerDelegate.h>
 
+#import "OUIDocument-Internal.h"
 #import "OUIDocumentConflictResolutionTableViewCell.h"
 #import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
-/*
- WWDC '11 -- Session 125 @ 19:32 for notes on Automatic Cell Loading
- */
+#if 0 && defined(DEBUG)
+    #define DEBUG_VERSIONS(format, ...) NSLog(@"FILE VERSION: " format, ## __VA_ARGS__)
+    #define DEBUG_VERSIONS_ENABLED 1
+#else
+    #define DEBUG_VERSIONS(format, ...)
+    #define DEBUG_VERSIONS_ENABLED 0
+#endif
 
 @interface OUIDocumentConflictResolutionViewController () <NSFilePresenter>
 
@@ -33,6 +41,8 @@ RCS_ID("$Id$");
 - (IBAction)keep:(id)sender;
 
 - (void)_reloadVersions;
+- (void)_cancelWhenNoConflictExists;
+- (void)_documentPreviewsUpdatedForFileItemNotification:(NSNotification *)note;
 - (void)_updateToolbar;
 
 @end
@@ -40,12 +50,17 @@ RCS_ID("$Id$");
 @implementation OUIDocumentConflictResolutionViewController
 {
     OFSDocumentStore *_documentStore;
+    OFSDocumentStoreFileItem *_fileItem;
+    
+    // We want our -presentedItemURL to be under the our control for changing when we get NSFilePresenter methods (and maybe we'll just cancel ourselves). We don't want it to change out from under us if the file item hears about a presenter notification.
+    NSURL *_fileURL;
+    
     NSArray *_fileVersions;
     
     NSOperationQueue *_notificationQueue;
 }
 
-@synthesize fileURL = _fileURL;
+@synthesize fileItem = _fileItem;
 @synthesize delegate = _nonretained_delegate;
 
 @synthesize toolbar = _toolbar;
@@ -73,27 +88,34 @@ RCS_ID("$Id$");
     }
 #endif
 
-    if ([_fileVersions count] <= 1) {
-        // The conflict has been resolved on another device!
-        [self cancel:nil];
-        return;
-    }
-    
     [_tableView reloadData];
 }
 
-- initWithDocumentStore:(OFSDocumentStore *)documentStore fileURL:(NSURL *)fileURL delegate:(id <OUIDocumentConflictResolutionViewControllerDelegate>)delegate;
+- (void)_cancelWhenNoConflictExists;
+{
+    if ([_fileVersions count] <= 1)
+        // The conflict has probably been resolved on another device
+        [self cancel:nil];
+}
+
+- initWithDocumentStore:(OFSDocumentStore *)documentStore fileItem:(OFSDocumentStoreFileItem *)fileItem delegate:(id <OUIDocumentConflictResolutionViewControllerDelegate>)delegate;
 {
     if (!(self = [super initWithNibName:@"OUIDocumentConflictResolutionViewController" bundle:nil]))
         return nil;
-    
-    OBFinishPortingLater("Register as an NSFilePresenter and watch for gaining/losing conflict versions."); // We should update our table view, and in the case that the last conflicting version goes away, we should simply close as if cancelled.
-    
+        
     _documentStore = [documentStore retain];
-    _fileURL = [fileURL copy];
+    _fileItem = [fileItem retain];
     _nonretained_delegate = delegate;
     
+    _fileURL = [_fileItem.fileURL copy];
+    
     [self _reloadVersions];
+    
+    // Can't call cancel if there are no conflicts here, which there can be in some cases with crazy NSMetadataQuery results (which will hopefully sort themselves out).
+    if ([_fileVersions count] <= 1) {
+        [self release];
+        return nil;
+    }
     
     _notificationQueue = [[NSOperationQueue alloc] init];
     [_notificationQueue setMaxConcurrentOperationCount:1];
@@ -105,6 +127,8 @@ RCS_ID("$Id$");
     // Our action methods (-cancel: and -keep:) should do -removeFilePresenter: before they start mucking around, so that we don't get feedback on this due to our operations. We could maybe also avoid this by passing ourselves to the NSFileCoordinator, but it isn't that reliable.
     [NSFileCoordinator addFilePresenter:self];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_documentPreviewsUpdatedForFileItemNotification:) name:OUIDocumentPreviewsUpdatedForFileItemNotification object:_fileItem];
+    
     return self;
 }
 
@@ -119,6 +143,7 @@ RCS_ID("$Id$");
     [_instructionsTextLabel release];
     
     [_fileVersions release];
+    [_fileItem release];
     [_fileURL release];
     [_documentStore release];
     
@@ -152,12 +177,15 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
         [_instructionsBackgroundImageView addSubview:shadowView];
         _instructionsBackgroundImageView.autoresizesSubviews = YES;
     }
+
+    NSString *message = [_nonretained_delegate conflictResolutionPromptForFileItem:_fileItem];
+    if ([NSString isEmptyString:message])
+        message = NSLocalizedStringFromTableInBundle(@"Modifications aren't in sync. Choose which documents to keep.", @"OmniUI", OMNI_BUNDLE, @"Instructional text for file conflict resolution view");
     
-    _instructionsTextLabel.text = NSLocalizedStringFromTableInBundle(@"Modifications aren't in sync. Choose which documents to keep.", @"OmniUI", OMNI_BUNDLE, @"Instructional text for file conflict resolution view");
+    _instructionsTextLabel.text = message;
     _instructionsTextLabel.textColor = OQPlatformColorFromHSV(kOUIInspectorLabelTextColor);
                                         
-    _tableView.rowHeight = 88; // Matches the prototype in the xib
-    [_tableView registerNib:[UINib nibWithNibName:@"OUIDocumentConflictResolutionTableViewCell" bundle:nil] forCellReuseIdentifier:kOUIDocumentConflictTableViewCellReuseIdentifier];
+    _tableView.rowHeight = 88;
     
     [_tableView reloadData];
 }
@@ -178,6 +206,15 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
 {
     // Return YES for supported orientations
     return YES;
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation;
+{
+    [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
+    
+    BOOL landscape = UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
+    for (OUIDocumentConflictResolutionTableViewCell *cell in _tableView.visibleCells)
+        cell.landscape = landscape;
 }
 
 #pragma mark -
@@ -218,6 +255,7 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
         _fileURL = [newURL copy];
         
         [self _reloadVersions];
+        [self _cancelWhenNoConflictExists];
     }];
 }
 
@@ -226,6 +264,7 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
     DEBUG_VERSIONS(@"Resolution %@ gained version %@", [self shortDescription], version);
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         [self _reloadVersions];
+        [self _cancelWhenNoConflictExists];
     }];
 }
 
@@ -234,6 +273,7 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
     DEBUG_VERSIONS(@"Resolution %@ lost version %@", [self shortDescription], version);
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         [self _reloadVersions];
+        [self _cancelWhenNoConflictExists];
     }];
 }
 
@@ -242,6 +282,7 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
     DEBUG_VERSIONS(@"Resolution %@ resolved version %@", [self shortDescription], version);
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         [self _reloadVersions];
+        [self _cancelWhenNoConflictExists];
     }];
 }
 
@@ -255,9 +296,35 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    OUIDocumentConflictResolutionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kOUIDocumentConflictTableViewCellReuseIdentifier];
+    OUIDocumentConflictResolutionTableViewCell *cell = nil;//[tableView dequeueReusableCellWithIdentifier:kOUIDocumentConflictTableViewCellReuseIdentifier];
+    if (!cell)
+        cell = [[[OUIDocumentConflictResolutionTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kOUIDocumentConflictTableViewCellReuseIdentifier] autorelease];
+
+    OBFinishPortingLater("Sign up for preview generation notifications and update our rows if we get a preview update for something we are displaying");
     
-    cell.fileVersion = [_fileVersions objectAtIndex:indexPath.row];
+    BOOL landscape = UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
+    
+    NSFileVersion *fileVersion = [_fileVersions objectAtIndex:indexPath.row];
+    OUIDocumentPreview *preview;
+    {
+        // iWork doesn't rotate previews in the table cell rows if the device is rotated, but does use the current orientation
+        
+        // It is possible that different versions of the file are of different file types (convert rtf to rtfd, or the like).
+        // In other spots we are a bit more paranoid about NSFileVersion having bogus data and we get the URL/date from the file item. Maybe we should here too.
+        NSURL *fileURL = fileVersion.URL;
+        NSDate *date = fileVersion.modificationDate;
+        
+        Class documentClass = [[OUISingleDocumentAppController controller] documentClassForURL:fileURL];
+
+        preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:fileURL date:date withLandscape:landscape];
+        if (preview.type == OUIDocumentPreviewTypePlaceholder) {
+            DEBUG_VERSIONS(@"Need to build a preview for %@", fileVersion);
+        }
+    }
+    
+    cell.landscape = landscape;
+    cell.fileVersion = fileVersion;
+    cell.preview = preview;
     
     return cell;
 }
@@ -278,43 +345,6 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
 #pragma mark -
 #pragma mark Private
 
-- (void)_replaceURL:(NSURL *)fileURL withVersion:(NSFileVersion *)version replacing:(BOOL)replacing completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
-{
-    OBPRECONDITION(_documentStore);
-    
-    [_documentStore performAsynchronousFileAccessUsingBlock:^{
-        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:self];
-        NSFileCoordinatorWritingOptions options = replacing ? NSFileCoordinatorWritingForReplacing : 0;
-        
-        __block BOOL success = NO;
-        __block NSError *innerError = nil;
-        NSError *error = nil;
-        
-        [coordinator coordinateWritingItemAtURL:fileURL options:options error:&error byAccessor:^(NSURL *newURL){
-            // We don't pass NSFileVersionReplacingByMoving, leaving the version in place. It isn't clear if this is correct. We're going to mark it resolved if this all works, but it is unclear if that will clean it up.
-            NSError *replaceError = nil;
-            if (![version replaceItemAtURL:newURL options:0 error:&replaceError]) {
-                NSLog(@"Error replacing %@ with version %@: %@", fileURL, newURL, [replaceError toPropertyList]);
-                innerError = [replaceError retain];
-                return;
-            }
-            
-            success = YES;
-        }];
-        [coordinator release];
-        
-        if (!success) {
-            if (innerError)
-                error = [innerError autorelease];
-        } else
-            error = nil;
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            completionHandler(error);
-        }];
-    }];
-}
-
 - (IBAction)cancel:(id)sender;
 {
     OBFinishPortingLater("If we have an open document and hit cancel, what should happen? Seems like the sheet should be cancelled.");
@@ -327,12 +357,17 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
 
 - (IBAction)keep:(id)sender;
 {
+    OBPRECONDITION(_documentStore);
+
     // Avoid feedback from NSFileCoordinator -- we are done caring about external resolution anyway.
     // NOTE: Even if there is an error performing resolution, we still dismiss ourselves. If we change that, we'll need to re-add and reload our versions.
     [NSFileCoordinator removeFilePresenter:self];
 
+#ifdef OMNI_ASSERTIONS_ON
     NSFileVersion *originalVersion = [_fileVersions objectAtIndex:0];
     OBASSERT(originalVersion.conflict == NO);
+    OBASSERT(originalVersion.resolved == YES);
+#endif
     
     NSMutableArray *pickedVersions = [NSMutableArray array];
     for (NSIndexPath *indexPath in [_tableView indexPathsForSelectedRows]) {
@@ -345,80 +380,18 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
     }
     OBASSERT([pickedVersions count] >= 1);
     
-    NSUInteger pickedVersionCount = [pickedVersions count];
-    NSFileVersion *firstPickedVersion = [pickedVersions objectAtIndex:0];
-    
-    NSMutableArray *errors = [NSMutableArray array];
-                              
-    if (firstPickedVersion != originalVersion) {
-        // This version is going to replace the current version. replacing==YES means that the coordinated write will preserve the identity of the file, rather than looking like a delete of the original and a new file being created in its place.
-        [self _replaceURL:_fileURL withVersion:firstPickedVersion replacing:YES completionHandler:^(NSError *errorOrNil){
-            OBASSERT([NSThread isMainThread]);
-            if (errorOrNil)
-                [errors addObject:errorOrNil];
-        }];
-    }
-    
-    // Make new files for any other versions to be preserved
-    if (pickedVersionCount >= 2) {
-        OBFinishPorting; // If we keep three versions, the 'available file name' method could pick the same name twice due to file items not being updated yet.
-#if 0
-        NSString *originalFileName = [_fileURL lastPathComponent];
-        NSString *originalBaseName = nil;
-        NSUInteger counter;
-        OFSFileManagerSplitNameAndCounter([originalFileName stringByDeletingPathExtension], &originalBaseName, &counter);
-        NSString *originalPathExtension = [originalFileName pathExtension];
-        
-        NSURL *originalContainerURL = [_fileURL URLByDeletingLastPathComponent];
-        
-        OBFinishPortingLater("Make sure that the either our counter parameter is a minimum allowed version to use and increment it each time, or that OFSDocumentStore rescans each time through");
-#ifdef OMNI_ASSERTIONS_ON
-        NSMutableSet *usedFileNames = [NSMutableSet set];
-#endif
-        
-        for (NSUInteger pickedVersionIndex = 1; pickedVersionIndex < pickedVersionCount; pickedVersionIndex++) {
-            NSFileVersion *pickedVersion = [pickedVersions objectAtIndex:pickedVersionIndex];
-            NSString *fileName = [_documentStore availableFileNameWithBaseName:originalBaseName extension:originalPathExtension counter:&counter];
-#ifdef OMNI_ASSERTIONS_ON
-            OBASSERT([usedFileNames member:fileName] == nil);
-            [usedFileNames addObject:fileName];
-#endif
-            
-            NSURL *replacementURL = [originalContainerURL URLByAppendingPathComponent:fileName];
-            
-            [self _replaceURL:replacementURL withVersion:pickedVersion replacing:NO completionHandler:^(NSError *errorOrNil){
-                OBASSERT([NSThread isMainThread]);
-                if (errorOrNil)
-                    [errors addObject:errorOrNil];
-            }];
-        }
-#endif
-    }
-    
-    // Now, wait for all the resolution attempts to filter out
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
-    
-    [_documentStore performAsynchronousFileAccessUsingBlock:^{
-        if ([errors count] > 0) {
-            for (NSError *error in errors)
-                OUI_PRESENT_ERROR(error);
-        } else {
-            // Only mark versions resolved if we had no errors.
-            // The documentation makes no claims about whether this is considered an operation that needs file coordination...
-            for (NSFileVersion *fileVersion in _fileVersions) {
-                if (fileVersion != originalVersion) {
-                    OBASSERT(fileVersion.conflict == YES);
-                    fileVersion.resolved = YES;
-                }
-            }
-        }
+
+    [_documentStore resolveConflictForFileURL:_fileURL keepingFileVersions:pickedVersions completionHandler:^(NSError *errorOrNil){
+        OBASSERT([NSThread isMainThread]);
         
+        if (errorOrNil)
+            OUI_PRESENT_ERROR(errorOrNil);
+
         // NOTE: We dismiss ourselves even on error. See above for why and what would need to change if we don't want to.
         // TODO: In the case that this worked, we should animate the previews off our table view and into the picker (or give enough information to the delegate to do so while we are dismissed). We'll need to hide those previews on our table view, too.
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [_nonretained_delegate conflictResolutionFinished:self];
-            [[UIApplication sharedApplication] endIgnoringInteractionEvents];
-        }];
+        [_nonretained_delegate conflictResolutionFinished:self];
+        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
     }];
 }
 
@@ -436,6 +409,12 @@ static NSString *_keepTitleForCounts(NSUInteger selected, NSUInteger available)
     
     NSString *format = NSLocalizedStringFromTableInBundle(@"Keep %d", @"OmniUI", OMNI_BUNDLE, @"Toolbar title for file conflict resolution view, when there are multiple possibilities and some are selected");
     return [NSString stringWithFormat:format, selected];
+}
+
+- (void)_documentPreviewsUpdatedForFileItemNotification:(NSNotification *)note;
+{
+    OBPRECONDITION([note object] == _fileItem);
+    [_tableView reloadData]; // Rebuild the cells and thus reload the previews
 }
 
 - (void)_updateToolbar;

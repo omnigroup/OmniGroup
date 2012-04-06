@@ -20,12 +20,17 @@
 + (BOOL)shouldShowAutosaveIndicator;
 
 - initWithExistingFileItem:(OFSDocumentStoreFileItem *)fileItem error:(NSError **)outError;
+- initWithExistingFileItem:(OFSDocumentStoreFileItem *)fileItem conflictFileVersion:(NSFileVersion *)conflictFileVersion error:(NSError **)outError;
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 
 // Can set this before opening a document to tell it that it is being opened for preview generation. Later we might want more control of how errors are captured for off-screen document work, but for now this just makes errors get logged instead of presented to the user. The document view controller may also opt to load less data or otherwise speed up its work by only doing what is necessary for preview generation.
 @property(nonatomic) BOOL forPreviewGeneration;
 
 @property(readonly, nonatomic) OFSDocumentStoreFileItem *fileItem;
+@property(readonly, nonatomic) NSFileVersion *conflictFileVersion;
+
+@property(readonly, nonatomic) NSURL *fileVersionURL;
+@property(readonly, nonatomic) NSDate *fileVersionModificationDate;
 
 @property(readonly) UIViewController <OUIDocumentViewController> *viewController;
 @property(readonly) BOOL editingDisabled;
@@ -33,6 +38,9 @@
 - (void)finishUndoGroup;
 - (IBAction)undo:(id)sender;
 - (IBAction)redo:(id)sender;
+
+// Called after an incoming rename, but before -enableEditing. Subclasses can refresh their references to child file wrappers. Called on a background queue via -performAsynchronousFileAccessUsingBlock:.
+- (void)reacquireSubItemsAfterMovingFromURL:(NSURL *)oldURL completionHandler:(void (^)(void))completionHandler;
 
 - (void)viewStateChanged; // Marks the document as dirty w/o logging an undo. If the app is backgrounded or the document closed it will be saved, but it won't be saved if the editor state change is the only change.
 - (void)beganUncommittedDataChange; // Can be used when the user has started a change (like editing a value in a text field) to request that the value be autosaved eventually. This requires that the document subclass knows how to save the partial edits and that the act of doing so makes a real undoable change. Calling this for editor state changes can result in taps to Undo resulting in data loss in the case that you make UIDocument think it is back to its last saved state.

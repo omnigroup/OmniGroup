@@ -19,6 +19,7 @@
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentPicker.h>
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
+#import <OmniUnzip/OUZipArchive.h>
 
 #import "OUICredentials.h"
 #import "OUIExportOptionsView.h"
@@ -294,38 +295,57 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     
     // Write to temp folder (need URL of file on disk to pass off to Doc Interaction.)
     NSString *temporaryDirectory = NSTemporaryDirectory();
-    NSString *fullTempPath = [temporaryDirectory stringByAppendingPathComponent:[fileWrapper preferredFilename]];
-    NSURL *tempURL = [NSURL fileURLWithPath:fullTempPath isDirectory:[fileWrapper isDirectory]];
+    NSString *tempPath = [temporaryDirectory stringByAppendingPathComponent:[fileWrapper preferredFilename]];
+    NSURL *tempURL = nil;
     
-    // Get a FileManager for our Temp Directory.
-    NSError *error = nil;
-    OFSFileManager *tempFileManager = [[[OFSFileManager alloc] initWithBaseURL:tempURL error:&error] autorelease];
-    if (error) {
-        OUI_PRESENT_ERROR(error);
-        return;
-    }
-    
-    // Get the FileInfo for where we want to place the temp file.
-    OFSFileInfo *fileInfo = [tempFileManager fileInfoAtURL:tempURL error:&error];
-    if (error) {
-        OUI_PRESENT_ERROR(error);
-        return;
-    }
-    
-    // If the temp file exists, we delete it.
-    if ([fileInfo exists] == YES) {
-        [tempFileManager deleteURL:tempURL error:&error];
+    if ([fileWrapper isDirectory]) {
+        // We need to zip this mother up!
+        NSString *tempZipPath = [tempPath stringByAppendingPathExtension:@"zip"];
         
+        NSError *error = nil;
+        OMNI_POOL_START {
+            if (![OUZipArchive createZipFile:tempZipPath fromFileWrappers:[NSArray arrayWithObject:fileWrapper] error:&error]) {
+                OUI_PRESENT_ERROR(error);
+                return;
+            }
+        } OMNI_POOL_END;
+
+        tempURL = [NSURL fileURLWithPath:tempZipPath];
+    }
+    else {
+        tempURL = [NSURL fileURLWithPath:tempPath isDirectory:[fileWrapper isDirectory]];
+        
+        // Get a FileManager for our Temp Directory.
+        NSError *error = nil;
+        OFSFileManager *tempFileManager = [[[OFSFileManager alloc] initWithBaseURL:tempURL error:&error] autorelease];
         if (error) {
             OUI_PRESENT_ERROR(error);
             return;
         }
-    }
-    
-    // Write to temp dir.
-    if (![fileWrapper writeToURL:tempURL options:0 originalContentsURL:nil error:&error]) {
-        OUI_PRESENT_ERROR(error);
-        return;
+        
+        // Get the FileInfo for where we want to place the temp file.
+        OFSFileInfo *fileInfo = [tempFileManager fileInfoAtURL:tempURL error:&error];
+        if (error) {
+            OUI_PRESENT_ERROR(error);
+            return;
+        }
+        
+        // If the temp file exists, we delete it.
+        if ([fileInfo exists] == YES) {
+            [tempFileManager deleteURL:tempURL error:&error];
+            
+            if (error) {
+                OUI_PRESENT_ERROR(error);
+                return;
+            }
+        }
+        
+        // Write to temp dir.
+        if (![fileWrapper writeToURL:tempURL options:0 originalContentsURL:nil error:&error]) {
+            OUI_PRESENT_ERROR(error);
+            return;
+        }
+        
     }
     
     [self _foreground_enableInterfaceAfterExportConversion];
@@ -522,7 +542,12 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
             [self cancel:nil];
             break;
         default:
-            [self signOut:nil];
+            OBASSERT_NOT_REACHED("Unexpected OUIWebDAVConnectionValidity.");
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                                      NSLocalizedStringFromTableInBundle(@"Error connecting to the WebDAV server.", @"OmniUI", OMNI_BUNDLE, @"Generic error for connecting to WebDAV."), NSLocalizedDescriptionKey,
+                                      nil];
+            NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError userInfo:userInfo];
+            OUI_PRESENT_ERROR(error);
             break;
     }
 }

@@ -30,6 +30,7 @@
 - (CGFloat)paddingToInspectorBottom; // For the bottom slice
 - (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice remainingHeight:(CGFloat)remainingHeight;
 - (CGFloat)paddingToInspectorSides; // Left/right
+- (CGFloat)minimumHeight; // When the view has UIViewAutoresizingFlexibleHeight, the minimum height the slice can have. Defaults to kOUIInspectorWellHeight.
 
 - (void)sizeChanged;
 
