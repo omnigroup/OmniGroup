@@ -12,6 +12,8 @@
 		008AB54814032D2B001F29CD /* OATinyPopUpButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 008AB54614032D2B001F29CD /* OATinyPopUpButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		008AB54914032D2B001F29CD /* OATinyPopUpButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 008AB54714032D2B001F29CD /* OATinyPopUpButton.m */; };
 		008AB54C14032D67001F29CD /* OADropDownTriangle.png in Resources */ = {isa = PBXBuildFile; fileRef = 008AB54B14032D67001F29CD /* OADropDownTriangle.png */; };
+		271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 271A9D9E1533DA2800A78CCB /* OAAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 271A9D9F1533DA2800A78CCB /* OAAnimation.m */; };
 		2730CF3B144E205B007C3A99 /* OADocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 2730CF39144E205B007C3A99 /* OADocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2730CF3C144E205B007C3A99 /* OADocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 2730CF3A144E205B007C3A99 /* OADocument.m */; };
 		3401161611E516C10016ADB3 /* OATextStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3401161411E516C10016ADB3 /* OATextStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -630,6 +632,8 @@
 		1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAResizingByteFormatter.h; sourceTree = "<group>"; };
 		1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAResizingByteFormatter.m; sourceTree = "<group>"; };
 		25B27335FFDDE12711CB17EA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		271A9D9E1533DA2800A78CCB /* OAAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAnimation.h; sourceTree = "<group>"; };
+		271A9D9F1533DA2800A78CCB /* OAAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAnimation.m; sourceTree = "<group>"; };
 		2730CF39144E205B007C3A99 /* OADocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADocument.h; sourceTree = "<group>"; };
 		2730CF3A144E205B007C3A99 /* OADocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADocument.m; sourceTree = "<group>"; };
 		2EAA6AE5FF476391C697A12F /* NSTableView-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTableView-OAExtensions.h"; sourceTree = "<group>"; };
@@ -1210,6 +1214,15 @@
 			name = "Obsolete or Deprecated";
 			sourceTree = "<group>";
 		};
+		271A9D9C1533DA1600A78CCB /* Animations */ = {
+			isa = PBXGroup;
+			children = (
+				271A9D9E1533DA2800A78CCB /* OAAnimation.h */,
+				271A9D9F1533DA2800A78CCB /* OAAnimation.m */,
+			);
+			name = Animations;
+			sourceTree = "<group>";
+		};
 		2730CF37144E1F96007C3A99 /* Documents */ = {
 			isa = PBXGroup;
 			children = (
@@ -1442,6 +1455,7 @@
 		3FDA413402096AEB0297A14E /* Omni Application Patterns */ = {
 			isa = PBXGroup;
 			children = (
+				271A9D9C1533DA1600A78CCB /* Animations */,
 				4A9FDD36065595540097A149 /* Application Controller */,
 				6C8771080405403600E7FE1C /* ColorSync */,
 				4FEF31EAFF191F02CD999A53 /* Find */,
@@ -2401,6 +2415,7 @@
 				3451254B12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */,
 				34275D1D13981621003F28F5 /* OAFeatures.h in Headers */,
 				2730CF3B144E205B007C3A99 /* OADocument.h in Headers */,
+				271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2935,6 +2950,7 @@
 				008AB54914032D2B001F29CD /* OATinyPopUpButton.m in Sources */,
 				2730CF3C144E205B007C3A99 /* OADocument.m in Sources */,
 				5FD7F19D14CA0ABF009FECB7 /* NSNib-OAExtensions.m in Sources */,
+				271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
