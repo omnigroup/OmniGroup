@@ -7,7 +7,7 @@
 # distributed with this project and can also be found at
 # <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 #
-# $Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Scripts/rubylib/xcodeproj.rb 161088 2012-02-04 03:19:12Z bungi $
+# $Id$
 
 # Very minimal class for getting informtion out of an Xcode xcodeproj file
 
