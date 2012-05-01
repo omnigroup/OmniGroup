@@ -29,8 +29,8 @@ OmniGroup/Frameworks/OmniFileStore(OmniFileStoreTouch)
 OmniGroup/Frameworks/OmniSoftwareUpdate(OmniSoftwareUpdateTouch)
 OmniGroup/Frameworks/OmniBase
 OmniGroup/Frameworks/OmniFoundation
-OmniGroup/Frameworks/OmniFileStore
 OmniGroup/Frameworks/OmniUnzip
+OmniGroup/Frameworks/OmniFileStore
 OmniGroup/Frameworks/OmniDataObjects
 OmniGroup/Frameworks/OmniNetworking
 OmniGroup/Frameworks/OmniAppKit
