@@ -436,7 +436,7 @@ static NSString *windowFrameSaveName = @"Preferences";
         secondaryPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings (including options not in this Preferences window, such as window sizes and toolbars) to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
         defaultButton = NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button");
         otherButton = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, "alert panel button");
-        NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, _window, self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), @"RestoreEverything", secondaryPrompt);
+        NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, _window, self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), @"RestoreEverything", @"%@", secondaryPrompt);
     } else if ([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) {
         // warn & wipe all prefs shown in the panel
         NSString *mainPrompt, *secondaryPrompt, *defaultButton, *otherButton;
@@ -447,7 +447,7 @@ static NSString *windowFrameSaveName = @"Preferences";
         secondaryPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings in all preference panes to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
         defaultButton = NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button");
         otherButton = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, "alert panel button");
-        NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, _window, self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), NULL, secondaryPrompt);
+        NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, _window, self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), NULL, @"%@", secondaryPrompt);
     } else {
         // OAPreferenceClient will handle warning & reverting
         [nonretained_currentClient restoreDefaults:sender];

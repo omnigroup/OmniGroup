@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -151,7 +151,7 @@ RCS_ID("$Id$")
     secondaryPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings in this pane to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
     defaultButton = NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button");
     otherButton = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, "alert panel button");
-    NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, [controlBox window], self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), NULL, secondaryPrompt);
+    NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, [controlBox window], self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), NULL, @"%@", secondaryPrompt);
 }
 
 - (void)restoreDefaultsNoPrompt;
