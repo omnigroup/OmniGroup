@@ -304,10 +304,21 @@ static BOOL animateInspectorToggles;
         
         // Record what was first responder in the inspector before we clear it.  We want to clear it since resigning first responder can cause controls to send actions and thus we want this happen *before* we change what would be affected by the action!
         oldResponder = [[[window firstResponder] retain] autorelease];
-        if ([oldResponder isKindOfClass:[NSTextView class]] &&
-            [[(NSTextView *)oldResponder delegate] isKindOfClass:[NSSearchField class]]) {
-            oldResponder = nil;  // (Bug #32481)  don't make the window the first responder if user is typing in a search field because it ends editing
-        } else {
+        
+        // See if we're dealing with the field editor - if so, we really want to deal with the view it's handling editing for instead.
+        if ([oldResponder isKindOfClass:[NSText class]]) {
+            id responderDelegate = [(NSText *)oldResponder delegate];
+            if ([responderDelegate isKindOfClass:[NSSearchField class]]) {
+                oldResponder = nil;  // (Bug #32481)  don't make the window the first responder if user is typing in a search field because it ends editing
+                
+            } else if ([responderDelegate isKindOfClass:[NSView class]]) {
+                OBASSERT([(NSView *)responderDelegate window] == window);  // We'd never have a first responder who is an NSText who has an NSView as their delegate, where this isn't a field editor situation, right?
+                oldResponder = (NSResponder *)responderDelegate;
+            }
+        }
+        
+        // A nil oldResponder means "don't end editing"
+        if (oldResponder != nil) {
             [window makeFirstResponder:window];
             
             // Since this is delayed, there is really no reasonable way for a NSResponder to refuse to resign here.  The selection has *already* changed!
@@ -315,8 +326,8 @@ static BOOL animateInspectorToggles;
         }
         
         [currentlyInspectedObjects release];
-	currentlyInspectedObjects = list; // takes ownership of the reference
-	list = nil;
+        currentlyInspectedObjects = list; // takes ownership of the reference
+        list = nil;
         [inspector inspectObjects:currentlyInspectedObjects];
     } NS_HANDLER {
         NSLog(@"-[%@ %@]: *** %@", [self class], NSStringFromSelector(_cmd), localException);
@@ -325,12 +336,12 @@ static BOOL animateInspectorToggles;
 
     // Restore the old first responder, unless it was a view that is no longer in the view hierarchy
     if ([oldResponder isKindOfClass:[NSView class]]) {
-	NSView *view = (NSView *)oldResponder;
-	if ([view window] != window)
-	    oldResponder = nil;
+        NSView *view = (NSView *)oldResponder;
+        if ([view window] != window)
+            oldResponder = nil;
     }
     if (oldResponder)
-	[window makeFirstResponder:oldResponder];
+        [window makeFirstResponder:oldResponder];
     [list release];
 }
 
