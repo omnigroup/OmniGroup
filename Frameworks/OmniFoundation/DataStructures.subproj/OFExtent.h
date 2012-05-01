@@ -1,4 +1,4 @@
-// Copyright 2000-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,6 +22,8 @@ typedef struct _OFExtent {
     CGFloat location;
     CGFloat length;
 } OFExtent;
+
+#define OFExtentZero (OFExtentMake(0.0f, 0.0f))
 
 static inline OFExtent OFExtentMake(CGFloat location, CGFloat length)
 {
@@ -111,6 +113,9 @@ static inline OFExtent OFExtentIntersection(OFExtent a, OFExtent b)
 // Adds the delta to the minimum and subtracts it from the maximum. We currently allow negative extents, but this seems like a strange way to get one, so we currently asser that doesn't happen.
 static inline OFExtent OFExtentInset(OFExtent a, CGFloat delta)
 {
+    if (a.length < delta*2)
+        return OFExtentMake(OFExtentMid(a), 0.0f);
+    
     CGFloat min = OFExtentMin(a) + delta;
     CGFloat max = OFExtentMax(a) - delta;
     OBASSERT(min <= max);
@@ -179,4 +184,3 @@ static inline OFExtent OFExtentAsNormalizedPoritionOfExtent(OFExtent toNormalize
     return normalized;
 }
                                                             
-#define OFExtentZero (OFExtentMake(0.0f, 0.0f))
