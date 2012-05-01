@@ -397,9 +397,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     }
     
     NSArray *existingPreviews = _previewView.previews;
-    
-    OBFinishPortingLater("If we get called twice before previews finish loading, we'll load them twice. Would be nice to check our running operations too.");
-    
+        
     NSMutableArray *loadedPreviews = nil;
     
     for (OFSDocumentStoreFileItem *fileItem in previewedFileItems) {

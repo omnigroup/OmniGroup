@@ -29,7 +29,7 @@ RCS_ID("$Id$");
 }
 
 @synthesize themes = _themes;
-- (void)setThemems:(NSArray *)themes;
+- (void)setThemes:(NSArray *)themes;
 {
     if (OFISEQUAL(_themes, themes))
         return;

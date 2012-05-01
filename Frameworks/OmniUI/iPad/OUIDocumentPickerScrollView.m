@@ -850,7 +850,6 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
             }
             
             if (!([_itemsIgnoredForLayout containsObject:item])) {
-                OBFinishPortingLater("The by-index lookup won't skip ignored items.");
                 positionIndex++;
             }
         }
@@ -951,11 +950,6 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
 
 - (void)_itemViewTapped:(UITapGestureRecognizer *)recognizer;
 {
-    if ([[OUIAppController controller] activityIndicatorVisible]) {
-        OBASSERT_NOT_REACHED("Should have been blocked");
-        return;
-    }
-
     UIView *hitView = [recognizer hitView];
     OUIDocumentPickerItemView *itemView = [hitView containingViewOfClass:[OUIDocumentPickerItemView class]];
     if (itemView) {

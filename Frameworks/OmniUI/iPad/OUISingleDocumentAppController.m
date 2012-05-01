@@ -19,6 +19,7 @@
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/OFUTI.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniUI/OUIActivityIndicator.h>
 #import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIDocumentConflictResolutionViewControllerDelegate.h>
@@ -70,6 +71,7 @@ typedef struct {
     UIWindow *_window;
     OUIMainViewController *_mainViewController;
     
+    UILabel *_documentTitleLabel;
     UITextField *_documentTitleTextField;
     UIBarButtonItem *_documentTitleToolbarItem;
     BOOL _hasAttemptedRename;
@@ -122,6 +124,7 @@ typedef struct {
     _undoBarButtonItem.undoBarButtonItemTarget = nil;
     [_undoBarButtonItem release];
     
+    [_documentTitleLabel release];
     [_documentTitleTextField release];
     [_documentTitleToolbarItem release];
     
@@ -130,15 +133,7 @@ typedef struct {
 
 @synthesize window = _window;
 @synthesize mainViewController = _mainViewController;
-@synthesize documentTitleTextField = _documentTitleTextField;
 @synthesize documentTitleToolbarItem = _documentTitleToolbarItem;
-
-- (void)setDocumentTitleTextField:(UITextField *)textField;
-{
-    [_documentTitleTextField release];
-    _documentTitleTextField = [textField retain];
-    [self _setupGesturesOnTitleTextField];
-}
 
 - (UIBarButtonItem *)closeDocumentBarButtonItem;
 {
@@ -222,7 +217,7 @@ typedef struct {
     
     // Start up the spinner and stop accepting events.
     UIViewController *viewController = _document.viewController;
-    [self showActivityIndicatorInView:viewController.view withColor:viewController.activityIndicatorColorForMainViewController];
+    OUIActivityIndicator *activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:viewController.view withColor:viewController.activityIndicatorColorForMainViewController];
     
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
     
@@ -261,6 +256,7 @@ typedef struct {
                                                          *outView = previewView;
                                                          *outRect = previewView.imageBounds;
                                                      } transitionAction:^{
+                                                         [activityIndicator hide];
                                                          [documentPicker.activeScrollView sortItems];
                                                          [documentPicker scrollItemToVisible:fileItem animated:NO];
                                                      } completionAction:^{
@@ -282,6 +278,7 @@ typedef struct {
                                         [_mainViewController.view layoutIfNeeded];
                                     }
                                     completion:^(BOOL finished){
+                                        [activityIndicator hide];
                                         [[UIApplication sharedApplication] endIgnoringInteractionEvents];
                                         
                                         if (completionHandler)
@@ -583,8 +580,8 @@ typedef struct {
 {
     OBPRECONDITION(textField == _documentTitleTextField);
     
-    // UITextField adjusts its recognizers when it starts editing. Put ours back.
-    [self _setupGesturesOnTitleTextField];
+    [self _toggleTitleToolbarCustomView];
+    [self _removeShieldView];
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
@@ -615,7 +612,8 @@ typedef struct {
 
 - (void)_delayedFinishLaunchingAllowCopyingSampleDocuments:(BOOL)allowCopyingSampleDocuments
                                     openingDocumentWithURL:(NSURL *)launchDocumentURL
-                           orOpeningWelcomeDocumentWithURL:(NSURL *)welcomeDocumentURL;
+                           orOpeningWelcomeDocumentWithURL:(NSURL *)welcomeDocumentURL
+                                         completionHandler:(void (^)(void))completionHandler;
 {
     DEBUG_LAUNCH(@"Delayed finish launching allowCopyingSamples:%d openURL:%@ orWelcome:%@", allowCopyingSampleDocuments, launchDocumentURL, welcomeDocumentURL);
     
@@ -630,6 +628,8 @@ typedef struct {
         DEBUG_LAUNCH(@"  launchFileItem: %@", [launchFileItem shortDescription]);
     }
     
+    completionHandler = [[completionHandler copy] autorelease];
+    
     if (allowCopyingSampleDocuments && launchDocumentURL == nil && ![[NSUserDefaults standardUserDefaults] boolForKey:@"SampleDocumentsHaveBeenCopiedToUserDocuments"]) {
         // Copy in a welcome document if one exists and we haven't done so for first launch yet.
         [self copySampleDocumentsToUserDocumentsWithCompletionHandler:^(NSDictionary *nameToURL) {
@@ -641,7 +641,8 @@ typedef struct {
                 // Retry after the scan finished, but this time try opening the Welcome document
                 [self _delayedFinishLaunchingAllowCopyingSampleDocuments:NO // we just did, don't try again
                                                   openingDocumentWithURL:nil // already checked this
-                                         orOpeningWelcomeDocumentWithURL:welcomeURL];
+                                         orOpeningWelcomeDocumentWithURL:welcomeURL
+                                                       completionHandler:completionHandler];
             }];
         }];
         return;
@@ -654,7 +655,7 @@ typedef struct {
 
     if (launchFileItem != nil) {
         DEBUG_LAUNCH(@"Opening document %@", [launchFileItem shortDescription]);
-        [self performSelector:@selector(_loadStartupDocument:) withObject:launchFileItem afterDelay:0.0];
+        [self _openDocument:launchFileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:YES];
         startedOpeningDocument = YES;
     } else {
         // Restore our selected or open document if we didn't get a command from on high.
@@ -671,7 +672,7 @@ typedef struct {
                 NSString *action = [launchAction objectAtIndex:0];
                 if ([action isEqualToString:OpenAction]) {
                     DEBUG_LAUNCH(@"Opening file item %@", [launchFileItem shortDescription]);
-                    [self performSelector:@selector(_loadStartupDocument:) withObject:launchFileItem afterDelay:0.0];
+                    [self _openDocument:launchFileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:YES];
                     startedOpeningDocument = YES;
                 } else
                     fileItemToSelect = launchFileItem;
@@ -685,13 +686,14 @@ typedef struct {
     } else {
         // Now that we are on screen, if we are waiting for a document to open, we'll just fade it in when it is loaded.
     }
+    
+    if (completionHandler)
+        completionHandler();
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
 {
     DEBUG_LAUNCH(@"Did launch with options %@", launchOptions);
-    
-    [self _setupGesturesOnTitleTextField];
     
     _mainViewController.resizesToAvoidKeyboard = YES;
     
@@ -699,9 +701,53 @@ typedef struct {
     _window.rootViewController = _mainViewController;
     [_window makeKeyAndVisible];
     
-    _previewGenerator = [[OUIDocumentPreviewGenerator alloc] init];
-    _previewGenerator.delegate = self;
+    // Setup Document Title Bar Item Stuffs
+    _documentTitleLabel = [[UILabel alloc] initWithFrame:(CGRect){
+        .origin.x = 0,
+        .origin.y = 0,
+        .size.width = [self titleTextFieldWidthForOrientation:[[UIApplication sharedApplication] statusBarOrientation]],
+        .size.height = 31
+    }];
+    _documentTitleLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:20.0];
+    _documentTitleLabel.textAlignment = UITextAlignmentCenter;
+    _documentTitleLabel.adjustsFontSizeToFitWidth = YES;
+    _documentTitleLabel.minimumFontSize = 17.0;
+    _documentTitleLabel.textColor = [UIColor whiteColor];
+    _documentTitleLabel.backgroundColor = [UIColor clearColor];
+    _documentTitleLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.5];
+    _documentTitleLabel.shadowOffset = (CGSize){
+        .width = 0,
+        .height = -1
+    };
     
+    _documentTitleLabel.userInteractionEnabled = YES;
+    _documentTitleLabel.accessibilityHint = NSLocalizedStringFromTableInBundle(@"Tripple tap to rename document.", @"OmniUI", OMNI_BUNDLE, @"Document title label item accessibility hint.");
+    
+    UITapGestureRecognizer *doubleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTitleDoubleTapGesture:)];
+    doubleTapRecognizer.numberOfTapsRequired = 2;
+    [_documentTitleLabel addGestureRecognizer:doubleTapRecognizer];
+    
+    _documentTitleTextField = [[UITextField alloc] initWithFrame:(CGRect){
+        .origin.x = 0,
+        .origin.y = 0,
+        .size.width = [self titleTextFieldWidthForOrientation:[[UIApplication sharedApplication] statusBarOrientation]],
+        .size.height = 31
+    }];
+    _documentTitleTextField.font = [UIFont fontWithName:@"Helvetica-Bold" size:20.0];
+    _documentTitleTextField.textAlignment = UITextAlignmentCenter;
+    _documentTitleTextField.adjustsFontSizeToFitWidth = YES;
+    _documentTitleTextField.minimumFontSize = 17.0;
+    _documentTitleTextField.autocapitalizationType = UITextAutocapitalizationTypeWords;
+    _documentTitleTextField.borderStyle = UITextBorderStyleBezel;
+    _documentTitleTextField.backgroundColor = [UIColor whiteColor];
+    _documentTitleTextField.textColor = [UIColor blackColor];
+    _documentTitleTextField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    _documentTitleTextField.delegate = self;
+    _documentTitleTextField.clearButtonMode = UITextFieldViewModeWhileEditing;
+    
+    
+    _documentTitleToolbarItem = [[UIBarButtonItem alloc] initWithCustomView:_documentTitleLabel];
+
     // Add a placeholder view controller until we finish scanning
     OUILaunchViewController *launchViewController = [[OUILaunchViewController alloc] init];
     [_mainViewController setInnerViewController:launchViewController animated:NO fromView:nil toView:nil];
@@ -716,6 +762,8 @@ typedef struct {
     void (^moarFinishing)(UbiquityAccessChange ubiquityAccessChange) = ^(UbiquityAccessChange ubiquityAccessChange){
         DEBUG_LAUNCH(@"Creating document store");
         
+        OUIActivityIndicator *activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_mainViewController.view];
+        
         _documentStore = [[OFSDocumentStore alloc] initWithDirectoryURL:[OFSDocumentStore userDocumentsDirectoryURL] containerScopes:[OFSDocumentStore defaultUbiquitousScopes] delegate:self scanCompletionHandler:nil];
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileItemContentsChangedNotification:) name:OFSDocumentStoreFileItemContentsChangedNotification object:_documentStore];
@@ -727,14 +775,19 @@ typedef struct {
         // We have to wait for the document store to get results from its NSMetadataQuery (if iCloud is enabled on this device and the app is using it).
         [_documentStore addAfterInitialDocumentScanAction:^{
             DEBUG_LAUNCH(@"Initial scan finished");
-
-            OBFinishPortingLater("If the user turns iCloud off and then back on, we could still end up moving sample documents into iCloud"); // We could maybe add a custom xattr to sample documents and make sure that doesn't get saved on save (or specifically remove it). Ugly, but then we could avoid moving sample documents into iCloud.
             
             // Now that we know what the existing documents are, possibly move some of them into iCloud (before we possibly create sample documents which should not be moved into iCloud).
             [self _handleUbiquityAccessChangeWithCopyBehavior:ubiquityAccessChange withCompletionHandler:^{
                 [self _delayedFinishLaunchingAllowCopyingSampleDocuments:YES
                                                   openingDocumentWithURL:launchOptionsURL
-                                         orOpeningWelcomeDocumentWithURL:nil]; // Don't always try to open the welcome document; just if we copy samples
+                                         orOpeningWelcomeDocumentWithURL:nil // Don't always try to open the welcome document; just if we copy samples
+                                                       completionHandler:^{
+                                                           // Don't start generating previews until we have decided whether to open a document at launch time (which will prevent preview generation until it is closed).
+                                                           _previewGenerator = [[OUIDocumentPreviewGenerator alloc] init];
+                                                           _previewGenerator.delegate = self;
+                                                           
+                                                           [activityIndicator hide];
+                                                       }];
             }];
         }];
         
@@ -775,20 +828,6 @@ typedef struct {
     return YES;
 }
 
-/*
- This is split out to avoid a semi-random (probably notification sending order dependent) assertion if we try to open a document at launch time:
- 
-2011-06-16 14:27:50.109 OmniOutliner-iPad[35144:15b03] *** Assertion failure in -[Document revertToContentsOfURL:completionHandler:], /SourceCache/UIKit_Sim/UIKit-1727.6/UIDocument.m:692
- 
- Apple is going to look at this (and has other reports of it).
- 
- */
-
-- (void)_loadStartupDocument:(OFSDocumentStoreFileItem *)fileItem;
-{
-    [self _openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve];
-}
-
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
 {
     if (!_didFinishLaunching)  // if the app is launched by an open request from another app, then this is called and then application:didFinishLaunchingWithOptions: is called
@@ -800,31 +839,37 @@ typedef struct {
     
     [self.documentPicker _applicationWillOpenDocument];
 
-    if ([OFSDocumentStore isURLInInbox:url]) {
-        OBASSERT(_documentStore);
-        [_documentStore cloneInboxItem:url completionHandler:^(OFSDocumentStoreFileItem *newFileItem, NSError *errorOrNil) {
-            NSError *deleteInboxError = nil;
-            if (![_documentStore deleteInbox:&deleteInboxError]) {
-                NSLog(@"Failed to delete the inbox: %@", [deleteInboxError toPropertyList]);
-            }
-            
-            main_async(^{
-                if (!newFileItem) {
-                    // Display Error and return.
-                    OUI_PRESENT_ERROR(errorOrNil);
-                    return;
+    // Have to wait for the docuemnt store to awake again (if we were backgrounded), initiated by -applicationWillEnterForeground:. <bug:///79297> (Bad animation closing file opened from another app)
+    [_documentStore addAfterInitialDocumentScanAction:^{
+        if ([OFSDocumentStore isURLInInbox:url]) {
+            OBASSERT(_documentStore);
+            [_documentStore cloneInboxItem:url completionHandler:^(OFSDocumentStoreFileItem *newFileItem, NSError *errorOrNil) {
+                NSError *deleteInboxError = nil;
+                if (![_documentStore deleteInbox:&deleteInboxError]) {
+                    NSLog(@"Failed to delete the inbox: %@", [deleteInboxError toPropertyList]);
                 }
                 
-                [self _openDocument:newFileItem animation:OUIDocumentAnimationTypeDissolve];
-            });
-        }];
-    } else {
-        OBASSERT_NOT_REACHED("Will the system ever give us a non-inbox item?");
-        OFSDocumentStoreFileItem *fileItem = [_documentStore fileItemWithURL:url];
-        OBASSERT(fileItem);
-        if (fileItem)
-            [self _openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve];
-    }
+                main_async(^{
+                    if (!newFileItem) {
+                        // Display Error and return.
+                        OUI_PRESENT_ERROR(errorOrNil);
+                        return;
+                    }
+                    
+                    // Depending on the sort type, the item mive be in view or not. Don't bother scrolling to it if not.
+                    OUIDocumentAnimationType animation = [self.documentPicker.activeScrollView fileItemViewForFileItem:newFileItem] ? OUIDocumentAnimationTypeZoom : OUIDocumentAnimationTypeDissolve;
+                    
+                    [self _openDocument:newFileItem animation:animation showActivityIndicator:YES];
+                });
+            }];
+        } else {
+            OBASSERT_NOT_REACHED("Will the system ever give us a non-inbox item?");
+            OFSDocumentStoreFileItem *fileItem = [_documentStore fileItemWithURL:url];
+            OBASSERT(fileItem);
+            if (fileItem)
+                [self _openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:YES];
+        }
+    }];
     
     return YES;
 }
@@ -944,7 +989,7 @@ typedef struct {
     if (![_previewGenerator shouldOpenDocumentWithFileItem:fileItem])
         return;
     
-    [self _openDocument:fileItem animation:OUIDocumentAnimationTypeZoom];
+    [self _openDocument:fileItem animation:OUIDocumentAnimationTypeZoom showActivityIndicator:YES];
 }
 
 - (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(OFSDocumentStoreFileItem *)fileItem;
@@ -961,7 +1006,7 @@ typedef struct {
         return;
 #endif
     
-    [self _openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve];
+    [self _openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:NO];
 }
 
 #pragma mark -
@@ -998,6 +1043,7 @@ typedef struct {
 
 - (BOOL)previewGeneratorHasOpenDocument:(OUIDocumentPreviewGenerator *)previewGenerator;
 {
+    OBPRECONDITION(_didFinishLaunching); // Don't start generating previews before the app decides whether to open a launch document
     return _document != nil;
 }
 
@@ -1048,6 +1094,7 @@ static unsigned ItemContext;
             OBASSERT([object isKindOfClass:[OFSDocumentStoreFileItem class]]);       
             // possible that this notification could come from iCloud while _documentTitleTextField is still editing. Replacing the text field with the iCloud change seems ok here.
             _documentTitleTextField.text = [(OFSDocumentStoreFileItem *)object name];
+            _documentTitleLabel.text = [(OFSDocumentStoreFileItem *)object name];
         } else
             OBASSERT_NOT_REACHED("Unknown KVO keyPath");
         return;
@@ -1100,7 +1147,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     }];
 }
 
-- (void)_mainThread_finishedLoadingDocument:(OUIDocument *)document animation:(OUIDocumentAnimationType)animation completionHandler:(void (^)(void))completionHandler;
+- (void)_mainThread_finishedLoadingDocument:(OUIDocument *)document animation:(OUIDocumentAnimationType)animation activityIndicator:(OUIActivityIndicator *)activityIndicator completionHandler:(void (^)(void))completionHandler;
 {
     OBASSERT([NSThread isMainThread]);
     [self _setDocument:document];
@@ -1108,6 +1155,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     NSString *title = _document.fileItem.name;
     OBASSERT(title);
     _documentTitleTextField.text = title;
+    _documentTitleLabel.text = title;
     
     UIViewController <OUIDocumentViewController> *viewController = _document.viewController;
     [viewController view]; // make sure the view is loaded in case -pickerAnimationViewForTarget: doesn't and return a subview thereof.
@@ -1157,7 +1205,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
                                                completionHandler();
                                        }];
 
-            [self hideActivityIndicator]; // will be on the item preview view for a document tap initiated load
+            [activityIndicator hide]; // will be on the item preview view for a document tap initiated load
             break;
         }
         case OUIDocumentAnimationTypeDissolve:
@@ -1174,6 +1222,8 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
                                     [viewController documentFinishedOpening];
                                 if (completionHandler)
                                     completionHandler();
+                                
+                                [activityIndicator hide];
                             }];
             break;
         default:
@@ -1184,7 +1234,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     } 
 }
 
-- (void)_openDocument:(OFSDocumentStoreFileItem *)fileItem animation:(OUIDocumentAnimationType)animation;
+- (void)_openDocument:(OFSDocumentStoreFileItem *)fileItem animation:(OUIDocumentAnimationType)animation showActivityIndicator:(BOOL)showActivityIndicator;
 {
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(fileItem);
@@ -1213,13 +1263,20 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
         }
     }
 
+    OUIActivityIndicator *activityIndicator = nil;
     OUIDocumentPickerFileItemView *fileItemView = nil;
     if (animation == OUIDocumentAnimationTypeZoom) {
         fileItemView = [self.documentPicker.activeScrollView fileItemViewForFileItem:fileItem];
         OBASSERT(fileItemView);
 
         fileItemView.highlighted = YES;
-        [self showActivityIndicatorInView:fileItemView.previewView];
+        
+        if (showActivityIndicator)
+            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView.previewView];
+    } else {
+        // Launch time document open, for example
+        if (showActivityIndicator)
+            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_mainViewController.view];
     }
     
     void (^doOpen)(void) = ^{
@@ -1250,14 +1307,14 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
             if (!success) {
                 OUIDocumentHandleDocumentOpenFailure(document, nil);
                 
-                [self hideActivityIndicator];
+                [activityIndicator hide];
                 [[UIApplication sharedApplication] endIgnoringInteractionEvents];
                 
                 onFail();
                 return;
             }
             
-            [self _mainThread_finishedLoadingDocument:document animation:animation completionHandler:^{
+            [self _mainThread_finishedLoadingDocument:document animation:animation activityIndicator:activityIndicator completionHandler:^{
                 [[UIApplication sharedApplication] endIgnoringInteractionEvents];
             }];
         }];
@@ -1411,7 +1468,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     [_documentStore startDeferringScanRequests];
     
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
-    [self showActivityIndicatorInView:_mainViewController.view];
+    OUIActivityIndicator *activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_mainViewController.view];
     
     NSUInteger metadataUpdateVersionNumber = [_documentStore metadataUpdateVersionNumber];
 
@@ -1429,7 +1486,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     [_documentStore migrateDocumentsInScope:sourceScope toScope:destinationScope byMoving:shouldMove completionHandler:^(NSDictionary *migratedURLs, NSDictionary *errorURLs){
         
         [[UIApplication sharedApplication] endIgnoringInteractionEvents];
-        [self hideActivityIndicator];
+        [activityIndicator hide];
         
         void (^metadataUpdateFinished)(void) = ^{
             [_documentStore stopDeferringScanRequests:^{
@@ -1483,31 +1540,40 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
 
     // When entering the conflict state, the state will transition from UIDocumentStateNormal to UIDocumentStateEditingDisabled, to UIDocumentStateEditingDisabled|UIDocumentStateInConflict to UIDocumentStateInConflict. The UIDocumentStateEditingDisabled flag means the document is still in the midst of -relinquishPresentedItemToWriter: and will likely be annoyed by us closing it.
     if ((state & (UIDocumentStateInConflict|UIDocumentStateEditingDisabled)) == UIDocumentStateInConflict && !_conflictResolutionViewController && !_aboutToStartConflictResolution) {
-        // We kick you out of the current document back to the document picker if a conflict happens. This is fairly rare, but iWork does let you resolve the conflict while in the document. On the other hand, iWork syncs around previews in their file wrapper where the iCloud guidelines say not to. We'd need to generate previews for the incoming conflict versions *while* we had the original document open. Our preview generation system tries to avoid making previews while a document is open since we could hit the memory ceiling and crash.
-        
-        DEBUG_DOCUMENT(@"Starting conflict resolution...");
-        _aboutToStartConflictResolution = YES;
-        
-        OFSDocumentStoreFileItem *fileItem = _document.fileItem;
-
-        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
-        [self closeDocumentWithAnimationType:OUIDocumentAnimationTypeZoom completionHandler:^{
-            // The default queuing will have only written out the open version of the document, not the conflict version's preview (and we want the document closed before we try that anyway, since we'll need to open the conflict document).
-            [_previewGenerator fileItemNeedsPreviewUpdate:fileItem];
-            
-            // Without the extra delay, if the iPad is held with the home button up we can hit <bug:///78643> (Conflict resolution sheet spins while appearing if document is closing)
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [self _startConflictResolution:fileItem];
-                
-                OBASSERT(_aboutToStartConflictResolution == YES);
-                _aboutToStartConflictResolution = NO;
-                [[UIApplication sharedApplication] endIgnoringInteractionEvents];
-            }];
-        }];
+        // This path could be hit if the autonominated winner is our device's current version. If an incoming version is the conflict winner, OUIDocument's revert subclass method will call this.
+        [self _closeDocumentAndStartConflictResolutionWithCompletionHandler:nil];
     } else if ((state & UIDocumentStateInConflict) == 0 && _conflictResolutionViewController) {
+        OBASSERT_NOT_REACHED("Leftover from when we could show the resolution sheet with open documents");
         DEBUG_DOCUMENT(@"Stopping conflict resolution...");
         [self _stopConflictResolutionWithCompletion:nil];
     }
+}
+
+- (void)_closeDocumentAndStartConflictResolutionWithCompletionHandler:(void (^)(void))completionHandler;
+{
+    OBPRECONDITION(_aboutToStartConflictResolution == NO);
+    
+    // We kick you out of the current document back to the document picker if a conflict happens. This is fairly rare, but iWork does let you resolve the conflict while in the document. On the other hand, iWork syncs around previews in their file wrapper where the iCloud guidelines say not to. We'd need to generate previews for the incoming conflict versions *while* we had the original document open. Our preview generation system tries to avoid making previews while a document is open since we could hit the memory ceiling and crash.
+    
+    DEBUG_DOCUMENT(@"Starting conflict resolution...");
+    _aboutToStartConflictResolution = YES;
+    
+    OFSDocumentStoreFileItem *fileItem = _document.fileItem;
+    
+    [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+    [self closeDocumentWithAnimationType:OUIDocumentAnimationTypeZoom completionHandler:^{
+        // The default queuing will have only written out the open version of the document, not the conflict version's preview (and we want the document closed before we try that anyway, since we'll need to open the conflict document).
+        [_previewGenerator fileItemNeedsPreviewUpdate:fileItem];
+        
+        // Without the extra delay, if the iPad is held with the home button up we can hit <bug:///78643> (Conflict resolution sheet spins while appearing if document is closing)
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [self _startConflictResolution:fileItem];
+            
+            OBASSERT(_aboutToStartConflictResolution == YES);
+            _aboutToStartConflictResolution = NO;
+            [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+        }];
+    }];
 }
 
 - (void)_startConflictResolution:(OFSDocumentStoreFileItem *)fileItem;
@@ -1563,70 +1629,58 @@ static void _updatePreviewForFileItem(OUISingleDocumentAppController *self, NSNo
     [self showInspectorFromBarButtonItem:_infoBarButtonItem];
 }
 
-- (void)_handleTitleTapGesture:(UIGestureRecognizer*)gestureRecognizer;
-{
-    // do not want an action here
-    OBASSERT(gestureRecognizer.view == _documentTitleTextField);
-}
-
-static UITapGestureRecognizer *titleTextFieldTap = nil;
-static UITapGestureRecognizer *titleTextFieldDoubleTap = nil;
-
 - (void)_handleTitleDoubleTapGesture:(UIGestureRecognizer*)gestureRecognizer;
 {
-    OBASSERT(gestureRecognizer.view == _documentTitleTextField);
-    
-    [_documentTitleTextField removeGestureRecognizer:titleTextFieldTap];
-    [_documentTitleTextField removeGestureRecognizer:titleTextFieldDoubleTap];
-    
+    OBASSERT(gestureRecognizer.view == _documentTitleLabel);
 
+    [self _toggleTitleToolbarCustomView];
+    [_documentTitleTextField becomeFirstResponder];
+    
     UITapGestureRecognizer *shieldViewTapRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_shieldViewTapped:)] autorelease];        
     NSArray *passthroughViews = [NSArray arrayWithObject:_documentTitleTextField];
     _shieldView = [[OUIShieldView shieldViewWithView:_window] retain];
     [_shieldView addGestureRecognizer:shieldViewTapRecognizer];
     _shieldView.passthroughViews = passthroughViews;
     [_window addSubview:_shieldView];
-    
-    // Switch to a white background while editing so that the text loupe will work properly.
-    [_documentTitleTextField setTextColor:[UIColor blackColor]];
-    [_documentTitleTextField setBackgroundColor:[UIColor whiteColor]];
-    _documentTitleTextField.borderStyle = UITextBorderStyleBezel;
-    
-    [_documentTitleTextField becomeFirstResponder];
 }
 
-- (void)_setupGesturesOnTitleTextField;
+- (void)_toggleTitleToolbarCustomView;
 {
-    if (!titleTextFieldDoubleTap) {
-        titleTextFieldDoubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTitleDoubleTapGesture:)];
-        titleTextFieldDoubleTap.numberOfTapsRequired = 2;
+    OBASSERT_NOTNULL(_documentTitleToolbarItem);
+    OBASSERT_NOTNULL(_documentTitleLabel);
+    OBASSERT_NOTNULL(_documentTitleTextField);
+    OBASSERT((_documentTitleToolbarItem.customView != nil) && (_documentTitleToolbarItem.customView.superview != nil));
+    
+    if (_documentTitleToolbarItem.customView == _documentTitleTextField) {
+        OUIWithoutAnimating(^{
+            _documentTitleToolbarItem.customView = _documentTitleLabel;
+            [[_documentTitleLabel superview] layoutSubviews];
+        });
     }
-    
-    if (!titleTextFieldTap) {
-        titleTextFieldTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTitleTapGesture:)];
-        
-        [titleTextFieldTap requireGestureRecognizerToFail:titleTextFieldDoubleTap];
+    else if (_documentTitleToolbarItem.customView == _documentTitleLabel) {
+        OUIWithoutAnimating(^{
+            _documentTitleToolbarItem.customView = _documentTitleTextField;
+            [[_documentTitleTextField superview] layoutSubviews];
+        });
     }
-    
-    [_documentTitleTextField addGestureRecognizer:titleTextFieldTap];
-    [_documentTitleTextField addGestureRecognizer:titleTextFieldDoubleTap];
-    
-    // Restore the regular colors of the text field.
-    [_documentTitleTextField setTextColor:[UIColor whiteColor]];
-    [_documentTitleTextField setBackgroundColor:[UIColor clearColor]];
-    _documentTitleTextField.borderStyle = UITextBorderStyleNone;
-    if ([_shieldView superview]) {
-        [_shieldView removeFromSuperview];
-        [_shieldView release], _shieldView = nil;
+    else {
+        OBASSERT_NOT_REACHED("_documentTitleToolbarItem has unrecognized customView.");
     }
 }
 
 - (void)_shieldViewTapped:(UIGestureRecognizer *)gestureRecognizer;
 {
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
+        [self _removeShieldView];
+        [_documentTitleTextField endEditing:YES];
+    }
+}
+
+- (void)_removeShieldView;
+{
+    if (_shieldView) {
         [_shieldView removeFromSuperview];
         [_shieldView release], _shieldView = nil;
-        [_documentTitleTextField endEditing:YES];
     }
 }
 

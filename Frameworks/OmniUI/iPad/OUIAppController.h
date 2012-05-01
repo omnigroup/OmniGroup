@@ -42,11 +42,6 @@
 
 @property(nonatomic,retain) IBOutlet OUIDocumentPicker *documentPicker;
 
-@property(readonly) BOOL activityIndicatorVisible;
-- (void)showActivityIndicatorInView:(UIView *)view;
-- (void)showActivityIndicatorInView:(UIView *)view withColor:(UIColor *)color;
-- (void)hideActivityIndicator;
-
 // NSObject (OUIAppMenuTarget)
 - (NSString *)aboutMenuTitle;
 - (NSString *)feedbackMenuTitle;

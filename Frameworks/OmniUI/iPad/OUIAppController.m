@@ -30,7 +30,6 @@
 #import <sys/sysctl.h>
 
 #import "OUICredentials.h"
-#import "OUIEventBlockingView.h"
 #import "OUIParameters.h"
 #import "OUISoftwareUpdateController.h"
 #import "OUISyncMenuController.h"
@@ -49,9 +48,6 @@ RCS_ID("$Id$");
     UIBarButtonItem *_appMenuBarItem;
     OUIMenuController *_appMenuController;
     OUISyncMenuController *_syncMenuController;
-    
-    UIActivityIndicatorView *_activityIndicator;
-    UIView *_eventBlockingView;
     
 #if OUI_SOFTWARE_UPDATE_CHECK
     OUISoftwareUpdateController *_softwareUpdateController;
@@ -375,70 +371,6 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
     [controller setSubject:subject];
     [self.topViewController presentModalViewController:controller animated:YES];
     [controller autorelease];
-}
-
-- (BOOL)activityIndicatorVisible;
-{
-    return (_activityIndicator.superview != nil);
-}
-
-- (void)showActivityIndicatorInView:(UIView *)view;
-{
-    [self showActivityIndicatorInView:view withColor:[UIColor whiteColor]];
-}
-
-- (void)showActivityIndicatorInView:(UIView *)view withColor:(UIColor *)color;
-{
-    OBPRECONDITION(view);
-    OBPRECONDITION(view.window); // should already be on screen
-    
-    if (_activityIndicator || _eventBlockingView) {
-        OBASSERT_NOT_REACHED("Not supporting nested calls");
-        return;
-    }
-    
-    OUIBeginWithoutAnimating
-    {
-        _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        _activityIndicator.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin;
-        
-        if (color)
-            _activityIndicator.color = color;
-        
-        _eventBlockingView = [[OUIEventBlockingView alloc] initWithFrame:CGRectZero];
-        _eventBlockingView.opaque = NO;
-        _eventBlockingView.backgroundColor = nil;
-        
-        _activityIndicator.center = view.center;
-        
-        _activityIndicator.layer.zPosition = 2;
-        [_activityIndicator startAnimating];
-        _activityIndicator.hidden = YES;
-        
-        [view.superview addSubview:_activityIndicator];
-        
-        UIView *topView = self.topViewController.view;
-        OBASSERT(topView.window == view.window);
-        
-        _eventBlockingView.frame = topView.bounds;
-        [topView addSubview:_eventBlockingView];
-    }
-    OUIEndWithoutAnimating;
-    
-    // Just fade this in
-    _activityIndicator.hidden = NO;
-}
-
-- (void)hideActivityIndicator;
-{
-    [_eventBlockingView removeFromSuperview];
-    [_eventBlockingView release];
-    _eventBlockingView = nil;
-    
-    [_activityIndicator stopAnimating];
-    [_activityIndicator removeFromSuperview];
-    [_activityIndicator release];
-    _activityIndicator = nil;
 }
 
 - (void)_showWebViewWithURL:(NSURL *)url title:(NSString *)title;

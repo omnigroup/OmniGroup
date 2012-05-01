@@ -73,6 +73,8 @@
 + (OFPreference *)sortPreference;
 - (void)updateSort;
 
+- (void)addAfterDocumentStoreInitializationAction:(void (^)(void))action;
+
 - (NSString *)mainToolbarTitle;
 - (void)updateTitle;
 

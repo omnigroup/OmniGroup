@@ -28,7 +28,12 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 }
 
 #if NS_BLOCKS_AVAILABLE
-@interface OFSFileOperationBlockTarget : OFObject <OFSFileManagerAsynchronousOperationTarget>
+@interface OFSFileOperationBlockTarget : OFObject <OFSFileManagerAsynchronousOperationTarget> {
+    long long _processedByteCount;
+    void (^_receiveDataBlock)(NSData *);
+    void (^_progressBlock)(long long);
+    void (^_completionBlock)(NSError *);
+}
 @property (copy) void (^receiveDataBlock)(NSData *);
 @property (copy) void (^progressBlock)(long long);
 @property (copy) void (^completionBlock)(NSError *);
@@ -218,9 +223,6 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 #if NS_BLOCKS_AVAILABLE
 
 @implementation OFSFileOperationBlockTarget
-{
-    long long _processedByteCount;
-}
 
 @synthesize receiveDataBlock = _receiveDataBlock, progressBlock = _progressBlock, completionBlock = _completionBlock;
 

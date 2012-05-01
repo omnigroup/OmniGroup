@@ -26,9 +26,8 @@ typedef enum {
 
 @property(nonatomic,retain) IBOutlet UIWindow *window;
 @property(nonatomic,retain) IBOutlet OUIMainViewController *mainViewController;
-@property(nonatomic,retain) IBOutlet UITextField *documentTitleTextField;
-@property(nonatomic,retain) IBOutlet UIBarButtonItem *documentTitleToolbarItem;
 
+@property(readonly) UIBarButtonItem *documentTitleToolbarItem;
 @property(readonly) UIBarButtonItem *closeDocumentBarButtonItem;
 @property(readonly) OUIUndoBarButtonItem *undoBarButtonItem;
 @property(readonly) UIBarButtonItem *infoBarButtonItem;
@@ -41,7 +40,7 @@ typedef enum {
 
 - (void)documentDidDisableEnditing:(OUIDocument *)document; // Incoming iCloud edit on an open document
 
-// Returns the width the _documentTitleTextField should be set to while editing. A different width can be returned depending on isLandscape.
+// Returns the width the _documentTitleTextField should be set to while editing.
 // If overridden in sub-class, don't call super.
 - (CGFloat)titleTextFieldWidthForOrientation:(UIInterfaceOrientation)orientation;
 

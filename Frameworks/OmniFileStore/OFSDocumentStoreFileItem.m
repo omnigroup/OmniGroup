@@ -563,7 +563,7 @@ static void _updateFlagFromAttributes(OFSDocumentStoreFileItem *self, BOOL *ioVa
     BOOL value;
     NSNumber *attributeValue = [attributeValues objectForKey:attributeKey];
     if (!attributeValue) {
-        OBASSERT_NOT_REACHED("Missing attribute value");
+        OBASSERT(attributeValues == nil); // OK if we don't have a metadata item at all
         value = defaultValue;
     } else {
         value = [attributeValue boolValue];
@@ -624,7 +624,7 @@ static void _postFinishedDownloadingIfNeeded(OFSDocumentStoreFileItem *self, BOO
 #define UPDATE_LOCAL_PERCENT(ivar, keySuffix) _updatePercent(self, &ivar, OFSDocumentStoreItem ## keySuffix ## Binding, kOFSDocumentStoreFileItemDefault_ ## keySuffix)
 
 
-- (void)_updateUbiquitousItemWithMetadataItem:(NSMetadataItem *)metadataItem;
+- (void)_updateUbiquitousItemWithMetadataItem:(NSMetadataItem *)metadataItem modificationDate:(NSDate *)modificationDate;
 {
     OBPRECONDITION([NSThread isMainThread]); // Fire KVO from the main thread
 //  OBPRECONDITION([self.scope isUbiquitous]); // this is an expensive call and the only place this is called from - [OFSDocumentStore scanItemsWithCompletionHandler:] - already checks the scope's isUbiquitous, so commenting out
@@ -639,13 +639,18 @@ static void _postFinishedDownloadingIfNeeded(OFSDocumentStoreFileItem *self, BOO
     
     // In the past, some NSMetadataItem attribute keys weren't reliable (updates might be missed that would be shown by the NSURL variants). But, getting the NSURL variants on an iCloud document does IPC to the ubiquity daemon and is very slow. Thankfully these work now, but if we are ever tempted to switch to the NSURL variants again, be wary of performance.
     NSDictionary *attributeValues = [metadataItem valuesForAttributes:MetadataAttributeKeys];
-    
-    NSDate *date = [attributeValues objectForKey:NSMetadataItemFSContentChangeDateKey];
-    if (!date) {
-        OBASSERT_NOT_REACHED("No date on metadata item");
-        date = [NSDate date];
+
+    // Use the metadata item's date if we have it. Otherwise, this might be a newly created/duplicated item that we know is in a ubiquitous container, but that we haven't received a metadata item for yet (so we'll use the date from the file system).
+    if (metadataItem) {
+        modificationDate = [attributeValues objectForKey:NSMetadataItemFSContentChangeDateKey];
+        OBASSERT(modificationDate);
+    } else {
+        OBASSERT(modificationDate);
     }
-    self.date = date;
+    if (!modificationDate)
+        modificationDate = [NSDate date];
+
+    self.date = modificationDate;
     
     BOOL wasDownloaded = _isDownloaded;
     
@@ -690,31 +695,6 @@ static void _postFinishedDownloadingIfNeeded(OFSDocumentStoreFileItem *self, BOO
     UPDATE_LOCAL_PERCENT(_percentDownloaded, PercentDownloaded);
     
     _postFinishedDownloadingIfNeeded(self, wasDownloaded);
-}
-
-- (void)_suspendFilePresenter;
-{
-    OBPRECONDITION(_hasRegisteredAsFilePresenter == YES);
-    
-    if (_hasRegisteredAsFilePresenter) {
-        DEBUG_FILE_ITEM(@"_suspendFilePresenter");
-        [NSFileCoordinator removeFilePresenter:self];
-        _hasRegisteredAsFilePresenter = NO;
-    }
-}
-
-- (void)_resumeFilePresenter;
-{
-    // Can't assert this since we might have a mix of re-activated items and new items.
-    //OBPRECONDITION(_hasRegisteredAsFilePresenter == NO);
-    
-    if (!_hasRegisteredAsFilePresenter) {
-        DEBUG_FILE_ITEM(@"_resumeFilePresenter");
-        [NSFileCoordinator addFilePresenter:self];
-        _hasRegisteredAsFilePresenter = YES;
-
-        // The document store should only call this after a scan has finished that would have updated our date, so we don't call -_queueContentsChanged here.
-    }
 }
 
 #pragma mark -
@@ -815,10 +795,19 @@ static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *modif
     } else {
         DEBUG_FILE_ITEM(@"Handling move from %@ / %@ to %@", oldURL, oldDate, _filePresenterURL);
         
+#ifdef OMNI_ASSERTIONS_ON
+        BOOL probablyInvalid = NO;
+#endif
         NSNumber *isDirectory = nil;
         NSError *resourceError = nil;
         if (![_filePresenterURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&resourceError]) {
-            NSLog(@"Error getting directory key for %@: %@", _filePresenterURL, [resourceError toPropertyList]);
+            // If we get EPERM, it is most likely because the iCloud Documents & Data was turned off while the app was backgrounded. In this case, when foregrounded, we get a -relinquishPresentedItemToWriter: with a -presentedItemDidMoveToURL: into something like <file://localhost/var/mobile/Library/Mobile%20Documents.1181216313/...> We do *not* get told, sadly, that we've been deleted and these messages come through before the finish of the new scan.
+            if ([resourceError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:EPERM]) {
+#ifdef OMNI_ASSERTIONS_ON
+                probablyInvalid = YES;
+#endif
+            } else
+                NSLog(@"Error getting directory key for %@: %@", _filePresenterURL, [resourceError toPropertyList]);
         }
         [_fileType release];
         _fileType = [OFUTIForFileExtensionPreferringNative([_filePresenterURL pathExtension], isDirectory) copy];
@@ -827,7 +816,12 @@ static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *modif
         // Update KVO on the main thread.
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             // On iOS, this lets the document preview be moved.
-            [self.documentStore _fileWithURL:oldURL andDate:oldDate didMoveToURL:_filePresenterURL];
+            if (![self _hasBeenInvalidated]) {
+                [self.documentStore _fileWithURL:oldURL andDate:oldDate didMoveToURL:_filePresenterURL];
+                // might not have been invalidated yet...
+            } else {
+                OBASSERT(probablyInvalid == YES);
+            }
             
             [self willChangeValueForKey:OFSDocumentStoreFileItemDisplayedFileURLBinding];
             [_displayedFileURL release];

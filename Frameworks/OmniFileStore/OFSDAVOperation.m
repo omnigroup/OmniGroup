@@ -92,12 +92,15 @@ static BOOL _isRead(OFSDAVOperation *self)
     
     // me.com returns 402 Payment Required if you mistype your user name.  402 is currently reserved and Apple shouldn't be using it at all; Radar 6253979
     // 409 Conflict -- we can get this if the user mistypes the directory or forgets to create it.  There might be other cases, but this is by far the most likely.
-    if (code == 402 || code == 409) {
+    if (code == 401 || code == 402 || code == 409) {
         NSString *location = [[_request URL] absoluteString];
         NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not access the WebDAV location <%@>.", @"OmniFileStore", OMNI_BUNDLE, @"error description"),
                                  location];
         NSString *reason;
         switch (code) {
+            case 401:
+                reason = NSLocalizedStringFromTableInBundle(@"Please check that the user name and password you provided are correct.", @"OmniFileStore", OMNI_BUNDLE, @"error suggestion");
+                break;
             case 402:
                 reason = NSLocalizedStringFromTableInBundle(@"Please make sure that the account information is correct.", @"OmniFileStore", OMNI_BUNDLE, @"error reason");
                 break;
@@ -461,6 +464,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
                     [[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
                     return;
                 } else {
+                    // If we have a delegate, we expect it to provide UI to the user about why we are canceling the authentication.
                     id <OFSDAVFileManagerAuthenticationDelegate> delegate = [OFSDAVFileManager authenticationDelegate];
                     [delegate DAVFileManager:_nonretained_fileManager validateCertificateForChallenge:challenge];
                     [[challenge sender] cancelAuthenticationChallenge:challenge];   // delegate will decide whether to restart the operation
@@ -488,7 +492,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         [[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
     else {
         _response = [[challenge failureResponse] copy]; // Keep around the response that says something about the failure
-        [[challenge sender] cancelAuthenticationChallenge:challenge];
+        [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
     }
 }
 
@@ -723,14 +727,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     
     if (OFSFileManagerDebug > 0)
         NSLog(@"%@: did fail with error: %@", [self shortDescription], [error toPropertyList]);
-    
-    if ([[error domain] isEqualToString:NSURLErrorDomain] && [error code] == NSURLErrorUserCancelledAuthentication) {
-        // If we run out of credentials to try, we cancel.  Layer a more useful error on this one.
-        NSString *desc = NSLocalizedStringFromTableInBundle(@"Unable to authenticate with WebDAV server.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Please check that the user name and password you provided are correct.", @"OmniFileStore", OMNI_BUNDLE, @"error suggestion");
-        OFSError(&error, OFSDAVFileManagerCannotAuthenticate, desc, reason);
-    }
-    
+        
     _finalError = [error copy];
 
     [self _finish];

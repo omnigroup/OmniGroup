@@ -1,4 +1,4 @@
-// Copyright 2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,8 +14,8 @@
 
 RCS_ID("$Id$");
 
-static NSString * const OUIScrollingWillBeginNotification = @"OUIScrollingWillBeginNotification";
-static NSString * const OUIScrollingDidEndNotification = @"OUIScrollingDidEndNotification";
+NSString * const OUIScrollingWillBeginNotification = @"OUIScrollingWillBeginNotification";
+NSString * const OUIScrollingDidEndNotification = @"OUIScrollingDidEndNotification";
 
 #if 0 && defined(DEBUG_curt)
     #define DEBUG_SCROLL(format, ...) NSLog(@"SCROLL: " format, ## __VA_ARGS__)

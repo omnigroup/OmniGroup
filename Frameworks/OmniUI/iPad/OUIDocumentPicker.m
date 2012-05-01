@@ -125,7 +125,7 @@ static NSString * const OpenGroupItemsBinding = @"openGroupItems";
 @property(nonatomic,copy) NSSet *openGroupItems;
 - (void)_propagateItems:(NSSet *)items toScrollView:(OUIDocumentPickerScrollView *)scrollView withCompletionHandler:(void (^)(void))completionHandler;
 - (void)_performDelayedItemPropagationWithCompletionHandler:(void (^)(void))completionHandler;
-
+- (void)_flushAfterDocumentStoreInitializationActions;
 @property(nonatomic,retain) NSMutableDictionary *openInMapCache;
 
 @end
@@ -161,6 +161,9 @@ static NSString * const OpenGroupItemsBinding = @"openGroupItems";
     UIButton *_appTitleToolbarButton;
 
     OFSDocumentStore *_documentStore;
+    
+    NSMutableArray *_afterDocumentStoreInitializationActions;
+    
     id _documentStoreUbiquityEnabledNotification;
     OFSDocumentStoreFilter *_documentStoreFilter;
     NSUInteger _ignoreDocumentsDirectoryUpdates;
@@ -282,6 +285,7 @@ static id _commonInit(OUIDocumentPicker *self)
     [_documentStoreFilter release];
     _documentStoreFilter = [[OFSDocumentStoreFilter alloc] initWithDocumentStore:_documentStore];
 
+    [self _flushAfterDocumentStoreInitializationActions];
     // Checks whether the document store has a file type for newly created documents
     [self _updateToolbarItemsAnimated:NO];
 }
@@ -809,6 +813,8 @@ static id _commonInit(OUIDocumentPicker *self)
 
 - (void)exportFileWrapperOfType:(NSString *)exportType forFileItem:(OFSDocumentStoreFileItem *)fileItem withCompletionHandler:(void (^)(NSFileWrapper *fileWrapper, NSError *error))completionHandler;
 {
+    completionHandler = [[completionHandler copy] autorelease]; // preserve scope
+    
     if ([_nonretained_delegate respondsToSelector:@selector(documentPicker:exportFileWrapperOfType:forFileItem:withCompletionHandler:)]) {
         [_nonretained_delegate documentPicker:self exportFileWrapperOfType:exportType forFileItem:fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
             if (completionHandler) {
@@ -817,6 +823,23 @@ static id _commonInit(OUIDocumentPicker *self)
         }];
         return;
     }
+    
+    if (OFISNULL(exportType)) {
+        // The 'nil' type is always first in our list of types, so we can eport the original file as is w/o going through any app specific exporter.
+        // NOTE: This is important for OO3 where the exporter has the ability to rewrite the document w/o hidden columns, in sorted order, with summary values (and eventually maybe with filtering). If we want to support untransformed exporting through the OO XML exporter, it will need to be configurable via settings on the OOXSLPlugin it uses. For now it assumes all 'exports' want all the transformations.
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
+                       ^{
+                           NSError *error = nil;
+                           NSFileWrapper *fileWrapper = [[[NSFileWrapper alloc] initWithURL:fileItem.fileURL options:0 error:&error] autorelease];
+                           
+                           if (completionHandler) {
+                               completionHandler(fileWrapper, error);
+                           }
+
+                       });
+        return;
+    }
+
     
     // If the delegate doesn't implement the new file wrapper export API, try the older NSData API
     NSData *fileData = nil;
@@ -1537,6 +1560,21 @@ static void _setSelectedDocumentsInCloud(OUIDocumentPicker *self, BOOL toCloud)
     _groupScrollView.itemSort = sort;
 }
 
+- (void)addAfterDocumentStoreInitializationAction:(void (^)(void))action;
+{
+    if (_documentStore) { // if it's already here, just run the action!
+        [[NSOperationQueue mainQueue] addOperationWithBlock:action]; // I'm not sure if this needs to be mainQueue or if I could directly call the block itself, but playing it safe for proof of concept here.
+        return;
+    }
+        
+    if (!_afterDocumentStoreInitializationActions)
+        _afterDocumentStoreInitializationActions = [[NSMutableArray alloc] init];
+    [_afterDocumentStoreInitializationActions addObject:[[action copy] autorelease]];
+    
+    // ... might be able to call it right now
+    [self _flushAfterDocumentStoreInitializationActions];
+}
+
 - (NSString *)mainToolbarTitle;
 {
     if ([_nonretained_delegate respondsToSelector:@selector(documentPickerMainToolbarTitle:)]) {
@@ -1713,7 +1751,6 @@ static void _setSelectedDocumentsInCloud(OUIDocumentPicker *self, BOOL toCloud)
     [[OUIAppController controller] dismissActionSheetAndPopover:YES];
 
     // If you Edit in an open group, the items in the background scroll view shouldn't wiggle.
-    OBFinishPortingLater("If you drag an item out of an Edit-ing group scroll view, then the main scroll view *should* start the wiggle animation");
     [self.activeScrollView setEditing:editing animated:animated];
     
     if (!editing) {
@@ -1860,8 +1897,6 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     // Actually, if you touch two view names at the same time we can get here... UIGestureRecognizer actions seem to be sent asynchronously via queued block, so other events can trickle in and cause another recognizer to fire before the first queued action has run.
     if (_renameViewController)
         return;
-
-    OBFinishPortingLater("Use the shielding view to avoid having to explicitly end editing here"); // also, if we zoom in on a preview to rename like iWork this may change
     
     if ([itemView isKindOfClass:[OUIDocumentPickerFileItemView class]]) {
         OUIDocumentPickerFileItemView *fileItemView = (OUIDocumentPickerFileItemView *)itemView;
@@ -2091,6 +2126,7 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
         
         
         UIBarButtonItem *selectionItem = [[UIBarButtonItem alloc] initWithCustomView:label];
+        [label release];
         
         [toolbarItems addObject:selectionItem];
         [selectionItem release];
@@ -2511,6 +2547,18 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
      ^{
          if ([toRemove count] > 0)
              [scrollView startRemovingItems:toRemove]; // Shrink/fade or whatever
+         
+         // If you have the Duplicate/Delete confirmation popover up, iWork seems to block incoming edits (presumably by making -relinquishPresentedItemToWriter: not call the writer until after the popover action is done) until the action is performed or cancelled. You can select a couple files, tap duplicate, delete them on another device and they won't go away (and you can actually duplicate them) on the the confirmation-alert-in-progress device until the alert is dismissed. We could probably do the same, but for now just cancelling the confirmation alert seems safer (though this is ugly and and ugly place to do it). On the other hand, the only users likely to try this work in our QA department...
+         // Added <bug:///79706> (Add a 'start blocking writers' API to the document store) to consider a real but maybe too scary fix for this.
+         for (OFSDocumentStoreItem *item in toRemove) {
+             if ([item isKindOfClass:[OFSDocumentStoreFileItem class]]) {
+                 OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)item;
+                 if (fileItem.selected) {
+                     [[OUIAppController controller] dismissActionSheetAndPopover:YES];
+                     break;
+                 }
+             }
+         }
      },
      ^{
          if ([toRemove count] > 0) {
@@ -2551,4 +2599,13 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     }
 }
 
+- (void)_flushAfterDocumentStoreInitializationActions;
+{
+    if (_documentStore) {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            for (void (^action)(void) in _afterDocumentStoreInitializationActions)
+                action();
+        }];
+    }
+}
 @end

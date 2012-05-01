@@ -741,15 +741,22 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     // The document may not exist (deletions while we were backgrounded, which don't go through -accommodatePresentedItemDeletionWithCompletionHandler:, but at any rate we can't read it.
     OUISingleDocumentAppController *controller = [OUISingleDocumentAppController controller];
     [controller closeDocumentWithAnimationType:OUIDocumentAnimationTypeDissolve completionHandler:^{
-        // UIDocument doesn't call -enableEditing on itself here.
-        if (_hasDisabledUserInteraction) {
-            _hasDisabledUserInteraction = NO;
-            [[[OUIAppController controller] mainViewController] endIgnoringInteractionEvents];
-            
-            if (completionHandler)
-                completionHandler(NO);
-        }
+        [self _cleanupAndSignalFailedRevertWithCompletionHandler:completionHandler];
     }];
+}
+
+- (void)_cleanupAndSignalFailedRevertWithCompletionHandler:(void (^)(BOOL success))completionHandler;
+{
+    OBASSERT((id)completionHandler == [[completionHandler copy] autorelease]); // should have already been promoted to the heap
+    
+    // UIDocument doesn't call -enableEditing on itself here.
+    if (_hasDisabledUserInteraction) {
+        _hasDisabledUserInteraction = NO;
+        [[[OUIAppController controller] mainViewController] endIgnoringInteractionEvents];
+    }
+    
+    if (completionHandler)
+        completionHandler(NO);
 }
 
 - (void)revertToContentsOfURL:(NSURL *)url completionHandler:(void (^)(BOOL success))completionHandler;
@@ -763,6 +770,17 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     NSError *reachableError = nil;
     if (![url checkResourceIsReachableAndReturnError:&reachableError]) {
         [self _failRevertAndCloseAndReturnToDocumentPickerWithCompletionHandler:completionHandler];
+        return;
+    }
+
+    // If we are in conflict, UIDocument is wanting us to reload the auto-nominated conflict winner. But, we decided we want to just punt back to the document picker in this case. If we start the process of reverting here (and rebuilding the view controller) and then return, the main thread will proceed to inform the OUISingleDocumentAppController. It will then start closing is (also trying to do view animation stuff). This can leave the view in a weird state, as in <bug:///79315> (Document not always fully closing when conflict sheet appears)
+    if ([self documentState] & UIDocumentStateInConflict) {
+        completionHandler = [[completionHandler copy] autorelease];
+        
+        [[OUISingleDocumentAppController controller] _closeDocumentAndStartConflictResolutionWithCompletionHandler:^{
+            // Fail the revert, as we would have done in -_failRevertAndCloseAndReturnToDocumentPickerWithCompletionHandler:.
+            [self _cleanupAndSignalFailedRevertWithCompletionHandler:completionHandler];
+        }];
         return;
     }
     

@@ -20,6 +20,8 @@ RCS_ID("$Id$")
 
 + (void)initialize;
 {
+    OBINITIALIZE;
+
     CFDictionaryRef type = UTTypeCopyDeclaration(kUTTypeRTF);
     NSLog(@"rtf = %@", type);
     if (type)
@@ -66,6 +68,11 @@ RCS_ID("$Id$")
     }
     
     return _documentToolbarItems;
+}
+
+- (NSString *)feedbackMenuTitle;
+{
+    return @"Help";
 }
 
 - (void)showInspectorFromBarButtonItem:(UIBarButtonItem *)item;

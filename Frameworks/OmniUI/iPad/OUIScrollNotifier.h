@@ -1,4 +1,4 @@
-// Copyright 2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,8 @@
  The notifier needs to implement the UIScrollViewDelegate methods that are redundantly specified in the UIScrollNotifier protocol, calling OUIPostScrollingWillBeginNotification or OUIPostScrollingDidEndNotification as necessary. OUIMinimalScrollNotifierImplementation defines, uh, a minimall implementation of OUIScrollNotifier. Use cases where a UIScrollView otherwise needs no delegate can use an instance of that.
 
  N.B., applications that manually adjust scroll views may need to post notifications from additional places. A typical example is the case where two sibling scroll views are synchronized. Suppose a scrolling gesture on the left-hand view is communicated to the right-hand view so they scroll together. A subview of the right-hand view wouldn't have registered for notifications on the left-hand view. In this case, when the controller for the right-hand view learns that its view needs to scroll, it will have to post the scroll notification.
+ 
+ At this time programmatically calling scrollRectToVisible: (and possibly other such API) does _not_ trigger the delegate callbacks, so the notifications are not effective.
 */
 
 @protocol OUIScrollNotifierDelegate;
@@ -49,3 +51,6 @@ extern void OUIPostScrollingDidEndNotification(UIScrollView *scrollView);
 - (void)ancestorScrollViewWillBeginScrolling;
 - (void)ancestorScrollViewDidEndScrolling;
 @end
+
+extern NSString *const OUIScrollingWillBeginNotification;
+extern NSString *const OUIScrollingDidEndNotification;

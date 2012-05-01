@@ -285,12 +285,10 @@ static BOOL IsPreIOS51 = NO;
         }
     }
     
-    // In case someone claims they were going to do an animated switch but then does a non-animated one. Hide this before going any captured transition images.
-    [[OUIAppController controller] hideActivityIndicator];
-
     _OUIMainViewControllerTransitionView *foregroundTransitionView = nil;
     _OUIMainViewControllerTransitionView *backgroundTransitionView = nil;
     UIImage *backgroundFromImage = nil;
+    BOOL toViewHasBackground = YES;
     
     NSTimeInterval duration = 0;
     if (animated) {
@@ -302,13 +300,18 @@ static BOOL IsPreIOS51 = NO;
         fromView.hidden = YES;
 
         // Capture the entire rest of the view hierarchy (including the toolbar and background view) for the "from" state.
-#ifdef DEBUG_bungi
-        // This will fail if viewController.view == toView, which it always does in OP-iPad when opening an existing document (The OpenDocumentAnimationZoom case in OUISingleDocumentppController). Need an || in here?
-        OBASSERT(viewController.view.hidden == NO);
-#endif
-        viewController.view.hidden = YES;
+        // There might not be a foreground/background difference in the destination, though. In this case, we need to leave the destination view hidden until the animation is complete.
+        toViewHasBackground = (viewController.view != toView);
+        
+        OBASSERT(viewController.view.hidden == NO || !toViewHasBackground);
+
+        if (toViewHasBackground)
+            viewController.view.hidden = YES;
+        
         backgroundFromImage = [mainView snapshotImage];
-        viewController.view.hidden = NO;
+        
+        if (toViewHasBackground)
+            viewController.view.hidden = NO;
 
         MAIN_VC_DEBUG(@"  sourcePreviewFrame = %@ (window: %@)", NSStringFromCGRect(sourcePreviewFrame), NSStringFromCGRect([mainView convertRect:sourcePreviewFrame toView:mainView.window]));
         MAIN_VC_DEBUG(@"  targetPreviewFrame = %@ (window: %@)", NSStringFromCGRect(targetPreviewFrame), NSStringFromCGRect([mainView convertRect:targetPreviewFrame toView:mainView.window]));

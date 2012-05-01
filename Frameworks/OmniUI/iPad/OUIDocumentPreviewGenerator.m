@@ -76,10 +76,8 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, OFSD
         if (_addFileItemIfPreviewMissing(self, fileItem, fileItem.fileURL, fileItem.date))
             continue;
         
-        OBFinishPortingLater("If a file item gains conflict versions we'll need to get called again");
         if (fileItem.hasUnresolvedConflicts) {
             // Request preview generation for the conflict versions. The conflict resolution UI might not be run, but it probably will, and it'll be nice to have them generated and ready to go.
-            OBFinishPortingLater("Also need to mark these as used when looking for unused preview files");
             for (NSFileVersion *fileVersion in [NSFileVersion unresolvedConflictVersionsOfItemAtURL:fileItem.fileURL]) {
                 if (_addFileItemIfPreviewMissing(self, fileItem, fileVersion.URL, fileVersion.modificationDate))
                     break;
@@ -255,6 +253,11 @@ static void _writePreviewsForFileVersions(OUIDocumentPreviewGenerator *self, NSM
         _fileItemToOpenAfterCurrentPreviewUpdateFinishes = nil;
         
         [_nonretained_delegate previewGenerator:self performDelayedOpenOfFileItem:fileItem];
+        return;
+    }
+    
+    if ([_nonretained_delegate previewGeneratorHasOpenDocument:self]) {
+        // We got started up, but then a document opened -- pause
         return;
     }
     

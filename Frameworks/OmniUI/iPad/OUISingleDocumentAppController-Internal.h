@@ -10,6 +10,7 @@
 #import <OmniUI/OUISingleDocumentAppController.h>
 
 @interface OUISingleDocumentAppController ()
+- (void)_closeDocumentAndStartConflictResolutionWithCompletionHandler:(void (^)(void))completionHandler;
 - (void)_startConflictResolution:(OFSDocumentStoreFileItem *)fileItem;
 - (void)_stopConflictResolutionWithCompletion:(void (^)(void))completion;
 - (void)_setupCloud:(id)sender;

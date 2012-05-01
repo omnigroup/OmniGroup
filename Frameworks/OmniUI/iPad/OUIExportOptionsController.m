@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -368,11 +368,7 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
             return;
         }
         
-        __block NSError *error = nil;
-        __block NSFileWrapper *fileWrapper;
-        
-        // Using a block here so that we can easily execute the same code no matter how we get the fileWrapper below.
-        void (^handler)(NSFileWrapper *fileWrapper, NSError *error) = ^(NSFileWrapper *fileWrapper, NSError *error) {
+        [documentPicker exportFileWrapperOfType:fileType forFileItem:fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
             // Need to make sure all of this happens on the mail thread.
             main_async(^{
                 if (fileWrapper == nil) {
@@ -382,23 +378,7 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
                     [self _foreground_exportFileWrapper:fileWrapper];
                 }
             });
-        };
-        
-        if (OFISNULL(fileType)) {
-            // The 'nil' type is always first in our list of types, so we can eport the original file as is w/o going through any app specific exporter.
-            // NOTE: This is important for OO3 where the exporter has the ability to rewrite the document w/o hidden columns, in sorted order, with summary values (and eventually maybe with filtering). If we want to support untransformed exporting through the OO XML exporter, it will need to be configurable via settings on the OOXSLPlugin it uses. For now it assumes all 'exports' want all the transformations.
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
-                           ^{
-                               fileWrapper = [[[NSFileWrapper alloc] initWithURL:fileItem.fileURL options:0 error:&error] autorelease];
-                               
-                               if (handler) {
-                                   handler(fileWrapper, error);
-                               }
-
-                           });
-        } else {
-            [documentPicker exportFileWrapperOfType:fileType forFileItem:fileItem withCompletionHandler:handler];
-        }
+        }];
     } OMNI_POOL_END;
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -134,6 +134,11 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
 
 #pragma mark -
 #pragma mark Internal
+
+- (BOOL)_hasBeenInvalidated;
+{
+    return _nonretained_documentStore == nil;
+}
 
 - (void)_invalidate;
 {

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniUI/OUIInspectorTextWell.h>
 #import "OUIParameters.h"
 
-RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/Frameworks/OmniUI/iPad/Inspectors/OUIActionInspectorSlice.m 165130 2012-04-06 19:59:29Z bungi $");
+RCS_ID("$Id$");
 
 @implementation OUIActionInspectorSlice
 
@@ -47,6 +47,7 @@ RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/
 }
 
 @synthesize shouldEditOnLoad = _shouldEditOnLoad;
+@synthesize shouldSelectAllOnLoad = _shouldSelectAllOnLoad;
 
 - (OUIInspectorTextWell *)textWell;
 {
@@ -100,6 +101,8 @@ RCS_ID("$Header: svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/OmniGroup/
     if (self.shouldEditOnLoad) {
         [[self textWell] startEditing];
         self.shouldEditOnLoad = NO;
+        if (self.shouldSelectAllOnLoad)
+            [_textWell selectAll:self];
     }
 }
 

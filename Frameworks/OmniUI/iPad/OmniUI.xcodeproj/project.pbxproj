@@ -184,7 +184,7 @@
 		346C4B481193273600BE8C49 /* OUIInspectorButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AAF1193273600BE8C49 /* OUIInspectorButton.m */; };
 		346C4B491193273600BE8C49 /* OUIInspectorWell.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AB01193273600BE8C49 /* OUIInspectorWell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B4A1193273600BE8C49 /* OUIInspectorWell.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AB11193273600BE8C49 /* OUIInspectorWell.m */; };
-		346C4B4B1193273600BE8C49 /* OUIPaletteColorPicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AB31193273600BE8C49 /* OUIPaletteColorPicker.h */; };
+		346C4B4B1193273600BE8C49 /* OUIPaletteColorPicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AB31193273600BE8C49 /* OUIPaletteColorPicker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B4C1193273600BE8C49 /* OUIPaletteColorPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AB41193273600BE8C49 /* OUIPaletteColorPicker.m */; };
 		346C4B4D1193273600BE8C49 /* OUIPaletteTheme.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AB61193273600BE8C49 /* OUIPaletteTheme.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B4E1193273600BE8C49 /* OUIPaletteTheme.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AB71193273600BE8C49 /* OUIPaletteTheme.m */; };
@@ -223,8 +223,6 @@
 		346C4B791193273600BE8C49 /* OUIEditableFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AEC1193273600BE8C49 /* OUIEditableFrame.m */; };
 		346C4B7A1193273600BE8C49 /* OUIErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AED1193273600BE8C49 /* OUIErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B7B1193273600BE8C49 /* OUIErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AEE1193273600BE8C49 /* OUIErrors.m */; };
-		346C4B7C1193273600BE8C49 /* OUIEventBlockingView.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AEF1193273600BE8C49 /* OUIEventBlockingView.h */; };
-		346C4B7D1193273600BE8C49 /* OUIEventBlockingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AF01193273600BE8C49 /* OUIEventBlockingView.m */; };
 		346C4B7E1193273600BE8C49 /* OUILoadedImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AF11193273600BE8C49 /* OUILoadedImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346C4B7F1193273600BE8C49 /* OUILoadedImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AF21193273600BE8C49 /* OUILoadedImage.m */; };
 		346C4B801193273600BE8C49 /* OUILoupeOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AF31193273600BE8C49 /* OUILoupeOverlay.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -430,6 +428,8 @@
 		34F1D215127232FA00F59E56 /* OUIFontStyle-Underline.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34F1D211127232B700F59E56 /* OUIFontStyle-Underline.png */; };
 		34F33CFD1436593600AD5F77 /* OUIDocumentConflictResolutionTableViewCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F33CFB1436593600AD5F77 /* OUIDocumentConflictResolutionTableViewCell.h */; };
 		34F33CFE1436593600AD5F77 /* OUIDocumentConflictResolutionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F33CFC1436593600AD5F77 /* OUIDocumentConflictResolutionTableViewCell.m */; };
+		34F495221549CA1100F848EE /* OUIActivityIndicator.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F495201549CA1100F848EE /* OUIActivityIndicator.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34F495231549CA1100F848EE /* OUIActivityIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F495211549CA1100F848EE /* OUIActivityIndicator.m */; };
 		34FAFD0C1343159F00A0AF06 /* OUIInspectorUpdateReason.h in Headers */ = {isa = PBXBuildFile; fileRef = 34FAFD0B1343159F00A0AF06 /* OUIInspectorUpdateReason.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34FF2F961304531300680983 /* OUIGradientView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34FF2F941304531300680983 /* OUIGradientView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34FF2F971304531300680983 /* OUIGradientView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FF2F951304531300680983 /* OUIGradientView.m */; };
@@ -1070,8 +1070,6 @@
 		346C4AEC1193273600BE8C49 /* OUIEditableFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIEditableFrame.m; sourceTree = "<group>"; };
 		346C4AED1193273600BE8C49 /* OUIErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIErrors.h; sourceTree = "<group>"; };
 		346C4AEE1193273600BE8C49 /* OUIErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIErrors.m; sourceTree = "<group>"; };
-		346C4AEF1193273600BE8C49 /* OUIEventBlockingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIEventBlockingView.h; sourceTree = "<group>"; };
-		346C4AF01193273600BE8C49 /* OUIEventBlockingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIEventBlockingView.m; sourceTree = "<group>"; };
 		346C4AF11193273600BE8C49 /* OUILoadedImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILoadedImage.h; sourceTree = "<group>"; };
 		346C4AF21193273600BE8C49 /* OUILoadedImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUILoadedImage.m; sourceTree = "<group>"; };
 		346C4AF31193273600BE8C49 /* OUILoupeOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILoupeOverlay.h; sourceTree = "<group>"; };
@@ -1239,6 +1237,8 @@
 		34F1D211127232B700F59E56 /* OUIFontStyle-Underline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Underline.png"; sourceTree = "<group>"; };
 		34F33CFB1436593600AD5F77 /* OUIDocumentConflictResolutionTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentConflictResolutionTableViewCell.h; sourceTree = "<group>"; };
 		34F33CFC1436593600AD5F77 /* OUIDocumentConflictResolutionTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentConflictResolutionTableViewCell.m; sourceTree = "<group>"; };
+		34F495201549CA1100F848EE /* OUIActivityIndicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIActivityIndicator.h; sourceTree = "<group>"; };
+		34F495211549CA1100F848EE /* OUIActivityIndicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIActivityIndicator.m; sourceTree = "<group>"; };
 		34FAFD0B1343159F00A0AF06 /* OUIInspectorUpdateReason.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorUpdateReason.h; sourceTree = "<group>"; };
 		34FF2F941304531300680983 /* OUIGradientView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIGradientView.h; sourceTree = "<group>"; };
 		34FF2F951304531300680983 /* OUIGradientView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIGradientView.m; sourceTree = "<group>"; };
@@ -1760,6 +1760,8 @@
 				008A8DE812F0AD93005C1402 /* Gesture Recognizers */,
 				23B06F791422A40A00288028 /* OUIActionSheet.h */,
 				23B06F7A1422A40A00288028 /* OUIActionSheet.m */,
+				34F495201549CA1100F848EE /* OUIActivityIndicator.h */,
+				34F495211549CA1100F848EE /* OUIActivityIndicator.m */,
 				348C484B1433CAF5002ECC50 /* OUIAlert.h */,
 				348C484C1433CAF5002ECC50 /* OUIAlert.m */,
 				34E5332612543FDE00AFA8E3 /* OUIAnimationSequence.h */,
@@ -1775,8 +1777,6 @@
 				346C4AEA1193273600BE8C49 /* OUIDrawing.m */,
 				346C4AED1193273600BE8C49 /* OUIErrors.h */,
 				346C4AEE1193273600BE8C49 /* OUIErrors.m */,
-				346C4AEF1193273600BE8C49 /* OUIEventBlockingView.h */,
-				346C4AF01193273600BE8C49 /* OUIEventBlockingView.m */,
 				34FF2F941304531300680983 /* OUIGradientView.h */,
 				34FF2F951304531300680983 /* OUIGradientView.m */,
 				4D8878E613E870A50001404E /* OUIViewController.h */,
@@ -2200,7 +2200,6 @@
 				346C4B761193273600BE8C49 /* OUIDrawing.h in Headers */,
 				346C4B781193273600BE8C49 /* OUIEditableFrame.h in Headers */,
 				346C4B7A1193273600BE8C49 /* OUIErrors.h in Headers */,
-				346C4B7C1193273600BE8C49 /* OUIEventBlockingView.h in Headers */,
 				346C4B7E1193273600BE8C49 /* OUILoadedImage.h in Headers */,
 				346C4B801193273600BE8C49 /* OUILoupeOverlay.h in Headers */,
 				346C4B821193273600BE8C49 /* OUIMenuController.h in Headers */,
@@ -2318,6 +2317,7 @@
 				34B9C14B151BA53700ECB5CD /* OUIDocumentPickerItemNameAndDateView.h in Headers */,
 				348E9C6915227FAB005C811B /* OUIDocumentConflictResolutionViewControllerDelegate.h in Headers */,
 				346E64C11523B9AA00C6C3E1 /* OUIEmptyPaddingInspectorSlice.h in Headers */,
+				34F495221549CA1100F848EE /* OUIActivityIndicator.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2435,7 +2435,6 @@
 				346C4B771193273600BE8C49 /* OUIDrawing.m in Sources */,
 				346C4B791193273600BE8C49 /* OUIEditableFrame.m in Sources */,
 				346C4B7B1193273600BE8C49 /* OUIErrors.m in Sources */,
-				346C4B7D1193273600BE8C49 /* OUIEventBlockingView.m in Sources */,
 				346C4B7F1193273600BE8C49 /* OUILoadedImage.m in Sources */,
 				346C4B811193273600BE8C49 /* OUILoupeOverlay.m in Sources */,
 				346C4B831193273600BE8C49 /* OUIMenuController.m in Sources */,
@@ -2544,6 +2543,7 @@
 				3418EEE514D36E3F00E4B2F3 /* OUIDocumentPreviewGenerator.m in Sources */,
 				34B9C14C151BA53700ECB5CD /* OUIDocumentPickerItemNameAndDateView.m in Sources */,
 				346E64C21523B9AA00C6C3E1 /* OUIEmptyPaddingInspectorSlice.m in Sources */,
+				34F495231549CA1100F848EE /* OUIActivityIndicator.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

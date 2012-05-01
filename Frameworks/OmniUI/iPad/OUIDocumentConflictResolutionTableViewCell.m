@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -166,6 +166,7 @@ RCS_ID("$Id$");
 
         CGSize previewSize = _preview.size;
         CGRect previewImageViewFrame = OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(previewImageFrame, previewSize);
+        CGFloat scale = [[UIScreen mainScreen] scale];
         
         if (_previewHasChanged && !CGSizeEqualToSize(previewImageViewFrame.size, _previewImageView.frame.size)) {
             // Build a high quality scaled image of this size, but only if we have to.
@@ -173,7 +174,12 @@ RCS_ID("$Id$");
             if (originalImage == NULL) {
                 _previewImageView.image = nil;
             } else {
-                CGImageRef scaledImage = OQCreateImageWithSize(originalImage, previewImageViewFrame.size, kCGInterpolationHigh);
+                CGSize scaledImageSize = previewImageViewFrame.size;
+                
+                scaledImageSize.width *= scale;
+                scaledImageSize.height *= scale;
+                
+                CGImageRef scaledImage = OQCreateImageWithSize(originalImage, scaledImageSize, kCGInterpolationHigh);
                 _previewImageView.image = scaledImage ? [UIImage imageWithCGImage:scaledImage] : nil;
                 CGImageRelease(scaledImage);
             }
@@ -185,6 +191,7 @@ RCS_ID("$Id$");
         previewImageLayer.shadowOffset = CGSizeMake(0, 1);
         previewImageLayer.shadowRadius = 3;
         previewImageLayer.shadowOpacity = 0.4;
+        previewImageLayer.contentsScale = scale;
         
         CGPathRef shadowPath = CGPathCreateWithRect(previewImageLayer.bounds, NULL);
         previewImageLayer.shadowPath = shadowPath;

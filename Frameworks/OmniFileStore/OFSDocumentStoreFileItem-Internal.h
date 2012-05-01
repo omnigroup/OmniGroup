@@ -17,10 +17,9 @@
 
 @interface OFSDocumentStoreFileItem (/*Internal*/)
 
-- (void)_updateUbiquitousItemWithMetadataItem:(NSMetadataItem *)metdataItem;
+- (void)_updateUbiquitousItemWithMetadataItem:(NSMetadataItem *)metadataItem modificationDate:(NSDate *)modificationDate;
 - (void)_updateLocalItemWithModificationDate:(NSDate *)modificationDate;
-- (void)_suspendFilePresenter;
-- (void)_resumeFilePresenter;
+
 @end
 
 #endif // OFS_DOCUMENT_STORE_SUPPORTED

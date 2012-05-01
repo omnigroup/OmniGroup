@@ -370,7 +370,7 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
 #endif
     
     NSMutableArray *pickedVersions = [NSMutableArray array];
-    for (NSIndexPath *indexPath in [_tableView indexPathsForSelectedRows]) {
+    for (NSIndexPath *indexPath in [[_tableView indexPathsForSelectedRows] sortedArrayUsingSelector:@selector(compare:)]) {
         NSUInteger row = indexPath.row;
         NSFileVersion *fileVersion = [_fileVersions objectAtIndex:row];
         

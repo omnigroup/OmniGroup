@@ -235,6 +235,8 @@ RCS_ID("$Id$");
     OUIDocumentPreviewView *_previewView;
     UITextField *_nameTextField;
     
+    OUIDocumentPickerFileItemView *_renamingFileItemView;
+    
     NSTimeInterval _animationDuration;
     UIViewAnimationCurve _animationCurve;
 }
@@ -277,6 +279,9 @@ RCS_ID("$Id$");
         [center removeObserver:self name:OUIMainViewControllerDidFinishResizingForKeyboard object:nil];
     }
     
+    OBASSERT(_renamingFileItemView == nil);
+    [_renamingFileItemView release];
+    
     [_picker release];
     [_fileItem release];
     
@@ -295,9 +300,12 @@ RCS_ID("$Id$");
     
     // Hide the preview view for the file item that is being renamed. The rename controller will put a view in the same spot on the screen and will animate it into place.
     OUIWithoutAnimating(^{
-        OUIDocumentPickerFileItemView *fileItemView = [_picker.activeScrollView fileItemViewForFileItem:_fileItem];
-        OBASSERT(fileItemView);
-        fileItemView.renaming = YES;
+        // Hold onto the exact view we set the flag on so that we make sure to turn it off on the exact same one. If the picker scrolls for some reason, it might assign a different item view.
+        OBASSERT(_renamingFileItemView == nil);
+        [_renamingFileItemView release];
+        _renamingFileItemView = [[_picker.activeScrollView fileItemViewForFileItem:_fileItem] retain];
+        OBASSERT(_renamingFileItemView);
+        _renamingFileItemView.renaming = YES;
     });
 
     // Get laid out in the original configuration
@@ -769,9 +777,12 @@ RCS_ID("$Id$");
     
     // Unhide the preview view we hid above
     OUIWithoutAnimating(^{
-        OUIDocumentPickerFileItemView *fileItemView = [_picker.activeScrollView fileItemViewForFileItem:_fileItem];
-        OBASSERT(fileItemView);
-        fileItemView.renaming = NO;
+        OBASSERT(_renamingFileItemView);
+        OBASSERT(_renamingFileItemView.renaming);
+        _renamingFileItemView.renaming = NO;
+        
+        [_renamingFileItemView release];
+        _renamingFileItemView = nil;
     });
     
     // We should have restored this already, but the user will be locked out if some keyboard animstion snafu prevents our layout from doing it.

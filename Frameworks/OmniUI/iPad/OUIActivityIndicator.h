@@ -7,8 +7,13 @@
 //
 // $Id$
 
-#import <OmniUI/OUIInspectorSlice.h>
+#import <OmniFoundation/OFObject.h>
 
-@interface OUIInspectorSlice ()
-- (void)fakeDidReceiveMemoryWarning;
+@interface OUIActivityIndicator : OFObject
+
++ (OUIActivityIndicator *)showActivityIndicatorInView:(UIView *)view;
++ (OUIActivityIndicator *)showActivityIndicatorInView:(UIView *)view withColor:(UIColor *)color;
+
+- (void)hide;
+
 @end

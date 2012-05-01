@@ -56,6 +56,18 @@ RCS_ID("$Id$");
     
     CGContextSaveGState(ctx);
     {
+        CGColorRef shadowColor = self.shadowColor;
+        if (shadowColor) {
+            // We assume shadowPath is just our bounds...
+            
+            CGFloat shadowRadius = self.shadowRadius;
+            CGSize shadowOffset = self.shadowOffset;
+            
+            OBASSERT(self.shadowOpacity == 1); // Not sure how CALayer would render this other than to pre-multiply it into the shadow color...
+            
+            CGContextSetShadowWithColor(ctx, shadowOffset, shadowRadius, shadowColor);
+        }
+        
         CGRect bounds = self.bounds;
         
         CGContextSetInterpolationQuality(ctx, kCGInterpolationLow);
@@ -240,9 +252,7 @@ static void _updateShouldRasterize(OUIDocumentPreviewView *self)
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(preview);
     OBPRECONDITION(!_previews || [_previews indexOfObjectIdenticalTo:preview] == NSNotFound);
-    
-    OBFinishPortingLater("Maintain the previews the sorted order that our enclosing picker is using.");
-    
+        
     if (!_previews)
         _previews = [[NSMutableArray alloc] init];
     
@@ -459,7 +469,6 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         OUIDocumentPreview *preview = [_previews lastObject];
         
         if (preview.type == OUIDocumentPreviewTypeRegular) {
-            OBFinishPortingLater("The CGImageRef will be 2x scale from what we want, possibly");
             OBASSERT(preview.image);
             return [UIImage imageWithCGImage:preview.image];
         }
@@ -572,126 +581,6 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         });
     }
 }
-
-#if 0
-- (void)drawRect:(CGRect)rect;
-{
-    if (_group) {
-        // Disabled for now since we get added to the view hierarchy and drawn once while we are hidden (during closing a document, for example), as previews are loading.
-        //OBASSERT([_previews count] >= 1); // can have a group with 1 item
-
-        // 3x3 grid of previews
-        const CGFloat kPreviewPadding = 8;
-        const NSUInteger kPreviewsPerRow = 3;
-        const NSUInteger kPreviewRows = 3;
-        
-        CGRect bounds = self.bounds;
-        CGSize previewSize = CGSizeMake((bounds.size.width - (kPreviewsPerRow + 1)*kPreviewPadding) / kPreviewsPerRow,
-                                        (bounds.size.height - (kPreviewRows + 1)*kPreviewPadding) / kPreviewRows);
-        
-        [[UIColor blackColor] set];
-        UIRectFill(bounds);
-        
-        OBFinishPortingLater("Do a gray overlay for highlighting"); // iWork highlights folders as they are opening and on long press (though long press does nothing interesting).
-        
-        NSUInteger previewCount = [_previews count];
-        for (NSUInteger row = 0; row < kPreviewRows; row++) {
-            for (NSUInteger column = 0; column < kPreviewsPerRow; column++) {
-                NSUInteger previewIndex = row * kPreviewsPerRow + column;
-                if (previewIndex >= previewCount)
-                    break;
-                
-                CGPoint pt = bounds.origin;
-                pt.x += ceil(column * previewSize.width + kPreviewPadding);
-                pt.y += ceil(row * previewSize.height + kPreviewPadding);
-                
-                OUIDocumentPreview *preview = [_previews objectAtIndex:previewIndex];
-
-                [preview drawInRect:CGRectMake(pt.x, pt.y, previewSize.width, previewSize.height)];
-            }
-        }
-    } else {
-        OBASSERT([_previews count] <= 1);
-        
-        CGRect previewRect = CGRectInset(self.bounds, 1, 1); // space for edge antialiasing
-              
-        if (_draggingSource) {
-            OBFinishPortingLater("Do empty box look");
-            
-            [[UIColor blueColor] set];
-            UIRectFill(previewRect);
-            
-        } else {
-            OUIDocumentPreview *preview = [_previews lastObject];
-            CGContextRef ctx = UIGraphicsGetCurrentContext();
-            
-            BOOL drawingShadow = NO;
-            
-            if (_selected) {
-                UIImage *image = [UIImage imageNamed:@"OUIDocumentPreviewViewSelectedBorder.png"];
-                OBASSERT(image);
-                
-                image = [image resizableImageWithCapInsets:kOUIDocumentPreviewViewBorderEdgeInsets];
-                [image drawInRect:previewRect];
-                
-                previewRect = UIEdgeInsetsInsetRect(previewRect, kOUIDocumentPreviewViewBorderEdgeInsets);
-            } else if (_draggingSource) {
-                // No shadow
-            } else {
-                // Normal preview
-                drawingShadow = YES;
-                CGContextSaveGState(ctx);
-                
-                CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
-                CGFloat shadowComponents[] = {kOUIDocumentPreviewViewNormalShadowWhiteAlpha.w, kOUIDocumentPreviewViewNormalShadowWhiteAlpha.a};
-                CGColorRef shadowColor = CGColorCreate(colorSpace, shadowComponents);
-                CGColorSpaceRelease(colorSpace);
-                
-                CGContextSetShadowWithColor(ctx, CGSizeMake(0, 1), kOUIDocumentPreviewViewNormalShadowBlur, shadowColor);
-                CGColorRelease(shadowColor);
-                
-                // Leave room for the shadow
-                previewRect = UIEdgeInsetsInsetRect(previewRect, kOUIDocumentPreviewViewNormalShadowInsets);
-            }
-            
-            BOOL isPlaceholder = (!preview || preview.type != OUIDocumentPreviewTypeRegular);
-            if (isPlaceholder) {
-                [[UIColor whiteColor] set];
-                UIRectFill(previewRect);
-                
-                // In this case the white box has the shadow and we don't want the preview to be shadowed *too*
-                if (drawingShadow) {
-                    CGContextRestoreGState(ctx);
-                    drawingShadow = NO;
-                }
-            }
-            
-            CGRect previewImageRect = previewRect;
-            if (preview && isPlaceholder)
-                previewImageRect = OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(previewRect, preview.size);
-            [preview drawInRect:previewImageRect];
-
-            if (drawingShadow) {
-                CGContextRestoreGState(ctx);
-            }
-            
-            if (_highlighted || _downloading) {
-                CGContextSaveGState(ctx);
-                                
-                CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
-                CGContextSetFillColorSpace(ctx, colorSpace);
-                CGColorSpaceRelease(colorSpace);
-
-                CGFloat highlight[] = {0, kOUIDocumentPreviewHighlightAlpha};
-                CGContextSetFillColor(ctx, highlight);
-                
-                CGContextFillRect(ctx, previewRect);
-                CGContextRestoreGState(ctx);
-            }
-        }
-    }
-}
-#endif
 
 @end
 

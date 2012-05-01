@@ -696,6 +696,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3421AE930F71F89C0096AADB /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
+				GCC_WARN_SHADOW = YES;
 			};
 			name = Debug;
 		};
@@ -703,6 +704,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3421AE940F71F89C0096AADB /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
+				GCC_WARN_SHADOW = YES;
 			};
 			name = Release;
 		};
@@ -710,6 +712,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3421AE920F71F89C0096AADB /* Omni-Global-Coverage.xcconfig */;
 			buildSettings = {
+				GCC_WARN_SHADOW = YES;
 			};
 			name = Coverage;
 		};
