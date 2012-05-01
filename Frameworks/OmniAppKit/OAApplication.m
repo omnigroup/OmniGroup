@@ -405,7 +405,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 - (id)targetForAction:(SEL)theAction to:(id)theTarget from:(id)sender;
 {
-    if (!OATargetSelection)
+    if (!theAction || !OATargetSelection)
         return [super targetForAction:theAction to:theTarget from:sender];
     
     __block id target = nil;
