@@ -1,4 +1,4 @@
-// Copyright 1997-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,7 +60,7 @@ OBPostLoader also listens for NSBecomingMultiThreaded and will invoke every impl
 /*"
 Searches the ObjC runtime for particular methods and invokes them.  Each implementation will be invoked exactly once.  Currently, there is no guarantee on the order that these messages will occur.  This should be called as the first line of main().  Once this has been called at the beginning of main, it will automatically be called each time a bundle is loaded (view the NSBundle loading notification).
 
-This method makes several passes, each time invoking a different selector.  On the first pass, +performPosing implementations are invoked, allowing modifictions to the ObjC runtime to happen early (before +initialize).  Then, +didLoad implementations are processed.
+This method makes several passes, each time invoking a different selector.  On the first pass, +performPosing implementations are invoked, allowing modifications to the ObjC runtime to happen early (before +initialize).  Then, +didLoad implementations are processed.
 "*/
 + (void)processClasses;
 {
