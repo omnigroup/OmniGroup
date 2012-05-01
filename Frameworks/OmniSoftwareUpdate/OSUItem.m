@@ -18,17 +18,18 @@
 
 RCS_ID("$Id$");
 
-#if 0 && defined(DEBUG)
-    #define DEBUG_FLAGS(format, ...) NSLog((format), ## __VA_ARGS__)
+#ifdef DEBUG
+    #define ITEM_DEBUG(...) do{ if(OSUItemDebug) NSLog(__VA_ARGS__); }while(0)
 #else
-    #define DEBUG_FLAGS(format, ...) do {} while(0)
+    #define ITEM_DEBUG(...) do{  }while(0)
 #endif
 
 NSString * const OSUItemAvailableBinding = @"available";
 NSString * const OSUItemSupersededBinding = @"superseded";
 NSString * const OSUItemIgnoredBinding = @"ignored";
+NSString * const OSUItemOldStableBinding = @"oldStable";
 
-static BOOL OSUItemDebug = NO;
+__private_extern__ BOOL OSUItemDebug = NO;
 
 static NSArray *_requireNodes(NSXMLElement *base, NSString *namespace, NSString *tag, NSError **outError)
 {
@@ -147,7 +148,7 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
     NSUInteger itemIndex, itemCount = [items count];
     for (itemIndex = 0; itemIndex < itemCount; itemIndex++) {
         OSUItem *item = [items objectAtIndex:itemIndex];
-        DEBUG_FLAGS(@"Item %@:", [item shortDescription]);
+        ITEM_DEBUG(@"Item %@:", [item shortDescription]);
         
         unsigned int peerIndex;
         for (peerIndex = 0; peerIndex < itemCount; peerIndex++) {
@@ -157,16 +158,16 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
                 continue;
             
             if ([peer available] && [peer supersedesItem:item]) {
-                DEBUG_FLAGS(@"\t...is superseded by %@", [peer shortDescription]);
+                ITEM_DEBUG(@"\t...is superseded by %@", [peer shortDescription]);
                 [item setSuperseded:YES];
                 break;
             } else {
-                DEBUG_FLAGS(@"\t...is not superseded by %@", [peer shortDescription]);
+                // ITEM_DEBUG(@"\t...is not superseded by %@", [peer shortDescription]);
             }
         }
         
         if (![item superseded])
-            DEBUG_FLAGS(@"Item %@ is not superseded by any other item", [item shortDescription]);
+            ITEM_DEBUG(@"\tis not superseded by any other item");
     }
 }
 
@@ -179,12 +180,13 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
     return predicate;
 }
 
+/* This predicate selects items that are worth popping up a panel for. We include some items in the panel that aren't interesting enough to show the panel for, such as ignored items or downgrade-to-previous-stable-release items, and this predicate filters those out. Those items may still be of interest to the user if they explicitly ask for an update check, for example, but won't bring up an unsolicited dialog. */
 + (NSPredicate *)availableAndNotSupersededOrIgnoredPredicate;
 {
     static NSPredicate *predicate = nil;
     
     if (!predicate)
-        predicate = [[NSPredicate predicateWithFormat:@"%K = YES AND %K = NO AND %K = NO", OSUItemAvailableBinding, OSUItemSupersededBinding, OSUItemIgnoredBinding] retain];
+        predicate = [[NSPredicate predicateWithFormat:@"%K = YES AND %K = NO AND %K = NO AND %K = NO", OSUItemAvailableBinding, OSUItemSupersededBinding, OSUItemIgnoredBinding, OSUItemOldStableBinding] retain];
     return predicate;
 }
 
@@ -313,7 +315,7 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
         if (!bestEnclosureNode) {
             NSString *description = NSLocalizedStringFromTableInBundle(@"No suitable enclosure found.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - RSS feed does not have an enclosure that we can use");
             if (OSUItemDebug)
-                NSLog(@"Ignoring item without any suiteable enclosures:\n%@", element);
+                NSLog(@"Ignoring item without any suitable enclosures:\n%@", element);
             OSUError(outError, OSUUnableToParseSoftwareUpdateItem, description, nil);
             return nil;
         }
@@ -391,7 +393,7 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
 + (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)aKey
 {
     if ([aKey isEqualToString:@"displayFont"] || [aKey isEqualToString:@"displayColor"])
-        return [NSSet setWithObjects:OSUItemIgnoredBinding, OSUItemAvailableBinding, nil];
+        return [NSSet setWithObjects:OSUItemIgnoredBinding, OSUItemAvailableBinding, OSUItemOldStableBinding, nil];
     else
         return [super keyPathsForValuesAffectingValueForKey:aKey];
 }
@@ -413,7 +415,7 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
 
 - (NSFont *)displayFont
 {
-    if (_ignored || !_available)
+    if (_ignored || !_available || _olderStable)
         return ignoredFont;
     else
         return itemFont;
@@ -511,9 +513,9 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
     BOOL available = [_minimumSystemVersion compareToVersionNumber:systemVersion] != NSOrderedDescending;
 
     if (available)
-        DEBUG_FLAGS(@"Item %@ is available on %@", [self shortDescription], [systemVersion cleanVersionString]);
+        ITEM_DEBUG(@"Item %@ is available on %@", [self shortDescription], [systemVersion cleanVersionString]);
     else
-        DEBUG_FLAGS(@"Item %@ is not available on %@", [self shortDescription], [systemVersion cleanVersionString]);
+        ITEM_DEBUG(@"Item %@ is not available on %@", [self shortDescription], [systemVersion cleanVersionString]);
     
     [self setAvailable:available];
 }
@@ -522,15 +524,23 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
 
 - (BOOL)supersedesItem:(OSUItem *)peer;
 {
-    // One item supersedes another if it's not on a less stable software update track, has same major marketing version (so their license applies equally to both) and same minimum OS version (so it runs on the same systems) and the peer has an older version number.
+    // This item supersedes 'peer' if this item is not on a less stable software update track, has same major marketing version (so their license applies equally to both) and the peer has an older version number.
     
-    if ([[self class] compareTrack:[self track] toTrack:[peer track]] == OSUTrackLessStable ||
-        ([_marketingVersion componentAtIndex:0] != [[peer marketingVersion] componentAtIndex:0]) ||
-        ([_minimumSystemVersion compareToVersionNumber:[peer minimumSystemVersion]] != NSOrderedSame))
+    if ([[self class] compareTrack:[self track] toTrack:[peer track]] == OSUTrackLessStable) {
+        /* We can't supersede a release that we are less stable than. */
         return NO;
+    }
     
+    if ([_marketingVersion componentAtIndex:0] != [[peer marketingVersion] componentAtIndex:0]) {
+        /* We only supersede releases of the same major version. */
+        return NO;
+    }
+    
+    /* Otherwise, newer releases supersede older releases. */
     return ([_buildVersion compareToVersionNumber:[peer buildVersion]] == NSOrderedDescending);
 }
+
+@synthesize isOldStable = _olderStable;
 
 - (NSString *)verifyFile:(NSString *)path
 {
@@ -622,6 +632,10 @@ static void loadFallbackTrackInfoIfNeeded()
     }
 }
 
+/*
+ Describes aTrack w.r.t othertrack:
+ returns, e.g., OSUTrackLessStable if aTrack is less stable than otherTrack.
+ */
 + (enum OSUTrackComparison)compareTrack:(NSString *)aTrack toTrack:(NSString *)otherTrack;
 {
     OBASSERT(aTrack != nil);

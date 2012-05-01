@@ -283,7 +283,7 @@ RCS_ID("$Id$");
     NSArray *nonIgnoredItems = [_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededOrIgnoredPredicate]];
     if ([nonIgnoredItems count] == 1) {
         OSUItem *theItem = [nonIgnoredItems objectAtIndex:0];
-        if ([theItem isFree] && [theItem available] && ![theItem superseded])
+        if ([theItem isFree])
             initialSelection = nonIgnoredItems;
     }
     if (initialSelection || bringingOnscreen) {
@@ -570,7 +570,6 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     if (tableView == _itemTableView && [[tableColumn identifier] isEqualToString:@"price"]) {
         OSUItem *rowItem = [[_availableItemController arrangedObjects] objectAtIndex:row];
         NSDictionary *attributes = [rowItem priceAttributesForStyle:[cell backgroundStyle]];
-        NSLog(@"attrs = %@", attributes);
         NSColor *fgColor = [attributes objectForKey:NSForegroundColorAttributeName];
         if (fgColor)
             [cell setTextColor:fgColor];

@@ -28,6 +28,8 @@ enum OSUTrackComparison {
 
 #define OSUTrackInformationChangedNotification (@"OSUTrackInfoChanged")
 
+__private_extern__ BOOL OSUItemDebug;
+
 @interface OSUItem : OFObject
 {
     OFVersionNumber *_buildVersion;
@@ -53,6 +55,8 @@ enum OSUTrackComparison {
     BOOL _superseded;
     // Ignored: Has the user chosen not to see this item (or the track it's on)?
     BOOL _ignored;
+    // OldStable: Is this older than the current version, but more stable than it?
+    BOOL _olderStable;
 }
 
 + (void)setSupersededFlagForItems:(NSArray *)items;
@@ -92,6 +96,7 @@ enum OSUTrackComparison {
 @property (readonly,nonatomic) BOOL isIgnored;
 @property (readwrite,nonatomic) BOOL superseded;
 - (BOOL)supersedesItem:(OSUItem *)peer;
+@property (readwrite,nonatomic) BOOL isOldStable;
 
 - (NSString *)verifyFile:(NSString *)local;
 
