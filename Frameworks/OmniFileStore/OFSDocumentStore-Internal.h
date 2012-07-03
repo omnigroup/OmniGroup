@@ -8,8 +8,10 @@
 // $Id$
 
 #import <OmniFileStore/OFSDocumentStore.h>
+#import <OmniFileStore/OFSFeatures.h>
 
 @interface OFSDocumentStore ()
 - (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date didMoveToURL:(NSURL *)newURL;
 - (void)_fileItem:(OFSDocumentStoreFileItem *)fileItem didGainVersion:(NSFileVersion *)fileVersion;
+- (void)_fileItemFinishedDownloading:(OFSDocumentStoreFileItem *)fileItem;
 @end

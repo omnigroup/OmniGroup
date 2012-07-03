@@ -23,7 +23,10 @@ RCS_ID("$Id$");
 #endif
 
 #if 0 && defined(DEBUG)
-#define LOG_RENDER_IN_CONTEXT_TIME
+    #define LOG_DRAW_IN_CONTEXT_TIME
+#endif
+#if 0 && defined(DEBUG)
+    #define LOG_RENDER_IN_CONTEXT_TIME
 #endif
 
 #if 0 && defined(DEBUG)
@@ -186,6 +189,18 @@ static void replacement_renderInContext(CALayer *self, SEL _cmd, CGContextRef ct
 }
 #endif
 
+#if defined(LOG_DRAW_IN_CONTEXT_TIME)
+static void (*original_drawInContext)(CALayer *self, SEL _cmd, CGContextRef ctx) = NULL;
+static void replacement_drawInContext(CALayer *self, SEL _cmd, CGContextRef ctx)
+{
+    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
+    original_drawInContext(self, _cmd, ctx);
+    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
+    
+    NSLog(@"%@=%@ drawInContext:%p delegate:%@ %f", self.name, [self shortDescription], ctx, [[self delegate] shortDescription], end - start);
+}
+#endif
+
 // No OBPostLoader on our iPhone OS builds, so splitting this out.
 static void OQEnableAnimationLogging(void) __attribute__((constructor));
 static void OQEnableAnimationLogging(void)
@@ -207,7 +222,17 @@ static void OQEnableRenderInContextLogging(void)
 #endif
 }
 
-#if defined(OQ_ANIMATION_LOGGING_ENABLED) || defined(LOG_CONTENT_FILLING) || defined(LOG_RENDER_IN_CONTEXT_TIME) || defined(OMNI_ASSERTIONS_ON)
+static void OQEnableDrawInContextLogging(void) __attribute__((constructor));
+static void OQEnableDrawInContextLogging(void)
+{
+#if defined(LOG_DRAW_IN_CONTEXT_TIME)
+    if (original_drawInContext)
+        return;
+    original_drawInContext = (typeof(original_drawInContext))OBReplaceMethodImplementation([CALayer class], @selector(drawInContext:), (IMP)replacement_drawInContext);
+#endif
+}
+
+#if defined(OQ_ANIMATION_LOGGING_ENABLED) || defined(LOG_CONTENT_FILLING) || defined(LOG_DRAW_IN_CONTEXT_TIME) || defined(LOG_RENDER_IN_CONTEXT_TIME) || defined(OMNI_ASSERTIONS_ON)
 + (void)performPosing;
 {
 #if defined(OMNI_ASSERTIONS_ON)
@@ -227,6 +252,9 @@ static void OQEnableRenderInContextLogging(void)
 #endif
 #if defined(LOG_CONTENT_FILLING)
     original_drawInContext = (typeof(original_drawInContext))OBReplaceMethodImplementation(self, @selector(drawInContext:), (IMP)replacement_drawInContext);
+#endif
+#if defined(LOG_DRAW_IN_CONTEXT_TIME)
+    OQEnableDrawInContextLogging();
 #endif
 #if defined(LOG_RENDER_IN_CONTEXT_TIME)
     OQEnableRenderInContextLogging();
@@ -261,6 +289,15 @@ static void OQEnableRenderInContextLogging(void)
         if ([sublayer.name isEqualToString:name])
             return sublayer;
     return nil;
+}
+
+- (NSArray *)sublayersNamed:(NSString *)name;
+{
+    NSMutableArray *layers = [NSMutableArray array];
+    for (CALayer *sublayer in self.sublayers)
+        if ([sublayer.name isEqualToString:name])
+            [layers addObject:sublayer];
+    return layers;
 }
 
 #if 0

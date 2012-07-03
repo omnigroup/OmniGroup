@@ -12,6 +12,7 @@
 // This is not included in OmniBase.h since system.h shouldn't be used except when covering OS specific behaviour
 #import <OmniBase/system.h>
 #import <OmniBase/assertions.h>
+#import <OmniFoundation/NSFileManager-OFExtensions.h>
 #import <OmniFoundation/OFVersionNumber.h>
 
 RCS_ID("$Id$")
@@ -38,49 +39,55 @@ static NSString *_replacement_hostName(NSProcessInfo *self, SEL _cmd)
     return [NSNumber numberWithInt:getpid()];
 }
 
-static BOOL _isCurrentProcessSandboxed(void)
-{
-    if (![OFVersionNumber isOperatingSystemLionOrLater])
-        return NO;
-
-    // Test for sandbox entitlement
-    const BOOL uncertainResult = YES; // If we can't tell, then we will assume we're sandboxed
-    SecCodeRef applicationCode = NULL;
-    SecCodeCopySelf(kSecCSDefaultFlags, &applicationCode);
-    OBASSERT(applicationCode != NULL);
-    if (applicationCode == NULL)
-        return uncertainResult;
-
-    SecRequirementRef sandboxRequirement = NULL;
-    SecRequirementCreateWithString(CFSTR("entitlement[\"com.apple.security.app-sandbox\"] exists"), kSecCSDefaultFlags, &sandboxRequirement);
-    OBASSERT(sandboxRequirement != NULL);
-    if (sandboxRequirement == NULL)
-        return uncertainResult;
-
-    OSStatus sandboxStatus = SecCodeCheckValidity(applicationCode, kSecCSDefaultFlags, sandboxRequirement);
-    switch (sandboxStatus) {
-        case errSecSuccess:
-            return YES;
-        case errSecCSUnsigned: // We're unsigned
-        case errSecCSReqFailed: // Our signature doesn't have the sandbox requirement
-            return NO;
-        default:
-            OBASSERT_NOT_REACHED("_isCurrentProcessSandboxed() encountered an unexpected return code from SecCodeCheckValidity()");
-#ifdef DEBUG
-            NSLog(@"_isCurrentProcessSandboxed() should explicitly handle the %"PRI_OSStatus" return code from SecCodeCheckValidity()", sandboxStatus);
-#endif
-            return uncertainResult;
-    }
-}
-
 - (BOOL)isSandboxed;
 {
+    // N.B. Using the method in our NSFileManager extensions could possibly return a different answer than using the SecCodeCopySelf that was previously here, but we likely don't care about those cases.
     static BOOL isSandboxed;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        isSandboxed = _isCurrentProcessSandboxed();
+        NSError *error = nil;
+        NSURL *applicationURL = [[NSBundle mainBundle] bundleURL];
+        if (![[NSFileManager defaultManager] getSandboxed:&isSandboxed forApplicationAtURL:applicationURL error:&error]) {
+            NSLog(@"Error determining if current process is sandboxed (assuming YES): %@", error);
+            isSandboxed = YES;
+        }
     });
     return isSandboxed;
 }
+
+- (NSDictionary *)codeSigningInfoDictionary;
+{
+    static NSDictionary *codeSigningInfoDictionary = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        NSError *error = nil;
+        NSDictionary *dict = [[NSBundle mainBundle] codeSigningInfoDictionary:&error];
+        if (dict == nil) {
+            NSLog(@"Error retrieving code signing information for current process: %@", error);
+        } else {
+            codeSigningInfoDictionary = [dict copy];
+        }
+    });
+
+    return codeSigningInfoDictionary;
+}
+
+- (NSDictionary *)codeSigningEntitlements;
+{
+    static NSDictionary *codeSigningEntitlements = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        NSError *error = nil;
+        NSDictionary *dict = [[NSBundle mainBundle] codeSigningEntitlements:&error];
+        if (dict == nil) {
+            NSLog(@"Error retrieving code signing information for current process: %@", error);
+        } else {
+            codeSigningEntitlements = [dict copy];
+        }
+    });
+    
+    return codeSigningEntitlements;
+}
+
 
 @end

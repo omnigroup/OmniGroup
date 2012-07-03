@@ -24,6 +24,11 @@ RCS_ID("$Id$");
     return OUIInspectorTextWellStyleDefault;
 }
 
++ (OUIInspectorWellBackgroundType)textWellBackgroundType;
+{
+    return OUIInspectorWellBackgroundTypeButton;
+}
+
 + (UIControlEvents)textWellControlEvents;
 {
     // Return UIControlEventValueChanged for an editable field.
@@ -34,7 +39,6 @@ RCS_ID("$Id$");
 - initWithTitle:(NSString *)title action:(SEL)action;
 {
     OBPRECONDITION(title);
-    OBPRECONDITION(action);
     
     if (!(self = [super initWithNibName:nil bundle:nil]))
         return nil;
@@ -72,12 +76,14 @@ RCS_ID("$Id$");
     
     _textWell = [[[[self class] textWellClass] alloc] initWithFrame:textWellFrame];
     _textWell.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    _textWell.rounded = YES;
+    _textWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
     
-    [_textWell addTarget:self action:_action forControlEvents:UIControlEventTouchUpInside|UIControlEventValueChanged];
+    if (_action)
+        [_textWell addTarget:self action:_action forControlEvents:[[self class] textWellControlEvents]];
     
     OUIInspectorTextWellStyle style = [[self class] textWellStyle];
     _textWell.style = style;
+    _textWell.backgroundType = [[self class] textWellBackgroundType];
     
     if (style == OUIInspectorTextWellStyleSeparateLabelAndText)
         _textWell.label = self.title;
@@ -102,7 +108,7 @@ RCS_ID("$Id$");
         [[self textWell] startEditing];
         self.shouldEditOnLoad = NO;
         if (self.shouldSelectAllOnLoad)
-            [_textWell selectAll:self];
+            [_textWell selectAll:self showingMenu:NO];
     }
 }
 

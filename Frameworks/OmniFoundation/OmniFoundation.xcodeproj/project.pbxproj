@@ -42,6 +42,8 @@
 		341714FE0F783BB20062895C /* OFXMLReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 341714EE0F78399C0062895C /* OFXMLReaderTests.m */; };
 		341897940B7C01650032C5FA /* NSSetCommand-OFFixes.h in Headers */ = {isa = PBXBuildFile; fileRef = 341897920B7C01650032C5FA /* NSSetCommand-OFFixes.h */; };
 		341897950B7C01650032C5FA /* NSSetCommand-OFFixes.m in Sources */ = {isa = PBXBuildFile; fileRef = 341897930B7C01650032C5FA /* NSSetCommand-OFFixes.m */; };
+		341DDD1015631D10004DDB5A /* OmniFoundation.defaults in Resources */ = {isa = PBXBuildFile; fileRef = 341DDD0F15631D10004DDB5A /* OmniFoundation.defaults */; };
+		341DDD1315631ED0004DDB5A /* OmniFoundation.defaults in Copy Resources */ = {isa = PBXBuildFile; fileRef = 341DDD0F15631D10004DDB5A /* OmniFoundation.defaults */; };
 		341F551D0F72F08100632558 /* OFXMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 341F551B0F72F08100632558 /* OFXMLParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		341F551E0F72F08100632558 /* OFXMLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 341F551C0F72F08100632558 /* OFXMLParser.m */; };
 		342535AE128CBB7A009EFAC0 /* OFGeometryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 342535A9128CB9AD009EFAC0 /* OFGeometryTests.m */; };
@@ -814,6 +816,20 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		341DDD1215631EBB004DDB5A /* Copy Resources */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "Resources/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				341DDD1315631ED0004DDB5A /* OmniFoundation.defaults in Copy Resources */,
+			);
+			name = "Copy Resources";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		00E51C5FFE8AAEA611C9CC38 /* OFBundledClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBundledClass.m; sourceTree = "<group>"; };
 		00E51C60FE8AAEA611C9CC38 /* OFBundleRegistry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBundleRegistry.m; sourceTree = "<group>"; };
@@ -1058,6 +1074,7 @@
 		3418438D050D0C770097A113 /* OFXMLCursorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLCursorTests.m; sourceTree = "<group>"; };
 		341897920B7C01650032C5FA /* NSSetCommand-OFFixes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSSetCommand-OFFixes.h"; sourceTree = "<group>"; };
 		341897930B7C01650032C5FA /* NSSetCommand-OFFixes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSSetCommand-OFFixes.m"; sourceTree = "<group>"; };
+		341DDD0F15631D10004DDB5A /* OmniFoundation.defaults */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = OmniFoundation.defaults; sourceTree = "<group>"; };
 		341F551B0F72F08100632558 /* OFXMLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLParser.h; sourceTree = "<group>"; };
 		341F551C0F72F08100632558 /* OFXMLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLParser.m; sourceTree = "<group>"; };
 		342535A9128CB9AD009EFAC0 /* OFGeometryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFGeometryTests.m; sourceTree = "<group>"; };
@@ -2347,6 +2364,7 @@
 				344D0A891190DB4700264D89 /* OFErrors.m */,
 				A28C00260E25A52700832A54 /* OmniFoundation_Prefix.h */,
 				BF0E642806309CBE0097A147 /* Info.plist */,
+				341DDD0F15631D10004DDB5A /* OmniFoundation.defaults */,
 				16ACF158FFC40A50C697A14E /* OmniFoundation.strings */,
 				34920C7B0D58D2A0001CBD3D /* DateProcessing.strings */,
 				34A1594705641CC70097A113 /* OmniFoundation.order */,
@@ -2862,6 +2880,7 @@
 			buildConfigurationList = 344D08D21190D48A00264D89 /* Build configuration list for PBXNativeTarget "OmniFoundationTouch" */;
 			buildPhases = (
 				344D08B61190D47300264D89 /* Headers */,
+				341DDD1215631EBB004DDB5A /* Copy Resources */,
 				344D08B71190D47300264D89 /* Sources */,
 				344D08B81190D47300264D89 /* Frameworks */,
 				3444F47F11921ABF0003AD7F /* Build Strings */,
@@ -3055,6 +3074,7 @@
 				4A4E06AA08AA72B10098FF0F /* EnglishToISO.strings in Resources */,
 				34920C7D0D58D2A0001CBD3D /* DateProcessing.strings in Resources */,
 				345886331035C727006E712F /* SFMT-LICENSE.txt in Resources */,
+				341DDD1015631D10004DDB5A /* OmniFoundation.defaults in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

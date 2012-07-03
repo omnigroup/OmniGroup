@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -261,9 +261,10 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
     [super viewDidLoad];
 
     _fontFamilyTextWell.style = OUIInspectorTextWellStyleSeparateLabelAndText;
+    _fontFamilyTextWell.backgroundType = OUIInspectorWellBackgroundTypeButton;
     _fontFamilyTextWell.label = NSLocalizedStringFromTableInBundle(@"Font", @"OUIInspectors", OMNI_BUNDLE, @"Title for the font family list in the inspector");
     _fontFamilyTextWell.labelFont = [[_fontFamilyTextWell class] defaultLabelFont];
-    _fontFamilyTextWell.rounded = YES;
+    _fontFamilyTextWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
     
     [_fontFamilyTextWell setNavigationTarget:self action:@selector(_showFontFamilies:)];
     

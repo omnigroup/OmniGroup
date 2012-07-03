@@ -39,6 +39,7 @@
 + (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 
 @property(readonly) UIBarButtonItem *appMenuBarItem;
+@property(readonly) OUIMenuController *appMenuController;
 
 @property(nonatomic,retain) IBOutlet OUIDocumentPicker *documentPicker;
 
@@ -91,6 +92,7 @@
 - (void)showOnlineHelp:(id)sender;
 - (void)sendFeedback:(id)sender;
 - (void)showReleaseNotes:(id)sender;
+- (void)restoreSampleDocuments:(id)sender;
 - (void)runTests:(id)sender;
 @end
 

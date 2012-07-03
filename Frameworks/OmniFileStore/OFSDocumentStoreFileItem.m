@@ -103,12 +103,14 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     // Keep track of edits that have happened while we have relinquished for a writer. These can be randomly ordered in bad ways (for example, we can be told of a 'did change' right before a 'delete'). Radar 10879451.
     struct {
         unsigned relinquishToWriter:1;
+        unsigned invalidateAfterWriter:1;
         unsigned deleted:1;
         unsigned changed:1;
         
         unsigned moved:1;
         NSURL *originalURL; // nil or the old fileURL if we are being moved
         NSDate *originalDate; // likewise, for the date.
+        
     } _edits;
 }
 
@@ -132,6 +134,11 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 + (NSString *)editingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 {
     return [[[fileURL path] lastPathComponent] stringByDeletingPathExtension];
+}
+
++ (NSString *)exportingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
+{
+    return [self displayNameForFileURL:fileURL fileType:fileType];
 }
 
 - initWithDocumentStore:(OFSDocumentStore *)documentStore fileURL:(NSURL *)fileURL date:(NSDate *)date;
@@ -267,6 +274,13 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     return [[self class] editingNameForFileURL:_displayedFileURL fileType:self.fileType];
 }
 
+- (NSString *)exportingName;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+
+    return [[self class] exportingNameForFileURL:_displayedFileURL fileType:self.fileType];
+}
+
 + (NSSet *)keyPathsForValuesAffectingName;
 {
     return [NSSet setWithObjects:OFSDocumentStoreFileItemDisplayedFileURLBinding, nil];
@@ -316,7 +330,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     
     // If all else is equal, compare URLs (maybe different extensions?).  (If those are equal, so are the items!)
     return [[_displayedFileURL absoluteString] compare:[otherItem->_displayedFileURL absoluteString]];
- }
+}
 
 #pragma mark -
 #pragma mark OFSDocumentStoreItem subclass
@@ -398,6 +412,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 // Writer notifications can come in random/bad order (for example a 'did change' when the file has really already been deleted and we are about to get an 'accomodate').
 - (void)relinquishPresentedItemToWriter:(void (^)(void (^reacquirer)(void)))writer;
 {
+    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
     OBPRECONDITION(_edits.relinquishToWriter == NO);
     
     DEBUG_FILE_ITEM(@"-relinquishPresentedItemToWriter:");
@@ -433,11 +448,18 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
                 }
             }
         }
+        
+        if (_edits.invalidateAfterWriter) {
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [self _invalidate];
+            }];
+        }
     });
 }
 
 - (void)accommodatePresentedItemDeletionWithCompletionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 {
+    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
     OBPRECONDITION(_edits.relinquishToWriter == YES);
     OBPRECONDITION(_edits.deleted == NO);
 
@@ -451,6 +473,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 
 - (void)presentedItemDidMoveToURL:(NSURL *)newURL;
 {
+    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
     OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
     OBPRECONDITION(newURL);
     OBPRECONDITION([newURL isFileURL]);
@@ -487,6 +510,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 // This gets called for local coordinated writes and for unsolicited incoming edits from iCloud. From the header, "Your NSFileProvider may be sent this message without being sent -relinquishPresentedItemToWriter: first. Make your application do the best it can in that case."
 - (void)presentedItemDidChange;
 {
+    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
     OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
 
     DEBUG_FILE_ITEM(@"presentedItemDidChange");
@@ -500,6 +524,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 
 - (void)presentedItemDidGainVersion:(NSFileVersion *)version;
 {
+    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
     OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
 
     DEBUG_VERSIONS(@"%@ gained version %@", [self.fileURL absoluteString], version);
@@ -511,6 +536,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 
 - (void)presentedItemDidLoseVersion:(NSFileVersion *)version;
 {
+    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
     OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
 
     DEBUG_VERSIONS(@"%@ lost version %@", [self.fileURL absoluteString], version);
@@ -518,6 +544,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 
 - (void)presentedItemDidResolveConflictVersion:(NSFileVersion *)version;
 {
+    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
     OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
 
     DEBUG_VERSIONS(@"%@ did resolve conflict version %@", [self.fileURL absoluteString], version);
@@ -617,6 +644,8 @@ static void _postFinishedDownloadingIfNeeded(OFSDocumentStoreFileItem *self, BOO
         // The file type and modification date stored in this file item may not have changed (since undownloaded file items know those). So, -_queueContentsChanged may end up posting no notification. Rather than forcing it to do so in this case, we have a specific notification for a download finishing.
         NSDictionary *userInfo = [NSDictionary dictionaryWithObject:self forKey:OFSDocumentStoreFileItemInfoKey];
         [[NSNotificationCenter defaultCenter] postNotificationName:OFSDocumentStoreFileItemFinishedDownloadingNotification object:self.documentStore userInfo:userInfo];
+        
+        [self.documentStore _fileItemFinishedDownloading:self];
     }
 }
 
@@ -695,6 +724,21 @@ static void _postFinishedDownloadingIfNeeded(OFSDocumentStoreFileItem *self, BOO
     UPDATE_LOCAL_PERCENT(_percentDownloaded, PercentDownloaded);
     
     _postFinishedDownloadingIfNeeded(self, wasDownloaded);
+}
+
+- (void)_invalidateAfterWriter;
+{
+    // The _edits.relinquishToWriter is maintained on this queue, so dispatch before we check it.
+    [_presentedItemOperationQueue addOperationWithBlock:^{
+        if (_edits.relinquishToWriter) {
+            OBASSERT(_edits.invalidateAfterWriter == NO);
+            _edits.invalidateAfterWriter = YES;
+        } else {
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [self _invalidate];
+            }];
+        }
+    }];
 }
 
 #pragma mark -

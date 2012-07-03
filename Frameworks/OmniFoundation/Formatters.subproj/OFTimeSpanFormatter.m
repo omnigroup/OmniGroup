@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,10 +34,6 @@ typedef struct {
 } OFTimeSpanUnit;
 
 @implementation OFTimeSpanFormatter
-
-enum {
-    UNITS_YEARS, UNITS_MONTHS, UNITS_WEEKS, UNITS_DAYS, UNITS_HOURS, UNITS_MINUTES, UNITS_SECONDS, UNITS_COUNT
-};
 
 static OFTimeSpanUnit timeSpanUnits[UNITS_COUNT];
 
@@ -123,6 +119,21 @@ static OFTimeSpanUnit timeSpanUnits[UNITS_COUNT];
     timeSpanUnits[UNITS_SECONDS].spanSetImplementation = (SETFLOAT_IMP)[OFTimeSpan instanceMethodForSelector:@selector(setSeconds:)];    
     timeSpanUnits[UNITS_SECONDS].formatterMultiplierImplementation = NULL;    
     timeSpanUnits[UNITS_SECONDS].fixedMultiplier = 1.0f;    
+}
+
++ (NSString *)localizedPluralStringForUnits:(OFTimeSpanFormatterUnit)unit;
+{
+    return timeSpanUnits[unit].localizedPluralString;
+}
+
++ (NSString *)localizedSingularStringForUnits:(OFTimeSpanFormatterUnit)unit;
+{
+    return timeSpanUnits[unit].localizedSingularString;
+}
+
++ (NSString *)localizedAbbreviationStringForUnits:(OFTimeSpanFormatterUnit)unit;
+{
+    return timeSpanUnits[unit].localizedAbbreviatedString;
 }
 
 - init;

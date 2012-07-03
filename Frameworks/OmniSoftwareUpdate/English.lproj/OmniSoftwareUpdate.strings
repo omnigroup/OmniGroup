@@ -52,6 +52,9 @@
 /* status description */
 "Decompressing\\U2026" = "Decompressing…";
 
+/* software update item - if an item is presented as a downgrade option, use this to format its displayed title - placeholder is normal title */
+"Downgrade: %@" = "Downgrade: %@";
+
 /* error title */
 "Download failed" = "Download failed";
 
@@ -108,6 +111,12 @@
 
 /* details panel string - accumulated number of hours the program has been running */
 "Hours Run" = "Hours Run";
+
+/* detail message of new versions available dialog: appended when it is possible to downgrade to an older version */
+"If you wish, you can downgrade to an older, but possibly more stable, version." = "If you wish, you can downgrade to an older, but possibly more stable, version.";
+
+/* detail message of new versions available dialog, with [link] to preference pane */
+"If you're not ready to update now, you can use the [Update preference pane] to check for updates later or adjust the frequency of automatic checking." = "If you're not ready to update now, you can use the [Update preference pane] to check for updates later or adjust the frequency of automatic checking.";
 
 /* button title to allow user to stop being notified of releases on a particular track (eg, 'rc', 'beta', 'sneakypeek') - used in stability downgrade warning pane */
 "Ignore \\U201C%@\\U201D Releases" = "Ignore “%@” Releases";
@@ -236,7 +245,7 @@
 /* error reason - we downloaded an update, but there's something obviously wrong with the updated application, like it doesn't have an Info.plist or whatever */
 "The updated application is invalid (%@)" = "The updated application is invalid (%@)";
 
-/* title of new versions available dialog, when multiple updates are available - text is name of application */
+/* title of new versions available dialog, when more than one update is available - text is name of application */
 "There are %2$d updates available for %1$@." = "There are %2$d updates available for %1$@.";
 
 /* title of new versions available dialog, when one update is available - text is name of application */
@@ -259,6 +268,9 @@
 
 /* error description - we have some update information but it doesn't look authentic */
 "Unable to authenticate the response from the software update server." = "Unable to authenticate the response from the software update server.";
+
+/* title of new versions available dialog, when check failed */
+"Unable to check for updates." = "Unable to check for updates.";
 
 /* error message - unable to download URL to LOCALFILENAME - will often be followed by more detailed explanation */
 "Unable to download %@ to %@." = "Unable to download %1$@ to %2$@.";
@@ -302,11 +314,11 @@
 /* Download status */
 "Verifying file\\U2026" = "Verifying file…";
 
-/* message of no updates are available dialog */
-"You are currently running %@." = "You are currently running %@.";
+/* detail message of new versions available dialog. placeholder is application version number. further text may be appended */
+"You are currently running %@, which is the newest version." = "You are currently running %@, which is the newest version.";
 
-/* message of new versions available dialog */
-"You are currently running %@.  If you're not ready to update now, you can use the [Update preference pane] to check for updates later or adjust the frequency of automatic checking." = "You are currently running %@.  If you're not ready to update now, you can use the [Update preference pane] to check for updates later or adjust the frequency of automatic checking.";
+/* detail message of new versions available dialog. placeholder is application version number. further text may be appended */
+"You are currently running %@." = "You are currently running %@.";
 
 /* error recovery suggestion - when we notice that we won't be able to unpack the update to the specified location - we offer to let the user choose another install location */
 "You may be able to install in a different location." = "You may be able to install in a different location.";

@@ -25,7 +25,14 @@
 
 static inline OFBindingPoint *OFBindingPointMake(id object, NSString *keyPath)
 {
-    return [[[OFBindingPoint alloc] initWithObject:object keyPath:keyPath] autorelease];
+    OFBindingPoint *bindingPoint = [[OFBindingPoint alloc] initWithObject:object keyPath:keyPath];
+#if defined(__has_feature) && __has_feature(objc_arc)
+    return bindingPoint;
+#else
+    return [bindingPoint autorelease];
+#endif
 }
+
+#define OFBindingKeyPath(object, keyPath) OFBindingPointMake(object, (NO && object.keyPath ? @#keyPath : @#keyPath))
 
 extern BOOL OFBindingPointsEqual(OFBindingPoint *a, OFBindingPoint *b);

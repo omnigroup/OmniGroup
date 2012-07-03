@@ -41,7 +41,6 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 
 - (id)replacement_initWithContentsOfFile:(NSString *)fileName;
 {
-    OBPRECONDITION(fileName != nil);
     self = original_initWithContentsOfFile(self, _cmd, fileName);
 
     if (self == nil) {

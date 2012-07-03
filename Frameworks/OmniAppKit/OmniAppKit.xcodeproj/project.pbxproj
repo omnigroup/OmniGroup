@@ -54,6 +54,8 @@
 		3451254E12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */; };
 		345E74250C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 345E74230C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		345E74260C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */; };
+		346A98A215903B0F00CA3359 /* NSAnimationContext-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 346A98A015903B0F00CA3359 /* NSAnimationContext-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		346A98A315903B0F00CA3359 /* NSAnimationContext-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 346A98A115903B0F00CA3359 /* NSAnimationContext-OAExtensions.m */; };
 		346DB94B0D74BDAD00CA37DE /* ExceptionHandling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */; };
 		3473992311947194002DF726 /* OAParagraphStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473992111947194002DF726 /* OAParagraphStyle.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3473992411947194002DF726 /* OAParagraphStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 3473992211947194002DF726 /* OAParagraphStyle.m */; };
@@ -707,6 +709,8 @@
 		345E74230C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASendFeedbackErrorRecovery.h; sourceTree = "<group>"; };
 		345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASendFeedbackErrorRecovery.m; sourceTree = "<group>"; };
 		346A548A0551B08600C03EF8 /* OAUnitTests_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAUnitTests_Prefix.h; sourceTree = "<group>"; };
+		346A98A015903B0F00CA3359 /* NSAnimationContext-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAnimationContext-OAExtensions.h"; sourceTree = "<group>"; };
+		346A98A115903B0F00CA3359 /* NSAnimationContext-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAnimationContext-OAExtensions.m"; sourceTree = "<group>"; };
 		346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExceptionHandling.framework; path = /System/Library/Frameworks/ExceptionHandling.framework; sourceTree = "<absolute>"; };
 		3473992111947194002DF726 /* OAParagraphStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAParagraphStyle.h; sourceTree = "<group>"; };
 		3473992211947194002DF726 /* OAParagraphStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAParagraphStyle.m; sourceTree = "<group>"; };
@@ -1094,6 +1098,7 @@
 			children = (
 				3FDA4149020973770297A14E /* Foundation */,
 				34A201260FF0454B00B699DB /* NSAlert */,
+				346A989E15903AF100CA3359 /* NSAnimationContext */,
 				66D9C71F029F51A90097A138 /* NSAppleScript */,
 				3FDA4143020972AA0297A14E /* NSApplication */,
 				3F411EA0036D27010297A14E /* NSBezierPath */,
@@ -1281,6 +1286,15 @@
 				3457306405D011B00097A113 /* OAPatternColorPicker.nib */,
 			);
 			name = NSColor;
+			sourceTree = "<group>";
+		};
+		346A989E15903AF100CA3359 /* NSAnimationContext */ = {
+			isa = PBXGroup;
+			children = (
+				346A98A015903B0F00CA3359 /* NSAnimationContext-OAExtensions.h */,
+				346A98A115903B0F00CA3359 /* NSAnimationContext-OAExtensions.m */,
+			);
+			name = NSAnimationContext;
 			sourceTree = "<group>";
 		};
 		349F65E40EBBA2B300AB6E36 /* NSResponder */ = {
@@ -2416,6 +2430,7 @@
 				34275D1D13981621003F28F5 /* OAFeatures.h in Headers */,
 				2730CF3B144E205B007C3A99 /* OADocument.h in Headers */,
 				271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */,
+				346A98A215903B0F00CA3359 /* NSAnimationContext-OAExtensions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2951,6 +2966,7 @@
 				2730CF3C144E205B007C3A99 /* OADocument.m in Sources */,
 				5FD7F19D14CA0ABF009FECB7 /* NSNib-OAExtensions.m in Sources */,
 				271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */,
+				346A98A315903B0F00CA3359 /* NSAnimationContext-OAExtensions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

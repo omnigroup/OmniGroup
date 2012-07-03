@@ -123,6 +123,7 @@ static BOOL IsPreIOS51 = NO;
     CGFloat _lastKeyboardHeight;
     UIViewController *_innerViewController;
     BOOL _resizesToAvoidKeyboard;
+    BOOL _ignoringInteractionWhileAnimatingToAvoidKeyboard; // We ignore events at the application level while resizing to avoid the keyboard
     
     // Flags for iOS 5.0 bugs
     BOOL _keyboardVisible;
@@ -568,11 +569,28 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIMainViewController 
             DEBUG_KEYBOARD("keyboard not controlling animation");
         }
 
+        // Ignore all events while the keyboard animation is going on so that double-taps on editable fields that will be covered by the keyboard don't hit a key on the second tap.
+        // We can't just use our method since that only ignores events w/in our view, since that doesn't cover the keyboard. Also, the keyboard is immediately in place after the 'will' as far as hit testing goes, so the second tap can actually hit it before it is done animating to that spot.
+        OBASSERT(_ignoringInteractionWhileAnimatingToAvoidKeyboard == NO);
+        if (_ignoringInteractionWhileAnimatingToAvoidKeyboard == NO) {
+            DEBUG_KEYBOARD("disabling interaction during keyboard animation");
+            _ignoringInteractionWhileAnimatingToAvoidKeyboard = YES;
+            [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+        }
+        
         void (^completionHandler)(BOOL finished) = nil;
         if (isDid && !keyboardControllingAnimation) {
             // The UIKit keyboard won't be animating for us and we're starting an animation in the 'did' but sending OUIMainViewControllerDidBeginResizingForKeyboard. Wait for *our* animation to finish and send the OUIMainViewControllerDidFinishResizingForKeyboard.
             DEBUG_KEYBOARD("will post did-finish");
             completionHandler = ^(BOOL finished){
+                
+                OBASSERT(_ignoringInteractionWhileAnimatingToAvoidKeyboard == YES);
+                if (_ignoringInteractionWhileAnimatingToAvoidKeyboard) {
+                    DEBUG_KEYBOARD("enabling interaction after keyboard animation");
+                    _ignoringInteractionWhileAnimatingToAvoidKeyboard = NO;
+                    [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+                }
+                
                 DEBUG_KEYBOARD("posting did-finish");
                 _postResize(self, OUIMainViewControllerDidFinishResizingForKeyboard, userInfo);
             };
@@ -612,6 +630,13 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIMainViewController 
     if ([self _handleKeyboardFrameChange:note isDid:YES]) {
         // Animation started from the did -- it will send the OUIMainViewControllerDidFinishResizingForKeyboard
     } else {
+        OBASSERT(_ignoringInteractionWhileAnimatingToAvoidKeyboard == YES);
+        if (_ignoringInteractionWhileAnimatingToAvoidKeyboard) {
+            DEBUG_KEYBOARD("enabling interaction after keyboard animation");
+            _ignoringInteractionWhileAnimatingToAvoidKeyboard = NO;
+            [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+        }
+
         // Otherwise they keyboard was driving the animation and it has finished, so we should do it now.
         NSDictionary *userInfo = [note userInfo];
         _postResize(self, OUIMainViewControllerDidFinishResizingForKeyboard, userInfo);

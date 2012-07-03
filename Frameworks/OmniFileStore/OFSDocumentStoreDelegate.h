@@ -39,6 +39,10 @@
 
 - (void)documentStore:(OFSDocumentStore *)store fileItem:(OFSDocumentStoreFileItem *)fileItem didGainVersion:(NSFileVersion *)fileVersion;
 
+#if OFS_AUTOMATICALLY_DOWNLOAD_SMALL_UBIQUITOUS_FILE_ITEMS
+- (OFSDocumentStoreFileItem *)documentStore:(OFSDocumentStore *)store preferredFileItemForNextAutomaticDownload:(NSSet *)fileItems;
+#endif
+
 @end
 
 #endif // OFS_DOCUMENT_STORE_SUPPORTED

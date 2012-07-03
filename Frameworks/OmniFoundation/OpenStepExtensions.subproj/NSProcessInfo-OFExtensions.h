@@ -19,4 +19,11 @@
 - (BOOL)isSandboxed;
     // Indicates whether the current process is sandboxed.
 
+- (NSDictionary *)codeSigningInfoDictionary;
+    // Various pieces of information extraced from the code signature for this bundle.
+    // See Security/SecCode.h for the dictionary keys
+
+- (NSDictionary *)codeSigningEntitlements;
+    // The code sign entitlements for this process
+
 @end

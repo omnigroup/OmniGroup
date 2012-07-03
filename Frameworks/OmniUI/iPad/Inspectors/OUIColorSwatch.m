@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,15 +7,19 @@
 
 #import "OUIColorSwatch.h"
 
+#import <OmniUI/OUIInspectorWell.h>
 #import <OmniQuartz/OQColor.h>
 #import <OmniQuartz/OQDrawing.h>
+
+#import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
 @implementation OUIColorSwatch
-
-static UIImage *SwatchFrame = nil;
-static UIImage *SelectedArrow = nil;
+{
+    OQColor *_color;
+    BOOL _showNavigationArrow;
+}
 
 static UIImage *_navigationArrowImage(void)
 {
@@ -38,36 +42,33 @@ static UIImage *_nilColorImage(void)
     return image;
 }
 
-+ (void)initialize;
+static UIImage *_selectedImage(void)
 {
-    OBINITIALIZE;
-    
-    SwatchFrame = [[[UIImage imageNamed:@"OUIColorSwatchFrame.png"] stretchableImageWithLeftCapWidth:6 topCapHeight:5] retain];
-    OBASSERT(SwatchFrame);
-        
-    SelectedArrow = [[UIImage imageNamed:@"OUIColorInspectorSelected.png"] retain];
-    OBASSERT(SelectedArrow);
+    UIImage *image = [UIImage imageNamed:@"OUIColorInspectorSelected.png"];
+    OBASSERT(image);
+    return image;
+}
+
+static UIImage *_colorPickerImage(void)
+{
+    UIImage *image = [UIImage imageNamed:@"OUIColorPickerSwatch.png"];
+    OBASSERT(image);
+    return image;
 }
 
 + (CGSize)swatchSize;
 {
-    return [SwatchFrame size];
+    // Hacky: kOUIInspectorWellHeight includes 1 for the highlight on the bottom. Add code to superclass to deal with this?
+    // TODO: This used to have the top edge of the border 1px off the edge of the pre-computed frame. Still need that?
+    return CGSizeMake(kOUIInspectorWellHeight - 1, kOUIInspectorWellHeight);
 }
 
 // Caller expected to set up the target/action on this.
-+ (UIButton *)navigateToColorPickerButton;
++ (OUIColorSwatch *)navigateToColorPickerSwatch;
 {
-    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-    button.opaque = NO;
-    button.showsTouchWhenHighlighted = YES;
-    
-    UIImage *backgroundImage = [UIImage imageNamed:@"OUIColorPickerSwatch.png"];
-    OBASSERT(backgroundImage);
-    [button setBackgroundImage:backgroundImage forState:UIControlStateNormal];
-    
-    [button setImage:_navigationArrowImage() forState:UIControlStateNormal];
-    
-    return button;
+    OUIColorSwatch *swatch = [[[self alloc] initWithFrame:CGRectZero] autorelease];
+    swatch.showNavigationArrow = YES;
+    return swatch;
 }
 
 static id _commonInit(OUIColorSwatch *self)
@@ -114,12 +115,12 @@ static id _commonInit(OUIColorSwatch *self)
 
 @synthesize color = _color;
 
-@synthesize singleSwatch = _singleSwatch;
-- (void)setSingleSwatch:(BOOL)singleSwatch;
+@synthesize showNavigationArrow = _showNavigationArrow;
+- (void)setShowNavigationArrow:(BOOL)showNavigationArrow;
 {
-    if (_singleSwatch == singleSwatch)
+    if (_showNavigationArrow == showNavigationArrow)
         return;
-    _singleSwatch = singleSwatch;
+    _showNavigationArrow = showNavigationArrow;
     [self setNeedsDisplay];
 }
 
@@ -133,57 +134,47 @@ static id _commonInit(OUIColorSwatch *self)
 
 - (CGSize)sizeThatFits:(CGSize)size;
 {
-    return [SwatchFrame size];
-}
-
-static void _appendSwatchPath(CGContextRef ctx, CGRect bounds)
-{
-    OQAppendRoundedRect(ctx, CGRectInset(bounds, 1, 2), 4);
-}
-
-static void _drawSwatchImage(CGContextRef ctx, CGRect bounds, UIImage *image)
-{
-    CGContextSaveGState(ctx);
-    {
-        _appendSwatchPath(ctx, bounds);
-        CGContextClip(ctx);
-        [image drawInRect:bounds];
-    }
-    CGContextRestoreGState(ctx);
+    return [[self class] swatchSize];
 }
 
 - (void)drawRect:(CGRect)rect;
 {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
-    CGRect bounds = self.bounds;
-    
-    if (_color) {
-        if ([_color alphaComponent] < 1.0) {
-            _drawSwatchImage(ctx, bounds, _translucentBackgroundImage());
+    OUIInspectorWellDraw(ctx, self.bounds,
+                         OUIInspectorWellCornerTypeSmallRadius, OUIInspectorWellBorderTypeDark, YES/*innerShadow*/,
+                         ^(CGRect interiorRect){
+        if (_color) {
+            if ([_color alphaComponent] < 1.0) {
+                CGContextSetInterpolationQuality(ctx, kCGInterpolationNone); // Don't blur the edges between the checkers if this does happen to get stretched.
+                [_translucentBackgroundImage() drawInRect:interiorRect];
+            }
+            
+            [_color.toColor set];
+            CGContextFillRect(ctx, interiorRect);
+        } else if (_showNavigationArrow) {
+            [_colorPickerImage() drawInRect:interiorRect];
+        } else {
+            [_nilColorImage() drawInRect:interiorRect];
         }
-
-        [_color.toColor set];
-        _appendSwatchPath(ctx, bounds);
-        CGContextFillPath(ctx);
-        [SwatchFrame drawInRect:bounds];
-    } else {
-        _drawSwatchImage(ctx, bounds, _nilColorImage());
-        [SwatchFrame drawInRect:bounds];
-    }
-    
-    if (self.selected && !_singleSwatch) {
-        OQFlipVerticallyInRect(ctx, bounds);
-        OQDrawImageCenteredInRect(ctx, SelectedArrow, bounds);
-    }
-
-    if (_singleSwatch) {
-        // Hard coded to match the navigation arrow in OUIInspectorTextWells.
-        CGFloat inset = 32;
         
-        CGRect swatchRect, dummy;
-        CGRectDivide(bounds, &swatchRect, &dummy, inset, CGRectMaxXEdge);
-        OQDrawImageCenteredInRect(ctx, _navigationArrowImage(), swatchRect);
-    }
+        if (self.selected && !_showNavigationArrow) {
+            OQFlipVerticallyInRect(ctx, interiorRect);
+            OQDrawImageCenteredInRect(ctx, _selectedImage(), interiorRect);
+        }
+        
+        if (_showNavigationArrow) {
+            CGRect swatchRect = interiorRect;
+            
+            // If we are "wide", then stick the navigation error on the right edge, matching the navigation arrow in OUIInspectorTextWells.
+            if (interiorRect.size.width - interiorRect.size.height > 4) {
+                CGFloat inset = 32;
+                CGRect dummy;
+                CGRectDivide(interiorRect, &swatchRect, &dummy, inset, CGRectMaxXEdge);
+            }
+            
+            OQDrawImageCenteredInRect(ctx, _navigationArrowImage(), swatchRect);
+        }
+    });
 }
 
 @end

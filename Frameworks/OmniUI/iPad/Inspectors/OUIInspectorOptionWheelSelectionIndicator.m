@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,21 +71,10 @@ static const CGFloat kIndicatorSize = 20;
 
     CGContextSaveGState(ctx);
     {
-        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
-
-        CGFloat shadowComponents[] = {kOUIInspectorWellInnerShadowWhiteAlpha.w, kOUIInspectorWellInnerShadowWhiteAlpha.a};
-        CGColorRef shadowColor = CGColorCreate(colorSpace, shadowComponents);
-        
-        CGFloat strokeComponents[] = {kOUIInspectorWellInnerShadowWhiteAlpha.w, kOUIInspectorWellInnerShadowWhiteAlpha.a};
-        CGColorRef strokeColor = CGColorCreate(colorSpace, strokeComponents);
-        
-        CGColorSpaceRelease(colorSpace);
+        CGColorRef shadowColor = [OQMakeUIColor(kOUIInspectorWellInnerShadowColor) CGColor];
         
         CGContextSetShadowWithColor(ctx, CGSizeMake(0, 1), kOUIInspectorWellInnerShadowBlur, shadowColor);
-        CGColorRelease(shadowColor);
-        
-        CGContextSetStrokeColorWithColor(ctx, strokeColor);
-        CGColorRelease(strokeColor);
+        CGContextSetStrokeColorWithColor(ctx, shadowColor);
 
         CGContextMoveToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
         CGContextAddLineToPoint(ctx, CGRectGetMidX(bounds), CGRectGetMaxY(bounds) - kOUIInspectorWellInnerShadowBlur - 0.5);

@@ -352,6 +352,7 @@ local int ziplocal_getByte(pzlib_filefunc_def,filestream,pi)
     }
     else
     {
+        *pi = 0; // Workaround for spurious garbage value warnings in unzlocal_getShort() and unzlocal_getLong() when building with clang-sa <http://llvm.org/bugs/show_bug.cgi?id=12801>
         if (ZERROR(*pzlib_filefunc_def,filestream))
             return ZIP_ERRNO;
         else
@@ -610,6 +611,7 @@ extern zipFile ZEXPORT zipOpen2 (pathname, append, globalcomment, pzlib_filefunc
 
         if (err!=ZIP_OK)
         {
+            TRYFREE(zi);
             ZCLOSE(ziinit.z_filefunc, ziinit.filestream);
             return NULL;
         }

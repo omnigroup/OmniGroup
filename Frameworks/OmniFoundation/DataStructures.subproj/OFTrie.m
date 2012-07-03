@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -200,7 +200,7 @@ RCS_ID("$Id$")
 	    }
 	    while (*ptr) {
 		if (*ptr != *lowerPtr && *ptr != *upperPtr)
-		    return nil;
+                    goto freeBufferAndReturnNil;
 		lowerPtr++, upperPtr++, ptr++;
 	    }
 	    if (useMalloc)
@@ -208,6 +208,8 @@ RCS_ID("$Id$")
 	    return *lowerPtr ? nil : test;
 	}
     }
+
+freeBufferAndReturnNil:
     if (useMalloc)
 	free(buffer);
     return nil;

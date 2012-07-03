@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -100,7 +100,7 @@ static NSURL *_url(NSString *str)
             return NO;
         
         for (OFSFileInfo *fileInfo in fileInfos)
-            _log(@"%@ %ld %@\n", [fileInfo isDirectory] ? @"dir" : @"file", [fileInfo size], [fileInfo name]);
+            _log(@"%@ %lld %@ (eTag:%@)\n", fileInfo.isDirectory ? @"dir" : @"file", fileInfo.size, fileInfo.name, fileInfo.eTag);
     }
     
     return YES;
@@ -180,6 +180,29 @@ static NSURL *_url(NSString *str)
     return YES;
 }
 
+- (BOOL)command_mv:(NSArray *)arguments error:(NSError **)outError;
+{
+    if ([arguments count] != 2) {
+        OFSToolError(outError, BadCommand, @"Bad command", @"Need source and destination URLs.");
+        return NO;
+    }
+    
+    NSURL *sourceURL = _url([arguments objectAtIndex:0]);
+    NSURL *destinationURL = _url([arguments objectAtIndex:1]);
+    
+    
+    OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:sourceURL error:outError] autorelease];
+    if (!fileManager)
+        return NO;
+    
+    if (![fileManager moveURL:sourceURL toURL:destinationURL error:outError]) {
+        NSLog(@"Unable to move %@ to %@", sourceURL, destinationURL);
+        return NO;
+    }
+    
+    return YES;
+}
+
 #pragma mark -
 #pragma mark OFSFileManagerAsynchronousOperationTarget
 
@@ -213,7 +236,16 @@ static NSURL *_url(NSString *str)
     if ([challenge previousFailureCount] == 0) {
         NSURLCredential *credentials = [[NSURLCredentialStorage sharedCredentialStorage] defaultCredentialForProtectionSpace:protectionSpace];
         if (!credentials) {
-            NSLog(@"No credentials found in keychain!");
+            NSLog(@"No credentials found in keychain for protection");
+            NSLog(@"  realm:%@", protectionSpace.realm);
+            NSLog(@"  receivesCredentialSecurely:%d", protectionSpace.receivesCredentialSecurely);
+            NSLog(@"  isProxy:%d", protectionSpace.isProxy);
+            NSLog(@"  host:%@", protectionSpace.host);
+            NSLog(@"  port:%ld", protectionSpace.port);
+            NSLog(@"  proxyType:%@", protectionSpace.proxyType);
+            NSLog(@"  protocol:%@", protectionSpace.protocol);
+            NSLog(@"  authenticationMethod:%@", protectionSpace.authenticationMethod);
+            NSLog(@"  distinguishedNames:%@", protectionSpace.distinguishedNames);
         }
         return credentials;
     }

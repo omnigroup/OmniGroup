@@ -86,6 +86,7 @@ static inline void writeCharacter(CompileStatus *compile, unichar character)
         if (!compile->wroteArgument) {
             NSUInteger length = (compile->stringPtr - compile->stringPtrBase);
             OBASSERT(length <= UINT32_MAX);
+            OBASSERT_NOTNULL(compile->writePtr);
             compile->writePtr->string = (uint32_t)length;
             compile->writePtr++;
             compile->wroteArgument = YES;
@@ -729,6 +730,8 @@ static inline BOOL unicodeSubstring(unichar *substring, unichar *string)
     ExpressionOpCode operator = OpStartOfLine; // arbitrary non End op
     ExpressionState *next, *state = program;
     NSMutableString *result = [NSMutableString string];
+    
+    OBASSERT_NOTNULL(program);
     
     while (operator != OpEnd) {
         [result appendFormat:@"%2td:%@", state - program, [self descriptionOfState:state]];

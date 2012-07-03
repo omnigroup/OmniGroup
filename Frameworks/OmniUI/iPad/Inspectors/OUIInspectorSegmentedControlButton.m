@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,47 +21,57 @@ RCS_ID("$Id$");
 @end
 
 @implementation OUIInspectorSegmentedControlButton
+{
+    OUIInspectorSegmentedControlButtonPosition _buttonPosition;
+    UIImage *_image;
+    id _representedObject;
+    BOOL _dark;
+}
 
 typedef struct {
-    UIImage *normal;
-    UIImage *selected;
-} ImageInfo;
+    NSString *normal;
+    NSString *selected;
+} ImageNames;
 
-static ImageInfo BackgroundImages[3]; // One for each of OUIInspectorSegmentedControlButtonPosition
-static ImageInfo DarkBackgroundImages[3];
+static const ImageNames BackgroundImageNames[] = {
+    [OUIInspectorSegmentedControlButtonPositionLeft] = {@"OUISegmentLeftEndNormal.png", @"OUISegmentLeftEndSelected.png"},
+    [OUIInspectorSegmentedControlButtonPositionRight] = {@"OUISegmentRightEndNormal.png", @"OUISegmentRightEndSelected.png"},
+    [OUIInspectorSegmentedControlButtonPositionCenter] = {@"OUISegmentMiddleNormal.png", @"OUISegmentMiddleSelected.png"},
+};
 
-static UIImage *_loadImage(NSString *imageName)
+static const ImageNames DarkBackgroundImageNames[] = {
+    [OUIInspectorSegmentedControlButtonPositionLeft] = {@"OUIDarkSegmentLeftEndNormal.png", @"OUIDarkSegmentLeftEndSelected.png"},
+    [OUIInspectorSegmentedControlButtonPositionRight] = {@"OUIDarkSegmentRightEndNormal.png", @"OUIDarkSegmentRightEndSelected.png"},
+    [OUIInspectorSegmentedControlButtonPositionCenter] = {@"OUIDarkSegmentMiddleNormal.png", @"OUIDarkSegmentMiddleSelected.png"},
+};
+
+static UIImage *_loadImage(NSString *imageName, OUIInspectorSegmentedControlButtonPosition position)
 {
     UIImage *image = [UIImage imageNamed:imageName];
     OBASSERT(image);
     
-    // These images should all be stretchable. The caps have to be the same width. The one uncapped px is used for stretching.
-    const CGFloat capWidth = 6;
-    OBASSERT(image.size.width == capWidth * 2 + 1);
+    // These images are all even width. The amount of end-cap stretching needs to be based on whether this is left or right (the center images work either way).
     
-    return [image stretchableImageWithLeftCapWidth:capWidth topCapHeight:0];
-}
+    OBASSERT(image.size.width == 20);
+    OBASSERT(image.size.height == kOUIInspectorWellHeight);
 
-static void _loadImages(ImageInfo *info, NSString *normalName, NSString *selectedName)
-{
-    info->normal = [_loadImage(normalName) retain];
-    OBASSERT(info->normal);
-    
-    info->selected = [_loadImage(selectedName) retain];
-    OBASSERT(info->selected);
-}
+    // There are still some dark images that are not 20 wide
+    // This code can go away when they are fixed
+    if (image.size.width == 13) {
+        UIEdgeInsets edgeInsets = (UIEdgeInsets){.left = 6, .right = 6};
+        return [image resizableImageWithCapInsets:edgeInsets];
+    }
 
-+ (void)initialize;
-{
-    OBINITIALIZE;
+    const CGFloat roundCapWidth = 12;
+    const CGFloat flatCapWidth = 7;
     
-    _loadImages(&BackgroundImages[OUIInspectorSegmentedControlButtonPositionLeft], @"OUISegmentLeftEndNormal.png", @"OUISegmentLeftEndSelected.png");
-    _loadImages(&BackgroundImages[OUIInspectorSegmentedControlButtonPositionRight], @"OUISegmentRightEndNormal.png", @"OUISegmentRightEndSelected.png");
-    _loadImages(&BackgroundImages[OUIInspectorSegmentedControlButtonPositionCenter], @"OUISegmentMiddleNormal.png", @"OUISegmentMiddleSelected.png");
+    UIEdgeInsets edgeInsets;
+    if (position == OUIInspectorSegmentedControlButtonPositionLeft)
+        edgeInsets = (UIEdgeInsets){.left = roundCapWidth, .right = flatCapWidth};
+    else
+        edgeInsets = (UIEdgeInsets){.left = flatCapWidth, .right = roundCapWidth};
     
-    _loadImages(&DarkBackgroundImages[OUIInspectorSegmentedControlButtonPositionLeft], @"OUIDarkSegmentLeftEndNormal.png", @"OUIDarkSegmentLeftEndSelected.png");
-    _loadImages(&DarkBackgroundImages[OUIInspectorSegmentedControlButtonPositionRight], @"OUIDarkSegmentRightEndNormal.png", @"OUIDarkSegmentRightEndSelected.png");
-    _loadImages(&DarkBackgroundImages[OUIInspectorSegmentedControlButtonPositionCenter], @"OUIDarkSegmentMiddleNormal.png", @"OUIDarkSegmentMiddleSelected.png");
+    return [image resizableImageWithCapInsets:edgeInsets];
 }
 
 static id _commonInit(OUIInspectorSegmentedControlButton *self)
@@ -150,9 +160,9 @@ static id _commonInit(OUIInspectorSegmentedControlButton *self)
     if (buttonPosition >= _OUIInspectorSegmentedControlButtonPositionCount)
         buttonPosition = OUIInspectorSegmentedControlButtonPositionCenter;
     
-    ImageInfo *backgroundImages = (_dark) ? &DarkBackgroundImages[buttonPosition] : &BackgroundImages[buttonPosition];
-    [self setBackgroundImage:backgroundImages->normal forState:UIControlStateNormal];
-    [self setBackgroundImage:backgroundImages->selected forState:UIControlStateSelected];
+    const ImageNames *backgroundImageNames = (_dark) ? &DarkBackgroundImageNames[buttonPosition] : &BackgroundImageNames[buttonPosition];
+    [self setBackgroundImage:_loadImage(backgroundImageNames->normal, buttonPosition) forState:UIControlStateNormal];
+    [self setBackgroundImage:_loadImage(backgroundImageNames->selected, buttonPosition) forState:UIControlStateSelected];
 }
 
 @end

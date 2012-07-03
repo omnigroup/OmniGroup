@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -116,6 +116,10 @@ RCS_ID("$Id$")
 	    [self presentModalViewController:controller animated:YES];
 	    [controller release];
             return NO; // Don't load this in the WebView
+	} else if ([scheme isEqualToString:@"x-safari"]) { // Hand off x-safari URLs to the OS
+            NSURL *safariURL = [NSURL URLWithString:[[request URL] resourceSpecifier]];
+            if (safariURL != nil && [[UIApplication sharedApplication] openURL:safariURL])
+                return NO; // Don't load this in the WebView
         } else {
             if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:nil handleOpenURL:[request URL]])
                 return NO; // Don't load this in the WebView

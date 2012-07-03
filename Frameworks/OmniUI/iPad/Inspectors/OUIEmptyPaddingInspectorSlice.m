@@ -29,7 +29,7 @@ RCS_ID("$Id$")
 
 #pragma mark - OUIInspectorSlice subclass
 
-- (CGFloat)minimumHeight;
+- (CGFloat)minimumHeightForWidth:(CGFloat)width;
 {
     return 0;
 }

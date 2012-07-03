@@ -21,9 +21,3 @@
 }
 
 @end
-
-#if OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT
-extern id <NSObject> OFCopyObject(OFObject *object, unsigned extraBytes, NSZone *zone);
-#else
-#define OFCopyObject NSCopyObject
-#endif

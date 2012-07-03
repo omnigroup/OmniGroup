@@ -40,6 +40,8 @@ typedef enum {
 
 - (void)documentDidDisableEnditing:(OUIDocument *)document; // Incoming iCloud edit on an open document
 
+- (void)updateTitleBarButtonItemSizeUsingInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+
 // Returns the width the _documentTitleTextField should be set to while editing.
 // If overridden in sub-class, don't call super.
 - (CGFloat)titleTextFieldWidthForOrientation:(UIInterfaceOrientation)orientation;

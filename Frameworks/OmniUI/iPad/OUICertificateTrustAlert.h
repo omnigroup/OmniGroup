@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,16 +11,20 @@
 
 @class OUICertificateTrustAlert;
 
-@protocol OUICertificateTrustAlertDelegate
-- (void)certificateTrustAlert:(OUICertificateTrustAlert *)alert didDismissWithButtonIndex:(NSInteger)buttonIndex challenge:(NSURLAuthenticationChallenge *)challenge;
-@end
-
 @interface OUICertificateTrustAlert : OFObject <UIAlertViewDelegate> {
 @private
-    id <OUICertificateTrustAlertDelegate> _nonretained_delegate;
     NSURLAuthenticationChallenge *_challenge;
+    BOOL _shouldOfferTrustAlwaysOption;
+    void (^_cancelBlock)(void);
+    void (^_trustBlock)(BOOL trustAlways);
 }
-- initWithDelegate:(id <OUICertificateTrustAlertDelegate>)delegate forChallenge:(NSURLAuthenticationChallenge *)challenge;
+
+- (id)initForChallenge:(NSURLAuthenticationChallenge *)challenge;
+
+@property (copy, nonatomic) void (^cancelBlock)(void);
+@property (copy, nonatomic) void (^trustBlock)(BOOL);
+@property (assign, nonatomic) BOOL shouldOfferTrustAlwaysOption;
+
 - (void)show;
 
 @end

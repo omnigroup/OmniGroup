@@ -186,14 +186,9 @@ static NSLock *pathLock = nil;
 
 - (void)addNonExpiredCookiesToArray:(NSMutableArray *)array usageIsSecure:(BOOL)secure includeRejected:(BOOL)includeRejected;
 {
-    NSUInteger cookieIndex, cookieCount;
-    OWCookie *cookie;
-    
     [pathLock lock];
     
-    cookieCount = [_cookies count];
-    for (cookieIndex = 0; cookieIndex < cookieCount; cookieIndex++) {
-        cookie = [_cookies objectAtIndex:cookieIndex];
+    for (OWCookie *cookie in _cookies) {
         if ([cookie isExpired])
             continue;
         if ([cookie secure] && !secure)
@@ -208,14 +203,9 @@ static NSLock *pathLock = nil;
 
 - (void)addCookiesToSaveToArray:(NSMutableArray *)array;
 {
-    unsigned int cookieIndex, cookieCount;
-    OWCookie *cookie;
-
     [pathLock lock];
 
-    cookieCount = [_cookies count];
-    for (cookieIndex = 0; cookieIndex < cookieCount; cookieIndex++) {
-        cookie = [_cookies objectAtIndex:cookieIndex];
+    for (OWCookie *cookie in _cookies) {
         if ([cookie isExpired])
             continue;
         if ([cookie status] != OWCookieSavedStatus)

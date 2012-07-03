@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -79,8 +79,12 @@ RCS_ID("$Id$");
 
 @interface OUIRTFReaderState : OFObject <NSCopying>
 {
-    @public
+@public
 
+    //
+    // NOTE: Update -copyWithZone: if you add ivars
+    //
+    
     NSMutableString *_alternateDestination;
     CFStringEncoding _stringEncoding;
     id _foregroundColor;
@@ -877,14 +881,35 @@ static NSMutableDictionary *KeywordActions;
     return self;
 }
 
+- initWithState:(OUIRTFReaderState *)state;
+{
+    OBPRECONDITION(state);
+    
+    if (!(self = [super init]))
+        return nil;
+    
+    _alternateDestination = [state->_alternateDestination retain];
+    _stringEncoding = state->_stringEncoding;
+    _foregroundColor = [state->_foregroundColor retain];
+    _backgroundColor = [state->_backgroundColor retain];
+    _fontSize = state->_fontSize;
+    _fontNumber = state->_fontNumber;
+    _fontCharacterSet = state->_fontCharacterSet;
+    _underline = state->_underline;
+    _superscriptCount = state->_superscriptCount;
+    _unicodeSkipCount = state->_unicodeSkipCount;
+    _flags = state->_flags;
+    _paragraph = state->_paragraph;
+    
+    OBASSERT(_cachedStringAttributes == nil);
+    
+    return self;
+}
+
+
 - (id)copyWithZone:(NSZone *)zone;
 {
-    OUIRTFReaderState *copy = (OUIRTFReaderState *)OFCopyObject(self, 0, zone);
-    [copy->_alternateDestination retain];
-    [copy->_foregroundColor retain];
-    [copy->_backgroundColor retain];
-    copy->_cachedStringAttributes = nil;
-    return copy;
+    return [[[self class] alloc] initWithState:self];
 }
 
 - (void)dealloc;

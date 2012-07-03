@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,32 +25,20 @@ extern NSString * const OUIInspectorWillBeginChangingInspectedObjectsNotificatio
 extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 @interface OUIInspector : OFObject
-{
-@private
-    // We hold onto this in case we don't have a _navigationController to retain it on our behalf (if we have -isEmbededInOtherNavigationController subclassed to return YES).
-    OUIInspectorPane *_mainPane;
-    CGFloat _height;
-    
-    UINavigationController *_navigationController;
-    OUIInspectorPopoverController *_popoverController;
-    
-    id <OUIInspectorDelegate> _nonretained_delegate;
-    
-    BOOL _isObservingNotifications;
-    BOOL _keyboardShownWhilePopoverVisible;
-}
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 
 + (UIColor *)disabledLabelTextColor;
 + (UIColor *)labelTextColor;
 + (UIFont *)labelFont;
++ (UIColor *)valueTextColor;
 
 // Defaults to making a OUIStackedSlicesInspectorPane if mainPane is nil (or if -init is called).
 - initWithMainPane:(OUIInspectorPane *)mainPane height:(CGFloat)height;
 
 @property(readonly,nonatomic) OUIInspectorPane *mainPane;
 @property(readonly,nonatomic) CGFloat height;
+@property(assign,nonatomic) BOOL alwaysShowToolbar;
 
 @property(assign,nonatomic) id <OUIInspectorDelegate> delegate;
 

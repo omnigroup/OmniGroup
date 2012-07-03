@@ -183,7 +183,7 @@ static NSString * const kOUIDocumentConflictTableViewCellReuseIdentifier = @"con
         message = NSLocalizedStringFromTableInBundle(@"Modifications aren't in sync. Choose which documents to keep.", @"OmniUI", OMNI_BUNDLE, @"Instructional text for file conflict resolution view");
     
     _instructionsTextLabel.text = message;
-    _instructionsTextLabel.textColor = OQPlatformColorFromHSV(kOUIInspectorLabelTextColor);
+    _instructionsTextLabel.textColor = OQMakeUIColor(kOUIInspectorLabelTextColor);
                                         
     _tableView.rowHeight = 88;
     

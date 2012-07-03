@@ -31,23 +31,68 @@ typedef enum {
     OQRoundedRectCornerBottomLeft = 0x8,
 } OQRoundedRectCorner;
 
-// These assume a non-flipped coordinate system (top == CGRectGetMaxY, bottom == CGRectGetMinY)
+#define OQRectMinXEdge            0x010
+#define OQRectMinYEdge            0x020
+#define OQRectMaxXEdge            0x040
+#define OQRectMaxYEdge            0x080
+#define OQRectAllEdges            0x0F0
+#define _OQRectAllEdgesShift      4
+#define OQRectMinXMinYCorner      0x001
+#define OQRectMaxXMinYCorner      0x002
+#define OQRectMaxXMaxYCorner      0x004
+#define OQRectMinXMaxYCorner      0x008
+#define OQRectAllCorners          0x00F
+
+// These do not depend on the flippedness of the coordinate system because they are symmetrical
 extern void OQAppendRoundedRect(CGContextRef ctx, CGRect rect, CGFloat radius);
 extern void OQAddRoundedRect(CGMutablePathRef path, CGRect rect, CGFloat radius);
 
-// These assume a flipped coordinate system (top == CGRectGetMinY, bottom == CGRectGetMaxY)
+// These use the OQRect{Min,Max}{X,Y} flags, and therefore don't depend on the flippedness of the coordinate system
+extern void OQAppendRectWithMask(CFTypeRef ctxOrPath, CGRect rect, unsigned int edgeMask);
+
+/*
+ Workhorse rounded-rect-with-missing-sides function.
+ This doesn't do anything special for the case where the radius is too large; none of its callers currently depend on its behavior in that case. If you need a specific behavior, add it.
+*/
+extern void OQAppendRoundedRectWithMask_c(CFTypeRef ctxOrPath, CGRect rect, CGFloat radius, unsigned int cornerMask);
+static inline void OQAppendRoundedRectWithMask(CFTypeRef ctxOrPath, CGRect rect, CGFloat radius, unsigned int cornerMask)
+{
+    if ((cornerMask & OQRectAllCorners) == 0)
+        OQAppendRectWithMask(ctxOrPath, rect, cornerMask);
+    else
+        OQAppendRoundedRectWithMask_c(ctxOrPath, rect, radius, cornerMask);
+}
+
+// This function assumes a flipped coordinate system (top == CGRectGetMinY, bottom == CGRectGetMaxY)
 extern void OQAppendRectWithRoundedCornerMask(CGContextRef ctx, CGRect rect, CGFloat radius, NSUInteger cornerMask);
 
-extern void OQAppendRectWithRoundedTop(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom);
-extern void OQAppendRectWithRoundedTopRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom);
-extern void OQAppendRectWithRoundedTopLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom);
+// These assume a non-flipped coordinate system (top == CGRectGetMaxY, bottom == CGRectGetMinY)
+static inline void OQAppendRectWithRoundedTop(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom)
+    { OQAppendRoundedRectWithMask_c(ctx, rect, radius, OQRectMaxXMaxYCorner|OQRectMinXMaxYCorner|
+                                    (closeBottom?OQRectAllEdges:(OQRectMinXEdge|OQRectMaxXEdge|OQRectMaxYEdge))); }
+static inline void OQAppendRectWithRoundedTopRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom)
+    { OQAppendRoundedRectWithMask_c(ctx, rect, radius, OQRectMaxXMaxYCorner|
+                                    (closeBottom?OQRectAllEdges:(OQRectMinXEdge|OQRectMaxXEdge|OQRectMaxYEdge))); }
+static inline void OQAppendRectWithRoundedTopLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom)
+    { OQAppendRoundedRectWithMask_c(ctx, rect, radius, OQRectMinXMaxYCorner|
+                                    (closeBottom?OQRectAllEdges:(OQRectMinXEdge|OQRectMaxXEdge|OQRectMaxYEdge))); }
 
-extern void OQAppendRectWithRoundedBottom(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop);
-extern void OQAppendRectWithRoundedBottomLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop);
-extern void OQAppendRectWithRoundedBottomRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop);
+static inline void OQAppendRectWithRoundedBottom(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop)
+    { OQAppendRoundedRectWithMask_c(ctx, rect, radius, OQRectMaxXMinYCorner|OQRectMinXMinYCorner|
+                                    (closeTop?OQRectAllEdges:(OQRectMinXEdge|OQRectMaxXEdge|OQRectMinYEdge))); }
+static inline void OQAppendRectWithRoundedBottomLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop)
+    { OQAppendRoundedRectWithMask_c(ctx, rect, radius, OQRectMaxXMinYCorner|OQRectMinXMinYCorner|
+                                    (closeTop?OQRectAllEdges:(OQRectMinXEdge|OQRectMaxXEdge|OQRectMinYEdge))); }
+static inline void OQAppendRectWithRoundedBottomRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop)
+    { OQAppendRoundedRectWithMask_c(ctx, rect, radius, OQRectMaxXMinYCorner|OQRectMinXMinYCorner|
+                                    (closeTop?OQRectAllEdges:(OQRectMinXEdge|OQRectMaxXEdge|OQRectMinYEdge))); }
 
-extern void OQAppendRectWithRoundedLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeRight);
-extern void OQAppendRectWithRoundedRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeLeft);
+static inline void OQAppendRectWithRoundedLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeRight)
+    { OQAppendRoundedRectWithMask_c(ctx, rect, radius, OQRectMinXMinYCorner|OQRectMinXMaxYCorner|
+                                    (closeRight?OQRectAllEdges:(OQRectMinXEdge|OQRectMinYEdge|OQRectMaxYEdge))); }
+static inline void OQAppendRectWithRoundedRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeLeft)
+    { OQAppendRoundedRectWithMask_c(ctx, rect, radius, OQRectMaxXMinYCorner|OQRectMaxXMaxYCorner|
+                                    (closeLeft?OQRectAllEdges:(OQRectMaxXEdge|OQRectMinYEdge|OQRectMaxYEdge))); }
 
 // Updates the CTM so that the lower/upper edges of the rect are swapped.
 static inline void OQFlipVerticallyInRect(CGContextRef ctx, CGRect rect)

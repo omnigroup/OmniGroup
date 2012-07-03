@@ -30,10 +30,12 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 #if NS_BLOCKS_AVAILABLE
 @interface OFSFileOperationBlockTarget : OFObject <OFSFileManagerAsynchronousOperationTarget> {
     long long _processedByteCount;
+    NSOperationQueue *_blockOperationQueue;
     void (^_receiveDataBlock)(NSData *);
     void (^_progressBlock)(long long);
     void (^_completionBlock)(NSError *);
 }
+@property (retain) NSOperationQueue *blockOperationQueue;
 @property (copy) void (^receiveDataBlock)(NSData *);
 @property (copy) void (^progressBlock)(long long);
 @property (copy) void (^completionBlock)(NSError *);
@@ -224,10 +226,22 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 
 @implementation OFSFileOperationBlockTarget
 
-@synthesize receiveDataBlock = _receiveDataBlock, progressBlock = _progressBlock, completionBlock = _completionBlock;
+@synthesize blockOperationQueue = _blockOperationQueue, receiveDataBlock = _receiveDataBlock, progressBlock = _progressBlock, completionBlock = _completionBlock;
+
+- (id)init;
+{
+    self = [super init];
+    if (self == nil)
+        return nil;
+
+    self.blockOperationQueue = [NSOperationQueue currentQueue];
+
+    return self;
+}
 
 - (void)dealloc;
 {
+    [_blockOperationQueue release];
     [_receiveDataBlock release];
     [_progressBlock release];
     [_completionBlock release];
@@ -236,27 +250,42 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 
 - (void)fileManager:(OFSFileManager *)fileManager operationDidFinish:(id <OFSAsynchronousOperation>)operation withError:(NSError *)error;
 {
-    if (_completionBlock != NULL)
-        _completionBlock(error);
+    if (_completionBlock != NULL) {
+        [self.blockOperationQueue addOperationWithBlock:^{
+            _completionBlock(error);
+        }];
+    }
+}
+
+- (void)_didProcessBytes:(long long)processedBytes;
+{
+    OBPRECONDITION(_progressBlock != NULL);
+    [self.blockOperationQueue addOperationWithBlock:^{
+        _progressBlock(_processedByteCount);
+    }];
 }
 
 // For write operations, the 'didProcessBytes' will be called. For read operations, the 'didReceiveData' will be called if present, otherwise the didProcessBytes.
 - (void)fileManager:(OFSFileManager *)fileManager operation:(id <OFSAsynchronousOperation>)operation didReceiveData:(NSData *)data;
 {
-    if (_receiveDataBlock != NULL)
-        _receiveDataBlock(data);
+    if (_receiveDataBlock != NULL) {
+        [self.blockOperationQueue addOperationWithBlock:^{
+            _receiveDataBlock(data);
+        }];
+    }
 
     if (_progressBlock != NULL) {
         _processedByteCount += [data length];
-        _progressBlock(_processedByteCount);
+        [self _didProcessBytes:_processedByteCount];
     }
 }
 
 - (void)fileManager:(OFSFileManager *)fileManager operation:(id <OFSAsynchronousOperation>)operation didProcessBytes:(long long)processedBytes;
 {
     OBASSERT(_receiveDataBlock == NULL);
+
     if (_progressBlock != NULL)
-        _progressBlock(processedBytes);
+        [self _didProcessBytes:processedBytes];
 }
 
 @end

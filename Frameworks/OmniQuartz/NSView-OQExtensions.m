@@ -1,4 +1,4 @@
-// Copyright 2005-2011 The Omni Group. All rights reserved.
+// Copyright 2005-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -306,6 +306,14 @@ typedef struct _TransitionUserInfo {
 		[[window graphicsContext] flushGraphics];
 	NSEnableScreenUpdates();
     }
+}
+
+// Converts the point to window coordinates, then calls CGContextSetPatternPhase().
+- (void)setPatternColorReferencePoint:(NSPoint)point;
+{
+    NSPoint refPoint = [self convertPoint:point toView:nil];
+    CGSize phase = (CGSize){refPoint.x, refPoint.y};
+    CGContextSetPatternPhase([[NSGraphicsContext currentContext] graphicsPort], phase);
 }
 
 // Mostly for debugging; should make a NSError version

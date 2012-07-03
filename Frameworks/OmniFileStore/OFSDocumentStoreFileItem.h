@@ -31,6 +31,7 @@ extern NSString * const OFSDocumentStoreFileItemInfoKey;
 
 + (NSString *)displayNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 + (NSString *)editingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
++ (NSString *)exportingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 
 - initWithDocumentStore:(OFSDocumentStore *)documentStore fileURL:(NSURL *)fileURL date:(NSDate *)date;
 
@@ -43,6 +44,7 @@ extern NSString * const OFSDocumentStoreFileItemInfoKey;
 
 @property(readonly,nonatomic) NSString *editingName;
 @property(readonly,nonatomic) NSString *name;
+@property(readonly,nonatomic) NSString *exportingName;
 @property(copy,nonatomic) NSDate *date;
 @property(readonly,nonatomic) BOOL isUbiquitous;
 

@@ -19,6 +19,7 @@
 
 - (void)_updateUbiquitousItemWithMetadataItem:(NSMetadataItem *)metadataItem modificationDate:(NSDate *)modificationDate;
 - (void)_updateLocalItemWithModificationDate:(NSDate *)modificationDate;
+- (void)_invalidateAfterWriter;
 
 @end
 

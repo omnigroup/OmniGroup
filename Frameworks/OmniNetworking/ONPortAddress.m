@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -203,10 +203,12 @@ RCS_ID("$Id$")
         portAddress = (struct sockaddr *)ipv4Address;
     } else {
         NSData *saddr = [coder decodeDataObject];
+        NSUInteger saddrLength = [saddr length];
 
-        portAddress = malloc([saddr length]);
-        bcopy([saddr bytes], portAddress, [saddr length]);
-        OBASSERT(portAddress->sa_len == [saddr length]);
+        portAddress = malloc(saddrLength);
+        bcopy([saddr bytes], portAddress, saddrLength);
+        OBASSERT((signed)saddrLength > ((void *)&portAddress->sa_len - (void *)portAddress)); // Otherwise the following assertion is looking at a garbage value
+        OBASSERT(portAddress->sa_len == saddrLength);
     }
 
     return self;

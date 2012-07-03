@@ -20,6 +20,14 @@ extern const CFStringRef kSecTransformInputAttributeName __attribute__((weak_imp
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFErrors.h>
 
+// Redeclare this locally for now because the 10.7 SDK doesn't have the CF_RETURNS_RETAINED annotation, even though that's the behavior.
+#if !defined(MAC_OS_X_VERSION_10_8) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
+CF_EXPORT 
+CFTypeRef SecTransformExecute(SecTransformRef transformRef, CFErrorRef* errorRef) 
+__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA) CF_RETURNS_RETAINED; 
+#endif
+
+
 RCS_ID("$Id$");
 
 // #define DEBUG_OFSecSignTransform // Enables some log messages
@@ -84,7 +92,9 @@ RCS_ID("$Id$");
     return YES;
 }
 
-static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData, CFStringRef digestType, int digestLength, CFErrorRef *cfError)
+static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData, CFStringRef digestType, int digestLength, CFErrorRef *cfError) CF_RETURNS_RETAINED;
+
+static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData, CFStringRef digestType, int digestLength, CFErrorRef *cfError) 
 {
     CFDataRef immutable = CFDataCreateCopy(kCFAllocatorDefault, (CFDataRef)inputData);
     Boolean success = SecTransformSetAttribute(transform, kSecTransformInputAttributeName, immutable, cfError);
@@ -113,17 +123,16 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     if (!SecTransformSetAttribute(transform, kSecInputIsAttributeName, kSecInputIsPlainText, cfError))
         return NULL;
     
-    CFErrorRef localError = NULL;
-    CFTypeRef result = SecTransformExecute(transform, &localError);
+    CFTypeRef result = SecTransformExecute(transform, cfError);
     // NB: The example code (such as it is) seems to test the *error argument to determine success, instead of checking the result. Not sure whether this means the example code is wrong or SecTransform uses a different convention from the rest of the system. The documentation is not informative.
-    if (localError) {
-        if (cfError)
-            *cfError = localError;
-        else
-            CFRelease(localError);
-        result = NULL;
-    }
-    
+    //
+    // !!!:correia:20120622
+    // The example code must be wrong in the error case. The documentation does say, about the errorRef:
+    //    "An optional pointer to a CFErrorRef. This value will be set if an error occurred during initialization or execution of the transform or group. If not NULL the caller will be responsible for releasing the returned CFErrorRef."
+    // The return value, therefore, must indicate success or failure.
+    // I'm dropping the localError that used to be here, and letting it just fall through the normal path.
+    // This also quiets the warning that the static analyzer in Apple LLVM compiler 4.0 generates about this code.
+
 #ifdef DEBUG_OFSecSignTransform
     NSString *desc = [(id)result description];
     if ([desc length] > 200) {
@@ -182,6 +191,7 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     }
     
     CFRelease(vrfy);
+    CFRelease(result);
     
     return verifyOK;
     
@@ -218,9 +228,8 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     
     // Result is presumably kept alive by the SecTransform we got it from at this point; retain+autorelease for our caller.
     NSData *nsResult = [(id)result retain];
-    
+    CFRelease(result);
     CFRelease(gen);
-    
     
     if (generatorGroupOrderLog2) {
         NSData *packed = OFDigestConvertDLSigToPacked(nsResult, generatorGroupOrderLog2, outError);

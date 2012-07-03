@@ -10,11 +10,11 @@
 enum {
     OUIOmniSync,
     OUIWebDAVSync,
-    OUIMobileMeSync,
     OUIiTunesSync,
     OUINumberSyncChoices,
     
     OUISyncTypeNone, /* not used for syncing. used for getting a rough idea of how many export types are available */
+    OUIMobileMeSync,
 }; 
 typedef NSUInteger OUISyncType;
 

@@ -1,4 +1,4 @@
-// Copyright 2003-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -168,11 +168,51 @@ extern OQLinearRGBA OQHSVToRGB(OSHSV c);
 @interface OQColor (OQColor) <OQColor>
 @end
 
+#ifndef __has_feature
+#define __has_feature(x) 0
+#endif
+#if __has_feature(attribute_overloadable)
+
+static inline OQColor * __attribute__((overloadable)) OQMakeColor(OQLinearRGBA c)
+{
+    return [OQColor colorWithRed:c.r green:c.g blue:c.b alpha:c.a];
+}
+static inline OQColor * __attribute__((overloadable)) OQMakeColor(OSHSV c)
+{
+    return [OQColor colorWithHue:c.h saturation:c.s brightness:c.v alpha:c.a];
+}
+static inline OQColor * __attribute__((overloadable)) OQMakeColor(OQWhiteAlpha c)
+{
+    return [OQColor colorWithWhite:c.w alpha:c.a];
+}
+
+static inline BOOL __attribute__((overloadable)) OQColorsEqual(OQLinearRGBA c1, OQLinearRGBA c2)
+{
+    return c1.r == c2.r && c1.g == c2.g && c1.b == c2.b && c1.a == c2.a;
+}
+static inline BOOL __attribute__((overloadable)) OQColorsEqual(OSHSV c1, OSHSV c2)
+{
+    return c1.h == c2.h && c1.s == c2.s && c1.v == c2.v && c1.a == c2.a;
+}
+static inline BOOL __attribute__((overloadable)) OQColorsEqual(OQWhiteAlpha c1, OQWhiteAlpha c2)
+{
+    return c1.w == c2.w && c1.a == c2.a;
+}
+
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIColor.h>
-static inline UIColor *OQPlatformColorFromHSV(OSHSV hsv)
+static inline UIColor * __attribute__((overloadable)) OQMakeUIColor(OQLinearRGBA c)
 {
-    return [UIColor colorWithHue:hsv.h saturation:hsv.s brightness:hsv.v alpha:hsv.a];
+    return [UIColor colorWithRed:c.r green:c.g blue:c.b alpha:c.a];
+}
+static inline UIColor * __attribute__((overloadable)) OQMakeUIColor(OSHSV c)
+{
+    return [UIColor colorWithHue:c.h saturation:c.s brightness:c.v alpha:c.a];
+}
+static inline UIColor * __attribute__((overloadable)) OQMakeUIColor(OQWhiteAlpha c)
+{
+    return [UIColor colorWithWhite:c.w alpha:c.a];
 }
 #endif
 
+#endif

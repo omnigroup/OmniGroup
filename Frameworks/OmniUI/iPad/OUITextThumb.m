@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,12 @@
 
 #import "OUITextThumb.h"
 
-#import <OmniUI/OUIEditableFrame.h>
-
 #import <OmniQuartz/OQDrawing.h>
 #import <QuartzCore/QuartzCore.h>
 #import <OmniBase/rcsid.h>
+#import <OmniUI/OUIDragGestureRecognizer.h>
 
+#import "OUIEditableFrame-Internal.h"
 
 #define THUMB_TOP_GAP (-2)     // The gap between the thumb image and the caret bar (pixels)
 #define THUMB_BOT_GAP ( 0)     // Same, for the end-thumb
@@ -22,7 +22,13 @@
 
 RCS_ID("$Id$");
 
+@interface OUITextThumb () <UIGestureRecognizerDelegate>
+@end
+
 @implementation OUITextThumb
+{
+    OUIDragGestureRecognizer *_touchRecognizer;
+}
 
 - (id)initWithFrame:(CGRect)frame;
 {
@@ -38,17 +44,42 @@ RCS_ID("$Id$");
     ascent = -1;
     width = -1;
     
-    /* We create a gesture recognizer for the drag gesture */
-    UIPanGestureRecognizer *dragMe = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_dragged:)];
-    dragMe.minimumNumberOfTouches = 1;
-    dragMe.maximumNumberOfTouches = 1;
-    dragMe.delaysTouchesBegan = YES;
-    dragMe.enabled = NO; // Will be enabled & disabled in our -setHidden: implementation
-    
-    [self addGestureRecognizer:dragMe];
-    [dragMe release];
-    
+    // This recognizer handles long-press to unconditionally show the loupe and dragging to adjust the handle.
+    // We could probably make this handle taps too, but that would complicate the code w/o any significant savings.
+    OUIDragGestureRecognizer *dragRecognizer = [[OUIDragGestureRecognizer alloc] initWithTarget:self action:@selector(_dragged:)];
+    dragRecognizer.holdDuration = 0.5; // fire if held long enough, even if we didn't start dragging. taken from UILongPressGestureRecognizer.h
+    dragRecognizer.numberOfTouchesRequired = 1;
+    dragRecognizer.delaysTouchesBegan = YES;
+    dragRecognizer.enabled = NO; // Will be enabled & disabled in our -setHidden: implementation
+    dragRecognizer.delegate = self;
+    [self addGestureRecognizer:dragRecognizer];
+    [dragRecognizer release];
+
+    // A tap on a thumb should transition from range selection to caret selection
+    UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_tapped:)];
+    tapRecognizer.enabled = NO; // Will be enabled & disabled in our -setHidden: implementation
+    tapRecognizer.delegate = self;
+    [self addGestureRecognizer:tapRecognizer];
+    [tapRecognizer release];
+
+    // Add *another* recognizer that just tells us immediately when we are being touched and let this run concurrently with the other two. This will let us hide the system menu before the system automatically does it so that our workarounds in OUIEditMenuController have a chance.
+    _touchRecognizer = [[OUIDragGestureRecognizer alloc] initWithTarget:self action:@selector(_touched:)];
+    _touchRecognizer.holdDuration = 0.0001; // Zero means it won't auto-start, but we want a short delay to be effectively immediately. We are competing with the timer in OUIEditMenuController for re-showing the menu after the system has finished hiding one (currently 0.1s). Terrible.
+    _touchRecognizer.numberOfTouchesRequired = 1;
+    _touchRecognizer.enabled = NO; // Will be enabled & disabled in our -setHidden: implementation
+    _touchRecognizer.delegate = self;
+    [self addGestureRecognizer:_touchRecognizer];
+
     return self;
+}
+
+- (void)dealloc;
+{
+    _touchRecognizer.delegate = nil;
+    [_touchRecognizer release];
+    _touchRecognizer = nil;
+    
+    [super dealloc];
 }
 
 @synthesize isEndThumb;
@@ -110,6 +141,31 @@ RCS_ID("$Id$");
     self.frame = frame;
 }
 
+- (CGFloat)distanceFromPoint:(CGPoint)p;
+{
+    // Not a true distance, we only need something that increases monotonically with distance so we can compare.
+    
+    // Convert to our bounds coords...
+    p = [self convertPoint:p fromView:nonretained_editor];
+    // ... and to the system we mostly draw in
+    CGRect f = self.bounds;
+    p.y = (2 * f.origin.y) + f.size.height - p.y;
+    
+    CGFloat dy;
+    
+    if (p.y < 0) {
+        dy = -p.y;
+    } else if (p.y > ascent) {
+        dy = ascent - p.y;
+    } else {
+        dy = 0;
+    }
+    
+    return ( dy*dy ) + ( p.x * p.x );
+}
+
+#pragma mark - UIView subclass
+
 - (BOOL)canBecomeFirstResponder
 {
     return NO;
@@ -162,54 +218,60 @@ RCS_ID("$Id$");
     [thumbImage drawAtPoint:thumbRect.origin];
 }
 
-- (CGFloat)distanceFromPoint:(CGPoint)p;
-{
-    // Not a true distance, we only need something that increases monotonically with distance so we can compare.
-    
-    // Convert to our bounds coords...
-    p = [self convertPoint:p fromView:nonretained_editor];
-    // ... and to the system we mostly draw in
-    CGRect f = self.bounds;
-    p.y = (2 * f.origin.y) + f.size.height - p.y;
-    
-    CGFloat dy;
-    
-    if (p.y < 0) {
-        dy = -p.y;
-    } else if (p.y > ascent) {
-        dy = ascent - p.y;
-    } else {
-        dy = 0;
-    }
+#pragma mark - UIGestureRecognizerDelegate
 
-    return ( dy*dy ) + ( p.x * p.x );
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
+{
+    if (gestureRecognizer == _touchRecognizer || otherGestureRecognizer == _touchRecognizer)
+        return YES;
+    
+    return NO;
 }
 
-- (void)_dragged:(UIPanGestureRecognizer *)gestureRecognizer;
+#pragma mark - Private
+
+- (void)_tapped:(UITapGestureRecognizer *)gestureRecognizer;
 {
-    OUIEditableFrame *editor = nonretained_editor;
-    UIGestureRecognizerState st = gestureRecognizer.state;
-    CGPoint delta = [gestureRecognizer translationInView:editor];
- 
-    // UIPanGestureRecognizer seems to be kind of sloppy about its initial offset. Not sure if this'll be a problem in practice but it's noticeable in the simulator. Might need to do our own translation calculations.
-    // NSLog(@"pan: %@, delta=%@", gestureRecognizer, NSStringFromCGPoint(delta));
+    OBPRECONDITION(nonretained_editor);
     
+    OUIEditableFrame *editor = nonretained_editor;
+    [editor thumbTapped:self recognizer:gestureRecognizer];
+}
+
+- (void)_dragged:(OUIDragGestureRecognizer *)recognizer;
+{
+    OBPRECONDITION(nonretained_editor);
+    
+    OUIEditableFrame *editor = nonretained_editor;
+    UIGestureRecognizerState st = recognizer.state;
+ 
     if (st == UIGestureRecognizerStateBegan) {
         /* The point below is the center of the caret rectangle we draw. We want to use that rather than the baseline point or the thumb point to allow the maximum finger slop before the text view selects a different line. */
         touchdownPoint = [self convertPoint:(CGPoint){0, - ascent/2} toView:editor];
-        [editor thumbBegan:self];
+        [editor thumbDragBegan:self];
     }
 
-    /* UIPanGestureRecognizer will return a delta of { -NAN, -NAN } sometimes (if it would be outside the parent view's bounds maybe?). */
-    if ((isfinite(delta.x) && isfinite(delta.y)) &&
-        (st != UIGestureRecognizerStateBegan || !(delta.x == 0 && delta.y == 0))) {
-        [editor thumbMoved:self targetPosition:(CGPoint){ touchdownPoint.x + delta.x, touchdownPoint.y + delta.y }];
-    }
-    
     if (st == UIGestureRecognizerStateEnded || st == UIGestureRecognizerStateCancelled) {
-        [editor thumbEnded:self normally:(st == UIGestureRecognizerStateEnded? YES:NO)];
+        [editor thumbDragEnded:self normally:(st == UIGestureRecognizerStateEnded? YES:NO)];
         touchdownPoint = (CGPoint){ NAN, NAN };
+    } else {
+        // We send 'moved' on either a moved or a began, which is what we want. A long press on a handle should show the loupe, not wait for the first drag (though we could maybe rename this method to be less confusing for this change in behavior).
+        CGPoint delta = [recognizer cumulativeOffsetInView:editor];
+        [editor thumbDragMoved:self targetPosition:(CGPoint){ touchdownPoint.x + delta.x, touchdownPoint.y + delta.y }];
     }
+}
+
+- (void)_touched:(OUIDragGestureRecognizer *)recognizer;
+{
+    OBPRECONDITION(nonretained_editor);
+    
+    OUIEditableFrame *editor = nonretained_editor;
+    UIGestureRecognizerState st = recognizer.state;
+
+    if (st == UIGestureRecognizerStateBegan)
+        [editor thumbTouchBegan:self];
+    else if (st == UIGestureRecognizerStateEnded || st == UIGestureRecognizerStateCancelled)
+        [editor thumbTouchEnded:self];
 }
 
 @end

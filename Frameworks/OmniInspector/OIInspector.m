@@ -57,19 +57,19 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     // Do the OS version check before allocating an instance
     NSString *minimumOSVersionString = [dict objectForKey:@"minimumOSVersion"];
     if (![NSString isEmptyString:minimumOSVersionString]) {
-	OFVersionNumber *minimumOSVersion = [[OFVersionNumber alloc] initWithVersionString:minimumOSVersionString];
-	OFVersionNumber *currentOSVersion = [OFVersionNumber userVisibleOperatingSystemVersionNumber];
-	
-	BOOL yummy = ([currentOSVersion compareToVersionNumber:minimumOSVersion] != NSOrderedAscending);
-	
-	[minimumOSVersion release];
-	if (!yummy)
-	    return nil;
-    }
+        OFVersionNumber *minimumOSVersion = [[OFVersionNumber alloc] initWithVersionString:minimumOSVersionString];
+        OFVersionNumber *currentOSVersion = [OFVersionNumber userVisibleOperatingSystemVersionNumber];
+        
+        BOOL yummy = ([currentOSVersion compareToVersionNumber:minimumOSVersion] != NSOrderedAscending);
+        
+        [minimumOSVersion release];
+        if (!yummy)
+            return nil;
+        }
     
     NSString *className = [dict objectForKey:@"class"];
     if (!className)
-	[NSException raise:NSInvalidArgumentException format:@"Required key 'class' not found in inspector dictionary %@", dict];
+        [NSException raise:NSInvalidArgumentException format:@"Required key 'class' not found in inspector dictionary %@", dict];
     
     // Particularly for OITabbedInspectors which will always have [self bundle] of OmniInspector, the OIInspectors entry in the main bundle's Info.plist needs to allow the developer to specify where to find resources.
     NSBundle *inspectorResourceBundle;
@@ -107,32 +107,32 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         return nil;
 
     {
-	// Ensure that deprecated methods from the old OIGroupedInspector protocol aren't around
+        // Ensure that deprecated methods from the old OIGroupedInspector protocol aren't around
         OBASSERT_NOT_IMPLEMENTED(self, inspectorName);
-	OBASSERT_NOT_IMPLEMENTED(self, defaultDisplayGroupNumber);
-	OBASSERT_NOT_IMPLEMENTED(self, defaultDisplayOrderInGroup);
-	OBASSERT_NOT_IMPLEMENTED(self, defaultGroupVisibility);
-	OBASSERT_NOT_IMPLEMENTED(self, keyEquivalent);
-	OBASSERT_NOT_IMPLEMENTED(self, keyEquivalentModifierMask);
-	OBASSERT_NOT_IMPLEMENTED(self, imageName);
-	
-	// ... or deprecated methods from the OITabbedInspector protocol
-	OBASSERT_NOT_IMPLEMENTED(self, tabGroupName);
-	OBASSERT_NOT_IMPLEMENTED(self, tabGroupImage);
-	OBASSERT_NOT_IMPLEMENTED(self, tabImageName);
-	
-	// ... or deprecated methods from NSObject (OIInspectorOptionalMethods)
-	OBASSERT_NOT_IMPLEMENTED(self, inspectorWillResizeToSize:); // Now called -inspectorWillResizeToHeight:
-	OBASSERT_NOT_IMPLEMENTED(self, inspectorMinimumSize); // Now called -inspectorMinimumHeight
-	OBASSERT_NOT_IMPLEMENTED(self, inspectorDesiredWidth); // Totally deprecated
+        OBASSERT_NOT_IMPLEMENTED(self, defaultDisplayGroupNumber);
+        OBASSERT_NOT_IMPLEMENTED(self, defaultDisplayOrderInGroup);
+        OBASSERT_NOT_IMPLEMENTED(self, defaultGroupVisibility);
+        OBASSERT_NOT_IMPLEMENTED(self, keyEquivalent);
+        OBASSERT_NOT_IMPLEMENTED(self, keyEquivalentModifierMask);
+        OBASSERT_NOT_IMPLEMENTED(self, imageName);
+        
+        // ... or deprecated methods from the OITabbedInspector protocol
+        OBASSERT_NOT_IMPLEMENTED(self, tabGroupName);
+        OBASSERT_NOT_IMPLEMENTED(self, tabGroupImage);
+        OBASSERT_NOT_IMPLEMENTED(self, tabImageName);
+        
+        // ... or deprecated methods from NSObject (OIInspectorOptionalMethods)
+        OBASSERT_NOT_IMPLEMENTED(self, inspectorWillResizeToSize:); // Now called -inspectorWillResizeToHeight:
+        OBASSERT_NOT_IMPLEMENTED(self, inspectorMinimumSize); // Now called -inspectorMinimumHeight
+        OBASSERT_NOT_IMPLEMENTED(self, inspectorDesiredWidth); // Totally deprecated
         
         // Or other vanished methods
-	OBASSERT_NOT_IMPLEMENTED(self, initWithDictionary:); // Now called -initWithDictionary:bundle:
+        OBASSERT_NOT_IMPLEMENTED(self, initWithDictionary:); // Now called -initWithDictionary:bundle:
     }
     
     resourceBundle = sourceBundle;
     if (!resourceBundle)
-	resourceBundle = [self bundle]; // need something non-nil, but this likely won't work very well.
+        resourceBundle = [self bundle]; // need something non-nil, but this likely won't work very well.
     [resourceBundle retain];
     
     _identifier = [[dict objectForKey:@"identifier"] copy];
@@ -143,8 +143,8 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     
     _displayName = [resourceBundle localizedStringForKey:_identifier value:nil table:@"OIInspectors"];
     if ([_displayName isEqualToString:_identifier])
-	// _identifier is expected to be com.foo... so the two should never be equal if you've added the entry to the right OIInspectors.strings file
-	NSLog(@"Inspector with identifier %@ has no display name registered in OIInspectors.strings in %@", _identifier, resourceBundle);
+        // _identifier is expected to be com.foo... so the two should never be equal if you've added the entry to the right OIInspectors.strings file
+        NSLog(@"Inspector with identifier %@ has no display name registered in OIInspectors.strings in %@", _identifier, resourceBundle);
     
     NSString *visibilityString = [dict objectForKey:@"visibilityState"];
     if (visibilityString != nil) {
@@ -165,7 +165,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     
     _imageName = [[dict objectForKey:@"image"] copy];
     if (_imageName) {
-	_image = [[NSImage imageNamed:_imageName inBundle:resourceBundle] retain]; // cache up front so we don't need a 'cached' flag (very likely to get used ASAP)
+        _image = [[NSImage imageNamed:_imageName inBundle:resourceBundle] retain]; // cache up front so we don't need a 'cached' flag (very likely to get used ASAP)
 	if (!_image)
 	    NSLog(@"Unable to find image '%@' for %@ in bundle %@", _imageName, self, resourceBundle);
     }
@@ -219,7 +219,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 {
     NSImage *image = [NSImage imageNamed:tabImageName inBundle:resourceBundle];
     if (tabImageName && !image)
-	NSLog(@"Unable to find image '%@' for %@ in bundle %@", tabImageName, self, resourceBundle);
+        NSLog(@"Unable to find image '%@' for %@ in bundle %@", tabImageName, self, resourceBundle);
     return image;
 }
 
@@ -268,10 +268,10 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     
     NSImage *image = [self image];
     if (image) {
-	[menuItem setImage:image];
+        [menuItem setImage:image];
     }
     if ([keyEquivalent length])
-	[menuItem setKeyEquivalentModifierMask:[self shortcutModifierFlags]];
+        [menuItem setKeyEquivalentModifierMask:[self shortcutModifierFlags]];
     return menuItem;
 }
 
@@ -290,9 +290,9 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 - (void)setControlsEnabled:(BOOL)enabled inView:(NSView *)view;
 {
     for (id subview in [view subviews]) {
-	// This messes up scrollers; <bug://bugs/28355>
-	if ([subview isKindOfClass:[NSScrollView class]])
-	    continue;
+        // This messes up scrollers; <bug://bugs/28355>
+        if ([subview isKindOfClass:[NSScrollView class]])
+            continue;
 	
         if ([subview respondsToSelector:@selector(target)] && [subview target]) {
             if ([subview respondsToSelector:@selector(setEnabled:)])
@@ -339,16 +339,15 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     [dict setObject:_displayName forKey:@"displayName"];
     [dict setObject:[NSNumber numberWithInt:_defaultVisibilityState] forKey:@"defaultVisibilityState"];
     if (_shortcutKey)
-	[dict setObject:_shortcutKey forKey:@"shortcutKey"];
+        [dict setObject:_shortcutKey forKey:@"shortcutKey"];
     if (_shortcutModifierFlags) {
         OBASSERT(_shortcutModifierFlags < UINT32_MAX); // Need to make OFEnumNameTable do NSInteger instead of int?
-	[dict setObject:[[ModifierMaskNameTable copyStringForMask:(uint32_t)_shortcutModifierFlags withSeparator:'|'] autorelease]
-		 forKey:@"shortcutModifierFlags"];
+        [dict setObject:[[ModifierMaskNameTable copyStringForMask:(uint32_t)_shortcutModifierFlags withSeparator:'|'] autorelease] forKey:@"shortcutModifierFlags"];
     }
     if (_imageName) {
-	[dict setObject:_imageName forKey:@"imageName"];
-	if (_image)
-	    [dict setObject:_image forKey:@"image"];
+        [dict setObject:_imageName forKey:@"imageName"];
+        if (_image)
+            [dict setObject:_image forKey:@"image"];
     }
     
     return dict;

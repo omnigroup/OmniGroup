@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,13 +17,6 @@ typedef enum {
 } OUIInspectorSegmentedControlButtonPosition;
 
 @interface OUIInspectorSegmentedControlButton : UIButton
-{
-@private
-    OUIInspectorSegmentedControlButtonPosition _buttonPosition;
-    UIImage *_image;
-    id _representedObject;
-    BOOL _dark;
-}
 
 @property(assign,nonatomic) OUIInspectorSegmentedControlButtonPosition buttonPosition;
 @property(retain,nonatomic) UIImage *image;

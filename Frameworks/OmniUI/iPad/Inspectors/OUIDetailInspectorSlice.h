@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,24 +10,35 @@
 #import <OmniUI/OUIActionInspectorSlice.h>
 
 /*
- This class supports a common pattern of having a control in an inspector to tap and expose a detail pane.
- For now this only supports creating the detail pane with a block, but we could add a subclassing point if we ever want to use this on iOS 3.x.
+ Presents a table view of navigation items, each with a title and an optional value for the current state of some setting.
  */
 
 @class OUIDetailInspectorSlice;
 
-typedef OUIInspectorPane *(^OUIDetailInspectorSlicePaneMaker)(OUIDetailInspectorSlice *slice);
+// Filled out with default values so -updateItem:atIndex: can fill out only the bits relevant
+@interface OUIDetailInspectorSliceItem : NSObject
+@property(nonatomic,copy) NSString *title; // Defaults to the slice's title
+@property(nonatomic,copy) NSString *value; // Defaults to nil
+@property(nonatomic,assign) BOOL enabled; // Defaults to YES
+@end
 
-@interface OUIDetailInspectorSlice : OUIActionInspectorSlice
-{
-@private
-    OUIDetailInspectorSlicePaneMaker _paneMaker;
-}
+@interface OUIDetailInspectorSlice : OUIInspectorSlice
 
-+ (id)detailLabelWithTitle:(NSString *)title paneMaker:(OUIDetailInspectorSlicePaneMaker)paneMaker;
+// Defaults to 1
+@property(nonatomic,readonly) NSUInteger itemCount;
 
-- initWithTitle:(NSString *)title paneMaker:(OUIDetailInspectorSlicePaneMaker)paneMaker;
+// Passed an item with default values. Don't need to implement if the receiver has a title and doesn't want a value. Don't need to call super in your subclass method (defaults are filled in by the caller).
+- (void)updateItem:(OUIDetailInspectorSliceItem *)item atIndex:(NSUInteger)itemIndex;
 
-@property(nonatomic,copy) OUIDetailInspectorSlicePaneMaker paneMaker;
+// Defaults to nil, meaning the inspection set of the receiver will be passed to the detail pane.
+- (NSArray *)inspectedObjectsForItemAtIndex:(NSUInteger)itemIndex;
 
+// Will be called if the corresponding value passed to the 'handler' of -updateItemAtIndex:with: is nil. Defaults to nil.
+- (NSString *)placeholderTitleForItemAtIndex:(NSUInteger)itemIndex;
+- (NSString *)placeholderValueForItemAtIndex:(NSUInteger)itemIndex;
+
+@end
+
+@interface OUIDetailInspectorSlice (SubclassResponsibility)
+- (OUIInspectorPane *)makeDetailsPaneForItemAtIndex:(NSUInteger)itemIndex;
 @end

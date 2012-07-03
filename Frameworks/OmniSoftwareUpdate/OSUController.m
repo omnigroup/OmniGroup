@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -128,7 +128,6 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
     // Prepopulate the checkbox with your current setting.
     [enableHardwareCollectionButton setState:[[OSUPreferences includeHardwareDetails] boolValue]];
     
-    [privacyNoticePanel center];
     OSUPrivacyNoticeResult rc = (OSUPrivacyNoticeResult)[NSApp runModalForWindow:privacyNoticePanel];
     [privacyNoticePanel orderOut:nil];
     
@@ -159,6 +158,15 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
     }
 #endif
     
+    OSUAvailableUpdateController *availableUpdateController = [OSUAvailableUpdateController availableUpdateController:NO];
+    if (availableUpdateController) {
+        // If there is a controller, update its status.
+        [availableUpdateController setValue:[NSNumber numberWithBool:op.initiatedByUser]
+                                     forKey:OSUAvailableUpdateControllerLastCheckUserInitiatedBinding];
+        [availableUpdateController setValue:[NSNumber numberWithBool:YES]
+                                     forKey:OSUAvailableUpdateControllerLastCheckFailedBinding];
+    }
+    
     // Disabling the errors from the asynchronous check until the UI is improved.  <bug://bugs/40635> (Warn users if they haven't successfully connected to software update in N days)
     BOOL shouldReport = op.initiatedByUser /*|| !isNetworkError*/;
     
@@ -177,17 +185,32 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
     /* In the common case, there are no new versions available, and we don't want to create the OSUAvailableUpdateController (and all its GUI goo) for nothing. */
     BOOL quiet = YES;
     
-    // If this is an asynchronous run (not prompted by the user), and there are no items that would be displayed with the default predicate, don't call the target/action.
+    // If this is an asynchronous run (not prompted by the user), and there are no sufficiently interesting items that would be displayed with the default predicate, don't call the target/action.
     if (!op.initiatedByUser) {
-        NSArray *filteredItems = [versionInfos filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededOrIgnoredPredicate]];
+        NSArray *filteredItems = [versionInfos filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]];
         if ([filteredItems count] > 0)
             quiet = NO;
     }
     
+#if defined(DEBUG)
+    if (OSUItemDebug) {
+        OFForEachObject([versionInfos objectEnumerator], OSUItem *, item) {
+            NSLog(@"  %@ - avail=%d superseded=%d ignored=%d old=%d",
+                  [item shortDescription],
+                  item.available, item.superseded, item.isIgnored, item.isOldStable);
+        };
+    }
+#endif
+    
     OSUAvailableUpdateController *availableUpdateController = [OSUAvailableUpdateController availableUpdateController:!quiet];
     if (availableUpdateController) {
         // If there is a controller, update it even if quiet=YES
-        [availableUpdateController setValue:versionInfos forKey:OSUAvailableUpdateControllerAvailableItemsBinding];
+        [availableUpdateController setValue:versionInfos
+                                     forKey:OSUAvailableUpdateControllerAvailableItemsBinding];
+        [availableUpdateController setValue:[NSNumber numberWithBool:op.initiatedByUser]
+                                     forKey:OSUAvailableUpdateControllerLastCheckUserInitiatedBinding];
+        [availableUpdateController setValue:[NSNumber numberWithBool:NO]
+                                     forKey:OSUAvailableUpdateControllerLastCheckFailedBinding];
     }
     
     if (!quiet)

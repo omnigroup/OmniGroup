@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,6 +71,7 @@ BOOL tightBoundsOfCurveTo(NSRect *r, NSPoint startPoint, NSPoint control1, NSPoi
 - (NSInteger)segmentHitByPoint:(NSPoint)point;  // 0 == no hit, padding == 5
 - (BOOL)isStrokeHitByPoint:(NSPoint)point padding:(CGFloat)padding;
 - (BOOL)isStrokeHitByPoint:(NSPoint)point; // padding == 5
+- (NSInteger)segmentHitByPoint:(NSPoint)point position:(CGFloat *)position padding:(CGFloat)padding;
 
 //
 - (void)appendBezierPathWithRoundedRectangle:(NSRect)aRect withRadius:(CGFloat)radius;

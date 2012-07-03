@@ -59,32 +59,6 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-+ (BOOL)isOperatingSystemiOS32OrLater; // iOS 3.2
-{
-    static BOOL initialized = NO;
-    static BOOL isLater;
-
-    if (!initialized) {
-        isLater = isOperatingSystemLaterThanVersionString(@"3.2");
-        initialized = YES;
-    }
-
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystemiOS40OrLater; // iOS 4.0
-{
-    static BOOL initialized = NO;
-    static BOOL isLater;
-
-    if (!initialized) {
-        isLater = isOperatingSystemLaterThanVersionString(@"4.0");
-        initialized = YES;
-    }
-
-    return isLater;
-}
-
 + (BOOL)isOperatingSystemiOS50OrLater; // iOS 5.0
 {
     static BOOL initialized = NO;
@@ -111,20 +85,20 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
     return isLater;
 }
 
-#else
-
-+ (BOOL)isOperatingSystemLeopardOrLater; // 10.5
++ (BOOL)isOperatingSystemiOS60OrLater; // iOS 6.0
 {
     static BOOL initialized = NO;
     static BOOL isLater;
-
+    
     if (!initialized) {
-        isLater = isOperatingSystemLaterThanVersionString(@"10.5");
+        isLater = isOperatingSystemLaterThanVersionString(@"6.0");
         initialized = YES;
     }
-
+    
     return isLater;
 }
+
+#else
 
 + (BOOL)isOperatingSystemSnowLeopardOrLater; // 10.6
 {

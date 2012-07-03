@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>OFCompletionMatchScoreForFullMatch</key>
+        <integer>100</integer>
+        <key>OFCompletionMatchScoreForPhraseStart</key>
+        <integer>20</integer>
+        <key>OFCompletionMatchScoreForPhraseEnd</key>
+        <integer>5</integer>
+        <key>OFCompletionMatchScoreForConsecutiveCharacter</key>
+        <integer>25</integer>
+        <key>OFCompletionMatchScoreForConsecutiveWord</key>
+        <integer>10</integer>
+        <key>OFCompletionMatchScoreForWordStart</key>
+        <integer>10</integer>
+        <key>OFCompletionMatchScoreForCapitalLetter</key>
+        <integer>15</integer>
+    </dict>
+</plist>

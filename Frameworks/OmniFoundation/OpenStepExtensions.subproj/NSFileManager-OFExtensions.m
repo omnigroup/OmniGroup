@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,8 +21,11 @@
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFUtilities.h>
+#import <OmniFoundation/OFVersionNumber.h>
 
 #import <CoreServices/CoreServices.h>
+#import <Security/SecCode.h>
+#import <Security/SecStaticCode.h>
 #import <sys/errno.h>
 #import <sys/param.h>
 #import <stdio.h>
@@ -700,6 +703,168 @@ errorReturn:
         *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, nil]];
     }
     return nil;
+}
+
+#pragma mark Code signing
+
+- (BOOL)getSandboxed:(out BOOL *)outSandboxed forApplicationAtURL:(NSURL *)applicationURL error:(NSError **)error;
+{
+    OBPRECONDITION(outSandboxed != NULL);
+    if (error != NULL) {
+        *error = nil;
+    }
+    
+    if (![OFVersionNumber isOperatingSystemLionOrLater]) {
+        *outSandboxed = NO;
+        return YES;
+    }
+    
+    // Test for sandbox entitlement
+    // If we can't tell, then we will assume we're sandboxed
+    const BOOL uncertainResult = YES;
+    SecStaticCodeRef applicationCode = NULL;
+    OSStatus status = noErr;
+    
+    status = SecStaticCodeCreateWithPath((CFURLRef)applicationURL, kSecCSDefaultFlags, &applicationCode);
+    if (status != noErr) {
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+        }
+        return NO;
+    }
+    
+    OBASSERT(applicationCode != NULL);
+    if (applicationCode == NULL) {
+        *outSandboxed = uncertainResult;
+        return YES;
+    }
+    
+    SecRequirementRef sandboxRequirement = NULL;
+    status = SecRequirementCreateWithString(CFSTR("entitlement[\"com.apple.security.app-sandbox\"] exists"), kSecCSDefaultFlags, &sandboxRequirement);
+    if (status != noErr) {
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+        }
+        return NO;
+    }
+    
+    OBASSERT(sandboxRequirement != NULL);
+    if (sandboxRequirement == NULL) {
+        *outSandboxed = uncertainResult;
+        return YES;
+    }
+    
+    OSStatus sandboxStatus = SecStaticCodeCheckValidity(applicationCode, kSecCSDefaultFlags, sandboxRequirement);
+    switch (sandboxStatus) {
+        case errSecSuccess: {
+            *outSandboxed = YES;
+            break;
+        }
+            
+        case errSecCSUnsigned: { // We're unsigned
+        case errSecCSReqFailed:  // Our signature doesn't have the sandbox requirement
+            *outSandboxed = NO;
+            break;
+        }
+            
+        default: {
+            OBASSERT_NOT_REACHED("-getSandboxed:forApplicationAtURL:error: encountered an unexpected return code from SecCodeCheckValidity()");
+#ifdef DEBUG
+            NSLog(@"_isCurrentProcessSandboxed() should explicitly handle the %"PRI_OSStatus" return code from SecCodeCheckValidity()", sandboxStatus);
+#endif
+            *outSandboxed = uncertainResult;
+            break;
+        }
+    }
+    
+    CFRelease(applicationCode);
+    CFRelease(sandboxRequirement);
+
+    return YES; // return value indicates success/failure
+}
+
+- (NSDictionary *)codeSigningInfoDictionaryForURL:(NSURL *)url error:(NSError **)error;
+{
+    OSStatus status = noErr;
+    SecStaticCodeRef codeRef = NULL;
+    
+    status = SecStaticCodeCreateWithPath((CFURLRef)url, kSecCSDefaultFlags, &codeRef);
+    if (status != noErr) {
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+        }
+        return nil;
+    }
+    
+    SecCSFlags flags = ( // REVIEW: Which flags should we pass by default? Incorporate into exposed API?
+        kSecCSInternalInformation |
+        kSecCSSigningInformation |
+        kSecCSRequirementInformation |
+        kSecCSDynamicInformation |
+        kSecCSContentInformation
+    );
+    
+    CFDictionaryRef information = NULL;
+    status = SecCodeCopySigningInformation(codeRef, flags, &information);
+    if (status != noErr) {
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+        }
+        CFRelease(codeRef);
+        return nil;
+    }
+    
+    NSDictionary *codeSigningDictionary = [NSDictionary dictionaryWithDictionary:(NSDictionary *)information];
+    
+    CFRelease(codeRef);
+    CFRelease(information);
+    
+    return codeSigningDictionary;
+}
+
+- (NSDictionary *)codeSigningEntitlementsForURL:(NSURL *)signedURL error:(NSError **)error;
+{
+    NSDictionary *codeSigningInfoDictionary = [self codeSigningInfoDictionaryForURL:signedURL error:error];
+    if (codeSigningInfoDictionary == nil) {
+        return nil;
+    }
+
+    // N.B. kSecCodeInfoEntitlementsDict is not available on 10.7, but is not annotated as such
+    // rdar://problem/11799071
+
+    NSString *ENTITLEMENTS_DICT_KEY = @"entitlements-dict";
+    NSDictionary *entitlements = [codeSigningInfoDictionary objectForKey:ENTITLEMENTS_DICT_KEY];
+    if (entitlements != nil) {
+        return entitlements;
+    }
+
+    NSData *entitlementsData = [codeSigningInfoDictionary objectForKey:(id)kSecCodeInfoEntitlements];
+    if (entitlementsData != nil) {
+        // On Mac OS X 10.7, the entitlements data appears to be a prefixed plist XML blob.
+        // Interpret it, if we can...
+        
+        const char expectedSignature[] = {0xFA, 0xDE, 0x71, 0x71};
+        const NSUInteger signatureLength = sizeof(expectedSignature);
+        const NSUInteger headerLength = signatureLength + 4; // 4 skip bytes
+        if ([entitlementsData length] > headerLength) {
+            if (0 == memcmp(expectedSignature, [entitlementsData bytes], signatureLength)) {
+                NSData *plistData = [entitlementsData subdataWithRange:NSMakeRange(headerLength, [entitlementsData length] - headerLength)];
+                NSError *localError = nil;
+                id plist = [NSPropertyListSerialization propertyListWithData:plistData options:NSPropertyListImmutable format:NULL error:&localError];
+                if (plist != nil && [plist isKindOfClass:[NSDictionary class]]) {
+                    return plist;
+                }
+            }
+        }
+        
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSPropertyListReadCorruptError userInfo:nil];
+        }
+        return nil;
+    }
+
+    // Return an empty dictionary to indicate no entitlements, but success
+    return [NSDictionary dictionary];
 }
 
 @end

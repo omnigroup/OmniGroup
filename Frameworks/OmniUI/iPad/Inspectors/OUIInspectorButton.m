@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,18 +8,30 @@
 #import <OmniUI/OUIInspectorButton.h>
 
 #import <OmniUI/OUIDrawing.h>
-#import <OmniBase/OmniBase.h>
 #import <OmniUI/OUIInspector.h>
+
+#import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
 @implementation OUIInspectorButton
+{
+    UIImage *_image;
+}
 
 static UIImage *_backgroundImage(NSString *name)
 {
     UIImage *image = [UIImage imageNamed:name];
-    OBASSERT(image);
-    return [image stretchableImageWithLeftCapWidth:6 topCapHeight:0];
+    CGSize size = image.size;
+
+    // Should be exactly the height we expect and an odd width (making it easy to calculate the inner stretchable bit).
+    OBASSERT(size.width == floor(size.width));
+    OBASSERT(size.height == kOUIInspectorWellHeight);
+    
+    CGFloat capWidth = floor(size.width/2);
+    OBASSERT(size.width == capWidth * 2 + 1);
+    
+    return [image stretchableImageWithLeftCapWidth:capWidth topCapHeight:0];
 }
 
 static id _commonInit(OUIInspectorButton *self)
@@ -74,5 +86,27 @@ static id _commonInit(OUIInspectorButton *self)
     
     [self setImage:(image ? OUIMakeShadowedImage(image, OUIShadowTypeDarkContentOnLightBackground) : nil) forState:UIControlStateNormal];
 }
+
+#pragma mark - UIView (OUIExtensions)
+
+- (UIEdgeInsets)borderEdgeInsets;
+{
+    return UIEdgeInsetsMake(0/*top*/, 0/*left*/, 2/*bottom*/, 0/*right*/);
+}
+
+#pragma mark - UIView subclass
+
+- (CGSize)sizeThatFits:(CGSize)size;
+{
+    return CGSizeMake(size.width, kOUIInspectorWellHeight);
+}
+
+#ifdef OMNI_ASSERTIONS_ON
+- (void)layoutSubviews;
+{
+    OBASSERT(CGRectEqualToRect(self.bounds, CGRectZero) || self.bounds.size.height == kOUIInspectorWellHeight);
+    [super layoutSubviews];
+}
+#endif
 
 @end

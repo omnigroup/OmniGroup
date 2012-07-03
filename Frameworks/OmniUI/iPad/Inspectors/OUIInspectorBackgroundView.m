@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,6 +28,10 @@ RCS_ID("$Id$");
 
 static id _commonInit(OUIInspectorBackgroundView *self)
 {
+    // Without this, OmniPlan hits <bug:///79908> (Can only scroll inspectors by dragging on content). Our other apps don't, and I've yet to narrow down exactly why this is happening. Touches inbetween widgets (that would presumably fall through to an instance of this class) provoke zero messages to objc_msgSend{,_stret,fpret,_noarg} in the Simulator. So, it seems like *maybe* the event system is doing some non-ObjC hit detection on the CALayer tree before dispatching the event, and maybe CAGradientLayers look transparent. Grasping a straws. So far no luck building a standalone test case...
+    // Logged as Radar 11478441: CAGradientLayer-backed UIView can be untouchable
+    self.backgroundColor = [UIColor blackColor];
+    
     self.opaque = YES;
     return self;
 }

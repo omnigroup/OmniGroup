@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,16 +24,7 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
 
 @end
 
-static NSString *helperKeyPrefix = nil;
-
 @implementation OAInternetConfig
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-
-    helperKeyPrefix = (NSString *)CFStringCreateWithPascalString(NULL, kICHelper, kCFStringEncodingMacRoman);
-}
 
 + (OAInternetConfig *)internetConfig;
 {

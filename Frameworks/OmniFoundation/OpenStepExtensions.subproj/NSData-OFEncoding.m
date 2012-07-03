@@ -1,4 +1,4 @@
-// Copyright 1998-2005,2007,2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005,2007,2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -85,8 +85,13 @@ static inline uint8_t _fromhex(unichar hexDigit)
     result = [self initWithBytesNoCopy:outputBytes length:outputLength];
     OBASSERT(outputPosition == outputLength);
     
+    outputBytes = NULL; // Don't free it below since the result owns it now.
+    
 cleanup:
     free(inputBase);
+    if (outputBytes)
+        free(outputBytes);
+    
     return result;
 }
 

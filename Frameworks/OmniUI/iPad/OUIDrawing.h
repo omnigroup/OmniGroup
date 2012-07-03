@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,3 +42,15 @@ extern void OUISetShadowOnLabel(UILabel *label, OUIShadowType type);
 
 extern void OUIDrawTransparentColorBackground(CGContextRef ctx, CGRect rect, CGSize phase);
 extern void OUIDrawPatternBackground(CGContextRef ctx, NSString *imageName, CGRect rect, CGSize phase);
+
+static inline CGRect OUIEdgeInsetsOutsetRect(CGRect rect, UIEdgeInsets insets)
+{
+    UIEdgeInsets outsets = {
+        .top = -insets.top,
+        .bottom = -insets.bottom,
+        .left = -insets.left,
+        .right = -insets.right,
+    };
+    return UIEdgeInsetsInsetRect(rect, outsets);
+}
+

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <UIKit/UIView.h>
 #import <UIKit/UIGeometry.h>
+#import <OmniFoundation/OFUtilities.h>
 
 @class UIView, UIImage;
 
@@ -19,6 +20,7 @@
 - (UIImage *)snapshotImage;
 
 - (id)containingViewOfClass:(Class)cls; // can return self
+- (id)containingViewMatching:(OFPredicateBlock)predicate;
 
 // Defaults to zeros, but subclasses can return spacing offsets for where their border appears to be relative to where their actual view edge is.
 // Edge borders: Used by the inspector system to help build seemingly contsistent spacing between controls.

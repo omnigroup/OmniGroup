@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,35 +7,87 @@
 
 #import <OmniUI/OUIDetailInspectorSlice.h>
 
-#import <OmniUI/OUIInspectorTextWell.h>
+#import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorPane.h>
+#import <OmniUI/UITableView-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
-@implementation OUIDetailInspectorSlice
+@implementation OUIDetailInspectorSliceItem
 
-+ (id)detailLabelWithTitle:(NSString *)title paneMaker:(OUIDetailInspectorSlicePaneMaker)paneMaker;
+@synthesize title, value, enabled;
+
+- (void)dealloc;
 {
-    return [[(OUIDetailInspectorSlice *)[self alloc] initWithTitle:title paneMaker:paneMaker] autorelease];
+    [title release];
+    [value release];
+    [super dealloc];
 }
 
-- initWithTitle:(NSString *)title paneMaker:(OUIDetailInspectorSlicePaneMaker)paneMaker;
-{
-    OBPRECONDITION(paneMaker);
+@end
 
-    if (!(self = [super initWithTitle:title action:@selector(showDetails:)]))
+@interface OUIDetailInspectorSliceTableViewCell : UITableViewCell
+@property(nonatomic,assign) BOOL enabled;
+@end
+
+@implementation OUIDetailInspectorSliceTableViewCell
+@synthesize enabled;
+@end
+
+@interface OUIDetailInspectorSlice() <UITableViewDataSource, UITableViewDelegate>
+@property(nonatomic,retain) UITableView *tableView;
+@end
+
+@implementation OUIDetailInspectorSlice
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
+{
+    if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
         return nil;
     
-    self.paneMaker = paneMaker;
+    // Subclass responsibility
+    OBASSERT([self respondsToSelector:@selector(itemCount)]);
+    OBASSERT([self respondsToSelector:@selector(updateItem:atIndex:)]);
     
     return self;
 }
 
-@synthesize paneMaker = _paneMaker;
-
 - (void)dealloc;
 {
-    [_paneMaker release];
+    _tableView.delegate = nil;
+    _tableView.dataSource = nil;
+    [_tableView release];
+
     [super dealloc];
+}
+
+@synthesize tableView = _tableView;
+
+// The most common case is that there is only one, but subclasses might have a whole group of related options.
+- (NSUInteger)itemCount;
+{
+    return 1;
+}
+
+- (void)updateItem:(OUIDetailInspectorSliceItem *)item atIndex:(NSUInteger)itemIndex;
+{
+    // just leave the title.
+}
+
+// Let subclasses filter/adjust the inspection set for their details. Returning nil uses the default behavior of passing the same inspection set along.
+- (NSArray *)inspectedObjectsForItemAtIndex:(NSUInteger)itemIndex;
+{
+    return nil;
+}
+
+- (NSString *)placeholderTitleForItemAtIndex:(NSUInteger)itemIndex;
+{
+    return nil;
+}
+
+- (NSString *)placeholderValueForItemAtIndex:(NSUInteger)itemIndex;
+{
+    return nil;
 }
 
 #pragma mark -
@@ -43,18 +95,150 @@ RCS_ID("$Id$");
 
 - (void)showDetails:(id)sender;
 {
-    if (!self.detailPane && _paneMaker)
-        self.detailPane = _paneMaker(self);
-    [super showDetails:sender];
+    OBFinishPorting;
+}
+
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
+{
+    [super updateInterfaceFromInspectedObjects:reason];
+    
+    [_tableView reloadData];
+    OUITableViewAdjustHeightToFitContents(_tableView);
 }
 
 #pragma mark -
 #pragma mark UIViewController subclass
 
+- (void)loadView;
+{
+    OBPRECONDITION(_tableView == nil);
+    
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 420) style:UITableViewStyleGrouped];
+    
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    self.view = _tableView;
+}
+
 - (void)viewDidLoad;
 {
     [super viewDidLoad];
-    [self.textWell setNavigationArrowRightView];
+    
+    [self configureTableViewBackground:_tableView];
+}
+
+- (void)viewDidUnload;
+{
+    _tableView.delegate = nil;
+    _tableView.dataSource = nil;
+    self.tableView = nil;
+    
+    [super viewDidUnload];
+}
+
+- (void)viewWillAppear:(BOOL)animated;
+{
+    [super viewWillAppear:animated];
+    
+    // Might be coming back from a detail pane that edited a displayed value
+    [_tableView reloadData];
+    OUITableViewAdjustHeightToFitContents(_tableView);
+}
+
+#pragma mark -
+#pragma mark UITableViewDataSource
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
+{
+    if (section == 0)
+        return [self itemCount];
+    return 0;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    NSString *reuseIdentifier = [[NSString alloc] initWithFormat:@"%ld", indexPath.row];
+    OUIDetailInspectorSliceTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
+    if (!cell) {
+        cell = [[[OUIDetailInspectorSliceTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:reuseIdentifier] autorelease];
+        
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.selectionStyle = UITableViewCellSelectionStyleGray;
+    }
+    [reuseIdentifier release];
+    
+    NSUInteger itemIndex = (NSUInteger)indexPath.row;
+    OUIDetailInspectorSliceItem *item = [[OUIDetailInspectorSliceItem alloc] init];
+    item.title = self.title;
+    item.enabled = YES;
+    
+    [self updateItem:item atIndex:itemIndex];
+    
+    BOOL placeholder;
+    
+    NSString *title = item.title;
+    placeholder = NO;
+    if ([NSString isEmptyString:title]) {
+        placeholder = YES;
+        title = [self placeholderTitleForItemAtIndex:itemIndex];
+    }
+    cell.textLabel.text = title;
+    cell.textLabel.textColor = placeholder ? [OUIInspector disabledLabelTextColor] : nil;
+    cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
+    
+    NSString *value = item.value;
+    placeholder = NO;
+    if ([NSString isEmptyString:value]) {
+        placeholder = YES;
+        value = [self placeholderValueForItemAtIndex:itemIndex];
+    }
+
+    // No entry in UIInterface for this.
+    static UIColor *defaultDetailTextColor = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        defaultDetailTextColor = [cell.detailTextLabel.textColor retain];
+    });
+    
+    cell.detailTextLabel.text = value;
+    cell.detailTextLabel.textColor = placeholder ? [OUIInspector disabledLabelTextColor] : defaultDetailTextColor;
+    cell.detailTextLabel.font = [OUIInspectorTextWell defaultFont];
+    
+    cell.enabled = item.enabled;
+    
+    [item release];
+    
+    return cell;
+}
+
+#pragma mark -
+#pragma mark UITableViewDelegate protocol
+
+- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    OUIDetailInspectorSliceTableViewCell *cell = (OUIDetailInspectorSliceTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
+    return cell.enabled ? indexPath : nil;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    OBPRECONDITION(self.detailPane == nil); // I want to get rid of this property, but we definitely shouldn't have one here since we might have multiple items
+    
+    NSUInteger itemIndex = (NSUInteger)indexPath.row;
+    
+    OUIInspectorPane *details = [self makeDetailsPaneForItemAtIndex:itemIndex];
+    
+    OBASSERT(details.parentSlice == nil); // The implementation shouldn't bother to set this up, we just pass it in case the detail needs to get some info from the parent
+    details.parentSlice = self;
+    
+    // Maybe just call -updateItemAtIndex:with: again rather than grunging it back out of the UI...
+    OUIDetailInspectorSliceTableViewCell *selectedCell = (OUIDetailInspectorSliceTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
+    OBASSERT(selectedCell); // just got tapped, so it should be around!
+    details.title = selectedCell.textLabel.text;
+    
+    [self.inspector pushPane:details inspectingObjects:[self inspectedObjectsForItemAtIndex:itemIndex]];
+    
+    [_tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 @end

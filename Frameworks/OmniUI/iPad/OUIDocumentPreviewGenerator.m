@@ -26,7 +26,7 @@ RCS_ID("$Id$");
 {
     NSMutableSet *_fileItemsNeedingUpdatedPreviews;
     OFSDocumentStoreFileItem *_currentPreviewUpdatingFileItem;
-    OFSDocumentStoreFileItem *_fileItemToOpenAfterCurrentPreviewUpdateFinishes;
+    OFSDocumentStoreFileItem *_fileItemToOpenAfterCurrentPreviewUpdateFinishes; // We block user interaction while this is set.
     UIBackgroundTaskIdentifier _previewUpdatingBackgroundTaskIdentifier;
 }
 
@@ -39,7 +39,11 @@ RCS_ID("$Id$");
 
     [_fileItemsNeedingUpdatedPreviews release];
     [_currentPreviewUpdatingFileItem release];
-    [_fileItemToOpenAfterCurrentPreviewUpdateFinishes release];
+    
+    if (_fileItemToOpenAfterCurrentPreviewUpdateFinishes) {
+        [_fileItemToOpenAfterCurrentPreviewUpdateFinishes release];
+        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+    }
 
     if (_previewUpdatingBackgroundTaskIdentifier != UIBackgroundTaskInvalid) {
         [[UIApplication sharedApplication] endBackgroundTask:_previewUpdatingBackgroundTaskIdentifier];
@@ -102,6 +106,7 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, OFSD
 - (BOOL)shouldOpenDocumentWithFileItem:(OFSDocumentStoreFileItem *)fileItem;
 {
     OBPRECONDITION(_fileItemToOpenAfterCurrentPreviewUpdateFinishes == nil);
+    OBPRECONDITION(fileItem);
     
     if (_currentPreviewUpdatingFileItem == nil) {
         OBASSERT(_previewUpdatingBackgroundTaskIdentifier == UIBackgroundTaskInvalid);
@@ -114,6 +119,10 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, OFSD
     [_fileItemToOpenAfterCurrentPreviewUpdateFinishes release];
     _fileItemToOpenAfterCurrentPreviewUpdateFinishes = [fileItem retain];
     
+    // Hacky, but if we defer the action (which would have paused user interaction while opening a document), we shouldn't let another action creep in (like tapping the + button to add a new document) and then fire off our delayed open.
+    if (_fileItemToOpenAfterCurrentPreviewUpdateFinishes)
+        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+
     OBFinishPortingLater("Turn off user interaction while this is going on");
     return NO;
 }
@@ -251,6 +260,7 @@ static void _writePreviewsForFileVersions(OUIDocumentPreviewGenerator *self, NSM
         
         OFSDocumentStoreFileItem *fileItem = [_fileItemToOpenAfterCurrentPreviewUpdateFinishes autorelease];
         _fileItemToOpenAfterCurrentPreviewUpdateFinishes = nil;
+        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
         
         [_nonretained_delegate previewGenerator:self performDelayedOpenOfFileItem:fileItem];
         return;
@@ -353,8 +363,12 @@ static void _writePreviewsForFileVersions(OUIDocumentPreviewGenerator *self, NSM
     OBPRECONDITION(_previewUpdatingBackgroundTaskIdentifier == UIBackgroundTaskInvalid);
     
     // Forget any request to open a file after a preview update
-    [_fileItemToOpenAfterCurrentPreviewUpdateFinishes release];
-    _fileItemToOpenAfterCurrentPreviewUpdateFinishes = nil;
+    if (_fileItemToOpenAfterCurrentPreviewUpdateFinishes) {
+        [_fileItemToOpenAfterCurrentPreviewUpdateFinishes release];
+        _fileItemToOpenAfterCurrentPreviewUpdateFinishes = nil;
+        
+        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+    }
     
     // On our next foregrounding, we'll restart our preview updating anyway. If we have a preview generation in progress, try to wait for that to complete, though. Otherwise if it happens to complete after we say we can get backgrounded, our read/writing of the image can fail with EINVAL (presumably they close up the sandbox).
     [_fileItemsNeedingUpdatedPreviews removeAllObjects];

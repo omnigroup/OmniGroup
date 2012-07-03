@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -241,27 +241,17 @@ static id _commonInit(OUIInspectorOptionWheel *self)
 - (void)drawRect:(CGRect)rect;
 {
     CGRect bounds = self.bounds;
-    
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
-    OUIInspectorWellDrawOuterShadow(ctx, bounds, YES/*rounded*/);
-    
-    // Fill the gradient
-    CGContextSaveGState(ctx);
-    {
-        OUIInspectorWellAddPath(ctx, bounds, YES/*rounded*/);
-        CGContextClip(ctx);
-        
-        
+    OUIInspectorWellDraw(ctx, self.bounds,
+                         OUIInspectorWellCornerTypeLargeRadius, OUIInspectorWellBorderTypeLight, YES/*innerShadow*/,
+                         ^(CGRect interiorRect){
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
         CGShadingRef shading = CGShadingCreateAxial(colorSpace, bounds.origin, CGPointMake(CGRectGetMaxX(bounds), CGRectGetMinY(bounds)), BackgroundShadingFunction, NO, NO);
         CGColorSpaceRelease(colorSpace);
         CGContextDrawShading(ctx, shading);
         CGShadingRelease(shading);
-    }
-    CGContextRestoreGState(ctx);
-
-    OUIInspectorWellDrawBorderAndInnerShadow(ctx, bounds, YES/*rounded*/, YES/*innerShadow*/);
+    });
 }
 
 - (void)layoutSubviews;

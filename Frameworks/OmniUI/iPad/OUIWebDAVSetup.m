@@ -89,6 +89,7 @@ NSString * const OUIOmniSyncUsername = @"OUIOmniSyncUsername";
 - (void)viewDidLoad;
 {
     [super viewDidLoad];
+    self.tableView.scrollEnabled = NO;
 
     NSString *syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Sign In", @"OmniUI", OMNI_BUNDLE, @"sign in button title");
     UIBarButtonItem *syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(saveSettingsAndSync:)];

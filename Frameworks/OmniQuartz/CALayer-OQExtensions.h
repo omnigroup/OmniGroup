@@ -22,6 +22,7 @@
 - (CALayer *)rootLayer;
 - (BOOL)isSublayerOfLayer:(CALayer *)layer;
 - (id)sublayerNamed:(NSString *)name;
+- (NSArray *)sublayersNamed:(NSString *)name;
 //- (void)hideLayersBasedOnPotentiallyVisibleRect:(CGRect)r;
 - (NSUInteger)countLayers;
 - (NSUInteger)countVisibleLayers;

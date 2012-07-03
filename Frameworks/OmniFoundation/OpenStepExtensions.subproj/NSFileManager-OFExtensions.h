@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -75,5 +75,19 @@
 
    // Checks whether one path is a subdirectory of another, optionally returning the relative path (a suffix of thisPath). Consults the filesystem in an attempt to discover commonalities due to symlinks and file mounts. (Does not handle aliases, particularly.)
 - (BOOL)path:(NSString *)otherPath isAncestorOfPath:(NSString *)thisPath relativePath:(NSString **)relativeResult;
+
+// Code signing
+
+- (BOOL)getSandboxed:(out BOOL *)outSandboxed forApplicationAtURL:(NSURL *)applicationURL error:(NSError **)error;
+    // Works with bundled applications and standalone executables
+    // N.B. You need to have read access to the application bundle or executable to determine sandboxedness.
+    // As an implementation detail this appears to work for everything under /Applications for sandboxed applications on 10.7 and 10.8 but probably should not be relied upon.
+
+- (NSDictionary *)codeSigningInfoDictionaryForURL:(NSURL *)signedURL error:(NSError **)error;
+    // Various pieces of information extraced from the code signature for the bundle/executable at this URL
+    // See Security/SecCode.h for the dictionary keys
+
+- (NSDictionary *)codeSigningEntitlementsForURL:(NSURL *)signedURL error:(NSError **)error;
+    // The extracted entitlements for the signed entity at the URL
 
 @end

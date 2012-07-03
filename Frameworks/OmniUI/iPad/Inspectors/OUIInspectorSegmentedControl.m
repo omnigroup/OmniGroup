@@ -6,15 +6,15 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIInspectorSegmentedControl.h>
+
 #import <OmniUI/OUIInspectorSegmentedControlButton.h>
-#import <UIKit/UIKit.h>
-#import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFNull.h>
+#import "OUIParameters.h"
+
 
 RCS_ID("$Id$");
 
 static const CGFloat kButtonWidth = 57;
-static const CGFloat kButtonHeight = 38;
 
 @interface OUIInspectorSegmentedControl (/*Private*/)
 - (void)_segmentPressed:(OUIInspectorSegmentedControlButton *)segment;
@@ -24,7 +24,7 @@ static const CGFloat kButtonHeight = 38;
 
 + (CGFloat)buttonHeight;
 {
-    return kButtonHeight;
+    return kOUIInspectorWellHeight;
 }
 
 static id _commonInit(OUIInspectorSegmentedControl *self)
@@ -204,12 +204,6 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
     return nil;
 }
 
-- (CGFloat)buttonHeight;
-// Graffle subclasses this to keep the height from changing, though sizesToFit might make more sense
-{
-    return [[self class] buttonHeight];
-}
-
 - (void)setEnabled:(BOOL)yn;
 {
     for (OUIInspectorSegmentedControlButton *button in _segments)
@@ -222,8 +216,7 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
 - (UIEdgeInsets)borderEdgeInsets
 {
     // Really we should implement this on the buttons and then have the lookups recurse, but our button subviews aren't likely to be used anywhere else.
-    // 1px space at the top, 1px white shadow at the bottom.
-    return UIEdgeInsetsMake(1/*top*/, 0/*left*/, 1/*bottom*/, 0/*right*/);
+    return UIEdgeInsetsMake(0/*top*/, 0/*left*/, 1/*bottom*/, 0/*right*/);
 }
 
 #pragma mark -
@@ -234,7 +227,7 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
     OBPRECONDITION([_segments count] >= 2); // Else, why are you using a segmented control at all...
 
     CGRect bounds = self.bounds;
-    OBASSERT(bounds.size.height == [self buttonHeight]); // Make sure it is the right size in the xib. Or maybe we should add a -sizeThatFits...
+    OBASSERT(bounds.size.height == [[self class] buttonHeight]); // Make sure it is the right size in the xib. Or maybe we should add a -sizeThatFits...
     
     // Don't go totally insane if we only have one button, but it won't look good.
 
@@ -269,7 +262,7 @@ static id _commonInit(OUIInspectorSegmentedControl *self)
         buttonFrame.origin.x = BUTTON_LEFT_X(buttonIndex);
         buttonFrame.origin.y = CGRectGetMinY(bounds);
         buttonFrame.size.width = BUTTON_LEFT_X(buttonIndex + 1) - BUTTON_LEFT_X(buttonIndex);
-        buttonFrame.size.height = [self buttonHeight];
+        buttonFrame.size.height = [[self class] buttonHeight];
         
         if (_sizesSegmentsToFit && (buttonIndex == buttonCount - 1)) {
             // Make sure the last button reaches all the way to the right edge

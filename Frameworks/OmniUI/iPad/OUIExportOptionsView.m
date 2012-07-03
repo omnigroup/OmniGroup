@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,7 +98,16 @@ static id _commonInit(OUIExportOptionsView *self)
     
     [self addSubview:choice];
     
-    NSUInteger rows = ([_choiceButtons count] + kMaximumChoicesPerRow - 1) / kMaximumChoicesPerRow;
+    NSUInteger choiceIndex = 0, choiceCount = [_choiceButtons count];
+    CGFloat maxWidth = 0.0f;
+    for (choiceIndex = 0; choiceIndex < choiceCount; choiceIndex++) {
+        OUIExportOptionsButton *choice = [_choiceButtons objectAtIndex:choiceIndex];
+        [choice sizeToFit];
+        maxWidth = MAX(maxWidth, CGRectGetWidth(choice.frame));
+    }
+    NSUInteger maxChoicesPerRow = MIN(kMaximumChoicesPerRow, (NSUInteger)floor(CGRectGetWidth(self.bounds) / maxWidth));
+
+    NSUInteger rows = ([_choiceButtons count] + maxChoicesPerRow - 1) / maxChoicesPerRow;
     OBASSERT(rows >= 1);
     
     CGFloat height = 2*kVerticalBorder + rows*(kImageSize + kLabelHeight) + (rows-1)*kRowPadding;
@@ -112,11 +121,19 @@ static id _commonInit(OUIExportOptionsView *self)
     CGRect bounds = self.bounds;
     CGFloat yOffset = kVerticalBorder;
     NSUInteger choiceIndex = 0, choiceCount = [_choiceButtons count];
+    CGFloat maxWidth = 0.0f;
     
+    for (choiceIndex = 0; choiceIndex < choiceCount; choiceIndex++) {
+        OUIExportOptionsButton *choice = [_choiceButtons objectAtIndex:choiceIndex];
+        [choice sizeToFit];
+        maxWidth = MAX(maxWidth, CGRectGetWidth(choice.frame));
+    }
+    NSUInteger maxChoicesPerRow = MIN(kMaximumChoicesPerRow, (NSUInteger)floor(CGRectGetWidth(bounds) / maxWidth));
+    
+    choiceIndex = 0;
     while (choiceIndex < choiceCount) {
-        NSUInteger choicesOnThisRow = MIN(choiceCount - choiceIndex, kMaximumChoicesPerRow);
-        
-        CGFloat horizontalPadding = (CGRectGetWidth(bounds) - kImageSize*choicesOnThisRow) / (choicesOnThisRow + 1);
+        NSUInteger choicesOnThisRow = MIN(choiceCount - choiceIndex, maxChoicesPerRow);
+        CGFloat horizontalPadding = (CGRectGetWidth(bounds) - maxWidth*choicesOnThisRow) / (choicesOnThisRow + 1);
 
         CGFloat maxHeightInRow = 0;
         for (NSUInteger rowIndex = 0; rowIndex < choicesOnThisRow; rowIndex++) {
@@ -126,7 +143,7 @@ static id _commonInit(OUIExportOptionsView *self)
 
             choiceFrame.origin.x = floor(horizontalPadding + (horizontalPadding + kImageSize) * rowIndex);
             choiceFrame.origin.y = yOffset;
-            choiceFrame.size.width = kImageSize;
+            choiceFrame.size.width = maxWidth;
             choiceFrame.size.height = kImageSize + kLabelHeight;
             
             choice.frame = choiceFrame;

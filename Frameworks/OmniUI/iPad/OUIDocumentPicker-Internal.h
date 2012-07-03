@@ -17,6 +17,6 @@
 - (void)_beginIgnoringDocumentsDirectoryUpdates;
 - (void)_endIgnoringDocumentsDirectoryUpdates;
 
-- (OFSDocumentStoreFileItem *)_preferredFileItemForNextPreviewUpdate:(NSSet *)fileItemsNeedingPreviewUpdate;
+- (OFSDocumentStoreFileItem *)_preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
 
 @end

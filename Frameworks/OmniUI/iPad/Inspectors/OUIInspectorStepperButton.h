@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,20 +9,7 @@
 
 #import <UIKit/UIButton.h>
 
-
 @interface OUIInspectorStepperButton : UIButton
-{
-@private
-    BOOL _flipped;
-    BOOL _repeats;
-    
-    NSTimer *_repeatTimer;
-    
-    UILabel *_label;
-    UIImage *_image;
-    
-    UIImage *_cachedImage;
-}
 
 + (CGSize)stepperButtonSize;
 

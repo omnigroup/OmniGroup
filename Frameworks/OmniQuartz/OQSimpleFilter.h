@@ -1,4 +1,4 @@
-// Copyright 2005-2011 The Omni Group. All rights reserved.
+// Copyright 2005-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,7 @@
 
 @interface OQSimpleFilter : CIFilter
 + (CIKernel *)kernel;
-+ (NSString *)filterSourceFileName; // "<name>.cikernel" must existing in the class's bundle
++ (NSString *)filterSourceFileName; // "<name>.cikernel" must exist in the class's bundle
 @end
 
 // Subclasses must implement this protocol

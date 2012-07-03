@@ -128,6 +128,8 @@ static NSString * const OpenGroupItemsBinding = @"openGroupItems";
 - (void)_flushAfterDocumentStoreInitializationActions;
 @property(nonatomic,retain) NSMutableDictionary *openInMapCache;
 
+@property(nonatomic,readonly) BOOL canPerformActions;
+
 @end
 
 @implementation OUIDocumentPicker
@@ -141,7 +143,6 @@ static NSString * const OpenGroupItemsBinding = @"openGroupItems";
     
     UIPopoverController *_filterPopoverController;
     OUIDocumentRenameViewController *_renameViewController;
-    BOOL _isRevealingNewDocument;
     
     OUIReplaceDocumentAlert *_replaceDocumentAlert;
     
@@ -327,7 +328,7 @@ static id _commonInit(OUIDocumentPicker *self)
         // <bug://bugs/60005> (Document picker scrolls to empty spot after editing file)
         [_mainScrollView.window layoutIfNeeded];
         
-        OBFinishPortingLater("Show/open the group scroll view if the item is in a group?");
+        //OBFinishPortingLater("Show/open the group scroll view if the item is in a group?");
         OFSDocumentStoreFileItem *fileItem = [_documentStore fileItemWithURL:targetURL];
         if (!fileItem)
             [_mainScrollView scrollsToTop]; // OBFinishPorting -- this is a getter
@@ -414,23 +415,17 @@ static id _commonInit(OUIDocumentPicker *self)
     [self.activeScrollView scrollItemsToVisible:items animated:animated];
 }
 
-- (BOOL)okayToOpenMenu;
-{
-    return (!_isRevealingNewDocument && self.parentViewController != nil);  // will still be the inner controller while scrolling to the new doc
-}
-
 - (IBAction)newDocument:(id)sender;
 {
     OBPRECONDITION(_renameViewController == nil); // Can't be renaming right now, so need to try to stop
 
-    if (![self okayToOpenMenu])
+    if (!self.canPerformActions)
         return;
     
     // Get rid of any visible popovers immediately
     [[OUIAppController controller] dismissPopoverAnimated:NO];
     
     [self _beginIgnoringDocumentsDirectoryUpdates];
-    
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
     
     [_documentStore createNewDocument:^(OFSDocumentStoreFileItem *createdFileItem, NSError *error){
@@ -441,9 +436,7 @@ static id _commonInit(OUIDocumentPicker *self)
             OUI_PRESENT_ERROR(error);
             return;
         }
-        
-        _isRevealingNewDocument = YES;
-        
+                
         // We want the file item to have a new date, but this is the wrong place to do it. Want to do it in the document picker before it creates the item.
         // [[NSFileManager defaultManager] touchItemAtURL:createdItem.fileURL error:NULL];
         
@@ -685,6 +678,9 @@ static id _commonInit(OUIDocumentPicker *self)
     if ([_nonretained_delegate respondsToSelector:@selector(documentPicker:availableExportTypesForFileItem:withSyncType:exportOptionsType:)]) {
         [exportTypes addObjectsFromArray:[_nonretained_delegate documentPicker:self availableExportTypesForFileItem:fileItem withSyncType:syncType exportOptionsType:exportOptionsType]];
     } else {
+        // Add the 'native' marker
+        [exportTypes insertObject:[NSNull null] atIndex:0];
+
         // PDF PNG Fallbacks
         BOOL canMakePDF = [_nonretained_delegate respondsToSelector:@selector(documentPicker:PDFDataForFileItem:error:)];
         BOOL canMakePNG = [_nonretained_delegate respondsToSelector:@selector(documentPicker:PNGDataForFileItem:error:)];
@@ -1071,7 +1067,7 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
         return;
     }
     
-    if (![self okayToOpenMenu])
+    if (!self.canPerformActions)
         return;
 
     OUIActionSheet *actionSheet = [[[OUIActionSheet alloc] initWithIdentifier:kActionSheetDeleteIdentifier] autorelease];
@@ -1097,7 +1093,7 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
 
 - (IBAction)export:(id)sender;
 {
-    if (![self okayToOpenMenu])
+    if (!self.canPerformActions)
         return;
 
     OFSDocumentStoreFileItem *fileItem = self.singleSelectedFileItem;
@@ -1505,7 +1501,7 @@ static void _setSelectedDocumentsInCloud(OUIDocumentPicker *self, BOOL toCloud)
 @synthesize filterViewContentSize = _filterViewContentSize;
 - (IBAction)filterAction:(UIView *)sender;
 {
-    if (![self okayToOpenMenu])
+    if (!self.canPerformActions)
         return;
     
 /*
@@ -1892,12 +1888,9 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
 
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView inArea:(OUIDocumentPickerItemViewTapArea)area;
 {
-    //OBPRECONDITION(_renameViewController == nil); // Can't be renaming right now, so need to try to stop
-    
-    // Actually, if you touch two view names at the same time we can get here... UIGestureRecognizer actions seem to be sent asynchronously via queued block, so other events can trickle in and cause another recognizer to fire before the first queued action has run.
-    if (_renameViewController)
+    if (!self.canPerformActions || _renameViewController) // Another rename might be starting (we don't have a spot to start/stop ignore user interaction there since the keyboard drives the animation).
         return;
-    
+            
     if ([itemView isKindOfClass:[OUIDocumentPickerFileItemView class]]) {
         OUIDocumentPickerFileItemView *fileItemView = (OUIDocumentPickerFileItemView *)itemView;
         OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)itemView.item;
@@ -1966,6 +1959,7 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
 // We become the file presentor for our document store's directory (which we assume won't change...)
 // Under iOS 5, when iTunes fiddles with your files, your app no longer gets deactivated and reactivated. Instead, the operations seem to happen via NSFileCoordinator.
 // Sadly, we don't get subitem changes just -presentedItemDidChange, no matter what set of NSFilePresenter methods we implement (at least as of beta 7).
+// Under the WWDC iOS 6 beta, we've started getting sub-item notifications, but not necessarily the right ones (typically "did change" instead of "did appear" or "accommodate deletion"). We'll watch both for the expected callbacks and the ones we actually get now.
 
 - (NSURL *)presentedItemURL;
 {
@@ -1982,6 +1976,31 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
 
 - (void)presentedItemDidChange;
 {
+    [self _requestScanDueToPresentedItemDidChange];
+}
+
+- (void)accommodatePresentedSubitemDeletionAtURL:(NSURL *)url completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+{
+    PICKER_DEBUG(@"Accomodate sub item deletion at %@", url);
+    
+    completionHandler(nil);
+    [self _requestScanDueToPresentedItemDidChange];
+}
+
+- (void)presentedSubitemDidAppearAtURL:(NSURL *)url;
+{
+    PICKER_DEBUG(@"Sub item did appear at %@", url);
+    [self _requestScanDueToPresentedItemDidChange];
+}
+
+- (void)presentedSubitemDidChangeAtURL:(NSURL *)url;
+{
+    PICKER_DEBUG(@"Sub item did change at %@", url);
+    [self _requestScanDueToPresentedItemDidChange];
+}
+
+- (void)_requestScanDueToPresentedItemDidChange;
+{
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         OBPRECONDITION([NSThread isMainThread]);
         
@@ -1991,30 +2010,25 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
         if (_ignoreDocumentsDirectoryUpdates > 0)
             return; // Some other operation is going on that is provoking this change and that wants to do the rescan manually.
         
-        [self _requestScanDueToPresentedItemDidChange];
-    }];
-}
-
-- (void)_requestScanDueToPresentedItemDidChange;
-{
-    // We can get called a ton when moving a whole bunch of documents into iCloud. Don't start another scan until our first has finished.
-    if (_rescanForPresentedItemDidChangeRunning) {        
-        // Note that there was a rescan request while the first was running. We don't want to queue up an arbitrary number of rescans, but if some operations happened while the first scan was running, we could miss them. So, we need to remember and do one more scan.
-        _presentedItemDidChangeCalledWhileRescanning = YES;
-        return;
-    }
-    
-    _rescanForPresentedItemDidChangeRunning = YES;
-    
-    // Note: this will get called when the app is returned to the foreground, if coordinated writes were made while it was backgrounded.
-    [self rescanDocumentsScrollingToURL:nil animated:YES completionHandler:^{
-        _rescanForPresentedItemDidChangeRunning = NO;
-        
-        // If there were more scans requested while the first was running, do *one* more now to catch any remaining changes (no matter how many requests there were).
-        if (_presentedItemDidChangeCalledWhileRescanning) {
-            _presentedItemDidChangeCalledWhileRescanning = NO;
-            [self _requestScanDueToPresentedItemDidChange];
+        // We can get called a ton when moving a whole bunch of documents into iCloud. Don't start another scan until our first has finished.
+        if (_rescanForPresentedItemDidChangeRunning) {        
+            // Note that there was a rescan request while the first was running. We don't want to queue up an arbitrary number of rescans, but if some operations happened while the first scan was running, we could miss them. So, we need to remember and do one more scan.
+            _presentedItemDidChangeCalledWhileRescanning = YES;
+            return;
         }
+        
+        _rescanForPresentedItemDidChangeRunning = YES;
+        
+        // Note: this will get called when the app is returned to the foreground, if coordinated writes were made while it was backgrounded.
+        [self rescanDocumentsScrollingToURL:nil animated:YES completionHandler:^{
+            _rescanForPresentedItemDidChangeRunning = NO;
+            
+            // If there were more scans requested while the first was running, do *one* more now to catch any remaining changes (no matter how many requests there were).
+            if (_presentedItemDidChangeCalledWhileRescanning) {
+                _presentedItemDidChangeCalledWhileRescanning = NO;
+                [self _requestScanDueToPresentedItemDidChange];
+            }
+        }];
     }];
 }
 
@@ -2028,7 +2042,7 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     return vc;
 }
 
-- (OFSDocumentStoreFileItem *)_preferredFileItemForNextPreviewUpdate:(NSSet *)fileItemsNeedingPreviewUpdate;
+- (OFSDocumentStoreFileItem *)_preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
 {
     // Don't think too hard if there is just a single incoming iCloud update
     if ([fileItemsNeedingPreviewUpdate count] <= 1)
@@ -2037,9 +2051,9 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     // Find a file preview that will update something in the user's view.
     OFSDocumentStoreFileItem *fileItem = nil;
     if ([_groupScrollView window])
-        fileItem = [_groupScrollView preferredFileItemForNextPreviewUpdate:fileItemsNeedingPreviewUpdate];
+        fileItem = [_groupScrollView preferredVisibleItemFromSet:fileItemsNeedingPreviewUpdate];
     if (!fileItem)
-        fileItem = [_mainScrollView preferredFileItemForNextPreviewUpdate:fileItemsNeedingPreviewUpdate];
+        fileItem = [_mainScrollView preferredVisibleItemFromSet:fileItemsNeedingPreviewUpdate];
 
     return fileItem;
 }
@@ -2418,9 +2432,7 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
 #if 1
     if ([_nonretained_delegate respondsToSelector:@selector(documentPicker:openCreatedFileItem:)])
         [_nonretained_delegate documentPicker:self openCreatedFileItem:createdFileItem];
-    
-    _isRevealingNewDocument = NO;
-    
+        
     if (completionHandler)
         completionHandler();
 #else
@@ -2461,8 +2473,6 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
              
              if ([_nonretained_delegate respondsToSelector:@selector(documentPicker:openCreatedFileItem:)])
                  [_nonretained_delegate documentPicker:self openCreatedFileItem:createdFileItem];
-
-             _isRevealingNewDocument = NO;
          });
          
          if (completionHandler)
@@ -2542,7 +2552,17 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     
     NSMutableSet *toAdd = [[items mutableCopy] autorelease];
     [toAdd minusSet:currentItems];
+    
+    // We can get a sequence of add/removes and might still be in the midst of animating them. For example, we might get two back-to-back KVO cycles where one item is removed and one item its added (say, when replacing an existing document with a newly downloaded one). To avoid assertions and animation glitches, we need to be careful to filter out stuff that is already in the process of being added or removed.
+    [toRemove minusSet:scrollView.itemsBeingRemoved];
+    [toAdd minusSet:scrollView.itemsBeingAdded];
 
+    if ([toRemove count] == 0 && [toAdd count] == 0) {
+        // Some changes might have been sent already and still be in flight, but we should have gotten at least one extra change...
+        OBASSERT_NOT_REACHED("Probably shouldn't happen -- getting redundant KVO?");
+        return;
+    }
+    
     [OUIAnimationSequence runWithDuration:animationInterval actions:
      ^{
          if ([toRemove count] > 0)
@@ -2608,4 +2628,15 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
         }];
     }
 }
+
+- (BOOL)canPerformActions;
+{
+    // Ugly. This can happen due to UIGestureRecognizer matching and then not immediately firing its action, but rather queuing it in a block. Some *other* event may have fired a non-recognizer action or two recognizers might fire. If one fires and starts doing something async with interaction turned off, bail here.
+    if ([[UIApplication sharedApplication] isIgnoringInteractionEvents]) {
+        return NO;
+    }
+    
+    return (self.parentViewController != nil); // will still be the inner controller while scrolling to the new doc
+}
+
 @end

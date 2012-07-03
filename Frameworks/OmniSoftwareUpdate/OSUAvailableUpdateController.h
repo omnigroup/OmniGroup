@@ -15,6 +15,8 @@
 
 extern NSString * const OSUAvailableUpdateControllerAvailableItemsBinding;
 extern NSString * const OSUAvailableUpdateControllerCheckInProgressBinding;
+extern NSString * const OSUAvailableUpdateControllerLastCheckFailedBinding;
+extern NSString * const OSUAvailableUpdateControllerLastCheckUserInitiatedBinding;
 
 @interface OSUAvailableUpdateController : NSWindowController <NSTableViewDelegate>
 {
@@ -45,6 +47,8 @@ extern NSString * const OSUAvailableUpdateControllerCheckInProgressBinding;
     OSUItem *_selectedItem;
     BOOL _loadingReleaseNotes;
     BOOL _checkInProgress;
+    BOOL _lastCheckFailed;
+    BOOL _lastCheckExplicit;
 }
 
 + (OSUAvailableUpdateController *)availableUpdateController:(BOOL)shouldCreate;

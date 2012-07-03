@@ -1,4 +1,4 @@
-// Copyright 2007-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -302,13 +302,13 @@ static void filterScoreInit(void)
     uppercaseLetterOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:[NSCharacterSet uppercaseLetterCharacterSet]];
     
     OFPreferenceWrapper *preferences = [OFPreferenceWrapper sharedPreferenceWrapper];
-    CompletionScoreFullMatch = [preferences integerForKey:@"CompletionScoreFullMatch"];
-    CompletionScorePhraseStart = [preferences integerForKey:@"CompletionScorePhraseStart"];
-    CompletionScorePhraseEnd = [preferences integerForKey:@"CompletionScorePhraseEnd"];
-    CompletionScoreConsecutiveCharacter = [preferences integerForKey:@"CompletionScoreConsecutiveCharacter"];
-    CompletionScoreConsecutiveWord = [preferences integerForKey:@"CompletionScoreConsecutiveWord"];
-    CompletionScoreWordStart = [preferences integerForKey:@"CompletionScoreWordStart"];
-    CompletionScoreCapitalLetter = [preferences integerForKey:@"CompletionScoreCapitalLetter"];
+    CompletionScoreFullMatch = [preferences integerForKey:@"OFCompletionMatchScoreForFullMatch"];
+    CompletionScorePhraseStart = [preferences integerForKey:@"OFCompletionMatchScoreForPhraseStart"];
+    CompletionScorePhraseEnd = [preferences integerForKey:@"OFCompletionMatchScoreForPhraseEnd"];
+    CompletionScoreConsecutiveCharacter = [preferences integerForKey:@"OFCompletionMatchScoreForConsecutiveCharacter"];
+    CompletionScoreConsecutiveWord = [preferences integerForKey:@"OFCompletionMatchScoreForConsecutiveWord"];
+    CompletionScoreWordStart = [preferences integerForKey:@"OFCompletionMatchScoreForWordStart"];
+    CompletionScoreCapitalLetter = [preferences integerForKey:@"OFCompletionMatchScoreForCapitalLetter"];
 }
 
 static BOOL calculateIndexesOfLastMatchesInName(

@@ -309,6 +309,22 @@ typedef struct {
     });
 }
 
+- (void)updateTitleBarButtonItemSizeUsingInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+{
+    UIBarButtonItem *titleItem = self.documentTitleToolbarItem;
+    UIView *customView = titleItem.customView;
+    
+    OBASSERT_NOTNULL(customView);
+    
+    CGFloat newWidth = [self titleTextFieldWidthForOrientation:interfaceOrientation];
+    customView.frame = (CGRect){
+        .origin.x = customView.frame.origin.x,
+        .origin.y = customView.frame.origin.y,
+        .size.width = newWidth,
+        .size.height = customView.frame.size.height
+    };
+}
+
 - (CGFloat)titleTextFieldWidthForOrientation:(UIInterfaceOrientation)orientation;
 {
     if (UIInterfaceOrientationIsPortrait(orientation))
@@ -691,6 +707,16 @@ typedef struct {
         completionHandler();
 }
 
+- (CGRect)_documentTitleFrame;
+{
+    return (CGRect){
+        .origin.x = 0,
+        .origin.y = 0,
+        .size.width = [self titleTextFieldWidthForOrientation:[[UIApplication sharedApplication] statusBarOrientation]],
+        .size.height = 31
+    };
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
 {
     DEBUG_LAUNCH(@"Did launch with options %@", launchOptions);
@@ -702,12 +728,7 @@ typedef struct {
     [_window makeKeyAndVisible];
     
     // Setup Document Title Bar Item Stuffs
-    _documentTitleLabel = [[UILabel alloc] initWithFrame:(CGRect){
-        .origin.x = 0,
-        .origin.y = 0,
-        .size.width = [self titleTextFieldWidthForOrientation:[[UIApplication sharedApplication] statusBarOrientation]],
-        .size.height = 31
-    }];
+    _documentTitleLabel = [[UILabel alloc] initWithFrame:[self _documentTitleFrame]];
     _documentTitleLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:20.0];
     _documentTitleLabel.textAlignment = UITextAlignmentCenter;
     _documentTitleLabel.adjustsFontSizeToFitWidth = YES;
@@ -726,13 +747,9 @@ typedef struct {
     UITapGestureRecognizer *doubleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTitleDoubleTapGesture:)];
     doubleTapRecognizer.numberOfTapsRequired = 2;
     [_documentTitleLabel addGestureRecognizer:doubleTapRecognizer];
+    [doubleTapRecognizer release];
     
-    _documentTitleTextField = [[UITextField alloc] initWithFrame:(CGRect){
-        .origin.x = 0,
-        .origin.y = 0,
-        .size.width = [self titleTextFieldWidthForOrientation:[[UIApplication sharedApplication] statusBarOrientation]],
-        .size.height = 31
-    }];
+    _documentTitleTextField = [[UITextField alloc] initWithFrame:[self _documentTitleFrame]];
     _documentTitleTextField.font = [UIFont fontWithName:@"Helvetica-Bold" size:20.0];
     _documentTitleTextField.textAlignment = UITextAlignmentCenter;
     _documentTitleTextField.adjustsFontSizeToFitWidth = YES;
@@ -972,6 +989,11 @@ typedef struct {
     [OUIDocumentPreview cachePreviewImagesForFileURL:newURL date:newDate byDuplicatingFromFileURL:oldURL date:oldDate];
 }
 
+- (OFSDocumentStoreFileItem *)documentStore:(OFSDocumentStore *)store preferredFileItemForNextAutomaticDownload:(NSSet *)fileItems;
+{
+    return [self.documentPicker _preferredVisibleItemFromSet:fileItems];
+}
+
 #pragma mark - OUIDocumentPickerDelegate
 
 - (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(OFSDocumentStoreFileItem *)fileItem;
@@ -1054,7 +1076,7 @@ typedef struct {
 
 - (OFSDocumentStoreFileItem *)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator preferredFileItemForNextPreviewUpdate:(NSSet *)fileItems;
 {
-    return [self.documentPicker _preferredFileItemForNextPreviewUpdate:fileItems];
+    return [self.documentPicker _preferredVisibleItemFromSet:fileItems];
 }
 
 - (Class)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator documentClassForFileURL:(NSURL *)fileURL;
@@ -1159,7 +1181,8 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     
     UIViewController <OUIDocumentViewController> *viewController = _document.viewController;
     [viewController view]; // make sure the view is loaded in case -pickerAnimationViewForTarget: doesn't and return a subview thereof.
-    
+    OBASSERT(![document hasUnsavedChanges]); // We just loaded our document and created our view, we shouldn't have any view state that needs to be saved. If we do, we should probably investigate to prevent bugs like <bug:///80514> ("Document Updated" on (null) alert is still hanging around), perhaps discarding view state changes if we can't prevent them.
+
     [self mainThreadFinishedLoadingDocument:document];
     
     
@@ -1324,10 +1347,13 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
         // If we have a document open, wait for it to close before starting to open the new one.
         doOpen = [[doOpen copy] autorelease];
 
+        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+
         [_document closeWithCompletionHandler:^(BOOL success) {
             [self _setDocument:nil];
             
             doOpen();
+            [[UIApplication sharedApplication] endIgnoringInteractionEvents];
         }];
     } else {
         // Just open immediately
@@ -1654,12 +1680,14 @@ static void _updatePreviewForFileItem(OUISingleDocumentAppController *self, NSNo
     if (_documentTitleToolbarItem.customView == _documentTitleTextField) {
         OUIWithoutAnimating(^{
             _documentTitleToolbarItem.customView = _documentTitleLabel;
+            _documentTitleLabel.frame = [self _documentTitleFrame];
             [[_documentTitleLabel superview] layoutSubviews];
         });
     }
     else if (_documentTitleToolbarItem.customView == _documentTitleLabel) {
         OUIWithoutAnimating(^{
             _documentTitleToolbarItem.customView = _documentTitleTextField;
+            _documentTitleTextField.frame = [self _documentTitleFrame];
             [[_documentTitleTextField superview] layoutSubviews];
         });
     }

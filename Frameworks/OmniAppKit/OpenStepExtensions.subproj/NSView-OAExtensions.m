@@ -126,28 +126,29 @@ static unsigned int scrollEntriesCount = 0;
 
 - (OADeferredScrollEntry *)_deferredScrollEntry;
 {
-    OADeferredScrollEntry *deferredScrollEntry;
-
     if (scrollEntriesAllocated == 0) {
         scrollEntriesAllocated = 8;
         scrollEntries = malloc(scrollEntriesAllocated * sizeof(*scrollEntries));
+        OBASSERT(scrollEntriesCount == 0);
     }
-    deferredScrollEntry = scrollEntries + scrollEntriesCount;
+
+    OADeferredScrollEntry *deferredScrollEntry = scrollEntries + scrollEntriesCount;
     while (deferredScrollEntry-- > scrollEntries)
         if (deferredScrollEntry->view == self)
             return deferredScrollEntry;
 
     // We didn't find an existing entry, let's make a new one
     if (scrollEntriesCount == scrollEntriesAllocated) {
-        scrollEntriesAllocated = scrollEntriesCount + scrollEntriesCount;
+        scrollEntriesAllocated *= 2;
         scrollEntries = realloc(scrollEntries, scrollEntriesAllocated * sizeof(*scrollEntries));
     }
-    deferredScrollEntry = scrollEntries + scrollEntriesCount;
-    deferredScrollEntry->view = [self retain];
-    deferredScrollEntry->x = 0.0f;
-    deferredScrollEntry->y = 0.0f;
+
+    OADeferredScrollEntry *newScrollEntry = scrollEntries + scrollEntriesCount;
+    newScrollEntry->view = [self retain];
+    newScrollEntry->x = 0.0f;
+    newScrollEntry->y = 0.0f;
     scrollEntriesCount++;
-    return deferredScrollEntry;
+    return newScrollEntry;
 }
 
 - (void)_scrollByAdjustedPixelsDown:(CGFloat)downPixels right:(CGFloat)rightPixels;

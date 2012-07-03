@@ -9,8 +9,11 @@
 
 #import <UIKit/UIView.h>
 
+#import <OmniUI/OUIDocumentPickerItemViewTapArea.h>
+
 extern NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification;
 
+@class UITapGestureRecognizer;
 @class OFSDocumentStoreItem;
 
 typedef enum {
@@ -37,5 +40,7 @@ typedef enum {
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 
 - (void)prepareForReuse;
+
+- (BOOL)getHitTapArea:(OUIDocumentPickerItemViewTapArea *)outTapArea withRecognizer:(UITapGestureRecognizer *)recognizer;
 
 @end

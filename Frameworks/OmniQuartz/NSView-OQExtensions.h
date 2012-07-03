@@ -1,4 +1,4 @@
-// Copyright 2005-2011 The Omni Group. All rights reserved.
+// Copyright 2005-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,9 @@
 // Uses CIFilter and a custom animation.
 - (void)transitionOutAndReplaceSubview:(NSView *)oldSubview withView:(NSView *)newSubview;
 - (void)transitionOutAndReplaceSubview:(NSView *)oldSubview withView:(NSView *)newSubview reverse:(BOOL)reverse;
+
+// Converts the point to window coordinates, then calls CGContextSetPatternPhase().
+- (void)setPatternColorReferencePoint:(NSPoint)p;
 
 - (BOOL)writePNGImageToFile:(NSString *)path;
 

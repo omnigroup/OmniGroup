@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+#import <Foundation/NSDate.h> // NSTimeInterval
 
 @class NSArray, NSBundle, NSMutableDictionary, NSSet;
 
@@ -25,5 +26,7 @@
 - (BOOL)satisfiesCondition:(SEL)sel withObject:(id)object;
 
 - (NSMutableDictionary *)dictionaryWithNonNilValuesForKeys:(NSArray *)keys;
+
+- (void)afterDelay:(NSTimeInterval)delay performBlock:(void (^)(void))block;
 
 @end

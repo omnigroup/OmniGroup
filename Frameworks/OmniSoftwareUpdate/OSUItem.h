@@ -61,7 +61,8 @@ __private_extern__ BOOL OSUItemDebug;
 
 + (void)setSupersededFlagForItems:(NSArray *)items;
 + (NSPredicate *)availableAndNotSupersededPredicate;
-+ (NSPredicate *)availableAndNotSupersededOrIgnoredPredicate;
++ (NSPredicate *)availableAndNotSupersededIgnoredOrOldPredicate;
++ (NSPredicate *)availableOldStablePredicate;
 
 + (enum OSUTrackComparison)compareTrack:(NSString *)aTrack toTrack:(NSString *)otherTrack;
 + (NSArray *)dominantTracks:(id <NSFastEnumeration>)someTracks;

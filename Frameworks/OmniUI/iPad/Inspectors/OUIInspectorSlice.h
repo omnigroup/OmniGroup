@@ -19,6 +19,8 @@
     OUIInspectorPane *_detailPane;
 }
 
++ (instancetype)slice;
+
 @property(readonly,nonatomic) OUIStackedSlicesInspectorPane *containingPane; // Set by the containing inspector pane
 @property(readonly,nonatomic) OUIInspector *inspector;
 
@@ -30,7 +32,7 @@
 - (CGFloat)paddingToInspectorBottom; // For the bottom slice
 - (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice remainingHeight:(CGFloat)remainingHeight;
 - (CGFloat)paddingToInspectorSides; // Left/right
-- (CGFloat)minimumHeight; // When the view has UIViewAutoresizingFlexibleHeight, the minimum height the slice can have. Defaults to kOUIInspectorWellHeight.
+- (CGFloat)minimumHeightForWidth:(CGFloat)width; // The minimum height the slice can have. Defaults to kOUIInspectorWellHeight for height-sizeable views, or the view's current height for non-sizeable views.
 
 - (void)sizeChanged;
 

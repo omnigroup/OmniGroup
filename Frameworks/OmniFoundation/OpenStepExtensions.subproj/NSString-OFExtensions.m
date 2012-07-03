@@ -95,25 +95,26 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 
 + (NSString *)abbreviatedStringForBytes:(unsigned long long)bytes;
 {
-    double kb, mb, gb, tb, pb;
+    double valueLimit = 999.95; // Above this value we switch to bigger units
+    double kilo = 1000.0; // Switched from kiB to kB for <bug:///80383> (Switch to base 1000 now that finder uses it rather than base 1024)
     
     // We can't use [self bundle] or [NSString bundle], since that would try to load from Foundation, where NSString is defined. So we use [OFObject bundle]. If this file is ever moved to a bundle other than the one containing OFObject, that will have to be changed.
     
-    if (bytes < 1000)
+    if (bytes < valueLimit)
         return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%d bytes", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), (int)bytes];
-    kb = bytes / 1024.0;
-    if (kb < 1000.0)
+    double kb = bytes / kilo;
+    if (kb < valueLimit)
         return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f kB", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), kb];
-    mb = kb / 1024.0;
-    if (mb < 1000.0)
+    double mb = kb / kilo;
+    if (mb < valueLimit)
         return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f MB", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), mb];
-    gb = mb / 1024.0;
-    if (gb < 1000.0)
+    double gb = mb / kilo;
+    if (gb < valueLimit)
         return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f GB", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), gb];
-    tb = gb / 1024.0;
-    if (tb < 1000.0)
+    double tb = gb / kilo;
+    if (tb < valueLimit)
         return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f TB", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), tb];
-    pb = tb / 1024.0;
+    double pb = tb / kilo;
     return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f PB", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), pb];
 }
 

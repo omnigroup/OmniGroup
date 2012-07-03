@@ -153,6 +153,8 @@ BOOL OFXMLSigGetKeyAttributes(NSMutableDictionary *keyusage, xmlNode *signatureM
 CSSM_ALGORITHMS OFXMLCSSMKeyTypeForAlgorithm(xmlNode *signatureMethod);
 #endif
 
+int OFSecKeyGetGroupSize(SecKeyRef k); /* Size in bits, or -1 if unable to determine */
+
 /* More more */
 
 NSString *OFSecItemDescription(CFTypeRef t);

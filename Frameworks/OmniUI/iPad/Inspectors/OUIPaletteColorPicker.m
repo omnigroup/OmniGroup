@@ -136,7 +136,7 @@ RCS_ID("$Id$");
     _themeViews = nil;
 
     const CGFloat kLabelToPaletteSpacing = 5;
-    const CGFloat kInterThemeSpacing = 13;
+    const CGFloat kInterThemeSpacing = 12;
     
     UIFont *labelFont = [UIFont fontWithName:@"Helvetica Neue" size:16];
     UIScrollView *view = (UIScrollView *)self.view;
@@ -146,7 +146,7 @@ RCS_ID("$Id$");
     
     CGRect viewBounds = view.bounds;
     CGFloat xOffset = 8;
-    CGFloat yOffset = CGRectGetMinY(view.bounds);
+    CGFloat yOffset = CGRectGetMinY(view.bounds) + kInterThemeSpacing;
     NSMutableArray *themeViews = [NSMutableArray array];
     for (OUIPaletteTheme *theme in _themes) {
         {

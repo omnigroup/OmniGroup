@@ -15,9 +15,6 @@
 
 RCS_ID("$Id$")
 
-NSString * const OAAquaButtonAquaImageSuffix = @"Aqua";
-NSString * const OAAquaButtonGraphiteImageSuffix = @"Graphite";
-NSString * const OAAquaButtonClearImageSuffix = @"Clear";
 
 @implementation OAAquaButton
 
@@ -61,8 +58,8 @@ NSString * const OAAquaButtonClearImageSuffix = @"Clear";
     [aquaImage release];
     [graphiteImage release];
     clearImage = [[NSImage imageNamed:anImageName inBundle:aBundle] retain];
-    aquaImage = [[NSImage imageNamed:[anImageName stringByAppendingString:OAAquaButtonAquaImageSuffix] inBundle:aBundle] retain];
-    graphiteImage = [[NSImage imageNamed:[anImageName stringByAppendingString:OAAquaButtonGraphiteImageSuffix] inBundle:aBundle] retain];
+    aquaImage = [[NSImage imageNamed:[anImageName stringByAppendingString:OAAquaImageTintSuffix] inBundle:aBundle] retain];
+    graphiteImage = [[NSImage imageNamed:[anImageName stringByAppendingString:OAGraphiteImageTintSuffix] inBundle:aBundle] retain];
     
     [self _setButtonImages];
 }

@@ -98,7 +98,13 @@ This method does the work of looping over the runtime searching for implementati
         newClassCount = objc_getClassList(NULL, 0);
         while (classCount < newClassCount) {
             classCount = newClassCount;
-            classes = realloc(classes, sizeof(Class) * classCount);
+            classes = reallocf(classes, sizeof(Class) * classCount);
+            if (classes == NULL) {
+                // If realloc fails, we need to abort, otherwise we'll leave the application in a nondeterministic state.
+                // Classes may expect to get +didLoad, +becomingMultiThreaded, etc., and will misbehave if they don't.
+                NSLog(@"aborting: realloc failed while retrieving class list to process selector +%@.", NSStringFromSelector(selectorToCall));
+                abort();
+            }
             newClassCount = objc_getClassList(classes, classCount);
         }
 

@@ -21,7 +21,7 @@ static NSString *_quotedString(NSString *str)
     if ([str rangeOfCharacterFromSet:CharactersNeedingQuoting].length == 0)
         return str;
     
-    NSMutableString *result = [str mutableCopy];
+    NSMutableString *result = [[str mutableCopy] autorelease];
     [result replaceOccurrencesOfString:@"\\" withString:@"\\\\" options:0 range:(NSRange){0, [result length]}]; // must be first to avoid quoting the backslashes entered here
     [result replaceOccurrencesOfString:@"\"" withString:@"\\\"" options:0 range:(NSRange){0, [result length]}];
     [result replaceOccurrencesOfString:@"\n" withString:@"\\n" options:0 range:(NSRange){0, [result length]}];

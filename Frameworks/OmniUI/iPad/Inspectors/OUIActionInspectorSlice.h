@@ -27,6 +27,8 @@
 
 + (Class)textWellClass;
 + (OUIInspectorTextWellStyle)textWellStyle;
++ (OUIInspectorWellBackgroundType)textWellBackgroundType;
++ (UIControlEvents)textWellControlEvents;
 
 - initWithTitle:(NSString *)title action:(SEL)action;
 

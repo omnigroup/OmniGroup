@@ -80,5 +80,7 @@
 
 extern NSString *OFKeyPathForKeys(NSString *firstKey, ...) NS_REQUIRES_NIL_TERMINATION;
 
-extern void OFSetMutableSet(id self, NSString *key, NSMutableSet **ivar, NSSet *set);
+extern void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set);
 extern void OFSetMutableSetByProxy(id self, NSString *key, NSSet *ivar, NSSet *set);
+
+#define OFSetSetProperty(self, key, set) OFSetMutableSet(self, (NO && self.key ? @#key : @#key), &_##key, set)

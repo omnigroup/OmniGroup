@@ -196,6 +196,10 @@ static NSDictionary *_scopeToContainerURL(OFSDocumentStore *docStore);
     
     NSMutableSet *_topLevelItems;
     
+#if OFS_AUTOMATICALLY_DOWNLOAD_SMALL_UBIQUITOUS_FILE_ITEMS
+    NSMutableSet *_ubiquitiousFileItemsToAutomaticallyDownload;
+#endif
+    
     NSOperationQueue *_actionOperationQueue;
     
     NSArray *_ubiquitousScopes;
@@ -424,6 +428,10 @@ static OFPreference *OFSDocumentStoreUserWantsUbiquityPreference = nil; // If ub
 
     [_metadataQuery release];
     
+#if OFS_AUTOMATICALLY_DOWNLOAD_SMALL_UBIQUITOUS_FILE_ITEMS
+    [_ubiquitiousFileItemsToAutomaticallyDownload release];
+#endif
+    
     for (OFSDocumentStoreFileItem *fileItem in _fileItems)
         [fileItem _invalidate];
     [_fileItems release];
@@ -626,6 +634,9 @@ static void _addItemAndNotifyHandler(OFSDocumentStore *self, void (^handler)(OFS
             [self didChangeValueForKey:OFSDocumentStoreTopLevelItemsBinding withSetMutation:NSKeyValueMinusSetMutation usingObjects:removed];
             
             [removed release];
+
+            // Since we've removed the deleted file item here, we'll lose track of it and never send it -_invalidate if we aren't careful. he deleted item might still be in a NSFilePresenter relinquish-to-writer block and we don't want to send _invalidate while it is still dealing with that. Still, if we don't remove it here, we have to avoid reusing it elsewhere when looking up file items by URL. So, we opt for the immediate removal and tell the file item to invalidate itself once it gets out of its writer block.
+            [deletedFileItem _invalidateAfterWriter];
         }
         
         if (addedFileItem) {
@@ -1162,7 +1173,7 @@ static NSOperation *_coordinatedMoveItem(OFSDocumentStore *self, OFSDocumentStor
     if ([urls count] == 0)
         goto bail;
     
-    OBFinishPortingLater("Can we rename iCloud items that aren't yet fully (or at all) downloaded?");
+    // <bug:///80920> (Can we rename iCloud items that aren't yet fully (or at all) downloaded? [engineering])
     
 #ifdef DEBUG_CLOUD_ENABLED
     void (^originalCompletionHandler)(NSDictionary *, NSDictionary *) = completionHandler;
@@ -1307,7 +1318,9 @@ static NSString *_fileItemCacheKeyForURL(NSURL *url)
     NSRange cacheKeyRange = NSMakeRange(0, urlStringLength);
 
     NSRange mobileRange = [urlString rangeOfString:@"/mobile/"];
-    OBASSERT(mobileRange.length > 0);
+#if !defined(TARGET_IPHONE_SIMULATOR) || !TARGET_IPHONE_SIMULATOR
+    OBASSERT(mobileRange.length > 0); // There is no /mobile/ in the URL when building for the simulator.
+#endif
     if (mobileRange.length > 0) {
         cacheKeyRange = NSMakeRange(NSMaxRange(mobileRange), urlStringLength - NSMaxRange(mobileRange));
         OBASSERT(NSMaxRange(cacheKeyRange) == urlStringLength);
@@ -1324,7 +1337,7 @@ static NSString *_fileItemCacheKeyForURL(NSURL *url)
 
     return cacheKey;
 #else
-    OBFinishPortingLater("Figure out how to build cache keys on the Mac"); // have the old version here that doesn't work right for NSURLs that don't currently exist
+    // <bug:///80921> (Figure out how to build cache keys on the Mac): have the old version here that doesn't work right for NSURLs that don't currently exist
     
     // NSFileManager will return /private/var URLs even when passed a standardized (/var) URL. Our cache keys should always be in one space.
     url = [url URLByStandardizingPath];
@@ -1574,7 +1587,7 @@ static NSDate *_modificationDateForFileURL(NSFileManager *fileManager, NSURL *fi
                         [fileItem _updateUbiquitousItemWithMetadataItem:metadataItem modificationDate:modificationDate];
                         
                         if (isNewItem)
-                            [self _possiblyRequestDownloadOfNewlyAddedUbiquitousFileItem:fileItem metadataItem:metadataItem];
+                            [self _possiblyEnqueueDownloadRequestForNewlyAddedUbiquitousFileItem:fileItem metadataItem:metadataItem];
                     } else
                         [fileItem _updateLocalItemWithModificationDate:modificationDate];
                 }
@@ -1674,6 +1687,13 @@ static NSDate *_modificationDateForFileURL(NSFileManager *fileManager, NSURL *fi
             
             // Now, after we've reported our results, check if there are any documents with the same names. We want document names to be unambiguous, following iWork's lead.
             [self _checkFileItemsForUniqueFileNames];
+            
+#if OFS_AUTOMATICALLY_DOWNLOAD_SMALL_UBIQUITOUS_FILE_ITEMS
+            // If we aren't renaming, see if we should start one download.
+            if (!_isRenamingFileItemsToHaveUniqueFileNames && [_ubiquitiousFileItemsToAutomaticallyDownload count]) {
+                [self _requestDownloadOfUbiquitousItem];
+            }
+#endif
             
             // We are done scanning -- see if any other scan requests have piled up while we were running and start one if so.
             // We do need to rescan (rather than just calling all the queued completion handlers) since the caller might have queued more filesystem changing operations between the two scan requests.
@@ -1954,15 +1974,12 @@ static BOOL _getBoolResourceValue(NSURL *url, NSString *key, BOOL *outValue, NSE
     if (!extension)
         OBRequestConcreteImplementation(self, _cmd); // UTI not registered in the Info.plist?
     
-    static NSString * const UntitledDocumentCreationCounterKey = @"OUIUntitledDocumentCreationCounter";
     
     NSURL *directoryURL = [[self class] userDocumentsDirectoryURL];
-    NSUInteger counter = [[NSUserDefaults standardUserDefaults] integerForKey:UntitledDocumentCreationCounterKey];
-    
+    NSUInteger counter = 0;
     NSURL *fileURL = [self _availableURLInDirectoryAtURL:directoryURL baseName:name extension:(NSString *)extension counter:&counter scope:_localScope];
     CFRelease(extension);
     
-    [[NSUserDefaults standardUserDefaults] setInteger:counter forKey:UntitledDocumentCreationCounterKey];
     return fileURL;
 }
 
@@ -2592,9 +2609,14 @@ static BOOL _getBoolResourceValue(NSURL *url, NSString *key, BOOL *outValue, NSE
     return fileItem;
 }
 
-- (void)_possiblyRequestDownloadOfNewlyAddedUbiquitousFileItem:(OFSDocumentStoreFileItem *)fileItem metadataItem:(NSMetadataItem *)metadataItem;
-{
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+- (void)_possiblyEnqueueDownloadRequestForNewlyAddedUbiquitousFileItem:(OFSDocumentStoreFileItem *)fileItem metadataItem:(NSMetadataItem *)metadataItem;
+{    
+#if OFS_AUTOMATICALLY_DOWNLOAD_SMALL_UBIQUITOUS_FILE_ITEMS
+    OBPRECONDITION([NSThread isMainThread]); // _fileItems and _ubiquitiousFileItemsToAutomaticallyDownload are main-thread only
+
+    // There is some indication that requesting a ton of files be downloaded is implicated in files getting stuck in the download state (maybe due to too many download requests?). <bug:///79659> (iPad refuses to download files it decides to auto download [iCloud])
+    // But also, it is slow to request download of a bunch of files, so this can hurt first-launch time if you have a bunch of documents in iCloud. We should instead only download one or two at a time and not until after the Welcome document has possibly been shown.
+    
     // The first time we see an item for a URL (newly created or once at app launch), automatically start downloading it if it is "small" and we are on wi-fi. iWork seems to automatically download files in some cases where normal iCloud apps don't. Unclear what rules they uses.
     
     if (fileItem.isDownloaded || !_netReachability.reachable || _netReachability.usingCell)
@@ -2608,14 +2630,43 @@ static BOOL _getBoolResourceValue(NSURL *url, NSString *key, BOOL *outValue, NSE
     NSUInteger maximumAutomaticDownloadSize = [[OFPreference preferenceForKey:@"OFSDocumentStoreMaximumAutomaticDownloadSize"] unsignedIntegerValue];
     
     if ([size unsignedLongLongValue] <= (unsigned long long)maximumAutomaticDownloadSize) {
-        NSError *downloadError = nil;
-        //NSLog(@"Reqesting download of %@ (size %@)", fileItem.fileURL, size);
-        if (![fileItem requestDownload:&downloadError]) {
-            NSLog(@"automatic download request for %@ failed with %@", fileItem.fileURL, [downloadError toPropertyList]);
-        }
+        if (!_ubiquitiousFileItemsToAutomaticallyDownload)
+            _ubiquitiousFileItemsToAutomaticallyDownload = [[NSMutableSet alloc] init];
+        [_ubiquitiousFileItemsToAutomaticallyDownload addObject:fileItem];
     }
 #endif
 }
+
+#if OFS_AUTOMATICALLY_DOWNLOAD_SMALL_UBIQUITOUS_FILE_ITEMS
+- (void)_requestDownloadOfUbiquitousItem;
+{
+    OBPRECONDITION([NSThread isMainThread]); // _fileItems and _ubiquitiousFileItemsToAutomaticallyDownload are main-thread only
+    
+    // Get rid of any since-invalidated items.
+    [_ubiquitiousFileItemsToAutomaticallyDownload intersectSet:_fileItems];
+    
+    // Bail if any file item is already downloading or we've asked it to start (metadata query update that it is may be pending). Manual download requests will still proceed.
+    if ([_fileItems any:^BOOL(OFSDocumentStoreFileItem *fileItem) { return fileItem.isDownloading || fileItem.downloadRequested; }])
+        return;
+    
+    OFSDocumentStoreFileItem *fileItem = nil;
+    if ([_nonretained_delegate respondsToSelector:@selector(documentStore:preferredFileItemForNextAutomaticDownload:)])
+        fileItem = [_nonretained_delegate documentStore:self preferredFileItemForNextAutomaticDownload:_ubiquitiousFileItemsToAutomaticallyDownload];
+    if (!fileItem)
+        fileItem = [_ubiquitiousFileItemsToAutomaticallyDownload anyObject];
+    
+    if (!fileItem)
+        return; // Nothing left to download!
+    
+    OBASSERT(fileItem.isDownloaded == NO); // Since -_fileItemFinishedDownloading: should clean these up before we are called again.
+    //NSLog(@"Requesting download of %@", fileItem.fileURL);
+    
+    NSError *downloadError = nil;
+    if (![fileItem requestDownload:&downloadError]) {
+        NSLog(@"automatic download request for %@ failed with %@", fileItem.fileURL, [downloadError toPropertyList]);
+    }
+}
+#endif
 
 - (NSString *)_singleTopLevelEntryNameInArchive:(OUUnzipArchive *)archive directory:(BOOL *)directory error:(NSError **)error;
 {
@@ -3112,6 +3163,16 @@ static NSDictionary *_scopeToContainerURL(OFSDocumentStore *docStore)
     
     if ([_nonretained_delegate respondsToSelector:@selector(documentStore:fileItem:didGainVersion:)])
         [_nonretained_delegate documentStore:self fileItem:fileItem didGainVersion:fileVersion];
+}
+
+- (void)_fileItemFinishedDownloading:(OFSDocumentStoreFileItem *)fileItem;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    
+#if OFS_AUTOMATICALLY_DOWNLOAD_SMALL_UBIQUITOUS_FILE_ITEMS
+    [_ubiquitiousFileItemsToAutomaticallyDownload removeObject:fileItem];
+    [self _requestDownloadOfUbiquitousItem];
+#endif
 }
 
 @end

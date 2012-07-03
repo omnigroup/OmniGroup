@@ -161,9 +161,21 @@ static void OUIViewPerformPosing(void)
 
 - (id)containingViewOfClass:(Class)cls; // can return self
 {
+    return [self containingViewMatching:^(id view){
+        return [view isKindOfClass:cls];
+    }];
+}
+
+- (id)containingViewMatching:(OFPredicateBlock)predicate;
+{
+    if (!predicate) {
+        OBASSERT_NOT_REACHED("Treating nil predicate as true... probably not that useful");
+        return self;
+    }
+    
     UIView *view = self;
     while (view) {
-        if ([view isKindOfClass:cls])
+        if (predicate(view))
             return view;
         view = view.superview;
     }

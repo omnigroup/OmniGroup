@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,4 +16,6 @@
     #define OFS_DOCUMENT_STORE_SUPPORTED 0
 #endif
 
-
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    #define OFS_AUTOMATICALLY_DOWNLOAD_SMALL_UBIQUITOUS_FILE_ITEMS 1
+#endif

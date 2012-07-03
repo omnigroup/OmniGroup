@@ -10,6 +10,7 @@
 #import <OmniFileStore/OFSDocumentStore.h>
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
+#import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIDocumentPreview.h>
 #import <OmniUI/OUIDocumentViewController.h>
@@ -324,7 +325,10 @@ static int32_t OUIDocumentInstanceCount = 0;
 - (void)viewStateChanged;
 {
     OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(_forPreviewGeneration == NO); // Make sure we don't provoke a save due to just opening a document to make a preview!
     
+    if (([self documentState] & UIDocumentStateClosed) != 0)
+        return;
     _requestedViewStateChangeCount++;
 }
 
@@ -332,6 +336,8 @@ static int32_t OUIDocumentInstanceCount = 0;
 {
     // Unlike view state, here we do eventually plan to make a data change, but haven't done so yet.
     // This can be useful when an in-progress text field change is made and we want to periodically autosave the edits.
+    if (([self documentState] & UIDocumentStateClosed) != 0)
+        return;
     [self updateChangeCount:UIDocumentChangeDone];
 }
 
@@ -354,6 +360,8 @@ static int32_t OUIDocumentInstanceCount = 0;
     DEBUG_DOCUMENT(@"%@ %@ hasUnsavedChanges -> %d (view:%d data:%d)", [self shortDescription], NSStringFromSelector(_cmd), result, hasUnsavedViewState, hasUnsavedData);
     
     OBPOSTCONDITION(!result || _conflictFileVersion == nil); // Shouldn't be editing conflict versions, just opening and writing previews
+    OBPOSTCONDITION(!result || _forPreviewGeneration == NO); // Make sure we don't provoke a save due to just opening a document to make a preview!
+
     return result;
 }
 
@@ -361,7 +369,8 @@ static int32_t OUIDocumentInstanceCount = 0;
 {
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(_conflictFileVersion == nil); // Shouldn't be editing conflict versions, just opening and writing previews
-    
+    OBPRECONDITION(_forPreviewGeneration == NO); // Make sure we don't provoke a save due to just opening a document to make a preview!
+
     DEBUG_DOCUMENT(@"%@ %@ %ld", [self shortDescription], NSStringFromSelector(_cmd), change);
     
     // This registers the autosave timer
@@ -830,12 +839,15 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
                 DEBUG_DOCUMENT(@"Document is now in conflict.");
             } else {
                 NSFileVersion *currentVersion = [NSFileVersion currentVersionOfItemAtURL:self.fileURL];
-                
-                NSString *messageFormat = NSLocalizedStringFromTableInBundle(@"Last edited on %@.", @"OmniUI", OMNI_BUNDLE, @"Message format for alert informing user that the document has been reloaded with iCloud edits from another device");
-                NSString *message = [NSString stringWithFormat:messageFormat, currentVersion.localizedNameOfSavingComputer];
-                
-                message = [message stringByAppendingFormat:@"\n%@", [OFSDocumentStoreFileItem displayStringForDate:currentVersion.modificationDate]];
-                
+
+                NSString *message;
+                if (currentVersion.localizedNameOfSavingComputer != nil) {
+                    NSString *messageFormat = NSLocalizedStringFromTableInBundle(@"Last edited on %@.", @"OmniUI", OMNI_BUNDLE, @"Message format for alert informing user that the document has been reloaded with iCloud edits from another device");
+                    message = [NSString stringWithFormat:messageFormat, currentVersion.localizedNameOfSavingComputer];
+                    message = [message stringByAppendingFormat:@"\n%@", [OFSDocumentStoreFileItem displayStringForDate:currentVersion.modificationDate]];
+                } else {
+                    message = [OFSDocumentStoreFileItem displayStringForDate:currentVersion.modificationDate];
+                }
                 
                 [self _queueUpdateAlertWithMessage:message];
             }
@@ -1248,8 +1260,13 @@ void OUIDocumentHandleDocumentOpenFailure(OUIDocument *document, void (^completi
     // Failed to read the document. The error will have already been presented via OUIDocument's -handleError:userInteractionPermitted:.
     OBASSERT(document.documentState == (UIDocumentStateClosed|UIDocumentStateSavingError)); // don't have to close it here.
     
-    // ... actually, if we don't call -closeWithCompletionHandler:, the document is left as a file presenter forever and can start issuing NSError yelping about being deleted by iCloud if coordinated delete.
-    OBASSERT([[NSFileCoordinator filePresenters] indexOfObjectIdenticalTo:document] != NSNotFound);
-    [document closeWithCompletionHandler:completionHandler];
+    if ([OFVersionNumber isOperatingSystemiOS60OrLater]) {
+        // The leak of file presenter status is fixed on iOS 6 beta 1, but they made -closeWithCompletionHandler: throw when calling it on a not-closed document. Noted this in the Radar; hopefully they'll fix it before 6.0 ships or we'll ship a version that doesn't call this when running on 6.0).
+        OBASSERT([[NSFileCoordinator filePresenters] indexOfObjectIdenticalTo:document] == NSNotFound);
+    } else {
+        // ... actually, if we don't call -closeWithCompletionHandler:, the document is left as a file presenter forever and can start issuing NSError yelping about being deleted by iCloud if coordinated delete.
+        OBASSERT([[NSFileCoordinator filePresenters] indexOfObjectIdenticalTo:document] != NSNotFound);
+        [document closeWithCompletionHandler:completionHandler];
+    }
 }
 

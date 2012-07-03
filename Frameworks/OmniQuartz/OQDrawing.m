@@ -27,11 +27,24 @@ void OQSetPatternColorReferencePoint(CGPoint point, NSView *view)
 }
 #endif
 
+#define CGPathClosePath(p, x) CGPathCloseSubpath(p)
+#define PathOp(func, ...) do{ if (isPath) CGPath ## func((CGMutablePathRef)ctxtOrPath, NULL, ## __VA_ARGS__); else CGContext ## func((CGContextRef)ctxtOrPath, ## __VA_ARGS__); }while(0)
+
+#define PickPathOps     BOOL isPath; do { \
+    CFTypeID specialization = CFGetTypeID(ctxtOrPath); \
+    if (specialization == CGPathGetTypeID()) \
+    isPath = YES; \
+    else if (specialization == CGContextGetTypeID()) { \
+        isPath = NO; \
+    } else { \
+        OBASSERT_NOT_REACHED("Wrong type passed"); \
+        return; \
+    } \
+} while(0)
+
 //
 // Rounded rect support.
 //
-
-// These assume a non-flipped coordinate system (top == CGRectGetMaxY, bottom == CGRectGetMinY)
 
 void OQAppendRoundedRect(CGContextRef ctx, CGRect rect, CGFloat radius)
 {
@@ -110,155 +123,118 @@ void OQAppendRectWithRoundedCornerMask(CGContextRef ctx, CGRect rect, CGFloat ra
     CGContextClosePath(ctx);
 }
 
-void OQAppendRectWithRoundedTop(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom)
+// This does not depend no the flippedness of the coordinate system.
+
+void OQAppendRectWithMask(CFTypeRef ctxtOrPath, CGRect rect, unsigned int edgeMask)
 {
-    if (closeBottom) {
-        OQAppendRectWithRoundedCornerMask(ctx, rect, radius, (OQRoundedRectCornerTopLeft | OQRoundedRectCornerTopRight));
+    PickPathOps;
+    
+    edgeMask &= OQRectAllEdges;
+    if (edgeMask == OQRectAllEdges) {
+        PathOp(AddRect, rect);
     } else {
-        CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
-        CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
-        CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
-        CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
+        CGPoint points[7];
+        /* Place corners into an array; the edges between the corners are:
+           MinX MaxY MaxX MinY MinX MaxY MaxX
+        */
+        points[0].x = points[1].x = points[4].x = points[5].x = CGRectGetMinX(rect);
+        points[2].x = points[3].x = points[6].x =               CGRectGetMaxX(rect);
+        points[0].y = points[3].y = points[4].y =               CGRectGetMinY(rect);
+        points[1].y = points[2].y = points[5].y = points[6].y = CGRectGetMaxY(rect);
         
-        CGContextMoveToPoint(ctx, bottomLeft.x, bottomLeft.y);
-        CGContextAddLineToPoint(ctx, topLeft.x, topLeft.y + radius);
-        CGContextAddArcToPoint(ctx, topLeft.x, topLeft.y, topLeft.x + radius, topLeft.y, radius);
-        CGContextAddLineToPoint(ctx, topRight.x - radius, topRight.y);
-        CGContextAddArcToPoint(ctx, topRight.x, topRight.y, topRight.x, topRight.y + radius, radius);
-        CGContextAddLineToPoint(ctx, bottomRight.x, bottomRight.y);
+        /* This array tells us which edges we need to pass to CGContextAddLines(), based on the edges mask. */
+        static const struct { uint_fast8_t start, run; } ph[15] = {
+        /*    none      MinX      MinY     MinXY   */
+            { 0, 0 }, { 0, 2 }, { 3, 2 }, { 3, 3 },      /* !MaxX   !MaxY */
+            { 2, 2 }, { 2, 2 }, { 2, 3 }, { 2, 4 },      /*  MaxX   !MaxY */
+            { 1, 2 }, { 0, 3 }, { 3, 2 }, { 3, 4 },      /* !MaxX    MaxY */
+            { 1, 3 }, { 0, 4 }, { 1, 4 }
+        };
+        edgeMask >>= _OQRectAllEdgesShift;
+        PathOp(AddLines, points + (ph[edgeMask].start), ph[edgeMask].run);
+        
+        /* There are two possibilities where there's more than one run of edges. Handle them here. */
+        if (edgeMask == ( (OQRectMinXEdge|OQRectMaxXEdge) >> _OQRectAllEdgesShift)) {
+            PathOp(AddLines, points + 0, 2);
+        } else if (edgeMask == ( (OQRectMinYEdge|OQRectMaxYEdge) >> _OQRectAllEdgesShift)) {
+            PathOp(AddLines, points + 1, 2);
+        }
     }
 }
 
-void OQAppendRectWithRoundedTopLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom)
+/* This is the workhorse implementation of OQAppendRoundedRectWithMask(). Simplified cases are passed off to other functions by the inline, but this function can actually handle all cases. */
+void OQAppendRoundedRectWithMask_c(CFTypeRef ctxtOrPath, CGRect rect, CGFloat radius, unsigned int mask)
 {
-    if (closeBottom) {
-        OQAppendRectWithRoundedCornerMask(ctx, rect, radius, OQRoundedRectCornerTopLeft);
-    } else {
-        CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
-        CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
-        CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
-        CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
-        
-        CGContextMoveToPoint(ctx, bottomRight.x, bottomRight.y);
-        CGContextAddLineToPoint(ctx, topRight.x, topRight.y);
-        CGContextAddLineToPoint(ctx, topLeft.x + radius, topLeft.y);
-        CGContextAddArcToPoint(ctx, topLeft.x, topLeft.y, topLeft.x, topLeft.y + radius, radius);
-        CGContextAddLineToPoint(ctx, bottomLeft.x, bottomLeft.y);
-    }
-}
+    PickPathOps;
 
-void OQAppendRectWithRoundedTopRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeBottom)
-{
-    if (closeBottom) {
-        OQAppendRectWithRoundedCornerMask(ctx, rect, radius, OQRoundedRectCornerTopRight);
-    } else {
-        CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
-        CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
-        CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
-        CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
+    CGPoint points[4];
+    points[0].x = points[3].x = CGRectGetMinX(rect);
+    points[1].x = points[2].x = CGRectGetMaxX(rect);
+    points[0].y = points[1].y = CGRectGetMinY(rect);
+    points[2].y = points[3].y = CGRectGetMaxY(rect);
+    
+    /* bitForCorner[] and edgeAfterCorner[] are unrolled once so that they can be indexed directly by 'corner' */
+    static const uint_fast8_t bitForCorner[8] = {
+        OQRectMinXMinYCorner, OQRectMaxXMinYCorner, OQRectMaxXMaxYCorner, OQRectMinXMaxYCorner,
+        OQRectMinXMinYCorner, OQRectMaxXMinYCorner, OQRectMaxXMaxYCorner, OQRectMinXMaxYCorner,
+    };    
+    static const uint_fast8_t edgeAfterCorner[8] = {
+        OQRectMinYEdge, OQRectMaxXEdge, OQRectMaxYEdge, OQRectMinXEdge,
+        OQRectMinYEdge, OQRectMaxXEdge, OQRectMaxYEdge, OQRectMinXEdge,
+    };
+    
+    /* firstCorners[] computes the first corner we want to draw, based on the contents of the edges bitmap.
+       We draw any corner that is adjacent to a drawn edge, and we draw them in the order they appear in points[].
+       If there are any gaps (i.e., anything other than OQRectAllEdges), we need to start at the beginning of a run of edges--- the first 1-bit that follows a 0-bit. */
+    static const uint_fast8_t firstCorners[16] = { 0, 3, 0, 3,
+                                                   1, 1, 0, 3,
+                                                   2, 2, 0, 2,
+                                                   1, 1, 0, 0 };
+    
+    int firstCorner = firstCorners[ (mask & OQRectAllEdges) >> _OQRectAllEdgesShift ];
+    BOOL penUp = 1;
+    for(int corner = firstCorner; corner < 4+firstCorner; corner ++) {
+        if (penUp && !( mask & edgeAfterCorner[corner] )) {
+            continue;
+        }
+        OBAnalyzerNotReached(); // The combination of mod arithmetic, array access, and structs boggles clang-sa's mind. It's fixed in ToT clang. <bug:///80329> (Remove OBAnalyzerNotReached from OQAppendRoundedRectWithMask_c)
+        int cornum = corner % 4;
+        CGFloat px = points[cornum].x;
+        CGFloat py = points[cornum].y;
+        /* Draw this corner, depending on whether the mask indicates it should be rounded, or not; also draw the edge leading from the last corner to this one (CGContextAddArcToPoint() does this implicitly). */
+        if (mask & bitForCorner[corner]) {
+            if (penUp) {
+                CGFloat approachx = px, approachy = py;
+                switch (cornum) {
+                    case 0: approachy += radius; break;
+                    case 1: approachx -= radius; break;
+                    case 2: approachy -= radius; break;
+                    case 3: approachx += radius; break;
+                }
+                PathOp(MoveToPoint, approachx, approachy);
+                penUp = 0;
+            }
+            int nextcorner = ( corner + 1 ) % 4;
+            PathOp(AddArcToPoint, px, py, points[nextcorner].x, points[nextcorner].y, radius);
+        } else {
+            if (penUp) {
+                PathOp(MoveToPoint, px, py);
+                penUp = 0;
+            } else {
+                PathOp(AddLineToPoint, px, py);
+            }
+        }
         
-        CGContextMoveToPoint(ctx, bottomLeft.x, bottomLeft.y);
-        CGContextAddLineToPoint(ctx, topLeft.x, topLeft.y);
-        CGContextAddLineToPoint(ctx, topRight.x - radius, topRight.y);
-        CGContextAddArcToPoint(ctx, topRight.x, topRight.y, topRight.x, topRight.y + radius, radius);
-        CGContextAddLineToPoint(ctx, bottomRight.x, bottomRight.y);
-    }
-}
-
-void OQAppendRectWithRoundedBottom(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop)
-{
-    if (closeTop) {
-        OQAppendRectWithRoundedCornerMask(ctx, rect, radius, (OQRoundedRectCornerBottomLeft | OQRoundedRectCornerBottomRight));
-    } else {
-        CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
-        CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
-        CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
-        CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
-        
-        CGContextMoveToPoint(ctx, topLeft.x, topLeft.y);
-        CGContextAddLineToPoint(ctx, bottomLeft.x, bottomLeft.y - radius);
-        CGContextAddArcToPoint(ctx, bottomLeft.x, bottomLeft.y, bottomLeft.x + radius, bottomLeft.y, radius);
-        CGContextAddLineToPoint(ctx, bottomRight.x - radius, bottomRight.y);
-        CGContextAddArcToPoint(ctx, bottomRight.x, bottomRight.y, bottomRight.x, bottomRight.y - radius, radius);
-        CGContextAddLineToPoint(ctx, topRight.x, topRight.y);
-    }
-}
-
-void OQAppendRectWithRoundedBottomLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop)
-{
-    if (closeTop) {
-        OQAppendRectWithRoundedCornerMask(ctx, rect, radius, OQRoundedRectCornerBottomLeft);
-    } else {
-        CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
-        CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
-        CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
-        CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
-        
-        CGContextMoveToPoint(ctx, topLeft.x, topLeft.y);
-        CGContextAddLineToPoint(ctx, bottomLeft.x, bottomLeft.y - radius);
-        CGContextAddArcToPoint(ctx, bottomLeft.x, bottomLeft.y, bottomLeft.x + radius, bottomLeft.y, radius);
-        CGContextAddLineToPoint(ctx, bottomRight.x, bottomRight.y);
-        CGContextAddLineToPoint(ctx, topRight.x, topRight.y);
+        if (!( mask & edgeAfterCorner[corner] )) {
+            penUp = 1;
+        }
     }
     
-    
-    if (closeTop)
-        CGContextClosePath(ctx);
-}
-
-void OQAppendRectWithRoundedBottomRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeTop)
-{
-    if (closeTop) {
-        OQAppendRectWithRoundedCornerMask(ctx, rect, radius, OQRoundedRectCornerBottomRight);
+    /* As a special case, we want to closepath if all the edges were drawn */
+    if ((mask & OQRectAllEdges) == OQRectAllEdges) {
+        PathOp(ClosePath);
     } else {
-        CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
-        CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
-        CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
-        CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
-        
-        CGContextMoveToPoint(ctx, topLeft.x, topLeft.y);
-        CGContextAddLineToPoint(ctx, bottomLeft.x, bottomLeft.y);
-        CGContextAddLineToPoint(ctx, bottomRight.x - radius, bottomRight.y);
-        CGContextAddArcToPoint(ctx, bottomRight.x, bottomRight.y, bottomRight.x, bottomRight.y - radius, radius);
-        CGContextAddLineToPoint(ctx, topRight.x, topRight.y);
-    }
-}
-
-void OQAppendRectWithRoundedLeft(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeRight)
-{
-    if (closeRight) {
-        OQAppendRectWithRoundedCornerMask(ctx, rect, radius, (OQRoundedRectCornerBottomLeft | OQRoundedRectCornerTopLeft));
-    } else {
-        CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
-        CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
-        CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
-        CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
-        
-        CGContextMoveToPoint(ctx, topRight.x, topRight.y);
-        CGContextAddLineToPoint(ctx, topLeft.x + radius, topLeft.y);
-        CGContextAddArcToPoint(ctx, topLeft.x, topLeft.y, topLeft.x, topLeft.y + radius, radius);
-        CGContextAddLineToPoint(ctx, bottomLeft.x, bottomLeft.y - radius );
-        CGContextAddArcToPoint(ctx, bottomLeft.x, bottomLeft.y, bottomLeft.x + radius, bottomLeft.y, radius);
-        CGContextAddLineToPoint(ctx, bottomRight.x, bottomRight.y);
-    }
-}
-
-void OQAppendRectWithRoundedRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeLeft)
-{
-    if (closeLeft) {
-        OQAppendRectWithRoundedCornerMask(ctx, rect, radius, (OQRoundedRectCornerBottomRight | OQRoundedRectCornerTopRight));
-    } else {
-        CGPoint bottomLeft  = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
-        CGPoint bottomRight = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
-        CGPoint topRight    = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
-        CGPoint topLeft     = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
-        
-        CGContextMoveToPoint(ctx, topLeft.x, topLeft.y);
-        CGContextAddLineToPoint(ctx, topRight.x - radius, topRight.y);
-        CGContextAddArcToPoint(ctx, topRight.x, topRight.y, topRight.x, topRight.y + radius, radius);
-        CGContextAddLineToPoint(ctx, bottomRight.x, bottomRight.y - radius );
-        CGContextAddArcToPoint(ctx, bottomRight.x, bottomRight.y, bottomRight.x - radius, bottomRight.y, radius);
-        CGContextAddLineToPoint(ctx, bottomLeft.x, bottomLeft.y);
+        OBASSERT(penUp);
     }
 }
 

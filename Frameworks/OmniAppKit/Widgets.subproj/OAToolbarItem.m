@@ -186,7 +186,7 @@ RCS_ID("$Id$");
     [self setOptionKeyAction:action];
 }
 
-- (void)_tintsDidChange:(id)sender
+- (void)_tintsDidChange:(id)sender;
 {
     BOOL shouldBeObserving;
     NSImage *base, *opt;

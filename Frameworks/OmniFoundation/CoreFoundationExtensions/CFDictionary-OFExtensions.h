@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -119,6 +119,16 @@ static inline const void *OFCFDictionaryGetValueForInteger(CFMutableDictionaryRe
 static inline const void *OFCFDictionaryGetValueForUInteger(CFMutableDictionaryRef theDict, uintptr_t key)
 {
     return CFDictionaryGetValue(theDict, (const void *)key);
+}
+
+static inline Boolean OFCFDictionaryGetValueForIntegerIfPresent(CFMutableDictionaryRef theDict, intptr_t key, const void **value)
+{
+    return CFDictionaryGetValueIfPresent(theDict, (const void *)key, value);
+}
+
+static inline Boolean OFCFDictionaryGetValueForUIntegerIfPresent(CFMutableDictionaryRef theDict, uintptr_t key, const void **value)
+{
+    return CFDictionaryGetValueIfPresent(theDict, (const void *)key, value);
 }
 
 static inline void OFCFDictionaryRemoveValueForInteger(CFMutableDictionaryRef theDict, intptr_t key)

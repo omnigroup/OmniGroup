@@ -9,6 +9,8 @@
 
 #import <UIKit/UIView.h>
 
+#import <OmniUI/OUIDocumentPickerItemViewTapArea.h>
+
 extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 
 @class OFPreference;
@@ -19,11 +21,6 @@ typedef enum {
     OUIDocumentPickerItemSortByDate,
     OUIDocumentPickerItemSortByName,
 } OUIDocumentPickerItemSort;
-
-typedef enum {
-    OUIDocumentPickerItemViewTapAreaPreview,
-    OUIDocumentPickerItemViewTapAreaLabelAndDetails,
-} OUIDocumentPickerItemViewTapArea;
 
 @protocol OUIDocumentPickerScrollViewDelegate <UIScrollViewDelegate>
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView inArea:(OUIDocumentPickerItemViewTapArea)area;
@@ -40,10 +37,14 @@ typedef enum {
 @property(nonatomic,assign) BOOL ubiquityEnabled;
 
 @property(nonatomic,readonly) NSSet *items;
+
 - (void)startAddingItems:(NSSet *)toAdd;
 - (void)finishAddingItems:(NSSet *)toAdd;
+@property(nonatomic,readonly) NSSet *itemsBeingAdded;
+
 - (void)startRemovingItems:(NSSet *)toRemove;
 - (void)finishRemovingItems:(NSSet *)toRemove;
+@property(nonatomic,readonly) NSSet *itemsBeingRemoved;
 
 @property(nonatomic,readonly) NSArray *sortedItems;
 @property(nonatomic,retain) id draggingDestinationItem;
@@ -59,7 +60,7 @@ typedef enum {
 - (OUIDocumentPickerItemView *)itemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
 - (OUIDocumentPickerFileItemView *)fileItemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
 
-- (OFSDocumentStoreFileItem *)preferredFileItemForNextPreviewUpdate:(NSSet *)fileItemsNeedingPreviewUpdate;
+- (OFSDocumentStoreFileItem *)preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
 - (void)previewsUpdatedForFileItem:(OFSDocumentStoreFileItem *)fileItem;
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;

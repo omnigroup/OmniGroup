@@ -1,4 +1,4 @@
-// Copyright 2005-2011 The Omni Group. All rights reserved.
+// Copyright 2005-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,7 +54,7 @@ static NSMutableDictionary *classToKernel = nil;
 	NSLog(@"Unable to create kernel from source at '%@'", kernelSourcePath);
 	return;
     }
-    [classToKernel setObject:kernel forKey:self];
+    [classToKernel setObject:kernel forKey:(id)self];
     
     NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:
 	className, kCIAttributeFilterDisplayName,

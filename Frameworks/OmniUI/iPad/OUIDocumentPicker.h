@@ -59,8 +59,6 @@
 - (void)scrollItemToVisible:(OFSDocumentStoreItem *)item animated:(BOOL)animated;
 - (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated;
 
-- (BOOL)okayToOpenMenu;
-
 - (IBAction)newDocument:(id)sender;
 - (IBAction)duplicateDocument:(id)sender;
 - (IBAction)deleteDocument:(id)sender;

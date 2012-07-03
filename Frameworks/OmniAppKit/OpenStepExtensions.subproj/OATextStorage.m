@@ -1,4 +1,4 @@
-// Copyright 2003-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,16 +30,7 @@ NSString * const OATextStorageDidProcessEditingNotification = @"OATextStorageDid
 
 - (BOOL)containsAttachments;
 {
-    NSUInteger position = 0, length = [self length];
-    
-    while (position < length) {
-        NSRange effectiveRange;
-        if ([self attribute:OAAttachmentAttributeName atIndex:position effectiveRange:&effectiveRange])
-            return YES;
-        position = NSMaxRange(effectiveRange);
-    }
-    
-    return NO;
+    return [self containsAttribute:OAAttachmentAttributeName];
 }
 
 - (id)attachmentAtCharacterIndex:(NSUInteger)characterIndex;
@@ -320,3 +311,20 @@ static void _processEditing(OATextStorage_ *self)
 }
 
 @end
+
+@implementation OATextStorage(OATextStorageExtensions)
+- (BOOL)containsAttribute:(NSString *)attributeName;
+{
+    NSUInteger position = 0, length = [self length];
+    
+    while (position < length) {
+        NSRange effectiveRange;
+        if ([self attribute:attributeName atIndex:position effectiveRange:&effectiveRange])
+            return YES;
+        position = NSMaxRange(effectiveRange);
+    }
+    
+    return NO;
+}
+@end
+

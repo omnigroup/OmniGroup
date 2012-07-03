@@ -7,13 +7,14 @@
 
 #import <OmniUI/OUIDocumentPickerItemView.h>
 
-#import <OmniUI/OUIDocumentPreviewView.h>
-#import <OmniUI/OUIDocumentPreview.h>
-#import <OmniUI/OUISingleDocumentAppController.h>
-#import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniFoundation/OFBinding.h>
 #import <OmniFoundation/OFRandom.h>
-#import <OmniFileStore/OFSDocumentStoreFileItem.h>
+#import <OmniUI/OUIDocumentPreview.h>
+#import <OmniUI/OUIDocumentPreviewView.h>
+#import <OmniUI/OUISingleDocumentAppController.h>
+#import <OmniUI/UIGestureRecognizer-OUIExtensions.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 #import "OUIDocumentPickerItemView-Internal.h"
 #import "OUIDocumentPickerItemNameAndDateView.h"
@@ -359,6 +360,26 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 {
     [self setEditing:NO animated:NO];
     self.item = nil;
+}
+
+- (BOOL)getHitTapArea:(OUIDocumentPickerItemViewTapArea *)outTapArea withRecognizer:(UITapGestureRecognizer *)recognizer;
+{
+    OBASSERT(self.hidden == NO); // shouldn't be hittable if hidden
+    OBASSERT(self.item); // should have an item if it is on screen/not hidden
+    
+    UIView *hitView = [recognizer hitView];
+
+    if ([hitView isDescendantOfView:_previewView]) {
+        if (outTapArea)
+            *outTapArea = OUIDocumentPickerItemViewTapAreaPreview;
+        return YES;
+    } else if ([hitView isDescendantOfView:_nameAndDateView]) {
+        if (outTapArea)
+            *outTapArea = OUIDocumentPickerItemViewTapAreaLabelAndDetails;
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 - (NSSet *)previewedFileItems;

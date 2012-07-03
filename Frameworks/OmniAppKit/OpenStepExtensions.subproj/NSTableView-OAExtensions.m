@@ -76,8 +76,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 - (NSImage *)_replacement_dragImageForRowsWithIndexes:(NSIndexSet *)dragRows tableColumns:(NSArray *)tableColumns event:(NSEvent*)dragEvent offset:(NSPointPointer)dragImageOffset;
 {
-    NSPoint dragPoint;
-
+    [OATableViewRowsInCurrentDrag release]; // Just in case we missed releasing this somehow
     OATableViewRowsInCurrentDrag = [dragRows retain]; // hang on to these so we can use them in -draggedImage:endedAt:operation:.
 
     if ([self _columnIdentifiersForDragImage] == nil)
@@ -117,7 +116,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
     }
     [dragImage unlockFocus];
 
-    dragPoint = [self convertPoint:[dragEvent locationInWindow] fromView:nil];
+    NSPoint dragPoint = [self convertPoint:[dragEvent locationInWindow] fromView:nil];
     dragImageOffset->x = NSMidX([self bounds]) - dragPoint.x;
     dragImageOffset->y = dragPoint.y - NSMidY([self bounds]);
 
@@ -447,6 +446,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
     }
             
     [OATableViewRowsInCurrentDrag release]; // retained at start of drag
+    OATableViewRowsInCurrentDrag = nil;
 }
 
 

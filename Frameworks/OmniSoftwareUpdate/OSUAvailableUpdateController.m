@@ -36,6 +36,8 @@ NSString * const OSUAvailableUpdateControllerSelectedItemBinding = @"selectedIte
 NSString * const OSUAvailableUpdateControllerMessageBinding = @"message";
 NSString * const OSUAvailableUpdateControllerDetailsBinding = @"details";
 NSString * const OSUAvailableUpdateControllerLoadingReleaseNotesBinding = @"loadingReleaseNotes";
+NSString * const OSUAvailableUpdateControllerLastCheckFailedBinding = @"lastCheckFailed";
+NSString * const OSUAvailableUpdateControllerLastCheckUserInitiatedBinding = @"lastCheckExplicit";
 
 
 RCS_ID("$Id$");
@@ -130,13 +132,7 @@ RCS_ID("$Id$");
     }
         
     // If running on 10.6+, use the "pane splitter" style instead of the "thick divider" style (they're *almost* identical...)
-    if (NSAppKitVersionNumber >= OAAppKitVersionNumber10_6) {
-#if defined(MAX_OS_X_VERSION_10_6) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAX_OS_X_VERSION_10_6
-        [_itemsAndReleaseNotesSplitView setDividerStyle:NSSplitViewDividerStylePaneSplitter];
-#else
-        [_itemsAndReleaseNotesSplitView setDividerStyle:3 /* NSSplitViewDividerStylePaneSplitter */ ];
-#endif
-    }
+    [_itemsAndReleaseNotesSplitView setDividerStyle:NSSplitViewDividerStylePaneSplitter];
     
     // Allow @media {...} in the release notes to display differently when we are showing the content
     [_releaseNotesWebView setMediaStyle:@"osu-available-updates"];
@@ -173,40 +169,38 @@ RCS_ID("$Id$");
 
 + (NSSet *)keyPathsForValuesAffectingMessage;
 {
-    return [NSSet setWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, OSUAvailableUpdateControllerCheckInProgressBinding, nil];
+    return [NSSet setWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, OSUAvailableUpdateControllerCheckInProgressBinding, OSUAvailableUpdateControllerLastCheckFailedBinding, nil];
 }
 
 - (NSString *)message;
 {
-    NSArray *visibleItems = [_availableItemController arrangedObjects];
-    NSUInteger count = [visibleItems count];
-    
     NSString *format; // All format strings should take the app name and then the update count.
-    switch (count) {
-        case 0:
-            if ([[self valueForKey:OSUAvailableUpdateControllerCheckInProgressBinding] boolValue])
-                format = NSLocalizedStringFromTableInBundle(@"Checking for %1$@ updates.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when in the process of checking for updates - text is name of application");
-            else
-                format = NSLocalizedStringFromTableInBundle(@"%1$@ is up to date.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when no updates are available - text is name of application");
-            break;
-        case 1:
-            format = NSLocalizedStringFromTableInBundle(@"There is an update available for %1$@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when one update is available - text is name of application");
-            break;
-        default:
-            format = NSLocalizedStringFromTableInBundle(@"There are %2$d updates available for %1$@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when multiple updates are available - text is name of application");
-            break;
-
-    }
-    
     NSDictionary *bundleInfo = [[NSBundle mainBundle] infoDictionary];
     NSString *appName = [bundleInfo objectForKey:(NSString *)kCFBundleNameKey];
-
-    return [NSString stringWithFormat:format, appName, (int)count]; // Format string has hard coded 'd'.
+    
+    if ([[self valueForKey:OSUAvailableUpdateControllerCheckInProgressBinding] boolValue]) {
+        format = NSLocalizedStringFromTableInBundle(@"Checking for %1$@ updates.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when in the process of checking for updates - text is name of application");
+        return [NSString stringWithFormat:format, appName];
+    } else if (_lastCheckFailed) {
+        format = NSLocalizedStringFromTableInBundle(@"Unable to check for updates.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when check failed");
+        return [NSString stringWithFormat:format, appName];
+    } else {
+        NSUInteger count = [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count];
+        
+        if (count == 0) {
+            format = NSLocalizedStringFromTableInBundle(@"%1$@ is up to date.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when no updates are available - text is name of application");
+        } else if (count == 1) {
+            format = NSLocalizedStringFromTableInBundle(@"There is an update available for %1$@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when one update is available - text is name of application");
+        } else {
+            format = NSLocalizedStringFromTableInBundle(@"There are %2$d updates available for %1$@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when more than one update is available - text is name of application");
+        }
+        return [NSString stringWithFormat:format, appName, (int)count]; // Format string has hard coded 'd'.
+    }
 }
 
 + (NSSet *)keyPathsForValuesAffectingDetails;
 {
-    return [NSSet setWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, nil];
+    return [NSSet setWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, OSUAvailableUpdateControllerLastCheckUserInitiatedBinding, nil];
 }
 
 - (NSAttributedString *)details;
@@ -222,14 +216,33 @@ RCS_ID("$Id$");
         // Append the bundle version
         version = [version stringByAppendingFormat:@" (v%@)", [bundleInfo objectForKey:(NSString *)kCFBundleVersionKey]];
     }
+
+    NSArray *displayedItems = [_availableItemController arrangedObjects];
     
-    NSString *format;
-    if ([[_availableItemController arrangedObjects] count])
-        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.  If you're not ready to update now, you can use the [Update preference pane] to check for updates later or adjust the frequency of automatic checking.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "message of new versions available dialog");
-    else
-        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "message of no updates are available dialog");
+    NSUInteger knownCount = [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededPredicate]] count];
+    NSUInteger downgradesCount = [[displayedItems filteredArrayUsingPredicate:[OSUItem availableOldStablePredicate]] count];
     
-    NSMutableAttributedString *detailText = [[[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:format, version]] autorelease];
+    BOOL newerVersionsAvailable = (knownCount > downgradesCount);
+    
+    NSString *format, *formatted;
+    if (!newerVersionsAvailable && ![[self valueForKey:OSUAvailableUpdateControllerCheckInProgressBinding] boolValue]) {
+        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@, which is the newest version.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog. placeholder is application version number. further text may be appended");
+    } else {
+        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog. placeholder is application version number. further text may be appended");
+    }
+    formatted = [NSString stringWithFormat:format, version];
+    
+    if (downgradesCount > 0) {
+        format = NSLocalizedStringFromTableInBundle(@"If you wish, you can downgrade to an older, but possibly more stable, version.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog: appended when it is possible to downgrade to an older version");
+        formatted = [[formatted stringByAppendingString:@"  "] stringByAppendingString:format];
+    }
+    
+    if (newerVersionsAvailable && !_lastCheckExplicit) {
+        format = NSLocalizedStringFromTableInBundle(@"If you're not ready to update now, you can use the [Update preference pane] to check for updates later or adjust the frequency of automatic checking.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog, with [link] to preference pane");
+        formatted = [[formatted stringByAppendingString:@"  "] stringByAppendingString:format];
+    }
+    
+    NSMutableAttributedString *detailText = [[[NSMutableAttributedString alloc] initWithString:formatted] autorelease];
     [detailText addAttribute:NSFontAttributeName value:[NSFont messageFontOfSize:[NSFont smallSystemFontSize]] range:(NSRange){0, [detailText length]}];
     NSRange leftBracket = [[detailText string] rangeOfString:@"["];
     NSRange rightBracket = [[detailText string] rangeOfString:@"]"];
@@ -280,7 +293,7 @@ RCS_ID("$Id$");
     
     NSArray *initialSelection = nil;
     /* In the special (but common) case that there's exactly one update available, *and* it's free, go ahead and select it by default */
-    NSArray *nonIgnoredItems = [_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededOrIgnoredPredicate]];
+    NSArray *nonIgnoredItems = [_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]];
     if ([nonIgnoredItems count] == 1) {
         OSUItem *theItem = [nonIgnoredItems objectAtIndex:0];
         if ([theItem isFree])
@@ -331,7 +344,7 @@ RCS_ID("$Id$");
     }
     
     // If the user just ignored the last non-ignored item, then assume they're not interested in upgrading and close the window
-    if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededOrIgnoredPredicate]] count] == 0) {
+    if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
         [[self window] performClose:nil];
     }
 }
@@ -378,7 +391,7 @@ RCS_ID("$Id$");
         [_availableItemController removeSelectedObjects:[NSArray arrayWithObject:curSelection]];
     
     // If the user just ignored the last non-ignored item, then assume they're not interested in upgrading and close the window
-    if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededOrIgnoredPredicate]] count] == 0) {
+    if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
         [[self window] performClose:nil];
     }
 }
@@ -531,19 +544,24 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     CGFloat myMinimum = proposedMinimumPosition;
     if (dividerIndex == 0)
         myMinimum = minHeightOfItemTableScrollView(_itemTableView);
+    // NSLog(@"splitView constrainMinCoordinate:%.1f ofSubviewAt:%d  -->  %.1f", proposedMinimumPosition, (int)dividerIndex, MAX(myMinimum, proposedMinimumPosition));
     return MAX(myMinimum, proposedMinimumPosition);
 }
 
 - (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMaximumPosition ofSubviewAt:(NSInteger)dividerIndex;
 {
+    CGFloat constrained;
+    
     if (dividerIndex == 0) {
         CGFloat minimumHeight = 10; // Don't let them completely hide the release-notes pane
         if (_displayingWarningPane)
             minimumHeight += NSHeight([_itemAlertPane frame]);
-        return proposedMaximumPosition - minimumHeight;
+        constrained = proposedMaximumPosition - minimumHeight;
+    } else {
+        constrained = proposedMaximumPosition;
     }
-    
-    return proposedMaximumPosition;
+    // NSLog(@"splitView constrainMaxCoordinate:%.1f ofSubviewAt:%d  -->  %.1f", proposedMaximumPosition, (int)dividerIndex, constrained);
+    return constrained;
 }
 
 /*
@@ -569,11 +587,9 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     
     if (tableView == _itemTableView && [[tableColumn identifier] isEqualToString:@"price"]) {
         OSUItem *rowItem = [[_availableItemController arrangedObjects] objectAtIndex:row];
-        NSDictionary *attributes = [rowItem priceAttributesForStyle:[cell backgroundStyle]];
-        NSColor *fgColor = [attributes objectForKey:NSForegroundColorAttributeName];
-        if (fgColor)
-            [cell setTextColor:fgColor];
-        [cell setFont:[attributes objectForKey:NSFontAttributeName]];
+        NSAttributedString *s = [[NSAttributedString alloc] initWithString:[rowItem priceString] attributes:[rowItem priceAttributesForStyle:[cell backgroundStyle]]];
+        [cell setAttributedStringValue:s];
+        [s release];
     }
 }
 

@@ -1,50 +1,59 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010, 2012 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUICertificateTrustAlert.h"
+#import <OmniUI/OUICertificateTrustAlert.h>
 
 RCS_ID("$Id$");
 
 @implementation OUICertificateTrustAlert
 
-- initWithDelegate:(id <OUICertificateTrustAlertDelegate>)delegate forChallenge:(NSURLAuthenticationChallenge *)challenge;
+@synthesize cancelBlock = _cancelBlock, trustBlock = _trustBlock, shouldOfferTrustAlwaysOption = _shouldOfferTrustAlwaysOption;
+
+- (id)initForChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
     if (!(self = [super init]))
         return nil;
     
-    _nonretained_delegate = delegate;
     _challenge = [[NSURLAuthenticationChallenge alloc] initWithAuthenticationChallenge:challenge sender:[challenge sender]];
-    
-    
+
     return self;
 }
 
 - (void)dealloc;
 {
     [_challenge release];
+    [_cancelBlock release];
+    [_trustBlock release];
     
     [super dealloc];
 }
 
 - (void)show;
 {
+    [self retain];
+
     NSError *error = [_challenge error];
-    OBASSERT([[error domain] isEqualToString:NSURLErrorDomain]);
+    int errorCode;
+    if (error != nil && [[error domain] isEqualToString:NSURLErrorDomain])
+        errorCode = [error code];
+    else
+        errorCode = NSURLErrorSecureConnectionFailed;
+
 #if !TARGET_OS_IPHONE && (MAC_OS_X_VERSION_MIN_REQUIRED >= 1060) || (TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MIN_REQUIRED >= 40000)
     NSString *failedURLString = [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey];
 #else
     NSString *failedURLString = [[error userInfo] objectForKey:NSErrorFailingURLStringKey];
 #endif
     
-    if (!failedURLString)
+    if (failedURLString == nil)
         failedURLString = [[_challenge protectionSpace] host];
     
     NSString *prompt = nil;
-    switch ([error code]) {
+    switch (errorCode) {
         case NSURLErrorServerCertificateHasUnknownRoot:
             prompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?", @"OmniUI", OMNI_BUNDLE, @"server certificate has unknown root"), failedURLString];
             break;
@@ -67,7 +76,8 @@ RCS_ID("$Id$");
                                             message:prompt delegate:self
                                   cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"cancel button title")
                                   otherButtonTitles:NSLocalizedStringFromTableInBundle(@"Continue", @"OmniUI", OMNI_BUNDLE, @"Certificate trust alert button title"),
-                                                    NSLocalizedStringFromTableInBundle(@"Trust Always", @"OmniUI", OMNI_BUNDLE, @"Certificate trust alert button title"), nil];
+                                                    (_shouldOfferTrustAlwaysOption ? NSLocalizedStringFromTableInBundle(@"Trust Always", @"OmniUI", OMNI_BUNDLE, @"Certificate trust alert button title") : nil),
+                                                    nil];
     [_alertView show];
     [_alertView release];
 }
@@ -77,7 +87,28 @@ RCS_ID("$Id$");
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
 {
-    [_nonretained_delegate certificateTrustAlert:self didDismissWithButtonIndex:buttonIndex challenge:_challenge];
+    BOOL trustAlways;
+
+    switch (buttonIndex) {
+        case 0: /* Cancel */
+        default:
+            if (_cancelBlock != NULL)
+                _cancelBlock();
+            return;
+            
+        case 1: /* Continue */
+            trustAlways = NO;
+            break;
+
+        case 2: /* Trust always */
+            trustAlways = YES;
+            break;
+    }
+
+    if (_trustBlock != NULL)
+        _trustBlock(trustAlways);
+
+    [self autorelease];
 }
 
 @end

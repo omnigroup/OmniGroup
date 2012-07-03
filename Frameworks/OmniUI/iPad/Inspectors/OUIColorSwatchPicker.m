@@ -303,7 +303,7 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
         swatch.selected = _colorsMatch(color, _swatchSelectionColor);
 
         if (_showsSingleSwatch) {
-            swatch.singleSwatch = YES;
+            swatch.showNavigationArrow = YES;
             break;
         }
         
@@ -336,7 +336,7 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
         [swatch addTarget:self action:@selector(_swatchTouchDown:) forControlEvents:UIControlEventTouchDown];
     } else if (_showsNavigationSwatch) {
         if (!_navigationButton)
-            _navigationButton = [[OUIColorSwatch navigateToColorPickerButton] retain];
+            _navigationButton = [[OUIColorSwatch navigateToColorPickerSwatch] retain];
         _configureSwatchView(self, _navigationButton, &offset, swatchSize);
         [_navigationButton addTarget:self action:@selector(_swatchTouchDown:) forControlEvents:UIControlEventTouchDown];
     }

@@ -1,4 +1,4 @@
-// Copyright 2006-2011 The Omni Group. All rights reserved.
+// Copyright 2006-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,8 +37,9 @@ const CGFloat OAMakeImageAsWideAsNeededToAvoidWrapping = -1.0f;
 	
 	NSTextStorage *textStorage = [[[NSTextStorage alloc] initWithAttributedString:attributedString] autorelease];
 	[textStorage addLayoutManager:layoutManager];
-	
-        width = (CGFloat)ceil([layoutManager widthOfLongestLine]);
+
+	// The fraction-of-a-pixel fudge factor is necessary on 10.7 and above. Not sure why. (bug #79474) TODO: Figure out if we're actually doing something wrong in -widthOfLongestLine, or if AppKit is just being inconsistent.
+        width = (CGFloat)ceil([layoutManager widthOfLongestLine] + 0.125);
         [textContainer setContainerSize:NSMakeSize(width, 1e9f)];
 	
 	CGFloat height = (CGFloat)ceil([layoutManager totalHeightUsed]);

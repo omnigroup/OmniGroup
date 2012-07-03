@@ -116,10 +116,9 @@ static BOOL _viewControllerIsChildButNotInViewHiearchy(OUIViewController *self, 
 - (void)viewDidAppear:(BOOL)animated;
 {
     DEBUG_PARENT_VC(@"In %s", __func__);
-    
-    // iOS 5 b5 calls this method twice, sadly.
-    OBPRECONDITION((([self isMovingToParentViewController] || [self isBeingPresented] || (self.parentViewController == nil)) && _visibility == OUIViewControllerVisibilityAppearing) ||
-                   ((![self isMovingToParentViewController] && ![self isBeingPresented]) && _visibility == OUIViewControllerVisibilityVisible));
+
+    // iOS 5 calls this method twice, sadly.
+    OBPRECONDITION(_visibility == OUIViewControllerVisibilityAppearing || _visibility == OUIViewControllerVisibilityVisible);
     
     OBPRECONDITION(_lastChangeAnimated == animated);
 

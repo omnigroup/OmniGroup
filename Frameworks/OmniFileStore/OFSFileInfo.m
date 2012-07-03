@@ -37,7 +37,7 @@ RCS_ID("$Id$");
     return name;
 }
 
-- initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date;
+- initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date eTag:(NSString *)eTag;
 {
     OBPRECONDITION(url);
     OBPRECONDITION(!directory || size == 0);
@@ -54,8 +54,14 @@ RCS_ID("$Id$");
     _directory = directory;
     _size = size;
     _lastModifiedDate = [date copy];
+    _eTag = [eTag copy];
     
     return self;
+}
+
+- initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date;
+{
+    return [self initWithOriginalURL:url name:name exists:exists directory:directory size:size lastModifiedDate:date eTag:nil];
 }
 
 - (void)dealloc;
@@ -63,38 +69,17 @@ RCS_ID("$Id$");
     [_originalURL release];
     [_name release];
     [_lastModifiedDate release];
+    [_eTag release];
     [super dealloc];
 }
 
-- (NSURL *)originalURL;
-{
-    return _originalURL;
-}
-
-- (NSString *)name;
-{
-    return _name;
-}
-
-- (BOOL)exists;
-{
-    return _exists;
-}
-
-- (BOOL)isDirectory;
-{
-    return _directory;
-}
-
-- (off_t)size;
-{
-    return _size;
-}
-
-- (NSDate *)lastModifiedDate;
-{
-    return _lastModifiedDate;
-}
+@synthesize originalURL = _originalURL;
+@synthesize name = _name;
+@synthesize exists = _exists;
+@synthesize isDirectory = _directory;
+@synthesize size = _size;
+@synthesize lastModifiedDate = _lastModifiedDate;
+@synthesize eTag = _eTag;
 
 - (BOOL)hasExtension:(NSString *)extension;
 {

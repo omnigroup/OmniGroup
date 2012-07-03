@@ -50,12 +50,24 @@ static CGFloat _setSliceSizes(UIView *self, NSArray *_slices, NSSet *slicesToPos
         if (previousSlice)
             totalHeight += [slice paddingToPreviousSlice:previousSlice remainingHeight:bounds.size.height - totalHeight];
 
+        CGFloat sideInset = [slice paddingToInspectorSides];
+        CGFloat sliceWidth = CGRectGetWidth(bounds) - 2*sideInset;
+        CGFloat minimumHeight = [slice minimumHeightForWidth:sliceWidth];
+        
         if (sliceView.autoresizingMask & UIViewAutoresizingFlexibleHeight) {
             [resizableSlices addObject:slice];
-            totalFlexibleSliceMinimumHeight += [slice minimumHeight];
-        } else 
+            totalFlexibleSliceMinimumHeight += minimumHeight;
+        } else {
             // Otherwise the slice should be a fixed height and we should use it.
-            totalHeight += CGRectGetHeight(sliceView.frame);
+            totalHeight += minimumHeight;
+            
+            // Only height-resizable slices will have their height adjusted below (based on how much space is left). This slice might not be stretchable, but just have a computed height based on contents that changes as its width (for example, OUIInstructionTextInspectorSlice).
+            CGRect sliceFrame = sliceView.frame;
+            if (sliceFrame.size.height != minimumHeight) {
+                sliceFrame.size.height = minimumHeight;
+                sliceView.frame = sliceFrame;
+            }
+        }
         previousSlice = slice;
     }
     totalHeight += [[_slices lastObject] paddingToInspectorBottom];
@@ -75,20 +87,21 @@ static CGFloat _setSliceSizes(UIView *self, NSArray *_slices, NSSet *slicesToPos
         if (sliceView.superview != self)
             continue;
         
+        CGFloat sideInset = [slice paddingToInspectorSides];
+        CGFloat sliceWidth = CGRectGetWidth(bounds) - 2*sideInset;
+
         CGFloat sliceHeight = CGRectGetHeight(sliceView.frame);
         if ([resizableSlices member:slice]) {
             // Rather than sharing the extra height evenly on the resizable slices, we might want to come up with some kind of API to offer them space and let them set min/max constraints and workout how to share amongst themselves.
-            sliceHeight = [slice minimumHeight] + floor(extraFlexibleHeight / resizableSliceCount);
+            sliceHeight = [slice minimumHeightForWidth:sliceWidth] + floor(extraFlexibleHeight / resizableSliceCount);
             remainingHeight -= sliceHeight;
         } 
         
         if (previousSlice && sliceHeight > 0) // OUIEmptyPaddingInspectorSlice can shrink to zero -- don't give it padding.
             yOffset += [slice paddingToPreviousSlice:previousSlice remainingHeight:bounds.size.height - yOffset];
-        
-        CGFloat sideInset = [slice paddingToInspectorSides];
-        
+                
         if (!slicesToPostponeFrameSetting || [slicesToPostponeFrameSetting member:slice] == nil) 
-            sliceView.frame = CGRectMake(CGRectGetMinX(bounds) + sideInset, yOffset, CGRectGetWidth(bounds) - 2*sideInset, sliceHeight);
+            sliceView.frame = CGRectMake(CGRectGetMinX(bounds) + sideInset, yOffset, sliceWidth, sliceHeight);
 
         yOffset += sliceHeight;
         
@@ -199,6 +212,34 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 
 @implementation OUIStackedSlicesInspectorPane
 
++ (instancetype)stackedSlicesPaneWithAvailableSlices:(OUIInspectorSlice *)slice, ...;
+{
+    OBPRECONDITION(slice);
+    
+    NSMutableArray *slices = [[NSMutableArray alloc] initWithObjects:slice, nil];
+    if (slice) {
+        OUIInspectorSlice *nextSlice;
+        
+        va_list argList;
+        va_start(argList, slice);
+        while ((nextSlice = va_arg(argList, OUIInspectorSlice *)) != nil) {
+            OBASSERT([nextSlice isKindOfClass:[OUIInspectorSlice class]]);
+            [slices addObject:nextSlice];
+        }
+        va_end(argList);
+    }
+
+    OUIStackedSlicesInspectorPane *result = [[[self alloc] init] autorelease];
+    
+    NSArray *availableSlices = [slices copy];
+    result.availableSlices = availableSlices;
+
+    [availableSlices release];
+    [slices release];
+    
+    return result;
+}
+
 - (void)dealloc;
 {
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
@@ -279,6 +320,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     
     // Terrible hack to delay change until previous animation completes
     if (_isAnimating) {
+        // This can happen when doing a sync in OmniPlan's Project:Sync inspector, where we add a slice to display status when the sync starts, then remove the slice when the sync completes (which can easily happen before the animation completes).
         [self performSelector:@selector(setSlices:) withObject:slices afterDelay:0];
         return;
     }
@@ -315,7 +357,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         }
     }
     
-    _setSliceSizes(self.view, _slices, oldSlices); // any slices that are sticking around keep their old frames, so we can animate them to their new positions
+    _setSliceSizes(view, _slices, oldSlices); // any slices that are sticking around keep their old frames, so we can animate them to their new positions
     
     // Telling the view about the slices triggers [view setNeedsLayout]. The view's layoutSubviews loops over the slices in order and sets their frames.
     view.slices = _slices;
@@ -325,7 +367,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         _isAnimating = YES;
 
         // animate position of slices that were already showing (whose frames were left unchanged above)
-        _setSliceSizes(self.view, _slices, nil);
+        _setSliceSizes(view, _slices, nil);
 
         for (OUIInspectorSlice *slice in toBeOrphanedSlices) {
             if ([slice isViewLoaded] && slice.view.superview == view)
@@ -354,7 +396,9 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         DEBUG_ANIM(@"Animation completed");
     };
     
-    if ([_slices count] > 0) {
+    BOOL shouldAnimate = [UIView areAnimationsEnabled] && [_slices count] > 0;
+    
+    if (shouldAnimate) {
         UIViewAnimationOptions options = UIViewAnimationOptionTransitionNone |UIViewAnimationOptionAllowAnimatedContent;
         [UIView animateWithDuration:OUICrossFadeDuration delay:0 options:options animations:animationHandler completion:completionHandler];
     } else {

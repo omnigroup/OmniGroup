@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUIDocumentPreview.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OUIDrawing.h>
 #import <OmniQuartz/CALayer-OQExtensions.h>
 #import <OmniQuartz/OQDrawing.h>
 
@@ -282,17 +283,6 @@ static void _updateShouldRasterize(OUIDocumentPreviewView *self)
 
 #define kOUIDocumentPreviewViewNormalShadowInsets UIEdgeInsetsMake(ceil(kOUIDocumentPreviewViewNormalShadowBlur)/*top*/, ceil(kOUIDocumentPreviewViewNormalShadowBlur)/*left*/, ceil(kOUIDocumentPreviewViewNormalShadowBlur + 1)/*bottom*/, ceil(kOUIDocumentPreviewViewNormalShadowBlur)/*right*/)
 
-static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
-{
-    UIEdgeInsets outsets = {
-        .top = -insets.top,
-        .bottom = -insets.bottom,
-        .left = -insets.left,
-        .right = -insets.right,
-    };
-    return UIEdgeInsetsInsetRect(rect, outsets);
-}
-
 - (UIEdgeInsets)_edgeInsets;
 {
     UIEdgeInsets insets;
@@ -336,7 +326,7 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
         previewFrame.origin.y = floor(CGRectGetMidY(frame) - previewSize.height / 2);
         previewFrame.size = previewSize;
         
-        return _outsetRect(previewFrame, [self _edgeInsets]);
+        return OUIEdgeInsetsOutsetRect(previewFrame, [self _edgeInsets]);
     }
 }
 
@@ -358,7 +348,7 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
 
         CGRect previewFrame = OQCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(frame, previewSize);
         
-        return _outsetRect(previewFrame, [self _edgeInsets]);
+        return OUIEdgeInsetsOutsetRect(previewFrame, [self _edgeInsets]);
     }
 }
 
@@ -537,22 +527,14 @@ static CGRect _outsetRect(CGRect rect, UIEdgeInsets insets)
             _imageLayer.shadowOpacity = 1;
             _imageLayer.shadowRadius = kOUIDocumentPreviewViewNormalShadowBlur;
             _imageLayer.shadowOffset = CGSizeMake(0, 1);
-            
-            //CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-            //CGFloat shadowComponents[] = {1, 0, 0, 1};
-            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
-            CGFloat shadowComponents[] = {kOUIDocumentPreviewViewNormalShadowWhiteAlpha.w, kOUIDocumentPreviewViewNormalShadowWhiteAlpha.a};
-            CGColorRef shadowColor = CGColorCreate(colorSpace, shadowComponents);
-            CGColorSpaceRelease(colorSpace);
-            _imageLayer.shadowColor = shadowColor;
-            CGColorRelease(shadowColor);
+            _imageLayer.shadowColor = [OQMakeUIColor(kOUIDocumentPreviewViewNormalShadowColor) CGColor];
         });
     }
 
     // Selection
     if (_selectionLayer) {
         OUIWithoutLayersAnimating(^{
-            _selectionLayer.frame = _outsetRect(previewFrame, kOUIDocumentPreviewViewBorderEdgeInsets);
+            _selectionLayer.frame = OUIEdgeInsetsOutsetRect(previewFrame, kOUIDocumentPreviewViewBorderEdgeInsets);
         });
     }
     

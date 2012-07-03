@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,11 +20,12 @@ RCS_ID("$Id$");
 
 NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
 
-#ifdef USE_CORE_IMAGE
 @interface OITabCell (/*Private*/)
+#ifdef USE_CORE_IMAGE
 - (void)_deriveImages;
-@end
 #endif
+- (void)_drawImageInRect:(NSRect)cellFrame inView:(NSView *)controlView;
+@end
 
 @implementation OITabCell
 
@@ -32,6 +33,7 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
 {
     [grayscaleImage release];
     [dimmedImage release];
+    [_imageCell release];
     [super dealloc];
 }
 
@@ -160,19 +162,13 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
         return;
     
     // The highlight is now drawn by the matrix so that parts can be behind all cells and parts can be in front of all cells, etc.
-    
+
     NSRect imageRect;
     imageRect.size = NSMakeSize(24,24);
     imageRect.origin.x = (CGFloat)(cellFrame.origin.x + floor((cellFrame.size.width - imageRect.size.width)/2));
     imageRect.origin.y = (CGFloat)(cellFrame.origin.y + floor((cellFrame.size.height - imageRect.size.height)/2));
-
-    if (duringMouseDown && [self isHighlighted]) {
-        [[self dimmedImage] drawFlippedInRect:imageRect operation:NSCompositeSourceOver];
-    } else if (!dimmed) {
-        [[self image] drawFlippedInRect:imageRect operation:NSCompositeSourceOver];
-    } else {
-        [[self grayscaleImage] drawFlippedInRect:imageRect operation:NSCompositeSourceOver fraction:1.0f];        
-    }
+    
+    [self _drawImageInRect:imageRect inView:controlView];
 
     if (isPinned) {
         NSImage *image = [NSImage imageNamed:@"OITabLock.pdf" inBundle:OMNI_BUNDLE];
@@ -183,22 +179,21 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
     return;
 }
 
-#pragma mark NSCopying
+#pragma mark - NSCopying
 
 - (id)copyWithZone:(NSZone *)zone;
 {
     OITabCell *copy = [super copyWithZone:zone];
     copy->grayscaleImage = [grayscaleImage retain];
     copy->dimmedImage = [dimmedImage retain];
+    copy->_imageCell = [_imageCell copy];
 
     return copy;
 }
 
+#pragma mark - Private
+
 #ifdef USE_CORE_IMAGE
-
-
-#pragma mark -
-#pragma mark Private
 
 // This should only be called when we're lockFocused on our view, so that we'll get an appropriate CIContext for our window.
 - (void)_deriveImages;
@@ -244,7 +239,29 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
     [filteredImageRep release];
 }
 
-@end
-
 #endif /* USE_CORE_IMAGE */
 
+- (void)_drawImageInRect:(NSRect)cellFrame inView:(NSView *)controlView;
+{
+    // Non-template images may be dimmed or made grayscale, depending on the context. That's incompatible with template images, so for them we instead adjust the bckgroundStyle, which will result in different treatment of the template.
+    BOOL drawHighlighted = duringMouseDown && [self isHighlighted]; // Have to check duringMouseDown as well, because the first cell is often highlighted at launch, so we would draw highlighted even though the user hadn't clicked on us yet.
+    NSImage *image = [self image];
+    if (![image isTemplate]) {
+        if (drawHighlighted) {
+            image = [self dimmedImage];
+        } else if (dimmed) {
+            image = [self grayscaleImage];
+        }
+    }
+    
+    // Let an image cell draw the image, because it knows how to handle template images, and won't draw any background. (We can't let our superclass do its own drawing, because NSButtonCell always draws its background, which would overlay the background being drawn for us by the OITabMatrix we are in.)
+    if (_imageCell == nil) {
+        _imageCell = [[NSImageCell alloc] initImageCell:nil];
+    }
+    [_imageCell setEnabled:!dimmed];
+    [_imageCell setImage:image];
+    [_imageCell setBackgroundStyle:(drawHighlighted ? NSBackgroundStyleLight : NSBackgroundStyleRaised)]; // Kind of interested in using NSBackgroundStyleLowered instead of NSBackgroundStyleLight when highlighted, but drawing after first click is delayed due to OITabMatrix looking for a second click, and the delay in the redraw was much more obvious (and flashy on single clicks) when the highlighted effect was so much more dramatic. Strangely, the very first click, if on the first tab and it's already selected (or some similar context), doesn't have this delay, but I didn't research that.
+    [_imageCell drawInteriorWithFrame:cellFrame inView:controlView];
+}
+
+@end

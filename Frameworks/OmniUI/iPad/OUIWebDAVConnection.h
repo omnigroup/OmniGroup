@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <Foundation/NSObject.h>
 #import <OmniFileStore/OFSDAVFileManagerDelegate.h>
-#import "OUICertificateTrustAlert.h"
+#import <OmniUI/OUICertificateTrustAlert.h>
 
 extern NSString * const OUICertificateTrustUpdated;
 
@@ -22,7 +22,7 @@ typedef enum {
 } OUIWebDAVConnectionValidity;
 
 @class OFSFileManager;
-@interface OUIWebDAVConnection : NSObject <OFSDAVFileManagerAuthenticationDelegate, OUICertificateTrustAlertDelegate> {
+@interface OUIWebDAVConnection : NSObject <OFSDAVFileManagerAuthenticationDelegate> {
 @private 
     NSURL *_address;
     NSString *_username;

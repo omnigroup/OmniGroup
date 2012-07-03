@@ -35,6 +35,7 @@
 #import "OUISyncMenuController.h"
 #import "UIViewController-OUIExtensions.h"
 #import "OUISingleDocumentAppController-Internal.h" // Terrible -- for _setupCloud:
+#import "OUIRestoreSampleDocumentListController.h"
 
 RCS_ID("$Id$");
 
@@ -290,6 +291,8 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
     return _appMenuBarItem;
 }
 
+@synthesize appMenuController = _appMenuController;
+
 - (void)resetKeychain;
 {
     OUIDeleteAllCredentials();
@@ -420,6 +423,19 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
     [OUIAboutPanel displayInSheet];
 }
 
+- (void)restoreSampleDocuments:(id)sender;
+{
+    UIViewController *viewController = [[OUIRestoreSampleDocumentListController alloc] init];
+    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
+    navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
+    navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+    
+    [self.topViewController presentModalViewController:navigationController animated:YES];
+    
+    [navigationController release];
+    [viewController release];
+}
+
 - (void)runTests:(id)sender;
 {
     Class cls = NSClassFromString(@"SenTestSuite");
@@ -514,6 +530,9 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 {
     OBPRECONDITION(popover);
     
+    // Treat a print sheet the same way as a popover and dismiss it when presenting something else. Sure would be nice if UIPrintInteractionController was a subclass of UIPopoverController as would make sense... 
+    [[UIPrintInteractionController sharedPrintController] dismissAnimated:animated];
+    
     // If _possiblyVisibleActionSheet is not nil, then we have a visable actionSheet. Dismiss it.
     if (_possiblyVisibleActionSheet) {
         [self dismissActionSheetAndPopover:YES];
@@ -600,6 +619,9 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
         return;
     }
     
+    // Treat a print sheet the same way as a popover and dismiss it when presenting something else. Sure would be nice if UIPrintInteractionController was a subclass of UIPopoverController as would make sense... 
+    [[UIPrintInteractionController sharedPrintController] dismissAnimated:animated];
+
     [self dismissActionSheetAndPopover:YES];
     
 

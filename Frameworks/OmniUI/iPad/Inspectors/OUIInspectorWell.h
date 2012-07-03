@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,16 +10,30 @@
 #import <UIKit/UIControl.h>
 #import <CoreGraphics/CGContext.h>
 
-extern void OUIInspectorWellAddPath(CGContextRef ctx, CGRect frame, BOOL rounded);
-extern void OUIInspectorWellDrawOuterShadow(CGContextRef ctx, CGRect frame, BOOL rounded);
-extern void OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect frame, BOOL rounded, BOOL innerShadow);
-extern CGRect OUIInspectorWellInnerRect(CGRect frame);
-extern void OUIInspectorWellStrokePathWithBorderColor(CGContextRef ctx);
-
 typedef enum {
     OUIInspectorWellBackgroundTypeNormal, // Value holding well
     OUIInspectorWellBackgroundTypeButton,
 } OUIInspectorWellBackgroundType;
+
+typedef enum {
+    OUIInspectorWellCornerTypeNone, // perfectly square
+    OUIInspectorWellCornerTypeSmallRadius,
+    OUIInspectorWellCornerTypeLargeRadius,
+} OUIInspectorWellCornerType;
+
+typedef enum {
+    OUIInspectorWellBorderTypeLight,
+    OUIInspectorWellBorderTypeDark,
+} OUIInspectorWellBorderType;
+
+extern void OUIInspectorWellAddPath(CGContextRef ctx, CGRect frame, OUIInspectorWellCornerType cornerType);
+extern void OUIInspectorWellDrawOuterShadow(CGContextRef ctx, CGRect frame, OUIInspectorWellCornerType cornerType);
+extern void OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect frame, OUIInspectorWellCornerType cornerType, OUIInspectorWellBorderType borderType, BOOL innerShadow);
+extern CGRect OUIInspectorWellInnerRect(CGRect frame);
+
+extern void OUIInspectorWellDraw(CGContextRef ctx, CGRect frame,
+                                 OUIInspectorWellCornerType cornerType, OUIInspectorWellBorderType borderType, BOOL innerShadow,
+                                 void (^drawInterior)(CGRect interior));
 
 
 // This just draws the background border/gradient with highlighting, font and color support methods for subclasses.
@@ -31,7 +45,7 @@ typedef enum {
 + (UIColor *)highlightedTextColor;
 + (UIImage *)navigationArrowImage;
 
-@property(assign,nonatomic) BOOL rounded;
+@property(assign,nonatomic) OUIInspectorWellCornerType cornerType;
 @property(readonly,nonatomic) BOOL shouldDrawHighlighted;
 @property(nonatomic) OUIInspectorWellBackgroundType backgroundType;
 

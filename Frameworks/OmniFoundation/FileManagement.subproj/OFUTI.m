@@ -234,6 +234,9 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
     
     // No luck looking in our own Info.plist. Look through all the definitions Launch Services knows about, but prefer any declarations by CoreServices. We allow the caller to pass a conformingToUTI hint in order to limit the size of and time spent copying this array.
     CFArrayRef allTypes = UTTypeCreateAllIdentifiersForTag((CFStringRef)tagClass, (CFStringRef)tagValue, (CFStringRef)conformingToUTIOrNil);
+    if (!allTypes)
+        return;
+    
     NSMutableArray *systemTypes = [[NSMutableArray alloc] init];
     NSMutableArray *thirdPartyTypes = [[NSMutableArray alloc] init];
     

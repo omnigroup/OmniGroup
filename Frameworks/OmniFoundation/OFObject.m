@@ -110,19 +110,6 @@ RCS_ID("$Id$")
 #endif
 
 #if OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT
-// NSCopyObject does a byte-by-byte copy, which would clone the reference count of the copied object into the result.
-id <NSObject> OFCopyObject(OFObject *object, unsigned extraBytes, NSZone *zone)
-{
-    id <NSObject> result = NSCopyObject(object, extraBytes, zone);
-    if (result) {
-        OBASSERT([result isKindOfClass:[OFObject class]]);
-        [(OFObject *)result _resetInternalReferenceCount];
-    }
-    return result;
-}
-#endif
-
-#if OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT
 static void OFCheckForInstruments(void) __attribute__((constructor));
 static void OFCheckForInstruments(void)
 {

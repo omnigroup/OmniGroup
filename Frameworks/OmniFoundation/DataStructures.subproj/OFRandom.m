@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2009-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2009-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,7 +73,7 @@ OFRandomState *OFRandomStateDuplicate(OFRandomState *oldstate_)
     memcpy(newstate, oldstate, sizeof(*newstate));
     newstate->psfmt32 = &newstate->sfmt[0].u[0] + ( oldstate->psfmt32 - &oldstate->sfmt[0].u[0] );
 #if !defined(BIG_ENDIAN64) || defined(ONLY64)
-    newstate->psfmt64 = (uint64_t *)&oldstate->sfmt[0].u[0] + ( oldstate->psfmt64 - (uint64_t *)&oldstate->sfmt[0].u[0] );
+    newstate->psfmt64 = (uint64_t *)&newstate->sfmt[0].u[0] + ( oldstate->psfmt64 - (uint64_t *)&oldstate->sfmt[0].u[0] );
 #endif
 
     return (OFRandomState *)newstate;

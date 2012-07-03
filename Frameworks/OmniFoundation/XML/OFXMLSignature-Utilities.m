@@ -629,6 +629,39 @@ static BOOL describeSecItemLion(CFTypeRef item, CFTypeID what, NSMutableString *
 
 #endif /* 10.7 and above */
 
+int OFSecKeyGetGroupSize(SecKeyRef k)
+{
+    /* In order to correctly format DSA and ECDSA signatures, we need to know the key's "size" --- the number of bits it takes to represent a member of the generated group (aka the number of bits in the largest exponent the algorithm will use). On 10.6, 10.7, and some 10.8 betas, this information is returned by SecKeyGetBlockSize(). In 10.8, though, that function's behavior changed to return some other number (unclear what). Here we use SecKeychainItemCopyAttributesAndData(); if SecItemCopyMatching() starts to work in some future OS release we could switch to that instead. 
+     
+     RADAR references:
+         SecItemCopyMatching - 10155924
+         SecKeyGetBlockSize  - 11765613
+     */
+
+    OSStatus oserr;
+    SecKeychainAttributeList *returnedAttributes;
+    static const UInt32 keyAttributeCount = 2;
+    static const UInt32 keyAttributeTags[2]     = { kSecKeyKeyType, kSecKeyKeySizeInBits };
+    static const UInt32 keyAttributeFormats[2]  = { CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32 };
+        
+    SecKeychainAttributeInfo queryAttributes = { keyAttributeCount, (UInt32 *)keyAttributeTags, (UInt32 *)keyAttributeFormats };
+        
+    returnedAttributes = NULL;
+    oserr = SecKeychainItemCopyAttributesAndData((SecKeychainItemRef)k, &queryAttributes, NULL, &returnedAttributes, NULL, NULL);
+    if (oserr == noErr) {
+        UInt32 v;
+        int result;
+        if (uint32attr(returnedAttributes, kSecKeyKeySizeInBits, &v))
+            result = v;
+        else
+            result = -1;
+        SecKeychainItemFreeAttributesAndData(returnedAttributes, NULL);
+        return result;
+    }
+    
+    return -1;
+}
+
 #pragma mark X.509 Certificate Utilities
 
 #if OF_ENABLE_CDSA

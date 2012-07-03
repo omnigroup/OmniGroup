@@ -728,6 +728,10 @@ BOOL OFBTreeDelete(OFBTree *btree, void *value)
         cursor.nodeStack[++cursor.nodeStackDepth] = _OFBTreeValueLesserChildNode(btree, value);
         replacement = _OFBTreeSelectLast(btree, &cursor);
         
+        OBASSERT_NOTNULL(replacement);
+        if (replacement == NULL)
+            return NO;
+        
         // Replace original with greatest lesser value
         memcpy(value, replacement, btree->elementSize);
         

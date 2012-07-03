@@ -58,9 +58,7 @@
     
     UITextAutocorrectionType _autocorrectionType;
     UITextAutocapitalizationType _autocapitalizationType;
-#if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
     UITextSpellCheckingType _spellCheckingType;
-#endif
     UIReturnKeyType _returnKeyType;
     UIKeyboardType _keyboardType;
     
@@ -130,6 +128,7 @@
 
 @property (nonatomic, readonly) OUEFTextRange *selection;
 @property (nonatomic, readwrite, retain) UIColor *selectionColor;
+@property (nonatomic, readwrite, retain) UIColor *selectedRangeColor;
 @property (nonatomic, copy) NSDictionary *typingAttributes;
 @property (nonatomic, copy) NSAttributedString *attributedText;
 @property (nonatomic, assign) id <OUIEditableFrameDelegate> delegate;
@@ -142,6 +141,7 @@
 @property (nonatomic, readonly) CGSize viewUsedSize; // Same as -textUsedSpace, but accounting for effective scale to UIView space.
 @property (nonatomic, assign) BOOL shouldTryToCenterFirstLine;
 @property (nonatomic, assign) CGFloat firstLineCenterTarget;
+@property (nonatomic, readonly) CGFloat firstLineAscent;
 
 - (BOOL)endEditing;
 
@@ -154,9 +154,7 @@
 @property (nonatomic) BOOL autoCorrectDoubleSpaceToPeriodAtSentenceEnd;
 @property (nonatomic) UITextAutocorrectionType autocorrectionType;  // defaults to UITextAutocorrectionTypeNo
 @property (nonatomic) UITextAutocapitalizationType autocapitalizationType; // defaults to UITextAutocapitalizationTypeNone
-#if defined(__IPHONE_5_0) && (__IPHONE_5_0 <= __IPHONE_OS_VERSION_MAX_ALLOWED)
 @property (nonatomic) UITextSpellCheckingType spellCheckingType; // default is UITextSpellCheckingTypeDefault;
-#endif
 @property (nonatomic) UIReturnKeyType returnKeyType; // default is UIReturnKeyDefault;
 @property (nonatomic) UITextGranularity tapSelectionGranularity;
 
@@ -184,11 +182,6 @@
 - (CGRect)targetRectangleForEditMenu;
 - (BOOL)canPerformMainMenuAction:(SEL)action withSender:(id)sender;
 - (BOOL)canSuperclassPerformAction:(SEL)action withSender:(id)sender;
-
-/* These are the interface from the thumbs to our selection machinery */
-- (void)thumbBegan:(OUITextThumb *)thumb;
-- (void)thumbMoved:(OUITextThumb *)thumb targetPosition:(CGPoint)pt;
-- (void)thumbEnded:(OUITextThumb *)thumb normally:(BOOL)normalEnd;
 
 /* These are the interface from the inspectable spans */
 - (NSDictionary *)attributesInRange:(UITextRange *)r;

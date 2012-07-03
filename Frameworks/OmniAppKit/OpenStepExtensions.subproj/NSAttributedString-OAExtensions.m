@@ -433,82 +433,10 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 {
     return [self RTFFromRange:NSMakeRange(0, [self length]) documentAttributes:nil];
 }
-
-- (NSAttributedString *)substringWithEllipsisToWidth:(CGFloat)width;
-{
-    static NSTextStorage *substringWithEllipsisTextStorage = nil;
-    static NSLayoutManager *substringWithEllipsisLayoutManager = nil;
-    static NSTextContainer *substringWithEllipsisTextContainer = nil;
-
-    NSRange drawGlyphRange;
-    NSRange lineCharacterRange;
-    NSRect lineFragmentRect;
-    NSSize lineSize;
-    NSString *ellipsisString;
-    NSSize ellipsisSize;
-    NSDictionary *ellipsisAttributes;
-    BOOL requiresEllipsis = YES;
-    BOOL isRightToLeft = NO;
-    
-    if ([self length] == 0)
-        return self;
-
-    if (substringWithEllipsisTextContainer == nil) {
-        substringWithEllipsisTextStorage = [[NSTextStorage alloc] init];
-
-        substringWithEllipsisLayoutManager = [[NSLayoutManager alloc] init];
-        [substringWithEllipsisTextStorage addLayoutManager:substringWithEllipsisLayoutManager];
-
-        substringWithEllipsisTextContainer = [[NSTextContainer alloc] initWithContainerSize:NSMakeSize(1.0e7f, 1.0e7f)];
-        [substringWithEllipsisTextContainer setLineFragmentPadding:0.0f];
-        [substringWithEllipsisLayoutManager addTextContainer:substringWithEllipsisTextContainer];
-    }
-    
-    [substringWithEllipsisTextStorage setAttributedString:self];
-    
-    lineFragmentRect = [substringWithEllipsisLayoutManager lineFragmentUsedRectForGlyphAtIndex:0 effectiveRange:&drawGlyphRange];
-    lineSize = lineFragmentRect.size;
-    if (lineSize.width <= width)
-	return self;
-	
-    lineCharacterRange = [substringWithEllipsisLayoutManager characterRangeForGlyphRange:drawGlyphRange actualGlyphRange:NULL];
-    
-    NSUInteger ellipsisAttributeCharacterIndex;
-
-    isRightToLeft = ([substringWithEllipsisLayoutManager intAttribute:NSGlyphAttributeBidiLevel forGlyphAtIndex:[substringWithEllipsisLayoutManager numberOfGlyphs] - 1] != 0);        
-
-    if (lineCharacterRange.length != 0)
-	ellipsisAttributeCharacterIndex = NSMaxRange(lineCharacterRange) - 1;
-    else
-	ellipsisAttributeCharacterIndex = 0;
-    ellipsisAttributes = [self attributesAtIndex:ellipsisAttributeCharacterIndex longestEffectiveRange:NULL inRange:NSMakeRange(0, 1)];
-    ellipsisString = [NSString horizontalEllipsisString];
-    ellipsisSize = [ellipsisString sizeWithAttributes:ellipsisAttributes];
-
-    NSPoint glyphLocation;
-    glyphLocation.x = (isRightToLeft) ? ellipsisSize.width : width - ellipsisSize.width;
-    glyphLocation.y = 0.5f * lineSize.height;
-    drawGlyphRange.length = [substringWithEllipsisLayoutManager glyphIndexForPoint:glyphLocation inTextContainer:substringWithEllipsisTextContainer];
-
-    if (drawGlyphRange.length == 0) {
-	// We couldn't fit any characters with the ellipsis, so try drawing some without it (rather than drawing nothing)
-	requiresEllipsis = NO;
-	glyphLocation.x = (isRightToLeft) ? 0.0f : width;
-	drawGlyphRange.length = [substringWithEllipsisLayoutManager glyphIndexForPoint:glyphLocation inTextContainer:substringWithEllipsisTextContainer];
-    }
-    
-    NSMutableAttributedString *copy = [self mutableCopy];
-    
-    lineCharacterRange = [substringWithEllipsisLayoutManager characterRangeForGlyphRange:drawGlyphRange actualGlyphRange:NULL];
-    if (isRightToLeft)
-	[copy replaceCharactersInRange:NSMakeRange(0, lineCharacterRange.location) withString:(requiresEllipsis ? ellipsisString : @"")];
-    else
-	[copy replaceCharactersInRange:NSMakeRange(NSMaxRange(lineCharacterRange), [copy length]-NSMaxRange(lineCharacterRange)) withString:(requiresEllipsis ? ellipsisString : @"")];
-    return [copy autorelease];
-}
 #endif
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+// See <bug:///79949> (Update NSAttributedString extension method drawInRectangle:alignment:verticallyCentered:)
 - (void)drawInRectangle:(NSRect)rectangle alignment:(int)alignment verticallyCentered:(BOOL)verticallyCenter;
     // ASSUMPTION: This is for one line
 {

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,8 +52,8 @@ static void OUIDrawingInitialize(void)
 {
     if (OUILightContentOnDarkBackgroundShadowColor)
         return;
-    OUILightContentOnDarkBackgroundShadowColor = [[UIColor colorWithWhite:kOUILightContentOnDarkBackgroundShadowWhiteAlpha.w alpha:kOUILightContentOnDarkBackgroundShadowWhiteAlpha.a] retain];
-    OUIDarkContentOnLightBackgroundShadowColor = [[UIColor colorWithWhite:kOUIDarkContentOnLightBackgroundShadowWhiteAlpha.w alpha:kOUIDarkContentOnLightBackgroundShadowWhiteAlpha.a] retain];
+    OUILightContentOnDarkBackgroundShadowColor = [OQMakeUIColor(kOUILightContentOnDarkBackgroundShadowColor) retain];
+    OUIDarkContentOnLightBackgroundShadowColor = [OQMakeUIColor(kOUIDarkContentOnLightBackgroundShadowColor) retain];
 }
 
 CGSize OUIShadowOffset(OUIShadowType type)

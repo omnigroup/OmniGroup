@@ -96,6 +96,7 @@ static CGPoint _clampContentOffset(CGPoint contentOffset, CGRect bounds, CGSize 
     id _draggingDestinationItem;
     
     NSMutableSet *_itemsBeingAdded;
+    NSMutableSet *_itemsBeingRemoved;
     NSMutableSet *_itemsIgnoredForLayout;
     
     struct {
@@ -118,6 +119,7 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
 {
     self->_items = [[NSMutableSet alloc] init];
     self->_itemsBeingAdded = [[NSMutableSet alloc] init];
+    self->_itemsBeingRemoved = [[NSMutableSet alloc] init];
     self->_itemsIgnoredForLayout = [[NSMutableSet alloc] init];
     
     self.showsVerticalScrollIndicator = YES;
@@ -147,6 +149,7 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
     [_sortedItems release];
     [_items release];
     [_itemsBeingAdded release];
+    [_itemsBeingRemoved release];
     [_itemViewsForPreviousOrientation release];
     [_fileItemViews release];
     [_groupItemViews release];
@@ -393,9 +396,14 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
 }
 
+@synthesize itemsBeingAdded = _itemsBeingAdded;
+
 - (void)startRemovingItems:(NSSet *)toRemove;
 {
     OBPRECONDITION([toRemove isSubsetOfSet:_items]);
+    OBPRECONDITION([toRemove intersectsSet:_itemsBeingRemoved] == NO);
+
+    [_itemsBeingRemoved unionSet:toRemove];
 
     for (OFSDocumentStoreItem *item in toRemove) {
         OUIDocumentPickerItemView *itemView = [self itemViewForItem:item];
@@ -406,6 +414,7 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
 - (void)finishRemovingItems:(NSSet *)toRemove;
 {
     OBPRECONDITION([toRemove isSubsetOfSet:_items]);
+    OBPRECONDITION([toRemove isSubsetOfSet:_itemsBeingRemoved]);
 
     for (OFSDocumentStoreItem *item in toRemove) {
         OUIDocumentPickerItemView *itemView = [self itemViewForItem:item];
@@ -413,6 +422,7 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
         itemView.shrunken = NO;
     }
 
+    [_itemsBeingRemoved minusSet:toRemove];
     [_items minusSet:toRemove];
     [self sortItems]; // The order hasn't changed, but w/o this the sorted array would still have the removed items
     
@@ -420,6 +430,8 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
 }
+
+@synthesize itemsBeingRemoved = _itemsBeingRemoved;
 
 - (NSArray *)_sortDescriptors;
 {
@@ -620,7 +632,8 @@ static OUIDocumentPickerItemView *_itemViewHitInPreviewAreaByRecognizer(NSArray 
     return (OUIDocumentPickerFileItemView *)_itemViewHitInPreviewAreaByRecognizer(_fileItemViews, recognizer);
 }
 
-- (OFSDocumentStoreFileItem *)preferredFileItemForNextPreviewUpdate:(NSSet *)fileItemsNeedingPreviewUpdate;
+// Used to pick file items that are visible for automatic download (if they are small and we are on wi-fi) or preview generation.
+- (OFSDocumentStoreFileItem *)preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
 {
     // Prefer to update items that are visible, and then among those, do items starting at the top-left.
     OFSDocumentStoreFileItem *bestFileItem = nil;
@@ -643,9 +656,9 @@ static OUIDocumentPickerItemView *_itemViewHitInPreviewAreaByRecognizer(NSArray 
         if ([fileItemsNeedingPreviewUpdate member:fileItem] == nil)
             continue;
 
-        CGRect itemBounds = fileItemView.bounds;
-        CGPoint itemOrigin = itemBounds.origin;
-        OFExtent itemYExtent = OFExtentFromRectYRange(fileItemView.frame);
+        CGRect itemFrame = fileItemView.frame;
+        CGPoint itemOrigin = itemFrame.origin;
+        OFExtent itemYExtent = OFExtentFromRectYRange(itemFrame);
 
         OFExtent itemVisibleYExtent = OFExtentIntersection(itemYExtent, contentYExtent);
         CGFloat itemVisiblePercentage = itemVisibleYExtent.length / contentYExtent.length;
@@ -955,16 +968,10 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
     if (itemView) {
         // should be one of ours, not some other temporary animating item view        
         OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
-        OBASSERT(itemView.hidden == NO); // shouldn't be hittable if hidden
-        OBASSERT(itemView.item); // should have an item if it is on screen/not hidden
         
-        if ([hitView isDescendantOfView:itemView.previewView]) {
-            [self.delegate documentPickerScrollView:self itemViewTapped:itemView inArea:OUIDocumentPickerItemViewTapAreaPreview];
-        } else if ([hitView isDescendantOfView:itemView]) {
-            [self.delegate documentPickerScrollView:self itemViewTapped:itemView inArea:OUIDocumentPickerItemViewTapAreaLabelAndDetails];
-        } else {
-            OBASSERT_NOT_REACHED("Should be fully covered by the subviews...");
-        }
+        OUIDocumentPickerItemViewTapArea area;
+        if ([itemView getHitTapArea:&area withRecognizer:recognizer])
+            [self.delegate documentPickerScrollView:self itemViewTapped:itemView inArea:area];
     }
 }
 

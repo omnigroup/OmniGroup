@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,22 +10,25 @@
 #import <OmniQuartz/OQColor.h>
 
 // OUIInspectorWell
-#define kOUIInspectorWellHeight (37)
-#define kOUIInspectorWellBorderGradientStartWhiteAlpha ((OQWhiteAlpha){0.42, 1.0})
-#define kOUIInspectorWellBorderGradientEndWhiteAlpha ((OQWhiteAlpha){0.58, 1.0})
-#define kOUIInspectorWellInnerShadowWhiteAlpha ((OQWhiteAlpha){0.0, 0.4})
-#define kOUIInspectorWellInnerShadowBlur (3)
+#define kOUIInspectorWellHeight (46) // This makes our inner content height match that of a UITableViewCell.
+#define kOUIInspectorWellLightBorderGradientStartColor ((OSHSV){213.0/360.0, 0.06, 0.62, 1.0})
+#define kOUIInspectorWellLightBorderGradientEndColor ((OSHSV){216.0/360.0, 0.05, 0.72, 1.0})
+#define kOUIInspectorWellDarkBorderGradientStartColor ((OSHSV){213.0/360.0, 0.06, 0.20, 1.0})
+#define kOUIInspectorWellDarkBorderGradientEndColor ((OSHSV){216.0/360.0, 0.05, 0.35, 1.0})
+#define kOUIInspectorWellInnerShadowColor ((OQWhiteAlpha){0.0, 0.35})
+#define kOUIInspectorWellInnerShadowBlur (2)
 #define kOUIInspectorWellInnerShadowOffset (CGSizeMake(0,1))
-#define kOUIInspectorWellOuterShadowWhiteAlpha ((OQWhiteAlpha){1.0, 0.5})
-#define kOUIInspectorWellCornerRadius (4)
+#define kOUIInspectorWellOuterShadowColor ((OQWhiteAlpha){1.0, 0.5})
+#define kOUIInspectorWellCornerCornerRadiusSmall (4)
+#define kOUIInspectorWellCornerCornerRadiusLarge (10.5)
 
 // OUIInspectorTextWell
-#define kOUIInspectorTextWellNormalGradientTopColor ((OSHSV){213.0/360.0, 0.10, 1.00, 1.0})
+#define kOUIInspectorTextWellNormalGradientTopColor ((OSHSV){210.0/360.0, 0.08, 1.00, 1.0})
 #define kOUIInspectorTextWellNormalGradientBottomColor ((OSHSV){210.0/360.0, 0.02, 1.00, 1.0})
-#define kOUIInspectorTextWellHighlightedGradientTopColor ((OSHSV){213.0/360.0, 0.08, 0.58, 1.0})
-#define kOUIInspectorTextWellHighlightedGradientBottomColor ((OSHSV){210.0/360.0, 0.05, 0.63, 1.0})
+#define kOUIInspectorTextWellHighlightedGradientTopColor ((OSHSV){210.0/360.0, 0.4, 1.0, 1.0})
+#define kOUIInspectorTextWellHighlightedGradientBottomColor ((OSHSV){210.0/360.0, 0.2, 1.0, 1.0})
 
-#define kOUIInspectorTextWellTextColor ((OSHSV){213.0/360.0, 0.50, 0.40, 1.0})
+#define kOUIInspectorTextWellTextColor ((OSHSV){221.0/360.0, 0.30, 0.42, 1.0})
 #define kOUIInspectorTextWellHighlightedTextColor ((OSHSV){213.0/360.0, 0.50, 0.30, 1.0})
 #define kOUIInspectorLabelDisabledTextColorAlphaScale (0.5)
 
@@ -39,11 +42,12 @@
 #define kOUIInspectorOptionWheelGradientPower (2.5)
 
 // OUIDrawing
-#define kOUILightContentOnDarkBackgroundShadowWhiteAlpha ((OQWhiteAlpha){0.0, 0.5})
-#define kOUIDarkContentOnLightBackgroundShadowWhiteAlpha ((OQWhiteAlpha){1.0, 0.5})
+#define kOUILightContentOnDarkBackgroundShadowColor ((OQWhiteAlpha){0.0, 0.5})
+#define kOUIDarkContentOnLightBackgroundShadowColor ((OQWhiteAlpha){1.0, 0.5})
 
 // OUIInspector
 #define kOUIInspectorLabelTextColor ((OSHSV){212.0/360.0, 0.5, 0.35, 1.0}) // Also toggle buttons and segmented control buttons if they have labels instead of images
+#define kOUIInspectorValueTextColor ((OSHSV){212.0/360.0, 0.5, 0.35, 1.0}) // For lable+value inspectors in detail/tappable mode (which looks like a UITableView now).
 
 // OUIBarButtonItem
 #define kOUIBarButtonItemDisabledTextGrayForColoredButtons (0.9) // The default is too dark against these lighter colored buttons (but OK on the black buttons).
@@ -59,19 +63,19 @@
 
 // OUIDocumentPicker and friends
 #define kOUIDocumentPickerItemViewNameLabelFontSize (17.0)
-#define kOUIDocumentPickerItemViewNameLabelWhiteAlpha ((OQWhiteAlpha){1.0, 0.90})
+#define kOUIDocumentPickerItemViewNameLabelColor ((OQWhiteAlpha){1.0, 0.90})
 #define kOUIDocumentPickerItemViewDetailLabelFontSize (12.0)
-#define kOUIDocumentPickerItemViewDetailLabelWhiteAlpha ((OQWhiteAlpha){1.0, 0.75})
+#define kOUIDocumentPickerItemViewDetailLabelColor ((OQWhiteAlpha){1.0, 0.75})
 #define kOUIDocumentPickerItemViewNameToPreviewPadding (7.0)
 #define kOUIDocumentPickerItemViewNameToDatePadding (-1.0)
-#define kOUIDocumentPickerItemViewLabelShadowWhiteAlpha ((OQWhiteAlpha){0.0, 0.66})
+#define kOUIDocumentPickerItemViewLabelShadowColor ((OQWhiteAlpha){0.0, 0.66})
 #define kOUIDocumentPickerItemViewProgressTintColor ((OQLinearRGBA){0.5, 0.5, 0.85, 1.0})
 
 // OUIDocumentPreviewView
 #define kOUIDocumentPreviewViewNormalShadowBlur (1.25)
-#define kOUIDocumentPreviewViewNormalShadowWhiteAlpha ((OQWhiteAlpha){0.0, 0.75})
+#define kOUIDocumentPreviewViewNormalShadowColor ((OQWhiteAlpha){0.0, 0.75})
 #define kOUIDocumentPreviewViewBorderEdgeInsets (UIEdgeInsetsMake(11/*top*/, 11/*left*/, 11/*bottom*/, 11/*right*/))
-#define kOUIDocumentPreviewViewBorderSelectionWhiteAlpha ((OQWhiteAlpha){0.0, 0.5})
+#define kOUIDocumentPreviewViewBorderSelectionColor ((OQWhiteAlpha){0.0, 0.5})
 #define kOUIDocumentPreviewSelectionTouchBounceScale (0.96)
 #define kOUIDocumentPreviewSelectionTouchBounceDuration (0.17)
 #define kOUIDocumentPreviewHighlightAlpha (0.33)

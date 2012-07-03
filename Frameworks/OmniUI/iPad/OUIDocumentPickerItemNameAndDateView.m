@@ -29,7 +29,7 @@ static UIFont *DateFont = nil;
 {
     OBINITIALIZE;
     
-    ShadowColor = [[UIColor colorWithWhite:kOUIDocumentPickerItemViewLabelShadowWhiteAlpha.w alpha:kOUIDocumentPickerItemViewLabelShadowWhiteAlpha.a] retain];
+    ShadowColor = [OQMakeUIColor(kOUIDocumentPickerItemViewLabelShadowColor) retain];
     NameFont = [[UIFont boldSystemFontOfSize:kOUIDocumentPickerItemViewNameLabelFontSize] retain];
     DateFont = [[UIFont boldSystemFontOfSize:kOUIDocumentPickerItemViewDetailLabelFontSize] retain];
 }
@@ -116,7 +116,7 @@ static UIFont *DateFont = nil;
         CGRect dateRect;
         CGRectDivide(bounds, &dateRect, &bounds, ceil(_dateStringSize.height), CGRectMaxYEdge);
         
-        [[UIColor colorWithWhite:kOUIDocumentPickerItemViewNameLabelWhiteAlpha.w alpha:kOUIDocumentPickerItemViewNameLabelWhiteAlpha.a] set];
+        [OQMakeUIColor(kOUIDocumentPickerItemViewNameLabelColor) set];
         
         if (_nameBadgeImage) {            
             // Center the name and image together.
@@ -136,7 +136,7 @@ static UIFont *DateFont = nil;
 
         [_name drawInRect:nameRect withFont:NameFont lineBreakMode:UILineBreakModeTailTruncation alignment:UITextAlignmentCenter];
         
-        [[UIColor colorWithWhite:kOUIDocumentPickerItemViewDetailLabelWhiteAlpha.w alpha:kOUIDocumentPickerItemViewDetailLabelWhiteAlpha.a] set];
+        [OQMakeUIColor(kOUIDocumentPickerItemViewDetailLabelColor) set];
         [_dateString drawInRect:dateRect withFont:DateFont lineBreakMode:UILineBreakModeTailTruncation alignment:UITextAlignmentCenter];
     }
     CGContextRestoreGState(ctx);

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,7 +67,7 @@ NSURLCredential *OUIReadCredentialsForProtectionSpace(NSURLProtectionSpace *prot
                 NSString *password = [[[NSString alloc] initWithData:[item objectForKey:(id)kSecValueData] encoding:NSUTF8StringEncoding] autorelease];
                 
                 if (![NSString isEmptyString:user] && ![NSString isEmptyString:password]) {
-                    NSURLCredential *result = [NSURLCredential credentialWithUser:user password:password persistence:NSURLCredentialPersistenceNone];
+                    NSURLCredential *result = [NSURLCredential credentialWithUser:user password:password persistence:NSURLCredentialPersistenceForSession];
                     //NSLog(@"trying %@",  result);
                     CFRelease(item);
                     return result;

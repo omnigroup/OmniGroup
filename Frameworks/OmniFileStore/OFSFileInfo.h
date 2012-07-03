@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,18 +21,21 @@
     BOOL _directory;
     off_t _size;
     NSDate *_lastModifiedDate;
+    NSString *_eTag;
 }
 
 + (NSString *)nameForURL:(NSURL *)url;
+- initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date eTag:(NSString *)eTag;
 - initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date;
 
 // Accessors
-- (NSURL *)originalURL;
-- (NSString *)name;
-- (BOOL)exists;
-- (BOOL)isDirectory;
-- (off_t)size;
-- (NSDate *)lastModifiedDate;
+@property(nonatomic,readonly) NSURL *originalURL;
+@property(nonatomic,readonly) NSString *name;
+@property(nonatomic,readonly) BOOL exists;
+@property(nonatomic,readonly) BOOL isDirectory;
+@property(nonatomic,readonly) off_t size;
+@property(nonatomic,readonly) NSDate *lastModifiedDate;
+@property(nonatomic,readonly) NSString *eTag; // Only set for files returned from WebDAV
 
 // Filename manipulation
 - (BOOL)hasExtension:(NSString *)extension;

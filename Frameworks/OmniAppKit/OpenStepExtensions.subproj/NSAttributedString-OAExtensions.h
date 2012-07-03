@@ -30,8 +30,7 @@
 
 - (NSData *)rtf;
 
-- (NSAttributedString *)substringWithEllipsisToWidth:(CGFloat)width;
-
+// See <bug:///79949> (Update NSAttributedString extension method drawInRectangle:alignment:verticallyCentered:)
 - (void)drawInRectangle:(CGRect)rectangle alignment:(int)alignment verticallyCentered:(BOOL)verticallyCenter;
 
 - (void)drawCenteredShrinkingToFitInRect:(CGRect)rect;

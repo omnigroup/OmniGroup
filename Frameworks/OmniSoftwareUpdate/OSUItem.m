@@ -114,6 +114,7 @@ static NSString *_optionalStringNode(NSXMLElement *elt, NSString *tag, NSString 
 static NSDictionary *FreeAttributes = nil;
 static NSDictionary *PaidAttributes = nil;
 static NSFont *itemFont = nil, *ignoredFont = nil;
+static NSNumber *ignoredFontNeedsObliquity = nil;
 
 @implementation OSUItem
 
@@ -127,10 +128,15 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
     NSFont *font = [NSFont controlContentFontOfSize:[NSFont systemFontSize]];
     
     NSFont *italicFont = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSItalicFontMask];
-    if (!italicFont)
+    NSNumber *lackingObliquity;
+    if (!italicFont || [italicFont isEqual:font]) {
         italicFont = font;
-
-    FreeAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:italicFont, NSFontAttributeName, [NSColor disabledControlTextColor], NSForegroundColorAttributeName, nil];
+        lackingObliquity = [[NSNumber alloc] initWithCGFloat:(CGFloat)0.35];
+    } else {
+        lackingObliquity = nil;
+    }
+    
+    FreeAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:italicFont, NSFontAttributeName, [NSColor disabledControlTextColor], NSForegroundColorAttributeName, lackingObliquity, NSObliquenessAttributeName, nil];
 
     NSFont *boldFont = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSBoldFontMask];
     if (!boldFont)
@@ -140,6 +146,7 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
     
     itemFont = [font retain];
     ignoredFont = [italicFont retain];
+    ignoredFontNeedsObliquity = lackingObliquity;
 }
 
 + (void)setSupersededFlagForItems:(NSArray *)items;
@@ -171,6 +178,7 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
     }
 }
 
+/* This predicate selects items which we might display in the panel. We filter out unavailable items (which run on an OS the user doesn't have) and superseded items (which are older than another item in the list on the same or stabler track). */
 + (NSPredicate *)availableAndNotSupersededPredicate;
 {
     static NSPredicate *predicate = nil;
@@ -181,12 +189,21 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
 }
 
 /* This predicate selects items that are worth popping up a panel for. We include some items in the panel that aren't interesting enough to show the panel for, such as ignored items or downgrade-to-previous-stable-release items, and this predicate filters those out. Those items may still be of interest to the user if they explicitly ask for an update check, for example, but won't bring up an unsolicited dialog. */
-+ (NSPredicate *)availableAndNotSupersededOrIgnoredPredicate;
++ (NSPredicate *)availableAndNotSupersededIgnoredOrOldPredicate;
 {
     static NSPredicate *predicate = nil;
     
     if (!predicate)
         predicate = [[NSPredicate predicateWithFormat:@"%K = YES AND %K = NO AND %K = NO AND %K = NO", OSUItemAvailableBinding, OSUItemSupersededBinding, OSUItemIgnoredBinding, OSUItemOldStableBinding] retain];
+    return predicate;
+}
+
++ (NSPredicate *)availableOldStablePredicate;
+{
+    static NSPredicate *predicate = nil;
+    
+    if (!predicate)
+        predicate = [[NSPredicate predicateWithFormat:@"%K = YES AND %K = NO AND %K = YES", OSUItemAvailableBinding, OSUItemIgnoredBinding, OSUItemOldStableBinding] retain];
     return predicate;
 }
 
@@ -410,6 +427,9 @@ static NSFont *itemFont = nil, *ignoredFont = nil;
 
 - (NSString *)displayName;
 {
+    if (_olderStable)
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Downgrade: %@", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update item - if an item is presented as a downgrade option, use this to format its displayed title - placeholder is normal title"), _title];
+    
     return _title;
 }
 

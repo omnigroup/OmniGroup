@@ -176,7 +176,7 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
             if ([keytype isEqual:(id)kSecAttrKeyTypeECDSA]) {
                 int sigorder = -1;
                 SecKeyRef retval = OFXMLSigCopyKeyFromEllipticKeyValue(keyvalue, &sigorder, outError);
-                OBASSERT(sigorder >= 0 && (size_t)sigorder == SecKeyGetBlockSize(retval));
+                OBASSERT(sigorder >= 0 && (size_t)sigorder == OFSecKeyGetGroupSize(retval));
                 return retval;
             }
         }
@@ -1167,7 +1167,7 @@ static void alterSignature(xmlNode *sigNode, int delta)
     ((unsigned char *)[dec mutableBytes])[6] = b0;
     NSData *enc = [[dec base64String] dataUsingEncoding:NSUTF8StringEncoding];
     
-    NSLog(@"Alter<%d>  %s -> %.*s\n", delta, contentbuf, (int)[enc length], (char *)[enc bytes]);
+    // NSLog(@"Alter<%d>  %s -> %.*s\n", delta, contentbuf, (int)[enc length], (char *)[enc bytes]);
     
     xmlNode *newText = xmlNewTextLen([enc bytes], (int)[enc length]);
 
@@ -1181,6 +1181,39 @@ static void alterSignature(xmlNode *sigNode, int delta)
     
     xmlFree(contentbuf);
     [dec release];
+}
+
+static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAlg, enum OFXMLSignatureOperation op)
+{
+    int result;
+    xmlDoc *d = xmlNewDoc((xmlChar *)"1.0");
+    xmlNode *sigNode = applySigBlob(d, sigAlg, ((const xmlChar *)"http://www.w3.org/2001/10/xml-exc-c14n#"));
+    xmlNode *signedInfo = OFLibXMLChildNamed(sigNode, "SignedInfo", XMLSignatureNamespace, NULL);
+    xmlNode *signatureMethod = OFLibXMLChildNamed(signedInfo, "SignatureMethod", XMLSignatureNamespace, NULL);
+    SecKeyRef k = copyKeyFromKeychain(keychain, signatureMethod, op, NULL);
+    if (!k) {
+        NSLog(@"%s: Unable to retrieve key for alg = %s", __PRETTY_FUNCTION__, (const char *)sigAlg);
+        result = -1;
+    } else {
+        result = OFSecKeyGetGroupSize(k);
+        CFRelease(k);
+    }
+    
+    xmlFreeDoc(d);
+    return result;
+}
+
+- (void)testSizes;
+{
+    /* Make sure that OFSecKeyGetGroupSize() returns the expected values for the three keys we generated in +setUp. */
+    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureRSA_SHA256, OFXMLSignature_Sign), 768, @"RSA private key size");
+    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureRSA_SHA256, OFXMLSignature_Verify), 768, @"RSA public key size");
+    
+    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureDSS, OFXMLSignature_Sign), 512, @"DSA private key size");
+    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureDSS, OFXMLSignature_Verify), 512, @"DSA public key size");
+
+    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureECDSA_SHA512, OFXMLSignature_Sign), 384, @"ECDSA private key size");
+    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureECDSA_SHA512, OFXMLSignature_Verify), 384, @"ECDSA public key size");
 }
 
 - (void)testSign;
@@ -1352,6 +1385,7 @@ static void alterSignature(xmlNode *sigNode, int delta)
 
 + (id) defaultTestSuite
 {
+    NSLog(@"Warning: tests that fails on 10.8 <bug:///81112> (OFXMLSignatureTests_EllipticInterop fails on 10.8)");
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     SenTestSuite *suite = [[super defaultTestSuite] retain];
     NSString *files[] = { @"w3c_microsoft_ecc_p256_sha256_c14n.xml", @"w3c_microsoft_ecc_p521_sha256_c14n.xml", @"w3c_microsoft_ecc_p521_sha512_c14n.xml", @"w3c_oracle_signature-enveloping-p256_sha1.xml", @"w3c_oracle_signature-enveloping-p521_sha256.xml", nil };
@@ -1384,7 +1418,7 @@ static void alterSignature(xmlNode *sigNode, int delta)
     OFXMLSignatureTest *sig = [signatures objectAtIndex:0];
     
     [sig setKeySource:keyFromEmbeddedValues];
-    OBShouldNotError([sig processSignatureElement:OFXMLSignature_Verify error:&error]);    
+    OBShouldNotError([sig processSignatureElement:OFXMLSignature_Verify error:&error]);
 }
 
 @end

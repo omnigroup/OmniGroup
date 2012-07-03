@@ -321,7 +321,9 @@ enum {
         }
     }
     else if (indexPath.section == ResetSampleDocumentSection) {
-        viewController = [[OUIRestoreSampleDocumentListController alloc] init];
+        [self.navigationController dismissModalViewControllerAnimated:YES];
+        [[OUIAppController controller] restoreSampleDocuments:nil];
+        return;
     }
     
     [self.navigationController dismissModalViewControllerAnimated:YES];

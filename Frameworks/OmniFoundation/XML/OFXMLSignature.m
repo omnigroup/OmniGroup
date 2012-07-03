@@ -919,9 +919,9 @@ struct algorithmParameter {
     }
     
     if (keyRef && (sigorder < 0)) {
-        // We have a SecKeyRef, and we know we need to know its group order, but we don't. It turns out that SecKeyGetBlockSize() will return this value, although the documentation is unclear (the documentation for SecKeyGetBlockSize() is kind of incoherent)
-        size_t blocksize = SecKeyGetBlockSize(keyRef);
-        if (blocksize > 0 && blocksize <= 16*1024 /* sanity check to avoid crashing securityd */ ) {
+        // We have a SecKeyRef, and we know we need to know its group order, but we don't.
+        int blocksize = OFSecKeyGetGroupSize(keyRef);
+        if (blocksize > 0 && blocksize <= 16*1024 /* sanity check to avoid crashing securityd - see RADAR 11043986 */ ) {
             sigorder = (int)blocksize;
         }
     }
@@ -932,7 +932,7 @@ struct algorithmParameter {
         CFRelease(keyRef);
         result.digestType = *(cursor->secDigestType);
         result.digestLength = cursor->secDigestLength;
-        if (sigorder)
+        if (sigorder > 0)
             [result setPackDigestsWithGroupOrder:sigorder];
         return result; // We are NS_RETURNS_RETAINED
     }

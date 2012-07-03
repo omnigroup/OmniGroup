@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -94,7 +94,7 @@ static id _commonInit(OUIColorAttributeInspectorWell *self)
         
         // Grid dividing the normal gradient background from the color swatch
 
-        float leftLine[] = {0.0, 0.35};
+        float leftLine[] = {0.0, 0.15};
         float rightLine[] = {1.0, 0.35};
         CGContextSetFillColorSpace(ctx, colorSpace);
 

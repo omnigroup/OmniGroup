@@ -31,6 +31,11 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     OBASSERT(OBClassImplementingMethod(self, @selector(init)) == [OUIInspectorSlice class]);
 }
 
++ (instancetype)slice;
+{
+    return [[[self alloc] init] autorelease];
+}
+
 + (NSString *)nibName;
 {
     // OUIAllocateViewController means we might get 'MyCustomFooInspectorSlice' for 'OUIFooInspectorSlice'. View controller's should be created so often that this would be too slow. One question is whether UINib is uniqued, though, since otherwise we perform extra I/O.
@@ -119,7 +124,10 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 - (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice remainingHeight:(CGFloat)remainingHeight;
 {
     OBPRECONDITION(previousSlice);
-    return 14 - _borderOffsetFromEdge(self.view, CGRectMinYEdge) - _borderOffsetFromEdge(previousSlice.view, CGRectMaxYEdge);
+    CGFloat result = 14 - _borderOffsetFromEdge(self.view, CGRectMinYEdge) - _borderOffsetFromEdge(previousSlice.view, CGRectMaxYEdge);
+    
+    OBASSERT(result >= -14.0); // if the combined border of the views is too large, we can end up overlapping content and causing badness
+    return result;    
 }
 
 - (CGFloat)paddingToInspectorSides;
@@ -128,13 +136,15 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
     return 9 - _borderOffsetFromEdge(self.view, CGRectMinXEdge); // Assumes the left/right border offsets are the same, which they usually are with shadows being done vertically.
 }
 
-- (CGFloat)minimumHeight; // When the view has UIViewAutoresizingFlexibleHeight, the minimum height the slice can have. Defaults to kOUIInspectorWellHeight.
+// Called on both height-resizable and non-resizable slices. Subclasses must implement this to be height sizeable. The default implementation is to just return the current view height (assuming a fixed height view). For backwards compatibility, if the view *is* height sizeable, we use kOUIInspectorWellHeight.
+- (CGFloat)minimumHeightForWidth:(CGFloat)width;
 {
     // Shouldn't be called unless we have a height sizeable view.
     OBPRECONDITION([self isViewLoaded]);
-    OBPRECONDITION(self.view.autoresizingMask & UIViewAutoresizingFlexibleHeight);
     
-    return kOUIInspectorWellHeight;
+    if (self.view.autoresizingMask & UIViewAutoresizingFlexibleHeight)
+        return kOUIInspectorWellHeight;
+    return CGRectGetHeight(self.view.bounds);
 }
 
 - (void)sizeChanged;

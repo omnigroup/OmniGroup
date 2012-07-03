@@ -7,15 +7,13 @@
 
 
 #import <OmniUI/UIGestureRecognizer-OUIExtensions.h>
+
+#if OUI_GESTURE_RECOGNIZER_DEBUG // For 'state' being readwrite
+#import <UIKit/UIGestureRecognizerSubclass.h>
+#endif
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
-
-#if OUI_GESTURE_RECOGNIZER_DEBUG
-@interface UIGestureRecognizer (PrivateAPI)
-- (void)setState:(UIGestureRecognizerState)state;
-@end
-#endif
 
 @implementation UIGestureRecognizer (OUIExtensions)
 

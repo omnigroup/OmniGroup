@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2012 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,8 @@
     BOOL _isAnimating;
     BOOL _keyboardIsAppearing;
 }
+
++ (instancetype)stackedSlicesPaneWithAvailableSlices:(OUIInspectorSlice *)slice, ... NS_REQUIRES_NIL_TERMINATION;
 
 - (NSArray *)makeAvailableSlices; // For subclasses (though the delegate hook can also be used)
 @property(nonatomic,copy) NSArray *availableSlices; // All the possible slices. Will get narrowed by applicability.
