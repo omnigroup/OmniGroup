@@ -4,9 +4,9 @@ OmniGroup
 Checking out the source
 -----------------------
 
-git clone git://github.com/omnigroup/OmniGroup
-git submodule init
-git submodule update
+    git clone git://github.com/omnigroup/OmniGroup
+    git submodule init
+    git submodule update
 
 Configuring Xcode 4
 -------------------
