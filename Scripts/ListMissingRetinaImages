@@ -1,0 +1,80 @@
+#!/usr/bin/ruby
+#
+# Copyright 2012 Omni Development, Inc.  All rights reserved.
+#
+# This software may only be used and reproduced according to the
+# terms in the file OmniSourceLicense.html, which should be
+# distributed with this project and can also be found at
+# <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+#
+# $Id$
+
+require 'find'
+require 'getoptlong'
+require 'pathname'
+
+def usage
+    STDERR.print "usage: #{$0} {--ignore regexp} My.app ...\n"
+    exit 1
+end
+
+@@IgnorePatterns = []
+@@ApplicationPaths = []
+
+GetoptLong.new(
+  [ "--ignore", "-I", GetoptLong::REQUIRED_ARGUMENT ]
+).each do |opt,arg|
+    case opt
+    when "--ignore"
+        @@IgnorePatterns << Regexp.new(arg.to_s)
+    else
+        usage
+    end
+end
+
+if ARGV.length == 0
+    STDERR.print "No application paths specified\n"
+    usage
+end
+
+retinaPattern = /(.*)@2x$/
+
+ARGV.each {|appPath|
+    STDERR.print "Checking for missing Retina images in #{appPath}...\n"
+
+    imageNames = {}
+    imageNames2x = []
+
+    appPath = Pathname.new(appPath).realpath
+    
+    Find.find(appPath.to_s) {|f|
+        next unless f =~ /\.(png|jpeg|jpg)$/
+        next if @@IgnorePatterns.detect {|pattern| pattern.match(f) }
+        
+        base = File.basename(f, File.extname(f))
+    
+        match = retinaPattern.match(base)
+        if match
+            imageNames2x << match[1]
+        else
+            imageNames[base] = Pathname.new(f).relative_path_from(appPath).to_s
+        end
+    }
+
+    # Get rid of matches, reporting any 2x imagees that don't have a 1x original (uncommon)
+    imageNames2x.each {|n|
+        if imageNames[n]
+            imageNames.delete(n)
+        else
+            STDERR.print "Extra 2x image for #{n}\n"
+        end
+    }
+
+    # Report the lonely 1x variants in sorted order
+    if imageNames.size > 0
+        STDERR.print "Missing 2x images for...\n"
+        imageNames.values.sort.each {|n|
+            STDERR.print "\t#{n}\n"
+        }
+    end
+}
