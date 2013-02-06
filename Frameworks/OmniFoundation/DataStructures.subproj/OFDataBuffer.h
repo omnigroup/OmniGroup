@@ -145,10 +145,13 @@ OFDataBufferDidAppend(OFDataBuffer *dataBuffer, size_t spaceUsed)
 static inline char
 OFDataBufferHexCharacterForDigit(int digit)
 {
+    OBPRECONDITION(digit >= 0x0);
+    OBPRECONDITION(digit <= 0xf);
+    
     if (digit < 10)
-	return digit + '0';
+	return (char)(digit + '0');
     else
-	return digit + 'a' - 10;
+	return (char)(digit + 'a' - 10);
 }
 
 static inline void
@@ -319,7 +322,11 @@ OFDataBufferAppendInteger(OFDataBuffer *dataBuffer, int integer)
 	divisor = 0;
     divisor = (int)pow(10.0, (double)divisor);
     while (1) {
-	OFDataBufferAppendByte(dataBuffer, (integer / divisor) + '0');
+        int digit = (integer / divisor);
+        OBASSERT(digit >= 0);
+        OBASSERT(digit <= 9);
+	OFDataBufferAppendByte(dataBuffer, (char)(digit + '0'));
+        
 	if (divisor <= 1)
 	    break;
 	integer %= divisor;

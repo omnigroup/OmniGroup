@@ -5,15 +5,18 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/OFSFileManagerAsynchronousOperationTarget.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniFileStore/OFSDAVFileManager.h>
+#import <OmniFileStore/OFSFileInfo.h>
+#import <OmniFileStore/OFSFileManager.h>
+#import <OmniFileStore/OFSFileManagerAsynchronousOperationTarget.h>
+#import <OmniFileStore/OFSFileManagerDelegate.h>
+#import <OmniFoundation/OFCredentials.h>
+#import <readpassphrase.h>
 
 RCS_ID("$Id$");
 
-@interface OFSTool : NSObject <OFSDAVFileManagerAuthenticationDelegate, OFSFileManagerAsynchronousOperationTarget>
+@interface OFSTool : NSObject <OFSFileManagerDelegate, OFSFileManagerAsynchronousOperationTarget>
 {
 @private
     id <OFSAsynchronousOperation> _asyncOperation;
@@ -91,7 +94,7 @@ static NSURL *_url(NSString *str)
     for (NSString *arg in arguments) {
         NSURL *url = _url(arg);
         
-        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url error:outError] autorelease];
+        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url delegate:self error:outError] autorelease];
         if (!fileManager)
             return NO;
         
@@ -100,7 +103,7 @@ static NSURL *_url(NSString *str)
             return NO;
         
         for (OFSFileInfo *fileInfo in fileInfos)
-            _log(@"%@ %lld %@ (eTag:%@)\n", fileInfo.isDirectory ? @"dir" : @"file", fileInfo.size, fileInfo.name, fileInfo.eTag);
+            _log(@"%@ %lld %@ (ETag:%@)\n", fileInfo.isDirectory ? @"dir" : @"file", fileInfo.size, fileInfo.name, fileInfo.ETag);
     }
     
     return YES;
@@ -119,7 +122,7 @@ static NSURL *_url(NSString *str)
     NSData *data;
     {
         NSURL *url = _url([arguments objectAtIndex:0]);
-        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url error:outError] autorelease];
+        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url delegate:self error:outError] autorelease];
         if (!fileManager)
             return NO;
         data = [fileManager dataWithContentsOfURL:url error:outError];
@@ -129,7 +132,7 @@ static NSURL *_url(NSString *str)
     
     {
         NSURL *url = _url([arguments objectAtIndex:1]);
-        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url error:outError] autorelease];
+        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url delegate:self error:outError] autorelease];
         if (![fileManager writeData:data toURL:url atomically:NO error:outError])
             return NO;
     }
@@ -150,7 +153,7 @@ static NSURL *_url(NSString *str)
     NSData *data;
     {
         NSURL *url = _url([arguments objectAtIndex:0]);
-        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url error:outError] autorelease];
+        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url delegate:self error:outError] autorelease];
         if (!fileManager)
             return NO;
         data = [fileManager dataWithContentsOfURL:url error:outError];
@@ -160,7 +163,7 @@ static NSURL *_url(NSString *str)
     
     {
         NSURL *url = _url([arguments objectAtIndex:1]);
-        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url error:outError] autorelease];
+        OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url delegate:self error:outError] autorelease];
         
         _asyncOperation = [[fileManager asynchronousWriteData:data toURL:url atomically:NO withTarget:self] retain];
         [_asyncOperation startOperation];
@@ -191,7 +194,7 @@ static NSURL *_url(NSString *str)
     NSURL *destinationURL = _url([arguments objectAtIndex:1]);
     
     
-    OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:sourceURL error:outError] autorelease];
+    OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:sourceURL delegate:self error:outError] autorelease];
     if (!fileManager)
         return NO;
     
@@ -229,31 +232,48 @@ static NSURL *_url(NSString *str)
 #pragma mark -
 #pragma mark OFSDAVFileManagerDelegate
 
-- (NSURLCredential *)DAVFileManager:(OFSDAVFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
     // We don't prompt for credentials, just use whatever is in the keychain.
     NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
     if ([challenge previousFailureCount] == 0) {
-        NSURLCredential *credentials = [[NSURLCredentialStorage sharedCredentialStorage] defaultCredentialForProtectionSpace:protectionSpace];
-        if (!credentials) {
-            NSLog(@"No credentials found in keychain for protection");
-            NSLog(@"  realm:%@", protectionSpace.realm);
-            NSLog(@"  receivesCredentialSecurely:%d", protectionSpace.receivesCredentialSecurely);
-            NSLog(@"  isProxy:%d", protectionSpace.isProxy);
-            NSLog(@"  host:%@", protectionSpace.host);
-            NSLog(@"  port:%ld", protectionSpace.port);
-            NSLog(@"  proxyType:%@", protectionSpace.proxyType);
-            NSLog(@"  protocol:%@", protectionSpace.protocol);
-            NSLog(@"  authenticationMethod:%@", protectionSpace.authenticationMethod);
-            NSLog(@"  distinguishedNames:%@", protectionSpace.distinguishedNames);
-        }
-        return credentials;
+//        NSString *serviceIdentifier = OFMakeServiceIdentifier(manager.baseURL, username, realm);
+//        NSURLCredential *credentials = OFReadCredentialsForServiceIdentifier(serviceIdentifier);
+//        if (credentials)
+//            return credentials;
+        
+        
+        NSLog(@"No credentials found in keychain for protection space");
+        NSLog(@"  realm:%@", protectionSpace.realm);
+        NSLog(@"  receivesCredentialSecurely:%d", protectionSpace.receivesCredentialSecurely);
+        NSLog(@"  isProxy:%d", protectionSpace.isProxy);
+        NSLog(@"  host:%@", protectionSpace.host);
+        NSLog(@"  port:%ld", protectionSpace.port);
+        NSLog(@"  proxyType:%@", protectionSpace.proxyType);
+        NSLog(@"  protocol:%@", protectionSpace.protocol);
+        NSLog(@"  authenticationMethod:%@", protectionSpace.authenticationMethod);
+        NSLog(@"  distinguishedNames:%@", protectionSpace.distinguishedNames);
+        
+        char username[512];
+        fputs("Username: ", stdout);
+        if (!fgets(username, sizeof(username), stdin))
+            return nil;
+        char *newline = strchr(username, '\n');
+        if (newline)
+            *newline = '\0';
+        
+        char password[512];
+        if (!readpassphrase("Password: ", password, sizeof(password), 0/*options*/))
+            return nil;
+        
+        OFWriteCredentialsForServiceIdentifier(@"ofs", [NSString stringWithUTF8String:username], [NSString stringWithUTF8String:password]);
+        return OFReadCredentialsForServiceIdentifier(@"ofs");
     }
     
     return nil;
 }
 
-- (void)DAVFileManager:(OFSDAVFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
     OBFinishPorting;
 }
@@ -269,8 +289,6 @@ int main(int argc, char *argv[])
         NSError *error = nil;
         OFSTool *tool = [[[OFSTool alloc] init] autorelease];
         
-        [OFSDAVFileManager setAuthenticationDelegate:tool];
-
         if (![tool run:&error]) {
             NSLog(@"Error: %@", [error toPropertyList]);
             return 1;

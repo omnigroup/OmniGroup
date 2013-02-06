@@ -39,6 +39,24 @@ static NSString *_replacement_hostName(NSProcessInfo *self, SEL _cmd)
     return [NSNumber numberWithInt:getpid()];
 }
 
+- (NSURL *)_processBundleOrMainExecutableURL;
+{
+    // If this looks like a traditional bundle, return the main bundle's URL, otherwise return the main executable URL so that SecStaticCodeCreateWithPath does the right thing for command line tools
+    static NSURL *url = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        NSURL *mainExecutableURL = [[NSBundle mainBundle] executableURL];
+        NSURL *executableContainer = [mainExecutableURL URLByDeletingLastPathComponent];
+        if ([[executableContainer lastPathComponent] isEqualToString:@"MacOS"] && [[[executableContainer URLByDeletingLastPathComponent] lastPathComponent] isEqualToString:@"Contents"]) {
+            url = [[[NSBundle mainBundle] bundleURL] copy];
+        } else {
+            url = [mainExecutableURL copy];
+        }
+    });
+
+    return url;
+}
+
 - (BOOL)isSandboxed;
 {
     // N.B. Using the method in our NSFileManager extensions could possibly return a different answer than using the SecCodeCopySelf that was previously here, but we likely don't care about those cases.
@@ -46,7 +64,7 @@ static NSString *_replacement_hostName(NSProcessInfo *self, SEL _cmd)
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         NSError *error = nil;
-        NSURL *applicationURL = [[NSBundle mainBundle] bundleURL];
+        NSURL *applicationURL = [self _processBundleOrMainExecutableURL];
         if (![[NSFileManager defaultManager] getSandboxed:&isSandboxed forApplicationAtURL:applicationURL error:&error]) {
             NSLog(@"Error determining if current process is sandboxed (assuming YES): %@", error);
             isSandboxed = YES;
@@ -61,7 +79,8 @@ static NSString *_replacement_hostName(NSProcessInfo *self, SEL _cmd)
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         NSError *error = nil;
-        NSDictionary *dict = [[NSBundle mainBundle] codeSigningInfoDictionary:&error];
+        NSURL *applicationURL = [self _processBundleOrMainExecutableURL];
+        NSDictionary *dict = [[NSFileManager defaultManager] codeSigningInfoDictionaryForURL:applicationURL error:&error];
         if (dict == nil) {
             NSLog(@"Error retrieving code signing information for current process: %@", error);
         } else {
@@ -78,7 +97,8 @@ static NSString *_replacement_hostName(NSProcessInfo *self, SEL _cmd)
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         NSError *error = nil;
-        NSDictionary *dict = [[NSBundle mainBundle] codeSigningEntitlements:&error];
+        NSURL *applicationURL = [self _processBundleOrMainExecutableURL];
+        NSDictionary *dict = [[NSFileManager defaultManager] codeSigningEntitlementsForURL:applicationURL error:&error];
         if (dict == nil) {
             NSLog(@"Error retrieving code signing information for current process: %@", error);
         } else {

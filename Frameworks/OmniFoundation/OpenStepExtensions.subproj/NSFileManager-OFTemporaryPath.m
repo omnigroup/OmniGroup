@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@ RCS_ID("$Id$")
 
 #import <OmniFoundation/OFErrors.h>
 #import <OmniBase/NSError-OBExtensions.h>
+#import <OmniFoundation/OFXMLIdentifier.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <CoreServices/CoreServices.h>
@@ -23,6 +24,57 @@ static NSLock *tempFilenameLock = nil;
 + (void)didLoad;
 {
     tempFilenameLock = [[NSLock alloc] init];
+}
+
+- (NSURL *)temporaryDirectoryForFileSystemContainingURL:(NSURL *)fileURL error:(NSError **)outError;
+/*"
+ Returns a URL to a temporary items directory that can be used to write a new file and then do a -replaceItemAtURL:... If there is a problem (no temporary items folder on the filesystem), nil is returned.
+ Note that if this returns an error, a common course of action would be to put the temporary file in the same folder as the original file.  This has the same security problems as -uniqueFilenameFromName:, of course, so we don't want to do that by default.  The calling code should make this decision.
+ The returned directory should be only readable by the calling user, so files written into this directory can be written with the desired final permissions without worrying about security (the expectation being that you'll soon call -exchangeFileAtPath:withFileAtPath:).
+ "*/
+{
+    // Sadly, -URLForDirectory:inDomain:appropriateForURL:create:error: creates a new '(A Document Being Saved By foo)' directory each time it is called, even if you pass create:NO! We just want the temporary items directory.
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    // Only one filesystem. Sadly, on the simulator this returns something in / instead of the app sandbox's "tmp" directory. Radar 8137291.
+    return [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByStandardizingPath]];
+#else
+    // We do NOT carry over the OFTemporaryDirectory/OFTemporaryVolumeOverride goop from the path-based version since those could mean the result isn't usable for -replaceItemAtURL:...
+    return [self specialDirectory:kTemporaryFolderType forFileSystemContainingPath:[[fileURL absoluteURL] path] create:YES error:outError];
+#endif
+}
+
+- (NSURL *)temporaryURLForWritingToURL:(NSURL *)originalURL allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
+{
+    OBPRECONDITION(originalURL);
+    
+    NSURL *containerURL = [self temporaryDirectoryForFileSystemContainingURL:originalURL error:outError];
+    if (!containerURL) {
+        if (!allowOriginalDirectory)
+            return nil;
+        containerURL = [originalURL URLByDeletingLastPathComponent];
+    }
+    
+    // Make sure we hand back standardized URLs. This won't work unless the container exists (meaning the passed in URL's container must exist if we allow the original directory).
+    if (![containerURL checkResourceIsReachableAndReturnError:outError])
+        return nil;
+    containerURL = [containerURL URLByStandardizingPath];
+    
+    // Terrible, but if the originalURL doesn't exist yet (we are getting ready to build a new file in a temporary location to swap into place, maybe), then we will get an error trying to look up if it is a directory via -getResourceValue:forKey:error:.
+    BOOL isDirectory = [[originalURL absoluteString] hasSuffix:@"/"];
+
+    NSString *originalFilename = [originalURL lastPathComponent];
+    
+    // We do *not* use an intecrementing counter + an existence check since we don't create the resource. A counter-based approach will happily return the same value multiple times if the caller doesn't "use up" the temporary file name by creating it. This can be a subtle bug, so let's just avoid it (though creating the resource would also avoid it, it is less convenient for the caller...).
+    // Prefix the original name to avoid having to munge path extension goop.
+    NSString *identifier = OFXMLCreateID();
+    NSString *temporaryFilename = [[NSString alloc] initWithFormat:@"%@-%@", identifier, originalFilename];
+    [identifier release];
+    
+    NSURL *temporaryURL = [containerURL URLByAppendingPathComponent:temporaryFilename isDirectory:isDirectory];
+    [temporaryFilename release];
+    
+    return temporaryURL;
 }
 
 - (NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
@@ -67,7 +119,7 @@ static NSLock *tempFilenameLock = nil;
 {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     // Only one filesystem. Sadly, on the simulator this returns something in / instead of the app sandbox's "tmp" directory. Radar 8137291.
-    return NSTemporaryDirectory();
+    return [NSTemporaryDirectory() stringByStandardizingPath];
 #else
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
@@ -128,7 +180,9 @@ static NSLock *tempFilenameLock = nil;
         return nil;
     }
 
-    return [NSMakeCollectable(temporaryItemsURL) autorelease];
+    NSURL *resultURL = [NSMakeCollectable(temporaryItemsURL) autorelease];
+        
+    return [resultURL URLByStandardizingPath];
 }
 #endif
 
@@ -243,6 +297,10 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
 // If 'create' is NO, the returned path will not exist.  This could allow another thread/process to steal the filename.
 - (NSString *)uniqueFilenameFromName:(NSString *)filename allowOriginal:(BOOL)allowOriginal create:(BOOL)create error:(NSError **)outError;
 {
+#ifdef DEBUG_bungi
+    OBASSERT(create, "Avoid this use to avoid race conditions");
+#endif
+    
     NSError *dummy = nil;
     if (!outError)
         outError = &dummy;

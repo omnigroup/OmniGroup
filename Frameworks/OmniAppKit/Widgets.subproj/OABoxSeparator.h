@@ -1,9 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
-//
-//  OABoxSeparator.h
-//  OmniAppKit
-//
-// Copyright 2009 Omni Development, Inc.  All rights reserved.
+// Copyright 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,9 +14,23 @@
 
 @interface OABoxSeparator : NSBox
 {
+@private
     NSColor *lineColor;
+    NSBackgroundStyle _backgroundStyle;
+    NSColor *backgroundColor;
 }
 
 @property (retain) NSColor *lineColor;
+@property (retain) NSColor *backgroundColor;
+
+@property NSBackgroundStyle backgroundStyle;
+
+- (NSRect)separatorRect; // The rect, relative to this view's bounds, in which the line will be drawn
+- (NSRect)embossRect; // The rect, relative to this view's bounds, in which the background (underhighlight/shadow) will be drawn
+
+// Equivalents to -drawRect: for the line and background, respectively
+// The -drawRect: implementation on this class calls each of these at most once
+- (void)drawLineInRect:(NSRect)rect;
+- (void)drawBackgroundInRect:(NSRect)rect;
 
 @end

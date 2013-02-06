@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,11 @@
 RCS_ID("$Id$")
 
 @implementation OWSGMLMethods
+{
+    OWSGMLMethods *parent;
+    NSMutableDictionary *implementationForTagDictionary;
+    NSMutableDictionary *implementationForEndTagDictionary;
+}
 
 // Init and dealloc
 
@@ -46,53 +51,24 @@ RCS_ID("$Id$")
 
 // API
 
-- (void)registerSelector:(SEL)selector forTagName:(NSString *)tagName inDictionary:(NSMutableDictionary *)dictionary;
+- (void)registerHandler:(OWSGMLMethodHandler)handler forTagName:(NSString *)tagName inDictionary:(NSMutableDictionary *)dictionary;
 {
-    OFImplementationHolder *implementation;
-
-    if (!selector)
+    if (!handler)
 	return;
-    implementation = [[OFImplementationHolder alloc] initWithSelector:selector];
-    [dictionary setObject:implementation forKey:[tagName lowercaseString]];
-    [implementation release];
+    
+    handler = [handler copy];
+    [dictionary setObject:handler forKey:[tagName lowercaseString]];
+    [handler release];
 }
 
-- (void)registerSelector:(SEL)selector forTagName:(NSString *)tagName;
+- (void)registerTagName:(NSString *)tagName startHandler:(OWSGMLMethodHandler)handler;
 {
-    [self registerSelector:selector forTagName:tagName inDictionary:implementationForTagDictionary];
+    [self registerHandler:handler forTagName:tagName inDictionary:implementationForTagDictionary];
 }
 
-- (void)registerMethod:(NSString *)name forTagName:(NSString *)tagName;
+- (void)registerTagName:(NSString *)tagName endHandler:(OWSGMLMethodHandler)handler;
 {
-    NSString *methodName;
-    SEL selector;
-
-    methodName = [NSString stringWithFormat:@"process%@Tag:", name];
-    selector = NSSelectorFromString(methodName);
-    if (selector != NULL) {
-        [self registerSelector:selector forTagName:tagName];
-    } else {
-        NSLog(@"OWSGMLMethods warning:  Could not find selector for method named %@", methodName);
-    }
-}
-
-- (void)registerSelector:(SEL)selector forEndTagName:(NSString *)tagName;
-{
-    [self registerSelector:selector forTagName:tagName inDictionary:implementationForEndTagDictionary];
-}
-
-- (void)registerMethod:(NSString *)name forEndTagName:(NSString *)tagName;
-{
-    NSString *methodName;
-    SEL selector;
-
-    methodName = [NSString stringWithFormat:@"process%@Tag:", name];
-    selector = NSSelectorFromString(methodName);
-    if (selector != NULL) {
-        [self registerSelector:selector forEndTagName:tagName];
-    } else {
-        NSLog(@"OWSGMLMethods warning:  Could not find selector for method named %@", methodName);
-    }
+    [self registerHandler:handler forTagName:tagName inDictionary:implementationForEndTagDictionary];
 }
 
 - (NSDictionary *)implementationForTagDictionary;

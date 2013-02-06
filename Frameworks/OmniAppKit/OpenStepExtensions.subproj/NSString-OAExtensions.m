@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,7 +52,7 @@ RCS_ID("$Id$")
 
 // String drawing
 
-- (void)drawWithFontAttributes:(NSDictionary *)attributes alignment:(int)alignment verticallyCenter:(BOOL)verticallyCenter inRectangle:(NSRect)rectangle;
+- (void)drawWithFontAttributes:(NSDictionary *)attributes alignment:(NSTextAlignment)alignment verticallyCenter:(BOOL)verticallyCenter inRectangle:(NSRect)rectangle;
 {
     NSAttributedString *attributedString;
     
@@ -61,7 +61,7 @@ RCS_ID("$Id$")
     [attributedString release];
 }
 
-- (void)drawWithFont:(NSFont *)font color:(NSColor *)color alignment:(int)alignment verticallyCenter:(BOOL)verticallyCenter inRectangle:(NSRect)rectangle;
+- (void)drawWithFont:(NSFont *)font color:(NSColor *)color alignment:(NSTextAlignment)alignment verticallyCenter:(BOOL)verticallyCenter inRectangle:(NSRect)rectangle;
 {
     NSMutableDictionary *attributes;
 
@@ -75,12 +75,12 @@ RCS_ID("$Id$")
     [attributes release];
 }
 
-- (void)drawWithFontAttributes:(NSDictionary *)attributes alignment:(int)alignment rectangle:(NSRect)rectangle;
+- (void)drawWithFontAttributes:(NSDictionary *)attributes alignment:(NSTextAlignment)alignment rectangle:(NSRect)rectangle;
 {
     [self drawWithFontAttributes:attributes alignment:alignment verticallyCenter:NO inRectangle:rectangle];
 }
 
-- (void)drawWithFont:(NSFont *)font color:(NSColor *)color alignment:(int)alignment rectangle:(NSRect)rectangle;
+- (void)drawWithFont:(NSFont *)font color:(NSColor *)color alignment:(NSTextAlignment)alignment rectangle:(NSRect)rectangle;
 {
     [self drawWithFont:font color:color alignment:alignment verticallyCenter:NO inRectangle:rectangle];
 }

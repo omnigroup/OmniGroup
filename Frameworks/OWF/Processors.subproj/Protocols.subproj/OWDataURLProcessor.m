@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,23 +36,16 @@ static inline unichar hexDigit(unichar digit)
 	return 10 + digit - 'a';
 }
 
-#if 0 // OBFinishPorting; // 64->32 warnings -- if we even keep this framework
 static NSData *decodeURLEscapedBytes(NSString *input)
 {
-    NSData *result;
-    unichar *characters;
-    unsigned char *bytes;
-    unsigned int charCount, byteCount;
-    unsigned int charIndex;
+    NSUInteger charCount = [input length];
     
-    charCount = [input length];
-    
-    characters = (unichar *)NSZoneMalloc(NULL, charCount * sizeof(*characters));
+    unichar *characters = (unichar *)NSZoneMalloc(NULL, charCount * sizeof(*characters));
     [input getCharacters:characters];
     
-    bytes = NSZoneMalloc(NULL, charCount);
-    byteCount = 0;
-    charIndex = 0;
+    unsigned char *bytes = NSZoneMalloc(NULL, charCount);
+    NSUInteger byteCount = 0;
+    NSUInteger charIndex = 0;
     while(charIndex < charCount) {
         unsigned char byte;
         
@@ -69,12 +62,11 @@ static NSData *decodeURLEscapedBytes(NSString *input)
     }
     
     NSZoneFree(NULL, characters);
-    result = [NSData dataWithBytes:bytes length:byteCount];
+    NSData *result = [NSData dataWithBytes:bytes length:byteCount];
     NSZoneFree(NULL, bytes);
     
     return result;
 }
-#endif
 
 
 + (void)didLoad;
@@ -90,31 +82,19 @@ static NSData *decodeURLEscapedBytes(NSString *input)
 
 - (void)process
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     NSString *dataString = [[sourceAddress url] schemeSpecificPart];
-    NSRange comma;
-    NSString *headersString;
-    NSArray *headers;
-    OWContentType *header;
-    OWParameterizedContentType *fullHeader = nil;
-    NSData *body;
-    BOOL isBase64 = NO;
-    int headerIndex, headerCount;
-    NSString *part;
-    OWDataStream *content;
-    OWContent *nContent;
-    
-    comma = [dataString rangeOfString:@","];
+    NSRange comma = [dataString rangeOfString:@","];
     
     if (comma.length < 1) {
         [NSException raise:@"MalformedURL" reason:NSLocalizedStringFromTableInBundle(@"data: URL does not contain comma", @"OWF", [OWDataURLProcessor bundle], @"data: url error")];
     }
     
-    header = [OWContentType contentTypeForString:@"text/plain"];
+    OWContentType *header = [OWContentType contentTypeForString:@"text/plain"];
 
-    headersString = [dataString substringToIndex:comma.location];
-    
+    NSString *headersString = [dataString substringToIndex:comma.location];
+    NSArray *headers;
+    NSUInteger headerIndex, headerCount;
+
     if ([headersString length] > 0) {
         headers = [headersString componentsSeparatedByString:@";"];
         headerCount = [headers count];
@@ -123,7 +103,9 @@ static NSData *decodeURLEscapedBytes(NSString *input)
         headerCount = 0;
     }
             
-    for(headerIndex = 0; headerIndex < headerCount; headerIndex ++) {
+    OWParameterizedContentType *fullHeader = nil;
+    BOOL isBase64 = NO;
+    for (headerIndex = 0; headerIndex < headerCount; headerIndex ++) {
         NSString *part = [headers objectAtIndex:headerIndex];
         if ([part isEqualToString:@"base64"]) {
             isBase64 = YES;
@@ -144,18 +126,19 @@ static NSData *decodeURLEscapedBytes(NSString *input)
         }
     }
     
-    part = [dataString substringFromIndex:NSMaxRange(comma)];
+    NSString *part = [dataString substringFromIndex:NSMaxRange(comma)];
+    NSData *body;
     if (isBase64) {
         body = [NSData dataWithBase64String:part];
     } else {
         body = decodeURLEscapedBytes(part);
     }
     
-    content = [[OWDataStream alloc] initWithLength:[body length]];
+    OWDataStream *content = [[OWDataStream alloc] initWithLength:[body length]];
     [content writeData:body];
     [content dataEnd];
 
-    nContent = [OWContent contentWithDataStream:content isSource:YES];
+    OWContent *nContent = [OWContent contentWithDataStream:content isSource:YES];
     [content release];
     if (fullHeader)
         [nContent setFullContentType:fullHeader];
@@ -166,7 +149,6 @@ static NSData *decodeURLEscapedBytes(NSString *input)
     [pipeline addContent:nContent
            fromProcessor:self
                    flags:OWProcessorContentNoDiskCache|OWProcessorContentIsSource|OWProcessorTypeDerived];
-#endif
 }
     
 @end

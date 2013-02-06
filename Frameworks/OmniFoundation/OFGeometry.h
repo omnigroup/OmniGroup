@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,14 @@
 #import <Foundation/NSGeometry.h>
 
 @class NSArray, NSMutableArray;
+
+typedef NS_OPTIONS(NSUInteger, OFRectCorner) {
+    OFRectCornerMinXMinY = 1 << 0,
+    OFRectCornerMaxXMinY = 1 << 1,
+    OFRectCornerMaxXMaxY = 1 << 2,
+    OFRectCornerMinXMaxY = 1 << 3,
+    OFRectCornerAllCorners = ~0UL
+};
 
 /*" Returns the centerpoint of the circle passing through the three specified points. "*/
 extern NSPoint OFCenterOfCircleFromThreePoints(NSPoint point1, NSPoint point2, NSPoint point3);

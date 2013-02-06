@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -79,13 +79,13 @@ enum OWStringEncodingProvenance {
 - (void)writeString:(NSString *)string;
 - (void)writeFormat:(NSString *)formatString, ...;
 
-- (unsigned int)appendToUnderlyingBuffer:(void **)returnedBufferPtr;
+- (NSUInteger)appendToUnderlyingBuffer:(void **)returnedBufferPtr;
     // Returns the number of bytes which can be safely written to the returned pointer (always >0)
-- (void)wroteBytesToUnderlyingBuffer:(unsigned int)count;    
+- (void)wroteBytesToUnderlyingBuffer:(NSUInteger)count;    
     // Tell the data stream how many bytes you actually wrote
 
 - (NSData *)bufferedData;
-- (unsigned int)bufferedDataLength;
+- (NSUInteger)bufferedDataLength;
 
 - (NSUInteger)accessUnderlyingBuffer:(void **)returnedBufferPtr startingAtLocation:(NSUInteger)dataOffset;
     // Returns 0 if there isn't any remaining data, otherwise returns a portion of a _OWDataStreamBuffer
@@ -116,7 +116,7 @@ enum OWStringEncodingProvenance {
 - (NSString *)filename;
 - (BOOL)hasThrownAwayData;
 - (void)raiseIfInvalid;
-- (unsigned int)bytesWrittenToFile;
+- (NSUInteger)bytesWrittenToFile;
 - (unsigned long long)startPositionInFile;
 - (void)setStartPositionInFile:(unsigned long long)newStartPosition;
 

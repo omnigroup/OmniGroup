@@ -80,8 +80,11 @@ RCS_ID("$Id$");
 
 - (IBAction)showMoreInformation:(id)sender;
 {
-    NSURL *infoURL = [NSURL URLWithString:[[self selectedItem] sourceLocation]];
-    if (!infoURL) {
+    OSUItem *item = [self selectedItem];
+    NSString *sourceWebPage = [item sourceLocation];
+    NSURL *infoURL;
+    
+    if ([NSString isEmptyString:sourceWebPage] || !(infoURL = [NSURL URLWithString:sourceWebPage])) {
         NSBeep();
         return;  // Shouldn't happen; button should be disabled.
     }
@@ -736,7 +739,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
         newFrame.origin.x = NSMaxX(oldFrame) - newFrame.size.width;
         [_installButton setFrame:newFrame];
         CGFloat delta = newFrame.origin.x - oldFrame.origin.x;
-        if (fabs(delta) > 0.9) {
+        if (fabs(delta) > 0.25) {
             NSRect oldCancelFrame = [_cancelButton frame];
             oldCancelFrame.origin.x += delta;
             [_cancelButton setFrameOrigin:oldCancelFrame.origin];
@@ -792,24 +795,28 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     
     NSString *installButtonTitle;
     SEL installButtonAction;
-    if (item && ![item downloadURL] && [item sourceLocation]) {
+    BOOL installButtonEnable;
+    if (item && ![item downloadURL] && ![NSString isEmptyString:[item sourceLocation]]) {
         installButtonTitle = NSLocalizedStringWithDefaultValue(@"More Information...",
                                                                @"OmniSoftwareUpdate", OMNI_BUNDLE,
                                                                @"More Information\\U2026",
-                                                               "button title - display more information about the selected update");
+                                                               "button title - go to a webpage with more information about the selected update, from which it can probably be downloaded");
         installButtonAction = @selector(showMoreInformation:);
+        installButtonEnable = YES;
     } else {
         installButtonTitle = NSLocalizedStringWithDefaultValue(@"Install",
                                                                @"OmniSoftwareUpdate", OMNI_BUNDLE,
                                                                @"Install",
                                                                "button title - (download and) install the selected update");
         installButtonAction = @selector(installSelectedItem:);
+        installButtonEnable = ( [item downloadURL] != nil )? YES : NO;
     }
     if (![installButtonTitle isEqual:[_installButton title]] || !sel_isEqual(installButtonAction, [_installButton action])) {
         [_installButton setTitle:installButtonTitle];
         [_installButton setAction:installButtonAction];
         shouldResizeUI = YES;
     }
+    [_installButton setEnabled:installButtonEnable];
     
     if (shouldResizeUI)
         [self _resizeInterface:NO];
@@ -824,13 +831,18 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
         return;
     
     NSArray *visibleItems = [_availableItemController arrangedObjects];
-
+    
+    // The cancel button's key equivalent is set to ESC in the nib, but making it be the default button cell (as happens in some branches of this if) clobbers the key equivalent. So we set it back in the other branches.
+    // (Note that ESC is also documented to catch cmd-period, as a special case in NSWindow.)
+    
     if ([visibleItems count] == 0 && !_checkInProgress) {
         [[self window] setDefaultButtonCell:[_cancelButton cell]];
     } else if (_displayingWarningPane && !sel_isEqual([_installButton action], @selector(showMoreInformation:))) {
         [[self window] setDefaultButtonCell:nil];
+        [_cancelButton setKeyEquivalent:@"\x1B"];
     } else {
         [[self window] setDefaultButtonCell:[_installButton cell]];
+        [_cancelButton setKeyEquivalent:@"\x1B"];
     }
 }
 

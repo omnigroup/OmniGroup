@@ -76,6 +76,8 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
         }
     }
     [inspector didEndChangingInspectedObjects];
+    
+    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self.fontSizeTextWell.accessibilityValue);
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
@@ -267,15 +269,18 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
     _fontFamilyTextWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
     
     [_fontFamilyTextWell setNavigationTarget:self action:@selector(_showFontFamilies:)];
+    [(UIImageView *)_fontFamilyTextWell.rightView setHighlightedImage:[OUIInspectorWell navigationArrowImageHighlighted]];
     
     _fontSizeDecreaseStepperButton.title = @"A";
     _fontSizeDecreaseStepperButton.titleFont = [UIFont boldSystemFontOfSize:14];
     _fontSizeDecreaseStepperButton.titleColor = [UIColor whiteColor];
     _fontSizeDecreaseStepperButton.flipped = YES;
+    _fontSizeDecreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font smaller", @"OUIInspectors", OMNI_BUNDLE, @"Decrement font size button accessibility label");
 
     _fontSizeIncreaseStepperButton.title = @"A";
     _fontSizeIncreaseStepperButton.titleFont = [UIFont boldSystemFontOfSize:32];
     _fontSizeIncreaseStepperButton.titleColor = [UIColor whiteColor];
+    _fontSizeIncreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font bigger", @"OUIInspectors", OMNI_BUNDLE, @"Increment font size button accessibility label");
 
     CGFloat fontSize = [OUIInspectorTextWell fontSize];
     _fontSizeTextWell.font = [UIFont boldSystemFontOfSize:fontSize];
@@ -283,6 +288,7 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
     _fontSizeTextWell.labelFont = [UIFont systemFontOfSize:fontSize];
     _fontSizeTextWell.editable = YES;
     [_fontSizeTextWell setKeyboardType:UIKeyboardTypeNumberPad];
+    _fontSizeTextWell.accessibilityLabel = @"Font size";
 
     // Superclass does this for the family detail.
     _fontFacesPane.parentSlice = self;
@@ -313,5 +319,6 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
     
     return [formatter stringFromNumber:[NSNumber numberWithDouble:displaySize]];
 }
+
 @end
 

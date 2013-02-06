@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,6 @@
 RCS_ID("$Id$")
 
 @interface OUIColorAttributeInspectorSlice ()
-@property(nonatomic,retain) OUIColorAttributeInspectorWell *textWell;
 @end
 
 @implementation OUIColorAttributeInspectorSlice
@@ -57,12 +56,6 @@ RCS_ID("$Id$")
     [_textWell addTarget:self action:@selector(showDetails:) forControlEvents:UIControlEventTouchUpInside];
     
     self.view = _textWell;
-}
-
-- (void)viewDidUnload;
-{
-    self.textWell = nil;
-    [super viewDidUnload];
 }
 
 #pragma mark -

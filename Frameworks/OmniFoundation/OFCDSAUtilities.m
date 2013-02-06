@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #define OF_ENABLE_CDSA 1
+
 #pragma clang diagnostic ignored "-Wdeprecated-declarations" // TODO: Avoid using deprecated CSSM API
 
 #import <OmniFoundation/OFCDSAUtilities.h>

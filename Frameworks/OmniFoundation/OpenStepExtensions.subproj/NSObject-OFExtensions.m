@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/OFNull.h>
 
+#import <Foundation/NSOperation.h>
 #import <dispatch/dispatch.h>
 
 RCS_ID("$Id$")
@@ -72,7 +73,8 @@ static void OFPerformWithObject(const void *arg, void *context)
     id target = (id)arg;
     struct reversedApplyContext *c = context;
     
-    (c->impl)(c->receiver, c->sel, target);
+    id (*imp)(id self, SEL _cmd, id target) = (typeof(imp))c->impl;
+    imp(c->receiver, c->sel, target);
 }
 
 static void OFPerformWithObjectAndStore(const void *arg, void *context)
@@ -80,7 +82,8 @@ static void OFPerformWithObjectAndStore(const void *arg, void *context)
     id target = (id)arg;
     struct reversedApplyContext *c = context;
     
-    id result = (c->impl)(c->receiver, c->sel, target);
+    id (*imp)(id self, SEL _cmd, id target) = (typeof(imp))c->impl;
+    id result = imp(c->receiver, c->sel, target);
     
     [c->storage addObject:result];
 }
@@ -214,25 +217,31 @@ typedef double (*dblImp_t)(id self, SEL _cmd, id arg);
 
 - (void)afterDelay:(NSTimeInterval)delay performBlock:(void (^)(void))block;
 {
+    /*
+     dispatch_get_current_queue is deprecated, or this could be a bit simpler. Instead, we do the scheduling on the main queue and then send that back to the original queue. This requires the main queue to be unblocked (which it really should be anyway). All the current callers are from the main queue, anyway. Assert this is still true so that we can make sure to test the non-main caller case if/when it happens.
+     */
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    NSOperationQueue *operationQueue = [NSOperationQueue currentQueue];
+    
     block = [[block copy] autorelease];
         
     dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER,
                                                      0/* handle -- not applicable */,
                                                      0/* mask -- not applicable */,
-                                                     dispatch_get_current_queue());
+                                                     dispatch_get_main_queue());
     
     dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, delay * 1e9);
     dispatch_source_set_timer(timer, startTime, 0/*interval*/, 0/*leeway*/);
     
-    // Fire it up.
-    dispatch_resume(timer);
-    
     dispatch_source_set_event_handler(timer, ^{
-        if (block)
-            block();
+        [operationQueue addOperationWithBlock:block];
         dispatch_source_cancel(timer);
         dispatch_release(timer);
     });
+
+    // Fire it up.
+    dispatch_resume(timer);
 }
 
 @end

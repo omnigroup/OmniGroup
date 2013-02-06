@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,13 +20,10 @@ RCS_ID("$Id$")
 
 + (OWObjectStreamCursor *)cursorAtCursor:(OWObjectStreamCursor *)aCursor beforeStream:(OWAbstractObjectStream *)interjectMe;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
     OWCompoundObjectStream *newStream;
     OWAbstractObjectStream *frame, *interject;
     OWObjectStreamCursor *newCursor;
-    unsigned int interjectWhere, newCursorPosition;
+    NSUInteger interjectWhere, newCursorPosition;
 
     frame = [aCursor objectStream];
     interject = interjectMe;
@@ -47,10 +44,9 @@ RCS_ID("$Id$")
     [newStream release];
 
     return newCursor;
-#endif
 }
 
-- initWithStream:(OWAbstractObjectStream *)aStream interjectingStream:(OWAbstractObjectStream *)anotherStream atIndex:(unsigned int)index;
+- initWithStream:(OWAbstractObjectStream *)aStream interjectingStream:(OWAbstractObjectStream *)anotherStream atIndex:(NSUInteger)index;
 {
     self = [super init];
     framingStream = [aStream retain];
@@ -94,9 +90,6 @@ RCS_ID("$Id$")
 
 - (NSUInteger)translateIndex:(NSUInteger)index fromStream:(OWAbstractObjectStream *)aStream;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return 0;
-#if 0
     if (aStream == self)
         return index;
 
@@ -113,9 +106,7 @@ RCS_ID("$Id$")
 
     if ([framingStream respondsToSelector:_cmd]) {
         NS_DURING {
-            unsigned int framingIndex;
-
-            framingIndex = [(OWCompoundObjectStream *)framingStream translateIndex:index fromStream:aStream];
+            NSUInteger framingIndex = [(OWCompoundObjectStream *)framingStream translateIndex:index fromStream:aStream];
 
             if (framingIndex >= interjectedAtIndex)
                 framingIndex += [interjectedStream objectCount];
@@ -128,9 +119,7 @@ RCS_ID("$Id$")
     }
 
     if ([interjectedStream respondsToSelector:_cmd]) {
-        unsigned int interjectedIndex;
-
-        interjectedIndex = [(OWCompoundObjectStream *)interjectedStream translateIndex:index fromStream:aStream];
+        NSUInteger interjectedIndex = [(OWCompoundObjectStream *)interjectedStream translateIndex:index fromStream:aStream];
 
         // TODO: Should we check that the returned index is less than [interjectedStream objectCount]? Doing so might cause an unnecessary block for end of data in -objectCount.
         
@@ -140,7 +129,6 @@ RCS_ID("$Id$")
     // This is only a real internal error if we don't catch it. In the places compound streams are used right now, I don't think this will ever get raised in the first place.
     [NSException raise:@"UnknownStream" reason:@"Internal error: unknown stream in -[OWCompoundObjectStream translateIndex:fromStream:]"];
     return NSNotFound; // make the compiler happy
-#endif
 }
 
 - (void)waitForDataEnd;

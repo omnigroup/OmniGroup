@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,15 +8,15 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
-#import <OmniFoundation/OFWeakRetainProtocol.h>
-#import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
+#import <OWF/OWFWeakRetainProtocol.h>
+#import <OWF/OWFWeakRetainConcreteImplementation.h>
 #import <ApplicationServices/ApplicationServices.h>
 
 @class NSData;
 
-@interface OIICCProfile : OFObject <OFWeakRetain>
+@interface OIICCProfile : OFObject <OWFWeakRetain>
 {
-    OFWeakRetainConcreteImplementation_IVARS;
+    OWFWeakRetainConcreteImplementation_IVARS;
     
     NSData *profileData;
     CGColorSpaceRef profileColorSpace;

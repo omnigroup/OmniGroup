@@ -178,12 +178,23 @@ static void _startElementNsSAX2Func(void *ctx, const xmlChar *localname, const x
     if (behavior != OFXMLParserElementBehaviorParse) {
         const xmlChar *p = state->ctxt->input->cur;
         const xmlChar *base = state->ctxt->input->base;
-        while (p >= base) {
-            if (*p == '<')
-                break;
-            p--;
+        
+        if (behavior == OFXMLParserElementBehaviorUnparsedReturnContentsOnly) {
+            // do not include the element, just the data
+            OBASSERT(*p == '/' || *p == '>');
+            if (*p == '/')
+                p++;
+            if (*p == '>')
+                p++;
+        } else {
+            while (p >= base) {
+                if (*p == '<')
+                    break;
+                p--;
+            }
         }
-        if (*p == '<') {
+        
+        if (*p == '<' || behavior == OFXMLParserElementBehaviorUnparsedReturnContentsOnly) {
             state->unparsedBlockBehavior = behavior;
             state->unparsedBlockStart = p - base;
             state->unparsedBlockElementNesting = 0;
@@ -260,12 +271,22 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
     if (state->unparsedBlockStart >= 0) {
         if (state->unparsedBlockElementNesting == 0) {
             // Don't call back (or create the contents data) if we just wanted to skip it.
-            if (state->unparsedBlockBehavior == OFXMLParserElementBehaviorUnparsed && state->targetImp.endUnparsedElementWithQName) {
+            if ((state->unparsedBlockBehavior == OFXMLParserElementBehaviorUnparsed || state->unparsedBlockBehavior == OFXMLParserElementBehaviorUnparsedReturnContentsOnly) && state->targetImp.endUnparsedElementWithQName) {
                 // This gets called right after the closing '>'.  This is the end of our unparsed block.
                 const xmlChar *p = state->ctxt->input->cur;
                 const xmlChar *base = state->ctxt->input->base;
+                
+                if (state->unparsedBlockBehavior == OFXMLParserElementBehaviorUnparsedReturnContentsOnly) {
+                    // do not include the element in the data passed to -endUnparsedElementWithQName    
+                    while (p >= base) {
+                        if (*p == '<')
+                            break;
+                        p--;
+                    }
+                }
+                
                 OBASSERT(p > base);
-                OBASSERT(p[-1] == '>');
+//                OBASSERT(p[-1] == '>');
                 
                 size_t end = p - base;
                 //fprintf(stderr, "unparsed element '%s' at %qd extended for %qd\n", localname, state->unparsedBlockStart, end - state->unparsedBlockStart);

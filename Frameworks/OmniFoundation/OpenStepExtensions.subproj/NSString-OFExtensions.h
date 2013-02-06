@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,7 +55,6 @@ Currently the only way to create strings with deferred bytes/characters is using
 + (NSString *)defaultValueForCFStringEncoding:(CFStringEncoding)anEncoding;
 + (NSString *)abbreviatedStringForBytes:(unsigned long long)bytes;
 + (NSString *)abbreviatedStringForHertz:(unsigned long long)hz;
-+ (NSString *)humanReadableStringForTimeInterval:(NSTimeInterval)timeInterval;
 + (NSString *)approximateStringForTimeInterval:(NSTimeInterval)interval;
 + (NSString *)spacesOfLength:(NSUInteger)aLength;
 + (NSString *)stringWithStrings:(NSString *)first, ... NS_REQUIRES_NIL_TERMINATION;

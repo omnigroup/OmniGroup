@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2009, 2011-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2009, 2011-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -437,7 +437,7 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 // See <bug:///79949> (Update NSAttributedString extension method drawInRectangle:alignment:verticallyCentered:)
-- (void)drawInRectangle:(NSRect)rectangle alignment:(int)alignment verticallyCentered:(BOOL)verticallyCenter;
+- (void)drawInRectangle:(NSRect)rectangle alignment:(NSTextAlignment)alignment verticallyCentered:(BOOL)verticallyCenter;
     // ASSUMPTION: This is for one line
 {
     OBPRECONDITION([NSThread isMainThread]); // statics make this not thread-safe

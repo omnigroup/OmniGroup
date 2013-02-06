@@ -11,14 +11,24 @@
 
 RCS_ID("$Id$")
 
+typedef struct _OFFastMutableBuffer {
+    struct _OFFastMutableBuffer *_nextBuffer;
+    
+    NSUInteger _realLength;
+    void *_realBytes;
+    
+    NSUInteger _currentLength;
+    void *_currentBytes;
+} OFFastMutableBuffer;
 
 static OFSimpleLockType lock;
-static OFFastMutableData *freeList = nil;
+static OFFastMutableBuffer *freeList = nil;
 static NSUInteger pageSizeMinusOne = 0;
 
+//#define PRINT_STATS
 #ifdef PRINT_STATS
-static NSUInteger totalBlockCount = 0;
-static NSUInteger totalBlockSize = 0;
+static NSUInteger totalBufferCount = 0;
+static NSUInteger totalBufferSize = 0;
 #endif
 
 static inline NSUInteger _OFRoundToPageSize(NSUInteger byteCount)
@@ -31,7 +41,7 @@ static inline NSUInteger _OFRoundToPageSize(NSUInteger byteCount)
 
 OFFastMutableData is an an attempt to get rid of this overhead.  We maintain a pool of available buffers and we never zero them when they are allocated.
 
-Right now we don't have optimized retain counting for these instances.  The major expense seems to be in the system call and in zeroing the bytes.
+Right now we don't have optimized retain counting for these instances.  The major expense seems to be in the system call and in zeroing the bytes. Also, as of at least 10.8, NSObject instances that *ever* have their retain count go to zero cannot be resurrected by returning them again. Their -retainCount returns -1 (for what that's worth), even if you retain them again.
 
 Also, the current algorithm never frees buffers.  This can lead to memory space being wasted if the buffer sizes or usage changes during a program.  It might be better to have pools of fast mutable data objects.  An algorithm could create a pool and use it for a while and when it was done, clean up all of the instances.
 "*/
@@ -49,56 +59,56 @@ Also, the current algorithm never frees buffers.  This can lead to memory space 
 Returns a new retained OFFastMutableData with the requested length.
 "*/
 + (OFFastMutableData *)newFastMutableDataWithLength:(NSUInteger)length;
-{    
+{
     OFSimpleLock(&lock);
 
 #ifdef PRINT_STATS
     NSLog(@"Requested length = %d", length);
 #endif
 
-    // Search through the free list looking for a block of good enough length.
+    // Search through the free list looking for a buffer of good enough length.
     // Don't try to do any best fit matching or anything like that.
-    OFFastMutableData *block = freeList;
-    OFFastMutableData **blockp = &freeList;
-    while (block && block->_realLength < length) {
-        blockp = &block->_nextBlock;
-        block  = block->_nextBlock;
+    OFFastMutableBuffer *buffer = freeList;
+    OFFastMutableBuffer **bufferp = &freeList;
+    while (buffer && buffer->_realLength < length) {
+        bufferp = &buffer->_nextBuffer;
+        buffer  = buffer->_nextBuffer;
     }
 
-    if (block) {
-        // Remove the block from the chain.  The external ref count is zero
-        // (ie, -retainCount -> 1 as it should).
-        *blockp = block->_nextBlock;
-        block->_nextBlock = NULL;
+    if (buffer) {
+        // Remove the buffer from the chain and use it.
+        *bufferp = buffer->_nextBuffer;
+        buffer->_nextBuffer = NULL;
 #ifdef PRINT_STATS
-        NSLog(@"  Found block of length %d at 0x%08x", block->_realLength, block);
+        NSLog(@"  Using buffer %p with length %d", buffer, buffer->_realLength);
 #endif
     } else {
-        // Allocate a new block with a realLength rounded up to the next
-        // page size.
+        // Allocate a new buffer with a realLength rounded up to the next page size.
         NSUInteger pageRoundedLength = _OFRoundToPageSize(length);
 
-        block = (id)NSAllocateObject(self, 0, NULL);
-        block->_nextBlock = NULL;
-        block->_realLength = pageRoundedLength;
-        block->_realBytes = NSAllocateMemoryPages(pageRoundedLength);
+        buffer = calloc(1, sizeof(*buffer));
+        buffer->_realLength = pageRoundedLength;
+        buffer->_realBytes = NSAllocateMemoryPages(pageRoundedLength);
 
 #ifdef PRINT_STATS
-        totalBlockCount++;
-        totalBlockSize += pageRoundedLength;
+        totalBufferCount++;
+        totalBufferSize += pageRoundedLength;
 
-        NSLog(@"  No block found -- allocated one of length %d at 0x%08x.  total count = %d, size = %d",
-              block->_realLength, block, totalBlockCount, totalBlockSize);
+        NSLog(@"  Made new buffer %p.  total count = %d, size = %d", buffer, buffer->_realLength, totalBufferCount, totalBufferSize);
 #endif
     }
 
     // Set up the initial bytes/length range
-    block->_currentLength = length;
-    block->_currentBytes = block->_realBytes;
+    buffer->_currentLength = length;
+    buffer->_currentBytes  = buffer->_realBytes;
     
     OFSimpleUnlock(&lock);
 
-    return block;
+    // Fill out the instance
+    OFFastMutableData *instance = (OFFastMutableData *)NSAllocateObject(self, 0, NULL);
+    instance->_buffer = buffer;
+    
+    return instance;
 }
 
 /*"
@@ -111,42 +121,39 @@ Raises an exception.  You should always get instances of OFFastMutableData via +
 }
 
 /*"
-Makes the instance available for later reuse.  Does not actually deallocate the instance.
+ Returns the internal buffer to the free list.
 "*/
 - (void)dealloc;
 {
-    // Don't actually deallocate the object.  Just put it back on the free list.
+    // Put our buffer back on the free list
     OFSimpleLock(&lock);
-    _currentLength = 0; // we aren't allocated right now
-    _currentBytes = NULL;
-    _nextBlock = freeList;
-    freeList = self;
+    
+    _buffer->_currentLength = 0; // we aren't allocated right now
+    _buffer->_currentBytes = NULL;
+    _buffer->_nextBuffer = freeList;
+    freeList = _buffer;
 
 #ifdef PRINT_STATS
     {
         NSUInteger freeListCount = 0;
         NSUInteger freeListSize = 0;
-        OFFastMutableData *block;
+        OFFastMutableBuffer *buffer;
 
-        block = freeList;
-        while (block) {
+        buffer = freeList;
+        while (buffer) {
             freeListCount++;
-            freeListSize += block->_realLength;
-            block = block->_nextBlock;
+            freeListSize += buffer->_realLength;
+            buffer = buffer->_nextBuffer;
         }
-        NSLog(@"Put block 0x%08x back on free list, free list count = %d, free list size = %d",
+        NSLog(@"Put buffer %p back on free list, free list count = %d, free list size = %d",
               self, freeListCount, freeListSize);
     }
 #endif
 
     OFSimpleUnlock(&lock);
 	
-    // 10.4 emits a warning here if there is no call to super.  We don't want it since we are doing a free list.
-    return;
     [super dealloc];
 }
-
-#pragma mark API
 
 /*"
 Sets the contents of the instance to zeros.  This is the only time when OFFastMutableData instances are zeroed since this is typically not necessary.
@@ -154,29 +161,28 @@ Sets the contents of the instance to zeros.  This is the only time when OFFastMu
 - (void)fillWithZeros;
 {
     // We could do '_realLength' here, but we'll define that we don't need to
-    memset(_currentBytes, 0, _currentLength);
+    memset(_buffer->_currentBytes, 0, _buffer->_currentLength);
 }
 
 /*" Sets the offset into the receiver that will be used.  This is very useful if you have a data object and you want to efficiently chop of some leading bytes.  This will modify the length of the data as well. "*/
 - (void)setStartingOffset:(NSUInteger)offset;
 {
-    if (offset > _currentLength)
-        [NSException raise:NSInvalidArgumentException
-                    format:@"Offset of %lu is greater than length of %lu", offset, _currentLength];
-    
+    if (offset > _buffer->_currentLength)
+        [NSException raise:NSInvalidArgumentException format:@"Offset of %ld is greater than length of %ld", offset, _buffer->_currentLength];
+
     // figure out the old end of the data
-    void *end = _currentBytes + _currentLength;
-    
+    void *end = _buffer->_currentBytes + _buffer->_currentLength;
+
     // update the starting point of the data
-    _currentBytes  = _realBytes + offset;
-    
+    _buffer->_currentBytes = _buffer->_realBytes + offset;
+
     // keep the new end of the data at the same address as the old end
-    _currentLength = end - _currentBytes;
+    _buffer->_currentLength = end - _buffer->_currentBytes;
 }
 
 - (NSUInteger)startingOffset;
 {
-    return _currentBytes - _realBytes;
+    return _buffer->_currentBytes - _buffer->_realBytes;
 }
 
 #pragma mark NSData subclass
@@ -184,44 +190,44 @@ Sets the contents of the instance to zeros.  This is the only time when OFFastMu
 /*" Returns the current length of the instance. "*/
 - (NSUInteger)length;
 {
-    return _currentLength;
+    return _buffer->_currentLength;
 }
 
 /*" Returns a pointer to the contents of the data object. "*/
 - (const void *)bytes;
 {
-    return _currentBytes;
+    return _buffer->_currentBytes;
 }
 
 #pragma mark NSMutableData subclass
 
-/*" Returns a pointer to the contents of the data object that is suitable for making modifications to the contents. "*/
+/*" Returns a pointer to the contents of the buffer object that is suitable for making modifications to the contents. "*/
 - (void *)mutableBytes;
 {
-    return _currentBytes;
+    return _buffer->_currentBytes;
 }
 
 /*" Increases the length of the receiver.  The new bytes may or may not actually contain zeros. "*/
 - (void)setLength:(NSUInteger)length;
 {
     // We need to leave the offset between _realBytes and _currentBytes the same.
-    NSUInteger startingOffset = _currentBytes - _realBytes;
-    
-    if (length <= _realLength - startingOffset)
-        _currentLength = length;
+    NSUInteger startingOffset = _buffer->_currentBytes - _buffer->_realBytes;
+
+    if (length <= _buffer->_realLength - startingOffset)
+        _buffer->_currentLength = length;
     else {
         // Need to grow the memory we have
         NSUInteger newRealSize = _OFRoundToPageSize(length + startingOffset);
         void *newRealBytes = NSAllocateMemoryPages(newRealSize);
-        
-        NSCopyMemoryPages(_realBytes + startingOffset, newRealBytes + startingOffset, _currentLength);
-        
-        NSDeallocateMemoryPages(_realBytes, _realLength);
-        _realBytes = newRealBytes;
-        _realLength = newRealSize;
-        
-        _currentBytes = _realBytes + startingOffset;
-        _currentLength = length;
+
+        NSCopyMemoryPages(_buffer->_realBytes + startingOffset, newRealBytes + startingOffset, _buffer->_currentLength);
+
+        NSDeallocateMemoryPages(_buffer->_realBytes, _buffer->_realLength);
+        _buffer->_realBytes = newRealBytes;
+        _buffer->_realLength = newRealSize;
+
+        _buffer->_currentBytes = _buffer->_realBytes + startingOffset;
+        _buffer->_currentLength = length;
     }
 }
 
@@ -234,14 +240,14 @@ Sets the contents of the instance to zeros.  This is the only time when OFFastMu
 - (id)copyWithZone:(NSZone *)zone;
 {
     NSLog(@"-[OFFastMutableData copyWithZone:] called.  This is going to slow stuff down.");
-    return [super copyWithZone: zone];
+    return [super copyWithZone:zone];
 }
 
 /*" Logs a message and then makes the copy.  You typically do not want to call this method on OFFastMutableData instances since the result will not be a fast data object (defeating the purpose of using this class in the first place). "*/
 - (id)mutableCopyWithZone:(NSZone *)zone;
 {
     NSLog(@"-[OFFastMutableData mutableCopyWithZone:] called.  This is going to slow stuff down.");
-    return [super mutableCopyWithZone: zone];
+    return [super mutableCopyWithZone:zone];
 }
 
 @end

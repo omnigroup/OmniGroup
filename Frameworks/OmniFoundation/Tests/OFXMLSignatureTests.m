@@ -176,7 +176,7 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
             if ([keytype isEqual:(id)kSecAttrKeyTypeECDSA]) {
                 int sigorder = -1;
                 SecKeyRef retval = OFXMLSigCopyKeyFromEllipticKeyValue(keyvalue, &sigorder, outError);
-                OBASSERT(sigorder >= 0 && (size_t)sigorder == OFSecKeyGetGroupSize(retval));
+                OBASSERT(sigorder >= 0 && sigorder == OFSecKeyGetGroupSize(retval));
                 return retval;
             }
         }

@@ -1,4 +1,4 @@
-// Copyright 2003-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,6 +24,7 @@
 #import <UIKit/UIColor.h>
 #else
 #import <AppKit/NSColor.h>
+#import <OmniAppKit/NSColor-OAExtensions.h>
 #import <OmniAppKit/NSUserDefaults-OAExtensions.h>
 #endif
 
@@ -103,6 +104,7 @@ OQLinearRGBA OQGetColorRefComponents(CGColorRef c)
             l.a = components[1];
         } else {
             OBASSERT_NOT_REACHED("OQGetColorRefComponents() passed CGColorRefs in an unsupported colorspace.");
+            memset(&l, 0, sizeof(l)); // Return a predictable/defined value in the unsupported colorspace case.
         }
         
         CFRelease(colorSpaceName);
@@ -312,38 +314,12 @@ CGColorRef OQCreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpac
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 CGColorRef OQCreateColorRefFromColor(CGColorSpaceRef destinationColorSpace, NSColor *c)
 {
-    OBPRECONDITION(destinationColorSpace);
-    
-    NSColorSpace *wrappedColorSpace = [[[NSColorSpace alloc] initWithCGColorSpace:destinationColorSpace] autorelease];
-    NSColor *convertedColor = [c colorUsingColorSpace:wrappedColorSpace];
-    
-    if (!convertedColor)
-        return nil;
-    
-    size_t componentCount = CGColorSpaceGetNumberOfComponents(destinationColorSpace);
-    OBASSERT(componentCount > 0);
-    
-    CGFloat *components = malloc((componentCount + 1) * sizeof(CGFloat));
-    [convertedColor getComponents:components];
-    
-    CGColorRef result = CGColorCreate(destinationColorSpace, components);
-    free(components);
-    
-    OBPOSTCONDITION(result);
-    return result;
+    return [c newCGColorWithCGColorSpace:destinationColorSpace];
 }
 
 NSColor *OQColorFromColorRef(CGColorRef c)
 {
-    NSColorSpace *colorSpace = [[NSColorSpace alloc] initWithCGColorSpace:CGColorGetColorSpace(c)];
-    const CGFloat *components = CGColorGetComponents(c);
-    
-    NSColor *result = [NSColor colorWithColorSpace:colorSpace components:components count:[colorSpace numberOfColorComponents] + 1];
-    
-    [colorSpace release];
-    
-    OBPOSTCONDITION(result);
-    return result;
+    return [NSColor colorFromCGColor:c];
 }
 
 CGColorRef OQCreateGrayColorRefFromColor(NSColor *c)
@@ -948,6 +924,9 @@ static OQColor *_colorWithCGColorRef(CGColorRef cgColor)
             OBASSERT(CGColorSpaceGetNumberOfComponents(colorSpace) == 3);
             OBASSERT(CGColorGetNumberOfComponents(cgColor) == 4);
             return [OQColor colorWithRed:components[0] green:components[1] blue:components[2] alpha:components[3]];
+        case kCGColorSpaceModelPattern:
+            // Graffle uses color patterns that are generated in MacOS documents
+            return [OQColor purpleColor];
         default:
             NSLog(@"color = %@", cgColor);
             NSLog(@"colorSpace %@", colorSpace);
@@ -1215,3 +1194,30 @@ static void OQColorInitPlatformColor(OQColor *self)
 
 @end
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+
+void OQFillRGBAColorPair(OQRGBAColorPair *pair, NSColor *color1, NSColor *color2)
+{
+    [color1 getRed:&pair->color1.r green:&pair->color1.g blue:&pair->color1.b alpha:&pair->color1.a];
+    [color2 getRed:&pair->color2.r green:&pair->color2.g blue:&pair->color2.b alpha:&pair->color2.a];
+}
+
+static void _OQLinearColorBlendFunction(void *info, const CGFloat *in, CGFloat *out)
+{
+    OQRGBAColorPair *colorPair = info;
+    
+    CGFloat A = (1.0f - *in), B = *in;
+    out[0] = A * colorPair->color1.r + B * colorPair->color2.r;
+    out[1] = A * colorPair->color1.g + B * colorPair->color2.g;
+    out[2] = A * colorPair->color1.b + B * colorPair->color2.b;
+    out[3] = A * colorPair->color1.a + B * colorPair->color2.a;
+}
+
+static void _OQLinearColorReleaseInfoFunction(void *info)
+{
+    free(info);
+}
+
+const CGFunctionCallbacks OQLinearFunctionCallbacks = {0, &_OQLinearColorBlendFunction, &_OQLinearColorReleaseInfoFunction};
+
+#endif

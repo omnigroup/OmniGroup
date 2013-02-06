@@ -1,4 +1,4 @@
-// Copyright 1997-2007, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2007, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,7 @@ static BOOL is_mutex_locked(pthread_mutex_t *m);
 
 @implementation ONInternetSocket
 
-OmniNetworking_PRIVATE_EXTERN BOOL ONSocketStateDebug = NO;
+BOOL ONSocketStateDebug = NO;
 
 + (int)ipProtocol;
 {
@@ -788,15 +788,15 @@ static BOOL is_mutex_locked(pthread_mutex_t *m)
 @end
 
 
-NSString *ONInternetSocketBroadcastSelectionFailedExceptionName = @"ONInternetSocketBroadcastSelectionFailedExceptionName";
-NSString *ONInternetSocketReuseSelectionFailedExceptionName = @"ONInternetSocketReuseSelectionFailedExceptionName";
-NSString *ONInternetSocketBindFailedExceptionName = @"ONInternetSocketBindFailedExceptionName";
-NSString *ONInternetSocketConnectFailedExceptionName = @"ONInternetSocketConnectFailedExceptionName";
-NSString *ONInternetSocketConnectTemporarilyFailedExceptionName = @"ONInternetSocketConnectTemporarilyFailedExceptionName";
-NSString *ONInternetSocketGetNameFailedExceptionName = @"ONInternetSocketGetNameFailedExceptionName";
-NSString *ONInternetSocketNotConnectedExceptionName = @"ONInternetSocketNotConnectedExceptionName";
-NSString *ONInternetSocketReadFailedExceptionName = @"ONInternetSocketReadFailedExceptionName";
-NSString *ONInternetSocketUserAbortExceptionName = @"ONInternetSocketUserAbortExceptionName";
-NSString *ONInternetSocketWriteFailedExceptionName = @"ONInternetSocketWriteFailedExceptionName";
-NSString *ONInternetSocketCloseFailedExceptionName = @"ONInternetSocketCloseFailedExceptionName";
-NSString *ONInternetSocketSetOptionFailedExceptionName = @"ONInternetSocketSetOptionFailedExceptionName";
+NSString * const ONInternetSocketBroadcastSelectionFailedExceptionName = @"ONInternetSocketBroadcastSelectionFailedExceptionName";
+NSString * const ONInternetSocketReuseSelectionFailedExceptionName = @"ONInternetSocketReuseSelectionFailedExceptionName";
+NSString * const ONInternetSocketBindFailedExceptionName = @"ONInternetSocketBindFailedExceptionName";
+NSString * const ONInternetSocketConnectFailedExceptionName = @"ONInternetSocketConnectFailedExceptionName";
+NSString * const ONInternetSocketConnectTemporarilyFailedExceptionName = @"ONInternetSocketConnectTemporarilyFailedExceptionName";
+NSString * const ONInternetSocketGetNameFailedExceptionName = @"ONInternetSocketGetNameFailedExceptionName";
+NSString * const ONInternetSocketNotConnectedExceptionName = @"ONInternetSocketNotConnectedExceptionName";
+NSString * const ONInternetSocketReadFailedExceptionName = @"ONInternetSocketReadFailedExceptionName";
+NSString * const ONInternetSocketUserAbortExceptionName = @"ONInternetSocketUserAbortExceptionName";
+NSString * const ONInternetSocketWriteFailedExceptionName = @"ONInternetSocketWriteFailedExceptionName";
+NSString * const ONInternetSocketCloseFailedExceptionName = @"ONInternetSocketCloseFailedExceptionName";
+NSString * const ONInternetSocketSetOptionFailedExceptionName = @"ONInternetSocketSetOptionFailedExceptionName";

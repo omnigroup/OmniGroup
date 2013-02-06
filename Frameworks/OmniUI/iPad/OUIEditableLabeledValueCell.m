@@ -30,6 +30,8 @@ RCS_ID("$Id$");
 
 - (void)dealloc
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:_valueField];
+
     _valueField.delegate = nil;
     [_valueField release];
     [super dealloc];
@@ -67,6 +69,8 @@ RCS_ID("$Id$");
         [self addGestureRecognizer:tapGestureRecognizer];
         [tapGestureRecognizer release];
 #endif
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_textFieldTextDidChange:) name:UITextFieldTextDidChangeNotification object:_valueField];
+        
     } else {
         _valueField.frame = valueRect;
     }
@@ -162,6 +166,12 @@ RCS_ID("$Id$");
 
     [textField endEditing:YES];
     return NO;
+}
+
+- (void)_textFieldTextDidChange:(NSNotification *)note;
+{
+    if ([_delegate respondsToSelector:@selector(editableLabeledValueCellTextDidChange:)])
+        [_delegate editableLabeledValueCellTextDidChange:self];
 }
 
 @end

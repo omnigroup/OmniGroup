@@ -244,77 +244,79 @@ static void _checkForCommonClassMethodNameTypos(Class metaClass, Class class, Me
 {
     const char * const affectingPrefix = "keyPathsForValuesAffecting";
 
-    for (unsigned int methodIndex = 0; methodIndex < methodCount; methodIndex ++) {
-        SEL sel = method_getName(methods[methodIndex]);
-        const char *selName = sel_getName(sel);
-        size_t selNameLength = strlen(selName);
+    if (methods) {
+        for (unsigned int methodIndex = 0; methodIndex < methodCount; methodIndex ++) {
+            SEL sel = method_getName(methods[methodIndex]);
+            const char *selName = sel_getName(sel);
+            size_t selNameLength = strlen(selName);
 
-        // Someone was asleep at the wheel and we have +automaticallyNotifiesObserversForKey: but +automaticallyNotifiesObserversOf<Key> (note "For" -> "Of").
-        if (sel != @selector(automaticallyNotifiesObserversForKey:)) {
-            const char * const badPrefix = "automaticallyNotifiesObserversFor";
-            if (strncmp(selName, badPrefix, strlen(badPrefix)) == 0) {
-                NSLog(@"Class %s implements +%s, but this is likely a typo where \"For\" should be replaced by \"Of\".", class_getName(metaClass), selName);
-                OBAssertFailed(); // stop in the debugger if we have a breakpoint
+            // Someone was asleep at the wheel and we have +automaticallyNotifiesObserversForKey: but +automaticallyNotifiesObserversOf<Key> (note "For" -> "Of").
+            if (sel != @selector(automaticallyNotifiesObserversForKey:)) {
+                const char * const badPrefix = "automaticallyNotifiesObserversFor";
+                if (strncmp(selName, badPrefix, strlen(badPrefix)) == 0) {
+                    NSLog(@"Class %s implements +%s, but this is likely a typo where \"For\" should be replaced by \"Of\".", class_getName(metaClass), selName);
+                    OBAssertFailed(); // stop in the debugger if we have a breakpoint
+                }
             }
-        }
-        
-        if (selNameLength > strlen(affectingPrefix) &&
-            strncmp(selName, affectingPrefix, strlen(affectingPrefix)) == 0 &&
-            method_getNumberOfArguments(methods[methodIndex]) == 2 /* arg count includes self and _cmd */) {
-                
-            // Verify that we only have keyPathsForValuesAffectingFoo if we also have Foo.
-            char *namebuf = malloc(selNameLength + 5);
-            strcpy(namebuf, selName + strlen(affectingPrefix));
-            namebuf[0] = tolower(namebuf[0]);
             
-            /* This test can produce false positives on valid code. We can extend it as we run into the exceptions.
-               Some things it doesn't know about:
-                 direct ivar access
-                 indexed accessors
-                 valueForUndefinedKey:
-            */
-            
-            objc_property_t propInfo = class_getProperty(metaClass, namebuf);
-            if (propInfo != NULL) {
-                /* good, there's a property */
-                /* the docs don't say whether you need to actually use the @property syntax for this function to work --- for most of our KVObservables, class_getProperty() returns nil */
-                // NSLog(@"property(%s) -> \"%s\"", namebuf, property_getAttributes(propInfo));
-            } else {
-                SEL seln;
-                
-                /* Look for -foo */
-                if (!((seln = sel_getUid(namebuf)) && class_respondsToSelector(class, seln))) {
+            if (selNameLength > strlen(affectingPrefix) &&
+                strncmp(selName, affectingPrefix, strlen(affectingPrefix)) == 0 &&
+                method_getNumberOfArguments(methods[methodIndex]) == 2 /* arg count includes self and _cmd */) {
                     
-                    /* OK, look for -_foo */
-                    memmove(namebuf+1, namebuf, strlen(namebuf)+1);
-                    namebuf[0] = '_';
-                    if (!((seln = sel_getUid(namebuf)) && class_getInstanceMethod(class, seln))) {
+                // Verify that we only have keyPathsForValuesAffectingFoo if we also have Foo.
+                char *namebuf = malloc(selNameLength + 5);
+                strcpy(namebuf, selName + strlen(affectingPrefix));
+                namebuf[0] = tolower(namebuf[0]);
+                
+                /* This test can produce false positives on valid code. We can extend it as we run into the exceptions.
+                   Some things it doesn't know about:
+                     direct ivar access
+                     indexed accessors
+                     valueForUndefinedKey:
+                */
+                
+                objc_property_t propInfo = class_getProperty(metaClass, namebuf);
+                if (propInfo != NULL) {
+                    /* good, there's a property */
+                    /* the docs don't say whether you need to actually use the @property syntax for this function to work --- for most of our KVObservables, class_getProperty() returns nil */
+                    // NSLog(@"property(%s) -> \"%s\"", namebuf, property_getAttributes(propInfo));
+                } else {
+                    SEL seln;
+                    
+                    /* Look for -foo */
+                    if (!((seln = sel_getUid(namebuf)) && class_respondsToSelector(class, seln))) {
                         
-                        /* Maybe it's a boolean -isFoo ? */
-                        memcpy(namebuf, "is", 2);
-                        strcpy(namebuf+2, selName + strlen(affectingPrefix));
+                        /* OK, look for -_foo */
+                        memmove(namebuf+1, namebuf, strlen(namebuf)+1);
+                        namebuf[0] = '_';
                         if (!((seln = sel_getUid(namebuf)) && class_getInstanceMethod(class, seln))) {
                             
-                            /* Well, how about -getFoo ? */
-                            memcpy(namebuf, "get", 3);
-                            strcpy(namebuf+3, selName + strlen(affectingPrefix));
+                            /* Maybe it's a boolean -isFoo ? */
+                            memcpy(namebuf, "is", 2);
+                            strcpy(namebuf+2, selName + strlen(affectingPrefix));
                             if (!((seln = sel_getUid(namebuf)) && class_getInstanceMethod(class, seln))) {
                                 
-                                seln = NULL;
-                                /* No luck */
-                                namebuf[3] = tolower(namebuf[3]);
-                                NSLog(@"Class %s implements +%s, but instances do not respond to -%s, -_%s, -is%s, or -get%s", class_getName(metaClass), selName, namebuf+3, namebuf+3, selName + strlen(affectingPrefix), selName + strlen(affectingPrefix));
-                                OBAssertFailed(); // stop in the debugger if we have a breakpoint
+                                /* Well, how about -getFoo ? */
+                                memcpy(namebuf, "get", 3);
+                                strcpy(namebuf+3, selName + strlen(affectingPrefix));
+                                if (!((seln = sel_getUid(namebuf)) && class_getInstanceMethod(class, seln))) {
+                                    
+                                    seln = NULL;
+                                    /* No luck */
+                                    namebuf[3] = tolower(namebuf[3]);
+                                    NSLog(@"Class %s implements +%s, but instances do not respond to -%s, -_%s, -is%s, or -get%s", class_getName(metaClass), selName, namebuf+3, namebuf+3, selName + strlen(affectingPrefix), selName + strlen(affectingPrefix));
+                                    OBAssertFailed(); // stop in the debugger if we have a breakpoint
+                                }
                             }
                         }
                     }
+                    
+                    // NSLog(@" No @property %s, but found -%@", namebuf, NSStringFromSelector(seln));
+                    (void)seln;
                 }
                 
-                // NSLog(@" No @property %s, but found -%@", namebuf, NSStringFromSelector(seln));
-                (void)seln;
+                free(namebuf);
             }
-            
-            free(namebuf);
         }
     }
 }

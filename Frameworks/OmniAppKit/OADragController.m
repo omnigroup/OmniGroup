@@ -16,12 +16,12 @@
 
 RCS_ID("$Id$")
 
-@interface OADragController (Private)
-- (void)controllerWillTerminate:(OFController *)controller;
-- (void)flushPasteboard;
-@end
-
 @implementation OADragController
+{
+    NSPasteboard *draggingPasteboard;
+    OAPasteboardHelper *pasteboardHelper;
+    NSView *draggingFromView;
+}
 
 static OADragController *sharedDragController;
 
@@ -88,15 +88,7 @@ static OADragController *sharedDragController;
     return YES;
 }
 
-// OFWeakRetain protocol
-
-OFWeakRetainConcreteImplementation_NULL_IMPLEMENTATION
-
-@end
-
-@implementation OADragController (Private)
-
-// Notifications
+#pragma mark - Private
 
 - (void)controllerWillTerminate:(OFController *)controller;
 {

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,9 +15,9 @@
 #import <Foundation/NSDate.h> // For NSTimeInterval
 #import <OWF/OWContentCacheProtocols.h> // For OWCacheArcType
 #import <OWF/OWProcessor.h> // For OWProcessorStatus
-#import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
+#import <OWF/OWFWeakRetainConcreteImplementation.h>
 
-@interface OWProcessorCacheArc : OFObject <OWCacheArc, OWProcessorContext, OFWeakRetain>
+@interface OWProcessorCacheArc : OFObject <OWCacheArc, OWProcessorContext, OWFWeakRetain>
 {
     OWContent /* *subject, */ *source, *object;
 
@@ -75,7 +75,7 @@
 
     NSMutableArray *auxiliaryContent;
 
-    OFWeakRetainConcreteImplementation_IVARS;
+    OWFWeakRetainConcreteImplementation_IVARS;
 }
 
 - initWithSource:(OWContent *)sourceEntry link:(OWContentTypeLink *)aLink inCache:(OWProcessorCache *)aCache forPipeline:(OWPipeline *)owner;

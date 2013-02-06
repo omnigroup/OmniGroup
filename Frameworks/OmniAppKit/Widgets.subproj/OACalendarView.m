@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -90,7 +90,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     monthAndYearTextFieldCell = [[NSTextFieldCell alloc] init];
     [monthAndYearTextFieldCell setFont:[NSFont boldSystemFontOfSize:12.0f]];
     
-    NSString *dateFormat = [NSDateFormatter dateFormatFromTemplate:@"MMMM YYYY" options:0 locale:[NSLocale currentLocale]];
+    NSString *dateFormat = [NSDateFormatter dateFormatFromTemplate:@"MMMM yyyy" options:0 locale:[NSLocale currentLocale]];
     monthAndYearFormatter = [[NSDateFormatter alloc] init];
     [monthAndYearFormatter setDateFormat:dateFormat];
 
@@ -569,7 +569,8 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     [button setImagePosition:NSImageOnly];
     [button setTarget:self];
     [button setContinuous:YES];
-//    [self addSubview:button];
+    [[button cell] setShowsStateBy:NSCellChangesContents];
+    [[button cell] setBackgroundColor:[NSColor whiteColor]];
     [buttons addObject:button];
     [button release];
 

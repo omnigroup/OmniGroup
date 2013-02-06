@@ -16,6 +16,12 @@
 @interface NSView (OAExtensions)
 
 - (BOOL)isOrContainsFirstResponder;
+- (void)windowDidChangeKeyOrFirstResponder; // calls -setNeedsDisplay: if -needsDisplayOnWindowDidChangeKeyOrFirstResponder returns YES; then sends -windowDidChangeKeyOrFirstResponder to subviews
+- (BOOL)needsDisplayOnWindowDidChangeKeyOrFirstResponder; // returns NO by default
+
+// Coordinate conversion
+- (NSPoint)convertPointFromScreen:(NSPoint)point;
+- (NSPoint)convertPointToScreen:(NSPoint)point;
 
 // Snapping to base coordinates.
 - (NSPoint)floorSnappedPoint:(NSPoint)point;
@@ -76,5 +82,6 @@
 
 // Debugging
 - (void)logViewHierarchy;
+- (void)logConstraintsInvolvingView;
 
 @end

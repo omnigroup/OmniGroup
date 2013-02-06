@@ -1,0 +1,69 @@
+// Copyright 2010-2012 The Omni Group. All rights reserved.
+//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+//
+// $Id$
+
+#import "OUIFileListViewController.h"
+
+#import <OmniUIDocument/OUIReplaceDocumentAlert.h>
+
+@class NSFileWrapper;
+@class OFSFileInfo, OFXServerAccount;
+@class OUISyncDownloader;
+
+@interface OUISyncListController : OUIFileListViewController <OUIReplaceDocumentAlertDelegate> {
+@protected
+    UIView *_connectingView;
+    UIActivityIndicatorView *_connectingProgress;
+    UILabel *_connectingLabel;
+    
+    BOOL _isDownloading;
+    
+@private
+    OFXServerAccount *_serverAccount;
+    NSURL *_address;
+    
+    BOOL _isExporting;
+    NSFileWrapper *_exportFileWrapper;
+    
+    /* these are used when the download is delayed in order to scroll the view to the visible */ 
+    NSURL *_exportURL; 
+    NSIndexPath *_exportIndexPath; 
+    
+    OUIReplaceDocumentAlert *_replaceDocumentAlert;
+    
+    OUISyncDownloader *_downloader;
+}
+
+- initWithServerAccount:(OFXServerAccount *)serverAccount exporting:(BOOL)exporting error:(NSError **)outError;
+
+@property(nonatomic,readonly) OFXServerAccount *serverAccount;
+@property (nonatomic, readonly) BOOL isExporting;
+
+@property (nonatomic, strong) UIView *connectingView;
+@property (nonatomic, strong) UIActivityIndicatorView *connectingProgress;
+@property (nonatomic, strong) UILabel *connectingLabel;
+
+@property (readwrite, strong) NSURL *address;
+
+@property (readwrite, strong) NSFileWrapper *exportFileWrapper;
+
+@property (nonatomic, strong) OUISyncDownloader *downloader;
+
+// Public
+- (void)addDownloaderWithURL:(NSURL *)exportURL toCell:(UITableViewCell *)cell;
+- (void)downloadFinished:(NSNotification *)notification;
+- (void)downloadCanceled:(NSNotification *)notification;
+
+// Private
+- (void)_loadFiles;
+- (void)_stopConnectingIndicator;
+- (void)_exportToURL:(NSURL *)exportURL;
+- (void)_displayDuplicateFileAlertForFile:(NSURL *)fileURL;
+- (void)_exportToNewPathGeneratedFromURL:(NSURL *)documentURL;
+
+@end

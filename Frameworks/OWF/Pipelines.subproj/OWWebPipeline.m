@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,7 +49,7 @@ OFCharacterSet *CacheControlValueDelimiterSet;
     [CacheControlValueDelimiterSet addCharacter:','];
 }
 
-- initWithContent:(OWContent *)aContent target:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;
+- initWithContent:(OWContent *)aContent target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
 {
     if (!(self = [super initWithContent:aContent target:aTarget]))
         return nil;

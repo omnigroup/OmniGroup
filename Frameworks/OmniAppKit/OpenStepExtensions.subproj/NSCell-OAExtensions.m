@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,7 +44,6 @@ RCS_ID("$Id$")
     [cell setSendsActionOnEndEditing: [self sendsActionOnEndEditing]];
     [cell setRefusesFirstResponder: [self refusesFirstResponder]];
     [cell setShowsFirstResponder: [self showsFirstResponder]];
-    [cell setMnemonicLocation: [self mnemonicLocation]];  // subclasses will need to set the title, I guess
     [cell setAllowsEditingTextAttributes: [self allowsEditingTextAttributes]];
     [cell setImportsGraphics: [self importsGraphics]];
     [cell setAllowsMixedState: [self allowsMixedState]];

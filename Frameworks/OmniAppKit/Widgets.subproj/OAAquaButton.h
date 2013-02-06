@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,8 +22,3 @@
     // The image named anImageName will be used for the normal state of the button.  The alternate image of the button will be the image named anImageName with either "Aqua" or "Graphite" appended to it.
     
 @end
-
-// Legacy symbols. New code should use OAGraphiteImageTintSuffix, etc., defined in NSImage-OAExtensions.h.
-extern NSString * const OAAquaButtonAquaImageSuffix;	// "Aqua"
-extern NSString * const OAAquaButtonGraphiteImageSuffix;	// "Graphite"
-extern NSString * const OAAquaButtonClearImageSuffix;	// "Clear"

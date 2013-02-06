@@ -67,8 +67,6 @@
 				<string></string>
 				<key>OUIWebDAVUsername</key>
 				<string></string>
-				<key>OUIMobileMeUsername</key>
-				<string></string>
 				<key>OUIOmniSyncUsername</key>
 				<string></string>
 				<key>OUIImportEnabled</key>
@@ -80,10 +78,6 @@
                         </dict>
                 </dict>
         </dict>
-        <key>OUIApplicationCloudID</key>
-        <string>34YW5XSRB7</string>
-	<key>OUIApplicationCloudContainerID</key>
-	<string>com.omnigroup.OmniTextEdit.iPad</string>
         <key>UISupportedInterfaceOrientations</key>
         <array>
                 <string>UIInterfaceOrientationPortrait</string>

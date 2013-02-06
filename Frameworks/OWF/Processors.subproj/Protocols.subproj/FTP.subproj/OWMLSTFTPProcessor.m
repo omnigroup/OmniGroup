@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,9 +55,6 @@ RCS_ID("$Id$");
 
 + (NSCalendarDate *)parseDate:(NSString *)date
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
     NSString *fixed, *variable;
     NSCalendarDate *parsed;
     NSRange dotRange;
@@ -81,58 +78,38 @@ RCS_ID("$Id$");
         return nil;
 
     if (parsed != nil && variable != nil) {
-        int decimalPlaces = [variable length];
+        NSInteger decimalPlaces = [variable length];
 
         parsed = [parsed dateByAddingTimeInterval:(NSTimeInterval)(pow(10., - decimalPlaces) * [variable doubleValue])];
     }
 
     return parsed;
-#endif
 }
 
 - (OWFileInfo *)fileInfoForLine:(NSString *)line;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
-    NSArray *facts;
-    unsigned int factCount, factIndex;
-    NSString *filename;
-
-    NSRange separator;
-    BOOL isDir, isLink;
-    NSNumber *fileSize;
-    NSCalendarDate *modDate;
-    NSString *fileTypeName, *nameCharset;
-    CFStringEncoding nameEncoding;
-    NSString *unicodeFilename, *urlCodedFilename;
-
-    OWFileInfo *fileInfo;
-
-    separator = [line rangeOfString:@" "];
+    NSRange separator = [line rangeOfString:@" "];
     if (separator.length == 0) {
         [NSException raise:@"ListAborted" reason:NSLocalizedStringFromTableInBundle(@"Incorrect response to MLST command", @"OWF", [OWMLSTFTPProcessor bundle], @"ftpsession error - MLST (directory listing) command returned invalid data")];
     }
-    facts = [[line substringToIndex:separator.location] componentsSeparatedByString:@";"];
-    filename = [line substringFromIndex:NSMaxRange(separator)];
+    NSArray *facts = [[line substringToIndex:separator.location] componentsSeparatedByString:@";"];
+    NSString *filename = [line substringFromIndex:NSMaxRange(separator)];
 
     /* Ignore entries with zero-length names. */
     if ([filename isEqual:@""])
         return nil;
 
-    fileTypeName = @"file";
-    fileSize = nil;
-    modDate = nil;
-    nameCharset = nil;
-    isDir = NO;
-    isLink = NO;
+    NSString *fileTypeName = @"file";
+    NSNumber *fileSize = nil;
+    NSCalendarDate *modDate = nil;
+    NSString *nameCharset = nil;
+    BOOL isDir = NO;
+    BOOL isLink = NO;
 
-    factCount = [facts count];
-    for(factIndex = 0; factIndex < factCount; factIndex ++) {
-        NSString *fact = [facts objectAtIndex:factIndex];
+    for (NSString *fact in facts) {
         NSString *factName, *factValue;
         
-        separator = [fact rangeOfString:@"="];
+        NSRange separator = [fact rangeOfString:@"="];
         if (separator.length) {
             factName = [fact substringToIndex:separator.location];
             factValue = [fact substringFromIndex:NSMaxRange(separator)];
@@ -176,6 +153,7 @@ RCS_ID("$Id$");
     }
     
     /* Reëncode the filename into the specified character set. */
+    CFStringEncoding nameEncoding;
     if (nameCharset == nil) {
         /* The spec says that lines with no charset fact are in UTF-8. */
         nameEncoding = kCFStringEncodingUTF8;
@@ -188,19 +166,18 @@ RCS_ID("$Id$");
         lastNameCharset = [nameCharset retain];
         lastNameEncoding = nameEncoding;
     }
-    unicodeFilename = [filename stringByApplyingDeferredCFEncoding:nameEncoding];
+    NSString *unicodeFilename = [filename stringByApplyingDeferredCFEncoding:nameEncoding];
     
     /* Here's the subtle part. For display, we need to interpret the filename according to its specified encoding, in order to get a valid sequence of characters/glyphs. But in order to retrieve the file later, we'll need to send back the same *sequence of bytes/octets* we got from the server, regardless of what encoding they were in or what transformations we've applied to make them displayable. So the URL we compute for this file needs to be derived from the filename without applying the encoding. */
 
     /* -encodeURLString:... knows about OF deferred encoding and will correctly represent deferred bytes as hex escapes */
-    urlCodedFilename = [NSString encodeURLString:filename asQuery:NO leaveSlashes:NO leaveColons:NO];
+    NSString *urlCodedFilename = [NSString encodeURLString:filename asQuery:NO leaveSlashes:NO leaveColons:NO];
     if (isDir)
         urlCodedFilename = [urlCodedFilename stringByAppendingString:@"/"];
-    fileInfo = [[OWFileInfo alloc] initWithAddress:[baseAddress addressForRelativeString:urlCodedFilename] size:fileSize isDirectory:isDir isShortcut:isLink lastChangeDate:modDate];
+    OWFileInfo *fileInfo = [[OWFileInfo alloc] initWithAddress:[baseAddress addressForRelativeString:urlCodedFilename] size:fileSize isDirectory:isDir isShortcut:isLink lastChangeDate:modDate];
     [fileInfo setName:unicodeFilename];
 
     return [fileInfo autorelease];
-#endif
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -91,11 +91,9 @@ RCS_ID("$Id$")
 
 - (void)addHeaders:(OFMultiValueDictionary *)headerDictionary;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     NSString *headerText;
     NSArray *cacheControl, *pragmata;
-    unsigned directiveCount, directiveIndex;
+    NSUInteger directiveCount, directiveIndex;
     BOOL hasCacheControl;
     //    NSMutableArray *unCachedHeaders;
 
@@ -188,8 +186,6 @@ RCS_ID("$Id$")
         unCachedHeaders = [unCachedHeaders autorelease];
     }
 #endif
-
-#endif // OBFinishPorting
 }
 
 - (void)addSettings:(OWCacheControlSettings *)moreSettings;

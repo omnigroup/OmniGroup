@@ -1,4 +1,4 @@
-// Copyright 2010, 2012 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,9 @@
 RCS_ID("$Id$");
 
 @implementation OUICertificateTrustAlert
+{
+    NSURLAuthenticationChallenge *_challenge;
+}
 
 @synthesize cancelBlock = _cancelBlock, trustBlock = _trustBlock, shouldOfferTrustAlwaysOption = _shouldOfferTrustAlwaysOption;
 
@@ -87,7 +90,7 @@ RCS_ID("$Id$");
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
 {
-    BOOL trustAlways;
+    OFHostTrustDuration trustDuration;
 
     switch (buttonIndex) {
         case 0: /* Cancel */
@@ -97,16 +100,21 @@ RCS_ID("$Id$");
             return;
             
         case 1: /* Continue */
-            trustAlways = NO;
+            if (_shouldOfferTrustAlwaysOption == NO) {
+                // We only have two buttons in this case. Defaulting to OFHostTrustDurationSession is problematic since the code to show the alert later might not be set up (we might do this when preflighting a server). Still, we should handle this.
+                // <bug:///85541> (Handler certificate invalidation after a server has been added)
+                trustDuration = OFHostTrustDurationAlways;
+            } else
+                trustDuration = OFHostTrustDurationSession;
             break;
 
         case 2: /* Trust always */
-            trustAlways = YES;
+            trustDuration = OFHostTrustDurationAlways;
             break;
     }
 
     if (_trustBlock != NULL)
-        _trustBlock(trustAlways);
+        _trustBlock(trustDuration);
 
     [self autorelease];
 }

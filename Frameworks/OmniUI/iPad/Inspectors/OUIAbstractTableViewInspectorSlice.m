@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,16 +68,6 @@ RCS_ID("$Id$");
     [self configureTableViewBackground:_tableView];
 }
 
-- (void)viewDidUnload;
-{
-    _tableView.delegate = nil;
-    _tableView.dataSource = nil;
-    [_tableView release];
-    _tableView = nil;
-    
-    [super viewDidUnload];
-}
-
 - (void)viewWillAppear:(BOOL)animated;
 {
     [super viewWillAppear:animated];
@@ -99,6 +89,11 @@ RCS_ID("$Id$");
 {
     [super setEditing:editing animated:animated]; // updates our editingButtonItem
     [_tableView setEditing:editing animated:animated];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
+{
+    return 12;
 }
 
 @end

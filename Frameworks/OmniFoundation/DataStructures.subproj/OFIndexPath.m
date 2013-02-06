@@ -1,4 +1,4 @@
-// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,11 +11,11 @@
 
 RCS_ID("$Id$")
 
-@interface OFIndexPath (Private)
-- (id)_initWithParent:(OFIndexPath *)parent index:(NSUInteger)anIndex length:(NSUInteger)aLength;
-@end
-
 @implementation OFIndexPath
+{
+    OFIndexPath *_parent;
+    NSUInteger _index, _length;
+}
 
 static OFIndexPath *emptyIndexPath = nil;
 
@@ -45,7 +45,7 @@ static OFIndexPath *emptyIndexPath = nil;
 
 - (OFIndexPath *)indexPathByAddingIndex:(NSUInteger)anIndex;
 {
-    return [[[isa alloc] _initWithParent:self index:anIndex length:_length + 1] autorelease];
+    return [[[[self class] alloc] _initWithParent:self index:anIndex length:_length + 1] autorelease];
 }
 
 - (OFIndexPath *)indexPathByRemovingLastIndex;
@@ -68,14 +68,20 @@ static OFIndexPath *emptyIndexPath = nil;
     return _length;
 }
 
+static void _getIndexes(OFIndexPath *indexPath, NSUInteger *indexes, NSUInteger length)
+{
+    OBPRECONDITION(indexPath->_length == length);
+    
+    NSUInteger slot = length;
+    while (slot--) {
+        indexes[slot] = indexPath->_index;
+        indexPath = indexPath->_parent;
+    }
+}
+
 - (void)getIndexes:(NSUInteger *)indexes;
 {
-    if (_length == 0)
-        return;
-
-    indexes[_length - 1] = _index;
-    OBASSERT(_parent != nil); // The only time we have a nil parent is if our length is 0
-    [_parent getIndexes:indexes];
+    _getIndexes(self, indexes, _length);
 }
 
 - (NSComparisonResult)_compare:(OFIndexPath *)otherObject orderParentsFirst:(BOOL)shouldOrderParentsFirst;
@@ -94,8 +100,9 @@ static OFIndexPath *emptyIndexPath = nil;
     if (componentCount > 0) {
         NSUInteger indexes[length], otherIndexes[otherLength];
 
-        [self getIndexes:indexes];
-        [otherObject getIndexes:otherIndexes];
+        // clang-sa doesn't know that -getIndexes: fills the full array. The IPA can determine this with the inlined version, though.
+        _getIndexes(self, indexes, length);
+        _getIndexes(otherObject, otherIndexes, otherLength);
 
         for (componentIndex = 0; componentIndex < componentCount; componentIndex++) {
             NSUInteger component = indexes[componentIndex];
@@ -129,11 +136,17 @@ static OFIndexPath *emptyIndexPath = nil;
 - (NSString *)description;
 {
     NSMutableString *description = [NSMutableString string];
-    NSUInteger indexIndex, indexCount = _length;
+    NSUInteger indexCount = _length;
     if (indexCount > 0) {
         NSUInteger indexes[indexCount];
-        [self getIndexes:indexes];
-        for (indexIndex = 0; indexIndex < indexCount; indexIndex++) {
+        
+        // clang-sa doesn't know that -getIndexes: fills the full array. The IPA can determine this with the inlined version, though.
+        // http://llvm.org/bugs/show_bug.cgi?id=14877 -- a warning gets emitted here anyway, even though the inlined _getIndexes() fixes the warnings that were in -_compare:orderParentsFirst:.
+        // -description shouldn't be in a performance critical path, so lets zero the array here to quiet the warning for now.
+        memset(indexes, 0, sizeof(NSUInteger) * indexCount);
+        _getIndexes(self, indexes, indexCount);
+
+        for (NSUInteger indexIndex = 0; indexIndex < indexCount; indexIndex++) {
             NSUInteger indexValue = indexes[indexIndex];
             if (indexIndex == 0)
                 [description appendFormat:@"%lu", indexValue];
@@ -149,9 +162,7 @@ static OFIndexPath *emptyIndexPath = nil;
     return [self description];
 }
 
-@end
-
-@implementation OFIndexPath (Private)
+#pragma mark -
 
 - (id)_initWithParent:(OFIndexPath *)parent index:(NSUInteger)anIndex length:(NSUInteger)aLength;
 {

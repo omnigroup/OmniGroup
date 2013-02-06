@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,104 +14,99 @@
 #import <OWF/OWSGMLDTD.h>
 #import <OWF/OWSGMLMethods.h>
 #import <OWF/OWSGMLTagType.h>
+#import <OWF/OWSGMLProcessor.h>
 
 RCS_ID("$Id$")
 
 @implementation OWSGMLAppliedMethods
+{
+    OWSGMLMethodHandler *_tagHandlers;
+    OWSGMLMethodHandler *_endTagHandlers;
+    NSUInteger _tagCount;
+}
+
+static OWSGMLMethodHandler UnknownTagHandler;
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    UnknownTagHandler = [^void(OWSGMLProcessor *processor, OWSGMLTag *tag){
+        [processor processUnknownTag:tag];
+    } copy];
+}
+
+void sgmlAppliedMethodsInvokeTag(OWSGMLAppliedMethods *self, unsigned int tagIndex, id target, OWSGMLTag *tag)
+{
+    if (tagIndex >= self->_tagCount)
+        return;
+    
+    OWSGMLMethodHandler handler = self->_tagHandlers[tagIndex];
+    handler(target, tag);
+}
+
+inline BOOL sgmlAppliedMethodsInvokeEndTag(OWSGMLAppliedMethods *self, unsigned int tagIndex, id target, OWSGMLTag *tag)
+{
+    if (tagIndex >= self->_tagCount)
+        return NO;
+
+    OWSGMLMethodHandler handler = self->_endTagHandlers[tagIndex];
+    if (!handler)
+        return NO;
+
+    handler(target, tag);
+    return YES;
+}
 
 - initFromSGMLMethods:(OWSGMLMethods *)sgmlMethods dtd:(OWSGMLDTD *)dtd forTargetClass:(Class)targetClass;
 {
-    unsigned int tagIndex;
-    NSDictionary *implementationForTagDictionary;
-    NSDictionary *implementationForEndTagDictionary;
-    NSEnumerator *tagNameEnumerator;
-    NSString *tagName;
-    SEL unknownTagSelector;
-    voidIMP unknownTagImplementation;
-    NSZone *myZone;
-
     if (!(self = [super init]))
         return nil;
 
-    myZone = [self zone];
+    _tagCount = [dtd tagCount];
+    if (_tagCount > 0) {
+        _tagHandlers = malloc(_tagCount * sizeof(*_tagHandlers));
+        _endTagHandlers = malloc(_tagCount * sizeof(*_tagHandlers));
+    }
     
-    tagCount = [dtd tagCount];
-
-    if (tagCount > 0) {
-        tagImplementation = NSZoneMalloc(myZone, tagCount * sizeof(voidIMP));
-        endTagImplementation = NSZoneMalloc(myZone, tagCount * sizeof(voidIMP));
-        tagSelector = NSZoneMalloc(myZone, tagCount * sizeof(SEL));
-        endTagSelector = NSZoneMalloc(myZone, tagCount * sizeof(SEL));
+    for (NSUInteger tagIndex = 0; tagIndex < _tagCount; tagIndex++) {
+        _tagHandlers[tagIndex] = UnknownTagHandler;
+        _endTagHandlers[tagIndex] = NULL; // No default for end tags
     }
 
-    unknownTagSelector = @selector(processUnknownTag:);
-    unknownTagImplementation = (voidIMP)[targetClass instanceMethodForSelector:unknownTagSelector];
-    for (tagIndex = 0; tagIndex < tagCount; tagIndex++) {
-        tagImplementation[tagIndex] = unknownTagImplementation;
-	tagSelector[tagIndex] = unknownTagSelector;
-	endTagImplementation[tagIndex] = NULL;
-	tagSelector[tagIndex] = unknownTagSelector;
-    }
-
-    implementationForTagDictionary = [sgmlMethods implementationForTagDictionary];
-    implementationForEndTagDictionary = [sgmlMethods implementationForEndTagDictionary];
-    tagNameEnumerator = [implementationForTagDictionary keyEnumerator];
-    while ((tagName = [tagNameEnumerator nextObject])) {
-	OFImplementationHolder *implementationHolder;
-	SEL selector;
-
+    [[sgmlMethods implementationForTagDictionary] enumerateKeysAndObjectsUsingBlock:^(NSString *tagName, OWSGMLMethodHandler handler, BOOL *stop) {
         if (![dtd hasTagTypeNamed:tagName]) {
 #if DEBUG
             NSLog(@"OWSGMLAppliedMethods: <%@> isn't in dtd", tagName);
 #endif // DEBUG
-            continue;
+            return;
         }
-	implementationHolder = [implementationForTagDictionary objectForKey:tagName];
-	selector = [implementationHolder selector];
-	tagIndex = [[dtd tagTypeNamed:tagName] dtdIndex];
-	tagImplementation[tagIndex] = (voidIMP)[targetClass instanceMethodForSelector:selector];
-	tagSelector[tagIndex] = selector;
-    }
-    tagNameEnumerator = [implementationForEndTagDictionary keyEnumerator];
-    while ((tagName = [tagNameEnumerator nextObject])) {
-	OFImplementationHolder *implementationHolder;
-	SEL selector;
-
+	NSUInteger tagIndex = [[dtd tagTypeNamed:tagName] dtdIndex];
+        OBASSERT(tagIndex < _tagCount);
+	_tagHandlers[tagIndex] = handler;
+    }];
+    
+    [[sgmlMethods implementationForEndTagDictionary] enumerateKeysAndObjectsUsingBlock:^(NSString *tagName, OWSGMLMethodHandler handler, BOOL *stop) {
         if (![dtd hasTagTypeNamed:tagName]) {
             NSLog(@"OWSGMLAppliedMethods: <%@> isn't in dtd", tagName);
-            continue;
+            return;
         }
-	implementationHolder = [implementationForEndTagDictionary objectForKey:tagName];
-	selector = [implementationHolder selector];
-	tagIndex = [[dtd tagTypeNamed:tagName] dtdIndex];
-	endTagImplementation[tagIndex] = (voidIMP)[targetClass instanceMethodForSelector:selector];
-	endTagSelector[tagIndex] = selector;
-    }
+	NSUInteger tagIndex = [[dtd tagTypeNamed:tagName] dtdIndex];
+        OBASSERT(tagIndex < _tagCount);
+	_endTagHandlers[tagIndex] = handler;
+    }];
 
     return self;
 }
 
 - (void)dealloc;
 {
-    if (tagCount > 0) {
-        NSZone *myZone = NSZoneFromPointer(tagImplementation);
-        NSZoneFree(myZone, tagImplementation);
-        NSZoneFree(myZone, tagSelector);
-        NSZoneFree(myZone, endTagImplementation);
-        NSZoneFree(myZone, endTagSelector);
-    }
-
+    if (_tagHandlers)
+        free(_tagHandlers);
+    if (_endTagHandlers)
+        free(_endTagHandlers);
+    
     [super dealloc];
-}
-
-- (void)invokeTagAtIndex:(unsigned int)tagIndex forTarget:(id)target withObject:(id)anObject;
-{
-    sgmlAppliedMethodsInvokeTag(self, tagIndex, target, anObject);
-}
-
-- (BOOL)invokeEndTagAtIndex:(unsigned int)tagIndex forTarget:(id)target withObject:(id)anObject;
-{
-    return sgmlAppliedMethodsInvokeEndTag(self, tagIndex, target, anObject);
 }
 
 @end

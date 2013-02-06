@@ -11,6 +11,8 @@
 
 @interface NSBundle (OAExtensions)
 
++ (NSBundle *)OmniAppKit;
+
 // This method has been deprecated because of its ambigous ownership policy for top level objects.
 // This ambiguous policy has led to writing code which leaks the top-level objects.
 // Additional, the current calling interface makes it cumbersome to do the right thing.

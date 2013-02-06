@@ -25,6 +25,7 @@ RCS_ID("$Id$");
 - (void)_snapToSelectionAnimated:(BOOL)animated;
 - (void)_selectClosestItemAndSendAction;
 - (void)_selectOptionWheelItem:(id)sender;
+- (UIImage *)_imageWithHighlight:(UIImage *)baseImage;
 @end
 
 @interface OUIInspectorOptionWheelScrollView : UIScrollView
@@ -143,6 +144,7 @@ static id _commonInit(OUIInspectorOptionWheel *self)
 
 - (void)dealloc;
 {
+    _scrollView.delegate = nil;
     [_scrollView release];
     [_selectionIndicator release];
     [_items release];
@@ -157,6 +159,8 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     OUIInspectorOptionWheelItem *item = [[OUIInspectorOptionWheelItem alloc] init];
     item.value = value;
     [item setImage:image forState:UIControlStateNormal];
+    if (_showHighlight)
+        [item setImage:[self _imageWithHighlight:image] forState:UIControlStateSelected];
     [item addTarget:self action:@selector(_selectOptionWheelItem:) forControlEvents:UIControlEventTouchUpInside];
     [_items addObject:item];
     [item release];
@@ -212,9 +216,13 @@ static id _commonInit(OUIInspectorOptionWheel *self)
 {
     for (OUIInspectorOptionWheelItem *item in _items) {
         if (OFISEQUAL(value, item.value)) {
+            if (_showHighlight)
+                _selectedItem.selected = NO;
             [_selectedItem release];
             _selectedItem = [item retain];
-            
+            if (_showHighlight)
+                _selectedItem.selected = YES;
+
             [self _snapToSelectionAnimated:animated];
             return;
         }
@@ -240,6 +248,8 @@ static id _commonInit(OUIInspectorOptionWheel *self)
 
 - (void)drawRect:(CGRect)rect;
 {
+    [_selectionIndicator updateColor];
+
     CGRect bounds = self.bounds;
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
@@ -263,7 +273,6 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     CGRect indicatorFrame = _selectionIndicator.frame;
     _selectionIndicator.frame = CGRectMake(CGRectGetMidX(bounds) - CGRectGetWidth(indicatorFrame)/2,
                                            CGRectGetMinY(bounds), indicatorFrame.size.width, indicatorFrame.size.height);
-    [_selectionIndicator updateColor];
 }
 
 #pragma mark -
@@ -303,8 +312,12 @@ static id _commonInit(OUIInspectorOptionWheel *self)
 
 - (void)_selectClosestItemAndSendAction;
 {
+    if (_showHighlight)
+        _selectedItem.selected = NO;
     [_selectedItem release];
     _selectedItem = [[self _closestItemToCenter] retain];
+    if (_showHighlight)
+        _selectedItem.selected = YES;
     
     [self _snapToSelectionAnimated:YES];
     [self sendActionsForControlEvents:UIControlEventValueChanged];
@@ -316,6 +329,30 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     OUIInspectorOptionWheelItem *optionWheelItem = sender;
     self.selectedValue = optionWheelItem.value;
     [self sendActionsForControlEvents:UIControlEventValueChanged];
+}
+
+@synthesize showHighlight = _showHighlight;
+- (UIImage *)_imageWithHighlight:(UIImage *)baseImage;
+{
+    CGFloat blur = 4;
+    
+    UIImage *result = nil;
+    UIGraphicsBeginImageContextWithOptions(baseImage.size, NO, 0.0); {
+        CGContextRef context = UIGraphicsGetCurrentContext();
+        CGRect baseDrawingRect = CGRectMake(0, 0, baseImage.size.width, baseImage.size.height);
+        
+        // flipping
+        CGContextTranslateCTM(context, 0.0, baseImage.size.height);
+        CGContextScaleCTM(context, 1.0, -1.0);
+        
+        // draw original image with a shadow
+        CGContextSetShadowWithColor(context, CGSizeMake(0, 0), blur, [UIColor colorWithRed:0 green:0.3 blue:0.88 alpha:1].CGColor);
+        CGContextDrawImage(context, baseDrawingRect, baseImage.CGImage);
+        
+        result =  UIGraphicsGetImageFromCurrentImageContext();
+    } UIGraphicsEndImageContext();
+    
+    return result;
 }
 
 @end

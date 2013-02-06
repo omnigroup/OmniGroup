@@ -206,7 +206,7 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
                 [aClass class];
             else if (class_getClassMethod(aClass, @selector(initialize)))
                 // Avoid a compiler warning
-                objc_msgSend(aClass, @selector(initialize));
+                OBSendVoidMessage(aClass, @selector(initialize));
             [pool release];
         }
 
@@ -222,7 +222,7 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
                 if (imposterClass != Nil)
                     aClass = imposterClass;
                 
-                imps[impIndex](aClass, selectorToCall);
+                OBCallVoidIMP(imps[impIndex], aClass, selectorToCall);
             } @catch (NSException *exc) {
                 fprintf(stderr, "Exception raised by +[%s %s]: %s\n", class_getName(aClass), sel_getName(selectorToCall), [[exc reason] UTF8String]);
             }

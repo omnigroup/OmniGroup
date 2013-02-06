@@ -50,6 +50,11 @@ static BOOL _viewsCompatible(UIView *self, UIView *otherView)
     if (!otherView) {
         // "If aView is nil, this method instead converts to/from window base coordinates"
 #ifdef OMNI_ASSERTIONS_ON
+        
+        // Not sure what to do other than whitelist UISearchResultsTableView which has a nil root view when an instance of UISearchDisplayController is present, but not in the view hierarchy. See <bug:///81503> (Failed assertion switching between calendars and search in Forecast view).
+        if ([self isKindOfClass:NSClassFromString(@"UISearchResultsTableView")])
+            return YES;
+        
         // Not sure what UIKit does in this case. It might just not do any transform, but until we need it we'll stick to requiring a window.
         UIView *root = _rootView(self);
         OBASSERT([root isKindOfClass:[UIWindow class]]);
@@ -62,6 +67,40 @@ static BOOL _viewsCompatible(UIView *self, UIView *otherView)
     if ([self isKindOfClass:NSClassFromString(@"UITextRangeView")] ||
         [otherView isKindOfClass:NSClassFromString(@"UITextRangeView")])
         return YES;
+
+    // Bail on the UIPeripheralHostView. Not our problem.
+    if ([self isKindOfClass:NSClassFromString(@"UIPeripheralHostView")] ||
+        [otherView isKindOfClass:NSClassFromString(@"UIPeripheralHostView")])
+        return YES;
+
+    // Bail on the UICalloutBar. Not our problem.
+    if ([self isKindOfClass:NSClassFromString(@"UICalloutBar")] ||
+        [otherView isKindOfClass:NSClassFromString(@"UICalloutBar")])
+        return YES;
+
+    // Bail on the snapshot view. There is some internal UIKit magic going on that takes advantage of whatever the default behavior of the transform is when they aren't in the same window.
+    if ([self isKindOfClass:NSClassFromString(@"UISnapshotView")] ||
+        [otherView isKindOfClass:NSClassFromString(@"UISnapshotView")])
+        return YES;
+    
+    // If an <MKAnnotation> canShowCallout, selecting that annotation generates a convertPoint:toView: where the UICalloutView is not yet associated with a window. Bail in that case.
+    // There are, however, cases where UICalloutView would correctly pass our assertions (e.g. tapping an accessory view button in the callout), but these framework behaviours are not our concern in these validations.
+    if ([self isKindOfClass:NSClassFromString(@"UICalloutView")] ||
+        [otherView isKindOfClass:NSClassFromString(@"UICalloutView")])
+        return YES;
+    
+    // Bail on the PLTileContainerView. Not our problem.
+    if ([self isKindOfClass:NSClassFromString(@"PLTileContainerView")] ||
+        [otherView isKindOfClass:NSClassFromString(@"PLTileContainerView")])
+        return YES;
+
+    // Bail on the assertion when UIKit is removing the tint view from the current window because it does this bogus conversion.
+    // Hopefully silencing this false positive doesn't also silence other warnings we do care about.
+    // This quiets the assertion in OmniFocus for iPad when showing the sidebar "popover".
+    if ([self isKindOfClass:[UIWindow class]] &&
+        [otherView isKindOfClass:[UINavigationBar class]] &&
+        otherView.window == nil)
+        return YES;
 #endif
     
     // "Otherwise, both view and the receiver must belong to the same UIWindow object."
@@ -72,6 +111,11 @@ static BOOL _viewsCompatible(UIView *self, UIView *otherView)
     if (root1 == root2)
         return YES;
         
+    // Bail on UITextEffectsWindow. Not our problem.
+    if ([root1 isKindOfClass:NSClassFromString(@"UITextEffectsWindow")] ||
+        [root2 isKindOfClass:NSClassFromString(@"UITextEffectsWindow")])
+        return YES;
+    
     UIWindow *window1 = _window(self);
     UIWindow *window2 = _window(otherView);
     
@@ -180,6 +224,31 @@ static void OUIViewPerformPosing(void)
         view = view.superview;
     }
     return nil;
+}
+
+- (OUIViewVisitorResult)applyToViewTree:(OUIViewVisitorBlock)block;
+{
+    if (block == NULL)
+        return OUIViewVisitorResultStop;
+
+    switch (block(self)) {
+        case OUIViewVisitorResultStop:
+            return OUIViewVisitorResultStop;
+            
+        case OUIViewVisitorResultSkipSubviews:
+            return OUIViewVisitorResultContinue;
+            
+        case OUIViewVisitorResultContinue:
+            for (UIView *view in self.subviews) {
+                if ([view applyToViewTree:block] == OUIViewVisitorResultStop)
+                    return OUIViewVisitorResultStop;
+            }
+            return OUIViewVisitorResultContinue;
+
+        default:
+            OBASSERT_NOT_REACHED("unhandled case");
+            return OUIViewVisitorResultStop;
+    }
 }
 
 // Subclass to return YES if this view has no border or doesn't want to be in your border finding nonsense.

@@ -122,13 +122,11 @@ RCS_ID("$Id$")
 // NB: Arguably, some of this functionality should be in the superclass. The superclass' definition could call _rewindCharacterSource and most of this method's functionality could be moved into an overridden version of that one. However, _rewindCharacterSource's semantics would have to be thought out a little more, since right now it's also used for actual seeks (which always fail). The tricky part would be making sure that an unseekable dataStream raises an exception early enough that the scanner is left in a consistent state.
 - (void)discardReadahead;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     // NB: It's important that any exceptions raised in this method leave the scanner in a consistent state, with the scan location unchanged!
 
     // first, remove any prefetched data from our buffer
     if (scannerScanLocation(self) < (bufferOffset + bufferLength)) {
-        int prefetchedCharactersCount = (bufferOffset + bufferLength) - scannerScanLocation(self);
+        NSInteger prefetchedCharactersCount = (bufferOffset + bufferLength) - scannerScanLocation(self);
         
         // this may raise, if the cursor is not seekable and/or has buffered some characters in a non-simple encoding
         [streamCursor seekToOffset: -prefetchedCharactersCount fromPosition:OWCursorSeekFromCurrent];
@@ -145,7 +143,6 @@ RCS_ID("$Id$")
     
     if (firstNonASCIIOffset >= (inputStringPosition + (scanEnd - inputBuffer)))
         firstNonASCIIOffset = NSNotFound;
-#endif
 }
 
 // OBObject subclass

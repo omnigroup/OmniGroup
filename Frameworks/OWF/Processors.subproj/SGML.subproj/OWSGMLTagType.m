@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -126,26 +126,18 @@ RCS_ID("$Id$")
 
 - (void)shareAttributesWithTagType:(OWSGMLTagType *)aTagType;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
-    unsigned int attributeIndex, attributeCount;
-
     aTagType = [aTagType masterAttributesTagType];
     if (aTagType == self)
         return;
 
     masterAttributesTagType = [aTagType retain];
-    attributeCount = [attributeNames count];
-    for (attributeIndex = 0;
-         attributeIndex < attributeCount;
-         attributeIndex++) {
-         [masterAttributesTagType addAttributeNamed:[attributeNames objectAtIndex:attributeIndex]];
-    }
+    for (NSString *attributeName in attributeNames)
+         [masterAttributesTagType addAttributeNamed:attributeName];
+
     [attributeNames release];
     [attributeTrie release];
     attributeNames = nil;
     attributeTrie = nil;
-#endif
 }
 
 - (NSUInteger)addAttributeNamed:(NSString *)attributeName;

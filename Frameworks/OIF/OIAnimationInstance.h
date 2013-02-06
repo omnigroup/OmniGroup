@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,9 +13,9 @@
 @class OFScheduledEvent;
 @class OIAnimation, OIAnimationFrame;
 
-#import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
+#import <OWF/OWFWeakRetainConcreteImplementation.h>
 
-@interface OIAnimationInstance : OIImage <OIImageObserver, OFWeakRetain>
+@interface OIAnimationInstance : OIImage <OIImageObserver, OWFWeakRetain>
 {
     OIAnimation *animation;
     OIAnimationFrame *frame;
@@ -28,7 +28,7 @@
     NSTimer *expirationTimer;
     NSLock *expirationTimerLock;
 
-    OFWeakRetainConcreteImplementation_IVARS;
+    OWFWeakRetainConcreteImplementation_IVARS;
 }
 
 - (id)initWithAnimation:(OIAnimation *)animation;
@@ -41,6 +41,6 @@
 - (void)animationEnded;
 - (void)animationReceivedFrame:(OIAnimationFrame *)aFrame;
 
-OFWeakRetainConcreteImplementation_INTERFACE
+OWFWeakRetainConcreteImplementation_INTERFACE
 
 @end

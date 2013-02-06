@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,8 +65,6 @@ static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
 {
     if (!(self = [super initForQueue:aQueue]))
         return nil;
-
-    OFWeakRetainConcreteImplementation_INIT;
     
     [messageQueue setDelegate:self];
 
@@ -108,15 +106,6 @@ static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
    if (![portMessage sendBeforeDate:[NSDate distantPast]]) {
        // If this fails, then the port is probably full, meaning that we've already notified
    }
-}
-
-// OFWeakRetain
-
-OFWeakRetainConcreteImplementation_IMPLEMENTATION
-
-- (void)invalidateWeakRetains;
-{
-    [messageQueue setDelegate:nil];
 }
 
 // NSPort delegate method --- called by our registered runloop in its thread

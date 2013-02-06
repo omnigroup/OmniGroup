@@ -11,8 +11,10 @@
 
 @interface NSException (OBExtensions)
 + (void)raise:(NSString *)name reason:(NSString *)reason;
-+ (void)raise:(NSString *)exceptionName posixErrorNumber:(int)posixErrorNumber format:(NSString *)format, ...;
-+ (NSException *)exceptionWithName:(NSString *)exceptionName posixErrorNumber:(int)posixErrorNumber format:(NSString *)format, ...;
++ (void)raise:(NSString *)exceptionName posixErrorNumber:(int)posixErrorNumber format:(NSString *)format, ...
+    __attribute__((format(__NSString__, 3, 4)));
++ (NSException *)exceptionWithName:(NSString *)exceptionName posixErrorNumber:(int)posixErrorNumber format:(NSString *)format, ...
+    __attribute__((format(__NSString__, 3, 4)));
 - (int)posixErrorNumber;
 @end
 

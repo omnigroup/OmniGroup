@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,11 @@
 #import <Foundation/NSFileManager.h>
 
 @interface NSFileManager (OFTemporaryPath)
+
+- (NSURL *)temporaryDirectoryForFileSystemContainingURL:(NSURL *)fileURL error:(NSError **)outError;
+
+// This returns a new URL that does not exist (but that should be relatively race free vs other callers as it contains a random identifier instead of an incrementing number). The path based versions below use a sequence number, checking if the file exists. Two calls in a row that are intended to return two temporary names could then return the same one twice.
+- (NSURL *)temporaryURLForWritingToURL:(NSURL *)originalURL allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
 
 - (NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
 - (NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory create:(BOOL)create error:(NSError **)outError;

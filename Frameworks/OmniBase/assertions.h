@@ -8,6 +8,7 @@
 // $Id$
 
 #import <objc/objc.h>
+#import <Foundation/NSObjCRuntime.h>
 
 #if defined(DEBUG) || defined(OMNI_FORCE_ASSERTIONS)
 #define OMNI_ASSERTIONS_ON
@@ -71,103 +72,93 @@ static inline void OBAnalyzerNotReached(void) { }
 extern "C" {
 #endif    
 
-typedef void (*OBAssertionFailureHandler)(const char *type, const char *expression, const char *file, unsigned int lineNumber);
+typedef void (*OBAssertionFailureHandler)(const char *type, const char *expression, const char *file, unsigned int lineNumber, const char *reason);
 
-extern void OBLogAssertionFailure(const char *type, const char *expression, const char *file, unsigned int lineNumber); // in case you want to integrate the normal behavior with your handler
+extern void OBLogAssertionFailure(const char *type, const char *expression, const char *file, unsigned int lineNumber, const char *reason); // in case you want to integrate the normal behavior with your handler
 
 #if defined(OMNI_ASSERTIONS_ON)
     
     extern void OBSetAssertionFailureHandler(OBAssertionFailureHandler handler);
 
-    extern void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber) CLANG_ANALYZER_NORETURN;
+    extern void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber, NSString *fmt, ...) NS_FORMAT_FUNCTION(5,6) CLANG_ANALYZER_NORETURN;
     extern void OBAssertFailed(void) __attribute__((noinline)); // This is a convenience breakpoint for in the debugger.
     
     extern BOOL OBEnableExpensiveAssertions;
-
-    #define OBPRECONDITION(expression)                                            \
-    do {                                                                        \
-        if (!(expression))                                                      \
-            OBInvokeAssertionFailureHandler("PRECONDITION", #expression, __FILE__, __LINE__); \
+    
+    #define _OBASSERT_CORE(type, expression, expr_str, ...) _OBASSERT_CORE0(type, expression, expr_str, __FILE__, __LINE__, __VA_ARGS__)
+    #define _OBASSERT_CORE0(type, expression, expr_str, file, line, ...) \
+    do { \
+        if (!(expression)) \
+            OBInvokeAssertionFailureHandler(type, expr_str, file, line, @"" __VA_ARGS__); \
+    } while(NO)
+    
+    #define OBPRECONDITION(expression, ...) _OBASSERT_CORE("PRECONDITION", expression, #expression, __VA_ARGS__)
+    #define OBPOSTCONDITION(expression, ...) _OBASSERT_CORE("POSTCONDITION", expression, #expression, __VA_ARGS__)
+    #define OBINVARIANT(expression, ...) _OBASSERT_CORE("INVARIANT", expression, #expression, __VA_ARGS__)
+    #define OBASSERT(expression, ...) _OBASSERT_CORE("ASSERT", expression, #expression, __VA_ARGS__)
+    
+    #define OBASSERT_NOT_REACHED(...) \
+    do { \
+        OBInvokeAssertionFailureHandler("NOTREACHED", NULL, __FILE__, __LINE__, @"" __VA_ARGS__); \
+    } while (NO)
+    
+    #define OBASSERT_IF(condition, implication, ...) _OBASSERT_IF0(condition, implication, #condition " ==> " #implication, __FILE__, __LINE__, __VA_ARGS__)
+    #define _OBASSERT_IF0(condition, implication, expr_str, file, line, ...) \
+    do { \
+        if ((condition) && !(implication)) \
+            OBInvokeAssertionFailureHandler("ASSERT_IF", expr_str, file, line, @"" __VA_ARGS__); \
     } while (NO)
 
-    #define OBPOSTCONDITION(expression)                                           \
-    do {                                                                        \
-        if (!(expression))                                                      \
-            OBInvokeAssertionFailureHandler("POSTCONDITION", #expression, __FILE__, __LINE__); \
-    } while (NO)
-
-    #define OBINVARIANT(expression)                                               \
-    do {                                                                        \
-        if (!(expression))                                                      \
-            OBInvokeAssertionFailureHandler("INVARIANT", #expression, __FILE__, __LINE__); \
-    } while (NO)
-
-    #define OBASSERT(expression)                                                  \
-    do {                                                                        \
-        if (!(expression))                                                      \
-            OBInvokeAssertionFailureHandler("ASSERT", #expression, __FILE__, __LINE__); \
-    } while (NO)
-
-    #define OBASSERT_NOT_REACHED(reason)                                        \
-    do {                                                                        \
-        OBInvokeAssertionFailureHandler("NOTREACHED", reason, __FILE__, __LINE__); \
-    } while (NO)
-
-    #define OBASSERT_IF(condition, implication)                                 \
-    do {                                                                        \
-        if ((condition) && !(implication))                                      \
-            OBInvokeAssertionFailureHandler("ASSERT_IF", #condition " ==> " #implication, __FILE__, __LINE__); \
-    } while (NO)
-
-    #define OBPRECONDITION_EXPENSIVE(expression) do { \
+    #define OBPRECONDITION_EXPENSIVE(expression, ...) do { \
         if (OBEnableExpensiveAssertions) \
-            OBPRECONDITION(expression); \
+            _OBASSERT_CORE("PRECONDITION", expression, #expression, __VA_ARGS__); \
     } while(NO)
 
-    #define OBPOSTCONDITION_EXPENSIVE(expression) do { \
+    #define OBPOSTCONDITION_EXPENSIVE(expression, ...) do { \
         if (OBEnableExpensiveAssertions) \
-            OBPOSTCONDITION(expression); \
+            _OBASSERT_CORE("POSTCONDITION", expression, #expression, __VA_ARGS__); \
     } while(NO)
 
-    #define OBINVARIANT_EXPENSIVE(expression) do { \
+    #define OBINVARIANT_EXPENSIVE(expression, ...) do { \
         if (OBEnableExpensiveAssertions) \
-            OBINVARIANT(expression); \
+            _OBASSERT_CORE("INVARIANT", expression, #expression, __VA_ARGS__); \
     } while(NO)
 
-    #define OBASSERT_EXPENSIVE(expression) do { \
+    #define OBASSERT_EXPENSIVE(expression, ...) do { \
         if (OBEnableExpensiveAssertions) \
-            OBASSERT(expression); \
+            _OBASSERT_CORE("ASSERT", expression, #expression, __VA_ARGS__); \
     } while(NO)
 
     // Scalar-taking variants that also do the test at compile time to just signal clang attributes.  The input must be a scalar l-value to avoid evaluation of code.  This will mark the value as referenced, though, so we don't get unused variable warnings.
-    #define OBASSERT_NULL(pointer) do { \
+    #define OBASSERT_NULL(pointer, ...) do { \
         if (pointer) { \
             void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
-            OBInvokeAssertionFailureHandler("OBASSERT_NULL", #pointer, __FILE__, __LINE__); \
+            OBInvokeAssertionFailureHandler("OBASSERT_NULL", #pointer, __FILE__, __LINE__, @"" __VA_ARGS__); \
         } \
     } while(NO);
-    #define OBASSERT_NOTNULL(pointer) do { \
+    #define OBASSERT_NOTNULL(pointer, ...) do { \
         if (!pointer) { \
             void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
-            OBInvokeAssertionFailureHandler("OBASSERT_NOTNULL", #pointer, __FILE__, __LINE__); \
+            OBInvokeAssertionFailureHandler("OBASSERT_NOTNULL", #pointer, __FILE__, __LINE__, @"" __VA_ARGS__); \
         } \
     } while(NO);
 
     // Useful for cases where we *currently* have unsigned values that we want to assert are non-negative but that might later become signed. For exmaple, array indexes -- if we switch between NSUInteger and CFIndex.
-    #define OBASSERT_NONNEGATIVE(x) do { \
+    #define OBASSERT_NONNEGATIVE(x, ...) do { \
         if (_OBIsNegative(x)) { \
-            OBInvokeAssertionFailureHandler("OBASSERT_NONNEGATIVE", #x, __FILE__, __LINE__); \
+            OBInvokeAssertionFailureHandler("OBASSERT_NONNEGATIVE", #x, __FILE__, __LINE__, @"" __VA_ARGS__); \
         } \
     } while (NO);
     
     #ifdef __OBJC__
         // Useful if you are subclassing a parent class that conforms to a protcocol with @optional methods; can assert that they *still* don't have the superclass method.
         // +instanceMethodForSelector: returns objc_msgForward now.
-        #define OBASSERT_NO_SUPER do { \
+        #define OBASSERT_NO_SUPER OBASSERT_NO_SUPER_BECAUSE()
+        #define OBASSERT_NO_SUPER_BECAUSE(...) do { \
             Class super__ = [[self class] superclass]; \
             Method method__ = class_getInstanceMethod(super__, _cmd); \
             if (method__) \
-                OBInvokeAssertionFailureHandler("OBASSERT_NO_SUPER", __PRETTY_FUNCTION__, __FILE__, __LINE__); \
+                OBInvokeAssertionFailureHandler("OBASSERT_NO_SUPER", __PRETTY_FUNCTION__, __FILE__, __LINE__, @"" __VA_ARGS__); \
         } while (NO)
     
         #import <Foundation/NSObject.h>
@@ -178,37 +169,38 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
     
 #else	// else insert blank lines into the code
 
-    #define OBPRECONDITION(expression) do {} while(0)
-    #define OBPOSTCONDITION(expression) do {} while(0)
-    #define OBINVARIANT(expression) do {} while(0)
-    #define OBASSERT(expression) do {} while(0)
-    #define OBASSERT_NOT_REACHED(reason) do {} while(0)
-    #define OBASSERT_IF(condition, implication) do {} while(0)
+    #define OBPRECONDITION(expression, ...) do {} while(0)
+    #define OBPOSTCONDITION(expression, ...) do {} while(0)
+    #define OBINVARIANT(expression, ...) do {} while(0)
+    #define OBASSERT(expression, ...) do {} while(0)
+    #define OBASSERT_NOT_REACHED(...) do {} while(0)
+    #define OBASSERT_IF(condition, implication, ...) do {} while(0)
 
-    #define OBPRECONDITION_EXPENSIVE(expression) do {} while(0)
-    #define OBPOSTCONDITION_EXPENSIVE(expression) do {} while(0)
-    #define OBINVARIANT_EXPENSIVE(expression) do {} while(0)
-    #define OBASSERT_EXPENSIVE(expression) do {} while(0)
+    #define OBPRECONDITION_EXPENSIVE(expression, ...) do {} while(0)
+    #define OBPOSTCONDITION_EXPENSIVE(expression, ...) do {} while(0)
+    #define OBINVARIANT_EXPENSIVE(expression, ...) do {} while(0)
+    #define OBASSERT_EXPENSIVE(expression, ...) do {} while(0)
 
     // Pointer checks to satisfy clang scan-build in non-assertion builds too.
-    #define OBASSERT_NULL(pointer) do { \
+    #define OBASSERT_NULL(pointer, ...) do { \
         if (pointer) { \
             void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
             OBAnalyzerNotReached(); \
         } \
     } while(NO);
-    #define OBASSERT_NOTNULL(pointer) do { \
+    #define OBASSERT_NOTNULL(pointer, ...) do { \
         if (!pointer) { \
             void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
             OBAnalyzerNotReached(); \
         } \
     } while(NO);
 
-    #define OBASSERT_NONNEGATIVE(x) do {} while (0)
+    #define OBASSERT_NONNEGATIVE(x, ...) do {} while (0)
 
     #ifdef __OBJC__
         #define OBASSERT_NO_SUPER
-        #define OBASSERT_NOT_IMPLEMENTED(obj, sel)
+        #define OBASSERT_NO_SUPER_BECAUSE(...)
+        #define OBASSERT_NOT_IMPLEMENTED(obj, sel, ...)
     #endif
 #endif
 #if defined(__cplusplus)

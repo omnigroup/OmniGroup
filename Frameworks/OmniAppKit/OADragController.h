@@ -14,14 +14,8 @@
 @class OAPasteboardHelper;
 
 #import <Foundation/NSGeometry.h> // For NSPoint
-#import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
 
-@interface OADragController : OFObject <OFWeakRetain>
-{
-    NSPasteboard *draggingPasteboard;
-    OAPasteboardHelper *pasteboardHelper;
-    NSView *draggingFromView;
-}
+@interface OADragController : NSObject
 
 + (OADragController *)sharedDragController;
 

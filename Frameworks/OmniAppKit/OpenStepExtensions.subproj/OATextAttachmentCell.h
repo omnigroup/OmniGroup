@@ -1,4 +1,4 @@
-// Copyright 2011 The Omni Group.  All rights reserved.
+// Copyright 2011, 2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,7 @@
 #endif
 @property(nonatomic,readonly) CGSize cellSize;
 - (CGPoint)cellBaselineOffset;
+
 @property(nonatomic,assign) OATextAttachment *attachment;
 
 #if 0

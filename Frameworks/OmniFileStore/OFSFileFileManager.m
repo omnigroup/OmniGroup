@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,9 +15,9 @@ RCS_ID("$Id$");
 
 @implementation OFSFileFileManager
 
-- initWithBaseURL:(NSURL *)baseURL error:(NSError **)outError;
+- initWithBaseURL:(NSURL *)baseURL delegate:(id <OFSFileManagerDelegate>)delegate error:(NSError **)outError;
 {
-    if (!(self = [super initWithBaseURL:baseURL error:outError]))
+    if (!(self = [super initWithBaseURL:baseURL delegate:delegate error:outError]))
         return nil;
     
     if (![[[self baseURL] path] isAbsolutePath]) {
@@ -26,7 +26,6 @@ RCS_ID("$Id$");
         OFSError(outError, OFSBaseURLIsNotAbsolute, title, description);
         
         NSLog(@"Error: The path of the url \"%@\" is not absolute. Cannot create file-based file manager.", [self baseURL]);
-        [self release];
         return nil;
     }
     
@@ -55,7 +54,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     
     // +[NSURL fileURLWithPath:] will re-check whether this is a directory, but we already know.
     CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)path, kCFURLPOSIXPathStyle, directory);
-    OFSFileInfo *info = [[OFSFileInfo alloc] initWithOriginalURL:(NSURL *)url name:[path lastPathComponent] exists:exists directory:directory size:size lastModifiedDate:[attributes fileModificationDate]];
+    OFSFileInfo *info = [[OFSFileInfo alloc] initWithOriginalURL:(__bridge NSURL *)url name:[path lastPathComponent] exists:exists directory:directory size:size lastModifiedDate:[attributes fileModificationDate]];
     CFRelease(url);
     
     return info;
@@ -66,7 +65,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     if (OFSFileManagerDebug > 0)
         NSLog(@"FILE operation: INFO at %@", url);
 
-    OFSFileInfo *info = [_createFileInfoAtPath([url path]) autorelease];
+    OFSFileInfo *info = _createFileInfoAtPath([url path]);
 
     if (OFSFileManagerDebug > 1)
         NSLog(@"  --> %@", info);
@@ -128,11 +127,10 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
             NSString *absolutePath = [basePath stringByAppendingPathComponent:fileName];
             OFSFileInfo *fileInfo = _createFileInfoAtPath(absolutePath);
             [results addObject:fileInfo];
-            [fileInfo release];
         }
     }
     
-    if (OFSFileManagerDebug > 0) {
+    if (OFSFileManagerDebug > 1) {
         static NSTimeInterval totalWait = 0;
         NSTimeInterval operationWait = [NSDate timeIntervalSinceReferenceDate] - start;
         totalWait += operationWait;
@@ -215,10 +213,17 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
         NSLog(@"FILE operation: DELETE %@", url);
 
     NSFileManager *manager = [NSFileManager defaultManager];
-
     if (![manager removeItemAtPath:[url path] error:outError]) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to delete \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [url absoluteString]];
-        OFSError(outError, OFSCannotDelete, NSLocalizedStringFromTableInBundle(@"Unable to delete file.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason);
+        if (outError) {
+            if ([*outError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] ||
+                [*outError hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError]) {
+                NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No such file \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [url absoluteString]];
+                OFSError(outError, OFSNoSuchFile, NSLocalizedStringFromTableInBundle(@"Unable to delete file.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason);
+            } else {
+                NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to delete \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [url absoluteString]];
+                OFSError(outError, OFSCannotDelete, NSLocalizedStringFromTableInBundle(@"Unable to delete file.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason);
+            }
+        }
         return NO;
     }
     

@@ -11,6 +11,7 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #define SYSTEM_TYPE_BUNDLE_IDENTIFIER @"com.apple.MobileCoreServices"
 #else
+#import <OmniFoundation/OFController.h>
 #import <CoreServices/CoreServices.h>
 #define SYSTEM_TYPE_BUNDLE_IDENTIFIER @"com.apple.LaunchServices"
 #endif
@@ -136,7 +137,14 @@ static void InitializeKnownTypeDictionaries()
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+        // Look in +[OFController controllingBundle] to support unit test bundles
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+        NSBundle *controllingBundle = [NSBundle mainBundle];
+#else
+        NSBundle *controllingBundle = [OFController controllingBundle];
+#endif
+        NSDictionary *infoDictionary = [controllingBundle infoDictionary];
+        
         MainBundleExportedTypeDeclarationsByTag = CreateTagDictionaryFromTypeDeclarations([infoDictionary objectForKey:(NSString *)kUTExportedTypeDeclarationsKey]);
         MainBundleImportedTypeDeclarationsByTag = CreateTagDictionaryFromTypeDeclarations([infoDictionary objectForKey:(NSString *)kUTImportedTypeDeclarationsKey]);
         

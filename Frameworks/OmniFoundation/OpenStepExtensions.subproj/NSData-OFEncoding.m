@@ -1,4 +1,4 @@
-// Copyright 1998-2005,2007,2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,6 +63,7 @@ static inline uint8_t _fromhex(unichar hexDigit)
     if (v == 0xff) { \
         if (outError) \
 	    OFError(outError, OFInvalidHexDigit, ([NSString stringWithFormat:@"The character '%C' (0x%x) is not a valid hexadecimal digit.", c, c]), nil); \
+        [self release]; \
         goto cleanup; \
     } \
 } while(0)

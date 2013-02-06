@@ -36,6 +36,8 @@
 - (void)recursivelyRemoveAnimationForKey:(NSString *)key;
 - (void)recursivelyRemoveAllAnimations;
 
+- (void)sortSublayersByZOrder;
+
 - (BOOL)isModelLayer;
 
 - (void)renderInContextIgnoringCache:(CGContextRef)ctx;

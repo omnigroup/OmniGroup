@@ -15,11 +15,13 @@ RCS_ID("$Id$");
 @implementation OUIColorAttributeInspectorWell
 
 @synthesize color = _color;
+@synthesize singleSwatch;
 
 static id _commonInit(OUIColorAttributeInspectorWell *self)
 {
     self.style = OUIInspectorTextWellStyleSeparateLabelAndText;
     [self setNavigationArrowRightView];
+    self.singleSwatch = NO;
     return self;
 }
 
@@ -68,7 +70,11 @@ static id _commonInit(OUIColorAttributeInspectorWell *self)
         
         CGRect bounds = self.bounds;
         CGRect swatchRect, remainder;
-        CGRectDivide(bounds, &swatchRect, &remainder, CGRectGetHeight(bounds) - kLineWidth, CGRectMaxXEdge);
+        if (!self.singleSwatch) {
+            CGRectDivide(bounds, &swatchRect, &remainder, CGRectGetHeight(bounds) - kLineWidth, CGRectMaxXEdge);
+        } else {
+            swatchRect = bounds;
+        }
 
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
 
@@ -92,17 +98,18 @@ static id _commonInit(OUIColorAttributeInspectorWell *self)
         [_color set];
         CGContextFillRect(ctx, swatchRect);
         
-        // Grid dividing the normal gradient background from the color swatch
+        if (!self.singleSwatch) {
+            // Grid dividing the normal gradient background from the color swatch
+            float leftLine[] = {0.0, 0.15};
+            float rightLine[] = {1.0, 0.35};
+            CGContextSetFillColorSpace(ctx, colorSpace);
 
-        float leftLine[] = {0.0, 0.15};
-        float rightLine[] = {1.0, 0.35};
-        CGContextSetFillColorSpace(ctx, colorSpace);
-
-        CGContextSetFillColor(ctx, leftLine);
-        CGContextFillRect(ctx, CGRectMake(swatchRect.origin.x, swatchRect.origin.y, kLineWidth, swatchRect.size.height));
-        
-        CGContextSetFillColor(ctx, rightLine);
-        CGContextFillRect(ctx, CGRectMake(swatchRect.origin.x + kLineWidth, swatchRect.origin.y, kLineWidth, swatchRect.size.height));
+            CGContextSetFillColor(ctx, leftLine);
+            CGContextFillRect(ctx, CGRectMake(swatchRect.origin.x, swatchRect.origin.y, kLineWidth, swatchRect.size.height));
+            
+            CGContextSetFillColor(ctx, rightLine);
+            CGContextFillRect(ctx, CGRectMake(swatchRect.origin.x + kLineWidth, swatchRect.origin.y, kLineWidth, swatchRect.size.height));
+        }
         CGColorSpaceRelease(colorSpace);
     }
 }

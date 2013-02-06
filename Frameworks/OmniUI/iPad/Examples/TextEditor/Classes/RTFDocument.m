@@ -11,7 +11,7 @@
 #import <OmniQuartz/OQDrawing.h> // For OQCreateImageWithSize()
 #import <OmniUI/OUIRTFReader.h>
 #import <OmniUI/OUIRTFWriter.h>
-#import <OmniUI/OUIDocumentPreview.h>
+#import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniUI/UIView-OUIExtensions.h> // For -snapshotImageWithSize:
 
 #import "TextViewController.h"
@@ -84,13 +84,12 @@ static void _writePreview(Class self, NSURL *fileURL, NSDate *date, UIViewContro
         CGFloat scale = [OUIDocumentPreview previewImageScale];
         size.width = floor(size.width * scale);
         size.height = floor(size.height * scale);
-        NSURL *previewURL = [OUIDocumentPreview fileURLForPreviewOfFileURL:fileURL date:date withLandscape:landscape];
         CGImageRef scaledImage = OQCreateImageWithSize([image CGImage], size, kCGInterpolationHigh);
         
         // Back to the main thread to cache the image!
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage) {
-                cacheImage(scaledImage, previewURL);
+                cacheImage(fileURL, date, landscape, scaledImage);
                 CFRelease(scaledImage);
             }];
 

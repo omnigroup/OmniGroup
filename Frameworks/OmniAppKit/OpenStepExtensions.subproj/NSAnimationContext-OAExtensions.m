@@ -5,6 +5,8 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7)
+
 #import <OmniAppKit/NSAnimationContext-OAExtensions.h>
 
 RCS_ID("$Id$")
@@ -123,3 +125,5 @@ RCS_ID("$Id$")
 }
 
 @end
+
+#endif

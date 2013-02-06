@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,9 +19,9 @@
 @interface OAPreferenceClient : NSUserDefaultsController
 {
 @private
-    IBOutlet NSView *controlBox;
-    IBOutlet NSView *initialFirstResponder;
-    IBOutlet NSView *lastKeyView;
+    NSView *_controlBox;
+    NSView *_initialFirstResponder;
+    NSView *_lastKeyView;
     
     OAPreferenceController *_nonretained_controller;
     NSString *_title;
@@ -34,9 +34,9 @@
 @property(readonly, nonatomic) NSString *title;
 @property(readonly, nonatomic) OAPreferenceController *controller;
 
-@property(readonly, nonatomic) NSView *controlBox;
-@property(readonly, nonatomic) NSView *initialFirstResponder;
-@property(readonly, nonatomic) NSView *lastKeyView;
+@property(retain, nonatomic) IBOutlet NSView *controlBox;
+@property(assign, nonatomic) IBOutlet NSView *initialFirstResponder;
+@property(assign, nonatomic) IBOutlet NSView *lastKeyView;
 
 - (void)resetFloatValueToDefaultNamed:(NSString *)defaultName inTextField:(NSTextField *)textField;
 - (void)resetIntValueToDefaultNamed:(NSString *)defaultName inTextField:(NSTextField *)textField;
@@ -56,9 +56,5 @@
 // These are public so they can be subclassed.
 - (void)valuesHaveChanged;
 - (void)controlTextDidEndEditing:(NSNotification *)notification;
-
-// NSNibAwaking informal protocol
-// Be sure to call super if you subclass this.
-- (void)awakeFromNib;
 
 @end

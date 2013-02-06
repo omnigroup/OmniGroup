@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,9 +62,7 @@
 
 @end
 
-#import "FrameworkDefines.h"
-
 // Exceptions which may be raised by this class
-OmniNetworking_EXTERN NSString *ONHostNotFoundExceptionName;
-OmniNetworking_EXTERN NSString *ONHostNameLookupErrorExceptionName;
-OmniNetworking_EXTERN NSString *ONHostHasNoAddressesExceptionName;
+extern NSString * const ONHostNotFoundExceptionName;
+extern NSString * const ONHostNameLookupErrorExceptionName;
+extern NSString * const ONHostHasNoAddressesExceptionName;

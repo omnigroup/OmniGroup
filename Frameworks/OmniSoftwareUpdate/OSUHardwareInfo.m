@@ -1,4 +1,4 @@
-// Copyright 2002-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -522,7 +522,7 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
                             
                             if (CFStringGetLength(rendererMem))
                                 CFStringAppend(rendererMem, CFSTR(","));
-                            CFStringAppendFormat(rendererMem, NULL, CFSTR("%ld"), videoMemory);
+                            CFStringAppendFormat(rendererMem, NULL, CFSTR("%d"), videoMemory);
                         }
                         
                         CGLDestroyRendererInfo(rendererInfo);
@@ -826,7 +826,7 @@ static NSString *clGetDeviceInfoString(cl_device_id device, cl_device_info what)
         char *buf = malloc(param_value_size);
         size_t buf_used = 0;
         clErr = clGetDeviceInfo(device, what, param_value_size, buf, &buf_used);
-        if (clErr == CL_SUCCESS && buf_used <= param_value_size) {
+        if (clErr == CL_SUCCESS && buf_used < param_value_size) {
             if (buf_used > 0 && buf[buf_used] == 0)
                 buf_used --;
             NSString *str = [[NSString alloc] initWithBytesNoCopy:buf length:buf_used encoding:NSISOLatin1StringEncoding freeWhenDone:YES];

@@ -20,9 +20,9 @@ RCS_ID("$Id$")
 #define UNKNOWN_CHAR OF_UNICODE_REPLACEMENT_CHARACTER
 
 /* Internal functions called by code in NSString-OFURLEncoding.m. Update that file if you change these. */
-__private_extern__ CFCharacterSetRef OFDeferredDecodingCharacterSet(void);
-__private_extern__ unichar OFCharacterForDeferredDecodedByte(unsigned int byte);
-__private_extern__ unsigned int OFByteForDeferredDecodedCharacter(unichar uchar);
+CFCharacterSetRef OFDeferredDecodingCharacterSet(void) OB_HIDDEN;
+unichar OFCharacterForDeferredDecodedByte(unsigned int byte) OB_HIDDEN;
+unsigned int OFByteForDeferredDecodedCharacter(unichar uchar) OB_HIDDEN;
 
 /* Under 10.1.x, CFCharacterSets are pretty much useless, and aren't toll-free-bridged with NSCharacterSets. So we use NSCharacterSets here ... some happy day, we will be free of the burden of 10.1 support ... */
 #ifdef OSX_10_1_KLUDGE
@@ -436,6 +436,9 @@ extern NSString *OFMostlyApplyDeferredEncoding(NSString *str, CFStringEncoding n
         return str;
     
     NSUInteger inputStringLength = [str length];
+    if (inputStringLength == 0)
+        return str;
+    
     CFDataRef octets = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)str, CFRangeMake(0, inputStringLength), newEncoding, 0);
     if (!octets)
         return str;
@@ -520,7 +523,7 @@ static void createDeferredCharactersSet(void)
     deferredCharactersSet_ = CFCharacterSetCreateWithCharactersInRange(kCFAllocatorDefault, CFRangeMake(OFDeferredASCIISupersetBase, 256));
 }
 
-__private_extern__ CFCharacterSetRef OFDeferredDecodingCharacterSet(void)
+CFCharacterSetRef OB_HIDDEN OFDeferredDecodingCharacterSet(void)
 {
     pthread_once(&once, createDeferredCharactersSet);
     OBPOSTCONDITION(deferredCharactersSet_ != NULL);

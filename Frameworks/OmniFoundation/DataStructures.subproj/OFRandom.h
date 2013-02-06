@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2009-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2008, 2009-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,3 +25,6 @@ extern double OFRandomNextStateDouble(OFRandomState *state);
 extern uint32_t OFRandomNext32(void);
 extern uint64_t OFRandomNext64(void);
 extern double OFRandomNextDouble(void);
+
+extern NSData *OFRandomStateCreateDataOfLength(OFRandomState *state, NSUInteger byteCount) NS_RETURNS_RETAINED;
+extern NSData *OFRandomCreateDataOfLength(NSUInteger byteCount) NS_RETURNS_RETAINED;

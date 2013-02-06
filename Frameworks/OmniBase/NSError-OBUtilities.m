@@ -1,4 +1,4 @@
-// Copyright 2005-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,23 +42,11 @@ static NSError *_OBWrapUnderlyingErrorv(NSError *underlyingError, NSString *doma
 	[userInfo setObject:underlyingError forKey:NSUnderlyingErrorKey];
     }
     
-    // Add in file and line information if the file was supplied
-    if (fileName) {
+    // Add in file and line information if the file was supplied and it wasn't explicitly set via userInfo already (which can happen if someone has a helper function to build errors and *it* takes the file and line).
+    if (fileName && userInfo[OBFileNameAndNumberErrorKey] == nil) {
 	NSString *fileString = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:fileName length:strlen(fileName)];
 	[userInfo setObject:[fileString stringByAppendingFormat:@":%d", line] forKey:OBFileNameAndNumberErrorKey];
     }
-    
-#if INCLUDE_BACKTRACE_IN_ERRORS
-    {
-        const int maxFrames = 200;
-        void *frames[maxFrames];
-        int frameCount = backtrace(frames, maxFrames);
-        if (frameCount > 0) {
-            [userInfo setObject:[NSData dataWithBytes:frames length:sizeof(frames[0]) * frameCount]
-                         forKey:OBBacktraceAddressesErrorKey];
-        }
-    }
-#endif
     
     NSError *error = [NSError errorWithDomain:domain code:code userInfo:userInfo];
     [userInfo release];

@@ -35,3 +35,26 @@ BOOL OAPushValueThroughBinding(id self, id objectValue, NSString *binding)
     return YES;
 }
 
+void OASliceRectByEdgeInsets(NSRect rect, BOOL isFlipped, NSEdgeInsets insets, NSRect *topLeft, NSRect *midLeft, NSRect *bottomLeft, NSRect *topCenter, NSRect *midCenter, NSRect *bottomCenter, NSRect *topRight, NSRect *midRight, NSRect *bottomRight)
+{
+    NSRect topRect, midRect, bottomRect, leftRect, centerRect, rightRect;
+    NSRect remainder;
+    
+    NSDivideRect(rect, &topRect, &remainder, insets.top, isFlipped ? NSMinYEdge : NSMaxYEdge);
+    NSDivideRect(remainder, &bottomRect, &midRect, insets.bottom, isFlipped ? NSMaxYEdge : NSMinYEdge);
+    
+    NSDivideRect(rect, &leftRect, &remainder, insets.left, NSMinXEdge);
+    NSDivideRect(remainder, &rightRect, &centerRect, insets.right, NSMaxXEdge);
+    
+    *topLeft = NSIntersectionRect(leftRect, topRect);
+    *midLeft = NSIntersectionRect(leftRect, midRect);
+    *bottomLeft = NSIntersectionRect(leftRect, bottomRect);
+    
+    *topCenter = NSIntersectionRect(centerRect, topRect);
+    *midCenter = NSIntersectionRect(centerRect, midRect);
+    *bottomCenter = NSIntersectionRect(centerRect, bottomRect);
+    
+    *topRight = NSIntersectionRect(rightRect, topRect);
+    *midRight = NSIntersectionRect(rightRect, midRect);
+    *bottomRight = NSIntersectionRect(rightRect, bottomRect);
+}

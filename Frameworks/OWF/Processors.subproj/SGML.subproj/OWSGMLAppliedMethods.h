@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,37 +9,14 @@
 
 #import <OmniFoundation/OFObject.h>
 
-@class OWSGMLDTD, OWSGMLMethods;
-
-#import <OmniFoundation/OFImplementationHolder.h> /* For voidIMP */
+@class OWSGMLDTD, OWSGMLMethods, OWSGMLTag;
 
 @interface OWSGMLAppliedMethods : OFObject
-{
-@public
-    voidIMP *tagImplementation;
-    SEL *tagSelector;
-    voidIMP *endTagImplementation;
-    SEL *endTagSelector;
-    unsigned int tagCount;
-}
 
 - initFromSGMLMethods:(OWSGMLMethods *)sgmlMethods dtd:(OWSGMLDTD *)dtd forTargetClass:(Class)targetClass;
 
-- (void)invokeTagAtIndex:(unsigned int)tagIndex forTarget:(id)target withObject:(id)anObject;
-- (BOOL)invokeEndTagAtIndex:(unsigned int)tagIndex forTarget:(id)target withObject:(id)anObject;
-
 @end
 
-static inline void sgmlAppliedMethodsInvokeTag(OWSGMLAppliedMethods *methods, unsigned int tagIndex, id target, id anObject)
-{
-    if (tagIndex < methods->tagCount)
-        methods->tagImplementation[tagIndex](target, methods->tagSelector[tagIndex], anObject);
-}
+extern void sgmlAppliedMethodsInvokeTag(OWSGMLAppliedMethods *self, unsigned int tagIndex, id target, OWSGMLTag *tag);
+extern BOOL sgmlAppliedMethodsInvokeEndTag(OWSGMLAppliedMethods *self, unsigned int tagIndex, id target, OWSGMLTag *tag);
 
-static inline BOOL sgmlAppliedMethodsInvokeEndTag(OWSGMLAppliedMethods *methods, unsigned int tagIndex, id target, id anObject)
-{
-    if (tagIndex > methods->tagCount || !methods->endTagImplementation[tagIndex])
-        return NO;
-    methods->endTagImplementation[tagIndex](target, methods->tagSelector[tagIndex], anObject);
-    return YES;
-}

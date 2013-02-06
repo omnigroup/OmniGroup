@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,12 +15,13 @@ RCS_ID("$Id$");
 
 @implementation OUIDetailInspectorSliceItem
 
-@synthesize title, value, enabled;
+@synthesize title, value, image, enabled, boldValue;
 
 - (void)dealloc;
 {
     [title release];
     [value release];
+    [image release];
     [super dealloc];
 }
 
@@ -90,6 +91,11 @@ RCS_ID("$Id$");
     return nil;
 }
 
+- (NSString *)groupTitle;
+{
+    return nil;
+}
+
 #pragma mark -
 #pragma mark OUIInspectorSlice subclass
 
@@ -127,15 +133,6 @@ RCS_ID("$Id$");
     [self configureTableViewBackground:_tableView];
 }
 
-- (void)viewDidUnload;
-{
-    _tableView.delegate = nil;
-    _tableView.dataSource = nil;
-    self.tableView = nil;
-    
-    [super viewDidUnload];
-}
-
 - (void)viewWillAppear:(BOOL)animated;
 {
     [super viewWillAppear:animated];
@@ -163,7 +160,7 @@ RCS_ID("$Id$");
         cell = [[[OUIDetailInspectorSliceTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:reuseIdentifier] autorelease];
         
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-        cell.selectionStyle = UITableViewCellSelectionStyleGray;
+        cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     }
     [reuseIdentifier release];
     
@@ -171,6 +168,7 @@ RCS_ID("$Id$");
     OUIDetailInspectorSliceItem *item = [[OUIDetailInspectorSliceItem alloc] init];
     item.title = self.title;
     item.enabled = YES;
+    item.boldValue = NO;
     
     [self updateItem:item atIndex:itemIndex];
     
@@ -193,6 +191,9 @@ RCS_ID("$Id$");
         value = [self placeholderValueForItemAtIndex:itemIndex];
     }
 
+    if (item.image != nil) 
+        cell.imageView.image = item.image;
+    
     // No entry in UIInterface for this.
     static UIColor *defaultDetailTextColor = nil;
     static dispatch_once_t onceToken;
@@ -202,13 +203,26 @@ RCS_ID("$Id$");
     
     cell.detailTextLabel.text = value;
     cell.detailTextLabel.textColor = placeholder ? [OUIInspector disabledLabelTextColor] : defaultDetailTextColor;
-    cell.detailTextLabel.font = [OUIInspectorTextWell defaultFont];
-    
+    if (item.boldValue == YES)
+        cell.detailTextLabel.font = [OUIInspectorTextWell defaultLabelFont];
+    else
+        cell.detailTextLabel.font = [OUIInspectorTextWell defaultFont];
+
     cell.enabled = item.enabled;
     
     [item release];
     
     return cell;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section;
+{
+    return [self groupTitle];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
+{
+    return 12;
 }
 
 #pragma mark -

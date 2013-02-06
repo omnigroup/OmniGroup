@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,7 @@ extern NSString * const OUIUndoPopoverWillShowNotification;
 @protocol OUIUndoBarButtonItemTarget <NSObject>
 - (void)undo:(id)sender;
 - (void)redo:(id)sender;
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender; // in case the target is not a subclass of UIResponder (like with OUISingleDocumentAppController)
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender; // in case the target is not a subclass of UIResponder (like with OUIDocumentAppController)
 @end
 
 @interface OUIUndoBarButtonItem : UIBarButtonItem

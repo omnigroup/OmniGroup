@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -546,9 +546,9 @@ static inline void writeString(OFDataBuffer *dataBuffer, NSString *string)
 
 - (BOOL)isEqual:(id)object;
 {
-    OUIRTFColorTableEntry *otherEntry = object;
-    if (otherEntry->isa != isa)
+    if (![object isKindOfClass:[self class]])
         return NO;
+    OUIRTFColorTableEntry *otherEntry = object;
     return otherEntry->red == red && otherEntry->green == green && otherEntry->blue == blue;
 }
 

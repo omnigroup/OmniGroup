@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,12 +11,9 @@
 
 #import <Foundation/NSUserDefaults.h>
 
-@class NSBundle, NSDictionary, NSString;
-
 #import <OmniFoundation/OFBundleRegistry.h> // For OFBundleRegistryTarget
 
 @interface NSUserDefaults (OFExtensions) <OFBundleRegistryTarget>
-- (void)autoSynchronize;
 @end
 
-__private_extern__ NSString * const OFUserDefaultsRegistrationItemName; // Needed by OFBundleRegistry
+OB_HIDDEN extern NSString * const OFUserDefaultsRegistrationItemName; // Needed by OFBundleRegistry

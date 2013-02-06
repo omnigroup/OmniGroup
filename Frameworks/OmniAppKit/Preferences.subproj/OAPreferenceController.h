@@ -12,8 +12,7 @@
 
 @class NSArray, NSBundle, NSMutableArray, NSMutableDictionary;
 @class NSBox, NSButton, NSImageView, NSMatrix, NSTabView, NSTextField, NSToolbar, NSView, NSWindow;
-@class OAPreferenceClient, OAPreferenceClientRecord, OAPreferencesIconView, OAPreferencesShowAllIconView, OAPreferencesWindow;
-@class OAPreferencesMultipleIconView;
+@class OAPreferenceClient, OAPreferenceClientRecord, OAPreferencesIconView, OAPreferencesWindow;
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet
 #import <AppKit/NSToolbar.h>

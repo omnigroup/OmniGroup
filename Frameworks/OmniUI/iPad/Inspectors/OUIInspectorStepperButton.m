@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -183,7 +183,7 @@ static id _commonInit(OUIInspectorStepperButton *self)
     // Not added as a subview; we treat this as a cell to just draw out text into our own backing store
     _label = [[UILabel alloc] initWithFrame:self.bounds];
     _label.textColor = [UIColor colorWithWhite:0.3 alpha:1];
-    _label.textAlignment = UITextAlignmentCenter;
+    _label.textAlignment = NSTextAlignmentCenter;
 }
 
 - (void)_initialRepeatTimerFired:(NSTimer *)timer;

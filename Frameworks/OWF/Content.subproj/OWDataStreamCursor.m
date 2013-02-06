@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -166,21 +166,21 @@ static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *a
 
 #define ABSTRACT { OBRequestConcreteImplementation(self, _cmd); }
 
-- (id)initFromCursor:(id)aCursor				   ABSTRACT
-- (BOOL)isAtEOF                                                    ABSTRACT
-- (BOOL)haveFinishedReadingData                                    ABSTRACT
-- (OWDataStream *)underlyingDataStream                             ABSTRACT
+- (id)initFromCursor:(id)aCursor				 ABSTRACT
+- (BOOL)isAtEOF                                                  ABSTRACT
+- (BOOL)haveFinishedReadingData                                  ABSTRACT
+- (OWDataStream *)underlyingDataStream                           ABSTRACT
 - (NSUInteger)dataLength                                         ABSTRACT
-- (void)readBytes:(unsigned int)count intoBuffer:(void *)buffer    ABSTRACT
-- (void)peekBytes:(unsigned int)count intoBuffer:(void *)buffer    ABSTRACT
-- (NSData *)peekBytesOrUntilEOF:(unsigned int)count                ABSTRACT
+- (void)readBytes:(NSUInteger)count intoBuffer:(void *)buffer    ABSTRACT
+- (void)peekBytes:(NSUInteger)count intoBuffer:(void *)buffer    ABSTRACT
+- (NSData *)peekBytesOrUntilEOF:(NSUInteger)count                ABSTRACT
 - (void)bufferBytes:(NSUInteger)count                            ABSTRACT
-- (BOOL)haveBufferedBytes:(unsigned int)count                      ABSTRACT
+- (BOOL)haveBufferedBytes:(NSUInteger)count                      ABSTRACT
 - (NSUInteger)copyBytesToBuffer:(void *)buffer
-                   minimumBytes:(unsigned int)maximum maximumBytes:(unsigned int)minimum
+                   minimumBytes:(NSUInteger)maximum maximumBytes:(NSUInteger)minimum
                         advance:(BOOL)shouldAdvance              ABSTRACT
 - (NSUInteger)peekUnderlyingBuffer:(void **)returnedBufferPtr    ABSTRACT
-- (NSData *)readAllData                                            ABSTRACT
+- (NSData *)readAllData                                          ABSTRACT
 
 - (NSUInteger)currentOffset;
 {
@@ -195,26 +195,19 @@ static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *a
 
 - (NSData *)readData
 {
-    unsigned int count;
     void *buf;
-
-    count = [self readUnderlyingBuffer:&buf];
+    NSUInteger count = [self readUnderlyingBuffer:&buf];
     return [[[NSData alloc] initWithBytes:buf length:count] autorelease];
 }
 
 - (NSData *)peekData
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
-    unsigned int count;
     void *buf;
-
-    count = [self peekUnderlyingBuffer:&buf];
+    NSUInteger count = [self peekUnderlyingBuffer:&buf];
     return [[[NSData alloc] initWithBytes:buf length:count] autorelease];
-#endif
 }
 
-- (NSData *)readBytes:(unsigned int)count
+- (NSData *)readBytes:(NSUInteger)count
 {
     char *buffer;
     
@@ -225,7 +218,7 @@ static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *a
     return [[[NSData alloc] initWithBytesNoCopy:buffer length:count freeWhenDone:YES] autorelease];
 }
 
-- (NSData *)peekBytes:(unsigned int)count
+- (NSData *)peekBytes:(NSUInteger)count
 {
     char *buffer;
 
@@ -236,20 +229,14 @@ static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *a
     return [[[NSData alloc] initWithBytesNoCopy:buffer length:count freeWhenDone:YES] autorelease];
 }
 
-- (unsigned int)readMaximumBytes:(unsigned int)maximum intoBuffer:(void *)buffer;
+- (NSUInteger)readMaximumBytes:(NSUInteger)maximum intoBuffer:(void *)buffer;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     return [self copyBytesToBuffer:buffer minimumBytes:1 maximumBytes:maximum advance:YES];
-#endif
 }
 
-- (unsigned int)peekMaximumBytes:(unsigned int)maximum intoBuffer:(void *)buffer;
+- (NSUInteger)peekMaximumBytes:(NSUInteger)maximum intoBuffer:(void *)buffer;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     return [self copyBytesToBuffer:buffer minimumBytes:1 maximumBytes:maximum advance:NO];
-#endif
 }
 
 #define SWAP_BYTES(inputValue, returnValue, swapType)		\
@@ -354,6 +341,9 @@ PEEK_DATA_OF_TYPE(double, Double);
 
 - (int)readSignedBits:(unsigned int)number;
 {
+    if (number == 0)
+        return 0;
+    
     int result = (int)[self readBits:number];
 
     if (result & (1 << (number-1)))
@@ -366,25 +356,18 @@ PEEK_DATA_OF_TYPE(double, Double);
     bitsLeft = 0;
 }
 
-- (unsigned)scanUpToByte:(OFByte)byteMatch
+- (NSUInteger)scanUpToByte:(OFByte)byteMatch
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return 0;
-#if 0
-    unsigned int scanOffset = dataOffset;
+    NSUInteger scanOffset = dataOffset;
 
     while (![self isAtEOF]) {
-        OFByte *buffer;
-        void *fetch, *found;
-        unsigned int bufferSize;
-
-        bufferSize = [self readUnderlyingBuffer:&fetch];
-        buffer = fetch;
+        void *fetch;
+        NSUInteger bufferSize = [self readUnderlyingBuffer:&fetch];
 
         if (bufferSize == 0)
             continue;
 
-        found = memchr(fetch, byteMatch, bufferSize);
+        void *found = memchr(fetch, byteMatch, bufferSize);
         if (found) {
             // rewind to just before the byte we found
             [self seekToOffset: ( found - fetch ) - bufferSize fromPosition:OWCursorSeekFromCurrent];
@@ -396,49 +379,36 @@ PEEK_DATA_OF_TYPE(double, Double);
     [OWDataStreamCursor_UnderflowException raise];
     /* NOTREACHED */
     return 0;
-#endif
 }
 
-- (unsigned int)readUnderlyingBuffer:(void **)returnedBufferPtr;
+- (NSUInteger)readUnderlyingBuffer:(void **)returnedBufferPtr;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
-    unsigned int count = [self peekUnderlyingBuffer:returnedBufferPtr];
+    NSUInteger count = [self peekUnderlyingBuffer:returnedBufferPtr];
     dataOffset += count;
     return count;
-#endif
 }
 
 - (NSData *)readUpToByte:(OFByte)byteMatch
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
-    OFByte *buffer;
-    void *fetch, *found;
-    unsigned int bufferSize;
-    NSMutableData *accumulator;
-    
     if ([self isAtEOF])
         return [NSData data];
 
-    bufferSize = [self readUnderlyingBuffer:&fetch];
-    buffer = fetch;
+    void *fetch;
+    NSUInteger bufferSize = [self readUnderlyingBuffer:&fetch];
 
-    found = memchr(fetch, byteMatch, bufferSize);
+    void *found = memchr(fetch, byteMatch, bufferSize);
     if (found) {
         // rewind to just before the byte we found
         [self seekToOffset: ( found - fetch ) - bufferSize fromPosition:OWCursorSeekFromCurrent];
         return [NSData dataWithBytes:fetch length: (found - fetch)];
     }
 
-    accumulator = [[NSMutableData alloc] initWithBytes:fetch length:bufferSize];
+    NSMutableData *accumulator = [[NSMutableData alloc] initWithBytes:fetch length:bufferSize];
     [accumulator autorelease];
 
     while (![self isAtEOF]) {
         bufferSize = [self readUnderlyingBuffer:&fetch];
-        buffer = fetch;
-        
+
         if (bufferSize == 0)
             continue;
 
@@ -455,7 +425,6 @@ PEEK_DATA_OF_TYPE(double, Double);
 
     /* byte not found */
     return accumulator;
-#endif
 }
 
 // OWCursor subclass
@@ -503,22 +472,18 @@ PEEK_DATA_OF_TYPE(double, Double);
 
 - (NSString *)logDescription
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
 #define LOG_BYTES_LEN 45
     unsigned char peekBuffer[LOG_BYTES_LEN];
-    unsigned int peeked, peekIndex;
-    NSMutableString *descript;
-
-    NS_DURING {
+    NSUInteger peeked;
+    @try {
         peeked = [self copyBytesToBuffer:peekBuffer minimumBytes:0 maximumBytes:LOG_BYTES_LEN advance:NO];
-    } NS_HANDLER {
-        return [NSString stringWithFormat:@"<Invalid: %@>", [localException name]];
-    } NS_ENDHANDLER;
+    } @catch (NSException *exception) {
+        return [NSString stringWithFormat:@"<Invalid: %@>", [exception name]];
+    }
 
-    descript = [[[NSMutableString alloc] initWithCapacity:LOG_BYTES_LEN + 6] autorelease];
+    NSMutableString *descript = [[[NSMutableString alloc] initWithCapacity:LOG_BYTES_LEN + 6] autorelease];
 
-    for(peekIndex = 0; peekIndex < peeked; peekIndex ++) {
+    for (NSUInteger peekIndex = 0; peekIndex < peeked; peekIndex ++) {
         int ch = peekBuffer[peekIndex];
 
         if ([descript length] >= LOG_BYTES_LEN)
@@ -540,7 +505,6 @@ PEEK_DATA_OF_TYPE(double, Double);
 
     return descript;
 #undef LOG_BYTES_LEN
-#endif
 }
 
 @end
@@ -597,7 +561,7 @@ static inline void _ensureBytesAvailable(OWDataStreamConcreteCursor *self, NSUIn
         [OWDataStreamCursor_UnderflowException raise];
 }
 
-static inline NSData *_getData(OWDataStreamConcreteCursor *self, unsigned int count)
+static inline NSData *_getData(OWDataStreamConcreteCursor *self, NSUInteger count)
 {
     NSData *result;
 
@@ -659,13 +623,13 @@ static inline NSData *_getBufferedData(OWDataStreamConcreteCursor *self, BOOL in
 
 //
 
-- (void)readBytes:(unsigned int)count intoBuffer:(void *)buffer;
+- (void)readBytes:(NSUInteger)count intoBuffer:(void *)buffer;
 {
     _getBytes(self, buffer, count);
     dataOffset += count;
 }
 
-- (void)peekBytes:(unsigned int)count intoBuffer:(void *)buffer;
+- (void)peekBytes:(NSUInteger)count intoBuffer:(void *)buffer;
 {
     _getBytes(self, buffer, count);
 }
@@ -675,7 +639,7 @@ static inline NSData *_getBufferedData(OWDataStreamConcreteCursor *self, BOOL in
     _ensureBytesAvailable(self, count);
 }
 
-- (BOOL)haveBufferedBytes:(unsigned int)count
+- (BOOL)haveBufferedBytes:(NSUInteger)count
 {
     if (abortException)
         [abortException raise];
@@ -686,13 +650,11 @@ static inline NSData *_getBufferedData(OWDataStreamConcreteCursor *self, BOOL in
         return NO;
 }
 
-- (NSUInteger)copyBytesToBuffer:(void *)buffer minimumBytes:(unsigned int)minimum maximumBytes:(unsigned int)maximum advance:(BOOL)shouldAdvance
+- (NSUInteger)copyBytesToBuffer:(void *)buffer minimumBytes:(NSUInteger)minimum maximumBytes:(NSUInteger)maximum advance:(BOOL)shouldAdvance
 {
-    NSUInteger count;
-
     if (minimum > 0 && ![dataStream waitForBufferedDataLength:dataOffset + minimum])
         return 0;
-    count = MIN([dataStream bufferedDataLength] - dataOffset, maximum);
+    NSUInteger count = MIN([dataStream bufferedDataLength] - dataOffset, maximum);
     _getBytes(self, buffer, count);
     if (shouldAdvance)
         dataOffset += count;
@@ -729,7 +691,7 @@ static inline NSData *_getBufferedData(OWDataStreamConcreteCursor *self, BOOL in
     return _getBufferedData(self, YES);
 }
 
-- (NSData *)readBytes:(unsigned int)count;
+- (NSData *)readBytes:(NSUInteger)count;
 {
     NSData *returnData;
 
@@ -738,16 +700,14 @@ static inline NSData *_getBufferedData(OWDataStreamConcreteCursor *self, BOOL in
     return returnData;
 }
 
-- (NSData *)peekBytes:(unsigned int)count;
+- (NSData *)peekBytes:(NSUInteger)count;
 {
     return _getData(self, count);
 }
 
-- (NSData *)peekBytesOrUntilEOF:(unsigned int)count;
+- (NSData *)peekBytesOrUntilEOF:(NSUInteger)count;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
-    unsigned available;
+    NSUInteger available;
 
     _raiseIfAborted(self);
     if ([self->dataStream waitForBufferedDataLength:self->dataOffset + count])
@@ -755,7 +715,6 @@ static inline NSData *_getBufferedData(OWDataStreamConcreteCursor *self, BOOL in
     
     available = [self->dataStream bufferedDataLength] - self->dataOffset;
     return [self->dataStream dataWithRange:(NSRange){self->dataOffset, MIN(available, count)}];
-#endif
 }
 
 - (OFByte)readByte;

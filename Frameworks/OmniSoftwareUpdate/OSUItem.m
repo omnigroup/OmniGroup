@@ -1,4 +1,4 @@
-// Copyright 2001-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 #import "OSUChecker.h"
 #import "OSUPreferences.h"
 
-#import <AppKit/AppKit.h>
+#import <OmniAppKit/NSFileManager-OAExtensions.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>
 
@@ -29,7 +29,7 @@ NSString * const OSUItemSupersededBinding = @"superseded";
 NSString * const OSUItemIgnoredBinding = @"ignored";
 NSString * const OSUItemOldStableBinding = @"oldStable";
 
-__private_extern__ BOOL OSUItemDebug = NO;
+BOOL OSUItemDebug = NO;
 
 static NSArray *_requireNodes(NSXMLElement *base, NSString *namespace, NSString *tag, NSError **outError)
 {
@@ -286,18 +286,30 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
         _price = [[NSDecimalNumber zero] copy]; // display 'free' in the price column for users with a valid license
     }
     
+    // Get the associated link for this item; failing that, use the link for the feed as a whole
+    NSString *linkText = _optionalStringNode(element, @"link", nil);
+    NSString *feedLinkText = _optionalStringNode((NSXMLElement *)[element parent], @"link", nil);
+    BOOL itemHasIndividualLink = ![NSString isEmptyString:linkText];
+    if (linkText && feedLinkText)
+        linkText = [[NSURL URLWithString:linkText relativeToURL:[NSURL URLWithString:feedLinkText]] absoluteString];
+    else if (!linkText && feedLinkText)
+        linkText = feedLinkText;
+    _notionalItemOrigin = [linkText copy]; // May be nil
+    
     // Pick an enclosure.  For a while, we used dmgs as our primary packaging format.  But, hdiutil is unreliable, so we are switching to tar and/or zip files.
+    // Note that we allow items without enclosures only if they have a link.
     {
         NSArray *enclosureNodes = _requireNodes(element, nil, @"enclosure", outError);
-        if (!enclosureNodes) {
+        if (!enclosureNodes && !itemHasIndividualLink) {
             if (OSUItemDebug)
-                NSLog(@"Ignoring item without enclosures:\n%@", element);
+                NSLog(@"Ignoring item without enclosures or link:\n%@", element);
             [self release];
             return nil;
         }
 
         NSXMLElement *bestEnclosureNode = nil;
         NSUInteger bestEnclosurePrecedence = [packageExtensions count];
+        NSURL *bestEnclosureURL = nil;
         
         NSUInteger nodeIndex = [enclosureNodes count];
         while (nodeIndex--) {
@@ -321,46 +333,41 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
                     // This enclosure's suffix is in OSUInstaller's list of supported formats, and either it's the first/only enclosure we've found, or its suffix is closer to the start of the list than the last one we found (since this loop only goes up to bestEnclosurePrecedence, not to the end of the list of formats).
                     bestEnclosureNode = node;
                     bestEnclosurePrecedence = thisEnclosurePrecedence;
+                    bestEnclosureURL = downloadURL;
                     break;
                 }
             }
             
             if (OSUItemDebug && (bestEnclosureNode != node))
-                NSLog(@"Ignoring enclosure with unsupported or less-preferred file extension in item:\n%@", element);
+                NSLog(@"Ignoring enclosure with unsupported or less-preferred file extension:\n%@", node);
         }
         
-        if (!bestEnclosureNode) {
+        if (!bestEnclosureNode && !itemHasIndividualLink) {
             NSString *description = NSLocalizedStringFromTableInBundle(@"No suitable enclosure found.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - RSS feed does not have an enclosure that we can use");
             if (OSUItemDebug)
                 NSLog(@"Ignoring item without any suitable enclosures:\n%@", element);
             OSUError(outError, OSUUnableToParseSoftwareUpdateItem, description, nil);
             return nil;
-        }
-    
-    
-        NSString *urlString = [[bestEnclosureNode attributeForName:@"url"] stringValue];
-        _downloadURL = [[NSURL alloc] initWithString:urlString];
-        if (!_downloadURL) {
-            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot parse enclosure url '%@'.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - RSS feed has an enclosure but the URL is malformed"), urlString];
-            if (OSUItemDebug)
-                NSLog(@"Ignoring item with unparseable enclosure URL '%@':\n%@", urlString, element);
-            OSUError(outError, OSUUnableToParseSoftwareUpdateItem, description, nil);
-            [self release];
-            return nil;
-        }
-        
-        NSString *downloadSizeString = [[bestEnclosureNode attributeForName:@"length"] stringValue];
-        _downloadSize = [NSString isEmptyString:downloadSizeString] ? 0 : [downloadSizeString unsignedLongLongValue];
-        
-        NSMutableDictionary *sums = [NSMutableDictionary dictionary];
-        for(NSString *hashAlgo in [NSArray arrayWithObjects:@"md5", @"sha1", @"sha256", @"ripemd160", nil]) {
-            NSXMLNode *hashAttribute = [bestEnclosureNode attributeForLocalName:hashAlgo URI:OSUAppcastXMLNamespace];
-            if (hashAttribute)
-                [sums setObject:[hashAttribute stringValue] forKey:hashAlgo];
-        }
-        if ([sums count]) {
-            [_checksums release];
-            _checksums = [sums copy];
+        } else if (bestEnclosureNode) {
+            _downloadURL = [bestEnclosureURL copy];  // We already know this is non-nil, from the enclosure selection loop
+            
+            NSString *downloadSizeString = [[bestEnclosureNode attributeForName:@"length"] stringValue];
+            _downloadSize = [NSString isEmptyString:downloadSizeString] ? 0 : [downloadSizeString unsignedLongLongValue];
+            
+            NSMutableDictionary *sums = [NSMutableDictionary dictionary];
+            OFForEachObject([([NSArray arrayWithObjects:@"md5", @"sha1", @"sha256", @"ripemd160", nil]) objectEnumerator], NSString *, hashAlgo) {
+                NSXMLNode *hashAttribute = [bestEnclosureNode attributeForLocalName:hashAlgo URI:OSUAppcastXMLNamespace];
+                if (hashAttribute)
+                    [sums setObject:[hashAttribute stringValue] forKey:hashAlgo];
+            }
+            if ([sums count]) {
+                [_checksums release];
+                _checksums = [sums copy];
+            }
+        } else {
+            /* We don't have an enclosure, but we do have an individual item link. */
+            OBASSERT(_downloadURL == nil);
+            OBASSERT(![NSString isEmptyString:_notionalItemOrigin]);
         }
     }
     
@@ -370,17 +377,11 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
         if (!_releaseNotesURL) {
             NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot parse release notes url '%@'.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description"), _releaseNotesURL];
             if (OSUItemDebug)
-                NSLog(@"Ignoring item unparseable release notes URL '%@':\n%@", releaseNotesURLString, element);
+                NSLog(@"Ignoring unparsable release notes URL '%@' in item:\n%@", releaseNotesURLString, element);
             OSUError(outError, OSUUnableToParseSoftwareUpdateItem, description, nil);
             return nil;
         }
     }
-    
-    // Get the associated link for this item; failing that, get the link for the feed as a whole
-    NSString *linkText = _optionalStringNode(element, @"link", nil);
-    if (!linkText)
-        linkText = _optionalStringNode((NSXMLElement *)[element parent], @"link", nil);
-    _notionalItemOrigin = [linkText copy]; // May be nil
     
     [OFPreference addObserver:self selector:@selector(_updateIgnoredState:) forPreference:[OSUPreferences ignoredUpdates]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_updateIgnoredState:) name:OSUTrackVisibilityChangedNotification object:nil];
@@ -518,6 +519,10 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
 
 - (NSString *)downloadSizeString;
 {
+    /* If we don't have a download, or if we don't know its size, display nothing. */
+    if (_downloadURL == nil || _downloadSize == 0)
+        return nil;
+    
     return [NSString abbreviatedStringForBytes:_downloadSize];
 }
 
@@ -604,7 +609,8 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
                     expected = [NSData dataWithHexString:expectedString error:NULL];
                 if (![hash isEqualToData:expected])
                     [badSums addObject:algo];
-                didVerify = YES;
+                if (![algo isEqualToString:@"md5"])  /* MD5 doesn't really count any more. */
+                    didVerify = YES;
             } else {
                 NSLog(@"%@: (%@): Unknown hash algorithm \"%@\"", [self class], _title, algo);
             }
@@ -641,13 +647,16 @@ static void loadFallbackTrackInfoIfNeeded()
 {
     if (!knownTrackOrderings) {
         // Fallback track orderings. Normally we'll have gotten an up-to-date ordering graph from our OSU query.
-        NSString *names[4] = { @"sneakypeek", @"alpha", @"beta", @"rc" };
-        id sets[4];
-        sets[0] = [NSSet setWithObjects:@"beta", @"rc", nil];
-        sets[1] = sets[0];
-        sets[2] = [NSSet setWithObject:@"rc"];
-        sets[3] = [NSSet set];
-        knownTrackOrderings = [[NSDictionary alloc] initWithObjects:sets forKeys:names count:4];
+        NSString *names[7] = { @"sneakypeek", @"alpha", @"beta", @"internal-test", @"private-test", @"test", @"rc" };
+        id sets[7];
+        sets[0] = [NSSet setWithObjects:@"beta", @"rc", nil]; // sneakypeek
+        sets[1] = sets[0]; // alpha
+        sets[2] = [NSSet setWithObject:@"rc"]; // beta
+        sets[3] = [NSSet setWithObjects:@"private-test", @"test", @"rc", nil]; // internal-test
+        sets[4] = [NSSet setWithObjects:@"test", @"rc", nil]; // private-test
+        sets[5] = [NSSet setWithObject:@"rc"]; // test
+        sets[6] = [NSSet set]; // rc
+        knownTrackOrderings = [[NSDictionary alloc] initWithObjects:sets forKeys:names count:7];
         trackOrderingsAreCurrent = NO;
     }
 }
@@ -750,13 +759,13 @@ static void loadFallbackTrackInfoIfNeeded()
     return result;
 }
 
-+ (NSArray *)elaboratedTracks:(id <NSFastEnumeration>)someTracks;
++ (NSArray *)elaboratedTracks:(id)someTracks;
 {
     NSMutableArray *result = [NSMutableArray array];
 
     loadFallbackTrackInfoIfNeeded();
     
-    for (NSString *aTrack in someTracks) {
+    OFForEachObject([someTracks objectEnumerator], NSString *, aTrack) {
         [result addObjectIfAbsent:aTrack];
         NSSet *more = [knownTrackOrderings objectForKey:aTrack];
         if (more) {
@@ -943,17 +952,20 @@ static NSXMLNode *_attr(NSXMLElement *elt, NSString *localName, NSString *URI)
     if (_track)
         [dict setObject:_track forKey:@"track"];
     
-    if (_price) {
+    if (_price)
         [dict setObject:_price forKey:@"price"];
+    if (_currencyCode)
         [dict setObject:_currencyCode forKey:@"currencyCode"];
-    }
     
     if (_releaseNotesURL)
         [dict setObject:_releaseNotesURL forKey:@"releaseNotesURL"];
-    [dict setObject:_downloadURL forKey:@"downloadURL"];
+    if (_downloadURL)
+        [dict setObject:_downloadURL forKey:@"downloadURL"];
     [dict setUnsignedLongLongValue:_downloadSize forKey:@"downloadSize" defaultValue:0];
     if (_checksums)
         [dict setObject:_checksums forKey:@"checksums"];
+    if (_notionalItemOrigin)
+        [dict setObject:_notionalItemOrigin forKey:@"link"];
     
     [dict setBoolValue:_available forKey:@"available"];
     [dict setBoolValue:_superseded forKey:@"superseded"];

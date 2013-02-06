@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,7 +46,7 @@ RCS_ID("$Id$");
     if (!(self = [super init]))
         return nil;
 
-    OFWeakRetainConcreteImplementation_INIT;
+    OWFWeakRetainConcreteImplementation_INIT;
 
     OFSimpleLockInit(&displayablesSimpleLock);
     
@@ -124,7 +124,7 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-OFWeakRetainConcreteImplementation_IMPLEMENTATION;
+OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (NSUInteger)hash
 {
@@ -457,8 +457,6 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (void)processedBytes:(NSUInteger)bytes ofBytes:(NSUInteger)newTotalBytes;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     BOOL alreadyRetired;
 
     [lock lock];
@@ -471,8 +469,8 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
         return;
     }
 
-    unsigned int oldBytesProcessed;
-    unsigned int oldTotalBytes;
+    NSUInteger oldBytesProcessed;
+    NSUInteger oldTotalBytes;
 
     OFSimpleLock(&displayablesSimpleLock);
     oldBytesProcessed = bytesProcessed;
@@ -488,7 +486,6 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
     if ((oldBytesProcessed == 0 && bytesProcessed > 0) || (oldTotalBytes < 10 && totalBytes >= 10) || (bytesProcessed == totalBytes))
         [self processorStatusChanged:processor];
-#endif
 }
 
 - (NSDate *)firstBytesDate;

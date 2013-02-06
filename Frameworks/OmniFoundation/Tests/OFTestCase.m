@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,27 +17,19 @@ RCS_ID("$Id$")
 @implementation OFTestCase
 
 + (SenTest *)dataDrivenTestSuite
-{
-    NSString *casesPath;
-    NSDictionary *allTestCases;
-    NSEnumerator *methodEnumerator;
-    NSString *methodName;
-    SenTestSuite *suite;
-    
-    casesPath = [[NSBundle bundleForClass:self] pathForResource:[self description] ofType:@"tests"];
-    allTestCases = [NSDictionary dictionaryWithContentsOfFile:casesPath];
+{    
+    NSString *casesPath = [[NSBundle bundleForClass:self] pathForResource:[self description] ofType:@"tests"];
+    NSDictionary *allTestCases = [NSDictionary dictionaryWithContentsOfFile:casesPath];
     if (!allTestCases) {
         [NSException raise:NSGenericException format:@"Unable to load test cases for class %@ from path: \"%@\"", [self description], casesPath];
         return nil;
     }
     
-    suite = [[SenTestSuite alloc] initWithName:[casesPath lastPathComponent]];
-    [suite autorelease];
+    SenTestSuite *suite = OB_AUTORELEASE([[SenTestSuite alloc] initWithName:[casesPath lastPathComponent]]);
     
-    methodEnumerator = [allTestCases keyEnumerator];
-    while( (methodName = [methodEnumerator nextObject]) != nil ) {
-        [suite addTest:[self testSuiteForMethod:methodName cases:[allTestCases objectForKey:methodName]]];
-    }
+    [allTestCases enumerateKeysAndObjectsUsingBlock:^(NSString *methodName, NSArray *cases, BOOL *stop) {
+        [suite addTest:[self testSuiteForMethod:methodName cases:cases]];
+    }];
     
     return suite;
 }
@@ -61,13 +53,13 @@ RCS_ID("$Id$")
         [NSException raise:NSGenericException format:@"Method -[%@ %@] referenced in test case file has incorrect signature", [self description], NSStringFromSelector(testSelector)];
     }
     
-    SenTestSuite *suite = [[[SenTestSuite alloc] initWithName:suiteName] autorelease];
+    SenTestSuite *suite = OB_AUTORELEASE([[SenTestSuite alloc] initWithName:suiteName]);
     
     for (id testArguments in testCases) {
         NSInvocation *testInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
+        [testInvocation retainArguments]; // Do this before setting the argument so it gets captured in ARC mode
         [testInvocation setSelector:testSelector];
-        [testInvocation setArgument:&testArguments atIndex:2];
-        [testInvocation retainArguments];
+        [testInvocation setArgument:(void *)&testArguments atIndex:2];
         
         OFTestCase *testCase = [self testCaseWithInvocation:testInvocation];
         [suite addTest:testCase];
@@ -161,7 +153,8 @@ static BOOL _addRelativePaths(NSMutableSet *relativePaths, NSString *base, OFDif
     return YES;
 }
 
-void OFDiffFiles(SenTestCase *self, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter)
+
+static BOOL OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path2, BOOL requireSame, OFDiffFilesPathFilter pathFilter)
 {
     OBPRECONDITION(path1);
     OBPRECONDITION(path2);
@@ -172,17 +165,19 @@ void OFDiffFiles(SenTestCase *self, NSString *path1, NSString *path2, OFDiffFile
     NSMutableSet *files1 = [NSMutableSet set];
     OBShouldNotError(_addRelativePaths(files1, path1, pathFilter, &error));
     if ([files1 count] == 0) {
-        STFail(@"No files at \"%@\"", path1);
-        return;
+        if (requireSame)
+            STFail(@"No files at \"%@\"", path1);
+        return NO;
     }
     
     NSMutableSet *files2 = [NSMutableSet set];
     OBShouldNotError(_addRelativePaths(files2, path2, pathFilter, &error));
     if ([files2 count] == 0) {
-        STFail(@"No files at \"%@\"", path2);
-        return;
+        if (requireSame)
+            STFail(@"No files at \"%@\"", path2);
+        return NO;
     }
-
+    
     // Build a map between entries
     NSMutableDictionary *map = [NSMutableDictionary dictionary];
     
@@ -197,42 +192,82 @@ void OFDiffFiles(SenTestCase *self, NSString *path1, NSString *path2, OFDiffFile
     // Now compare each mapping.
     for (NSString *map1 in [[map allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
         NSString *map2 = [map objectForKey:map1];
-
+        
         // TODO: Support for comparing compressed files, formatting XML, etc.
         
-        NSDictionary *attributes1;
-        NSDictionary *attributes2;
-        OBShouldNotError((attributes1 = [[NSFileManager defaultManager] attributesOfItemAtPath:map1 error:&error]));
-        OBShouldNotError((attributes2 = [[NSFileManager defaultManager] attributesOfItemAtPath:map1 error:&error]));
-
+        NSDictionary *attributes1 = [[NSFileManager defaultManager] attributesOfItemAtPath:map1 error:&error];
+        if (!attributes1) {
+            if (requireSame)
+                STFail(@"Unable to read attributes");
+            return NO;
+        }
+        NSDictionary *attributes2 = [[NSFileManager defaultManager] attributesOfItemAtPath:map1 error:&error];
+        if (!attributes2) {
+            if (requireSame)
+                STFail(@"Unable to read attributes");
+            return NO;
+        }
+        
         NSString *fileType1 = [attributes1 fileType];
         NSString *fileType2 = [attributes2 fileType];
         
         if (OFNOTEQUAL(fileType1, fileType2)) {
-            STFail(@"One file is of type \"%@\" and the other \"%@\"", fileType1, fileType2);
-            return;
+            if (requireSame)
+                STFail(@"One file is of type \"%@\" and the other \"%@\"", fileType1, fileType2);
+            return NO;
         }
-
-        if (OFISEQUAL(fileType1, NSFileTypeRegular)) {
-            NSData *data1, *data2;
-            OBShouldNotError((data1 = [[NSData alloc] initWithContentsOfFile:map1 options:0 error:&error]));
-            OBShouldNotError((data2 = [[NSData alloc] initWithContentsOfFile:map2 options:0 error:&error]));
         
+        if (OFISEQUAL(fileType1, NSFileTypeRegular)) {
+            NSData *data1 = [[NSData alloc] initWithContentsOfFile:map1 options:0 error:&error];
+            if (!data1) {
+                if (requireSame)
+                    STFail(@"Unable to read data");
+                return NO;
+            }
+            
+            NSData *data2 = [[NSData alloc] initWithContentsOfFile:map2 options:0 error:&error];
+            if (!data2) {
+                OB_RELEASE(data1);
+                if (requireSame)
+                    STFail(@"Unable to read data");
+                return NO;
+            }
+
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-            if (OFNOTEQUAL(data1, data2))
-                STFail(@"Files differ!\ndiff \"%@\" \"%@\"", map1, map2);
+            if (OFNOTEQUAL(data1, data2)) {
+                OB_RELEASE(data1);
+                OB_RELEASE(data2);
+                if (requireSame)
+                    STFail(@"Files differ!\ndiff \"%@\" \"%@\"", map1, map2);
+                return NO;
+            }
 #else
-            OFDataShouldBeEqual(data1, data2);
+            if (requireSame)
+                OFDataShouldBeEqual(data1, data2);
 #endif
             
-            [data1 release];
-            [data2 release];
+            OB_RELEASE(data1);
+            OB_RELEASE(data2);
         } else if (OFISEQUAL(fileType1, NSFileTypeDirectory)) {
             // could maybe compare attributes...
         } else {
-            STFail(@"Don't know how to compare files of type \"%@\"", fileType1);
-            return;
+            if (requireSame)
+                STFail(@"Don't know how to compare files of type \"%@\"", fileType1);
+            return NO;
         }
     }
+    
+    return YES;
+}
+
+BOOL OFSameFiles(SenTestCase *self, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter)
+{
+    return OFCheckFilesSame(self, path1, path2, NO/*requireSame*/, pathFilter);
+}
+
+
+void OFDiffFiles(SenTestCase *self, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter)
+{
+    OFCheckFilesSame(self, path1, path2, YES/*requireSame*/, pathFilter);
 }
 

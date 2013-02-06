@@ -284,6 +284,11 @@ NSString * const OATabColumnTerminatorsAttributeName = @"NSTabColumnTerminatorsA
     return _scalar.defaultTabInterval;
 }
 
+- (OALineBreakMode)lineBreakMode;
+{
+    return _scalar.lineBreakMode;
+}
+
 - (CFTypeRef)copyCTParagraphStyle;
 {
 #define OAParagraphStyleNumSettings 13
@@ -327,6 +332,18 @@ NSString * const OATabColumnTerminatorsAttributeName = @"NSTabColumnTerminatorsA
         case OAWritingDirectionRightToLeft: baseDirection = kCTWritingDirectionRightToLeft; break;
     }
     SETTING(kCTParagraphStyleSpecifierBaseWritingDirection, CTWritingDirection, baseDirection, kCTWritingDirectionNatural);
+
+    CTLineBreakMode lineBreakMode;
+    switch (_scalar.lineBreakMode) {
+        case OALineBreakByWordWrapping: lineBreakMode = kCTLineBreakByWordWrapping; break;
+        case OALineBreakByCharWrapping: lineBreakMode = kCTLineBreakByCharWrapping; break;
+        case OALineBreakByClipping: lineBreakMode = kCTLineBreakByClipping; break;		
+        case OALineBreakByTruncatingHead: lineBreakMode = kCTLineBreakByTruncatingHead; break;	
+        case OALineBreakByTruncatingTail: lineBreakMode = kCTLineBreakByTruncatingTail; break;	
+        case OALineBreakByTruncatingMiddle: lineBreakMode = kCTLineBreakByTruncatingMiddle; break;
+        default: lineBreakMode = kCTLineBreakByWordWrapping;
+    }
+    SETTING(kCTParagraphStyleSpecifierLineBreakMode, CTLineBreakMode, lineBreakMode, kCTLineBreakByWordWrapping);
 
     OBASSERT(settingIndex <= OAParagraphStyleNumSettings);
     
@@ -441,6 +458,11 @@ NSString * const OATabColumnTerminatorsAttributeName = @"NSTabColumnTerminatorsA
     _tabStops = [tabStops copy];
 }
 
+- (void)setLineBreakMode:(OALineBreakMode)mode;
+{
+    _scalar.lineBreakMode = mode;
+}
+    
 @end
 
 #endif

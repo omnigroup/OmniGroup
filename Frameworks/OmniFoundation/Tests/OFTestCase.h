@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,5 +34,6 @@ do { \
 #endif
 
 typedef BOOL (^OFDiffFilesPathFilter)(NSString *relativePath);
-extern void OFDiffFiles(SenTestCase *testCase, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter);
+extern BOOL OFSameFiles(SenTestCase *testCase, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter); // query, not required
+extern void OFDiffFiles(SenTestCase *testCase, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter); // fails if the files aren't the same
 

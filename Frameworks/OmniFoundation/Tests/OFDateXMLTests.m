@@ -9,6 +9,7 @@
 #import "OFTestCase.h"
 
 #import <OmniFoundation/NSDate-OFExtensions.h>
+#import <OmniFoundation/OFVersionNumber.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$")
@@ -24,12 +25,13 @@ RCS_ID("$Id$")
     NSTimeZone *tz = [NSDate UTCTimeZone];
     should(tz != nil);
     should([tz secondsFromGMT] == 0);
-#if defined(MAC_OS_X_VERSION_10_8) && MAC_OS_X_VERSION_10_8 >= MAC_OS_X_VERSION_MIN_REQUIRED
-    // This seems buggy, but this is what we currently get. Radar 11739087: NSTimeZone returning GMT instead of UTC. We could presumably make our own shared instance with -initWithName:data:, but that would only fix confusion with the name. If the data ever divereged w.r.t. leap seconds or ...
-    shouldBeEqual([tz name], @"GMT");
-#else
-    shouldBeEqual([tz name], @"UTC");
-#endif
+    
+    if ([OFVersionNumber isOperatingSystemMountainLionOrLater]) {
+        // This seems buggy, but this is what we currently get. Radar 11739087: NSTimeZone returning GMT instead of UTC. We could presumably make our own shared instance with -initWithName:data:, but that would only fix confusion with the name. If the data ever divereged w.r.t. leap seconds or ...
+        shouldBeEqual([tz name], @"GMT");
+    } else {
+        shouldBeEqual([tz name], @"UTC");
+    }
 }
 
 - (void)testGregorianUTCCalendar;

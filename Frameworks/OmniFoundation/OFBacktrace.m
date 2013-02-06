@@ -44,14 +44,14 @@ NSString *OFCopySymbolicBacktraceForNumericBacktrace(NSString *numericTrace)
     NSArray *stackStrings = [numericTrace componentsSeparatedByString:@"  "];
     NSUInteger frameCount = [stackStrings count];
     void *callstack[frameCount];
-    for (NSString *stackString in stackStrings) {
-        callstack[frameCount] = (void *)(uintptr_t)[stackString maxHexValue];
+    for (NSUInteger frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+        NSString *stackString = [stackStrings objectAtIndex:frameIndex];
+        callstack[frameIndex] = (void *)(uintptr_t)[stackString maxHexValue];
     }
     OBASSERT(frameCount <= UINT_MAX); // That's all backtrace_symbols() can handle
     char **symbols = backtrace_symbols(callstack, (unsigned int)frameCount);
-    unsigned int frameIndex;
     NSMutableString *symbolicBacktrace = [[NSMutableString alloc] init];
-    for (frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+    for (NSUInteger frameIndex = 0; frameIndex < frameCount; frameIndex++) {
         [symbolicBacktrace appendFormat:@"%p -- %s\n", callstack[frameIndex], symbols[frameIndex]];
 #ifdef DEBUG
         printf("%s\n", symbols[frameIndex]);

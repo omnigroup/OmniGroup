@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2009, 2011-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2009, 2011-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,7 @@
 - (NSData *)rtf;
 
 // See <bug:///79949> (Update NSAttributedString extension method drawInRectangle:alignment:verticallyCentered:)
-- (void)drawInRectangle:(CGRect)rectangle alignment:(int)alignment verticallyCentered:(BOOL)verticallyCenter;
+- (void)drawInRectangle:(CGRect)rectangle alignment:(NSTextAlignment)alignment verticallyCentered:(BOOL)verticallyCenter;
 
 - (void)drawCenteredShrinkingToFitInRect:(CGRect)rect;
 #endif

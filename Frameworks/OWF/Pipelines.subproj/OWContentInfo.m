@@ -318,74 +318,54 @@ static NSLock *allActiveTasksLock = nil;
     return childTasksCount;
 }
 
-- (int)workDoneByChildTasks;
+- (size_t)workDoneByChildTasks;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return 0;
-#if 0
-    int work;
+    size_t work;
     
     if (flags.wasActiveOnLastCheck) {
-        NSArray *childrenCopy;
-        int taskIndex;
-
         [childTasksLock lock];
-        childrenCopy = [[NSArray alloc] initWithArray:childTasks];
+        NSArray *childTasksCopy = [[NSArray alloc] initWithArray:childTasks];
         [childTasksLock unlock];
 
         work = 0;
-        taskIndex = [childrenCopy count];
-        while (taskIndex--)
-            work += [[childrenCopy objectAtIndex:taskIndex] workDoneIncludingChildren];
-        [childrenCopy release];
+        for (OWTask *childTask in childTasksCopy)
+            work += [childTask workDoneIncludingChildren];
+        [childTasksCopy release];
     } else
         work = 0;
 
     return work;
-#endif
 }
 
-- (int)workToBeDoneByChildTasks;
+- (size_t)workToBeDoneByChildTasks;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return 0;
-#if 0
-    int work;
+    size_t work;
     
     if (flags.wasActiveOnLastCheck) {
-        NSArray *childrenCopy;
-        int taskIndex;
-
         [childTasksLock lock];
-        childrenCopy = [[NSArray alloc] initWithArray:childTasks];
+        NSArray *childTasksCopy = [[NSArray alloc] initWithArray:childTasks];
         [childTasksLock unlock];
 
         work = 0;
-        taskIndex = [childrenCopy count];
-        while (taskIndex--)
-            work += [[childrenCopy objectAtIndex:taskIndex] workToBeDoneIncludingChildren];
-        [childrenCopy release];
+        for (OWTask *childTask in childTasksCopy)
+            work += [childTask workToBeDoneIncludingChildren];
+        [childTasksCopy release];
         workToBeDoneIncludingChildren = work;
     } else
         work = 0;
 
     return work;
-#endif
 }
 
 - (void)calculateDeadPipelines:(NSUInteger *)deadPipelines totalPipelines:(NSUInteger *)totalPipelines;
 {
-    NSArray *childrenCopy;
-    NSUInteger taskIndex;
-
     [childTasksLock lock];
-    childrenCopy = [[NSArray alloc] initWithArray:childTasks];
+    NSArray *childTasksCopy = [[NSArray alloc] initWithArray:childTasks];
     [childTasksLock unlock];
 
-    taskIndex = [childrenCopy count];
-    while (taskIndex--)
-        [[childrenCopy objectAtIndex:taskIndex] calculateDeadPipelines:deadPipelines totalPipelines:totalPipelines];
-    [childrenCopy release];
+    for (OWTask *childTask in childTasksCopy)
+        [childTask calculateDeadPipelines:deadPipelines totalPipelines:totalPipelines];
+    [childTasksCopy release];
 }
 
 - (void)addChildFossil:(id <NSObject>)childFossil;
@@ -503,50 +483,34 @@ static NSLock *allActiveTasksLock = nil;
 
 - (NSTimeInterval)timeSinceTreeActivationIntervalForActiveChildTasks;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return 0;
-#if 0
     NSTimeInterval maxTimeInterval = 0.0;
 
     if (flags.wasActiveOnLastCheck) {
-        NSArray *childrenCopy;
-        int taskIndex;
-
         [childTasksLock lock];
-        childrenCopy = [[NSArray alloc] initWithArray:childTasks];
+        NSArray *childTasksCopy = [[NSArray alloc] initWithArray:childTasks];
         [childTasksLock unlock];
         
-        taskIndex = [childrenCopy count];
-        while (taskIndex--)
-            maxTimeInterval = MAX(maxTimeInterval, [[childrenCopy objectAtIndex:taskIndex] timeSinceTreeActivationInterval]);
-        [childrenCopy release];
+        for (OWTask *childTask in childTasksCopy)
+            maxTimeInterval = MAX(maxTimeInterval, [childTask timeSinceTreeActivationInterval]);
+        [childTasksCopy release];
     }
     return maxTimeInterval;
-#endif
 }
 
 - (NSTimeInterval)estimatedRemainingTreeTimeIntervalForActiveChildTasks;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return 0;
-#if 0
     NSTimeInterval maxTimeInterval = 0.0;
 
     if (flags.wasActiveOnLastCheck) {
-        NSArray *childrenCopy;
-        int taskIndex;
-
         [childTasksLock lock];
-        childrenCopy = [[NSArray alloc] initWithArray:childTasks];
+        NSArray *childTasksCopy = [[NSArray alloc] initWithArray:childTasks];
         [childTasksLock unlock];
         
-        taskIndex = [childrenCopy count];
-        while (taskIndex--)
-            maxTimeInterval = MAX(maxTimeInterval, [[childrenCopy objectAtIndex:taskIndex] estimatedRemainingTreeTimeInterval]);
-        [childrenCopy release];
+        for (OWTask *childTask in childTasksCopy)
+            maxTimeInterval = MAX(maxTimeInterval, [childTask estimatedRemainingTreeTimeInterval]);
+        [childTasksCopy release];
     }
     return maxTimeInterval;
-#endif
 }
 
 

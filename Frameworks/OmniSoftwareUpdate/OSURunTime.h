@@ -1,4 +1,4 @@
-// Copyright 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2007, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,9 +12,9 @@
 @class NSString, NSMutableDictionary;
 
 // This is linked by both OmniSoftwareUpdate and OmniCrashCatcher.
-__private_extern__ BOOL OSURunTimeHasHandledApplicationTermination(void);
+BOOL OSURunTimeHasHandledApplicationTermination(void) OB_HIDDEN;
 
-__private_extern__ void OSURunTimeApplicationActivated(void);
-__private_extern__ void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleVersion, BOOL crashed);
+void OSURunTimeApplicationActivated(void) OB_HIDDEN;
+void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleVersion, BOOL crashed) OB_HIDDEN;
 
-__private_extern__ void OSURunTimeAddStatisticsToInfo(NSString *appIdentifier, NSMutableDictionary *info);
+void OSURunTimeAddStatisticsToInfo(NSString *appIdentifier, NSMutableDictionary *info) OB_HIDDEN;

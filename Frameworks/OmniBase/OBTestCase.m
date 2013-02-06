@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,13 +51,33 @@ void _OBReportUnexpectedError(NSError *error)
     NSLog(@"Error: %@", [error toPropertyList]);
 }
 
+#if defined(OMNI_ASSERTIONS_ON)
+static NSString * const OBShouldWaitOnAssertFailureKey = @"OBShouldWaitOnAssertFailure";
+#endif
+
 @implementation OBTestCase
 
 #if defined(OMNI_ASSERTIONS_ON)
-static void OBTestCaseAssertionHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber)
+static void OBTestCaseAssertionHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber, const char *reason)
 {
-    OBLogAssertionFailure(type, expression, file, lineNumber);
-//    abort();
+    OBLogAssertionFailure(type, expression, file, lineNumber, reason);
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:OBShouldWaitOnAssertFailureKey]) {
+        // If we are running unit tests, abort on assertion failure.  We could make assertions throw exceptions, but note that this wouldn't catch cases where you are using 'shouldRaise' and hit an assertion.
+#ifdef DEBUG
+        // If we're failing in a debug build, give the developer a little time to connect in gdb before crashing
+        NSTimeInterval timeToWait = 15.0;
+        const char *env = getenv("OBASSERT_TIME_TO_WAIT");
+        if (env)
+            timeToWait = strtod(env, NULL);
+        
+        if (timeToWait > 0) {
+            fprintf(stderr, "You have %g seconds to attach to pid %u in gdb...\n", timeToWait, getpid());
+            [NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:timeToWait]];
+        }
+#endif
+    }
+    
+    abort();
 }
 #endif
 
@@ -68,12 +88,20 @@ static void OBTestCaseAssertionHandler(const char *type, const char *expression,
     atexit(OBTestCaseReportCoverage);
 #endif
     
-#if !defined(TARGET_OS_IPHONE) && !TARGET_OS_IPHONE
-    [OBPostLoader processClasses];
-#endif
+    // Let OBObject get set up (which might run OBPostLoader if we are on the right platform).
+    [OBObject class];
     
 #if defined(OMNI_ASSERTIONS_ON)
     OBSetAssertionFailureHandler(OBTestCaseAssertionHandler);
+    
+    @autoreleasepool {
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        NSDictionary *assertionDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
+                                           @NO, OBShouldWaitOnAssertFailureKey,
+                                           nil];
+        [defaults registerDefaults:assertionDefaults];
+    }
+
 #endif
 }
 

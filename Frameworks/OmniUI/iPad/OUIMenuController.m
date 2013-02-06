@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,7 @@
 #import <OmniUI/OUIMenuController.h>
 
 #import <OmniUI/OUIAppController.h>
-#import <OmniUI/OUIDocumentPicker.h>
+//#import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUI/OUIMenuOption.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 
@@ -115,20 +115,6 @@ RCS_ID("$Id$");
     
     self.view = tableView;
     [tableView release];
-}
-
-- (void)viewDidUnload;
-{
-    [_menuNavigationController release];
-    _menuNavigationController = nil;
-    
-    [_menuPopoverController release];
-    _menuPopoverController = nil;
-    
-    [_options release];
-    _options = nil;
-    
-    [super viewDidUnload];
 }
 
 #pragma mark -

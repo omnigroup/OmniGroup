@@ -27,9 +27,12 @@
 #define kOUIInspectorTextWellNormalGradientBottomColor ((OSHSV){210.0/360.0, 0.02, 1.00, 1.0})
 #define kOUIInspectorTextWellHighlightedGradientTopColor ((OSHSV){210.0/360.0, 0.4, 1.0, 1.0})
 #define kOUIInspectorTextWellHighlightedGradientBottomColor ((OSHSV){210.0/360.0, 0.2, 1.0, 1.0})
+#define kOUIInspectorTextWellButtonHighlightedGradientTopColor ((OSHSV){209.0/360.0, 0.91, 0.96, 1.0})      // matches UITableViewCellSelectionStyleBlue
+#define kOUIInspectorTextWellButtonHighlightedGradientBottomColor ((OSHSV){218.0/360.0, 0.93, 0.90, 1.0})   // matches UITableViewCellSelectionStyleBlue
 
 #define kOUIInspectorTextWellTextColor ((OSHSV){221.0/360.0, 0.30, 0.42, 1.0})
 #define kOUIInspectorTextWellHighlightedTextColor ((OSHSV){213.0/360.0, 0.50, 0.30, 1.0})
+#define kOUIInspectorTextWellHighlightedButtonTextColor ((OQWhiteAlpha){1.0, 1.0})
 #define kOUIInspectorLabelDisabledTextColorAlphaScale (0.5)
 
 // OUIInspectorBackgroundView
@@ -60,23 +63,3 @@
 #define kOUIAutoscrollBorderWidth (44.0 * 1.1) // Area on edge of the screen that defines the ramp for autoscroll speed. Want to be able to hit the max speed without finger risking going off edge of view
 #define kOUIAutoscrollMaximumVelocity (850) // in pixels per second
 #define kOUIAutoscrollVelocityRampPower (0.25) // power ramp for autoscroll velocity
-
-// OUIDocumentPicker and friends
-#define kOUIDocumentPickerItemViewNameLabelFontSize (17.0)
-#define kOUIDocumentPickerItemViewNameLabelColor ((OQWhiteAlpha){1.0, 0.90})
-#define kOUIDocumentPickerItemViewDetailLabelFontSize (12.0)
-#define kOUIDocumentPickerItemViewDetailLabelColor ((OQWhiteAlpha){1.0, 0.75})
-#define kOUIDocumentPickerItemViewNameToPreviewPadding (7.0)
-#define kOUIDocumentPickerItemViewNameToDatePadding (-1.0)
-#define kOUIDocumentPickerItemViewLabelShadowColor ((OQWhiteAlpha){0.0, 0.66})
-#define kOUIDocumentPickerItemViewProgressTintColor ((OQLinearRGBA){0.5, 0.5, 0.85, 1.0})
-
-// OUIDocumentPreviewView
-#define kOUIDocumentPreviewViewNormalShadowBlur (1.25)
-#define kOUIDocumentPreviewViewNormalShadowColor ((OQWhiteAlpha){0.0, 0.75})
-#define kOUIDocumentPreviewViewBorderEdgeInsets (UIEdgeInsetsMake(11/*top*/, 11/*left*/, 11/*bottom*/, 11/*right*/))
-#define kOUIDocumentPreviewViewBorderSelectionColor ((OQWhiteAlpha){0.0, 0.5})
-#define kOUIDocumentPreviewSelectionTouchBounceScale (0.96)
-#define kOUIDocumentPreviewSelectionTouchBounceDuration (0.17)
-#define kOUIDocumentPreviewHighlightAlpha (0.33)
-

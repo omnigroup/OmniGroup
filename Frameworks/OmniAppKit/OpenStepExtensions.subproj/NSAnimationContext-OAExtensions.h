@@ -7,6 +7,8 @@
 //
 // $Id$
 
+#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7)
+
 #import <AppKit/NSAnimationContext.h>
 
 typedef void (^OAAnimationGroup)(NSAnimationContext *context);
@@ -14,3 +16,6 @@ typedef void (^OAAnimationGroup)(NSAnimationContext *context);
 @interface NSAnimationContext (OAExtensions)
 + (void)runAnimationGroups:(OAAnimationGroup)group, ... NS_REQUIRES_NIL_TERMINATION;
 @end
+
+#endif
+

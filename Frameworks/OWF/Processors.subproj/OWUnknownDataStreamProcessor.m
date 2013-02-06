@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -155,29 +155,18 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
 
 - (NSDictionary *)contentTypeGuessForBytes:(OWDataStreamCursor *)cursor
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
-    unsigned guessIndex, guessCount;
     NSData *peekedData = nil;
 
-    guessCount = [guessList count];
-    for(guessIndex = 0; guessIndex < guessCount; guessIndex ++) {
-        NSDictionary *guess = [guessList objectAtIndex:guessIndex];
-        NSData *bytes;
-        NSData *mask;
-        NSMutableData *maskedData;
-        NSNumber *lookaheadNumber;
-        unsigned lookahead;
-        BOOL anywhere;
-        BOOL matches;
-
-        bytes = [guess objectForKey:@"bytes"];
+    for (NSDictionary *guess in guessList) {
+        NSData *bytes = [guess objectForKey:@"bytes"];
         if (!bytes)
             continue;
-        mask = [guess objectForKey:@"mask"];
-        lookaheadNumber = [guess objectForKey:@"lookahead"];
-        anywhere = [guess boolForKey:@"anywhere" defaultValue:NO];
+        
+        NSData *mask = [guess objectForKey:@"mask"];
+        NSNumber *lookaheadNumber = [guess objectForKey:@"lookahead"];
+        BOOL anywhere = [guess boolForKey:@"anywhere" defaultValue:NO];
+        
+        NSUInteger lookahead;
         if (lookaheadNumber)
             lookahead = [lookaheadNumber unsignedIntValue];
         else if (anywhere)
@@ -190,59 +179,45 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
         }
 
         // Apply a mask, if one was specified
+        NSData *matchData;
         if (mask) {
-            unsigned char *fileBytes;
-            const unsigned char *maskBytes;
-            unsigned length;
-            maskedData = [peekedData mutableCopy];
-            length = MIN([maskedData length], [mask length]);
-            fileBytes = [maskedData mutableBytes];
-            maskBytes = [mask bytes];
+            NSMutableData *maskedData = [peekedData mutableCopy];
+            NSUInteger length = MIN([maskedData length], [mask length]);
+            unsigned char *fileBytes = [maskedData mutableBytes];
+            const unsigned char *maskBytes = [mask bytes];
             while (length) {
                 *fileBytes &= *maskBytes;
                 fileBytes ++;
                 maskBytes ++;
                 length --;
             }
+            matchData = maskedData;
         } else
-            maskedData = [peekedData retain];
+            matchData = [peekedData retain];
 
-        matches = (anywhere? [maskedData containsData:bytes] : [maskedData hasPrefix:bytes]);
+        BOOL matches = (anywhere? [matchData containsData:bytes] : [matchData hasPrefix:bytes]);
 
-        [maskedData release];
+        [matchData release];
         
         if (matches)
             return guess;
     }
 
     return nil;
-#endif
 }
 
 - (NSDictionary *)contentTypeGuessForCharacters:(OWDataStreamCharacterCursor *)cursor;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
-    unsigned guessIndex, guessCount;
-    NSMutableString *beginning;
+    NSMutableString *beginning = [NSMutableString string];
 
-    beginning = [NSMutableString string];
-
-    guessCount = [guessList count];
-    for (guessIndex = 0; guessIndex < guessCount; guessIndex ++) {
-        NSDictionary *guess = [guessList objectAtIndex:guessIndex];
-        NSString *pattern;
-        NSNumber *lookaheadNumber;
-        unsigned lookahead;
-        BOOL anywhere;
-        NSRange searchRange, foundRange;
-
-        pattern = [guess objectForKey:@"string"];
+    for (NSDictionary *guess in guessList) {
+        NSString *pattern = [guess objectForKey:@"string"];
         if (!pattern)
             continue;
-        lookaheadNumber = [guess objectForKey:@"lookahead"];
-        anywhere = [guess boolForKey:@"anywhere" defaultValue:NO];
+
+        NSNumber *lookaheadNumber = [guess objectForKey:@"lookahead"];
+        NSUInteger lookahead;
+        BOOL anywhere = [guess boolForKey:@"anywhere" defaultValue:NO];
         if (lookaheadNumber)
             lookahead = [lookaheadNumber unsignedIntValue];
         else if (anywhere)
@@ -254,15 +229,13 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
             [beginning appendString:[cursor readString]];
         }
 
-        searchRange.location = 0;
-        searchRange.length = MIN(lookahead, [beginning length]);
-        foundRange = [beginning rangeOfString:pattern options:anywhere? 0 : NSAnchoredSearch range:searchRange];
+        NSRange searchRange = NSMakeRange(0, MIN(lookahead, [beginning length]));
+        NSRange foundRange = [beginning rangeOfString:pattern options:anywhere? 0 : NSAnchoredSearch range:searchRange];
         if (foundRange.length > 0)
             return guess;
     }
 
     return nil;
-#endif
 }
 
 - (OWContentType *)contentTypeGuessForXML;
@@ -273,33 +246,20 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
 
 - (OWContentType *)contentTypeGuess;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
-    unsigned const char *buffer;
-    int index;
-    int controlCount;
-    int textCount;
-    int linefeedCount;
-    int highCount;
-    NSDictionary *guess;
-    OWDataStreamCursor *byteCursor;
-    NSData *prefixData;
-    CFStringEncoding cfEncoding = kCFStringEncodingInvalidId;
-        
     // TODO: Attempt to guess character encoding of text streams?
 
     // First we look for specific patterns of bytes. This catches .jpgs that are really .gifs and vice-versa.
-    byteCursor = [workingContent dataCursor];
-    guess = [self contentTypeGuessForBytes:byteCursor];
+    OWDataStreamCursor *byteCursor = [workingContent dataCursor];
+    NSDictionary *guess = [self contentTypeGuessForBytes:byteCursor];
     if ([guess objectForKey:@"type"])
         return [guess objectForKey:@"type"];
     
     // Next we see if we can interpret the data stream as text, and if so, we look for textual patterns. This catches HTML that's been labeled as text/plain or application/octet-stream.
+    CFStringEncoding cfEncoding = kCFStringEncodingInvalidId;
     if (guess && [guess objectForKey:@"charset"])
         cfEncoding = [OWDataStreamCharacterProcessor stringEncodingForIANACharSetName:[guess objectForKey:@"charset"]];
     if (cfEncoding == kCFStringEncodingInvalidId) {
-        prefixData = [byteCursor peekBytesOrUntilEOF:3];
+        NSData *prefixData = [byteCursor peekBytesOrUntilEOF:3];
 
         if ([prefixData length] >= 3) {
             const unsigned char *buf = [prefixData bytes];
@@ -338,13 +298,13 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
 #endif
     
     // Try a heuristic based on the ratio of text to line feeds (and no control characters).
-    prefixData = [[workingContent dataCursor] peekBytesOrUntilEOF:1024];
-    textCount = 0;
-    controlCount = 0;
-    linefeedCount = 0;
-    highCount = 0;
-    index = [prefixData length];
-    buffer = [prefixData bytes];
+    NSData *prefixData = [[workingContent dataCursor] peekBytesOrUntilEOF:1024];
+    NSUInteger textCount = 0;
+    NSUInteger controlCount = 0;
+    NSUInteger linefeedCount = 0;
+    NSUInteger highCount = 0;
+    NSUInteger index = [prefixData length];
+    unsigned const char *buffer = [prefixData bytes];
     while (index--) {
         unsigned char ch;
 
@@ -376,7 +336,6 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
         return [OWContentType contentTypeForString:@"image/x-bmp"];
     else
 	return applicationOctetStreamContentType;
-#endif
 }
 
 - (void)process;

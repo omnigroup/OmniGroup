@@ -30,7 +30,7 @@ typedef enum _OATableViewRowVisibility {
 
 // Actions
 - (IBAction)copy:(id)sender; // If you support dragging out, you'll automatically support copy.
-- (IBAction)delete:(id)sender; // Data source must support -tableView:deleteRows:.
+- (IBAction)delete:(id)sender; // Data source must support -tableView:deleteRowsAtIndexes:.
 - (IBAction)cut:(id)sender; // cut == copy + delete
 - (IBAction)paste:(id)sender; // Data source must support -tableView:addItemsFromPasteboard:.
 - (IBAction)duplicate:(id)sender; // duplicate == copy + paste (without using the general pasteboard)

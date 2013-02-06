@@ -5,7 +5,7 @@
 */
 #define XZ_DEC_BCJ
 #define XZ_DEC_X86
-#define XZ_EXTERN __attribute__((visibility("hidden")))
+#define XZ_EXTERN OB_HIDDEN
 
 #include <stdbool.h>
 #include <unistd.h>

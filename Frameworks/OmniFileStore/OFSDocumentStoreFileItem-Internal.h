@@ -7,20 +7,19 @@
 //
 // $Id$
 
-#import <OmniFileStore/OFSFeatures.h>
-
-#if OFS_DOCUMENT_STORE_SUPPORTED
-
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
-
-@class NSMetadataItem;
 
 @interface OFSDocumentStoreFileItem (/*Internal*/)
 
-- (void)_updateUbiquitousItemWithMetadataItem:(NSMetadataItem *)metadataItem modificationDate:(NSDate *)modificationDate;
-- (void)_updateLocalItemWithModificationDate:(NSDate *)modificationDate;
 - (void)_invalidateAfterWriter;
 
-@end
+// Redeclare the properties from <OFSDocumentStoreItem> as writable so that scopes can update their file items.
+@property(nonatomic) BOOL hasUnresolvedConflicts;
+@property(nonatomic) BOOL isDownloaded;
+@property(nonatomic) BOOL isDownloading;
+@property(nonatomic) BOOL isUploaded;
+@property(nonatomic) BOOL isUploading;
+@property(nonatomic) double percentDownloaded;
+@property(nonatomic) double percentUploaded;
 
-#endif // OFS_DOCUMENT_STORE_SUPPORTED
+@end

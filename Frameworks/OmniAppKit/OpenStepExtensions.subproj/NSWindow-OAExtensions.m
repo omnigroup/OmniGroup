@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/NSWindow-OAExtensions.h>
+#import <OmniAppKit/NSView-OAExtensions.h>
+#import <OmniAppKit/OAViewPicker.h>
 
 #import "OAConstructionTimeView.h"
 
@@ -17,7 +19,10 @@
 RCS_ID("$Id$")
 
 
+static void (*oldBecomeKeyWindow)(id self, SEL _cmd);
+static void (*oldResignKeyWindow)(id self, SEL _cmd);
 static void (*oldMakeKeyAndOrderFront)(id self, SEL _cmd, id sender);
+static void (*oldDidChangeValueForKey)(id self, SEL _cmd, NSString *key);
 static id (*oldSetFrameDisplayAnimateIMP)(id self, SEL _cmd, NSRect newFrame, BOOL shouldDisplay, BOOL shouldAnimate);
 static NSWindow *becomingKeyWindow = nil;
 
@@ -25,8 +30,11 @@ static NSWindow *becomingKeyWindow = nil;
 
 + (void)performPosing;
 {
+    oldBecomeKeyWindow = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(becomeKeyWindow), @selector(replacement_becomeKeyWindow));
+    oldResignKeyWindow = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(resignKeyWindow), @selector(replacement_resignKeyWindow));
     oldMakeKeyAndOrderFront = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(makeKeyAndOrderFront:), @selector(replacement_makeKeyAndOrderFront:));
-    oldSetFrameDisplayAnimateIMP = (typeof(oldSetFrameDisplayAnimateIMP))OBReplaceMethodImplementationWithSelector(self, @selector(setFrame:display:animate:), @selector(replacement_setFrame:display:animate:));
+    oldDidChangeValueForKey = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(didChangeValueForKey:), @selector(replacement_didChangeValueForKey:));
+    oldSetFrameDisplayAnimateIMP = (typeof(oldSetFrameDisplayAnimateIMP))OBReplaceMethodImplementationWithSelector(self, @selector(setFrame:display:animate:), @selector(replacement_setFrame:display:animate:));    
 }
 
 static NSMutableArray *zOrder;
@@ -55,6 +63,29 @@ static NSMutableArray *zOrder;
     return NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame));
 }
 
+- (void)_sendWindowDidChangeKeyOrFirstResponder;
+{
+    NSView *rootView = [self contentView];
+    NSView *superview;
+    
+    while ((superview = [rootView superview]))
+           rootView = superview;
+    
+    [rootView windowDidChangeKeyOrFirstResponder];
+}
+
+- (void)replacement_becomeKeyWindow;
+{
+    oldBecomeKeyWindow(self, _cmd);
+    [self _sendWindowDidChangeKeyOrFirstResponder];
+}
+
+- (void)replacement_resignKeyWindow;
+{
+    oldResignKeyWindow(self, _cmd);
+    [self _sendWindowDidChangeKeyOrFirstResponder];
+}
+
 /*" We occasionally want to draw differently based on whether we are in the key window or not (for example, OAAquaButton).  This method allows us to draw correctly the first time we get drawn, when the window is coming on screen due to -makeKeyAndOrderFront:.  The window is not key at that point, but we would like to draw as if it is so that we don't have to redraw later, wasting time and introducing flicker. "*/
 
 - (void)replacement_makeKeyAndOrderFront:(id)sender;
@@ -62,6 +93,14 @@ static NSMutableArray *zOrder;
     becomingKeyWindow = self;
     oldMakeKeyAndOrderFront(self, _cmd, sender);
     becomingKeyWindow = nil;
+}
+
+- (void)replacement_didChangeValueForKey:(NSString *)key;
+{
+    oldDidChangeValueForKey(self, _cmd, key);
+    
+    if ([key isEqualToString:@"firstResponder"])
+        [self _sendWindowDidChangeKeyOrFirstResponder];
 }
 
 /*" There is an elusive crasher (at least in 10.2.x) related to animated frame changes that we believe happens only when the new and old frames are very close in position and size. This method disables the animation if the frame change is below a certain threshold, in an attempt to work around the crasher. "*/
@@ -138,6 +177,54 @@ static NSMutableArray *zOrder;
     
     return CGPointMake(cocoaScreenCoordinates.x,
                        ( mainScreenSize.size.height - cocoaScreenCoordinates.y ));
+}
+
+- (void)_visualizeConstraintsMenuAction:(id)sender;
+{
+    NSMenuItem *item = (NSMenuItem *)sender;
+    NSView *view = [item representedObject];
+    NSLayoutConstraintOrientation orientation = [item tag];
+    [self visualizeConstraints:[view constraintsAffectingLayoutForOrientation:orientation]];
+}
+
+- (void)visualizeConstraintsForPickedView:(id)sender;
+{
+    [OAViewPicker beginPickingForWindow:self withCompletionHandler:^(NSView *pickedView) {
+        if (!pickedView)
+            return NO;
+        
+        static NSMenu *constraintsOptions;
+        static NSMenuItem *pickedItem, *horizontalItem, *verticalItem;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            constraintsOptions = [[NSMenu alloc] initWithTitle:@"Visualize Constraints"];
+            [constraintsOptions setAutoenablesItems:NO];
+            
+            pickedItem = [constraintsOptions addItemWithTitle:@"<PICKED VIEW>" action:@selector(noop:) keyEquivalent:@""];
+            [pickedItem setEnabled:NO];
+            
+            horizontalItem = [constraintsOptions addItemWithTitle:@"Horizontal" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
+            [horizontalItem setTag:NSLayoutConstraintOrientationHorizontal];
+            [horizontalItem setEnabled:YES];
+            
+            verticalItem = [constraintsOptions addItemWithTitle:@"Vertical" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
+            [verticalItem setTag:NSLayoutConstraintOrientationVertical];
+            [verticalItem setEnabled:YES];
+        });
+        
+        [pickedItem setTitle:[NSString stringWithFormat:@"Visualize constraints for %@", [pickedView shortDescription]]];
+        [horizontalItem setRepresentedObject:pickedView];
+        [horizontalItem setTarget:self];
+        [verticalItem setRepresentedObject:pickedView];
+        [verticalItem setTarget:self];
+        
+        BOOL picked = [constraintsOptions popUpMenuPositioningItem:pickedItem atLocation:[NSEvent mouseLocation] inView:nil];
+        
+        [horizontalItem setRepresentedObject:nil];
+        [verticalItem setRepresentedObject:nil];
+        
+        return picked;
+    }];
 }
 
 // NSCopying protocol

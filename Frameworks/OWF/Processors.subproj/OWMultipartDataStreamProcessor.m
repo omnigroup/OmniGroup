@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,9 +38,6 @@ static NSString *PartFormatString = nil;
 
 - (BOOL)readDelimiter;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return NO;
-#if 0
     NSString *line = nil;
     OWDataStreamCharacterCursor *lineScanner = [[OWDataStreamCharacterCursor alloc] initForDataCursor:dataCursor encoding:OFDeferredASCIISupersetStringEncoding];
     NS_DURING {
@@ -77,18 +74,15 @@ static NSString *PartFormatString = nil;
 	delimiterSkipTable[delimiter[delimiterIndex]] = delimiterLength - delimiterIndex - 1;
 
     return YES;
-#endif
 }
 
 - (void)processPartIntoStream:(OWDataStream *)outputDataStream;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     BOOL foundDelimiter = NO;
     unsigned char inputBuffer[inputBufferSize];
     unsigned char *currentCharacter;
-    int charactersRead, charactersToSkip, charactersToWrite;
-    unsigned int lastDelimiterCharacter = delimiterLength - 1;
+    NSUInteger charactersRead, charactersToSkip, charactersToWrite;
+    NSUInteger lastDelimiterCharacter = delimiterLength - 1;
 
     do {
 	[dataCursor bufferBytes:delimiterLength];
@@ -120,7 +114,6 @@ static NSString *PartFormatString = nil;
     [dataCursor skipBytes:delimiterLength];
     [dataCursor scanUpToByte:'\n'];
     [dataCursor skipBytes:1];  /* skip the \n we just scanned to */
-#endif
 }
 
 - (void)processDataStreamPart:(OWDataStream *)aDataStream headers:(OWHeaderDictionary *)partHeaders;
@@ -199,7 +192,7 @@ static NSString *PartFormatString = nil;
     debugDictionary = [super debugDictionary];
     if (delimiter) {
 	[debugDictionary setObject:[NSString stringWithUTF8String:(char *)delimiter] forKey:@"delimiter"];
-	[debugDictionary setObject:[NSString stringWithFormat:@"%d", delimiterLength] forKey:@"delimiterLength"];
+	[debugDictionary setObject:[NSString stringWithFormat:@"%ld", delimiterLength] forKey:@"delimiterLength"];
     }
     return debugDictionary;
 }

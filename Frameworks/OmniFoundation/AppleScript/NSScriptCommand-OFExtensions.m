@@ -1,27 +1,56 @@
-// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniFoundation/NSScriptCommand-OFExtensions.h>
-
-#import <OmniBase/NSError-OBExtensions.h>
-#import <OmniFoundation/NSScriptObjectSpecifier-OFExtensions.h>
+#import <Carbon/Carbon.h>
 
 #import <Foundation/NSScriptCommandDescription.h>
 #import <Foundation/NSScriptObjectSpecifiers.h>
+#import <OmniBase/NSError-OBExtensions.h>
+#import <OmniFoundation/NSScriptCommand-OFExtensions.h>
+#import <OmniFoundation/NSScriptObjectSpecifier-OFExtensions.h>
 
 RCS_ID("$Id$");
 
 @implementation NSScriptCommand (OFExtensions)
 
-- (void)setError:(NSError *)error;
+- (NSScriptObjectSpecifier *)directParameterSpecifier;
 {
-    OBPRECONDITION(error); // why are you calling this if there is no error?
+    NSAppleEventDescriptor *descriptor = [[self appleEvent] attributeDescriptorForKeyword:keyDirectObject];
+    if (descriptor != nil && [descriptor descriptorType] != typeNull) {
+        NSScriptObjectSpecifier *specifier = [NSScriptObjectSpecifier objectSpecifierWithDescriptor:descriptor];
+        OBASSERT_NOTNULL(specifier);
+        return specifier;
+    }
+    
+    return nil;
+}
+
+- (NSScriptObjectSpecifier *)subjectSpecifier;
+{
+    NSAppleEventDescriptor *descriptor = [[self appleEvent] attributeDescriptorForKeyword:keySubjectAttr];
+    if (descriptor != nil && [descriptor descriptorType] != typeNull) {
+        NSScriptObjectSpecifier *specifier = [NSScriptObjectSpecifier objectSpecifierWithDescriptor:descriptor];
+        OBASSERT_NOTNULL(specifier);
+        return specifier;
+    }
+    
+    return nil;
+}
+
+- (id)evaluatedSubjects;
+{
+    return [[self subjectSpecifier] objectsByEvaluatingSpecifier];
+}
+
+- (void)setScriptError:(NSError *)error;
+{
+    OBPRECONDITION(error != nil); // why are you calling this if there is no error?
     OBPRECONDITION([error code] != NSNoScriptError); // a zero error code means no error, so that'll result in no error in the caller
-    OBPRECONDITION([error localizedDescription] != nil); // messages are good.
+    OBPRECONDITION(![NSString isEmptyString:[error localizedDescription]]); // messages are good.
     
 #if 1 && defined(DEBUG)
     NSLog(@"Script command %@ resulted in error %@", self, [error toPropertyList]);

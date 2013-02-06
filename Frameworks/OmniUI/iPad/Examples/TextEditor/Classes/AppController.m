@@ -17,6 +17,9 @@
 RCS_ID("$Id$")
 
 @implementation AppController
+{
+    NSArray *_documentToolbarItems;
+}
 
 + (void)initialize;
 {

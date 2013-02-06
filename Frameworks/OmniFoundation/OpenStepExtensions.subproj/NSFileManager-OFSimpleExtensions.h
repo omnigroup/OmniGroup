@@ -24,8 +24,10 @@
 // Creates any directories needed to be able to create a file at the specified path.  Returns NO on failure.
 - (BOOL)createPathComponents:(NSArray *)components attributes:(NSDictionary *)attributes error:(NSError **)outError;
 
-// Changing file access/update timestamps.
+// Instead of deleting in place, this moves the URL to a temporary location and then deletes it. This really only matters for directories, but this method doesn't try to check if the URL is a directory (since that is a race condition and would be slower anyway).
+- (BOOL)atomicallyRemoveItemAtURL:(NSURL *)url error:(NSError **)outError;
 
+// Changing file access/update timestamps.
 - (BOOL)touchItemAtURL:(NSURL *)url error:(NSError **)outError;
 
 #ifdef DEBUG

@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,6 @@
 // $Id$
 
 #import "ONUDPSocket.h"
-#import "FrameworkDefines.h"
 
 //
 // Much of the information in this header was taken from:
@@ -77,8 +76,8 @@
 @end
 
 // Exceptions which may be raised by this class
-OmniNetworking_EXTERN NSString *ONMulticastSocketNonMulticastAddress;
-OmniNetworking_EXTERN NSString *ONMulticastSocketSetTimeToLiveFailed;
-OmniNetworking_EXTERN NSString *ONMulticastSocketGroupMembershipOperationFailed;
-OmniNetworking_EXTERN NSString *ONMulticastSocketSendInterfaceSelectionFailed;
-OmniNetworking_EXTERN NSString *ONMulticastSocketFailedToSelectLooping;
+extern NSString * const ONMulticastSocketNonMulticastAddress;
+extern NSString * const ONMulticastSocketSetTimeToLiveFailed;
+extern NSString * const ONMulticastSocketGroupMembershipOperationFailed;
+extern NSString * const ONMulticastSocketSendInterfaceSelectionFailed;
+extern NSString * const ONMulticastSocketFailedToSelectLooping;

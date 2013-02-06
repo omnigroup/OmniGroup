@@ -1,4 +1,4 @@
-// Copyright 2007-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,3 +43,27 @@
         #define CF_CONSUMED
     #endif
 #endif
+
+// For use with OBJC_OLD_DISPATCH_PROTOTYPES=0 where we must cast objc_msgSend to a function pointer type
+
+static inline void OBCallVoidIMP(IMP imp, id self, SEL _cmd)
+{
+    void (*f)(id, SEL) = (typeof(f))imp;
+    f(self, _cmd);
+}
+
+static inline id OBCallObjectReturnIMP(IMP imp, id self, SEL _cmd)
+{
+    id (*f)(id, SEL) = (typeof(f))imp;
+    return f(self, _cmd);
+}
+
+static inline void OBSendVoidMessage(id self, SEL _cmd)
+{
+    OBCallVoidIMP(objc_msgSend, self, _cmd);
+}
+
+static inline id OBSendObjectReturnMessage(id self, SEL _cmd)
+{
+    return OBCallObjectReturnIMP(objc_msgSend, self, _cmd);
+}

@@ -8,21 +8,16 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
+#import <OmniFoundation/OFCredentials.h>
 
 @class OUICertificateTrustAlert;
 
-@interface OUICertificateTrustAlert : OFObject <UIAlertViewDelegate> {
-@private
-    NSURLAuthenticationChallenge *_challenge;
-    BOOL _shouldOfferTrustAlwaysOption;
-    void (^_cancelBlock)(void);
-    void (^_trustBlock)(BOOL trustAlways);
-}
+@interface OUICertificateTrustAlert : OFObject <UIAlertViewDelegate>
 
 - (id)initForChallenge:(NSURLAuthenticationChallenge *)challenge;
 
 @property (copy, nonatomic) void (^cancelBlock)(void);
-@property (copy, nonatomic) void (^trustBlock)(BOOL);
+@property (copy, nonatomic) void (^trustBlock)(OFHostTrustDuration duration);
 @property (assign, nonatomic) BOOL shouldOfferTrustAlwaysOption;
 
 - (void)show;

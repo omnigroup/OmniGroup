@@ -1,4 +1,4 @@
-// Copyright 1998-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,30 +7,29 @@
 
 #import <OmniFoundation/OFController.h>
 
-#import <OmniBase/system.h>
 #import <ExceptionHandling/NSExceptionHandler.h>
-
-#import <OmniFoundation/OFObject-Queue.h>
-#import <OmniFoundation/OFInvocation.h>
+#import <OmniBase/system.h>
+#import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSThread-OFExtensions.h>
-#import <OmniFoundation/NSData-OFExtensions.h>
-#import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/OFBacktrace.h>
+#import <OmniFoundation/OFInvocation.h>
+#import <OmniFoundation/OFObject-Queue.h>
+#import <OmniFoundation/OFVersionNumber.h>
+#import <OmniFoundation/OFWeakReference.h>
 
 RCS_ID("$Id$")
 
 
-// The following exception can be raised during an OFControllerRequestsTerminateNotification.
-
-@interface OFController (PrivateAPI)
-- (void)_makeObserversPerformSelector:(SEL)aSelector;
-- (void)_runQueues;
-- (NSArray *)_observersSnapshot;
-@end
-
 /*" OFController is used to represent the current state of the application and to receive notifications about changes in that state. "*/
 @implementation OFController
+{
+    OFControllerStatus status;
+    NSLock *observerLock;
+    NSMutableArray *_observerReferences; // OFWeakReferences holding the observers
+    NSMutableSet *postponingObservers;
+    NSMutableDictionary *queues;
+}
 
 static OFController *sharedController = nil;
 
@@ -78,7 +77,7 @@ static void _OFControllerCheckTerminated(void)
         if (!controllingBundle)
             controllingBundle = [[NSBundle mainBundle] retain];
         
-        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.6 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
+        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.7 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
 #ifdef OMNI_ASSERTIONS_ON
         {
             NSString *requiredVersionString = [[controllingBundle infoDictionary] objectForKey:@"LSMinimumSystemVersion"];
@@ -86,7 +85,7 @@ static void _OFControllerCheckTerminated(void)
                 OFVersionNumber *requiredVersion = [[OFVersionNumber alloc] initWithVersionString:requiredVersionString];
                 OBASSERT(requiredVersion);
                 
-                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.6"];
+                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.7"];
                 OBASSERT([globalRequiredVersion compareToVersionNumber:requiredVersion] != NSOrderedDescending);
                 [requiredVersion release];
                 [globalRequiredVersion release];
@@ -102,7 +101,10 @@ static void _OFControllerCheckTerminated(void)
 + (id)sharedController;
 {
     // Don't set up the shared controller in +initialize.  The issue is that the superclass +initialize will always get called first and the fallback code to use the receiving class will always get OFController.  In a command line tool you don't have a bundle plist, but you can subclass OFController and make sure +sharedController is called on it first.
-    if (!sharedController) {
+    if (sharedController == nil) {
+        static BOOL _stillSettingUpSharedController = YES;
+        assert(_stillSettingUpSharedController == YES);
+
         NSBundle *controllingBundle = [self controllingBundle];
         NSDictionary *infoDictionary = [controllingBundle infoDictionary];
         NSString *controllerClassName = [infoDictionary objectForKey:@"OFControllerClass"];
@@ -122,10 +124,19 @@ static void _OFControllerCheckTerminated(void)
             }
         }
         
-        OBASSERT(sharedController == nil);
-        
-        sharedController = [controllerClass alloc]; // Special case; make sure assignment happens before call to -init so that it will actually initialize this instance
-        sharedController = [sharedController init];
+        OFController *allocatedController = [controllerClass alloc]; // Special case; make sure assignment happens before call to -init so that it will actually initialize this instance
+        if (sharedController == nil) {
+            sharedController = allocatedController;
+            OFController *initializedController = [allocatedController init];
+            assert(sharedController == initializedController);
+        } else {
+            // Allocating a controller can recursively reenter this code (because it triggers class initialization which can register with OFController).  That means that by the time the first +alloc finishes, we may have already completely set up a different shared controller which we should continue to use instead of blindly replacing it.
+            [allocatedController release];
+            return sharedController;
+        }
+
+        assert(_stillSettingUpSharedController == YES);
+        _stillSettingUpSharedController = NO;
     }
     
     return sharedController;
@@ -145,6 +156,8 @@ static void _OFControllerCheckTerminated(void)
         //
         // An alternate solution would be to ensure that subclasses do not override init, and provide an overridable method such as -initializeSharedInstance where they can set up their private state.  
         
+        OBAnalyzerNotReached(); // clang-sa from Xcode 4.6 warns about this pattern.
+        
         id sharedInstance = [OFController sharedController];
 	[self release];
 	return [sharedInstance retain];
@@ -163,7 +176,7 @@ static void _OFControllerCheckTerminated(void)
     
     observerLock = [[NSLock alloc] init];
     status = OFControllerNotInitializedStatus;
-    observers = [[NSMutableArray alloc] init];
+    _observerReferences = [[NSMutableArray alloc] init];
     postponingObservers = [[NSMutableSet alloc] init];
     
 #ifdef OMNI_ASSERTIONS_ON
@@ -177,7 +190,7 @@ static void _OFControllerCheckTerminated(void)
 {
     OBPRECONDITION([NSThread isMainThread]);
 
-    [observers release];
+    [_observerReferences release];
     [postponingObservers release];
     [queues release];
     
@@ -191,31 +204,40 @@ static void _OFControllerCheckTerminated(void)
     return status;
 }
 
+- (NSUInteger)_locked_indexOfObserver:(id)observer;
+{
+    return [_observerReferences indexOfObjectPassingTest:^BOOL(OFWeakReference *ref, NSUInteger idx, BOOL *stop) {
+        return ref.object == observer;
+    }];
+}
+
 /*" Subscribes the observer to a set of notifications based on the methods that it implements in the OFControllerObserver informal protocol.  Classes can register for these notifications in their +didLoad methods (and those +didLoad methods probably shouldn't do much else, since defaults aren't yet registered during +didLoad). "*/
-- (void)addObserver:(id <OFWeakRetain>)observer;
+- (void)addObserver:(id)observer;
 {
     OBPRECONDITION(observer != nil);
     
     [observerLock lock];
     
-    // Adding the same observer twice is very likely a bug. Let's assert that we aren't.
-    // On more modern versions of Foundation, we may want to use an NSOrderedSet here.
-    OBASSERT(![observers containsObject:observer]); 
+    OBASSERT([self _locked_indexOfObserver:observer] == NSNotFound, "Adding the same observer twice is very likely a bug");
     
-    [observers addObject:observer];
-    [observer incrementWeakRetainCount];
-    
+    OFWeakReference *ref = [[OFWeakReference alloc] initWithObject:observer];
+    [_observerReferences addObject:ref];
+    [ref release];
+        
     [observerLock unlock];
 }
 
 
 /*" Unsubscribes the observer to a set of notifications based on the methods that it implements in the OFControllerObserver informal protocol. "*/
-- (void)removeObserver:(id <OFWeakRetain>)observer;
+- (void)removeObserver:(id)observer;
 {
     [observerLock lock];
     
-    [observers removeObject:observer];
-    [observer decrementWeakRetainCount];
+    NSUInteger observerIndex = [self _locked_indexOfObserver:observer];
+    
+    OBASSERT(observerIndex != NSNotFound, "Removing an observer that wasn't added is very likely a bug");
+    if (observerIndex != NSNotFound)
+        [_observerReferences removeObjectAtIndex:observerIndex];
     
     [observerLock unlock];
 }
@@ -391,6 +413,8 @@ static void _OFControllerCheckTerminated(void)
 
 - (void)crashWithReport:(NSString *)report;
 {
+    [self _makeObserversPerformSelector:@selector(controller:willCrashWithReport:) withObject:report];
+    
     OBASSERT_NOT_REACHED("Subclasses should do something more useful here, like use OmniCrashCatcher");
     NSLog(@"Crashing with report:\n%@", report);
     
@@ -418,6 +442,11 @@ static void _OFControllerCheckTerminated(void)
 {
     OBRecordBacktrace(NULL, OBBacktraceBuffer_NSException);
     [self crashWithException:exception mask:NSLogUncaughtExceptionMask];
+}
+
+- (BOOL)shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
+{
+    return YES;
 }
 
 #pragma mark -
@@ -536,6 +565,9 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 	return NO; // We are collecting the backtrace for some random purpose
     // (note on the above: we now use backtrace() instead of raising a OFControllerAssertionHandlerException to collect stack traces, so this test is presumably not needed any more)
     
+    if (![self shouldLogException:exception mask:aMask])
+        return NO;
+    
     NSString *numericTrace = [[exception userInfo] objectForKey:NSStackTraceKey];
     if ([NSString isEmptyString:numericTrace])
 	return YES; // huh?
@@ -551,10 +583,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     return NO; // we already did
 }
 
-@end
-
-
-@implementation OFController (PrivateAPI)
+#pragma mark - Private
 
 - (void)_makeObserversPerformSelector:(SEL)aSelector;
 {
@@ -574,15 +603,40 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     [self _runQueues];
 }
 
+- (void)_makeObserversPerformSelector:(SEL)aSelector withObject:(id)object;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    for (id anObserver in [self _observersSnapshot]) {
+        if ([anObserver respondsToSelector:aSelector]) {
+            @try {
+                [anObserver performSelector:aSelector withObject:self withObject:object];
+            } @catch (NSException *exc) {
+                NSLog(@"Ignoring exception raised during %s[%@ %@]: %@", OBPointerIsClass(anObserver) ? "+" : "-", OBShortObjectDescription(anObserver), NSStringFromSelector(aSelector), [exc reason]);
+            };
+        }
+    }
+    
+    [self _runQueues];
+}
+
 - (NSArray *)_observersSnapshot;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
+    NSMutableArray *observers = [[NSMutableArray alloc] init];
+
     [observerLock lock];
-    NSMutableArray *observersSnapshot = [[NSMutableArray alloc] initWithArray:observers];
+    {
+        for (OFWeakReference *ref in _observerReferences) {
+            id object = ref.object;
+            if (object)
+                [observers addObject:object];
+        }
+    }
     [observerLock unlock];
 
-    return [observersSnapshot autorelease];
+    return [observers autorelease];
 }
 
 - (void)_runQueues

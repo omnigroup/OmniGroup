@@ -10,6 +10,7 @@
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
+#import "NSImage-OAExtensions.h"
 #import "OAVersion.h"
 
 RCS_ID("$Id$")
@@ -34,17 +35,16 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
 {
     OBINITIALIZE;
     
-    NSBundle *bundle = [NSBundle bundleForClass:[OADefaultSettingIndicatorButton class]];
     NSString *imageStyle = [[NSUserDefaults standardUserDefaults] stringForKey:@"OADefaultSettingIndicatorStyle"];
     
     if ([imageStyle isEqualToString:IndicatorImageStyleCircleX]) {
-        ledOnImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForImageResource:@"OADefaultSettingIndicatorCircleXOn"]];
-        ledOffImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForImageResource:@"OADefaultSettingIndicatorCircleXOff"]];
+        ledOnImage = [[NSImage imageNamed:@"OADefaultSettingIndicatorCircleXOn" inBundle:OMNI_BUNDLE] retain];
+        ledOffImage = [[NSImage imageNamed:@"OADefaultSettingIndicatorCircleXOff" inBundle:OMNI_BUNDLE] retain];
         
     } else {
         OBASSERT((imageStyle == nil) || [imageStyle isEqualToString:IndicatorImageStyleLED]);   // Unspecified = the original LED mode
-        ledOnImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForImageResource:@"OADefaultSettingIndicatorOn"]];
-        ledOffImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForImageResource:@"OADefaultSettingIndicatorOff"]];
+        ledOnImage = [[NSImage imageNamed:@"OADefaultSettingIndicatorOn" inBundle:OMNI_BUNDLE] retain];
+        ledOffImage = [[NSImage imageNamed:@"OADefaultSettingIndicatorOff" inBundle:OMNI_BUNDLE] retain];
     }
 }
 

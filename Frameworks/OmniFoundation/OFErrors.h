@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,6 +40,8 @@ enum {
     OFXMLSignatureValidationFailure,  // Signature information could be parsed, but did not validate
     OFASN1Error,                      // Problem parsing an ASN.1 BER or DER encoded value
     OFKeyNotAvailable,
+    
+    OFNetStateRegistrationCannotCreateSocket,
 };
 
 

@@ -50,9 +50,7 @@ static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, 
 - (void)_loadInterface;
 - (void)_createShowAllItemsView;
 - (void)_setupMultipleToolbar;
-#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
-- (void)_setupCustomizableToolbar;
-#endif
+- (void)_setupShowAllToolbar;
 - (void)_resetWindowTitle;
 - (OAPreferenceClient *)_clientForRecord:(OAPreferenceClientRecord *)record;
 - (void)_showAllIcons:(id)sender;
@@ -527,12 +525,12 @@ static NSString *windowFrameSaveName = @"Preferences";
     } else if ([itemIdentifier isEqualToString:@"OAPreferencesNext"]) {
         [newItem setAction:@selector(showNextClient:)];
         [newItem setLabel:NSLocalizedStringFromTableInBundle(@"Next", @"OmniAppKit", [OAPreferenceController bundle], "preferences panel button")];
-        [newItem setImage:[NSImage imageNamed:@"OAPreferencesNextButton" inBundleForClass:[OAPreferenceController class]]];
+        [newItem setImage:[NSImage imageNamed:@"OAPreferencesNextButton" inBundle:OMNI_BUNDLE]];
         [newItem setEnabled:NO]; // the first time these get added, we'll be coming up in "show all" mode, so they'll immediately diable anyway...
     } else if ([itemIdentifier isEqualToString:@"OAPreferencesPrevious"]) {
         [newItem setAction:@selector(showPreviousClient:)];
         [newItem setLabel:NSLocalizedStringFromTableInBundle(@"Previous", @"OmniAppKit", [OAPreferenceController bundle], "preferences panel button")];
-        [newItem setImage:[NSImage imageNamed:@"OAPreferencesPreviousButton" inBundleForClass:[OAPreferenceController class]]];
+        [newItem setImage:[NSImage imageNamed:@"OAPreferencesPreviousButton" inBundle:OMNI_BUNDLE]];
         [newItem setEnabled:NO]; // ... so we disable them now to prevent visible flickering.
     } else { // it's for a preference client
         if ([self clientRecordWithIdentifier:itemIdentifier] == nil)
@@ -629,13 +627,11 @@ static NSString *windowFrameSaveName = @"Preferences";
 	    if (!initialClientRecord)
 		initialClientRecord = [_clientRecords lastObject];
             break;
-#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
         case OAPreferencesViewCustomizable:
             [self _createShowAllItemsView];
-            [self _setupCustomizableToolbar];
+            [self _setupShowAllToolbar];
             [self _showAllIcons:nil];
             break;
-#endif
 	default:
         case OAPreferencesViewMultiple:
 	    [_clientRecords autorelease];
@@ -714,7 +710,6 @@ static NSString *windowFrameSaveName = @"Preferences";
     [showAllIconsView setFrameSize:NSMakeSize(NSWidth([self.preferenceBox bounds]), boxHeight)];
 }
 
-// See <bug://50034> Stop using private API in OAPreferenceController on behalf of OmniWeb's preference panel
 - (void)_setupMultipleToolbar;
 {
     NSMutableArray *allClients;
@@ -728,19 +723,15 @@ static NSString *windowFrameSaveName = @"Preferences";
     [toolbar setAllowsUserCustomization:NO];
     [toolbar setAutosavesConfiguration:NO]; // Don't store the configured items or new items won't show up!
     [toolbar setDelegate:self];
-#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
-    [toolbar setShowsContextMenu:NO];
-#endif
     [_window setToolbar:toolbar];
 }
 
-#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
-- (void)_setupCustomizableToolbar;
+- (void)_setupShowAllToolbar;
 {
     NSArray *constantToolbarItems, *defaultClients, *allClients;
 
     constantToolbarItems = [NSArray arrayWithObjects:
-        @"OAPreferencesShowAll", @"OAPreferencesPrevious", @"OAPreferencesNext", NSToolbarSeparatorItemIdentifier,
+        @"OAPreferencesShowAll", @"OAPreferencesPrevious", @"OAPreferencesNext", // NSToolbarFlexibleSpaceItemIdentifier, @"OAPreferencesSearch",
         nil];
 
     defaultClients = [[NSUserDefaults standardUserDefaults] arrayForKey:@"FavoritePreferenceIdentifiers"];
@@ -751,15 +742,11 @@ static NSString *windowFrameSaveName = @"Preferences";
     allowedToolbarItems = [[constantToolbarItems arrayByAddingObjectsFromArray:allClients] retain];
 
     toolbar = [[OAPreferencesToolbar alloc] initWithIdentifier:@"OAPreferenceIdentifiers"];
-    [toolbar setAllowsUserCustomization:YES];
-    [toolbar setAutosavesConfiguration:YES];
+    [toolbar setAllowsUserCustomization:NO];
+    [toolbar setAutosavesConfiguration:NO];
     [toolbar setDelegate:self];
-    [toolbar setAlwaysCustomizableByDrag:YES];
-    [toolbar setShowsContextMenu:NO];
-    [window setToolbar:toolbar];
-    [toolbar setIndexOfFirstMovableItem:4]; // first four items are always ShowAll, Previous, Next, and Separator
+    [_window setToolbar:toolbar];
 }
-#endif
 
 - (void)_resetWindowTitle;
 {
@@ -1012,6 +999,8 @@ static NSComparisonResult OAPreferenceControllerCompareCategoryNames(id name1, i
 
 @end
 
+#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_10_7 > MAC_OS_X_VERSION_MIN_REQUIRED
+#define HAVE_OAOpenSystemPreferenceBundle
 static BOOL OAOpenSystemPreferenceBundle(NSString *paneBundleIdentifier)
 {
     OSErr err;
@@ -1055,6 +1044,7 @@ static BOOL OAOpenSystemPreferenceBundle(NSString *paneBundleIdentifier)
     
     return didOpen;
 }
+#endif
 
 static NSAppleEventDescriptor *whose(OSType form, OSType want, NSAppleEventDescriptor *seld, NSAppleEventDescriptor *container)
 {
@@ -1133,9 +1123,11 @@ BOOL OAOpenSystemPreferencePane(NSString *bundleIdentifier, NSString *tabIdentif
 {
     BOOL success = OAOpenSystemPreferenceTab(bundleIdentifier, tabIdentifier);
     
+#ifdef HAVE_OAOpenSystemPreferenceBundle
     /* Fall back to the 10.3 technique of asking System Preferences to open a given preference bundle. */
     if (!success)
         success = OAOpenSystemPreferenceBundle(bundleIdentifier);
+#endif
     
     return success;
 }

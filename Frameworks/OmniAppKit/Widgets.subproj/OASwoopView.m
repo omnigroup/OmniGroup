@@ -1,4 +1,4 @@
-// Copyright 2003-2005,2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -785,8 +785,9 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
 #ifdef DEBUG_SWOOP
                 OBASSERT(swoop[swoopIndex].cellIndex < oldCellCount);
 #endif
-                swoop[swoopIndex].cellIndex = cellRemap[swoop[swoopIndex].cellIndex];
-                OBASSERT(swoop[swoopIndex].cellIndex < swoopCellCount);
+                unsigned newCellIndex = cellRemap[swoop[swoopIndex].cellIndex];
+                OBASSERT(newCellIndex < swoopCellCount || newCellIndex == InvalidCellIndex);
+                swoop[swoopIndex].cellIndex = newCellIndex;
             }
             /* check whether the cell disappeared out from under this entry */
             if (swoop[swoopIndex].cellIndex == InvalidCellIndex)

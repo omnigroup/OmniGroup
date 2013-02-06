@@ -1,4 +1,4 @@
-// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,34 +7,66 @@
 
 #import <OmniFileStore/OFSDAVOperation.h>
 
+#import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSDAVFileManager.h>
 #import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/Errors.h>
-#import <OmniFoundation/OFStringScanner.h>
-#import <OmniFoundation/OFMultiValueDictionary.h>
-#import <OmniFoundation/OFUtilities.h>
+#import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
+#import <OmniFoundation/OFCredentials.h>
+#import <OmniFoundation/OFMultiValueDictionary.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniFoundation/OFStringScanner.h>
+#import <OmniFoundation/OFUtilities.h>
 #import <Security/SecTrust.h>
 
 RCS_ID("$Id$");
 
+// Methods from the removed protocol OFSFileManagerAsynchronousOperationTarget.
+OBDEPRECATED_METHOD(-fileManager:operationDidFinish:withError:);
+OBDEPRECATED_METHOD(-fileManager:operation:didReceiveData:);
+OBDEPRECATED_METHOD(-fileManager:operation:didReceiveBytes:);
+OBDEPRECATED_METHOD(-fileManager:operation:didSendBytes:);
+OBDEPRECATED_METHOD(-fileManager:operation:didProcessBytes:);
+
 @implementation OFSDAVOperation
+{
+    NSURLRequest *_request;
+    NSURLConnection *_connection;
+    
+    // For PUT operations
+    long long _bodyBytesSent;
+    long long _expectedBytesToWrite;
+    
+    // Mostly for GET operations, though _response gets used at the end of a PUT or during an auth challenge.
+    NSHTTPURLResponse *_response;
+    NSMutableData *_resultData;
+    NSUInteger _bytesReceived;
+    
+    BOOL _finished;
+    BOOL _shouldCollectDetailsForError;
+    NSMutableData *_errorData;
+    NSError *_error;
+    NSMutableArray *_redirects;
+}
 
 static BOOL _isRead(OFSDAVOperation *self)
 {
     NSString *method = [self->_request HTTPMethod];
     
     // We assert it is uppercase in the initializer.
-    if ([method isEqualToString:@"GET"] || [method isEqualToString:@"PROPFIND"])
+    if ([method isEqualToString:@"GET"] || [method isEqualToString:@"PROPFIND"] || [method isEqualToString:@"LOCK"])
         return YES;
     
-    OBASSERT([method isEqualToString:@"PUT"] || [method isEqualToString:@"MKCOL"] || [method isEqualToString:@"DELETE"] || [method isEqualToString:@"MOVE"]); // The delegate doesn't need to read any data from these operations
+    OBASSERT([method isEqualToString:@"PUT"] ||
+             [method isEqualToString:@"MKCOL"] ||
+             [method isEqualToString:@"DELETE"] ||
+             [method isEqualToString:@"MOVE"] ||
+             [method isEqualToString:@"UNLOCK"]); // The delegate doesn't need to read any data from these operations
     
     return NO;
 }
 
-- initWithFileManager:(OFSDAVFileManager *)fileManager request:(NSURLRequest *)request target:(id <OFSFileManagerAsynchronousOperationTarget>)target;
+- initWithRequest:(NSURLRequest *)request;
 {
     OBPRECONDITION([[[request URL] scheme] isEqualToString:@"http"] || [[[request URL] scheme] isEqualToString:@"https"]); // We want a NSHTTPURLResponse
     OBPRECONDITION([[request HTTPMethod] isEqualToString:[[request HTTPMethod] uppercaseString]]);
@@ -42,28 +74,15 @@ static BOOL _isRead(OFSDAVOperation *self)
     if (!(self = [super init]))
         return nil;
 
-    _nonretained_fileManager = fileManager;
     _request = [request copy];
-    _target = [target retain];
-    _redirections = [[NSMutableArray alloc] init];
-    
+    _redirects = [[NSMutableArray alloc] init];
+        
     // For write operations, we have to record the expected length here AND in the NSURLConnection callback. The issue is that for https PUT operations, we can get an authorization challenge after we've uploaded the entire body, at which point we'll have to start all over. NSURLConnection keeps the # bytes increasing and doubles the expected bytes to write at this point (which is more accurate than going back to zero bytes, by some measure).
     if (!_isRead(self)) {
         NSData *body = [request HTTPBody];
         // OBASSERT(body); // We don't support streams, but we might be performing an operation which doesn't involve data (e.g. removing a file)
         
         _expectedBytesToWrite = [body length];
-        
-        // Must implement the byte-based option
-        OBASSERT(_target == nil || [_target respondsToSelector:@selector(fileManager:operation:didProcessBytes:)]);
-            
-    } else {
-        // Must implement one of the reading options
-        if ([_target respondsToSelector:@selector(fileManager:operation:didReceiveData:)])
-            _targetWantsData = YES;
-        else {
-            OBASSERT(_target == nil || [_target respondsToSelector:@selector(fileManager:operation:didReceiveData:)] || [_target respondsToSelector:@selector(fileManager:operation:didProcessBytes:)]);
-        }
     }
     
     return self;
@@ -71,18 +90,11 @@ static BOOL _isRead(OFSDAVOperation *self)
 
 - (void)dealloc;
 {
-    _nonretained_fileManager = nil;
-    if (!_finished)
+    if (!_finished) {
+        if (OFSFileManagerDebug > 3)
+            NSLog(@"%@: cancelling request in -dealloc", OBShortObjectDescription(self));
         [_connection cancel];
-    [_connection release];
-    [_request release];
-    [_response release];
-    [_resultData release];
-    [_errorData release];
-    [_finalError release];
-    [_target release];
-    [_redirections release];
-    [super dealloc];
+    }
 }
 
 - (NSError *)prettyErrorForDAVError:(NSError *)davError;
@@ -92,7 +104,7 @@ static BOOL _isRead(OFSDAVOperation *self)
     
     // me.com returns 402 Payment Required if you mistype your user name.  402 is currently reserved and Apple shouldn't be using it at all; Radar 6253979
     // 409 Conflict -- we can get this if the user mistypes the directory or forgets to create it.  There might be other cases, but this is by far the most likely.
-    if (code == 401 || code == 402 || code == 409) {
+    if (code == OFS_HTTP_UNAUTHORIZED || code == OFS_HTTP_PAYMENT_REQUIRED || code == OFS_HTTP_CONFLICT) {
         NSString *location = [[_request URL] absoluteString];
         NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not access the WebDAV location <%@>.", @"OmniFileStore", OMNI_BUNDLE, @"error description"),
                                  location];
@@ -196,44 +208,21 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         }
         scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
     }
-    [scanner release];
     return bareHeader;
 }
 
-- (NSData *)run:(NSError **)outError;
+- (NSString *)valueForResponseHeader:(NSString *)header;
 {
-    // Start the NSURLConnection and then wait for it to finish.
-    [self startOperation];
-    
-    while (!_finished) {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.5]];
-        [pool release];
-    }
-    
-    if (OFSFileManagerDebug > 1) {
-        NSLog(@"%@: redirections = %@", [self shortDescription], [_redirections description]);
-    }
-    
-    // Try to upgrade the response to an error if we didn't get an error in the actual attempt but rather received error content from the server.
-    OBASSERT(_response || _finalError); // Only nil if we got back something other than an http response
-
-    if (_finalError != nil) {
-        if (outError)
-            *outError = _finalError;
-        return nil;
-    }
-    
-    return _resultData;
+    OBPRECONDITION(_response);
+    return [_response allHeaderFields][header];
 }
 
-- (NSArray *)redirects
-{
-    return _redirections;
-}
+#pragma mark - OFSAsynchronousOperation
 
-#pragma mark -
-#pragma mark OFSAsynchronousOperation
+@synthesize didFinish = _didFinish;
+@synthesize didReceiveData = _didReceiveData;
+@synthesize didReceiveBytes = _didReceiveBytes;
+@synthesize didSendBytes = _didSendBytes;
 
 - (NSURL *)url;
 {
@@ -246,7 +235,8 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     OBPRECONDITION([_resultData length] == 0 || _bodyBytesSent == 0);
     
     if (_isRead(self)) {
-        if (_target)
+        // If we have a didReceiveData block, we don't buffer up the data, but we do keep a count.
+        if (_didReceiveData)
             return _bytesReceived;
         else
             return [_resultData length];
@@ -268,137 +258,70 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     }
 }
 
-- (void)startOperation;
+- (void)startOperationOnQueue:(NSOperationQueue *)queue;
 {
+    OBPRECONDITION(_didFinish); // What is the purpose of an async operation that we don't track the end of?
     OBPRECONDITION(_connection == nil);
     OBPRECONDITION(_response == nil);
-    _connection = [[NSURLConnection alloc] initWithRequest:_request delegate:self]; // this starts the operation
+    OBPRECONDITION(_findCredentialsForChallenge);
+    
+    // We cannot use the newer NSOperationQueue based API here in all cases. In particular, if we are invoked on a background operation queue with a maximum concurrent operation count of one, then when -run: is called, it will block and will prevent dispatched delegate methods from firing (and will thus self-deadlock). We instead use the NSRunLoop API, which is OK since we always call -startOperation and -run:  on the same thread (so the current run loop can't be recycled when an operation queue worker thread dies and discard the schedling of our connection).
+
+    // In the async version of the OFSFileManager API, the caller might be on a background queue serviced by a temporary thread. In this case, if the caller doesn't either specify a queue or run the runloop (preventing the calling thread from exiting) then the calling thread might exit and the delegate callbacks will silently not be called.
+    if (queue) {
+        if (OFSFileManagerDebug > 3)
+            NSLog(@"%@: starting connection (on queue %@)", [self shortDescription], queue);
+        _connection = [[NSURLConnection alloc] initWithRequest:_request delegate:self startImmediately:NO];
+        [_connection setDelegateQueue:queue];
+        [_connection start];
+    } else {
+        if (OFSFileManagerDebug > 3)
+            NSLog(@"%@: starting connection (on current runloop)", [self shortDescription]);
+        _connection = [[NSURLConnection alloc] initWithRequest:_request delegate:self startImmediately:YES];
+    }
 }
 
 - (void)stopOperation;
 {
+    if (OFSFileManagerDebug > 3)
+        NSLog(@"%@: cancelling request", [self shortDescription]);
     [_connection cancel];
-    [_connection release];
     _connection = nil;
 }
 
-#pragma mark -
-#pragma mark NSURLConnection delegate
+#pragma mark - NSURLConnectionDelegate
 
-- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse;
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
 {
-    if (OFSFileManagerDebug > 2) {
-        NSLog(@"%@: will send request %@, redirect response %@", [self shortDescription], request, redirectResponse);
-        NSLog(@"request URL: %@", [request URL]);
-        NSLog(@"request headers: %@", [request allHTTPHeaderFields]);
-        NSLog(@"redirect URL: %@", [redirectResponse URL]);
-        NSLog(@"redirect headers: %@", [(id)redirectResponse allHeaderFields]);
-    }
+    OBPRECONDITION(!_finished);
+    OBPRECONDITION(_error == nil);
     
-    NSURLRequest *continuation = nil;
+    [self _logError:error];
     
-    // Some WebDAV servers (the one builtin in Mac OS X Server, but not the one in .Mac) will redirect "/xyz" to "/xyz/" if we PROPFIND something that is a directory.  But, the re-sent request will be a GET instead of a PROPFIND.  This, in turn, will cause us to get back HTML instead of the expected XML.
-    // (This is what HTTP specifies as correct behavior for everything except GET and HEAD, mostly for security reasons: see RFC2616 section 10.3.)
-    // Likewise, if we MOVE /a/ to /b/ we've seen redirects to the non-slash version.  In particular, when using the LAN-local apache and picking local in the simulator on an incompatible database conflict.  When we try to put the new resource into place, it redirects.
-    // The above is arguably a bug in Apache.
-    /*
-     RFC4918 section [5.2], "Collection Resources", says in part:
-     There is a standing convention that when a collection is referred to by its name without a trailing slash, the server may handle the request as if the trailing slash were present. In this case, it should return a Content-Location header in the response, pointing to the URL ending with the "/". For example, if a client invokes a method on http://example.com/blah (no trailing slash), the server may respond as if the operation were invoked on http://example.com/blah/ (trailing slash), and should return a Content-Location header with the value http://example.com/blah/. Wherever a server produces a URL referring to a collection, the server should include the trailing slash. In general, clients should use the trailing slash form of collection names. If clients do not use the trailing slash form the client needs to be prepared to see a redirect response. Clients will find the DAV:resourcetype property more reliable than the URL to find out if a resource is a collection.
-    */
-    if (redirectResponse) {
-        NSString *method = [_request HTTPMethod];
-        if ([method isEqualToString:@"PROPFIND"] || [method isEqualToString:@"MKCOL"] || [method isEqualToString:@"DELETE"]) {
-            // PROPFIND is a GET-like request, so when we redirect, keep the method.
-            // Duplicate the original request, including any DAV headers and body content, but put in the redirected URL.
-            // MKCOL is not a 'safe' method, but for our purposes it can be considered redirectable.
-            NSMutableURLRequest *redirect = [[_request mutableCopy] autorelease];
-            [redirect setURL:[request URL]];
-            continuation = redirect;
-        } else if ([method isEqualToString:@"GET"]) {
-            // The NSURLConnection machinery handles GETs the way we want already.
-            continuation = request;
-        } else if ([method isEqualToString:@"MOVE"]) {
-            // MOVE is a bit dubious. If the source URL gets rewritten by the server, do we know that the destination URL we're sending is still what it should be?
-            // In theory, since we just use MOVE to implement atomic writes, we shouldn't get redirects on MOVE, as long as we paid attention to the response to the PUT or MKCOL request used to create the resource we're MOVEing.
-            // Exception: When replacing a remote database with the local version, if the user-entered URL incurs a redirect (e.g. http->https), we will still get a redirect on MOVE when moving the old database aside before replacing it with the new one.  TODO: Figure out how to avoid this.
-            // OBASSERT_NOT_REACHED("In theory, we shouldn't get redirected on MOVE?");
+    _error = [error copy];
+    
+    [self _finish];
+}
 
-            // Try to rewrite the destination URL analogously to the source URL.
-            NSString *rewrote = OFSURLAnalogousRewrite([_request URL], [_request valueForHTTPHeaderField:@"Destination"], [request URL]);
-            if (rewrote) {
-#ifdef OMNI_ASSERTIONS_ON
-                NSLog(@"%@: Suboptimal redirect %@ -> %@ (destination %@ -> %@)", [self shortDescription], [redirectResponse URL], [request URL], [_request valueForHTTPHeaderField:@"Destination"], rewrote);
-#endif                
-                NSMutableURLRequest *redirect = [[_request mutableCopy] autorelease];
-                [redirect setURL:[request URL]];
-                [redirect setValue:rewrote forHTTPHeaderField:@"Destination"];
-                continuation = redirect;
-            } else {
-                // We don't have enough information to figure out what the redirected request should be.
-                continuation = nil;
-            }
-        } else if ([method isEqualToString:@"PUT"]) {
-            // We really should never get a redirect on PUT anymore when working on our remote databases: we always use an up-to-date base URL derived from an earlier PROPFIND on our .ofocus collection.
-            // The one exception is when uploading an .ics file, which goes directly into the directory specified by the user and therefore might hit an initial redirect, esp. for the http->https redirect case.
-            // OBASSERT_NOT_REACHED("In theory, we shouldn't get redirected on PUT?");
-            
-#ifdef OMNI_ASSERTIONS_ON
-            NSLog(@"%@: Suboptimal redirect %@ -> %@", [self shortDescription], [redirectResponse URL], [request URL]);
+- (BOOL)connectionShouldUseCredentialStorage:(NSURLConnection *)connection;
+{
+    OBFinishPorting;
+#if 0
+    OFSFileManager *fileManager = _weak_fileManager;
+    OBASSERT(fileManager, "File manager deallocated before operations finished");
+    
+    id <OFSFileManagerDelegate> delegate = fileManager.delegate;
+    if ([delegate respondsToSelector:@selector(fileManagerShouldUseCredentialStorage:)])
+        return [delegate fileManagerShouldUseCredentialStorage:fileManager];
+    else
+        return YES;
 #endif
-            
-            NSMutableURLRequest *redirect = [[_request mutableCopy] autorelease];
-            [redirect setURL:[request URL]];
-            continuation = redirect;
-        } else {
-            OBASSERT_NOT_REACHED("Anything else get redirected that needs this treatment?");
-            continuation = request;
-        }
-        
-        if (continuation && redirectResponse) {
-            NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)redirectResponse;
-            OFSAddRedirectEntry(_redirections,
-                                [NSString stringWithFormat:@"%u", (unsigned)[httpResponse statusCode]], 
-                                [redirectResponse URL], [continuation URL], [httpResponse allHeaderFields]);
-        }
-        
-    } else {
-        // We're probably sending the initial request, here.
-        // (Note that 10.4 doesn't seem to call us for the initial request; 10.6 does. Not sure when this changed.)
-        continuation = request;
-    }
-    
-    return continuation;
 }
 
-- (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace;
-{
-    // The purpose of this method, as far as I can tell, is simply to tell NSURLConnection whether our -connection:didReceiveAuthenticationChallenge: will totally choke and die on a given authentication method. We still have the ability to reject the challenge later.
-    // If we return NO, the NSURLConnection will still try its usual fallbacks, like the keychain.
-    
-    BOOL result;
-    
-    NSString *authenticationMethod = [protectionSpace authenticationMethod];
-    if ([authenticationMethod isEqualToString:NSURLAuthenticationMethodClientCertificate])
-        result = NO;
-    else if ([authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
-        if (NSFoundationVersionNumber >= OFFoundationVersionNumber10_5)
-            result = YES;
-        else
-            result = NO; // Shouldn't be reached, but who knows.
-    } else {
-        result = YES;
-    }
-    
-    if (OFSFileManagerDebug > 2)
-        NSLog(@"%@: canAuthenticateAgainstProtectionSpace %@  ->  %@", [self shortDescription], protectionSpace, result?@"YES":@"NO");
-
-    return result;
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
     if (OFSFileManagerDebug > 2)
-        NSLog(@"%@: did receive challenge %@", [self shortDescription], challenge);
+        NSLog(@"%@: will send request for authentication challenge %@", [self shortDescription], challenge);
     
     NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
     NSString *challengeMethod = [protectionSpace authenticationMethod];
@@ -427,9 +350,6 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     NSURLCredential *credential = nil;
     
     if ([challengeMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
-        
-        BOOL shouldAskDelegate = NO;
-        
         SecTrustRef trustRef;
         if ((trustRef = [protectionSpace serverTrust]) != NULL) {
             
@@ -450,120 +370,146 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
                 NSLog(@"%@: SecTrustEvaluate returns %@", [self shortDescription], result);
             }
             if (oserr == noErr && evaluationResult == kSecTrustResultRecoverableTrustFailure) {
-                (void)shouldAskDelegate;
-                
                 // The situation we're interested in is "recoverable failure": this indicates that the evaluation failed, but might succeed if we prod it a little.
-                // shouldAskDelegate = YES;
                 // For now, we're just replicating the behavior of the old WebKit API: if a hostname is in OFSDAVFileManager's whitelist, we disable all certificate checks.
+                if (!OFIsTrustedHost([protectionSpace host])) {
+                    // Our caller may choose to pop up UI or it might choose to immediately mark the host as trusted.
+                    if (_validateCertificateForChallenge)
+                        _validateCertificateForChallenge(self, challenge);
+                }
 
-                NSString *trustedHost = [[OFPreferenceWrapper sharedPreferenceWrapper] objectForKey:OFSTrustedSyncHostPreference];
-                if ([OFSDAVFileManager isTrustedHost:[protectionSpace host]] || [trustedHost isEqualToString:[protectionSpace host]]) {
-                    credential = [[NSURLCredential class] performSelector:@selector(credentialForTrust:) withObject:(id)trustRef];
+                if (OFIsTrustedHost([protectionSpace host])) {
+                    credential = [NSURLCredential credentialForTrust:trustRef];
                     if (OFSFileManagerDebug > 2)
                         NSLog(@"credential = %@", credential);
                     [[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
                     return;
                 } else {
-                    // If we have a delegate, we expect it to provide UI to the user about why we are canceling the authentication.
-                    id <OFSDAVFileManagerAuthenticationDelegate> delegate = [OFSDAVFileManager authenticationDelegate];
-                    [delegate DAVFileManager:_nonretained_fileManager validateCertificateForChallenge:challenge];
-                    [[challenge sender] cancelAuthenticationChallenge:challenge];   // delegate will decide whether to restart the operation
+                    // The delegate didn't opt to immediately mark the host trusted. It is presumably giving up or prompting the user and will retry the operation later.
+                    // We'd prefer to cancel here, but if we do, we deadlock (in the NSOperationQueue-based scheduling).
+                    //[[challenge sender] cancelAuthenticationChallenge:challenge];
+                    [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
                     return;
                 }
             }
         }
         
         // If we "continue without credential", NSURLConnection will consult certificate trust roots and per-cert trust overrides in the normal way. If we cancel the "challenge", NSURLConnection will drop the connection, even if it would have succeeded without our meddling (that is, we can force failure as well as forcing success).
-
-        if (!shouldAskDelegate) {
-            [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
-            return;
-        }
+        
+        [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
+        return;
     }
 
-    id <OFSDAVFileManagerAuthenticationDelegate> delegate = [OFSDAVFileManager authenticationDelegate];
-    if (delegate)
-        credential = [delegate DAVFileManager:_nonretained_fileManager findCredentialsForChallenge:challenge];
+    if (_findCredentialsForChallenge)
+        credential = _findCredentialsForChallenge(self, challenge);
     
     if (OFSFileManagerDebug > 2)
         NSLog(@"credential = %@", credential);
     
-    if (credential)
+    if (credential) {
         [[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
-    else {
-        _response = [[challenge failureResponse] copy]; // Keep around the response that says something about the failure
-        [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
-    }
-}
-
-- (void)connection:(NSURLConnection *)connection didCancelAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    if (OFSFileManagerDebug > 2)
-        NSLog(@"%@: did cancel challenge %@", [self shortDescription], challenge);
-}
-
-- (NSError *)_generateErrorForResponse;
-{
-    NSInteger statusCode = [_response statusCode];
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to perform WebDAV operation.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [[_request URL] host], [NSHTTPURLResponse localizedStringForStatusCode:statusCode], statusCode, [_request HTTPMethod], [[_request URL] path]];
-    NSMutableDictionary *info = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedRecoverySuggestionErrorKey, nil];
-    
-    [info setObject:[_response URL] forKey:OFSURLErrorFailingURLErrorKey];
-    [info setObject:[_request allHTTPHeaderFields] forKey:@"headers"];
-    /* We don't make use of this yet (and may not ever), but it is handy for debugging */ 
-    NSString *locationHeader = [[_response allHeaderFields] objectForKey:@"Location"];
-    if (locationHeader) {
-        [info setObject:locationHeader forKey:OFSResponseLocationErrorKey];
-    }
-    
-    // Add the error content.  Need to obey the charset specified in the Content-Type header.  And the content type.
-    if (_errorData != nil) {
-        [info setObject:_errorData forKey:@"errorData"];
+    } else {
+        // Keep around the response that says something about the failure, and set the flag indicating we want details recorded for this error
+        OBASSERT(_response == nil);
+        _response = [[challenge failureResponse] copy];
+        _shouldCollectDetailsForError = YES;
         
-        NSString *contentType = [[_response allHeaderFields] objectForKey:@"Content-Type"];
-        do {
-            if (![contentType isKindOfClass:[NSString class]]) {
-                NSLog(@"Error Content-Type not a string");
-                break;
-            }
-            
-            // Record the Content-Type
-            [info setObject:contentType forKey:@"errorDataContentType"];
-            OFMultiValueDictionary *parameters = [[[OFMultiValueDictionary alloc] init] autorelease];
-            [[self class] _parseContentTypeHeaderValue:contentType intoDictionary:parameters valueChars:nil];
-            NSString *encodingName = [parameters firstObjectForKey:@"charset"];
-            CFStringEncoding encoding = kCFStringEncodingInvalidId;
-            if (encodingName != nil)
-                encoding = CFStringConvertIANACharSetNameToEncoding((CFStringRef)encodingName);
-            if (encoding == kCFStringEncodingInvalidId)
-                encoding = kCFStringEncodingWindowsLatin1; // Better a mangled error than no error at all!
-            
-            CFStringRef str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)_errorData, encoding);
-            if (!str) {
-                // The specified encoding didn't work, let's try Windows Latin 1
-                str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)_errorData, kCFStringEncodingWindowsLatin1);
-                if (!str) {
-                    NSLog(@"Error content cannot be turned into string using encoding '%@' (%ld)", encodingName, (long)encoding);
-                    [info setObject:_errorData forKey:@"errorData"];
-                    break;
-                }
-            }
-            
-            [info setObject:(id)str forKey:@"errorString"];
-            CFRelease(str);
-        } while (0);
+        [[challenge sender] cancelAuthenticationChallenge:challenge];
+    }
+}
+
+#pragma mark - NSURLConnectionDataDelegate
+
+- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse;
+{
+    if (OFSFileManagerDebug > 2) {
+        NSLog(@"%@: will send request %@, redirect response %@", [self shortDescription], request, redirectResponse);
+        NSLog(@"request URL: %@", [request URL]);
+        NSLog(@"request headers: %@", [request allHTTPHeaderFields]);
+        NSLog(@"redirect URL: %@", [redirectResponse URL]);
+        NSLog(@"redirect headers: %@", [(id)redirectResponse allHeaderFields]);
     }
 
-    NSError *davError = [NSError errorWithDomain:OFSDAVHTTPErrorDomain code:statusCode userInfo:info];
-    return [self prettyErrorForDAVError:davError];
+    NSURLRequest *continuation = nil;
+    
+    // Some WebDAV servers (the one builtin in Mac OS X Server, but not the one in .Mac) will redirect "/xyz" to "/xyz/" if we PROPFIND something that is a directory.  But, the re-sent request will be a GET instead of a PROPFIND.  This, in turn, will cause us to get back HTML instead of the expected XML.
+    // (This is what HTTP specifies as correct behavior for everything except GET and HEAD, mostly for security reasons: see RFC2616 section 10.3.)
+    // Likewise, if we MOVE /a/ to /b/ we've seen redirects to the non-slash version.  In particular, when using the LAN-local apache and picking local in the simulator on an incompatible database conflict.  When we try to put the new resource into place, it redirects.
+    // The above is arguably a bug in Apache.
+    /*
+     RFC4918 section [5.2], "Collection Resources", says in part:
+     There is a standing convention that when a collection is referred to by its name without a trailing slash, the server may handle the request as if the trailing slash were present. In this case, it should return a Content-Location header in the response, pointing to the URL ending with the "/". For example, if a client invokes a method on http://example.com/blah (no trailing slash), the server may respond as if the operation were invoked on http://example.com/blah/ (trailing slash), and should return a Content-Location header with the value http://example.com/blah/. Wherever a server produces a URL referring to a collection, the server should include the trailing slash. In general, clients should use the trailing slash form of collection names. If clients do not use the trailing slash form the client needs to be prepared to see a redirect response. Clients will find the DAV:resourcetype property more reliable than the URL to find out if a resource is a collection.
+    */
+    if (redirectResponse) {
+        NSString *method = [_request HTTPMethod];
+        if ([method isEqualToString:@"PROPFIND"] || [method isEqualToString:@"MKCOL"] || [method isEqualToString:@"DELETE"]) {
+            // PROPFIND is a GET-like request, so when we redirect, keep the method.
+            // Duplicate the original request, including any DAV headers and body content, but put in the redirected URL.
+            // MKCOL is not a 'safe' method, but for our purposes it can be considered redirectable.
+            OBPRECONDITION([_request valueForHTTPHeaderField:@"If"] == nil); // TODO: May need to rewrite the URL here too.
+            NSMutableURLRequest *redirect = [_request mutableCopy];
+            [redirect setURL:[request URL]];
+            continuation = redirect;
+        } else if ([method isEqualToString:@"GET"]) {
+            // The NSURLConnection machinery handles GETs the way we want already.
+            continuation = request;
+        } else if ([method isEqualToString:@"MOVE"]) {
+            // MOVE is a bit dubious. If the source URL gets rewritten by the server, do we know that the destination URL we're sending is still what it should be?
+            // In theory, since we just use MOVE to implement atomic writes, we shouldn't get redirects on MOVE, as long as we paid attention to the response to the PUT or MKCOL request used to create the resource we're MOVEing.
+            // Exception: When replacing a remote database with the local version, if the user-entered URL incurs a redirect (e.g. http->https), we will still get a redirect on MOVE when moving the old database aside before replacing it with the new one.  TODO: Figure out how to avoid this.
+            // OBASSERT_NOT_REACHED("In theory, we shouldn't get redirected on MOVE?");
+
+            // Try to rewrite the destination URL analogously to the source URL.
+            NSString *rewrote = OFSURLAnalogousRewrite([_request URL], [_request valueForHTTPHeaderField:@"Destination"], [request URL]);
+            if (rewrote) {
+#ifdef OMNI_ASSERTIONS_ON
+                NSLog(@"%@: Suboptimal redirect %@ -> %@ (destination %@ -> %@)", [self shortDescription], [redirectResponse URL], [request URL], [_request valueForHTTPHeaderField:@"Destination"], rewrote);
+#endif                
+                NSMutableURLRequest *redirect = [_request mutableCopy];
+                [redirect setURL:[request URL]];
+                [redirect setValue:rewrote forHTTPHeaderField:@"Destination"];
+                continuation = redirect;
+            } else {
+                // We don't have enough information to figure out what the redirected request should be.
+                continuation = nil;
+            }
+        } else if ([method isEqualToString:@"PUT"]) {
+            // We really should never get a redirect on PUT anymore when working on our remote databases: we always use an up-to-date base URL derived from an earlier PROPFIND on our .ofocus collection.
+            // The one exception is when uploading an .ics file, which goes directly into the directory specified by the user and therefore might hit an initial redirect, esp. for the http->https redirect case.
+            // OBASSERT_NOT_REACHED("In theory, we shouldn't get redirected on PUT?");
+            
+#ifdef OMNI_ASSERTIONS_ON
+            NSLog(@"%@: Suboptimal redirect %@ -> %@", [self shortDescription], [redirectResponse URL], [request URL]);
+#endif
+            
+            NSMutableURLRequest *redirect = [_request mutableCopy];
+            [redirect setURL:[request URL]];
+            continuation = redirect;
+        } else {
+            OBASSERT_NOT_REACHED("Anything else get redirected that needs this treatment?");
+            continuation = request;
+        }
+        
+        if (continuation && redirectResponse) {
+            NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)redirectResponse;
+            OFSAddRedirectEntry(_redirects,
+                                [NSString stringWithFormat:@"%u", (unsigned)[httpResponse statusCode]], 
+                                [redirectResponse URL], [continuation URL], [httpResponse allHeaderFields]);
+        }
+        
+    } else {
+        // We're probably sending the initial request, here.
+        // (Note that 10.4 doesn't seem to call us for the initial request; 10.6 does. Not sure when this changed.)
+        continuation = request;
+    }
+    
+    return continuation;
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response;
 {
     OBPRECONDITION(_response == nil);
     
-    [_response release];
     _response = nil;
     
     if (![response isKindOfClass:[NSHTTPURLResponse class]]) {
@@ -600,7 +546,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         NSDictionary *responseHeaders = [(NSHTTPURLResponse *)response allHeaderFields];
         NSString *location = [responseHeaders objectForKey:@"Content-Location"];
         if (location) {
-            OFSAddRedirectEntry(_redirections, kOFSRedirectContentLocation, [_response URL], [NSURL URLWithString:location relativeToURL:[_response URL]], responseHeaders);
+            OFSAddRedirectEntry(_redirects, kOFSRedirectContentLocation, [_response URL], [NSURL URLWithString:location relativeToURL:[_response URL]], responseHeaders);
         }
     }
 
@@ -611,13 +557,13 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         _shouldCollectDetailsForError = YES;
     }
     
-    OBASSERT(_isRead(self) || statusCode == 201 /* Accepted */ || statusCode == 204 /* No Content */ || statusCode >= 400 /* Some sort of error (e.g. missing file or permission denied) */);
+    OBASSERT(_isRead(self) || statusCode == OFS_HTTP_CREATED || statusCode == OFS_HTTP_NO_CONTENT || statusCode >= 400 /* Some sort of error (e.g. missing file or permission denied) */);
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data;
 {
     OBPRECONDITION(_response);
-    OBPRECONDITION([_response statusCode] != 204); // "No Content"
+    OBPRECONDITION([_response statusCode] != OFS_HTTP_NO_CONTENT);
     
     if (OFSFileManagerDebug > 2)
         NSLog(@"%@: did receive data of length %ld", [self shortDescription], [data length]);
@@ -631,42 +577,33 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         return; // We don't want to send uninterpreted error content to our target
     }
 
-#ifdef OMNI_ASSERTIONS_ON
-    long long bytesReportedSoFar;
-#endif
-    if (_target) {
-        long long processedBytes = [data length];
-        OBASSERT(processedBytes >= 0);
+    long long processedBytes = [data length];
+    OBASSERT(processedBytes >= 0);
+    
+    _bytesReceived += processedBytes;
+    
+    if (_didReceiveData)
+        // We don't accumulate data in this case (but do want to report the total bytes received).
+        _didReceiveData(self, data);
+    else {
+        if (_didReceiveBytes)
+            _didReceiveBytes(self, [data length]);
         
-        _bytesReceived += processedBytes;
-        
-        if (_targetWantsData)
-            [_target fileManager:_nonretained_fileManager operation:self didReceiveData:data];
-        else
-            [_target fileManager:_nonretained_fileManager operation:self didProcessBytes:[data length]];
-            
-#ifdef OMNI_ASSERTIONS_ON
-        bytesReportedSoFar = _bytesReceived;
-#endif
-    } else {
-        // We are supposed to collect the data (for example, OFSDAVFileManager -_rawDataByRunningRequest:operation:error:).
+        // We are supposed to collect the data
         if (!_resultData)
             _resultData = [[NSMutableData alloc] initWithData:data];
         else
             [_resultData appendData:data];
-        
-#ifdef OMNI_ASSERTIONS_ON
-        bytesReportedSoFar = [_resultData length];
-#endif
+        OBASSERT(_bytesReceived > 0);
+        OBASSERT(_bytesReceived == [_resultData length]);
     }
-
     
     // Check that the server and we agree on the expected content length, if it was sent.  It might not have said a content length, in which case we'll just get as much content as we are given.
 #ifdef OMNI_ASSERTIONS_ON
     long long expectedContentLength = [_response expectedContentLength];
 #endif
     OBPOSTCONDITION(expectedContentLength >= 0 || expectedContentLength == NSURLResponseUnknownLength);
-    OBPOSTCONDITION(expectedContentLength == NSURLResponseUnknownLength || bytesReportedSoFar <= expectedContentLength);
+    OBPOSTCONDITION(expectedContentLength == NSURLResponseUnknownLength || _bytesReceived <= (NSUInteger)expectedContentLength);
 }
 
 - (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite;
@@ -680,34 +617,11 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     _bodyBytesSent += bytesWritten;
     _expectedBytesToWrite = totalBytesExpectedToWrite; // See our initializer for details on this ivar's purpose.
 
-    if (_target) {
-        OBASSERT(bytesWritten <= totalBytesWritten);
-        OBASSERT(totalBytesWritten <= totalBytesExpectedToWrite);
-        [_target fileManager:_nonretained_fileManager operation:self didProcessBytes:bytesWritten];
-    }
-}
+    OBASSERT(bytesWritten <= totalBytesWritten);
+    OBASSERT(totalBytesWritten <= totalBytesExpectedToWrite);
 
-- (void)_finish;
-{
-    OBPRECONDITION(!_finished);
-
-    if (_shouldCollectDetailsForError) {
-        [_finalError release];
-        _finalError = [[self _generateErrorForResponse] retain];
-    }
-
-    if (_finalError != nil) {
-        if (OFSFileManagerDebug > 0)
-            NSLog(@"%@: did fail with error: %@", [self shortDescription], [_finalError toPropertyList]);
-    } else {
-        if (OFSFileManagerDebug > 2)
-            NSLog(@"%@: did finish loading", self);
-    }
-
-    if (_target != nil)
-        [_target fileManager:_nonretained_fileManager operationDidFinish:self withError:_finalError];
-
-    _finished = YES;
+    if (_didSendBytes)
+        _didSendBytes(self, bytesWritten);
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection;
@@ -716,20 +630,12 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     long long expectedContentLength = [_response expectedContentLength];
 #endif
     OBPRECONDITION(expectedContentLength >= 0 || expectedContentLength == NSURLResponseUnknownLength);
-    OBPRECONDITION(_target != nil || expectedContentLength == NSURLResponseUnknownLength || [_resultData length] <= (unsigned long long)expectedContentLength); // should have gotten all the content if we are to be considered successfully finised
-    [self _finish];
-}
+#ifdef OMNI_ASSERTIONS_ON
+    if (_didReceiveData == nil)
+        OBPRECONDITION(_bytesReceived == [_resultData length]); // We don't buffer the data if we are passing it out to a block.
+    OBPRECONDITION(expectedContentLength == NSURLResponseUnknownLength || _bytesReceived <= (unsigned long long)expectedContentLength); // should have gotten all the content if we are to be considered successfully finised
 
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
-{
-    OBPRECONDITION(!_finished);
-    OBPRECONDITION(_finalError == nil);
-    
-    if (OFSFileManagerDebug > 0)
-        NSLog(@"%@: did fail with error: %@", [self shortDescription], [error toPropertyList]);
-        
-    _finalError = [error copy];
-
+#endif
     [self _finish];
 }
 
@@ -740,8 +646,124 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     return nil; // Don't cache DAV stuff if asked to.
 }
 
-#pragma mark -
-#pragma mark Debugging
+#pragma mark - NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    return self;
+}
+
+#pragma mark - Private
+
+- (NSError *)_generateErrorForResponse;
+{
+    NSInteger statusCode = [_response statusCode];
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to perform WebDAV operation.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [[_request URL] host], [NSHTTPURLResponse localizedStringForStatusCode:statusCode], statusCode, [_request HTTPMethod], [[_request URL] path]];
+    NSMutableDictionary *info = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedRecoverySuggestionErrorKey, nil];
+    
+    // We should always have a response and request when generating the error.
+    // There is at least one case in the field where this is not true, and we are aborting due to an unhandled exception trying to stuff nil into the error dictionary. (See <bug:///84169> (Crash (unhandled exception) writing ICS file to sync server))
+    // Assert that we have a response and request, but handle that error condition gracefully.
+    
+    OBASSERT(_response != nil);
+    if (_response != nil) {
+        [info setObject:[_response URL] forKey:OFSURLErrorFailingURLErrorKey];
+    } else {
+        NSLog(@"_response is nil in %s", __func__);
+    }
+    
+    OBASSERT(_request != nil);
+    if (_request != nil) {
+        [info setObject:[_request allHTTPHeaderFields] forKey:@"headers"];
+    } else {
+        NSLog(@"_request is nil in %s", __func__);
+    }
+
+    // We don't make use of this yet (and may not ever), but it is handy for debugging
+    NSString *locationHeader = [[_response allHeaderFields] objectForKey:@"Location"];
+    if (locationHeader) {
+        [info setObject:locationHeader forKey:OFSResponseLocationErrorKey];
+    }
+    
+    // Add the error content.  Need to obey the charset specified in the Content-Type header.  And the content type.
+    if (_errorData != nil) {
+        [info setObject:_errorData forKey:@"errorData"];
+        
+        NSString *contentType = [[_response allHeaderFields] objectForKey:@"Content-Type"];
+        do {
+            if (![contentType isKindOfClass:[NSString class]]) {
+                NSLog(@"Error Content-Type not a string");
+                break;
+            }
+            
+            // Record the Content-Type
+            [info setObject:contentType forKey:@"errorDataContentType"];
+            OFMultiValueDictionary *parameters = [[OFMultiValueDictionary alloc] init];
+            [[self class] _parseContentTypeHeaderValue:contentType intoDictionary:parameters valueChars:nil];
+            NSString *encodingName = [parameters firstObjectForKey:@"charset"];
+            CFStringEncoding encoding = kCFStringEncodingInvalidId;
+            if (encodingName != nil)
+                encoding = CFStringConvertIANACharSetNameToEncoding((CFStringRef)encodingName);
+            if (encoding == kCFStringEncodingInvalidId)
+                encoding = kCFStringEncodingWindowsLatin1; // Better a mangled error than no error at all!
+            
+            CFStringRef str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)_errorData, encoding);
+            if (!str) {
+                // The specified encoding didn't work, let's try Windows Latin 1
+                str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)_errorData, kCFStringEncodingWindowsLatin1);
+                if (!str) {
+                    NSLog(@"Error content cannot be turned into string using encoding '%@' (%ld)", encodingName, (long)encoding);
+                    [info setObject:_errorData forKey:@"errorData"];
+                    break;
+                }
+            }
+            
+            [info setObject:(__bridge id)str forKey:@"errorString"];
+            CFRelease(str);
+        } while (0);
+    }
+    
+    NSError *davError = [NSError errorWithDomain:OFSDAVHTTPErrorDomain code:statusCode userInfo:info];
+    return [self prettyErrorForDAVError:davError];
+}
+
+- (void)_logError:(NSError *)error;
+{
+    if (OFSFileManagerDebug > 0) {
+        if (OFSFileManagerDebug > 1)
+            // full details
+            NSLog(@"%@: did fail with error: %@", [self shortDescription], [error toPropertyList]);
+        else
+            // brief note
+            NSLog(@"%@: did fail with error: %ld %@", [self shortDescription], error.code, [error localizedDescription]);
+    }
+}
+
+- (void)_finish;
+{
+    OBPRECONDITION(!_finished);
+    
+    if (_shouldCollectDetailsForError) {
+        _error = [self _generateErrorForResponse];
+    }
+    
+    if (_error != nil) {
+        [self _logError:_error];
+    } else {
+        if (OFSFileManagerDebug > 2)
+            NSLog(@"%@: did finish", [self shortDescription]);
+    }
+    
+    // Do this before calling the 'did finish' hook so that we are marked as finished when the target (possibly) calls our -resultData.
+    _finished = YES;
+    
+    if (_didFinish)
+        _didFinish(self, _error);
+}
+
+
+#pragma mark - Debugging
 
 - (NSString *)shortDescription;
 {

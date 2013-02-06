@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,7 @@
 #import <OWF/OWAuthorizationRequest.h> // For OWAuthorizationType
 #import <OWF/FrameworkDefines.h>
 
-OWF_PRIVATE_EXTERN NSTimeInterval OWAuthDistantPast;
+OB_HIDDEN extern NSTimeInterval OWAuthDistantPast;
 
 @interface OWAuthorizationCredential : OFObject
 {

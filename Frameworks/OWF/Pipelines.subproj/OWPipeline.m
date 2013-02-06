@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -508,7 +508,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
 // Init and dealloc
 
-+ (void)startPipelineWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;
++ (void)startPipelineWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
 {
     OWPipeline *pipeline;
 
@@ -517,7 +517,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     [pipeline release];
 }
 
-- (id)initWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;
+- (id)initWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
 {
     OWContent *initialContent;
 
@@ -531,7 +531,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     return [self initWithContent:initialContent target:aTarget];
 }
 
-- (id)initWithContent:(OWContent *)aContent target:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;
+- (id)initWithContent:(OWContent *)aContent target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
 {
     OWPipeline *newPipeline;
     NSArray *initialContent;
@@ -565,12 +565,12 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     return newPipeline;
 }
 
-- (id)initWithCacheGroup:(OWContentCacheGroup *)someCaches content:(NSArray *)someContent arcs:(NSArray *)someArcs target:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;  // Designated initializer
+- (id)initWithCacheGroup:(OWContentCacheGroup *)someCaches content:(NSArray *)someContent arcs:(NSArray *)someArcs target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;  // Designated initializer
 {
     if (!(self = [super init]))
         return nil;
 
-    OFWeakRetainConcreteImplementation_INIT;
+    OWFWeakRetainConcreteImplementation_INIT;
 
     state = OWPipelineInit;
     flags.contentError = NO;
@@ -701,7 +701,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
     [followedArcs makeObjectsPerformSelector:@selector(removeArcObserver:) withObject:self];
 
-    OFWeakRetainConcreteImplementation_DEALLOC;
+    OWFWeakRetainConcreteImplementation_DEALLOC;
 
     [costEstimates release];
     [caches release];
@@ -1014,9 +1014,9 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
 // Target
 
-- (id <OWTarget, OFWeakRetain, NSObject>)target;
+- (id <OWTarget, OWFWeakRetain, NSObject>)target;
 {
-    id <OWTarget, OFWeakRetain, NSObject> retainedTarget;
+    id <OWTarget, OWFWeakRetain, NSObject> retainedTarget;
 
     OFSimpleLock(&displayablesSimpleLock);
     retainedTarget = [_target strongRetain];
@@ -1265,9 +1265,9 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     return nil;
 }
     
-// OFWeakRetain protocol
+// OWFWeakRetain protocol
 
-OFWeakRetainConcreteImplementation_IMPLEMENTATION
+OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (void)invalidateWeakRetains;
 {
@@ -1297,7 +1297,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     [OWPipeline unlock];
 }
 
-- (OWPipeline *)cloneWithTarget:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;
+- (OWPipeline *)cloneWithTarget:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
 {
     OWPipeline *newPipeline = nil;
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -1505,7 +1505,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 // Some objects are interested in knowing when we're about to deallocate
 
-- (void)addDeallocationObserver:(id <OWPipelineDeallocationObserver, OFWeakRetain>)anObserver;
+- (void)addDeallocationObserver:(id <OWPipelineDeallocationObserver, OWFWeakRetain>)anObserver;
 {
     [contextLock lock];
     [deallocationObservers addObject:anObserver];
@@ -1513,7 +1513,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     [anObserver incrementWeakRetainCount];
 }
 
-- (void)removeDeallocationObserver:(id <OWPipelineDeallocationObserver, OFWeakRetain>)anObserver;
+- (void)removeDeallocationObserver:(id <OWPipelineDeallocationObserver, OWFWeakRetain>)anObserver;
 {
     [anObserver decrementWeakRetainCount];
     [(NSObject *)anObserver retain]; // Don't deallocate (or invalidate) this object inside our lock
@@ -2028,7 +2028,7 @@ OFWeakRetainConcreteImplementation_IMPLEMENTATION
     NSMutableArray *newPipelineContent;
     NSArray *newPipelineArcs;
     OWPipeline *newPipeline;
-    id <OWTarget, OFWeakRetain, NSObject> targetSnapshot = [self target];
+    id <OWTarget, OWFWeakRetain, NSObject> targetSnapshot = [self target];
 
     ASSERT_OWPipeline_Locked();
 

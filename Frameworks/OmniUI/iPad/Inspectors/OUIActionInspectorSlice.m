@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,6 +78,10 @@ RCS_ID("$Id$");
     _textWell.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _textWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
     
+    // Accessibility
+    _textWell.isAccessibilityElement = YES;
+    _textWell.accessibilityLabel = self.title;
+
     if (_action)
         [_textWell addTarget:self action:_action forControlEvents:[[self class] textWellControlEvents]];
     
@@ -91,14 +95,6 @@ RCS_ID("$Id$");
         _textWell.text = self.title;
 
     self.view = _textWell;
-}
-
-- (void)viewDidUnload;
-{
-    [_textWell release];
-    _textWell = nil;
-    
-    [super viewDidUnload];
 }
 
 - (void)viewDidAppear:(BOOL)animated

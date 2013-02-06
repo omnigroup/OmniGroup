@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2007, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -989,7 +989,7 @@ static void Thingy(id mememe, SEL wheee)
     if (anotherObject == self)
         return YES;
 
-    if (anotherObject == nil || ((OWContent *)anotherObject)->isa != isa)
+    if (anotherObject == nil || [anotherObject class] != [self class])
         return NO;
 
     other = anotherObject;

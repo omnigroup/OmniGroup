@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,8 +19,10 @@
 
 RCS_ID("$Id$")
 
-@interface OAToolbarWindowController (Private)
+@interface OAToolbarWindowController ()
+
 + (void)_loadToolbarNamed:(NSString *)toolbarName;
+
 @end
 
 @implementation OAToolbarWindowController
@@ -41,7 +43,9 @@ static NSMutableDictionary *helpersByExtension = nil;
     toolbarStringsTables = [[NSMutableDictionary alloc] init];
     helpersByExtension = [[NSMutableDictionary alloc] init];
     
-    [self registerToolbarHelper:[[[OAScriptToolbarHelper alloc] init] autorelease]];
+    OAScriptToolbarHelper *helper = [[OAScriptToolbarHelper alloc] init];
+    [self registerToolbarHelper:helper];
+    [helper release];
 }
 
 + (void)registerToolbarHelper:(NSObject <OAToolbarHelper> *)helperObject;
@@ -69,13 +73,30 @@ static NSMutableDictionary *helpersByExtension = nil;
 
 - (void)dealloc;
 {
-    [toolbar setDelegate:nil];
-    [toolbar release];
+    [_toolbar setDelegate:nil];
+    [_toolbar release];
     [super dealloc];
 }
 
 
 // NSWindowController subclass
+
++ (BOOL)shouldUpdateConstraintsAfterInstallingToolbar;
+{
+    return YES;
+}
+
+- (void)loadWindow;
+{
+    [super loadWindow];
+    
+    // DTS workaround for <bug:///83131> (r.12466034: Scroll view gets spurious NSZeroSize, causing constraint violations on 10.7)
+    // Adding a toolbar to a window will cause the window to resize itself, which will send -resizeSubviewsWithOldSize: down the view hierarchy. This method will obey constraints if they are enabled for the window, but it won't actually cause an -updateConstraints pass. This can result in bad NSAutoresizingMaskLayoutConstraints being installed and causing exceptions.
+    // We want to do this AS SOON AS POSSIBLE, because subclasses might do other work in -loadWindow, or before calling super in their overrides of -windowDidLoad.
+    
+    if ([[self class] shouldUpdateConstraintsAfterInstallingToolbar])
+        [[self window] updateConstraintsIfNeeded];
+}
 
 - (void)windowDidLoad; // Setup the toolbar and handle its delegate messages
 {
@@ -85,7 +106,7 @@ static NSMutableDictionary *helpersByExtension = nil;
 
 - (OAToolbar *)toolbar;
 {
-    return toolbar;
+    return _toolbar;
 }
 
 - (void)createToolbar;
@@ -94,9 +115,9 @@ static NSMutableDictionary *helpersByExtension = nil;
     
     _isCreatingToolbar = YES;
     @try {
-	if (toolbar) {
-	    [toolbar setDelegate:nil];
-	    [toolbar release];
+	if (_toolbar) {
+	    [_toolbar setDelegate:nil];
+	    [_toolbar release];
 	}
 	
 	// The subclass may change its response to all the subclass methods and then call this (see OmniOutliner's document-specific toolbar support)
@@ -105,23 +126,24 @@ static NSMutableDictionary *helpersByExtension = nil;
 	Class toolbarClass = [[self class] toolbarClass];
 	OBASSERT(OBClassIsSubclassOfClass(toolbarClass, [OAToolbar class]));
 	
-	toolbar = [[toolbarClass alloc] initWithIdentifier:[self toolbarIdentifier]];
-	[toolbar setAllowsUserCustomization:[self shouldAllowUserToolbarCustomization]];
-        [toolbar setDisplayMode:NSToolbarDisplayModeIconOnly];
+	_toolbar = [[toolbarClass alloc] initWithIdentifier:[self toolbarIdentifier]];
+	[_toolbar setAllowsUserCustomization:[self shouldAllowUserToolbarCustomization]];
+        [_toolbar setDisplayMode:NSToolbarDisplayModeIconOnly];
 
 	NSDictionary *config = nil;
 	if ([self shouldAutosaveToolbarConfiguration])
-	    [toolbar setAutosavesConfiguration:YES];
+	    [_toolbar setAutosavesConfiguration:YES];
 	else {
-	    [toolbar setAutosavesConfiguration:NO];
+	    [_toolbar setAutosavesConfiguration:NO];
 	    config = [self toolbarConfigurationDictionary];
 	}
-	[toolbar setDelegate:self];
-	[[self window] setToolbar:toolbar];
+	[_toolbar setDelegate:self];
+        
+	[[self window] setToolbar:_toolbar];
 	
 	// Have to set this after adding the toolbar to the window.  Otherwise, the toolbar will keep the size/mode, but will use the default identifiers.
 	if (config)
-	    [toolbar setConfigurationFromDictionary:config];
+	    [_toolbar setConfigurationFromDictionary:config];
     } @finally {
 	_isCreatingToolbar = NO;
     }
@@ -140,6 +162,32 @@ static NSMutableDictionary *helpersByExtension = nil;
     NSDictionary *itemInfo = [toolbarItemInfo objectForKey:identifier];
     OBPOSTCONDITION(itemInfo);
     return itemInfo;
+}
+
+- (NSDictionary *)localizedToolbarInfoForItem:(NSString *)identifier;
+{
+    NSDictionary *toolbarItemInfo = [self toolbarInfoForItem:identifier];
+    if (toolbarItemInfo == nil) {
+        return nil;
+    }
+    
+    NSMutableDictionary *localizedToolbarItemInfo = [NSMutableDictionary dictionary];
+    NSBundle *bundle = [[self class] toolbarBundle];
+    NSString *stringsFileName = [toolbarStringsTables objectForKey:[self toolbarConfigurationName]];
+    if (stringsFileName == nil) {
+        stringsFileName = [NSString stringWithFormat:@"%@Toolbar", [self toolbarConfigurationName]];
+    }
+    
+    [toolbarItemInfo enumerateKeysAndObjectsUsingBlock:^(id key, id object, BOOL *stop) {
+        NSString *value = _displayName(bundle, stringsFileName, identifier, key, toolbarItemInfo, NO);
+        if (value != nil) {
+            [localizedToolbarItemInfo setObject:value forKey:key];
+        } else {
+            [localizedToolbarItemInfo setObject:object forKey:key];
+        }
+    }];
+
+    return [NSDictionary dictionaryWithDictionary:localizedToolbarItemInfo];;
 }
 
 // Implement in subclasses
@@ -322,7 +370,7 @@ static void copyProperty(NSToolbarItem *anItem,
     }
         
     if (helper)
-        [helper finishSetupForItem:newItem];
+        [helper finishSetupForToolbarItem:newItem toolbar:toolbar willBeInsertedIntoToolbar:willInsert];
         
     return newItem;
 }
@@ -349,17 +397,7 @@ static void copyProperty(NSToolbarItem *anItem,
     return [defaultToolbarItems objectForKey:[self toolbarConfigurationName]];
 }
 
-// NSObject (NSToolbarItemValidation)
-
-- (BOOL)validateToolbarItem:(NSToolbarItem *)theItem;
-{
-    return YES;
-}
-
-@end
-
-
-@implementation OAToolbarWindowController (Private)
+#pragma mark - Private
 
 + (void)_loadToolbarNamed:(NSString *)toolbarName;
 {

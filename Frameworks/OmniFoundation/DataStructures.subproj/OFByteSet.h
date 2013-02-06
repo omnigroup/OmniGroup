@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,7 +52,8 @@ static inline BOOL isCharacterInByteSet(unichar ch, OFByteSet *byteSet)
 {
     if (ch & 0xff00)
         return NO;
-    return isByteInByteSet(ch, byteSet);
+    OFByte byte = (ch & 0xff);
+    return isByteInByteSet(byte, byteSet);
 }
 
 static inline void addByteToByteSet(OFByte aByte, OFByteSet *byteSet)

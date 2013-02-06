@@ -61,7 +61,7 @@ RCS_ID("$Id$");
 
 - (NSImage *)provideNewButtonImage;
 {
-    return [NSImage imageNamed:@"OAPatternColorPicker" inBundleForClass:[self class]];
+    return [NSImage imageNamed:@"OAPatternColorPicker" inBundle:OMNI_BUNDLE];
 }
 
 //

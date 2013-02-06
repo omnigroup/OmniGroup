@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,10 +18,10 @@ static void (*original_viewWillAppear)(id self, SEL _cmd, BOOL animated) = NULL;
 static void (*original_viewDidAppear)(id self, SEL _cmd, BOOL animated) = NULL;
 static void (*original_viewWillDisappear)(id self, SEL _cmd, BOOL animated) = NULL;
 static void (*original_viewDidDisappear)(id self, SEL _cmd, BOOL animated) = NULL;
-static void (*original_presentModalViewControllerAnimated)(id self, SEL _cmd, UIViewController *viewController, BOOL animated) = NULL;
-static void (*original_dismissModalViewControllerAnimated)(id self, SEL _cmd, BOOL animated) = NULL;
+static void (*original_presentViewControllerAnimatedCompletion)(id self, SEL _cmd, UIViewController *viewController, BOOL animated, void (^completion)(void)) = NULL;
+static void (*original_dismissViewControllerAnimatedCompletion)(id self, SEL _cmd, BOOL animated, void (^completion)(void)) = NULL;
 
-const NSTimeInterval OUIViewControllerExtraModalViewControllerPollInterval = 0.05;
+const NSTimeInterval OUIViewControllerExtraPresentViewControllerPollInterval = 0.05;
 
 @class OUIViewControllerExtra;
 
@@ -38,11 +38,11 @@ const NSTimeInterval OUIViewControllerExtraModalViewControllerPollInterval = 0.0
 - (void)replacement_viewWillDisappear:(BOOL)animated;
 - (void)replacement_viewDidDisappear:(BOOL)animated;
 
-- (void)replacement_presentModalViewController:(UIViewController *)viewController animated:(BOOL)animated;
-- (void)replacement_dismissModalViewControllerAnimated:(BOOL)animated;
+- (void)replacement_presentViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion;
+- (void)replacement_dismissViewControllerAnimated:(BOOL)animated completion:(void (^)(void))completion;
 
-- (void)OUI_processModalViewControllerQueue;
-- (void)OUI_checkForQueuedModalViewControllers;
+- (void)OUI_processPresentViewControllerQueue;
+- (void)OUI_checkForQueuedPresentViewControllers;
 
 @end
 
@@ -72,22 +72,30 @@ static NSString * NSStringFromOUIViewControllerState(OUIViewControllerState stat
 
 #pragma mark -
 
+@interface OUIPresentViewControllerRecord : NSObject
+@property(nonatomic,retain) UIViewController *viewController;
+@property(nonatomic,assign) BOOL animated;
+@property(nonatomic,copy) void  (^completion)(void);
+@end
+@implementation OUIPresentViewControllerRecord
+@end
+
 @interface OUIViewControllerExtra : NSObject {
   @private
      UIViewController *_owner;
      OUIViewControllerState _viewControllerState;
-     BOOL _dismissingModalViewControllerAnimated;
-     NSMutableArray *_modalViewControllerQueue;
+     BOOL _dismissingViewControllerAnimated;
+     NSMutableArray *_presentViewControllerQueue;
 }
 
 - (id)initWithViewController:(UIViewController *)viewController;
 
 @property (nonatomic, readonly) UIViewController *owner;
 @property (nonatomic) OUIViewControllerState viewControllerState;
-@property (nonatomic, getter=isDismissingModalViewControllerAnimated) BOOL dismissingModalViewControllerAnimated;
+@property (nonatomic, getter=isDismissingViewControllerAnimated) BOOL dismissingViewControllerAnimated;
 
-- (void)enqueuePresentModalViewController:(UIViewController *)viewController animated:(BOOL)animated;
-- (UIViewController *)dequeueModalViewControllerShouldPresentAnimated:(BOOL *)outPresentAnimated;
+- (void)enqueuePresentViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion;
+- (OUIPresentViewControllerRecord *)dequeuePresentViewControllerRecord;
 
 @end
 
@@ -114,34 +122,27 @@ static NSString * NSStringFromOUIViewControllerState(OUIViewControllerState stat
     original_viewWillDisappear = (typeof(original_viewWillDisappear))OBReplaceMethodImplementationWithSelector(self, @selector(viewWillDisappear:), @selector(replacement_viewWillDisappear:));
     original_viewDidDisappear = (typeof(original_viewDidDisappear))OBReplaceMethodImplementationWithSelector(self, @selector(viewDidDisappear:), @selector(replacement_viewDidDisappear:));
 
-    original_presentModalViewControllerAnimated = (typeof(original_presentModalViewControllerAnimated))OBReplaceMethodImplementationWithSelector(self, @selector(presentModalViewController:animated:), @selector(replacement_presentModalViewController:animated:));
-    original_dismissModalViewControllerAnimated = (typeof(original_dismissModalViewControllerAnimated))OBReplaceMethodImplementationWithSelector(self, @selector(dismissModalViewControllerAnimated:), @selector(replacement_dismissModalViewControllerAnimated:));
+    original_presentViewControllerAnimatedCompletion = (typeof(original_presentViewControllerAnimatedCompletion))OBReplaceMethodImplementationWithSelector(self, @selector(presentViewController:animated:completion:), @selector(replacement_presentViewController:animated:completion:));
+    original_dismissViewControllerAnimatedCompletion = (typeof(original_dismissViewControllerAnimatedCompletion))OBReplaceMethodImplementationWithSelector(self, @selector(dismissViewControllerAnimated:completion:), @selector(replacement_dismissViewControllerAnimated:completion:));
 }
 
-- (void)enqueuePresentModalViewController:(UIViewController *)viewController animated:(BOOL)animated;
+- (void)enqueuePresentViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion;
 {
     OBPRECONDITION(viewController);
     
     if (self.OUI_viewControllerState != OUIViewControllerStateOnscreen) {
-        [[self viewControllerExtra] enqueuePresentModalViewController:viewController animated:animated];
+        [[self viewControllerExtra] enqueuePresentViewController:viewController animated:animated completion:completion];
     } else {
-        [self presentModalViewController:viewController animated:animated];
+        [self presentViewController:viewController animated:animated completion:completion];
     }
-}
-
-- (BOOL)OUI_defaultShouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
-{
-    // iPad default
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-        return YES;
-    
-    return interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
 }
 
 #pragma mark -
 
 - (UIViewController *)modalParentViewController;
 {
+    OBFinishPortingLater("Reevaluate this for iOS 6?");
+    
     // What we really want here is the view controller which presented us, which iOS 5 happily tells us
     
     if ([self respondsToSelector:@selector(presentingViewController)])
@@ -152,9 +153,9 @@ static NSString * NSStringFromOUIViewControllerState(OUIViewControllerState stat
     UIViewController *modalParent = self.parentViewController;
 
     do {
-        if (modalParent.modalViewController != nil)
+        if (modalParent.presentedViewController != nil)
             return modalParent;
-    } while (nil != (modalParent = modalParent.parentViewController));
+    } while (nil != (modalParent = modalParent.presentedViewController));
 
     return nil;
 }
@@ -165,11 +166,11 @@ static NSString * NSStringFromOUIViewControllerState(OUIViewControllerState stat
     return viewControllerExtra.viewControllerState;
 }
 
-- (BOOL)OUI_isDismissingModalViewControllerAnimated;
+- (BOOL)OUI_isDismissingViewControllerAnimated;
 {
     OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
     if (viewControllerExtra)
-        return [viewControllerExtra isDismissingModalViewControllerAnimated];
+        return [viewControllerExtra isDismissingViewControllerAnimated];
     
     return NO;
 }
@@ -237,63 +238,62 @@ static void *OUIViewControllerExtraAssociatedObjectKey = &OUIViewControllerExtra
     viewControllerExtra.viewControllerState = OUIViewControllerStateOffscreen;
 }
 
-- (void)replacement_presentModalViewController:(UIViewController *)viewController animated:(BOOL)animated;
+- (void)replacement_presentViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion;
 {
-    BOOL shouldEnqueue = [self OUI_isDismissingModalViewControllerAnimated];
+    BOOL shouldEnqueue = [self OUI_isDismissingViewControllerAnimated];
     
     if (shouldEnqueue) {
         OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
-        [viewControllerExtra enqueuePresentModalViewController:viewController animated:animated];
+        [viewControllerExtra enqueuePresentViewController:viewController animated:animated completion:completion];
 #ifdef DEBUG_VIEW_CONTROLLER_EXTESIONS
-        NSLog(@"Automatically deferring -presentModalViewController:animated: on parent controller %@ with current view state: %@", self, NSStringFromOUIViewControllerState(self.OUI_viewControllerState));
+        NSLog(@"Automatically deferring -presentViewController:animated:completion: on parent controller %@ with current view state: %@", self, NSStringFromOUIViewControllerState(self.OUI_viewControllerState));
 #endif
     } else {
-        original_presentModalViewControllerAnimated(self, _cmd, viewController, animated);
+        original_presentViewControllerAnimatedCompletion(self, _cmd, viewController, animated, completion);
     }
 }
 
-- (void)replacement_dismissModalViewControllerAnimated:(BOOL)animated;
+- (void)replacement_dismissViewControllerAnimated:(BOOL)animated completion:(void (^)(void))completion;
 {
-    UIViewController *modalParent = (self.modalViewController ? self : self.modalParentViewController);
+    UIViewController *modalParent = (self.presentedViewController ? self : self.modalParentViewController);
     if (modalParent && animated) {
         OUIViewControllerExtra *extra = [modalParent viewControllerExtra];
         OBASSERT(extra);
-        extra.dismissingModalViewControllerAnimated = YES;
-        [modalParent performSelector:@selector(OUI_checkForQueuedModalViewControllers) withObject:nil afterDelay:OUIViewControllerExtraModalViewControllerPollInterval];
+        extra.dismissingViewControllerAnimated = YES;
+        [modalParent performSelector:@selector(OUI_checkForQueuedPresentViewControllers) withObject:nil afterDelay:OUIViewControllerExtraPresentViewControllerPollInterval];
 #ifdef DEBUG_VIEW_CONTROLLER_EXTESIONS
-        NSLog(@"Recording isDismissingModalViewControllerAnimated=YES for %p.", self);
+        NSLog(@"Recording isDismissingViewControllerAnimated=YES for %p.", self);
 #endif
     }
 
-    original_dismissModalViewControllerAnimated(self, _cmd, animated);
+    original_dismissViewControllerAnimatedCompletion(self, _cmd, animated, completion);
 }
 
-- (void)OUI_processModalViewControllerQueue;
+- (void)OUI_processPresentViewControllerQueue;
 {
     OUIViewControllerExtra *viewControllerExtra = [self viewControllerExtra];
     if (viewControllerExtra.viewControllerState != OUIViewControllerStateOnscreen)
         return;
 
-    // Dequeue and present any pending modal view controller now
-    BOOL presentAnimated = NO;
-    UIViewController *viewController = [viewControllerExtra dequeueModalViewControllerShouldPresentAnimated:&presentAnimated];
-    if (viewController)
-        [self presentModalViewController:viewController animated:presentAnimated];
+    // Dequeue and present any pending view controller presentation
+    OUIPresentViewControllerRecord *record = [viewControllerExtra dequeuePresentViewControllerRecord];
+    if (record)
+        [self presentViewController:record.viewController animated:record.animated completion:record.completion];
 }
 
-- (void)OUI_checkForQueuedModalViewControllers;
+- (void)OUI_checkForQueuedPresentViewControllers;
 {
     OUIViewControllerExtra *extra = [self viewControllerExtra];
     OBASSERT(extra);
-    OBASSERT(extra.dismissingModalViewControllerAnimated);
+    OBASSERT(extra.dismissingViewControllerAnimated);
     
-    if (extra.dismissingModalViewControllerAnimated) {
-        UIViewController *modalChildViewController = [self modalViewController];
+    if (extra.dismissingViewControllerAnimated) {
+        UIViewController *modalChildViewController = self.presentedViewController;
         if (!modalChildViewController) {
-            extra.dismissingModalViewControllerAnimated = NO;
-            [self performSelector:@selector(OUI_processModalViewControllerQueue) withObject:nil afterDelay:0];
+            extra.dismissingViewControllerAnimated = NO;
+            [self performSelector:@selector(OUI_processPresentViewControllerQueue) withObject:nil afterDelay:0];
         } else {
-            [self performSelector:_cmd withObject:nil afterDelay:OUIViewControllerExtraModalViewControllerPollInterval];
+            [self performSelector:_cmd withObject:nil afterDelay:OUIViewControllerExtraPresentViewControllerPollInterval];
         }
     }
 }
@@ -329,40 +329,36 @@ static void *OUIViewControllerExtraAssociatedObjectKey = &OUIViewControllerExtra
 
 - (void)dealloc;
 {
-    [_modalViewControllerQueue release];
+    [_presentViewControllerQueue release];
     [super dealloc];
 }
 
 @synthesize owner = _owner;
 @synthesize viewControllerState = _viewControllerState;
-@synthesize dismissingModalViewControllerAnimated = _dismissingModalViewControllerAnimated;
+@synthesize dismissingViewControllerAnimated = _dismissingViewControllerAnimated;
 
-- (void)enqueuePresentModalViewController:(UIViewController *)viewController animated:(BOOL)animated;
+- (void)enqueuePresentViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion;
 {
-    if (!_modalViewControllerQueue)
-        _modalViewControllerQueue = [[NSMutableArray alloc] init];
+    if (!_presentViewControllerQueue)
+        _presentViewControllerQueue = [[NSMutableArray alloc] init];
         
-    NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:  
-        viewController, @"viewController",
-        [NSNumber numberWithBool:animated], @"animated",
-        nil
-    ];
+    OUIPresentViewControllerRecord *record = [OUIPresentViewControllerRecord new];
+    record.viewController = viewController;
+    record.animated = animated;
+    record.completion = completion;
     
-    [_modalViewControllerQueue addObject:dictionary];
+    [_presentViewControllerQueue addObject:record];
 }   
 
-- (UIViewController *)dequeueModalViewControllerShouldPresentAnimated:(BOOL *)outPresentAnimated;
+- (OUIPresentViewControllerRecord *)dequeuePresentViewControllerRecord;
 {
-    if (!_modalViewControllerQueue || [_modalViewControllerQueue count] == 0)
+    if ([_presentViewControllerQueue count] == 0)
         return nil;
-        
-    NSDictionary *dictionary = [[[_modalViewControllerQueue objectAtIndex:0] retain] autorelease];
-    [_modalViewControllerQueue removeObjectAtIndex:0];
     
-    if (outPresentAnimated)
-        *outPresentAnimated = [[dictionary objectForKey:@"animated"] boolValue];
+    OUIPresentViewControllerRecord *record = [[[_presentViewControllerQueue objectAtIndex:0] retain] autorelease];
+    [_presentViewControllerQueue removeObjectAtIndex:0];
     
-    return [dictionary objectForKey:@"viewController"];
+    return record;
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,18 +42,18 @@ typedef long OFByteOrder;
 - (BOOL)isAtEOF; // Blocks when no more data is available and -dataLength is not yet known
 - (BOOL)haveFinishedReadingData; // Never blocks, can return NO at EOF if -dataLength is not yet known (in which case the next -readData will return nil)
 
-- (void)readBytes:(unsigned int)byteCount intoBuffer:(void *)buffer;
-- (void)peekBytes:(unsigned int)byteCount intoBuffer:(void *)buffer;
+- (void)readBytes:(NSUInteger)byteCount intoBuffer:(void *)buffer;
+- (void)peekBytes:(NSUInteger)byteCount intoBuffer:(void *)buffer;
 
 - (void)bufferBytes:(NSUInteger)count;
     // Ensures that 'count' bytes are buffered.
-- (BOOL)haveBufferedBytes:(unsigned int)count;
+- (BOOL)haveBufferedBytes:(NSUInteger)count;
 
-- (unsigned int)readMaximumBytes:(unsigned int)maximum intoBuffer:(void *)buffer;
+- (NSUInteger)readMaximumBytes:(NSUInteger)maximum intoBuffer:(void *)buffer;
     // Reads up to 'maximum' bytes into 'buffer', returns the number of bytes actually read.
-- (unsigned int)peekMaximumBytes:(unsigned int)maximum intoBuffer:(void *)buffer;
+- (NSUInteger)peekMaximumBytes:(NSUInteger)maximum intoBuffer:(void *)buffer;
     // Peeks up to 'maximum' bytes into 'buffer', returns the number of bytes actually read.
-- (NSUInteger)copyBytesToBuffer:(void *)buffer minimumBytes:(unsigned int)maximum maximumBytes:(unsigned int)minimum advance:(BOOL)shouldAdvance;
+- (NSUInteger)copyBytesToBuffer:(void *)buffer minimumBytes:(NSUInteger)maximum maximumBytes:(NSUInteger)minimum advance:(BOOL)shouldAdvance;
     // Peeks at least 'minimum' and up to 'maximum' bytes into 'buffer', returns the number of bytes actually read; advances cursor if shouldAdvance is true
 - (NSData *)readData;
     // Reads the buffered bytes.
@@ -61,14 +61,14 @@ typedef long OFByteOrder;
     // Peeks at the buffered bytes.
 
 - (NSUInteger)peekUnderlyingBuffer:(void **)returnedBufferPtr;
-- (unsigned int)readUnderlyingBuffer:(void **)returnedBufferPtr;    
+- (NSUInteger)readUnderlyingBuffer:(void **)returnedBufferPtr;
 
 - (NSData *)readAllData;
     // Reads all remaining data. If the stream is already at EOF, this will return nil (instead of an empty NSData as you might expect).
     
-- (NSData *)readBytes:(unsigned int)byteCount;          // Raises if it reaches EOF
-- (NSData *)peekBytes:(unsigned int)byteCount;          // Raises if it reaches EOF
-- (NSData *)peekBytesOrUntilEOF:(unsigned int)count;    // Returns short data if it reaches EOF
+- (NSData *)readBytes:(NSUInteger)byteCount;          // Raises if it reaches EOF
+- (NSData *)peekBytes:(NSUInteger)byteCount;          // Raises if it reaches EOF
+- (NSData *)peekBytesOrUntilEOF:(NSUInteger)count;    // Returns short data if it reaches EOF
 
 - (OFByte)readByte;
 - (OFByte)peekByte;
@@ -89,7 +89,7 @@ typedef long OFByteOrder;
 - (int)readSignedBits:(unsigned int)number;
 - (void)skipToNextFullByte;
 
-- (unsigned)scanUpToByte:(OFByte)byteMatch; // Positions the offset _before_ the byte. Returns the number of bytes skipped. If not found, positions the offset at EOF and raises underflow exception.
+- (NSUInteger)scanUpToByte:(OFByte)byteMatch; // Positions the offset _before_ the byte. Returns the number of bytes skipped. If not found, positions the offset at EOF and raises underflow exception.
 - (NSData *)readUpToByte:(OFByte)byteMatch; // Returns all data up to but not including the byte. If not found, reads to EOF and returns the bytes read.
 
 - (OWDataStream *)underlyingDataStream;

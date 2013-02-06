@@ -8,6 +8,7 @@
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
+
 #import <sys/stat.h> // For statbuf, stat, mkdir
 
 RCS_ID("$Id$")
@@ -70,7 +71,7 @@ RCS_ID("$Id$")
     return [self createPathComponents:[pathComponents subarrayWithRange:(NSRange){0, componentCount-1}] attributes:attributes error:outError];
 }
 
-- (BOOL)createPathComponents:(NSArray *)components attributes:(NSDictionary *)attributes error:(NSError **)outError
+- (BOOL)createPathComponents:(NSArray *)components attributes:(NSDictionary *)attributes error:(NSError **)outError;
 {
     if ([attributes count] == 0)
         attributes = nil;
@@ -146,8 +147,30 @@ RCS_ID("$Id$")
     return YES;
 }
 
-#pragma mark -
-#pragma mark Changing file access/update timestamps.
+- (BOOL)atomicallyRemoveItemAtURL:(NSURL *)url error:(NSError **)outError;
+{
+    OBPRECONDITION([url isFileURL]);
+    
+    /*
+     Docs on 10.8, "You can also use this method to create a new temporary directory for storing things like autosave files; to do so, specify NSItemReplacementDirectory for the directory parameter, NSUserDomainMask for the domain parameter, and a valid parent directory for the url parameter."
+
+     This returns something like file://localhost/private/var/folders/xn/8lr83k7x77j2cyxhpmmk99jm0000gp/T/TemporaryItems/(A%20Document%20Being%20Saved%20By%20MyApp)/ on 10.8.
+     */
+    
+    NSURL *temporaryParentURL = [self URLForDirectory:NSItemReplacementDirectory inDomain:NSUserDomainMask appropriateForURL:[url URLByDeletingLastPathComponent] create:YES error:outError];
+    if (!temporaryParentURL)
+        return NO;
+    
+    // The call above returns the parent directory
+    NSURL *temporaryURL = [temporaryParentURL URLByAppendingPathComponent:[url lastPathComponent]];
+    
+    if (![self moveItemAtURL:url toURL:temporaryURL error:outError])
+        return NO;
+    
+    return [self removeItemAtURL:temporaryParentURL error:outError];
+}
+
+#pragma mark - Changing file access/update timestamps.
 
 - (BOOL)touchItemAtURL:(NSURL *)url error:(NSError **)outError;
 {
@@ -157,8 +180,7 @@ RCS_ID("$Id$")
     return rc;
 }
 
-#pragma mark -
-#pragma mark Debugging
+#pragma mark - Debugging
 
 #ifdef DEBUG
 

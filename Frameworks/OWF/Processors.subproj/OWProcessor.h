@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 
 #import <OmniFoundation/OFSimpleLock.h>
 #import <OmniFoundation/OFMessageQueuePriorityProtocol.h>
-#import <OmniFoundation/OFWeakRetainProtocol.h>
+#import <OWF/OWFWeakRetainProtocol.h>
 #import <OWF/OWTargetProtocol.h>
 
 @class NSArray, NSDate, NSException, NSNumber;

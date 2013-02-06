@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,8 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OUIUndoButtonController.h"
-
-#import <OmniUI/OUIAppController.h>
+#import "OUIUndoButtonPopoverHelper.h"
 
 #import "OUIUndoButton.h"
 
@@ -25,7 +24,7 @@ RCS_ID("$Id$");
     return [super initWithNibName:@"OUIUndoMenu" bundle:OMNI_BUNDLE];
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+- (BOOL)shouldAutorotate;
 {
     return YES;
 }
@@ -68,21 +67,6 @@ RCS_ID("$Id$");
     [_redoButton setTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title") forState:UIControlStateNormal];
 }
 
-- (void)viewDidUnload;
-{
-    [super viewDidUnload];
-    [_undoButton release];
-    [_redoButton release];
-
-    [_menuPopoverController release];
-    [_menuNavigationController release];
-    
-    _undoButton = nil;
-    _redoButton = nil;
-    _menuPopoverController = nil;
-    _menuNavigationController = nil;    
-}
-
 - (void)showUndoMenuFromItem:(OUIUndoBarButtonItem *)item;
 {
     if ([_menuPopoverController isPopoverVisible])
@@ -102,8 +86,8 @@ RCS_ID("$Id$");
     [self _updateButtonStates];
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoPopoverWillShowNotification object:self];
-    
-    [[OUIAppController controller] presentPopover:_menuPopoverController fromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+
+    [[OUIUndoButtonPopoverHelper sharedPopoverHelper] presentPopover:_menuPopoverController fromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
 - (BOOL)dismissUndoMenu;
@@ -124,6 +108,12 @@ RCS_ID("$Id$");
 
 #pragma mark -
 #pragma mark Actions
+
+- (void)doesNotRecognizeSelector:(SEL)aSelector;
+{
+    NSLog(@"%@", NSStringFromSelector(aSelector));
+    [super doesNotRecognizeSelector:aSelector];
+}
 
 - (IBAction)undoButtonAction:(id)sender;
 {

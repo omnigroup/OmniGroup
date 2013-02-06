@@ -100,7 +100,7 @@ static BOOL compareDataEqual(NSMapTable *table, const void *a, const void *b)
     NSLog(@"Allocated %@ %p", NSStringFromClass(isa), self);
 #endif
 
-    OFWeakRetainConcreteImplementation_INIT;
+    OWFWeakRetainConcreteImplementation_INIT;
 
     profileData = [theProfile retain];
 
@@ -131,7 +131,7 @@ static BOOL compareDataEqual(NSMapTable *table, const void *a, const void *b)
     NSLog(@"Deallocated %@ %p", NSStringFromClass(isa), self);
 #endif
 
-    OFWeakRetainConcreteImplementation_DEALLOC;
+    OWFWeakRetainConcreteImplementation_DEALLOC;
 
     if (profileColorSpace)
         CGColorSpaceRelease(profileColorSpace);
@@ -140,7 +140,7 @@ static BOOL compareDataEqual(NSMapTable *table, const void *a, const void *b)
     [super dealloc];
 }
 
-OFWeakRetainConcreteImplementation_IMPLEMENTATION;
+OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (void)invalidateWeakRetains
 {

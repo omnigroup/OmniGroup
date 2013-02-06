@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,7 @@
 
 #define OFNOTNULL(ptr)   ((ptr) != nil && ![ptr isNull])
 #define OFISNULL(ptr)    ((ptr) == nil || [ptr isNull])
-#define OFISEQUAL(a, b)    ((a) == (b) || (OFISNULL(a) && OFISNULL(b)) || [(a) isEqual: (b)])
+#define OFISEQUAL(a, b)    ((id)(a) == (id)(b) || (OFISNULL(a) && OFISNULL(b)) || [(a) isEqual: (b)])
 #define OFNOTEQUAL(a, b)   (!OFISEQUAL(a, b))
 
 @interface OFNull : NSObject

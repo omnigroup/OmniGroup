@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,14 +36,14 @@ static NSString * const DefaultDateBinding = @"defaultDateBinding";
 
 - (id)initWithFrame:(NSRect)frameRect;
 {
-    if ([super initWithFrame:frameRect] == nil)
+    if (!(self = [super initWithFrame:frameRect]))
         return nil;
     return [self _initDatePickerTextFieldPost];
 }
 
 - (id)initWithCoder:(NSCoder *)aDecoder;
 {
-    if ([super initWithCoder:aDecoder] == nil)
+    if (!(self = [super initWithCoder:aDecoder]))
         return nil;
     return [self _initDatePickerTextFieldPost];
 }

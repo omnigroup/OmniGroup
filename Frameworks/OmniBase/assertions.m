@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2008-2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,34 +18,26 @@ RCS_ID("$Id$")
 
 BOOL OBEnableExpensiveAssertions = NO;
 
-void OBLogAssertionFailure(const char *type, const char *expression, const char *file, unsigned int lineNumber)
+void OBLogAssertionFailure(const char *type, const char *expression, const char *file, unsigned int lineNumber, const char *reason)
 {
-    fprintf(stderr, "%s failed: requires '%s', at %s:%d\n", type, expression, file, lineNumber);
+    if (expression && *expression != '\0') {
+        if (reason && *reason != '\0')
+            fprintf(stderr, "%s failed: '%s' (reason: '%s') at %s:%d\n", type, expression, reason, file, lineNumber);
+        else
+            fprintf(stderr, "%s failed: requires '%s', at %s:%d\n", type, expression, file, lineNumber);
+    } else {
+        if (reason && *reason != '\0')
+            fprintf(stderr, "%s failed (reason: '%s') at %s:%d\n", type, reason, file, lineNumber);
+        else
+            fprintf(stderr, "%s failed at %s:%d\n", type, file, lineNumber);
+    }
 }
 
-static NSString * const OBShouldAbortOnAssertFailureKey = @"OBShouldAbortOnAssertFailure";
 static NSString * const OBEnableExpensiveAssertionsKey = @"OBEnableExpensiveAssertions";
 
-static void OBDefaultAssertionHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber)
+static void OBDefaultAssertionHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber, const char *reason)
 {
-    OBLogAssertionFailure(type, expression, file, lineNumber);
-    
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:OBShouldAbortOnAssertFailureKey]) {
-        // If we are running unit tests, abort on assertion failure.  We could make assertions throw exceptions, but note that this wouldn't catch cases where you are using 'shouldRaise' and hit an assertion.
-#ifdef DEBUG
-        // If we're failing in a debug build, give the developer a little time to connect in gdb before crashing
-        NSTimeInterval timeToWait = 15.0;
-        const char *env = getenv("OBASSERT_TIME_TO_WAIT");
-        if (env)
-            timeToWait = strtod(env, NULL);
-        
-        if (timeToWait > 0) {
-            fprintf(stderr, "You have %g seconds to attach to pid %u in gdb...\n", timeToWait, getpid());
-            [NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:timeToWait]];
-        }
-#endif
-        abort();
-    }
+    OBLogAssertionFailure(type, expression, file, lineNumber, reason);
 }
 
 static OBAssertionFailureHandler currentAssertionHandler = OBDefaultAssertionHandler;
@@ -57,11 +49,24 @@ void OBSetAssertionFailureHandler(OBAssertionFailureHandler handler)
         currentAssertionHandler = OBDefaultAssertionHandler;
 }
 
-void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber)
+void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber, NSString *fmt, ...)
 {
+    NSString *reason;
+    
+    {
+        va_list args;
+        va_start(args, fmt);
+        
+        reason = [[NSString alloc] initWithFormat:fmt arguments:args];
+        
+        va_end(args);
+    }
+    
     OBRecordBacktrace(expression, OBBacktraceBuffer_OBAssertionFailure);
-    currentAssertionHandler(type, expression, file, lineNumber);
+    currentAssertionHandler(type, expression, file, lineNumber, [reason UTF8String]);
     OBAssertFailed();
+    
+    [reason release];
 }
 
 void OBAssertFailed(void)
@@ -93,7 +98,6 @@ static void _OBAssertionLoad(void)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *assertionDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
-                                       (id)kCFBooleanFalse, OBShouldAbortOnAssertFailureKey,
                                        (id)kCFBooleanFalse, OBEnableExpensiveAssertionsKey,
                                        nil];
     [defaults registerDefaults:assertionDefaults];

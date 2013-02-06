@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,7 +110,7 @@ static NSString * const OUIScrollingMenuInhibition = @"OUIScrollingMenuInhibitio
 - (void)_setSolidCaret:(int)delta;
 - (void)_setSelectionToIndex:(NSUInteger)ix;
 - (void)_setSelectedTextRange:(OUEFTextRange *)newRange notifyDelegate:(BOOL)shouldNotify;
-- (void)_idleTap;
+- (void)_idleTap:(UITapGestureRecognizer *)r;
 - (void)_activeTap:(UITapGestureRecognizer *)r;
 - (void)_inspectTap:(UILongPressGestureRecognizer *)r;
 - (void)_drawDecorationsBelowText:(CGContextRef)ctx;
@@ -120,6 +120,11 @@ static NSString * const OUIScrollingMenuInhibition = @"OUIScrollingMenuInhibitio
 - (void)_moveInDirection:(UITextLayoutDirection)direction;
 - (UIView *)_topmostView;
 - (NSAttributedString *)_attributedTextInRange:(UITextRange *)range;
+
+@property (nonatomic, readwrite, copy) NSArray *accessibilityElements;
+- (void)_updateAccessibilityElements;
+- (void)_releaseDrawnFrame:(BOOL)shouldSetNeedsDisplay;
+
 @end
 
 @implementation OUIEditableFrame
@@ -967,6 +972,8 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
     
     [_textInspector release];
     
+    [accessibilityElements release];
+    
     [super dealloc];
 }
 
@@ -1100,6 +1107,19 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
     [self setNeedsLayout];
 }
 
+- (void)_releaseDrawnFrame:(BOOL)shouldSetNeedsDisplay;
+{
+    CFRelease(drawnFrame);
+    drawnFrame = NULL;
+    
+    // Clear out accessibilityElements.
+    self.accessibilityElements = nil;
+
+    if (shouldSetNeedsDisplay) {
+        [self setNeedsDisplay];
+    }
+}
+
 @synthesize textLayoutSize = layoutSize;
 - (void)setTextLayoutSize:(CGSize)size;
 {
@@ -1108,8 +1128,7 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
     layoutSize = size;
     
     if (drawnFrame) {
-        CFRelease(drawnFrame);
-        drawnFrame = NULL;
+        [self _releaseDrawnFrame:NO];
     }
     [self setNeedsLayout];
 }
@@ -1225,13 +1244,16 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
         _loupe = nil;
     }
     
-    [self setNeedsLayout];
-    
-    if (selection)
-        [self setNeedsDisplay];
-
     if (delegate && [delegate respondsToSelector:@selector(textViewDidEndEditing:)])
         [delegate textViewDidEndEditing:self];
+    
+    // Clear the selection after the delegate is told we are done so that it doesn't get a selection change notification with a nil range (and that it probably doesn't care about anyway).
+    [self setSelectedTextRange:nil showingMenu:NO];
+    
+    [self setNeedsLayout];
+
+//    if (selection)
+//        [self setNeedsDisplay];
     
     return YES;
 }
@@ -1371,10 +1393,7 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
 
 - (BOOL)shouldSuppressEditMenu;
 {
-    // We shouldn't be asking for our menu to show if these are false.
-    BOOL suppressEditMenu = (selection == nil) || ![self isFirstResponder];
-    OBASSERT(suppressEditMenu == NO);
-    return suppressEditMenu;
+    return (selection == nil) || ![self isFirstResponder];
 }
 
 - (CGRect)targetRectangleForEditMenu;
@@ -1770,7 +1789,7 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
         self.selectionColor = [UIColor colorWithHue:210.0/360.0 saturation:1 brightness:0.90 alpha:0.75];
     
     if (!focusRecognizer) {
-        UITapGestureRecognizer *tap1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_idleTap)];
+        UITapGestureRecognizer *tap1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_idleTap:)];
         [self addGestureRecognizer:tap1];
         focusRecognizer = tap1;
     }
@@ -1808,9 +1827,7 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
     DEBUG_TEXT(@"Bounds are getting set to %@", NSStringFromCGRect(newBounds));
     
     if (drawnFrame && !CGSizeEqualToSize(newBounds.size, self.bounds.size)) {
-        CFRelease(drawnFrame);
-        drawnFrame = NULL;
-        [self setNeedsDisplay];
+        [self _releaseDrawnFrame:YES];
     }
     
     [super setBounds:newBounds];
@@ -1899,6 +1916,11 @@ static BOOL _eventTouchesView(UIEvent *event, UIView *view)
 - (BOOL)becomeFirstResponder
 {
     DEBUG_EDITING(@">> become first responder");
+#ifdef DEBUG
+    if ([[self superview] isKindOfClass:[UITableView class]]) {
+        NSLog(@"UITableView will now warn. So far, it's been safe to ignore this warning:"); // <bug:///81825> (Fix UITableView warning: setting the first responder view of the table but we don't know its type (cell/header/footer))
+    }
+#endif
     BOOL didBecomeFirstResponder = [super becomeFirstResponder];
     
     if (didBecomeFirstResponder && !actionRecognizers[0]) {
@@ -3248,7 +3270,7 @@ static NSUInteger moveVisuallyWithinLine(CTLineRef line, CFStringRef base, NSUIn
 - (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)range;
 {
     // This gets called in iOS 5 b6. Let's not intentionally crash release builds; for now we'll ignore the change.
-#ifdef DEBUG
+#if 0 // <bug:///74575> (Add support for base writing direction on OUIEditableFrame)
     btrace();
     OBFinishPortingLater("Stop ignoring writing direction changes.");
 #endif
@@ -3399,10 +3421,10 @@ CGRect OUITextLayoutFirstRectForRange(CTFrameRef frame, NSRange characterRange)
     if (ctFont) {
         /* As far as I can tell, the name that UIFont wants is the PostScript name of the font. (It's undocumented, of course. RADAR 7881781 / 7241008) */
         CFStringRef fontName = CTFontCopyPostScriptName(ctFont);
-        /* There's no way to tell the text input system that we're displaying a zoomed UI, but we can at least scale up the text in the correction rect. */
-        UIFont *uif = [UIFont fontWithName:(id)fontName size:CTFontGetSize(ctFont) * MAX(1.0, [self scale])];
+        /* There's no way to tell the text input system that we're displaying a zoomed UI, but we can at least scale the text in the correction rect. */
+        UIFont *uif = [UIFont fontWithName:(id)fontName size:CTFontGetSize(ctFont) * [self scale]];
         if (!uif) // we can get into situations where there are fonts the iPad is happy to render (GillSans-Light for example) but will not let us look up with UIFont. if we hit one of these, or otherwise fail, fall back to Helvetica Neue. I'm told it's fixed in iOS5
-            uif = [UIFont fontWithName:@"Helvetica Neue" size:CTFontGetSize(ctFont) * MAX(1.0, [self scale])];
+            uif = [UIFont fontWithName:@"Helvetica Neue" size:CTFontGetSize(ctFont) * [self scale]];
         
         CFRelease(fontName);
         [uiStyles setObject:uif forKey:UITextInputTextFontKey];
@@ -3938,10 +3960,23 @@ static CGPoint _closestPointInLine(CTLineRef line, CGPoint lineOrigin, CGPoint t
 }
 
 /* This is called by the tap recognizer when we don't have focus */
-- (void)_idleTap;
+- (void)_idleTap:(UITapGestureRecognizer *)r;
 {
-    if (![self isFirstResponder] && [self canBecomeFirstResponder])
+    if (![self isFirstResponder] && [self canBecomeFirstResponder]) {
         [self becomeFirstResponder];
+        
+        CGPoint p = [r locationInView:self];
+        OUEFTextRange *newSelection = (OUEFTextRange *)[self selectionRangeForPoint:p granularity:UITextGranularityCharacter];
+        OBASSERT(!newSelection || [newSelection isKindOfClass:[OUEFTextRange class]]);
+        
+        if (newSelection) {
+            [self unmarkText];
+            [self setSelectedTextRange:newSelection];
+        }
+        
+        // Reset the caret solidity timer even if we don't otherwise react to this tap, to indicate we did at least receive it
+        [self _setSolidCaret:0];
+    }
 }
 
 - (BOOL)_characterAtIndex:(NSUInteger)index containsPoint:(CGPoint)p
@@ -4607,8 +4642,7 @@ void OUITextLayoutDrawExtraRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFram
     
     if (!framesetter || flags.textNeedsUpdate) {
         if (drawnFrame) {
-            CFRelease(drawnFrame);
-            drawnFrame = NULL;
+            [self _releaseDrawnFrame:NO];
         }
         if (framesetter) {
             CFRelease(framesetter);
@@ -4908,6 +4942,34 @@ void OUITextLayoutDrawExtraRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFram
     _textInspector = nil;
 }
 
+#pragma mark Attachment support
+
+- (BOOL)insertAfterSelection:(NSAttributedString *)attributedString;
+{
+    [inputDelegate textWillChange:self];
+    [inputDelegate selectionWillChange:self];
+    
+    OUIEditableFrameMutationOptions options = 0;
+    if (!beforeMutate(self, _cmd, options))
+        return NO;
+    
+    NSUInteger insertionStartIndex = ((OUEFTextPosition *)(self.selection.end)).index;
+    [_content insertAttributedString:attributedString atIndex:insertionStartIndex];
+    NSUInteger newIndex = insertionStartIndex + [attributedString length];
+    
+    afterMutate(self, _cmd, options);
+    [self _setSelectionToIndex:newIndex];
+    notifyAfterMutate(self, _cmd, options);
+    
+    [self setNeedsDisplay];
+
+    [inputDelegate selectionDidChange:self];
+    [inputDelegate textDidChange:self];
+    
+    return YES;
+}
+
+
 #pragma mark -
 #pragma mark OATextStorageDelegate
 
@@ -4938,7 +5000,142 @@ void OUITextLayoutDrawExtraRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFram
     [self setNeedsDisplay];
 }
 
+#pragma mark -
+#pragma mark UIAccessibility
+
+@synthesize accessibilityElements;
+@synthesize linesAreIndividuallyAccessible;
+
+static NSArray *OUIMakeAccessibilityElementsFromFrame(OUIScalingView *self, CTFrameRef frameRef, NSAttributedString *content, CGPoint layoutOrigin)
+{
+    // Based on https://github.com/rustle/Accessibility
+    
+    // If we don't have a frame ref, we don't have any lines
+    if (frameRef == NULL) {
+        return nil;
+    }
+    
+    NSMutableArray *accessibilityElements = [NSMutableArray array];
+    
+    // Get the lines out of the current frame and the lines origins
+    CFArrayRef lines = CTFrameGetLines(frameRef);
+    CFIndex count = CFArrayGetCount(lines);
+    CGPoint *origins = malloc(sizeof(CGPoint) * count);
+    CTFrameGetLineOrigins(frameRef, CFRangeMake(0, count), origins);
+    for (CFIndex index = 0; index < count; index++) {
+        CTLineRef line = CFArrayGetValueAtIndex(lines, index);
+        
+        // Get the line's substring
+        CFRange cfRange = CTLineGetStringRange(line);
+        NSRange range = NSMakeRange(cfRange.location, cfRange.length);
+        NSString *string = [content.string substringWithRange:range];
+        
+        // Skips lines that are just line breaks
+        if (string.length == 1 && [string isEqualToString:@"\n"]) {
+            continue;
+        }
+        
+        // Get the lines geometry
+        CGFloat ascent;
+        CGFloat descent;
+        CGFloat leading;
+        double width = CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+        CGFloat height = ascent + descent + leading;
+        
+        CGPoint lineOrigin = origins[index];
+        
+        CGRect lineRect;
+        lineRect.origin.x = lineOrigin.x + layoutOrigin.x;
+        lineRect.origin.y = lineOrigin.y + layoutOrigin.y - descent;
+        lineRect.size.width = width;
+        lineRect.size.height = height;
+        
+        lineRect = [self convertRectToRenderingSpace:lineRect];
+        lineRect = [self convertRect:lineRect toView:nil]; // Accessibility frames are in window/screen coordinates so we need to convert here.
+        
+        
+        // Build accessibility element
+        UIAccessibilityElement *accessibilityElement = [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
+        accessibilityElement.isAccessibilityElement = YES;
+        accessibilityElement.accessibilityFrame = lineRect;
+        accessibilityElement.accessibilityValue = string;
+        
+        // Traits is a bitmask so don't forget to | in the default traits
+        accessibilityElement.accessibilityTraits = accessibilityElement.accessibilityTraits | UIAccessibilityTraitStaticText;
+        
+        [accessibilityElements addObject:accessibilityElement];
+        [accessibilityElement release];
+    }
+    free(origins);
+    return [[accessibilityElements copy] autorelease]; // Return immutable copy.
+}
+
+- (void)_updateAccessibilityElements;
+{
+    if (self.linesAreIndividuallyAccessible &&
+        (self.accessibilityElements == nil) &&
+        (drawnFrame != NULL)) {
+        
+        self.accessibilityElements = OUIMakeAccessibilityElementsFromFrame(self, drawnFrame, immutableContent, layoutOrigin);
+    }
+}
+
+/*
+ Return YES if the receiver should be exposed as an accessibility element. 
+ default == NO
+ default on UIKit controls == YES 
+ Setting the property to YES will cause the receiver to be visible to assistive applications. 
+ */
+- (BOOL)isAccessibilityElement
+{
+	// Containers are not themselves accessibility elements
+	return NO;
+}
+
+/*
+ Returns the number of accessibility elements in the container.
+ */
+- (NSInteger)accessibilityElementCount
+{
+    if (!self.linesAreIndividuallyAccessible) {
+        return 0;
+    }
+    
+    [self _updateAccessibilityElements];
+    return self.accessibilityElements.count;
+}
+
+/*
+ Returns the accessibility element in order, based on index.
+ default == nil 
+ */
+- (id)accessibilityElementAtIndex:(NSInteger)index
+{
+    if (!self.linesAreIndividuallyAccessible) {
+        return nil;
+    }
+    
+    [self _updateAccessibilityElements];
+    return [self.accessibilityElements objectAtIndex:index];
+}
+
+/*
+ Returns the ordered index for an accessibility element
+ default == NSNotFound 
+ */
+- (NSInteger)indexOfAccessibilityElement:(id)element
+{
+    if (!self.linesAreIndividuallyAccessible) {
+        return NSNotFound;
+    }
+    
+    [self _updateAccessibilityElements];
+    return [self.accessibilityElements indexOfObject:element];
+}
+
 @end
+
+#pragma mark - Categories
 
 @implementation UIResponder (OUIEditableFrameLoupeParentView)
 

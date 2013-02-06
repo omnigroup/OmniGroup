@@ -24,6 +24,7 @@ typedef enum {
 } OFTimeSpanFormatterUnit;
 
 @class NSNumberFormatter;
+@class OFTimeSpan;
 
 @interface OFTimeSpanFormatter : NSFormatter
 {
@@ -52,6 +53,7 @@ typedef enum {
 
 - (void)setShouldReturnNumber:(BOOL)shouldReturnNumber;
 - (BOOL)shouldReturnNumber;
+- (OFTimeSpan *)timeSpanValueForNumberValue:(NSNumber *)aNumber;
 
 - (void)setFloatValuesInSeconds:(BOOL)shouldTreatFloatValuesAsSeconds;
 - (BOOL)floatValuesInSeconds;

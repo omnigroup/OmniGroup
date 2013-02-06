@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,8 +14,8 @@
 @interface OWMultipartDataStreamProcessor : OWDataStreamProcessor
 {
     unsigned char *delimiter;
-    unsigned int delimiterLength, inputBufferSize;
-    unsigned int delimiterSkipTable[256];
+    NSUInteger delimiterLength, inputBufferSize;
+    NSUInteger delimiterSkipTable[256];
 }
 
 // This method is overridden by concrete subclasses

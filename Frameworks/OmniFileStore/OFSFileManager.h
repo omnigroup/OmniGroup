@@ -1,4 +1,4 @@
-// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,8 +8,8 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
-#import <OmniFileStore/OFSFileManagerAsynchronousOperationTarget.h>
-#import <OmniFileStore/OFSAsynchronousOperation.h>
+
+@protocol OFSAsynchronousOperation;
 
 extern NSInteger OFSFileManagerDebug;
 
@@ -23,27 +23,25 @@ enum {
 typedef NSUInteger OFSDirectoryEnumerationOptions;
 
 
+@protocol OFSFileManagerDelegate;
+
 @interface OFSFileManager : NSObject
-{
-@private
-    NSURL *_baseURL;
-}
 
 + (Class)fileManagerClassForURLScheme:(NSString *)scheme;
 
-- initWithBaseURL:(NSURL *)baseURL error:(NSError **)outError;
+- initWithBaseURL:(NSURL *)baseURL delegate:(id <OFSFileManagerDelegate>)delegate error:(NSError **)outError;
 
-- (NSURL *)baseURL;
+@property(nonatomic,readonly) NSURL *baseURL;
+@property(nonatomic,weak,readonly) id <OFSFileManagerDelegate> delegate;
 
-- (id <OFSAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url withTarget:(id <OFSFileManagerAsynchronousOperationTarget>)target;
-- (id <OFSAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically withTarget:(id <OFSFileManagerAsynchronousOperationTarget>)target;
+- (void)invalidate;
 
-#if NS_BLOCKS_AVAILABLE
-- (id <OFSAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url receiveDataBlock:(void (^)(NSData *))receiveDataBlock progressBlock:(void (^)(long long))progressBlock completionBlock:(void (^)(NSError *))completionBlock;
-- (id <OFSAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically progressBlock:(void (^)(long long))progressBlock completionBlock:(void (^)(NSError *))completionBlock;
-#endif
+- (id <OFSAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url;
+- (id <OFSAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically;
 
 - (NSURL *)availableURL:(NSURL *)startingURL;
+
+- (NSURL *)createDirectoryAtURLIfNeeded:(NSURL *)directoryURL error:(NSError **)outError;
 
 @end
 
@@ -65,7 +63,7 @@ typedef NSUInteger OFSDirectoryEnumerationOptions;
 - (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension options:(OFSDirectoryEnumerationOptions)options error:(NSError **)outError;
 - (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;  // passes OFSDirectoryEnumerationSkipsSubdirectoryDescendants for option
 
-// As above, but with extension=nil (matches all files) and collecting information about redirects encountered on the way.
+// Only published since OmniFocus was using this method on a generic OFSFileManager (for test cases that run vs. file: URLs). Once we switch that to always using DAV, this could go away
 - (NSMutableArray *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections options:(OFSDirectoryEnumerationOptions)options error:(NSError **)outError;
 
 - (NSData *)dataWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
@@ -76,6 +74,7 @@ typedef NSUInteger OFSDirectoryEnumerationOptions;
 
 - (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL error:(NSError **)outError;
 
+// Failure due to the URL not existing will be mapped to OFSNoSuchFile (with an underlying Cocoa/POSIX or HTTP error).
 - (BOOL)deleteURL:(NSURL *)url error:(NSError **)outError;
 
 @end

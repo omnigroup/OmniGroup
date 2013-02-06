@@ -9,9 +9,19 @@
 
 RCS_ID("$Id$");
 
+@interface OFBindingPoint () {
+  @private
+    id _object;
+    NSString *_keyPath;
+}
+
+@end
+
+#pragma mark -
+
 @implementation OFBindingPoint
 
-- initWithObject:(id)object keyPath:(NSString *)keyPath;
+- (id)initWithObject:(id)object keyPath:(NSString *)keyPath;
 {
     if (!(self = [super init]))
         return nil;
@@ -36,6 +46,7 @@ RCS_ID("$Id$");
 {
     if (![object isKindOfClass:[OFBindingPoint class]])
         return NO;
+
     return OFBindingPointsEqual(self, object);
 }
 
@@ -44,11 +55,20 @@ RCS_ID("$Id$");
     return [_object hash] ^ [_keyPath hash];
 }
 
+- (NSMutableDictionary *)debugDictionary;
+{
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
+    
+    debugDictionary[@"object"] = [_object debugDescription];
+    debugDictionary[@"keyPath"] = _keyPath;
+
+    return debugDictionary;
+}
+
 BOOL OFBindingPointsEqual(OFBindingPoint *a, OFBindingPoint *b)
 {
     // Requires identical objects, not -isEqual:!
     return a->_object == b->_object && [a->_keyPath isEqualToString:b->_keyPath];
 }
-
 
 @end

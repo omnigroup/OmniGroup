@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -209,9 +209,6 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
 
 - (BOOL)checkForSatisfaction;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return NO;
-#if 0
     BOOL satisfied = NO;
     
     [requestCondition lock];
@@ -239,7 +236,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
             
             if (theseDidntWork) {
                 NSMutableArray *mutableResults = [[NSMutableArray alloc] init];
-                unsigned int credentialIndex, credentialCount = [cacheContents count];
+                NSUInteger credentialIndex, credentialCount = [cacheContents count];
                 for (credentialIndex = 0; credentialIndex < credentialCount; credentialIndex++) {
                     OWAuthorizationCredential *aCredential = [cacheContents objectAtIndex:credentialIndex];
                     if ([theseDidntWork indexOfObjectIdenticalTo:aCredential] == NSNotFound) {
@@ -268,7 +265,6 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
     [requestCondition unlockWithCondition:satisfied];
     
     return satisfied;
-#endif
 }
 
 - (NSArray *)credentials;
@@ -416,9 +412,6 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
 
 + (NSArray *)findParametersOfType:(enum OWAuthorizationType)authType headers:(OWHeaderDictionary *)httpChallenge
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
     NSArray *headers;
     
     if (authType == OWAuth_HTTP) {
@@ -441,7 +434,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
     }
     OBASSERT(delimiterSet != nil);
 
-    unsigned int headerIndex, headerCount = headers != nil ? [headers count] : 0;
+    NSUInteger headerIndex, headerCount = headers != nil ? [headers count] : 0;
     NSMutableArray *parmsArray = [[NSMutableArray alloc] initWithCapacity:headerCount];
     for (headerIndex = 0; headerIndex < headerCount; headerIndex++) {
         OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:[headers objectAtIndex:headerIndex]];
@@ -509,7 +502,6 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
         NSLog(@"Auth parameters: %@", parmsArray);
     
     return [parmsArray autorelease];
-#endif
 }
 
 @end
@@ -551,10 +543,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
 
 - (NSDictionary *)_bestSupportedScheme:(NSArray *)challenges
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
-    unsigned int challengeIndex, challengeCount = [challenges count];
+    NSUInteger challengeIndex, challengeCount = [challenges count];
     NSDictionary *bestSoFar;
 
     bestSoFar = nil;
@@ -571,7 +560,6 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
     }
 
     return bestSoFar;
-#endif
 }
 
 - (void)_gatherCredentials;
@@ -654,9 +642,6 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
 
 - (NSArray *)findCachedCredentials;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
     if (parsedHostname == nil)
         return [NSArray array];
     
@@ -691,7 +676,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
     
     // Run through the credentials we've retrieved from the cache, and remove all of the credentials that don't relate to this request (wrong scheme, port, realm, etc.)
     unsigned int myPort = parsedPortnumber > 0 ? parsedPortnumber : defaultPortnumber;
-    unsigned int credentialIndex = [myCacheLine count];
+    NSUInteger credentialIndex = [myCacheLine count];
     while (credentialIndex > 0) {
         OWAuthorizationCredential *credential;
         BOOL credentialValid;
@@ -730,16 +715,11 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
     }
             
     return myCacheLine;
-#endif
 }
 
-#if 0
 static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential, NSArray *challenges)
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return NO;
-#if 0
-    unsigned int challengeIndex, challengeCount;
+    NSUInteger challengeIndex, challengeCount;
     
     challengeCount = [challenges count];
     for (challengeIndex = 0; challengeIndex < challengeCount; challengeIndex ++) {
@@ -751,9 +731,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     }
     
     return NO;
-#endif
 }
-#endif
 
 - (OWAuthorizationCredential *)_credentialForUsername:(NSString *)aName password:(id)aPassword challenge:(NSDictionary *)useParameters
 {
@@ -785,23 +763,14 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
 
 - (NSSet *)keychainTags;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
     NSMutableSet *knownKeychainTags;
     
     knownKeychainTags = [[[NSMutableSet alloc] init] autorelease];
     [credentialCacheLock lock];
     NS_DURING {
-        NSArray *line;
-        unsigned int credentialIndex, credentialCount;
-        
-        line = [credentialCache arrayForKey:parsedHostname];
-        credentialCount = [line count];
-        for (credentialIndex = 0; credentialIndex < credentialCount; credentialIndex++) {
-            id tag;
-
-            tag = [[line objectAtIndex:credentialIndex] keychainTag];
+        NSArray *line = [credentialCache arrayForKey:parsedHostname];
+        for (OWAuthorizationCredential *credential in line) {
+            id tag = [credential keychainTag];
             if (tag != nil)
                 [knownKeychainTags addObject:tag];
         }
@@ -812,12 +781,11 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     } NS_ENDHANDLER;
     
     return knownKeychainTags;
-#endif
 }
     
 - (BOOL)getPasswordFromKeychain:(NSDictionary *)useParameters;
 {
-    OBFinishPorting; // Uses keychain API that was deprecated in 10.7
+    OBFinishPorting; // Uses deprecated API
 #if 0
     NSMutableDictionary *search;
     NSString *realm = nil;

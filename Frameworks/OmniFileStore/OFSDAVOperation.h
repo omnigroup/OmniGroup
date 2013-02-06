@@ -1,4 +1,4 @@
-// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,41 +7,25 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
+
 #import <OmniFileStore/OFSAsynchronousOperation.h>
-#import <OmniFileStore/OFSFileManagerAsynchronousOperationTarget.h>
 
-@class OFSDAVFileManager;
+@interface OFSDAVOperation : NSObject <OFSAsynchronousOperation, NSURLConnectionDelegate, NSURLConnectionDataDelegate>
 
-@interface OFSDAVOperation : OFObject <OFSAsynchronousOperation>
-{
-@private
-    OFSDAVFileManager *_nonretained_fileManager;
-    id <OFSFileManagerAsynchronousOperationTarget> _target;
-    NSURLRequest *_request;
-    NSURLConnection *_connection;
+- initWithRequest:(NSURLRequest *)request;
 
-    // For PUT operations
-    long long _bodyBytesSent;
-    long long _expectedBytesToWrite;
-    
-    // Mostly for GET operations, though _response gets used at the end of a PUT or during an auth challenge.
-    NSHTTPURLResponse *_response;
-    NSMutableData *_resultData;
-    BOOL _targetWantsData;
-    long long _bytesReceived;
-    
-    BOOL _finished;
-    BOOL _shouldCollectDetailsForError;
-    NSMutableData *_errorData;
-    NSError *_finalError;
-    NSMutableArray *_redirections;
-}
-
-- initWithFileManager:(OFSDAVFileManager *)fileManager request:(NSURLRequest *)request target:(id <OFSFileManagerAsynchronousOperationTarget>)target;
 - (NSError *)prettyErrorForDAVError:(NSError *)davError;
-- (NSData *)run:(NSError **)outError;
-- (NSArray *)redirects; /* see below */
+
+@property(nonatomic,copy) void (^validateCertificateForChallenge)(OFSDAVOperation *op, NSURLAuthenticationChallenge *challenge);
+@property(nonatomic,copy) NSURLCredential *(^findCredentialsForChallenge)(OFSDAVOperation *op, NSURLAuthenticationChallenge *challenge);
+
+@property(nonatomic,readonly) NSError *error;
+@property(nonatomic,readonly) NSData *resultData; // Only set if didReceiveData is nil, otherwise that block is expected to accumulate data however the caller wants
+
+- (NSString *)valueForResponseHeader:(NSString *)header;
+
+@property(nonatomic,readonly) NSArray *redirects; /* see below */
 
 @end
 
@@ -55,4 +39,4 @@
 #define    kOFSRedirectPROPFIND    (@"PROPFIND")  /* Redirected ourselves because PROPFIND returned a URL other than the one we did a PROPFIND on; see for example the last paragraph of RFC4918 [5.2] */
 #define    kOFSRedirectContentLocation  (@"Content-Location")  /* "Redirect" because a response included a Content-Location: header; see e.g. RFC4918 [5.2] para 8 */
 
-__private_extern__ void OFSAddRedirectEntry(NSMutableArray *entries, NSString *type, NSURL *from, NSURL *to, NSDictionary *responseHeaders);
+void OFSAddRedirectEntry(NSMutableArray *entries, NSString *type, NSURL *from, NSURL *to, NSDictionary *responseHeaders) OB_HIDDEN;

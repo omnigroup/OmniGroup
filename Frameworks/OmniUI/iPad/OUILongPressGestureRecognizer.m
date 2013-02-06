@@ -1,4 +1,4 @@
-// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,6 +63,7 @@ RCS_ID("$Id$")
         return;
     }
     
+    // holdTimer has fired and we didn't move too far, so we have a match
     if (self.likelihood < 1)
         self.likelihood = 1;
     

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,20 +11,30 @@
 #import <OmniFoundation/OFInvocation.h>
 #import <OmniFoundation/OFMessageQueuePriorityProtocol.h>
 #import <OmniFoundation/OFQueueProcessor.h>
-#import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
 
 RCS_ID("$Id$")
-
-@interface OFMessageQueue (/*Private*/)
-- (void)_createProcessorsForQueueSize:(NSUInteger)queueCount;
-@end
 
 typedef enum {
     QUEUE_HAS_NO_SCHEDULABLE_INVOCATIONS, QUEUE_HAS_INVOCATIONS,
 } OFMessageQueueState;
 
-
 @implementation OFMessageQueue
+{
+    NSMutableArray *queue;
+    NSMutableSet *queueSet;
+    NSConditionLock *queueLock;
+    
+    __weak NSObject <OFMessageQueueDelegate> *_weak_delegate;
+    
+    NSLock *queueProcessorsLock;
+    unsigned int idleProcessors;
+    NSUInteger uncreatedProcessors;
+    NSMutableArray *queueProcessors;
+    
+    struct {
+        unsigned int schedulesBasedOnPriority;
+    } flags;
+}
 
 static BOOL OFMessageQueueDebug = NO;
 
@@ -48,7 +58,6 @@ static BOOL OFMessageQueueDebug = NO;
 
     queue = [[NSMutableArray alloc] init];
     queueLock = [[NSConditionLock alloc] initWithCondition:QUEUE_HAS_NO_SCHEDULABLE_INVOCATIONS];
-    weaklyRetainedDelegate = nil;
 
     idleProcessors = 0;
     queueProcessorsLock = [[NSLock alloc] init];
@@ -76,8 +85,7 @@ static BOOL OFMessageQueueDebug = NO;
 {
     OBPRECONDITION(aDelegate == nil || [(id)aDelegate conformsToProtocol:@protocol(OFMessageQueueDelegate)]);
     [queueLock lock];
-    [(NSObject *)weaklyRetainedDelegate weakRelease];
-    weaklyRetainedDelegate = [(NSObject *)aDelegate weakRetain];
+    _weak_delegate = aDelegate;
     [queueLock unlock];
 }
 
@@ -225,10 +233,6 @@ static BOOL OFMessageQueueDebug = NO;
 
 - (void)addQueueEntry:(OFInvocation *)aQueueEntry;
 {
-    NSUInteger queueCount, entryIndex;
-    unsigned int priority;
-    NSObject <OFMessageQueueDelegate> *retainedDelegate = nil;
-
     OBPRECONDITION(aQueueEntry);
     if (!aQueueEntry)
         return;
@@ -245,13 +249,14 @@ static BOOL OFMessageQueueDebug = NO;
 
     [queueLock lock];
 
-    queueCount = [queue count];
-    if (weaklyRetainedDelegate != nil && queueCount == 0)
-        retainedDelegate = [weaklyRetainedDelegate retain];
-    entryIndex = queueCount;
+    NSUInteger queueCount = [queue count];
+    BOOL wasEmpty = (queueCount == 0);
+    id <OFMessageQueueDelegate> strongDelegate = [_weak_delegate retain];
+    
+    NSUInteger entryIndex = queueCount;
     if (flags.schedulesBasedOnPriority) {
         // Figure out priority
-        priority = [aQueueEntry messageQueueSchedulingInfo].priority;
+        unsigned int priority = [aQueueEntry messageQueueSchedulingInfo].priority;
         OBASSERT(priority != 0);
 
         // Find spot at end of other entries with same priority
@@ -276,8 +281,9 @@ static BOOL OFMessageQueueDebug = NO;
 
     [queueLock unlockWithCondition:QUEUE_HAS_INVOCATIONS];
 
-    [retainedDelegate queueHasInvocations:self];
-    [retainedDelegate release];
+    if (wasEmpty)
+        [strongDelegate queueHasInvocations:self];
+    [strongDelegate release];
 }
 
 - (void)addQueueEntryOnce:(OFInvocation *)aQueueEntry;
@@ -441,8 +447,10 @@ static BOOL OFMessageQueueDebug = NO;
     [debugDictionary setObject:[NSNumber numberWithInt:idleProcessors] forKey:@"idleProcessors"];
     [debugDictionary setObject:[NSNumber numberWithUnsignedInteger:uncreatedProcessors] forKey:@"uncreatedProcessors"];
     [debugDictionary setObject:flags.schedulesBasedOnPriority ? @"YES" : @"NO" forKey:@"flags.schedulesBasedOnPriority"];
-    if (weaklyRetainedDelegate)
-	[debugDictionary setObject:weaklyRetainedDelegate forKey:@"weaklyRetainedDelegate"];
+    
+    id <OFMessageQueueDelegate> strongDelegate = [[_weak_delegate retain] autorelease];
+    if (strongDelegate)
+	[debugDictionary setObject:strongDelegate forKey:@"delegate"];
     
     return debugDictionary;
 }

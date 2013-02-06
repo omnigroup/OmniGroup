@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2009-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2008, 2009-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -138,4 +138,39 @@ uint64_t OFRandomNext64(void)
 double OFRandomNextDouble(void)
 {
     return OFRandomNextStateDouble(_OFDefaultRandomState());
+}
+
+NSData *OFRandomStateCreateDataOfLength(OFRandomState *state, NSUInteger byteCount)
+{
+#if 0 // gen_rand_array version. This doesn't seem to work the way I expect. Passing 1 for the size parameter writes to more than sizeof(w128_t) bytes and corrupts heap. The advantage of gen_rand_array() is that it will use vector instructions if available. We don't currently call this enough to warrant debugging this.
+    // Round up to a multiple of sizeof(w128_t)
+    NSUInteger roundedByteCount = ((byteCount + sizeof(w128_t) - 1) & ~(sizeof(w128_t) - 1));
+    OBASSERT((roundedByteCount % sizeof(w128_t)) == 0);
+    OBASSERT(roundedByteCount >= byteCount);
+    
+    w128_t *buffer = (w128_t *)malloc(roundedByteCount);
+    NSUInteger wordCount = roundedByteCount / sizeof(w128_t);
+    OBASSERT(wordCount <= INT_MAX); // SFMT takes int here.
+    
+    gen_rand_array((SFMTState *)state, buffer, (int)wordCount);
+
+    return [[NSData alloc] initWithBytesNoCopy:buffer length:byteCount];
+#else
+    // Round up to a multiple of sizeof(uint64_t).
+    NSUInteger roundedByteCount = ((byteCount + sizeof(uint64_t) - 1) & ~(sizeof(uint64_t) - 1));
+    OBASSERT((roundedByteCount % sizeof(uint64_t)) == 0);
+    OBASSERT(roundedByteCount >= byteCount);
+    
+    uint64_t *buffer = (uint64_t *)malloc(roundedByteCount);
+    NSUInteger wordCount = roundedByteCount / sizeof(uint64_t);
+    for (NSUInteger wordIndex = 0; wordIndex < wordCount; wordIndex++)
+        buffer[wordIndex] = OFRandomNextState64(state);
+    
+    return [[NSData alloc] initWithBytesNoCopy:buffer length:byteCount];
+#endif
+}
+
+NSData *OFRandomCreateDataOfLength(NSUInteger byteCount)
+{
+    return OFRandomStateCreateDataOfLength(_OFDefaultRandomState(), byteCount);
 }

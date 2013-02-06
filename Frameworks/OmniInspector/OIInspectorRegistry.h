@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,9 +17,8 @@
 @class OIInspector, OIInspectorController;
 
 #import <OmniAppKit/OAWindowCascade.h> // For the OAWindowCascadeDataSource protocol
-#import <OmniFoundation/OFWeakRetainProtocol.h>
 
-@interface OIInspectorRegistry : NSObject <OAWindowCascadeDataSource, OFWeakRetain>
+@interface OIInspectorRegistry : NSObject <OAWindowCascadeDataSource>
 {
     NSWindow *lastWindowAskedToInspect;
     NSWindow *lastMainWindowBeforeAppSwitch;
@@ -56,6 +55,7 @@
 + (void)registerAdditionalPanel:(NSWindowController *)additionalController;
 + (OIInspectorRegistry *)sharedInspector;
 + (Class)sharedInspectorClass;
++ (BOOL)allowsEmptyInspectorList;
 + (void)tabShowHidePanels;
 + (BOOL)showAllInspectors;
 + (BOOL)hideAllInspectors;

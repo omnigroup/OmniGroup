@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -101,7 +101,7 @@ static id _commonInit(OUIColorComponentSlider *self)
 {
     self->_range = 100;
     self->_formatString = @"%d %%";
-    self->_lastLabelAlignment = UITextAlignmentCenter; // "Unknown"
+    self->_lastLabelAlignment = NSTextAlignmentCenter; // "Unknown"
     self.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleBottomMargin;
     
     self.clearsContextBeforeDrawing = YES;
@@ -434,20 +434,20 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
         BOOL shouldGoRight = _value < 0.45;
         
         // But if we've never picked, we have to pick at least once
-        if (_lastLabelAlignment == UITextAlignmentCenter && !shouldGoLeft && !shouldGoRight)
+        if (_lastLabelAlignment == NSTextAlignmentCenter && !shouldGoLeft && !shouldGoRight)
             shouldGoLeft = YES;
         
         if (shouldGoLeft) {
             labelFrame.origin.x = CGRectGetMinX(bounds) + kLabelPadding;
-            _lastLabelAlignment = UITextAlignmentLeft;
+            _lastLabelAlignment = NSTextAlignmentLeft;
         } else if (shouldGoRight) {
             labelFrame.origin.x = CGRectGetMaxX(bounds) - labelFrame.size.width - kLabelPadding;
-            _lastLabelAlignment = UITextAlignmentRight;
+            _lastLabelAlignment = NSTextAlignmentRight;
         }
         labelFrame.origin.y = rint(CGRectGetMinY(bounds) + 0.5*(CGRectGetHeight(bounds) - CGRectGetHeight(labelFrame)));
         
-        OBASSERT(_lastLabelAlignment == UITextAlignmentLeft || _lastLabelAlignment == UITextAlignmentRight);
-        if (_lastLabelAlignment == UITextAlignmentLeft) {
+        OBASSERT(_lastLabelAlignment == NSTextAlignmentLeft || _lastLabelAlignment == NSTextAlignmentRight);
+        if (_lastLabelAlignment == NSTextAlignmentLeft) {
             // We ignore the supposed luma of the left side for alpha since it always fades to the light checkerboard
             if (_representsAlpha)
                 luma = 255;

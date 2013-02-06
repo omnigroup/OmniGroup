@@ -7,37 +7,31 @@
 //
 // $Id$
 
-#import <OmniFileStore/OFSFeatures.h>
-
-#if OFS_DOCUMENT_STORE_SUPPORTED
-
 #import <OmniFileStore/OFSDocumentStoreItem.h>
 
 #import <OmniFileStore/OFSDocumentStoreScope.h>
 #import <Foundation/NSFilePresenter.h>
 
-@class OUIDocument, OFSDocumentStore;
+@class OFSDocumentStoreScope;
 
-extern NSString * const OFSDocumentStoreFileItemFilePresenterURLBinding;
+extern NSString * const OFSDocumentStoreFileItemFileURLBinding;
 extern NSString * const OFSDocumentStoreFileItemSelectedBinding;
-extern NSString * const OFSDocumentStoreFileItemIsUbiquitousBinding;
 extern NSString * const OFSDocumentStoreFileItemDownloadRequestedBinding;
 
 extern NSString * const OFSDocumentStoreFileItemContentsChangedNotification;
 extern NSString * const OFSDocumentStoreFileItemFinishedDownloadingNotification;
 extern NSString * const OFSDocumentStoreFileItemInfoKey;
 
-@interface OFSDocumentStoreFileItem : OFSDocumentStoreItem <NSFilePresenter, OFSDocumentStoreItem, NSCopying>
+@interface OFSDocumentStoreFileItem : OFSDocumentStoreItem <NSFilePresenter, OFSDocumentStoreItem>
 
 + (NSString *)displayNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 + (NSString *)editingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 + (NSString *)exportingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 
-- initWithDocumentStore:(OFSDocumentStore *)documentStore fileURL:(NSURL *)fileURL date:(NSDate *)date;
+- initWithScope:(OFSDocumentStoreScope *)scope fileURL:(NSURL *)fileURL date:(NSDate *)date;
 
 @property(readonly,nonatomic) NSURL *fileURL;
 @property(readonly,copy,nonatomic) NSString *fileType;
-@property(readonly,nonatomic) OFSDocumentStoreScope *scope;
 
 @property(readonly) NSData *emailData; // packages cannot currently be emailed, so this allows subclasses to return a different content for email
 @property(readonly) NSString *emailFilename;
@@ -46,7 +40,6 @@ extern NSString * const OFSDocumentStoreFileItemInfoKey;
 @property(readonly,nonatomic) NSString *name;
 @property(readonly,nonatomic) NSString *exportingName;
 @property(copy,nonatomic) NSDate *date;
-@property(readonly,nonatomic) BOOL isUbiquitous;
 
 - (BOOL)requestDownload:(NSError **)outError;
 @property(readonly,assign,nonatomic) BOOL downloadRequested;
@@ -59,5 +52,3 @@ extern NSString * const OFSDocumentStoreFileItemInfoKey;
 - (NSComparisonResult)compare:(OFSDocumentStoreFileItem *)otherItem;
 
 @end
-
-#endif // OFS_DOCUMENT_STORE_SUPPORTED

@@ -1,4 +1,4 @@
-// Copyright 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007, 2010, 2012 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OSUSendFeedbackErrorRecovery.h"
+#import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$")
@@ -14,10 +15,13 @@ RCS_ID("$Id$")
 
 - (void)getFeedbackAddress:(NSString **)feedbackAddress andSubject:(NSString **)subjectLine;
 {
+    OBPRECONDITION(feedbackAddress != NULL);
+
     [super getFeedbackAddress:feedbackAddress andSubject:subjectLine];
     
-    // Override the email address for software update related issues
-    *feedbackAddress = @"omnisoftwareupdate@omnigroup.com";
+    if (feedbackAddress) {
+        *feedbackAddress = [*feedbackAddress stringByReplacingAllOccurrencesOfString:@"@" withString:@"+omnisoftwareupdate@"];
+    }
 }
 
 @end

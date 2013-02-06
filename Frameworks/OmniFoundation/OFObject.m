@@ -47,6 +47,13 @@ RCS_ID("$Id$")
 // We aren't using our _extraRefCount as a flag to indicate that other changes are complete, so the _extraRefCount needs to be atomically updated, but not ordered with other memory operations.  So, use the non-barrier versions.
 
 #if OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT
+
+- (BOOL)allowsWeakReference;
+{
+    // Without this, ARC weak references will perform incorrect ref counting.
+    return NO;
+}
+
 - (id)retain;
 {
 #ifdef OF_CHECK_INSANE_RETAIN_COUNT

@@ -7,10 +7,6 @@
 
 #import <OmniFileStore/OFSDocumentStoreGroupItem.h>
 
-#import <OmniFileStore/OFSFeatures.h>
-
-#if OFS_DOCUMENT_STORE_SUPPORTED
-
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFPreference.h>
 
@@ -27,12 +23,6 @@ NSString * const OFSDocumentStoreGroupItemFileItemsBinding = @"fileItems";
     NSSet *_fileItems;
 }
 
-- (void)dealloc;
-{
-    [_name release];
-    [_fileItems release];
-    [super dealloc];
-}
 
 @synthesize fileItems = _fileItems;
 - (void)setFileItems:(NSSet *)fileItems;
@@ -40,7 +30,6 @@ NSString * const OFSDocumentStoreGroupItemFileItemsBinding = @"fileItems";
     if (OFISEQUAL(_fileItems, fileItems))
         return;
     
-    [_fileItems release];
     _fileItems = [fileItems copy];
     
     OBFinishPortingLater("Recompute our derived date and fix up KVO for file item dates");
@@ -63,12 +52,6 @@ NSString * const OFSDocumentStoreGroupItemFileItemsBinding = @"fileItems";
     }
     
     return date;
-}
-
-// OBFinishPorting: Add KVO observances for our fileItems and derive these from our file items
-- (BOOL)isReady;
-{
-    return NO;
 }
 
 - (BOOL)hasUnresolvedConflicts;
@@ -101,5 +84,3 @@ NSString * const OFSDocumentStoreGroupItemFileItemsBinding = @"fileItems";
 }
 
 @end
-
-#endif // OFS_DOCUMENT_STORE_SUPPORTED

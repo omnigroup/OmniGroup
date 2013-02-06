@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -81,12 +81,6 @@ static NSException *OWDataStreamCursor_SeekException;
 
 - (BOOL)enlargeBuffer
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return NO;
-#if 0
-    unsigned int atLeast;
-    unsigned int oldValidLength;
-
     if (!haveStartedFilter)
         [self processBegin];
     if (abortException)
@@ -95,23 +89,20 @@ static NSException *OWDataStreamCursor_SeekException;
     if (!canFillMoreBuffer)
         return NO;
 
-    atLeast = bufferedDataValidLength + 1024;
+    NSUInteger atLeast = bufferedDataValidLength + 1024;
     if ([bufferedData length] < atLeast)
         [bufferedData setLength:atLeast];
 
-    oldValidLength = bufferedDataValidLength;
+    NSUInteger oldValidLength = bufferedDataValidLength;
     do {
         [self fillBuffer:nil length:[bufferedData length] filledToIndex:&bufferedDataValidLength];
     } while (canFillMoreBuffer && bufferedDataValidLength == oldValidLength);
 
     return (bufferedDataValidLength != oldValidLength);
-#endif
 }
 
 - (void)bufferBytes:(NSUInteger)count
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     if (bufferedDataStart + bufferedDataValidLength >= dataOffset + count)
         return;
 
@@ -143,15 +134,14 @@ static NSException *OWDataStreamCursor_SeekException;
             [OWDataStreamCursor_UnderflowException raise];
         [self fillBuffer:nil length:[bufferedData length] filledToIndex:&bufferedDataValidLength];
     }
-#endif
 }
 
-- (BOOL)haveBufferedBytes:(unsigned int)count
+- (BOOL)haveBufferedBytes:(NSUInteger)count
 {
     return (bufferedDataStart + bufferedDataValidLength >= dataOffset + count);
 }
 
-- (NSUInteger)copyBytesToBuffer:(void *)buffer minimumBytes:(unsigned int)maximum maximumBytes:(unsigned int)minimum advance:(BOOL)shouldAdvance
+- (NSUInteger)copyBytesToBuffer:(void *)buffer minimumBytes:(NSUInteger)maximum maximumBytes:(NSUInteger)minimum advance:(BOOL)shouldAdvance
 {
     NSUInteger bytesPeeked;
 
@@ -169,14 +159,14 @@ static NSException *OWDataStreamCursor_SeekException;
 }
 
 
-- (void)readBytes:(unsigned int)count intoBuffer:(void *)buffer
+- (void)readBytes:(NSUInteger)count intoBuffer:(void *)buffer
 {
     [self bufferBytes:count];
     [bufferedData getBytes:buffer range:(NSRange){ ( dataOffset - bufferedDataStart ), count }];
     dataOffset += count;
 }
 
-- (void)peekBytes:(unsigned int)count intoBuffer:(void *)buffer
+- (void)peekBytes:(NSUInteger)count intoBuffer:(void *)buffer
 {
     [self bufferBytes:count];
     [bufferedData getBytes:buffer range:(NSRange){ ( dataOffset - bufferedDataStart ), count }];
@@ -231,11 +221,9 @@ static NSException *OWDataStreamCursor_SeekException;
     return NO;
 }
 
-- (NSData *)peekBytesOrUntilEOF:(unsigned int)count
+- (NSData *)peekBytesOrUntilEOF:(NSUInteger)count
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
-    unsigned availableUnreadBytes;
+    NSUInteger availableUnreadBytes;
     NSRange peekRange;
     
     while (![self haveBufferedBytes:count]) {
@@ -247,15 +235,12 @@ static NSException *OWDataStreamCursor_SeekException;
     peekRange.location = bufferedDataStart - dataOffset;
     peekRange.length = MIN(count, availableUnreadBytes);
     return [bufferedData subdataWithRange:peekRange];
-#endif
 }
 
 - (NSData *)readAllData
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     NSData *result;
-    unsigned int oldBytesInBuffer;
+    NSUInteger oldBytesInBuffer;
 
     if (dataOffset < bufferedDataStart)
         [OWDataStreamCursor_SeekException raise];
@@ -285,10 +270,9 @@ static NSException *OWDataStreamCursor_SeekException;
     dataOffset = bufferedDataStart;
     
     return result;
-#endif
 }
 
-- (void)fillBuffer:(void *)buffer length:(unsigned)bufferLength filledToIndex:(unsigned *)bufferFullp
+- (void)fillBuffer:(void *)buffer length:(NSUInteger)bufferLength filledToIndex:(NSUInteger *)bufferFullp
 {
     OBRequestConcreteImplementation(self, _cmd);
 }

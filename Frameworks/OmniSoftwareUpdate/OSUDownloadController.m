@@ -1,4 +1,4 @@
-// Copyright 2007-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -482,31 +482,17 @@ static OSUDownloadController *CurrentDownloadController = nil;
     // Save disk images to the user's downloads folder.
     NSString *folder = nil;
     
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDownloadsDirectory, NSUserDomainMask, YES /* expand tilde */);
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES /* expand tilde */);
     if ([paths count] > 0) {
-        folder = [paths objectAtIndex:0];
-        if (folder && ![manager directoryExistsAtPath:folder]) {
+        NSString *cachePath = [paths objectAtIndex:0];
+        folder = [cachePath stringByAppendingPathComponent:OMNI_BUNDLE_IDENTIFIER];
+        if (folder != nil && ![manager directoryExistsAtPath:folder]) {
             NSError *error = nil;
             if (![manager createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:&error]) {
 #ifdef DEBUG		
                 NSLog(@"Unable to create download directory at specified location '%@' -- %@", folder, error);
 #endif		    
                 folder = nil;
-            }
-        }
-    }
-    
-    if (!folder) {
-        folder = [NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES/*expandTilde*/) lastObject];
-        if ([NSString isEmptyString:folder]) {
-            folder = [NSSearchPathForDirectoriesInDomains(NSUserDirectory, NSUserDomainMask, YES/*expandTilde*/) lastObject];
-            if ([NSString isEmptyString:folder]) {
-                // Terrible news everyone!
-#ifdef DEBUG		
-                NSLog(@"Couldn't find a directory into which to download.");
-#endif		
-                [download cancel];
-                return;
             }
         }
     }
@@ -725,9 +711,8 @@ static OSUDownloadController *CurrentDownloadController = nil;
     CGFloat desiredWindowContentHeight = originalWindowSize.height + desiredBottomViewFrameSize.height - originalBottomViewSize.height;
     NSRect oldFrame = [window frame];
     NSRect windowFrame = [window contentRectForFrameRect:oldFrame];
-    CGFloat scaleFactor = [window userSpaceScaleFactor];
-    windowFrame.size.width = desiredWindowContentWidth * scaleFactor;
-    windowFrame.size.height = desiredWindowContentHeight * scaleFactor;
+    windowFrame.size.width = desiredWindowContentWidth;
+    windowFrame.size.height = desiredWindowContentHeight;
     windowFrame = [window frameRectForContentRect:windowFrame];
     
     // It looks nicest if we keep the window's title bar in approximately the same position when resizing.

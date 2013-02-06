@@ -45,21 +45,20 @@ RCS_ID("$Id$");
 #if defined(OMNI_ASSERTIONS_ON)
 
 // Conversions only work w/in the same tree, but CALayer will just bail.
-#define DEFINE_CONVERT_CHECK(name, type, dir, checkWhenNil) \
+#define DEFINE_CONVERT_CHECK(name, type, dir) \
 static type (*original_convert ## name ## dir ## Layer)(CALayer *self, SEL _cmd, type p, CALayer *otherLayer) = NULL; \
 static type replacement_convert ## name ## dir ## Layer(CALayer *self, SEL _cmd, type p, CALayer *otherLayer) \
 { \
-    if (checkWhenNil || otherLayer != nil) \
-        OBASSERT([self rootLayer] == [otherLayer rootLayer]); \
+    OBASSERT_IF(otherLayer != nil, [self rootLayer] == [otherLayer rootLayer]); \
     return original_convert ## name ## dir ## Layer(self, _cmd, p, otherLayer); \
 } \
 
-DEFINE_CONVERT_CHECK(Point, CGPoint, from, YES);
-DEFINE_CONVERT_CHECK(Point, CGPoint, to, YES);
-DEFINE_CONVERT_CHECK(Rect, CGRect, from, YES);
-DEFINE_CONVERT_CHECK(Rect, CGRect, to, YES);
-DEFINE_CONVERT_CHECK(Time, CFTimeInterval, from, NO); // Radar 6793997: CALayer generates calls to -convertTime:fromLayer:, passing a nil layer.
-DEFINE_CONVERT_CHECK(Time, CFTimeInterval, to, YES);
+DEFINE_CONVERT_CHECK(Point, CGPoint, from);
+DEFINE_CONVERT_CHECK(Point, CGPoint, to);
+DEFINE_CONVERT_CHECK(Rect, CGRect, from);
+DEFINE_CONVERT_CHECK(Rect, CGRect, to);
+DEFINE_CONVERT_CHECK(Time, CFTimeInterval, from);
+DEFINE_CONVERT_CHECK(Time, CFTimeInterval, to);
 
 #define INSTALL_CONVERT_CHECK(name, dir) \
 original_convert ## name ## dir ## Layer = (typeof(original_convert ## name ## dir ## Layer))OBReplaceMethodImplementation(self, @selector(convert##name:dir##Layer:), (IMP)replacement_convert ## name ## dir ## Layer)
@@ -550,6 +549,22 @@ static void _writeString(NSString *str)
     [self.sublayers makeObjectsPerformSelector:_cmd];
 }
 
+- (void)sortSublayersByZOrder;
+{
+    NSArray *sortedSublayers = [[self sublayers] sortedArrayUsingComparator:^(id layer1, id layer2) {
+        if ([layer1 zPosition] > [layer2 zPosition]) {
+            return (NSComparisonResult)NSOrderedDescending;
+        }
+        
+        if ([layer1 zPosition] < [layer2 zPosition]) {
+            return (NSComparisonResult)NSOrderedAscending;
+        }
+        return (NSComparisonResult)NSOrderedSame;
+    }];
+    for (CALayer *layer in sortedSublayers)
+        [self addSublayer:layer];
+}
+
 - (BOOL)isModelLayer;
 {
     return self == self.modelLayer;
@@ -623,7 +638,6 @@ static void _writeString(NSString *str)
 #define SHAPE_LAYER_GET_VALUE(x) (((CAShapeLayer *)self).x)
 
             OBASSERT(!useAnimatedValues);
-            OBASSERT(SHAPE_LAYER_GET_VALUE(cornerRadius) == 0.0);
             OBASSERT([SHAPE_LAYER_GET_VALUE(lineCap) isEqualToString:kCALineCapButt]);
             OBASSERT([SHAPE_LAYER_GET_VALUE(lineJoin) isEqualToString:kCALineJoinMiter]);
             OBASSERT(SHAPE_LAYER_GET_VALUE(lineDashPhase) == 0.0);
@@ -631,26 +645,28 @@ static void _writeString(NSString *str)
             
             CGColorRef fillColor = SHAPE_LAYER_GET_VALUE(fillColor);
             CGColorRef strokeColor = SHAPE_LAYER_GET_VALUE(strokeColor);
-            CGFloat lineWidth = SHAPE_LAYER_GET_VALUE(lineWidth);
-            CGPathRef path = SHAPE_LAYER_GET_VALUE(path);
             
-            if (path != NULL)
-                path = CGPathCreateCopy(path);
-            else 
-                path = CGPathCreateWithRect(localBounds, NULL);
-
             if (fillColor != NULL) {
-                CGContextAddPath(ctx, path);
                 CGContextSetFillColorWithColor(ctx, fillColor);
-                CGContextFillPath(ctx);
             }
             if (strokeColor != NULL) {
-                CGContextAddPath(ctx, path);
                 CGContextSetStrokeColorWithColor(ctx, strokeColor);
+                CGFloat lineWidth = SHAPE_LAYER_GET_VALUE(lineWidth);
                 CGContextSetLineWidth(ctx, lineWidth);
-                CGContextStrokePath(ctx);
             }
-            CGPathRelease(path);
+            
+            if (fillColor || strokeColor) {
+                CGPathRef path = SHAPE_LAYER_GET_VALUE(path);
+                
+                if (path)
+                    CGContextAddPath(ctx, path);
+                else if (self.cornerRadius != 0.0f) {
+                    OQAppendRoundedRect(ctx, localBounds, SHAPE_LAYER_GET_VALUE(cornerRadius));
+                } else
+                    CGContextAddRect(ctx, localBounds);
+                
+                CGContextDrawPath(ctx, fillColor? (strokeColor? kCGPathFillStroke : kCGPathFill) : kCGPathStroke);
+            }
         } else if ((self.borderWidth && borderColor) || backgroundColor) {
 #if DEBUG_RENDER_ON
             {
@@ -804,6 +820,16 @@ static CGImageRef (*pCABackingStoreGetCGImage)(void *backingStore) = NULL;
     }
     
     while (layer) {
+        if ([layer.contents isKindOfClass:[NSImage class]]) {
+            NSData *data = [(NSImage *)layer.contents TIFFRepresentation];
+            NSString *path = [dir stringByAppendingPathComponent:[NSString stringWithFormat:@"%03d-%p.png", layerIndex, layer]];
+            
+            if (![data writeToFile:path options:0 error:&error])
+                NSLog(@"Unable to write %@: %@", path, [error toPropertyList]);
+
+            continue;
+        }
+        
         CGImageRef image = (CGImageRef)layer.contents;
         
         if (image && CFGetTypeID(image) != CGImageGetTypeID()) {

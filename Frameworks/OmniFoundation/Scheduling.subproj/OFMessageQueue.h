@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,21 +15,6 @@
 #import <OmniFoundation/OFMessageQueueDelegateProtocol.h>
 
 @interface OFMessageQueue : OFObject
-{
-    NSMutableArray *queue;
-    NSMutableSet *queueSet;
-    NSConditionLock *queueLock;
-    NSObject <OFMessageQueueDelegate> *weaklyRetainedDelegate;
-
-    NSLock *queueProcessorsLock;
-    unsigned int idleProcessors;
-    NSUInteger uncreatedProcessors;
-    NSMutableArray *queueProcessors;
-
-    struct {
-        unsigned int schedulesBasedOnPriority;
-    } flags;
-}
 
 + (OFMessageQueue *)mainQueue;
     // The main message queue (often the one which is run from the appkit).  By default, it doesn't schedule queued messages by priority (unlike other queues).

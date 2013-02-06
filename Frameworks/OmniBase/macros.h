@@ -1,4 +1,4 @@
-// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,35 @@
 
 #import <AvailabilityMacros.h>
 #import <Foundation/NSAutoreleasePool.h>
+
+// ARC/MRR support
+#if defined(__has_feature) && __has_feature(objc_arc)
+    #define OB_ARC 1
+    #define OB_STRONG __strong
+    #define OB_BRIDGE __bridge
+    #define OB_AUTORELEASING __autoreleasing
+    #define OB_RELEASE(x) (x = nil)
+    #define OB_AUTORELEASE(x) (x)
+#else
+    #define OB_ARC 0
+    #define OB_STRONG
+    #define OB_BRIDGE
+    #define OB_AUTORELEASING
+    #define OB_RELEASE(x) [(x) release]
+    #define OB_AUTORELEASE(x) [(x) autorelease]
+#endif
+
+#if OB_ARC
+    // In iOS 6 and Mac OS X 10.8, ARC extends to GCD. We require iOS 6, but we only require 10.7 currently.
+    #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+        #define OB_ARC_GCD 1
+    #elif (defined(MAC_OS_X_VERSION_10_8) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_8)
+        #define OB_ARC_GCD 1
+    #endif
+#endif
+#if !defined(OB_ARC_GCD)
+    #define OB_ARC_GCD 0
+#endif
 
 #if !defined(SWAP)
 #define SWAP(A, B) do { __typeof__(A) __temp = (A); (A) = (B); (B) = __temp;} while(0)
@@ -32,42 +61,47 @@
 #import <errno.h>
 #define OMNI_ERRNO() errno
 
-#define OMNI_POOL_START				\
-do {						\
-    NSAutoreleasePool *__pool;			\
-    __pool = [[NSAutoreleasePool alloc] init];	\
-    @try {
+#if OB_ARC
+    // These macros are not as useful in ARC since it does not NOT handle exceptions (it will leak references) and the 'just a pool' version is easier written with @autoreleasepool. There still is an issue in ARC where an autoreleasing outError can be zombied if it tries to cross pools. In this case, the code needs to rescue the error in a __strong local, close the pool, and then re-set the outError. BUT, we can only safely look at *outError if there was an error. We may come up with a macro pattern for this later, but for now: punt!
+#else
+    // MRR version
+    #define OMNI_POOL_START				\
+    do {						\
+        NSAutoreleasePool *__pool;			\
+        __pool = [[NSAutoreleasePool alloc] init];	\
+        @try {
 
-#define OMNI_POOL_END \
-    } @catch (NSException *__exc) { \
-	[__exc retain]; \
-	[__pool release]; \
-	__pool = nil; \
-	[__exc autorelease]; \
-	[__exc raise]; \
-    } @finally { \
-	[__pool release]; \
-    } \
-} while(0)
+    #define OMNI_POOL_END \
+        } @catch (NSException *__exc) { \
+            [__exc retain]; \
+            [__pool release]; \
+            __pool = nil; \
+            [__exc autorelease]; \
+            [__exc raise]; \
+        } @finally { \
+            [__pool release]; \
+        } \
+    } while(0)
 
-// For when you have an outError to deal with too
-#define OMNI_POOL_ERROR_END \
-    } @catch (NSException *__exc) { \
-        if (outError) \
-            *outError = nil; \
-        [__exc retain]; \
-        [__pool release]; \
-        __pool = nil; \
-        [__exc autorelease]; \
-        [__exc raise]; \
-    } @finally { \
-        if (outError) \
-            [*outError retain]; \
-        [__pool release]; \
-        if (outError) \
-            [*outError autorelease]; \
-    } \
-} while(0)
+    // For when you have an outError to deal with too
+    #define OMNI_POOL_ERROR_END \
+        } @catch (NSException *__exc) { \
+            if (outError) \
+                *outError = nil; \
+            [__exc retain]; \
+            [__pool release]; \
+            __pool = nil; \
+            [__exc autorelease]; \
+            [__exc raise]; \
+        } @finally { \
+            if (outError) \
+                [*outError retain]; \
+            [__pool release]; \
+            if (outError) \
+                [*outError autorelease]; \
+        } \
+    } while(0)
+#endif
 
 // We don't want to use the main-bundle related macros when building other bundle types.  This is sometimes what you want to do, but you shouldn't use the macros since it'll make genstrings emit those strings into your bundle as well.  We can't do this from the .xcconfig files since NSBundle's #define wins vs. command line flags.
 #import <Foundation/NSBundle.h> // Make sure this is imported first so that it doesn't get imported afterwards, clobbering our attempted clobbering.
@@ -118,17 +152,11 @@ do {						\
 #endif
 
 /* For doing retain-and-assign or copy-and-assign with CF objects */
-#define OB_ASSIGN_CFRELEASE(lval, rval) { __typeof__(lval) new_ ## lval = (rval); if (lval != NULL) { CFRelease(lval); } lval = new_ ## lval; }
+#define OB_ASSIGN_CFRELEASE(lval, rval) { __typeof__(rval) new_ ## lval = (rval); if (lval != NULL) { CFRelease(lval); } lval = new_ ## lval; }
 
+/* Replacement for __private_extern__, which is deprecated as of Xcode 4.6 DP2 */
+#define OB_HIDDEN __attribute__((visibility("hidden")))
 
-// ARC/MRR support
+/* The inverse of OB_HIDDEN / __private_extern__, for frameworks which hide symbols by default */
+#define OB_VISIBLE __attribute__((visibility("default")))
 
-#if defined(__has_feature) && __has_feature(objc_arc)
-    #define OB_STRONG __strong
-    #define OB_BRIDGE __bridge
-    #define OB_AUTORELEASING __autoreleasing
-#else
-    #define OB_STRONG
-    #define OB_BRIDGE
-    #define OB_AUTORELEASING
-#endif

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,103 +9,9 @@
 #import <OmniBase/rcsid.h>
 
 #import <CoreFoundation/CoreFoundation.h>
-
-#ifndef OF_USE_NEW_CF_PLIST_API
-/* The old-style APIs return strings which we want to wrap in NSErrors; we'll want an error code to do that with */
-#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
-#import <MacErrors.h> // For coreFoundationUnknownErr
-#define stringErrorCode coreFoundationUnknownErr
-#else
-/* Hilariously, coreFoundationUnknownErr exists in the *simulator* SDKs but not the *device* SDKs. Let's just copy the value out here. This whole chunk of code is only compiled if we're targeting an old (pre-4.0) version of iOS anyway. */
-#define stringErrorCode -4960
-#endif
-#endif
+#import <Foundation/NSPropertyList.h>
 
 RCS_ID("$Id$")
-
-
-#ifdef OF_USE_NEW_CF_PLIST_API
-
-/* OFCreateDataFromPropertyList() and OFCreatePropertyListFromData() are inlines on 10.6+ since there are now CF functions with nearly identical behavior */
-
-static inline CFPropertyListRef _OFCreatePropertyListWithStream(CFAllocatorRef allocator, CFReadStreamRef stream, CFOptionFlags options, CFErrorRef *error) CF_RETURNS_RETAINED;
-static inline CFPropertyListRef _OFCreatePropertyListWithStream(CFAllocatorRef allocator, CFReadStreamRef stream, CFOptionFlags options, CFErrorRef *error)
-{
-    return CFPropertyListCreateWithStream(allocator, stream, 0, options, NULL, error);
-}
-
-#else
-
-/* Pre-10.6 (or pre-iOS 4.0), we need to use the stream APIs directly */
-
-static int _OFSetErrorFromString(CFErrorRef *error, CFStringRef functionName, CFStringRef errorText)
-{
-    if (error) {
-        const void *keys[1], *values[1];
-        keys[0] = kCFErrorDescriptionKey;
-        values[0] = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%@: %@"), functionName, errorText);
-        *error = CFErrorCreateWithUserInfoKeysAndValues(kCFAllocatorDefault, kCFErrorDomainOSStatus, stringErrorCode, keys, values, 1);
-        CFRelease(values[0]);
-    }
-    
-    /* We don't have any useful return value, but clang insists that we must: "warning: Function accepting CFErrorRef* should have a non-void return value to indicate whether or not an error occurred" */
-    return 0;
-}
-
-static CFPropertyListRef _OFCreatePropertyListWithStream(CFAllocatorRef allocator, CFReadStreamRef stream, CFPropertyListMutabilityOptions options, CFErrorRef *outError) CF_RETURNS_RETAINED;
-static CFPropertyListRef _OFCreatePropertyListWithStream(CFAllocatorRef allocator, CFReadStreamRef stream, CFPropertyListMutabilityOptions options, CFErrorRef *outError)
-{
-    CFStringRef errorString = NULL;
-    CFPropertyListRef result = CFPropertyListCreateFromStream(allocator, stream, 0, options, NULL, &errorString);
-    
-    /* Note that the documentation for CFPropertyListCreateFromStream says that the error indication is based on whether errorString is NULL, not on whether the return value is NULL. WTF. */ 
-    if (errorString != NULL) {
-        OBASSERT_NULL(result);
-        _OFSetErrorFromString(outError, CFSTR("CFPropertyListCreateFromStream"), errorString);
-        return NULL;
-    }
-    
-    return result;
-}
-
-CFDataRef OFCreateDataFromPropertyList(CFAllocatorRef allocator, CFPropertyListRef plist, CFPropertyListFormat format, CFErrorRef *outError)
-{
-    CFWriteStreamRef stream;
-    CFStringRef error;
-    CFDataRef buf;
-
-    stream = CFWriteStreamCreateWithAllocatedBuffers(kCFAllocatorDefault, allocator);
-    CFWriteStreamOpen(stream);
-
-    error = NULL;
-    CFPropertyListWriteToStream(plist, stream, format, &error);
-
-    if (error != NULL) {
-        _OFSetErrorFromString(outError, CFSTR("CFPropertyListWriteToStream"), error);
-        CFWriteStreamClose(stream);
-        CFRelease(stream);
-        return NULL;
-    }
-    
-    buf = CFWriteStreamCopyProperty(stream, kCFStreamPropertyDataWritten);
-    CFWriteStreamClose(stream);
-    CFRelease(stream);
-
-    return buf;
-}
-
-#if 0  /* Not currently used anywhere */
-CFPropertyListRef OFCreatePropertyListFromBytes(CFAllocatorRef allocator, bytes, length, CFPropertyListMutabilityOptions options, CFErrorRef *outError)
-{
-    CFReadStreamRef stream = CFReadStreamCreateWithBytesNoCopy(kCFAllocatorDefault, bytes, length, kCFAllocatorNull);
-    CFPropertyListRef result = _OFCreatePropertyListWithStream(allocator, stream, options, outError);
-    CFReadStreamClose(stream);
-    CFRelease(stream);
-    return result;
-}
-#endif
-
-#endif
 
 CFPropertyListRef OFCreatePropertyListFromFile(CFStringRef filePath, CFPropertyListMutabilityOptions options, CFErrorRef *outError)
 {
@@ -138,9 +44,30 @@ CFPropertyListRef OFCreatePropertyListFromFile(CFStringRef filePath, CFPropertyL
         }
     }
     
-    CFPropertyListRef result = _OFCreatePropertyListWithStream(kCFAllocatorDefault, stream, options, outError);
+    CFPropertyListRef result = CFPropertyListCreateWithStream(kCFAllocatorDefault, stream, 0/*read to end of stream*/, options, NULL, outError);
     CFReadStreamClose(stream);
     CFRelease(stream);
     
     return result;
 }
+
+id OFReadNSPropertyListFromURL(NSURL *fileURL, NSError **outError)
+{
+    NSData *data = [[NSData alloc] initWithContentsOfURL:fileURL options:NSDataReadingUncached error:outError];
+    if (!data)
+        return nil;
+    
+    id plist = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:outError];
+    [data release];
+    return plist;
+}
+
+BOOL OFWriteNSPropertyListToURL(id plist, NSURL *fileURL, NSError **outError)
+{
+    NSData *data = [NSPropertyListSerialization dataWithPropertyList:plist format:NSPropertyListXMLFormat_v1_0 options:0 error:outError];
+    if (!data)
+        return NO;
+    
+    return [data writeToURL:fileURL options:0 error:outError];
+}
+

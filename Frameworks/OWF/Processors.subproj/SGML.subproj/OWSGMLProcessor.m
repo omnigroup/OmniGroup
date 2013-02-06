@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -335,12 +335,12 @@ static NSUInteger metaCharSetAttributeIndex;
 
     methods = [self sgmlMethods];
 
-    [methods registerMethod:@"Meaningless" forTagName:@"html"];
-    [methods registerMethod:@"Meaningless" forTagName:@"head"];
-    [methods registerMethod:@"Base" forTagName:@"base"];
-    [methods registerMethod:@"Meta" forTagName:@"meta"];
-    [methods registerMethod:@"Title" forTagName:@"title"];
-    [methods registerMethod:@"Style" forTagName:@"style"];
+    OWSGMLMethodStartHandler(OWSGMLProcessor, Meaningless, html);
+    OWSGMLMethodStartHandler(OWSGMLProcessor, Meaningless, head);
+    OWSGMLMethodStartHandler(OWSGMLProcessor, Base, base);
+    OWSGMLMethodStartHandler(OWSGMLProcessor, Meta, meta);
+    OWSGMLMethodStartHandler(OWSGMLProcessor, Title, title);
+    OWSGMLMethodStartHandler(OWSGMLProcessor, Style, style);
 }
 
 - (OWAddress *)addressForAnchorTag:(OWSGMLTag *)anchorTag;

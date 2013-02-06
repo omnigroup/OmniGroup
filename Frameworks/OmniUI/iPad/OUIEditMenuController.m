@@ -225,7 +225,11 @@ NSString * const OUIKeyboardAnimationInhibition = @"OUIKeyboardAnimationInhibiti
     }
     
     if (shouldBeVisible) {
-        BOOL shouldSuppress = [unretained_editor shouldSuppressEditMenu] || (delegateRespondsToCanShowContextMenu && ![delegate textViewCanShowContextMenu:unretained_editor]);
+        BOOL suppressEditMenu = [unretained_editor shouldSuppressEditMenu];
+        OBASSERT(suppressEditMenu == NO); // We shouldn't be asking for our menu to show if this is false.
+
+        BOOL shouldSuppress = suppressEditMenu || (delegateRespondsToCanShowContextMenu && ![delegate textViewCanShowContextMenu:unretained_editor]);
+        
         shouldBeVisible = !shouldSuppress && wantMainMenuDisplay;
         if (!shouldBeVisible) {
             DEBUG_MENU(@"  suppressed");

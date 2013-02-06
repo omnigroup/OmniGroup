@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -141,6 +141,13 @@ static struct pointInfo getLinePoint(const NSPoint *a, CGFloat position) {
 }
 
 @implementation NSBezierPath (OAExtensions)
+
++ (NSBezierPath *)bezierPathWithRoundedRectangle:(NSRect)rect byRoundingCorners:(OFRectCorner)corners withRadius:(CGFloat)radius;
+{
+    NSBezierPath *path = [[NSBezierPath alloc] init];
+    [path appendBezierPathWithRoundedRectangle:rect byRoundingCorners:corners withRadius:radius];
+    return [path autorelease];
+}
 
 - (NSPoint)currentpointForSegment:(NSInteger)i
 {
@@ -304,29 +311,34 @@ static struct pointInfo getLinePoint(const NSPoint *a, CGFloat position) {
     return NO;
 }
 
-
 static void copyIntersection(OABezierPathIntersection *buf, const struct intersectionInfo *info, NSInteger leftSegment, NSInteger rightSegment)
 {
-    buf->left.segment = leftSegment;
-    buf->left.parameter = info->leftParameter;
-    buf->left.parameterDistance = info->leftParameterDistance;
+    OABezierPathIntersectionHalf left;
+    OABezierPathIntersectionHalf right;
     
-    buf->right.segment = rightSegment;
-    buf->right.parameter = info->rightParameter;
-    buf->right.parameterDistance = info->rightParameterDistance;
+    left.segment = leftSegment;
+    left.parameter = info->leftParameter;
+    left.parameterDistance = info->leftParameterDistance;
+    
+    right.segment = rightSegment;
+    right.parameter = info->rightParameter;
+    right.parameterDistance = info->rightParameterDistance;
     
     OBINVARIANT(info->leftParameterDistance >= 0);
     if (info->rightParameterDistance >= 0) {
-        buf->left.firstAspect = info->leftEntryAspect;
-        buf->left.secondAspect = info->leftExitAspect;
-        buf->right.firstAspect = - ( info->leftEntryAspect );
-        buf->right.secondAspect = - ( info->leftExitAspect );
+        left.firstAspect = info->leftEntryAspect;
+        left.secondAspect = info->leftExitAspect;
+        right.firstAspect = - ( info->leftEntryAspect );
+        right.secondAspect = - ( info->leftExitAspect );
     } else {
-        buf->left.firstAspect = info->leftExitAspect;
-        buf->left.secondAspect = info->leftEntryAspect;
-        buf->right.firstAspect = - ( info->leftEntryAspect );
-        buf->right.secondAspect = - ( info->leftExitAspect );
+        left.firstAspect = info->leftExitAspect;
+        left.secondAspect = info->leftEntryAspect;
+        right.firstAspect = - ( info->leftEntryAspect );
+        right.secondAspect = - ( info->leftExitAspect );
     }
+    
+    buf.left = left;
+    buf.right = right;
 }
 
 - (BOOL)firstIntersectionWithLine:(OABezierPathIntersection *)result lineStart:(NSPoint)lineStart lineEnd:(NSPoint)lineEnd;
@@ -381,8 +393,10 @@ static void copyIntersection(OABezierPathIntersection *buf, const struct interse
                 haveResult = YES;
                 if (result) {
                     copyIntersection(result, &(intersections[intersectionIndex]), iter.currentElt, 0);
-                    result->location.x = (CGFloat)(lineCoefficients[0].x + leastParameterSoFar * lineCoefficients[1].x);
-                    result->location.y = (CGFloat)(lineCoefficients[0].y + leastParameterSoFar * lineCoefficients[1].y);
+                    NSPoint location;
+                    location.x = (CGFloat)(lineCoefficients[0].x + leastParameterSoFar * lineCoefficients[1].x);
+                    location.y = (CGFloat)(lineCoefficients[0].y + leastParameterSoFar * lineCoefficients[1].y);
+                    result.location = location;
                 }
             }
         }
@@ -440,18 +454,14 @@ static BOOL subsequent(struct OABezierPathIntersectionHalf *one, struct OABezier
 }
 #endif
 
-- (struct OABezierPathIntersectionList)allIntersectionsWithPath:(NSBezierPath *)other
+- (NSArray *)allIntersectionsWithPath:(NSBezierPath *)other
 {
-    NSUInteger intersectionCount, listSize;
-    OABezierPathIntersection *intersections;
     struct subpathWalkingState selfIter;
     
     if (!initializeSubpathWalkingState(&selfIter, self, 0, NO))
-        return (struct OABezierPathIntersectionList){ 0, NULL };
+        return [NSArray array];
     
-    intersectionCount = 0;
-#warning 64BIT: Inspect use of sizeof
-    intersections = malloc(sizeof(*intersections) * (listSize = 16));
+    NSMutableArray *intersections =[[NSMutableArray alloc] init];
     
     while(nextSubpathElement(&selfIter)) {
         struct subpathWalkingState otherIter;
@@ -544,54 +554,40 @@ static BOOL subsequent(struct OABezierPathIntersectionHalf *one, struct OABezier
                 }
             }
                     
-            if (intersectionsFound + intersectionCount > listSize) {
-                listSize += (listSize >> 1);
-#warning 64BIT: Inspect use of sizeof
-                intersections = realloc(intersections, sizeof(*intersections) * listSize);
-            }
-            
-            NSUInteger earliestInsertionPoint = intersectionCount;
+            NSUInteger earliestInsertionPoint = [intersections count];
             
             for(intersectionIndex = 0; intersectionIndex < intersectionsFound; intersectionIndex++) {
-                NSUInteger insertionPoint = intersectionCount;
+                NSUInteger insertionPoint = [intersections count];
                 double t;
                 
                 // Find where to insert this intersection so that the list remains sorted
                 while(insertionPoint > 0 &&
-                      intersections[insertionPoint-1].left.parameter > segmentIntersections[intersectionIndex].leftParameter &&
-                      intersections[insertionPoint-1].left.segment >= selfIter.currentElt)
+                      ((OABezierPathIntersection *)[intersections objectAtIndex:insertionPoint - 1]).left.parameter > segmentIntersections[intersectionIndex].leftParameter &&
+                      ((OABezierPathIntersection *)[intersections objectAtIndex:insertionPoint - 1]).left.segment >= selfIter.currentElt)
                     insertionPoint --;
                 
-                // Make room, if necessary
-                if (insertionPoint < intersectionCount)
-#warning 64BIT: Inspect use of sizeof
-                    memmove(&(intersections[insertionPoint+1]), &(intersections[insertionPoint]), sizeof(*intersections)*(intersectionCount-insertionPoint));
                 if (insertionPoint < earliestInsertionPoint)
                     earliestInsertionPoint = insertionPoint;
                 
-                copyIntersection(&(intersections[insertionPoint]), &(segmentIntersections[intersectionIndex]), selfIter.currentElt, otherIter.currentElt);
+                OABezierPathIntersection *newIntersection = [[OABezierPathIntersection alloc] init];
+                copyIntersection(newIntersection, &(segmentIntersections[intersectionIndex]), selfIter.currentElt, otherIter.currentElt);
                 
                 // parameterizeSubpathElement() fills the higher coefficients with 0 if they're not needed, so we can go ahead and treat everything as a cubic here.
                 t = segmentIntersections[intersectionIndex].leftParameter;
-                intersections[insertionPoint].location.x = (CGFloat)((( elementCoefficients[3].x * t + elementCoefficients[2].x ) * t + elementCoefficients[1].x ) * t + elementCoefficients[0].x);
-                intersections[insertionPoint].location.y = (CGFloat)((( elementCoefficients[3].y * t + elementCoefficients[2].y ) * t + elementCoefficients[1].y ) * t + elementCoefficients[0].y);
-                
-                intersectionCount ++;
+                NSPoint location;
+                location.x = (CGFloat)((( elementCoefficients[3].x * t + elementCoefficients[2].x ) * t + elementCoefficients[1].x ) * t + elementCoefficients[0].x);
+                location.y = (CGFloat)((( elementCoefficients[3].y * t + elementCoefficients[2].y ) * t + elementCoefficients[1].y ) * t + elementCoefficients[0].y);
+                newIntersection.location = location;
+
+                [intersections insertObject:newIntersection atIndex:insertionPoint];
+                [newIntersection release];
             }
         }
     }
     
-    // Trim the list down if there is much wasted space
-    if (listSize - intersectionCount > 8) {
-        listSize = intersectionCount;
-
-        // clang-sa warngs on possible zero size passed to realloc() (possibly because some implementations return NULL, others non-NULL?)
-        // We could free() the list and fill out NULL in the return struct, but all callers would need to be updated to expect that eventuality.
-        if (listSize != 0)
-            intersections = realloc(intersections, sizeof(*intersections) * listSize);
-    }
-
-    return (struct OABezierPathIntersectionList){ intersectionCount, intersections };
+    NSArray *result = [NSArray arrayWithArray:intersections];
+    [intersections release];
+    return result;
 }
 
 // TODO: Write unit tests for this. In particular, make sure the winding count comes out right even if the test point is lined up with a vertex or cusp.
@@ -877,52 +873,117 @@ void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
     return (segment != 0);
 }
 
-//
-
-// From Scott Anguish's Cocoa book, I believe.
-- (void)appendBezierPathWithRoundedRectangle:(NSRect)aRect withRadius:(CGFloat)radius;
+- (void)appendBezierPathWithRoundedRectangle:(NSRect)rect withRadius:(CGFloat)radius;
 {
-    NSPoint topMid = NSMakePoint(NSMidX(aRect), NSMaxY(aRect));
-    NSPoint topLeft = NSMakePoint(NSMinX(aRect), NSMaxY(aRect));
-    NSPoint topRight = NSMakePoint(NSMaxX(aRect), NSMaxY(aRect));
-    NSPoint bottomRight = NSMakePoint(NSMaxX(aRect), NSMinY(aRect));
-
-    [self moveToPoint:topMid];
-    [self appendBezierPathWithArcFromPoint:topLeft toPoint:aRect.origin radius:radius];
-    [self appendBezierPathWithArcFromPoint:aRect.origin toPoint:bottomRight radius:radius];
-    [self appendBezierPathWithArcFromPoint:bottomRight toPoint:topRight radius:radius];
-    [self appendBezierPathWithArcFromPoint:topRight toPoint:topLeft radius:radius];
-    [self closePath];
+    return [self appendBezierPathWithRoundedRectangle:rect byRoundingCorners:OFRectCornerAllCorners withRadius:radius];
 }
 
-- (void)appendBezierPathWithLeftRoundedRectangle:(NSRect)aRect withRadius:(CGFloat)radius;
+- (void)appendBezierPathWithLeftRoundedRectangle:(NSRect)rect withRadius:(CGFloat)radius;
 {
-    NSPoint topMid = NSMakePoint(NSMidX(aRect), NSMaxY(aRect));
-    NSPoint topLeft = NSMakePoint(NSMinX(aRect), NSMaxY(aRect));
-    NSPoint topRight = NSMakePoint(NSMaxX(aRect), NSMaxY(aRect));
-    NSPoint bottomRight = NSMakePoint(NSMaxX(aRect), NSMinY(aRect));
-    
-    [self moveToPoint:topMid];
-    [self appendBezierPathWithArcFromPoint:topLeft toPoint:aRect.origin radius:radius];
-    [self appendBezierPathWithArcFromPoint:aRect.origin toPoint:bottomRight radius:radius];
-    [self lineToPoint:bottomRight];
-    [self lineToPoint:topRight];
-    [self closePath];
+    OFRectCorner corners = (OFRectCornerMinXMinY | OFRectCornerMinXMaxY);
+    return [self appendBezierPathWithRoundedRectangle:rect byRoundingCorners:corners withRadius:radius];
 }
 
-- (void)appendBezierPathWithRightRoundedRectangle:(NSRect)aRect withRadius:(CGFloat)radius;
+- (void)appendBezierPathWithRightRoundedRectangle:(NSRect)rect withRadius:(CGFloat)radius;
 {
-    NSPoint topMid = NSMakePoint(NSMidX(aRect), NSMaxY(aRect));
-    NSPoint topLeft = NSMakePoint(NSMinX(aRect), NSMaxY(aRect));
-    NSPoint topRight = NSMakePoint(NSMaxX(aRect), NSMaxY(aRect));
-    NSPoint bottomRight = NSMakePoint(NSMaxX(aRect), NSMinY(aRect));
+    OFRectCorner corners = (OFRectCornerMaxXMinY | OFRectCornerMaxXMaxY);
+    return [self appendBezierPathWithRoundedRectangle:rect byRoundingCorners:corners withRadius:radius];
+}
+
+- (void)appendBezierPathWithRoundedRectangle:(NSRect)rect byRoundingCorners:(OFRectCorner)corners withRadius:(CGFloat)radius;
+{
+    // This is the value AppKit uses in -appendBezierPathWithRoundedRect:xRadius:yRadius:
     
-    [self moveToPoint:topMid];
-    [self lineToPoint:topLeft];
-    [self lineToPoint:aRect.origin];
-    [self appendBezierPathWithArcFromPoint:bottomRight toPoint:topRight radius:radius];
-    [self appendBezierPathWithArcFromPoint:topRight toPoint:topLeft radius:radius];
-    [self closePath];
+    const CGFloat kControlPointMultiplier = 0.55228;
+    
+    if (NSIsEmptyRect(rect)) {
+        return;
+    }
+    
+    NSBezierPath *bezierPath = [[self class] bezierPath];
+    NSPoint sourcePoint;
+    NSPoint destPoint;
+    NSPoint controlPoint1;
+    NSPoint controlPoint2;
+    
+    CGFloat length = MIN(NSWidth(rect), NSHeight(rect));
+    radius = MIN(radius, length / 2.0);
+    
+    // Top Left (in terms of a non-flipped view)
+
+    if ((corners & OFRectCornerMinXMinY) != 0) {
+        sourcePoint = NSMakePoint(NSMinX(rect), NSMaxY(rect) - radius);
+        destPoint = NSMakePoint(NSMinX(rect) + radius, NSMaxY(rect));
+        
+        controlPoint1 = sourcePoint;
+        controlPoint1.y += radius * kControlPointMultiplier;
+        
+        controlPoint2 = destPoint;
+        controlPoint2.x -= radius * kControlPointMultiplier;
+        
+        [bezierPath moveToPoint:sourcePoint];
+        [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+    } else {
+        [bezierPath moveToPoint:NSMakePoint(NSMinX(rect), NSMaxY(rect))];
+    }
+    
+    // Top right (in terms of a flipped view)
+    
+    if ((corners & OFRectCornerMaxXMinY) != 0) {
+        sourcePoint = NSMakePoint(NSMaxX(rect) - radius, NSMaxY(rect));
+        destPoint = NSMakePoint(NSMaxX(rect), NSMaxY(rect) - radius);
+        
+        controlPoint1 = sourcePoint;
+        controlPoint1.x += radius * kControlPointMultiplier;
+        
+        controlPoint2 = destPoint;
+        controlPoint2.y += radius * kControlPointMultiplier;
+        
+        [bezierPath lineToPoint:sourcePoint];
+        [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+    } else {
+        [bezierPath lineToPoint:NSMakePoint(NSMaxX(rect), NSMaxY(rect))];
+    }
+    
+    // Bottom right (in terms of a flipped view)
+    
+    if ((corners & OFRectCornerMaxXMaxY) != 0) {
+        sourcePoint = NSMakePoint(NSMaxX(rect), NSMinY(rect) + radius);
+        destPoint = NSMakePoint(NSMaxX(rect) - radius, NSMinY(rect));
+        
+        controlPoint1 = sourcePoint;
+        controlPoint1.y -= radius * kControlPointMultiplier;
+        
+        controlPoint2 = destPoint;
+        controlPoint2.x += radius * kControlPointMultiplier;
+        
+        [bezierPath lineToPoint:sourcePoint];
+        [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+    } else {
+        [bezierPath lineToPoint:NSMakePoint(NSMaxX(rect), NSMinY(rect))];
+    }
+    
+    // Bottom left (in terms of a flipped view)
+    
+    if ((corners & OFRectCornerMinXMaxY) != 0) {
+        sourcePoint = NSMakePoint(NSMinX(rect) + radius, NSMinY(rect));
+        destPoint = NSMakePoint(NSMinX(rect), NSMinY(rect) + radius);
+        
+        controlPoint1 = sourcePoint;
+        controlPoint1.x -= radius * kControlPointMultiplier;
+        
+        controlPoint2 = destPoint;
+        controlPoint2.y -= radius * kControlPointMultiplier;
+        
+        [bezierPath lineToPoint:sourcePoint];
+        [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+    } else {
+        [bezierPath lineToPoint:NSMakePoint(NSMinX(rect), NSMinY(rect))];
+    }
+    
+    // Append the path
+    [bezierPath closePath];
+    [self appendBezierPath: bezierPath];
 }
 
 //
@@ -1310,7 +1371,7 @@ static int compareFloat(const void *a_, const void *b_)
 
 - (BOOL)isClockwise
 {
-    OABezierPathIntersection edge;
+    OABezierPathIntersection *edge = [[OABezierPathIntersection alloc] init];
     BOOL hit;
     NSRect bounds = [self bounds];
     NSInteger elementCount = [self elementCount], elementIndex, coordinateCount, coordinateIndex;
@@ -1333,6 +1394,7 @@ static int compareFloat(const void *a_, const void *b_)
     }
     if (coordinateCount < 2) {
         free(yCoordinates);
+        [edge release];
         return YES;  // degenerate path
     }
 
@@ -1352,15 +1414,18 @@ static int compareFloat(const void *a_, const void *b_)
     free(yCoordinates);
     
     OBASSERT(bestGapSize >= 0.0);
-    if (bestGapSize <= 0)
+    if (bestGapSize <= 0) {
+        [edge release];
         return YES; // another degenerate path
+    }
     
-    hit = [self firstIntersectionWithLine:&edge
+    hit = [self firstIntersectionWithLine:edge
                                 lineStart:(NSPoint){ .x = NSMinX(bounds) - 1, .y = bestGapMidpoint }
                                   lineEnd:(NSPoint){ .x = NSMaxX(bounds) + 1, .y = bestGapMidpoint }];
     OBASSERT(hit);
     if (hit) {
         enum OAIntersectionAspect aspect = (edge.right.parameterDistance < 0)? edge.right.secondAspect : edge.right.firstAspect;
+        [edge release];
         switch(aspect) {
             case intersectionEntryRight:
                 return YES;
@@ -1371,6 +1436,8 @@ static int compareFloat(const void *a_, const void *b_)
             default:
                 break;
         }
+    } else {
+        [edge release]; // need to release `edge` in the not-hit, unreachable case
     }
 
     // This shouldn't be possible ... 
@@ -1903,7 +1970,11 @@ static inline OAdPoint evaluateCubicDerivativePt(const NSPoint *c, double t)
 void _parameterizeLine(NSPoint *coefficients, NSPoint startPoint, NSPoint endPoint) {
     coefficients[0] = startPoint;
     coefficients[1].x = endPoint.x - startPoint.x;
-    coefficients[1].y = endPoint.y - startPoint.y;
+    if (ABS(coefficients[1].x) < FLATNESS)         // this line is horizontal
+        coefficients[1].x = 0;
+    coefficients[1].y = endPoint.y - startPoint.y;  // this line is vertical
+    if (ABS(coefficients[1].y) < FLATNESS)
+        coefficients[1].y = 0;
 }
 
 // Given a curveto's endpoints and control points, compute the coefficients to trace out the curve as p(t) = c[0] + c[1]*t + c[2]*t^2 + c[3]*t^3
@@ -3492,3 +3563,8 @@ void OACGAddRoundedRect(CGContextRef context, NSRect rect, CGFloat minyLeft, CGF
     CGContextClosePath(context);
 }
 
+@implementation OABezierPathIntersection
+@synthesize left = _left;
+@synthesize right = _right;
+@synthesize location = _location;
+@end

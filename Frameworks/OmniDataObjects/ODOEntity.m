@@ -285,7 +285,7 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
 #ifdef OMNI_ASSERTIONS_ON
 static CFComparisonResult _compareByName(const void *val1, const void *val2, void *context)
 {
-    return [(ODOProperty *)val1 compareByName:(ODOProperty *)val2];
+    return (CFComparisonResult)[(ODOProperty *)val1 compareByName:(ODOProperty *)val2];
 }
 #endif
 

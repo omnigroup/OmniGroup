@@ -1,4 +1,4 @@
-// Copyright 2003-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,14 +17,15 @@
 
 enum {
     OALeftTextAlignment		= 0,    // Visually left aligned
-    OARightTextAlignment	= 1,    // Visually right aligned
-    OACenterTextAlignment	= 2,    // Visually centered
+    OARightTextAlignment	= 2,    // Visually right aligned
+    OACenterTextAlignment	= 1,    // Visually centered
     OAJustifiedTextAlignment	= 3,    // Fully-justified. The last line in a paragraph is natural-aligned.
     OANaturalTextAlignment	= 4,     // Indicates the default alignment for script
     
     OATextAlignmentMAX          = OANaturalTextAlignment
 };
 typedef NSUInteger OATextAlignment;
+// note that right and center are backwards on iOS (see NSText.h)
 
 enum {
     OAWritingDirectionNatural       = -1,   // Determines direction using the Unicode Bidi Algorithm rules P2 and P3
@@ -40,6 +41,16 @@ enum {
     OADecimalTabStopType
 };
 typedef NSUInteger OATextTabType;
+
+enum {		/* What to do with long lines */
+    OALineBreakByWordWrapping = 0,     	/* Wrap at word boundaries, default */
+    OALineBreakByCharWrapping,		/* Wrap at character boundaries */
+    OALineBreakByClipping,		/* Simply clip */
+    OALineBreakByTruncatingHead,	/* Truncate at head of line: "...wxyz" */
+    OALineBreakByTruncatingTail,	/* Truncate at tail of line: "abcd..." */
+    OALineBreakByTruncatingMiddle	/* Truncate middle of line:  "ab...yz" */
+};
+typedef NSInteger OALineBreakMode;
 
 @interface OATextTab : OFObject
 {
@@ -74,6 +85,8 @@ typedef NSUInteger OATextTabType;
         CGFloat lineHeightMultiple;
         CGFloat paragraphSpacingBefore;
         CGFloat defaultTabInterval;
+        
+        OALineBreakMode lineBreakMode;
     } _scalar;
 
     NSArray *_tabStops;
@@ -102,6 +115,8 @@ typedef NSUInteger OATextTabType;
 - (CGFloat)defaultTabInterval;
 
 - (CFTypeRef)copyCTParagraphStyle;
+
+- (OALineBreakMode)lineBreakMode;
 
 @end
 

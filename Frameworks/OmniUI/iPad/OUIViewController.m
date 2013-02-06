@@ -1,4 +1,4 @@
-// Copyright 2011-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -93,12 +93,6 @@ static BOOL _viewControllerIsChildButNotInViewHiearchy(OUIViewController *self, 
 }
 
 // These hooks maintain visibility state, which is accessible by clients using the visibility property and is used in places to skip the adding of child view controllers when we aren't visible.
-- (void)viewDidUnload;
-{
-    DEBUG_PARENT_VC(@"In %s", __func__);
-    OBPRECONDITION(self.visibility == OUIViewControllerVisibilityHidden);
-    [super viewDidUnload];
-}
 
 - (void)viewWillAppear:(BOOL)animated;
 {

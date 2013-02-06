@@ -9,8 +9,6 @@
 
 #import <OmniFileStore/OFSFeatures.h>
 
-#if OFS_DOCUMENT_STORE_SUPPORTED
-
 #import <OmniFileStore/OFSDocumentStoreItem.h>
 
 @interface OFSDocumentStoreItem (/*Internal*/)
@@ -19,5 +17,3 @@
 - (void)_invalidate;
 
 @end
-
-#endif // OFS_DOCUMENT_STORE_SUPPORTED

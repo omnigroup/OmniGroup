@@ -18,9 +18,9 @@
 RCS_ID("$Id$");
 
 /* To set up character set used for deferred string decoding (see OFStringDecoder.[hm]) */
-__private_extern__ CFCharacterSetRef OFDeferredDecodingCharacterSet(void);
-__private_extern__ unichar OFCharacterForDeferredDecodedByte(unsigned int byte);
-__private_extern__ unsigned int OFByteForDeferredDecodedCharacter(unichar uchar);
+CFCharacterSetRef OFDeferredDecodingCharacterSet(void) OB_HIDDEN;
+unichar OFCharacterForDeferredDecodedByte(unsigned int byte) OB_HIDDEN;
+unsigned int OFByteForDeferredDecodedCharacter(unichar uchar) OB_HIDDEN;
 
 /* Character sets & variables used for URI encoding */
 static OFCharacterSet *AcceptableCharacterSet(void)

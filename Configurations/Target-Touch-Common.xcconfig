@@ -5,12 +5,9 @@
 // We were setting this for all build types on iPhone/iPad. Necessary, or only do it for Debug like on the Mac?
 DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 
-// We let Xcode strip -- presumably for signing
-COPY_PHASE_STRIP = YES
-
 // Use the latest iOS SDK with a specific deployment target
 SDKROOT = iphoneos
-IPHONEOS_DEPLOYMENT_TARGET = 5.1
+IPHONEOS_DEPLOYMENT_TARGET = 6.0
 
 // iPhone OS 3.2+ only supports armv7. If we have a target that wants armv6 it'll already need to override the SDK to be 3.1.
 ARCHS[sdk=iphoneos*] = armv7
@@ -22,3 +19,6 @@ GCC_VERSION = com.apple.compilers.llvm.clang.1_0
 
 // For Xcode builds, we sign our applications using our individual development certificates ("iPhone Developer: [Person]"). For distribution builds, our build scripts will re-sign as "iPhone Distribution: [Company]" (for App Store submissions).
 CODE_SIGN_IDENTITY = iPhone Developer:
+
+// Output strings in UTF-8 format for Simulator builds; This is a more convenient format for the localizers to work with
+STRINGS_FILE_OUTPUT_ENCODING[sdk=iphonesimulator*] = UTF-8

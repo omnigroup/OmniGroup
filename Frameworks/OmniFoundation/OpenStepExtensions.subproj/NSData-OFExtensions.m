@@ -1,4 +1,4 @@
-// Copyright 1998-2005,2007,2008,2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,14 +29,7 @@ RCS_ID("$Id$")
 
 + (NSData *)randomDataOfLength:(NSUInteger)byteCount;
 {
-    OFByte *bytes = (OFByte *)malloc(byteCount);
-    
-    for (NSUInteger byteIndex = 0; byteIndex < byteCount; byteIndex++)
-        bytes[byteIndex] = OFRandomNext32() & 0xff;
-
-    // Send to self rather than NSData so that we'll get mutable instances when the caller sent the message to NSMutableData
-    // clang checker-0.209 incorrectly reports this as a +1 ref <http://llvm.org/bugs/show_bug.cgi?id=4292>
-    return objc_msgSend(self, @selector(dataWithBytesNoCopy:length:), bytes, byteCount);
+    return [OFRandomCreateDataOfLength(byteCount) autorelease];
 }
 
 + dataWithDecodedURLString:(NSString *)urlString
@@ -113,7 +106,7 @@ RCS_ID("$Id$")
     NSUInteger selfLength = [self length];
     if (searchRange.location > selfLength ||
         (searchRange.location + searchRange.length) > selfLength) {
-        OBRejectInvalidCall(self, _cmd, @"Range {%u,%u} exceeds length %u", searchRange.location, searchRange.length, selfLength);
+        OBRejectInvalidCall(self, _cmd, @"Range %@ exceeds length %"PRIuNS, NSStringFromRange(searchRange), selfLength);
     }
 
     if (patternLength == 0)
@@ -144,24 +137,6 @@ RCS_ID("$Id$")
 
 - propertyList
 {
-#ifndef OF_USE_NEW_CF_PLIST_API  /* Computed in CFPropertyList-OFExtensions.h */
-
-    CFStringRef errorString = NULL;
-    CFPropertyListRef propList = CFPropertyListCreateFromXMLData(kCFAllocatorDefault, (CFDataRef)self, kCFPropertyListImmutable, &errorString);
-    
-    if (propList != NULL)
-        return [NSMakeCollectable(propList) autorelease];
-    
-    NSException *exception = [[NSException alloc] initWithName:NSParseErrorException reason:(NSString *)errorString userInfo:nil];
-    [NSMakeCollectable(errorString) autorelease];
-    
-    [exception autorelease];
-    [exception raise];
-    /* NOT REACHED */
-    return nil;
-    
-#else
-    
     CFErrorRef error = NULL;
     CFPropertyListRef propList = CFPropertyListCreateWithData(kCFAllocatorDefault, (CFDataRef)self, kCFPropertyListImmutable, NULL, &error);
     if (propList != NULL)
@@ -176,8 +151,6 @@ RCS_ID("$Id$")
     [exception raise];
     /* NOT REACHED */
     return nil;
-    
-#endif
 }
 
 - (BOOL)writeToFile:(NSString *)path atomically:(BOOL)atomically createDirectories:(BOOL)shouldCreateDirectories error:(NSError **)outError;

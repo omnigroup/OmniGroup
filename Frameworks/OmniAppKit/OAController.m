@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2011-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,6 +29,15 @@ RCS_ID("$Id$")
         [NSApp replyToApplicationShouldTerminate:isReadyToTerminate];
     
     [super gotPostponedTerminateResult:isReadyToTerminate];
+}
+
+- (BOOL)shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
+{
+    if ([[exception name] isEqualToString:NSAccessibilityException] &&
+        [[[exception userInfo] objectForKey:NSAccessibilityErrorCodeExceptionInfo] intValue] == kAXErrorAttributeUnsupported)
+        return NO;
+    
+    return [super shouldLogException:exception mask:aMask];
 }
 
 #pragma mark -
@@ -78,7 +87,7 @@ RCS_ID("$Id$")
 {
     // Application developers should enter the feedback address in their main bundle's info dictionary.
     if (!feedbackAddress) {
-        NSRunAlertPanel(@"Unable to send feedback email.", @"No support email address configured in this applications.", @"Cancel", nil, nil);
+        NSRunAlertPanel(@"Unable to send feedback email.", @"No support email address configured in this application.", @"Cancel", nil, nil);
     } else {
         OAInternetConfig *internetConfig = [[[OAInternetConfig alloc] init] autorelease];
         

@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2005, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -147,7 +147,7 @@ static BOOL colorSyncEnabled;
     [cgImageLock release];
     observerCount = [_observers count];
     for (observerIndex = 0; observerIndex < observerCount; observerIndex++) {
-        id <OFWeakRetain> anObserver;
+        id <OWFWeakRetain> anObserver;
         
         anObserver = [_observers objectAtIndex:observerIndex];
         [anObserver decrementWeakRetainCount];
@@ -332,7 +332,7 @@ static inline CGRect _nsRectToCGRect(NSRect aRect)
 #endif
 }
 
-- (void)addObserver:(id <OIImageObserver, OFWeakRetain>)anObserver;
+- (void)addObserver:(id <OIImageObserver, OWFWeakRetain>)anObserver;
     // Subscribed anObserver to receive messages described in the OIImageObserver protocol.  The new observer is  retained.  The new observer is responsible for unsubscribing itself so that it can eventually be deallocated.
 {
     [observersLock lock];
@@ -342,7 +342,7 @@ static inline CGRect _nsRectToCGRect(NSRect aRect)
     [anObserver incrementWeakRetainCount];
 }
 
-- (void)removeObserver:(id <OIImageObserver, OFWeakRetain>)anObserver;
+- (void)removeObserver:(id <OIImageObserver, OWFWeakRetain>)anObserver;
     // Unsubscribes anObserver such that it will not receive the messages described in the OIImageObserver protocol and is no longer retained by the image.
 {
     [anObserver decrementWeakRetainCount];

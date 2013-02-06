@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2007, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,12 +18,13 @@
 - (NSString *)itemIdentifierExtension;
 - (NSString *)templateItemIdentifier;
 - (NSArray *)allowedItems;
-- (void)finishSetupForItem:(NSToolbarItem *)item;
+- (void)finishSetupForToolbarItem:(NSToolbarItem *)item toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 @end
 
 @interface OAToolbarWindowController : NSWindowController <NSToolbarDelegate>
 {
-    OAToolbar *toolbar;
+@private
+    OAToolbar *_toolbar;
     BOOL _isCreatingToolbar;
 }
 
@@ -32,10 +33,15 @@
 + (Class)toolbarClass;
 + (Class)toolbarItemClass;
 
+// DTS workaround for <bug:///83131> (r.12466034: Scroll view gets spurious NSZeroSize, causing constraint violations on 10.7)
+// Return YES from this method (the default) if the window controller should call -updateConstraintsIfNeeded on the window after installing the toolbar to avoid constraint violations.
++ (BOOL)shouldUpdateConstraintsAfterInstallingToolbar;
+
 - (OAToolbar *)toolbar;
 - (void)createToolbar;
 - (BOOL)isCreatingToolbar;
 - (NSDictionary *)toolbarInfoForItem:(NSString *)identifier;
+- (NSDictionary *)localizedToolbarInfoForItem:(NSString *)identifier;
 
 // implement in subclasses to control toolbar
 - (NSString *)toolbarConfigurationName; // file name to lookup .toolbar plist

@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,19 +110,16 @@ static inline int ONAddressFamilyForProtocolFamily(int protocolFamily)
     return protocolFamily;
 }
 
-
-#import "FrameworkDefines.h"
-
 // Exceptions which may be raised by this class
-OmniNetworking_EXTERN NSString *ONInternetSocketBindFailedExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketReuseSelectionFailedExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketBroadcastSelectionFailedExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketConnectFailedExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketConnectTemporarilyFailedExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketGetNameFailedExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketNotConnectedExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketReadFailedExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketSetOptionFailedExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketUserAbortExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketWriteFailedExceptionName;
-OmniNetworking_EXTERN NSString *ONInternetSocketCloseFailedExceptionName;
+extern NSString * const ONInternetSocketBindFailedExceptionName;
+extern NSString * const ONInternetSocketReuseSelectionFailedExceptionName;
+extern NSString * const ONInternetSocketBroadcastSelectionFailedExceptionName;
+extern NSString * const ONInternetSocketConnectFailedExceptionName;
+extern NSString * const ONInternetSocketConnectTemporarilyFailedExceptionName;
+extern NSString * const ONInternetSocketGetNameFailedExceptionName;
+extern NSString * const ONInternetSocketNotConnectedExceptionName;
+extern NSString * const ONInternetSocketReadFailedExceptionName;
+extern NSString * const ONInternetSocketSetOptionFailedExceptionName;
+extern NSString * const ONInternetSocketUserAbortExceptionName;
+extern NSString * const ONInternetSocketWriteFailedExceptionName;
+extern NSString * const ONInternetSocketCloseFailedExceptionName;

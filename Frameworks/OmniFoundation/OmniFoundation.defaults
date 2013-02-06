@@ -16,5 +16,7 @@
         <integer>10</integer>
         <key>OFCompletionMatchScoreForCapitalLetter</key>
         <integer>15</integer>
+		<key>OFTrustedHosts</key>
+		<array/>
     </dict>
 </plist>

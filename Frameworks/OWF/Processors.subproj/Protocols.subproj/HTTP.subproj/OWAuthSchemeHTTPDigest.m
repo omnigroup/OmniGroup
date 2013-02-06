@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -366,24 +366,16 @@ static void appendAuthParameter(NSMutableString *buf, NSString *name, NSString *
 
 - (void)authorizationSucceeded:(BOOL)success response:(OWHeaderDictionary *)response;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     /* If we've failed, but we succeeded some time in the past, check to see if we can just try again with a new nonce instead of prompting the user again. */
     if (!success && lastSucceededTimeInterval > OWAuthDistantPast) {
         NSArray *challenges = [OWAuthorizationRequest findParametersOfType:type headers:response];
-        unsigned int challengeIndex, challengeCount;
-        
-        challengeCount = [challenges count];
-        for (challengeIndex = 0; challengeIndex < challengeCount; challengeIndex++) {
-            NSDictionary *challenge = [challenges objectAtIndex:challengeIndex];
+        for (NSDictionary *challenge in challenges) {
             if ([self appliesToHTTPChallenge:challenge]) {
                 NSString *stale = [challenge objectForKey:@"stale"];
                 NSString *newNonce = [challenge objectForKey:@"nonce"];
-                if (stale && newNonce && ![nonce isEqual:newNonce] &&
+                if (stale != nil && newNonce != nil && ![nonce isEqual:newNonce] &&
                     [stale caseInsensitiveCompare:@"true"] == NSOrderedSame) {
-                    OWAuthSchemeHTTPDigest *newCred;
-                    
-                    newCred = [[OWAuthSchemeHTTPDigest alloc] initAsCopyOf:self];
+                    OWAuthSchemeHTTPDigest *newCred = [[OWAuthSchemeHTTPDigest alloc] initAsCopyOf:self];
                     [newCred setParameters:challenge];
                     [OWAuthorizationRequest cacheCredentialIfAbsent:newCred];
                     [newCred release];
@@ -395,7 +387,6 @@ static void appendAuthParameter(NSMutableString *buf, NSString *name, NSString *
     // TODO: Parse the Authentication-Info header for greater efficiency & protection
     
     [super authorizationSucceeded:success response:response];
-#endif
 }
 
 - (NSMutableDictionary *)debugDictionary;

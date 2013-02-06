@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <AppKit/NSBezierPath.h>
 #import <ApplicationServices/ApplicationServices.h> // CGContextRef
+#import <OmniFoundation/OFGeometry.h>
 
 @class NSCountedSet, NSDictionary, NSMutableDictionary;
 
@@ -30,26 +31,33 @@ typedef struct OABezierPathPosition {
 } OABezierPathPosition;
 
 typedef struct {
-    struct OABezierPathIntersectionHalf {
-        NSBezierPathSegmentIndex segment;
-        double parameter;
-        double parameterDistance;
-        // Unlike the lower-level calls, these aspects are ordered according to their occurrence on this path, not the other path. So 'firstAspect' is the aspect of the other line where it crosses us at (parameter), and 'secondAspect' is the aspect at (parameter.parameterDistance).
-        enum OAIntersectionAspect firstAspect, secondAspect;
-    } left, right;
-    NSPoint location;
-} OABezierPathIntersection;
+    NSBezierPathSegmentIndex segment;
+    double parameter;
+    double parameterDistance;
+    // Unlike the lower-level calls, these aspects are ordered according to their occurrence on this path, not the other path. So 'firstAspect' is the aspect of the other line where it crosses us at (parameter), and 'secondAspect' is the aspect at (parameter.parameterDistance).
+    enum OAIntersectionAspect firstAspect, secondAspect;
+} OABezierPathIntersectionHalf;
 
-struct OABezierPathIntersectionList {
-    NSUInteger count;
-    OABezierPathIntersection *intersections;
-};
+@interface OABezierPathIntersection : NSObject
+{
+    OABezierPathIntersectionHalf _left;
+    OABezierPathIntersectionHalf _right;
+    NSPoint _location;
+}
+
+@property (nonatomic, readwrite) OABezierPathIntersectionHalf left;
+@property (nonatomic, readwrite) OABezierPathIntersectionHalf right;
+@property (nonatomic, readwrite) NSPoint location;
+
+@end
 
 // Utility functions used internally, may be of use to other callers as well
 void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r);
 BOOL tightBoundsOfCurveTo(NSRect *r, NSPoint startPoint, NSPoint control1, NSPoint control2, NSPoint endPoint, CGFloat sideClearance);
 
 @interface NSBezierPath (OAExtensions)
+
++ (NSBezierPath *)bezierPathWithRoundedRectangle:(NSRect)rect byRoundingCorners:(OFRectCorner)corners withRadius:(CGFloat)radius;
 
 - (NSPoint)currentpointForSegment:(NSInteger)i;  // Raises an exception if no currentpoint
 
@@ -62,8 +70,8 @@ BOOL tightBoundsOfCurveTo(NSRect *r, NSPoint startPoint, NSPoint control1, NSPoi
 // Returns the first intersection with the given line (that is, the intersection closest to the start of the receiver's bezier path).
 - (BOOL)firstIntersectionWithLine:(OABezierPathIntersection *)result lineStart:(NSPoint)lineStart lineEnd:(NSPoint)lineEnd;
 
-// Returns a list of all the intersections between the receiver and the specified path. As a special case, if other==self, it does the useful thing and returns only the nontrivial self-intersections.
-- (struct OABezierPathIntersectionList)allIntersectionsWithPath:(NSBezierPath *)other;
+// Returns all the intersections between the receiver and the specified path. As a special case, if other==self, it does the useful thing and returns only the nontrivial self-intersections.
+- (NSArray *)allIntersectionsWithPath:(NSBezierPath *)other;
 
 - (void)getWinding:(NSInteger *)clockwiseWindingCount andHit:(NSUInteger *)strokeHitCount forPoint:(NSPoint)point;
 
@@ -73,10 +81,11 @@ BOOL tightBoundsOfCurveTo(NSRect *r, NSPoint startPoint, NSPoint control1, NSPoi
 - (BOOL)isStrokeHitByPoint:(NSPoint)point; // padding == 5
 - (NSInteger)segmentHitByPoint:(NSPoint)point position:(CGFloat *)position padding:(CGFloat)padding;
 
-//
-- (void)appendBezierPathWithRoundedRectangle:(NSRect)aRect withRadius:(CGFloat)radius;
-- (void)appendBezierPathWithLeftRoundedRectangle:(NSRect)aRect withRadius:(CGFloat)radius;
-- (void)appendBezierPathWithRightRoundedRectangle:(NSRect)aRect withRadius:(CGFloat)radius;
+- (void)appendBezierPathWithRoundedRectangle:(NSRect)rect withRadius:(CGFloat)radius;
+- (void)appendBezierPathWithLeftRoundedRectangle:(NSRect)rect withRadius:(CGFloat)radius;
+- (void)appendBezierPathWithRightRoundedRectangle:(NSRect)rect withRadius:(CGFloat)radius;
+
+- (void)appendBezierPathWithRoundedRectangle:(NSRect)rect byRoundingCorners:(OFRectCorner)corners withRadius:(CGFloat)radius;
 
 // The "position" manipulated by these methods divides the range 0..1 equally into segments corresponding to the Bezier's segments, and position within each segment is proportional to the t-parameter (not proportional to linear distance).
 - (NSPoint)getPointForPosition:(CGFloat)position andOffset:(CGFloat)offset;

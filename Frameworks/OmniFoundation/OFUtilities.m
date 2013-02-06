@@ -237,8 +237,12 @@ NSString *OFLocalizedNameForISOLanguageCode(NSString *languageCode)
     return [[NSBundle bundleForClass:[OFObject class]] localizedStringForKey:languageCode value:@"" table:@"Language"];
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 NSString *OFOSStatusDescription(OSStatus err)
 {
+    /* Deprecated without an adequate replacement in 10.8. RADAR 12514739 */
+    
     const char *longErrorDescription = GetMacOSStatusCommentString(err);
     if (longErrorDescription && strlen(longErrorDescription))
         return [NSString stringWithFormat:@"%s (%"PRI_OSStatus")", longErrorDescription, err];
@@ -249,6 +253,7 @@ NSString *OFOSStatusDescription(OSStatus err)
     
     return [NSString stringWithFormat:@"%"PRI_OSStatus"", err];
 }
+#pragma clang diagnostic pop
 
 // Adapted from OmniNetworking. May be replaced by something cleaner in the future.
 

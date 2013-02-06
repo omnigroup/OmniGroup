@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -120,7 +120,7 @@ static CGFloat _setSliceSizes(UIView *self, NSArray *_slices, NSSet *slicesToPos
     OUIInspectorBackgroundView *_backgroundView;
     NSArray *_slices;
 }
-
+- (UIColor *)colorForYPosition:(CGFloat)yPosition inView:(UIView *)view;
 @property(nonatomic,copy) NSArray *slices;
 @end
 
@@ -152,6 +152,11 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     [_backgroundView release];
     [_slices release];
     [super dealloc];
+}
+
+- (UIColor *)colorForYPosition:(CGFloat)yPosition inView:(UIView *)view;
+{
+    return [_backgroundView colorForYPosition:yPosition inView:view];
 }
 
 @synthesize slices = _slices;
@@ -524,17 +529,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     [nc addObserver:self selector:@selector(_stackedSlicesInspectorPane_textFieldTextDidBeginEditing:) name:UITextFieldTextDidBeginEditingNotification object:nil];
     [nc addObserver:self selector:@selector(_stackedSlicesInspectorPane_textViewTextDidBeginEditing:) name:UITextViewTextDidBeginEditingNotification object:nil];
     [nc addObserver:self selector:@selector(_stackedSlicesInspectorPane_editableFrameTextdDidBeginEditing:) name:OUIEditableFrameTextDidBeginEditingNotification object:nil];
-}
-
-- (void)viewDidUnload;
-{
-    DEBUG_ANIM(@"viewDidUnload");
-    
-    OBPRECONDITION(self.visibility == OUIViewControllerVisibilityHidden);
-
-    [super viewDidUnload];
-    
-    OBASSERT(self.inspector.visible || _slices == nil); // We expect -didReceiveMemoryWarning to do this, unless our inspector is still shown
 }
 
 - (void)viewWillAppear:(BOOL)animated;

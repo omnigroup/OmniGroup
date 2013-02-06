@@ -1,4 +1,4 @@
-// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@
 #import <Carbon/Carbon.h>
 #import <ExceptionHandling/NSExceptionHandler.h>
 
+#import <OmniAppKit/OAViewPicker.h>
 #import "NSView-OAExtensions.h"
 #import "NSWindow-OAExtensions.h"
 #import "NSImage-OAExtensions.h"
@@ -55,7 +56,6 @@ BOOL OATargetSelectionEnabled(void)
     launchModifierFlags = [NSEvent modifierFlags];
 }
 
-static NSImage *HelpIcon = nil;
 static NSImage *CautionIcon = nil;
 
 #pragma mark -
@@ -86,7 +86,7 @@ static NSImage *CautionIcon = nil;
     // that it just fails (without error on 10.6, with an error on 10.5)
     // 
     // Any other event not in the required suite (even one implemented by a scripting addition) kicks things into the working state.
-    // Forcing the shared instance of the script suite registry to come into existance also works around the problem. (This costs us a few hundreths of a second at startup.)
+    // Forcing the shared instance of the script suite registry to come into existance also works around the problem. (This costs us a few hundredths of a second at startup.)
 
     [NSScriptSuiteRegistry sharedScriptSuiteRegistry];
 }
@@ -319,7 +319,28 @@ static NSArray *flagsChangedRunLoopModes;
                     
                 break;
             }
+#ifdef OMNI_ASSERTIONS_ON
+            case NSKeyDown:
+                if ([[event charactersIgnoringModifiers] isEqualToString:@"\033"] && [OAViewPicker cancelActivePicker]) {
+                    break;
+                } else if ([[event charactersIgnoringModifiers] isEqualToString:@"V"] && [event checkForAllModifierFlags:NSControlKeyMask|NSCommandKeyMask|NSAlternateKeyMask|NSShiftKeyMask without:0]) {
+                    NSUInteger windowNumberUnderMouse = [NSWindow windowNumberAtPoint:[NSEvent mouseLocation] belowWindowWithWindowNumber:0];
+                    if (windowNumberUnderMouse) {
+                        NSWindow *window = [self windowWithWindowNumber:windowNumberUnderMouse];
+                        if ([window isKindOfClass:[OAViewPicker class]])
+                            window = [window parentWindow];
                         
+                        [window visualizeConstraintsForPickedView:self];
+                        break;
+                    }
+                    
+                    [self sendAction:@selector(visualizeConstraintsForPickedView:) to:nil from:self];
+                    break;
+                } else {
+                    // fall through
+                }
+#endif
+                
             default:
                 [super sendEvent:event];
                 break;
@@ -403,6 +424,14 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     [self applyToResponderChain:applier];
 }
 
+- (id)targetForAction:(SEL)theAction;
+{
+    if (!theAction || !OATargetSelection)
+        return [super targetForAction:theAction];
+    else
+        return [self targetForAction:theAction to:nil from:nil];
+}
+
 - (id)targetForAction:(SEL)theAction to:(id)theTarget from:(id)sender;
 {
     if (!theAction || !OATargetSelection)
@@ -414,11 +443,17 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     
     OAResponderChainApplier applier = ^(id object){
         DEBUG_TARGET_SELECTION(@" ... trying %@", [object shortDescription]);
+        
+        if (OADebugTargetSelection && [object respondsToSelector:@selector(window)]) {
+            DEBUG_TARGET_SELECTION(@"       has window: %@", [[object window] shortDescription]);
+        }
+        
         id responsible = [object responsibleTargetForAction:theAction sender:sender];
         
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_10_7 <= MAC_OS_X_VERSION_MIN_REQUIRED
         // Use the supplementalTargetForAction mechanism that was introduced in 10.7 to look for delegates and other helper objects attached to responders, but still use our OATargetSelection approach of requiring objects to override responsibleTargetForAction if they wish to terminate the search.
-        if (!responsible && [object isKindOfClass:[NSResponder class]]) {
+        if (!responsible && [object isKindOfClass:[NSResponder class]] && ![object respondsToSelector:@selector(remoteResponderChainPerformSelector:)]) {
+            DEBUG_TARGET_SELECTION(@"      ... trying supplementalTarget");
             responsible = [(NSResponder *)object supplementalTargetForAction:theAction sender:sender];
             if (responsible)
                 DEBUG_TARGET_SELECTION(@"      ... got supplementalTarget: %@", [responsible shortDescription]);
@@ -806,32 +841,31 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 #pragma mark - AppleScript
 
-static void _addPreferenceForKey(const void *value, void *context)
-{
-    NSString *key = (NSString *)value;
-    NSMutableArray *prefs = (NSMutableArray *)context;
-    
-    OFPreference *pref = [OFPreference preferenceForKey:key];
-    OBASSERT(pref);
-    if (pref)
-        [prefs addObject:pref];
-}
-
-static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
-{
-    return [[obj1 key] compare:[obj2 key]];
-}
-
 - (NSArray *)scriptPreferences;
 {
-    NSMutableArray *prefs = [NSMutableArray array];
-    [[OFPreference registeredKeys] applyFunction:_addPreferenceForKey context:prefs];
-    [prefs sortUsingFunction:_compareByKey context:NULL];
-    return prefs;
+    NSMutableArray *scriptPreferences = [NSMutableArray array];
+    NSArray *registeredKeys = [[[OFPreference registeredKeys] allObjects] sortedArrayUsingSelector:@selector(compare:)];
+
+    for (NSString *key in registeredKeys) {
+        OFPreference *preference = [OFPreference preferenceForKey:key];
+        OBASSERT(preference);
+        if (preference != nil) {
+            [scriptPreferences addObject:preference];
+        }
+    }
+
+    return scriptPreferences;
 }
 
 - (OFPreference *)valueInScriptPreferencesWithUniqueID:(NSString *)identifier;
 {
+    // Only return OFPreference objects, by unique ID, that exist.
+    // (That is, you shouldn't be able to access a preference by ID that doesn't exist in `every preference`.)
+    
+    if (![[OFPreference registeredKeys] containsObject:identifier]) {
+        return nil;
+    }
+    
     return [OFPreference preferenceForKey:identifier];
 }
 
@@ -919,8 +953,7 @@ static NSComparisonResult _compareByKey(id obj1, id obj2, void *context)
 
     // make these images available to client nibs and whatnot (retaining them so they stick around in cache).
     // Store them in ivars to avoid clang scan-build warnings.
-    HelpIcon = [[NSImage imageNamed:@"OAHelpIcon" inBundleForClass:[OAApplication class]] retain];
-    CautionIcon = [[NSImage imageNamed:@"OACautionIcon" inBundleForClass:[OAApplication class]] retain];
+    CautionIcon = [[NSImage imageNamed:@"OACautionIcon" inBundle:OMNI_BUNDLE] retain];
 }
 
 - (void)processMouseButtonsChangedEvent:(NSEvent *)event;
@@ -1170,16 +1203,24 @@ static NSMapTable *OAValidatorMaps[OAValidatorTypeCount]; // One SEL --> SEL map
     // e.g., @selector(toggleStatusCheckbox:) --> @"ToggleStatusCheckbox"
     NSString *selectorString = NSStringFromSelector(action);
 #ifdef OMNI_ASSERTIONS_ON
+    OBASSERT(selectorString.length > 0, @"Must have a non-empty selector string");
     NSRange firstColon = [selectorString rangeOfString:@":"];
     OBASSERT(firstColon.length == 1 && firstColon.location == [selectorString length] - 1); // sanity check for unary selector
 #endif
     unichar *buffer = alloca(selectorString.length * sizeof(unichar));
     [selectorString getCharacters:buffer];
+    NSUInteger actionNameLength = selectorString.length - 1; // -1 for trailing ':'
+    BOOL leadingUnderscore = *buffer == '_';
+    if (leadingUnderscore) {
+        // skip leading underscore
+        buffer++;
+        actionNameLength--;
+    }    
     if (*buffer >= 'a' && *buffer <= 'z')
         *buffer += 'A' - 'a';
 
-    NSString *actionName = [[NSString alloc] initWithCharacters:buffer length:selectorString.length - 1];
-    NSString *validatorString = [[NSString alloc] initWithFormat:@"validate%@%@:", actionName, suffix ? suffix : @""];
+    NSString *actionName = [[NSString alloc] initWithCharacters:buffer length:actionNameLength];
+    NSString *validatorString = [[NSString alloc] initWithFormat:@"%@validate%@%@:", leadingUnderscore ? @"_" : @"", actionName, suffix ? suffix : @""];
     validator = NSSelectorFromString(validatorString);
     [validatorString release];
     [actionName release];
@@ -1191,6 +1232,20 @@ static NSMapTable *OAValidatorMaps[OAValidatorTypeCount]; // One SEL --> SEL map
 
 - (BOOL)_invokeValidatorForType:(OAValidationType)type item:(NSObject <NSValidatedUserInterfaceItem> *)item;
 {
+    if ([item action] == nil) {
+#ifdef OMNI_ASSERTIONS_ON
+        NSString *itemIdentifier = nil;
+        NSString *label = nil;
+        if ([item respondsToSelector:@selector(itemIdentifier)])
+            itemIdentifier = [(id)item itemIdentifier];
+        if ([item respondsToSelector:@selector(label)])
+            label = [(id)item label];
+        OBASSERT_NOT_REACHED(@"Don't expect to hit OATargetSelectionValidation without an action, but here we are with item: %@, itemIdentifier: %@, label: %@", item, itemIdentifier, label);
+#endif
+        // With no action, we can't make a downcall to any validate<Action> methods, but neither can the action be invoked. So…
+        return NO;
+    }
+    
     SEL validator = [self _validatorSelectorFromAction:[item action] type:type];
     
     if ([self respondsToSelector:validator])

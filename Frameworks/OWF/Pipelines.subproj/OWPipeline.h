@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@
 @class /* OmniFoundation */ OFInvocation, OFPreference;
 @class /* OWF */ OWAddress, OWCacheSearch, OWContentCacheGroup, OWContentInfo, OWHeaderDictionary, OWProcessor, OWPipelineCoordinator, OWURL;
 
-#import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
+#import <OWF/OWFWeakRetainConcreteImplementation.h>
 #import <OWF/OWTargetProtocol.h>
 #import <OWF/FrameworkDefines.h>
 
@@ -27,13 +27,13 @@ typedef enum {
 
 @protocol OWCacheArc, OWPipelineDeallocationObserver;
 
-@interface OWPipeline : OWTask <OFWeakRetain>
+@interface OWPipeline : OWTask <OWFWeakRetain>
 {
-    OFWeakRetainConcreteImplementation_IVARS;
+    OWFWeakRetainConcreteImplementation_IVARS;
 
     // Unless otherwise noted, instance variables are protected by the global pipeline lock.
 
-    id <OWTarget, OFWeakRetain, NSObject> _target; // protected by displayablesSimpleLock
+    id <OWTarget, OWFWeakRetain, NSObject> _target; // protected by displayablesSimpleLock
 
     struct {
         unsigned int pipelineDidBegin: 1;
@@ -131,12 +131,12 @@ typedef enum {
 + (NSString *)stringForTargetContentOffer:(OWTargetContentOffer)offer;
 
 // Init and dealloc
-+ (void)startPipelineWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;
++ (void)startPipelineWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
 
-- (id)initWithContent:(OWContent *)aContent target:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;
-- (id)initWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;
+- (id)initWithContent:(OWContent *)aContent target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
+- (id)initWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
 
-- (id)initWithCacheGroup:(OWContentCacheGroup *)someCaches content:(NSArray *)someContent arcs:(NSArray *)someArcs target:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;  // Designated initializer
+- (id)initWithCacheGroup:(OWContentCacheGroup *)someCaches content:(NSArray *)someContent arcs:(NSArray *)someArcs target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;  // Designated initializer
 
 // Pipeline management
 - (void)startProcessingContent;
@@ -145,7 +145,7 @@ typedef enum {
 - (void)fetch;
 
 // Target
-- (id <OWTarget, OFWeakRetain, NSObject>)target;
+- (id <OWTarget, OWFWeakRetain, NSObject>)target;
 - (void)invalidate;
     // Called in +invalidatePipelinesForTarget:, if the pipeline was pointing at the target that wants to be invalidated.
     // Also called in -pipelineBuilt if our target rejects the content we offer and didn't suggest a new target, and in +_target:acceptedContentFromPipeline: on all pipelines created before the parameter that point at the same target (eg, some other pipeline beat you to the punch, sorry, guys).
@@ -170,11 +170,11 @@ typedef enum {
 - (OWHeaderDictionary *)headerDictionary;  // inefficient
 - (NSArray *)validator;  // Useful for making a value for OWCacheArcConditionalKey. (calls -headerDictionary)
 
-- (OWPipeline *)cloneWithTarget:(id <OWTarget, OFWeakRetain, NSObject>)aTarget;
+- (OWPipeline *)cloneWithTarget:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
 
 - (NSNumber *)estimateCostFromType:(OWContentType *)aType;
 
-OFWeakRetainConcreteImplementation_INTERFACE
+OWFWeakRetainConcreteImplementation_INTERFACE
 
 // Messages sent to us by our arcs
 
@@ -182,8 +182,8 @@ OFWeakRetainConcreteImplementation_INTERFACE
 - (void)arcHasResult:(NSDictionary *)info;
 
 // Some objects are interested in knowing when we're about to deallocate
-- (void)addDeallocationObserver:(id <OWPipelineDeallocationObserver, OFWeakRetain>)anObserver;
-- (void)removeDeallocationObserver:(id <OWPipelineDeallocationObserver, OFWeakRetain>)anObserver;
+- (void)addDeallocationObserver:(id <OWPipelineDeallocationObserver, OWFWeakRetain>)anObserver;
+- (void)removeDeallocationObserver:(id <OWPipelineDeallocationObserver, OWFWeakRetain>)anObserver;
 
 @end
 

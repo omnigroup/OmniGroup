@@ -80,4 +80,30 @@ RCS_ID("$Id$")
     [animation release];
 }
 
+#ifdef DEBUG
+
+static id SplitViewDidResizeObserver;
+
++ (void)didLoad;
+{
+    SplitViewDidResizeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSSplitViewDidResizeSubviewsNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
+        NSSplitView *splitView = note.object;
+        for (NSView *subview in splitView.subviews) {
+            BOOL isIntegral = NSEqualRects(subview.frame, NSIntegralRect(subview.frame));
+            if (!isIntegral) {
+                static NSString *const AlreadyWarnedKey = @"OASplitViewIntegralWarning";
+                id alreadyWarned = objc_getAssociatedObject(splitView, AlreadyWarnedKey);
+                if (!alreadyWarned) {
+                    OBASSERT_NOT_REACHED("Subview %@ of split view %@ was left with a nonintegral frame %@ after resize. Bad things can result when this happens. You should implement -[<NSSplitViewDelegate> splitView:constrainSplitPosition:ofSubviewAt:dividerIndex:] to restrict the splitters to integral positions. Only warning once per split view.", subview.shortDescription, splitView.shortDescription, NSStringFromRect(subview.frame));
+                    
+                    objc_setAssociatedObject(splitView, AlreadyWarnedKey, [NSSplitView class], OBJC_ASSOCIATION_ASSIGN);
+                    break;
+                }
+            }
+        }
+    }];
+}
+
+#endif
+
 @end

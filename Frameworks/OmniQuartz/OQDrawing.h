@@ -110,8 +110,8 @@ extern void OQDrawImageCenteredInRect(CGContextRef ctx, UIImage *image, CGRect r
 extern void OQDrawCGImageWithScaleCenteredInRect(CGContextRef ctx, CGImageRef image, CGFloat scale, CGRect rect);
 
 extern void OQPreflightImage(CGImageRef image);
-extern CGImageRef OQCopyFlattenedImage(CGImageRef image);
-extern CGImageRef OQCreateImageWithSize(CGImageRef image, CGSize size, CGInterpolationQuality interpolationQuality);
+extern CGImageRef OQCopyFlattenedImage(CGImageRef image) CF_RETURNS_RETAINED;
+extern CGImageRef OQCreateImageWithSize(CGImageRef image, CGSize size, CGInterpolationQuality interpolationQuality) CF_RETURNS_RETAINED;
 
 void OQCrosshatchRect(CGContextRef ctxt, CGRect rect, CGFloat lineWidth, CGFloat dx, CGFloat dy);
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,10 @@ typedef enum {
 @property(nonatomic) UITextSpellCheckingType spellCheckingType;           // default is UITextSpellCheckingTypeDefault;
 @property(nonatomic) UIKeyboardType keyboardType;                         // default is UIKeyboardTypeDefault
 @property(nonatomic) UIReturnKeyType returnKeyType;                       // default is UIReturnKeyDefault
+
 @property(nonatomic, readwrite, retain) id <OUICustomKeyboard> customKeyboard;
+@property(nonatomic, readwrite, retain) NSFormatter *formatter; // Formatter for turning objectValue into text
+@property(nonatomic, readwrite, retain) id objectValue; // Non-string actual content value for a customKeyboard to edit
 
 @property(assign,nonatomic) BOOL editable;
 @property(readonly) BOOL editing;
@@ -37,7 +40,7 @@ typedef enum {
 - (void)selectAll:(id)sender;
 - (void)selectAll:(id)sender showingMenu:(BOOL)show;
 
-@property(assign,nonatomic) UITextAlignment textAlignment; // Only useful for OUIInspectorTextWellStyleDefault
+@property(assign,nonatomic) NSTextAlignment textAlignment; // Only useful for OUIInspectorTextWellStyleDefault
 
 @property(copy,nonatomic) NSString *text;
 @property(copy,nonatomic) NSString *suffix;

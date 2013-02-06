@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,10 @@
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFVersionNumber.h>
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#import <OmniFoundation/NSProcessInfo-OFExtensions.h>
+#endif
 
 RCS_ID("$Id$")
 
@@ -248,8 +252,14 @@ static NSString *_normalizedPath(NSString *path)
                 [newPath addObject:mainBundleResourcesPath];
                 [newPath addObject:mainBundlePath];
 #ifdef DEBUG
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
                 // Also look next to the controlling bundle in DEBUG builds. This allows us to find locally built copies of plugins in development.
-                [newPath addObject:[_normalizedPath([[OFController controllingBundle] bundlePath]) stringByDeletingLastPathComponent]];
+                // (But don't look here if we're sandboxed, because that won't work.)
+                if (![[NSProcessInfo processInfo] isSandboxed])
+                    [newPath addObject:[_normalizedPath([[OFController controllingBundle] bundlePath]) stringByDeletingLastPathComponent]];
+#endif
+
 #endif
 #endif
             } else

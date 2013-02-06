@@ -1,4 +1,4 @@
-// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,13 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
+
 #import <OmniFoundation/NSString-OFURLEncoding.h>
 
 @class NSURL;
 
-@interface OFSFileInfo : OFObject
+@interface OFSFileInfo : NSObject <NSCopying>
 {
 @private
     NSURL *_originalURL;
@@ -21,11 +22,11 @@
     BOOL _directory;
     off_t _size;
     NSDate *_lastModifiedDate;
-    NSString *_eTag;
+    NSString *_ETag;
 }
 
 + (NSString *)nameForURL:(NSURL *)url;
-- initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date eTag:(NSString *)eTag;
+- initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date ETag:(NSString *)ETag;
 - initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date;
 
 // Accessors
@@ -35,7 +36,7 @@
 @property(nonatomic,readonly) BOOL isDirectory;
 @property(nonatomic,readonly) off_t size;
 @property(nonatomic,readonly) NSDate *lastModifiedDate;
-@property(nonatomic,readonly) NSString *eTag; // Only set for files returned from WebDAV
+@property(nonatomic,readonly) NSString *ETag; // Only set for files returned from WebDAV
 
 // Filename manipulation
 - (BOOL)hasExtension:(NSString *)extension;
@@ -65,6 +66,8 @@ extern NSRange OFSURLRangeOfPath(NSString *rfc1808URL);
 
 /* Appends a slash to the path of the given URL if it doesn't already end in one. */
 extern NSURL *OFSURLWithTrailingSlash(NSURL *baseURL);
+
+extern BOOL OFSURLEqualToURLIgnoringTrailingSlash(NSURL *URL1, NSURL *URL2);
 
 /* Modifies the last path segment of the given URL by appending a suffix string to it (the suffix must already contain any necessary %-escapes). If addSlash=YES, the returned URL will end in a slash; if removeSlash=YES, the returned URL will not end in a slash; otherwise its trailing slash (or lack of same) is left alone. */
 extern NSURL *OFSURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash, BOOL removeSlash);

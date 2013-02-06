@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,8 +8,7 @@
 #import "TextViewController.h"
 
 #import <OmniUI/OUIEditableFrame.h>
-#import <OmniUI/OUIAppController.h>
-#import <OmniUI/OUISingleDocumentAppController.h>
+#import <OmniUIDocument/OUIDocumentAppController.h>
 
 #import <QuartzCore/QuartzCore.h>
 #import <AssetsLibrary/AssetsLibrary.h>
@@ -25,9 +24,6 @@
 RCS_ID("$Id$");
 
 @interface TextViewController () <UINavigationControllerDelegate, UIImagePickerControllerDelegate>
-- (void)_updateEditorFrame;
-- (void)_scrollTextSelectionToVisibleWithAnimation:(BOOL)animated;
-- (void)_updateTitleBarButtonItemSizeUsingInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
 @end
 
 @implementation TextViewController
@@ -73,7 +69,7 @@ RCS_ID("$Id$");
 {
     [super viewDidLoad];
 
-    _toolbar.items = [[OUISingleDocumentAppController controller] toolbarItemsForDocument:self.document];
+    _toolbar.items = [[OUIDocumentAppController controller] toolbarItemsForDocument:self.document];
     
 #if 0
     self.view.layer.borderColor = [[UIColor blueColor] CGColor];
@@ -92,13 +88,6 @@ RCS_ID("$Id$");
     [self adjustScaleTo:1];
     [self adjustContentInset];
     [self _scrollTextSelectionToVisibleWithAnimation:NO];
-}
-
-- (void)viewDidUnload;
-{
-    self.toolbar = nil;
-    self.editor = nil;
-    [super viewDidUnload];
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;

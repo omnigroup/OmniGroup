@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		34CA5FA30FDEE29C005FF9D0 /* ONFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AFE726C08A02E9D00ED9F2D /* FrameworkDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E96FE8AB1FF11C9CC38 /* FrameworkDefines.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4AFE726D08A02E9D00ED9F2D /* OmniNetworking.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E97FE8AB1FF11C9CC38 /* OmniNetworking.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AFE726E08A02E9D00ED9F2D /* ONHost.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E99FE8AB1FF11C9CC38 /* ONHost.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AFE726F08A02E9D00ED9F2D /* ONHostAddress.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E9AFE8AB1FF11C9CC38 /* ONHostAddress.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -110,7 +109,6 @@
 		00E51E92FE8AB1FF11C9CC38 /* ONTCPDatagramSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONTCPDatagramSocket.m; sourceTree = "<group>"; };
 		00E51E93FE8AB1FF11C9CC38 /* ONTCPSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONTCPSocket.m; sourceTree = "<group>"; };
 		00E51E94FE8AB1FF11C9CC38 /* ONUDPSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONUDPSocket.m; sourceTree = "<group>"; };
-		00E51E96FE8AB1FF11C9CC38 /* FrameworkDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameworkDefines.h; sourceTree = "<group>"; };
 		00E51E97FE8AB1FF11C9CC38 /* OmniNetworking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniNetworking.h; sourceTree = "<group>"; };
 		00E51E98FE8AB1FF11C9CC38 /* ONHost-InternalAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ONHost-InternalAPI.h"; sourceTree = "<group>"; };
 		00E51E99FE8AB1FF11C9CC38 /* ONHost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONHost.h; sourceTree = "<group>"; };
@@ -273,7 +271,6 @@
 			isa = PBXGroup;
 			children = (
 				00E51E97FE8AB1FF11C9CC38 /* OmniNetworking.h */,
-				00E51E96FE8AB1FF11C9CC38 /* FrameworkDefines.h */,
 				34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */,
 				18EAC01DFFC40E94C697A14E /* OmniNetworking.strings */,
 				34A1595A056458170097A113 /* OmniNetworking.order */,
@@ -386,7 +383,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AFE726C08A02E9D00ED9F2D /* FrameworkDefines.h in Headers */,
 				4AFE726D08A02E9D00ED9F2D /* OmniNetworking.h in Headers */,
 				4AFE726E08A02E9D00ED9F2D /* ONHost.h in Headers */,
 				4AFE726F08A02E9D00ED9F2D /* ONHostAddress.h in Headers */,
@@ -520,7 +516,7 @@
 		00E51E85FE8AB1FF11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0460;
 			};
 			buildConfigurationList = 4A07274708A02D1300A31187 /* Build configuration list for PBXProject "OmniNetworking" */;
 			compatibilityVersion = "Xcode 3.2";

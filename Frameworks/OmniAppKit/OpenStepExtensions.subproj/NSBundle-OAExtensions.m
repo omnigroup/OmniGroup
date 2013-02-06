@@ -14,6 +14,11 @@ RCS_ID("$Id$")
 
 @implementation NSBundle (OAExtensions)
 
++ (NSBundle *)OmniAppKit;
+{
+    return [self bundleWithIdentifier:@"com.omnigroup.OmniAppKit"];
+}
+
 + (NSArray *)loadNibNamed:(NSString *)nibName owner:(id <NSObject>)owner options:(NSDictionary *)options;
 {
     NSBundle *bundle = [NSBundle bundleForClass:[owner class]];

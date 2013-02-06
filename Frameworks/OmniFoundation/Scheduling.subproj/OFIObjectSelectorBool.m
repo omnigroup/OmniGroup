@@ -40,7 +40,8 @@ static Class myClass;
     if (!method)
         [NSException raise:NSInvalidArgumentException format:@"%s(%p) does not respond to the selector %@", class_getName(cls), object, NSStringFromSelector(selector)];
 
-    method_getImplementation(method)(object, selector, theBool);
+    void (*imp)(id self, SEL _cmd, BOOL flag) = (typeof(imp))method_getImplementation(method);
+    imp(object, selector, theBool);
 }
 
 - (NSUInteger)hash;

@@ -1,4 +1,4 @@
-// Copyright 2003-2009, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2009, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -132,7 +132,7 @@ RCS_ID("$Id$");
 #endif
 
     if (flashCount++ == 4) {
-        // The spring load action invoked by -springLoadHelperWantsSpringLoad: may leave the target selected, but we don't necessarily want to leave the flash on since the delegate might not actually select the target on spring load (OmniOutliner might hoist or expand a row, for example).
+        // The spring load action invoked by -springLoadHelperWantsSpringLoad: may leave the target selected, but we don't necessarily want to leave the flash on since the delegate might not actually select the target on spring load (OmniOutliner might focus or expand a row, for example).
         [nonretainedDelegate springLoadHelper:self wantsFlash:NO];
         [self _springLoad];
     } else {

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,7 @@
     OUIInspectorOptionWheelScrollView *_scrollView;
     NSMutableArray *_items;
     OUIInspectorOptionWheelItem *_selectedItem; // might be animating to this, but not there yet
+    BOOL _showHighlight;
 }
 
 - (OUIInspectorOptionWheelItem *)addItemWithImage:(UIImage *)image value:(id)value;
@@ -27,6 +28,7 @@
 
 @property(copy,nonatomic) NSArray *items;
 @property(retain,nonatomic) id selectedValue; // animates
+@property(assign) BOOL showHighlight;   // selected item is highlighted; off by default 
 - (void)setSelectedValue:(id)value animated:(BOOL)animated;
 
 @end

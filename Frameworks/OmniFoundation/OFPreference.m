@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -239,15 +239,10 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return nil;
 }
 
-/*
-  Init/dealloc/ref counting
-  Right now OFPreference instances are shared and never go away.  The rest of the class shouldn't assume this, though, in case we decide to change this approach.
-*/
-
+// OFPreference instances must be uniqued, so you should always go through +preferenceForKey:
 - init;
 {
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    // OFPreference instances must be uniqued, so you should always go through +preferenceForKey:
     NSScriptCommand *command = [NSScriptCommand currentCommand];
     if (command) {
         // Some one doing 'make new' in a script; don't crash but log an error
@@ -263,23 +258,11 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return nil;
 }
 
-- (id) retain;
-{
-    return self;
-}
-
-- (id) autorelease;
-{
-    return self;
-}
-
-- (oneway void)release;
-{
-}
-
 - (void)dealloc;
 {
+    // Instances are currently held onto forever, so we shouldn't hit this.
     OBPRECONDITION(NO);
+    
     [_key release];
     [_value release];
     [_defaultValue release];
@@ -327,7 +310,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 
     if (enumeration != nil) {
         // It's OK to pass in a nil value for the enumeration, if you know that the enumeration has already been set up
-        OBPOSTCONDITION([[preference enumeration] isEqual: enumeration]);
+        assert([[preference enumeration] isEqual: enumeration]);
     }
     
     return [preference autorelease];
@@ -659,31 +642,40 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     [NSException raise:NSInvalidArgumentException format:@"-%@ called on non-enumerated %@ (%@)", NSStringFromSelector(_cmd), [self shortDescription], _key];
 }
 
-#pragma mark AppleScript support
+#pragma mark AppleScript Support
 
-#ifndef TARGET_OS_IPHONE
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+
 - (NSScriptObjectSpecifier *)objectSpecifier;
 {
     // We assume that preferences will be owned by the application with an element of @"scriptPreferences".  This is what OAApplication does.
     id application = [NSClassFromString(@"NSApplication") performSelector:@selector(sharedApplication)];
     return [[[NSUniqueIDSpecifier alloc] initWithContainerClassDescription:(NSScriptClassDescription *)[application classDescription] containerSpecifier:[application objectSpecifier] key:@"scriptPreferences" uniqueID:_key] autorelease];
 }
+
 - (NSString *)scriptIdentifier;
 {
     return _key;
 }
+
 - (id)scriptValue;
 {
     return [self objectValue];
 }
+
 - (void)setScriptValue:(id)value;
 {
-    [self setObjectValue:value]; // TODO: Make sure this is a plist type?
+    // TODO: Make sure this is a plist type?
+    // Cocoa Scripting should do this for us, or reject the apple event, before we are ever called.
+    
+    [self setObjectValue:value];
 }
+
 - (id)scriptDefaultValue;
 {
     return [self defaultObjectValue];
 }
+
 #endif
 
 @end
@@ -954,16 +946,6 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 - (BOOL)synchronize;
 {
     return [standardUserDefaults synchronize];
-}
-
-- (void)autoSynchronize;
-{
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    // -autoSynchronize pulls in OFScheduler and all that.  We might pull that in later anyway, but for now not so much.
-    [standardUserDefaults synchronize];
-#else
-    [standardUserDefaults autoSynchronize];
-#endif
 }
 
 - (NSDictionary *)volatileDomainForName:(NSString *)name;

@@ -65,7 +65,6 @@
         #import <OmniFoundation/OFSimpleLock.h>
         #import <OmniFoundation/OFScheduler.h>
         #import <OmniFoundation/OFScheduledEvent.h>
-        #import <OmniFoundation/OFWeakRetainProtocol.h>
         #import <OmniFoundation/NSBundle-OFExtensions.h>
         #import <OmniFoundation/NSString-OFExtensions.h>
         #import <OmniFoundation/NSThread-OFExtensions.h>

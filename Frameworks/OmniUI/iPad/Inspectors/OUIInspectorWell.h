@@ -44,6 +44,7 @@ extern void OUIInspectorWellDraw(CGContextRef ctx, CGRect frame,
 + (UIColor *)textColor;
 + (UIColor *)highlightedTextColor;
 + (UIImage *)navigationArrowImage;
++ (UIImage *)navigationArrowImageHighlighted;
 
 @property(assign,nonatomic) OUIInspectorWellCornerType cornerType;
 @property(readonly,nonatomic) BOOL shouldDrawHighlighted;

@@ -31,6 +31,11 @@ extern "C" {
 // CFMakeCollectable loses the type of the argument, casting it to a CFTypeRef, causing warnings.
 #define OBCFMakeCollectable(x) ((typeof(x))CFMakeCollectable(x))
 
+    
+// In some cases, we really need to keep an object alive. For example, we may have a window controller that will release itself in response to its window being closed.
+extern void OBStrongRetain(id object);
+extern void OBStrongRelease(id object);
+    
 /*
  A best guess at what macros might indicate availability and usefulness of the GC APIs.
  
@@ -73,7 +78,8 @@ extern "C" {
     
 extern void _OBRequestConcreteImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
 extern void _OBRejectUnusedImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
-extern void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned int line, NSString *format, ...) NORETURN;
+extern void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned int line, NSString *format, ...)
+                    NORETURN __attribute__((format(__NSString__, 5, 6)));
 
 #define OBRequestConcreteImplementation(self, sel) _OBRequestConcreteImplementation((self), (sel), __FILE__, __LINE__)
 #define OBRejectUnusedImplementation(self, sel) _OBRejectUnusedImplementation((self), (sel), __FILE__, __LINE__)
@@ -100,6 +106,17 @@ extern void _OBFinishPortingLater(const char *header, const char *function, cons
 
 extern NSString * const OBAbstractImplementation;
 extern NSString * const OBUnusedImplementation;
+
+// Helper for initializing debug log level globals
+#define OBInitializeDebugLogLevel(name) do { \
+    const char *env = getenv(#name); /* easier for command line tools */ \
+    if (env) { \
+        name = strtoul(env, NULL, 0); \
+    } else { \
+        NSInteger *namep = &name; /* make sure the given global is the right type */ \
+        *namep = [[NSUserDefaults standardUserDefaults] integerForKey:@#name]; \
+    } \
+} while (0);
 
 #if defined(DEBUG)
 #define OB_DEBUG_LOG_CALLER() do { NSArray *syms = [NSThread callStackSymbols]; if ([syms count] > 1) NSLog(@"caller: %@", [syms objectAtIndex:1U]); } while (0)
@@ -148,6 +165,16 @@ extern IMP OBReplaceMethodImplementationWithSelectorOnClass(Class destClass, SEL
 Calls OBReplaceMethodImplementation.  Derives newImp from newSelector on sourceClass and changes method implementation for oldSelector on destClass.
 */
 
+extern IMP OBReplaceClassMethodImplementationWithSelector(Class aClass, SEL oldSelector, SEL newSelector);
+/*.doc.
+Calls OBReplaceMethodImplementationWithSelector with aClass's metaclass as the class argument. aClass must not itself be a metaclass.
+*/
+
+extern IMP OBReplaceClassMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod);
+/*.doc.
+Calls OBReplaceMethodImplementationFromMethod with aClass's metaclass as the class argument. aClass must not itself be a metaclass.
+*/
+
 extern Class OBClassImplementingMethod(Class cls, SEL sel);
 
 // This returns YES if the given pointer is a class object
@@ -185,6 +212,10 @@ static inline BOOL OBClassIsSubclassOfClass(Class subClass, Class superClass)
 }
 
 extern NSString *OBShortObjectDescription(id anObject);
+extern NSString *OBShortObjectDescriptionWith(id anObject, NSString *extra);
+extern NSString *OBFormatObjectDescription(id anObject, NSString *fmt, ...)
+    __attribute__((format(__NSString__, 2, 3)));
+
 
 extern CFStringRef const OBBuildByCompilerVersion;
     
@@ -264,7 +295,7 @@ extern CFStringRef const OBBuildByCompilerVersion;
 
 #if NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 // Returns a copy of the method signature with the NSGeometry types replaced with CG types.  The result should be free'd by the caller.
-__private_extern__ const char *_OBGeometryAdjustedSignature(const char *sig);
+__attribute__((visibility("hidden"))) const char *_OBGeometryAdjustedSignature(const char *sig);
 #endif
 
 // Inttypes-style format macros for Apple-defined types

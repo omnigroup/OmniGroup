@@ -19,7 +19,9 @@
 @interface OUIDetailInspectorSliceItem : NSObject
 @property(nonatomic,copy) NSString *title; // Defaults to the slice's title
 @property(nonatomic,copy) NSString *value; // Defaults to nil
+@property(nonatomic,copy) UIImage *image; // Defaults to nil
 @property(nonatomic,assign) BOOL enabled; // Defaults to YES
+@property(nonatomic,assign) BOOL boldValue; //Defaults to NO
 @end
 
 @interface OUIDetailInspectorSlice : OUIInspectorSlice
@@ -36,6 +38,8 @@
 // Will be called if the corresponding value passed to the 'handler' of -updateItemAtIndex:with: is nil. Defaults to nil.
 - (NSString *)placeholderTitleForItemAtIndex:(NSUInteger)itemIndex;
 - (NSString *)placeholderValueForItemAtIndex:(NSUInteger)itemIndex;
+
+- (NSString *)groupTitle;
 
 @end
 

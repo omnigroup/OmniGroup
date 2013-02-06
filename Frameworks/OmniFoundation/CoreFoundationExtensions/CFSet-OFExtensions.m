@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,9 +8,6 @@
 #import <OmniFoundation/CFSet-OFExtensions.h>
 
 #import <OmniFoundation/CFString-OFExtensions.h>
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-#import <OmniFoundation/OFCFWeakRetainCallbacks.h>
-#endif
 #import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$")
@@ -25,17 +22,6 @@ OFCaseInsensitiveStringSetCallbacks = {
     OFCaseInsensitiveStringIsEqual,
     OFCaseInsensitiveStringHash,
 };
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-const CFSetCallBacks OFWeaklyRetainedObjectSetCallbacks = {
-    0,   // version
-    OFNSObjectWeakRetain,
-    OFNSObjectWeakRelease,
-    OFNSObjectCopyDescription,
-    OFNSObjectIsEqual,
-    OFNSObjectHash,
-};
-#endif
 
 NSMutableSet *OFCreateNonOwnedPointerSet(void)
 {

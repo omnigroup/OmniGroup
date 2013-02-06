@@ -7,3 +7,6 @@
 
 // Common settings for Tool targets
 INFOPLIST_FILE = 
+
+// And include any private headers for just *our* library
+HEADER_SEARCH_PATHS = $(value) $(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME)-Private $(TARGET_BUILD_DIR)/include

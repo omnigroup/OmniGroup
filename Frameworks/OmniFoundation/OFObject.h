@@ -9,6 +9,7 @@
 
 #import <OmniBase/OBObject.h>
 
+// Some basic testing (using OFXMLDocument to parse a bunch of large OO3 tests) shows that NSObject's ref counting is about 3% slower than inline ref counting on 10.7. On 10.8, inline ref counting is a bit slower
 // Turn this off when building on the iPhone and wanting to track leaks in Instruments.  For public release builds, the inline retain count is a win.  But there is no API on the iPhone SDK like the <Foundation/NSDebug.h> to inform the system of internal retain/release allocation events, so Instruments won't see these events and you can't track down leaks easily.
 #define OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT 1
 

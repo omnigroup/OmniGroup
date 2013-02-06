@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -233,22 +233,23 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     OIInspectorHeaderImageTint imageTint = ([NSColor currentControlTint] == NSBlueControlTint) ? OIInspectorHeaderImageTintBlue : OIInspectorHeaderImageTintGraphite;
     
     NSRect bounds = self.bounds;
+    CGFloat nextElementX = NSMinX(bounds) + 6.0f;
     if ([delegate headerViewShouldDisplayCloseButton:self]) {
-        NSPoint closeImagePoint = NSMakePoint(NSMinX(bounds) + 6.0f, NSMaxY(bounds)-1.0f);
         NSImage *closeImage = _closeButtonImages[imageTint][clickingClose ? OIInspectorCloseButtonStatePressed : (overClose ? OIInspectorCloseButtonStateRollover : OIInspectorCloseButtonStateNormal)];
+        NSRect closeImagePoint = NSMakeRect(nextElementX, NSMinY(bounds) + 1.0f, closeImage.size.width, closeImage.size.height);
         
-        [closeImage compositeToPoint:closeImagePoint operation:NSCompositeSourceOver];
+        [closeImage drawFlippedInRect:closeImagePoint operation:NSCompositeSourceOver];
+        nextElementX += 20.0f;
     }
     
-    CGFloat nextElementX = NSMinX(bounds) + 26.0f;
     if (drawAll && [self _allowToggleExpandedness]) {
         NSImage *disclosureImage = isExpanded ? _expandedImage : _collapsedImage;
-        NSPoint disclosureImagePoint = NSMakePoint(nextElementX, NSMaxY(bounds)-2.0f);
+        NSRect disclosureImageRect = NSMakeRect(nextElementX, NSMinY(bounds) + 3.0f, disclosureImage.size.width, disclosureImage.size.height);
 
-        [disclosureImage compositeToPoint:disclosureImagePoint operation:NSCompositeSourceOver];
+        [disclosureImage drawFlippedInRect:disclosureImageRect operation:NSCompositeSourceOver];
 
         if (isClicking && !overClose && !isDragging) // our triangle images are 100% black, but about 50% opaque, so we just draw it again over itself
-            [disclosureImage compositeToPoint:disclosureImagePoint operation:NSCompositeSourceOver fraction:0.6666f];
+            [disclosureImage drawFlippedInRect:disclosureImageRect operation:NSCompositeSourceOver fraction:0.6666f];
 
         nextElementX += 20.0f;
     }

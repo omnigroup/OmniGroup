@@ -95,6 +95,8 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     BOOL _keyboardShownWhilePopoverVisible;
 }
 
+@synthesize navigationController = _navigationController;
+
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 {
     UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png"];
@@ -148,7 +150,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     if (!_navigationController && [self isEmbededInOtherNavigationController] == NO) {
         _navigationController = [[OUIInspectorNavigationController alloc] initWithRootViewController:_mainPane];
         _navigationController.delegate = self;
-        _navigationController.toolbarHidden = NO;
+        _navigationController.toolbarHidden = YES;
     }
 
     return self;
@@ -305,7 +307,7 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
     
     pane.inspector = self;
     pane.inspectedObjects = inspectedObjects;
-    
+
     [self _configureTitleForPane:pane];
     
     [navigationController pushViewController:pane animated:animated];
@@ -454,7 +456,8 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
         // We *MUST* reuse our popover currently. In the past we've not been able to reuse them due to sizing oddities, but we no longer resize our popovers. Also, since we can potentially reuse our panes/slices, if you open an inspector, then quickly tap it closed and reopen, the old popover could not be done animating out before the new one tried to steal the panes/slices. This left them in a confused state. This all seems to work fine if we reuse our popover. See <bug:///71345> (Tapping between the two popover quickly can give you a blank inspector).
         if (embedded == NO) {
             // TODO: Assuming we aren't on screen.
-            [_navigationController popToRootViewControllerAnimated:NO];
+            if (!([_nonretained_delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [_nonretained_delegate inspectorShouldMaintainStateWhileReopening:self]))
+                [_navigationController popToRootViewControllerAnimated:NO];
             
             [self dismiss];
             

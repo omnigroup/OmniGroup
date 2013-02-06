@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -157,7 +157,7 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
 
 - (void)testPattern;
 {
-    NSImage *image = [NSImage imageNamed:@"pattern" inBundleForClass:[self class]];
+    NSImage *image = [NSImage imageNamed:@"pattern" inBundle:OMNI_BUNDLE];
     STAssertNotNil(image, @"image should exist");
     CHECK([NSColor colorWithPatternImage:image]);
 }

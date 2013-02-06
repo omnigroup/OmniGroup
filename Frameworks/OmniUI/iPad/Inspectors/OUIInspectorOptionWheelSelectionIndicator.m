@@ -39,16 +39,16 @@ static const CGFloat kIndicatorSize = 20;
 
 - (void)updateColor;
 {
-    OUIInspectorBackgroundView *topBackgroundView = nil;
+    UIView *topBackgroundView = nil;
     
     UIView *ancestor = self;
     while (ancestor) {
-        if ([ancestor isKindOfClass:[OUIInspectorBackgroundView class]])
-            topBackgroundView = (OUIInspectorBackgroundView *)ancestor;
+        if ([ancestor respondsToSelector:@selector(colorForYPosition:inView:)])
+            topBackgroundView = ancestor;
         ancestor = ancestor.superview;
     }
     
-    UIColor *color = [topBackgroundView colorForYPosition:CGRectGetMinY(self.bounds) inView:self];
+    UIColor *color = [(id)topBackgroundView colorForYPosition:CGRectGetMinY(self.bounds) inView:self];
     if (!color)
         color = [UIColor whiteColor];
     
@@ -68,20 +68,30 @@ static const CGFloat kIndicatorSize = 20;
     
     CGRect bounds = self.bounds;
     CGContextRef ctx = UIGraphicsGetCurrentContext();
-
+    
     CGContextSaveGState(ctx);
     {
         CGColorRef shadowColor = [OQMakeUIColor(kOUIInspectorWellInnerShadowColor) CGColor];
+        CGContextSetShadowWithColor(ctx, CGSizeMake(0, 0.5), kOUIInspectorWellInnerShadowBlur, shadowColor);
         
-        CGContextSetShadowWithColor(ctx, CGSizeMake(0, 1), kOUIInspectorWellInnerShadowBlur, shadowColor);
-        CGContextSetStrokeColorWithColor(ctx, shadowColor);
-
         CGContextMoveToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
-        CGContextAddLineToPoint(ctx, CGRectGetMidX(bounds), CGRectGetMaxY(bounds) - kOUIInspectorWellInnerShadowBlur - 0.5);
+        CGContextAddLineToPoint(ctx, CGRectGetMidX(bounds), CGRectGetMaxY(bounds) - kOUIInspectorWellInnerShadowBlur);
         CGContextAddLineToPoint(ctx, CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
-        //CGContextAddLineToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
         
-        CGContextDrawPath(ctx, kCGPathFillStroke);
+        CGContextDrawPath(ctx, kCGPathFill);
+    }
+    CGContextRestoreGState(ctx);
+    
+    CGContextSaveGState(ctx);
+    {
+        CGColorRef strokeColor = [OQMakeUIColor(kOUIInspectorWellLightBorderGradientStartColor) CGColor];
+        CGContextSetStrokeColorWithColor(ctx, strokeColor);
+        
+        CGContextMoveToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
+        CGContextAddLineToPoint(ctx, CGRectGetMidX(bounds), CGRectGetMaxY(bounds) - kOUIInspectorWellInnerShadowBlur);
+        CGContextAddLineToPoint(ctx, CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
+        
+        CGContextDrawPath(ctx, kCGPathStroke);
     }
     CGContextRestoreGState(ctx);
 }

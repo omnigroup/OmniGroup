@@ -1,4 +1,4 @@
-// Copyright 2008, 2011-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2011-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -91,7 +91,7 @@ static NSRange rangeFromString(NSString *aString, NSIndexSet *errSelf, SEL errCm
 
         OBASSERT([mutableSelf isKindOfClass:[NSMutableIndexSet class]]);
         for (NSString *rangeString in ranges)
-            [mutableSelf addIndexesInRange:rangeFromString(rangeString, self, _cmd)];
+            [mutableSelf addIndexesInRange:rangeFromString(rangeString, mutableSelf, _cmd)];
 
         return mutableSelf;
     } else {

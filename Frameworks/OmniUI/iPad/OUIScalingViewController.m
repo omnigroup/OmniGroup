@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -213,19 +213,9 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     return nil;
 }
 
-#pragma mark -
-#pragma mark UIViewController subclass;
+#pragma mark - UIViewController subclass;
 
-- (void)viewDidUnload;
-{
-    _scrollView.delegate = nil;
-    [_scrollView release];
-    _scrollView = nil;
-        
-    [super viewDidUnload];
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+- (BOOL)shouldAutorotate;
 {
     return YES;
 }

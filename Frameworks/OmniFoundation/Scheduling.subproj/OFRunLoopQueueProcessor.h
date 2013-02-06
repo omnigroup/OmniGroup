@@ -11,7 +11,6 @@
 
 @class NSPort, NSPortMessage, NSArray;
 
-#import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
 #import <OmniFoundation/OFMessageQueueDelegateProtocol.h>
 
 @interface OFRunLoopQueueProcessor : OFQueueProcessor <OFMessageQueueDelegate>
@@ -19,8 +18,6 @@
     NSPort *notificationPort;
     NSPortMessage *portMessage;
     unsigned int disableCount;
-
-    OFWeakRetainConcreteImplementation_IVARS;
 }
 
 + (NSArray *)mainThreadRunLoopModes;

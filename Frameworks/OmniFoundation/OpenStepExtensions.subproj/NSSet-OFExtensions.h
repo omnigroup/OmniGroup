@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,8 @@
 @interface NSSet (OFExtensions)
 
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
+- (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)block;
+
 - (NSArray *)sortedArrayUsingSelector:(SEL)comparator;
 
 - (void)applyFunction:(CFSetApplierFunction)applier context:(void *)context;

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ RCS_ID("$Id$");
     navController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     
     OUIAppController *appController = [OUIAppController controller];
-    [appController.topViewController presentModalViewController:navController animated:YES];
+    [appController.topViewController presentViewController:navController animated:YES completion:nil];
     
     UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:aboutPanel action:@selector(dismissPanel:)];
     aboutPanel.navigationItem.rightBarButtonItem = doneButton;
@@ -88,27 +88,13 @@ RCS_ID("$Id$");
     copyrightNotice.text = copyright;
 }
 
-- (void)viewDidUnload
+- (BOOL)shouldAutorotate;
 {
-    [self setAppNameLabel:nil];
-    [self setAppVersionLabel:nil];
-    [self setContactUsButton:nil];
-    [self setInfoSharingSettingsButton:nil];
-    [self setIconImage:nil];
-    [self setCopyrightNotice:nil];
-    [self setLogoImageButton:nil];
-    [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
+    return YES;
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+- (void)dealloc;
 {
-    // Return YES for supported orientations
-	return YES;
-}
-
-- (void)dealloc {
     [appNameLabel release];
     [appVersionLabel release];
     [contactUsButton release];
@@ -120,11 +106,9 @@ RCS_ID("$Id$");
 }
 
 
-#pragma mark -
-#pragma mark Class methods
-
-- (IBAction)dismissPanel:(id)sender {
-    [self dismissModalViewControllerAnimated:YES];
+- (IBAction)dismissPanel:(id)sender;
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (IBAction)emailSupport:(id)sender {

@@ -1,11 +1,11 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUILabeledValueCell.h"
+#import <OmniUI/OUILabeledValueCell.h>
 
 RCS_ID("$Id$");
 
@@ -221,8 +221,8 @@ RCS_ID("$Id$");
 
     CGRect labelRect = [self labelRect];
     UIFont *labelFont = [[self class] labelFontForStyle:self.style];
-    UITextAlignment alignment = (self.style == OUILabeledValueCellStyleOmniFocusForiPhoneLegacy) ? UITextAlignmentRight : UITextAlignmentLeft;
-    [self.label drawInRect:labelRect withFont:labelFont lineBreakMode:UILineBreakModeWordWrap alignment:alignment];
+    NSTextAlignment alignment = (self.style == OUILabeledValueCellStyleOmniFocusForiPhoneLegacy) ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    [self.label drawInRect:labelRect withFont:labelFont lineBreakMode:NSLineBreakByWordWrapping alignment:alignment];
     
     NSString *value = _value; // Must access iVar here, don't want to pull value from subclass, which substitutes an editable field
     NSString *valueString = value ? value : [self valuePlaceholder];
@@ -232,7 +232,7 @@ RCS_ID("$Id$");
     [valueColor set];
 
     UIFont *valueFont = [[self class] valueFontForStyle:self.style];
-    [valueString drawInRect:valueRect withFont:valueFont lineBreakMode:UILineBreakModeTailTruncation alignment:UITextAlignmentLeft];
+    [valueString drawInRect:valueRect withFont:valueFont lineBreakMode:NSLineBreakByTruncatingTail alignment:NSTextAlignmentLeft];
 }
 
 @end

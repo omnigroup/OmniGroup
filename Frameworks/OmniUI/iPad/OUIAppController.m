@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,47 +18,27 @@
 #import <OmniFoundation/NSString-OFURLEncoding.h>
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFPreference.h>
-#import <OmniUI/OUIAboutPanel.h>
+#import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIBarButtonItem.h>
-#import <OmniUI/OUIDocumentPicker.h>
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUISpecialURLActionSheet.h>
 #import <OmniUI/OUIWebViewController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
-#import <SenTestingKit/SenTestSuite.h>
 
 #import <sys/sysctl.h>
 
-#import "OUICredentials.h"
 #import "OUIParameters.h"
 #import "OUISoftwareUpdateController.h"
-#import "OUISyncMenuController.h"
 #import "UIViewController-OUIExtensions.h"
-#import "OUISingleDocumentAppController-Internal.h" // Terrible -- for _setupCloud:
-#import "OUIRestoreSampleDocumentListController.h"
 
 RCS_ID("$Id$");
 
-@interface OUIAppController (/*Private*/)
-- (NSString *)_fullReleaseString;
-@end
-
 @implementation OUIAppController
 {
-    OUIDocumentPicker *_documentPicker;
-    UIBarButtonItem *_appMenuBarItem;
-    OUIMenuController *_appMenuController;
-    OUISyncMenuController *_syncMenuController;
-    
 #if OUI_SOFTWARE_UPDATE_CHECK
     OUISoftwareUpdateController *_softwareUpdateController;
 #endif
     
-    dispatch_once_t _roleByFileTypeOnce;
-    NSDictionary *_roleByFileType;
-    
-    NSArray *_editableFileTypes;
-
     UIPopoverController *_possiblyVisiblePopoverController;
     UIPopoverArrowDirection _possiblyVisiblePopoverControllerArrowDirections;
     UIBarButtonItem *_possiblyTappedButtonItem;
@@ -105,13 +85,16 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 
     // Poke OFPreference to get default values registered
 #ifdef DEBUG
+    BOOL showNonLocalizedStrings = YES;
+#else
+    BOOL showNonLocalizedStrings = NO;
+#endif
     NSDictionary *defaults = [NSDictionary dictionaryWithObjectsAndKeys:
-                              [NSNumber numberWithBool:YES], @"NSShowNonLocalizableStrings",
-                              [NSNumber numberWithBool:YES], @"NSShowNonLocalizedStrings",
+                              [NSNumber numberWithBool:showNonLocalizedStrings], @"NSShowNonLocalizableStrings",
+                              [NSNumber numberWithBool:showNonLocalizedStrings], @"NSShowNonLocalizedStrings",
                               nil
                               ];
     [[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
-#endif
     [OFBundleRegistry registerKnownBundles];
     [OFPreference class];
     
@@ -127,7 +110,7 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 #endif
 }
 
-+ (id)controller;
++ (instancetype)controller;
 {
     id controller = [[UIApplication sharedApplication] delegate];
     OBASSERT([controller isKindOfClass:self]);
@@ -145,63 +128,6 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
             }
         }
     }
-    return NO;
-}
-
-- (NSArray *)editableFileTypes;
-{
-    if (!_editableFileTypes) {
-        NSMutableArray *types = [NSMutableArray array];
-        
-        NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
-        for (NSDictionary *documentType in documentTypes) {
-            NSString *role = [documentType objectForKey:@"CFBundleTypeRole"];
-            OBASSERT([role isEqualToString:@"Editor"] || [role isEqualToString:@"Viewer"]);
-            if ([role isEqualToString:@"Editor"]) {
-                NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
-                for (NSString *contentType in contentTypes)
-                    [types addObject:[contentType lowercaseString]];
-            }
-        }
-        
-        _editableFileTypes = [types copy];
-    }
-    
-    return _editableFileTypes;
-}
-
-- (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
-{
-    OBPRECONDITION(!uti || [uti isEqualToString:[uti lowercaseString]]); // our cache uses lowercase keys.
-    
-    if (uti == nil)
-        return NO;
-    
-    dispatch_once(&_roleByFileTypeOnce, ^{
-        // Make a fast index of all our declared UTIs
-        NSMutableDictionary *contentTypeRoles = [[NSMutableDictionary alloc] init];
-        NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
-        for (NSDictionary *documentType in documentTypes) {
-            NSString *role = [documentType objectForKey:@"CFBundleTypeRole"];
-            if (![role isEqualToString:@"Editor"] && ![role isEqualToString:@"Viewer"])
-                continue;
-            
-            NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
-            for (NSString *contentType in contentTypes)
-                [contentTypeRoles setObject:role forKey:[contentType lowercaseString]];
-        }
-        
-        _roleByFileType = [contentTypeRoles copy];
-        [contentTypeRoles release];
-    });
-    OBASSERT(_roleByFileType);
-
-    
-    for (NSString *candidateUTI in _roleByFileType) {
-        if (UTTypeConformsTo((CFStringRef)uti, (CFStringRef)candidateUTI))
-            return YES;
-    }
-
     return NO;
 }
 
@@ -266,39 +192,15 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 #if OUI_SOFTWARE_UPDATE_CHECK
     [_softwareUpdateController release];
 #endif
-    [_documentPicker release];
-    [_appMenuBarItem release];;
-    [_appMenuController release];
-    [_syncMenuController release];
     
     [super dealloc];
 }
 
-- (UIBarButtonItem *)appMenuBarItem;
-{
-    if (!_appMenuBarItem) {
-        NSString *imageName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIAppMenuImage"];
-        if ([NSString isEmptyString:imageName])
-            imageName = @"OUIAppMenu.png";
-        
-        UIImage *appMenuImage = [UIImage imageNamed:imageName];
-        OBASSERT(appMenuImage);
-        _appMenuBarItem = [[UIBarButtonItem alloc] initWithImage:appMenuImage style:UIBarButtonItemStylePlain target:self action:@selector(showAppMenu:)];
-        
-        _appMenuBarItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Help and Settings", @"OmniUI", OMNI_BUNDLE, @"Help and Settings toolbar item accessibility label.");
-    }
-    
-    return _appMenuBarItem;
-}
-
-@synthesize appMenuController = _appMenuController;
-
 - (void)resetKeychain;
 {
-    OUIDeleteAllCredentials();
+    OBFinishPorting; // Make this public? Move the credential stuff into OmniFoundation instead of OmniFileStore?
+//    OUIDeleteAllCredentials();
 }
-
-@synthesize documentPicker = _documentPicker;
 
 #pragma mark -
 #pragma mark Subclass responsibility
@@ -321,150 +223,6 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 }
 
 #pragma mark -
-#pragma mark NSObject (OUIAppMenuTarget)
-
-- (NSString *)feedbackMenuTitle;
-{
-    OBASSERT_NOT_REACHED("Should be subclassed to provide something nicer.");
-    return @"HALP ME!";
-}
-
-- (NSString *)aboutMenuTitle;
-{
-    NSString *format = NSLocalizedStringFromTableInBundle(@"About %@", @"OmniUI", OMNI_BUNDLE, @"Default title for the About menu item");
-    return [NSString stringWithFormat:format, self.applicationName];
-}
-
-// Invoked by the app menu
-- (void)sendFeedback:(id)sender;
-{
-    // May need to allow the app delegate to provide this conditionally later (OmniFocus has a retail build, for example)
-    NSString *feedbackAddress = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIFeedbackAddress"];
-    OBASSERT(feedbackAddress);
-    if (!feedbackAddress)
-        return;
-
-    UIViewController *topViewController = self.topViewController;
-    OBASSERT(topViewController);
-    if (!topViewController)
-        return;
-    
-    NSString *subject = [NSString stringWithFormat:@"%@ Feedback", [self _fullReleaseString]];
-    
-    if (![MFMailComposeViewController canSendMail]) {
-        NSString *urlString = [NSString stringWithFormat:@"mailto:%@?subject=%@", feedbackAddress,
-                               [NSString encodeURLString:subject asQuery:NO leaveSlashes:NO leaveColons:NO]];
-        NSURL *url = [NSURL URLWithString:urlString];
-        OBASSERT(url);
-        if (![[UIApplication sharedApplication] openURL:url]) {
-            // Need to pop up an alert telling the user? Might happen now since we don't have Mail,  but they shouldn't be able to delete that in the real world.  Though maybe our url string is bad.
-            NSLog(@"Unable to open mail url %@ from string\n%@\n", url, urlString);
-            OBASSERT_NOT_REACHED("Couldn't open mail url");
-        }
-        return;
-    }
-    
-    // TODO: Check +canSendMail. We're supposed to open a mailto: url if we can't.
-    // TODO: Allow sending a document with the mail?
-    
-    MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
-    controller.navigationBar.barStyle = UIBarStyleBlack;
-    controller.mailComposeDelegate = self;
-    [controller setToRecipients:[NSArray arrayWithObject:feedbackAddress]];
-    [controller setSubject:subject];
-    [self.topViewController presentModalViewController:controller animated:YES];
-    [controller autorelease];
-}
-
-- (void)_showWebViewWithURL:(NSURL *)url title:(NSString *)title;
-{
-    if (url == nil)
-        return;
-
-    OUIWebViewController *webController = [[OUIWebViewController alloc] init];
-    webController.title = title;
-    webController.URL = url;
-    UINavigationController *webNavigationController = [[UINavigationController alloc] initWithRootViewController:webController];
-    webNavigationController.navigationBar.barStyle = UIBarStyleBlack;
-    [webController release];
-
-    [self.topViewController presentModalViewController:webNavigationController animated:YES];        
-    [webNavigationController release];
-}
-
-- (void)_showWebViewWithPath:(NSString *)path title:(NSString *)title;
-{
-    if (!path)
-        return;
-    return [self _showWebViewWithURL:[NSURL fileURLWithPath:path] title:title];
-}
-
-- (void)showReleaseNotes:(id)sender;
-{
-    [self _showWebViewWithPath:[[NSBundle mainBundle] pathForResource:@"MessageOfTheDay" ofType:@"html"] title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"release notes html screen title")];
-}
-
-- (void)showOnlineHelp:(id)sender;
-{
-    NSString *helpBookFolder = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookFolder"];
-    NSString *helpBookName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"];
-    OBASSERT(helpBookName != nil);
-    NSString *webViewTitle = [[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:helpBookName table:@"InfoPlist"];
-
-    NSString *indexPath = [[NSBundle mainBundle] pathForResource:@"index" ofType:@"html" inDirectory:helpBookFolder];
-    if (indexPath == nil)
-        indexPath = [[NSBundle mainBundle] pathForResource:@"top" ofType:@"html" inDirectory:helpBookFolder];
-    OBASSERT(indexPath != nil);
-    [self _showWebViewWithPath:indexPath title:webViewTitle];
-}
-
-- (void)showAboutPanel:(id)sender;
-{
-    [OUIAboutPanel displayInSheet];
-}
-
-- (void)restoreSampleDocuments:(id)sender;
-{
-    UIViewController *viewController = [[OUIRestoreSampleDocumentListController alloc] init];
-    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
-    navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
-    navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    
-    [self.topViewController presentModalViewController:navigationController animated:YES];
-    
-    [navigationController release];
-    [viewController release];
-}
-
-- (void)runTests:(id)sender;
-{
-    Class cls = NSClassFromString(@"SenTestSuite");
-    OBASSERT(cls);
-
-    SenTestSuite *suite = [cls defaultTestSuite];
-    [suite run];
-}
-
-- (void)showAppMenu:(id)sender;
-{
-    if (!_appMenuController)
-        _appMenuController = [[OUIMenuController alloc] initWithDelegate:self];
-
-    OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
-    [_appMenuController showMenuFromBarItem:sender];
-}
-
-- (void)showSyncMenu:(id)sender;
-// aka "import from webDAV"
-{
-    if (!_syncMenuController)
-        _syncMenuController = [[OUISyncMenuController alloc] init];
-    
-    OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
-    [_syncMenuController showMenuFromBarItem:sender];
-}
-
-#pragma mark -
 #pragma mark Popover Helpers
 
 static void _forgetPossiblyVisiblePopoverIfAlreadyHidden(OUIAppController *self)
@@ -476,7 +234,7 @@ static void _forgetPossiblyVisiblePopoverIfAlreadyHidden(OUIAppController *self)
         self->_possiblyVisiblePopoverControllerArrowDirections = UIPopoverArrowDirectionUnknown;
     }
 }
-
+    
 static void _performDismissPopover(UIPopoverController *dismissingPopover, BOOL animated)
 {
     OBPRECONDITION(dismissingPopover);
@@ -521,7 +279,7 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
         [self presentPopover:_possiblyVisiblePopoverController fromBarButtonItem:_possiblyTappedButtonItem permittedArrowDirections:_possiblyVisiblePopoverControllerArrowDirections animated:NO];
     } else if (_possiblyVisiblePopoverController.popoverVisible) {
         // popover was shown with -presentPopover:fromRect:inView:permittedArrowDirections:animated: which does not automatically reposition on rotation, so going to dismiss this popover
-        [_possiblyVisiblePopoverController dismissPopoverAnimated:NO];
+        [self dismissPopoverAnimated:YES];
     }
 }
 
@@ -572,16 +330,20 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     if (item.customView) {
         CGRect rect = [item.customView convertRect:item.customView.bounds toView:[item.customView superview]];
         rect.size.height -= kOUIToolbarEdgePadding;
-        [_possiblyTappedButtonItem release];
-        _possiblyTappedButtonItem = [item retain];
         [popover presentPopoverFromRect:rect inView:[item.customView superview] permittedArrowDirections:arrowDirections animated:animated];
     } else
         [popover presentPopoverFromBarButtonItem:item permittedArrowDirections:arrowDirections animated:animated];
+
+    [_possiblyTappedButtonItem release];
+    _possiblyTappedButtonItem = [item retain];
     return YES;
 }
 
-- (void)dismissPopover:(UIPopoverController *)popover animated:(BOOL)animated;
+- (BOOL)dismissPopover:(UIPopoverController *)popover animated:(BOOL)animated;
 {
+    // Treat a print sheet the same way as a popover and dismiss it when presenting something else. Sure would be nice if UIPrintInteractionController was a subclass of UIPopoverController as would make sense...
+    [[UIPrintInteractionController sharedPrintController] dismissAnimated:animated];
+    
     // Unlike the plain UIPopoverController dismissal, this does send the 'did' hook. The reasoning here is that the caller doesn't necessarily know what popover it is dismissing.
     // If you still want to avoid the delegate method, just call the UIPopoverController method directly on your popover.
     
@@ -590,13 +352,14 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     _possiblyTappedButtonItem = nil;
     
     if (!_possiblyVisiblePopoverController || popover != _possiblyVisiblePopoverController)
-        return;
+        return NO;
     
     UIPopoverController *dismissingPopover = [_possiblyVisiblePopoverController autorelease];
     _possiblyVisiblePopoverController = nil;
     _possiblyVisiblePopoverControllerArrowDirections = UIPopoverArrowDirectionUnknown;
 
     _performDismissPopover(dismissingPopover, animated);
+    return YES;
 }
 
 - (void)dismissPopoverAnimated:(BOOL)animated;
@@ -618,13 +381,9 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
         [self dismissActionSheetAndPopover:YES];
         return;
     }
-    
-    // Treat a print sheet the same way as a popover and dismiss it when presenting something else. Sure would be nice if UIPrintInteractionController was a subclass of UIPopoverController as would make sense... 
-    [[UIPrintInteractionController sharedPrintController] dismissAnimated:animated];
 
     [self dismissActionSheetAndPopover:YES];
     
-
     [[NSNotificationCenter defaultCenter] addObserver:self 
                                              selector:@selector(actionSheetDidDismiss:)
                                                  name:OUIActionSheetDidDismissNotification
@@ -656,8 +415,8 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 - (UIViewController *)_activeController;
 {
     UIViewController *activeController = self.topViewController;
-    while (activeController.modalViewController != nil)
-        activeController = activeController.modalViewController;
+    while (activeController.presentedViewController != nil)
+        activeController = activeController.presentedViewController;
     return activeController;
 }
 
@@ -715,14 +474,76 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 
 - (BOOL)isRunningRetailDemo;
 {
-#ifdef DEBUG_rachael
-    NSLog(@"demo mode = %d", [[OFPreference preferenceForKey:@"IPadRetailDemo"] boolValue]);
-#endif
     return [[OFPreference preferenceForKey:@"IPadRetailDemo"] boolValue];
 }
 
-#pragma mark -
-#pragma mark UIApplicationDelegate
+- (BOOL)showFeatureDisabledForRetailDemoAlert;
+{
+    if ([self isRunningRetailDemo]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Feature not enabled for this demo", @"OmniUI", OMNI_BUNDLE, @"disabled for demo") message:nil delegate:nil cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"Done") otherButtonTitles:nil];
+        [alert show];
+        [alert release];
+        return YES;
+    }
+    
+    return NO;
+}
+
+- (NSString *)fullReleaseString;
+{
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    return [NSString stringWithFormat:@"%@ %@ (v%@)", [infoDictionary objectForKey:@"CFBundleName"], [infoDictionary objectForKey:@"CFBundleShortVersionString"], [infoDictionary objectForKey:@"CFBundleVersion"]];
+}
+
+
+- (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString *)body;
+{
+    // May need to allow the app delegate to provide this conditionally later (OmniFocus has a retail build, for example)
+    NSString *feedbackAddress = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIFeedbackAddress"];
+    OBASSERT(feedbackAddress);
+    if (!feedbackAddress)
+        return;
+    
+    UIViewController *topViewController = self.topViewController;
+    OBASSERT(topViewController);
+    if (!topViewController)
+        return;
+
+    // If the caller left up a different modal view controller, our attempt to show another modal view controller would just log a warning and do nothing.
+    BOOL allowInAppCompose = (topViewController.presentedViewController == nil);
+
+    BOOL useComposeView = allowInAppCompose && [MFMailComposeViewController canSendMail];
+    if (!useComposeView) {
+        NSString *urlString = [NSString stringWithFormat:@"mailto:%@?subject=%@", feedbackAddress,
+                               [NSString encodeURLString:subject asQuery:NO leaveSlashes:NO leaveColons:NO]];
+        
+        if (![NSString isEmptyString:body])
+            urlString = [urlString stringByAppendingFormat:@"&body=%@", [NSString encodeURLString:body asQuery:NO leaveSlashes:NO leaveColons:NO]];
+        
+        NSURL *url = [NSURL URLWithString:urlString];
+        OBASSERT(url);
+        if (![[UIApplication sharedApplication] openURL:url]) {
+            // Need to pop up an alert telling the user? Might happen now since we don't have Mail,  but they shouldn't be able to delete that in the real world.  Though maybe our url string is bad.
+            NSLog(@"Unable to open mail url %@ from string\n%@\n", url, urlString);
+            OBASSERT_NOT_REACHED("Couldn't open mail url");
+        }
+        return;
+    }
+    
+    // TODO: Allow sending a document with the mail?
+    
+    MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
+    controller.navigationBar.barStyle = UIBarStyleBlack;
+    controller.mailComposeDelegate = self;
+    [controller setToRecipients:[NSArray arrayWithObject:feedbackAddress]];
+    [controller setSubject:subject];
+    if (![NSString isEmptyString:body])
+        [controller setMessageBody:body isHTML:NO];
+    
+    [self.topViewController presentViewController:controller animated:YES completion:nil];
+}
+
+#pragma mark - UIApplicationDelegate
 
 // For when running on iOS 3.2.
 - (void)applicationWillTerminate:(UIApplication *)application;
@@ -747,102 +568,7 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error;
 {
-    [self.topViewController dismissModalViewControllerAnimated:YES];
-}
-
-#pragma mark -
-#pragma mark OFSDocumentStoreDelegate
-
-- (Class)documentStore:(OFSDocumentStore *)store fileItemClassForURL:(NSURL *)fileURL;
-{
-    return [OFSDocumentStoreFileItem class];
-}
-
-- (NSString *)documentStoreBaseNameForNewFiles:(OFSDocumentStore *)store;
-{
-    return NSLocalizedStringFromTableInBundle(@"My Document", @"OmniUI", OMNI_BUNDLE, @"Base name for newly created documents. This will have an number appended to it to make it unique.");
-}
-
-- (NSArray *)documentStoreEditableDocumentTypes:(OFSDocumentStore *)store;
-{
-    return [self editableFileTypes];
-}
-
-- (void)createNewDocumentAtURL:(NSURL *)url completionHandler:(void (^)(NSURL *url, NSError *error))completionHandler;
-{
-    OBRequestConcreteImplementation(self, _cmd);
-}
-
-- (BOOL)documentStore:(OFSDocumentStore *)store canViewFileTypeWithIdentifier:(NSString *)uti;
-{
-    return [self canViewFileTypeWithIdentifier:uti];
-}
-
-#pragma mark - OUIMenuControllerDelegate
-
-//#define SHOW_ABOUT_MENU_ITEM 1
-
-- (NSArray *)menuControllerOptions:(OUIMenuController *)menu;
-{
-    if (menu == _appMenuController) {
-        NSMutableArray *options = [NSMutableArray array];
-        OUIMenuOption *option;
-
-#ifdef SHOW_ABOUT_MENU_ITEM
-        option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(showAboutPanel:)
-                                                                   title:NSLocalizedStringFromTableInBundle(@"About", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
-                                                                   image:[UIImage imageNamed:@"OUIMenuItemAbout.png"]];
-        [options addObject:option];
-#endif
-        
-        if ([OFSDocumentStore canPromptForUbiquityAccess]) {
-            // -_setupCloud: is on OUISingleDocumentAppController. Perhaps its iCloud support should be merged up, or split into a OUIDocumentController...
-            option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(_setupCloud:)
-                                                                       title:NSLocalizedStringFromTableInBundle(@"Set Up iCloud", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
-                                                                       image:[UIImage imageNamed:@"OUIMenuItemCloudSetUp.png"]];
-            [options addObject:option];
-        }
-        
-        option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(showOnlineHelp:)
-                                                                   title:[[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"] table:@"InfoPlist"]
-                                                                   image:[UIImage imageNamed:@"OUIMenuItemHelp.png"]];
-        [options addObject:option];
-        
-        option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(sendFeedback:)
-                                                                   title:[[OUIAppController controller] feedbackMenuTitle]
-                                                                   image:[UIImage imageNamed:@"OUIMenuItemSendFeedback.png"]];
-        [options addObject:option];
-        
-        option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(showReleaseNotes:)
-                                                                   title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
-                                                                   image:[UIImage imageNamed:@"OUIMenuItemReleaseNotes.png"]];
-        [options addObject:option];
-#if defined(DEBUG)
-        BOOL includedTestsMenu = YES;
-#else
-        BOOL includedTestsMenu = [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIIncludeTestsMenu"];
-#endif
-        if (includedTestsMenu && NSClassFromString(@"SenTestSuite")) {
-            option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(runTests:)
-                                                                       title:NSLocalizedStringFromTableInBundle(@"Run Tests", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
-                                                                       image:[UIImage imageNamed:@"OUIMenuItemRunTests.png"]];
-            [options addObject:option];
-        }
-        
-        return options;
-    }
-    
-    OBASSERT_NOT_REACHED("Unknown menu");
-    return nil;
-}
-
-#pragma mark -
-#pragma mark Private
-
-- (NSString *)_fullReleaseString;
-{
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    return [NSString stringWithFormat:@"%@ %@ (v%@)", [infoDictionary objectForKey:@"CFBundleName"], [infoDictionary objectForKey:@"CFBundleShortVersionString"], [infoDictionary objectForKey:@"CFBundleVersion"]];
+    [self.topViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

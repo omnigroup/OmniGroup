@@ -91,6 +91,11 @@ struct OFXMLSignatureVerifyContinuation {
 
 /* Error-signaling functions */
 
+static BOOL signatureStructuralFailure(NSError **err, NSString *fmt, ...)  __attribute__((format(__NSString__, 2, 3)));
+static BOOL signatureProcessingFailure(NSError **err, enum OFXMLSignatureOperation op, NSInteger code, NSString *function, NSString *fmt, ...)
+__attribute__((format(__NSString__, 5, 6)));
+
+
 static BOOL signatureStructuralFailure(NSError **err, NSString *fmt, ...)
 {
     if (!err)
@@ -693,7 +698,7 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
     if (op == OFXMLSignature_Verify) {
         signatureValue = OFLibXMLNodeBase64Content(signatureValueNode);
         if (!signatureValue) {
-            signatureStructuralFailure(err, @"The <SignatureValue> content is not parsable as base64 data", count);
+            signatureStructuralFailure(err, @"The <SignatureValue> content is not parsable as base64 data");
             return NO;
         }
     }
@@ -1586,7 +1591,7 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
     if (!referenceNodes)
         OBRejectInvalidCall(self, _cmd, @"Signature element has not been processed yet");
     if (nodeIndex >= referenceNodeCount)
-        OBRejectInvalidCall(self, _cmd, @"Reference index (%lu) is out of range (count is %u)", (unsigned long)nodeIndex, referenceNodeCount);
+        OBRejectInvalidCall(self, _cmd, @"Reference index (%"PRIuNS") is out of range (count is %u)", (unsigned long)nodeIndex, referenceNodeCount);
     xmlNode *referenceNode = referenceNodes[nodeIndex];
     
     unsigned int count;
@@ -1602,7 +1607,7 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
     }
     NSData *digestValue = OFLibXMLNodeBase64Content(digestValueNode);
     if (!digestValue) {
-        signatureStructuralFailure(outError, @"The <DigestValue> content is not parsable as base64 data", count);
+        signatureStructuralFailure(outError, @"The <DigestValue> content is not parsable as base64 data");
         return NO;
     }
     id <OFDigestionContext, NSObject> digester = [self newDigestContextForMethod:digestMethodNode error:outError];

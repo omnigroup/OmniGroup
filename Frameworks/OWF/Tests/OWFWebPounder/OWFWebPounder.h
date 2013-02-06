@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,12 +9,12 @@
 
 
 #import <OmniFoundation/OFObject.h>
-#import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
+#import <OWF/OWFWeakRetainConcreteImplementation.h>
 #import <OWF/OWTargetProtocol.h>
 
-@interface OWFWebPounder : OFObject <OFWeakRetain, OWTarget>
+@interface OWFWebPounder : OFObject <OWFWeakRetain, OWTarget>
 {
-    OFWeakRetainConcreteImplementation_IVARS;
+    OWFWeakRetainConcreteImplementation_IVARS;
 }
 
 + (void)logStatus;

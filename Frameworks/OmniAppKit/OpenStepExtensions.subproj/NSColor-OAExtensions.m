@@ -85,7 +85,7 @@ typedef struct {
 // Works for both NSString and NSNumber encoded components
 static BOOL _dictionaryComponentGetter(void *container, NSString *key, CGFloat *outComponent)
 {
-    OBPRECONDITION([(id)container isKindOfClass:[NSMutableDictionary class]]);
+    OBPRECONDITION([(id)container isKindOfClass:[NSDictionary class]]);
 
     // In some cases we care if we got the default value due to it being missing or whether it was actually in the plist.
     id obj = [(NSMutableDictionary *)container objectForKey:key];
@@ -97,7 +97,7 @@ static BOOL _dictionaryComponentGetter(void *container, NSString *key, CGFloat *
 
 static NSString *_dictionaryStringGetter(void *container, NSString *key)
 {
-    OBPRECONDITION([(id)container isKindOfClass:[NSMutableDictionary class]]);
+    OBPRECONDITION([(id)container isKindOfClass:[NSDictionary class]]);
     NSString *result = [(NSMutableDictionary *)container objectForKey:key];
     OBASSERT(!result || [result isKindOfClass:[NSString class]]);
     return result;
@@ -105,7 +105,7 @@ static NSString *_dictionaryStringGetter(void *container, NSString *key)
 
 static NSData *_dictionaryDataGetter(void *container, NSString *key)
 {
-    OBPRECONDITION([(id)container isKindOfClass:[NSMutableDictionary class]]);
+    OBPRECONDITION([(id)container isKindOfClass:[NSDictionary class]]);
     NSData *result = [(NSMutableDictionary *)container objectForKey:key];
     OBASSERT(!result || [result isKindOfClass:[NSData class]]);
     return result;
@@ -662,18 +662,53 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
     return [self _adjustColor:baseColor withAdjective:aName];
 }
 
+static CGColorRef _CreateCGColorRefWithComponentsOfColor(NSColor *color, CGColorSpaceRef destinationColorSpace)
+{
+    size_t componentCount = CGColorSpaceGetNumberOfComponents(destinationColorSpace);
+    OBASSERT(componentCount > 0);
+    
+    CGFloat *components = malloc((componentCount + 1) * sizeof(CGFloat));
+    [color getComponents:components];
+    
+    CGColorRef result = CGColorCreate(destinationColorSpace, components);
+    free(components);
+    
+    OBPOSTCONDITION(result);
+    return result;
+}
+
 - (CGColorRef)newCGColor;
 {
-    NSColorSpace *genericNSSpace = [NSColorSpace genericRGBColorSpace];
-    NSColor *genericColor = [self colorUsingColorSpace:genericNSSpace];
-    CGColorSpaceRef genericCGSpace = [genericNSSpace CGColorSpace];
-    NSInteger numberOfComponents = [genericColor numberOfComponents];
-    CGFloat *components = malloc(numberOfComponents * sizeof(CGFloat));
-    [genericColor getComponents:components];
+    CGColorSpaceRef destinationColorSpace = self.colorSpace.CGColorSpace;
+    if (destinationColorSpace)
+        return _CreateCGColorRefWithComponentsOfColor(self, destinationColorSpace);
+    else
+        return nil;
+}
+
+- (CGColorRef)newCGColorWithCGColorSpace:(CGColorSpaceRef)destinationColorSpace;
+{
+    OBPRECONDITION(destinationColorSpace);
     
-    CGColorRef cgColor = CGColorCreate(genericCGSpace, components);
-    free(components);
-    return cgColor;
+    NSColorSpace *wrappedColorSpace = [[[NSColorSpace alloc] initWithCGColorSpace:destinationColorSpace] autorelease];
+    NSColor *convertedColor = [self colorUsingColorSpace:wrappedColorSpace];
+    if (convertedColor)
+        return _CreateCGColorRefWithComponentsOfColor(convertedColor, destinationColorSpace);
+    else
+        return nil;
+}
+
++ (NSColor *)colorFromCGColor:(CGColorRef)colorRef;
+{
+    NSColorSpace *colorSpace = [[NSColorSpace alloc] initWithCGColorSpace:CGColorGetColorSpace(colorRef)];
+    const CGFloat *components = CGColorGetComponents(colorRef);
+    
+    NSColor *result = [NSColor colorWithColorSpace:colorSpace components:components count:[colorSpace numberOfColorComponents] + 1];
+    
+    [colorSpace release];
+    
+    OBPOSTCONDITION(result);
+    return result;
 }
 
 #pragma mark -

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import "OUILabeledValueCell.h"
+#import <OmniUI/OUILabeledValueCell.h>
 
 @protocol OUIEditableLabeledValueCellDelegate;
 
@@ -39,6 +39,7 @@
 - (void)editableLabeledValueCell:(OUIEditableLabeledValueCell *)cell textFieldDidEndEditing:(UITextField *)textField;
 
 - (BOOL)editableLabeledValueCell:(OUIEditableLabeledValueCell *)cell textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
+- (void)editableLabeledValueCellTextDidChange:(OUIEditableLabeledValueCell *)cell;
 
 - (BOOL)editableLabeledValueCell:(OUIEditableLabeledValueCell *)cell textFieldShouldClear:(UITextField *)textField;
 - (BOOL)editableLabeledValueCell:(OUIEditableLabeledValueCell *)cell textFieldShouldReturn:(UITextField *)textField;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -171,18 +171,18 @@ static OFPreference *fileRefreshIntervalPreference = nil;
 
 - (void)_fetchDirectoryWithPath:(NSString *)directoryPath;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     [self setStatusString:NSLocalizedStringFromTableInBundle(@"Reading directory", @"OWF", [OWFileProcessor bundle], @"fileprocessor status")];
 
     NSError *error = nil;
-    NSArray *directoryContexts = [[NSFileManager defaultManager] subpathsOfDirectoryAtPath:directoryPath error:&error];
-    if (!directoryContexts) {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSArray *filenames = [fileManager contentsOfDirectoryAtPath:directoryPath error:&error];
+    if (filenames == nil) {
         // TODO: Handle error for real.
+        return;
     }
     
     NSString *directoryIndexFilename = [directoryIndexFilenamePreference stringValue];
-    if (![NSString isEmptyString:directoryIndexFilename] && [directoryContexts containsObject:directoryIndexFilename]) {
+    if (![NSString isEmptyString:directoryIndexFilename] && [filenames containsObject:directoryIndexFilename]) {
 	[self _fetchRegularFileWithPath:[directoryPath stringByAppendingPathComponent:directoryIndexFilename]];
 	return;
     }
@@ -195,25 +195,17 @@ static OFPreference *fileRefreshIntervalPreference = nil;
     [pipeline addContent:newContent fromProcessor:self flags:OWProcessorContentNoDiskCache|OWProcessorTypeRetrieval];
     [newContent release];
     
-    NSArray *files = [directoryContexts sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-    unsigned int fileIndex, fileCount = [files count];
-    for (fileIndex = 0; fileIndex < fileCount; fileIndex++) {
-#if 1
-        // Finish porting away from OFFile/OFDirectory
-        OBRejectUnusedImplementation(self, _cmd);
-#else
-        OFFile *file;
-        OWFileInfo *fileInfo;
-
-        file = [files objectAtIndex:fileIndex];
-        fileInfo = [[OWFileInfo alloc] initWithAddress:[OWAddress addressWithFilename:[file path]] size:[file size] isDirectory:[file isDirectory] isShortcut:[file isShortcut] lastChangeDate:[[file lastChanged] dateWithCalendarFormat:NSLocalizedStringFromTableInBundle(@"%d-%b-%Y %H:%M:%S %z", @"OWF", [OWFileProcessor bundle], @"fileprocessor lastChangeDate calendar format") timeZone:nil]];
+    NSArray *sortedFilenames = [filenames sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    for (NSString *filename in sortedFilenames) {
+        NSString *path = [directoryPath stringByAppendingPathComponent:filename];
+        NSDictionary *attributes = [fileManager attributesOfItemAtPath:path error:NULL];
+        NSString *fileType = [attributes objectForKey:NSFileType];
+        OWFileInfo *fileInfo = [[OWFileInfo alloc] initWithAddress:[OWAddress addressWithFilename:path] size:[attributes objectForKey:NSFileSize] isDirectory:fileType == NSFileTypeDirectory isShortcut:fileType == NSFileTypeSymbolicLink lastChangeDate:[attributes objectForKey:NSFileModificationDate]];
         [objectStream writeObject:fileInfo];
         [fileInfo release];
-#endif
     }
     [objectStream dataEnd];
     [objectStream release];
-#endif
 }
 
 - (void)_fetchRegularFileWithPath:(NSString *)filePath;

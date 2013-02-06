@@ -1,4 +1,4 @@
-// Copyright 2007-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2012 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,7 @@ RCS_ID("$Id$");
 - (BOOL)_unpackApplicationFromMountPoint:(NSString *)mountPoint error:(NSError **)outError;
 
 // tar/bz2 support
-- (BOOL)_unpackApplicationFromTarBzip2File:(NSError **)outError;
+- (BOOL)_unpackApplicationFromTarFile:(NSError **)outError;
 
 // Install & Relaunch
 - (BOOL)_installAndArchive:(NSError **)outError;
@@ -248,8 +248,9 @@ static BOOL trashFile(NSString *path, NSString *description, BOOL tryFinder);
     
     if ([packagePath hasSuffix:@".dmg"]) {
         return [self _unpackApplicationFromDiskImage:outError];
-    } else if ([packagePath hasSuffix:@".tbz2"] || [packagePath hasSuffix:@".tar.bz2"]) {
-        return [self _unpackApplicationFromTarBzip2File:outError];
+    } else if ([packagePath hasSuffix:@".tbz2"] || [packagePath hasSuffix:@".tar.bz2"] ||
+               [packagePath hasSuffix:@".tgz"] || [packagePath hasSuffix:@".tar.gz"]) {
+        return [self _unpackApplicationFromTarFile:outError];
     } else {
         OSUError(outError, OSUUnableToProcessPackage, @"Unable to open package.", @"Unknown package type.");
         return NO;
@@ -453,7 +454,7 @@ static BOOL trashFile(NSString *path, NSString *description, BOOL tryFinder);
     haveAskedForInstallLocation = YES;
     NSUInteger code = [chooseInstallLocation runModal];
     
-    // TODO: Run the panel as a sheet if [nonretained_delegate windowForSheet] is non-nil
+    // TODO: Run the panel as a sheet if [nonretained_delegate windowForSheet] is non-nil (use beginWithCompletionHandler:?)
     
     if (code == NSFileHandlingPanelOKButton) {
         // Success!
@@ -574,6 +575,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 {
     struct stat sbuf;
     NSString *badness;
+    CFErrorRef badnessError;
     
     // Check a handful of things about an application before we try to install it, just to avoid installing a completely broken app.
     // As with _findApplicationInDirectory:error:, we want to avoid indirectly using Carbon APIs here.
@@ -593,11 +595,13 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     NSData *infoPlistBytes = [NSData dataWithContentsOfFile:[contentsPath stringByAppendingPathComponent:@"Info.plist"] options:NSMappedRead error:outError];
     if (!infoPlistBytes)
         return NO; // NSData set outError for us
-    CFStringRef err = NULL;
-    NSDictionary *infoPlist = (NSDictionary *)CFPropertyListCreateFromXMLData(kCFAllocatorDefault, (CFDataRef)infoPlistBytes, kCFPropertyListImmutable, &err);
+    badnessError = NULL;
+    NSDictionary *infoPlist = (NSDictionary *)CFPropertyListCreateWithData(kCFAllocatorDefault, (CFDataRef)infoPlistBytes, kCFPropertyListImmutable, NULL, &badnessError);
     if (!infoPlist) {
-        badness = [NSString stringWithFormat:@"Can't read Info.plist: %@", err];
-        goto return_failure;
+        NSError *outError_ = [NSMakeCollectable(badnessError) autorelease];
+        if (outError)
+            *outError = outError_;
+        return NO;
     }
     [infoPlist autorelease];
     if (![infoPlist isKindOfClass:[NSDictionary class]] ||
@@ -730,8 +734,8 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     // filterDataThroughCommandAtPath:... will return an empty data in some cases -- once we figure out what that is, we should fix it.
     if (hdiResults == nil || [hdiResults length] == 0) {
         if (outError) {
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
-            NSString *reason = NSLocalizedStringFromTableInBundle(@"hdiutil failed to attach the disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - we downloaded a .DMG, but were unable to mount it using hdiutil");
+            NSString *reason = NSLocalizedStringFromTableInBundle(@"hdiutil failed to attach the disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason - we downloaded a .DMG, but were unable to mount it using hdiutil");
             NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey,   reportStringForCapturedOutput(errorStream), @"hdiutil-stderr", nil];
             
             if (hdiResults)
@@ -751,7 +755,7 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     
     if (!plist && plistError) {
         if (outError) {
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - we downloaded a .DMG, but were unable to mount it using hdiutil");
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to parse the response from hdiutil: %@", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason"), plistError];
             NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, hdiResults, @"hdi-result-data", reportStringForCapturedOutput(errorStream), @"hdiutil-stderr", nil];
             *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToMountDiskImage userInfo:userInfo];
@@ -770,8 +774,8 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         if (potentialMountPoint) {
             if (mountPoint && ![mountPoint isEqualToString:potentialMountPoint]) { // Never seen a case where they are equal, just checking.
                 if (outError) {
-                    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
-                    NSString *reason = NSLocalizedStringFromTableInBundle(@"Multiple mount points found in hdiutil results.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
+                    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to mount disk image", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - we downloaded a .DMG, but were unable to mount it using hdiutil");
+                    NSString *reason = NSLocalizedStringFromTableInBundle(@"Multiple mount points found in hdiutil results.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason - the disk image contained several partitions - unexpected");
                     NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedFailureReasonErrorKey, plist, @"hdi-result-plist", reportStringForCapturedOutput(errorStream), @"hdiutil-stderr", nil];
                     *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToMountDiskImage userInfo:userInfo];
                 }
@@ -873,9 +877,12 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 #pragma mark -
 #pragma mark tar/bz2 support
 
-- (BOOL)_unpackApplicationFromTarBzip2File:(NSError **)outError;
+- (BOOL)_unpackApplicationFromTarFile:(NSError **)outError;
 {
     NSString *expander;
+    NSString *untarPath = packagePath;
+    
+    NSMutableDictionary *extract = [NSMutableDictionary dictionary];
     
     if ([packagePath hasSuffix:@".tbz2"] || [packagePath hasSuffix:@".tar.bz2"])
         expander = @"--bzip2";
@@ -905,10 +912,9 @@ static BOOL isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         return NO;
     }
     
-    NSMutableDictionary *extract = [NSMutableDictionary dictionary];
     [extract setObject:@"/usr/bin/tar"
                 forKey:OFFilterProcessCommandPathKey];
-    [extract setObject:[NSArray arrayWithObjects:@"xf", packagePath, expander /* may be nil, therefore must be last */, nil]
+    [extract setObject:[NSArray arrayWithObjects:@"xf", untarPath, expander /* may be nil, therefore must be last */, nil]
                 forKey:OFFilterProcessArgumentsKey];
     [extract setObject:temporaryPath
                 forKey:OFFilterProcessWorkingDirectoryPathKey];
@@ -1098,7 +1104,7 @@ static void checkInstallWithFlags(const char *posixPath, const struct stat *sbuf
         
     NSString *installerPath = [OMNI_BUNDLE pathForResource:@"OSUInstaller" ofType:@"sh"];
     if (!installerPath) {
-	NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+	NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - OSUInstaller.sh is missing");
         NSString *reason = NSLocalizedStringFromTableInBundle(@"Cannot find the installer script.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason - OSUInstaller.sh is missing");
         OSUError(outError, OSUUnableToUpgrade, description, reason);
         return NO;

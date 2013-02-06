@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,14 +45,17 @@ void OSURunTimeApplicationActivated(void)
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
     // Can't really OBASSERT on this since it'll fire over and over when in the debugger.  So, we just log and only when not building for DEBUG to avoid accumulating log spam.
-#ifndef DEBUG
+#if !defined(DEBUG) || defined(DEBUG_kc)
     if ([defaults objectForKey:OSULastRunStartIntervalKey] != nil) {
         NSLog(@"%@ default is non-nil; unless you forcibly killed the app and restarted it it should be nil at launch time.", OSULastRunStartIntervalKey);
     }
 #endif
     
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    [[NSProcessInfo processInfo] disableSuddenTermination];
+#endif
     [defaults setObject:[NSNumber numberWithDouble:now] forKey:OSULastRunStartIntervalKey];
-    [defaults synchronize]; // Make sure we save in case we crash before -autoSynchronize would fire
+    [defaults synchronize]; // Make sure we save in case we crash before NSUserDefaults automatically synchronizes
 }
 
 static NSDictionary *_OSURunTimeUpdateStatisticsScope(NSDictionary *oldScope, NSString *version, NSNumber *startTimeNumber, NSTimeInterval now, BOOL crashed, BOOL newRun)
@@ -163,6 +166,9 @@ void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleV
     CFPreferencesSetAppValue((CFStringRef)OSULastRunStartIntervalKey, NULL, (CFStringRef)appIdentifier);
 
     CFPreferencesAppSynchronize((CFStringRef)appIdentifier);
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    [[NSProcessInfo processInfo] enableSuddenTermination];
+#endif
     firstCallForThisRun = NO;
 }
 

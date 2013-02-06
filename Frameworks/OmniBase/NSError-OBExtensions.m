@@ -1,4 +1,4 @@
-// Copyright 2005-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,22 +34,46 @@ RCS_ID("$Id$");
     static NSString * const OBBacktraceNamesErrorKey = @"com.omnigroup.framework.OmniBase.ErrorDomain.Backtrace";
 #endif
 
+static BOOL OBLogErrorCreations = NO;
 static id (*original_initWithDomainCodeUserInfo)(NSError *self, SEL _cmd, NSString *domain, NSInteger code, NSDictionary *dict) = NULL;
 
 @implementation NSError (OBExtensions)
 
-- (id)init_logging_WithDomain:(NSString *)domain code:(NSInteger)code userInfo:(NSDictionary *)dict;
+static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSString *domain, NSInteger code, NSDictionary *dict)
 {
-    self = original_initWithDomainCodeUserInfo(self, _cmd, domain, code, dict);
-    if (self)
+#if INCLUDE_BACKTRACE_IN_ERRORS
+    {
+        const int maxFrames = 200;
+        void *frames[maxFrames];
+        int frameCount = backtrace(frames, maxFrames);
+        if (frameCount > 0) {
+            NSData *frameData = [[NSData alloc] initWithBytes:frames length:sizeof(frames[0]) * frameCount];
+            if (dict) {
+                NSMutableDictionary *updatedInfo = [[[NSMutableDictionary alloc] initWithDictionary:dict] autorelease];
+                updatedInfo[OBBacktraceAddressesErrorKey] = frameData;
+                dict = updatedInfo;
+            } else {
+                dict = @{OBBacktraceAddressesErrorKey:frameData};
+            }
+            [frameData release];
+        }
+    }
+#endif
+    if (!(self = original_initWithDomainCodeUserInfo(self, _cmd, domain, code, dict)))
+        return nil;
+    
+    if (OBLogErrorCreations)
         NSLog(@"Error created: %@", [self toPropertyList]);
+    
     return self;
 }
 
 + (void)performPosing;
 {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"OBLogErrorCreations"]) {
-        original_initWithDomainCodeUserInfo = (typeof(original_initWithDomainCodeUserInfo))OBReplaceMethodImplementationWithSelector(self, @selector(initWithDomain:code:userInfo:), @selector(init_logging_WithDomain:code:userInfo:));
+    OBLogErrorCreations = [[NSUserDefaults standardUserDefaults] boolForKey:@"OBLogErrorCreations"];
+    
+    if (OBLogErrorCreations || INCLUDE_BACKTRACE_IN_ERRORS) {
+        original_initWithDomainCodeUserInfo = (typeof(original_initWithDomainCodeUserInfo))OBReplaceMethodImplementation(self, @selector(initWithDomain:code:userInfo:), (IMP)_replacement_initWithDomain_code_userInfo);
     }
 }
 
@@ -86,8 +110,13 @@ static id (*original_initWithDomainCodeUserInfo)(NSError *self, SEL _cmd, NSStri
     if ([self hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSUserCancelledError])
         return YES;
 
+    // N.B. Don't consider NSURLErrorDomain/NSURLErrorUserCancelledAuthentication a generic user cancelled case.
+    // We added this in r164657, but it turns out that this can bubble out of the URL connection system both by programatic and user cancels.
+    // These errors will have to be filtered closer to the source, as necessary
+#if 0
     if ([self hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorUserCancelledAuthentication])
         return YES;
+#endif
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     if ([self hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:errAuthorizationCanceled])
@@ -166,17 +195,19 @@ static id _mapUserInfoValueToPlistValue(id valueObject)
 #if INCLUDE_BACKTRACE_IN_ERRORS
             if ([key isEqualToString:OBBacktraceAddressesErrorKey]) {
                 // Transform this to symbol names when actually interested in it.
-                NSData *frameData = valueObject;
+                NSData *frameData = unmappedValue;
                 const void* const* frames = [frameData bytes];
-                int frameCount = [frameData length] / sizeof(frames[0]);
-                char **names = backtrace_symbols((void* const* )frames, frameCount);
+                NSUInteger frameCount = [frameData length] / sizeof(frames[0]);
+
+                OBASSERT(frameCount < INT_MAX); // since backtrace_symbols only takes int.
+                char **names = backtrace_symbols((void* const* )frames, (int)frameCount);
                 if (names) {
                     NSMutableArray *namesArray = [NSMutableArray array];
-                    for (int nameIndex = 0; nameIndex < frameCount; nameIndex++)
+                    for (NSUInteger nameIndex = 0; nameIndex < frameCount; nameIndex++)
                         [namesArray addObject:[NSString stringWithCString:names[nameIndex] encoding:NSUTF8StringEncoding]];
                     free(names);
                     
-                    [mappedUserInfo setObject:namesArray forKey:OBBacktraceNamesErrorKey];
+                    [mapped setObject:namesArray forKey:OBBacktraceNamesErrorKey];
                     return;
                 }
             }

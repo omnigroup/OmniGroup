@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,11 +12,11 @@
 @class NSConditionLock;
 @class OWContentInfo, OWContentType;
 
-#import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
+#import <OWF/OWFWeakRetainConcreteImplementation.h>
 #import <OWF/OWContent.h>
 #import <OWF/OWTargetProtocol.h>
 
-@interface OWSimpleTarget : OFObject <OWTarget, OFWeakRetain>
+@interface OWSimpleTarget : OFObject <OWTarget, OWFWeakRetain>
 {
     OWContent *initialContent;
     
@@ -29,7 +29,7 @@
     OWTargetContentOffer resultingContentFlags;
     OWAddress *addressOfLastContent;
     
-    OFWeakRetainConcreteImplementation_IVARS;
+    OWFWeakRetainConcreteImplementation_IVARS;
 }
 
 - (id)initWithParentContentInfo:(OWContentInfo *)contentInfo targetContentType:(OWContentType *)contentType initialContent:(OWContent *)someContent;
@@ -41,6 +41,6 @@
 - (OWTargetContentOffer)resultingContentFlags;
 - (OWAddress *)lastAddress;
 
-OFWeakRetainConcreteImplementation_INTERFACE
+OWFWeakRetainConcreteImplementation_INTERFACE
 
 @end

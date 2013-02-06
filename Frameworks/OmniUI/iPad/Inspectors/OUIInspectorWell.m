@@ -194,7 +194,7 @@ static void _OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect i
             
             CGContextBeginTransparencyLayer(ctx, NULL/*auxiliaryInfo*/);
             {
-                // Draw a big box, with a whole to cast the shadow. The difference between our clip rect above, and this path acts as clip on the shadow ramp.
+                // Draw a big box, with a hole to cast the shadow. The difference between our clip rect above, and this path acts as clip on the shadow ramp.
                 OUIInspectorWellAddPath(ctx, borderRect, cornerType);
                 CGContextAddRect(ctx, CGRectInset(borderRect, -20, -20));
                 
@@ -292,6 +292,7 @@ void OUIInspectorWellDraw(CGContextRef ctx, CGRect frame,
 
 static CGGradientRef NormalGradient = NULL;
 static CGGradientRef HighlightedGradient = NULL;
+static CGGradientRef HighlightedButtonGradient = NULL;
 
 + (void)initialize;
 {
@@ -307,6 +308,10 @@ static CGGradientRef HighlightedGradient = NULL;
         UIColor *topColor = OQMakeUIColor(kOUIInspectorTextWellHighlightedGradientTopColor);
         UIColor *bottomColor = OQMakeUIColor(kOUIInspectorTextWellHighlightedGradientBottomColor);
         HighlightedGradient = CGGradientCreateWithColors(NULL/*colorSpace*/, (CFArrayRef)[NSArray arrayWithObjects:(id)[topColor CGColor], (id)[bottomColor CGColor], nil], NULL);
+        
+        topColor = OQMakeUIColor(kOUIInspectorTextWellButtonHighlightedGradientTopColor);
+        bottomColor = OQMakeUIColor(kOUIInspectorTextWellButtonHighlightedGradientBottomColor);
+        HighlightedButtonGradient = CGGradientCreateWithColors(NULL/*colorSpace*/, (CFArrayRef)[NSArray arrayWithObjects:(id)[topColor CGColor], (id)[bottomColor CGColor], nil], NULL);
     }
     
 }
@@ -331,9 +336,19 @@ static CGGradientRef HighlightedGradient = NULL;
     return OQMakeUIColor(kOUIInspectorTextWellHighlightedTextColor);
 }
 
++ (UIColor *)highlightedButtonTextColor;
+{
+    return OQMakeUIColor(kOUIInspectorTextWellHighlightedButtonTextColor);
+}
+
 + (UIImage *)navigationArrowImage;
 {
     return [UIImage imageNamed:@"OUINavigationArrow.png"];
+}
+
++ (UIImage *)navigationArrowImageHighlighted;
+{
+    return [UIImage imageNamed:@"OUINavigationArrow-White.png"];
 }
 
 - (void)dealloc;
@@ -439,7 +454,10 @@ static CGGradientRef HighlightedGradient = NULL;
 
 - (UIColor *)textColor;
 {
-    return self.shouldDrawHighlighted ? [[self class] highlightedTextColor] : [[self class] textColor];
+    if (self.shouldDrawHighlighted)
+        return self.backgroundType == OUIInspectorWellBackgroundTypeButton ? [[self class] highlightedButtonTextColor] : [[self class] highlightedTextColor];
+    
+    return [[self class] textColor];
 }
 
 - (void)drawInteriorFillWithRect:(CGRect)rect; // Draws the interior gradient
@@ -450,9 +468,14 @@ static CGGradientRef HighlightedGradient = NULL;
         CGGradientRef gradient = self.shouldDrawHighlighted ? HighlightedGradient : NormalGradient;
         CGContextDrawLinearGradient(ctx, gradient, rect.origin, CGPointMake(rect.origin.x, CGRectGetMaxY(rect)), 0);
     } else {
-        UIColor *backgroundColor = OQMakeUIColor(self.shouldDrawHighlighted ? kOUIInspectorTextWellHighlightedGradientBottomColor : kOUIInspectorTextWellNormalGradientBottomColor);
-        [backgroundColor set];
-        UIRectFill(rect);
+        if (self.shouldDrawHighlighted) {
+            CGGradientRef gradient = HighlightedButtonGradient;
+            CGContextDrawLinearGradient(ctx, gradient, rect.origin, CGPointMake(rect.origin.x, CGRectGetMaxY(rect)), 0);
+        } else {
+            UIColor *backgroundColor = OQMakeUIColor(kOUIInspectorTextWellNormalGradientBottomColor);
+            [backgroundColor set];
+            UIRectFill(rect);
+        }
     }
 }
 

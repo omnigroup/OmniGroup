@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,7 +51,7 @@ RCS_ID("$Id$");
     // should we display the placeholder text while the editor is visible
     BOOL _shouldDisplayPlaceholderText;
     
-    UITextAlignment _textAlignment;
+    NSTextAlignment _textAlignment;
     NSString *_text;
     NSString *_suffix;
     UIColor *_textColor;
@@ -80,7 +80,10 @@ RCS_ID("$Id$");
     UITextSpellCheckingType _spellCheckingType;
     UIKeyboardType _keyboardType;
     UIReturnKeyType _returnKeyType;
+    
     id <OUICustomKeyboard> _customKeyboard;
+    NSFormatter *_formatter;
+    id _objectValue;
     BOOL _textChangedWhileEditingOnCustomKeyboard;
 }
 
@@ -98,7 +101,7 @@ static id _commonInit(OUIInspectorTextWell *self)
     self.returnKeyType = UIReturnKeyDefault;
     
     self->_style = OUIInspectorTextWellStyleDefault;
-    self->_textAlignment = UITextAlignmentCenter;
+    self->_textAlignment = NSTextAlignmentCenter;
     
     return self;
 }
@@ -131,6 +134,9 @@ static id _commonInit(OUIInspectorTextWell *self)
     [_placeholderText release];
     [_labelTextLayout release];
     [_valueTextLayout release];
+    [_customKeyboard release];
+    [_formatter release];
+    [_objectValue release];
     [super dealloc];
 }
 
@@ -207,15 +213,15 @@ static id _commonInit(OUIInspectorTextWell *self)
     return (_editor && _editorContainerView && _editor.superview == _editorContainerView);
 }
 
-static CTTextAlignment _ctAlignmentForAlignment(UITextAlignment align)
+static CTTextAlignment _ctAlignmentForAlignment(NSTextAlignment align)
 {    
-    // UITextAlignment only has three options and they aren't identical values to the CT version... maybe our property should be a CTTextAlignment
+    // NSTextAlignment only has three options and they aren't identical values to the CT version... maybe our property should be a CTTextAlignment
     switch (align) {
-        case UITextAlignmentRight:
+        case NSTextAlignmentRight:
             return kCTRightTextAlignment;
-        case UITextAlignmentCenter:
+        case NSTextAlignmentCenter:
             return kCTCenterTextAlignment;
-        case UITextAlignmentLeft:
+        case NSTextAlignmentLeft:
         default:
             return kCTLeftTextAlignment;
     }
@@ -349,7 +355,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
 }
 
 @synthesize textAlignment = _textAlignment;
-- (void)setTextAlignment:(UITextAlignment)textAlignment;
+- (void)setTextAlignment:(NSTextAlignment)textAlignment;
 {
     if (_textAlignment == textAlignment)
         return;
@@ -384,6 +390,16 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     }
         
     [self setNeedsDisplay];
+}
+
+- (void)setObjectValue:(id)objectValue;
+{
+    if (_objectValue == objectValue || (_objectValue && [objectValue isEqual:_objectValue]))
+        return;
+    
+    [_objectValue release];
+    _objectValue = [objectValue retain];
+    self.text = [_formatter stringForObjectValue:_objectValue];
 }
 
 - (NSString *)suffix;
@@ -542,6 +558,18 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
         [_editor selectAll:sender showingMenu:show];
 }
 
+- (void)setHighlighted:(BOOL)highlighted;
+{
+    [super setHighlighted:highlighted];
+
+    if (self.backgroundType == OUIInspectorWellBackgroundTypeButton) {
+        self.textColor = [super textColor];
+        self.labelColor = [super textColor];
+        OBASSERT([self.rightView isKindOfClass:[UIImageView class]]);
+        [(UIImageView *)self.rightView setHighlighted:highlighted];
+    }
+}
+
 #pragma mark -
 #pragma mark UIView subclass
 
@@ -579,7 +607,7 @@ static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little ext
     
     // Center the text across the whole bounds, even if we have a nav arrow chopping off part of it. But if we are right or left aligned just use the contents rect (since we are probably trying to avoid a left/right view.
     CGRect drawRect;
-    if (_textAlignment == UITextAlignmentCenter) {
+    if (_textAlignment == NSTextAlignmentCenter) {
         CGFloat leftRightInset = kEditorInsetX;
         
         // The left/right views are currently expected to have built-in padding.
@@ -912,6 +940,7 @@ static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little ext
             _textChangedWhileEditingOnCustomKeyboard = NO;
             [self sendActionsForControlEvents:UIControlEventValueChanged];
         }
+        [_customKeyboard editInspectorTextWell:nil];
         [self setNeedsDisplay];
     }
     return [super resignFirstResponder];
@@ -930,7 +959,8 @@ static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little ext
     
     // Move ourselves to the top of our peer subviews. Otherwise, text widgets can end up being clipped by peer views, see <bug:///72491> (Autocorrect/Kanji selection difficult in Column & Style Name fields entering Japanese with BT keyboard)
     [[self superview] bringSubviewToFront:self];
-    
+    [self.window endEditing:YES];
+   
     // turn off display while editing.
     [self setNeedsDisplay];
     
@@ -1099,6 +1129,27 @@ static const CGFloat kEditorInsetY = 2; // The top/bottom also need a little ext
     _editor.frame = editorFrame;
     _editor.clipRect = [_editor convertRect:clipBounds fromView:_editorContainerView];
     DEBUG_EDITOR_FRAME(@"_editor.clipRect = %@", NSStringFromCGRect(_editor.clipRect));
+}
+
+#pragma mark - UIAccessibility
+- (BOOL)isAccessibilityElement;
+{
+    return YES;
+}
+
+- (NSString *)accessibilityValue;
+{
+    NSString *accessibilityValue = nil;
+    
+    if (self.editing) {
+        accessibilityValue = _editor.accessibilityValue;
+    }
+    else {
+        // Calling _defaultStyleFormattedText to get the appropriate combination of _text and _label, then we just strip the NSString from the NSAttributedString
+        accessibilityValue = [[self _defaultStyleFormattedText] string];
+    }
+    
+    return accessibilityValue;
 }
 
 @end

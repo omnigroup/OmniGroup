@@ -197,7 +197,7 @@ void OQAppendRoundedRectWithMask_c(CFTypeRef ctxtOrPath, CGRect rect, CGFloat ra
         if (penUp && !( mask & edgeAfterCorner[corner] )) {
             continue;
         }
-        OBAnalyzerNotReached(); // The combination of mod arithmetic, array access, and structs boggles clang-sa's mind. It's fixed in ToT clang. <bug:///80329> (Remove OBAnalyzerNotReached from OQAppendRoundedRectWithMask_c)
+        OBAnalyzerNotReached(); // <http://llvm.org/bugs/show_bug.cgi?id=12856>: This combination of array access and structs boggles clang-sa's mind. It's fixed in ToT clang. <bug:///80329> (Remove OBAnalyzerNotReached from OQAppendRoundedRectWithMask_c)
         int cornum = corner % 4;
         CGFloat px = points[cornum].x;
         CGFloat py = points[cornum].y;
@@ -334,6 +334,12 @@ void OQDrawCGImageWithScaleCenteredInRect(CGContextRef ctx, CGImageRef image, CG
 void OQPreflightImage(CGImageRef image)
 {
     // Force decoding of the image data up front. This can be useful when we want to ensure that UI interaction isn't slowed down the first time a image comes on screen.
+    // If we keep the decoded image around, we can end up running out of memory pretty quickly, though.
+    // Drawing into a 1x1 image doesn't seem to be enough to decode the image...
+#if 1
+    CGImageRef flattenedImage = OQCopyFlattenedImage(image);
+    CFRelease(flattenedImage);
+#else
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     CGContextRef ctx = CGBitmapContextCreate(NULL, 1, 1, 8/*bitsPerComponent*/, 4/*bytesPerRow*/, colorSpace, kCGImageAlphaNoneSkipFirst);
     CGColorSpaceRelease(colorSpace);
@@ -343,6 +349,7 @@ void OQPreflightImage(CGImageRef image)
         CGContextDrawImage(ctx, CGRectMake(0, 0, 1, 1), image);
         CGContextRelease(ctx);
     }
+#endif
 }
 
 CGImageRef OQCopyFlattenedImage(CGImageRef image)

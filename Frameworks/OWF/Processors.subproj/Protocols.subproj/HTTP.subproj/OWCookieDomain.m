@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,8 +62,6 @@ static inline void _locked_checkCookiesLoaded()
 }
 
 @interface OWCookieDomain (PrivateAPI)
-+ (void)controllerDidInitialize:(OFController *)controller;
-+ (void)controllerWillTerminate:(OFController *)controller;
 + (void)saveCookies;
 + (NSString *)cookiePath:(NSString *)fileName;
 + (void)locked_didChange;
@@ -98,7 +96,8 @@ static inline void _locked_checkCookiesLoaded()
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:(id)self];    
+    [[OFController sharedController] queueSelector:@selector(_loadCookies) forObject:(id)self whenStatus:OFControllerInitializedStatus];
+    [[OFController sharedController] queueSelector:@selector(saveCookies) forObject:(id)self whenStatus:OFControllerTerminatingStatus];
 }
 
  + (void)readDefaults;
@@ -570,7 +569,7 @@ static inline void _locked_checkCookiesLoaded()
 
 - (NSComparisonResult)compare:(id)otherObject;
 {
-    if (((OWCookieDomain *)otherObject)->isa != isa)
+    if ([otherObject class] != [self class])
         return NSOrderedAscending;
 
     NSString *otherNameDomain = [(OWCookieDomain *)otherObject nameDomain];
@@ -596,7 +595,7 @@ static inline void _locked_checkCookiesLoaded()
 
 @implementation OWCookieDomain (PrivateAPI)
 
-+ (void)controllerDidInitialize:(OFController *)controller;
++ (void)_loadCookies;
 {
     [self readDefaults];
     
@@ -615,11 +614,6 @@ static inline void _locked_checkCookiesLoaded()
     
     if (OWCookiesDebug)
         NSLog(@"COOKIES: Read cookies");
-}
-
-+ (void)controllerWillTerminate:(OFController *)controller;
-{
-    [self saveCookies];
 }
 
 + (void)saveCookies;

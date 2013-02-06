@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,24 +11,31 @@
 
 @class OWSGMLDTD, OWSGMLTag;
 
+typedef void (^OWSGMLMethodHandler)(id receiver, OWSGMLTag *tag);
+
 @interface OWSGMLMethods : OFObject
-{
-    OWSGMLMethods *parent;
-    NSMutableDictionary *implementationForTagDictionary;
-    NSMutableDictionary *implementationForEndTagDictionary;
-}
 
 - initWithParent:(OWSGMLMethods *)aParent;
 
-- (void)registerSelector:(SEL)selector forTagName:(NSString *)tagName;
-- (void)registerSelector:(SEL)selector forEndTagName:(NSString *)tagName;
-- (void)registerMethod:(NSString *)name forTagName:(NSString *)tagName;
-- (void)registerMethod:(NSString *)name forEndTagName:(NSString *)tagName;
+- (void)registerTagName:(NSString *)tagName startHandler:(OWSGMLMethodHandler)handler;
+- (void)registerTagName:(NSString *)tagName endHandler:(OWSGMLMethodHandler)handler;
 
 - (NSDictionary *)implementationForTagDictionary;
 - (NSDictionary *)implementationForEndTagDictionary;
 
 @end
+
+#define OWSGMLMethodStartHandler(cls, methodName, tagName) do { \
+  [methods registerTagName:@#tagName startHandler:^(cls *processor, OWSGMLTag *tag){ \
+        [processor process ## methodName ## Tag:tag]; \
+  }]; \
+} while(0)
+
+#define OWSGMLMethodEndHandler(cls, methodName, tagName) do { \
+    [methods registerTagName:@#tagName endHandler:^(cls *processor, OWSGMLTag *tag){ \
+        [processor process ## methodName ## Tag:tag]; \
+    }]; \
+} while(0)
 
 @interface OWSGMLMethods (DTD)
 - (void)registerTagsWithDTD:(OWSGMLDTD *)aDTD;

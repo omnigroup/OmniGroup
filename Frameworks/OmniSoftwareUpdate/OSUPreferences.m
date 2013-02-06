@@ -1,4 +1,4 @@
-// Copyright 2001-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,13 +73,11 @@ static OFPreference *visibleTracks = nil;
         [ignorance addObject:itemRepr];
         [ignorance sortUsingSelector:@selector(compare:)];
         [currentlyIgnored setArrayValue:ignorance];
-        [[NSUserDefaults standardUserDefaults] autoSynchronize];
     } else if (!shouldBeIgnored && [ignorance containsObject:itemRepr]) {
         [ignorance removeObject:itemRepr];
         [currentlyIgnored setArrayValue:ignorance];
         if (![currentlyIgnored hasNonDefaultValue])
             [currentlyIgnored restoreDefaultValue];
-        [[NSUserDefaults standardUserDefaults] autoSynchronize];
     }
     
     [ignorance release];

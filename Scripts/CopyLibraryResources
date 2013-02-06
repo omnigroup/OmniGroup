@@ -15,6 +15,25 @@
 # resources for those libraries and merges them into your app bundle.
 
 require 'fileutils'
+require 'optparse'
+
+ExcludePatterns = []
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: #{File.basename($0)} [options]"
+  opts.on('--exclude pattern', 'Exclude files matching pattern when copying library resources') do |pattern|
+    re = Regexp.new(pattern)
+    ExcludePatterns << re
+    ExcludePatterns.uniq!
+  end
+  opts.on('-h', '--help', 'Display this screen') do
+    puts opts
+    exit 1
+  end
+end
+
+optparse.parse!
+ExcludePatterns.freeze
 
 # We expect each of the static libraries to copy any resources into this directory, under their product name.
 ResourcesRoot = "#{ENV["CONFIGURATION_BUILD_DIR"]}/Resources"
@@ -81,6 +100,18 @@ StaticLibraryResourceDirectories.each {|dirname|
     end
     
     sources.each {|source|
+      is_excluded = false
+      ExcludePatterns.each {|re|
+        if re.match(File.basename(source))
+          is_excluded = true
+          break
+        end
+      }
+      
+      if (is_excluded)
+        STDERR.print "  skipping excluded item #{source}"
+        next
+      end
       
       case source
       when /\.xib/
@@ -112,7 +143,7 @@ StaticLibraryResourceDirectories.each {|dirname|
         ENV["IBC_MINIMUM_COMPATIBILITY_VERSION"] = ENV["IPHONEOS_DEPLOYMENT_TARGET"]
       
         # Xcode runs the version in /Developer instead of the version in the SDK (it is a shim to pick up the right version based on xcode-select)
-        `set -x; #{ENV["DEVELOPER_USR_DIR"]}/bin/ibtool --errors --warnings --notices --output-format human-readable-text --compile "#{dest_file}" "#{source}"`
+        `set -x; "#{ENV['DEVELOPER_USR_DIR']}/bin/ibtool" --errors --warnings --notices --output-format human-readable-text --compile "#{dest_file}" "#{source}"`
         fail unless $?.exitstatus == 0
       when /\.strings$/
         output_encoding=ENV["STRINGS_FILE_OUTPUT_ENCODING"].downcase

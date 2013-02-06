@@ -440,7 +440,7 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     NSData *data = [NSData dataWithBytesNoCopy:(void *)bytes length:length freeWhenDone:NO];
     
     NSString *errorString = nil;
-    id plist = [NSPropertyListSerialization propertyListFromData:data mutabilityOption:kCFPropertyListImmutable format:NULL errorDescription:&errorString];
+    id plist = [NSPropertyListSerialization propertyListFromData:data mutabilityOption:NSPropertyListImmutable format:NULL errorDescription:&errorString];
     if (!plist) {
         NSLog(@"Unable to archive plist for metadata key '%@': %@", key, errorString);
         return YES;

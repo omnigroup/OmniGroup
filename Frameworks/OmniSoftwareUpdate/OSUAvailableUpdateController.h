@@ -56,6 +56,7 @@ extern NSString * const OSUAvailableUpdateControllerLastCheckUserInitiatedBindin
 - (IBAction)installSelectedItem:(id)sender;
 - (IBAction)ignoreSelectedItem:(id)sender;
 - (IBAction)ignoreCertainTracks:(id)sender;
+- (IBAction)showMoreInformation:(id)sender;
 
 // KVC
 - (OSUItem *)selectedItem;

@@ -1,4 +1,4 @@
-// Copyright 2007-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -154,22 +154,22 @@ static NSInteger sortByScore(id match1, id match2, void *context)
 
 - (OFCompletionMatch *)_preretainedSequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(int)aScore;
 {
-    return [[isa alloc] initWithString:_string wordIndexPath:[_wordIndexPath indexPathByAddingIndex:wordIndex] characterIndexPath:[_characterIndexPath indexPathByAddingIndex:characterIndex] score:_score + aScore];
+    return [[[self class] alloc] initWithString:_string wordIndexPath:[_wordIndexPath indexPathByAddingIndex:wordIndex] characterIndexPath:[_characterIndexPath indexPathByAddingIndex:characterIndex] score:_score + aScore];
 }
 
 - (OFCompletionMatch *)sequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(int)aScore;
 {
-    return [[[isa alloc] initWithString:_string wordIndexPath:[_wordIndexPath indexPathByAddingIndex:wordIndex] characterIndexPath:[_characterIndexPath indexPathByAddingIndex:characterIndex] score:_score + aScore] autorelease];
+    return [[[[self class] alloc] initWithString:_string wordIndexPath:[_wordIndexPath indexPathByAddingIndex:wordIndex] characterIndexPath:[_characterIndexPath indexPathByAddingIndex:characterIndex] score:_score + aScore] autorelease];
 }
 
 - (OFCompletionMatch *)_preretainedSequenceByAddingScore:(int)aScore;
 {
-    return [[isa alloc] initWithString:_string wordIndexPath:_wordIndexPath characterIndexPath:_characterIndexPath score:_score + aScore];
+    return [[[self class] alloc] initWithString:_string wordIndexPath:_wordIndexPath characterIndexPath:_characterIndexPath score:_score + aScore];
 }
 
 - (OFCompletionMatch *)sequenceByAddingScore:(int)aScore;
 {
-    return [[[isa alloc] initWithString:_string wordIndexPath:_wordIndexPath characterIndexPath:_characterIndexPath score:_score + aScore] autorelease];
+    return [[[[self class] alloc] initWithString:_string wordIndexPath:_wordIndexPath characterIndexPath:_characterIndexPath score:_score + aScore] autorelease];
 }
 
 - (NSString *)string;
@@ -290,7 +290,7 @@ static NSString *_quoteXML(NSString *string)
     return debugDictionary;
 }
 
-static NSInteger CompletionScoreFullMatch, CompletionScorePhraseStart, CompletionScorePhraseEnd, CompletionScoreConsecutiveCharacter, CompletionScoreConsecutiveWord, CompletionScoreWordStart, CompletionScoreCapitalLetter;
+static int CompletionScoreFullMatch, CompletionScorePhraseStart, CompletionScorePhraseEnd, CompletionScoreConsecutiveCharacter, CompletionScoreConsecutiveWord, CompletionScoreWordStart, CompletionScoreCapitalLetter;
 static OFCharacterSet *whitespaceOFCharacterSet, *uppercaseLetterOFCharacterSet;
 
 static void filterScoreInit(void)
@@ -302,13 +302,13 @@ static void filterScoreInit(void)
     uppercaseLetterOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:[NSCharacterSet uppercaseLetterCharacterSet]];
     
     OFPreferenceWrapper *preferences = [OFPreferenceWrapper sharedPreferenceWrapper];
-    CompletionScoreFullMatch = [preferences integerForKey:@"OFCompletionMatchScoreForFullMatch"];
-    CompletionScorePhraseStart = [preferences integerForKey:@"OFCompletionMatchScoreForPhraseStart"];
-    CompletionScorePhraseEnd = [preferences integerForKey:@"OFCompletionMatchScoreForPhraseEnd"];
-    CompletionScoreConsecutiveCharacter = [preferences integerForKey:@"OFCompletionMatchScoreForConsecutiveCharacter"];
-    CompletionScoreConsecutiveWord = [preferences integerForKey:@"OFCompletionMatchScoreForConsecutiveWord"];
-    CompletionScoreWordStart = [preferences integerForKey:@"OFCompletionMatchScoreForWordStart"];
-    CompletionScoreCapitalLetter = [preferences integerForKey:@"OFCompletionMatchScoreForCapitalLetter"];
+    CompletionScoreFullMatch = [preferences intForKey:@"OFCompletionMatchScoreForFullMatch"];
+    CompletionScorePhraseStart = [preferences intForKey:@"OFCompletionMatchScoreForPhraseStart"];
+    CompletionScorePhraseEnd = [preferences intForKey:@"OFCompletionMatchScoreForPhraseEnd"];
+    CompletionScoreConsecutiveCharacter = [preferences intForKey:@"OFCompletionMatchScoreForConsecutiveCharacter"];
+    CompletionScoreConsecutiveWord = [preferences intForKey:@"OFCompletionMatchScoreForConsecutiveWord"];
+    CompletionScoreWordStart = [preferences intForKey:@"OFCompletionMatchScoreForWordStart"];
+    CompletionScoreCapitalLetter = [preferences intForKey:@"OFCompletionMatchScoreForCapitalLetter"];
 }
 
 static BOOL calculateIndexesOfLastMatchesInName(

@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,9 +29,6 @@ RCS_ID("$Id$")
 
 - (OWFileInfo *)fileInfoForLine:(NSString *)line;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
     OWFileInfo *fileInfo;
     NSScanner *lineScanner;
     NSString *directoryFlag, *permissions = nil;
@@ -73,7 +70,7 @@ RCS_ID("$Id$")
     timeSeparatorRange = [timeOrYear rangeOfString:@":"];
     if (timeSeparatorRange.length) {
         NSCalendarDate *now = (NSCalendarDate *)[NSCalendarDate date];
-	dateString = [NSString stringWithFormat:@"%@ %@ %@ %d", month, day, timeOrYear, [now yearOfCommonEra]];
+	dateString = [NSString stringWithFormat:@"%@ %@ %@ %ld", month, day, timeOrYear, [now yearOfCommonEra]];
 	changeDate = [NSCalendarDate dateWithString:dateString calendarFormat:@"%b %d %H:%M %Y"];
         
         // deal with year boundaries
@@ -99,7 +96,6 @@ RCS_ID("$Id$")
                                     lastChangeDate:changeDate];
 
     return [fileInfo autorelease];
-#endif
 }
 
 @end

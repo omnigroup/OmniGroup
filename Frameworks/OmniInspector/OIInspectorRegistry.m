@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -129,16 +129,29 @@ static NSString *inspectorDefaultsVersion = nil;
     return sharedInspectorClass;
 }
 
++ (BOOL)allowsEmptyInspectorList;
+{
+    // By default, applications which link against OmniInspector out of necessity can opt-out by including an empty "OIInspectors" list in its Info.plist.
+    //
+    // An application which uses OmniInspector, but has an empty inspector list (e.g. OmniGraffle) should override this to return YES.
+    
+    return NO;
+}
+
 + (OIInspectorRegistry *)sharedInspector;
 {
     static OIInspectorRegistry *sharedInspector = nil;
 
-    if (sharedInspector == nil) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         sharedInspector = [[[self sharedInspectorClass] alloc] init];
-        [OAWindowCascade addDataSource:sharedInspector];
-        [OAWindowCascade avoidFontPanel];
-        [OAWindowCascade avoidColorPanel];
-    }
+        if (sharedInspector) {
+            [OAWindowCascade addDataSource:sharedInspector];
+            [OAWindowCascade avoidFontPanel];
+            [OAWindowCascade avoidColorPanel];
+        }
+    });
+
     return sharedInspector;
 }
 
@@ -310,7 +323,9 @@ static NSMutableArray *hiddenPanels = nil;
 
 - init
 {
-    [super init];
+    self = [super init];
+    if (!self)
+        return nil;
     
     _applicationDidFinishRestoringWindows = NO;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidFinishRestoringWindowsNotification:) name:(NSAppKitVersionNumber >= OAAppKitVersionNumber10_7) ? @"NSApplicationDidFinishRestoringWindowsNotification" : NSApplicationDidFinishLaunchingNotification object:nil];
@@ -345,6 +360,11 @@ static NSMutableArray *hiddenPanels = nil;
         OBASSERT([mainBundle pathForResource:@"Inspectors" ofType:@"plist"] == nil);  // Catch stupid mistakes
     }
     
+    if (![[self class] allowsEmptyInspectorList] && (inspectorPlists == nil || [inspectorPlists count] == 0)) {
+        [self release];
+        return nil;
+    }
+
     if (inspectorWidthString) {
         float specifiedInspectorWidth = [inspectorWidthString floatValue];
         inspectorWidth = MAX(inspectorWidth, specifiedInspectorWidth);
@@ -855,20 +875,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     return topLeft;
 }
 
-
-#pragma mark Weak retain stubs
-
-// We never get deallocated, so we don't really need to implement the weak retain API.
-- (void)incrementWeakRetainCount { }
-- (void)decrementWeakRetainCount { }
-- (id)strongRetain { return [self retain]; }
-- (void)invalidateWeakRetains
-{
-    [[OFController sharedController] removeObserver:self];
-}
-
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private
 
 + (NSString *)_workspacesHelpURL;
 {

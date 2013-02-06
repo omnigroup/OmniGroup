@@ -21,40 +21,10 @@ typedef struct {
     CFStringRef name;
 } OUIEnumName;
 
-__private_extern__ const OUIEnumName OUITextDirectionEnumNames[], OUITextSelectionGranularityNames[];
-__private_extern__ NSString *OUINameOfEnum(NSInteger v, const OUIEnumName *ns);
+OB_HIDDEN extern const OUIEnumName OUITextDirectionEnumNames[], OUITextSelectionGranularityNames[];
+NSString *OUINameOfEnum(NSInteger v, const OUIEnumName *ns) OB_HIDDEN;
 
 #define OUITextDirectionName(d) OUINameOfEnum(d, OUITextDirectionEnumNames)
 #define OUISelectionGranularityName(g) OUINameOfEnum(g, OUITextSelectionGranularityNames)
-
-static inline void main_async(void (^block)(void)) {
-    dispatch_async(dispatch_get_main_queue(), block);
-}
-static inline void main_sync(void (^block)(void)) {
-    if ([NSThread isMainThread])
-        block(); // else we'll deadlock since dispatch_sync doesn't check for this
-    else
-        dispatch_sync(dispatch_get_main_queue(), block);
-}
-
-#if 0 && defined(DEBUG)
-    #define DEBUG_PREVIEW_DISPLAY(format, ...) NSLog(@"PREVIEW: " format, ## __VA_ARGS__)
-#else
-    #define DEBUG_PREVIEW_DISPLAY(format, ...)
-#endif
-
-#if 0 && defined(DEBUG)
-    #define DEBUG_PREVIEW_GENERATION(format, ...) NSLog(@"PREVIEW: " format, ## __VA_ARGS__)
-#else
-    #define DEBUG_PREVIEW_GENERATION(format, ...)
-#endif
-
-#if 0 && defined(DEBUG)
-    #define DEBUG_DOCUMENT_DEFINED 1
-    #define DEBUG_DOCUMENT(format, ...) NSLog(@"DOCUMENT: " format, ## __VA_ARGS__)
-#else
-    #define DEBUG_DOCUMENT_DEFINED 0
-    #define DEBUG_DOCUMENT(format, ...)
-#endif
 
 #endif

@@ -506,6 +506,76 @@ static void describeSecKeyItem(SecKeychainItemRef item, SecItemClass itemClass, 
     }
 }
 
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7 && ( !defined(AVOID_SecItemCopyMatching) || defined(OMNI_ASSERTIONS_ON) )
+
+static CFTypeRef secClassFromCFTypeID(CFTypeID what)
+{
+    if (what == SecKeyGetTypeID())
+        return kSecClassKey;
+    else if (what == SecCertificateGetTypeID())
+        return kSecClassCertificate;
+    else if (what == SecIdentityGetTypeID())
+        return kSecClassIdentity;
+    else
+        return NULL; // Will probably cause SecItemCopyMatching() to fail, but might as well try
+}
+
+static BOOL already_whined = NO;
+static void whine_once(unsigned int lineno)
+{
+    if (!already_whined) {
+        already_whined = YES;
+        
+        NSLog(@"[%u] Working around RADAR 10155924", lineno);
+    }
+}
+#define WHINE whine_once(__LINE__)
+
+static CFDictionaryRef secItemCopySingleSanityCheck(SecKeyRef queryKey, CFTypeRef result)
+{
+    if (!result)
+        return NULL;
+    
+    if (CFGetTypeID(result) != CFArrayGetTypeID())
+        return NULL;
+    
+    // This function is mostly here to guard against RADAR 10155924, in which SecItemCopyMatching() returns keys other than the one it was asked about (often several at a time), or occasionally claims the key you just handed it doesn't exist.
+    CFIndex count = CFArrayGetCount((CFArrayRef)result);
+    if (count != 1) {
+        // SecItemCopyMatching() usually doesn't actually work correctly.
+        WHINE;
+        return NULL;
+    }
+    
+    CFDictionaryRef info = CFArrayGetValueAtIndex((CFArrayRef)result, 0);
+    if (CFGetTypeID(info) != CFDictionaryGetTypeID()) {
+        // I haven't seen this happen, but I don't really trust SecItemCopyMatching
+        WHINE;
+        return NULL;
+    }
+    
+    CFTypeRef returnedRef;
+    if (!CFDictionaryGetValueIfPresent(info, kSecValueRef, &returnedRef) || returnedRef != queryKey) {
+        WHINE;
+        return NULL;
+    }
+    
+    CFTypeRef returnedClass;
+    if (!CFDictionaryGetValueIfPresent(info, kSecClass, &returnedClass)) {
+        WHINE;
+        return NULL;
+    }
+    
+    CFTypeRef expectedClass = secClassFromCFTypeID(CFGetTypeID(queryKey));
+    if (returnedClass == NULL || (expectedClass != NULL && returnedClass != expectedClass)) {
+        WHINE;
+        return NULL;
+    }
+    
+    // Can't prove that it's bad, might as well use it *sigh*
+    return info;
+}
+#endif
 
 #if !defined(AVOID_SecItemCopyMatching) && defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
 
@@ -525,15 +595,7 @@ static BOOL describeSecItemLion(CFTypeRef item, CFTypeID what, NSMutableString *
 {
     /* We need to look up the class of the item and tell SecItemCopyMatching() that that's the class we're interested in. You'd think it would be able to do that itself... */
     
-    CFTypeRef secClass;
-    if (what == SecKeyGetTypeID())
-        secClass = kSecClassKey;
-    else if (what == SecCertificateGetTypeID())
-        secClass = kSecClassCertificate;
-    else if (what == SecIdentityGetTypeID())
-        secClass = kSecClassIdentity;
-    else
-        secClass = NULL; // Will probably cause SecItemCopyMatching() to fail, but might as well try    
+    CFTypeRef secClass = secClassFromCFType(what);
     
     /* We use kSecUseItemList because it works, although the documentation suggests we should use kSecMatchItemList (kSecUseItemList is in "Other Constants", which isn't listed as one of the sets of constants SecItemCopyMatching() looks at). */
     NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -546,22 +608,14 @@ static BOOL describeSecItemLion(CFTypeRef item, CFTypeID what, NSMutableString *
                            nil];
     CFTypeRef result = NULL;
     OSStatus err = SecItemCopyMatching((CFDictionaryRef)query, &result);
-    if (err != noErr) {
+    if (err != noErr || !result) {
         NSLog(@"SecItemCopyMatching(%@) -> %@", query, OFOSStatusDescription(err));
     }
     
-    NSLog(@"kSecReturnAttributes(%@) -> %@", query, [(id)result description]);
+    // NSLog(@"kSecReturnAttributes(%@) -> %@", query, [(id)result description]);
     
-    if (CFGetTypeID(result) != CFArrayGetTypeID() ||
-        CFArrayGetCount(result) != 1) {
-        // SecItemCopyMatching() usually doesn't actually work correctly.
-        CFRelease(result);
-        return NO;
-    }
-    
-    CFDictionaryRef attrDict = CFArrayGetValueAtIndex(result, 0);
-    if (CFGetTypeID(attrDict) != CFDictionaryGetTypeID()) {
-        // I haven't seen this happen, but I don't really trust SecItemCopyMatching
+    CFDictionaryRef attrDict = secItemCopySingleSanityCheck(item, result);
+    if (!attrDict) {
         CFRelease(result);
         return NO;
     }
@@ -629,38 +683,110 @@ static BOOL describeSecItemLion(CFTypeRef item, CFTypeID what, NSMutableString *
 
 #endif /* 10.7 and above */
 
+static int OFSecKeyGetGroupSize_cssmdb(SecKeyRef k);
+static int OFSecKeyGetGroupSize_csp(SecKeyRef k);
+
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7 && ( !defined(AVOID_SecItemCopyMatching) || defined(OMNI_ASSERTIONS_ON) )
+
+static int OFSecKeyGetGroupSize_copymatching(SecKeyRef k)
+{
+    OSStatus oserr;
+    
+    CFTypeRef secClass = secClassFromCFTypeID(CFGetTypeID(k));
+    
+    /* We use kSecUseItemList+kSecMatchItemList because it sometimes works, although the documentation suggests we should use kSecMatchItemList (kSecUseItemList is in "Other Constants", which isn't listed as one of the sets of constants SecItemCopyMatching() looks at). This set of parameters is chosen because it tickles SecItemCopyMatching()'s bugs in a detectable way--- it tends to return information about the wrong key, and we'd rather fail here than return garbage. */
+    NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
+                           [NSArray arrayWithObject:(id)k], (id)kSecUseItemList,
+                           [NSArray arrayWithObject:(id)k], (id)kSecMatchItemList,
+                           (id)kCFBooleanTrue, (id)kSecReturnAttributes,
+                           (id)kCFBooleanTrue, (id)kSecReturnRef,
+                           (id)kSecMatchLimitAll, (id)kSecMatchLimit,
+                           (id)secClass, (id)kSecClass,  // Note secClass is last since it may be nil
+                           nil];
+    CFTypeRef result = NULL;
+    oserr = SecItemCopyMatching((CFDictionaryRef)query, &result);
+    if (oserr != noErr || !result) {
+        if (oserr == errSecItemNotFound) {
+            WHINE;
+        } else {
+#ifdef DEBUG
+            NSLog(@"SecItemCopyMatching(%@) -> %@", query, OFOSStatusDescription(oserr));
+#endif
+        }
+        return -1;
+    }
+
+    CFDictionaryRef info;
+    int bits = -1;
+    CFNumberRef bitSize = NULL;
+    if (!(info = secItemCopySingleSanityCheck(k, result))) {
+        bits = -1;
+    } else if (!CFDictionaryGetValueIfPresent(info, kSecAttrKeySizeInBits, (const void **)&bitSize)) {
+        WHINE;
+        bits = -1;
+    } else if (!bitSize || !(CFGetTypeID(bitSize) == CFNumberGetTypeID())) {
+        /* Remember, SecItemCopyMatching() is extremely buggy, don't trust it */
+        WHINE;
+        bits = -1;
+    } else if (!CFNumberGetValue(bitSize, kCFNumberIntType, &bits)) {
+        bits = -1;
+    } else if (bits < 160) {
+        // The smallest key size we expect to see is ECDSA over p256
+        WHINE;
+        bits = -1;
+    }
+    
+    CFRelease(result);
+    
+    return bits;
+}
+#endif
+
 int OFSecKeyGetGroupSize(SecKeyRef k)
 {
-    /* In order to correctly format DSA and ECDSA signatures, we need to know the key's "size" --- the number of bits it takes to represent a member of the generated group (aka the number of bits in the largest exponent the algorithm will use). On 10.6, 10.7, and some 10.8 betas, this information is returned by SecKeyGetBlockSize(). In 10.8, though, that function's behavior changed to return some other number (unclear what). Here we use SecKeychainItemCopyAttributesAndData(); if SecItemCopyMatching() starts to work in some future OS release we could switch to that instead. 
+    /* In order to correctly format DSA and ECDSA signatures, we need to know the key's "size" --- the number of bits it takes to represent a member of the generated group (aka the number of bits in the largest exponent the algorithm will use). On 10.6, 10.7, and some 10.8 betas, this information is returned by SecKeyGetBlockSize(). In 10.8, though, that function's behavior changed to return some other number (unclear what, although the documentation now indicates that it wasn't ever supposed to return the value it was returning in 10.6 and 10.7). Here we use SecKeyGetCSSMKey() or SecKeychainItemCopyAttributesAndData(); if SecItemCopyMatching() starts to work in some future OS release we could switch to that instead.
      
      RADAR references:
          SecItemCopyMatching - 10155924
          SecKeyGetBlockSize  - 11765613
+         No better API       - 11840882
      */
-
-    OSStatus oserr;
-    SecKeychainAttributeList *returnedAttributes;
-    static const UInt32 keyAttributeCount = 2;
-    static const UInt32 keyAttributeTags[2]     = { kSecKeyKeyType, kSecKeyKeySizeInBits };
-    static const UInt32 keyAttributeFormats[2]  = { CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32 };
-        
-    SecKeychainAttributeInfo queryAttributes = { keyAttributeCount, (UInt32 *)keyAttributeTags, (UInt32 *)keyAttributeFormats };
-        
-    returnedAttributes = NULL;
-    oserr = SecKeychainItemCopyAttributesAndData((SecKeychainItemRef)k, &queryAttributes, NULL, &returnedAttributes, NULL, NULL);
-    if (oserr == noErr) {
-        UInt32 v;
-        int result;
-        if (uint32attr(returnedAttributes, kSecKeyKeySizeInBits, &v))
-            result = v;
-        else
-            result = -1;
-        SecKeychainItemFreeAttributesAndData(returnedAttributes, NULL);
-        return result;
-    }
     
-    return -1;
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7 && ( !defined(AVOID_SecItemCopyMatching) || defined(OMNI_ASSERTIONS_ON) )
+    int lion_result = OFSecKeyGetGroupSize_copymatching(k);
+#if !defined(OMNI_ASSERTIONS_ON)
+    if (lion_result > 0)
+        return lion_result;
+#endif
+#endif
+
+    int csp_result = OFSecKeyGetGroupSize_csp(k);
+#if !defined(OMNI_ASSERTIONS_ON)
+    if (csp_result > 0)
+        return csp_result;
+#endif
+    
+    int cssmdb_result = OFSecKeyGetGroupSize_cssmdb(k);
+#if !defined(OMNI_ASSERTIONS_ON)
+    if (cssmdb_result > 0)
+        return cssmdb_result;
+#endif
+    
+    
+#ifdef OMNI_ASSERTIONS_ON
+    if (csp_result > 0  && cssmdb_result > 0)   { OBASSERT(csp_result  == cssmdb_result); }
+#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7)
+    if (lion_result > 0 && csp_result > 0)      { OBASSERT(lion_result == csp_result);    }
+    if (lion_result > 0 && cssmdb_result > 0)   { OBASSERT(lion_result == cssmdb_result); }
+    
+    
+    if (lion_result > 0) return lion_result;
+#endif
+#endif
+    if (csp_result > 0) return csp_result;
+    return cssmdb_result;
 }
+
 
 #pragma mark X.509 Certificate Utilities
 
@@ -940,111 +1066,6 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
     return testCertificates;
 }
 
-static const struct { SecTrustResultType code; NSString *display; } results[] = {
-    { kSecTrustResultInvalid, @"Invalid" },
-    { kSecTrustResultProceed, @"Proceed" },
-    { kSecTrustResultConfirm, @"Confirm" },
-    { kSecTrustResultDeny, @"Deny" },
-    { kSecTrustResultUnspecified, @"Unspecified" },
-    { kSecTrustResultRecoverableTrustFailure, @"RecoverableTrustFailure" },
-    { kSecTrustResultFatalTrustFailure, @"FatalTrustFailure" },
-    { kSecTrustResultOtherError, @"OtherError" },
-    { 0, nil }
-};
-
-#if OF_ENABLE_CDSA
-    
-static const struct { CSSM_TP_APPLE_CERT_STATUS bit; NSString *display; } statusBits[] = {
-    { CSSM_CERT_STATUS_EXPIRED, @"EXPIRED" },
-    { CSSM_CERT_STATUS_NOT_VALID_YET, @"NOT_VALID_YET" },
-    { CSSM_CERT_STATUS_IS_IN_INPUT_CERTS, @"IS_IN_INPUT_CERTS" },
-    { CSSM_CERT_STATUS_IS_IN_ANCHORS, @"IS_IN_ANCHORS" },
-    { CSSM_CERT_STATUS_IS_ROOT, @"IS_ROOT" },
-    { CSSM_CERT_STATUS_IS_FROM_NET, @"IS_FROM_NET" },
-    { CSSM_CERT_STATUS_TRUST_SETTINGS_FOUND_USER, @"SETTINGS_FOUND_USER" },
-    { CSSM_CERT_STATUS_TRUST_SETTINGS_FOUND_ADMIN, @"SETTINGS_FOUND_ADMIN" },
-    { CSSM_CERT_STATUS_TRUST_SETTINGS_FOUND_SYSTEM, @"SETTINGS_FOUND_SYSTEM" },
-    { CSSM_CERT_STATUS_TRUST_SETTINGS_TRUST, @"SETTINGS_TRUST" },
-    { CSSM_CERT_STATUS_TRUST_SETTINGS_DENY, @"SETTINGS_DENY" },
-    { CSSM_CERT_STATUS_TRUST_SETTINGS_IGNORED_ERROR, @"SETTINGS_IGNORED_ERROR" },
-    { 0, nil }
-};
-
-NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext)
-{
-    SecTrustResultType trustResult;
-    CFArrayRef chain = NULL;
-    CSSM_TP_APPLE_EVIDENCE_INFO *stats = NULL;
-    if (SecTrustGetResult(evaluationContext, &trustResult, &chain, &stats) != noErr) {
-        return @"[SecTrustGetResult failure]";
-    }
-    
-    NSMutableString *buf = [NSMutableString stringWithFormat:@"Trust result = %d", (int)trustResult];
-    for(int i = 0; results[i].display; i++) {
-        if(results[i].code == trustResult) {
-            [buf appendFormat:@" (%@)", results[i].display];
-        }
-    }
-
-    for(CFIndex i = 0; i < CFArrayGetCount(chain); i++) {
-        SecCertificateRef c = (SecCertificateRef)CFArrayGetValueAtIndex(chain, i);
-        CFStringRef cert = CFCopyDescription(c);
-        [buf appendFormat:@"\n   %@: status=%08x ", cert, stats[i].StatusBits];
-        CFRelease(cert);
-        NSMutableArray *codez = [NSMutableArray array];
-        
-        for(int b = 0; statusBits[b].display; b ++) {
-            if ((statusBits[b].bit & stats[i].StatusBits) == statusBits[b].bit)
-                [codez addObject:statusBits[b].display];
-        }
-        if ([codez count]) {
-            [buf appendFormat:@"(%@) ", [codez componentsJoinedByComma]];
-            [codez removeAllObjects];
-        }
-        
-        for(unsigned int ret = 0; ret < stats[i].NumStatusCodes; ret++)
-            [codez addObject:OFStringFromCSSMReturn(stats[i].StatusCodes[ret])];
-    }
-    
-    CFRelease(chain);
-    
-    return buf;
-}
-    
-#else
-
-NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext)
-{
-    OSStatus err;
-    SecTrustResultType trustResult;
-    
-    err = SecTrustGetTrustResult(evaluationContext, &trustResult);
-    if (err != noErr) {
-        return [NSString stringWithFormat:@"[SecTrustGetTrustResult failure: %@]", OFOSStatusDescription(err)];
-    }
-    
-    NSMutableString *buf = [NSMutableString stringWithFormat:@"Trust result = %d", (int)trustResult];
-    for(int i = 0; results[i].display; i++) {
-        if(results[i].code == trustResult) {
-            [buf appendFormat:@" (%@)", results[i].display];
-        }
-    }
- 
-    CFArrayRef certProperties = SecTrustCopyProperties(evaluationContext);
-    for(CFIndex i = 0; i < CFArrayGetCount(certProperties); i++) {
-        NSDictionary *c = (NSDictionary *)CFArrayGetValueAtIndex(certProperties, i);
-        [buf appendFormat:@"\n  "];
-        for (NSString *k in c) {
-            [buf appendFormat:@" %@=%@", k, [[c objectForKey:k] description]];
-        }
-    }
-    CFRelease(certProperties);
-    
-    return buf;
-}
-
-#endif
-    
 NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputFormat_, NSError **outError)
 {
     NSData *pemFile = [[NSData alloc] initWithContentsOfFile:path options:0 error:outError];
@@ -1104,3 +1125,58 @@ NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputForma
     return [NSMakeCollectable(outItems) autorelease];
 }
                                  
+                                 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#else
+// Annoyingly, Apple's GCC doesn't understand "GCC diagnostic push". This code is at the end of the file to minimize the amount of other code unintentionally covered by the pragma here.
+//#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wdeprecated-declarations"
+#endif
+    
+    
+static int OFSecKeyGetGroupSize_cssmdb(SecKeyRef k)
+{
+    /* SecKeychainItemCopyAttributesAndData() is not marked as deprecated on 10.7, but that's presumably an oversight on Apple's part, since it uses the CSSM_DB constants. Anyway, it only works for keys that are in a keychain, not for unattached keys. */
+    OSStatus oserr;
+    SecKeychainAttributeList *returnedAttributes;
+    static const UInt32 keyAttributeCount = 2;
+    static const UInt32 keyAttributeTags[2]     = { kSecKeyKeyType, kSecKeyKeySizeInBits };
+    static const UInt32 keyAttributeFormats[2]  = { CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32 };
+    
+    SecKeychainAttributeInfo queryAttributes = { keyAttributeCount, (UInt32 *)keyAttributeTags, (UInt32 *)keyAttributeFormats };
+    
+    returnedAttributes = NULL;
+    oserr = SecKeychainItemCopyAttributesAndData((SecKeychainItemRef)k, &queryAttributes, NULL, &returnedAttributes, NULL, NULL);
+    if (oserr == noErr) {
+        UInt32 v;
+        int result;
+        if (uint32attr(returnedAttributes, kSecKeyKeySizeInBits, &v))
+            result = v;
+        else
+            result = -1;
+        SecKeychainItemFreeAttributesAndData(returnedAttributes, NULL);
+        return result;
+    }
+    
+    return -1;
+}
+
+static int OFSecKeyGetGroupSize_csp(SecKeyRef k)
+{
+    /* This is the simplest, most reliable, most straightforward, best-documented way to get the information we need; needless to day, it's deprecated. See RADAR 11840882 for a request for a working replacement. */
+    OSStatus oserr;
+    const CSSM_KEY *keyinfo = NULL;
+    oserr = SecKeyGetCSSMKey(k, &keyinfo);
+    
+    if (oserr == noErr &&
+        keyinfo != NULL &&
+        keyinfo->KeyHeader.HeaderVersion == CSSM_KEYHEADER_VERSION &&
+        keyinfo->KeyHeader.LogicalKeySizeInBits > 0) {
+        return keyinfo->KeyHeader.LogicalKeySizeInBits;
+    }
+    
+    return -1;
+}
+

@@ -1,4 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,12 +98,10 @@ RCS_ID("$Id$")
 
 static void _ReachabilityCallBack(SCNetworkReachabilityRef target, SCNetworkConnectionFlags flags, void* info)
 {
-    NSAutoreleasePool * pool = [NSAutoreleasePool new];
-    OFNetReachability *self = (OFNetReachability *)info;
-    
-    [self->_delegate reachabilityDidUpdate:self reachable:(IS_REACHABLE(flags) ? YES : NO) usingCell:(IS_CELL(flags) ? YES : NO)];
-    
-    [pool drain];
+    @autoreleasepool {
+        OFNetReachability *self = (OFNetReachability *)info;
+        [self->_delegate reachabilityDidUpdate:self reachable:(IS_REACHABLE(flags) ? YES : NO) usingCell:(IS_CELL(flags) ? YES : NO)];
+    }
 }
 
 @synthesize delegate = _delegate;

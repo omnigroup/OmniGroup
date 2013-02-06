@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,7 +69,6 @@ static NSLock *instanceCountLock;
     if (!(self = [super init]))
         return nil;
 
-    OFWeakRetainConcreteImplementation_INIT;
     scheduleQueue = [[NSMutableArray alloc] init];
     scheduleLock = [[NSRecursiveLock alloc] init];
 
@@ -80,7 +79,6 @@ static NSLock *instanceCountLock;
 
 - (void)dealloc;
 {
-    OFWeakRetainConcreteImplementation_DEALLOC;
     [scheduleQueue release];
     [scheduleLock release];
 #ifdef DEBUG_ALLOCATIONS
@@ -178,15 +176,6 @@ static NSLock *instanceCountLock;
     if (scheduleLock)
         [debugDictionary setObject:scheduleLock forKey:@"scheduleLock"];
     return debugDictionary;
-}
-
-// OFWeakRetain protocol
-
-OFWeakRetainConcreteImplementation_IMPLEMENTATION
-
-- (void)invalidateWeakRetains;
-{
-    [[OFController sharedController] removeObserver:self];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -476,6 +476,24 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
 {
     NSError *error = nil;
     OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithData:nil whitespaceBehavior:IgnoreAllWhitespace() error:&error] autorelease];
+    should(doc == nil);
+}
+
+// On iOS 6.0, the xml parser fails inside parsing the DOCTYPE declaration, and calls our error handler with a NULL userData, whereupon we crash dereferencing that pointer
+- (void)testHTMLContent;
+{
+    NSString *inputString =
+    @"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n"
+    @"<html><head>\n"
+    @"<title>404 Not Found</title>\n"
+    @"</head><body>\n"
+    @"<h1>Not Found</h1>\n"
+    @"<p>The requested URL /omniplan+sync3/Folder Space/usage/ was not found on this server.</p>\n"
+    @"</body></html>\n";
+    
+    NSData *inputData = [inputString dataUsingEncoding:NSUTF8StringEncoding];
+    //NSError *error = nil;
+    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithData:inputData whitespaceBehavior:[[[OFXMLWhitespaceBehavior alloc] init] autorelease] error:NULL] autorelease];
     should(doc == nil);
 }
 

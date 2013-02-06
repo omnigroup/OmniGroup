@@ -36,8 +36,9 @@ RCS_ID("$Id$")
     if (!(self = [self initWithTitle:[clientRecord title] defaultsArray:defaultsArray controller:controller]))
         return nil;
     
-    if ([clientRecord nibName] != nil)
-        [NSBundle loadNibNamed:[clientRecord nibName] owner:self];
+    NSString *nibName = [clientRecord nibName];
+    if (nibName != nil)
+        [NSBundle loadNibNamed:nibName owner:self];
 
     return self;
 }
@@ -111,9 +112,9 @@ RCS_ID("$Id$")
 
 - (void)dealloc;
 {
-    [controlBox release];
-    [initialFirstResponder release];
-    [lastKeyView release];
+    [_controlBox release];
+    [_initialFirstResponder release];
+    [_lastKeyView release];
     [_title release];
     [_preferences release];
     [super dealloc];
@@ -121,24 +122,11 @@ RCS_ID("$Id$")
 
 // API
 
+@synthesize controlBox = _controlBox;
+@synthesize initialFirstResponder = _initialFirstResponder;
+@synthesize lastKeyView = _lastKeyView;
 @synthesize title = _title;
 @synthesize controller = _nonretained_controller;
-
-/*" The controlBox outlet points to the box that will be transferred into the Preferences window when this preference client is selected. "*/
-- (NSView *)controlBox;
-{
-    return controlBox;
-}
-
-- (NSView *)initialFirstResponder;
-{
-    return initialFirstResponder;
-}
-
-- (NSView *)lastKeyView;
-{
-    return lastKeyView;
-}
 
 /*" Restores all defaults for this preference client to their original installation values. "*/
 - (IBAction)restoreDefaults:(id)sender;
@@ -151,7 +139,7 @@ RCS_ID("$Id$")
     secondaryPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings in this pane to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
     defaultButton = NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button");
     otherButton = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, "alert panel button");
-    NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, [controlBox window], self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), NULL, @"%@", secondaryPrompt);
+    NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, [_controlBox window], self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), NULL, @"%@", secondaryPrompt);
 }
 
 - (void)restoreDefaultsNoPrompt;
@@ -222,7 +210,6 @@ RCS_ID("$Id$")
 - (void)valuesHaveChanged;
 {
     [self updateUI];
-    [[self defaults] autoSynchronize];
 }
 
  // Text delegate methods
@@ -232,16 +219,6 @@ RCS_ID("$Id$")
 - (void)controlTextDidEndEditing:(NSNotification *)notification;
 {
     [self setValueForSender:[notification object]];
-}
-
-
-// NSNibAwaking informal protocol
-
-/*" Be sure to call super if you subclass this "*/
-- (void)awakeFromNib;
-{
-    [super awakeFromNib];
-    [controlBox retain];
 }
 
 @end

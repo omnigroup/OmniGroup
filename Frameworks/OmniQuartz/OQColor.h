@@ -216,3 +216,14 @@ static inline UIColor * __attribute__((overloadable)) OQMakeUIColor(OQWhiteAlpha
 #endif
 
 #endif
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+typedef struct {
+    OQLinearRGBA color1, color2;
+} OQRGBAColorPair;
+
+extern void OQFillRGBAColorPair(OQRGBAColorPair *pair, NSColor *color1, NSColor *color2);
+
+extern const CGFunctionCallbacks OQLinearFunctionCallbacks;
+
+#endif

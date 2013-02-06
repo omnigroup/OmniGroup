@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,7 +78,7 @@ static NSMutableDictionary *openSessions;
 static NSLock *openSessionsLock;
 static NSTimeInterval timeout;
 static NSString *asciiTransferType = @"A";
-//static NSString *imageTransferType = @"I";
+static NSString *imageTransferType = @"I";
 static NSData *crlf, *aSingleSpace;
 static NSString *defaultPassword = nil;
 
@@ -92,8 +92,8 @@ static NSString *defaultPassword = nil;
     openSessions = [[NSMutableDictionary alloc] init];
     openSessionsLock = [[NSLock alloc] init];
     timeout = 120.0; // Overridden in +readDefaults
-    crlf = [[NSData alloc] initWithBytesNoCopy:(void *)crlf_bytes length:2];
-    aSingleSpace = [[NSData alloc] initWithBytesNoCopy:(void *)space_byte length:1];
+    crlf = [[NSData alloc] initWithBytesNoCopy:(void *)crlf_bytes length:2 freeWhenDone:NO];
+    aSingleSpace = [[NSData alloc] initWithBytesNoCopy:(void *)space_byte length:1 freeWhenDone:NO];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contentCacheFlushedNotification:) name:OWContentCacheFlushNotification object:nil];
 }
 
@@ -365,9 +365,6 @@ static NSString *defaultPassword = nil;
 
 - (BOOL)querySystemFeatures
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return NO;
-#if 0
     NSEnumerator *featureEnumerator;
     NSString *feature;
     NSMutableDictionary *receivedFeatures;
@@ -386,20 +383,17 @@ static NSString *defaultPassword = nil;
     [receivedFeatures setObject:@"" forKey:@"FEAT"];
     featureEnumerator = [[lastMessage componentsSeparatedByString:@"\n"] objectEnumerator];
     for(feature = [featureEnumerator nextObject]; feature != nil; feature = [featureEnumerator nextObject]) {
-        NSRange spRange;
-        unsigned int nameStarts, lineLength;
-        NSString *featureName, *featureOptions;
-        
-        spRange = [feature rangeOfCharacterFromSet:nonWhitespaceSet];
+        NSRange spRange = [feature rangeOfCharacterFromSet:nonWhitespaceSet];
         if (spRange.location == 0 || spRange.length == 0) {
             // All feature lines must start with whitespace; other lines are status codes or terminators, which we ignore. We shouldn't see any lines consisting entirely of whitespace, but if we do, we should ignore them also.
             continue;
         }
 
-        nameStarts = spRange.location;
-        lineLength = [feature length];
+        NSUInteger nameStarts = spRange.location;
+        NSUInteger lineLength = [feature length];
         spRange = [feature rangeOfCharacterFromSet:whitespaceSet options:0 range:NSMakeRange(nameStarts, lineLength - nameStarts)];
 
+        NSString *featureName, *featureOptions;
         if (spRange.length == 0) {
             featureName = [feature substringFromIndex:nameStarts];
             featureOptions = @"";
@@ -415,7 +409,6 @@ static NSString *defaultPassword = nil;
     [systemFeatures release];
     systemFeatures = [receivedFeatures copy];
     return YES;
-#endif
 }
 
 //
@@ -482,9 +475,6 @@ static NSString *defaultPassword = nil;
 
 - (BOOL)sendCommand:(NSString *)command argument:(NSData *)arg;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return NO;
-#if 0
     BOOL plainASCII;
     
     if (abortOperation)
@@ -492,14 +482,11 @@ static NSString *defaultPassword = nil;
 
     plainASCII = YES;
     if (arg != nil) {
-        unsigned int octetCount, octetIndex;
-        unsigned const char *octetPointer;
-        
         // Scan through the arg to make sure it doesn't have any metacharacters in it which could cause protocol violations, security holes, etc.
         // While we're at it, check to see whether the arg looks like it's 100% plain ASCII, so we can decide how to log it.
-        octetCount = [arg length];
-        octetPointer = [arg bytes];
-        for(octetIndex = 0; octetIndex < octetCount; octetIndex ++) {
+        NSUInteger octetCount = [arg length];
+        unsigned const char *octetPointer = [arg bytes];
+        for (NSUInteger octetIndex = 0; octetIndex < octetCount; octetIndex ++) {
             int ch = octetPointer[octetIndex];
 
             if (ch < 16) {
@@ -534,7 +521,6 @@ static NSString *defaultPassword = nil;
     [controlSocketStream writeData:crlf];
     [controlSocketStream endBuffering];
     return [self readResponse];
-#endif
 }
 
 //
@@ -818,8 +804,6 @@ static NSString *defaultPassword = nil;
 
 - (void)getFile:(NSString *)path;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     NSString *file;
     NSData *decodedFileName;
     ONSocketStream *inputSocketStream;
@@ -950,9 +934,7 @@ static NSString *defaultPassword = nil;
 	[nonretainedProcessor processedBytes:dataBytesRead ofBytes:contentLength];
 
 	while ((data = [inputSocketStream readData])) {
-	    unsigned int dataLength;
-
-	    dataLength = [data length];
+	    NSUInteger dataLength = [data length];
 	    dataBytesRead += dataLength;
 	    bytesInThisPool += dataLength;
 	    [nonretainedProcessor processedBytes:dataBytesRead ofBytes:contentLength];
@@ -978,13 +960,10 @@ static NSString *defaultPassword = nil;
     [autoreleasePool release];
     if (![self readResponse]) // "226 Transfer complete"
 	[NSException raise:@"RetrieveStopped" format:NSLocalizedStringFromTableInBundle(@"Retrieve of %@ stopped: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error"), file, lastReply];
-#endif
 }    
 	
 - (void)getDirectory:(NSString *)path;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     ONSocketStream *inputSocketStream;
     OWDataStream *outputDataStream;
     OWContent *directoryContent;
@@ -1047,21 +1026,16 @@ static NSString *defaultPassword = nil;
     [outputDataStream release];
     if (![self readResponse]) // "226 Transfer complete"
 	[NSException raise:@"ListAborted" format:NSLocalizedStringFromTableInBundle(@"List stopped: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error"), lastReply];
-#endif
 }
 
 #define BLOCK_SIZE (4096)
 
 - (void)storeData:(NSData *)storeData atPath:(NSString *)path;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
-    NSString *file;
     ONSocketStream *outputSocketStream = nil;
-    unsigned int contentLength;
     NSAutoreleasePool *autoreleasePool = nil;
 
-    file = [OWURL lastPathComponentForPath:path];
+    NSString *file = [OWURL lastPathComponentForPath:path];
 
     [self changeAbsoluteDirectory:[OWURL stringByDeletingLastPathComponentFromPath:path]];
     [self setCurrentTransferType:imageTransferType];
@@ -1075,7 +1049,7 @@ static NSString *defaultPassword = nil;
     }
 
     [nonretainedProcessor setStatusString:NSLocalizedStringFromTableInBundle(@"Storing data", @"OWF", [OWFTPSession bundle], @"ftpsession status")];
-    contentLength = [storeData length];
+    NSUInteger contentLength = [storeData length];
 
     NS_DURING {
         NSData *data;
@@ -1116,7 +1090,6 @@ static NSString *defaultPassword = nil;
     [outputSocketStream release];
     if (![self readResponse]) // "226 Transfer complete"
         [NSException raise:@"StoreAborted" format:NSLocalizedStringFromTableInBundle(@"Store of %@ stopped: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error"), file, lastReply];
-#endif
 }    
 
 - (void)removeFileAtPath:(NSString *)path;

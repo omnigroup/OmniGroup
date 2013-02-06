@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,7 @@
 typedef enum {
     OFXMLParserElementBehaviorParse, // Descend into this element as normal
     OFXMLParserElementBehaviorUnparsed, // Return this entire element as an unparsed data block
+    OFXMLParserElementBehaviorUnparsedReturnContentsOnly, // Return this entire element as an unparsed data block; excludes the open and close element from the data passed to -endUnparsedElementWithQName
     OFXMLParserElementBehaviorSkip, // Skip this entire element.  No start/end callbacks will occur.
 } OFXMLParserElementBehavior;
 

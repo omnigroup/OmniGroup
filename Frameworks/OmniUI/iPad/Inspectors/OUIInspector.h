@@ -42,6 +42,9 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 @property(assign,nonatomic) id <OUIInspectorDelegate> delegate;
 
+// this is exposed so that OG-iPad can swap to the image picker. It probably shouldn't be used for much, if anything else.
+@property(readwrite,retain,nonatomic) UINavigationController *navigationController;
+
 - (BOOL)isEmbededInOtherNavigationController; // Subclass to return YES if you intend to embed the inspector into a your own navigation controller (you might not yet have the navigation controller, though).
 - (UINavigationController *)embeddingNavigationController; // Needed when pushing detail panes with -isEmbededInOtherNavigationController.
 

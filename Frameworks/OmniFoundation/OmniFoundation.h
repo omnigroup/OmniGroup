@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,8 @@
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniFoundation/OFExtent.h>
+#import <OmniFoundation/OFHTTPState.h>
+#import <OmniFoundation/OFHTTPStateMachine.h>
 #import <OmniFoundation/OFKnownKeyDictionaryTemplate.h>
 #import <OmniFoundation/OFMultiValueDictionary.h>
 #import <OmniFoundation/OFMutableKnownKeyDictionary.h>
@@ -36,6 +38,7 @@
 #import <OmniFoundation/OFTimeSpan.h>
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/OFVersionNumber.h>
+#import <OmniFoundation/OFWeakReference.h>
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     #import <OmniFoundation/OFBTree.h>
     #import <OmniFoundation/OFBulkBlockPool.h>
@@ -53,7 +56,6 @@
     #import <OmniFoundation/OFFastMutableData.h>
     #import <OmniFoundation/OFGeometry.h>
     #import <OmniFoundation/OFHeap.h>
-    #import <OmniFoundation/OFImplementationHolder.h>
     #import <OmniFoundation/OFInvocation.h>
     #import <OmniFoundation/OFMatrix.h>
     #import <OmniFoundation/OFMessageQueue.h>
@@ -65,7 +67,6 @@
     #import <OmniFoundation/OFReadWriteLock.h>
     #import <OmniFoundation/OFResourceFork.h>
     #import <OmniFoundation/OFResultHolder.h>
-    #import <OmniFoundation/OFRetainableObject.h>
     #import <OmniFoundation/OFRunLoopQueueProcessor.h>
     #import <OmniFoundation/OFScheduledEvent.h>
     #import <OmniFoundation/OFScheduler.h>
@@ -76,8 +77,6 @@
     #import <OmniFoundation/OFTrie.h>
     #import <OmniFoundation/OFTrieBucket.h>
     #import <OmniFoundation/OFTrieNode.h>
-    #import <OmniFoundation/OFWeakRetainConcreteImplementation.h>
-    #import <OmniFoundation/OFWeakRetainProtocol.h>
 #endif
 
 

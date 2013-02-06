@@ -132,44 +132,6 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f THz", @"OmniFoundation", [OFObject bundle], @"abbreviated string for terahertz format"), rint((double)hz/100000000000.0f)/10.0f];
 }
 
-+ (NSString *)humanReadableStringForTimeInterval:(NSTimeInterval)timeInterval;
-{
-    NSString *intervalString;
-    unsigned long int days, hours, minutes, seconds;
-    BOOL inThePast = NO;
-
-    timeInterval = rint(timeInterval);
-    if (timeInterval < 0) {
-        inThePast = YES;
-        timeInterval = -timeInterval;
-    }
-    days = (unsigned long int)(timeInterval / (24 * 60 * 60));
-    timeInterval -= days * (24 * 60 * 60);
-    hours = (unsigned long int)(timeInterval / (60 * 60));
-    timeInterval -= hours * (60 * 60);
-    minutes = (unsigned long int)(timeInterval / 60);
-    timeInterval -= minutes * 60;
-    seconds = (unsigned long int)timeInterval;
-    
-    if (days > 1)
-        intervalString = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%ld days, %ld:%02ld:%02ld", @"OmniFoundation", [OFObject bundle], @"humanReadableStringForTimeInterval"), days, hours, minutes, seconds];
-    else if (days == 1)
-        intervalString = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%ld day, %ld:%02ld:%02ld", @"OmniFoundation", [OFObject bundle], @"humanReadableStringForTimeInterval"), days, hours, minutes, seconds];
-    else if (hours > 0)
-        intervalString = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%ld:%02ld:%02ld", @"OmniFoundation", [OFObject bundle], @"humanReadableStringForTimeInterval"), hours, minutes, seconds];
-    else if (minutes > 0)
-        intervalString = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%ld:%02ld", @"OmniFoundation", [OFObject bundle], @"humanReadableStringForTimeInterval"), minutes, seconds];
-    else if (seconds > 0)
-        intervalString = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%ld seconds", @"OmniFoundation", [OFObject bundle], @"humanReadableStringForTimeInterval"), seconds];
-    else
-        intervalString = NSLocalizedStringFromTableInBundle(@"right now", @"OmniFoundation", [OFObject bundle], @"humanReadableStringForTimeInterval");
-
-    if (!inThePast)
-        return intervalString;
-    else
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ ago", @"OmniFoundation", [OFObject bundle], @"humanReadableStringForTimeInterval"), intervalString];
-}
-
 + (NSString *)approximateStringForTimeInterval:(NSTimeInterval)interval;
 {
     /* Copied from OWF/Pipelines.subproj/OWTask.m's +HMSStringFromTimeInterval: */

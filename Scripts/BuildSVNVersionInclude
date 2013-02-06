@@ -1,4 +1,4 @@
-#!/bin/zsh -f
+#!/bin/zsh
 #
 # $Id$
 
@@ -13,7 +13,8 @@ Usage () {
     echo >&2 "Usage: $PN [options]"
     echo >&2 "  Options:"
     echo >&2 "    --help                - show the usage"
-    echo >&2 "    --build-versions-txt  - build SVNVersion.txt"
+    echo >&2 "    --build-versions-txt  - build Versions.txt"
+    echo >&2 "    --force               - force rebuild of SVNVersion.h"
     exit 1
 }
 
@@ -31,6 +32,9 @@ do
         --build-versions-txt)
             GENERATE_VERSIONS_TXT=YES
             ;;
+        --force)
+            FORCE_REBUILD=YES
+            ;;
         *)
             Usage
             ;;
@@ -39,13 +43,21 @@ do
 done
 
 BUILD_DATE=`TZ=UTC date +"%Y-%m-%dT%H:%M:%S.000Z"`
+REBUILD=YES
 
-if [ -d .svn ]; then
-    SVNURL=`svn info --xml . | xpath '/info/entry/url/text()' 2>& /dev/null`
+SVNURL=`svn info --xml . | xpath '/info/entry/url/text()' 2>& /dev/null`
+if [ "$SVNURL" != "" ]; then
     if [ -n "$OMNI_VERSIONS" -a -f "$OMNI_VERSIONS" ]; then
         SVNREVISION=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
     else
         SVNREVISION=`svn info --xml . | xpath 'string(/info/entry/@revision)' 2>& /dev/null`
+        CACHED_REVISION=""
+        if [ -f "$PROJECT_DERIVED_FILE_DIR/SVNVersion.h" ]; then
+            CACHED_REVISION=`awk -v IFS=' ' '/^#define SVNREVISION / {print $3}' "$PROJECT_DERIVED_FILE_DIR/SVNVersion.h"`
+        fi
+        if [ "$CACHED_REVISION" = "$SVNREVISION" ]; then
+            REBUILD=$FORCE_REBUILD
+        fi
     fi
 else
     SVNURL="not svn"
@@ -54,17 +66,19 @@ fi
 
 mkdir -p "$PROJECT_DERIVED_FILE_DIR"
 
-(
-	echo -n "#define SVNVERSION @\""
-	echo -n $SVNURL
-	echo -n "@"
-	echo -n $SVNREVISION
-	echo "\""
-
-	echo "#define SVNREVISION $SVNREVISION"
-	echo "#define SVNURL $SVNURL"
-	echo "#define BUILD_DATE @\"$BUILD_DATE\""
-) > "$PROJECT_DERIVED_FILE_DIR/SVNVersion.h"
+if [ "$REBUILD" = "YES" ]; then
+    (
+        echo -n "#define SVNVERSION @\""
+        echo -n $SVNURL
+        echo -n "@"
+        echo -n $SVNREVISION
+        echo "\""
+    
+        echo "#define SVNREVISION $SVNREVISION"
+        echo "#define SVNURL $SVNURL"
+        echo "#define BUILD_DATE @\"$BUILD_DATE\""
+    ) > "$PROJECT_DERIVED_FILE_DIR/SVNVersion.h"
+fi
 
 if [ "$GENERATE_VERSIONS_TXT" = "YES" ]; then
     mkdir -p "$BUILT_PRODUCTS_DIR"

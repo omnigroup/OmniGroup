@@ -26,6 +26,7 @@
 #import <CoreServices/CoreServices.h>
 #import <Security/SecCode.h>
 #import <Security/SecStaticCode.h>
+#import <Security/SecRequirement.h> // For SecRequirementCreateWithString()
 #import <sys/errno.h>
 #import <sys/param.h>
 #import <stdio.h>
@@ -770,7 +771,7 @@ errorReturn:
         default: {
             OBASSERT_NOT_REACHED("-getSandboxed:forApplicationAtURL:error: encountered an unexpected return code from SecCodeCheckValidity()");
 #ifdef DEBUG
-            NSLog(@"_isCurrentProcessSandboxed() should explicitly handle the %"PRI_OSStatus" return code from SecCodeCheckValidity()", sandboxStatus);
+            NSLog(@"_isCurrentProcessSandboxed() should explicitly handle the %@ return code from SecCodeCheckValidity()", OFOSStatusDescription(sandboxStatus));
 #endif
             *outSandboxed = uncertainResult;
             break;

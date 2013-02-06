@@ -267,9 +267,36 @@ static BOOL animateInspectorToggles;
     OBPRECONDITION(window);  // -loadInterface should have been called by this point.
     
     if (needsToggleBeforeDisplay && window) {
+        
+        needsToggleBeforeDisplay = NO;
+        
+        /* Need to reset this flag first, because expanding might cause our inspector to load its interface and lay itself out, thus informing us of the resize and reentering this method.
+         
+         Stack trace (r170537):
+         
+         #186	0x0000000100738437 in -[OIInspectorController prepareWindowForDisplay] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:271
+         #187	0x000000010075a6b0 in -[OITabbedInspector _layoutSelectedTabs] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m:721
+         #188	0x0000000100754fb9 in -[OITabbedInspector awakeFromNib] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m:109
+         #189	0x00007fff8ba07a41 in -[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:] ()
+         #190	0x00007fff8b9fdf73 in loadNib ()
+         #191	0x00007fff8b9fd676 in +[NSBundle(NSNibLoading) _loadNibFile:nameTable:withZone:ownerBundle:] ()
+         #192	0x00007fff8bb9e580 in -[NSBundle(NSNibLoading) loadNibFile:externalNameTable:withZone:] ()
+         #193	0x00000001001a06ac in -[NSBundle(OAExtensions) loadNibNamed:owner:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSBundle-OAExtensions.m:46
+         #194	0x000000010075821a in -[OITabbedInspector inspectorView] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m:477
+         #195	0x0000000100739939 in -[OIInspectorController _inspectorView] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:445
+         #196	0x0000000100739e4a in -[OIInspectorController _setExpandedness:updateInspector:withNewTopLeftPoint:animate:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:479
+         #197	0x0000000100737bb0 in -[OIInspectorController toggleExpandednessWithNewTopLeftPoint:animate:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:211
+         #198	0x0000000100738437 in -[OIInspectorController prepareWindowForDisplay] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:271
+         #199	0x0000000100743bd7 in -[OIInspectorGroup _showGroup] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorGroup.m:799
+         #200	0x000000010073f39e in -[OIInspectorGroup showGroup] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorGroup.m:356
+         #201	0x00007fff88734fb1 in -[NSObject performSelector:] ()
+         #202	0x00007fff887392dc in -[NSArray makeObjectsPerformSelector:] ()
+         #203	0x000000010074bf36 in +[OIInspectorRegistry tabShowHidePanels] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorRegistry.m:182
+         #204	0x000000010075424a in -[OAApplication(OIExtensions) toggleInspectorPanel:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OAApplication-OIExtensions.m:25
+        */
+        
         NSRect windowFrame = [window frame];
         [self toggleExpandednessWithNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame)) animate:NO];
-        needsToggleBeforeDisplay = NO;
     }
     [self updateInspector];
 }

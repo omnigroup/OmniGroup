@@ -14,10 +14,12 @@
 #import <pthread.h>
 #import <QuartzCore/CIContext.h>
 
-#import "OAImageManager.h"
 #import "OAVersion.h"
 
 RCS_ID("$Id$")
+
+NSString * const OADropDownTriangleImageName = @"OADropDownTriangle";
+NSString * const OAInfoTemplateImageName = @"OAInfoTemplate";
 
 @implementation NSImage (OAExtensions)
 
@@ -61,7 +63,11 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 // Called by +[NSImage imageNamed:]
 - (id)replacement_initByReferencingFile:(NSString *)fileName;
 {
-    OBPRECONDITION(fileName != nil);
+    if (fileName == nil) {
+        [self release];
+        return nil;
+    }
+    
     self = original_initByReferencingFile(self, _cmd, fileName);
 
     if (self == nil) {
@@ -95,14 +101,24 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 
 #endif
 
-+ (NSImage *)imageNamed:(NSString *)imageName inBundleForClass:(Class)aClass;
++ (NSImage *)imageNamed:(NSString *)imageName inBundle:(NSBundle *)bundle;
 {
-    return [[OAImageManager sharedImageManager] imageNamed:imageName inBundle:[NSBundle bundleForClass:aClass]];
-}
-
-+ (NSImage *)imageNamed:(NSString *)imageName inBundle:(NSBundle *)aBundle;
-{
-    return [[OAImageManager sharedImageManager] imageNamed:imageName inBundle:aBundle];
+    OBPRECONDITION(![NSString isEmptyString:imageName]);
+    
+    // If we get asked for an image in the app wrapper (or unspecified bundle, which we take to mean the app wrapper), just let +imageNamed: do its thing.
+    if ((bundle == nil) || (bundle == [NSBundle mainBundle])) {
+        return [self imageNamed:imageName];
+    }
+    
+    // Use a bundle-specific name to check for an already-cached copy of the requested image, so that we won't trigger a search of / return an image from the app wrapper.
+    NSString *imageNameInCache = [NSString stringWithFormat:@"%@.%@", [bundle bundleIdentifier], imageName];
+    NSImage *image = [NSImage imageNamed:imageNameInCache];
+    if (![image isValid]) {
+        // If we didn't find the image in the cache, actually try to load it from the bundle (using the original, unmangled name, which is the actual name of the resource), then name it, using our bundle-specific mangled name so that it will be cached without conflicting with any identically-named images in the app wrapper (or in other bundles).
+        image = [bundle imageForResource:imageName];
+        [image setName:imageNameInCache];
+    }
+    return image;
 }
 
 + (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle;
@@ -129,21 +145,18 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
             break;
     }
     
-    OAImageManager *imageMunger = [OAImageManager sharedImageManager];
-    
-    // OAImageManager caches lookup failures, and NSImage caches successes, so it's not a big problem if we try a few variations.
     if (tintSuffix) {
         NSImage *tinted;
         
-        tinted = [imageMunger imageNamed:[NSString stringWithStrings:imageStem, @"-", tintSuffix, nil] inBundle:aBundle];
+        tinted = [self imageNamed:[NSString stringWithStrings:imageStem, @"-", tintSuffix, nil] inBundle:aBundle];
         if (tinted)
             return tinted;
-        tinted = [imageMunger imageNamed:[imageStem stringByAppendingString:tintSuffix] inBundle:aBundle];
+        tinted = [self imageNamed:[imageStem stringByAppendingString:tintSuffix] inBundle:aBundle];
         if (tinted)
             return tinted;
     }
     
-    return [imageMunger imageNamed:imageStem inBundle:aBundle];
+    return [self imageNamed:imageStem inBundle:aBundle];
 }
 
 + (NSImage *)imageForFileType:(NSString *)fileType;
@@ -703,8 +716,12 @@ static void setupTintTable(void)
 }
 
 #pragma mark CoreImage
-
 - (CIImage *)ciImageForContext:(CIContext *)ctxt;
+{
+    return [self ciImageForContext:ctxt scale:1];
+}
+
+- (CIImage *)ciImageForContext:(CIContext *)ctxt scale:(CGFloat)scale;
 {
     /* Check to see if we have an image rep that's easily converted to a CIImage. */
     for (NSImageRep *rep in [self representations]) {
@@ -721,11 +738,15 @@ static void setupTintTable(void)
     
     [NSGraphicsContext saveGraphicsState];
     NSSize mySize = [self size];
+    mySize.width *= scale;
+    mySize.height *= scale;
+    
     CGLayerRef imageLayer = [ctxt createCGLayerWithSize:(CGSize){mySize.width, mySize.height} info:NULL];
     CGContextRef layerContext = CGLayerGetContext(imageLayer);
+    CGContextScaleCTM(layerContext, scale, scale);
     [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithGraphicsPort:layerContext flipped:NO]];
     [self drawAtPoint:(NSPoint){0, 0}
-             fromRect:(NSRect){{0, 0}, mySize}
+             fromRect:(NSRect){{0, 0}, [self size]}
             operation:NSCompositeCopy
              fraction:1.0f];
     [NSGraphicsContext restoreGraphicsState];

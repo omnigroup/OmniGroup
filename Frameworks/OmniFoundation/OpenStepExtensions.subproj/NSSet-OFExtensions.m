@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,6 +57,29 @@ static void performAndAdd(const void *anObject, void *_context)
         return [NSSet setWithObject:ctxt.singleObject];
     else
         return [NSSet set];
+}
+
+- (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)block;
+{
+    NSMutableSet *resultSet = nil;
+    id singleResult = nil;
+    
+    for (id object in self) {
+        id result = block(object);
+        if (!result)
+            continue;
+        
+        if (resultSet)
+            [resultSet addObject:result];
+        else if (singleResult)
+            resultSet = [NSMutableSet setWithObjects:singleResult, result, nil];
+        else
+            singleResult = result;
+    }
+    
+    if (resultSet)
+        return resultSet;
+    return [NSSet setWithObjects:singleResult, nil];
 }
 
 struct insertionSortContext {

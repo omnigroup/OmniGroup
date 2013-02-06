@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,12 +9,15 @@
 
 #import <OmniUI/OUITiledScalingView.h>
 #import <OmniUI/OUIAppController.h>
-#import <OmniUI/OUIMainViewController.h>
-#import "OUIMainViewControllerBackgroundView.h"
 
 RCS_ID("$Id$");
 
 @implementation OUIScalingScrollView
+{
+    OFExtent _allowedEffectiveScaleExtent;
+    BOOL _centerContent;
+    UIEdgeInsets _extraEdgeInsets;
+}
 
 static id _commonInit(OUIScalingScrollView *self)
 {
@@ -51,12 +54,9 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 
 - (CGFloat)fullScreenScaleForCanvasSize:(CGSize)canvasSize;
 {
-    UIViewController *mainViewController = [[OUIAppController controller] topViewController];
-    OBASSERT([mainViewController isKindOfClass:[OUIMainViewController class]]);
-    UIView *backgroundView = [(OUIMainViewController *)mainViewController view];
-    OBASSERT([backgroundView isKindOfClass:[OUIMainViewControllerBackgroundView class]]);
-    
-    CGRect scrollBounds = [(OUIMainViewControllerBackgroundView *)backgroundView contentViewFullScreenBounds];    
+    UIViewController *topViewController = [[OUIAppController controller] topViewController];
+    CGRect scrollBounds = topViewController.contentViewFullScreenBounds;
+
     CGFloat fitXScale = CGRectGetWidth(scrollBounds) / canvasSize.width;
     CGFloat fitYScale = CGRectGetHeight(scrollBounds) / canvasSize.height;
     CGFloat fullScreenScale = MIN(fitXScale, fitYScale); // the maximum size that won't make us scrollable.
@@ -164,6 +164,15 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 - (void)layoutSubviews;
 {
     [self adjustContentInsetAnimated:NO];
+}
+
+@end
+
+@implementation UIViewController (OUIScalingScrollView)
+
+- (CGRect)contentViewFullScreenBounds;
+{
+    return self.view.bounds;
 }
 
 @end

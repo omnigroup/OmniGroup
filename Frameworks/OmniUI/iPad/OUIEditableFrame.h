@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -201,10 +201,14 @@
 - (NSArray *)inspector:(OUIInspector *)inspector makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 - (void)inspectorDidDismiss:(OUIInspector *)inspector;
 
+- (BOOL)insertAfterSelection:(NSAttributedString *)attributedString;
 
 @property (nonatomic, readwrite, retain) UIColor *markedRangeBorderColor;
 @property (nonatomic, readwrite, retain) UIColor *markedRangeBackgroundColor;
 @property (nonatomic, readwrite, assign) CGFloat markedRangeBorderThickness;
+
+// If YES, an accessibilityElement will be created for each line. If NO, one accessibilityElement will be created that contains the entire text.
+@property (nonatomic, readwrite, assign) BOOL linesAreIndividuallyAccessible;
 
 @end
 

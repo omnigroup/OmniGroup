@@ -24,22 +24,40 @@ if [ $# = 0 ]; then
     exit 1
 fi
 
-source_files=()
-$SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" c,m "$PROJECT_FILE_PATH" | while read f; do
-   source_files+=($f)
-done
-
 # Build the strings file(s) into a separate directory so we can avoid mucking with timestamps in the build output unless needed (see below).
-
 STRINGS_DIR="$DERIVED_FILES_DIR/BuildStringsFromTarget-$TARGET_NAME"
+TMP_OUTPUT="$STRINGS_DIR"/English.lproj
+FILE_LIST="$TMP_OUTPUT"/files
+
 if [ -d "$STRINGS_DIR" ]; then
+  # If we've run before and nothing has changed, bail
+  if [ -f "$FILE_LIST" ]; then
+      NEWER="no"
+      cat "$FILE_LIST" | while read file; do
+          if [ "$file" -nt "$FILE_LIST" ]; then
+              NEWER="yes"
+          fi
+      done
+      if [ "$NEWER" = "no" ]; then
+          exit 0
+      fi
+  fi
+  
+  # Otherwise start from scratch and continue on
   rm -rf "$STRINGS_DIR"
 fi
 
 mkdir -p "$STRINGS_DIR"
-TMP_OUTPUT="$STRINGS_DIR"/English.lproj
-
 mkdir "$TMP_OUTPUT"
+
+# Gather the source files and the project file that defined them into a list, which we'll use for early-out
+echo "$PROJECT_FILE_PATH"/project.pbxproj  > "$FILE_LIST"
+source_files=()
+$SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" c,m "$PROJECT_FILE_PATH" | while read f; do
+   source_files+=($f)
+   echo "$f" >> "$FILE_LIST"
+done
+
 if [ $#source_files -gt 0 ]; then
 	/usr/bin/genstrings -u -q -o "$TMP_OUTPUT" $source_files
 fi
@@ -88,7 +106,9 @@ done
 
 unexpected=0
 for x in "$TMP_OUTPUT"/*(N); do
-    echo "Unexpected string file emitted: $x"
-    unexpected=1
+    if [ "$x" != "$FILE_LIST" ]; then
+        echo "Unexpected string file emitted: $x"
+        unexpected=1
+    fi
 done
 exit $unexpected

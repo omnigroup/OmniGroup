@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -172,9 +172,6 @@ static id _commonInit(OUIToolbarButton *self)
     
     [_possibleTitles release];
     _possibleTitles = [possibleTitles copy];
-    
-    // This is lame, but sufficient for now.
-    OBASSERT([self superview] == nil);
     
     CGRect oldFrame = self.frame;
     NSString *oldTitle = [[[self titleForState:UIControlStateNormal] copy] autorelease];

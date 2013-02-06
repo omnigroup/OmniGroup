@@ -10,7 +10,6 @@
 		0A6C01C40CC046EF0014024A /* OIWorkspaceRestore.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A6C01C20CC046EF0014024A /* OIWorkspaceRestore.png */; };
 		0A6C01C50CC046EF0014024A /* OIWorkspaceStore.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A6C01C30CC046EF0014024A /* OIWorkspaceStore.png */; };
 		0A6C02900CC04ABB0014024A /* OIWorkspaceSnap.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 0A6C028F0CC04ABB0014024A /* OIWorkspaceSnap.aiff */; };
-		342CD98B08D21501009D42C3 /* OmniInspector.strings in Resources */ = {isa = PBXBuildFile; fileRef = 342CD98908D21501009D42C3 /* OmniInspector.strings */; };
 		346DEF3209992425008F5B5F /* OIInspectorTabController.h in Headers */ = {isa = PBXBuildFile; fileRef = 346DEF3009992425008F5B5F /* OIInspectorTabController.h */; settings = {ATTRIBUTES = (); }; };
 		346DEF3309992425008F5B5F /* OIInspectorTabController.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DEF3109992425008F5B5F /* OIInspectorTabController.m */; };
 		346E4371151A9550001C7496 /* OIInspectorGroup-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E4370151A954F001C7496 /* OIInspectorGroup-Internal.h */; };
@@ -97,6 +96,14 @@
 		A2F861290C960DAF00BE4827 /* OITabDepressionBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = A2F861280C960DAF00BE4827 /* OITabDepressionBackground.png */; };
 		A2F8617C0C961A4800BE4827 /* OIInspectorHeaderBackground.h in Headers */ = {isa = PBXBuildFile; fileRef = A2F8617A0C961A4800BE4827 /* OIInspectorHeaderBackground.h */; };
 		A2F8617D0C961A4800BE4827 /* OIInspectorHeaderBackground.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F8617B0C961A4800BE4827 /* OIInspectorHeaderBackground.m */; };
+		E2B8A8C915BDF90B00B5F26B /* OICollapsed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C115BDF90B00B5F26B /* OICollapsed@2x.png */; };
+		E2B8A8CA15BDF90B00B5F26B /* OIExpanded@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C215BDF90B00B5F26B /* OIExpanded@2x.png */; };
+		E2B8A8CB15BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Graphite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C315BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Graphite@2x.png */; };
+		E2B8A8CC15BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Ice@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C415BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Ice@2x.png */; };
+		E2B8A8CD15BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Graphite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C515BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Graphite@2x.png */; };
+		E2B8A8CE15BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Ice@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C615BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Ice@2x.png */; };
+		E2B8A8CF15BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Graphite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C715BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Graphite@2x.png */; };
+		E2B8A8D015BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Ice@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C815BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Ice@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -108,7 +115,6 @@
 		0A6C028F0CC04ABB0014024A /* OIWorkspaceSnap.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = OIWorkspaceSnap.aiff; sourceTree = "<group>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		32DBCF5E0370ADEE00C91783 /* OmniInspector_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniInspector_Prefix.h; sourceTree = "<group>"; };
-		342CD98A08D21501009D42C3 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniInspector.strings; sourceTree = "<group>"; };
 		346DEF3009992425008F5B5F /* OIInspectorTabController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorTabController.h; sourceTree = "<group>"; };
 		346DEF3109992425008F5B5F /* OIInspectorTabController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorTabController.m; sourceTree = "<group>"; };
 		346E4370151A954F001C7496 /* OIInspectorGroup-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OIInspectorGroup-Internal.h"; sourceTree = "<group>"; };
@@ -140,7 +146,7 @@
 		34B2542E08D0DCEE00DD2070 /* OIInspectableControllerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectableControllerProtocol.h; sourceTree = "<group>"; };
 		34B2542F08D0DCEE00DD2070 /* OIInspectionSet.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectionSet.h; sourceTree = "<group>"; };
 		34B2543008D0DCEE00DD2070 /* OIInspectionSet.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectionSet.m; sourceTree = "<group>"; };
-		34B2543108D0DCEE00DD2070 /* OIInspectorController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorController.h; sourceTree = "<group>"; };
+		34B2543108D0DCEE00DD2070 /* OIInspectorController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = OIInspectorController.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		34B2543208D0DCEE00DD2070 /* OIInspectorController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorController.m; sourceTree = "<group>"; };
 		34B2543308D0DCEE00DD2070 /* OIInspectorGroup.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorGroup.h; sourceTree = "<group>"; };
 		34B2543408D0DCEE00DD2070 /* OIInspectorGroup.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorGroup.m; sourceTree = "<group>"; };
@@ -212,6 +218,14 @@
 		A2F861280C960DAF00BE4827 /* OITabDepressionBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OITabDepressionBackground.png; sourceTree = "<group>"; };
 		A2F8617A0C961A4800BE4827 /* OIInspectorHeaderBackground.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorHeaderBackground.h; sourceTree = "<group>"; };
 		A2F8617B0C961A4800BE4827 /* OIInspectorHeaderBackground.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorHeaderBackground.m; sourceTree = "<group>"; };
+		E2B8A8C115BDF90B00B5F26B /* OICollapsed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OICollapsed@2x.png"; sourceTree = "<group>"; };
+		E2B8A8C215BDF90B00B5F26B /* OIExpanded@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIExpanded@2x.png"; sourceTree = "<group>"; };
+		E2B8A8C315BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Graphite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Normal-Graphite@2x.png"; sourceTree = "<group>"; };
+		E2B8A8C415BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Ice@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Normal-Ice@2x.png"; sourceTree = "<group>"; };
+		E2B8A8C515BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Graphite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Pressed-Graphite@2x.png"; sourceTree = "<group>"; };
+		E2B8A8C615BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Ice@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Pressed-Ice@2x.png"; sourceTree = "<group>"; };
+		E2B8A8C715BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Graphite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Rollover-Graphite@2x.png"; sourceTree = "<group>"; };
+		E2B8A8C815BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Ice@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Rollover-Ice@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -267,7 +281,6 @@
 			isa = PBXGroup;
 			children = (
 				34D2B76008D0E06D00C74260 /* Images */,
-				342CD98908D21501009D42C3 /* OmniInspector.strings */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
 				34D2B78F08D0E0A700C74260 /* OIInspectorWorkspacePanels.nib */,
 				089C1666FE841158C02AAC07 /* InfoPlist.strings */,
@@ -385,8 +398,10 @@
 				34D2B76308D0E09C00C74260 /* ColorsInfo.png */,
 				34D2B76408D0E09C00C74260 /* FontsInfo.png */,
 				34D2B76508D0E09C00C74260 /* OICollapsed.png */,
+				E2B8A8C115BDF90B00B5F26B /* OICollapsed@2x.png */,
 				34D2B76608D0E09C00C74260 /* OIColorInspector.png */,
 				34D2B76708D0E09C00C74260 /* OIExpanded.png */,
+				E2B8A8C215BDF90B00B5F26B /* OIExpanded@2x.png */,
 				34D2B76808D0E09C00C74260 /* OIFontInspector.png */,
 				34D2B76908D0E09C00C74260 /* OIHeaderCap-Ice-Pressed.png */,
 				34D2B76A08D0E09C00C74260 /* OIHeaderCap-Ice.png */,
@@ -399,11 +414,17 @@
 				34D2B77008D0E09C00C74260 /* OITitlebarInactivePressed.png */,
 				34D2B77108D0E09C00C74260 /* OIWindowResize.png */,
 				34D2B77208D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Graphite.png */,
+				E2B8A8C315BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Graphite@2x.png */,
 				34D2B77308D0E09C00C74260 /* OIWindowSmallCloseBox-Normal-Ice.png */,
+				E2B8A8C415BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Ice@2x.png */,
 				34D2B77408D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Graphite.png */,
+				E2B8A8C515BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Graphite@2x.png */,
 				34D2B77508D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png */,
+				E2B8A8C615BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Ice@2x.png */,
 				34D2B77608D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png */,
+				E2B8A8C715BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Graphite@2x.png */,
 				34D2B77708D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png */,
+				E2B8A8C815BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Ice@2x.png */,
 				0A6C01C20CC046EF0014024A /* OIWorkspaceRestore.png */,
 				0A6C01C30CC046EF0014024A /* OIWorkspaceStore.png */,
 				0A6C028F0CC04ABB0014024A /* OIWorkspaceSnap.aiff */,
@@ -478,6 +499,7 @@
 			buildPhases = (
 				8DC2EF500486A6940098B216 /* Headers */,
 				8DC2EF520486A6940098B216 /* Resources */,
+				E23AB61615DAE29000B86ED1 /* Build Strings From Target */,
 				8DC2EF540486A6940098B216 /* Sources */,
 				8DC2EF560486A6940098B216 /* Frameworks */,
 			);
@@ -497,7 +519,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0430;
+				LastUpgradeCheck = 0460;
 			};
 			buildConfigurationList = 34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -547,7 +569,6 @@
 				34D2B78B08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png in Resources */,
 				34D2B78C08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png in Resources */,
 				34D2B79208D0E0A700C74260 /* OIInspectorWorkspacePanels.nib in Resources */,
-				342CD98B08D21501009D42C3 /* OmniInspector.strings in Resources */,
 				34B443AB09F595BE008956F6 /* Tabbed.nib in Resources */,
 				A2F861290C960DAF00BE4827 /* OITabDepressionBackground.png in Resources */,
 				4914964D0C9B39DF006E9EAB /* OITabLock.pdf in Resources */,
@@ -555,10 +576,35 @@
 				0A6C01C50CC046EF0014024A /* OIWorkspaceStore.png in Resources */,
 				0A6C02900CC04ABB0014024A /* OIWorkspaceSnap.aiff in Resources */,
 				34A6524A0D0A0B0B003F4D4C /* OISectionedInspector.nib in Resources */,
+				E2B8A8C915BDF90B00B5F26B /* OICollapsed@2x.png in Resources */,
+				E2B8A8CA15BDF90B00B5F26B /* OIExpanded@2x.png in Resources */,
+				E2B8A8CB15BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Graphite@2x.png in Resources */,
+				E2B8A8CC15BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Ice@2x.png in Resources */,
+				E2B8A8CD15BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Graphite@2x.png in Resources */,
+				E2B8A8CE15BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Ice@2x.png in Resources */,
+				E2B8A8CF15BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Graphite@2x.png in Resources */,
+				E2B8A8D015BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Ice@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E23AB61615DAE29000B86ED1 /* Build Strings From Target */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build Strings From Target";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "../../Scripts/BuildStringsFromTarget OmniInspector\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8DC2EF540486A6940098B216 /* Sources */ = {
@@ -602,14 +648,6 @@
 				089C1667FE841158C02AAC07 /* English */,
 			);
 			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-		342CD98908D21501009D42C3 /* OmniInspector.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				342CD98A08D21501009D42C3 /* English */,
-			);
-			name = OmniInspector.strings;
 			sourceTree = "<group>";
 		};
 		34D2B78F08D0E0A700C74260 /* OIInspectorWorkspacePanels.nib */ = {

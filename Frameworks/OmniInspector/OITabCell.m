@@ -199,7 +199,10 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
 - (void)_deriveImages;
 {
     CIContext *ctx = [[NSGraphicsContext currentContext] CIContext];
-    CIImage *sourceImage = [[self image] ciImageForContext:ctx];
+    CGFloat scale = 1;
+    if ([[NSScreen mainScreen] respondsToSelector:@selector(backingScaleFactor)])
+        scale = [[NSScreen mainScreen] backingScaleFactor];
+    CIImage *sourceImage = [[self image] ciImageForContext:ctx scale:scale];
     NSCIImageRep *filteredImageRep;
     
     CIFilter *grayedFilter = [CIFilter filterWithName:@"CIColorControls"
@@ -212,7 +215,9 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
     
     filteredImageRep = [[NSCIImageRep alloc] initWithCIImage:[grayedFilter valueForKey:kCIOutputImageKey]];
     [grayscaleImage release];
-    grayscaleImage = [[NSImage alloc] initWithSize:[[self image] size]];
+    
+    NSSize imageSize = [[self image] size];    
+    grayscaleImage = [[NSImage alloc] initWithSize:imageSize];
     [grayscaleImage addRepresentation:filteredImageRep];
     [filteredImageRep release];
     
@@ -234,7 +239,7 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
     
     filteredImageRep = [[NSCIImageRep alloc] initWithCIImage:[dimmedFilter valueForKey:kCIOutputImageKey]];
     [dimmedImage release];
-    dimmedImage = [[NSImage alloc] initWithSize:[[self image] size]];
+    dimmedImage = [[NSImage alloc] initWithSize:imageSize];
     [dimmedImage addRepresentation:filteredImageRep];
     [filteredImageRep release];
 }

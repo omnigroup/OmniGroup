@@ -70,10 +70,10 @@ RCS_ID("$Id$")
 - (void)readBodyForProcessor:(OWHTTPProcessor *)processor ignore:(BOOL)ignoreThis;
 - (BOOL)readHeadForProcessor:(OWHTTPProcessor *)processor;
 - (void)readHeadersForProcessor:(OWHTTPProcessor *)processor;
-- (unsigned int)intValueFromHexString:(NSString *)aString;
-- (void)readChunkedBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(unsigned)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
-- (void)readStandardBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(unsigned)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
-- (void)readClosingBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(unsigned)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
+- (NSUInteger)intValueFromHexString:(NSString *)aString;
+- (void)readChunkedBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(NSUInteger)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
+- (void)readStandardBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(NSUInteger)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
+- (void)readClosingBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(NSUInteger)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
 
 // Closing
 - (void)_closeSocketStream;
@@ -90,7 +90,7 @@ NSString *OWCustomIdentityKey = @"__OWCustomIdent__";
 NSString *OWBrowserIdentity = @"OWBrowserIdentity";
 
 static BOOL OWHTTPDebug = NO;
-//static BOOL OWHTTPCredentialsDebug = NO;
+static BOOL OWHTTPCredentialsDebug = NO;
 static OFPreference *OWHTTPTrustServerContentType;
 static NSArray *OWHTTPWorkarounds;
 static NSString *preferredDateFormat;
@@ -432,12 +432,10 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
 
 - (void)abortProcessingForProcessor:(OWProcessor *)aProcessor;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     OBPRECONDITION([aProcessor status] != OWProcessorRunning);
 
     [processorQueueLock lock];
-    unsigned abortedProcessorIndex = [processorQueue indexOfObjectIdenticalTo:aProcessor];
+    NSUInteger abortedProcessorIndex = [processorQueue indexOfObjectIdenticalTo:aProcessor];
 #if 0
     NSLog(@"%@ %s:%@ [%d] queue=(%@)",
           [self shortDescription], _cmd, [aProcessor shortDescription],
@@ -451,7 +449,6 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     } else {
         // Do nothing. When the processor reaches the head of the queue, we will notice that its state is OWProcessorAborting and drop the connection. Meanwhile, we can continue to read responses for still-valid requests.
     }
-#endif
 }
 
 - (void)setStatusString:(NSString *)newStatus;
@@ -632,9 +629,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
 
 - (void)setKludgesForProcessor:(OWHTTPProcessor *)aProcessor address:(OWAddress *)thisAddress;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
-    int workaroundCount, workaroundIndex;
+    NSUInteger workaroundCount, workaroundIndex;
     NSString *hostString;
     id <OWProcessorContext> context;
     id contextObject;
@@ -678,14 +673,10 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
             // More kludges as needed.
         }
     }
-#endif
 }
 
 - (NSString *)requestStringForProcessor:(OWHTTPProcessor *)aProcessor;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
     NSMutableString *requestString;
     NSString *requestMethod;
     NSString *tempString;
@@ -746,18 +737,14 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
         [requestString appendString:endOfLineString];
     }
     return requestString;
-#endif
 }
 
 - (NSString *)authorizationStringForAddress:(OWAddress *)anAddress processor:(OWHTTPProcessor *)aProcessor;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
     NSMutableArray *credentialsToSend;
     OWAuthorizationRequest *serverAuthorization, *proxyAuthorization;
     NSMutableString *buffer;
-    unsigned credentialCount, credentialIndex;
+    NSUInteger credentialCount, credentialIndex;
     
     if (flags.connectingViaProxyServer && proxyCredentials == nil) {
         proxyAuthorization = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_HTTP_Proxy netLocation:proxyLocation defaultPort:[isa defaultPort] context:[aProcessor pipeline] challenge:nil promptForMoreThan:nil];
@@ -817,7 +804,6 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     [credentialsToSend release];
     
     return buffer;
-#endif // OBFinishPorting
 }
 
 - (NSString *)userAgentHeaderStringForAddress:(OWAddress *)anAddress;
@@ -868,9 +854,6 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
 
 - (BOOL)sendRequests;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return NO;
-#if 0
     NSData *requestData;
     NSString *requestString;
     OWAddress *anAddress;
@@ -961,7 +944,6 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     }
 
     return queueCount != 0;
-#endif
 }
 
 @end
@@ -1510,14 +1492,8 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
 
 - (NSString *)contentLengthHeaderStringForAddress:(OWAddress *)anAddress;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
-    NSDictionary *addressMethodDictionary;
-
-    addressMethodDictionary = [anAddress methodDictionary];
-    return [isa stringForHeader:@"Content-Length" value:[NSNumber numberWithInt:[[addressMethodDictionary objectForKey:OWAddressContentStringMethodKey] length] + [[addressMethodDictionary objectForKey:OWAddressContentDataMethodKey] length]]];
-#endif
+    NSDictionary *addressMethodDictionary = [anAddress methodDictionary];
+    return [isa stringForHeader:@"Content-Length" value:[NSNumber numberWithUnsignedLong:[[addressMethodDictionary objectForKey:OWAddressContentStringMethodKey] length] + [[addressMethodDictionary objectForKey:OWAddressContentDataMethodKey] length]]];
 }
 
 - (NSString *)contentStringForAddress:(OWAddress *)anAddress;
@@ -1536,21 +1512,15 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
 
 static void notifyCredentials(NSArray *credentials, BOOL success, OWHeaderDictionary *response)
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
-    NSUInteger credentialIndex, credentialCount;
-    
     if (credentials == nil)
         return;
-    credentialCount = [credentials count];
-    // Only notify the first credential, since we only sent the first credential --- the second through Nth credentials are credentials we've tried and failed with, and are just keeping around so we know not to try them again.
-    for (credentialIndex = 0; credentialIndex < credentialCount && credentialIndex < 1; credentialIndex++) {
-        OWAuthorizationCredential *credential;
 
-        credential = [credentials objectAtIndex:credentialIndex];
+    NSUInteger credentialCount = [credentials count];
+    // Only notify the first credential, since we only sent the first credential --- the second through Nth credentials are credentials we've tried and failed with, and are just keeping around so we know not to try them again.
+    if (credentialCount != 0) {
+        OWAuthorizationCredential *credential = [credentials objectAtIndex:0];
         [credential authorizationSucceeded:success response:response];
     }
-#endif
 }
 
 - (BOOL)readResponseForProcessor:(OWHTTPProcessor *)processor;
@@ -1808,8 +1778,6 @@ processStatus:
 
 - (void)readBodyForProcessor:(OWHTTPProcessor *)processor ignore:(BOOL)ignoreThis;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     OWParameterizedContentType *parameterizedContentType;
     OWContent *resultContent;
     NSUInteger totalLength;
@@ -1911,7 +1879,6 @@ processStatus:
     // NSLog(@"%@: ending data stream %@", OBShortObjectDescription(self), OBShortObjectDescription(interruptedDataStream));
     [interruptedDataStream dataEnd];
     // NSLog(@"%@: ended data stream %@", OBShortObjectDescription(self), OBShortObjectDescription(interruptedDataStream));
-#endif
 }
 
 #warning TODO [wiml nov2003] - verify that whoever makes HEAD requests can understand the results we produce here
@@ -2128,12 +2095,10 @@ processStatus:
         [headerDictionary addString:OWEntityTagHeaderString forKey:OWContentValidatorMetadataKey];
 }
 
-- (unsigned int)intValueFromHexString:(NSString *)aString;
+- (NSUInteger)intValueFromHexString:(NSString *)aString;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
-    unsigned int addition, result = 0;
-    unsigned int index, length = [aString length];
+    NSUInteger addition, result = 0;
+    NSUInteger index, length = [aString length];
     unichar c;
     
     for (index = 0; index < length; index++) {
@@ -2150,13 +2115,10 @@ processStatus:
         result += addition;
     }
     return result;
-#endif
 }
 
-- (void)readChunkedBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(unsigned)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
+- (void)readChunkedBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(NSUInteger)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     OWHeaderDictionary *trailingHeaderDictionary;
     NSUInteger totalByteCount = 0, totalLength = 0;
     
@@ -2192,7 +2154,7 @@ processStatus:
             precedingSkipLength = bytesLeft;
 
         if (precedingSkipLength != 0) {
-            int skipBytes = MIN(precedingSkipLength, bytesLeft);
+            NSUInteger skipBytes = MIN(precedingSkipLength, bytesLeft);
             
             [socketStream skipBytes:skipBytes];
             precedingSkipLength -= skipBytes;
@@ -2240,13 +2202,10 @@ processStatus:
     NSLog(@"Rx: %@\nRead trailing headers: %@", [fetchAddress addressString], trailingHeaderDictionary);
 #endif
     [processor markEndOfHeaders];
-#endif
 }
 
-- (void)readStandardBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(unsigned)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
+- (void)readStandardBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(NSUInteger)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     NSAutoreleasePool *autoreleasePool = nil;
     NSUInteger contentLength, bytesLeft;
     NSUInteger byteCount, bytesInThisPool;
@@ -2265,7 +2224,7 @@ processStatus:
         precedingSkipLength = bytesLeft;
 
     if (precedingSkipLength != 0) {
-        int skipBytes = MIN(precedingSkipLength, bytesLeft);
+        NSUInteger skipBytes = MIN(precedingSkipLength, bytesLeft);
         
         [socketStream skipBytes:skipBytes];
  //       precedingSkipLength -= skipBytes;
@@ -2297,13 +2256,10 @@ processStatus:
     }
     [autoreleasePool release];
     // We might be done, or we might be in the OWProcessorAborting state; the caller will check.
-#endif
 }
 
-- (void)readClosingBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(unsigned)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
+- (void)readClosingBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(NSUInteger)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     NSAutoreleasePool *autoreleasePool = nil;
     void *dataStreamBuffer;
     NSUInteger byteCount, bytesInThisPool;
@@ -2354,7 +2310,6 @@ processStatus:
     } NS_ENDHANDLER;
 
     [autoreleasePool release];
-#endif
 }
 
 // Closing

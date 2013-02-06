@@ -1,4 +1,4 @@
-// Copyright 2003-2006, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2006, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,7 @@
 RCS_ID("$Id$");
 
 @interface OAContextButton (Private)
-- (void)_popUpContextMenuWithEvent:(NSEvent *)simulatedEvent;
+- (void)_popUpContextMenu;
 @end
 
 
@@ -27,7 +27,7 @@ RCS_ID("$Id$");
 {
     static NSImage *OAActionImage = nil;
     if (OAActionImage == nil) {
-        OAActionImage = [[NSImage imageNamed:@"OAAction" inBundleForClass:[OAContextButton class]] retain];
+        OAActionImage = [[NSImage imageNamed:@"OAAction" inBundle:OMNI_BUNDLE] retain];
         OBASSERT(OAActionImage != nil);
     }
 
@@ -38,7 +38,7 @@ RCS_ID("$Id$");
 {
     static NSImage *OAMiniActionImage = nil;
     if (OAMiniActionImage == nil) {
-        OAMiniActionImage = [[NSImage imageNamed:@"OAMiniAction" inBundleForClass:[OAContextButton class]] retain];
+        OAMiniActionImage = [[NSImage imageNamed:@"OAMiniAction" inBundle:OMNI_BUNDLE] retain];
         OBASSERT(OAMiniActionImage != nil);
     }
 
@@ -71,7 +71,7 @@ RCS_ID("$Id$");
             [self setImage:[OAContextButton actionImage]];
     } else {
 	// IB will disable the size control if you use a flat image in the nib.  Sigh.
-	// Need to have the control size set on the cell correctly for font calculation in -_popUpContextMenuWithEvent:
+	// Need to have the control size set on the cell correctly for font calculation in -_popUpContextMenu
 	if ([[image name] isEqualToString:@"OAMiniAction"])
 	    [[self cell] setControlSize:NSSmallControlSize];
     }
@@ -90,12 +90,14 @@ RCS_ID("$Id$");
 //
 - (void)mouseDown:(NSEvent *)event;
 {
-    [self _popUpContextMenuWithEvent:event];
+    [self _popUpContextMenu];
 }
 
 //
 // API
 //
+
+@synthesize delegate=delegate;
 
 /*" Returns the menu to be used, or nil if no menu can be found. "*/
 - (NSMenu *)locateActionMenu;
@@ -113,15 +115,14 @@ RCS_ID("$Id$");
 
 - (void)runMenu:(id)sender;
 {
-    NSEvent *event = [NSApp currentEvent];
-    [self _popUpContextMenuWithEvent:event];
+    [self _popUpContextMenu];
 }
 
 @end
 
 @implementation OAContextButton (Private)
 
-- (void)_popUpContextMenuWithEvent:(NSEvent *)event
+- (void)_popUpContextMenu;
 {
     if (![self isEnabled])
         return;
@@ -133,23 +134,19 @@ RCS_ID("$Id$");
     if (targetView == nil)
         menu = OAContextControlNoActionsMenu();
     
-    NSPoint eventLocation = [self frame].origin;
-    eventLocation = [[self superview] convertPoint:eventLocation toView:nil];
-    if ([[[self window] contentView] isFlipped])
-        eventLocation.y += 3;
-    else
-        eventLocation.y -= 3;
-
-    NSEvent *simulatedEvent;
-    if ([event type] == NSLeftMouseDown) {
-        simulatedEvent = [NSEvent mouseEventWithType:NSLeftMouseDown location:eventLocation modifierFlags:[event modifierFlags] timestamp:[event timestamp] windowNumber:[event windowNumber] context:[event context] eventNumber:[event eventNumber] clickCount:[event clickCount] pressure:[event pressure]];
-    } else 
-        simulatedEvent = [NSEvent mouseEventWithType:NSLeftMouseDown location:eventLocation modifierFlags:[event modifierFlags] timestamp:[event timestamp] windowNumber:[event windowNumber] context:[event context] eventNumber:0 clickCount:1 pressure:1.0f];
+    NSRect bounds = self.bounds;
+    NSPoint menuLocation;
+    menuLocation.x = NSMinX(bounds);
     
-    NSFont *font = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:[[self cell] controlSize]]];
+    if ([self isFlipped])
+        menuLocation.y = NSMaxY(bounds) + 3;
+    else
+        menuLocation.y = NSMinY(bounds) - 3;
+    
+    menu.font = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:[[self cell] controlSize]]];
 
     [[self cell] setHighlighted:YES];
-    [NSMenu popUpContextMenu:menu withEvent:simulatedEvent forView:targetView withFont:font];
+    [menu popUpMenuPositioningItem:nil atLocation:menuLocation inView:self];
     [[self cell] setHighlighted:NO];
 }
 

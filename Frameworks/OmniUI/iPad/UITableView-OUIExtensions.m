@@ -67,13 +67,16 @@ void OUITableViewCellShowSelection(UITableViewCell *cell, OUITableViewCellSelect
             if (selected) {
                 cell.imageView.image = OUITableViewItemSelectionImage(UIControlStateSelected);
                 cell.imageView.highlightedImage = OUITableViewItemSelectionImage(UIControlStateHighlighted);
+                cell.accessibilityTraits = UIAccessibilityTraitSelected;
             } else {
                 cell.imageView.image = OUITableViewItemSelectionImage(UIControlStateNormal);
                 cell.imageView.highlightedImage = nil;
+                cell.accessibilityTraits = UIAccessibilityTraitNone;
             }
             break;
         case OUITableViewCellAccessorySelectionType:
             cell.accessoryType = selected ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+            cell.accessibilityTraits = selected ? UIAccessibilityTraitSelected : UIAccessibilityTraitNone;
             break;
         default:
             OBASSERT_NOT_REACHED("Unknown selection display type");

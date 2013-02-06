@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,31 +8,10 @@
 #import <OmniFoundation/OFInvocation.h>
 
 #import <OmniFoundation/OFMessageQueuePriorityProtocol.h>
-#import <OmniFoundation/OFTemporaryPlaceholderInvocation.h>
 
 RCS_ID("$Id$")
 
 @implementation OFInvocation
-
-static OFTemporaryPlaceholderInvocation *temporaryPlaceholderInvocation;
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    temporaryPlaceholderInvocation = [OFTemporaryPlaceholderInvocation alloc];
-}
-
-
-+ alloc;
-{
-    return temporaryPlaceholderInvocation;
-}
-
-+ allocWithZone:(NSZone *)aZone;
-{
-    // If I really cared about zones, I'd return a different placeholder for each zone.
-    return temporaryPlaceholderInvocation;
-}
 
 - (id <NSObject>)object;
 {

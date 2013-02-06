@@ -12,8 +12,22 @@
 
 #import <OmniBase/assertions.h>
 #import <OmniBase/rcsid.h>
+#import <OmniBase/macros.h>
 
 RCS_ID("$Id$")
+
+
+void OBStrongRetain(id object)
+{
+    if (object)
+        CFRetain((OB_BRIDGE CFTypeRef)object);
+}
+
+void OBStrongRelease(id object)
+{
+    if (object)
+        CFRelease((OB_BRIDGE CFTypeRef)object);
+}
 
 static BOOL _OBRegisterMethod(IMP imp, Class cls, const char *types, SEL name)
 {
@@ -152,6 +166,18 @@ IMP OBReplaceMethodImplementationWithSelectorOnClass(Class destClass, SEL oldSel
     return OBReplaceMethodImplementationFromMethod(destClass, oldSelector, class_getInstanceMethod(sourceClass, newSelector));
 }
 
+IMP OBReplaceClassMethodImplementationWithSelector(Class aClass, SEL oldSelector, SEL newSelector)
+{
+    OBPRECONDITION(!class_isMetaClass(aClass));
+    return OBReplaceMethodImplementationWithSelector(object_getClass(aClass), oldSelector, newSelector);
+}
+
+IMP OBReplaceClassMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod)
+{
+    OBPRECONDITION(!class_isMetaClass(aClass));
+    return OBReplaceMethodImplementationFromMethod(object_getClass(aClass), oldSelector, newMethod);
+}
+
 // Returns the class in the inheritance chain of 'cls' that actually implements the given selector, or Nil if it isn't implemented
 Class OBClassImplementingMethod(Class cls, SEL sel)
 {
@@ -172,7 +198,7 @@ Class OBClassImplementingMethod(Class cls, SEL sel)
 }
 
 /*"
- This method returns the original description for anObject, as implemented on NSObject. This allows you to get the original description even if the normal description methods have been overridden.
+ This method returns a basic description for anObject, like implemented on NSObject. This allows you to get the basic description even if the normal description methods have been overridden.
  
  See also: - description (NSObject), - description (OBObject), - shortDescription (OBObject)
  "*/
@@ -180,15 +206,33 @@ NSString *OBShortObjectDescription(id anObject)
 {
     if (!anObject)
         return nil;
+
+    return [NSString stringWithFormat:@"<%@:%p>", NSStringFromClass([anObject class]), anObject];
+}
+
+NSString *OBShortObjectDescriptionWith(id anObject, NSString *extra)
+{
+    if (!anObject)
+        return nil;
     
-    static IMP nsObjectDescription = NULL;
-    if (!nsObjectDescription) {
-        Method descriptionMethod = class_getInstanceMethod([NSObject class], @selector(description));
-        nsObjectDescription = method_getImplementation(descriptionMethod);
-        OBASSERT(nsObjectDescription);
-    }
+    return [NSString stringWithFormat:@"<%@:%p %@>", NSStringFromClass([anObject class]), anObject, extra];
+}
+
+NSString *OBFormatObjectDescription(id anObject, NSString *fmt, ...)
+{
+    NSString *suffix, *result;
+    va_list varg;
     
-    return nsObjectDescription(anObject, @selector(description));
+    if (!anObject)
+        return nil;
+    
+    va_start(varg, fmt);
+    suffix = [[NSString alloc] initWithFormat:fmt arguments:varg];
+    va_end(varg);
+    result = [NSString stringWithFormat:@"<%@:%p %@>", NSStringFromClass([anObject class]), anObject, suffix];
+    [suffix release];
+    
+    return result;
 }
 
 CFStringRef const OBBuildByCompilerVersion = CFSTR("OBBuildByCompilerVersion: " __VERSION__);

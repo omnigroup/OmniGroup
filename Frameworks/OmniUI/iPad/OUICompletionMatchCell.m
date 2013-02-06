@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -327,7 +327,8 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
     }
     CGContextRestoreGState(context);
 
-    CFRelease(font);
+    if (font != NULL)
+        CFRelease(font);
     CFRelease(line);
 }
 

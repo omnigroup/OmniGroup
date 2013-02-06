@@ -45,7 +45,7 @@ extern NSError *OBFirstUnchainedError(NSError *error);
 // Unlike the other routines in this file, but like all the other Foundation routines, this takes its key-value pairs with each value followed by its key.  The disadvantage to this is that you can't easily have runtime-ignored values (the nil value is a terminator rather than being skipped).
 extern NSError *_OBErrorWithErrnoObjectsAndKeys(int errno_value, const char *function, NSString *argument, NSString *localizedDescription, ...) NS_REQUIRES_NIL_TERMINATION;
 #define OBErrorWithErrnoObjectsAndKeys(outError, errno_value, function, argument, localizedDescription, ...) do { \
-    NSError **_outError = (outError); \
+    OB_AUTORELEASING NSError **_outError = (outError); \
     OBASSERT(!_outError || !*_outError); /*no underlying error support*/ \
     if (_outError) \
         *_outError = _OBErrorWithErrnoObjectsAndKeys(errno_value, function, argument, localizedDescription, ## __VA_ARGS__); \

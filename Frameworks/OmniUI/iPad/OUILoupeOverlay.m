@@ -341,7 +341,10 @@ RCS_ID("$Id$");
                 }
             }
             
-            [subject drawScaledContent:[subject convertRectToRenderingSpace:drawRect]];
+            if ([subject respondsToSelector:@selector(drawScaledContentForLoupe:)])
+                [subject drawScaledContentForLoupe:[subject convertRectToRenderingSpace:drawRect]];
+            else
+                [subject drawScaledContent:[subject convertRectToRenderingSpace:drawRect]];
 #endif
         }
     }

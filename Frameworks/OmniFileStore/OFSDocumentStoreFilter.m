@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,14 +7,12 @@
 
 #import <OmniFileStore/OFSDocumentStoreFilter.h>
 
-#if OFS_DOCUMENT_STORE_SUPPORTED
-
 #import <OmniFileStore/OFSDocumentStore.h>
+#import <OmniFileStore/OFSDocumentStoreScope.h>
 #import <OmniFoundation/OFBinding.h>
 
 RCS_ID("$Id$");
 
-NSString * const OFSFilteredDocumentStoreTopLevelItemsBinding = @"filteredTopLevelItems";
 static NSString * const UnfilteredTopLevelItems = @"unfilteredTopLevelItems";
 
 @interface OFSDocumentStoreFilter ()
@@ -24,7 +22,8 @@ static NSString * const UnfilteredTopLevelItems = @"unfilteredTopLevelItems";
 @implementation OFSDocumentStoreFilter
 {
     OFSDocumentStore *_documentStore;
-
+    OFSDocumentStoreScope *_scope;
+    
     // The incoming items from the document store
     OFSetBinding *_unfilteredTopItemsBinding;
     NSSet *_unfilteredTopLevelItems;
@@ -32,36 +31,44 @@ static NSString * const UnfilteredTopLevelItems = @"unfilteredTopLevelItems";
     NSPredicate *_filterPredicate;
 }
 
-- (id)initWithDocumentStore:(OFSDocumentStore *)docStore;
+- (id)initWithDocumentStore:(OFSDocumentStore *)documentStore scope:(OFSDocumentStoreScope *)scope;
 {
+    OBPRECONDITION(documentStore);
+    OBPRECONDITION(scope.documentStore == documentStore);
+    
     if (!(self = [super init]))
         return nil;
     
-    _documentStore = [docStore retain];
-    
-    _unfilteredTopItemsBinding = [[OFSetBinding alloc] initWithSourcePoint:OFBindingPointMake(_documentStore, OFSDocumentStoreTopLevelItemsBinding)
-                                                          destinationPoint:OFBindingPointMake(self, UnfilteredTopLevelItems)];
+    _documentStore = documentStore;
+    _scope = scope;
+        
+    _unfilteredTopItemsBinding = [[OFSetBinding alloc] initWithSourcePoint:OFBindingKeyPath(_scope, topLevelItems)
+                                                          destinationPoint:OFBindingKeyPath(self, unfilteredTopLevelItems)];
     [_unfilteredTopItemsBinding propagateCurrentValue];
-    
-    // by default take all comers.
-    _filterPredicate = [NSPredicate predicateWithValue:YES];
+
     return self;
 }
 
 - (void)dealloc;
 {
-    [_documentStore release];
     [_unfilteredTopItemsBinding invalidate];
-    [_unfilteredTopItemsBinding release];
-    [_unfilteredTopLevelItems release];
-    [_filterPredicate release];
-    
-    [super dealloc];
 }
 
-@synthesize documentStore = _documentStore;
-
-@synthesize filterPredicate = _filterPredicate;
+- (void)setScope:(OFSDocumentStoreScope *)scope;
+{
+    OBPRECONDITION(scope.documentStore == _documentStore);
+    
+    if (scope == _scope)
+        return;
+    
+    _scope = scope;
+    
+    [_unfilteredTopItemsBinding invalidate];
+    _unfilteredTopItemsBinding = [[OFSetBinding alloc] initWithSourcePoint:OFBindingKeyPath(_scope, topLevelItems)
+                                                          destinationPoint:OFBindingKeyPath(self, unfilteredTopLevelItems)];
+    
+    [_unfilteredTopItemsBinding propagateCurrentValue];
+}
 
 - (void)setFilterPredicate:(NSPredicate *)filterPredicate;
 {
@@ -70,12 +77,11 @@ static NSString * const UnfilteredTopLevelItems = @"unfilteredTopLevelItems";
     if (filterPredicate == _filterPredicate)
         return;
     
-    [self willChangeValueForKey:OFSFilteredDocumentStoreTopLevelItemsBinding];
+    [self willChangeValueForKey:OFValidateKeyPath(self, filteredTopLevelItems)];
     
-    [_filterPredicate release];
-    _filterPredicate = [filterPredicate retain];
+    _filterPredicate = filterPredicate;
     
-    [self didChangeValueForKey:OFSFilteredDocumentStoreTopLevelItemsBinding];
+    [self didChangeValueForKey:OFValidateKeyPath(self, filteredTopLevelItems)];
 }
 
 
@@ -110,11 +116,8 @@ static NSString * const UnfilteredTopLevelItems = @"unfilteredTopLevelItems";
         return;
     
     [self willChangeValueForKey:UnfilteredTopLevelItems];
-    [_unfilteredTopLevelItems release];
     _unfilteredTopLevelItems = [unfilteredTopLevelItems copy];
     [self didChangeValueForKey:UnfilteredTopLevelItems];
 }
 
 @end
-
-#endif // OFS_DOCUMENT_STORE_SUPPORTED

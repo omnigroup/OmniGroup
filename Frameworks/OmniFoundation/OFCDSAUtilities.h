@@ -10,15 +10,7 @@
 #import <Foundation/NSObject.h>
 #import <Security/Security.h>
 #import <OmniFoundation/OFDigestUtilities.h>
-
-/* In 10.7, Apple deprecated all existing crypto APIs and replaced them with new, completely different APIs which aren't available on previous versions (and which aren't as functional). */
-#ifndef OF_ENABLE_CDSA
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
-    #define OF_ENABLE_CDSA 0
-#else
-    #define OF_ENABLE_CDSA 1
-#endif
-#endif
+#import <OmniFoundation/OFFeatures.h>
 
 /*
  This file has a handful of trivial data-holders for CSSM / CDSA objects: service providers, keys, and cryptographic contexts.
@@ -34,7 +26,6 @@ NSString *OFStringFromCSSMReturn(CSSM_RETURN code);
 BOOL OFErrorFromCSSMReturn(NSError **outError, CSSM_RETURN errcode, NSString *function);
 NSData *OFGetAppleKeyDigest(const CSSM_KEY *pkey, CSSM_CC_HANDLE optionalContext, NSError **outError);
 #endif
-NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext);
 CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage, CFTypeRef anchors, SecPolicyRef policy, NSError **outError);
 
 #if OF_ENABLE_CDSA

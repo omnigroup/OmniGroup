@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,8 +8,6 @@
 // $Id$
 
 #import <OmniBase/OBObject.h>
-
-#import "FrameworkDefines.h"
 
 @interface ONServiceEntry : OBObject <NSCopying>
 {
@@ -32,10 +30,10 @@
 @end
 
 // This is not an exhaustive list, but more than most people will ever use
-OmniNetworking_EXTERN NSString *ONServiceEntryIPProtocolName;
-OmniNetworking_EXTERN NSString *ONServiceEntryICMPProtocolName;
-OmniNetworking_EXTERN NSString *ONServiceEntryTCPProtocolName;
-OmniNetworking_EXTERN NSString *ONServiceEntryUDPProtocolName;
+extern NSString * const ONServiceEntryIPProtocolName;
+extern NSString * const ONServiceEntryICMPProtocolName;
+extern NSString * const ONServiceEntryTCPProtocolName;
+extern NSString * const ONServiceEntryUDPProtocolName;
 
 // Exceptions which may be raised by this class
-OmniNetworking_EXTERN NSString *ONServiceNotFoundExceptionName;
+extern NSString * const ONServiceNotFoundExceptionName;

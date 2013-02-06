@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,7 +27,7 @@ RCS_ID("$Id$");
     OUIInspectorLabel *label = [[OUIInspectorLabel alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 5)];
     label.text = NSLocalizedStringFromTableInBundle(@"No color selected", @"OUIInspectors", OMNI_BUNDLE, @"Descriptive text on the no color pane of the color picker");
     
-    label.textAlignment = UITextAlignmentCenter;
+    label.textAlignment = NSTextAlignmentCenter;
     label.backgroundColor = nil;
     label.opaque = NO;
     label.numberOfLines = 0;

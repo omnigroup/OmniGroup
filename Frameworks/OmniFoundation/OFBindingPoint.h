@@ -10,20 +10,15 @@
 #import <OmniFoundation/OFObject.h>
 
 @interface OFBindingPoint : OFObject
-{
-@private
-    id _object;
-    NSString *_keyPath;
-}
 
-- initWithObject:(id)object keyPath:(NSString *)keyPath;
+- (id)initWithObject:(id)object keyPath:(NSString *)keyPath;
 
-@property(nonatomic,readonly) id object;
-@property(nonatomic,readonly) NSString *keyPath;
+@property(nonatomic, readonly) id object;
+@property(nonatomic, readonly) NSString *keyPath;
 
 @end
 
-static inline OFBindingPoint *OFBindingPointMake(id object, NSString *keyPath)
+static inline OFBindingPoint * OFBindingPointMake(id object, NSString *keyPath)
 {
     OFBindingPoint *bindingPoint = [[OFBindingPoint alloc] initWithObject:object keyPath:keyPath];
 #if defined(__has_feature) && __has_feature(objc_arc)
@@ -33,6 +28,7 @@ static inline OFBindingPoint *OFBindingPointMake(id object, NSString *keyPath)
 #endif
 }
 
-#define OFBindingKeyPath(object, keyPath) OFBindingPointMake(object, (NO && object.keyPath ? @#keyPath : @#keyPath))
+#define OFValidateKeyPath(object, keyPath) (NO && object.keyPath ? @#keyPath : @#keyPath)
+#define OFBindingKeyPath(object, keyPath) OFBindingPointMake(object, OFValidateKeyPath(object, keyPath))
 
 extern BOOL OFBindingPointsEqual(OFBindingPoint *a, OFBindingPoint *b);

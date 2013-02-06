@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2009, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,14 +16,15 @@
 #define OAGraphiteImageTintSuffix  (@"Graphite")
 #define OAClearImageTintSuffix     (@"Clear")
 
+extern NSString * const OADropDownTriangleImageName;
+extern NSString * const OAInfoTemplateImageName;
+
 @class /* Foundation     */ NSMutableSet;
 @class /* OmniFoundation */ OFEnumNameTable;
 
 @interface NSImage (OAExtensions)
 
-   // Returns an image with the specified name from the specified bundle, going through OAImageManager.
-+ (NSImage *)imageNamed:(NSString *)imageName inBundleForClass:(Class)aClass;
-   // Returns an image with the specified name from the specified bundle, going through OAImageManager.
+   // Returns an image with the specified name from the specified bundle
 + (NSImage *)imageNamed:(NSString *)imageName inBundle:(NSBundle *)aBundle;
    // Returns an image with the specified control tint if one is available, otherwise returns the image with the specified name. Tinted images are searched for by appending the name of the tint ("Graphite", "Aqua", "Clear") to the image, with an optional hyphen separating the name from the tint.
 + (NSImage *)imageNamed:(NSString *)imageName withTint:(NSControlTint)imageTint inBundle:(NSBundle *)aBundle;
@@ -78,6 +79,7 @@
 // CoreImage
 
 // Returns a CIImage containing this NSImage. If there is a NSCIImageRep or NSBitmapImageRep in the image, it will be used; otherwise the image will be rendered into a CGLayer and a CIImage created from that.
-- (CIImage *)ciImageForContext:(CIContext *)ctxt;
+- (CIImage *)ciImageForContext:(CIContext *)ctxt;   // defaults to scale = 1
+- (CIImage *)ciImageForContext:(CIContext *)ctxt scale:(CGFloat)scale;
 
 @end

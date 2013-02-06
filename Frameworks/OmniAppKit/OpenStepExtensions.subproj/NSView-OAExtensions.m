@@ -21,12 +21,65 @@ RCS_ID("$Id$")
 
 @implementation NSView (OAExtensions)
 
+#if 0 && defined(DEBUG_kyle)
+
+// Log when views get told to resize to zero width or height. This isn't an error, but it could be a sign of <bug:///83131> (r.12466034: Scroll view gets spurious NSZeroSize, causing constraint violations on 10.7)
+
+static void (*original_setFrameSize)(id self, SEL _cmd, NSSize newSize);
+
++ (void)performPosing;
+{
+    original_setFrameSize = (typeof(original_setFrameSize))OBReplaceMethodImplementationWithSelector(self, @selector(setFrameSize:), @selector(OALogging_setFrameSize:));
+}
+
+- (void)OALogging_setFrameSize:(NSSize)newSize;
+{
+    if (newSize.width == 0 || newSize.height == 0)
+        NSLog(@"*** -[%@ setFrameSize:%@] (has ambiguous layout=%@)", self.shortDescription, NSStringFromSize(newSize), self.hasAmbiguousLayout ? @"YES" : @"NO");
+    
+    original_setFrameSize(self, _cmd, newSize);
+}
+
+#endif
+
 - (BOOL)isOrContainsFirstResponder;
 {
     NSResponder *firstResponder = [[self window] firstResponder];
     if (![firstResponder isKindOfClass:[NSView class]])
         return NO;
     return (self == (NSView *)firstResponder || [(NSView *)firstResponder isDescendantOf:self]);
+}
+
+- (void)windowDidChangeKeyOrFirstResponder;
+{
+    if ([self needsDisplayOnWindowDidChangeKeyOrFirstResponder])
+        [self setNeedsDisplay:YES];
+    
+    for (NSView *subview in self.subviews)
+        [subview windowDidChangeKeyOrFirstResponder];
+}
+
+- (BOOL)needsDisplayOnWindowDidChangeKeyOrFirstResponder;
+{
+    return NO;
+}
+
+#pragma mark Coordinate conversion
+
+- (NSPoint)convertPointFromScreen:(NSPoint)point;
+{
+    // -[NSWindow convertScreenToBase:] is deprecated, so we have to work with an NSRect
+    NSRect screenRect = (NSRect){.origin = point, .size = NSMakeSize(0.0f, 0.0f)};
+    NSPoint windowPoint = [[self window] convertRectFromScreen:screenRect].origin;
+    return [self convertPoint:windowPoint fromView:nil];
+}
+
+- (NSPoint)convertPointToScreen:(NSPoint)point;
+{
+    // -[NSWindow convertBaseToScreen:] is deprecated, so we have to work with an NSRect
+    NSPoint windowPoint = [self convertPoint:point toView:nil];
+    NSRect windowRect = (NSRect){.origin = windowPoint, .size = NSMakeSize(0.0f, 0.0f)};
+    return [[self window] convertRectToScreen:windowRect].origin;
 }
 
 #pragma mark Snapping to base coordinates.
@@ -129,6 +182,7 @@ static unsigned int scrollEntriesCount = 0;
     if (scrollEntriesAllocated == 0) {
         scrollEntriesAllocated = 8;
         scrollEntries = malloc(scrollEntriesAllocated * sizeof(*scrollEntries));
+        memset(scrollEntries, 0, scrollEntriesAllocated * sizeof(*scrollEntries));
         OBASSERT(scrollEntriesCount == 0);
     }
 
@@ -141,6 +195,10 @@ static unsigned int scrollEntriesCount = 0;
     if (scrollEntriesCount == scrollEntriesAllocated) {
         scrollEntriesAllocated *= 2;
         scrollEntries = realloc(scrollEntries, scrollEntriesAllocated * sizeof(*scrollEntries));
+        // Zero the entries we just allocated
+        unsigned int newCount = scrollEntriesAllocated / 2;
+        OADeferredScrollEntry *newEntries = scrollEntries + newCount;
+        memset(newEntries, 0, newCount * sizeof(*scrollEntries));
     }
 
     OADeferredScrollEntry *newScrollEntry = scrollEntries + scrollEntriesCount;
@@ -325,7 +383,7 @@ static unsigned int scrollEntriesCount = 0;
 
     // Vertical position
     if (NSHeight(desiredRect) < NSHeight(bounds)) {
-        scrollPosition.y = MIN(MAX(scrollPosition.y, 0.0f), 1.0f);
+        scrollPosition.y = CLAMP(scrollPosition.y, 0, 1);
         if (![self isFlipped])
             scrollPosition.y = 1.0f - scrollPosition.y;
         desiredRect.origin.y = (CGFloat)rint(NSMinY(bounds) + scrollPosition.y * (NSHeight(bounds) - NSHeight(desiredRect)));
@@ -337,7 +395,7 @@ static unsigned int scrollEntriesCount = 0;
 
     // Horizontal position
     if (NSWidth(desiredRect) < NSWidth(bounds)) {
-        scrollPosition.x = MIN(MAX(scrollPosition.x, 0.0f), 1.0f);
+        scrollPosition.x = CLAMP(scrollPosition.x, 0, 1);
         desiredRect.origin.x = (CGFloat)rint(NSMinX(bounds) + scrollPosition.x * (NSWidth(bounds) - NSWidth(desiredRect)));
         if (NSMinX(desiredRect) < NSMinX(bounds))
             desiredRect.origin.x = NSMinX(bounds);
@@ -672,6 +730,48 @@ unsigned int NSViewMaxDebugDepth = 10;
 - (void)logViewHierarchy;
 {
     [self logViewHierarchy:0];
+}
+
+- (void)_appendConstraintsInvolvingView:(NSView *)aView toString:(NSMutableString *)string level:(int)level recurse:(BOOL)recurse;
+{
+    NSString *spaces = [NSString spacesOfLength:level * 2];
+    [string appendFormat:@"%@%@\n", spaces, self.shortDescription];
+    
+    for (NSLayoutConstraint *constraint in self.constraints) {
+        if (constraint.firstItem == aView || constraint.secondItem == aView)
+            [string appendFormat:@"%@   + %@\n", spaces, constraint];
+    }
+    
+    if (recurse) {
+        for (NSView *subview in self.subviews)
+            [subview _appendConstraintsInvolvingView:aView toString:string level:(level + 1) recurse:YES];
+    }
+}
+
+- (void)logConstraintsInvolvingView;
+{
+    NSMutableString *string = [[NSMutableString alloc] init];
+    int level = 0;
+    
+    NSMutableArray *ancestors = [[NSMutableArray alloc] init];
+    NSView *superview = self.superview;
+    while (superview != nil) {
+        [ancestors addObject:superview];
+        superview = superview.superview;
+    }
+    
+    for (NSView *ancestor in ancestors.reverseObjectEnumerator) {
+        [ancestor _appendConstraintsInvolvingView:self toString:string level:level recurse:NO];
+        level++;
+    }
+    
+    [ancestors release];
+    
+    [self _appendConstraintsInvolvingView:self toString:string level:level recurse:YES];
+    
+    NSLog(@"Constraints involving %@:\n%@", self.shortDescription, string);
+    
+    [string release];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -174,8 +174,6 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
 
 + (void)resetPreferencesForDomain:(NSString *)domain;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     NSDictionary *preferenceCache;
     NSArray *allValues;
     NSUInteger valueCount, valueIndex;
@@ -199,7 +197,6 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
     [domainLock lock];
     [domainCache removeObjectForKey:domain];
     [domainLock unlock];
-#endif
 }
 
 // Init and dealloc

@@ -18,5 +18,5 @@
 - (BOOL)_appendSQL:(NSMutableString *)sql entity:(ODOEntity *)entity constants:(NSMutableArray *)constants error:(NSError **)outError;
 @end
 
-__private_extern__ const char * const ODOComparisonPredicateStartsWithFunctionName;
-__private_extern__ const char * const ODOComparisonPredicateContainsFunctionName;
+OB_HIDDEN const char * const ODOComparisonPredicateStartsWithFunctionName;
+OB_HIDDEN const char * const ODOComparisonPredicateContainsFunctionName;

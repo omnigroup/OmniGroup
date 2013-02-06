@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,18 +86,12 @@ static inline OWDataStreamBufferDescriptor *descriptorForBlockContainingOffset(O
 
 static inline BOOL copyBuffersOut(OWDataStreamBufferDescriptor *dsBuffer, NSUInteger offsetIntoBlock, void *outBuffer, NSUInteger length)
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return NO;
-#if 0
     while (length != 0) {
-        OWDataStreamBufferDescriptor dsBufferCopy;
-        unsigned bytesCopied;
-        
         if (!dsBuffer)
             return NO;
             
-        dsBufferCopy = *dsBuffer;
-        bytesCopied = MIN(length, dsBufferCopy.bufferUsed - offsetIntoBlock);
+        OWDataStreamBufferDescriptor dsBufferCopy = *dsBuffer;
+        NSUInteger bytesCopied = MIN(length, dsBufferCopy.bufferUsed - offsetIntoBlock);
         bcopy(dsBufferCopy.buffer + offsetIntoBlock, outBuffer, bytesCopied);
         outBuffer += bytesCopied;
         length -= bytesCopied;
@@ -107,7 +101,6 @@ static inline BOOL copyBuffersOut(OWDataStreamBufferDescriptor *dsBuffer, NSUInt
     }
     
     return YES;
-#endif
 }
 
 // Allocates another buffer and links it into self's list of buffers. bytesToAllocate is merely a hint; the allocated buffer may be larger or smaller than this for various reasons. In particular:
@@ -257,15 +250,11 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     return result;
 }
 
-- (unsigned int)bufferedDataLength;
+- (NSUInteger)bufferedDataLength;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return 0;
-#if 0
     _raiseIfInvalid(self);
 
     return readLength;
-#endif
 }
 
 - (NSUInteger)accessUnderlyingBuffer:(void **)returnedBufferPtr startingAtLocation:(NSUInteger)dataOffset;
@@ -345,10 +334,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
 - (BOOL)waitForMoreData;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return NO;
-#if 0
-    unsigned int oldReadLength;
+    NSUInteger oldReadLength;
 
     _raiseIfInvalid(self);
 
@@ -363,7 +349,6 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     }
     pthread_mutex_unlock(&lengthMutex);
     return YES;
-#endif
 }
 
 - (BOOL)waitForBufferedDataLength:(NSUInteger)desiredLength;
@@ -512,11 +497,8 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 }
 
 
-- (unsigned int)appendToUnderlyingBuffer:(void **)returnedBufferPtr;
+- (NSUInteger)appendToUnderlyingBuffer:(void **)returnedBufferPtr;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return 0;
-#if 0
     OWDataStreamBufferDescriptor *targetBuffer = _last;
     
     if (!targetBuffer || !(targetBuffer->bufferUsed < targetBuffer->bufferSize)) {
@@ -530,10 +512,9 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
         
     *returnedBufferPtr = _last->buffer + _last->bufferUsed;
     return _last->bufferSize - _last->bufferUsed;
-#endif
 }
 
-- (void)wroteBytesToUnderlyingBuffer:(unsigned int)count;    
+- (void)wroteBytesToUnderlyingBuffer:(NSUInteger)count;    
 {
     NSArray *notifications;
     
@@ -741,13 +722,9 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     return flags.hasThrownAwayData;
 }
 
-- (unsigned int)bytesWrittenToFile;
+- (NSUInteger)bytesWrittenToFile;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return 0;
-#if 0
     return readLength;
-#endif
 }
 
 - (unsigned long long)startPositionInFile;
@@ -839,8 +816,6 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
 - (BOOL)isEqualToDataStream:(OWDataStream *)anotherStream
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     OWDataStreamCursor *cursorA, *cursorB;
 
     /* Some quick and easy checks ... */
@@ -857,21 +832,18 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     cursorB = [anotherStream createCursor];
 
     for(;;) {
-        void *bufferA, *bufferB;
-        unsigned int bufferLengthA, bufferLengthB, bufferLengthCommon;
-        BOOL eofA, eofB;
-
-        eofA = [cursorA isAtEOF];
-        eofB = [cursorB isAtEOF];
+        BOOL eofA = [cursorA isAtEOF];
+        BOOL eofB = [cursorB isAtEOF];
 
         if (eofA && eofB)
             return YES;
         if (eofA || eofB)
             return NO;
 
-        bufferLengthA = [cursorA peekUnderlyingBuffer:&bufferA];
-        bufferLengthB = [cursorA peekUnderlyingBuffer:&bufferB];
-        bufferLengthCommon = MIN(bufferLengthA, bufferLengthB);
+        void *bufferA, *bufferB;
+        NSUInteger bufferLengthA = [cursorA peekUnderlyingBuffer:&bufferA];
+        NSUInteger bufferLengthB = [cursorA peekUnderlyingBuffer:&bufferB];
+        NSUInteger bufferLengthCommon = MIN(bufferLengthA, bufferLengthB);
 
         if (memcmp(bufferA, bufferB, bufferLengthCommon) != 0)
             return NO;
@@ -879,24 +851,19 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
         [cursorA skipBytes:bufferLengthCommon];
         [cursorB skipBytes:bufferLengthCommon];
     }
-#endif
 }
 
 // OBObject subclass (Debugging)
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-    return nil;
-#if 0
     NSMutableDictionary *debugDictionary;
 
     debugDictionary = [super debugDictionary];
     [debugDictionary setObject:flags.endOfData ? @"YES" : @"NO" forKey:@"flags.endOfData"];
     [debugDictionary setObject:flags.hasThrownAwayData ? @"YES" : @"NO" forKey:@"flags.hasThrownAwayData"];
-    [debugDictionary setObject:[NSNumber numberWithInt:readLength] forKey:@"readLength"];
+    [debugDictionary setObject:[NSNumber numberWithInteger:readLength] forKey:@"readLength"];
     return debugDictionary;
-#endif
 }
 
 @end
@@ -906,8 +873,6 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
 - (void)flushContentsToFile;
 {
-    OBFinishPorting; // 64->32 warnings -- if we even keep this framework
-#if 0
     // This always happens in writer's thread, or after writer is done.
 
     if (savedBuffer == NULL) {
@@ -920,11 +885,8 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     }
 
     do {
-        unsigned int bytesCount;
-        void *bytesPointer;
-        
-        bytesPointer = savedBuffer->buffer + savedInBuffer;
-        bytesCount = savedBuffer->bufferUsed - savedInBuffer;
+        void *bytesPointer = savedBuffer->buffer + savedInBuffer;
+        NSUInteger bytesCount = savedBuffer->bufferUsed - savedInBuffer;
         
         if (bytesCount > 0) {
             NSData *data;
@@ -967,7 +929,6 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     } else {
         [_lock unlock];
     }
-#endif
 }
 
 - (void)flushAndCloseSaveFile;

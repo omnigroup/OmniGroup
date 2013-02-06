@@ -1,4 +1,4 @@
-// Copyright 1999-2007, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2007, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -729,7 +729,7 @@ addressForNotSoObviousHostname(NSString *string)
     if (anObject == nil)
         return NO;
     otherAddress = anObject;
-    if (otherAddress->isa != isa)
+    if ([otherAddress class] != [self class])
 	return NO;
     if (flags.effect != otherAddress->flags.effect)
 	return NO;

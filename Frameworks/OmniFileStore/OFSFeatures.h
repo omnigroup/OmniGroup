@@ -9,13 +9,4 @@
 
 #import <Availability.h>
 
-// The document store classes depend on 10.7 or iOS 5 for NSFileCoordinator/NSFilePresenter, etc. We require iOS 5 on the trunk, so we don't check the iOS version.
-#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || (defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7)
-    #define OFS_DOCUMENT_STORE_SUPPORTED 1
-#else
-    #define OFS_DOCUMENT_STORE_SUPPORTED 0
-#endif
-
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    #define OFS_AUTOMATICALLY_DOWNLOAD_SMALL_UBIQUITOUS_FILE_ITEMS 1
-#endif
+// Nothing at the moment.

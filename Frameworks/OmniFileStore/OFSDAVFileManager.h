@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,21 +8,28 @@
 // $Id$
 
 #import <OmniFileStore/OFSFileManager.h>
-#import <OmniFileStore/OFSDAVFileManagerDelegate.h>
-
-extern NSString * const OFSMobileMeHost;
-extern NSString * const OFSTrustedSyncHostPreference;
 
 @interface OFSDAVFileManager : OFSFileManager <OFSConcreteFileManager>
 
-+ (NSString *)standardUserAgentString;
-+ (void)setUserAgentDelegate:(id <OFSDAVFileManagerUserAgentDelegate>)delegate;
-+ (id <OFSDAVFileManagerUserAgentDelegate>)userAgentDelegate;
+// Takes an infinite-depth exclusive write lock on the URL, returning the lock token. No support right now for refreshing locks.
+- (NSString *)lockURL:(NSURL *)url error:(NSError **)outError;
 
-+ (void)setAuthenticationDelegate:(id <OFSDAVFileManagerAuthenticationDelegate>)delegate;
-+ (id <OFSDAVFileManagerAuthenticationDelegate>)authenticationDelegate;
+// Removes the lock.
+- (BOOL)unlockURL:(NSURL *)url token:(NSString *)lockToken error:(NSError **)outError;
 
-+ (BOOL)isTrustedHost:(NSString *)host;
-+ (void)setTrustedHost:(NSString *)host;
-+ (void)removeTrustedHost:(NSString *)host;
+- (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
+- (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
+
+- (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
+- (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
+
+- (BOOL)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL error:(NSError **)outError;
+
+- (NSData *)dataWithContentsOfURL:(NSURL *)url withETag:(NSString *)ETag error:(NSError **)outError;
+
+- (OFSFileInfo *)fileInfoAtURL:(NSURL *)url serverDate:(NSDate **)outServerDate error:(NSError **)outError;
+- (NSMutableArray *)directoryContentsAtURL:(NSURL *)url withETag:(NSString *)ETag collectingRedirects:(NSMutableArray *)redirections options:(OFSDirectoryEnumerationOptions)options serverDate:(NSDate **)outServerDate error:(NSError **)outError;
+
+- (BOOL)deleteURL:(NSURL *)url withETag:(NSString *)ETag error:(NSError **)outError;
+
 @end

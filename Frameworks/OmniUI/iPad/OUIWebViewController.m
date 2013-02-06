@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,7 +60,7 @@ RCS_ID("$Id$")
 
 - (IBAction)close:(id)sender;
 {
-    [[[OUIAppController controller] topViewController] dismissModalViewControllerAnimated:YES];
+    [[[OUIAppController controller] topViewController] dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)_updateBarButtonItemForURL:(NSURL *)aURL;
@@ -98,7 +98,7 @@ RCS_ID("$Id$")
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error;
 {
-    [self dismissModalViewControllerAnimated:YES];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType;
@@ -113,7 +113,7 @@ RCS_ID("$Id$")
 	    MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
 	    controller.mailComposeDelegate = self;
 	    [controller setToRecipients:[NSArray arrayWithObject:[[request URL] resourceSpecifier]]];
-	    [self presentModalViewController:controller animated:YES];
+	    [self presentViewController:controller animated:YES completion:nil];
 	    [controller release];
             return NO; // Don't load this in the WebView
 	} else if ([scheme isEqualToString:@"x-safari"]) { // Hand off x-safari URLs to the OS
@@ -138,10 +138,9 @@ RCS_ID("$Id$")
     _backButton.enabled = webView.canGoBack;
 }
 
-#pragma mark -
-#pragma mark UIViewController subclass
+#pragma mark - UIViewController subclass
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+- (BOOL)shouldAutorotate;
 {
     return YES;
 }

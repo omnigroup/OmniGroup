@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,26 +7,19 @@
 //
 // $Id$
 
-#import <OmniFileStore/OFSFeatures.h>
+#import <Foundation/NSObject.h>
 
-#if OFS_DOCUMENT_STORE_SUPPORTED
+@class OFSDocumentStore, OFSDocumentStoreScope;
 
-#import <OmniFoundation/OFObject.h>
+@interface OFSDocumentStoreFilter : NSObject
 
-@class OFSDocumentStore;
-
-extern NSString * const OFSFilteredDocumentStoreTopLevelItemsBinding;
-
-@interface OFSDocumentStoreFilter : OFObject
-
-- (id)initWithDocumentStore:(OFSDocumentStore *)docStore;
+- (id)initWithDocumentStore:(OFSDocumentStore *)documentStore scope:(OFSDocumentStoreScope *)scope;
 
 @property(nonatomic,readonly) OFSDocumentStore *documentStore;
-// only good for properties that cannot change at this point.
-@property(nonatomic,retain) NSPredicate *filterPredicate;
+
+@property(nonatomic,strong) OFSDocumentStoreScope *scope;
+@property(nonatomic,strong) NSPredicate *filterPredicate;
 
 @property(nonatomic,readonly) NSSet *filteredTopLevelItems;
 
 @end
-
-#endif // OFS_DOCUMENT_STORE_SUPPORTED

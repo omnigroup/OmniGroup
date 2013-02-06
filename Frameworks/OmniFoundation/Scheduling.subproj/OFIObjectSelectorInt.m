@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,8 @@ static Class myClass;
     if (!method)
         [NSException raise:NSInvalidArgumentException format:@"%s(%p) does not respond to the selector %@", class_getName(cls), object, NSStringFromSelector(selector)];
 
-    method_getImplementation(method)(object, selector, theInt);
+    void (*imp)(id self, SEL _cmd, int i) = (typeof(imp))method_getImplementation(method);
+    imp(object, selector, theInt);
 }
 
 - (NSUInteger)hash;

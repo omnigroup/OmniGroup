@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,11 +10,11 @@
 #import <Foundation/NSObject.h>
 
 // If this pattern works out, we could extend it to more classes. For now, just explicitly add this via +allocWithZone: and OUIAllocateCustomClass().
-__private_extern__ id _OUIAllocateCustomClass(Class self, NSZone *zone);
+id _OUIAllocateCustomClass(Class self, NSZone *zone) OB_HIDDEN;
 #define OUIAllocateCustomClass do { \
     id result = _OUIAllocateCustomClass(self, zone); \
     return result ? result : [super allocWithZone:zone]; \
 } while (0)
 
-__private_extern__ NSString *OUICustomClassOriginalClassName(Class cls);
+NSString *OUICustomClassOriginalClassName(Class cls) OB_HIDDEN;
 

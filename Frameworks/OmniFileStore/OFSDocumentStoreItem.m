@@ -7,11 +7,8 @@
 
 #import <OmniFileStore/OFSDocumentStoreItem.h>
 
-#import <OmniFileStore/OFSFeatures.h>
-
-#if OFS_DOCUMENT_STORE_SUPPORTED
-
 #import <Foundation/NSDateFormatter.h>
+#import <OmniFileStore/OFSDocumentStoreScope.h>
 
 #import "OFSDocumentStoreItem-Internal.h"
 
@@ -31,9 +28,6 @@ NSString * const OFSDocumentStoreItemPercentDownloadedBinding = @"percentDownloa
 NSString * const OFSDocumentStoreItemPercentUploadedBinding = @"percentUploaded";
 
 @implementation OFSDocumentStoreItem
-{
-    OFSDocumentStore *_nonretained_documentStore;
-}
 
 static NSCalendar *CurrentCalendar = nil;
 
@@ -42,7 +36,7 @@ static NSCalendar *CurrentCalendar = nil;
     OBINITIALIZE;
 
     // Calling this on iOS can be very slow (possibly if no one is holding onto it). It should auto-track changes anyway, so we'll hold onto it.
-    CurrentCalendar = [[NSCalendar currentCalendar] retain];
+    CurrentCalendar = [NSCalendar currentCalendar];
 }
 
 static NSDate *_day(NSDate *date)
@@ -56,7 +50,6 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
     NSDateComponents *components = [[NSDateComponents alloc] init];
     [components setDay:offset];
     NSDate *result = [CurrentCalendar dateByAddingComponents:components toDate:date options:0];
-    [components release];
     return result;
 }
 
@@ -106,47 +99,52 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
     OBRejectUnusedImplementation(self, _cmd);
 }
 
-- initWithDocumentStore:(OFSDocumentStore *)documentStore;
+- initWithScope:(OFSDocumentStoreScope *)scope;
 {
-    OBPRECONDITION(documentStore);
+    OBPRECONDITION(scope);
+    OBPRECONDITION(scope.documentStore);
     OBPRECONDITION([self conformsToProtocol:@protocol(OFSDocumentStoreItem)]);
     
     if (!(self = [super init]))
         return nil;
 
-    _nonretained_documentStore = documentStore;
-    
+    _weak_scope = scope;
+
     return self;
 }
 
 - (void)dealloc;
 {
-    OBPRECONDITION(_nonretained_documentStore == nil); // Document store should call -invalidate
-    
-    [super dealloc];
+    OBPRECONDITION(_weak_scope == nil); // Scope should have called -invalidate
 }
 
-- (OFSDocumentStore *)documentStore;
+@synthesize scope = _weak_scope;
+
+- (OFSDocumentStoreScope *)scope;
 {
-    OBPRECONDITION(_nonretained_documentStore); // Don't call this after -_invalidate
-    return _nonretained_documentStore;
+    OBPRECONDITION(_weak_scope); // Don't call this after -_invalidate
+    return _weak_scope;
 }
 
-#pragma mark -
-#pragma mark Internal
+#pragma mark - NSCopying
+
+// So we can be a dictionary key
+- (id)copyWithZone:(NSZone *)zone;
+{
+    return self;
+}
+
+#pragma mark - Internal
 
 - (BOOL)_hasBeenInvalidated;
 {
-    return _nonretained_documentStore == nil;
+    return _weak_scope == nil;
 }
 
 - (void)_invalidate;
 {
-    OBPRECONDITION(_nonretained_documentStore != nil); // Shouldn't be keeping references to previously invalidated items, so double invalidation signals a problem
-    
-    _nonretained_documentStore = nil;
+    OBPRECONDITION(_weak_scope != nil);  // Shouldn't be keeping references to previously invalidated items, so double invalidation signals a problem
+    _weak_scope = nil;
 }
 
 @end
-
-#endif // OFS_DOCUMENT_STORE_SUPPORTED

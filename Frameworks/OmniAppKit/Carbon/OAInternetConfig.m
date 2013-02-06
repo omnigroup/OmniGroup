@@ -26,6 +26,35 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
 
 @implementation OAInternetConfig
 
+#ifdef OMNI_ASSERTIONS_ON
+
++ (void)didLoad;
+{
+    if ([[NSProcessInfo processInfo] isSandboxed]) {
+        NSDictionary *entitlements = [[NSProcessInfo processInfo] codeSigningEntitlements];
+        
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
+        // We can realy on scripting targets on Mountain Lion
+        NSDictionary *scriptingTargets = entitlements[@"com.apple.security.scripting-targets"];
+        NSArray *mailAccessGroups = scriptingTargets[@"com.apple.mail"];
+        OBASSERT([mailAccessGroups containsObject:@"com.apple.mail.compose"], "Missing scripting target entitlement needed in order to compose feedback message in Mail on Mountain Lion.");
+#endif
+        
+        NSArray *appleEventExceptions = entitlements[@"com.apple.security.temporary-exception.apple-events"];
+        
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
+        // Need a temporary exception entitlement for sending apple-events to Mail on Lion
+        OBASSERT([appleEventExceptions containsObject:@"com.apple.mail"], "Missing temporary exception entitlement needed in order to compose feedback message in Mail on Lion.");
+#endif
+        
+        // We can only send apple-events to Entourage and Mailsmith via temporary exceptions
+        OBASSERT([appleEventExceptions containsObject:@"com.barebones.mailsmith"], "Missing temporary exception entitlement needed in order to compose feedback message in Mailsmith.");
+        OBASSERT([appleEventExceptions containsObject:@"com.microsoft.entourage"], "Missing temporary exception entitlement needed in order to compose feedback message in Entourage.");
+    }
+}
+
+#endif
+
 + (OAInternetConfig *)internetConfig;
 {
     return [[[self alloc] init] autorelease];

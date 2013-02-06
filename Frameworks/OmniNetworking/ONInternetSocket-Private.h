@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,6 +55,6 @@ typedef int ONSocketAddressLength;
 - (void)_locked_destroySocketFD;
     // Sets the socketFD to -1, as well as doing related cleanup. Must not raise.
 
-OmniNetworking_PRIVATE_EXTERN BOOL ONSocketStateDebug;
+OB_HIDDEN extern BOOL ONSocketStateDebug;
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,7 @@ RCS_ID("$Id$");
     return name;
 }
 
-- initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date eTag:(NSString *)eTag;
+- initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date ETag:(NSString *)ETag;
 {
     OBPRECONDITION(url);
     OBPRECONDITION(!directory || size == 0);
@@ -54,24 +54,16 @@ RCS_ID("$Id$");
     _directory = directory;
     _size = size;
     _lastModifiedDate = [date copy];
-    _eTag = [eTag copy];
+    _ETag = [ETag copy];
     
     return self;
 }
 
 - initWithOriginalURL:(NSURL *)url name:(NSString *)name exists:(BOOL)exists directory:(BOOL)directory size:(off_t)size lastModifiedDate:(NSDate *)date;
 {
-    return [self initWithOriginalURL:url name:name exists:exists directory:directory size:size lastModifiedDate:date eTag:nil];
+    return [self initWithOriginalURL:url name:name exists:exists directory:directory size:size lastModifiedDate:date ETag:nil];
 }
 
-- (void)dealloc;
-{
-    [_originalURL release];
-    [_name release];
-    [_lastModifiedDate release];
-    [_eTag release];
-    [super dealloc];
-}
 
 @synthesize originalURL = _originalURL;
 @synthesize name = _name;
@@ -79,7 +71,7 @@ RCS_ID("$Id$");
 @synthesize isDirectory = _directory;
 @synthesize size = _size;
 @synthesize lastModifiedDate = _lastModifiedDate;
-@synthesize eTag = _eTag;
+@synthesize ETag = _ETag;
 
 - (BOOL)hasExtension:(NSString *)extension;
 {
@@ -124,6 +116,14 @@ RCS_ID("$Id$");
 }
 #endif
 
+#pragma mark - NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    // We are immutable
+    return self;
+}
+
 @end
 
 NSURL *OFSURLRelativeToDirectoryURL(NSURL *baseURL, NSString *quotedFileName)
@@ -142,7 +142,6 @@ NSURL *OFSURLRelativeToDirectoryURL(NSURL *baseURL, NSString *quotedFileName)
     [urlString insertString:quotedFileName atIndex:NSMaxRange(pathRange)];
 
     NSURL *newURL = [NSURL URLWithString:urlString];
-    [urlString release];
     return newURL;
 }
 
@@ -176,10 +175,17 @@ NSURL *OFSURLWithTrailingSlash(NSURL *baseURL)
     NSMutableString *newString = [baseURLString mutableCopy];
     [newString insertString:@"/" atIndex:NSMaxRange(pathRange)];
     NSURL *newURL = [NSURL URLWithString:newString];
-    [newString release];
     
     return newURL;
 }
+
+BOOL OFSURLEqualToURLIgnoringTrailingSlash(NSURL *URL1, NSURL *URL2)
+{
+    if ([URL1 isEqual:URL2])
+        return YES;
+    return [OFSURLWithTrailingSlash(URL1) isEqual:OFSURLWithTrailingSlash(URL2)];
+}
+
 
 NSURL *OFSURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash, BOOL removeSlash)
 {
@@ -191,7 +197,6 @@ NSURL *OFSURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash
     
     // Can't apply an affix to an empty name. Well, we could, but that would just push the problem off to some other part of XMLData.
     if (!pathRange.length) {
-        [urlString release];
         return nil;
     }
     
@@ -209,7 +214,6 @@ NSURL *OFSURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash
     // pathRange is inaccurate now, but we don't use it again
 
     NSURL *newURL = [NSURL URLWithString:urlString];
-    [urlString release];
     return newURL;
 }
 
@@ -335,7 +339,7 @@ NSString *OFSURLAnalogousRewrite(NSURL *oldSourceURL, NSString *oldDestination, 
         return nil;
     }
     
-    NSMutableString *newDestination = [[newSource mutableCopy] autorelease];
+    NSMutableString *newDestination = [newSource mutableCopy];
     NSString *newLastComponent = [oldDestination substringWithRange:oldDestinationLastComponent];
     if (!oldSourceSlashy && oldDestinationSlashy && !newSourceSlashy) {
         // We were adding a trailing slash; keep doing so.

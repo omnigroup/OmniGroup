@@ -12,6 +12,10 @@ INFOPLIST_FILE =
 // Libraries are linked into the main app and shouldn't be installed.
 SKIP_INSTALL = YES
 
+// Since we don't ship libraries, we don't need to strip them
+COPY_PHASE_STRIP = NO
+STRIP_INSTALLED_PRODUCT = NO
+
 // Publish all public header files for Foo to a common area as <Foo/header.h>
 PUBLIC_HEADERS_FOLDER_PATH = include/$(PRODUCT_NAME)
 

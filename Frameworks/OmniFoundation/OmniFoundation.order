@@ -70,7 +70,6 @@ OFIObjectSelectorObject.o:___rcs_id_hack
 OFIObjectSelectorObjectInt.o:___rcs_id_hack
 OFIObjectSelectorObjectObject.o:___rcs_id_hack
 OFIObjectSelectorObjectObjectObject.o:___rcs_id_hack
-OFImplementationHolder.o:___rcs_id_hack
 OFInvocation.o:___rcs_id_hack
 OFKnownKeyDictionaryTemplate.o:___rcs_id_hack
 OFMach.o:___rcs_id_hack
@@ -93,7 +92,6 @@ OFRegularExpressionMatch.o:___rcs_id_hack
 OFRemoveScriptCommand.o:___rcs_id_hack
 OFResourceFork.o:___rcs_id_hack
 OFResultHolder.o:___rcs_id_hack
-OFRetainableObject.o:___rcs_id_hack
 OFRunLoopQueueProcessor.o:___rcs_id_hack
 OFRunLoopScheduler.o:___rcs_id_hack
 OFScheduledEvent.o:___rcs_id_hack
@@ -115,7 +113,6 @@ OFTrieEnumerator.o:___rcs_id_hack
 OFTrieNode.o:___rcs_id_hack
 OFUppercaseFormatter.o:___rcs_id_hack
 OFUtilities.o:___rcs_id_hack
-OFWeakRetainConcreteImplementation.o:___rcs_id_hack
 OFXMLCursor.o:___rcs_id_hack
 OFXMLDocument.o:___rcs_id_hack
 OFXMLElement.o:___rcs_id_hack
@@ -210,7 +207,6 @@ OFObject.o:+[OFObject initialize]
 OFPoint.o:+[OFPoint initialize]
 OFPreference.o:+[OFPreference initialize]
 OFQueueProcessor.o:+[OFQueueProcessor initialize]
-OFRetainableObject.o:+[OFRetainableObject initialize]
 OFRunLoopScheduler.o:+[OFRunLoopScheduler initialize]
 OFScheduledEvent.o:+[OFScheduledEvent initialize]
 OFSignature.o:+[OFSignature initialize]
@@ -296,7 +292,6 @@ NSData-OFExtensions.o:__NSData_readfn
 OFXMLDocument.o:_createXMLStructure
 NSBundle-OFFixes.o:+[NSBundle(OFFixes) replacement_bundleForClass:]
 NSObject-OFExtensions.o:+[NSObject(OFExtensions) bundle]
-OFWeakRetainConcreteImplementation.o:+[NSObject(OFWeakRetain) incrementWeakRetainCount]
 NSString-OFExtensions.o:+[NSString(OFExtensions) commandKeyIndicatorString]
 NSString-OFExtensions.o:+[NSString(OFExtensions) horizontalEllipsisString]
 NSString-OFExtensions.o:+[NSString(OFExtensions) isEmptyString:]
@@ -337,7 +332,6 @@ NSMutableSet-OFExtensions.o:-[NSMutableSet(OFExtensions) exclusiveDisjoinSet:]
 NSMutableString-OFExtensions.o:-[NSMutableString(OFExtensions) replaceAllOccurrencesOfCharactersInSet:withString:]
 OFNull.o:-[NSObject(Null) isNull]
 NSObject-OFExtensions.o:-[NSObject(OFExtensions) bundle]
-OFWeakRetainConcreteImplementation.o:-[NSObject(OFWeakRetain) weakRetain]
 NSProcessInfo-OFExtensions.o:-[NSProcessInfo(OFExtensions) processNumber]
 NSString-OFExtensions.o:-[NSString(OFExtensions) boolValue]
 NSString-OFExtensions.o:-[NSString(OFExtensions) containsCharacterInSet:]
@@ -416,5 +410,4 @@ OFCFCallbacks.o:_OFNSObjectRelease
 OFCFCallbacks.o:_OFNSObjectRetain
 OFCFCallbacks.o:_OFNSObjectRetainCopy
 OFStringDecoder.o:_OFStringDecoder_DidLoad
-OFWeakRetainConcreteImplementation.o:__OFWeakRetainRelease
 OFPreference.o:__retainedObjectValue

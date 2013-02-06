@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2007, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -156,7 +156,6 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
     }
 
     NSRect mainScreenVisibleRect = [[NSScreen mainScreen] visibleFrame];
-    CGFloat screenScaleFactor = [[NSScreen mainScreen] userSpaceScaleFactor];
     NSMutableArray *inspectorColumns = [NSMutableArray array];
     [inspectorColumns addObject:[NSMutableArray array]];
     CGFloat freeVerticalSpace = NSHeight(mainScreenVisibleRect);
@@ -195,12 +194,12 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
         NSString *defaultPlacementString = [[OFPreferenceWrapper sharedPreferenceWrapper] objectForKey:@"OIInspectorSideOfScreen"];
         if ([defaultPlacementString isEqualToString:@"left"]) {
             // position on the left side of the screen
-            topLeft.x = screenScaleFactor * INSPECTOR_PADDING;
+            topLeft.x = INSPECTOR_PADDING;
         } else {
             // position on the right side of the screen
-            topLeft.x = NSMaxX(mainScreenVisibleRect) - screenScaleFactor * (inspectorWidth + INSPECTOR_PADDING);
+            topLeft.x = NSMaxX(mainScreenVisibleRect) - (inspectorWidth + INSPECTOR_PADDING);
         }
-        topLeft.y = NSMaxY(mainScreenVisibleRect) - screenScaleFactor * MIN(INSPECTOR_PADDING, minFreeHeight);
+        topLeft.y = NSMaxY(mainScreenVisibleRect) - MIN(INSPECTOR_PADDING, minFreeHeight);
     }
     topLeft = [[OIInspectorRegistry sharedInspector] adjustTopLeftDefaultPositioningPoint:topLeft];
     
@@ -214,14 +213,14 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
             else
                 [group hideGroup];
 
-            topLeft.y -= screenScaleFactor * ( [group singlePaneExpandedMaxHeight] + OIInspectorStartingHeaderButtonHeight );
+            topLeft.y -= ( [group singlePaneExpandedMaxHeight] + OIInspectorStartingHeaderButtonHeight );
         }
 
-        topLeft.x -= screenScaleFactor * ( inspectorWidth - OIInspectorColumnSpacing );
+        topLeft.x -= ( inspectorWidth - OIInspectorColumnSpacing );
         if (topLeft.x < NSMinX(mainScreenVisibleRect)) 
-            topLeft.x = NSMaxX(mainScreenVisibleRect) - screenScaleFactor * ( inspectorWidth + INSPECTOR_PADDING );
+            topLeft.x = NSMaxX(mainScreenVisibleRect) - ( inspectorWidth + INSPECTOR_PADDING );
 
-        topLeft.y = NSMaxY(mainScreenVisibleRect) - screenScaleFactor * MIN(INSPECTOR_PADDING, minFreeHeight);
+        topLeft.y = NSMaxY(mainScreenVisibleRect) - MIN(INSPECTOR_PADDING, minFreeHeight);
     }
 	
     [self forceAllGroupsToCheckScreenGeometry];
@@ -1195,7 +1194,7 @@ static NSComparisonResult sortByGroupAndDisplayOrder(OIInspectorController *a, O
     NSBundle *bundle = [OIInspectorGroup bundle];
         
     // Both the controllers and the dynamic menus need to be set up before this should be called.  See -[OIDynamicInspectorMenuItem awakeFromNib] and -[OIInspectorRegistry _awakeAtLaunch].  The ordering of these two methods is indeterminate so both will provoke this method and the last one will actually cause us to do the work.
-    if (!dynamicMenu || ![controllers count])
+    if (!dynamicMenu || !controllers)
         return;
     
     while (dynamicMenuItemCount--)

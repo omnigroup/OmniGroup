@@ -588,7 +588,8 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     NSColor *newColor;
 
     if ([NSGraphicsContext currentContextDrawingToScreen]) {
-        [self _setRGBColor:aColor];
+        NSColor *aColorInRGBColorSpace = [aColor colorUsingColorSpaceName:([[aColor colorSpaceName] isEqualToString:@"NSDeviceCMYKColorSpace"]) ? @"NSDeviceRGBColorSpace":@"NSCalibratedRGBColorSpace"];
+        [self _setRGBColor:aColorInRGBColorSpace];
         return;
     }
  
@@ -610,7 +611,8 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     NSColor *newColor;
 
     if ([NSGraphicsContext currentContextDrawingToScreen]) {
-        [self _setRGBColor:aColor];
+        NSColor *aColorInRGBColorSpace = [aColor colorUsingColorSpaceName:([[aColor colorSpaceName] isEqualToString:@"NSDeviceRGBColorSpace"]) ? @"NSDeviceRGBColorSpace":@"NSCalibratedRGBColorSpace"];
+        [self _setRGBColor:aColorInRGBColorSpace];
         return;
     }
     

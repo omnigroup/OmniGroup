@@ -135,13 +135,15 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         resourceBundle = [self bundle]; // need something non-nil, but this likely won't work very well.
     [resourceBundle retain];
     
+    _allowImagesFromApplication = [dict boolForKey:@"allowImagesFromApplication" defaultValue:NO];
+    
     _identifier = [[dict objectForKey:@"identifier"] copy];
     if (!_identifier) {
         _identifier = [[NSString stringWithStrings:[resourceBundle bundleIdentifier], @".", NSStringFromClass([self class]), nil] retain];
     }
     OBASSERT(_identifier != nil);
     
-    _displayName = [resourceBundle localizedStringForKey:_identifier value:nil table:@"OIInspectors"];
+    _displayName = [[resourceBundle localizedStringForKey:_identifier value:nil table:@"OIInspectors"] retain];
     if ([_displayName isEqualToString:_identifier])
         // _identifier is expected to be com.foo... so the two should never be equal if you've added the entry to the right OIInspectors.strings file
         NSLog(@"Inspector with identifier %@ has no display name registered in OIInspectors.strings in %@", _identifier, resourceBundle);
@@ -165,7 +167,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     
     _imageName = [[dict objectForKey:@"image"] copy];
     if (_imageName) {
-        _image = [[NSImage imageNamed:_imageName inBundle:resourceBundle] retain]; // cache up front so we don't need a 'cached' flag (very likely to get used ASAP)
+        _image = [[self imageNamed:_imageName] retain]; // cache up front so we don't need a 'cached' flag (very likely to get used ASAP)
 	if (!_image)
 	    NSLog(@"Unable to find image '%@' for %@ in bundle %@", _imageName, self, resourceBundle);
     }
@@ -210,6 +212,19 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return _shortcutModifierFlags;
 }
 
+- (NSImage *)imageNamed:(NSString *)imageName;
+{
+    NSImage *image = nil;
+    BOOL checkAppWrapperFirst = (_allowImagesFromApplication && (resourceBundle != [NSBundle mainBundle])); // NO if the resourceBundle is the mainBundle, to avoid checking the app wrapper twice
+    if (checkAppWrapperFirst) {
+        image = [NSImage imageNamed:imageName];
+    }
+    if (image == nil) {
+        image = [NSImage imageNamed:imageName inBundle:resourceBundle];
+    }
+    return image;
+}
+
 - (NSImage *)image;
 {
     return _image;
@@ -217,10 +232,20 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 
 - (NSImage *)tabImage;
 {
-    NSImage *image = [NSImage imageNamed:tabImageName inBundle:resourceBundle];
+    NSImage *image = [self imageNamed:tabImageName];
     if (tabImageName && !image)
         NSLog(@"Unable to find image '%@' for %@ in bundle %@", tabImageName, self, resourceBundle);
     return image;
+}
+
+- (NSString *)inspectorImageName;
+{
+    return _imageName;
+}
+
+- (NSString *)inspectorTabImageName;
+{
+    return tabImageName;
 }
 
 - (NSString *)displayName;
@@ -242,6 +267,11 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 - (NSBundle *)resourceBundle
 {
     return resourceBundle;
+}
+
+- (BOOL)allowImagesFromApplication;
+{
+    return _allowImagesFromApplication;
 }
 
 // TODO: Get rid of this
@@ -294,12 +324,12 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         if ([subview isKindOfClass:[NSScrollView class]])
             continue;
 	
-        if ([subview respondsToSelector:@selector(target)] && [subview target]) {
+        if (([subview infoForBinding:NSEnabledBinding] == nil) && [subview respondsToSelector:@selector(target)] && [subview target]) {
             if ([subview respondsToSelector:@selector(setEnabled:)])
                 [subview setEnabled:enabled];
             continue;
         }
-        if ([subview respondsToSelector:@selector(changeColorAsIfEnabledStateWas:)]) {
+        if (([subview infoForBinding:NSTextColorBinding] == nil) && [subview respondsToSelector:@selector(changeColorAsIfEnabledStateWas:)]) {
             [subview changeColorAsIfEnabledStateWas:enabled];
             continue;
         }

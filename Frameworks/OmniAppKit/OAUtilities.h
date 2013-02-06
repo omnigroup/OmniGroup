@@ -8,6 +8,7 @@
 // $Id$
 
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
+#import <AppKit/NSLayoutConstraint.h> // for NSEdgeInsets
 
 #import <math.h>
 #import <tgmath.h>
@@ -52,3 +53,24 @@ static inline NSAffineTransformStruct NSAffineTransformFromCG(CGAffineTransform 
 
 extern BOOL OAPushValueThroughBinding(id self, id objectValue, NSString *binding);
 
+/*
+ These have to live here because NSEdgeInsets lives in <AppKit/NSLayoutConstraint.h> instead of in <Foundation/NSGeometry.h> for no good reason
+*/
+
+// Slices an NSRect into subrects based on edge inset values. To get three-way slicing, set either top/bottom or left/right insets to zero. All arguments are required. (If you don't care about a value, pass in `&(NSRect){}`.) If isFlipped=YES, top is NSMinYEdge, otherwise it is NSMaxYEdge.
+extern void OASliceRectByEdgeInsets(NSRect rect, BOOL isFlipped, NSEdgeInsets insets, NSRect *topLeft, NSRect *midLeft, NSRect *bottomLeft, NSRect *topCenter, NSRect *midCenter, NSRect *bottomCenter, NSRect *topRight, NSRect *midRight, NSRect *bottomRight);
+
+// Insets an NSRect on each side by the amount specified in `insets`. If isFlipped=YES, top is NSMinYEdge, otherwise it is NSMaxYEdge.
+static inline NSRect OAInsetRectByEdgeInsets(NSRect rect, NSEdgeInsets insets, BOOL isFlipped)
+{
+    rect.origin.x += insets.left;
+    rect.size.width -= insets.left + insets.right;
+    rect.size.height -= insets.top + insets.bottom;
+    
+    if (isFlipped)
+        rect.origin.y -= insets.top;
+    else
+        rect.origin.y += insets.bottom;
+    
+    return rect;
+}

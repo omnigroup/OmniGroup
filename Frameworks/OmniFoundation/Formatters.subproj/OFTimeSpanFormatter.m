@@ -494,6 +494,44 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
     return displayString;
 }
 
+- (OFTimeSpan *)timeSpanValueForNumberValue:(NSNumber *)aNumber;
+{
+    OFTimeSpan *result = [[OFTimeSpan alloc] initWithTimeSpanFormatter:self];
+    float secondsLeft = [aNumber floatValue];
+    if (!_flags.floatValuesInSeconds)
+        secondsLeft *= 3600.0f;
+    
+    unsigned int unitIndex;
+    for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
+        if (_flags.displayUnits & (1 << unitIndex)) {
+            BOOL willDisplaySmallerUnits = (_flags.displayUnits & ~((1 << (unitIndex+1))-1));
+	    float secondsPerUnit = timeSpanUnits[unitIndex].fixedMultiplier;
+	    if (timeSpanUnits[unitIndex].formatterMultiplierImplementation)
+		secondsPerUnit *= timeSpanUnits[unitIndex].formatterMultiplierImplementation(self, NULL);
+	    
+	    float value = secondsLeft / secondsPerUnit;
+	    secondsLeft -= floorf(value) * secondsPerUnit;
+            
+            if (willDisplaySmallerUnits) {
+		value = floorf(value);
+            } else {
+                secondsLeft = 0.0f;
+            }
+            
+            switch (unitIndex) {
+                case UNITS_YEARS: result.years = value; break;
+                case UNITS_MONTHS: result.months = value; break;
+                case UNITS_WEEKS: result.weeks = value; break;
+                case UNITS_DAYS: result.days = value; break;
+                case UNITS_HOURS: result.hours = value; break;
+                case UNITS_MINUTES: result.minutes = value; break;
+                case UNITS_SECONDS: result.seconds = value; break;
+            }
+        }
+    }
+    return [result autorelease];
+}
+
 - (NSString *)_stringForObjectValue:(id)object withRounding:(BOOL)withRounding;
 {
     DLOG(@"building string for %@; displayUnits:0x%x", [object shortDescription], _flags.displayUnits);

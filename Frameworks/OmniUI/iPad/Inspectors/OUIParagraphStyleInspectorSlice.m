@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -144,28 +144,24 @@ RCS_ID("$Id$");
         
     button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentLeft.png"];
     [button setTag:OALeftTextAlignment];
+    button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Left text align", @"OmniUI", OMNI_BUNDLE, @"Left Text Align button accessibility label.");
     
     button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentCenter.png"];
     [button setTag:OACenterTextAlignment];
+    button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Center text align", @"OmniUI", OMNI_BUNDLE, @"Center Text Align button accessibility label.");
 
     button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentRight.png"];
     [button setTag:OARightTextAlignment];
+    button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Right text align", @"OmniUI", OMNI_BUNDLE, @"Right Text Align button accessibility label.");
 
     button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentJustified.png"];
     [button setTag:OAJustifiedTextAlignment];
+    button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Justified text align", @"OmniUI", OMNI_BUNDLE, @"Justified Text Align button accessibility label.");
 
     [alignBar addTarget:self action:@selector(changeParagraphAlignment:) forControlEvents:UIControlEventValueChanged];
     
     self.view = alignBar;
     alignmentControl = alignBar; // Retain moves from our local var to the ivar
-}
-
-- (void)viewDidUnload
-{
-    [alignmentControl release];
-    alignmentControl = nil;
-    
-    [super viewDidUnload];
 }
 
 @end

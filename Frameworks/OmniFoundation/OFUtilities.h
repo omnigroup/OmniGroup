@@ -14,8 +14,8 @@
 
 @class NSDictionary;
 
-extern void OFLog(NSString *messageFormat, ...);
-extern NSString *OFGetInput(NSStringEncoding encoding, NSString *promptFormat, ...);
+extern void OFLog(NSString *messageFormat, ...) __attribute__((format(__NSString__, 1, 2)));
+extern NSString *OFGetInput(NSStringEncoding encoding, NSString *promptFormat, ...) __attribute__((format(__NSString__, 2, 3)));
 
 #if 0 // Should probably use KVC
 extern void OFSetIvar(NSObject *object, NSString *ivarName, NSObject *ivarValue);

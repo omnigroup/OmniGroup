@@ -1,4 +1,4 @@
-// Copyright 2003-2006, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2006, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -101,9 +101,12 @@ const char *s4 = "Would you like another packet? It is WAFFER THIN!";
     should([dewie remoteAddress] != nil);
     addrDLoop = [dewie remoteAddress];
 
-    should(rd != nil);
-    should([rd length] == len);
-    should(memcmp([rd bytes], s4, len) == 0);
+    if (rd == nil) {
+        should(rd != nil);
+    } else {
+        should([rd length] == len);
+        should(memcmp([rd bytes], s4, len) == 0);
+    }
 
     // NSLog(@"Sent to: %@ Received from: %@", addrD, addrDLoop);
     should([addrDLoop isEqual:addrD]);
@@ -150,14 +153,20 @@ const char *s4 = "Would you like another packet? It is WAFFER THIN!";
     should(res == len);
 
     rd = [huey readData];
-    should(rd != nil);
-    should([rd length] == strlen(s2));
-    should(memcmp([rd bytes], s2, strlen(s2)) == 0);
+    if (rd == nil) {
+        should(rd != nil);
+    } else {
+        should([rd length] == strlen(s2));
+        should(memcmp([rd bytes], s2, strlen(s2)) == 0);
+    }
 
     rd = [louie readData];
-    should(rd != nil);
-    should([rd length] == strlen(s1));
-    should(memcmp([rd bytes], s1, strlen(s1)) == 0);
+    if (rd == nil) {
+        should(rd != nil);
+    } else {
+        should([rd length] == strlen(s1));
+        should(memcmp([rd bytes], s1, strlen(s1)) == 0);
+    }
 }
 
 - (void)setAddressFamily:(int)af

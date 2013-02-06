@@ -626,7 +626,6 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     }
 
     [defaults setObject:[currentlyRunningVersionNumber cleanVersionString] forKey:OSUNewestVersionNumberLaunchedKey];
-    [defaults autoSynchronize];
 
     return YES;
 }
@@ -657,7 +656,6 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
         nextCheckDate = [[NSDate alloc] initWithTimeInterval:checkInterval sinceDate:now];
         [nextCheckDate autorelease];
         [defaults setObject:nextCheckDate forKey:OSUNextCheckKey];
-        [defaults autoSynchronize];
     }
     
     if (_hasScheduledCheck(self)) {

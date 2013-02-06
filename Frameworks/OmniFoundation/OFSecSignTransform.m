@@ -94,7 +94,7 @@ RCS_ID("$Id$");
 
 static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData, CFStringRef digestType, int digestLength, CFErrorRef *cfError) CF_RETURNS_RETAINED;
 
-static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData, CFStringRef digestType, int digestLength, CFErrorRef *cfError) 
+static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData, CFStringRef digestType, int digestLength, CFErrorRef *cfError)
 {
     CFDataRef immutable = CFDataCreateCopy(kCFAllocatorDefault, (CFDataRef)inputData);
     Boolean success = SecTransformSetAttribute(transform, kSecTransformInputAttributeName, immutable, cfError);
@@ -226,9 +226,10 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
         goto errorOut;
     }
     
-    // Result is presumably kept alive by the SecTransform we got it from at this point; retain+autorelease for our caller.
-    NSData *nsResult = [(id)result retain];
-    CFRelease(result);
+    OBASSERT(CFGetTypeID(result) == CFDataGetTypeID());
+    
+    // Result is presumably CFRetained by the SecTransform we got it from at this point; convert to NS retain+autorelease for our caller.
+    NSData *nsResult = NSMakeCollectable(result);
     CFRelease(gen);
     
     if (generatorGroupOrderLog2) {

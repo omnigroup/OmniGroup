@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,5 +14,9 @@
 
 - (void)drawLoupeOverlayBackgroundInRect:(CGRect)rect; // In the subject view's coordinate system
 - (UIColor *)loupeOverlayBackgroundColor;
+
+// If drawScaledContentForLoupe: is not implemented, the drawScaledContent: will be called
+
+- (void)drawScaledContentForLoupe:(CGRect)rect;
 
 @end

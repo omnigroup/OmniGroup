@@ -36,7 +36,7 @@ typedef struct {
 // Works for both NSString and NSNumber encoded components
 static BOOL _dictionaryComponentGetter(void *container, NSString *key, CGFloat *outComponent)
 {
-    OBPRECONDITION([(id)container isKindOfClass:[NSMutableDictionary class]]);
+    OBPRECONDITION([(id)container isKindOfClass:[NSDictionary class]]);
     
     // In some cases we care if we got the default value due to it being missing or whether it was actually in the plist.
     id obj = [(NSMutableDictionary *)container objectForKey:key];
@@ -48,7 +48,7 @@ static BOOL _dictionaryComponentGetter(void *container, NSString *key, CGFloat *
 
 static NSString *_dictionaryStringGetter(void *container, NSString *key)
 {
-    OBPRECONDITION([(id)container isKindOfClass:[NSMutableDictionary class]]);
+    OBPRECONDITION([(id)container isKindOfClass:[NSDictionary class]]);
     NSString *result = [(NSMutableDictionary *)container objectForKey:key];
     OBASSERT(!result || [result isKindOfClass:[NSString class]]);
     return result;
@@ -56,7 +56,7 @@ static NSString *_dictionaryStringGetter(void *container, NSString *key)
 
 static NSData *_dictionaryDataGetter(void *container, NSString *key)
 {
-    OBPRECONDITION([(id)container isKindOfClass:[NSMutableDictionary class]]);
+    OBPRECONDITION([(id)container isKindOfClass:[NSDictionary class]]);
     NSData *result = [(NSMutableDictionary *)container objectForKey:key];
     OBASSERT(!result || [result isKindOfClass:[NSData class]]);
     return result;

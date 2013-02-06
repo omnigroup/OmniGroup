@@ -1,4 +1,4 @@
-// Copyright 1998-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,17 +27,7 @@ typedef enum _OFControllerTerminateReply {
     OFControllerTerminateLater
 } OFControllerTerminateReply;
 
-#import <OmniFoundation/OFWeakRetainProtocol.h>
-
-@interface OFController : OFObject
-{
-@private
-    OFControllerStatus status;
-    NSLock *observerLock;
-    NSMutableArray *observers;
-    NSMutableSet *postponingObservers;
-    NSMutableDictionary *queues;
-}
+@interface OFController : NSObject
 
 + (NSBundle *)controllingBundle;
 
@@ -45,8 +35,9 @@ typedef enum _OFControllerTerminateReply {
 
 - (OFControllerStatus)status;
 
-- (void)addObserver:(id <OFWeakRetain>)observer;
-- (void)removeObserver:(id <OFWeakRetain>)observer;
+// Only a weak reference is made to the observer via OFWeakReference
+- (void)addObserver:(id)observer;
+- (void)removeObserver:(id)observer;
 
 // A simplified way to perform an action at a specific point in the app's lifecycle without going to the trouble of being an observer
 - (void)queueSelector:(SEL)message forObject:(NSObject *)receiver whenStatus:(OFControllerStatus)state;
@@ -73,6 +64,7 @@ typedef enum _OFControllerTerminateReply {
 - (void)crashWithReport:(NSString *)report;
 - (void)crashWithException:(NSException *)exception mask:(NSUInteger)mask;
 - (void)handleUncaughtException:(NSException *)exception;
+- (BOOL)shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
 
 // NSAssertionHandler customization
 - (void)handleFailureInMethod:(SEL)selector object:(id)object file:(NSString *)fileName lineNumber:(int)line description:(NSString *)format,...;
@@ -111,5 +103,10 @@ Called when -[OFController requestTermination] is called.  This notification giv
 /*"
 Called when -[OFController willTerminate] is called.  This notification is posted by the OFController just before the application terminates, when there's no chance that the termination will be cancelled).  This may be used to wait for a particular activity (e.g. an asynchronous document save) before the application finally terminates.
 "*/
+
+- (void)controller:(OFController *)controller willCrashWithReport:(NSString *)report;
+/*"
+ Called when -[OFController crashWithReport:] is called.  This notification is posted by the OFController just before the application logs the given report and induces a crash. An observer may implement this method to add custom handling of application induced crashes. This should be used with care as some part of the application has decided that a self-induced crash is the safest course of action.
+ "*/
 
 @end

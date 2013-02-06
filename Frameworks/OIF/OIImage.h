@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 
 #import <Foundation/NSGeometry.h> // For NSSize
 #import <OmniFoundation/OFByte.h>
-#import <OmniFoundation/OFWeakRetainProtocol.h>
+#import <OWF/OWFWeakRetainProtocol.h>
 #import <OIF/OIImageObserverProtocol.h>
 #import <ApplicationServices/ApplicationServices.h> // For CGImage
 #import <AppKit/NSGraphics.h> // For NSCompositingOperation
@@ -78,10 +78,10 @@ typedef OFByte *OIImageGammaCorrectionTable;
 - (NSUInteger)observerCount;
     // Returns the number of observers for this image (more efficient than [[self observers] count])
 
-- (void)addObserver:(id <OIImageObserver, OFWeakRetain>)anObserver;
+- (void)addObserver:(id <OIImageObserver, OWFWeakRetain>)anObserver;
     // Subscribed anObserver to receive messages described in the OIImageObserver protocol.  The new observer is  retained.  The new observer is responsible for unsubscribing itself so that it can eventually be deallocated.
 
-- (void)removeObserver:(id <OIImageObserver, OFWeakRetain>)anObserver;
+- (void)removeObserver:(id <OIImageObserver, OWFWeakRetain>)anObserver;
     // Unsubscribes anObserver such that it will not receive the messages described in the OIImageObserver protocol and is no longer retained by the image.
 
 - (void)setPixelData:(NSData *)newPixelData;
