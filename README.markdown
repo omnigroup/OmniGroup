@@ -11,7 +11,7 @@ Checking out the source
 Configuring Xcode 4
 -------------------
 
-- Xcode 4.3 or higher is required
+- We currently use Xcode 4.6. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace
 - If building for iOS, you need to edit your scheme to turn off implicit dependencies and parallel builds. Xcode 4 doesn't understand implicit dependencies with static libraries, so you'll need to add the dependencies to your scheme in the right order.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
