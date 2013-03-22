@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,8 +19,7 @@ typedef struct _OFBTree OFBTree;
 typedef void *(*OFBTreeNodeAllocator)(struct _OFBTree *tree);
 typedef void (*OFBTreeNodeDeallocator)(struct _OFBTree *tree, void *node);
 typedef int  (*OFBTreeElementComparator)(const struct _OFBTree *tree, const void *elementA, const void *elementB);
-typedef void (*OFBTreeEnumeratorCallback)(const struct _OFBTree *tree, void *element, void *arg);
-typedef void (^OFBTreeEnumeratorBlock)(const struct _OFBTree *tree, void *element);
+typedef void (^OFBTreeEnumerator)(const struct _OFBTree *tree, void *element);
 
 
 struct _OFBTree {
@@ -56,8 +55,7 @@ extern void *OFBTreeFind(const OFBTree *tree, const void *value);
 extern void *OFBTreeFindNear(const OFBTree *tree, const void *value, int offset, BOOL afterMatch);
 extern void OFBTreeDeleteAll(OFBTree *tree);
 
-extern void OFBTreeEnumerate(const OFBTree *tree, OFBTreeEnumeratorCallback callback, void *arg);
-extern void OFBTreeEnumerateBlock(const OFBTree *tree, OFBTreeEnumeratorBlock callback);
+extern void OFBTreeEnumerate(const OFBTree *tree, OFBTreeEnumerator enumerator);
 
 // This is not a terribly efficient API but it is reliable and does what I need
 extern void *OFBTreePrevious(const OFBTree *tree, const void *value);

@@ -55,6 +55,36 @@ RCS_ID("$Id$")
 
 
 @implementation OACalendarView
+{
+    NSCalendar *calendar;
+    NSDate *visibleMonth;
+    NSMutableArray *selectedDays;
+    
+    NSView *monthAndYearView;
+    NSTextFieldCell *monthAndYearTextFieldCell;
+    NSTextFieldCell *dayOfWeekCell[7];
+    NSTextFieldCell *dayOfMonthCell;
+    NSMutableArray *buttons;
+    
+    uint32_t dayHighlightMask;
+    OACalendarViewSelectionType selectionType;
+    NSInteger displayFirstDayOfWeek;
+    
+    CGFloat columnWidth;
+    CGFloat rowHeight;
+    NSRect monthAndYearRect;
+    NSRect gridHeaderAndBodyRect;
+    NSRect gridHeaderRect;
+    NSRect gridBodyRect;
+    
+    struct {
+        unsigned int showsDaysForOtherMonths:1;
+        unsigned int targetProvidesHighlightMask:1;
+        unsigned int targetWatchesCellDisplay:1;
+        unsigned int targetWatchesVisibleMonth:1;
+        unsigned int targetApprovesDateSelection:1;
+    } flags;
+}
 
 const float OACalendarViewSpaceBetweenMonthYearAndGrid = 4.0f;
 const int OACalendarViewNumDaysPerWeek = 7;

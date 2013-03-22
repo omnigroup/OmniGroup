@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2011,2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,7 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/OBUtilities.h>
 #import <OmniBase/objc.h>
+#import <OmniBase/macros.h>
 
 RCS_ID("$Id$")
 
@@ -184,7 +185,7 @@ See also: - debugDictionary
 
 CFStringRef OBNSObjectCopyShortDescription(const void *value)
 {
-    CFStringRef str = (CFStringRef)[(id)value shortDescription];
+    CFStringRef str = (__bridge CFStringRef)[(OB_BRIDGE id)value shortDescription];
     if (str)
         CFRetain(str);
     return str;

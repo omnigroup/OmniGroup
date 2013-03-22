@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,16 +12,11 @@
 @class OUUnzipEntry, OUUnzipArchive;
 
 @interface OUZipRawFileMember : OUZipMember
-{
-@private
-    OUUnzipEntry *_entry;
-    OUUnzipArchive *_archive;
-}
 
 - initWithName:(NSString *)name entry:(OUUnzipEntry *)entry archive:(OUUnzipArchive *)archive;
 - initWithEntry:(OUUnzipEntry *)entry archive:(OUUnzipArchive *)archive;
 
-@property(readonly) OUUnzipArchive *archive;
-@property(readonly) OUUnzipEntry *entry;
+@property(nonatomic,readonly) OUUnzipArchive *archive;
+@property(nonatomic,readonly) OUUnzipEntry *entry;
 
 @end

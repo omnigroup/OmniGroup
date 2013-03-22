@@ -165,6 +165,9 @@ static unsigned ScopeContext;
     [self willChangeValueForKey:OFValidateKeyPath(self, scopes)];
     _scopes = [scopes copy];
     [self didChangeValueForKey:OFValidateKeyPath(self, scopes)];
+
+    if ([scope respondsToSelector:@selector(wasAddedToDocumentStore)])
+        [scope wasAddedToDocumentStore];
 }
 
 - (void)removeScope:(OFSDocumentStoreScope *)scope;
@@ -177,6 +180,9 @@ static unsigned ScopeContext;
         return;
     }
     
+    if ([scope respondsToSelector:@selector(willBeRemovedFromDocumentStore)])
+        [scope willBeRemovedFromDocumentStore];
+
     [scope removeObserver:self forKeyPath:OFValidateKeyPath(scope, hasFinishedInitialScan) context:&ScopeContext];
     [scope removeObserver:self forKeyPath:OFValidateKeyPath(scope, fileItems) context:&ScopeContext];
     
@@ -353,6 +359,128 @@ static unsigned ScopeContext;
 #endif
 }
 
+- (void)moveItemsAtURLs:(NSSet *)urls toCloudFolderInScope:(OFSDocumentStoreScope *)ubiquitousScope withName:(NSString *)folderNameOrNil completionHandler:(void (^)(NSDictionary *movedURLs, NSDictionary *errorURLs))completionHandler;
+{
+    OBFinishPorting; // Make this work and remove references to ubiquity
+#if 0
+    OBPRECONDITION([NSThread isMainThread]);
+    OBASSERT(ubiquitousScope);
+    
+    NSMutableDictionary *movedURLs = [NSMutableDictionary dictionary];
+    NSMutableDictionary *errorURLs = [NSMutableDictionary dictionary];
+    
+    // Early out for no-ops
+    if ([urls count] == 0) {
+        if (completionHandler)
+            completionHandler(movedURLs, errorURLs);
+        return;
+    }
+    
+    // <bug:///80920> (Can we rename iCloud items that aren't yet fully (or at all) downloaded? [engineering])
+    
+#ifdef DEBUG_CLOUD_ENABLED
+    void (^originalCompletionHandler)(NSDictionary *, NSDictionary *) = completionHandler;
+    completionHandler = ^(NSDictionary *theMovedURLs, NSDictionary *theErrorURLs) {
+        DEBUG_CLOUD(@"-moveItemsAtURLs:... is executing completion handler %p", (void *)originalCompletionHandler);
+        originalCompletionHandler(theMovedURLs, theErrorURLs);
+    };
+#endif
+    
+    // Make a destination in a folder under the same container scope as the original item
+    NSURL *destinationDirectoryURL;
+    {
+        NSError *error = nil;
+        NSURL *containerURL = [ubiquitousScope documentsURL:&error];
+        if (!containerURL) {
+            NSLog(@"-moveItemsAtURLs:... failed to get ubiquity container URL: %@", error);
+            if (completionHandler)
+                completionHandler(movedURLs, errorURLs);
+            return;
+        }
+        
+        // TODO: We might be creating a directory in the ubiquity container. To we need to do a coordinated read/write of this non-document directory in case there is an incoming folder creation from the cloud? This seems like a pretty small hole, but still...
+        if (folderNameOrNil)
+            destinationDirectoryURL = [containerURL URLByAppendingPathComponent:folderNameOrNil isDirectory:YES];
+        else
+            destinationDirectoryURL = containerURL;
+        
+        OBASSERT([destinationDirectoryURL isFileURL]);
+        DEBUG_CLOUD(@"-moveItemsAtURLs:... is trying to create cloud directory %@", destinationDirectoryURL);
+        if (![[NSFileManager defaultManager] directoryExistsAtPath:[destinationDirectoryURL path]]) {
+            if (![[NSFileManager defaultManager] createDirectoryAtURL:destinationDirectoryURL withIntermediateDirectories:YES/*shouldn't be necessary...*/ attributes:nil error:&error]) {
+                for (NSURL *sourceURL in urls)
+                    [errorURLs setObject:error forKey:sourceURL];
+                
+                NSLog(@"-moveItemsAtURLs:... failed to create cloud directory %@: %@", destinationDirectoryURL, error);
+                if (completionHandler)
+                    completionHandler(movedURLs, errorURLs);
+                return;
+            }
+        }
+    }
+    
+    OBASSERT([_actionOperationQueue maxConcurrentOperationCount] == 1); // Or else we'll try to mutate movedURLs and errorURLs from multiple threads simultaneously
+    
+    [_actionOperationQueue addOperationWithBlock:^{
+        // Theoretically, we could create a temporary concurrent queue and perform these moves simultaneously, but then I'd have to synchronize on collecting the movedURLs and errorURLs.
+        for (NSURL *sourceURL in urls) {
+            OBASSERT([[movedURLs allKeys] containsObject:sourceURL] == NO);
+            OBASSERT([[errorURLs allKeys] containsObject:sourceURL] == NO);
+            
+            NSURL *destinationURL = [destinationDirectoryURL URLByAppendingPathComponent:[sourceURL lastPathComponent]];
+            NSError *error;
+            
+            DEBUG_CLOUD(@"-moveItemsAtURLs:... is attempting to move %@ to the cloud at %@", sourceURL, destinationURL);
+            if ([[NSFileManager defaultManager] setUbiquitous:YES itemAtURL:sourceURL destinationURL:destinationURL error:&error]) {
+                DEBUG_CLOUD(@"-moveItemsAtURLs:... successfully created %@", destinationURL);
+                [movedURLs setObject:destinationURL forKey:sourceURL];
+            } else {
+                OBASSERT_NOTNULL(error);
+                DEBUG_CLOUD(@"-moveItemsAtURLs:... failed to create %@: %@", destinationURL, error);
+                [errorURLs setObject:error forKey:sourceURL];
+            }
+            
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [self scanItemsWithCompletionHandler:^{
+                    if (completionHandler)
+                        completionHandler(movedURLs, errorURLs);
+                }];
+            }];
+        }
+    }];
+    
+    DEBUG_CLOUD(@"-moveItemsAtURLs:... is returning");
+#endif
+}
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+- (void)moveFileItems:(NSSet *)fileItems toScope:(OFSDocumentStoreScope *)scope completionHandler:(void (^)(OFSDocumentStoreFileItem *failingItem, NSError *errorOrNil))completionHandler;
+{
+    OBPRECONDITION([NSThread isMainThread]); // since we'll send the completion handler back to the main thread, make sure we came from there
+    OBPRECONDITION(scope);
+    
+    completionHandler = [completionHandler copy];
+        
+    for (OFSDocumentStoreFileItem *fileItem in fileItems) {
+        NSError *error;
+        OBASSERT(fileItem.scope != scope, "Don't try to move items within the same scope");
+        if (![fileItem.scope prepareToMoveFileItem:fileItem toScope:scope error:&error]) {
+            if (completionHandler)
+                completionHandler(fileItem, error);
+            return;
+        }
+    }
+
+    [scope moveFileItems:fileItems completionHandler:^(OFSDocumentStoreFileItem *failingFileItem, NSError *errorOrNil){
+        OBASSERT([NSThread isMainThread]);
+        if (completionHandler)
+            completionHandler(failingFileItem, errorOrNil);
+    }];
+}
+
+#endif
+
+
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 - (void)makeGroupWithFileItems:(NSSet *)fileItems completionHandler:(void (^)(OFSDocumentStoreGroupItem *group, NSError *error))completionHandler;
 {
@@ -440,100 +568,6 @@ static unsigned ScopeContext;
 }
 
 #endif
-
-- (void)moveItemsAtURLs:(NSSet *)urls toCloudFolderInScope:(OFSDocumentStoreScope *)ubiquitousScope withName:(NSString *)folderNameOrNil completionHandler:(void (^)(NSDictionary *movedURLs, NSDictionary *errorURLs))completionHandler;
-{
-    OBFinishPorting; // Make this work and remove references to ubiquity
-#if 0
-    OBPRECONDITION([NSThread isMainThread]);
-    OBASSERT(ubiquitousScope);
-    
-    NSMutableDictionary *movedURLs = [NSMutableDictionary dictionary];
-    NSMutableDictionary *errorURLs = [NSMutableDictionary dictionary];
-    
-    // Early out for no-ops
-    if ([urls count] == 0) {
-        if (completionHandler)
-            completionHandler(movedURLs, errorURLs);
-        return;
-    }
-    
-    // <bug:///80920> (Can we rename iCloud items that aren't yet fully (or at all) downloaded? [engineering])
-    
-#ifdef DEBUG_CLOUD_ENABLED
-    void (^originalCompletionHandler)(NSDictionary *, NSDictionary *) = completionHandler;
-    completionHandler = ^(NSDictionary *theMovedURLs, NSDictionary *theErrorURLs) {
-        DEBUG_CLOUD(@"-moveItemsAtURLs:... is executing completion handler %p", (void *)originalCompletionHandler);
-        originalCompletionHandler(theMovedURLs, theErrorURLs);
-    };
-#endif
-        
-    // Make a destination in a folder under the same container scope as the original item
-    NSURL *destinationDirectoryURL;
-    {
-        NSError *error = nil;
-        NSURL *containerURL = [ubiquitousScope documentsURL:&error];
-        if (!containerURL) {
-            NSLog(@"-moveItemsAtURLs:... failed to get ubiquity container URL: %@", error);
-            if (completionHandler)
-                completionHandler(movedURLs, errorURLs);
-            return;
-        }
-        
-        // TODO: We might be creating a directory in the ubiquity container. To we need to do a coordinated read/write of this non-document directory in case there is an incoming folder creation from the cloud? This seems like a pretty small hole, but still...
-        if (folderNameOrNil)
-            destinationDirectoryURL = [containerURL URLByAppendingPathComponent:folderNameOrNil isDirectory:YES];
-        else
-            destinationDirectoryURL = containerURL;
-        
-        OBASSERT([destinationDirectoryURL isFileURL]);
-        DEBUG_CLOUD(@"-moveItemsAtURLs:... is trying to create cloud directory %@", destinationDirectoryURL);
-        if (![[NSFileManager defaultManager] directoryExistsAtPath:[destinationDirectoryURL path]]) {
-            if (![[NSFileManager defaultManager] createDirectoryAtURL:destinationDirectoryURL withIntermediateDirectories:YES/*shouldn't be necessary...*/ attributes:nil error:&error]) {
-                for (NSURL *sourceURL in urls)
-                    [errorURLs setObject:error forKey:sourceURL];
-                
-                NSLog(@"-moveItemsAtURLs:... failed to create cloud directory %@: %@", destinationDirectoryURL, error);
-                if (completionHandler)
-                    completionHandler(movedURLs, errorURLs);
-                return;
-            }
-        }
-    }
-    
-    OBASSERT([_actionOperationQueue maxConcurrentOperationCount] == 1); // Or else we'll try to mutate movedURLs and errorURLs from multiple threads simultaneously
-    
-    [_actionOperationQueue addOperationWithBlock:^{
-        // Theoretically, we could create a temporary concurrent queue and perform these moves simultaneously, but then I'd have to synchronize on collecting the movedURLs and errorURLs.
-        for (NSURL *sourceURL in urls) {
-            OBASSERT([[movedURLs allKeys] containsObject:sourceURL] == NO);
-            OBASSERT([[errorURLs allKeys] containsObject:sourceURL] == NO);
-            
-            NSURL *destinationURL = [destinationDirectoryURL URLByAppendingPathComponent:[sourceURL lastPathComponent]];
-            NSError *error;
-            
-            DEBUG_CLOUD(@"-moveItemsAtURLs:... is attempting to move %@ to the cloud at %@", sourceURL, destinationURL);
-            if ([[NSFileManager defaultManager] setUbiquitous:YES itemAtURL:sourceURL destinationURL:destinationURL error:&error]) {
-                DEBUG_CLOUD(@"-moveItemsAtURLs:... successfully created %@", destinationURL);
-                [movedURLs setObject:destinationURL forKey:sourceURL];
-            } else {
-                OBASSERT_NOTNULL(error);
-                DEBUG_CLOUD(@"-moveItemsAtURLs:... failed to create %@: %@", destinationURL, error);
-                [errorURLs setObject:error forKey:sourceURL];
-            }
-            
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [self scanItemsWithCompletionHandler:^{
-                    if (completionHandler)
-                        completionHandler(movedURLs, errorURLs);
-                }];
-            }];
-        }
-    }];
-    
-    DEBUG_CLOUD(@"-moveItemsAtURLs:... is returning");
-#endif
-}
 
 - (void)scanItemsWithCompletionHandler:(void (^)(void))completionHandler;
 {
@@ -699,37 +733,6 @@ static unsigned ScopeContext;
     [scope performDocumentCreationAction:action handler:handler];
 }
 
-// The documentation says to not call -setUbiquitous:itemAtURL:destinationURL:error: on the main thread to avoid possible deadlock.
-- (void)moveFileItems:(NSSet *)fileItems toCloud:(BOOL)shouldBeInCloud completionHandler:(void (^)(OFSDocumentStoreFileItem *failingItem, NSError *errorOrNil))completionHandler;
-{
-    OBFinishPorting; // Make this work and remove references to iCloud/ubiquity
-#if 0
-    OBPRECONDITION([NSThread isMainThread]); // since we'll send the completion handler back to the main thread, make sure we came from there
-    
-    // capture scope...
-    completionHandler = [completionHandler copy];
-    
-    [_actionOperationQueue addOperationWithBlock:^{
-        OFSDocumentStoreFileItem *failingFileItem = nil;
-        NSError *error = nil;
-
-        for (OFSDocumentStoreFileItem *fileItem in fileItems) {
-            error = nil;
-            if (![self _moveURL:fileItem.fileURL toCloud:shouldBeInCloud error:&error]) {
-                failingFileItem = fileItem;
-                break;
-            }
-        }
-    
-        if (completionHandler) {
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                completionHandler(failingFileItem, error);
-            }];
-        }
-    }];
-#endif
-}
-
 #endif
 
 #pragma mark - NSObject (NSKeyValueObserving)
@@ -797,82 +800,6 @@ static unsigned ScopeContext;
         [self scanItemsWithCompletionHandler:nextCompletionHandler];
     }
 }
-
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-- (NSURL *)_moveURL:(NSURL *)sourceURL toCloud:(BOOL)shouldBeInCloud error:(NSError **)outError;
-{
-    OBPRECONDITION(sourceURL);
-    
-    OBFinishPorting; // Make this work and remove references to iCloud/ubiquity
-#if 0
-    NSURL *targetDocumentsURL;
-    if (shouldBeInCloud) {
-        OFSDocumentStoreScope *ubiquitousScope = [OFSDocumentStoreUbiquityScope defaultUbiquitousScope];
-        if (!(targetDocumentsURL = [ubiquitousScope documentsURL:outError]))
-            return NO;
-    } else {
-        // Check to make sure sourceURL is eligible to be moved out of the cloud.
-        NSNumber *sourceIsDownloaded = nil;
-        NSNumber *sourceHasUnresolvedConflicts = nil;
-        NSError *error = nil;
-
-        if (![sourceURL getResourceValue:&sourceIsDownloaded forKey:NSURLUbiquitousItemIsDownloadedKey error:&error]) {
-             NSLog(@"Error checking if source URL %@ is downloaded: %@", [sourceURL absoluteString], [error toPropertyList]);
-        }
-        
-        if ([sourceIsDownloaded boolValue] == NO) {
-            NSLog(@"Source URL %@ is not fully downloaded.", sourceURL);
-            
-            NSString *title =  NSLocalizedStringFromTableInBundle(@"Cannot move item out of the cloud.", @"OmniFileStore", OMNI_BUNDLE, @"error title");
-            NSString *description = NSLocalizedStringFromTableInBundle(@"This item is not fully downloaded and cannot be moved out of the cloud. Tap the document to begin the download.", @"OmniFileStore", OMNI_BUNDLE, @"not fully downloaded error description");
-            
-            OFSError(outError, OFSUbiquitousItemNotDownloaded, title, description);
-            
-            return nil;
-        }
-        
-        if (![sourceURL getResourceValue:&sourceHasUnresolvedConflicts forKey:NSURLUbiquitousItemHasUnresolvedConflictsKey error:&error]) {
-            NSLog(@"Error checking if source URL %@ is has unresolved conflicts: %@", [sourceURL absoluteString], [error toPropertyList]);
-        }
-        
-        if ([sourceHasUnresolvedConflicts boolValue]) {
-            NSLog(@"Source URL %@ has unresolved conflicts.", sourceURL);
-            
-            NSString *title =  NSLocalizedStringFromTableInBundle(@"Cannot move item out of the cloud.", @"OmniFileStore", OMNI_BUNDLE, @"error title");
-            NSString *description = NSLocalizedStringFromTableInBundle(@"This item has unresolved conflicts and cannot be moved out of the cloud.", @"OmniFileStore", OMNI_BUNDLE, @"unresolved conflicts error description");
-            
-            OFSError(outError, OFSUbiquitousItemInConflict, title, description);
-            
-            return nil;
-        }
-        
-        OBFinishPorting;
-//        OFSDocumentStoreScope *localScope = [OFSDocumentStoreLocalDirectoryScope defaultLocalScope];
-//        targetDocumentsURL = [localScope documentsURL:outError];
-    }
-    
-    NSNumber *sourceIsDirectory = nil;
-    NSError *resourceError = nil;
-    if (![sourceURL getResourceValue:&sourceIsDirectory forKey:NSURLIsDirectoryKey error:&resourceError]) {
-        NSLog(@"Error checking if source URL %@ is a directory: %@", [sourceURL absoluteString], [resourceError toPropertyList]);
-        // not fatal...
-    }
-    OBASSERT(sourceIsDirectory);
-
-    NSURL *destinationURL = [targetDocumentsURL URLByAppendingPathComponent:[sourceURL lastPathComponent] isDirectory:[sourceIsDirectory boolValue]];
-    DEBUG_STORE(@"Moving document: %@ -> %@ (shouldBeInCloud=%u)", sourceURL, destinationURL, shouldBeInCloud);
-    
-    // The documentation says to not call -setUbiquitous:itemAtURL:destinationURL:error: on the main thread to avoid possible deadlock.
-    OBASSERT(![NSThread isMainThread]);
-    
-    // The documentation also says that this method does a coordinated move, so we don't need to (and in fact, experimentally, if we try we deadlock).
-    if (![[NSFileManager defaultManager] setUbiquitous:shouldBeInCloud itemAtURL:sourceURL destinationURL:destinationURL error:outError])
-        return nil;
-    
-    return destinationURL;
-#endif
-}
-#endif
 
 - (BOOL)_allScopesHaveFinishedInitialScan;
 {

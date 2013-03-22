@@ -78,6 +78,10 @@
                         </dict>
                 </dict>
         </dict>
+    	<key>OFXSyncPathExtensions</key>
+    	<array>
+    		<string>rtf</string>
+    	</array>
         <key>UISupportedInterfaceOrientations</key>
         <array>
                 <string>UIInterfaceOrientationPortrait</string>

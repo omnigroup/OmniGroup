@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,44 +15,30 @@
 @class OFSFileInfo, OFXServerAccount;
 @class OUISyncDownloader;
 
-@interface OUISyncListController : OUIFileListViewController <OUIReplaceDocumentAlertDelegate> {
+@interface OUISyncListController : OUIFileListViewController <OUIReplaceDocumentAlertDelegate>
+{
 @protected
     UIView *_connectingView;
     UIActivityIndicatorView *_connectingProgress;
     UILabel *_connectingLabel;
     
     BOOL _isDownloading;
-    
-@private
-    OFXServerAccount *_serverAccount;
-    NSURL *_address;
-    
-    BOOL _isExporting;
-    NSFileWrapper *_exportFileWrapper;
-    
-    /* these are used when the download is delayed in order to scroll the view to the visible */ 
-    NSURL *_exportURL; 
-    NSIndexPath *_exportIndexPath; 
-    
-    OUIReplaceDocumentAlert *_replaceDocumentAlert;
-    
-    OUISyncDownloader *_downloader;
 }
 
 - initWithServerAccount:(OFXServerAccount *)serverAccount exporting:(BOOL)exporting error:(NSError **)outError;
 
 @property(nonatomic,readonly) OFXServerAccount *serverAccount;
-@property (nonatomic, readonly) BOOL isExporting;
+@property(nonatomic,readonly) BOOL isExporting;
 
-@property (nonatomic, strong) UIView *connectingView;
-@property (nonatomic, strong) UIActivityIndicatorView *connectingProgress;
-@property (nonatomic, strong) UILabel *connectingLabel;
+@property(nonatomic,strong) UIView *connectingView;
+@property(nonatomic,strong) UIActivityIndicatorView *connectingProgress;
+@property(nonatomic,strong) UILabel *connectingLabel;
 
-@property (readwrite, strong) NSURL *address;
+@property(nonatomic,strong) NSURL *address;
 
-@property (readwrite, strong) NSFileWrapper *exportFileWrapper;
+@property(nonatomic,strong) NSFileWrapper *exportFileWrapper;
 
-@property (nonatomic, strong) OUISyncDownloader *downloader;
+@property(nonatomic,strong) OUISyncDownloader *downloader;
 
 // Public
 - (void)addDownloaderWithURL:(NSURL *)exportURL toCell:(UITableViewCell *)cell;

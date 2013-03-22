@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'OSUInstaller' target in the 'OSUInstaller' project
+//
+
+#ifdef __OBJC__
+    #import <Foundation/Foundation.h>
+#endif

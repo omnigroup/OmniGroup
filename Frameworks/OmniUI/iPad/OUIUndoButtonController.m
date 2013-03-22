@@ -12,12 +12,11 @@
 
 RCS_ID("$Id$");
 
-@interface OUIUndoButtonController (/*private */)
-- (void)_updateButtonStates;
-@end
- 
-
 @implementation OUIUndoButtonController
+{
+    UIPopoverController *_menuPopoverController;
+    UINavigationController *_menuNavigationController;
+}
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
@@ -106,8 +105,7 @@ RCS_ID("$Id$");
     return NO;
 }
 
-#pragma mark -
-#pragma mark Actions
+#pragma mark - Actions
 
 - (void)doesNotRecognizeSelector:(SEL)aSelector;
 {
@@ -117,32 +115,27 @@ RCS_ID("$Id$");
 
 - (IBAction)undoButtonAction:(id)sender;
 {
-    if (undoBarButtonItemTarget)
-        [undoBarButtonItemTarget undo:_undoButton];
+    if (_undoBarButtonItemTarget)
+        [_undoBarButtonItemTarget undo:_undoButton];
     
     [self _updateButtonStates];
 }
 
 - (IBAction)redoButtonAction:(id)sender;
 {
-    if (undoBarButtonItemTarget)
-        [undoBarButtonItemTarget redo:_redoButton];
+    if (_undoBarButtonItemTarget)
+        [_undoBarButtonItemTarget redo:_redoButton];
     
     [self _updateButtonStates];
 }
 
-@synthesize undoButton = _undoButton;
-@synthesize redoButton = _redoButton;
-@synthesize undoBarButtonItemTarget;
-
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private
 
 - (void)_updateButtonStates;
 {
-    if (undoBarButtonItemTarget) {
-        [_undoButton setEnabled:[undoBarButtonItemTarget canPerformAction:@selector(undo:) withSender:_undoButton]];
-        [_redoButton setEnabled:[undoBarButtonItemTarget canPerformAction:@selector(redo:) withSender:_redoButton]];
+    if (_undoBarButtonItemTarget) {
+        [_undoButton setEnabled:[_undoBarButtonItemTarget canPerformAction:@selector(undo:) withSender:_undoButton]];
+        [_redoButton setEnabled:[_undoBarButtonItemTarget canPerformAction:@selector(redo:) withSender:_redoButton]];
     }
 }
 

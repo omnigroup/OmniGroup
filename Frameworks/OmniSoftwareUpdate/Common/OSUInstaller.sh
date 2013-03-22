@@ -3,27 +3,12 @@
 # Die on any error
 set -e
 
-# The authorization framework doesn't allow collecting stderr, so we direct it to a file.
-if [ -n "$3" ]; then
-    # The error log shouldn't overwrite; get this first
-    ERRORS=$3
-    if [ -e "$ERRORS" ]; then
-            echo "$ERRORS already exists!"
-            exit 4
-    fi
-
-    echo "Putting stderr in '$ERRORS'" >&2
-    exec 2> "$ERRORS"
-    exec 1>&2
-fi
-
-
 echo "args: $*"
 id
 
 SOURCE=$1
 DEST=$2
-shift 3
+shift 2
 
 if [ ! -r "$SOURCE" ]; then
 	echo "$SOURCE doesn't exist!" >&2
@@ -99,6 +84,9 @@ if [ ! -z "$CHFLAGS" ]; then
         echo "Applying flags ($CHFLAGS) to $DEST"
         /usr/bin/chflags "$CHFLAGS" "$DEST"
 fi
+
+# Remove quarantine
+xattr -r -d com.apple.quarantine "$DEST"
 
 echo "Installer script was successful."
 /bin/ls -leo@d "$DEST" || true

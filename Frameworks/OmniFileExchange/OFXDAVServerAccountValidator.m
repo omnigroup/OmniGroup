@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,6 +78,7 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
         
         self->_finished = nil;
         self->_stateChanged = nil;
+        self->_account.lastError = strongError;
         
         if (finished)
             finished(strongError);
@@ -93,7 +94,9 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
 
 - (void)startValidation;
 {
-    OBStrongRetain(self); // Hard retain ourselves until the end of the operation (even when we switch to ARC) 
+    OBStrongRetain(self); // Hard retain ourselves until the end of the operation (even when we switch to ARC)
+    
+    _account.lastError = nil;
     
     [_validationOperationQueue addOperationWithBlock:^{
         NSURL *address = _account.remoteBaseURL;
@@ -155,7 +158,7 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
         
         // Dispatch to the main queue so that any possible credential adding is done.
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            if (_shouldSkipConformanceTests) {
+            if (!_account.isCloudSyncEnabled || _shouldSkipConformanceTests) {
                 finishWithError(nil);
             }
             OFSDAVConformanceTest *conformanceTest = [[OFSDAVConformanceTest alloc] initWithFileManager:fileManager];

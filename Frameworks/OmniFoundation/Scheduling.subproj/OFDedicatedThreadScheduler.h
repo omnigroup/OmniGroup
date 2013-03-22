@@ -23,6 +23,7 @@
 }
 
 + (OFDedicatedThreadScheduler *)dedicatedThreadScheduler;
++ (OFDedicatedThreadScheduler *)dedicatedThreadSchedulerIfCreated;
 
 - (void)setInvokesEventsInMainThread:(BOOL)shouldInvokeEventsInMainThread;
 - (void)runScheduleForeverInNewThread;

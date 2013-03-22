@@ -11,6 +11,8 @@
 #import <OmniFoundation/OFInvocation.h>
 #import <OmniFoundation/OFMessageQueuePriorityProtocol.h>
 #import <OmniFoundation/OFQueueProcessor.h>
+#import <OmniFoundation/OFRunLoopQueueProcessor.h>
+#import <Foundation/NSOperation.h>
 
 RCS_ID("$Id$")
 
@@ -40,12 +42,20 @@ static BOOL OFMessageQueueDebug = NO;
 
 + (OFMessageQueue *)mainQueue;
 {
+    static dispatch_once_t onceToken;
     static OFMessageQueue *mainQueue = nil;
-
-    if (mainQueue == nil) {
+    
+    dispatch_once(&onceToken, ^{
         mainQueue = [[OFMessageQueue alloc] init];
         [mainQueue setSchedulesBasedOnPriority:NO];
-    }
+
+        // If we are going to be queueing messages to the main queue, it needs a processor.
+        // NOTE: This will call back to +mainQueue to pass the result to the queue processor's -initForQueue:. This is OK and needed in the case that the first call to +mainQueue is from a background thread.
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [OFRunLoopQueueProcessor mainThreadProcessor];
+        }];
+    });
+
     return mainQueue;
 }
 

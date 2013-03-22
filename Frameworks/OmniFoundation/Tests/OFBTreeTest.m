@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,18 +86,23 @@ struct expectedEnumeration {
     NSString *marker;
 };
 
-static void checkEnumerator(const OFBTree *tree, void *element, void *arg)
-{
-    struct expectedEnumeration *expectation = arg;
-    int elt = *(int *)element;
-    OFBTreeTests *self = expectation->tester;
-
-    should1(expectation->pos < expectation->numCount, expectation->marker);
-    should1(elt == expectation->nums[expectation->pos], expectation->marker);
-    expectation->pos ++;
-}
-
-#define CHECK_ENUMERATION(bTree, numbers...) { static const int nums[] = { numbers }; struct expectedEnumeration ctxt; ctxt.nums = nums; ctxt.numCount = ( sizeof(nums) / sizeof(nums[0]) ); ctxt.pos = 0; ctxt.tester = self; ctxt.marker = [NSString stringWithFormat:@"(Enumeration check at line %d of %s)", __LINE__, __FILE__]; OFBTreeEnumerate(&bTree, checkEnumerator, (void *)&ctxt); should1(ctxt.pos == ctxt.numCount, ctxt.marker); }
+#define CHECK_ENUMERATION(bTree, numbers...) do { \
+    static const int nums[] = { numbers }; \
+    __block struct expectedEnumeration expectation; \
+    expectation.nums = nums; \
+    expectation.numCount = ( sizeof(nums) / sizeof(nums[0]) ); \
+    expectation.pos = 0; \
+    expectation.tester = self; \
+    expectation.marker = [NSString stringWithFormat:@"(Enumeration check at line %d of %s)", __LINE__, __FILE__]; \
+    OFBTreeEnumerate(&bTree, ^(const OFBTree *tree, void *element){ \
+        int elt = *(int *)element; \
+        OFBTreeTests *self = expectation.tester; \
+        should1(expectation.pos < expectation.numCount, expectation.marker); \
+        should1(elt == expectation.nums[expectation.pos], expectation.marker); \
+        expectation.pos ++; \
+    }); \
+    should1(expectation.pos == expectation.numCount, expectation.marker); \
+} while(0)
 
 // Methods automatically found and invoked by the SenTesting framework
 
@@ -285,7 +290,7 @@ static void checkEnumerator(const OFBTree *tree, void *element, void *arg)
     }
 
     // I'm too lazy to write a real test, but this will segfault if the tree is not empty
-    OFBTreeEnumerate(&btree, NULL, NULL);
+    OFBTreeEnumerate(&btree, NULL);
 
     // Finding 1..N in random order
     permute(numbers, INSERT_COUNT);

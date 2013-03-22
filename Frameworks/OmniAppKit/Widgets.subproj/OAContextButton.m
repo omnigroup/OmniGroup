@@ -16,12 +16,10 @@
 
 RCS_ID("$Id$");
 
-@interface OAContextButton (Private)
-- (void)_popUpContextMenu;
-@end
-
-
 @implementation OAContextButton
+{
+    id _nonretained_delegate;
+}
 
 + (NSImage *)actionImage;
 {
@@ -97,13 +95,13 @@ RCS_ID("$Id$");
 // API
 //
 
-@synthesize delegate=delegate;
+@synthesize delegate = _nonretained_delegate;
 
 /*" Returns the menu to be used, or nil if no menu can be found. "*/
 - (NSMenu *)locateActionMenu;
 {
     NSMenu *menu;
-    OAContextControlGetMenu(delegate, self, &menu, NULL);
+    OAContextControlGetMenu(_nonretained_delegate, self, &menu, NULL);
     return menu;
 }
 
@@ -118,9 +116,7 @@ RCS_ID("$Id$");
     [self _popUpContextMenu];
 }
 
-@end
-
-@implementation OAContextButton (Private)
+#pragma mark - Private
 
 - (void)_popUpContextMenu;
 {
@@ -129,7 +125,7 @@ RCS_ID("$Id$");
     
     NSView *targetView;
     NSMenu *menu;
-    OAContextControlGetMenu(delegate, self, &menu, &targetView);
+    OAContextControlGetMenu(_nonretained_delegate, self, &menu, &targetView);
     
     if (targetView == nil)
         menu = OAContextControlNoActionsMenu();

@@ -18,6 +18,9 @@
 
 RCS_ID("$Id$")
 
+@interface NSView (DebuggingSPI)
+- (NSString *)_subtreeDescription;
+@end
 
 static void (*oldBecomeKeyWindow)(id self, SEL _cmd);
 static void (*oldResignKeyWindow)(id self, SEL _cmd);
@@ -187,6 +190,23 @@ static NSMutableArray *zOrder;
     [self visualizeConstraints:[view constraintsAffectingLayoutForOrientation:orientation]];
 }
 
+- (void)_logSubtreeDescriptionMenuAction:(id)sender;
+{
+    NSView *view = [sender representedObject];
+    if ([view respondsToSelector:@selector(_subtreeDescription)])
+        NSLog(@"%@", [[sender representedObject] _subtreeDescription]);
+    else
+        OBASSERT_NOT_REACHED("Object %@ does not respond to -_subtreeDescription; either the debugging method is gone or it is not an NSView", view);
+}
+
+- (void)_copyAddressMenuAction:(id)sender;
+{
+    NSString *addressString = [NSString stringWithFormat:@"%p", [sender representedObject]];
+    NSPasteboard *pboard = [NSPasteboard generalPasteboard];
+    [pboard clearContents];
+    [pboard writeObjects:[NSArray arrayWithObject:addressString]];
+}
+
 - (void)visualizeConstraintsForPickedView:(id)sender;
 {
     [OAViewPicker beginPickingForWindow:self withCompletionHandler:^(NSView *pickedView) {
@@ -194,31 +214,38 @@ static NSMutableArray *zOrder;
             return NO;
         
         static NSMenu *constraintsOptions;
-        static NSMenuItem *pickedItem, *horizontalItem, *verticalItem;
+        static NSMenuItem *headerItem, *horizontalItem, *verticalItem, *logSubtreeItem, *copyAddressItem;
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
             constraintsOptions = [[NSMenu alloc] initWithTitle:@"Visualize Constraints"];
             [constraintsOptions setAutoenablesItems:NO];
             
-            pickedItem = [constraintsOptions addItemWithTitle:@"<PICKED VIEW>" action:@selector(noop:) keyEquivalent:@""];
-            [pickedItem setEnabled:NO];
+            headerItem = [constraintsOptions addItemWithTitle:@"<PICKED VIEW>" action:@selector(noop:) keyEquivalent:@""];
+            [headerItem setEnabled:NO];
             
-            horizontalItem = [constraintsOptions addItemWithTitle:@"Horizontal" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
+            horizontalItem = [constraintsOptions addItemWithTitle:@"Visualize horizontal constraints" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
             [horizontalItem setTag:NSLayoutConstraintOrientationHorizontal];
             [horizontalItem setEnabled:YES];
             
-            verticalItem = [constraintsOptions addItemWithTitle:@"Vertical" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
+            verticalItem = [constraintsOptions addItemWithTitle:@"Visualize vertical constraints" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
             [verticalItem setTag:NSLayoutConstraintOrientationVertical];
             [verticalItem setEnabled:YES];
+            
+            logSubtreeItem = [constraintsOptions addItemWithTitle:@"Log subview hierarchy" action:@selector(_logSubtreeDescriptionMenuAction:) keyEquivalent:@""];
+            [logSubtreeItem setEnabled:YES];
+            
+            copyAddressItem = [constraintsOptions addItemWithTitle:@"Copy address" action:@selector(_copyAddressMenuAction:) keyEquivalent:@""];
+            [copyAddressItem setEnabled:YES];
         });
         
-        [pickedItem setTitle:[NSString stringWithFormat:@"Visualize constraints for %@", [pickedView shortDescription]]];
-        [horizontalItem setRepresentedObject:pickedView];
-        [horizontalItem setTarget:self];
-        [verticalItem setRepresentedObject:pickedView];
-        [verticalItem setTarget:self];
+        [headerItem setTitle:[NSString stringWithFormat:@"%@", [pickedView shortDescription]]];
         
-        BOOL picked = [constraintsOptions popUpMenuPositioningItem:pickedItem atLocation:[NSEvent mouseLocation] inView:nil];
+        for (NSMenuItem *item in constraintsOptions.itemArray) {
+            item.representedObject = pickedView;
+            item.target = self;
+        }
+
+        BOOL picked = [constraintsOptions popUpMenuPositioningItem:headerItem atLocation:[NSEvent mouseLocation] inView:nil];
         
         [horizontalItem setRepresentedObject:nil];
         [verticalItem setRepresentedObject:nil];

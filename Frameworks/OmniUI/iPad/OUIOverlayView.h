@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,21 +22,6 @@ typedef enum {
 
 @class OUITextLayout;
 @interface OUIOverlayView : UIView
-{
-@private
-    NSString *_text;
-    NSAttributedString *_attributedText;
-    UIImage *_image;
-    CGSize _borderSize;
-    NSTimeInterval _messageDisplayInterval;
-    
-    NSTimer *_overlayTimer;
-    CGSize _cachedSuggestedSize;
-    
-    BOOL shouldHide;
-    
-    OUITextLayout *_textLayout;
-}
 
 // Convenience methods for creating temporary overlays.  Pass 0 as the displayInterval to use the default delay.
 + (OUIOverlayView *)sharedTemporaryOverlay;
@@ -59,10 +44,10 @@ typedef enum {
 
 @property(assign,nonatomic) NSString *text;     // not retained - sets up NSAttributedString with default font and color
 @property(retain,nonatomic) NSAttributedString *attributedText;
-@property(readonly) OUITextLayout *textLayout;
+@property(readonly,nonatomic) OUITextLayout *textLayout;
 @property(retain,nonatomic) UIImage *image;
-@property(assign,nonatomic) CGSize borderSize;
-@property(assign,nonatomic) NSTimeInterval messageDisplayInterval;  // seconds
+@property(nonatomic) CGSize borderSize;
+@property(nonatomic) NSTimeInterval messageDisplayInterval;  // seconds
 @property(readonly, nonatomic) BOOL isVisible;
 
 - (void)avoidTouchPoint:(CGPoint)touchPoint withinBounds:(CGRect)superBounds;

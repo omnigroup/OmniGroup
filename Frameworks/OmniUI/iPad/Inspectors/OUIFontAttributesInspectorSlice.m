@@ -18,9 +18,13 @@
 RCS_ID("$Id$");
 
 @implementation OUIFontAttributesInspectorSlice
-
-//@synthesize fontAttributeSegmentedControl = _fontAttributeSegmentedControl;
-@synthesize showStrikethrough = _showStrikethrough;
+{
+    OUIInspectorSegmentedControl *_fontAttributeSegmentedControl;
+    OUIInspectorSegmentedControlButton *_boldFontAttributeButton;
+    OUIInspectorSegmentedControlButton *_italicFontAttributeButton;
+    OUIInspectorSegmentedControlButton *_underlineFontAttributeButton;
+    OUIInspectorSegmentedControlButton *_strikethroughFontAttributeButton;
+}
 
 - (void)dealloc;
 {
@@ -81,8 +85,7 @@ RCS_ID("$Id$");
     [_strikethroughFontAttributeButton setSelected:strikethrough];
 }
 
-#pragma mark -
-#pragma mark UIViewController subclass;
+#pragma mark - UIViewController subclass;
 
 - (void)loadView;
 {
@@ -113,8 +116,7 @@ RCS_ID("$Id$");
     self.view = _fontAttributeSegmentedControl;
 }
 
-#pragma mark -
-#pragma mark OUIInspectorSlice subclass
+#pragma mark - OUIInspectorSlice subclass
 
 - (BOOL)isAppropriateForInspectedObject:(id)object;
 {
@@ -130,8 +132,7 @@ RCS_ID("$Id$");
     [self updateFontAttributeButtonsWithFontDescriptors:selection.fontDescriptors];
 }
 
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private
 
 static id <OUIFontInspection> _firstFont(OUIFontAttributesInspectorSlice *self)
 {

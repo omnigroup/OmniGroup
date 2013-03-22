@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,5 +70,4 @@ extern NSString *OFXMLCreateStringWithEntityReferencesInCFEncoding(NSString *sou
 extern NSString *OFXMLCreateParsedEntityString(NSString *sourceString) NS_RETURNS_RETAINED;
 extern NSString *OFStringForEntityName(NSString *entityName);
 
-//extern NSString *OFCharacterDataFromXMLTree(CFXMLTreeRef aTree);
 extern NSString *OFCharacterDataFromElement(OFXMLElement *element);

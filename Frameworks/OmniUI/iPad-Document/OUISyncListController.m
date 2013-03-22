@@ -18,17 +18,14 @@
 
 RCS_ID("$Id$");
 
-@interface OUISyncListController (/* Private */)
-
-- (NSString *)_formattedFileSize:(NSUInteger)sizeinBytes;
-- (void)_updateNavigationButtons;
-- (void)_fadeOutDownload:(OUISyncDownloader *)downloader;
-- (void)_goBack:(id)sender;
-
-@end
-
-
 @implementation OUISyncListController
+{
+    /* these are used when the download is delayed in order to scroll the view to the visible */
+    NSURL *_exportURL;
+    NSIndexPath *_exportIndexPath;
+    
+    OUIReplaceDocumentAlert *_replaceDocumentAlert;
+}
 
 - initWithServerAccount:(OFXServerAccount *)serverAccount exporting:(BOOL)exporting error:(NSError **)outError;
 {
@@ -49,14 +46,6 @@ RCS_ID("$Id$");
 @synthesize connectingView = _connectingView;
 @synthesize connectingProgress = _connectingProgress;
 @synthesize connectingLabel = _connectingLabel;
-
-@synthesize serverAccount = _serverAccount;
-@synthesize address = _address;
-@synthesize isExporting = _isExporting;
-@synthesize exportFileWrapper = _exportFileWrapper;
-
-@synthesize downloader = _downloader;
-
 
 - (void)viewDidLoad;
 {
@@ -174,8 +163,9 @@ RCS_ID("$Id$");
 {
     // Should override in subclass.
 }
-#pragma mark -
-#pragma mark OUIReplaceDocumentAlert
+
+#pragma mark - OUIReplaceDocumentAlert
+
 - (void)replaceDocumentAlert:(OUIReplaceDocumentAlert *)alert didDismissWithButtonIndex:(NSInteger)buttonIndex documentURL:(NSURL *)documentURL;
 {
     _replaceDocumentAlert = nil;
@@ -200,7 +190,8 @@ RCS_ID("$Id$");
     }
 }
 
-#pragma mark private
+#pragma mark - Private
+
 - (void)_displayDuplicateFileAlertForFile:(NSURL *)fileURL;
 {
     OBASSERT(_replaceDocumentAlert == nil); // this should never happen
@@ -332,8 +323,8 @@ RCS_ID("$Id$");
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-#pragma mark -
-#pragma mark UITableViewDataSource
+#pragma mark - UITableViewDataSource
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [super tableView:tableView cellForRowAtIndexPath:indexPath];
     
@@ -344,8 +335,8 @@ RCS_ID("$Id$");
     return cell;
 }
 
-#pragma mark -
-#pragma mark UITableViewDelegate
+#pragma mark - UITableViewDelegate
+
 - (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     if (_isDownloading)
@@ -372,4 +363,5 @@ RCS_ID("$Id$");
     
     _exportIndexPath = nil;
 }
+
 @end

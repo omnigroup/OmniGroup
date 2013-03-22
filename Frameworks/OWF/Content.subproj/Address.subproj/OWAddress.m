@@ -46,8 +46,8 @@ NSString *OWAddressShortcutsDidChange = @"OWAddressShortcutsDidChange";
 
 static NSDictionary *_shortcutDictionary = nil;
 static NSLock *_filterRegularExpressionLock = nil;
-static OFRegularExpression *_filterRegularExpression = nil;
-static OFRegularExpression *_whitelistFilterRegularExpression = nil;
+static NSRegularExpression *_filterRegularExpression = nil;
+static NSRegularExpression *_whitelistFilterRegularExpression = nil;
 static NSCharacterSet *nonShortcutCharacterSet;
 static unsigned int uniqueKeyCount;
 static NSLock *uniqueKeyCountLock;
@@ -189,13 +189,13 @@ static OFPreference *directoryIndexFilenamePreference = nil;
         NSEnumerator *regexEnumerator = [addressFilterArray objectEnumerator];
         NSString *regexString;
         while ((regexString = [regexEnumerator nextObject])) {
-            OFRegularExpression *regex = [[OFRegularExpression alloc] initWithString:regexString];
+            NSRegularExpression *regex = [[NSRegularExpression alloc] initWithPattern:regexString options:0 error:NULL];
             if (regex != nil) {
                 [regex release];
                 [goodRegex addObject:regexString];
             } 
         }
-        _filterRegularExpression = [[OFRegularExpression alloc] initWithString:[NSString stringWithFormat:@"(%@)", [goodRegex componentsJoinedByString:@")|("]]];
+        _filterRegularExpression = [[NSRegularExpression alloc] initWithPattern:[NSString stringWithFormat:@"(%@)", [goodRegex componentsJoinedByString:@")|("]] options:0 error:NULL];
     }
     whitelistArray = [userDefaults arrayForKey:OWAddressesToAllowDefaultName];
     if ([whitelistArray count] > 0) {
@@ -203,13 +203,13 @@ static OFPreference *directoryIndexFilenamePreference = nil;
         NSEnumerator *regexEnumerator = [whitelistArray objectEnumerator];
         NSString *regexString;
         while ((regexString = [regexEnumerator nextObject])) {
-            OFRegularExpression *regex = [[OFRegularExpression alloc] initWithString:regexString];
+            NSRegularExpression *regex = [[NSRegularExpression alloc] initWithPattern:regexString options:0 error:NULL];
             if (regex != nil) {
                 [regex release];
                 [goodRegex addObject:regexString];
             } 
         }
-        _whitelistFilterRegularExpression = [[OFRegularExpression alloc] initWithString:[NSString stringWithFormat:@"(%@)", [goodRegex componentsJoinedByString:@")|("]]];
+        _whitelistFilterRegularExpression = [[NSRegularExpression alloc] initWithPattern:[NSString stringWithFormat:@"(%@)", [goodRegex componentsJoinedByString:@")|("]] options:0 error:NULL];
     }
     [_filterRegularExpressionLock unlock];
 }

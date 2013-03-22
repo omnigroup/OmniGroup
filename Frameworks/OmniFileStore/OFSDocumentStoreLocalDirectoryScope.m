@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,13 @@
 
 RCS_ID("$Id$");
 
+@interface OFSDocumentStoreLocalDirectoryScopeFileInfo : NSObject
+@property(nonatomic,copy) NSURL *fileURL;
+@property(nonatomic,copy) NSDate *fileModificationDate;
+@end
+@implementation OFSDocumentStoreLocalDirectoryScopeFileInfo
+@end
+
 @interface OFSDocumentStoreLocalDirectoryScope () <OFSDocumentStoreConcreteScope, NSFilePresenter>
 @end
 
@@ -25,22 +32,12 @@ RCS_ID("$Id$");
     BOOL _hasRegisteredAsFilePresenter;
     BOOL _hasFinishedInitialScan;
     NSOperationQueue *_filePresenterQueue;
+
+    BOOL _rescanForPresentedItemDidChangeRunning;
+    BOOL _presentedItemDidChangeCalledWhileRescanning;
 }
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-
-#if 0
-+ (OFSDocumentStoreLocalDirectoryScope *)defaultLocalScope;
-{
-    static OFSDocumentStoreLocalDirectoryScope *localScope = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        localScope = [[self alloc] initWithDirectoryURL:[self userDocumentsDirectoryURL]];
-    });
-    
-    return localScope;
-}
-#endif
 
 + (NSURL *)userDocumentsDirectoryURL;
 {
@@ -80,25 +77,15 @@ RCS_ID("$Id$");
         [[NSFileManager defaultManager] logPropertiesOfTreeAtURL:_directoryURL];
 #endif
     
-    [self _scanItems];
+    [self _scanItemsWithCompletionHandler:nil];
     
     return self;
 }
 
-#pragma mark - OFSDocumentStoreScope subclass
-
-- (void)setDocumentStore:(OFSDocumentStore *)documentStore;
+- (void)dealloc;
 {
-    [super setDocumentStore:documentStore];
-    
-    // Only be registered as a file presenter while a document store has us as a scope. NSFileCoordinator will retain us while we are a presenter, so we can't de-register in -dealloc.
-    if (documentStore && !_hasRegisteredAsFilePresenter) {
-        _hasRegisteredAsFilePresenter = YES;
-        [NSFileCoordinator addFilePresenter:self];
-    } else if (!documentStore && _hasRegisteredAsFilePresenter) {
-        _hasRegisteredAsFilePresenter = NO;
-        [NSFileCoordinator removeFilePresenter:self];
-    }
+    // NOTE: We cannot wait until here to -removeFilePresenter: since -addFilePresenter: retains us. We remove in -_invalidate
+    OBASSERT([_filePresenterQueue operationCount] == 0);
 }
 
 #pragma mark - OFSDocumentStoreConcreteScope
@@ -117,6 +104,72 @@ RCS_ID("$Id$");
 {
     OBASSERT_NOT_REACHED("Local documents are always downloaded -- this should only be called if the fileItem.isDownloaded == NO");
     return YES;
+}
+
+- (void)deleteItem:(OFSDocumentStoreFileItem *)fileItem completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+{
+    OBPRECONDITION(fileItem.scope == self);
+    OBPRECONDITION([NSThread isMainThread]); // Synchronize with updating of fileItems, and this is the queue we'll invoke the completion handler on.
+    
+    // capture scope (might not be necessary since we aren't currently asynchronous here).
+    completionHandler = [completionHandler copy];
+    
+    [self performAsynchronousFileAccessUsingBlock:^{
+        // Passing nil for the presenter so that the file item gets its normal deletion accommodation request (it should then send us -_fileItemHasAccommodatedDeletion:).
+        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+        
+        NSError *error = nil;
+        __block BOOL success = NO;
+        __block NSError *innerError = nil;
+        
+        [coordinator coordinateWritingItemAtURL:fileItem.fileURL options:NSFileCoordinatorWritingForDeleting error:&error byAccessor:^(NSURL *newURL){
+            DEBUG_STORE(@"  coordinator issued URL to delete %@", newURL);
+            
+            NSError *deleteError = nil;
+            if (![[NSFileManager defaultManager] removeItemAtURL:newURL error:&deleteError]) {
+                NSLog(@"Error deleting %@: %@", [newURL absoluteString], [deleteError toPropertyList]);
+                innerError = deleteError;
+                return;
+            }
+            
+            // Recommended calling convention for this API (since it returns void) is to set a __block variable to success...
+            success = YES;
+        }];
+        
+        
+        if (!success) {
+            OBASSERT(error || innerError);
+            if (innerError)
+                error = innerError;
+        } else
+            error = nil;
+        
+        if (completionHandler) {
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                if (error)
+                    completionHandler(error);
+                else
+                    completionHandler(innerError);
+            }];
+        }
+    }];
+}
+
+- (void)wasAddedToDocumentStore;
+{
+    // Only be registered as a file presenter while a document store has us as a scope. NSFileCoordinator will retain us while we are a presenter, so we can't de-register in -dealloc.
+    if (!_hasRegisteredAsFilePresenter) {
+        _hasRegisteredAsFilePresenter = YES;
+        [NSFileCoordinator addFilePresenter:self];
+    }
+}
+
+- (void)willBeRemovedFromDocumentStore;
+{
+    if (_hasRegisteredAsFilePresenter) {
+        _hasRegisteredAsFilePresenter = NO;
+        [NSFileCoordinator removeFilePresenter:self];
+    }
 }
 
 #pragma mark - NSFilePresenter
@@ -141,6 +194,11 @@ RCS_ID("$Id$");
 - (void)presentedItemDidChange;
 {
     [self _requestScanDueToPresentedItemDidChange];
+}
+
+- (void)presentedSubitemAtURL:(NSURL *)oldURL didMoveToURL:(NSURL *)newURL;
+{
+    OBASSERT_NOT_REACHED("Never seen this called, but it would sure be nice");
 }
 
 - (void)accommodatePresentedSubitemDeletionAtURL:(NSURL *)url completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
@@ -168,13 +226,9 @@ RCS_ID("$Id$");
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         OBPRECONDITION([NSThread isMainThread]);
         
-        OBFinishPortingLater("Not scanning local directory");
-#if 0
-        if ([self parentViewController] == nil)
-            return; // We'll rescan when the currently open document closes
-        
-        if (_ignoreDocumentsDirectoryUpdates > 0)
-            return; // Some other operation is going on that is provoking this change and that wants to do the rescan manually.
+        OBFinishPortingLater("Still need ability to ignore updates? Only do this in the UI?");
+//        if (_ignoreDocumentsDirectoryUpdates > 0)
+//            return; // Some other operation is going on that is provoking this change and that wants to do the rescan manually.
         
         // We can get called a ton when moving a whole bunch of documents into iCloud. Don't start another scan until our first has finished.
         if (_rescanForPresentedItemDidChangeRunning) {
@@ -186,7 +240,8 @@ RCS_ID("$Id$");
         _rescanForPresentedItemDidChangeRunning = YES;
         
         // Note: this will get called when the app is returned to the foreground, if coordinated writes were made while it was backgrounded.
-        [self rescanDocumentsScrollingToURL:nil animated:YES completionHandler:^{
+        [self _scanItemsWithCompletionHandler:^{
+//        [self rescanDocumentsScrollingToURL:nil animated:YES completionHandler:^{
             _rescanForPresentedItemDidChangeRunning = NO;
             
             // If there were more scans requested while the first was running, do *one* more now to catch any remaining changes (no matter how many requests there were).
@@ -195,7 +250,6 @@ RCS_ID("$Id$");
                 [self _requestScanDueToPresentedItemDidChange];
             }
         }];
-#endif
     }];
 }
 
@@ -209,6 +263,14 @@ RCS_ID("$Id$");
 - (NSString *)displayName;
 {
     return NSLocalizedStringFromTableInBundle(@"Local Documents", @"OmniFileStore", OMNI_BUNDLE, @"Document store scope display name");
+}
+
+- (NSString *)moveToActionLabelWhenInList:(BOOL)inList;
+{
+    if (inList)
+        return self.displayName;
+    else
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Move to local documents", @"OmniFileStore", OMNI_BUNDLE, @"Menu item label for moving a document to local storage"), self.displayName];
 }
 
 static void _updateObjectValue(OFSDocumentStoreFileItem *fileItem, NSString *bindingKey, id newValue)
@@ -236,14 +298,16 @@ static void _updatePercent(OFSDocumentStoreFileItem *fileItem, NSString *binding
 #define UPDATE_LOCAL_FLAG(keySuffix) _updateFlag(fileItem, OFSDocumentStoreItem ## keySuffix ## Binding, kOFSDocumentStoreFileItemDefault_ ## keySuffix)
 #define UPDATE_LOCAL_PERCENT(keySuffix) _updatePercent(fileItem, OFSDocumentStoreItem ## keySuffix ## Binding, kOFSDocumentStoreFileItemDefault_ ## keySuffix)
 
-- (void)updateFileItem:(OFSDocumentStoreFileItem *)fileItem withMetadata:(id)metadata modificationDate:(NSDate *)modificationDate;
+- (void)updateFileItem:(OFSDocumentStoreFileItem *)fileItem withMetadata:(id)metadata fileModificationDate:(NSDate *)fileModificationDate;
 {
     OBPRECONDITION(metadata == nil);
     OBPRECONDITION([NSThread isMainThread]); // Fire KVO from the main thread
     OBPRECONDITION(fileItem.isDownloaded); // Local files should always be downloaded and never post a OFSDocumentStoreFileItemFinishedDownloadingNotification notification
     
-    fileItem.date = modificationDate;
-        
+    // Local filesystem items have the actual filesystem time as their user edit time.
+    fileItem.fileModificationDate = fileModificationDate;
+    fileItem.userModificationDate = fileModificationDate;
+    
     UPDATE_LOCAL_FLAG(HasUnresolvedConflicts);
     UPDATE_LOCAL_FLAG(IsDownloaded);
     UPDATE_LOCAL_FLAG(IsDownloading);
@@ -295,16 +359,25 @@ static void _updatePercent(OFSDocumentStoreFileItem *fileItem, NSString *binding
 
 #pragma mark - Internal
 
-- (void)_scanItems;
+- (void)_scanItemsWithCompletionHandler:(void (^)(void))completionHandler;
 {
+    completionHandler = [completionHandler copy];
+    
     [self performAsynchronousFileAccessUsingBlock:^{
         
-        // Build a map of document URLs to modification dates for all the found URLs. We don't deal with file items in the scan since we need to update the fileItems property on the foreground once the scan is finished and since we'd need to snapshot the existing file items for reuse on the foreground. The gap between these could let other operations in that might add/remove file items. When we are merging this scanned dictionary into the results, we'll need to be careful of that (in particular, other creators of files items like the -addDocumentFromURL:... method
-        NSMutableDictionary *urlToModificationDate = [[NSMutableDictionary alloc] init];
+        // Build a map of cache key to file URL/modification dates for all the found URLs. We don't use the fileURL as a key since -hash/-isEqual: assert in DEBUG builds due to NSURL -isEqual: bugs.
+        // We don't deal with file items in the scan since we need to update the fileItems property on the foreground once the scan is finished and since we'd need to snapshot the existing file items for reuse on the foreground. The gap between these could let other operations in that might add/remove file items. When we are merging this scanned dictionary into the results, we'll need to be careful of that (in particular, other creators of files items like the -addDocumentFromURL:... method
+        NSMutableDictionary *cacheKeyToFileInfo = [[NSMutableDictionary alloc] init];
         
         void (^itemBlock)(NSFileManager *fileManager, NSURL *fileURL) = ^(NSFileManager *fileManager, NSURL *fileURL){
+            NSString *cacheKey = OFSDocumentStoreScopeCacheKeyForURL(fileURL);
             NSDate *modificationDate = OFSDocumentStoreScopeModificationDateForFileURL(fileManager, fileURL);
-            [urlToModificationDate setObject:modificationDate forKey:fileURL];
+            
+            OFSDocumentStoreLocalDirectoryScopeFileInfo *fileInfo = [OFSDocumentStoreLocalDirectoryScopeFileInfo new];
+            fileInfo.fileURL = fileURL;
+            fileInfo.fileModificationDate = modificationDate;
+            
+            [cacheKeyToFileInfo setObject:fileInfo forKey:cacheKey];
         };
         
         void (^scanFinished)(void) = ^{
@@ -323,12 +396,24 @@ static void _updatePercent(OFSDocumentStoreFileItem *fileItem, NSString *binding
             NSMutableSet *updatedFileItems = [[NSMutableSet alloc] init];;
             
             // Update or create file items
-            [urlToModificationDate enumerateKeysAndObjectsUsingBlock:^(NSURL *fileURL, NSDate *modificationDate, BOOL *stop) {
-                NSString *cacheKey = OFSDocumentStoreScopeCacheKeyForURL(fileURL);
+            [cacheKeyToFileInfo enumerateKeysAndObjectsUsingBlock:^(NSString *cacheKey, OFSDocumentStoreLocalDirectoryScopeFileInfo *fileInfo, BOOL *stop) {
                 OFSDocumentStoreFileItem *fileItem = existingFileItemByCacheKey[cacheKey];
                 
+                // Our filesystem and user modification date are the same for local directory documents
+                NSDate *fileModificationDate = fileInfo.fileModificationDate;
+                NSDate *userModificationDate = fileModificationDate;
+                
+                NSURL *fileURL = fileInfo.fileURL;
+                
                 if (!fileItem) {
-                    fileItem = [self makeFileItemForURL:fileURL date:modificationDate];
+                    NSNumber *isDirectory = nil;
+                    NSError *resourceError = nil;
+                    if (![fileURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&resourceError]) {
+                        NSLog(@"Error getting directory key for %@: %@", fileURL, [resourceError toPropertyList]);
+                        isDirectory = @([[fileURL absoluteString] hasSuffix:@"/"]);
+                    }
+
+                    fileItem = [self makeFileItemForURL:fileURL isDirectory:[isDirectory boolValue] fileModificationDate:fileModificationDate userModificationDate:userModificationDate];
                     if (!fileItem) {
                         OBASSERT_NOT_REACHED("Failed to make a file item!");
                         return;
@@ -339,7 +424,7 @@ static void _updatePercent(OFSDocumentStoreFileItem *fileItem, NSString *binding
                 [updatedFileItems addObject:fileItem];
 
                 DEBUG_METADATA(@"Updating metadata properties on file item %@", [fileItem shortDescription]);
-                [self updateFileItem:fileItem withMetadata:nil modificationDate:modificationDate];
+                [self updateFileItem:fileItem withMetadata:nil fileModificationDate:fileModificationDate];
             }];
             
             self.fileItems = updatedFileItems;
@@ -351,6 +436,9 @@ static void _updatePercent(OFSDocumentStoreFileItem *fileItem, NSString *binding
                 _hasFinishedInitialScan = YES;
                 [self didChangeValueForKey:OFValidateKeyPath(self, hasFinishedInitialScan)];
             }
+            
+            if (completionHandler)
+                completionHandler();
         };
         
         

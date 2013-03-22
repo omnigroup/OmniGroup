@@ -24,11 +24,6 @@
 
 static BOOL OSUDebugDownload = NO;
 
-// Preferences not manipulated through the preferences UI
-#define UpgradeShowsOptionsPreferenceKey (@"OSUUpgradeShowsOptions")
-#define UpgradeKeepsExistingVersionPreferenceKey (@"OSUUpgradeArchivesExistingVersion")
-#define UpgradeKeepsPackagePreferenceKey (@"OSUUpgradeKeepsDiskImage")
-
 #define DEBUG_DOWNLOAD(format, ...) \
 do { \
     if (OSUDebugDownload) \
@@ -37,23 +32,100 @@ do { \
 
 RCS_ID("$Id$");
 
-static NSString * const OSUDownloadControllerStatusKey = @"status";
-static NSString * const OSUDownloadControllerCurrentBytesDownloadedKey = @"currentBytesDownloaded";
-static NSString * const OSUDownloadControllerTotalSizeKey = @"totalSize";
-static NSString * const OSUDownloadControllerSizeKnownKey = @"sizeKnown";
-static NSString * const OSUDownloadControllerInstallationDirectoryKey = @"installationDirectory";
-static NSString * const OSUDownloadControllerInstallationDirectoryNoteKey = @"installationDirectoryNote";
-
 static OSUDownloadController *CurrentDownloadController = nil;
 
-@interface OSUDownloadController (Private)
-#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
-<NSURLDownloadDelegate>
-#endif
+@interface OSUDownloadController () <NSURLDownloadDelegate, OSUInstallerDelegate> {
+  @private
+    // Book-keeping information for swapping views in and out of the panel.
+    NSView *_bottomView;
+    NSSize _originalBottomViewSize;
+    NSSize _originalWindowSize;
+    NSSize _originalWarningViewSize;
+    CGFloat _originalWarningTextHeight;
+    CGFloat _warningTextTopMargin;
+    
+    // These are the toplevel views we might display in the panel.
+    NSView *_plainStatusView;
+    NSView *_credentialsView;
+    NSView *_progressView;
+    NSView *_installBasicView;         // Very basic, nonthreatening dialog text.
+    NSView *_installOptionsNoteView;   // View with small note text displayed instead of options view.
+    NSView *_installWarningView;       // Warning message and icon.
+    NSView *_installButtonsView;       // Box containing the action buttons.
+    
+    NSTextField *_installViewMessageText;
+    NSImageView *_installViewCautionImageView;
+    NSTextField *_installViewCautionText;
+    NSButton *_installViewInstallButton;
+    
+    NSURL *_packageURL;
+    OSUItem *_item;
+    NSURLRequest *_request;
+    NSURLDownload *_download;
+    NSURLAuthenticationChallenge *_challenge;
+    BOOL _didFinishOrFail;
+    BOOL _showCautionText;  // Usually describing a verification failure
+    BOOL _displayingInstallView;
+    
+    NSString *_status;
+    
+    NSString *_userName;
+    NSString *_password;
+    BOOL _rememberInKeychain;
+    
+    off_t _currentBytesDownloaded;
+    off_t _totalSize;
+    
+    // Where we're downloading the package to
+    NSString *_suggestedDestinationFile;
+    NSString *_destinationFile;
+    
+    // Where we think we'll install the new application
+    NSString *_installationDirectory;
+    NSAttributedString *_installationDirectoryNote;
+    
+    // Installer bookkeeping
+    OSUInstaller *_installer;
+}
+
+@property (nonatomic, retain) IBOutlet NSView *bottomView;
+@property (nonatomic, retain) IBOutlet NSView *plainStatusView;
+@property (nonatomic, retain) IBOutlet NSView *credentialsView;
+@property (nonatomic, retain) IBOutlet NSView *progressView;
+@property (nonatomic, retain) IBOutlet NSView *installBasicView;
+@property (nonatomic, retain) IBOutlet NSView *installOptionsNoteView;
+@property (nonatomic, retain) IBOutlet NSView *installWarningView;
+@property (nonatomic, retain) IBOutlet NSView *installButtonsView;
+
+@property (nonatomic, retain) IBOutlet NSView *installViewMessageText;
+@property (nonatomic, retain) IBOutlet NSImageView *installViewCautionImageView;
+@property (nonatomic, retain) IBOutlet NSView *installViewCautionText;
+@property (nonatomic, retain) IBOutlet NSView *installViewInstallButton;
+
+@property (nonatomic, copy) NSString *installationDirectory;
+@property (nonatomic, copy) NSAttributedString *installationDirectoryNote;
+
+@property (nonatomic, copy) NSString *status;
+
+@property (nonatomic, copy) NSString *userName;
+@property (nonatomic, copy) NSString *password;
+@property (nonatomic) BOOL rememberInKeychain;
+
+@property (nonatomic) off_t currentBytesDownloaded;
+@property (nonatomic) off_t totalSize;
+
+@property (nonatomic, retain) OSUInstaller *installer;
+
+- (IBAction)cancelAndClose:(id)sender;
+- (IBAction)continueDownloadWithCredentials:(id)sender;
+- (IBAction)installAndRelaunch:(id)sender;
+- (IBAction)chooseDirectory:(id)sender;
+
 - (void)_setInstallViews;
 - (void)_setDisplayedView:(NSView *)aView;
 - (void)setContentViews:(NSArray *)newContent;
 - (void)_cancel;
+
 @end
 
 @implementation OSUDownloadController
@@ -70,22 +142,41 @@ static OSUDownloadController *CurrentDownloadController = nil;
     return CurrentDownloadController;
 }
 
-// Item might be nil if all we have is the URL (say, if the debugging support for downloading from a URL at launch is enabled).  *Usually* we'll have an item, but don't depend on it.
-- initWithPackageURL:(NSURL *)packageURL item:(OSUItem *)item error:(NSError **)outError;
+static void _FillOutDownloadInProgressError(NSError **outError)
 {
-    if (!(self = [super init]))
-        return nil;
+    // TODO: Add recovery options to cancel the existing download?
+    NSString *description = NSLocalizedStringFromTableInBundle(@"A download is already in progress.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description when trying to start a download when one is already in progress");
+    NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Please cancel the existing download before starting another.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error suggestion when trying to start a download when one is already in progress");
+    OSUError(outError, OSUDownloadAlreadyInProgress, description, suggestion);
+}
 
-    // Only allow one download at a time for now.
-    if (CurrentDownloadController) {
-        // TODO: Add recovery options to cancel the existing download?
-        NSString *description = NSLocalizedStringFromTableInBundle(@"A download is already in progress.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description when trying to start a download when one is already in progress");
-        NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Please cancel the existing download before starting another.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error suggestion when trying to start a download when one is already in progress");
-        OSUError(outError, OSUDownloadAlreadyInProgress, description, suggestion);
++ (BOOL)beginWithPackageURL:(NSURL *)packageURL item:(OSUItem *)item error:(NSError **)outError;
+{
+    if (CurrentDownloadController != nil) {
+        _FillOutDownloadInProgressError(outError);
         return NO;
     }
-    CurrentDownloadController = self;
     
+    CurrentDownloadController = [[self alloc] initWithPackageURL:packageURL item:item error:outError];
+    return (CurrentDownloadController != nil);
+}
+
+// Item might be nil if all we have is the URL (say, if the debugging support for downloading from a URL at launch is enabled).
+// *Usually* we'll have an item, but don't depend on it.
+
+- (id)initWithPackageURL:(NSURL *)packageURL item:(OSUItem *)item error:(NSError **)outError;
+{
+    self = [super init];
+    if (self == nil)
+        return nil;
+    
+    OBASSERT(CurrentDownloadController == nil);
+    if (CurrentDownloadController != nil) {
+        _FillOutDownloadInProgressError(outError);
+        [self release];
+        return nil;
+    }
+
     // Display a 'connecting' view here until we know whether we are going to be asked for credentials or not (and to allow cancelling).
     
     _rememberInKeychain = NO;
@@ -93,60 +184,77 @@ static OSUDownloadController *CurrentDownloadController = nil;
     _request = [[NSURLRequest requestWithURL:packageURL] retain];
     _item = [item retain];
     _showCautionText = NO;
-    
+
     [self setInstallationDirectory:[OSUInstaller suggestAnotherInstallationDirectory:nil trySelf:YES]];
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if (![[[NSBundle mainBundle] bundlePath] hasPrefix:_installationDirectory] &&
-        ![defaults boolForKey:UpgradeKeepsExistingVersionPreferenceKey]) {
-        
-        // If we can't install over our current location, we probably can't delete the old copy either, so don't try.
-        // We set "archives" to "yes" because "no" means "delete"
-        // We really should have a better name for this flag (or maybe make it multivalued: leave alone, move to trash, move aside, make a zip file)
-        
-        // To avoid setting the preference for future sessions as well, put it in a new volatile domain
-        // Also, it's probably an undesirable side effect that this sets the default for future updates as well as preventing us from trying to delete the old version on this update as well
-        
-        NSDictionary *cmdline = [defaults volatileDomainForName:NSArgumentDomain];
-        cmdline = cmdline? [cmdline dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:UpgradeKeepsExistingVersionPreferenceKey] : [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:UpgradeKeepsExistingVersionPreferenceKey];
-        [defaults setVolatileDomain:cmdline forName:NSArgumentDomain];
-        
-        OBASSERT([defaults boolForKey:UpgradeKeepsExistingVersionPreferenceKey]);
-    }
-    
     [self showWindow:nil];
     
-    // This starts the download
-    _download = [[NSURLDownload alloc] initWithRequest:_request delegate:self];
-    
-    // at least until we support resuming downloads, let's delete them on failure.
-    // TODO: This doesn't delete the file when you cancel the download.
-    [_download setDeletesFileUponFailure:YES];
-    
-    [[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:UpgradeShowsOptionsPreferenceKey options:0 context:[OSUDownloadController class]];
-    
+    void (^startDownload)(void) = ^{
+        // This starts the download
+        _download = [[NSURLDownload alloc] initWithRequest:_request delegate:self];
+        
+        // At least until we support resuming downloads, let's delete them on failure.
+        // TODO: This doesn't delete the file when you cancel the download.
+        [_download setDeletesFileUponFailure:YES];
+        
+    };
+
+    NSError *error = nil;
+    if (_installationDirectory == nil || ![OSUInstaller validateTargetFilesystem:_installationDirectory error:&error]) {
+        // We should only have to prompt the user to pick a directory if both the application's directory and /Applications on the root filesystem both live on read-only filesystems.
+        [OSUInstaller chooseInstallationDirectory:_installationDirectory modalForWindow:self.window completionHandler:^(NSError *error, NSString *result) {
+            if (result == nil) {
+                [[NSApplication sharedApplication] presentError:error];
+                [self cancelAndClose:nil];
+            } else {
+                startDownload();
+            }
+        }];
+    } else {
+        startDownload();
+    }
+
     return self;
 }
 
 - (void)dealloc;
 {    
-    [self _cancel]; // should have been done in -close, but just in case
+    // Should have been done in -close, but just in case
+    [self _cancel]; 
+   
     OBASSERT(_download == nil);
     OBASSERT(_challenge == nil);
     OBASSERT(_request == nil);
     OBASSERT(CurrentDownloadController != self); // cleared in _cancel
-    
-    [[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:UpgradeShowsOptionsPreferenceKey];
-    
-    // _bottomView is embedded in our window and need not be released
+
+    [_bottomView release];
+    [_plainStatusView release];
     [_credentialsView release];
     [_progressView release];
+    [_installBasicView release];
+    [_installOptionsNoteView release];
+    [_installWarningView release];
+    [_installButtonsView release];
+    [_installViewMessageText release];
+    [_installViewCautionImageView release];
+    [_installViewCautionText release];
+    [_installViewInstallButton release];
+
     [_packageURL release];
     [_item release];
     
+    [_status release];
+
+    [_userName release];
+    [_password release];
+
     [_suggestedDestinationFile release];
     [_destinationFile release];
+
+    [_installationDirectory release];
+    [_installationDirectoryNote release];
     
+    [_installer release];
+
     [super dealloc];
 }
 
@@ -164,20 +272,20 @@ static OSUDownloadController *CurrentDownloadController = nil;
     
     OBASSERT([_bottomView window] == [self window]);
     
-    originalBottomViewSize = [_bottomView frame].size;
-    originalWindowSize = [[[self window] contentView] frame].size;
-    originalWarningViewSize = [_installWarningView frame].size;
+    _originalBottomViewSize = [_bottomView frame].size;
+    _originalWindowSize = [[[self window] contentView] frame].size;
+    _originalWarningViewSize = [_installWarningView frame].size;
     NSRect warningTextFrame = [_installViewCautionText frame];
     NSRect warningViewBounds = [_installWarningView bounds];
-    originalWarningTextHeight = warningTextFrame.size.height;
-    warningTextTopMargin = NSMaxY(warningViewBounds) - NSMaxY(warningTextFrame);
+    _originalWarningTextHeight = warningTextFrame.size.height;
+    _warningTextTopMargin = NSMaxY(warningViewBounds) - NSMaxY(warningTextFrame);
 
     OBASSERT([_installViewCautionText superview] == _installWarningView);
     OBASSERT([_installViewInstallButton superview] == _installButtonsView);
     OBASSERT([_installViewMessageText superview] == _installBasicView);
 
     NSString *name = [[[_request URL] path] lastPathComponent];
-    [self setValue:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Downloading %@ \\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status - text is filename of update package being downloaded"), name] forKey:OSUDownloadControllerStatusKey];
+    [self setStatus:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Downloading %@ \\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status - text is filename of update package being downloaded"), name]];
     
     [_installViewCautionText setStringValue:@"---"];
     [self _setDisplayedView:_plainStatusView];
@@ -188,6 +296,9 @@ static OSUDownloadController *CurrentDownloadController = nil;
     NSString *basicText = [_installViewMessageText stringValue];
     basicText = [basicText stringByReplacingAllOccurrencesOfString:@"%@" withString:appDisplayName];
     [_installViewMessageText setStringValue:basicText];
+    
+    [self _adjustProgressIndiciateAttributesInSubtreeForView:_progressView];
+    [self _adjustProgressIndiciateAttributesInSubtreeForView:_plainStatusView];
 }
 
 #pragma mark -
@@ -220,80 +331,53 @@ static OSUDownloadController *CurrentDownloadController = nil;
     [self _setDisplayedView:_progressView];
 }
 
-- (void)_documentController:(NSDocumentController *)documentController didCloseAll:(BOOL)didCloseAll contextInfo:(void *)contextInfo;
-{
-    // Edited document still open.  Leave our 'Update and Relaunch' view up; the user might save and decide to install the update in a little bit.
-    if (!didCloseAll)
-        return;
-    
-    [self _setDisplayedView:_plainStatusView];
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    
-    // The code below will eventually call the normal NSApp termination logic (which the app can use to close files and such).
-    OSUInstaller *installer = [[OSUInstaller alloc] initWithPackagePath:_destinationFile];
-    installer.archiveExistingVersion = [defaults boolForKey:UpgradeKeepsExistingVersionPreferenceKey];
-    installer.deletePackageOnSuccess = ![defaults boolForKey:UpgradeKeepsPackagePreferenceKey];
-    [installer setInstalledVersion:[[[NSBundle mainBundle] bundlePath] stringByExpandingTildeInPath]];
-    if (_installationDirectory)
-        installer.installationDirectory = _installationDirectory;
-    [installer setDelegate:self];
-    
-    [installer run];
-    [installer release];
-}
-
 - (IBAction)installAndRelaunch:(id)sender;
 {
-    // Close all the document windows, allowing the user to cancel.
-    [[NSDocumentController sharedDocumentController] closeAllDocumentsWithDelegate:self didCloseAllSelector:@selector(_documentController:didCloseAll:contextInfo:) contextInfo:NULL];
-}
-
-- (IBAction)revealDownloadInFinder:(id)sender;
-{
-    [[NSWorkspace sharedWorkspace] selectFile:_destinationFile inFileViewerRootedAtPath:nil];
-    [self close];
-}
-
-- (void)setStatus:(NSString *)newStatus
-{
-    if (OFISEQUAL(newStatus, _status))
+    OBPRECONDITION(self.installer == nil);
+    if (self.installer != nil) {
         return;
-    
-    [self willChangeValueForKey:OSUDownloadControllerStatusKey];
-    [newStatus retain];
-    [_status release];
-    _status = newStatus;
-    [self didChangeValueForKey:OSUDownloadControllerStatusKey];
+    }
 
-    [[self window] displayIfNeeded];
+    // OSUInstaller will either fail during decode & preflight, and ask us to close and leave us running, or complete (either successfully, or by posting an error and quitting.)
+    // In the later case, *it* is responsible for initiating the application termination sequence.
+
+    OSUInstaller *installer = [[OSUInstaller alloc] initWithPackagePath:_destinationFile];
+    
+    installer.delegate = self;
+    installer.installedVersionPath = [[NSBundle mainBundle] bundlePath];
+    
+    if (_installationDirectory != nil)
+        installer.installationDirectory = _installationDirectory;
+    
+    self.installer = installer;
+    [installer autorelease];
+    
+    [self _setDisplayedView:_plainStatusView];
+    [installer run];
+}
+
+- (NSString *)status;
+{
+    return _status;
+}
+
+- (void)setStatus:(NSString *)status
+{
+    if (status != _status) {
+        [_status release];
+        _status = [status copy];
+
+        [[self window] displayIfNeeded];
+    }
 }
 
 - (IBAction)chooseDirectory:(id)sender;
 {
-    // TODO: This is copy&pasted from OSUInstaller. Consolidate?
+    NSString *initialDirectory = [OSUInstaller suggestAnotherInstallationDirectory:[self installationDirectory] trySelf:YES];
 
-    // Set up the save panel for selecting an install location.
-    NSOpenPanel *chooseInstallLocation = [NSOpenPanel openPanel];
-    NSArray *allowedTypes = [NSArray arrayWithObject:(id)kUTTypeApplicationBundle];
-    [chooseInstallLocation setAllowedFileTypes:allowedTypes];
-    [chooseInstallLocation setAllowsOtherFileTypes:NO];
-    [chooseInstallLocation setCanCreateDirectories:YES];
-    [chooseInstallLocation setCanChooseDirectories:YES];
-    [chooseInstallLocation setCanChooseFiles:NO];
-    [chooseInstallLocation setResolvesAliases:YES];
-    [chooseInstallLocation setAllowsMultipleSelection:NO];    
-    
-    NSString *chosenDirectory = [OSUInstaller suggestAnotherInstallationDirectory:[self installationDirectory] trySelf:YES];
-    if (chosenDirectory)
-        [chooseInstallLocation setDirectoryURL:[NSURL fileURLWithPath:chosenDirectory]];
-    
-    // If we couldn't find any writable directories, we're kind of screwed, but go ahead and pop up the panel in case the user can navigate somewhere
-    
-    [chooseInstallLocation beginSheetModalForWindow:[self window] completionHandler:^(NSInteger result){
-        if (result == NSFileHandlingPanelOKButton) {
-            NSURL *directoryURL = [[[chooseInstallLocation URLs] lastObject] absoluteURL];
-            [self setInstallationDirectory:[directoryURL path]];
+    [OSUInstaller chooseInstallationDirectory:initialDirectory modalForWindow:[self window] completionHandler:^(NSError *error, NSString *result) {
+        if (result != nil) {
+            [self setInstallationDirectory:result];
         }
     }];
 }
@@ -301,13 +385,9 @@ static OSUDownloadController *CurrentDownloadController = nil;
 #pragma mark -
 #pragma mark KVC/KVO
 
-@synthesize installationDirectoryNote = _installationDirectoryNote;
-
-+ (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key;
++ (NSSet *)keyPathsForValuesAffectingSizeKnown;
 {
-    if ([key isEqualToString:OSUDownloadControllerSizeKnownKey])
-	return [NSSet setWithObject:OSUDownloadControllerTotalSizeKey];
-    return [super keyPathsForValuesAffectingValueForKey:key];
+    return [NSSet setWithObject:@"totalSize"];
 }
 
 - (BOOL)sizeKnown;
@@ -315,42 +395,45 @@ static OSUDownloadController *CurrentDownloadController = nil;
     return _totalSize != 0ULL;
 }
 
-- (void)setInstallationDirectory:(NSString *)newDirectory
+- (NSString *)installationDirectory;
 {
-    if (OFISEQUAL(_installationDirectory, newDirectory))
+    return _installationDirectory;
+}
+
+- (void)setInstallationDirectory:(NSString *)installationDirectory
+{
+    if (OFISEQUAL(_installationDirectory, installationDirectory))
         return;
     
-    [self willChangeValueForKey:OSUDownloadControllerInstallationDirectoryKey];
     [_installationDirectory release];
-    _installationDirectory = [newDirectory copy];
-    [self didChangeValueForKey:OSUDownloadControllerInstallationDirectoryKey];
+    _installationDirectory = [installationDirectory copy];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSString *noteTemplate = nil;
     
-    if (newDirectory && ![newDirectory isEqualToString:[[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent]]) {
-        if (!noteTemplate) {
+    if (installationDirectory && ![installationDirectory isEqualToString:[[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent]]) {
+        if (noteTemplate == nil) {
             NSString *homeDir = [NSHomeDirectory() stringByExpandingTildeInPath];
-            if ([fileManager path:homeDir isAncestorOfPath:newDirectory relativePath:NULL]) {
+            if ([fileManager path:homeDir isAncestorOfPath:installationDirectory relativePath:NULL]) {
                 noteTemplate = NSLocalizedStringFromTableInBundle(@"The update will be installed in your @ folder.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Install dialog message - small note indicating that app will be installed in a user directory - @ is replaced with name of directory, eg Applications");
             }
         }
         
-        if (!noteTemplate) {
+        if (noteTemplate == nil) {
             noteTemplate = NSLocalizedStringFromTableInBundle(@"The update will be installed in the @ folder.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Install dialog message - small note indicating that app will be installed in a system or network directory - @ is replaced with name of directory, eg Applications");
         }
     }
     
-    if (noteTemplate) {
+    if (noteTemplate != nil) {
         CGFloat fontSize = [NSFont smallSystemFontSize];
         
-        NSString *displayName = [fileManager displayNameAtPath:newDirectory];
-        if (!displayName) {
-            displayName = [newDirectory lastPathComponent];
+        NSString *displayName = [fileManager displayNameAtPath:installationDirectory];
+        if (displayName == nil) {
+            displayName = [installationDirectory lastPathComponent];
         }
+
         NSMutableAttributedString *infix = [[NSMutableAttributedString alloc] initWithString:displayName];
-        
-        NSImage *icon = [[NSWorkspace sharedWorkspace] iconForFile:newDirectory];
+        NSImage *icon = [[NSWorkspace sharedWorkspace] iconForFile:installationDirectory];
         if (icon && [icon isValid]) {
             icon = [icon copy];
             [icon setScalesWhenResized:YES];
@@ -362,27 +445,20 @@ static OSUDownloadController *CurrentDownloadController = nil;
         
         [infix addAttribute:NSFontAttributeName value:[NSFont systemFontOfSize:fontSize] range:(NSRange){0, [infix length]}];
         
-        NSMutableAttributedString *message = [[NSMutableAttributedString alloc] initWithString:noteTemplate
-                                                                                  attributes:[NSDictionary dictionaryWithObject:[NSFont messageFontOfSize:fontSize] forKey:NSFontAttributeName]];
+        NSMutableAttributedString *message = [[NSMutableAttributedString alloc] initWithString:noteTemplate attributes:[NSDictionary dictionaryWithObject:[NSFont messageFontOfSize:fontSize] forKey:NSFontAttributeName]];
         [message replaceCharactersInRange:[noteTemplate rangeOfString:@"@"] withAttributedString:infix];
         
         [infix release];
         
-        [self willChangeValueForKey:OSUDownloadControllerInstallationDirectoryNoteKey];
-        [_installationDirectoryNote release];
-        _installationDirectoryNote = message; // Consumes refcount from alloc+init
-        [self didChangeValueForKey:OSUDownloadControllerInstallationDirectoryNoteKey];
+        self.installationDirectoryNote = message;
+        [message release];
     } else {
-        if (_installationDirectoryNote != nil) {
-            [self willChangeValueForKey:OSUDownloadControllerInstallationDirectoryNoteKey];
-            [_installationDirectoryNote release];
-            _installationDirectoryNote = nil;
-            [self didChangeValueForKey:OSUDownloadControllerInstallationDirectoryNoteKey];
-        }
+        self.installationDirectoryNote = nil;
     }
     
-    if (_displayingInstallView)
+    if (_displayingInstallView) {
         [self queueSelectorOnce:@selector(_setInstallViews)];
+    }
 }
 
 #pragma mark -
@@ -427,7 +503,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
     }
     
     // Clear our status to stop the animation in the view.  NSProgressIndicator hates getting removed from the view while it is animating, yielding exceptions in the heartbeat thread.
-    [self setValue:nil forKey:OSUDownloadControllerStatusKey];
+    [self setStatus:nil];
     [self _setDisplayedView:_credentialsView];
     [self showWindow:nil];
     [NSApp requestUserAttention:NSInformationalRequest]; // Let the user know they need to interact with us (else the server will timeout waiting for authentication).
@@ -452,7 +528,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
         DEBUG_DOWNLOAD(@"  allHeaderFields %@", [(NSHTTPURLResponse *)response allHeaderFields]);
     }
 
-    [self setValue:[NSNumber numberWithUnsignedLongLong:[response expectedContentLength]] forKey:OSUDownloadControllerTotalSizeKey];
+    [self setTotalSize:[response expectedContentLength]];
     [self _setDisplayedView:_progressView];
 }
 
@@ -464,7 +540,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
 - (void)download:(NSURLDownload *)download didReceiveDataOfLength:(NSUInteger)length;
 {
     off_t newBytesDownloaded = _currentBytesDownloaded + length;
-    [self setValue:[NSNumber numberWithUnsignedLongLong:newBytesDownloaded] forKey:OSUDownloadControllerCurrentBytesDownloadedKey];
+    self.currentBytesDownloaded = newBytesDownloaded;
 }
 
 - (BOOL)download:(NSURLDownload *)download shouldDecodeSourceDataOfMIMEType:(NSString *)encodingType;
@@ -520,7 +596,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
     NSFileManager *fm = [NSFileManager defaultManager];
     if ([fm quarantinePropertiesForItemAtPath:path error:&qError] != nil) {
         // It already has a quarantine (presumably we're running with LSFileQuarantineEnabled in our Info.plist)
-        // And apparently it's not possible to change the paramneters of an existing quarantine event
+        // And apparently it's not possible to change the parameters of an existing quarantine event
         // So just assume that NSURLDownload did something that was good enough
     } else {
         if ( !([[qError domain] isEqualToString:NSOSStatusErrorDomain] && [qError code] == unimpErr) ) {
@@ -545,14 +621,14 @@ static OSUDownloadController *CurrentDownloadController = nil;
     DEBUG_DOWNLOAD(@"downloadDidFinish %@", download);
     _didFinishOrFail = YES;
     
-    [self setValue:NSLocalizedStringFromTableInBundle(@"Verifying file\\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status") forKey:OSUDownloadControllerStatusKey];
+    [self setStatus:NSLocalizedStringFromTableInBundle(@"Verifying file\\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status")];
     NSString *caution = [_item verifyFile:_destinationFile];
     if (![NSString isEmptyString:caution]) {
         [_installViewCautionText setStringValue:caution];
         _showCautionText = YES;
     }
     
-    [self setValue:NSLocalizedStringFromTableInBundle(@"Ready to Install", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status - Done downloading, about to prompt the user to let us reinstall and restart the app") forKey:OSUDownloadControllerStatusKey];
+    [self setStatus:NSLocalizedStringFromTableInBundle(@"Ready to Install", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status - Done downloading, about to prompt the user to let us reinstall and restart the app")];
     
     if (![NSApp isActive])
         [NSApp requestUserAttention:NSInformationalRequest];
@@ -646,43 +722,55 @@ static OSUDownloadController *CurrentDownloadController = nil;
         [self close]; // Didn't recover
 }
 
-- (NSString *)installationDirectory
+#pragma mark -
+#pragma mark Private
+
+- (void)_adjustProgressIndiciateAttributesInSubtreeForView:(NSView *)view;
 {
-    return _installationDirectory;
+    for (NSView *subview in view.subviews) {
+        [self _adjustProgressIndiciateAttributesInSubtreeForView:subview];
+        
+        // Threaded animation doesn't play nicely with our blocking animation; it causes visual glitches.
+        // Probably shoudl move off of blocking animation, but easier to just turn this off for now.
+        if ([subview isKindOfClass:[NSProgressIndicator class]]) {
+            NSProgressIndicator *progressIndicator = (NSProgressIndicator *)subview;
+            [progressIndicator setUsesThreadedAnimation:NO];
+        }
+    }
 }
-
-@end
-
-@implementation OSUDownloadController (Private)
 
 - (void)_setInstallViews;
 {
     NSMutableArray *installViews = [NSMutableArray array];
     [installViews addObject:_installBasicView];
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:UpgradeShowsOptionsPreferenceKey])
-        [installViews addObject:_installOptionsView];
-    else if (_installationDirectoryNote != nil)
+
+    if (_installationDirectoryNote != nil) {
         [installViews addObject:_installOptionsNoteView];
+    }
+    
     if (_showCautionText) {
         [installViews addObject:_installWarningView];
-        /* Resize the warning text, if it's tall, and resize its containing view as well. Unfortunately, just resizing the containing view and telling it to automatically resize its subviews doesn't do the right thing here, so we do the bookkeeping ourselves. */
+        // Resize the warning text, if it's tall, and resize its containing view as well. Unfortunately, just resizing the containing view and telling it to automatically resize its subviews doesn't do the right thing here, so we do the bookkeeping ourselves.
         NSSize textSize = [_installViewCautionText desiredFrameSize:NSViewHeightSizable];
         NSRect textFrame = [_installViewCautionText frame];
-        if (textSize.height <= originalWarningTextHeight) {
-            [_installWarningView setFrameSize:originalWarningViewSize];
-            textFrame.size.height = originalWarningTextHeight;
+        if (textSize.height <= _originalWarningTextHeight) {
+            [_installWarningView setFrameSize:_originalWarningViewSize];
+            textFrame.size.height = _originalWarningTextHeight;
         } else {
             [_installWarningView setFrameSize:(NSSize){
-                .width = originalWarningViewSize.width,
-                .height = ceil(originalWarningViewSize.height + textSize.height - originalWarningTextHeight)
+                .width = _originalWarningViewSize.width,
+                .height = ceil(_originalWarningViewSize.height + textSize.height - _originalWarningTextHeight)
             }];
             textFrame.size.height = textSize.height;
         }
-        textFrame.origin.y = ceil(NSMaxY([_installWarningView bounds]) - warningTextTopMargin - textFrame.size.height);
+        
+        textFrame.origin.y = ceil(NSMaxY([_installWarningView bounds]) - _warningTextTopMargin - textFrame.size.height);
         [_installViewCautionText setFrame:textFrame];
         [_installViewCautionText setNeedsDisplay:YES];
         [_installWarningView setNeedsDisplay:YES];
+        [_installViewCautionImageView setImage:[NSImage imageNamed:NSImageNameCaution]];
     }
+
     [installViews addObject:_installButtonsView];
     
     _displayingInstallView = YES;
@@ -701,14 +789,14 @@ static OSUDownloadController *CurrentDownloadController = nil;
     
     // Get a list of view animations to position all the new content in _bottomView
     // (and to hide the old content)
-    NSSize desiredBottomViewFrameSize = originalBottomViewSize;
+    NSSize desiredBottomViewFrameSize = _originalBottomViewSize;
     NSMutableArray *animations = [_bottomView animationsToStackSubviews:newContent finalFrameSize:&desiredBottomViewFrameSize];
     
     // Compute the desired size of the window frame.
     // By virtue of the fact that our bottom view is flipped, resizable and the various contents are set to be top-aligned, this is the only resizing we need.
     
-    CGFloat desiredWindowContentWidth = originalWindowSize.width + desiredBottomViewFrameSize.width - originalBottomViewSize.width;
-    CGFloat desiredWindowContentHeight = originalWindowSize.height + desiredBottomViewFrameSize.height - originalBottomViewSize.height;
+    CGFloat desiredWindowContentWidth = _originalWindowSize.width + desiredBottomViewFrameSize.width - _originalBottomViewSize.width;
+    CGFloat desiredWindowContentHeight = _originalWindowSize.height + desiredBottomViewFrameSize.height - _originalBottomViewSize.height;
     NSRect oldFrame = [window frame];
     NSRect windowFrame = [window contentRectForFrameRect:oldFrame];
     windowFrame.size.width = desiredWindowContentWidth;
@@ -718,51 +806,42 @@ static OSUDownloadController *CurrentDownloadController = nil;
     // It looks nicest if we keep the window's title bar in approximately the same position when resizing.
     // NSWindow screen coordinates are in a Y-increases-upwards orientation.
     windowFrame.origin.y += ( NSMaxY(oldFrame) - NSMaxY(windowFrame) );
+
     // If moving horizontally, let's see if keeping a point 1/3 from the left looks good.
-    windowFrame.origin.x = oldFrame.origin.x + (oldFrame.size.width - windowFrame.size.width)/3;
-    
-    windowFrame = NSIntegralRect(windowFrame);
+    windowFrame.origin.x = floor(oldFrame.origin.x + (oldFrame.size.width - windowFrame.size.width)/3);
+
     NSScreen *windowScreen = [window screen];
     if (windowScreen) {
         windowFrame = OFConstrainRect(windowFrame, [windowScreen visibleFrame]);
     }
     
     if (!NSEqualRects(oldFrame, windowFrame)) {
-        NSString *keys[3] = { NSViewAnimationTargetKey, NSViewAnimationStartFrameKey, NSViewAnimationEndFrameKey };
-        id values[3] = { window, [NSValue valueWithRect:oldFrame], [NSValue valueWithRect:windowFrame] };
-        [animations addObject:[NSDictionary dictionaryWithObjects:values forKeys:keys count:3]];
+        NSDictionary *animationDictionary = @{
+            NSViewAnimationTargetKey : window,
+            NSViewAnimationStartFrameKey : [NSValue valueWithRect:oldFrame],
+            NSViewAnimationEndFrameKey : [NSValue valueWithRect:windowFrame],
+        };
+        [animations addObject:animationDictionary];
     }
-    
+
     // Animate if there was anything to do.
-    if ([animations count]) {
+    if ([animations count] > 0) {
         NSViewAnimation *animation = [[[NSViewAnimation alloc] initWithViewAnimations:animations] autorelease];
-        [animation setDuration:0.1];
+        NSTimeInterval duration = [window isVisible] ? 0.1 : 0.0;
+        [animation setDuration:duration];
         [animation setAnimationBlockingMode:NSAnimationBlocking];
         [animation startAnimation];
     }
     
-    // Set up the key view loop.
+    // Update up the key view loop and first responder if appropriate
     // If there are no animations, assume we don't need to make any changes to the key view loop.
-    if ([animations count]) {
-        NSUInteger viewCount = [newContent count];
+    if ([animations count] > 0) {
+       [window recalculateKeyViewLoop];
         
-        // Find the view that followed all the views inside _bottomView, so we can attach it to the end of the new sequence of views
-        NSView *keyViewLoopAnchor = [[_bottomView lastChildKeyView] nextKeyView];
-        
-        // Attach the beginning of the list of child views to the _bottomView
-        if (viewCount > 0)
-            [_bottomView setNextKeyView:[newContent objectAtIndex:0]];
-        else
-            [_bottomView setNextKeyView:keyViewLoopAnchor];
-        
-        // Attach the last child key view of each view to the next view
-        for(NSUInteger viewIndex = 0; viewIndex < viewCount; viewIndex ++) {
-            NSView *aView = [newContent objectAtIndex:viewIndex];
-            NSView *linkTail = [aView lastChildKeyView];
-            if (viewIndex+1 < viewCount)
-                [linkTail setNextKeyView:[newContent objectAtIndex:viewIndex+1]];
-            else
-                [linkTail setNextKeyView:keyViewLoopAnchor];
+        NSView *nextValidKeyView = [[newContent objectAtIndex:0] nextValidKeyView];
+        BOOL shouldAdjustFirstResponder = [window firstResponder] == nil || [window firstResponder] == window;
+        if (shouldAdjustFirstResponder && nextValidKeyView != nil) {
+            [window makeFirstResponder:nextValidKeyView];
         }
     }
 }
@@ -771,8 +850,10 @@ static OSUDownloadController *CurrentDownloadController = nil;
 {
     OBPRECONDITION(CurrentDownloadController == self || CurrentDownloadController == nil);
     
-    if (CurrentDownloadController == self)
+    if (CurrentDownloadController == self) {
+        [CurrentDownloadController autorelease]; // We own the reference from +beginWithPackageURL:item:error:
         CurrentDownloadController = nil;
+    }
     
     [[_challenge sender] cancelAuthenticationChallenge:_challenge];
     [_challenge release];
@@ -787,19 +868,11 @@ static OSUDownloadController *CurrentDownloadController = nil;
             [[NSFileManager defaultManager] removeItemAtPath:_destinationFile error:NULL];
     }
     
+    [_request release];
+    _request = nil;
+    
     [_download release];
     _download = nil;
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
-{
-    if (context == [OSUDownloadController class]) {
-        if (_displayingInstallView) {
-            [self queueSelectorOnce:@selector(_setInstallViews)];
-        }
-    } else {
-        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-    }
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,7 +72,7 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, OFSD
         if ([delegate previewGenerator:self isFileItemCurrentlyOpen:fileItem])
             continue; // Ignore this one. The process of closing a document will update its preview and once we become visible we'll check for other previews that need to be updated.
         
-        if (_addFileItemIfPreviewMissing(self, fileItem, fileItem.fileURL, fileItem.date))
+        if (_addFileItemIfPreviewMissing(self, fileItem, fileItem.fileURL, fileItem.fileModificationDate))
             continue;
     }
     
@@ -149,7 +149,7 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
 {
     // Be careful to use the modification date we'd get otherwise for the current version. They should be the same, but...
     NSURL *fileURL = fileItem.fileURL;
-    NSDate *date = fileItem.date;
+    NSDate *date = fileItem.fileModificationDate;
     
     id <OUIDocumentPreviewGeneratorDelegate> delegate = self->_weak_delegate;
     Class cls = [delegate previewGenerator:self documentClassForFileURL:fileURL];
@@ -186,7 +186,7 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
                     
                     [document willClose];
                     
-                    DEBUG_PREVIEW_GENERATION(@"Finished preview update of %@ (version %@)", fileURL, fileVersion);
+                    DEBUG_PREVIEW_GENERATION(@"Finished preview update of %@", fileURL);
                     
                     // Wait until the close is done to end our background task (in case we are being backgrounded, we don't want an open document alive that might point at a document the user might delete externally).
                     [self _finishedUpdatingPreview];
@@ -265,7 +265,7 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
     
     OBASSERT(_currentPreviewUpdatingFileItem.beingDeleted == NO);
     
-    DEBUG_PREVIEW_GENERATION(@"Starting preview update for %@ at %@", _currentPreviewUpdatingFileItem.fileURL, [_currentPreviewUpdatingFileItem.date xmlString]);
+    DEBUG_PREVIEW_GENERATION(@"Starting preview update for %@ at %@", _currentPreviewUpdatingFileItem.fileURL, [_currentPreviewUpdatingFileItem.fileModificationDate xmlString]);
     
     _writePreviewsForFileItem(self, _currentPreviewUpdatingFileItem);
 }

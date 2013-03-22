@@ -7,5 +7,4 @@
 
 // Common settings for Release configurations of Framework targets
 OMNI_FRAMEWORK_TARGET_PATH = @rpath
-DYLIB_INSTALL_NAME_BASE = $(OMNI_FRAMEWORK_TARGET_PATH)
 SKIP_INSTALL = NO

@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -534,7 +534,7 @@ RCS_ID("$Id$");
     // We don't want a "directory changed" notification for the local documents directory.
     [_picker _beginIgnoringDocumentsDirectoryUpdates];
     
-    [_fileItem.scope renameFileItem:_fileItem baseName:newName fileType:uti completionQueue:[NSOperationQueue mainQueue] handler:^(NSURL *destinationURL, NSError *error){
+    [_fileItem.scope renameFileItem:_fileItem baseName:newName fileType:uti completionHandler:^(NSURL *destinationURL, NSError *error){
         
         [_picker _endIgnoringDocumentsDirectoryUpdates];
         [[UIApplication sharedApplication] endIgnoringInteractionEvents];
@@ -673,7 +673,7 @@ RCS_ID("$Id$");
     
     _previewView.landscape = landscape;
     
-    OUIDocumentPreview *preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:_fileItem.fileURL date:_fileItem.date withLandscape:landscape];
+    OUIDocumentPreview *preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:_fileItem.fileURL date:_fileItem.fileModificationDate withLandscape:landscape];
     [_previewView discardPreviews];
     [_previewView addPreview:preview];
 }

@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,6 +26,11 @@ RCS_ID("$Id$");
 static NSString * const OUZipRootDirectoryName = @".";  // We'll want to strip this when writing so we write "foo" instead of "./foo"
 
 @implementation OUZipDirectoryMember
+{
+    NSMutableArray *_children;
+    NSMutableDictionary *_childrenByName;
+    BOOL _shouldArchive;
+}
 
 - initRootDirectoryWithChildren:(NSArray *)children;
 {

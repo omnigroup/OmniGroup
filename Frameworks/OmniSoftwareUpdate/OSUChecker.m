@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,6 +44,13 @@ RCS_ID("$Id$");
 #define ITEM_DEBUG(...) do{ if(OSUItemDebug) NSLog(__VA_ARGS__); }while(0)
 #else
 #define ITEM_DEBUG(...) do{  }while(0)
+#endif
+
+#define VERIFY_APPCAST 1
+
+#if 1 && defined(DEBUG_correia)
+    #undef VERIFY_APPCAST
+    #define VERIFY_APPCAST 0
 #endif
 
 // Strings of interest
@@ -785,6 +792,11 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     if (outError)
         *outError = nil;
     
+#ifndef VERIFY_APPCAST
+#error "Expected VERIFY_APPCAST to be defined (and very likely have a value of 1)"
+#endif
+
+#if VERIFY_APPCAST
     NSString *trust = [OMNI_BUNDLE pathForResource:@"AppcastTrustRoot" ofType:@"pem"];
     if (trust) {
 #ifdef DEBUG
@@ -823,6 +835,9 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     } else {
         NSLog(@"OSU: Verification has been disabled. Unauthentic updates may be accepted.");
     }
+#else
+    NSLog(@"OSU: Verification has been disabled in this configuration. Unauthentic updates may be accepted.");
+#endif
     
     NSXMLDocument *document = [[[NSXMLDocument alloc] initWithData:data options:NSXMLNodeOptionsNone error:outError] autorelease];
     if (!document) {

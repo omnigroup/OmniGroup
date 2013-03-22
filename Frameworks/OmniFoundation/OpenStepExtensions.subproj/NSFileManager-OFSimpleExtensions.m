@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,10 @@
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 
 #import <sys/stat.h> // For statbuf, stat, mkdir
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import <sys/xattr.h>
+#endif
 
 RCS_ID("$Id$")
 
@@ -253,6 +257,38 @@ static void _appendPropertiesOfTreeAtURL(NSFileManager *self, NSMutableString *s
     [str release];
 }
 
+#endif
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+- (BOOL)addExcludedFromBackupAttributeToItemAtPath:(NSString *)path error:(NSError **)error;
+{
+    if (&NSURLIsExcludedFromBackupKey != NULL) {
+        NSURL *url = [NSURL fileURLWithPath:path];
+        BOOL result = [url setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:error];
+        return result;
+    } else {
+        // See Technical Q&A QA1719
+        // http://developer.apple.com/library/ios/#qa/qa1719/_index.html
+        
+        const char* filePath = [path fileSystemRepresentation];
+        const char* attrName = "com.apple.MobileBackup";
+        u_int8_t attrValue = 1;
+        
+        int result = setxattr(filePath, attrName, &attrValue, sizeof(attrValue), 0, 0);
+        if (result != 0 && error != NULL) {
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                                      path, NSFilePathErrorKey,
+                                      nil
+                                      ];
+            *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:result userInfo:userInfo];
+        }
+        
+        return result == 0;
+    }
+    
+    OBASSERT_NOT_REACHED("");
+    return NO;
+}
 #endif
 
 @end

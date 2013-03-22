@@ -1,4 +1,4 @@
-// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,7 +98,7 @@ This method does the work of looping over the runtime searching for implementati
         newClassCount = objc_getClassList(NULL, 0);
         while (classCount < newClassCount) {
             classCount = newClassCount;
-            classes = reallocf(classes, sizeof(Class) * classCount);
+            classes = (Class *)reallocf(classes, sizeof(Class) * classCount);
             if (classes == NULL) {
                 // If realloc fails, we need to abort, otherwise we'll leave the application in a nondeterministic state.
                 // Classes may expect to get +didLoad, +becomingMultiThreaded, etc., and will misbehave if they don't.
@@ -140,11 +140,9 @@ This method does the work of looping over the runtime searching for implementati
     [LoadedBundles addObjectsFromArray:[NSBundle allFrameworks]];
     
     if (![PreviouslySeenBundles isEqualToSet:LoadedBundles]) {
-        [PreviouslySeenBundles release];
         PreviouslySeenBundles = [LoadedBundles copy];
         [self processClasses];
     }
-    [LoadedBundles release];
 }
 
 /*"
@@ -197,37 +195,35 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
     
     if (impCount) {
         if (shouldInitialize) {
-            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-            POSTLOADER_DEBUG("Initializing %s\n", class_getName(aClass));
-
-            // try to make sure +initialize gets called
-            if (class_getClassMethod(aClass, @selector(class)))
-                [aClass class];
-            else if (class_getClassMethod(aClass, @selector(initialize)))
-                // Avoid a compiler warning
-                OBSendVoidMessage(aClass, @selector(initialize));
-            [pool release];
+            @autoreleasepool {
+                POSTLOADER_DEBUG("Initializing %s\n", class_getName(aClass));
+                
+                // try to make sure +initialize gets called
+                if (class_getClassMethod(aClass, @selector(class)))
+                    [aClass class];
+                else if (class_getClassMethod(aClass, @selector(initialize)))
+                    // Avoid a compiler warning
+                    OBSendVoidMessage(aClass, @selector(initialize));
+            }
         }
 
         for (impIndex = 0; impIndex < impCount; impIndex++) {
-            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-            POSTLOADER_DEBUG("Calling (%p) ... ", (void *)imps[impIndex]);
-
-            // We now call this within an exception handler because twice now we've released versions of OmniWeb where something would raise within +didLoad on certain configurations (not configurations we had available for testing) and weren't getting caught, resulting in an application that won't launch on those configurations.  We could insist that everyone do their own exception handling in +didLoad, but if we're going to potentially crash because a +didLoad failed I'd rather crash later than now.  (Especially since the exceptions in question were perfectly harmless.)
-            @try {
-                // We discovered that we'll crash if we use aClass after it has posed as another class.  So, we go look up the imposter class that resulted from the +poseAs: and use it instead.
-                Class imposterClass = objc_getClass(class_getName(metaClass));
-                if (imposterClass != Nil)
-                    aClass = imposterClass;
+            @autoreleasepool {
+                POSTLOADER_DEBUG("Calling (%p) ... ", (void *)imps[impIndex]);
                 
-                OBCallVoidIMP(imps[impIndex], aClass, selectorToCall);
-            } @catch (NSException *exc) {
-                fprintf(stderr, "Exception raised by +[%s %s]: %s\n", class_getName(aClass), sel_getName(selectorToCall), [[exc reason] UTF8String]);
+                // We now call this within an exception handler because twice now we've released versions of OmniWeb where something would raise within +didLoad on certain configurations (not configurations we had available for testing) and weren't getting caught, resulting in an application that won't launch on those configurations.  We could insist that everyone do their own exception handling in +didLoad, but if we're going to potentially crash because a +didLoad failed I'd rather crash later than now.  (Especially since the exceptions in question were perfectly harmless.)
+                @try {
+                    // We discovered that we'll crash if we use aClass after it has posed as another class.  So, we go look up the imposter class that resulted from the +poseAs: and use it instead.
+                    Class imposterClass = objc_getClass(class_getName(metaClass));
+                    if (imposterClass != Nil)
+                        aClass = imposterClass;
+                    
+                    OBCallVoidIMP(imps[impIndex], aClass, selectorToCall);
+                } @catch (NSException *exc) {
+                    fprintf(stderr, "Exception raised by +[%s %s]: %s\n", class_getName(aClass), sel_getName(selectorToCall), [[exc reason] UTF8String]);
+                }
+                POSTLOADER_DEBUG("done\n");
             }
-            POSTLOADER_DEBUG("done\n");
-            [pool release];
         }
     }
 

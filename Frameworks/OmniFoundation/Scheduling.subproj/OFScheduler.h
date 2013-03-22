@@ -22,6 +22,7 @@
 }
 
 + (OFScheduler *)mainScheduler;
++ (OFScheduler *)mainSchedulerIfCreated;
 + (OFDedicatedThreadScheduler *)dedicatedThreadScheduler;
 
 - (void)scheduleEvent:(OFScheduledEvent *)event;

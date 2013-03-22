@@ -42,12 +42,14 @@ typedef NS_ENUM(NSUInteger, OFSDAVDepth) {
 - (void)putData:(NSData *)data toURL:(NSURL *)url completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 - (OFSDAVOperation *)asynchronousPutData:(NSData *)data toURL:(NSURL *)url; // Returns an unstarted operation
 
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
-- (void)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
+- (void)copyURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
+
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 
 - (void)lockURL:(NSURL *)url completionHandler:(OFSDAVConnectionStringCompletionHandler)completionHandler;
 - (void)unlockURL:(NSURL *)url token:(NSString *)lockToken completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;

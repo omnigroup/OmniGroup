@@ -110,7 +110,7 @@ RCS_ID("$Id$");
     OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initWithAccount:nil ofType:accountType];
     setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError *errorOrNil){
         OFXServerAccount *account = errorOrNil ? nil : vc.account;
-        OBASSERT(!account || [[[OFXServerAccountRegistry defaultAccountRegistry] validatedAccounts] containsObject:account]);
+        OBASSERT(account == nil || [[[OFXServerAccountRegistry defaultAccountRegistry] validImportExportAccounts] containsObject:account]);
         [[OUIDocumentAppController controller] _didAddSyncAccount:account];
     };
     

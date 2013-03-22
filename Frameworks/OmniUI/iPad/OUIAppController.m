@@ -13,8 +13,6 @@
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniBase/OBRuntimeCheck.h>
 #import <OmniBase/system.h>
-#import <OmniFileStore/OFSDocumentStore.h>
-#import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniFoundation/NSString-OFURLEncoding.h>
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFPreference.h>

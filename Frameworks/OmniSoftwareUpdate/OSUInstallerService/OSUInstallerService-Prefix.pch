@@ -1,0 +1,5 @@
+//
+// Prefix header for all source files of the 'OSUInstallerService' target in the 'OSUInstallerService' project
+//
+
+#import <OmniBase/rcsid.h>

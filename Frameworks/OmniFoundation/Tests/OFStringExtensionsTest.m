@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -454,6 +454,19 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     STAssertFalse(OFStringContainsInvalidSequences(USTR(good3)), nil);
     STAssertFalse(OFStringContainsInvalidSequences(USTR(good4)), nil);
 #undef USTR
+}
+
+- (void)testReplaceRegex;
+{
+    shouldBeEqual([@"    good stuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"^ +" withString:@"X"], @"Xgood stuff    ");
+    shouldBeEqual([@"    good stuff.    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"\\.? +$" withString:@"X"], @"    good stuffX");
+    shouldBeEqual([@"    good stuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"\\.? +$" withString:@"X"], @"    good stuffX");
+    shouldBeEqual([@"    goodstuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"^ +| +$" withString:@"X"], @"XgoodstuffX");
+    shouldBeEqual([@"    good stuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"^ +| +$" withString:@"X"], @"Xgood stuffX");
+    
+    // Make sure we don't re-process characters from the replacement string
+    shouldBeEqual([@"aaaa" stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"a" withString:@"aa"], @"aaaaaaaa");
+    shouldBeEqual([@"aaaa" stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"aa" withString:@"a"], @"aa");
 }
 
 @end

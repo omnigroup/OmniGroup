@@ -23,8 +23,8 @@
 
 #import <CoreFoundation/CFString.h>  // for CFStringEncoding
 
+@class NSRegularExpression;
 @class OFCharacterSet;
-@class OFRegularExpression;
 
 /* A note on deferred string decoding.
 
@@ -70,7 +70,7 @@ Currently the only way to create strings with deferred bytes/characters is using
 - (NSString *)stringByRemovingWhitespace;
 - (NSString *)stringByRemovingCharactersInOFCharacterSet:(OFCharacterSet *)removeSet;
 - (NSString *)stringByRemovingReturns;
-- (NSString *)stringByRemovingRegularExpression:(OFRegularExpression *)regularExpression;
+- (NSString *)stringByRemovingRegularExpression:(NSRegularExpression *)regularExpression;
 
 enum {
     OFStringNormlizationOptionLowercase = 0x01,
@@ -91,8 +91,9 @@ enum {
 
 - (NSString *)stringByApplyingDeferredCFEncoding:(CFStringEncoding)newEncoding;
 
-- (NSString *)stringByReplacingAllOccurrencesOfRegularExpressionString:(NSString *)matchString withString:(NSString *)newString;
+- (NSString *)stringByReplacingAllOccurrencesOfRegularExpressionPattern:(NSString *)pattern withString:(NSString *)newString;
     // Note: Useful, but fairly expensive!
+- (NSString *)stringByReplacingAllOccurrencesOfRegularExpression:(NSRegularExpression *)matchExpression withString:(NSString *)newString;
 
 - (NSString *)stringByReplacingOccurancesOfString:(NSString *)targetString withObjectsFromArray:(NSArray *)sourceArray;
 

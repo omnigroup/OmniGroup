@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -767,11 +767,11 @@ void *OFBTreeFind(const OFBTree *btree, const void *value)
 }
 
 /*"
-Calls the supplied callback once for each element in the tree, passing the element and the argument passed to OFBTreeEnumerator().  Currently, this only does a forward enumeration of the tree.
+Calls the supplied block once for each element in the tree, passing the element.  Currently, this only does a forward enumeration of the tree.
 "*/
 // TODO:  Later we could have a version of this that takes a min element, max element (either of which can be NULL) and a direction.  We'd then find the path to the two elements that don't break the range (i.e., the given min/max elements might not actually be in the tree) and start the enumeration from the starting path, continuing until we hit the ending element.
 
-static void _OFBTreeEnumerateNode(const OFBTree *tree, OFBTreeChildPointer p, OFBTreeEnumeratorCallback callback, void *arg, unsigned height)
+static void _OFBTreeEnumerateNode(const OFBTree *tree, OFBTreeChildPointer p, OFBTreeEnumerator enumerator, unsigned height)
 {
     NSUInteger elementIndex;
     
@@ -783,7 +783,7 @@ static void _OFBTreeEnumerateNode(const OFBTree *tree, OFBTreeChildPointer p, OF
         for (elementIndex = 0, element = node->contents;
              elementIndex < node->elementCount;
              elementIndex ++, element += stride) {
-            callback(tree, element, arg);
+            enumerator(tree, element);
         }
     } else {
         /* Internal node; child pointers between elements, all guaranteed non-NULL */
@@ -796,26 +796,17 @@ static void _OFBTreeEnumerateNode(const OFBTree *tree, OFBTreeChildPointer p, OF
         
         for (elementIndex = 0; elementIndex <= count; elementIndex++) {
             value = ELEMENT_AT_INDEX(node, stride, elementIndex);
-            _OFBTreeEnumerateNode(tree, _OFBTreeValueLesserChildNode(tree, value), callback, arg, height-1);
+            _OFBTreeEnumerateNode(tree, _OFBTreeValueLesserChildNode(tree, value), enumerator, height-1);
             if (elementIndex == count)
                 break;
-            callback(tree, value, arg);
+            enumerator(tree, value);
         }
     }
 }
 
-void OFBTreeEnumerate(const OFBTree *tree, OFBTreeEnumeratorCallback callback, void *arg)
+void OFBTreeEnumerate(const OFBTree *tree, OFBTreeEnumerator enumerator)
 {
-    _OFBTreeEnumerateNode(tree, tree->root, callback, arg, tree->height);
-}
-
-static void _invokeBlock(const struct _OFBTree *tree, void *element, void *arg)
-{
-    ((OFBTreeEnumeratorBlock)arg)(tree, element);
-}
-void OFBTreeEnumerateBlock(const OFBTree *tree, OFBTreeEnumeratorBlock callback)
-{
-    _OFBTreeEnumerateNode(tree, tree->root, _invokeBlock, callback, tree->height);
+    _OFBTreeEnumerateNode(tree, tree->root, enumerator, tree->height);
 }
 
 static void *_OFBTreeCursorLesserValue(const OFBTree *btree, OFBTreeCursor *cursor);

@@ -11,24 +11,17 @@
 #import <UIKit/UIScrollView.h>
 #import <UIKit/UIControl.h>
 
-@class OUIInspectorOptionWheelItem, OUIInspectorOptionWheelSelectionIndicator, OUIInspectorOptionWheelScrollView;
+@class OUIInspectorOptionWheelItem;
 
 @interface OUIInspectorOptionWheel : UIControl <UIScrollViewDelegate>
-{
-@private
-    OUIInspectorOptionWheelSelectionIndicator *_selectionIndicator;
-    OUIInspectorOptionWheelScrollView *_scrollView;
-    NSMutableArray *_items;
-    OUIInspectorOptionWheelItem *_selectedItem; // might be animating to this, but not there yet
-    BOOL _showHighlight;
-}
 
 - (OUIInspectorOptionWheelItem *)addItemWithImage:(UIImage *)image value:(id)value;
 - (OUIInspectorOptionWheelItem *)addItemWithImageNamed:(NSString *)imageName value:(id)value;
 
 @property(copy,nonatomic) NSArray *items;
 @property(retain,nonatomic) id selectedValue; // animates
-@property(assign) BOOL showHighlight;   // selected item is highlighted; off by default 
+@property(nonatomic) BOOL showHighlight;   // selected item is highlighted; off by default
+
 - (void)setSelectedValue:(id)value animated:(BOOL)animated;
 
 @end

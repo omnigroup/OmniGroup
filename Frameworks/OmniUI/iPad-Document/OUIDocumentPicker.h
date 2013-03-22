@@ -26,9 +26,9 @@
 @property(nonatomic,readonly) OFSDocumentStoreFilter *documentStoreFilter;
 @property(nonatomic,retain) OFSDocumentStoreScope *selectedScope;
 
-@property(retain) IBOutlet UIToolbar *toolbar;
-@property(retain) IBOutlet OUIDocumentPickerScrollView *mainScrollView;
-@property(retain) IBOutlet OUIDocumentPickerScrollView *groupScrollView;
+@property(nonatomic,retain) IBOutlet UIToolbar *toolbar;
+@property(nonatomic,retain) IBOutlet OUIDocumentPickerScrollView *mainScrollView;
+@property(nonatomic,retain) IBOutlet OUIDocumentPickerScrollView *groupScrollView;
 
 @property(nonatomic,readonly) OUIDocumentPickerScrollView *activeScrollView;
 
@@ -36,9 +36,9 @@
 - (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL;
 - (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL animated:(BOOL)animated completionHandler:(void (^)(void))completionHandler;
 
-@property(readonly,nonatomic) NSSet *selectedFileItems;
+@property(nonatomic,readonly) NSSet *selectedFileItems;
 - (void)clearSelection:(BOOL)shouldEndEditing;
-@property(readonly,nonatomic) OFSDocumentStoreFileItem *singleSelectedFileItem;
+@property(nonatomic,readonly) OFSDocumentStoreFileItem *singleSelectedFileItem;
 
 - (void)addDocumentFromURL:(NSURL *)url;
 - (void)addSampleDocumentFromURL:(NSURL *)url;

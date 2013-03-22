@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,10 +10,9 @@
 
 #import <OmniFoundation/OFRelativeDateParser.h>
 
-#import <OmniFoundation/OFRegularExpression.h>
-#import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/OFRandom.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
+#import <OmniFoundation/NSRegularExpression-OFExtensions.h>
 #import "OFRelativeDateParser-Internal.h"
 
 #import <OmniBase/OmniBase.h>
@@ -67,9 +66,8 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
     OFRelativeDateParser *parser = [OFRelativeDateParser sharedParser];
     
     NSString *dateFormat = shortFormat;
-    static OFRegularExpression *formatseparatorRegex = nil;
-    if (!formatseparatorRegex)
-	formatseparatorRegex = [[OFRegularExpression alloc] initWithString:@"^\\w+([\\./-])"];
+
+    OFCreateRegularExpression(formatseparatorRegex, @"^\\w+([\\./-])");
 //    OFRegularExpressionMatch *formattedDateMatch = [formatseparatorRegex matchInString:dateFormat];
 //    NSString *formatStringseparator = nil;
 //    if (formattedDateMatch) {

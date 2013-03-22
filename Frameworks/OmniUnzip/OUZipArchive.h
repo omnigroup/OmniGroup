@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,11 +10,6 @@
 #import <OmniFoundation/OFObject.h>
 
 @interface OUZipArchive : OFObject
-{
-@private
-    NSString *_path;
-    struct TagzipFile__ *_zip;
-}
 
 + (BOOL)createZipFile:(NSString *)zipPath fromFilesAtPaths:(NSArray *)paths error:(NSError **)outError;
 + (BOOL)createZipFile:(NSString *)zipPath fromFileWrappers:(NSArray *)fileWrappers error:(NSError **)outError;

@@ -1,4 +1,4 @@
-// Copyright 2009-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1385,7 +1385,6 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
 
 + (id) defaultTestSuite
 {
-    NSLog(@"Warning: tests that fails on 10.8 <bug:///81112> (OFXMLSignatureTests_EllipticInterop fails on 10.8)");
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     SenTestSuite *suite = [[super defaultTestSuite] retain];
     NSString *files[] = { @"w3c_microsoft_ecc_p256_sha256_c14n.xml", @"w3c_microsoft_ecc_p521_sha256_c14n.xml", @"w3c_microsoft_ecc_p521_sha512_c14n.xml", @"w3c_oracle_signature-enveloping-p256_sha1.xml", @"w3c_oracle_signature-enveloping-p521_sha256.xml", nil };

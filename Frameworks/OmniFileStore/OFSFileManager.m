@@ -12,6 +12,7 @@
 #import <OmniFileStore/OFSFileFileManager.h>
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
+#import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 

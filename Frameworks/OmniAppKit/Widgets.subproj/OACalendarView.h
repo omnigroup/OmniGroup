@@ -1,6 +1,4 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
-// This should be updated to not use NSCalendarDate (or removed) as it is deprecated.
-// Copyright 2001-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,8 +9,6 @@
 
 #import <AppKit/NSControl.h>
 
-@class NSMutableArray;
-@class NSTableHeaderCell, NSTextFieldCell;
 @class OACalendarView;
 
 #import <AppKit/NSNibDeclarations.h>
@@ -32,38 +28,8 @@ typedef enum _OACalendarViewSelectionType {
 } OACalendarViewSelectionType;
 
 @interface OACalendarView : NSControl
-{
-    NSCalendar *calendar;
-    NSDate *visibleMonth;
-    NSMutableArray *selectedDays;
 
-    NSView *monthAndYearView;
-    NSTextFieldCell *monthAndYearTextFieldCell;
-    NSTextFieldCell *dayOfWeekCell[7];
-    NSTextFieldCell *dayOfMonthCell;
-    NSMutableArray *buttons;
-
-    uint32_t dayHighlightMask;
-    OACalendarViewSelectionType selectionType;
-    NSInteger displayFirstDayOfWeek;
-    
-    CGFloat columnWidth;
-    CGFloat rowHeight;
-    NSRect monthAndYearRect;
-    NSRect gridHeaderAndBodyRect;
-    NSRect gridHeaderRect;
-    NSRect gridBodyRect;
-    
-    struct {
-        unsigned int showsDaysForOtherMonths:1;
-        unsigned int targetProvidesHighlightMask:1;
-        unsigned int targetWatchesCellDisplay:1;
-        unsigned int targetWatchesVisibleMonth:1;
-        unsigned int targetApprovesDateSelection:1;
-    } flags;
-}
-
-@property(readwrite,retain) NSCalendar *calendar;
+@property(nonatomic,retain) NSCalendar *calendar;
 
 - (NSDate *)visibleMonth;
 - (void)setVisibleMonth:(NSDate *)aDate;

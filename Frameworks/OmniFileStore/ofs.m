@@ -1,4 +1,4 @@
-// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,19 +9,14 @@
 #import <OmniFileStore/OFSDAVFileManager.h>
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManager.h>
-#import <OmniFileStore/OFSFileManagerAsynchronousOperationTarget.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
+#import <OmniFileStore/OFSAsynchronousOperation.h>
 #import <OmniFoundation/OFCredentials.h>
 #import <readpassphrase.h>
 
 RCS_ID("$Id$");
 
-@interface OFSTool : NSObject <OFSFileManagerDelegate, OFSFileManagerAsynchronousOperationTarget>
-{
-@private
-    id <OFSAsynchronousOperation> _asyncOperation;
-    NSError *_asyncError;
-}
+@interface OFSTool : NSObject <OFSFileManagerDelegate>
 @end
 
 static NSString * const OFSToolErrorDomain = @"com.omnigroup.framework.omnifilestore.ofs";
@@ -34,6 +29,10 @@ enum {
 };
 
 @implementation OFSTool
+{
+    id <OFSAsynchronousOperation> _asyncOperation;
+    NSError *_asyncError;
+}
 
 static void _log(NSString *format, ...) NS_FORMAT_FUNCTION(1,2);
 static void _log(NSString *format, ...)
@@ -103,7 +102,7 @@ static NSURL *_url(NSString *str)
             return NO;
         
         for (OFSFileInfo *fileInfo in fileInfos)
-            _log(@"%@ %lld %@ (ETag:%@)\n", fileInfo.isDirectory ? @"dir" : @"file", fileInfo.size, fileInfo.name, fileInfo.ETag);
+            _log(@"%@ %lld %@ (date:%@ ETag:%@)\n", fileInfo.isDirectory ? @"dir" : @"file", fileInfo.size, fileInfo.name, [fileInfo.lastModifiedDate xmlString], fileInfo.ETag);
     }
     
     return YES;
@@ -165,8 +164,20 @@ static NSURL *_url(NSString *str)
         NSURL *url = _url([arguments objectAtIndex:1]);
         OFSFileManager *fileManager = [[[OFSFileManager alloc] initWithBaseURL:url delegate:self error:outError] autorelease];
         
-        _asyncOperation = [[fileManager asynchronousWriteData:data toURL:url atomically:NO withTarget:self] retain];
-        [_asyncOperation startOperation];
+        _asyncOperation = [[fileManager asynchronousWriteData:data toURL:url atomically:NO] retain];
+        _asyncOperation.didSendBytes = ^(id <OFSAsynchronousOperation> op, long long byteCount){
+            long long expectedLength = op.expectedLength;
+            if (expectedLength == NSURLResponseUnknownLength)
+                NSLog(@"%qd bytes processed", op.processedLength);
+            else
+                NSLog(@"%.1f%%", 100.0 * (double)op.processedLength / expectedLength);
+        };
+        _asyncOperation.didFinish = ^(id <OFSAsynchronousOperation> op, NSError *errorOrNil){
+            _asyncError = [errorOrNil retain];
+            [_asyncOperation autorelease];
+            _asyncOperation = nil;
+        };
+        [_asyncOperation startOperationOnQueue:nil];
         
         while (_asyncOperation) {
             NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -204,29 +215,6 @@ static NSURL *_url(NSString *str)
     }
     
     return YES;
-}
-
-#pragma mark -
-#pragma mark OFSFileManagerAsynchronousOperationTarget
-
-- (void)fileManager:(OFSFileManager *)fileManager operation:(id <OFSAsynchronousOperation>)operation didProcessBytes:(long long)processedBytes;
-{
-    OBPRECONDITION(_asyncOperation);
-    
-    long long expectedLength = [operation expectedLength];
-    if (expectedLength == NSURLResponseUnknownLength)
-        NSLog(@"%qd bytes processed", [operation processedLength]);
-    else
-        NSLog(@"%.1f%%", 100.0 * (double)[operation processedLength] / expectedLength);
-}
-
-- (void)fileManager:(OFSFileManager *)fileManager operationDidFinish:(id <OFSAsynchronousOperation>)operation withError:(NSError *)error;
-{
-    OBPRECONDITION(_asyncOperation);
-
-    _asyncError = [error retain];
-    [_asyncOperation autorelease];
-    _asyncOperation = nil;
 }
 
 #pragma mark -
@@ -286,13 +274,20 @@ int main(int argc, char *argv[])
     
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     @try {
-        NSError *error = nil;
-        OFSTool *tool = [[[OFSTool alloc] init] autorelease];
+        // We have to run the tool on a background queue so that the main queue is unblocked to allow the credential lock hack in OFCredential to work.
+        NSOperationQueue *runQueue = [[NSOperationQueue alloc] init];
+        [runQueue addOperationWithBlock:^{
+            NSError *error = nil;
+            OFSTool *tool = [[[OFSTool alloc] init] autorelease];
+            
+            if (![tool run:&error]) {
+                NSLog(@"Error: %@", [error toPropertyList]);
+                exit(1);
+            }
+            exit(0);
+        }];
         
-        if (![tool run:&error]) {
-            NSLog(@"Error: %@", [error toPropertyList]);
-            return 1;
-        }
+        [[NSRunLoop currentRunLoop] run];
         return 0;
     } @finally {
         [pool release];

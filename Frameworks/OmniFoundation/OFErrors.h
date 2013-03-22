@@ -42,6 +42,8 @@ enum {
     OFKeyNotAvailable,
     
     OFNetStateRegistrationCannotCreateSocket,
+    
+    OFSyncClientStateInvalidPropertyList,
 };
 
 

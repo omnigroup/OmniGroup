@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,24 +19,11 @@ typedef struct {
 } OUIFontInspectorSliceFontDisplay;
 
 @interface OUIFontInspectorSlice : OUIInspectorSlice
-{
-@private
-    OUIInspectorTextWell *_fontFamilyTextWell;
-    
-    OUIInspectorStepperButton *_fontSizeDecreaseStepperButton;
-    OUIInspectorStepperButton *_fontSizeIncreaseStepperButton;
-    OUIInspectorTextWell *_fontSizeTextWell;
-    
-    OUIFontInspectorPane *_fontFacesPane;
-    
-    NSNumberFormatter *_wholeNumberFormatter;
-    NSNumberFormatter *_fractionalNumberFormatter;
-}
 
-@property(retain) IBOutlet OUIInspectorTextWell *fontFamilyTextWell;
-@property(retain) IBOutlet OUIInspectorStepperButton *fontSizeDecreaseStepperButton;
-@property(retain) IBOutlet OUIInspectorStepperButton *fontSizeIncreaseStepperButton;
-@property(retain) IBOutlet OUIInspectorTextWell *fontSizeTextWell;
+@property(nonatomic,retain) IBOutlet OUIInspectorTextWell *fontFamilyTextWell;
+@property(nonatomic,retain) IBOutlet OUIInspectorStepperButton *fontSizeDecreaseStepperButton;
+@property(nonatomic,retain) IBOutlet OUIInspectorStepperButton *fontSizeIncreaseStepperButton;
+@property(nonatomic,retain) IBOutlet OUIInspectorTextWell *fontSizeTextWell;
 
 - (IBAction)increaseFontSize:(id)sender;
 - (IBAction)decreaseFontSize:(id)sender;
@@ -46,7 +33,7 @@ typedef struct {
 - (OUIFontInspectorSliceFontDisplay)fontNameDisplayForFontDescriptors:(NSArray *)fontDescriptors;
 - (void)updateFontSizeTextWellForFontSizes:(NSArray *)fontSizes extent:(OFExtent)fontSizeExtent;
 
-@property(retain) IBOutlet OUIFontInspectorPane *fontFacesPane;
+@property(nonatomic,retain) IBOutlet OUIFontInspectorPane *fontFacesPane;
 - (void)showFacesForFamilyBaseFont:(UIFont *)font; // Called from the family listing to display members of the family
 
 @end

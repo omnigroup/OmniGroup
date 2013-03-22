@@ -25,7 +25,7 @@ RCS_ID("$Id$");
 
 @implementation OUIMenuController
 {
-    id <OUIMenuControllerDelegate> _nonretained_delegate;
+    __weak id <OUIMenuControllerDelegate> _nonretained_delegate;
     
     UIPopoverController *_menuPopoverController;
     UINavigationController *_menuNavigationController;
@@ -66,6 +66,18 @@ RCS_ID("$Id$");
     return self;
 }
 
+- initWithOptions:(NSArray *)options;
+{
+    OBPRECONDITION([options count] > 0);
+    
+    if (!(self = [super initWithNibName:nil bundle:nil]))
+        return nil;
+    
+    _options = [options copy];
+    
+    return self;
+}
+
 - (void)dealloc;
 {
     [_menuNavigationController release];
@@ -81,9 +93,13 @@ RCS_ID("$Id$");
         return;
     }
     
-    // Options chould change each time we are presented (for example, if the Documents & Data preference is toggled, the main app might show an iCloud Set Up option).
-    [_options release];
-    _options = [[_nonretained_delegate menuControllerOptions:self] copy];
+    // Options chould change each time we are presented.
+    if (_nonretained_delegate) {
+        [_options release];
+        _options = [[_nonretained_delegate menuControllerOptions:self] copy];
+    } else {
+        // The options should be set in this case and we should keep using the static list.
+    }
     
     UITableView *tableView = (UITableView *)self.view;
     [tableView reloadData];
@@ -94,7 +110,7 @@ RCS_ID("$Id$");
 
     if (!_menuNavigationController) {
         _menuNavigationController = [[UINavigationController alloc] initWithRootViewController:self];
-        _menuNavigationController.navigationBarHidden = YES;
+        _menuNavigationController.navigationBarHidden = [NSString isEmptyString:self.title];
     }
     if (!_menuPopoverController) {
         _menuPopoverController = [[UIPopoverController alloc] initWithContentViewController:_menuNavigationController];

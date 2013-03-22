@@ -16,10 +16,7 @@ RCS_ID("$Id$")
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 @interface OAInlineImageTextAttachmentCell : NSImageCell /* <NSTextAttachmentCell> */
-{
-    NSTextAttachment *nonretained_attachment;
-}
-@property (readwrite, assign) NSTextAttachment *attachment;
+@property (nonatomic,assign) NSTextAttachment *attachment;
 @end
 #endif
 
@@ -575,6 +572,9 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 @implementation OAInlineImageTextAttachmentCell
+{
+    NSTextAttachment *_nonretained_attachment;
+}
 
 // Many of the NSTextAttachmentCell protocol's methods are supplied by NSCell.
 // - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
@@ -596,7 +596,7 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
     }
 }
 
-@synthesize attachment = nonretained_attachment;
+@synthesize attachment = _nonretained_attachment;
 
 - (NSSize)cellSize
 {

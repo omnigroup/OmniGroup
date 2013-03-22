@@ -11,6 +11,9 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
 #import <OmniBase/OBUtilities.h>
+#import <OmniBase/macros.h>
+
+OB_REQUIRE_ARC
 
 RCS_ID("$Id$");
 
@@ -48,9 +51,7 @@ static NSError *_OBWrapUnderlyingErrorv(NSError *underlyingError, NSString *doma
 	[userInfo setObject:[fileString stringByAppendingFormat:@":%d", line] forKey:OBFileNameAndNumberErrorKey];
     }
     
-    NSError *error = [NSError errorWithDomain:domain code:code userInfo:userInfo];
-    [userInfo release];
-    return error;
+    return [NSError errorWithDomain:domain code:code userInfo:userInfo];
 }
 
 
@@ -91,7 +92,6 @@ NSError *_OBErrorWithErrnoObjectsAndKeys(int errno_value, const char *function, 
     
     NSMutableDictionary *userInfo = [[NSMutableDictionary alloc] init];
     [userInfo setObject:description forKey:NSLocalizedFailureReasonErrorKey];
-    [description release];
     if (localizedDescription)
         [userInfo setObject:localizedDescription forKey:NSLocalizedDescriptionKey];
     
@@ -110,8 +110,6 @@ NSError *_OBErrorWithErrnoObjectsAndKeys(int errno_value, const char *function, 
     }
     va_end(kvargs);
     
-    NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno_value userInfo:userInfo];
-    [userInfo release];
-    return error;
+    return [NSError errorWithDomain:NSPOSIXErrorDomain code:errno_value userInfo:userInfo];
 }
 

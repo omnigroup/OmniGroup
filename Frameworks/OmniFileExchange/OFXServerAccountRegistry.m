@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,9 +21,8 @@
 RCS_ID("$Id$")
 
 static NSString * const AllAccountsKey = @"allAccounts";
-static NSString * const ValidatedAccountsKey = @"validatedAccounts";
-
-NSInteger OFXSyncDebug;
+static NSString * const ValidCloudSyncAccounts = @"validCloudSyncAccounts";
+static NSString * const ValidImportExportAccounts = @"validImportExportAccounts";
 
 @interface OFXServerAccountRegistry ()
 @property(nonatomic,assign) BOOL ownsCredentials;
@@ -37,6 +36,7 @@ NSInteger OFXSyncDebug;
     OBINITIALIZE;
     
     OBInitializeDebugLogLevel(OFXSyncDebug);
+    OBInitializeDebugLogLevel(OFXMetadataDebug);
 }
 
 + (OFXServerAccountRegistry *)defaultAccountRegistry;
@@ -130,7 +130,8 @@ NSInteger OFXSyncDebug;
     }
 
     NSMutableArray *allAccounts = [NSMutableArray new];
-    NSMutableArray *validatedAccounts = [NSMutableArray new];
+    NSMutableArray *validCloudSyncAccounts = [NSMutableArray new];
+    NSMutableArray *validImportExportAccounts = [NSMutableArray new];
     
     for (NSURL *accountURL in accountURLs) {
         NSError *infoError;
@@ -166,15 +167,21 @@ NSInteger OFXSyncDebug;
         [self _startObservingAccount:account];
         [allAccounts addObject:account];
         
-        if ([self _isAccountValid:account])
-            [validatedAccounts addObject:account];
+        if ([self _isAccountValid:account]) {
+            if (account.isCloudSyncEnabled)
+                [validCloudSyncAccounts addObject:account];
+            if (account.isImportExportEnabled)
+                [validImportExportAccounts addObject:account];
+        }
     }
     
     _allAccounts = [allAccounts copy];
-    _validatedAccounts = [validatedAccounts copy];
+    _validCloudSyncAccounts = [validCloudSyncAccounts copy];
+    _validImportExportAccounts = [validImportExportAccounts copy];
     
     OBPOSTCONDITION(_allAccounts);
-    OBPOSTCONDITION(_validatedAccounts);
+    OBPOSTCONDITION(_validCloudSyncAccounts);
+    OBPOSTCONDITION(_validImportExportAccounts);
     return self;
 }
 
@@ -231,29 +238,31 @@ NSInteger OFXSyncDebug;
     if (![manager createDirectoryAtURL:temporaryURL withIntermediateDirectories:NO attributes:nil error:outError])
         return NO;
     
-    // TODO: Use NSFileCoordination here?
-    // Make the local documents directory for this URL. We need to do this before calling -propertyList so that (on OS X), we can record an app-scoped bookmark.
-    NSError *createError;
-    if (![manager createDirectoryAtURL:account.localDocumentsURL withIntermediateDirectories:YES attributes:nil error:&createError]) {
-        NSLog(@"Error creating local documents directory %@: %@", account.localDocumentsURL, [createError toPropertyList]);
-        if (outError)
-            *outError = createError;
-        return NO;
+    if (account.isCloudSyncEnabled) {
+        // TODO: Use NSFileCoordination here?
+        // Make the local documents directory for this URL. We need to do this before calling -propertyList so that (on OS X), we can record an app-scoped bookmark.
+        NSError *createError;
+        if (![manager createDirectoryAtURL:account.localDocumentsURL withIntermediateDirectories:YES attributes:nil error:&createError]) {
+            NSLog(@"Error creating local documents directory %@: %@", account.localDocumentsURL, [createError toPropertyList]);
+            if (outError)
+                *outError = createError;
+            return NO;
+        }
+        
+        NSError *contentsError;
+        if (![OFXServerAccount isValidLocalDocumentsURL:account.localDocumentsURL error:&contentsError]) {
+            if (outError)
+                *outError = contentsError;
+            return NO;
+        }
     }
-    
-    NSError *contentsError;
-    if (![OFXServerAccount isValidLocalDocumentsURL:account.localDocumentsURL error:&contentsError]) {
-        if (outError)
-            *outError = contentsError;
-        return NO;
-    }
-    
+
     NSDictionary *plist = account.propertyList;
     if (!OFWriteNSPropertyListToURL(plist, [temporaryURL URLByAppendingPathComponent:@"Info.plist"], outError))
         return NO;
     
     // We lazily create our accounts directory
-    createError = nil;
+    NSError *createError = nil;
     if (![manager createDirectoryAtURL:_accountsDirectoryURL withIntermediateDirectories:YES attributes:nil error:&createError]) {
         if ([createError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:EEXIST] ||
             [createError hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileWriteFileExistsError]) {
@@ -342,12 +351,14 @@ static unsigned AccountContext;
     
     // On the Mac, we'll leave the synchronized files around since they are in a user-visible location and the user may have just decided to stop using our service. On iOS, there is no other way to get to the files, so we need to clean up after ourselves.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    removeError = nil;
+    if (account.isCloudSyncEnabled) {
+        removeError = nil;
 
-    // Go through this helper method to make sure we delete the right ancestory URL (since there is an extra 'Documents' component). This does some other checks to make sure we are deleting the right thing.
-    if (![OFXServerAccount deleteGeneratedLocalDocumentsURL:account.localDocumentsURL error:&removeError]) {
-        NSLog(@"Error removing local account documents at %@: %@", account.localDocumentsURL, [removeError toPropertyList]);
-        return NO;
+        // Go through this helper method to make sure we delete the right ancestory URL (since there is an extra 'Documents' component). This does some other checks to make sure we are deleting the right thing.
+        if (![OFXServerAccount deleteGeneratedLocalDocumentsURL:account.localDocumentsURL error:&removeError]) {
+            NSLog(@"Error removing local account documents at %@: %@", account.localDocumentsURL, [removeError toPropertyList]);
+            return NO;
+        }
     }
 #endif
     
@@ -368,18 +379,28 @@ static unsigned AccountContext;
 
 - (void)_updateValidatedAccounts;
 {
-    NSMutableArray *validatedAccounts = [NSMutableArray new];
+    NSMutableArray *validCloudSyncAccounts = [NSMutableArray new];
+    NSMutableArray *validImportExportAccounts = [NSMutableArray new];
     for (OFXServerAccount *account in _allAccounts) {
-        if ([self _isAccountValid:account])
-            [validatedAccounts addObject:account];
+        if ([self _isAccountValid:account]) {
+            if (account.isCloudSyncEnabled)
+                [validCloudSyncAccounts addObject:account];
+            if (account.isImportExportEnabled)
+                [validImportExportAccounts addObject:account];
+        }
     }
     
-    if ([_validatedAccounts isEqual:validatedAccounts])
-        return;
-    
-    [self willChangeValueForKey:ValidatedAccountsKey];
-    _validatedAccounts = [validatedAccounts copy];
-    [self didChangeValueForKey:ValidatedAccountsKey];
+    if (![_validImportExportAccounts isEqual:validImportExportAccounts]) {
+        [self willChangeValueForKey:ValidImportExportAccounts];
+        _validImportExportAccounts = [validImportExportAccounts copy];
+        [self didChangeValueForKey:ValidImportExportAccounts];
+    }
+
+    if (![_validCloudSyncAccounts isEqual:validCloudSyncAccounts]) {
+        [self willChangeValueForKey:ValidCloudSyncAccounts];
+        _validCloudSyncAccounts = [validCloudSyncAccounts copy];
+        [self didChangeValueForKey:ValidCloudSyncAccounts];
+    }
 }
 
 - (void)_startObservingAccount:(OFXServerAccount *)account;

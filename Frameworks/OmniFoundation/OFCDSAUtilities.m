@@ -1,4 +1,4 @@
-// Copyright 2005, 2007, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2005, 2007, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -103,6 +103,10 @@ static inline NSString *NSStringFromCSSMGUID(CSSM_GUID uid)
 
 #if OF_ENABLE_CDSA
 @implementation OFCDSAModule
+{
+    CSSM_MODULE_HANDLE hdl;
+    BOOL detachWhenDone;
+}
 
 static void *cssmLibcMalloc(CSSM_SIZE size, void *allocref)
 {
@@ -248,6 +252,16 @@ static const CSSM_VERSION callingApiVersion = {2,0};
 
 #if OF_ENABLE_CDSA
 @implementation OFCSSMKey
+{
+    OFCDSAModule *csp;
+    CSSM_KEY key;
+    
+    NSData *keyBlob;
+    SecKeyRef keyReference;
+    const CSSM_ACCESS_CREDENTIALS *credentials;
+    
+    int groupOrder;
+}
 
 - initWithCSP:(OFCDSAModule *)cryptographicServiceProvider
 {
@@ -465,7 +479,17 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
     }
 }
 
+@interface OFCSSMCryptographicContext ()
+{
+@protected
+    CSSM_CC_HANDLE ccontext; // Exposed for subclass direct access
+}
+@end
+
 @implementation OFCSSMCryptographicContext
+{
+    OFCDSAModule *csp;
+}
 
 - initWithCSP:(OFCDSAModule *)cryptographicServiceProvider cc:(CSSM_CC_HANDLE)ctxt;
 {
@@ -489,6 +513,9 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
 @end
 
 @implementation OFCSSMMacContext
+{
+    BOOL generating;
+}
 
 - (BOOL)verifyInit:(NSError **)outError;
 {
@@ -552,6 +579,10 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
 @end
 
 @implementation OFCSSMSignatureContext
+{
+    int generatorGroupOrderLog2;
+    BOOL signing;
+}
 
 - (void)setPackDigestsWithGroupOrder:(int)sizeInBits;
 {
@@ -629,6 +660,9 @@ static inline BOOL cssmCheckError(NSError **outError, CSSM_RETURN errcode, NSStr
 @end
 
 @implementation OFCSSMDigestContext
+{
+    NSData *result;
+}
 
 - (void)dealloc
 {

@@ -1,4 +1,4 @@
-// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -481,7 +481,7 @@ static void _validateMethodSignatures(void)
     newClassCount = objc_getClassList(NULL, 0);
     while (classCount < newClassCount) {
         classCount = newClassCount;
-        classes = realloc(classes, sizeof(Class) * classCount);
+        classes = (Class *)realloc(classes, sizeof(Class) * classCount);
         newClassCount = objc_getClassList(classes, classCount);
     }
     
@@ -600,7 +600,7 @@ static void _checkForMethodsInDeprecatedProtocols(void)
     newClassCount = objc_getClassList(NULL, 0);
     while (classCount < newClassCount) {
         classCount = newClassCount;
-        classes = realloc(classes, sizeof(Class) * classCount);
+        classes = (Class *)realloc(classes, sizeof(Class) * classCount);
         newClassCount = objc_getClassList(classes, classCount);
     }
     
@@ -744,9 +744,9 @@ static void OBPerformRuntimeChecksOnLoad(void)
     OBReportWarningsInSystemLibraries = (getenv("OBReportWarningsInSystemLibraries") != NULL);
     
     if (getenv("OBPerformRuntimeChecksOnLoad")) {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        OBPerformRuntimeChecks();
-        [pool drain];
+        @autoreleasepool {
+            OBPerformRuntimeChecks();
+        }
     }
 }
 

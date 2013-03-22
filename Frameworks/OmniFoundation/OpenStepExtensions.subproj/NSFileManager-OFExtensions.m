@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -740,6 +740,18 @@ errorReturn:
         return YES;
     }
     
+    // The Code Signing Language Requirement documentation says:
+    //
+    //    The existence operator tests whether the value exists. It evaluates to
+    //    false only if the value does not exist at all or is exactly the Boolean
+    //    value false. An empty string and the number 0 are considered to exist.
+    //
+    // Testing `entitlement["com.apple.security.app-sandbox"] exists` will
+    // therefore evaluate to TRUE for sandboxed applications, and FALSE when the
+    // sandbox entitlement is missing or false. Malformed code signing
+    // entitlements (non-boolean value for the sandbox entitlement) may produce
+    // an unexpected result.
+    
     SecRequirementRef sandboxRequirement = NULL;
     status = SecRequirementCreateWithString(CFSTR("entitlement[\"com.apple.security.app-sandbox\"] exists"), kSecCSDefaultFlags, &sandboxRequirement);
     if (status != noErr) {
@@ -764,6 +776,8 @@ errorReturn:
             
         case errSecCSUnsigned: { // We're unsigned
         case errSecCSReqFailed:  // Our signature doesn't have the sandbox requirement
+        case errSecCSSignatureFailed: // Invalid signature (code or signature have been modified)
+        case errSecCSBadResource: // A sealed resource is missing or invalid
             *outSandboxed = NO;
             break;
         }

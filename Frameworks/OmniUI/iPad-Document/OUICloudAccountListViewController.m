@@ -22,8 +22,8 @@
 RCS_ID("$Id$");
 
 enum {
-    AccountListSection,
-    AddAccountSection,
+    CloudSyncAccountListSection,
+    ImportExportAccountListSection,
     SectionCount,
 };
 
@@ -32,33 +32,53 @@ enum {
 
 @implementation OUICloudAccountListViewController
 {
-    UITableView *_tableView;
+    UITableView *_accountListTableView;
+    UITableView *_addAccountTableView;
 
-    NSArray *_accounts;
+    NSArray *_cloudSyncAccounts;
+    NSArray *_importExportAccounts;
 }
 
 - (void)dealloc;
 {
-    _tableView.delegate = nil;
-    _tableView.dataSource = nil;
+    _accountListTableView.delegate = nil;
+    _accountListTableView.dataSource = nil;
 }
 
 #pragma mark - UIViewController
 
 - (void)loadView;
 {
-    OBPRECONDITION(_tableView == nil);
+    OBPRECONDITION(_accountListTableView == nil);
+    OBPRECONDITION(_addAccountTableView == nil);
     
-    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, 0) style:UITableViewStyleGrouped];
-    _tableView.delegate = self;
-    _tableView.dataSource = self;
-    _tableView.scrollEnabled = NO; // OBFinishPorting - What if you have a huge number of accounts?
-    
-    self.navigationItem.leftBarButtonItem = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_done:)];
+    _accountListTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, 500) style:UITableViewStyleGrouped];
+    _accountListTableView.delegate = self;
+    _accountListTableView.dataSource = self;
+    _accountListTableView.scrollEnabled = YES;
+    _accountListTableView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+    _accountListTableView.backgroundColor = [UIColor clearColor];
+    _accountListTableView.backgroundView = nil;
+
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Cloud Setup", @"OmniUIDocument", OMNI_BUNDLE, @"Cloud setup modal sheet title");
 
-    self.view = _tableView;
+    _addAccountTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 500, 320, 100) style:UITableViewStyleGrouped];
+    _addAccountTableView.delegate = self;
+    _addAccountTableView.dataSource = self;
+    _addAccountTableView.scrollEnabled = NO;
+    _addAccountTableView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleTopMargin;
+    _addAccountTableView.backgroundColor = [UIColor clearColor];
+    _addAccountTableView.backgroundView = nil;
+    // OUITableViewAdjustHeightToFitContents(_addAccountTableView);
+
+    UIView *topLevelView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 600)];
+    [topLevelView addSubview:_accountListTableView];
+    [topLevelView addSubview:_addAccountTableView];
+
+    self.view = topLevelView;
+
+    [self _updateToolbarButtons];
 }
 
 - (BOOL)shouldAutorotate;
@@ -70,6 +90,7 @@ enum {
 {
     [super viewWillAppear:animated];
     [self setEditing:NO animated:NO];
+    [_addAccountTableView deselectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] animated:NO];
     
     [self _reloadAccounts];
 }
@@ -78,62 +99,98 @@ enum {
 {
     [super setEditing:editing animated:animated];
     
-    if (self.isViewLoaded) {
-        UITableView *tableView = (UITableView *)self.view;
-        [tableView setEditing:editing animated:animated];
-    }
+    if (self.isViewLoaded)
+        [_accountListTableView setEditing:editing animated:animated];
+
+    [self _updateToolbarButtons];
 }
 #pragma mark -
 #pragma mark UITableView dataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
 {
+    if (tableView != _accountListTableView)
+        return 1;
+
     return SectionCount;
 }
 
 - (NSInteger)tableView:(UITableView *)table numberOfRowsInSection:(NSInteger)section;
 {
+    if (table != _accountListTableView)
+        return 1;
+
     switch (section) {
-        case AccountListSection:
-            return [_accounts count];
-        case AddAccountSection:
-            return 1;
+        case CloudSyncAccountListSection:
+            return [_cloudSyncAccounts count];
+        case ImportExportAccountListSection:
+            return [_importExportAccounts count];
         default:
             OBASSERT_NOT_REACHED("Unknown section");
             return 0;
     }
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+- (OFXServerAccount *)_accountForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     switch (indexPath.section) {
-        case AccountListSection: {
+        case CloudSyncAccountListSection:
+            return [_cloudSyncAccounts objectAtIndex:indexPath.row];
+        case ImportExportAccountListSection:
+            return [_importExportAccounts objectAtIndex:indexPath.row];
+        default:
+            return nil;
+    }
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    if (tableView != _accountListTableView) {
+        static NSString *reuseIdentifier = @"AddAccount";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
+        if (!cell) {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
+            cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Add an Account", @"OmniUIDocument", OMNI_BUNDLE, @"Cloud Setup button title to add a new account");
+            cell.imageView.image = [UIImage imageNamed:@"OUIGreenPlusButton.png"];
+        }
+
+        return cell;
+    }
+
+    switch (indexPath.section) {
+        case CloudSyncAccountListSection:
+        case ImportExportAccountListSection: {
             static NSString * const reuseIdentifier = @"ExistingServer";
             UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
             if (!cell) {
                 cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:reuseIdentifier];
                 cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             }
-            
-            OFXServerAccount *account = [_accounts objectAtIndex:indexPath.row];
+
+            OFXServerAccount *account = [self _accountForRowAtIndexPath:indexPath];
             cell.textLabel.text = account.displayName;
             cell.detailTextLabel.text = account.accountDetailsString;
             
             return cell;
         }
-        case AddAccountSection: {
-            static NSString *reuseIdentifier = @"AddAccount";
-            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
-            if (!cell) {
-                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
-                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Add an Account", @"OmniUIDocument", OMNI_BUNDLE, @"Cloud Setup button title to add a new account");
-                cell.imageView.image = [UIImage imageNamed:@"OUIGreenPlusButton.png"];
-            }
-            
-            return cell;
-        }
         default:
             OBASSERT_NOT_REACHED("Unknown section");
+            return nil;
+    }
+
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section;
+{
+    if (tableView != _accountListTableView)
+        return nil;
+
+    switch (section) {
+        case CloudSyncAccountListSection:
+            return NSLocalizedStringFromTableInBundle(@"OmniPresence Accounts", @"OmniUIDocument", OMNI_BUNDLE, @"Group label for Cloud Setup");
+        case ImportExportAccountListSection:
+            return NSLocalizedStringFromTableInBundle(@"Import/Export Accounts", @"OmniUIDocument", OMNI_BUNDLE, @"Group label for Cloud Setup");
+        default:
             return nil;
     }
 }
@@ -157,16 +214,18 @@ enum {
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     OBPRECONDITION(self.editing == NO); // Tapping rows doesn't select them in edit mode
-    
+
+    if (tableView != _accountListTableView) {
+        OUIAddCloudAccountViewController *add = [[OUIAddCloudAccountViewController alloc] init];
+        [self.navigationController pushViewController:add animated:YES];
+        return;
+    }
+
     switch (indexPath.section) {
-        case AccountListSection: {
-            OFXServerAccount *account = [_accounts objectAtIndex:indexPath.row];
+        case CloudSyncAccountListSection:
+        case ImportExportAccountListSection: {
+            OFXServerAccount *account = [self _accountForRowAtIndexPath:indexPath];
             [self _editServerAccount:account];
-            break;
-        }
-        case AddAccountSection: {
-            OUIAddCloudAccountViewController *add = [[OUIAddCloudAccountViewController alloc] init];
-            [self.navigationController pushViewController:add animated:YES];
             break;
         }
         default:
@@ -177,7 +236,7 @@ enum {
 // We use this, instead of -tableView:canEditRowAtIndexPath: since this lets the left edge of the non-editable Add Account rows move with existing accounts rather than staying outdented and thus tearing the edge of the table view.
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    if (indexPath.section == AddAccountSection)
+    if (tableView != _accountListTableView)
         return UITableViewCellEditingStyleNone;
     
     return UITableViewCellEditingStyleDelete;
@@ -185,28 +244,46 @@ enum {
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    if (indexPath.section == AccountListSection) {
-        NSInteger accountIndex = indexPath.row;
+    NSMutableArray *accounts;
+    switch (indexPath.section) {
+        case CloudSyncAccountListSection:
+            accounts = [_cloudSyncAccounts mutableCopy];
+            break;
+        case ImportExportAccountListSection:
+            accounts = [_importExportAccounts mutableCopy];
+            break;
+        default:
+            return;
+    }
 
-        OFXServerAccount *account = [_accounts objectAtIndex:accountIndex];
-        
-        // This marks the account for removal and starts the process of stopping syncing on it. Once that happens, it will automatically be removed from the filesystem.
-        [account prepareForRemoval];
-    
-        NSMutableArray *accounts = [_accounts mutableCopy];
-        [accounts removeObject:account];
-        _accounts = [accounts copy];
-        
-        [_tableView beginUpdates];
-        [_tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-        [_tableView endUpdates];
-    
-        // Edit editing mode if this was the last editable object
-        if ([_accounts count] == 0) {
-            OBFinishPortingLater("Can we swap to the 'add account' view controller at this point?");
-            [self setEditing:NO animated:YES];
-            [self _updateToolbarButtons];
-        }
+    NSInteger accountIndex = indexPath.row;
+
+    OFXServerAccount *account = [accounts objectAtIndex:accountIndex];
+
+    // This marks the account for removal and starts the process of stopping syncing on it. Once that happens, it will automatically be removed from the filesystem.
+    [account prepareForRemoval];
+
+    [accounts removeObjectAtIndex:accountIndex];
+    switch (indexPath.section) {
+        case CloudSyncAccountListSection:
+            _cloudSyncAccounts = accounts;
+            break;
+        case ImportExportAccountListSection:
+            _importExportAccounts = accounts;
+            break;
+        default:
+            OBASSERT_NOT_REACHED("We already short-circuit above if we're not in one of these two sections");
+    }
+
+    [_accountListTableView beginUpdates];
+    [_accountListTableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    [_accountListTableView endUpdates];
+
+    // Edit editing mode if this was the last editable object
+    if ([accounts count] == 0) {
+        OBFinishPortingLater("Can we swap to the 'add account' view controller at this point?");
+        [self setEditing:NO animated:YES];
+        [self _updateToolbarButtons];
     }
 }
 
@@ -220,23 +297,29 @@ enum {
 - (void)_reloadAccounts;
 {
     [self view]; // Make sure our view is loaded
-    OBASSERT(_tableView);
+    OBASSERT(_accountListTableView);
     
     OFXServerAccountRegistry *accountRegistry = [OFXServerAccountRegistry defaultAccountRegistry];
     OFXServerAccountType *iTunesAccountType = [OFXServerAccountType accountTypeWithIdentifier:OFXiTunesLocalDocumentsServerAccountTypeIdentifier];
 
-    NSArray *accounts = [accountRegistry.allAccounts select:^BOOL(OFXServerAccount *account) {
+    NSMutableArray *cloudSyncAccounts = [NSMutableArray array];
+    NSMutableArray *importExportAccounts = [NSMutableArray array];
+    for (OFXServerAccount *account in accountRegistry.allAccounts) {
         if (account.type == iTunesAccountType)
-            return NO;
+            continue;
         if (account.hasBeenPreparedForRemoval)
-            return NO;
-        return YES;
-    }];
+            continue;
+        if (account.isCloudSyncEnabled)
+            [cloudSyncAccounts addObject:account];
+        else
+            [importExportAccounts addObject:account];
+    }
     
-    _accounts = [accounts copy];
+    _cloudSyncAccounts = [cloudSyncAccounts copy];
+    _importExportAccounts = [importExportAccounts copy];
     
-    [_tableView reloadData];
-    OUITableViewAdjustHeightToFitContents(_tableView);
+    [_accountListTableView reloadData];
+    // OUITableViewAdjustHeightToFitContents(_accountListTableView);
     
     [self _updateToolbarButtons];
 }
@@ -247,12 +330,7 @@ enum {
     
     OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initWithAccount:account ofType:account.type];
     setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError *errorOrNil){
-        if (errorOrNil) {
-            [self.navigationController popViewControllerAnimated:YES];
-        } else {
-            // New account successfully added -- close the Cloud Setup sheet
-            [self.navigationController popViewControllerAnimated:YES];
-        }
+        [self.navigationController popToViewController:self animated:YES];
     };
     
     [self.navigationController pushViewController:setup animated:YES];
@@ -260,7 +338,11 @@ enum {
 
 - (void)_updateToolbarButtons;
 {
-    [self.editButtonItem setEnabled:[_accounts count] > 0];
+    [self.editButtonItem setEnabled:_cloudSyncAccounts.count + _importExportAccounts.count > 0];
+    if (self.editing)
+        self.navigationItem.leftBarButtonItem = nil;
+    else
+        self.navigationItem.leftBarButtonItem = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_done:)];
 }
 
 @end

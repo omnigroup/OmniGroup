@@ -1,4 +1,4 @@
-// Copyright 2007-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -429,10 +429,14 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark WebView delegates
 
-- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation
-        request:(NSURLRequest *)request
-          frame:(WebFrame *)frame
-decisionListener:(id<WebPolicyDecisionListener>)listener;
++ (BOOL)_isURL:(NSURL *)requestedURL onSamePageAsURL:(NSURL *)pageURL;
+{
+    NSURL *baseRequestedURL = [[[NSURL URLWithString:@"#" relativeToURL:requestedURL] absoluteURL] standardizedURL];
+    NSURL *basePageURL = [[[NSURL URLWithString:@"#" relativeToURL:pageURL] absoluteURL] standardizedURL];
+    return baseRequestedURL != nil && basePageURL != nil && [baseRequestedURL isEqual:basePageURL];
+}
+
+- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
 {
     WebNavigationType navigation = [actionInformation intForKey:WebActionNavigationTypeKey defaultValue:WebNavigationTypeOther];
     switch (navigation) {
@@ -440,8 +444,12 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
             [listener use];
             break;
         case WebNavigationTypeLinkClicked:
-            [listener ignore];
-            [[NSWorkspace sharedWorkspace] openURL:[request URL]];
+            if ([OSUAvailableUpdateController _isURL:[request URL] onSamePageAsURL:[[[frame dataSource] initialRequest] URL]]) {
+                [listener use];
+            } else {
+                [listener ignore];
+                [[NSWorkspace sharedWorkspace] openURL:[request URL]];
+            }
             break;
     }
 }
@@ -590,9 +598,14 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     
     if (tableView == _itemTableView && [[tableColumn identifier] isEqualToString:@"price"]) {
         OSUItem *rowItem = [[_availableItemController arrangedObjects] objectAtIndex:row];
-        NSAttributedString *s = [[NSAttributedString alloc] initWithString:[rowItem priceString] attributes:[rowItem priceAttributesForStyle:[cell backgroundStyle]]];
-        [cell setAttributedStringValue:s];
-        [s release];
+        NSString *priceString = [rowItem priceString];
+        if (priceString != nil) {
+            NSAttributedString *s = [[NSAttributedString alloc] initWithString:[rowItem priceString] attributes:[rowItem priceAttributesForStyle:[cell backgroundStyle]]];
+            [cell setAttributedStringValue:s];
+            [s release];
+        } else {
+            [cell setStringValue:@""];
+        }
     }
 }
 

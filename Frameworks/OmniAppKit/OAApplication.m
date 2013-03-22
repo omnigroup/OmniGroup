@@ -351,7 +351,7 @@ static NSArray *flagsChangedRunLoopModes;
         [self handleRunException:localException];
     } NS_ENDHANDLER;
 
-    [[OFScheduler mainScheduler] scheduleEvents]; // Ping the scheduler, in case the system clock changed
+    [[OFScheduler mainSchedulerIfCreated] scheduleEvents]; // Ping the scheduler, in case the system clock changed
 }
 
 BOOL OADebugTargetSelection = NO;

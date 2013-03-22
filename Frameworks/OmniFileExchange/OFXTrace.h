@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,8 @@
 extern void OFXTraceSignal(NSString *name);
 extern void OFXTraceWait(NSString *name);
 extern void OFXTraceReset(void);
+extern NSUInteger OFXTraceSignalCount(NSString *name);
+extern BOOL OFXTraceHasSignal(NSString *name);
 
 extern BOOL OFXTraceEnabled;
 

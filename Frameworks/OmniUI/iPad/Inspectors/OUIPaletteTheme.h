@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,19 +12,13 @@
 @class NSArray, NSDictionary, NSString;
 
 @interface OUIPaletteTheme : OFObject
-{
-@private
-    NSString *_identifier;
-    NSString *_displayName;
-    NSArray *_colors;
-}
 
 + (NSArray *)defaultThemes;
 
 - initWithDictionary:(NSDictionary *)dict stringTable:(NSString *)stringTable bundle:(NSBundle *)bundle;
 
-@property(readonly) NSString *identifier;
-@property(readonly) NSString *displayName;
-@property(readonly) NSArray *colors;
+@property(nonatomic,readonly) NSString *identifier;
+@property(nonatomic,readonly) NSString *displayName;
+@property(nonatomic,readonly) NSArray *colors;
 
 @end

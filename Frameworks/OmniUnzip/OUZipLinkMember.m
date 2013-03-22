@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,13 +32,7 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-- (NSString *)destination;
-{
-    return _destination;
-}
-
-#pragma mark -
-#pragma mark OUZipMember subclass
+#pragma mark - OUZipMember subclass
 
 - (NSFileWrapper *)fileWrapperRepresentation;
 {
@@ -48,8 +42,7 @@ RCS_ID("$Id$");
     return wrapper;
 }
 
-#pragma mark -
-#pragma mark OUZipMember subclass
+#pragma mark - OUZipMember subclass
 
 - (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString *)fileNamePrefix error:(NSError **)outError;
 {

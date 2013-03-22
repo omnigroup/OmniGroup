@@ -625,6 +625,13 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     
     // If we're returning success, and we actually did anything that might be called verification, remove the quarantine on the file.
     if (didVerify) {
+        // Sandboxed applications cannot remove the quarantine attribute.
+        //   LSSetItemAttribute will return noErr (but do nothing) when attempting to remove kLSItemQuarantineProperties.
+        //   removexattr will return EPERM when attempting to remove com.apple.quarantine.
+        //
+        // OSUInstaller.sh will remove the quarantine attribute as the final step of the install.
+        // We ignore success/failure here.
+        
         [fm setQuarantineProperties:nil forItemAtPath:path error:NULL];
     }
     

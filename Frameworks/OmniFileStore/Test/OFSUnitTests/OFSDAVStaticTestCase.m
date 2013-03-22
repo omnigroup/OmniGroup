@@ -140,7 +140,7 @@
     OBShouldNotError(lock);
     
     error = nil;
-    STAssertFalse([self.fileManager moveURL:dir1 toURL:dir2 withSourceLock:nil overwrite:NO error:&error], nil);
+    STAssertNil([self.fileManager moveURL:dir1 toURL:dir2 withSourceLock:nil overwrite:NO error:&error], nil);
     STAssertTrue([error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_LOCKED], nil);
 }
 

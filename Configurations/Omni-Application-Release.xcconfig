@@ -8,4 +8,3 @@
 
 // Common settings for Release configurations of Application targets
 SKIP_INSTALL = NO
-LD_RUNPATH_SEARCH_PATHS = $(value) @loader_path/../Frameworks

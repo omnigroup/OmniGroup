@@ -660,20 +660,31 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 
 - (id)scriptValue;
 {
-    return [self objectValue];
+    id value = [self objectValue];
+    if ([value isKindOfClass:[NSArray class]] || [value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSData class]])
+        return [value description];
+    else
+        return value;
 }
 
 - (void)setScriptValue:(id)value;
 {
     // TODO: Make sure this is a plist type?
     // Cocoa Scripting should do this for us, or reject the apple event, before we are ever called.
-    
+
+    if ([value isKindOfClass:[NSString class]])
+        value = [[self class] coerceStringValue:value toTypeOfPropertyListValue:[self defaultObjectValue]];
+
     [self setObjectValue:value];
 }
 
 - (id)scriptDefaultValue;
 {
-    return [self defaultObjectValue];
+    id value = [self defaultObjectValue];
+    if ([value isKindOfClass:[NSArray class]] || [value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSData class]])
+        return [value description];
+    else
+        return value;
 }
 
 #endif

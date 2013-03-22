@@ -1,4 +1,4 @@
-// Copyright 1997-2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,8 @@
 #import <OmniBase/assertions.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/macros.h>
+
+OB_REQUIRE_ARC
 
 RCS_ID("$Id$")
 
@@ -230,7 +232,6 @@ NSString *OBFormatObjectDescription(id anObject, NSString *fmt, ...)
     suffix = [[NSString alloc] initWithFormat:fmt arguments:varg];
     va_end(varg);
     result = [NSString stringWithFormat:@"<%@:%p %@>", NSStringFromClass([anObject class]), anObject, suffix];
-    [suffix release];
     
     return result;
 }
@@ -278,9 +279,8 @@ void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned int line
     NSString *reasonString = [NSString stringWithFormat:@"%c[%s %s] (%s:%d) %@", OBPointerIsClass(self) ? '+' : '-', className, methodName, file, line, complaint];
     NSLog(@"%@", reasonString);
 
-    [complaint release];
     [[NSException exceptionWithName:NSInvalidArgumentException reason:reasonString userInfo:nil] raise];
-    exit(1);  // notreached, but needed to pacify the compiler
+    exit(1);  // not reached, but needed to pacify the compiler
 }
 
 void _OBFinishPorting(const char *header, const char *function)
@@ -296,3 +296,34 @@ void _OBFinishPortingLater(const char *header, const char *function, const char 
 
 DEFINE_NSSTRING(OBAbstractImplementation);
 DEFINE_NSSTRING(OBUnusedImplementation);
+
+void _OBInitializeDebugLogLevel(NSInteger *outLevel, NSString *name)
+{
+    NSInteger level;
+
+    const char *env = getenv([name UTF8String]); /* easier for command line tools */
+    if (env)
+        level = strtoul(env, NULL, 0);
+    else
+        level = [[NSUserDefaults standardUserDefaults] integerForKey:name];
+    
+    if (level)
+        NSLog(@"DEBUG LEVEL %@ = %ld", name, level);
+    *outLevel = level;
+}
+
+void _OBInitializeTimeInterval(NSTimeInterval *outInterval, NSString *name, NSTimeInterval default_value, NSTimeInterval min_value, NSTimeInterval max_value)
+{
+    NSTimeInterval value = default_value;
+    
+    const char *env = getenv([name UTF8String]); /* easier for command line tools */
+    if (env)
+        value = strtod(env, NULL);
+    else if ([[NSUserDefaults standardUserDefaults] objectForKey:name])
+        value = [[NSUserDefaults standardUserDefaults] doubleForKey:name];
+
+    CLAMP(value, min_value, max_value);
+    if (value != default_value)
+        NSLog(@"TIME INTERVAL %@ = %lf", name, value);
+    *outInterval = value;
+}

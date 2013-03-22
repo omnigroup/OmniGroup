@@ -191,7 +191,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     return [manager createPathComponents:[[url path] pathComponents] attributes:attributes error:outError]? url : nil;
 }
 
-- (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL error:(NSError **)outError;
+- (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL error:(NSError **)outError;
 {
     if (OFSFileManagerDebug > 0)
         NSLog(@"FILE operation: RENAME %@ to %@", sourceURL, destURL);
@@ -201,10 +201,10 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     if (![manager moveItemAtPath:[sourceURL path] toPath:[destURL path] error:outError]) {
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to move \"%@\" to \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [sourceURL absoluteString], [destURL absoluteString]];
         OFSError(outError, OFSCannotMove, NSLocalizedStringFromTableInBundle(@"Unable to move file.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason);
-        return NO;
+        return nil;
     }
 
-    return YES;
+    return destURL;
 }
 
 - (BOOL)deleteURL:(NSURL *)url error:(NSError **)outError;

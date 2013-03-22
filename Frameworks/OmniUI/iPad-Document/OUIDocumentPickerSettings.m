@@ -88,9 +88,13 @@ enum {
 {
     switch (section) {
         case SettingSectionScope:
+            if ([_availableScopes count] == 1)
+                return 0; // No options to pick from.
             return [_availableScopes count];
             
         case SettingSectionFilter:
+            if ([_availableFilters count] == 1)
+                return 0; // No options to pick from.
             return [_availableFilters count];
             
         case SettingSectionSort:

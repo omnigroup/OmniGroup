@@ -12,7 +12,7 @@
 @class OFSDocumentStoreScope;
 
 extern NSString * const OFSDocumentStoreItemNameBinding;
-extern NSString * const OFSDocumentStoreItemDateBinding;
+extern NSString * const OFSDocumentStoreItemUserModificationDateBinding;
 
 extern NSString * const OFSDocumentStoreItemReadyBinding;
 
@@ -38,7 +38,7 @@ extern NSString * const OFSDocumentStoreItemPercentUploadedBinding;
 // Concrete stuff that subclasses must implement
 @protocol OFSDocumentStoreItem <NSObject>
 - (NSString *)name;
-- (NSDate *)date;
+- (NSDate *)userModificationDate;
 
 @property(nonatomic,readonly) BOOL hasUnresolvedConflicts;
 @property(nonatomic,readonly) BOOL isDownloaded;

@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,16 +28,16 @@ typedef enum {
 @property(nonatomic,retain) IBOutlet UIWindow *window;
 @property(nonatomic,retain) IBOutlet OUIMainViewController *mainViewController;
 
-@property(readonly) UIBarButtonItem *appMenuBarItem;
-@property(readonly) OUIMenuController *appMenuController;
+@property(nonatomic,readonly) UIBarButtonItem *appMenuBarItem;
+@property(nonatomic,readonly) OUIMenuController *appMenuController;
 
 @property(nonatomic,retain) IBOutlet OUIDocumentPicker *documentPicker;
 
-@property(readonly) UIBarButtonItem *documentTitleToolbarItem;
-@property(readonly) UIBarButtonItem *closeDocumentBarButtonItem;
-@property(readonly) OUIUndoBarButtonItem *undoBarButtonItem;
-@property(readonly) UIBarButtonItem *infoBarButtonItem;
-@property(readonly) BOOL shouldOpenWelcomeDocumentOnFirstLaunch;
+@property(nonatomic,readonly) UIBarButtonItem *documentTitleToolbarItem;
+@property(nonatomic,readonly) UIBarButtonItem *closeDocumentBarButtonItem;
+@property(nonatomic,readonly) OUIUndoBarButtonItem *undoBarButtonItem;
+@property(nonatomic,readonly) UIBarButtonItem *infoBarButtonItem;
+@property(nonatomic,readonly) BOOL shouldOpenWelcomeDocumentOnFirstLaunch;
 
 - (NSArray *)editableFileTypes;
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
@@ -59,7 +59,9 @@ typedef enum {
 
 - (void)duplicateAndOpenFileItem:(OFSDocumentStoreFileItem *)fileItem completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem))completionHandler;
 
-@property(readonly) OUIDocument *document;
+- (void)openDocument:(OFSDocumentStoreFileItem *)fileItem animation:(OUIDocumentAnimationType)animation showActivityIndicator:(BOOL)showActivityIndicator;
+
+@property(nonatomic,readonly) OUIDocument *document;
 
 // This is for debugging and ninja use, not production
 - (void)invalidateDocumentPreviews;

@@ -12,7 +12,7 @@
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFoundation/OFRandom.h>
 
-RCS_ID("$Id$")
+RCS_ID("$Id$");
 
 /*
  These get run for server conformance validation as well as being hooked up as unit tests by OFSDAVDynamicTestCase.
@@ -138,7 +138,10 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
             __autoreleasing NSError *error;
             if ([errors count] > 0) {
                 NSString *description = NSLocalizedStringFromTableInBundle(@"WebDAV server failed conformance test.", @"OmniFileStore", OMNI_BUNDLE, @"Error description");
-                OFSErrorWithInfo(&error, OFSDAVFileManagerConformanceFailed, description, nil, OFSDAVConformanceFailureErrors, errors, nil);
+                NSArray *recoverySuggestions = [errors arrayByPerformingBlock:^(NSError *anError) {
+                    return [anError localizedRecoverySuggestion];
+                }];
+                OFSErrorWithInfo(&error, OFSDAVFileManagerConformanceFailed, description, [recoverySuggestions componentsJoinedByString:@" "], OFSDAVConformanceFailureErrors, errors, nil);
             }
             typeof(_finished) finished = _finished; // break retain cycles
             _finished = nil;
@@ -370,6 +373,68 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
         OFSDAVRequire([dirInfo.ETag isEqual:ETagB], @"Destination directory should have the new ETag.");
     }
     
+    return YES;
+}
+
+- (BOOL)testCollectionCopyFailingDueToETagPrecondition:(NSError **)outError;
+{
+    [self _updateStatus:@"Testing collection COPY with out-of-date ETag predicate."];
+    
+    NSURL *dir1 = [_baseURL URLByAppendingPathComponent:@"dir-1" isDirectory:YES];
+    NSURL *dir2 = [_baseURL URLByAppendingPathComponent:@"dir-2" isDirectory:YES];
+    
+    NSError *error;
+    OFSDAVRequire(dir1 = [_fileManager createDirectoryAtURL:dir1 attributes:nil error:&error], @"Error creating first directory.");
+    
+    OFSFileInfo *dirInfo;
+    OFSDAVRequire(dirInfo = [_fileManager fileInfoAtURL:dir1 error:&error], @"Error getting info for first directory.");
+    
+    // Add something to the directory to change its ETag
+    OFSDAVRequire([_fileManager writeData:[NSData data] toURL:[dir1 URLByAppendingPathComponent:@"file"] atomically:NO error:&error], @"Error writing data to directory.");
+    
+    // Verify ETag changed
+    OFSFileInfo *updatedDirInfo;
+    OFSDAVRequire(updatedDirInfo = [_fileManager fileInfoAtURL:dir1 error:&error], @"Error getting info of updated directory.");
+    OFSDAVRequire(![updatedDirInfo.ETag isEqual:dirInfo.ETag], @"Directory ETag should have changed due to writing file into it.");
+    
+    OFSDAVReject([_fileManager copyURL:dir1 toURL:dir2 withSourceETag:dirInfo.ETag overwrite:NO error:&error], @"Directory copy should have failed due to ETag precondition.");
+    OFSDAVRequire([error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_PRECONDITION_FAILED], @"Error should specify precondition failure.");
+    
+    OFSDAVRequire(dirInfo = [_fileManager fileInfoAtURL:dir2 error:&error], @"Error getting info for destination directory.");
+    OFSDAVReject(dirInfo.exists, @"Directory should not have been copied.");
+    
+    return YES;
+}
+
+- (BOOL)testCollectionCopySucceedingWithETagPrecondition:(NSError **)outError;
+{
+    [self _updateStatus:@"Testing collection COPY with current ETag predicate."];
+    
+    NSURL *dir1 = [_baseURL URLByAppendingPathComponent:@"dir-1" isDirectory:YES];
+    NSURL *dir2 = [_baseURL URLByAppendingPathComponent:@"dir-2" isDirectory:YES];
+    
+    NSError *error;
+    OFSDAVRequire(dir1 = [_fileManager createDirectoryAtURL:dir1 attributes:nil error:&error], @"Error creating first directory.");
+    
+    OFSFileInfo *dirInfo;
+    OFSDAVRequire(dirInfo = [_fileManager fileInfoAtURL:dir1 error:&error], @"Error getting info for first directory.");
+    
+    // Add something to the directory to change its ETag
+    OFSDAVRequire([_fileManager writeData:[NSData data] toURL:[dir1 URLByAppendingPathComponent:@"file"] atomically:NO error:&error], @"Error writing data to directory.");
+    
+    // Verify ETag changed
+    OFSFileInfo *updatedDirInfo;
+    OFSDAVRequire(updatedDirInfo = [_fileManager fileInfoAtURL:dir1 error:&error], @"Error getting info of updated directory.");
+    OFSDAVRequire(![updatedDirInfo.ETag isEqual:dirInfo.ETag], @"Directory ETag should have changed due to writing file into it.");
+    
+    OFSDAVRequire([_fileManager copyURL:dir1 toURL:dir2 withSourceETag:updatedDirInfo.ETag overwrite:NO error:&error], @"Directory copy should succeed with ETag precondition.");
+    
+    OFSDAVRequire(dirInfo = [_fileManager fileInfoAtURL:dir2 error:&error], @"Error getting info for copied directory.");
+    OFSDAVRequire(dirInfo.exists, @"Directory should have been copied.");
+    
+    OFSDAVRequire(dirInfo = [_fileManager fileInfoAtURL:[dir2 URLByAppendingPathComponent:@"file"] error:&error], @"Error getting copied child info");
+    OFSDAVRequire(dirInfo.exists, @"Child file should have been copied.");
+
     return YES;
 }
 

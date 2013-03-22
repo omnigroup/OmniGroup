@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -82,6 +82,7 @@ OFDataBufferSetCapacity(OFDataBuffer *dataBuffer, size_t capacity)
 {
     OBASSERT_IF(dataBuffer->buffer == NULL, capacity > 0); // realloc(NULL,0) is equivalent to malloc(0), which has implementation-defined behavior
     size_t occupied = OFDataBufferSpaceOccupied(dataBuffer);
+    OBASSERT(capacity >= occupied);
     void *newBuffer = realloc(dataBuffer->buffer, capacity);
     if (!newBuffer) {
         // If dataBuffer->buffer was NULL, then we have the same situation we started with. Otherwise, dataBuffer->buffer is still valid, but wasn't resized, so again, the same situation we started with. However, we can't satisfy our spec in either case, so:
@@ -157,9 +158,7 @@ OFDataBufferHexCharacterForDigit(int digit)
 static inline void
 OFDataBufferAppendByte(OFDataBuffer *dataBuffer, OFByte aByte)
 {
-    OFByte *ptr;
-    
-    ptr = OFDataBufferGetPointer(dataBuffer, sizeof(OFByte));
+    OFByte *ptr = OFDataBufferGetPointer(dataBuffer, sizeof(OFByte));
     *ptr = aByte;
     OFDataBufferDidAppend(dataBuffer, sizeof(OFByte));
 }

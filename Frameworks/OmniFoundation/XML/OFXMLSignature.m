@@ -1,4 +1,4 @@
-// Copyright 2009-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -852,7 +852,7 @@ struct algorithmParameter {
     const CFTypeRef     *secKeytype;        /* kSecAttrKeyTypeFoo */
     const CFStringRef   *secDigestType;     /* kSecDigestFoo */
 #define PKCALG2(keytype, digtype) & kSecAttrKeyType ## keytype, & kSecDigest ## digtype,
-#define MACALG2(digtype)          /* NULL, & kSecDigest ## digtype, */ NULL, NULL, /* 10424173 */
+#define MACALG2(digtype)          NULL, & kSecDigest ## digtype,
 #else
 #define PKCALG2(keytype, digtype) /* */
 #define MACALG2(digtype)          /* */

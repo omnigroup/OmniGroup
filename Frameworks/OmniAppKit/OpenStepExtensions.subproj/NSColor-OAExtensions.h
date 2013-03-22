@@ -8,13 +8,14 @@
 // $Id$
 
 #import <AppKit/NSColor.h>
+#import <OmniBase/OBUtilities.h>
 
 @class NSDictionary, NSMutableDictionary;
 @class OFXMLDocument, OFXMLCursor;
 
 @interface NSColor (OAExtensions)
 
-+ (NSColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict;
++ (NSColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict; // When specifying colors by component, values for abbreviated keys (@"r", @"g", etc.) are floats in [0, 1]. Spelled-out keys (@"red", @"green") are integers in the natural range of the value ([0, 255] for RGB, [0, 100] for HSB and CMYK, [0, 100] for alpha).
 
 - (NSMutableDictionary *)propertyListRepresentationWithStringComponentsOmittingDefaultValues:(BOOL)omittingDefaultValues;
 - (NSMutableDictionary *)propertyListRepresentationWithNumberComponentsOmittingDefaultValues:(BOOL)omittingDefaultValues;
@@ -36,7 +37,7 @@
 + (NSString *)xmlElementName;
 - (void) appendXML:(OFXMLDocument *)doc;
 + (NSColor *)colorFromXML:(OFXMLCursor *)cursor;
-+ (NSColor *)colorFromXMLTreeRef:(CFXMLTreeRef)treeRef;
++ (NSColor *)colorFromXMLTreeRef:(CFXMLTreeRef)treeRef OB_DEPRECATED_ATTRIBUTE;
 
 @end
 

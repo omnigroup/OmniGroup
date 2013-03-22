@@ -19,10 +19,6 @@
 
 RCS_ID("$Id$")
 
-@interface OABoxSeparator ()
-
-@end
-
 @implementation OABoxSeparator
 
 - (id)init;
@@ -47,6 +43,14 @@ RCS_ID("$Id$")
         return nil;
     [self _setDefaultColors];
     return self;
+}
+
+- (void)dealloc;
+{
+    [_lineColor release];
+    [_backgroundColor release];
+    
+    [super dealloc];
 }
 
 #pragma mark - Private methods
@@ -76,18 +80,10 @@ RCS_ID("$Id$")
 
 #pragma mark - Public API
 
-@synthesize lineColor;
-@synthesize backgroundColor;
-
-@synthesize backgroundStyle = _backgroundStyle;
-
-- (NSBackgroundStyle)backgroundStyle;
-{
-    return _backgroundStyle;
-}
-
 - (void)setBackgroundStyle:(NSBackgroundStyle)backgroundStyle;
 {
+    if (_backgroundStyle == backgroundStyle)
+        return;
     _backgroundStyle = backgroundStyle;
     [self setNeedsDisplay:YES];
 }

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,16 +12,14 @@
 #ifndef __cplusplus // 'namespace' as a argument/property annoys ObjC++
     
 @interface OFXMLQName : OFObject <NSCopying>
-{
-@private
-    NSString *_namespace; // The resolved namespace of the name.  For example, <foo:bar/> would be resolved to whatever has previously been declared as the value of a "xmlns:foo" attribute.
-    NSString *_name; // The non-namespace portion of the element name.  For example, <foo:bar/> would be "bar".
-}
 
 - initWithNamespace:(NSString *)namespace name:(NSString *)name;
 
-@property (readonly) NSString *namespace;
-@property (readonly) NSString *name;
+// The resolved namespace of the name.  For example, <foo:bar/> would be resolved to whatever has previously been declared as the value of a "xmlns:foo" attribute.
+@property(nonatomic,readonly) NSString *namespace;
+
+// The non-namespace portion of the element name.  For example, <foo:bar/> would be "bar".
+@property(nonatomic,readonly) NSString *name;
 
 - (BOOL)isEqualToQName:(OFXMLQName *)otherName;
 

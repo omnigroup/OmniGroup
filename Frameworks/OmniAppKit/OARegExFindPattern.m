@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,66 +14,76 @@
 RCS_ID("$Id$")
 
 @implementation OARegExFindPattern
+{
+    NSRegularExpression *_regularExpression;
+    OFRegularExpressionMatch *_lastMatch;
+    BOOL _isBackwards;
+    NSInteger _selectedCaptureGroup;
+    
+    NSString *_replacementString;
+}
 
-- initWithString:(NSString *)aString selectedSubexpression:(NSInteger)subexpression backwards:(BOOL)backwards;
+- initWithPattern:(NSString *)pattern selectedCaptureGroup:(NSInteger)captureGroup backwards:(BOOL)backwards;
 {
     if (!(self = [super init]))
         return nil;
 
-    regularExpression = [[OFRegularExpression alloc] initWithString:aString];
-    selectedSubexpression = subexpression;
-    isBackwards = backwards;
+    NSError *error;
+    _regularExpression = [[NSRegularExpression alloc] initWithPattern:pattern options:0 error:&error];
+    if (!_regularExpression) {
+        NSLog(@"Error creating regular expression from pattern %@ --> %@", pattern, [error toPropertyList]);
+    }
+    
+    _selectedCaptureGroup = captureGroup;
+    _isBackwards = backwards;
+    
     return self;
 }
 
 - (void)setReplacementString:(NSString *)aString;
 {
-    if (aString != replacementString) {
-        [replacementString release];
-        replacementString = [aString retain];
+    if (aString != _replacementString) {
+        [_replacementString release];
+        _replacementString = [aString copy];
     }
 }
 
 - (void)dealloc;
 {
-    [regularExpression release];
-    [lastMatch release];
-    [replacementString release];
+    [_regularExpression release];
+    [_lastMatch release];
+    [_replacementString release];
     [super dealloc];
 }
 
-//
-// OAFindPattern protocol
-//
+#pragma mark - OAFindPattern protocol
 
 - (BOOL)findInString:(NSString *)aString foundRange:(NSRangePointer)rangePtr;
 {
-    OFRegularExpressionMatch *match;
-    
-    [lastMatch release];
-    lastMatch = nil;
+    [_lastMatch release];
+    _lastMatch = nil;
     
     if (aString == nil)
         return NO;
 
-    if (!(match = [regularExpression matchInString:aString]))
+    OFRegularExpressionMatch *match;
+    if (!(match = [_regularExpression of_firstMatchInString:aString]))
         return NO;
         
-    if (isBackwards) {
+    if (_isBackwards) {
         OFRegularExpressionMatch *next;
-
         while ((next = [match nextMatch]))
             match = next;
     }
         
     if (rangePtr != NULL) {
-        if (selectedSubexpression == SELECT_FULL_EXPRESSION)
+        if (_selectedCaptureGroup == SELECT_FULL_EXPRESSION)
             *rangePtr = [match matchRange];
         else
-            *rangePtr = [match rangeOfSubexpressionAtIndex:selectedSubexpression];
+            *rangePtr = [match rangeOfCaptureGroupAtIndex:_selectedCaptureGroup];
     }
     
-    lastMatch = [match retain];
+    _lastMatch = [match retain];
     return YES;
 }
 
@@ -92,12 +102,14 @@ RCS_ID("$Id$")
 
 - (NSString *)replacementStringForLastFind;
 {
+    OBFinishPortingLater("Use the NSRegularExpression template replacement methods? These take $0 instead of \0");
+    
     OFStringScanner *scanner;
     NSMutableString *interpolatedString = [NSMutableString string];
     
-    scanner = [[OFStringScanner alloc] initWithString:replacementString];
+    scanner = [[OFStringScanner alloc] initWithString:_replacementString];
     while (scannerHasData(scanner)) {
-        unsigned int subexpressionIndex = 0;
+        NSUInteger captureGroupIndex = 0;
         BOOL readNumber = NO;
         unichar c;
 
@@ -108,14 +120,14 @@ RCS_ID("$Id$")
         c = scannerPeekCharacter(scanner);
         if ((c >= '0') && (c <= '9')) {
             scannerSkipPeekedCharacter(scanner);
-            subexpressionIndex = (c - '0');
+            captureGroupIndex = (c - '0');
             readNumber = YES;
         } else if (c == '{') {
             scannerSkipPeekedCharacter(scanner);
             while ((c = scannerPeekCharacter(scanner)) && (c >= '0') && (c <= '9')) {
                 scannerSkipPeekedCharacter(scanner);
-                subexpressionIndex *= 10;
-                subexpressionIndex += (c - '0');
+                captureGroupIndex *= 10;
+                captureGroupIndex += (c - '0');
                 readNumber = YES;
             }
             if (c == '}')
@@ -134,13 +146,13 @@ RCS_ID("$Id$")
             [interpolatedString appendString:@"\\"];
         }
         
-        if (readNumber && subexpressionIndex <= [regularExpression subexpressionCount]) {
+        if (readNumber && captureGroupIndex <= [_regularExpression numberOfCaptureGroups]) {
             NSString *subString;
             
-            if (subexpressionIndex)
-                subString = [lastMatch subexpressionAtIndex:(subexpressionIndex - 1)];
+            if (captureGroupIndex)
+                subString = [_lastMatch captureGroupAtIndex:(captureGroupIndex - 1)];
             else	
-                subString = [lastMatch matchString];
+                subString = [_lastMatch matchString];
             [interpolatedString appendString:subString];
         } 
     }
@@ -152,7 +164,7 @@ RCS_ID("$Id$")
 
 - (NSString *)findPattern;
 {
-    return [regularExpression patternString];
+    return _regularExpression.pattern;
 }
 
 - (BOOL)isCaseSensitive;
@@ -162,7 +174,7 @@ RCS_ID("$Id$")
 
 - (BOOL)isBackwards;
 {
-    return isBackwards;
+    return _isBackwards;
 }
 
 - (BOOL)isRegularExpression;

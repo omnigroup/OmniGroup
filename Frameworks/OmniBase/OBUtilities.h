@@ -1,4 +1,4 @@
-// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <Foundation/NSString.h>
 #import <Foundation/NSBundle.h>
+#import <Foundation/NSDate.h>
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Foundation/NSGeometry.h> // For NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 #endif
@@ -108,15 +109,12 @@ extern NSString * const OBAbstractImplementation;
 extern NSString * const OBUnusedImplementation;
 
 // Helper for initializing debug log level globals
-#define OBInitializeDebugLogLevel(name) do { \
-    const char *env = getenv(#name); /* easier for command line tools */ \
-    if (env) { \
-        name = strtoul(env, NULL, 0); \
-    } else { \
-        NSInteger *namep = &name; /* make sure the given global is the right type */ \
-        *namep = [[NSUserDefaults standardUserDefaults] integerForKey:@#name]; \
-    } \
-} while (0);
+    extern void _OBInitializeDebugLogLevel(NSInteger *outLevel, NSString *name);
+#define OBInitializeDebugLogLevel(name) _OBInitializeDebugLogLevel(&name, @#name)
+    
+// Helper for initializing time interval globals
+extern void _OBInitializeTimeInterval(NSTimeInterval *outInterval, NSString *name, NSTimeInterval default_value, NSTimeInterval min_value, NSTimeInterval max_value);
+#define OBInitializeTimeInterval(name, default_value, min_value, max_value) _OBInitializeTimeInterval(&name, @#name, (default_value), (min_value), (max_value))
 
 #if defined(DEBUG)
 #define OB_DEBUG_LOG_CALLER() do { NSArray *syms = [NSThread callStackSymbols]; if ([syms count] > 1) NSLog(@"caller: %@", [syms objectAtIndex:1U]); } while (0)

@@ -13,14 +13,11 @@
 @class NSMenu;
 
 @interface OAContextButton : NSButton
-{
-    id delegate;
-}
 
 + (NSImage *)actionImage;
 + (NSImage *)miniActionImage;
 
-@property (assign) IBOutlet id delegate;
+@property (nonatomic,assign) IBOutlet id delegate;
 
 - (BOOL)validate;
 - (NSMenu *)locateActionMenu;

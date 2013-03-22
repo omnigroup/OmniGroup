@@ -126,6 +126,8 @@
 		3441607A16B0BC5E00E917F5 /* OUIServerAccountValidationViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 3441607716B0BC5E00E917F5 /* OUIServerAccountValidationViewController.h */; };
 		3441607B16B0BC5E00E917F5 /* OUIServerAccountValidationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3441607816B0BC5E00E917F5 /* OUIServerAccountValidationViewController.m */; };
 		3441608016B1A9B700E917F5 /* OUIServerAccountValidationViewController.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3441607916B0BC5E00E917F5 /* OUIServerAccountValidationViewController.xib */; };
+		3452DDDD16C213E5001164A6 /* OUIDocumentInbox.h in Headers */ = {isa = PBXBuildFile; fileRef = 3452DDDB16C213E5001164A6 /* OUIDocumentInbox.h */; };
+		3452DDDE16C213E5001164A6 /* OUIDocumentInbox.m in Sources */ = {isa = PBXBuildFile; fileRef = 3452DDDC16C213E5001164A6 /* OUIDocumentInbox.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -388,6 +390,8 @@
 		3441607716B0BC5E00E917F5 /* OUIServerAccountValidationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIServerAccountValidationViewController.h; sourceTree = SOURCE_ROOT; };
 		3441607816B0BC5E00E917F5 /* OUIServerAccountValidationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIServerAccountValidationViewController.m; sourceTree = SOURCE_ROOT; };
 		3441607916B0BC5E00E917F5 /* OUIServerAccountValidationViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUIServerAccountValidationViewController.xib; sourceTree = SOURCE_ROOT; };
+		3452DDDB16C213E5001164A6 /* OUIDocumentInbox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentInbox.h; sourceTree = SOURCE_ROOT; };
+		3452DDDC16C213E5001164A6 /* OUIDocumentInbox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentInbox.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -688,6 +692,8 @@
 				342F490B16779B89007C5FFB /* OUIDocumentAppController-Internal.h */,
 				342F490C16779B89007C5FFB /* OUIDocumentAppController.h */,
 				342F490D16779B89007C5FFB /* OUIDocumentAppController.m */,
+				3452DDDB16C213E5001164A6 /* OUIDocumentInbox.h */,
+				3452DDDC16C213E5001164A6 /* OUIDocumentInbox.m */,
 			);
 			name = "Main Controller";
 			sourceTree = "<group>";
@@ -733,6 +739,7 @@
 				3424E56916781FDC0019328E /* OUISheetNavigationController.h in Headers */,
 				3424E56D167820280019328E /* OUIToolbarTitleButton.h in Headers */,
 				3441607A16B0BC5E00E917F5 /* OUIServerAccountValidationViewController.h in Headers */,
+				3452DDDD16C213E5001164A6 /* OUIDocumentInbox.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -844,6 +851,7 @@
 				3424E56A16781FDC0019328E /* OUISheetNavigationController.m in Sources */,
 				3424E56E167820280019328E /* OUIToolbarTitleButton.m in Sources */,
 				3441607B16B0BC5E00E917F5 /* OUIServerAccountValidationViewController.m in Sources */,
+				3452DDDE16C213E5001164A6 /* OUIDocumentInbox.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

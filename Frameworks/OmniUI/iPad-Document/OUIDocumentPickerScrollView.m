@@ -402,7 +402,7 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     NSMutableArray *descriptors = [NSMutableArray array];
     
     if (_itemSort == OUIDocumentPickerItemSortByDate) {
-        NSSortDescriptor *dateSort = [[NSSortDescriptor alloc] initWithKey:OFSDocumentStoreItemDateBinding ascending:NO];
+        NSSortDescriptor *dateSort = [[NSSortDescriptor alloc] initWithKey:OFSDocumentStoreItemUserModificationDateBinding ascending:NO];
         [descriptors addObject:dateSort];
         
         // fall back to name sorting if the dates are equal
@@ -830,7 +830,7 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
                 if (shouldLoadPreview) {
                     if (!preview) {
                         Class documentClass = [[OUIDocumentAppController controller] documentClassForURL:fileItem.fileURL];
-                        preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:fileItem.fileURL date:fileItem.date withLandscape:_landscape];
+                        preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:fileItem.fileURL date:fileItem.fileModificationDate withLandscape:_landscape];
                         [preview incrementDisplayCount];
                     }
                     [updatedFileItemToPreview setObject:preview forKey:fileItem];

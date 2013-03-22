@@ -82,6 +82,7 @@ static void EndActivePicker()
         // If we got here, we didn't pick a view and are closing because our parent window closed
         _completionHandler(nil);
         [_completionHandler release];
+        _completionHandler = nil;
     }
     
     OBASSERT(self == ActivePicker);
@@ -96,13 +97,16 @@ static NSView *_rootView(NSView *view)
     return view;
 }
 
+- (NSPoint)mouseLocation:(NSPoint)mouseLocationInOurWindow inWindow:(NSWindow *)otherWindow;
+{
+    return [otherWindow convertRectFromScreen:[self convertRectToScreen:(NSRect){.origin = mouseLocationInOurWindow, .size={1,1}}]].origin;
+}
+
 - (void)_updatePickedView:(NSPoint)mouseLocationInOurWindow;
 {
     NSWindow *parentWindow = [self parentWindow];
-    NSPoint pointInOtherWindow = [parentWindow convertRectFromScreen:[self convertRectToScreen:(NSRect){.origin = mouseLocationInOurWindow, .size={1,1}}]].origin;
-    
     NSView *otherRootView = _rootView([parentWindow contentView]);
-    NSPoint pointInOtherRootView = [otherRootView convertPoint:pointInOtherWindow fromView:nil];
+    NSPoint pointInOtherRootView = [otherRootView convertPoint:[self mouseLocation:mouseLocationInOurWindow inWindow:parentWindow] fromView:nil];
     
     NSView *hitView = [[otherRootView hitTest:pointInOtherRootView] retain];
     [_pickedView release];
@@ -136,6 +140,21 @@ static NSView *_rootView(NSView *view)
         [ourContentView addSubview:_nonretained_highlightBox];
         [_nonretained_highlightBox release];
     }
+    
+    [_nonretained_highlightBox setToolTip:[_pickedView shortDescription]];
+}
+
+- (void)_verifyPickedView:(NSPoint)mouseLocationInOurWindow;
+{
+    NSWindow *parentWindow = [self parentWindow];
+    if ([_pickedView window] == parentWindow) {
+        NSPoint pointInOtherWindow = [self mouseLocation:mouseLocationInOurWindow inWindow:parentWindow];
+        if ([_pickedView mouse:[_pickedView convertPoint:pointInOtherWindow fromView:nil] inRect:[_pickedView visibleRect]])
+            return;
+    }
+    
+    // If we didn't early-out, the current picked view is no longer valid
+    [self _updatePickedView:mouseLocationInOurWindow];
 }
 
 - (void)mouseMoved:(NSEvent *)theEvent;
@@ -147,7 +166,7 @@ static NSView *_rootView(NSView *view)
 - (void)mouseDown:(NSEvent *)theEvent;
 {
     _isInMouseDown = YES;
-    [self _updatePickedView:[theEvent locationInWindow]];
+    [self _verifyPickedView:[theEvent locationInWindow]];
     if (_pickedView) {
         if (_completionHandler(_pickedView)) {
             [_completionHandler release];

@@ -9,7 +9,7 @@
 
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
+#import <OmniFileStore/OFSURL.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFCredentials.h>
@@ -61,6 +61,7 @@ static BOOL _isRead(OFSDAVOperation *self)
              [method isEqualToString:@"MKCOL"] ||
              [method isEqualToString:@"DELETE"] ||
              [method isEqualToString:@"MOVE"] ||
+             [method isEqualToString:@"COPY"] ||
              [method isEqualToString:@"UNLOCK"]); // The delegate doesn't need to read any data from these operations
     
     return NO;
@@ -414,7 +415,9 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         _response = [[challenge failureResponse] copy];
         _shouldCollectDetailsForError = YES;
         
-        [[challenge sender] cancelAuthenticationChallenge:challenge];
+        // We'd prefer to cancel here, but if we do, we deadlock (in the NSOperationQueue-based scheduling).
+        //[[challenge sender] cancelAuthenticationChallenge:challenge];
+        [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
     }
 }
 

@@ -20,10 +20,23 @@ extern NSInteger OFXSyncDebug;
         NSLog(@"SYNC %@: " format, [self shortDescription], ## __VA_ARGS__); \
     } while (0)
 
-#if 0 && defined(DEBUG)
-    #define DEBUG_METADATA(format, ...) NSLog(@"METADATA: " format, ## __VA_ARGS__)
-#else
-    #define DEBUG_METADATA(format, ...)
-#endif
+extern NSInteger OFXLocalRelativePathDebug;
+
+#define DEBUG_LOCAL_RELATIVE_PATH(level, format, ...) do { \
+    if (OFXLocalRelativePathDebug >= (level)) \
+        NSLog(@"PATH %@: " format, [self shortDescription], ## __VA_ARGS__); \
+    } while (0)
+
+extern NSInteger OFXTransferDebug;
+#define DEBUG_TRANSFER(level, format, ...) do { \
+    if (OFXTransferDebug >= (level)) \
+        NSLog(@"TRANSFER %@: " format, [self shortDescription], ## __VA_ARGS__); \
+    } while (0)
+
+extern NSInteger OFXMetadataDebug;
+#define DEBUG_METADATA(level, format, ...) do { \
+    if (OFXMetadataDebug >= (level)) \
+        NSLog(@"METADATA %@: " format, [self shortDescription], ## __VA_ARGS__); \
+    } while (0)
 
 #import "OFXTrace.h"

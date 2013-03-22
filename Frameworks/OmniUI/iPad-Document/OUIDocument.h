@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,14 +21,15 @@
 
 - initWithExistingFileItem:(OFSDocumentStoreFileItem *)fileItem error:(NSError **)outError;
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
+- initWithFileItem:(OFSDocumentStoreFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
 
 // Can set this before opening a document to tell it that it is being opened for preview generation. Later we might want more control of how errors are captured for off-screen document work, but for now this just makes errors get logged instead of presented to the user. The document view controller may also opt to load less data or otherwise speed up its work by only doing what is necessary for preview generation.
 @property(nonatomic) BOOL forPreviewGeneration;
 
-@property(readonly, nonatomic) OFSDocumentStoreFileItem *fileItem;
+@property(nonatomic,readonly) OFSDocumentStoreFileItem *fileItem;
 
-@property(readonly) UIViewController <OUIDocumentViewController> *viewController;
-@property(readonly) BOOL editingDisabled;
+@property(nonatomic,readonly) UIViewController <OUIDocumentViewController> *viewController;
+@property(nonatomic,readonly) BOOL editingDisabled;
 
 - (void)finishUndoGroup;
 - (IBAction)undo:(id)sender;

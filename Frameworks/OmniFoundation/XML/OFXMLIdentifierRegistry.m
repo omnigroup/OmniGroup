@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,12 @@
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
+
+#if 0 && defined(DEBUG_curt) && defined(DEBUG)
+#define DEBUG_IDREG(format, ...) NSLog(@"IDREG: " format, ## __VA_ARGS__)
+#else
+#define DEBUG_IDREG(format, ...)
+#endif
 
 /*" Creates a valid XML ID string from the input string under the constraints that (a) if the input is already valid, it is returned exactly (b) two identical inputs will produce two identical outputs and (c) two different inputs will produce two different outputs.  We probably don't conform to (c) exactly since we conform to (a).  That is, since (a) requres that valid inputs are returned, no matter what function we chose to encode invalid inputs into valid ones, someone could pass in a 'pre-fixed' invalid output and get a duplicate.  This shouldn't happen give our current caller.
  "*/
@@ -63,13 +69,50 @@ NSString *OFXMLIDFromString(NSString *str)
     [super dealloc];
 }
 
+#pragma mark - NSObject (OBDebugging)
+
+- (NSMutableDictionary *)debugDictionary;
+{
+    NSMutableDictionary *dict = [super debugDictionary];
+    
+    if (_idToObject)
+        [dict setObject:((NSMutableDictionary *)_idToObject) forKey:@"_idToObject"];
+    if (_objectToID)
+        [dict setObject:((NSMutableDictionary *)_objectToID) forKey:@"_objectToID"];
+    
+    return dict;
+}
+
+- (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(NSUInteger)level
+{
+    if (level < 3)
+        return [[self debugDictionary] descriptionWithLocale:locale indent:level];
+    return [self shortDescription];
+}
+
+/*" Returns [self descriptionWithLocale:nil indent:0]. This often provides more meaningful information than the default implementation of description, and is (normally) automatically used by the debugger, gdb, when asked to print an object.
+ 
+ See also: - description (NSObject), - shortDescription
+ "*/
+- (NSString *)description;
+{
+    return [self descriptionWithLocale:nil indent:0];
+}
+
+- (NSString *)shortDescription;
+{
+    return [super description];
+}
+
+#pragma mark - Public API
+
 /*" Manages the identifier/object relationship.  If object is nil, then identifier is required and any mapping for the identifier is cleared and nil is returned.  If object is non-nil, then the object is registered.  In this case, the identifier can be nil, signalling that the caller doesn't care what identifier is registered.  If the identifier is non-nil, then it is the preferred value to use for the identifier.  If some other object already has that identifier registered, though, a new unique identifier will be created.  In the registration case, this method returns a new retained unique identifier for the object.  Note that registration does not retain the object -- thus if the object is deallocated, it must be deregistered.  The identifer actually used is returned autoreleased.  The object is notified when it is added and removed from the registry via the OFXMLIdentifierRegistryObject protocol. "*/
 - (NSString *)registerIdentifier:(NSString *)identifier forObject:(id <OFXMLIdentifierRegistryObject>)object;
 {
     OBINVARIANT_EXPENSIVE([self checkInvariants]);
     OBPRECONDITION(object || identifier);
     OBPRECONDITION(!object || ![self identifierForObject:object]); // Don't allow duplicate adds
-
+    
     if (!object) {
         OBASSERT(OFXMLIsValidID(identifier) || ![self objectForIdentifier:identifier]); // Shouldn't be registered yet if the identifier is invalid
         object = [self objectForIdentifier:identifier];
@@ -77,6 +120,7 @@ NSString *OFXMLIDFromString(NSString *str)
             // Was previously registered -- remove the mappings.
             CFDictionaryRemoveValue(_idToObject, identifier);
             CFDictionaryRemoveValue(_objectToID, object);
+            DEBUG_IDREG(@"In registry %p, de-registering object <%@-%p> with identifier %@", self, [(NSObject *)object class], object, identifier);
             [object removedFromIdentifierRegistry:self];
         }
         OBINVARIANT_EXPENSIVE([self checkInvariants]);
@@ -98,6 +142,7 @@ NSString *OFXMLIDFromString(NSString *str)
 
         // _idToObject retains the identifier, so we can -release instead of -autorelease here
         [identifier release];
+        DEBUG_IDREG(@"In registry %p, registering object <%@-%p> with identifier %@", self, [(NSObject *)object class], object, identifier);
         return identifier;
     }
 }
@@ -153,15 +198,16 @@ static void _checkEntry(const void *key, const void *value, void *context)
 {
     NSString *identifier = (NSString *)key;
     id object = (id)value;
-
+    CFDictionaryRef objectToID = (CFDictionaryRef)context;
+    
     OBINVARIANT([identifier isKindOfClass:[NSString class]]);
     OBINVARIANT(OFXMLIsValidID(identifier));
     OBINVARIANT([object class]); // just make sure it isn't zombied
 
-    if (CFDictionaryGetValue((CFDictionaryRef)context, object) != identifier) {
+    if (CFDictionaryGetValue(objectToID, object) != identifier) {
         NSLog(@"_objectToID[%@] -> '%@'", identifier, OBShortObjectDescription(object));
         NSLog(@"_idToObject['%@'] -> %@", OBShortObjectDescription(object), CFDictionaryGetValue((CFDictionaryRef)context, object));
-        OBINVARIANT(CFDictionaryGetValue((CFDictionaryRef)context, object) == identifier);
+        OBINVARIANT(CFDictionaryGetValue(objectToID, object) == identifier);
     }
 }
 
@@ -171,20 +217,23 @@ static void _checkEntry(const void *key, const void *value, void *context)
     CFDictionaryApplyFunction(_idToObject, _checkEntry, _objectToID);
     return YES;
 }
-#endif
 
-//
-// Debugging
-//
-- (NSMutableDictionary *) debugDictionary;
+- (BOOL)isSubsetOfRegistry:(OFXMLIdentifierRegistry *)otherRegistry;
 {
-    NSMutableDictionary *dict = [super debugDictionary];
-    
-    [dict setObject:(id)_idToObject forKey:@"_idToObject"];
-    [dict setObject:(id)_objectToID forKey:@"_objectToID"];
-
-    return dict;
+    OBINVARIANT([self checkInvariants]);
+    OBINVARIANT([otherRegistry checkInvariants]);
+    __block BOOL mismatchFound = NO;
+    [(NSDictionary *)_idToObject enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        NSString *identifier = key;
+        id otherRegistryObject = [otherRegistry objectForIdentifier:identifier];
+        if (otherRegistryObject != obj) {
+            mismatchFound = YES;
+            *stop = YES;
+        }
+    }];
+    return !mismatchFound;
 }
+#endif
 
 @end
 
@@ -197,6 +246,7 @@ static void _checkEntry(const void *key, const void *value, void *context)
     OBPRECONDITION(_objectToID == NULL);
 
     if (registry) {
+        DEBUG_IDREG(@"Initializing new registry %p from old registry %p", self, registry);
         _idToObject = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, registry->_idToObject);
         _objectToID = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, registry->_objectToID);
     } else {

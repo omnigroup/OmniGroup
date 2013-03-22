@@ -30,15 +30,14 @@ RCS_ID("$Id$");
 #endif
 
 NSString * const OFSDocumentStoreFileItemFileURLBinding = @"fileURL";
+NSString * const OFSDocumentStoreFileItemFileTypeBinding = @"fileType";
 NSString * const OFSDocumentStoreFileItemSelectedBinding = @"selected";
 NSString * const OFSDocumentStoreFileItemDownloadRequestedBinding = @"downloadRequested";
 
-static NSString * const OFSDocumentStoreFileItemDisplayedFileURLBinding = @"displayedFileURL";
-
 @interface OFSDocumentStoreFileItem ()
-@property(copy,nonatomic) NSString *fileType;
 @property(nonatomic) BOOL downloadRequested;
-- (void)_queueContentsChanged;
+@property(readwrite,nonatomic) NSURL *fileURL;
+@property(readwrite,nonatomic) NSString *fileType;
 @end
 
 NSString * const OFSDocumentStoreFileItemContentsChangedNotification = @"OFSDocumentStoreFileItemContentsChanged";
@@ -47,6 +46,8 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 
 @implementation OFSDocumentStoreFileItem
 {
+    NSURL *_fileURL;
+    
     // ivars for properties in the OFSDocumentStoreItem protocol
     BOOL _hasUnresolvedConflicts;
     BOOL _isDownloaded;
@@ -55,15 +56,6 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     BOOL _isUploading;
     double _percentDownloaded;
     double _percentUploaded;
-    
-    // File presenter support
-    NSURL *_filePresenterURL; // NSFilePresenter needs to get/set this on multiple threads
-    NSURL *_displayedFileURL; // A mirrored copy of _fileURL that is only changed on the main thread to fire KVO for the name key.
-    
-    BOOL _hasRegisteredAsFilePresenter;
-    NSOperationQueue *_presentedItemOperationQueue;
-    
-    OFFilePresenterEdits *_edits; // Keep track of edits that have happened while we have relinquished for a writer.
 }
 
 + (void)initialize;
@@ -89,15 +81,17 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     return [self displayNameForFileURL:fileURL fileType:fileType];
 }
 
-- initWithScope:(OFSDocumentStoreScope *)scope fileURL:(NSURL *)fileURL date:(NSDate *)date;
+- initWithScope:(OFSDocumentStoreScope *)scope fileURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileModificationDate:(NSDate *)fileModificationDate userModificationDate:(NSDate *)userModificationDate;
 {
     OBPRECONDITION(scope);
     OBPRECONDITION(fileURL);
     OBPRECONDITION([fileURL isFileURL]);
-    OBPRECONDITION(date);
+    // OBPRECONDITION(fileModificationDate); // This can be nil for files that haven't been downloaded (since we don't publish stub files any more).
+    OBPRECONDITION(userModificationDate);
     OBPRECONDITION(scope.documentStore);
     OBPRECONDITION([scope isFileInContainer:fileURL]);
-
+    OBPRECONDITION(isDirectory == [[fileURL absoluteString] hasSuffix:@"/"]); // We can't compute isDirectory here based on the filesystem state since the file URL might not currently exist (if it represents a non-downloaded file in a cloud scope).
+    
     if (!fileURL) {
         OBASSERT_NOT_REACHED("Bad caller");
         return nil;
@@ -108,29 +102,14 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     if (!(self = [super initWithScope:scope]))
         return nil;
     
-    _filePresenterURL = [fileURL copy];
-    _displayedFileURL = _filePresenterURL;
-    _date = [date copy];
-    _edits = [[OFFilePresenterEdits alloc] initWithFileURL:_filePresenterURL];
+    _fileURL = [fileURL copy];
+    _fileModificationDate = [fileModificationDate copy];
+    _userModificationDate = [userModificationDate copy];
 
-    NSNumber *isDirectory = nil;
-    NSError *resourceError = nil;
-    if (![_filePresenterURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&resourceError]) {
-        NSLog(@"Error getting directory key for %@: %@", _filePresenterURL, [resourceError toPropertyList]);
-        OBASSERT_NOT_REACHED("Possibly messed up accommodatePresentedItemDeletionWithCompletionHandler:");
-    }
-    _fileType = [OFUTIForFileExtensionPreferringNative([_filePresenterURL pathExtension], isDirectory) copy];
+    // We might represent a file that isn't downloaded and not locally present, so we can't look up the directory-ness of the file ourselves.
+    _fileType = [OFUTIForFileExtensionPreferringNative([_fileURL pathExtension], @(isDirectory)) copy];
     OBASSERT(_fileType);
-
-    _presentedItemOperationQueue = [[NSOperationQueue alloc] init];
-    [_presentedItemOperationQueue setName:[NSString stringWithFormat:@"OFSDocumentStoreFileItem presenter queue -- %@", OBShortObjectDescription(self)]];
-    [_presentedItemOperationQueue setMaxConcurrentOperationCount:1];
-    
-    // NOTE: This retains us, so we cannot wait until -dealloc to do -removeFilePresenter:!
-    _hasRegisteredAsFilePresenter = YES;
-    [NSFileCoordinator addFilePresenter:self];
-    DEBUG_FILE_ITEM(@"Added as file presenter");
-    
+        
     // Reasonable values for local documents that will never get updated by a sync container agent.
     _hasUnresolvedConflicts = kOFSDocumentStoreFileItemDefault_HasUnresolvedConflicts;
     _isDownloaded = kOFSDocumentStoreFileItemDefault_IsDownloaded;
@@ -143,47 +122,50 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     return self;
 }
 
-- (void)dealloc;
-{
-    // NOTE: We cannot wait until here to -removeFilePresenter: since -addFilePresenter: retains us. We remove in -_invalidate
-    OBASSERT([_presentedItemOperationQueue operationCount] == 0);
-}
-
-// This isn't declared as atomic, but we make it so so that -presentedItemDidMoveToURL: and -presentedItemURL (which can get called on various threads) can use it. Other uses of our file URL may have other serialization issues w.r.t. incoming sync edits and the edits we do on the document store action queue (since we don't have -performAsynchronousFileAccessUsingBlock: here... yet).
 - (NSURL *)fileURL;
 {
-    NSURL *URL;
+    // OBPRECONDITION([NSThread isMainThread]); This gets called by the preview generation queue, so we need to make this minimally thread-safe.
     
-    // This and -presentedItemDidMoveToURL: can get called on varying threads, so make sure we can deal with that as best we can.
+    NSURL *fileURL;
     @synchronized(self) {
-        URL = _filePresenterURL;
+        fileURL = _fileURL;
     }
+    OBASSERT(fileURL);
     
-    return URL;
+    return fileURL;
+}
+- (void)setFileURL:(NSURL *)fileURL;
+{
+    OBPRECONDITION([NSThread isMainThread]); // Send KVO on the main thread only
+    OBPRECONDITION(fileURL);
+    
+    // but lock vs. any background reader
+    @synchronized(self) {
+        if (OFNOTEQUAL(_fileURL, fileURL)) {
+            [self willChangeValueForKey:OFSDocumentStoreFileItemFileURLBinding];
+            _fileURL = fileURL;
+            [self didChangeValueForKey:OFSDocumentStoreFileItemFileURLBinding];
+        }
+    }
 }
 
-// See notes on -fileURL regarding atomicity.
 @synthesize fileType = _fileType; // Just makes the ivar since we implement both accessors.
 - (NSString *)fileType;
 {
-    NSString *fileType;
-    
-    // This and -presentedItemDidMoveToURL: can get called on varying threads, so make sure we can deal with that as best we can.
-    @synchronized(self) {
-        fileType = _fileType;
-    }
-    
-    OBPOSTCONDITION(fileType);
-    return fileType;
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(_fileType);
+    return _fileType;
 }
-
 - (void)setFileType:(NSString *)fileType;
 {
+    OBPRECONDITION([NSThread isMainThread]); // Send KVO on the main thread only
     OBPRECONDITION(fileType);
     
     @synchronized(self) {
         if (OFNOTEQUAL(_fileType, fileType)) {
-            _fileType = [fileType copy];
+            [self willChangeValueForKey:OFSDocumentStoreFileItemFileTypeBinding];
+            _fileType = fileType;
+            [self didChangeValueForKey:OFSDocumentStoreFileItemFileTypeBinding];
         }
     }
 }
@@ -197,31 +179,35 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    return [[_displayedFileURL path] lastPathComponent];
+    return [[self.fileURL path] lastPathComponent];
 }
 
 - (NSString *)editingName;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
-    return [[self class] editingNameForFileURL:_displayedFileURL fileType:self.fileType];
+    return [[self class] editingNameForFileURL:self.fileURL fileType:self.fileType];
 }
 
 - (NSString *)exportingName;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
-    return [[self class] exportingNameForFileURL:_displayedFileURL fileType:self.fileType];
+    return [[self class] exportingNameForFileURL:self.fileURL fileType:self.fileType];
 }
 
 + (NSSet *)keyPathsForValuesAffectingName;
 {
-    return [NSSet setWithObjects:OFSDocumentStoreFileItemDisplayedFileURLBinding, nil];
+    return [NSSet setWithObjects:OFSDocumentStoreFileItemFileURLBinding, nil];
 }
 
 - (BOOL)isBeingDeleted;
 {
+    OBFinishPortingLater("Report correct value for -isBeingDeleted, or remove it");
+    return NO;
+#if 0
     return _edits.hasAccommodatedDeletion;
+#endif
 }
 
 - (NSComparisonResult)compare:(OFSDocumentStoreFileItem *)otherItem;
@@ -229,7 +215,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     OBPRECONDITION([NSThread isMainThread]);
     
     // First, compare dates
-    NSComparisonResult dateComparison = [self.date compare:otherItem.date];
+    NSComparisonResult dateComparison = [self.userModificationDate compare:otherItem.userModificationDate];
     switch (dateComparison) {
         default: case NSOrderedSame:
             break;
@@ -258,22 +244,8 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     else if (counter1 > counter2)
         return NSOrderedAscending;
     
-    // If all else is equal, compare URLs (maybe different extensions?).  (If those are equal, so are the items!)
-    return [[_displayedFileURL absoluteString] compare:[otherItem->_displayedFileURL absoluteString]];
-}
-
-#pragma mark - OFSDocumentStoreItem subclass
-
-- (void)_invalidate;
-{
-    if (_hasRegisteredAsFilePresenter) {
-        DEBUG_FILE_ITEM(@"Removed as file presenter");
-        
-        _hasRegisteredAsFilePresenter = NO;
-        [NSFileCoordinator removeFilePresenter:self];
-    }
-    
-    [super _invalidate];
+    // If all else is equal, compare URLs (maybe different extensions?). (If those are equal, so are the items!)
+    return [[self.fileURL absoluteString] compare:[otherItem.fileURL absoluteString]];
 }
 
 #pragma mark - OFSDocumentStoreItem protocol
@@ -283,15 +255,15 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     return [[self class] displayNameForFileURL:self.fileURL fileType:self.fileType];
 }
 
-- (void)setDate:(NSDate *)date;
+- (void)setFileModificationDate:(NSDate *)fileModificationDate;
 {
     OBPRECONDITION([NSThread isMainThread]); // Ensure we are only firing KVO on the main thread
-    OBPRECONDITION(date);
+    //OBPRECONDITION(fileModificationDate); // can be nil if this represents a non-downloaded cloud item.
     
-    if (OFISEQUAL(_date, date))
+    if (OFISEQUAL(_fileModificationDate, fileModificationDate))
         return;
     
-    _date = [date copy];
+    _fileModificationDate = [fileModificationDate copy];
 }
 
 - (BOOL)isReady;
@@ -320,10 +292,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     if (finishedDownloading) {
         self.downloadRequested = NO;
         
-        // The downloading process sends -presentedItemDidChange a couple times during downloading, but not right at the end, sadly.
         [self _queueContentsChanged];
-        
-        [self.scope fileItemFinishedDownloading:self];
     }
 }
 
@@ -336,6 +305,8 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     return [self.scope requestDownloadOfFileItem:self error:outError];
 }
 
+// OBFinishPorting -- this is moving to OFSDocumentStoreLocalDirectoryScope
+#if 0
 #pragma mark - NSFilePresenter protocol
 
 - (NSURL *)presentedItemURL;
@@ -388,16 +359,15 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
         if (OFISEQUAL(_filePresenterURL, newURL))
             return;
         NSURL *oldURL = [_filePresenterURL copy];
-        NSDate *oldDate = [_date copy];
         
         // This can get called from various threads
         _filePresenterURL = [newURL copy];
 
         // NOTE: OFFilePresenterEditsDidMove will call this directly if not in a writer block, otherwise when we reacquire
-        [_edits presenter:self didMoveFromURL:oldURL date:oldDate toURL:newURL handler:^(OFSDocumentStoreFileItem *_self, NSURL *originalURL, NSDate *originalDate){
+        [_edits presenter:self didMoveFromURL:oldURL toURL:newURL handler:^(OFSDocumentStoreFileItem *_self, NSURL *originalURL){
             // Might be called delayed, out of the enclosing @synchronized if we are in a writer block.
             @synchronized(self) {
-                [_self _synchronized_processItemDidMoveFromURL:oldURL date:oldDate];
+                [_self _synchronized_processItemDidMoveFromURL:oldURL];
             }
         }];
     }
@@ -452,18 +422,21 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 
     OBASSERT_NOT_REACHED("We no longer use iCloud and have no way of creating our own NSFileVersions, so this should never happen");
 }
+#endif
 
 #pragma mark - Debugging
 
 - (NSString *)shortDescription;
 {
-    return [NSString stringWithFormat:@"<%@:%p '%@' date:%@>", NSStringFromClass([self class]), self, self.presentedItemURL, [self.date xmlString]];
+    return [NSString stringWithFormat:@"<%@:%p '%@' date:%@>", NSStringFromClass([self class]), self, self.fileURL, [self.userModificationDate xmlString]];
 }
 
 #pragma mark - Internal
 
 - (void)_invalidateAfterWriter;
 {
+    OBFinishPorting;
+#if 0
     OBPRECONDITION(_edits);
 
     // The _edits.relinquishToWriter is maintained on this queue, so dispatch before we check it.
@@ -474,28 +447,32 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
             }];
         }];
     }];
+#endif
+}
+
+// Called by our scope when it notices we've been moved.
+- (void)didMoveToURL:(NSURL *)fileURL;
+{
+    self.fileURL = fileURL;
 }
 
 #pragma mark - Private
 
 // Split out to make sure we only capture the variables we want and they are the non-__block versions so they get retained until the block executes
-static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *modificationDate, NSString *fileType)
+static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *fileModificationDate, NSString *fileType)
 {
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         // -presentedItemDidChange can get called at the end of a rename operation (after -presentedItemDidMoveToURL:). Only send our notification if we "really" changed.
-        BOOL didChange = OFNOTEQUAL(self.date, modificationDate) || OFNOTEQUAL(self.fileType, fileType);
+        BOOL didChange = OFNOTEQUAL(self.fileModificationDate, fileModificationDate) || OFNOTEQUAL(self.fileType, fileType);
         if (!didChange)
             return;
         
         // Fire KVO on the main thread
-        self.date = modificationDate;
+        self.fileModificationDate = fileModificationDate;
         self.fileType = fileType;
         
-        // We can't shunt the notification to the main thread immediately. There may be other file presenter methods incoming (and importantly, for a file rename there will be one that changes our URL). So, queue this on our presenter queue.
-        [self->_presentedItemOperationQueue addOperationWithBlock:^{
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [self.scope _fileItemContentsChanged:self];
-            }];
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [self.scope _fileItemContentsChanged:self];
         }];
     }];
 }
@@ -505,15 +482,19 @@ static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *modif
 {
     // We get sent -presentedItemDidChange even after -accommodatePresentedItemDeletionWithCompletionHandler:.
     // We don't need to not any content changes and if we try to get our modification date, we'll be unable to read the attributes of our file in the dead zone anyway.
+    OBFinishPortingLater("Deal with items that are getting deleted. May not be an issue now that we aren't a presenter and don't get -presentedItemDidChange");
+#if 0
     if (_edits.hasAccommodatedDeletion) {
         DEBUG_FILE_ITEM(@"Deleted: ignoring change");
         return;
     }
+#endif
     
     DEBUG_FILE_ITEM(@"Queuing contents changed update");
 
     [self.scope performAsynchronousFileAccessUsingBlock:^{
         
+        OBFinishPortingLater("Now that we aren't a file presenter, we might be able to do a coordinated read here. We are running on the scope's action queue also (not the local directory scope's presenter queue)");
         /*
          NOTE: We do NOT use a coordinated read here anymore, though we would like to. If we are getting an incoming sync rename, we could end up deadlocking.
          
@@ -553,8 +534,10 @@ static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *modif
     }];
 }
 
-- (void)_synchronized_processItemDidMoveFromURL:(NSURL *)oldURL date:(NSDate *)oldDate;
+- (void)_synchronized_processItemDidMoveFromURL:(NSURL *)oldURL;
 {
+    OBFinishPorting; // Move stuff to OFSDocumentStoreLocalDirectoryScope
+#if 0
     // Called either from -presentedItemDidMoveToURL: if we aren't inside of a writer block, or from the reacquire block in our -relinquishPresentedItemToWriter:. The caller should @synchronized(self) {...} around this since it accesses the _filePresenterURL, which needs to be accessible from the our operation queue and the main queue.
     
     // When we get deleted via sync, our on-disk representation could get moved into a dead zone. Don't present that to the user briefly. Also, don't try to look at the time stamp on the dead file or poke it with a stick in any fashion.
@@ -584,12 +567,22 @@ static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *modif
         _fileType = [OFUTIForFileExtensionPreferringNative([_filePresenterURL pathExtension], isDirectory) copy];
         OBASSERT(_fileType);
         
+        OBFinishPortingLater("It would be better to use a content hash in our previews, but that would be slow...");
+        __block NSDate *fileModificationDate;
+        __block NSError *attributesError;
+        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:self];
+        [coordinator coordinateReadingItemAtURL:_filePresenterURL options:0 error:&attributesError byAccessor:^(NSURL *newURL) {
+            fileModificationDate = [[NSFileManager defaultManager] attributesOfItemAtPath:[[newURL absoluteURL] path] error:&attributesError].fileModificationDate;
+        }];
+        if (!fileModificationDate)
+            NSLog(@"Error getting file modification date for %@: %@", _filePresenterURL, [attributesError toPropertyList]);
+
         // Update KVO on the main thread.
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             // On iOS, this lets the document preview be moved.
-            if (![self _hasBeenInvalidated]) {
-                [self.scope fileWithURL:oldURL andDate:oldDate didMoveToURL:_filePresenterURL];
-                // might not have been invalidated yet...
+            OFSDocumentStoreScope *scope = self.scope; // Weak pointer might have been cleared already on shutdown
+            if (scope) {
+                [scope fileWithURL:oldURL andDate:fileModificationDate didMoveToURL:_filePresenterURL];
             } else {
                 OBASSERT(probablyInvalid == YES);
             }
@@ -599,6 +592,7 @@ static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *modif
             [self didChangeValueForKey:OFSDocumentStoreFileItemDisplayedFileURLBinding];
         }];
     }
+#endif
 }
 
 @end

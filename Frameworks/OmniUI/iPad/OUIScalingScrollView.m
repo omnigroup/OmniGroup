@@ -13,11 +13,6 @@
 RCS_ID("$Id$");
 
 @implementation OUIScalingScrollView
-{
-    OFExtent _allowedEffectiveScaleExtent;
-    BOOL _centerContent;
-    UIEdgeInsets _extraEdgeInsets;
-}
 
 static id _commonInit(OUIScalingScrollView *self)
 {
@@ -119,9 +114,6 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     
     [view scaleChanged];
 }
-
-@synthesize centerContent = _centerContent;
-@synthesize extraEdgeInsets = _extraEdgeInsets;
 
 - (void)adjustContentInsetAnimated:(BOOL)animated;
 {

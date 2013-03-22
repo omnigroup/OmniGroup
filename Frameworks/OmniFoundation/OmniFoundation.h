@@ -28,12 +28,12 @@
 #import <OmniFoundation/OFRandom.h>
 #import <OmniFoundation/OFRationalNumber.h>
 #import <OmniFoundation/OFReadWriteFileBuffer.h>
+#import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/OFRelativeDateFormatter.h>
 #import <OmniFoundation/OFRelativeDateParser.h>
-#import <OmniFoundation/OFRegularExpression.h>
-#import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/OFStringDecoder.h>
 #import <OmniFoundation/OFStringScanner.h>
+#import <OmniFoundation/OFSyncClient.h>
 #import <OmniFoundation/OFTimeSpanFormatter.h>
 #import <OmniFoundation/OFTimeSpan.h>
 #import <OmniFoundation/OFUtilities.h>
@@ -136,6 +136,7 @@
 #import <OmniFoundation/NSNumber-OFExtensions.h>
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
+#import <OmniFoundation/NSRegularExpression-OFExtensions.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>

@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -125,11 +125,17 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     }
     
     CGFloat alpha = 1.0f;
-    getters.component(container, @"a", &alpha);
+    if (!getters.component(container, @"a", &alpha)) {
+        CGFloat alphaPercent = 100.0f;
+        getters.component(container, @"alpha", &alphaPercent);
+        alpha = alphaPercent / 100.0f;
+    }
 
     CGFloat v0;
     if (getters.component(container, @"w", &v0))
         return [NSColor colorWithCalibratedWhite:v0 alpha:alpha];
+    else if (getters.component(container, @"white", &v0))
+        return [NSColor colorWithCalibratedWhite:(v0 / 255.0f) alpha:alpha];
     
     NSString *catalog = getters.string(container, @"catalog");
     if (catalog) {
@@ -148,6 +154,11 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
         getters.component(container, @"g", &v1);
         getters.component(container, @"b", &v2);
         return OARGBA(v0, v1, v2, alpha);
+    } else if (getters.component(container, @"red", &v0)) {
+        CGFloat v1 = 0.0f, v2 = 0.0f;
+        getters.component(container, @"green", &v1);
+        getters.component(container, @"blue", &v2);
+        return OARGBA(v0 / 255.0f, v1 / 255.0f, v2 / 255.0f, alpha);
     }
     
     if (getters.component(container, @"c", &v0)) {
@@ -161,6 +172,16 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
         components[4] = alpha;
         
         return [NSColor colorWithColorSpace:[NSColorSpace genericCMYKColorSpace] components:components count:5];
+    } else if (getters.component(container, @"cyan", &v0)) {
+        // No global name for the calibrated CMYK color space
+        
+        CGFloat v1 = 0.0f, v2 = 0.0f, v3 = 0.0f;
+        getters.component(container, @"magenta", &v1);
+        getters.component(container, @"yellow", &v2);
+        getters.component(container, @"black", &v3);
+        
+        CGFloat components[5] = {v0 / 100.0f, v1 / 100.0f, v2 / 100.0f, v3 / 100.0f, alpha};
+        return [NSColor colorWithColorSpace:[NSColorSpace genericCMYKColorSpace] components:components count:5];
     }
     
     // There is no HSB/HSV colorspace, but lets allow specifying colors in property lists (for defaults in Info.plist) that way
@@ -171,6 +192,13 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
             getters.component(container, @"b", &v2);
         
         return [NSColor colorWithCalibratedHue:v0 saturation:v1 brightness:v2 alpha:alpha];
+    } else if (getters.component(container, @"hue", &v0)) {
+        CGFloat v1 = 0.0f, v2 = 0.0f;
+        getters.component(container, @"saturation", &v1);
+        if (!getters.component(container, @"value", &v2))
+            getters.component(container, @"brightness", &v2);
+        
+        return [NSColor colorWithCalibratedHue:(v0 / 360.0f) saturation:(v1 / 100.0f) brightness:(v2 / 100.0f) alpha:alpha];
     }
     
     NSData *patternData = getters.data(container, @"png");
@@ -816,6 +844,9 @@ static NSData *_xmlNodeAttributeDictionaryDataGetter(void *container, NSString *
     return [[[NSData alloc] initWithBase64String:string] autorelease];
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 + (NSColor *)colorFromXMLTreeRef:(CFXMLTreeRef)treeRef;
 {
     CFXMLNodeRef nodeRef = CFXMLTreeGetNode(treeRef);
@@ -831,6 +862,7 @@ static NSData *_xmlNodeAttributeDictionaryDataGetter(void *container, NSString *
     };
     return [NSColor _colorFromContainer:colorAttributes getters:getters];
 }
+#pragma clang diagnostic pop
 
 @end
 

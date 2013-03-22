@@ -50,7 +50,6 @@ static const CGFloat kKnobBorderThickness = 6;
     [super dealloc];
 }
 
-@synthesize color = _color;
 - (void)setColor:(OQColor *)color;
 {
     [_color autorelease];
@@ -91,6 +90,28 @@ static const CGFloat kKnobBorderThickness = 6;
 
 
 @implementation OUIColorComponentSlider
+{
+    CGFloat _range;
+    NSString *_formatString;
+    UILabel *_label;
+    BOOL _representsAlpha;
+    BOOL _needsShading;
+    
+    CGFloat _value; // Our component's value
+    OQColor *_color; // The full calculated color
+    
+    NSTextAlignment _lastLabelAlignment;
+    CGFloat _leftLuma;
+    CGFloat _rightLuma;
+    
+    OUIColorComponentSliderKnobLayer *_knobLayer;
+    
+    // One of these should be set.
+    CGFunctionRef _backgroundShadingFunction;
+    CGGradientRef _backgroundGradient;
+    
+    BOOL _inMiddleOfTouch;
+}
 
 + (id)slider;
 {
@@ -148,7 +169,6 @@ static id _commonInit(OUIColorComponentSlider *self)
     [super dealloc];
 }
 
-@synthesize range = _range;
 - (void)setRange:(CGFloat)range;
 {
     if (_range == range)
@@ -157,7 +177,6 @@ static id _commonInit(OUIColorComponentSlider *self)
     [self setNeedsLayout];
 }
 
-@synthesize formatString = _formatString;
 - (void)setFormatString:(NSString *)formatString;
 {
     if (OFISEQUAL(_formatString, formatString))
@@ -167,7 +186,6 @@ static id _commonInit(OUIColorComponentSlider *self)
     [self setNeedsLayout];
 }
 
-@synthesize representsAlpha = _representsAlpha;
 - (void)setRepresentsAlpha:(BOOL)flag;
 {
     if (_representsAlpha == flag)
@@ -176,10 +194,7 @@ static id _commonInit(OUIColorComponentSlider *self)
     [self setNeedsDisplay];
 }
 
-@synthesize needsShading = _needsShading;
-
 // We want the knob interior to show the calculated color
-@synthesize color = _color;
 - (void)setColor:(OQColor *)color;
 {
     if (OFISEQUAL(_color, color))
@@ -196,7 +211,6 @@ static id _commonInit(OUIColorComponentSlider *self)
 }
 
 // This cannot be named "alpha". Otherwise when it reaches zero, hit testing will trivially return NO as if we were hidden.
-@synthesize value = _value;
 - (void)setValue:(CGFloat)value;
 {
     if (_value == value)
@@ -207,7 +221,6 @@ static id _commonInit(OUIColorComponentSlider *self)
     [self setNeedsLayout];
 }
 
-@synthesize leftLuma = _leftLuma;
 - (void)setLeftLuma:(CGFloat)luma;
 {
     if (_leftLuma == luma)
@@ -216,7 +229,6 @@ static id _commonInit(OUIColorComponentSlider *self)
     [self setNeedsLayout];
 }
 
-@synthesize rightLuma = _rightLuma;
 - (void)setRightLuma:(CGFloat)luma;
 {
     if (_rightLuma == luma)
@@ -224,8 +236,6 @@ static id _commonInit(OUIColorComponentSlider *self)
     _rightLuma = luma;
     [self setNeedsLayout];
 }
-
-@synthesize inMiddleOfTouch = _inMiddleOfTouch;
 
 static CGFloat _valueToX(OUIColorComponentSlider *self, CGFloat value)
 {

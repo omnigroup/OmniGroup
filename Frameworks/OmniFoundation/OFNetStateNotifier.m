@@ -16,9 +16,7 @@
 #import <UIKit/UIApplication.h>
 #endif
 
-#if !defined(OB_ARC) || !OB_ARC
-#error This file requires ARC
-#endif
+OB_REQUIRE_ARC
 
 RCS_ID("$Id$")
 
@@ -48,7 +46,7 @@ NSInteger OFNetStateNotifierDebug;
     NSNetServiceBrowser *_browser;
     NSMutableArray *_resolvingServices;
     NSMapTable *_serviceToEntry;
-    NSMapTable *_serviceToReportedState;
+    NSMapTable *_serviceToReportedVersion;
 }
 
 + (void)initialize;
@@ -78,9 +76,9 @@ NSInteger OFNetStateNotifierDebug;
     _serviceToEntry = [[NSMapTable alloc] initWithKeyOptions:NSMapTableStrongMemory
                                                 valueOptions:NSMapTableStrongMemory|NSMapTableObjectPointerPersonality
                                                     capacity:0];
-    _serviceToReportedState = [[NSMapTable alloc] initWithKeyOptions:NSMapTableStrongMemory
-                                                        valueOptions:NSMapTableStrongMemory|NSMapTableObjectPointerPersonality
-                                                            capacity:0];
+    _serviceToReportedVersion = [[NSMapTable alloc] initWithKeyOptions:NSMapTableStrongMemory
+                                                          valueOptions:NSMapTableStrongMemory|NSMapTableObjectPointerPersonality
+                                                              capacity:0];
     
     [self _startBrowser];
     
@@ -123,7 +121,7 @@ NSInteger OFNetStateNotifierDebug;
     [_serviceToEntry removeAllObjects];
     
     // Since we forget our services and stop our browser, the last reported state for each service will be pointer-equal if we get started up again. Maybe we could switch to registration->state, but with multiple network interfaces, we could have a single registration reporting multiple states temporarily (or permanently when mDNS lets entries get stuck, as it does frequently).
-    [_serviceToReportedState removeAllObjects];
+    [_serviceToReportedVersion removeAllObjects];
 }
 
 - (void)setMonitoredGroupIdentifiers:(NSSet *)monitoredGroupIdentifiers;
@@ -169,13 +167,13 @@ NSInteger OFNetStateNotifierDebug;
     } else {
         OBASSERT([_serviceToEntry objectForKey:aNetService] != nil);
         [_serviceToEntry removeObjectForKey:aNetService];
-        [_serviceToReportedState removeObjectForKey:aNetService];
+        [_serviceToReportedVersion removeObjectForKey:aNetService];
     }
 
     if (!moreComing) {
         DEBUG_NOTIFIER(2, @"_resolvingServices = %@", _resolvingServices);
         DEBUG_NOTIFIER(2, @"_serviceToEntry = %@", _serviceToEntry);
-        DEBUG_NOTIFIER(2, @"_serviceToReportedState = %@", _serviceToReportedState);
+        DEBUG_NOTIFIER(2, @"_serviceToReportedVersion = %@", _serviceToReportedVersion);
     }
     
     // We don't really need to do this since we'll hold onto its previous states anyway (in case it comes back online).
@@ -327,6 +325,11 @@ NSInteger OFNetStateNotifierDebug;
     id <OFNetStateNotifierDelegate> delegate = _weak_delegate;
     
     /*
+     
+     UPDATE for note below: In the A->B->A case, the registration doesn't guarantee that other observers will ever see a TXT record for B (mDNS might collapse the two updates into nothing). So, each state update to a registration must produce a unique TXT record. So OFNetStateRegistration includes a version token. If this makes the TXT record too long, we might drop the state entirely and just report the version token (and update it when the state changes).
+     
+     -----
+     
      We cannot remember a set of all previous states and ignore those in the future, at least not without cooperation from the registrations. Consider when a registration's state is based on a hash of its content, without any consideration for a timestamp. In this case if we have a registaration transition from state A, to B, and then back to A, we'd not inform our delegate about the transition back to state A. As a concrete example, a OmniFileExchange container may get a new file and then delete that file. We want to inform our delegate of the deletion.
      
      So, we remember the last seen state for each NSNetService. This could result in more notifications than we really want as a bunch of clients transition between states. We may coalesce notifications for a little bit, which would cut down on this some (can't completely eliminate it with this approach since one peer needs to post a state change to provoke the others to update and then *they* will all post their state changes). If this becomes a problem, we can maybe remember the history of states for each client and make better decisions about whether to notify based on that.
@@ -348,25 +351,29 @@ NSInteger OFNetStateNotifierDebug;
         if ([NSString isEmptyString:groupIdentifier] || [_monitoredGroupIdentifiers member:groupIdentifier] == nil)
             continue;
         
-        // Ignore items that haven't published a state yet. An empty string is considered a valid state, unlike the member/group strings (might be a list of document identifiers, so the empty string would be "no documents").
+        // Ignore registrations that haven't published a state yet. An empty string is considered a valid state, unlike the member/group strings (might be a list of document identifiers, so the empty string would be "no documents").
         NSString *state = txtRecord[OFNetStateRegistrationStateKey];
         if (!state)
             continue;
         
-        NSString *itemIdentifier = txtRecord[OFNetStateRegistrationItemIdentifierKey];
-        if ([delegate respondsToSelector:@selector(netStateNotifier:shouldIncludeItem:)] && ![delegate netStateNotifier:self shouldIncludeItem:itemIdentifier])
+        NSString *version = txtRecord[OFNetStateRegistrationVersionKey];
+        if (!version) {
+            OBASSERT_NOT_REACHED("Bad client? Should include a version if there is a state");
             continue;
-
-        NSString *reportedState = [_serviceToReportedState objectForKey:service];
-        if (OFNOTEQUAL(state, reportedState)) {
-            DEBUG_NOTIFIER(1, @"State of service %@ changed from %@ to %@", service, reportedState, state);
-            [_serviceToReportedState setObject:state forKey:service];
+        }
+        
+        NSString *reportedVersion = [_serviceToReportedVersion objectForKey:service];
+        if (OFNOTEQUAL(version, reportedVersion)) {
+            DEBUG_NOTIFIER(1, @"State version of service %@ changed from %@ to %@", service, version, reportedVersion);
+            [_serviceToReportedVersion setObject:version forKey:service];
             changed = YES;
         }
     }
     
-    if (changed)
+    if (changed) {
+        DEBUG_NOTIFIER(1, @"Notifying delegate of change %@", [(id)delegate shortDescription]);
         [delegate netStateNotifierStateChanged:self];
+    }
 }
 
 @end

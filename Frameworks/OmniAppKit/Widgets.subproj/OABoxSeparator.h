@@ -13,17 +13,11 @@
 // This subclass allows you to choose a color other than black for the separator line.  The default color here is 70% gray (which tends to look a lot better than black).
 
 @interface OABoxSeparator : NSBox
-{
-@private
-    NSColor *lineColor;
-    NSBackgroundStyle _backgroundStyle;
-    NSColor *backgroundColor;
-}
 
-@property (retain) NSColor *lineColor;
-@property (retain) NSColor *backgroundColor;
+@property (nonatomic,retain) NSColor *lineColor;
+@property (nonatomic,retain) NSColor *backgroundColor;
 
-@property NSBackgroundStyle backgroundStyle;
+@property (nonatomic) NSBackgroundStyle backgroundStyle;
 
 - (NSRect)separatorRect; // The rect, relative to this view's bounds, in which the line will be drawn
 - (NSRect)embossRect; // The rect, relative to this view's bounds, in which the background (underhighlight/shadow) will be drawn

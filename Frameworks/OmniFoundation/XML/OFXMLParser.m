@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -420,6 +420,9 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
 }
 
 @implementation OFXMLParser
+{
+    struct _OFMLParserState *_state; // Only set while parsing.
+}
 
 - (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject <OFXMLParserTarget> *)target error:(NSError **)outError;
 {
@@ -571,11 +574,6 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     [_loadWarnings release];
     [super dealloc];
 }
-
-@synthesize encoding = _encoding;
-@synthesize versionString = _versionString;
-@synthesize standalone = _standalone;
-@synthesize loadWarnings = _loadWarnings;
 
 - (NSUInteger)elementDepth;
 {

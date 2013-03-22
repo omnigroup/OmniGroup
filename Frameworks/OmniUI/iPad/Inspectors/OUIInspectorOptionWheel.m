@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,6 +70,12 @@ RCS_ID("$Id$");
 
 
 @implementation OUIInspectorOptionWheel
+{
+    OUIInspectorOptionWheelSelectionIndicator *_selectionIndicator;
+    OUIInspectorOptionWheelScrollView *_scrollView;
+    NSMutableArray *_items;
+    OUIInspectorOptionWheelItem *_selectedItem; // might be animating to this, but not there yet
+}
 
 static CGFunctionRef BackgroundShadingFunction;
 

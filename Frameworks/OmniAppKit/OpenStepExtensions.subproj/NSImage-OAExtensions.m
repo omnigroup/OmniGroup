@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,15 +28,19 @@ NSString * const OAInfoTemplateImageName = @"OAInfoTemplate";
 // Photoshop likes to save files with non-integral DPI.  This can cause hard to find bugs later on, so lets just find out about this right away.
 static id (*original_initWithContentsOfFile)(id self, SEL _cmd, NSString *fileName);
 static id (*original_initByReferencingFile)(id self, SEL _cmd, NSString *fileName);
+#ifdef DEBUG_NONINTEGRAL_IMAGE_SIZE
 static id (*original_initWithSize)(id self, SEL _cmd, NSSize size);
 static id (*original_setSize)(id self, SEL _cmd, NSSize size);
+#endif
 
 + (void)performPosing;
 {
     original_initByReferencingFile = (typeof(original_initWithContentsOfFile))OBReplaceMethodImplementationWithSelector(self, @selector(initByReferencingFile:), @selector(replacement_initByReferencingFile:));
     original_initWithContentsOfFile = (typeof(original_initWithContentsOfFile))OBReplaceMethodImplementationWithSelector(self, @selector(initWithContentsOfFile:), @selector(replacement_initWithContentsOfFile:));
+#ifdef DEBUG_NONINTEGRAL_IMAGE_SIZE
     original_initWithSize = (typeof(original_initWithSize))OBReplaceMethodImplementationWithSelector(self, @selector(initWithSize:), @selector(replacement_initWithSize:));
     original_setSize = (typeof(original_setSize))OBReplaceMethodImplementationWithSelector(self, @selector(setSize:), @selector(replacement_setSize:));
+#endif
 }
 
 // If you run into these assertions, consider running the OAMakeImageSizeIntegral command line tool in your image (probably only reasonable for TIFF right now).
@@ -85,6 +89,7 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
     return self;
 }
 
+#ifdef DEBUG_NONINTEGRAL_IMAGE_SIZE
 - (id)replacement_initWithSize:(NSSize)size;
 {
     OBPRECONDITION(size.width == rint(size.width));
@@ -98,6 +103,7 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
     OBPRECONDITION(size.height == rint(size.height));
     original_setSize(self, _cmd, size);
 }
+#endif
 
 #endif
 

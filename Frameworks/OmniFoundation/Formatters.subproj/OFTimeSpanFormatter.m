@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,8 +7,10 @@
 
 #import <OmniFoundation/OFTimeSpanFormatter.h>
 
+#import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFTimeSpan.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
+#import <OmniFoundation/OFNull.h>
 
 #import <Foundation/NSCoder.h>
 #import <Foundation/NSNumberFormatter.h>
@@ -42,10 +44,17 @@ static OFTimeSpanUnit timeSpanUnits[UNITS_COUNT];
     OBINITIALIZE;
     
     NSBundle *bundle = [self bundle];
+    NSString *localizedPluralString = nil;
+    NSString *localizedSingularString = nil;
+    NSString *localizedAbbreviatedString = nil;
     
-    timeSpanUnits[UNITS_YEARS].localizedPluralString = NSLocalizedStringFromTableInBundle(@"years", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_YEARS].localizedSingularString = NSLocalizedStringFromTableInBundle(@"year", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_YEARS].localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"y", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedPluralString = NSLocalizedStringFromTableInBundle(@"years", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedSingularString = NSLocalizedStringFromTableInBundle(@"year", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"y", @"OmniFoundation", bundle, @"time span formatter span");
+
+    timeSpanUnits[UNITS_YEARS].localizedPluralString = [localizedPluralString copy];
+    timeSpanUnits[UNITS_YEARS].localizedSingularString = [localizedSingularString copy];
+    timeSpanUnits[UNITS_YEARS].localizedAbbreviatedString = [localizedAbbreviatedString copy];
     timeSpanUnits[UNITS_YEARS].pluralString = @"years";
     timeSpanUnits[UNITS_YEARS].singularString = @"year";
     timeSpanUnits[UNITS_YEARS].abbreviatedString = @"y";
@@ -54,9 +63,13 @@ static OFTimeSpanUnit timeSpanUnits[UNITS_COUNT];
     timeSpanUnits[UNITS_YEARS].formatterMultiplierImplementation = (FLOAT_IMP)[self instanceMethodForSelector:@selector(hoursPerYear)];
     timeSpanUnits[UNITS_YEARS].fixedMultiplier = 3600.0f;    
     
-    timeSpanUnits[UNITS_MONTHS].localizedPluralString = NSLocalizedStringFromTableInBundle(@"months", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_MONTHS].localizedSingularString = NSLocalizedStringFromTableInBundle(@"month", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_MONTHS].localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"mo", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedPluralString = NSLocalizedStringFromTableInBundle(@"months", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedSingularString = NSLocalizedStringFromTableInBundle(@"month", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"mo", @"OmniFoundation", bundle, @"time span formatter span");
+
+    timeSpanUnits[UNITS_MONTHS].localizedPluralString = [localizedPluralString copy];
+    timeSpanUnits[UNITS_MONTHS].localizedSingularString = [localizedSingularString copy];
+    timeSpanUnits[UNITS_MONTHS].localizedAbbreviatedString = [localizedAbbreviatedString copy];
     timeSpanUnits[UNITS_MONTHS].pluralString = @"months";
     timeSpanUnits[UNITS_MONTHS].singularString = @"month";
     timeSpanUnits[UNITS_MONTHS].abbreviatedString = @"mo";
@@ -65,9 +78,13 @@ static OFTimeSpanUnit timeSpanUnits[UNITS_COUNT];
     timeSpanUnits[UNITS_MONTHS].formatterMultiplierImplementation = (FLOAT_IMP)[self instanceMethodForSelector:@selector(hoursPerMonth)];    
     timeSpanUnits[UNITS_MONTHS].fixedMultiplier = 3600.0f;    
     
-    timeSpanUnits[UNITS_WEEKS].localizedPluralString = NSLocalizedStringFromTableInBundle(@"weeks", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_WEEKS].localizedSingularString = NSLocalizedStringFromTableInBundle(@"week", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_WEEKS].localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"w", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedPluralString = NSLocalizedStringFromTableInBundle(@"weeks", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedSingularString = NSLocalizedStringFromTableInBundle(@"week", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"w", @"OmniFoundation", bundle, @"time span formatter span");
+
+    timeSpanUnits[UNITS_WEEKS].localizedPluralString = [localizedPluralString copy];
+    timeSpanUnits[UNITS_WEEKS].localizedSingularString = [localizedSingularString copy];
+    timeSpanUnits[UNITS_WEEKS].localizedAbbreviatedString = [localizedAbbreviatedString copy];
     timeSpanUnits[UNITS_WEEKS].pluralString = @"weeks";
     timeSpanUnits[UNITS_WEEKS].singularString = @"week";
     timeSpanUnits[UNITS_WEEKS].abbreviatedString = @"w";
@@ -76,9 +93,13 @@ static OFTimeSpanUnit timeSpanUnits[UNITS_COUNT];
     timeSpanUnits[UNITS_WEEKS].formatterMultiplierImplementation = (FLOAT_IMP)[self instanceMethodForSelector:@selector(hoursPerWeek)];       
     timeSpanUnits[UNITS_WEEKS].fixedMultiplier = 3600.0f;    
      
-    timeSpanUnits[UNITS_DAYS].localizedPluralString = NSLocalizedStringFromTableInBundle(@"days", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_DAYS].localizedSingularString = NSLocalizedStringFromTableInBundle(@"day", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_DAYS].localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"d", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedPluralString = NSLocalizedStringFromTableInBundle(@"days", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedSingularString = NSLocalizedStringFromTableInBundle(@"day", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"d", @"OmniFoundation", bundle, @"time span formatter span");
+
+    timeSpanUnits[UNITS_DAYS].localizedPluralString = [localizedPluralString copy];
+    timeSpanUnits[UNITS_DAYS].localizedSingularString = [localizedSingularString copy];
+    timeSpanUnits[UNITS_DAYS].localizedAbbreviatedString = [localizedAbbreviatedString copy];
     timeSpanUnits[UNITS_DAYS].pluralString = @"days";
     timeSpanUnits[UNITS_DAYS].singularString = @"day";
     timeSpanUnits[UNITS_DAYS].abbreviatedString = @"d";
@@ -87,9 +108,13 @@ static OFTimeSpanUnit timeSpanUnits[UNITS_COUNT];
     timeSpanUnits[UNITS_DAYS].formatterMultiplierImplementation = (FLOAT_IMP)[self instanceMethodForSelector:@selector(hoursPerDay)];  
     timeSpanUnits[UNITS_DAYS].fixedMultiplier = 3600.0f;    
               
-    timeSpanUnits[UNITS_HOURS].localizedPluralString = NSLocalizedStringFromTableInBundle(@"hours", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_HOURS].localizedSingularString = NSLocalizedStringFromTableInBundle(@"hour", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_HOURS].localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"h", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedPluralString = NSLocalizedStringFromTableInBundle(@"hours", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedSingularString = NSLocalizedStringFromTableInBundle(@"hour", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"h", @"OmniFoundation", bundle, @"time span formatter span");
+
+    timeSpanUnits[UNITS_HOURS].localizedPluralString = [localizedPluralString copy];
+    timeSpanUnits[UNITS_HOURS].localizedSingularString = [localizedSingularString copy];
+    timeSpanUnits[UNITS_HOURS].localizedAbbreviatedString = [localizedAbbreviatedString copy];
     timeSpanUnits[UNITS_HOURS].pluralString = @"hours";
     timeSpanUnits[UNITS_HOURS].singularString = @"hour";
     timeSpanUnits[UNITS_HOURS].abbreviatedString = @"h";
@@ -98,9 +123,13 @@ static OFTimeSpanUnit timeSpanUnits[UNITS_COUNT];
     timeSpanUnits[UNITS_HOURS].formatterMultiplierImplementation = NULL;    
     timeSpanUnits[UNITS_HOURS].fixedMultiplier = 3600.0f;    
     
-    timeSpanUnits[UNITS_MINUTES].localizedPluralString = NSLocalizedStringFromTableInBundle(@"minutes", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_MINUTES].localizedSingularString = NSLocalizedStringFromTableInBundle(@"minute", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_MINUTES].localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"m", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedPluralString = NSLocalizedStringFromTableInBundle(@"minutes", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedSingularString = NSLocalizedStringFromTableInBundle(@"minute", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"m", @"OmniFoundation", bundle, @"time span formatter span");
+
+    timeSpanUnits[UNITS_MINUTES].localizedPluralString = [localizedPluralString copy];
+    timeSpanUnits[UNITS_MINUTES].localizedSingularString = [localizedSingularString copy];
+    timeSpanUnits[UNITS_MINUTES].localizedAbbreviatedString = [localizedAbbreviatedString copy];
     timeSpanUnits[UNITS_MINUTES].pluralString = @"minutes";
     timeSpanUnits[UNITS_MINUTES].singularString = @"minute";
     timeSpanUnits[UNITS_MINUTES].abbreviatedString = @"m";
@@ -109,9 +138,13 @@ static OFTimeSpanUnit timeSpanUnits[UNITS_COUNT];
     timeSpanUnits[UNITS_MINUTES].formatterMultiplierImplementation = NULL;
     timeSpanUnits[UNITS_MINUTES].fixedMultiplier = 60.0f;    
                         
-    timeSpanUnits[UNITS_SECONDS].localizedPluralString = NSLocalizedStringFromTableInBundle(@"seconds", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_SECONDS].localizedSingularString = NSLocalizedStringFromTableInBundle(@"second", @"OmniFoundation", bundle, @"time span formatter span");
-    timeSpanUnits[UNITS_SECONDS].localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"s", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedPluralString = NSLocalizedStringFromTableInBundle(@"seconds", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedSingularString = NSLocalizedStringFromTableInBundle(@"second", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"s", @"OmniFoundation", bundle, @"time span formatter span");
+
+    timeSpanUnits[UNITS_SECONDS].localizedPluralString = [localizedPluralString copy];
+    timeSpanUnits[UNITS_SECONDS].localizedSingularString = [localizedSingularString copy];
+    timeSpanUnits[UNITS_SECONDS].localizedAbbreviatedString = [localizedAbbreviatedString copy];
     timeSpanUnits[UNITS_SECONDS].pluralString = @"seconds";
     timeSpanUnits[UNITS_SECONDS].singularString = @"second";
     timeSpanUnits[UNITS_SECONDS].abbreviatedString = @"s";

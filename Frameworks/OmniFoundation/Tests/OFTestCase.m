@@ -250,6 +250,26 @@ static BOOL OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path2
             OB_RELEASE(data2);
         } else if (OFISEQUAL(fileType1, NSFileTypeDirectory)) {
             // could maybe compare attributes...
+        } else if (OFISEQUAL(fileType1, NSFileTypeSymbolicLink)) {
+            NSString *destination1 = [[NSFileManager defaultManager] destinationOfSymbolicLinkAtPath:map1 error:&error];
+            if (!destination1)
+                return NO;
+            NSString *destination2 = [[NSFileManager defaultManager] destinationOfSymbolicLinkAtPath:map2 error:&error];
+            if (!destination1)
+                return NO;
+            
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+            if (OFNOTEQUAL(destination1, destination2)) {
+                if (requireSame)
+                    STFail(@"Symlink destinations differ!\n"
+                           "\"%@\" -> \"%@\"\n"
+                           "\"%@\" -> \"%@\"\n", map1, destination1, map2, destination2);
+                return NO;
+            }
+#else
+            if (requireSame)
+                STAssertEqualObjects(destination1, destination2, @"Link destinations should be the same");
+#endif
         } else {
             if (requireSame)
                 STFail(@"Don't know how to compare files of type \"%@\"", fileType1);

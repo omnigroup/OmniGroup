@@ -161,7 +161,7 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
 static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFSDocumentStoreFileItem *fileItem, BOOL landscape)
 {
     NSURL *fileURL = fileItem.fileURL;
-    NSDate *date = fileItem.date;
+    NSDate *date = fileItem.fileModificationDate;
         
     NSString *previewFilename = [self _filenameForPreviewOfFileURL:fileURL date:date withLandscape:landscape];
     OUIDocumentPreview *preview = [PreviewFileNameToPreview objectForKey:previewFilename];
@@ -455,38 +455,41 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFSDoc
     return preview.exists;
 }
 
-static void _removeUsedPreviewFileURLs(Class self, NSMutableSet *unusedPreviewURLs, NSURL *fileURL, NSDate *date)
+static void _removeUsedPreviewFileURLs(Class self, NSMutableSet *unusedPreviewFilenames, NSURL *fileURL, NSDate *date)
 {
-    NSURL *previewURL;
+    NSString *previewFilename;
     
-    if ((previewURL = [self fileURLForPreviewOfFileURL:fileURL date:date withLandscape:YES]))
-        [unusedPreviewURLs removeObject:previewURL];
-    if ((previewURL = [self fileURLForPreviewOfFileURL:fileURL date:date withLandscape:NO]))
-        [unusedPreviewURLs removeObject:previewURL];
+    if ((previewFilename = [self _filenameForPreviewOfFileURL:fileURL date:date withLandscape:YES]))
+        [unusedPreviewFilenames removeObject:previewFilename];
+    if ((previewFilename = [self _filenameForPreviewOfFileURL:fileURL date:date withLandscape:NO]))
+        [unusedPreviewFilenames removeObject:previewFilename];
 }
 
 + (void)deletePreviewsNotUsedByFileItems:(id <NSFastEnumeration>)fileItems;
 {
+    NSURL *previewDirectoryURL = [self _previewDirectoryURL];
     NSError *error = nil;
-    NSArray *existingPreviewURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:[self _previewDirectoryURL] includingPropertiesForKeys:[NSArray array] options:0 error:&error];
+    NSArray *existingPreviewURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:previewDirectoryURL includingPropertiesForKeys:[NSArray array] options:0 error:&error];
     if (!existingPreviewURLs) {
         NSLog(@"Error finding existing previews: %@", [error toPropertyList]);
         return;
     }
     
-    NSMutableSet *unusedPreviewURLs = [NSMutableSet set];
+    // Don't insert NSURLs directly since we don't want to call its -hash/-isEqual:.
+    NSMutableSet *unusedPreviewFilenames = [NSMutableSet set];
     for (NSURL *existingPreviewURL in existingPreviewURLs) {
         // NSFileManager can return non-normalized URLs when we ask it for the contents of a directory.
-        [unusedPreviewURLs addObject:_normalizeURL(existingPreviewURL)];
+        [unusedPreviewFilenames addObject:[existingPreviewURL lastPathComponent]];
     }
     
     for (OFSDocumentStoreFileItem *fileItem in fileItems)
-        _removeUsedPreviewFileURLs(self, unusedPreviewURLs, fileItem.fileURL, fileItem.date);
+        _removeUsedPreviewFileURLs(self, unusedPreviewFilenames, fileItem.fileURL, fileItem.fileModificationDate);
     
-    DEBUG_PREVIEW_CACHE(@"Removing unused previews: %@", unusedPreviewURLs);
+    DEBUG_PREVIEW_CACHE(@"Removing unused previews: %@", unusedPreviewFilenames);
     
-    for (NSURL *unusedPreviewURL in unusedPreviewURLs) {
+    for (NSString *previewFilename in unusedPreviewFilenames) {
         NSError *removeError = nil;
+        NSURL *unusedPreviewURL = [previewDirectoryURL URLByAppendingPathComponent:previewFilename];
         if (![[NSFileManager defaultManager] removeItemAtURL:unusedPreviewURL error:&removeError])
             NSLog(@"Error removing %@: %@", [unusedPreviewURL absoluteString], [removeError toPropertyList]);
     }
@@ -743,7 +746,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
 - _initWithFileURL:(NSURL *)fileURL date:(NSDate *)date landscape:(BOOL)landscape previewURL:(NSURL *)previewURL exists:(BOOL)exists empty:(BOOL)empty;
 {
     OBPRECONDITION(fileURL);
-    OBPRECONDITION(date);
+    OBPRECONDITION(date || !exists); // Might represent a non-downloaded cloud item.
     OBPRECONDITION(previewURL);
     
     if (!(self = [super init]))

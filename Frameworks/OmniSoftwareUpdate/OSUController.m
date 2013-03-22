@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,11 +62,7 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
 
 - (BOOL)beginDownloadAndInstallFromPackageAtURL:(NSURL *)packageURL item:(OSUItem *)item error:(NSError **)outError;
 {
-    // As a standard NSWindowController pattern, this will self-destruct when the window closes.  clang scan-build doesn't understand that, though.
-    // Under there is a better fix for this, doing this still stuff to make scan-build oblivious.
-    // There is an existing clang scan-build bug for this at <http://llvm.org/bugs/show_bug.cgi?id=2633>
-    OSUDownloadController *download = [objc_msgSend([OSUDownloadController class], @selector(alloc)) initWithPackageURL:packageURL item:item error:outError];
-    return (download != nil);
+    return [OSUDownloadController beginWithPackageURL:packageURL item:item error:outError];
 }
 
 #pragma mark -

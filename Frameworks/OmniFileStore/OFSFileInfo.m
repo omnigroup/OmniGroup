@@ -20,6 +20,43 @@
 
 RCS_ID("$Id$");
 
+#if defined(DEBUG_bungi)
+// Patch -[NSURL isEqual:] and -hash to asssert. Don't use these as dictionary keys due to their issues with comparison (standardized paths for /var/private, trailing slash, case comparison bugs with hex-encoded octets).
+static BOOL (*original_NSURL_isEqual)(NSURL *self, SEL _cmd, id otherObject);
+static NSUInteger (*original_NSURL_hash)(NSURL *self, SEL _cmd);
+
+static BOOL replacement_NSURL_isEqual(NSURL *self, SEL _cmd, id otherObject)
+{
+    if ([self isFileURL]) {
+        // NSFileManager calls -isEqual: on the two URLs given to -writeToURL:options:originalContentsURL:error:, so we ignore file URLs.
+    } else if ([[self absoluteString] length] == 0) {
+        // OSURLStyleAttribute's default value
+
+    } else {
+        OBASSERT_NOT_REACHED("Don't call -[NSURL isEqual:]");
+    }
+    
+    return original_NSURL_isEqual(self, _cmd, otherObject);
+}
+
+static NSUInteger replacement_NSURL_hash(NSURL *self, SEL _cmd)
+{
+    OBASSERT_NOT_REACHED("Don't call -[NSURL hash]");
+    return original_NSURL_hash(self, _cmd);
+}
+
+static void patchURL(void) __attribute__((constructor));
+static void patchURL(void)
+{
+    Class cls = [NSURL class];
+    original_NSURL_isEqual = (typeof(original_NSURL_isEqual))OBReplaceMethodImplementation(cls, @selector(isEqual:), (IMP)replacement_NSURL_isEqual);
+    original_NSURL_hash = (typeof(original_NSURL_hash))OBReplaceMethodImplementation(cls, @selector(hash), (IMP)replacement_NSURL_hash);
+}
+
+
+#endif
+
+
 @implementation OFSFileInfo
 
 + (NSString *)nameForURL:(NSURL *)url;
@@ -93,6 +130,20 @@ RCS_ID("$Id$");
     return [_name localizedStandardCompare:[otherInfo name]];
 }
 
+- (BOOL)isSameAsFileInfo:(OFSFileInfo *)otherInfo asOfServerDate:(NSDate *)serverDate;
+{
+    if (OFNOTEQUAL(_ETag, otherInfo.ETag))
+        return NO;
+    if (OFNOTEQUAL(_lastModifiedDate, otherInfo.lastModifiedDate))
+        return NO;
+    if (![_lastModifiedDate isBeforeDate:serverDate])
+        return NO; // It might be the same, but we can't be sure since server timestamps have limited resolution.
+    
+    return YES;
+}
+
+#pragma mark - Debugging
+
 - (NSString *)shortDescription;
 {
     return _name;
@@ -125,231 +176,3 @@ RCS_ID("$Id$");
 }
 
 @end
-
-NSURL *OFSURLRelativeToDirectoryURL(NSURL *baseURL, NSString *quotedFileName)
-{
-    if (!baseURL || !quotedFileName)
-        return nil;
-    
-    NSMutableString *urlString = [[baseURL absoluteString] mutableCopy];
-    NSRange pathRange = OFSURLRangeOfPath(urlString);
-    
-    if ([urlString rangeOfString:@"/" options:NSAnchoredSearch|NSBackwardsSearch range:pathRange].length == 0) {
-        [urlString insertString:@"/" atIndex:NSMaxRange(pathRange)];
-        pathRange.length ++;
-    }
-    
-    [urlString insertString:quotedFileName atIndex:NSMaxRange(pathRange)];
-
-    NSURL *newURL = [NSURL URLWithString:urlString];
-    return newURL;
-}
-
-NSURL *OFSDirectoryURLForURL(NSURL *url)
-{
-    NSString *urlString = [url absoluteString];
-    NSRange lastComponentRange;
-    unsigned trailingSlashLength;
-    if (!OFSURLRangeOfLastPathComponent(urlString, &lastComponentRange, &trailingSlashLength))
-        return url;
-
-    NSString *parentURLString = [urlString substringToIndex:lastComponentRange.location];
-    NSURL *parentURL = [NSURL URLWithString:parentURLString];
-    return parentURL;
-}
-
-NSURL *OFSURLWithTrailingSlash(NSURL *baseURL)
-{
-    if (baseURL == nil)
-        return nil;
-
-    if ([[baseURL path] hasSuffix:@"/"])
-        return baseURL;
-    
-    NSString *baseURLString = [baseURL absoluteString];
-    NSRange pathRange = OFSURLRangeOfPath(baseURLString);
-    
-    if (pathRange.length && [baseURLString rangeOfString:@"/" options:NSAnchoredSearch|NSBackwardsSearch range:pathRange].length > 0)
-        return baseURL;
-    
-    NSMutableString *newString = [baseURLString mutableCopy];
-    [newString insertString:@"/" atIndex:NSMaxRange(pathRange)];
-    NSURL *newURL = [NSURL URLWithString:newString];
-    
-    return newURL;
-}
-
-BOOL OFSURLEqualToURLIgnoringTrailingSlash(NSURL *URL1, NSURL *URL2)
-{
-    if ([URL1 isEqual:URL2])
-        return YES;
-    return [OFSURLWithTrailingSlash(URL1) isEqual:OFSURLWithTrailingSlash(URL2)];
-}
-
-
-NSURL *OFSURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash, BOOL removeSlash)
-{
-    OBASSERT(![quotedSuffix containsString:@"/"]);
-    OBASSERT(!(addSlash && removeSlash));
-    
-    NSMutableString *urlString = [[baseURL absoluteString] mutableCopy];
-    NSRange pathRange = OFSURLRangeOfPath(urlString);
-    
-    // Can't apply an affix to an empty name. Well, we could, but that would just push the problem off to some other part of XMLData.
-    if (!pathRange.length) {
-        return nil;
-    }
-    
-    NSRange trailingSlash = [urlString rangeOfString:@"/" options:NSAnchoredSearch|NSBackwardsSearch range:pathRange];
-    if (trailingSlash.length) {
-        if (removeSlash)
-            [urlString replaceCharactersInRange:trailingSlash withString:quotedSuffix];
-        else
-            [urlString insertString:quotedSuffix atIndex:trailingSlash.location];
-    } else {
-        if (addSlash)
-            [urlString insertString:@"/" atIndex:NSMaxRange(pathRange)];
-        [urlString insertString:quotedSuffix atIndex:NSMaxRange(pathRange)];
-    }
-    // pathRange is inaccurate now, but we don't use it again
-
-    NSURL *newURL = [NSURL URLWithString:urlString];
-    return newURL;
-}
-
-BOOL OFSURLRangeOfLastPathComponent(NSString *urlString, NSRange *lastComponentRange, unsigned *andTrailingSlash)
-{
-    if (!urlString)
-        return NO;
-    
-    NSRange pathRange = OFSURLRangeOfPath(urlString);
-    if (!pathRange.length)
-        return NO;
-    
-    NSRange trailingSlash = [urlString rangeOfString:@"/" options:NSAnchoredSearch|NSBackwardsSearch range:pathRange];
-    NSRange previousSlash;
-    if (trailingSlash.length) {
-        OBINVARIANT(NSMaxRange(trailingSlash) == NSMaxRange(pathRange));
-        previousSlash = [urlString rangeOfString:@"/"
-                                         options:NSBackwardsSearch
-                                           range:(NSRange){ pathRange.location, trailingSlash.location - pathRange.location }];
-        
-        if (previousSlash.length && !(NSMaxRange(previousSlash) <= trailingSlash.location)) {
-            // Double trailing slash is a syntactic weirdness we don't have a good way to handle.
-            return NO;
-        }
-    } else {
-        previousSlash = [urlString rangeOfString:@"/" options:NSBackwardsSearch range:pathRange];
-    }
-    
-    if (!previousSlash.length)
-        return NO;
-    
-    lastComponentRange->location = NSMaxRange(previousSlash);
-    lastComponentRange->length = NSMaxRange(pathRange) - NSMaxRange(previousSlash) - trailingSlash.length;
-    if (andTrailingSlash)
-        *andTrailingSlash = (unsigned)trailingSlash.length;
-    
-    return YES;
-}
-
-NSRange OFSURLRangeOfPath(NSString *rfc1808URL)
-{
-    if (!rfc1808URL) {
-        return (NSRange){NSNotFound, 0};
-    }
-    
-    NSRange colon = [rfc1808URL rangeOfString:@":"];
-    if (!colon.length) {
-        return (NSRange){NSNotFound, 0};
-    }
-    
-    NSUInteger len = [rfc1808URL length];
-#define Suffix(pos) (NSRange){(pos), len - (pos)}
-
-    // The fragment identifier is significant anywhere after the colon (and forbidden before the colon, but whatever)
-    NSRange terminator = [rfc1808URL rangeOfString:@"#" options:0 range:Suffix(NSMaxRange(colon))];
-    if (terminator.length)
-        len = terminator.location;
-    
-    // According to RFC1808, the ? and ; characters do not have special meaning within the host specifier.
-    // But the host specifier is an optional part (again, according to the RFC), so we need to only optionally skip it.
-    NSRange pathRange;
-    NSRange slashes = [rfc1808URL rangeOfString:@"//" options:NSAnchoredSearch range:Suffix(NSMaxRange(colon))];
-    if (slashes.length) {
-        NSRange firstPathSlash = [rfc1808URL rangeOfString:@"/" options:0 range:Suffix(NSMaxRange(slashes))];
-        if (!firstPathSlash.length) {
-            // A URL of the form foo://bar.com
-            return (NSRange){ len, 0 };
-        } else {
-            pathRange.location = firstPathSlash.location;
-        }
-    } else {
-        // The first character after the colon may or may not be a slash; RFC1808 allows relative paths there.
-        pathRange.location = NSMaxRange(colon);
-    }
-    
-    pathRange.length = len - pathRange.location;
-    
-    // Strip any query
-    terminator = [rfc1808URL rangeOfString:@"?" options:0 range:pathRange];
-    if (terminator.length)
-        pathRange.length = terminator.location - pathRange.location;
-    
-    // Strip any parameter-string
-    [rfc1808URL rangeOfString:@";" options:0 range:pathRange];
-    if (terminator.length)
-        pathRange.length = terminator.location - pathRange.location;
-    
-    return pathRange;
-}
-
-
-// This is a sort of simple 3-way-merge of URLs which we use to rewrite the Destination: header of a MOVE request if the server responds with a redirect of the source URL.
-// Generally we're just MOVEing something to rename it within its containing collection. So this function checks to see if that is true, and if so, returns a new Destination: URL which represents the same rewrite within the new collection pointed to by the redirect.
-// For more complicated situations, this function just gives up and returns nil; the caller will need to have some way to handle that.
-NSString *OFSURLAnalogousRewrite(NSURL *oldSourceURL, NSString *oldDestination, NSURL *newSourceURL)
-{
-    if ([oldDestination hasPrefix:@"/"])
-        oldDestination = [[NSURL URLWithString:oldDestination relativeToURL:oldSourceURL] absoluteString];
-    NSString *oldSource = [oldSourceURL absoluteString];
-    
-    NSRange oldSourceLastComponent, oldDestinationLastComponent, newSourceLastComponent;
-    unsigned oldSourceSlashy, oldDestinationSlashy, newSourceSlashy;
-    if (!OFSURLRangeOfLastPathComponent(oldDestination, &oldDestinationLastComponent, &oldDestinationSlashy) ||
-        !OFSURLRangeOfLastPathComponent(oldSource, &oldSourceLastComponent, &oldSourceSlashy)) {
-        // Can't parse something.
-        return nil;
-    }
-    
-    if (![[oldSource substringToIndex:oldSourceLastComponent.location] isEqualToString:[oldDestination substringToIndex:oldDestinationLastComponent.location]]) {
-        // The old source and destination URLs differ in more than just their final path component. Not obvious how to rewrite.
-        // (We should maybe be checking the span after the last path component as well, but that's going to be an empty string in any reasonable situation)
-        return nil;
-    }
-    
-    NSString *newSource = [newSourceURL absoluteString];
-    if (!OFSURLRangeOfLastPathComponent(newSource, &newSourceLastComponent, &newSourceSlashy)) {
-        // Can't parse something.
-        return nil;
-    }
-    
-    if (![[oldSource substringWithRange:oldSourceLastComponent] isEqualToString:[newSource substringWithRange:newSourceLastComponent]]) {
-        // The server's redirect changes the final path component, which is the same thing our MOVE is changing. Flee!
-        return nil;
-    }
-    
-    NSMutableString *newDestination = [newSource mutableCopy];
-    NSString *newLastComponent = [oldDestination substringWithRange:oldDestinationLastComponent];
-    if (!oldSourceSlashy && oldDestinationSlashy && !newSourceSlashy) {
-        // We were adding a trailing slash; keep doing so.
-        newLastComponent = [newLastComponent stringByAppendingString:@"/"];
-    } else if (oldSourceSlashy && !oldDestinationSlashy && newSourceSlashy) {
-        // We were removing a trailing slash. Extend the range so that we delete the new URL's trailing slash as well.
-        newSourceLastComponent.length += newSourceSlashy;
-    }
-    [newDestination replaceCharactersInRange:newSourceLastComponent withString:newLastComponent];
-    
-    return newDestination;
-}
-

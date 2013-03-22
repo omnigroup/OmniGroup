@@ -1,4 +1,4 @@
-// Copyright 1997-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,6 +55,8 @@
 - (NSArray *)arrayByPerformingBlock:(OFObjectToObjectBlock)blk;
 - (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)blk;
 - (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
+
+- (NSArray *)flattenedArray;
 
 - (NSArray *)select:(OFPredicateBlock)predicate;
 - (NSArray *)reject:(OFPredicateBlock)predicate;

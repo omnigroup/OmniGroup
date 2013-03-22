@@ -12,6 +12,7 @@
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSDAVOperation.h>
 #import <OmniFileStore/OFSFileInfo.h>
+#import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
 
 RCS_ID("$Id$");
@@ -272,7 +273,7 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
                 
                 // The directory itself will be in the property results.
                 // We don't necessarily know what its name will be, though.
-                if (!containerInfo && [[info originalURL] isEqual:expectedDirectoryURL]) {
+                if (!containerInfo && OFSURLEqualsURL([info originalURL], expectedDirectoryURL)) {
                     containerInfo = info;
                     // Don't return the container itself in the results list.
                     continue;
@@ -391,16 +392,15 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
             return nil;
         
         NSURL *finalURL = url;
-        if (![actualTemporaryURL isEqual:temporaryURL]) {
+        if (!OFSURLEqualsURL(actualTemporaryURL,temporaryURL)) {
             NSString *rewrittenFinalURL = OFSURLAnalogousRewrite(temporaryURL, [url absoluteString], actualTemporaryURL);
             if (rewrittenFinalURL)
                 finalURL = [NSURL URLWithString:rewrittenFinalURL];
         }
         
         // MOVE the fully written data into place.
-        BOOL success = [self moveURL:actualTemporaryURL toURL:finalURL error:outError];
         // TODO: Try to delete the temporary file if MOVE fails?
-        return ( success ? finalURL : nil );
+        return [self moveURL:actualTemporaryURL toURL:finalURL error:outError];
     }
     
     __block NSURL *returnURL;
@@ -444,98 +444,125 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     return createdURL;
 }
 
-static BOOL _returnError(NSError *error, NSError **outError)
+static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
 {
-    if (error) {
-        if (outError)
-            *outError = error;
-        return NO;
-    }
-    return YES;
+    if (URL)
+        return URL;
+    if (outError)
+        *outError = error;
+    return nil;
 }
 
-- (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL error:(NSError **)outError;
+- (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL error:(NSError **)outError;
 {
+    __block NSURL *URL;
     __block NSError *error;
     
     [self _performOperation:^(OperationDone done) {
-        [_connection moveURL:sourceURL toURL:destURL completionHandler:^(NSError *errorOrNil) {
+        [_connection moveURL:sourceURL toURL:destURL completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
+            URL = resultURL;
             error = errorOrNil;
             done();
         }];
     }];
     
-    return _returnError(error, outError);
+    return _returnURLOrError(URL, error, outError);
 }
 
-- (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
+- (NSURL *)copyURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
 {
+    __block NSURL *URL;
     __block NSError *error;
     
     [self _performOperation:^(OperationDone done) {
-        [_connection moveURL:sourceURL toURL:destURL withSourceLock:lock overwrite:overwrite completionHandler:^(NSError *errorOrNil) {
+        [_connection copyURL:sourceURL toURL:destURL withSourceETag:ETag overwrite:overwrite completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
+            URL = resultURL;
             error = errorOrNil;
             done();
         }];
     }];
     
-    return _returnError(error, outError);
+    return _returnURLOrError(URL, error, outError);
 }
 
-- (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
+- (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
 {
+    __block NSURL *URL;
     __block NSError *error;
     
     [self _performOperation:^(OperationDone done) {
-        [_connection moveURL:sourceURL toURL:destURL withDestinationLock:lock overwrite:overwrite completionHandler:^(NSError *errorOrNil) {
+        [_connection moveURL:sourceURL toURL:destURL withSourceLock:lock overwrite:overwrite completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
+            URL = resultURL;
             error = errorOrNil;
             done();
         }];
     }];
     
-    return _returnError(error, outError);
+    return _returnURLOrError(URL, error, outError);
 }
 
-- (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
+- (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
 {
+    __block NSURL *URL;
     __block NSError *error;
     
     [self _performOperation:^(OperationDone done) {
-        [_connection moveURL:sourceURL toURL:destURL withSourceETag:ETag overwrite:overwrite completionHandler:^(NSError *errorOrNil) {
+        [_connection moveURL:sourceURL toURL:destURL withDestinationLock:lock overwrite:overwrite completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
+            URL = resultURL;
             error = errorOrNil;
             done();
         }];
     }];
     
-    return _returnError(error, outError);
+    return _returnURLOrError(URL, error, outError);
 }
 
-- (BOOL)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
+- (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
 {
+    __block NSURL *URL;
     __block NSError *error;
     
     [self _performOperation:^(OperationDone done) {
-        [_connection moveURL:sourceURL toURL:destURL withDestinationETag:ETag overwrite:overwrite completionHandler:^(NSError *errorOrNil) {
+        [_connection moveURL:sourceURL toURL:destURL withSourceETag:ETag overwrite:overwrite completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
+            URL = resultURL;
             error = errorOrNil;
             done();
         }];
     }];
     
-    return _returnError(error, outError);
+    return _returnURLOrError(URL, error, outError);
 }
 
-- (BOOL)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL error:(NSError **)outError;
+- (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
 {
+    __block NSURL *URL;
     __block NSError *error;
     
     [self _performOperation:^(OperationDone done) {
-        [_connection moveURL:sourceURL toMissingURL:destURL completionHandler:^(NSError *errorOrNil) {
+        [_connection moveURL:sourceURL toURL:destURL withDestinationETag:ETag overwrite:overwrite completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
+            URL = resultURL;
             error = errorOrNil;
             done();
         }];
     }];
     
-    return _returnError(error, outError);
+    return _returnURLOrError(URL, error, outError);
+}
+
+- (NSURL *)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL error:(NSError **)outError;
+{
+    __block NSURL *URL;
+    __block NSError *error;
+    
+    [self _performOperation:^(OperationDone done) {
+        [_connection moveURL:sourceURL toMissingURL:destURL completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
+            URL = resultURL;
+            error = errorOrNil;
+            done();
+        }];
+    }];
+    
+    return _returnURLOrError(URL, error, outError);
 }
 
 - (BOOL)deleteURL:(NSURL *)url error:(NSError **)outError;
@@ -584,9 +611,17 @@ typedef void (^Operation)(OperationDone done);
             [doneLock unlockWithCondition:YES];
         });
     }];
-    
-    [doneLock lockWhenCondition:YES];
-    [doneLock unlock];
+
+    BOOL currentThreadBlocksOperationQueue = [NSOperationQueue currentQueue] == _connectionQueue;
+    if (currentThreadBlocksOperationQueue) {
+        _connectionQueue.maxConcurrentOperationCount = _connectionQueue.maxConcurrentOperationCount + 1;
+        [doneLock lockWhenCondition:YES];
+        _connectionQueue.maxConcurrentOperationCount = _connectionQueue.maxConcurrentOperationCount - 1;
+        [doneLock unlock];
+    } else {
+        [doneLock lockWhenCondition:YES];
+        [doneLock unlock];
+    }
 }
 
 - (NSMutableArray *)_recursivelyCollectDirectoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections options:(OFSDirectoryEnumerationOptions)options error:(NSError **)outError;

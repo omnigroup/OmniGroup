@@ -9,10 +9,10 @@
 
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFoundation/OFRegularExpression.h>
-#import <OmniUI/OUIAppController.h>
+#import <OmniFileStore/OFSURL.h>
+#import <OmniFoundation/NSRegularExpression-OFExtensions.h>
 #import <OmniUI/OUIAlert.h>
+#import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIEditableLabeledTableViewCell.h>
 #import <OmniUI/OUIEditableLabeledValueCell.h>
@@ -41,6 +41,7 @@ typedef enum {
     ServerAccountDescriptionSection,
     ServerAccountAddressSection,
     ServerAccountCredentialsSection,
+    ServerAccountCloudSyncEnabledSection,
     ServerAccountSectionCount,
 } ServerAccountSections;
 
@@ -103,6 +104,8 @@ typedef enum {
     if (_accountType.requiresPassword)
         password = TEXT_AT(ServerAccountCredentialsSection, ServerAccountCredentialsPasswordRow);
     
+    BOOL isCloudSyncEnabled = ((UISwitch *)(CELL_AT(ServerAccountCloudSyncEnabledSection, 0).accessoryView)).on;
+
     // Remember if this is a new account or if we are changing the configuration on an existing one.
     if (!_account) {
         NSURL *remoteBaseURL = OFSURLWithTrailingSlash([_accountType baseURLForServerURL:serverURL username:username]);
@@ -120,6 +123,7 @@ typedef enum {
 
     // Let us rename existing accounts even if their credentials aren't currently valid
     _account.displayName = displayName;
+    _account.isCloudSyncEnabled = isCloudSyncEnabled;
 
     OUIServerAccountValidationViewController *validationViewController = [[OUIServerAccountValidationViewController alloc] initWithAccount:_account username:username password:password];
 
@@ -185,7 +189,7 @@ typedef enum {
     if (_accountType.requiresServerURL)
         [CELL_AT(ServerAccountAddressSection, 0).editableValueCell.valueField becomeFirstResponder];
     else if (_accountType.requiresUsername)
-        [CELL_AT(ServerAccountCredentialsSection, ServerAccountSectionCount).editableValueCell.valueField becomeFirstResponder];
+        [CELL_AT(ServerAccountCredentialsSection, 0).editableValueCell.valueField becomeFirstResponder];
     
 #ifdef DEBUG_bungi
     // Speedy account creation
@@ -223,6 +227,8 @@ typedef enum {
             OBASSERT(_accountType.requiresUsername);
             OBASSERT(_accountType.requiresPassword);
             return 2;
+        case ServerAccountCloudSyncEnabledSection:
+            return 1;
         default:
             OBASSERT_NOT_REACHED("Unknown section");
             return 0;
@@ -232,6 +238,29 @@ typedef enum {
 // Customize the appearance of table view cells.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
+    if (indexPath.section == ServerAccountCloudSyncEnabledSection) {
+        static NSString * const switchIdentifier = @"OUIServerAccountSetupViewControllerSwitch";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:switchIdentifier];
+        if (!cell) {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:switchIdentifier];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+
+            UISwitch *accessorySwitch = [[UISwitch alloc] initWithFrame:CGRectZero];
+            [accessorySwitch addTarget:self action:@selector(_validateSignInButton) forControlEvents:UIControlEventValueChanged];
+            [accessorySwitch sizeToFit];
+            cell.accessoryView = accessorySwitch;
+        }
+
+        NSString *title = NSLocalizedStringFromTableInBundle(@"OmniPresence", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV OmniPresence edit field");
+
+        cell.textLabel.text = title;
+
+        UISwitch *accessorySwitch = (UISwitch *)cell.accessoryView;
+        [accessorySwitch setOn:_account != nil ? _account.isCloudSyncEnabled : YES];
+        
+        return cell;
+    }
+
     static NSString * const CellIdentifier = @"Cell";
     
     OUIEditableLabeledTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
@@ -272,9 +301,9 @@ typedef enum {
         case ServerAccountCredentialsSection: {
             switch (indexPath.row) {
                 case ServerAccountCredentialsUsernameRow:
-                    contents.label = NSLocalizedStringFromTableInBundle(@"User Name", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV username edit field");
+                    contents.label = NSLocalizedStringFromTableInBundle(@"Username", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV username edit field");
                     contents.value = _account.credential.user;
-                    contents.valueField.placeholder = NSLocalizedStringFromTableInBundle(@"username", @"OmniUIDocument", OMNI_BUNDLE, @"default for WebDAV username edit field");
+                    contents.valueField.placeholder = nil;
                     contents.valueField.keyboardType = UIKeyboardTypeDefault;
                     contents.valueField.secureTextEntry = NO;
                     break;
@@ -282,7 +311,7 @@ typedef enum {
                 case ServerAccountCredentialsPasswordRow:
                     contents.label = NSLocalizedStringFromTableInBundle(@"Password", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV password edit field");
                     contents.value = _account.credential.password;
-                    contents.valueField.placeholder = NSLocalizedStringFromTableInBundle(@"password", @"OmniUIDocument", OMNI_BUNDLE, @"default for WebDAV password edit field");
+                    contents.valueField.placeholder = nil;
                     contents.valueField.secureTextEntry = YES;
                     contents.valueField.keyboardType = UIKeyboardTypeDefault;
                     break;
@@ -410,11 +439,9 @@ static const CGFloat OUIOmniSyncServerSetupFooterHeight = 144;
     if (url == nil)
         url = [NSURL URLWithString:[webdavString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 
-    static OFRegularExpression *reasonableHostnameRegularExpression = nil;
-    if (reasonableHostnameRegularExpression == nil)
-        reasonableHostnameRegularExpression = [[OFRegularExpression alloc] initWithString:@"^[-_$A-Za-z0-9]+\\.[-_$A-Za-z0-9]+"];
+    OFCreateRegularExpression(reasonableHostnameRegularExpression, @"^[-_$A-Za-z0-9]+\\.[-_$A-Za-z0-9]+");
 
-    if ([url scheme] == nil && ![NSString isEmptyString:webdavString] && [reasonableHostnameRegularExpression hasMatchInString:webdavString])
+    if ([url scheme] == nil && ![NSString isEmptyString:webdavString] && [reasonableHostnameRegularExpression of_firstMatchInString:webdavString])
         url = [NSURL URLWithString:[@"http://" stringByAppendingString:webdavString]];
 
     NSString *scheme = [url scheme];

@@ -15,6 +15,10 @@
 RCS_ID("$Id$");
 
 @implementation OUZipArchive
+{
+    NSString *_path;
+    struct TagzipFile__ *_zip;
+}
 
 + (BOOL)createZipFile:(NSString *)zipPath fromFilesAtPaths:(NSArray *)paths error:(NSError **)outError;
 {

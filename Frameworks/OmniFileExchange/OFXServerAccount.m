@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,7 @@
 RCS_ID("$Id$")
 
 static NSString * const DisplayNameKey = @"displayName";
+static NSString * const IsCloudSyncEnabledKey = @"isCloudSyncEnabled";
 static NSString * const CredentialServiceIdentifierKey = @"credentialServiceIdentifier";
 static NSString * const HasBeenPreparedForRemovalKey = @"hasBeenPreparedForRemoval";
 
@@ -28,6 +29,7 @@ static const NSUInteger ServerAccountPropertListVersion = 0;
 
 @implementation OFXServerAccount
 {
+    NSURL *_localDocumentsURL;
 #if OFX_USE_SECURITY_SCOPED_BOOKMARKS
     // The security scoped bookmark (with the ?applesecurityscope=BAG_OF_HEX needed to gain access).
     NSURL *_localDocumentsBookmarkURL;
@@ -180,6 +182,7 @@ static const NSUInteger ServerAccountPropertListVersion = 0;
     _remoteBaseURL = [[remoteBaseURL absoluteURL] copy];
     _localDocumentsURL = [[localDocumentsURL absoluteURL] copy];
     _displayName = nil;
+    _isCloudSyncEnabled = YES;
     
     return self;
 }
@@ -266,6 +269,17 @@ static const NSUInteger ServerAccountPropertListVersion = 0;
 - (NSString *)accountDetailsString;
 {
     return [_type accountDetailsStringForAccount:self];
+}
+
+- (NSURL *)localDocumentsURL;
+{
+    assert(_isCloudSyncEnabled); // We shouldn't be calling this for non-syncing accounts
+    return _localDocumentsURL;
+}
+
+- (BOOL)isImportExportEnabled;
+{
+    return YES; // Or possibly !_isCloudSyncEnabled, or possibly store its own attribute
 }
 
 - (void)prepareForRemoval;
@@ -363,6 +377,8 @@ static const NSUInteger ServerAccountPropertListVersion = 0;
     
     // CANNOT USE SETTERS HERE. The setters flag the account as needing to be written.
         
+    _isCloudSyncEnabled = [propertyList boolForKey:@"cloudSyncEnabled" defaultValue:YES];
+
     _displayName = [propertyList[@"displayName"] copy];
     
     _credentialServiceIdentifier = [propertyList[@"serviceIdentifier"] copy];
@@ -373,7 +389,7 @@ static const NSUInteger ServerAccountPropertListVersion = 0;
 + (NSSet *)keyPathsForValuesAffectingPropertyList;
 {
     // uuid, type, remoteBaseURL, and localDocumentsURL not included since they can't change.
-    return [NSSet setWithObjects:DisplayNameKey, CredentialServiceIdentifierKey, HasBeenPreparedForRemovalKey, nil];
+    return [NSSet setWithObjects:DisplayNameKey, IsCloudSyncEnabledKey, CredentialServiceIdentifierKey, HasBeenPreparedForRemovalKey, nil];
 }
 
 - (NSDictionary *)propertyList;
@@ -401,6 +417,10 @@ static const NSUInteger ServerAccountPropertListVersion = 0;
         }
 #endif
     }
+
+    if (!_isCloudSyncEnabled)
+        plist[@"cloudSyncEnabled"] = @NO;
+    
     if (_credentialServiceIdentifier)
         [plist setObject:_credentialServiceIdentifier forKey:@"serviceIdentifier"];
     if (_displayName)

@@ -1,13 +1,11 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniFileStore/OFSDocumentInbox.h>
-
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import "OUIDocumentInbox.h"
 
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniFileStore/Errors.h>
@@ -19,7 +17,7 @@
 #import <OmniUnzip/OUUnzipArchive.h>
 #import <OmniUnzip/OUUnzipEntry.h>
 
-@implementation OFSDocumentInbox
+@implementation OUIDocumentInbox
 
 RCS_ID("$Id$");
 
@@ -81,8 +79,8 @@ RCS_ID("$Id$");
             OBASSERT(![NSString isEmptyString:appName]);
             
             __autoreleasing NSError *utiShouldNotBeIncludedError = nil;
-            NSString *title =  NSLocalizedStringFromTableInBundle(@"Unable to open file.", @"OmniFileStore", OMNI_BUNDLE, @"error title");
-            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ cannot open this type of file.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), appName];
+            NSString *title =  NSLocalizedStringFromTableInBundle(@"Unable to open file.", @"OmniUIDocument", OMNI_BUNDLE, @"error title");
+            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ cannot open this type of file.", @"OmniUIDocument", OMNI_BUNDLE, @"error description"), appName];
             OFSError(&utiShouldNotBeIncludedError, OFSCannotMoveItemFromInbox, title, description);
             
             finishedBlock(nil, utiShouldNotBeIncludedError);
@@ -105,6 +103,26 @@ RCS_ID("$Id$");
         }
         else {
             itemToMoveURL = inboxURL;
+        }
+        
+        // This deals with read-only files given to us in the Inbox on iOS. <bug:///60499> (OmniGraphSketcher needs to handle read-only files)
+        {
+            NSFileManager *fileManager = [NSFileManager defaultManager];
+            NSError *attributesError = nil;
+            NSDictionary *attributes = [fileManager attributesOfItemAtPath:[[itemToMoveURL absoluteURL] path] error:&attributesError];
+            if (!attributes) {
+                // Hopefully non-fatal, but worrisome. We'll log it at least....
+                NSLog(@"Error getting attributes of \"%@\": %@", [itemToMoveURL absoluteString], [attributesError toPropertyList]);
+            } else {
+                NSUInteger mode = [attributes filePosixPermissions];
+                if ((mode & S_IWUSR) == 0) {
+                    mode |= S_IWUSR;
+                    attributesError = nil;
+                    if (![fileManager setAttributes:[NSDictionary dictionaryWithObject:[NSNumber numberWithUnsignedInteger:mode] forKey:NSFilePosixPermissions] ofItemAtPath:[[itemToMoveURL absoluteURL] path] error:&attributesError]) {
+                        NSLog(@"Error setting attributes of \"%@\": %@", [itemToMoveURL absoluteString], [attributesError toPropertyList]);
+                    }
+                }
+            }
         }
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
@@ -190,8 +208,8 @@ RCS_ID("$Id$");
     
     if (!topLevelEntryName) {
         // Something has gone wrong. Let's fill in Error.
-        NSString *title =  NSLocalizedStringFromTableInBundle(@"Invalid Zip Archive", @"OmniFileStore", OMNI_BUNDLE, @"error title");
-        NSString *description = NSLocalizedStringFromTableInBundle(@"The zip archive must contain a single document.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
+        NSString *title =  NSLocalizedStringFromTableInBundle(@"Invalid Zip Archive", @"OmniUIDocument", OMNI_BUNDLE, @"error title");
+        NSString *description = NSLocalizedStringFromTableInBundle(@"The zip archive must contain a single document.", @"OmniUIDocument", OMNI_BUNDLE, @"error description");
         
         OFSError(error, OFSInvalidZipArchive, title, description);
     }
@@ -214,5 +232,3 @@ RCS_ID("$Id$");
 }
 
 @end
-
-#endif

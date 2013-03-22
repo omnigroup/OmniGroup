@@ -1,4 +1,4 @@
-// Copyright 2005-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,7 +46,7 @@ struct OFRationalNumberStruct OFRationalFromDouble(double d)
     mbits = MIN(DBL_MANT_DIG, CHAR_BIT*(int)sizeof(m));
     m = ldexp(frexp(fabs(d), &exponent), mbits);
     OFRationalFromPartsExp(&r, m, 1, exponent - mbits, d<0);
-    
+
     /*  Properly set the loss of precision bit when converting from a double. Right now it gets set in some cases even if converting the rational back to a double would produce the same number, because we had to round in order to fit the denominator: OFRationalFromDouble( 0.01 ) gets the lop bit set, even though it comes out as 1/100. But OFRationalFromDouble(nextafter(0.01, 1)) *should* get the lop bit set, because it also comes out as 1/100. */
     
     if (r.lop) {
@@ -339,7 +339,9 @@ static BOOL OFRationalSpecialCases(struct OFRationalNumberStruct *r, ofr_unsigne
     if (numerator == 0) {
         r->numerator = 0;
         r->denominator = 0;
+        BOOL lop = r->lop == 1; // Work around for <bug:///86450> (Clang static analyzer false positive after assigning to bit field)
         r->negative = (r->lop && negative)?1:0;   // Only approximate zeroes can be negative
+        r->lop = lop ? 1 : 0; // Work around for <bug:///86450> (Clang static analyzer false positive after assigning to bit field)
         return YES;
     }
     
@@ -358,7 +360,8 @@ static BOOL OFRationalSpecialCases(struct OFRationalNumberStruct *r, ofr_unsigne
 static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_unsigned_wide numerator, ofr_unsigned_wide denominator, int exponent, BOOL negative)
 {
     //NSLog(@"OFRationalFromPartsExp(%lld, %lld, %d, %s)", numerator, denominator, exponent, negative?"neg":"pos");
-    
+    OBASSERT(r->lop == 0 || r->lop == 1, @"Must pre-initialize lop");
+
 #if 0 // clang notices these are dead code since the arguments are unsigned
     if (numerator < 0) {
         numerator = -numerator;
@@ -386,7 +389,7 @@ static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_unsigne
     
     numerator /= d;
     denominator /= d;
-    
+
     while(exponent != 0 || numerator > OFR_DENOMINATOR_MAX || denominator > OFR_DENOMINATOR_MAX) {
         unsigned int numeratorWidth, denominatorWidth;
         numeratorWidth = ofr_width(numerator);
@@ -414,8 +417,11 @@ static void OFRationalFromPartsExp(struct OFRationalNumberStruct *r, ofr_unsigne
     /* We know that both the numerator and the denominator are <= OFR_DENOMINATOR_MAX (that's the termination condition of the above loop), so this cast is safe. */
     r->numerator = (ofr_component)numerator;
     r->denominator = (ofr_component)denominator;
+    BOOL lop = r->lop == 1;  // Work around for <bug:///86450> (Clang static analyzer false positive after assigning to bit field)
     r->negative = negative?1:0;
+    r->lop = lop ? 1 : 0; // Work around for <bug:///86450> (Clang static analyzer false positive after assigning to bit field)
     /* r->lop is unchanged */
+    OBASSERT(r->lop == 0 || r->lop == 1, @"lop must be clean on exit");
 }
 
 void OFRationalMAdd(struct OFRationalNumberStruct *a, struct OFRationalNumberStruct b, int c)

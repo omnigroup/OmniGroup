@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,6 +36,8 @@
 #import <OmniUI/OUIAnimationSequence.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUI/OUIMenuOption.h>
+#import <OmniUI/OUIMenuController.h>
 #import <OmniUIDocument/OUIDocument.h>
 #import <OmniUIDocument/OUIDocumentPickerDelegate.h>
 #import <OmniUIDocument/OUIDocumentPickerFileItemView.h>
@@ -74,38 +76,16 @@ RCS_ID("$Id$");
 #endif
 
 static NSString * const kActionSheetExportIdentifier = @"com.omnigroup.OmniUI.OUIDocumentPicker.ExportAction";
+static NSString * const kActionSheetPickMoveDestinationScopeIdentifier = @"com.omnigroup.OmniUI.OUIDocumentPicker.PickMoveDestinationScope";
 static NSString * const kActionSheetDeleteIdentifier = @"com.omnigroup.OmniUI.OUIDocumentPicker.DeleteAction";
 
 static NSString * const TopItemsBinding = @"topItems";
 static NSString * const OpenGroupItemsBinding = @"openGroupItems";
 
-@interface OUIDocumentPicker (/*Private*/) <MFMailComposeViewControllerDelegate>
-
-- (void)_updateToolbarItemsAnimated:(BOOL)animated;
-- (void)_updateToolbarItemsEnabledness;
-- (void)_setupTopItemsBinding;
-- (void)_sendEmailWithSubject:(NSString *)subject messageBody:(NSString *)messageBody isHTML:(BOOL)isHTML attachmentName:(NSString *)attachmentFileName data:(NSData *)attachmentData fileType:(NSString *)fileType;
-- (void)_deleteWithoutConfirmation:(NSSet *)fileItemsToDelete;
-- (void)_updateFieldsForSelectedFileItem;
-- (void)exportDocument:(id)sender;
-- (void)emailDocumentChoice:(id)sender;
-- (void)sendToApp:(id)sender;
-- (void)printDocument:(id)sender;
-- (void)copyAsImage:(id)sender;
-- (void)sendToCameraRoll:(id)sender;
-- (BOOL)_canUseOpenInWithExportType:(NSString *)exportType;
-- (BOOL)_canUseOpenInWithFileItem:(OFSDocumentStoreFileItem *)fileItem;
-- (void)_applicationDidEnterBackground:(NSNotification *)note;
-- (void)_previewsUpdateForFileItemNotification:(NSNotification *)note;
-- (void)_startRenamingFileItem:(OFSDocumentStoreFileItem *)fileItem;
-- (void)_openGroup:(OFSDocumentStoreGroupItem *)groupItem andEditTitle:(BOOL)editTitle;
-- (void)_revealAndActivateNewDocumentFileItem:(OFSDocumentStoreFileItem *)createdFileItem completionHandler:(void (^)(void))completionHandler;
+@interface OUIDocumentPicker () <MFMailComposeViewControllerDelegate>
 
 @property(nonatomic,copy) NSSet *topItems;
 @property(nonatomic,copy) NSSet *openGroupItems;
-- (void)_propagateItems:(NSSet *)items toScrollView:(OUIDocumentPickerScrollView *)scrollView withCompletionHandler:(void (^)(void))completionHandler;
-- (void)_performDelayedItemPropagationWithCompletionHandler:(void (^)(void))completionHandler;
-- (void)_flushAfterDocumentStoreInitializationActions;
 @property(nonatomic,strong) NSMutableDictionary *openInMapCache;
 
 @property(nonatomic,readonly) BOOL canPerformActions;
@@ -146,9 +126,6 @@ static NSString * const OpenGroupItemsBinding = @"openGroupItems";
     NSSet *_openGroupItems;
     
     OUIDocumentPickerDragSession *_dragSession;
-    
-    BOOL _rescanForPresentedItemDidChangeRunning;
-    BOOL _presentedItemDidChangeCalledWhileRescanning;
 }
 
 static id _commonInit(OUIDocumentPicker *self)
@@ -399,8 +376,8 @@ static id _commonInit(OUIDocumentPicker *self)
             [duplicateFileItems addObject:duplicateFileItem];
             
             // Copy the previews for the original file item to be the previews for the duplicate.
-            [OUIDocumentPreview cachePreviewImagesForFileURL:duplicateFileItem.fileURL date:duplicateFileItem.date
-                                    byDuplicatingFromFileURL:fileItem.fileURL date:fileItem.date];
+            [OUIDocumentPreview cachePreviewImagesForFileURL:duplicateFileItem.fileURL date:duplicateFileItem.fileModificationDate
+                                    byDuplicatingFromFileURL:fileItem.fileURL date:fileItem.fileModificationDate];
 
         }];
     }
@@ -1036,19 +1013,55 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     if (!self.canPerformActions)
         return;
 
+    OUIActionSheet *actionSheet = [[OUIActionSheet alloc] initWithIdentifier:kActionSheetExportIdentifier];
+
+    // "Move to" for each scope that isn't the selected scope
+    if ([_documentStore.scopes count] > 1) {
+        NSMutableArray *otherScopes = [_documentStore.scopes mutableCopy];
+        [otherScopes removeObject:self.selectedScope];
+        
+        [otherScopes sortUsingComparator:^NSComparisonResult(OFSDocumentStoreScope *scope1, OFSDocumentStoreScope *scope2) {
+            // Put the local scope last
+            BOOL isLocal1 = ([scope1 isKindOfClass:[OFSDocumentStoreLocalDirectoryScope class]]);
+            BOOL isLocal2 = ([scope2 isKindOfClass:[OFSDocumentStoreLocalDirectoryScope class]]);
+            if (isLocal1 ^ isLocal2) {
+                return isLocal1 ? NSOrderedAscending : NSOrderedDescending;
+            }
+            
+            // Otherwise, sort scopes by their display name
+            return [scope1.displayName localizedStandardCompare:scope2.displayName];
+        }];
+        
+        if ([otherScopes count] == 1) {
+            OFSDocumentStoreScope *otherScope = [otherScopes lastObject];
+            [actionSheet addButtonWithTitle:[otherScope moveToActionLabelWhenInList:NO] forAction:^{
+                [self _moveSelectedDocumentsToScope:otherScope];
+            }];
+        } else {
+            [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Move to...", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet button title") forAction:^{
+                [self _showMoveMenuWithScopes:otherScopes fromSender:sender];
+            }];
+        }
+    }
+
+    if (self.selectedFileItems.count > 1) {
+        [[OUIAppController controller] showActionSheet:actionSheet fromSender:sender animated:YES];
+        return;
+    }
+
     OFSDocumentStoreFileItem *fileItem = self.singleSelectedFileItem;
     if (!fileItem){
         OBASSERT_NOT_REACHED("Make this button be disabled");
         return;
     }
-    
+
     // Make sure selected item is in non-conflict state.
     if (fileItem.hasUnresolvedConflicts) {
         OBFinishPorting; // We no longer have iCloud; should we get rid of this property if we always auto-resolve conflicts?
 
         return;
     }
-    
+
     // Make sure selected item is fully downloaded.
     if (!fileItem.isDownloaded) {
         OUIAlert *alert = [[OUIAlert alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Cannot Export Item", @"OmniUIDocument", OMNI_BUNDLE, @"item not fully downloaded error title")
@@ -1068,7 +1081,6 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     if (url == nil)
         return;
 
-    OUIActionSheet *actionSheet = [[OUIActionSheet alloc] initWithIdentifier:kActionSheetExportIdentifier];
     id <OUIDocumentPickerDelegate> delegate = _weak_delegate;
     
     BOOL canExport = [[OFPreferenceWrapper sharedPreferenceWrapper] boolForKey:@"OUIExportEnabled"];
@@ -1474,9 +1486,14 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     
     [self scrollToTopAnimated:NO];
     
-    [self addAfterDocumentStoreInitializationAction:^(OUIDocumentPicker *blockSelf){
-        blockSelf->_documentStoreFilter.filterPredicate = filter.predicate;
-    }];
+    // If we can do this right now, we should, to avoid displaying and then applying a filter, prompting fears of lost data
+    if (!_documentStore) {
+        [self addAfterDocumentStoreInitializationAction:^(OUIDocumentPicker *blockSelf){
+            blockSelf->_documentStoreFilter.filterPredicate = filter.predicate;
+        }];
+    } else {
+        _documentStoreFilter.filterPredicate = filter.predicate;
+    }
 
     // The delegate likely wants to update the title displayed in the document picker toolbar.
     [self updateTitle];
@@ -1952,14 +1969,16 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
             _exportBarButtonItem.enabled = NO;
             _duplicateDocumentBarButtonItem.enabled = NO;
             _deleteBarButtonItem.enabled = NO;
-        }
-        else if (count == 1) {
-            _exportBarButtonItem.enabled = [[self availableExportTypesForFileItem:[self singleSelectedFileItem] serverAccount:nil exportOptionsType:OUIExportOptionsNone] count];
-            _duplicateDocumentBarButtonItem.enabled = YES;
-            _deleteBarButtonItem.enabled = YES;
-        }
-        else if (count > 1) {
-            _exportBarButtonItem.enabled = NO;
+        } else {
+            BOOL canExport;
+            if ([_documentStore.scopes count] > 1)
+                canExport = YES;
+            else if (count == 1)
+                canExport = ([[self availableExportTypesForFileItem:[self singleSelectedFileItem] serverAccount:nil exportOptionsType:OUIExportOptionsNone] count] > 0);
+            else
+                canExport = NO;
+
+            _exportBarButtonItem.enabled = canExport;
             _duplicateDocumentBarButtonItem.enabled = YES;
             _deleteBarButtonItem.enabled = YES;
         }
@@ -2152,6 +2171,37 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     [_renameViewController removeFromParentViewController];
     
     _renameViewController = nil;
+}
+
+- (void)_moveSelectedDocumentsToScope:(OFSDocumentStoreScope *)scope;
+{
+    [self _beginIgnoringDocumentsDirectoryUpdates];
+    [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+    [_documentStore moveFileItems:self.selectedFileItems toScope:scope completionHandler:^(OFSDocumentStoreFileItem *failingItem, NSError *errorOrNil){
+        [self clearSelection:YES];
+        [self _endIgnoringDocumentsDirectoryUpdates];
+        [self _performDelayedItemPropagationWithCompletionHandler:^{
+            [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+            if (failingItem)
+                OUI_PRESENT_ALERT(errorOrNil);
+        }];
+    }];
+}
+
+- (void)_showMoveMenuWithScopes:(NSArray *)scopes fromSender:(id)sender;
+{
+    NSMutableArray *options = [NSMutableArray new];
+    
+    for (OFSDocumentStoreScope *scope in scopes) {
+        OUIMenuOption *option = [[OUIMenuOption alloc] initWithTitle:[scope moveToActionLabelWhenInList:YES] image:nil action:^{
+            [self _moveSelectedDocumentsToScope:scope];
+        }];
+        [options addObject:option];
+    }
+    
+    OUIMenuController *menu = [[OUIMenuController alloc] initWithOptions:options];
+    menu.title = NSLocalizedStringFromTableInBundle(@"Move to...", @"OmniUIDocument", OMNI_BUNDLE, @"Menu popover title");
+    [menu showMenuFromBarItem:_exportBarButtonItem];
 }
 
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView dragWithRecognizer:(OUIDragGestureRecognizer *)recognizer;

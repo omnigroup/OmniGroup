@@ -38,8 +38,8 @@
 				<true/>
 				<key>OSUCheckInterval</key>
 				<integer>168</integer>
-                                <key>OSUIgnoredUpdates</key>
-                                <array/>
+				 <key>OSUIgnoredUpdates</key>
+				 <array/>
 				<key>OSUIncludeHardwareDetails</key>
 				<true/>
 				<key>OSUVisibleTracks</key>
@@ -70,8 +70,8 @@
 				<string>anchor:updatepreferences</string>
 				<key>icon</key>
 				<string>OSUPreferences</string>
-                                <key>identifier</key>
-                                <string>$(OMNI_BUNDLE_IDENTIFIER).preferences</string>
+				<key>identifier</key>
+				<string>$(OMNI_BUNDLE_IDENTIFIER).preferences</string>
 				<key>nib</key>
 				<string>OSUPreferences</string>
 				<key>ordering</key>

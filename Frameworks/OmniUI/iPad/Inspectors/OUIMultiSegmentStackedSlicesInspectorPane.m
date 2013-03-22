@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,16 +22,7 @@ RCS_ID("$Id$");
 }
 @end
 
-
-@interface OUIMultiSegmentStackedSlicesInspectorPane ()
-- (void)_changeSegment:(id)sender;
-@end
-
 @implementation OUIMultiSegmentStackedSlicesInspectorPane
-
-@synthesize segments = _segments;
-@synthesize selectedSegment = _selectedSegment;
-@synthesize titleSegmentedControl = _titleSegmentedControl;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
@@ -75,6 +66,21 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
+- (void)setSelectedSegment:(OUIInspectorSegment *)segment;
+{
+    if (segment == _selectedSegment)
+        return;
+    
+    [_selectedSegment release];
+    _selectedSegment = [segment retain];
+    
+    self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:_selectedSegment.title style:UIBarButtonItemStyleBordered target:nil action:NULL] autorelease];
+    
+    [self.titleSegmentedControl setSelectedSegmentIndex:[_segments indexOfObject:segment]];
+    self.availableSlices = segment.slices;
+    [self setToolbarItems:_toolbarItemsForSegment(_selectedSegment) animated:NO];
+}
+
 - (NSArray *)makeAvailableSegments; // For subclasses
 {
     return [NSArray array];
@@ -107,23 +113,7 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
     [self _changeSegment:nil];
 }
 
-#pragma mark -
-#pragma mark Private
-
-- (void)setSelectedSegment:(OUIInspectorSegment *)segment;
-{
-    if (segment == _selectedSegment)
-        return;
-    
-    [_selectedSegment release];
-    _selectedSegment = [segment retain];
-    
-    self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:_selectedSegment.title style:UIBarButtonItemStyleBordered target:nil action:NULL] autorelease];
- 
-    [self.titleSegmentedControl setSelectedSegmentIndex:[_segments indexOfObject:segment]];
-    self.availableSlices = segment.slices;
-    [self setToolbarItems:_toolbarItemsForSegment(_selectedSegment) animated:NO];
-}
+#pragma mark - Private
 
 - (void)_changeSegment:(id)sender;
 {

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,9 +11,7 @@
 #import <Foundation/NSRange.h>
 #import <OmniAppKit/OAFindPattern.h>
 
-@class NSView;
 @class NSString;
-@class OFRegularExpression;
 
 @protocol OAFindControllerTarget
 - (BOOL)findPattern:(id <OAFindPattern>)pattern backwards:(BOOL)backwards wrap:(BOOL)wrap;

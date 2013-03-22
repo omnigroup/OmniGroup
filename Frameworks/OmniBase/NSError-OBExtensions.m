@@ -129,6 +129,11 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
     return NO;
 }
 
+- (BOOL)causedByMissingFile;
+{
+    return [self hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] || [self hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError];
+}
+
 - initWithPropertyList:(NSDictionary *)propertyList;
 {
     NSString *domain = [propertyList objectForKey:@"domain"];
@@ -145,7 +150,7 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
             
             // This is lossy, but once something is plist-ified, we can't be sure where it came from.
             if ([key isEqualToString:NSUnderlyingErrorKey])
-                valueObject = [[[NSError alloc] initWithPropertyList:valueObject] autorelease];
+                valueObject = [[NSError alloc] initWithPropertyList:valueObject];
             else if ([key isEqualToString:NSRecoveryAttempterErrorKey] && [valueObject isKindOfClass:[NSString class]])
                 continue; // We can't turn an NSString back into a valid -recoveryAttempter object
             
@@ -242,6 +247,50 @@ static id _mapUserInfoValueToPlistValue(id valueObject)
         [plist setObject:_mapUserInfoValueToPlistValue(userInfo) forKey:@"userInfo"];
     
     return plist;
+}
+
+static NSString * const OFSuppressedErrorStack = @"com.omnigroup.OmniFoundation.SuppressedErrorStack"; // array of dictionaries
+static NSString * const OFSuppressedErrorDomain = @"domain";
+static NSString * const OFSuppressedErrorCode = @"code";
+
++ (void)suppressingLogsWithUnderlyingDomain:(NSString *)domain code:(NSInteger)code action:(void (^)(void))action;
+{
+    NSMutableDictionary *threadInfo = [[NSThread currentThread] threadDictionary];
+    NSMutableArray *suppressionStack = threadInfo[OFSuppressedErrorStack];
+    if (!suppressionStack) {
+        suppressionStack = [NSMutableArray new];
+        threadInfo[OFSuppressedErrorStack] = suppressionStack;
+    }
+    NSDictionary *suppression = @{OFSuppressedErrorDomain:domain, OFSuppressedErrorCode:@(code)};
+    [suppressionStack addObject:suppression];
+    
+    action();
+    
+    OBASSERT([suppressionStack lastObject] == suppression);
+    [suppressionStack removeLastObject];
+    
+    if ([suppressionStack count] == 0)
+        [threadInfo removeObjectForKey:OFSuppressedErrorStack];
+}
+
+- (void)log:(NSString *)format, ...;
+{
+    NSMutableArray *suppressionStack = [[NSThread currentThread] threadDictionary][OFSuppressedErrorStack];
+    if (suppressionStack) {
+        NSString *domain = self.domain;
+        NSNumber *code = @(self.code);
+        for (NSDictionary *suppression in suppressionStack) {
+            if ([domain isEqual:suppression[OFSuppressedErrorDomain]] && [code isEqual:suppression[OFSuppressedErrorCode]])
+                return;
+        }
+    }
+    
+    va_list args;
+    va_start(args, format);
+    NSString *reason = [[NSString alloc] initWithFormat:format arguments:args];
+    va_end(args);
+    
+    NSLog(@"%@: %@", reason, [self toPropertyList]);
 }
 
 @end

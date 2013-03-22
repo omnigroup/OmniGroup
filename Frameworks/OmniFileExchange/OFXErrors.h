@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,10 +13,14 @@ enum {
     // OFXServerAccountType account validation
     OFXServerAccountCannotLoad = 1,
     OFXServerAccountNotConfigured,
-    //OFXServerAccountNoInternetConnection, Check for NSURLErrorDomain/NSURLErrorNotConnectedToInternet
     OFXServerAccountCertificateTrustIssue,
     
-    OFXAccountAgentCannotStart,
+    OFXLocalAccountDocumentsDirectoryMissing,
+    OFXAgentNotStarted,
+    OFXFileNotContainedInAnyAccount,
+    OFXNoFileForURL,
+    OFXAccountRepositoryCorrupt,
+    OFXAccountRepositoryTooNew,
     
     // Syncing
     OFXAccountCannotBeAdded,
@@ -29,6 +33,10 @@ enum {
     OFXDownloadNotNeeded,
     OFXAccountNotPreparedForRemoval, // Internal and should never been seen under properly working conditions
     OFXAccountLocalDocumentsDirectoryInvalidForDeletion, // Returned by +[OFXServerAccount deleteGeneratedLocalDocumentsURL:error:] if the passed in URL looks suspicious
+    OFXNoContainer,
+    
+    // Document store scope
+    OFXFileItemNotDownloaded,
 };
 
 extern NSString * const OFXErrorDomain;

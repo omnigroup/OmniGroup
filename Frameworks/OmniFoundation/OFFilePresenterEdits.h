@@ -20,7 +20,7 @@
  The normal usage pattern for this is that a presenter would have a 'edits' property pointing to an instance of this class if it is in the middle of -relinquishPresentedItemToWriter:.
  */
 
-typedef void (^OFFilePresenterEditMoveHandler)(id presenter, NSURL *originalURL, NSDate *originalDate);
+typedef void (^OFFilePresenterEditMoveHandler)(id presenter, NSURL *originalURL);
 typedef void (^OFFilePresenterEditHandler)(id presenter);
 
 @interface OFFilePresenterEdits : NSObject
@@ -38,12 +38,9 @@ typedef void (^OFFilePresenterEditHandler)(id presenter);
 - (void)presenter:(id)presenter accommodateDeletion:(OFFilePresenterEditHandler)handler;
 @property(nonatomic,readonly) BOOL hasAccommodatedDeletion;
 
-// Set in -presentedItemDidChange:
+// Call from -presentedItemDidChange. Will call the handler immediately unless the receiver is relinquished to a writer, in the most recenly passed handler will be called when reacquiring. NOTE: NSFileCoordinator will sometimes spam us with extra -presentedItemDidChange messages. This class doesn't attempt to ignore them (which is difficult since the file modification date might not advance if the edit is fast enough).
 - (void)presenter:(id)presenter changed:(OFFilePresenterEditHandler)handler;
 
-- (void)presenter:(id)presenter didMoveFromURL:(NSURL *)originalURL date:(NSDate *)originalDate toURL:(NSURL *)destinationURL handler:(OFFilePresenterEditMoveHandler)handler;
-
-// Call this inside a coordinated write to the file and don't want to hear about change notifications.  Radar 12455224 describes some scenarios where a presenters can get told about changes made to it when it was the file presenter passed to NSFileCoordinator (which should not receive the notifications).
-- (void)updateModificationDate;
+- (void)presenter:(id)presenter didMoveFromURL:(NSURL *)originalURL toURL:(NSURL *)destinationURL handler:(OFFilePresenterEditMoveHandler)handler;
 
 @end

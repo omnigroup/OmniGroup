@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 
 #import <Foundation/NSIndexSet.h>
 
+@class NSSet;
+
 @interface NSIndexSet (OFExtensions)
 
 - (NSString *)rangeString;
@@ -19,6 +21,8 @@
 - (NSRange)rangeGreaterThanOrEqualToIndex:(NSUInteger)index;
 
 - (BOOL)isEmpty;
+
+- (NSSet *)setByPerformingBlock:(id (^)(NSUInteger index))blk;
 
 @end
 

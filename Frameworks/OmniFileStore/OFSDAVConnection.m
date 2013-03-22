@@ -12,6 +12,7 @@
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSDAVOperation.h>
 #import <OmniFileStore/OFSFileInfo.h>
+#import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/OFXMLDocument.h>
 #import <OmniFoundation/OFXMLCursor.h>
 #import <OmniFoundation/OFXMLString.h>
@@ -430,7 +431,7 @@ static NSString *OFSDAVDepthName(OFSDAVDepth depth)
 #ifdef OMNI_ASSERTIONS_ON
         {
             NSURL *foundURL = [fileInfo originalURL];
-            if (!OFISEQUAL(url, foundURL)) {
+            if (!OFSURLEqualsURL(url, foundURL)) {
                 // The URLs will legitimately not be equal if we got a redirect -- don't spuriously warn in that case.
                 if (OFNOTEQUAL([OFSFileInfo nameForURL:url], [OFSFileInfo nameForURL:foundURL])) {
                     OBASSERT_NOT_REACHED("Any issues with encoding normalization or whatnot?");
@@ -515,16 +516,17 @@ static NSString *OFSDAVDepthName(OFSDAVDepth depth)
 
 typedef void (^OFSAddPredicate)(NSMutableURLRequest *request, NSURL *sourceURL, NSURL *destURL);
 
-- (void)_moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL overwrite:(BOOL)overwrite predicate:(OFSAddPredicate)predicate completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
+// COPY supports Depth=0 as well, but we haven't neede that yet.
+- (void)_moveOrCopy:(NSString *)method sourceURL:(NSURL *)sourceURL toURL:(NSURL *)destURL overwrite:(BOOL)overwrite predicate:(OFSAddPredicate)predicate completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 {
     completionHandler = [completionHandler copy];
 
     if (OFSFileManagerDebug > 0)
-        NSLog(@"DAV operation: MOVE %@ to %@, overwrite:%d", sourceURL, destURL, overwrite);
+        NSLog(@"DAV operation: %@ %@ to %@, overwrite:%d", method, sourceURL, destURL, overwrite);
     
     NSMutableURLRequest *request = [self _requestForURL:sourceURL];
     OFSDAVAddUserAgentStringToRequest(self, request);
-    [request setHTTPMethod:@"MOVE"];
+    [request setHTTPMethod:method];
     
     // .Mac WebDAV accepts the just path the portion as the Destination, but normal OSXS doesn't.  It'll give a 400 Bad Request if we try that.  So, we send the full URL as the Destination.
     NSString *destination = [destURL absoluteString];
@@ -536,7 +538,7 @@ typedef void (^OFSAddPredicate)(NSMutableURLRequest *request, NSURL *sourceURL, 
     
     [self _runRequestExpectingEmptyResultData:request completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
         if (resultURL) {
-            completionHandler(nil);
+            completionHandler(resultURL, nil);
             return;
         }
     
@@ -553,19 +555,14 @@ typedef void (^OFSAddPredicate)(NSMutableURLRequest *request, NSURL *sourceURL, 
             
             [self _runRequestExpectingEmptyResultData:request completionHandler:^(NSURL *workaroundResultURL, NSError *workaroundErrorOrNil){
                 if (workaroundResultURL)
-                    completionHandler(nil);
+                    completionHandler(workaroundResultURL, nil);
                 else
-                    completionHandler(workaroundErrorOrNil);
+                    completionHandler(nil, workaroundErrorOrNil);
             }];
         } else {
-            completionHandler(errorOrNil);
+            completionHandler(nil, errorOrNil);
         }
     }];
-}
-
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
-{
-    [self _moveURL:sourceURL toURL:destURL overwrite:YES predicate:nil completionHandler:completionHandler];
 }
 
 static void OFSAddIfPredicateForURLAndETag(NSMutableURLRequest *request, NSURL *url, NSString *ETag)
@@ -583,39 +580,52 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
     }
 }
 
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
+- (void)copyURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 {
-    [self _moveURL:sourceURL toURL:destURL overwrite:overwrite predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
+    // TODO: COPY can return 207 if there is an error copying a sub-resource
+    [self _moveOrCopy:@"COPY" sourceURL:sourceURL toURL:destURL overwrite:overwrite predicate:^(NSMutableURLRequest *request, NSURL *copySourceURL, NSURL *copyDestURL) {
+        OFSAddIfPredicateForURLAndETag(request, copySourceURL, ETag);
+    } completionHandler:completionHandler];
+}
+
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
+{
+    [self _moveOrCopy:@"MOVE" sourceURL:sourceURL toURL:destURL overwrite:YES predicate:nil completionHandler:completionHandler];
+}
+
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
+{
+    [self _moveOrCopy:@"MOVE" sourceURL:sourceURL toURL:destURL overwrite:overwrite predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
         OFSAddIfPredicateForURLAndETag(request, moveSourceURL, ETag);
     } completionHandler:completionHandler];
 }
 
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 {
-    [self _moveURL:sourceURL toURL:destURL overwrite:overwrite predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
+    [self _moveOrCopy:@"MOVE" sourceURL:sourceURL toURL:destURL overwrite:overwrite predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
         OFSAddIfPredicateForURLAndETag(request, moveDestURL, ETag);
     } completionHandler:completionHandler];
 }
 
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 {
-    [self _moveURL:sourceURL toURL:destURL overwrite:overwrite predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
+    [self _moveOrCopy:@"MOVE" sourceURL:sourceURL toURL:destURL overwrite:overwrite predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
         // The untagged list approach is supposed to use the source URI, but Apache 2.4.3 screws up and returns OFS_HTTP_PRECONDITION_FAILED in that case.
         // If we explicitly give the source URL, it works. It may be that Apache is checking based on the path? Anyway, it is no pain to be specific about which resource we think has the lock.
         OFSAddIfPredicateForURLAndLockToken(request, moveSourceURL, lock);
     } completionHandler:completionHandler];
 }
 
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 {
-    [self _moveURL:sourceURL toURL:destURL overwrite:overwrite predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
+    [self _moveOrCopy:@"MOVE" sourceURL:sourceURL toURL:destURL overwrite:overwrite predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
         OFSAddIfPredicateForURLAndLockToken(request, moveDestURL, lock);
     } completionHandler:completionHandler];
 }
 
-- (void)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 {
-    [self _moveURL:sourceURL toURL:destURL overwrite:NO predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
+    [self _moveOrCopy:@"MOVE" sourceURL:sourceURL toURL:destURL overwrite:NO predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
         // "If-None-Match: *" applies to the URL in the command, not the one in the Destination header, but we can write this as a tagged condition list with the "If" header.
         NSString *ifValue = [NSString stringWithFormat:@"<%@> (Not [*])", [moveDestURL absoluteString]];
         [request setValue:ifValue forHTTPHeaderField:@"If"];
@@ -808,14 +818,32 @@ static void OFSDAVAddUserAgentStringToRequest(OFSDAVConnection *manager, NSMutab
             // still, we didn't get an error code, so let it pass
         }
         
-        NSURL *resultLocation = request.URL;
+        NSURL *resultLocation;
         
-        NSArray *redirects = operation.redirects;
-        if ([redirects count]) {
-            NSDictionary *lastRedirect = [redirects lastObject];
-            NSURL *lastLocation = [lastRedirect objectForKey:kOFSRedirectedTo];
-            if (![lastLocation isEqual:resultLocation])
-                resultLocation = lastLocation;
+        // If the response specified a Location header, use that (this will be set to the the Destination for COPY/MOVE, possibly already redirected).
+        NSString *resultLocationString = [operation valueForResponseHeader:@"Location"];
+        if (![NSString isEmptyString:resultLocationString]) {
+            resultLocation = [NSURL URLWithString:resultLocationString];
+            OBASSERT(resultLocation, @"Location header couldn't be parsed as a URL, %@", resultLocationString);
+            
+            // If we couldn't parse the Location header, try the Destination header (for COPY/MOVE). Apache 2.4.3 doesn't properly URI encode the Location header <See https://issues.apache.org/bugzilla/show_bug.cgi?id=54611> (though our patched version does), but hopefully the location we *asked* to move it to will be valid. Note this won't help for PUT <https://issues.apache.org/bugzilla/show_bug.cgi?id=54367> since it doesn't have a destination header. But in this case we'll fall through and use the original URI.
+            NSString *destinationHeader = [request valueForHTTPHeaderField:@"Destination"];
+            if (![NSString isEmptyString:destinationHeader]) {
+                resultLocation = [NSURL URLWithString:destinationHeader];
+            }
+        }
+        
+        if (!resultLocation) {
+            // Otherwise use the original URL, looking up any redirection that happened on it.
+            resultLocation = request.URL;
+        
+            NSArray *redirects = operation.redirects;
+            if ([redirects count]) {
+                NSDictionary *lastRedirect = [redirects lastObject];
+                NSURL *lastLocation = [lastRedirect objectForKey:kOFSRedirectedTo];
+                if (![lastLocation isEqual:resultLocation])
+                    resultLocation = lastLocation;
+            }
         }
         
         completionHandler(resultLocation, nil);

@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -357,7 +357,7 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
     if ((string = [args objectForKey:@"string"])) {
         pattern = [[OAFindPattern alloc] initWithString:string ignoreCase:ignoreCase wholeWord:wholeWords backwards:NO];
     } else if ((string = [args objectForKey:@"regexp"])) {
-        pattern = [[OARegExFindPattern alloc] initWithString:string selectedSubexpression:SELECT_FULL_EXPRESSION backwards:NO];
+        pattern = [[OARegExFindPattern alloc] initWithPattern:string selectedCaptureGroup:SELECT_FULL_EXPRESSION backwards:NO];
     } else {
 	[NSException raise:NSInvalidArgumentException format:@"No 'string' or 'regexp' specified."];
         return nil;

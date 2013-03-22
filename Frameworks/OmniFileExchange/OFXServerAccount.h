@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,6 +33,8 @@
 @property(nonatomic,readonly) NSURL *localDocumentsURL; // For document syncing; not needed for simple WebDAV access
 
 @property(nonatomic,copy) NSString *displayName;
+@property(nonatomic,readwrite) BOOL isCloudSyncEnabled;
+@property(nonatomic,readonly) BOOL isImportExportEnabled; // Always YES for now
 
 // The credential service identifier and credentals get set by validating the account via OFXServerAccountType
 // NSURLProtectionSpace cannot be archived in 10.8 (though it conforms the resulting archive data can't be unarchived) so OFXServerAccount just records a service identifier. In 10.7 NSURLProtectionSpace didn't even claim to conform to NSCoding.
@@ -48,5 +50,7 @@
 @property(nonatomic,readonly) NSString *accountDetailsString;
 
 @property(nonatomic,readonly) NSDictionary *propertyList;
+
+@property(nonatomic,retain) NSError *lastError;
 
 @end

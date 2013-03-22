@@ -1,4 +1,4 @@
-// Copyright 1997-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -382,6 +382,21 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
         return [NSSet setWithObject:singleResult];
     else
         return [NSSet set];
+}
+
+- (NSArray *)flattenedArray;
+{
+    NSMutableArray *result = [NSMutableArray array];
+    
+    for (id anObj in self) {
+        if ([anObj isKindOfClass:[NSArray class]]) {
+            [result addObjectsFromArray:[anObj flattenedArray]];
+        } else {
+            [result addObject:anObj];
+        }
+    }
+    
+    return result;
 }
 
 - (NSArray *)select:(OFPredicateBlock)predicate;

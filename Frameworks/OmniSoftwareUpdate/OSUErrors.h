@@ -1,4 +1,4 @@
-// Copyright 2007,2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007,2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,20 +10,21 @@
 #import <OmniBase/NSError-OBExtensions.h>
 
 enum {
-    /* Generic error */
+    // Generic error   
     OSUUnableToUpgrade = 1,                               // skip zero since it means 'no error' to AppleScript
     
-    /* Problems fetching the list of available updates */
+    // Problems fetching the list of available updates
     OSUUnableToFetchSoftwareUpdateInformation,
     OSUUnableToParseSoftwareUpdateData,
     OSUUnableToParseSoftwareUpdateItem,
     
-    /* Problems retrieving the actual download */
+    // Problems retrieving the actual download
     OSUDownloadAlreadyInProgress,
     OSUDownloadFailed,
     
-    /* Problems installing the downloaded update */
-    OSUUnableToMountDiskImage,                            // hdiutil failures
+    // Problems installing the downloaded update
+    OSUPreflightNotPerformed,                             // programmer error, preflight wasn't run
+    OSUCannotUninstallPrivilegedHelper,                   // there are other active connections to the privileged helper
     OSUUnableToProcessPackage,                            // other failures (tar, etc.)
     OSUBadInstallationDirectory,                          // There's something wrong with the destination location
     
@@ -32,6 +33,9 @@ enum {
     OSULocalNetworkFailure,
     OSUServerError,
     OSUExceptionRaised,
+    
+    // XPC Service communication
+    OSURequiredArgumentMissing,
 };
 
 extern NSString * const OSUErrorDomain;

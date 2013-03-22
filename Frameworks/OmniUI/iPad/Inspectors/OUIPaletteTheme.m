@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -96,9 +96,5 @@ RCS_ID("$Id$");
     [_colors release];
     [super dealloc];
 }
-
-@synthesize identifier = _identifier;
-@synthesize displayName = _displayName;
-@synthesize colors = _colors;
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,23 +17,14 @@
  */
 
 @interface OFXMLParser : OFObject
-{
-@private
-    CFStringEncoding _encoding;
-    NSString *_versionString;
-    BOOL _standalone;
-    NSArray *_loadWarnings;
-    
-    struct _OFMLParserState *_state; // Only set while parsing.
-}
 
 - (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject <OFXMLParserTarget> *)target error:(NSError **)outError;
 
-@property(readonly) CFStringEncoding encoding;
-@property(readonly) NSString *versionString;
-@property(readonly) BOOL standalone;
-@property(readonly) NSArray *loadWarnings;
+@property(nonatomic,readonly) CFStringEncoding encoding;
+@property(nonatomic,readonly) NSString *versionString;
+@property(nonatomic,readonly) BOOL standalone;
+@property(nonatomic,readonly) NSArray *loadWarnings;
 
-@property(readonly) NSUInteger elementDepth;
+@property(nonatomic,readonly) NSUInteger elementDepth;
 
 @end

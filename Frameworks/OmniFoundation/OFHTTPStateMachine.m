@@ -1,4 +1,4 @@
-// Copyright 2012 The Omni Group. All rights reserved.
+// Copyright 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -159,7 +159,10 @@ static NSString * const HTTPErrorDomain = @"org.w3.http";
     NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
     NSString *challengeMethod = [protectionSpace authenticationMethod];
 
-    if ([challenge previousFailureCount]) {
+    STATE_LOG(1, @"challenge=%@ realm=%@ method=%@", [protectionSpace host], [protectionSpace realm], [protectionSpace authenticationMethod]);
+
+    // Have a theory that we're getting the same challenge when the responses go (1)unauthorized,(2)redirect,(3)unauthorized, but can't repro. Trying the "> 1" to test and added more logging
+    if ([challenge previousFailureCount] > 1) {
         [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
     } else if ([challengeMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
         SecTrustRef trustRef = [protectionSpace serverTrust];

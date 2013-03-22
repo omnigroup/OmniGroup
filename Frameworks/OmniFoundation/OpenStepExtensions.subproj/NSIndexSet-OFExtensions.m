@@ -148,4 +148,17 @@ static NSRange rangeFromString(NSString *aString, NSIndexSet *errSelf, SEL errCm
     return [self count] == 0;
 }
 
+- (NSSet *)setByPerformingBlock:(id (^)(NSUInteger index))blk;
+{
+    NSMutableSet *set = [NSMutableSet setWithCapacity:self.count];
+    
+    [self enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
+        id result = blk(idx);
+        if (!OFISNULL(result))
+            [set addObject:result];
+    }];
+    
+    return set;
+}
+
 @end

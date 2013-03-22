@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,11 +11,12 @@
 #import <OmniFileStore/OFSDocumentStoreScope.h>
 
 #import "OFSDocumentStoreItem-Internal.h"
+#import <OmniFileStore/OFSDocumentStoreScope-Subclass.h> // For our scopeInfo property.
 
 RCS_ID("$Id$");
 
 NSString * const OFSDocumentStoreItemNameBinding = @"name";
-NSString * const OFSDocumentStoreItemDateBinding = @"date";
+NSString * const OFSDocumentStoreItemUserModificationDateBinding = @"userModificationDate";
 
 NSString * const OFSDocumentStoreItemReadyBinding = @"ready";
 
@@ -136,14 +137,9 @@ static NSDate *_dayOffset(NSDate *date, NSInteger offset)
 
 #pragma mark - Internal
 
-- (BOOL)_hasBeenInvalidated;
-{
-    return _weak_scope == nil;
-}
-
 - (void)_invalidate;
 {
-    OBPRECONDITION(_weak_scope != nil);  // Shouldn't be keeping references to previously invalidated items, so double invalidation signals a problem
+    // If we are getting called due to our scope being deallocated, this will already be cleared. Weak pointers to an object get cleared before the object's -dealloc is run.
     _weak_scope = nil;
 }
 

@@ -10,3 +10,6 @@ INFOPLIST_FILE =
 
 // And include any private headers for just *our* library
 HEADER_SEARCH_PATHS = $(value) $(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME)-Private $(TARGET_BUILD_DIR)/include
+
+// We want to sign all tools
+CODE_SIGN_IDENTITY = $(OMNI_MAC_CODE_SIGN_IDENTITY)

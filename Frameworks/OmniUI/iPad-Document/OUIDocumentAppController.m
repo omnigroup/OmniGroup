@@ -14,7 +14,6 @@
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniFileStore/Errors.h>
-#import <OmniFileStore/OFSDocumentInbox.h>
 #import <OmniFileStore/OFSDocumentStore.h>
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
 #import <OmniFileStore/OFSDocumentStoreLocalDirectoryScope.h>
@@ -22,9 +21,11 @@
 #import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
+#import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFBindingPoint.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFUTI.h>
+#import <OmniFoundation/OFNull.h>
 #import <OmniUI/OUIAboutPanel.h>
 #import <OmniUI/OUIActivityIndicator.h>
 #import <OmniUI/OUIAlert.h>
@@ -46,6 +47,7 @@
 #import "OUICloudSetupViewController.h"
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentAppController-Internal.h"
+#import "OUIDocumentInbox.h"
 #import "OUIDocumentPicker-Internal.h"
 #import "OUIDocumentPickerItemView-Internal.h"
 #import "OUIDocumentPreviewGenerator.h"
@@ -77,11 +79,6 @@ static NSString * const OpenAction = @"open";
 @implementation OUIDocumentAppController
 {
     UIWindow *_window;
-    OUIMainViewController *_mainViewController;
-    
-    OUIDocumentPicker *_documentPicker;
-    UIBarButtonItem *_appMenuBarItem;
-    OUIMenuController *_appMenuController;
     
     dispatch_once_t _roleByFileTypeOnce;
     NSDictionary *_roleByFileType;
@@ -90,13 +87,8 @@ static NSString * const OpenAction = @"open";
     
     UILabel *_documentTitleLabel;
     UITextField *_documentTitleTextField;
-    UIBarButtonItem *_documentTitleToolbarItem;
     BOOL _hasAttemptedRename;
-    
-    UIBarButtonItem *_closeDocumentBarButtonItem;
-    OUIUndoBarButtonItem *_undoBarButtonItem;
-    UIBarButtonItem *_infoBarButtonItem;
-    
+
     OUIDocument *_document;
     
     OUIShieldView *_shieldView;
@@ -131,10 +123,10 @@ static NSString * const OpenAction = @"open";
     _undoBarButtonItem.undoBarButtonItemTarget = nil;
 }
 
+// UIApplicationDelegate has an @optional window property. Our superclass conforms to this protocol, so clang assumes we already have the property, it seems (even though we redeclare it).
 @synthesize window = _window;
-@synthesize documentPicker = _documentPicker;
-@synthesize appMenuController = _appMenuController;
 
+@synthesize appMenuBarItem = _appMenuBarItem;
 - (UIBarButtonItem *)appMenuBarItem;
 {
     if (!_appMenuBarItem) {
@@ -152,6 +144,7 @@ static NSString * const OpenAction = @"open";
     return _appMenuBarItem;
 }
 
+@synthesize closeDocumentBarButtonItem = _closeDocumentBarButtonItem;
 - (UIBarButtonItem *)closeDocumentBarButtonItem;
 {
     if (!_closeDocumentBarButtonItem) {
@@ -165,6 +158,7 @@ static NSString * const OpenAction = @"open";
 }
 
 // OmniGraffle overrides -undoBarButtonItem to return an item from its xib
+@synthesize undoBarButtonItem = _undoBarButtonItem;
 - (OUIUndoBarButtonItem *)undoBarButtonItem;
 {
     if (!_undoBarButtonItem) {
@@ -174,6 +168,7 @@ static NSString * const OpenAction = @"open";
     return _undoBarButtonItem;
 }
 
+@synthesize infoBarButtonItem = _infoBarButtonItem;
 - (UIBarButtonItem *)infoBarButtonItem;
 {
     if (!_infoBarButtonItem) {
@@ -393,12 +388,118 @@ static NSString * const OpenAction = @"open";
         if (![_previewGenerator shouldOpenDocumentWithFileItem:duplicateFileItem])
             return;
         
-        [self _openDocument:duplicateFileItem animation:OUIDocumentAnimationTypeZoom showActivityIndicator:YES];
+        [self openDocument:duplicateFileItem animation:OUIDocumentAnimationTypeZoom showActivityIndicator:YES];
         
         if (completionHandler)
             completionHandler(duplicateFileItem);
     }];
 #endif
+}
+
+- (void)openDocument:(OFSDocumentStoreFileItem *)fileItem animation:(OUIDocumentAnimationType)animation showActivityIndicator:(BOOL)showActivityIndicator;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(fileItem);
+    
+    void (^onFail)(void) = ^{
+        // The launch document failed to load -- don't leave the user with no document picker and no open document!
+        if (_mainViewController.innerViewController != self.documentPicker)
+            [self _fadeInDocumentPickerScrollingToFileItem:fileItem];
+        _isOpeningURL = NO;
+    };
+    onFail = [onFail copy];
+    
+    // Need to provoke download, and if this is a launch-time open, we need to fall back to the document picker instead. Maybe we shouldn't actually provoke download in the launch time case, really. The user might want to tap another document and not compete for download bandwidth.
+    if (!fileItem.isDownloaded) {
+        NSError *error = nil;
+        if (![fileItem requestDownload:&error])
+            OUI_PRESENT_ERROR(error);
+        onFail();
+        return;
+    }
+    
+    // If we were last launched with a document that is now in conflict, don't automatically open it.
+    if (fileItem.hasUnresolvedConflicts) {
+        onFail();
+        return;
+    }
+    
+    OUIActivityIndicator *activityIndicator = nil;
+    OUIDocumentPickerFileItemView *fileItemView = nil;
+    if (animation == OUIDocumentAnimationTypeZoom) {
+        fileItemView = [self.documentPicker.activeScrollView fileItemViewForFileItem:fileItem];
+        OBASSERT(fileItemView);
+        
+        fileItemView.highlighted = YES;
+        
+        if (showActivityIndicator)
+            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView.previewView];
+    } else {
+        // Launch time document open, for example
+        if (showActivityIndicator)
+            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_mainViewController.view];
+    }
+    
+    void (^doOpen)(void) = ^{
+        Class cls = [self documentClassForURL:fileItem.fileURL];
+        OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
+        
+        NSError *error = nil;
+        OUIDocument *document = [[cls alloc] initWithExistingFileItem:fileItem error:&error];
+        if (!document) {
+            OUI_PRESENT_ERROR(error);
+            onFail();
+            return;
+        }
+        
+        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+        
+        // Dismiss any popovers that may be presented.
+        [self dismissPopoverAnimated:YES];
+        
+        [document openWithCompletionHandler:^(BOOL success){
+            if (animation == OUIDocumentAnimationTypeZoom) {
+                OBASSERT(fileItemView.highlighted);
+                fileItemView.highlighted = NO;
+            } else {
+                OBASSERT(fileItemView == nil);
+            }
+            
+            if (!success) {
+                OUIDocumentHandleDocumentOpenFailure(document, nil);
+                
+                [activityIndicator hide];
+                [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+                
+                onFail();
+                return;
+            }
+            
+            [self _mainThread_finishedLoadingDocument:document animation:animation activityIndicator:activityIndicator completionHandler:^{
+                [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+                
+                // Ensure that when the document is closed we'll be using a filter that shows it.
+                [self.documentPicker ensureSelectedFilterMatchesFileItem:fileItem];
+            }];
+        }];
+    };
+    
+    if (_document) {
+        // If we have a document open, wait for it to close before starting to open the new one.
+        doOpen = [doOpen copy];
+        
+        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+        
+        [_document closeWithCompletionHandler:^(BOOL success) {
+            [self _setDocument:nil];
+            
+            doOpen();
+            [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+        }];
+    } else {
+        // Just open immediately
+        doOpen();
+    }
 }
 
 #pragma mark -
@@ -758,7 +859,6 @@ static NSString * const OpenAction = @"open";
         [options addObject:option];
 #endif
         
-        // -_setupCloud: is on OUIDocumentAppController. Perhaps its cloud support should be merged up, or split into a OUIDocumentController...
         option = [OUIMenuController menuOptionWithFirstResponderSelector:@selector(_setupCloud:)
                                                                    title:NSLocalizedStringFromTableInBundle(@"Cloud Setup", @"OmniUIDocument", OMNI_BUNDLE, @"App menu item title")
                                                                    image:[UIImage imageNamed:@"OUIMenuItemCloudSetUp.png"]];
@@ -873,7 +973,7 @@ static NSString * const OpenAction = @"open";
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
     [documentPicker _beginIgnoringDocumentsDirectoryUpdates];
     
-    [fileItem.scope renameFileItem:fileItem baseName:newName fileType:uti completionQueue:[NSOperationQueue mainQueue] handler:^(NSURL *destinationURL, NSError *error){
+    [fileItem.scope renameFileItem:fileItem baseName:newName fileType:uti completionHandler:^(NSURL *destinationURL, NSError *error){
         
         [documentPicker _endIgnoringDocumentsDirectoryUpdates];
         [[UIApplication sharedApplication] endIgnoringInteractionEvents];
@@ -980,7 +1080,7 @@ static NSString * const OpenAction = @"open";
 
     if (launchFileItem != nil) {
         DEBUG_LAUNCH(@"Opening document %@", [launchFileItem shortDescription]);
-        [self _openDocument:launchFileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:YES];
+        [self openDocument:launchFileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:YES];
         startedOpeningDocument = YES;
     } else {
         // Restore our selected or open document if we didn't get a command from on high.
@@ -997,7 +1097,7 @@ static NSString * const OpenAction = @"open";
                 NSString *action = [launchAction objectAtIndex:0];
                 if ([action isEqualToString:OpenAction]) {
                     DEBUG_LAUNCH(@"Opening file item %@", [launchFileItem shortDescription]);
-                    [self _openDocument:launchFileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:YES];
+                    [self openDocument:launchFileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:YES];
                     startedOpeningDocument = YES;
                 } else
                     fileItemToSelect = launchFileItem;
@@ -1057,7 +1157,7 @@ static NSString * const OpenAction = @"open";
     };
     
     _documentTitleLabel.userInteractionEnabled = YES;
-    _documentTitleLabel.accessibilityHint = NSLocalizedStringFromTableInBundle(@"Tripple tap to rename document.", @"OmniUIDocument", OMNI_BUNDLE, @"Document title label item accessibility hint.");
+    _documentTitleLabel.accessibilityHint = NSLocalizedStringFromTableInBundle(@"Triple tap to rename document.", @"OmniUIDocument", OMNI_BUNDLE, @"Document title label item accessibility hint.");
     
     UITapGestureRecognizer *doubleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTitleDoubleTapGesture:)];
     doubleTapRecognizer.numberOfTapsRequired = 2;
@@ -1209,9 +1309,9 @@ static NSString * const OpenAction = @"open";
         if (OFSInInInbox(url)) {
             OFSDocumentStoreScope *scope = strongSelf.documentPicker.selectedScope; // Ooof, that's a deep dive.
 
-            [OFSDocumentInbox cloneInboxItem:url toScope:scope completionHandler:^(OFSDocumentStoreFileItem *newFileItem, NSError *errorOrNil) {
+            [OUIDocumentInbox cloneInboxItem:url toScope:scope completionHandler:^(OFSDocumentStoreFileItem *newFileItem, NSError *errorOrNil) {
                 NSError *deleteInboxError = nil;
-                if (![OFSDocumentInbox deleteInbox:&deleteInboxError]) {
+                if (![OUIDocumentInbox deleteInbox:&deleteInboxError]) {
                     NSLog(@"Failed to delete the inbox: %@", [deleteInboxError toPropertyList]);
                 }
                 
@@ -1225,7 +1325,7 @@ static NSString * const OpenAction = @"open";
                     // Depending on the sort type, the item mive be in view or not. Don't bother scrolling to it if not.
                     OUIDocumentAnimationType animation = [strongSelf.documentPicker.activeScrollView fileItemViewForFileItem:newFileItem] ? OUIDocumentAnimationTypeZoom : OUIDocumentAnimationTypeDissolve;
                     
-                    [strongSelf _openDocument:newFileItem animation:animation showActivityIndicator:YES];
+                    [strongSelf openDocument:newFileItem animation:animation showActivityIndicator:YES];
                 });
             }];
         } else {
@@ -1233,7 +1333,7 @@ static NSString * const OpenAction = @"open";
             OFSDocumentStoreFileItem *fileItem = [strongSelf->_documentStore fileItemWithURL:url];
             OBASSERT(fileItem);
             if (fileItem)
-                [strongSelf _openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:YES];
+                [strongSelf openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:YES];
         }
     }];
     
@@ -1355,7 +1455,7 @@ static NSString * const OpenAction = @"open";
     if (![_previewGenerator shouldOpenDocumentWithFileItem:fileItem])
         return;
     
-    [self _openDocument:fileItem animation:OUIDocumentAnimationTypeZoom showActivityIndicator:YES];
+    [self openDocument:fileItem animation:OUIDocumentAnimationTypeZoom showActivityIndicator:YES];
 }
 
 - (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(OFSDocumentStoreFileItem *)fileItem;
@@ -1372,7 +1472,7 @@ static NSString * const OpenAction = @"open";
         return;
 #endif
     
-    [self _openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:NO];
+    [self openDocument:fileItem animation:OUIDocumentAnimationTypeDissolve showActivityIndicator:NO];
 }
 
 #pragma mark - OUIDocumentPreviewGeneratorDelegate delegate
@@ -1583,112 +1683,6 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     } 
 }
 
-- (void)_openDocument:(OFSDocumentStoreFileItem *)fileItem animation:(OUIDocumentAnimationType)animation showActivityIndicator:(BOOL)showActivityIndicator;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(fileItem);
-    
-    void (^onFail)(void) = ^{
-        // The launch document failed to load -- don't leave the user with no document picker and no open document!
-        if (_mainViewController.innerViewController != self.documentPicker)
-            [self _fadeInDocumentPickerScrollingToFileItem:fileItem];
-        _isOpeningURL = NO;
-    };
-    onFail = [onFail copy];
-    
-    // Need to provoke download, and if this is a launch-time open, we need to fall back to the document picker instead. Maybe we shouldn't actually provoke download in the launch time case, really. The user might want to tap another document and not compete for download bandwidth.
-    if (!fileItem.isDownloaded) {
-        NSError *error = nil;
-        if (![fileItem requestDownload:&error])
-            OUI_PRESENT_ERROR(error);
-        onFail();
-        return;
-    }
-    
-    // If we were last launched with a document that is now in conflict, don't automatically open it.
-    if (fileItem.hasUnresolvedConflicts) {
-        onFail();
-        return;
-    }
-
-    OUIActivityIndicator *activityIndicator = nil;
-    OUIDocumentPickerFileItemView *fileItemView = nil;
-    if (animation == OUIDocumentAnimationTypeZoom) {
-        fileItemView = [self.documentPicker.activeScrollView fileItemViewForFileItem:fileItem];
-        OBASSERT(fileItemView);
-
-        fileItemView.highlighted = YES;
-        
-        if (showActivityIndicator)
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView.previewView];
-    } else {
-        // Launch time document open, for example
-        if (showActivityIndicator)
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_mainViewController.view];
-    }
-    
-    void (^doOpen)(void) = ^{
-        Class cls = [self documentClassForURL:fileItem.fileURL];
-        OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
-        
-        NSError *error = nil;
-        OUIDocument *document = [[cls alloc] initWithExistingFileItem:fileItem error:&error];
-        if (!document) {
-            OUI_PRESENT_ERROR(error);
-            onFail();
-            return;
-        }
-        
-        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
-        
-        // Dismiss any popovers that may be presented.
-        [self dismissPopoverAnimated:YES];
-        
-        [document openWithCompletionHandler:^(BOOL success){
-            if (animation == OUIDocumentAnimationTypeZoom) {
-                OBASSERT(fileItemView.highlighted);
-                fileItemView.highlighted = NO;
-            } else {
-                OBASSERT(fileItemView == nil);
-            }
-            
-            if (!success) {
-                OUIDocumentHandleDocumentOpenFailure(document, nil);
-                
-                [activityIndicator hide];
-                [[UIApplication sharedApplication] endIgnoringInteractionEvents];
-                
-                onFail();
-                return;
-            }
-            
-            [self _mainThread_finishedLoadingDocument:document animation:animation activityIndicator:activityIndicator completionHandler:^{
-                [[UIApplication sharedApplication] endIgnoringInteractionEvents];
-                
-                // Ensure that when the document is closed we'll be using a filter that shows it.
-                [self.documentPicker ensureSelectedFilterMatchesFileItem:fileItem];
-            }];
-        }];
-    };
-    
-    if (_document) {
-        // If we have a document open, wait for it to close before starting to open the new one.
-        doOpen = [doOpen copy];
-
-        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
-
-        [_document closeWithCompletionHandler:^(BOOL success) {
-            [self _setDocument:nil];
-            
-            doOpen();
-            [[UIApplication sharedApplication] endIgnoringInteractionEvents];
-        }];
-    } else {
-        // Just open immediately
-        doOpen();
-    }
-}
-
 - (void)_setDocument:(OUIDocument *)document;
 {
     if (_document == document)
@@ -1770,7 +1764,10 @@ static void _updatePreviewForFileItem(OUIDocumentAppController *self, NSNotifica
     OBASSERT(gestureRecognizer.view == _documentTitleLabel);
 
     [self _toggleTitleToolbarCustomView];
-    [_documentTitleTextField becomeFirstResponder];
+    if (![_documentTitleTextField becomeFirstResponder]) {
+        [self _toggleTitleToolbarCustomView];
+        return;
+    }
     
     UITapGestureRecognizer *shieldViewTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_shieldViewTapped:)];        
     NSArray *passthroughViews = [NSArray arrayWithObject:_documentTitleTextField];

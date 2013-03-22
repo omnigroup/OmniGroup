@@ -1,4 +1,4 @@
-// Copyright 2005-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,7 @@
 #include <sys/pipe.h>
 #include <crt_externs.h>
 #include <spawn.h>
+#include <sys/event.h>
 
 RCS_ID("$Id$")
 
@@ -29,6 +30,24 @@ struct copy_out_state {
     NSOutputStream *nsstream;
     BOOL filterEnabled, streamReady;
 };
+
+static NSString *OFDescribeKevent(const struct kevent *ev)
+{
+    switch(ev->filter) {
+        case EVFILT_PROC:
+            ;
+            NSString *s = [NSString stringWithFormat:@"filter=PROC pid=%lu flags=%04x %04x", ev->ident, ev->flags, ev->fflags];
+            if (ev->data)
+                s = [s stringByAppendingFormat:@" data=%ld", (long)(ev->data)];
+            return s;
+        case EVFILT_READ:
+            return [NSString stringWithFormat:@"filter=READ fd=%lu flags=%04x %04x data=%ld", ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
+        case EVFILT_WRITE:
+            return [NSString stringWithFormat:@"filter=WRITE fd=%lu flags=%04x %04x data=%ld", ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
+        default:
+            return [NSString stringWithFormat:@"filter=%d ident=%lu flags=%04x %04x data=%ld", ev->filter, ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
+    }
+}
 
 @interface OFFilterProcess (Private)
 
@@ -59,6 +78,39 @@ static char *pathStringIncludingDirectory(const char *currentPath, const char *p
 @end
 
 @implementation OFFilterProcess
+{
+    /* Parameters set before launch */
+    NSString *commandPath;
+    NSArray *arguments;
+    NSData *subprocStdinBytes;
+    OFFilterProcessFdAcceptor subprocStdinWriter;
+    
+    /* Set at launch time */
+    int subprocStdinFd;
+    NSUInteger subprocStdinBytesWritten;
+    
+    struct copy_out_state *stdoutCopyBuf, *stderrCopyBuf;
+    
+    pid_t child;
+    
+    int kevent_fd;
+    // We keep a CFRetain on these rather than making them collectable and using __strong here
+    CFFileDescriptorRef kevent_cf; // Lazily created
+    CFRunLoopSourceRef kevent_cfrunloop;
+    CFRunLoopTimerRef poll_timer; // Workaround for RADAR 6898524
+#define OFFilterProcess_CHANGE_QUEUE_MAX 5
+    struct kevent pending_changes[OFFilterProcess_CHANGE_QUEUE_MAX];
+    int num_pending_changes;
+    
+    /* Misc state variables */
+    enum {
+        OFFilterProcess_Initial,
+        OFFilterProcess_Started,
+        OFFilterProcess_Finished
+    } state;
+    NSError *error;
+    struct rusage child_rusage;
+}
 
 @synthesize commandPath, arguments, error;
 
@@ -1093,24 +1145,6 @@ static void pollTimerRunLoopCallback(CFRunLoopTimerRef timer, void *info)
 }
 
 @end
-
-NSString *OFDescribeKevent(const struct kevent *ev)
-{
-    switch(ev->filter) {
-        case EVFILT_PROC:
-            ;
-            NSString *s = [NSString stringWithFormat:@"filter=PROC pid=%lu flags=%04x %04x", ev->ident, ev->flags, ev->fflags];
-            if (ev->data)
-                s = [s stringByAppendingFormat:@" data=%ld", (long)(ev->data)];
-            return s;
-        case EVFILT_READ:
-            return [NSString stringWithFormat:@"filter=READ fd=%lu flags=%04x %04x data=%ld", ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
-        case EVFILT_WRITE:
-            return [NSString stringWithFormat:@"filter=WRITE fd=%lu flags=%04x %04x data=%ld", ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
-        default:
-            return [NSString stringWithFormat:@"filter=%d ident=%lu flags=%04x %04x data=%ld", ev->filter, ev->ident, ev->flags, ev->fflags, (long)(ev->data)];
-    }
-}
 
 #pragma mark Environment and path utilities
 

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,19 +14,9 @@
 @protocol OUIUndoButtonTarget, OUIUndoBarButtonItem;
 
 @interface OUIUndoButtonController : UIViewController <UIPopoverControllerDelegate>
-{
-@private
-    UIPopoverController *_menuPopoverController;
-    UINavigationController *_menuNavigationController;
-    
-    UIButton *_undoButton;
-    UIButton *_redoButton;
-    
-    id <OUIUndoBarButtonItemTarget> undoBarButtonItemTarget;
-}
 
-@property(retain) IBOutlet UIButton *undoButton;
-@property(retain) IBOutlet UIButton *redoButton;
+@property(nonatomic,retain) IBOutlet UIButton *undoButton;
+@property(nonatomic,retain) IBOutlet UIButton *redoButton;
 
 - (IBAction)undoButtonAction:(id)sender;
 - (IBAction)redoButtonAction:(id)sender;
@@ -34,6 +24,6 @@
 - (BOOL)dismissUndoMenu;
 - (BOOL)isMenuVisible;
 
-@property (nonatomic, assign) id <OUIUndoBarButtonItemTarget> undoBarButtonItemTarget;
+@property(nonatomic,assign) id <OUIUndoBarButtonItemTarget> undoBarButtonItemTarget;
 
 @end

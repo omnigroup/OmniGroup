@@ -12,9 +12,9 @@
 
 @interface OUIScalingScrollView : UIScrollView
 
-@property(assign,nonatomic) OFExtent allowedEffectiveScaleExtent;
-@property (assign) BOOL centerContent;
-@property (assign) UIEdgeInsets extraEdgeInsets;
+@property(nonatomic) OFExtent allowedEffectiveScaleExtent;
+@property(nonatomic) BOOL centerContent;
+@property(nonatomic) UIEdgeInsets extraEdgeInsets;
 
 - (CGFloat)fullScreenScaleForCanvasSize:(CGSize)canvasSize;
 

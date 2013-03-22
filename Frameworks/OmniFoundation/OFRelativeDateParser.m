@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,17 +11,19 @@
 #import <OmniFoundation/OFErrors.h>
 
 #import <Foundation/NSDateFormatter.h>
+#import <Foundation/NSRegularExpression.h>
+#import <OmniFoundation/NSRegularExpression-OFExtensions.h>
+#import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSMutableArray-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 
-#import <OmniFoundation/OFRegularExpression.h>
-#import <OmniFoundation/OFRegularExpressionMatch.h>
 #import "OFRelativeDateParser-Internal.h"
 
 RCS_ID("$Id$");
 
+// http://userguide.icu-project.org/strings/regexp
 // http://icu.sourceforge.net/userguide/formatDateTime.html
 
 static NSDictionary *relativeDateNames;
@@ -38,9 +40,11 @@ static OFRelativeDateParser *sharedParser;
 static NSArray *englishWeekdays;
 static NSArray *englishShortdays;
 
-//#ifdef DEBUG_correia
-//    #define DEBUG_date (1)
-//#endif
+#if 0 && defined(DEBUG)
+    #define DEBUG_DATE(format, ...) NSLog(@"DATE: " format , ## __VA_ARGS__)
+#else
+    #define DEBUG_DATE(format, ...) do {} while (0)
+#endif
 
 typedef enum {
     DPHour = 0,
@@ -56,6 +60,16 @@ typedef enum {
     OFRelativeDateParserFutureRelativity = -1, // "next"
     OFRelativeDateParserPastRelativity = 1, // "last"
 } OFRelativeDateParserRelativity;
+
+static NSRegularExpression *_createRegex(NSString *pattern)
+{
+    NSError *error;
+    NSRegularExpression *regex = [[NSRegularExpression alloc] initWithPattern:pattern options:0 error:&error];
+    if (!regex) {
+        NSLog(@"Error creating regular expression from pattern: %@ --> %@", pattern, [error toPropertyList]);
+    }
+    return regex;
+}
 
 static NSCalendar *_defaultCalendar(void)
 {
@@ -388,55 +402,45 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	
 	// allow for the string to start with the time, and have no time, an "@" must always precede the time
 	if ([string hasPrefix:@"@"]) {
-#ifdef DEBUG_date
-	    NSLog( @"string starts w/ an @ , so there is no date");
-#endif
+	    DEBUG_DATE( @"string starts w/ an @ , so there is no date");
 	    timeString = [dateAndTime objectAtIndex:1];
 	} else {
 	    dateString = [dateAndTime objectAtIndex:0];
 	    if ([dateAndTime count] == 2) 
 		timeString = [dateAndTime objectAtIndex:1];
 	}
-#ifdef DEBUG_date
-	NSLog( @"contains @, dateString: %@, timeString: %@", dateString, timeString );
-#endif
+	DEBUG_DATE( @"contains @, dateString: %@, timeString: %@", dateString, timeString );
     } else {
-#ifdef DEBUG_date
-	NSLog(@"-----------'%@' starting date:%@", string, startingDate);
-#endif	
+	DEBUG_DATE(@"-----------'%@' starting date:%@", string, startingDate);
 	NSArray *stringComponents = [string componentsSeparatedByString:@" "];
 	NSUInteger maxComponentIndex = [stringComponents count] - 1;
 	
 	// test for a time at the end of the string.  This will only match things that are clearly times, ie, has colons, or am/pm
 	NSInteger timeMatchIndex = -1;
 	if ([self _stringMatchesTime:[stringComponents objectAtIndex:maxComponentIndex] optionalSecondString:nil withTimeFormat:timeFormat]) {
-	    //NSLog(@"returned a true for _stringMatchesTime and the previous thing WASN't A MONTH for the end of the string: %@", [stringComponents objectAtIndex:maxComponentIndex]);
+	    //DEBUG_DATE(@"returned a true for _stringMatchesTime and the previous thing WASN't A MONTH for the end of the string: %@", [stringComponents objectAtIndex:maxComponentIndex]);
 	    timeMatchIndex = maxComponentIndex;
 	} else if (maxComponentIndex >= 1 && [self _stringMatchesTime:[stringComponents objectAtIndex:maxComponentIndex-1] optionalSecondString:[stringComponents objectAtIndex:maxComponentIndex] withTimeFormat:timeFormat]) {
-	    //NSLog(@"returned a true for _stringMatchesTime for (with 2 comps): %@ & %@", [stringComponents objectAtIndex:maxComponentIndex-1], [stringComponents objectAtIndex:maxComponentIndex]);
+	    //DEBUG_DATE(@"returned a true for _stringMatchesTime for (with 2 comps): %@ & %@", [stringComponents objectAtIndex:maxComponentIndex-1], [stringComponents objectAtIndex:maxComponentIndex]);
 	    timeMatchIndex = maxComponentIndex -1;
 	} else if ([self _stringIsNumber:[stringComponents objectAtIndex:maxComponentIndex]]) {
 	    int number = [[stringComponents objectAtIndex:maxComponentIndex] intValue];
 	    int minutes = number % 100;
 	    if (([timeFormat isEqualToString:@"HHmm"] || [timeFormat isEqualToString:@"kkmm"])&& ([[stringComponents objectAtIndex:maxComponentIndex] length] == 4)) {
 		if (number < 2500 && minutes < 60) {
-#ifdef DEBUG_date
-		    NSLog(@"The time format is 24 hour time with the format: %@.  The number is: %d, and is less than 2500. The minutes are: %d, and are less than 60", timeFormat, number, minutes);
-#endif
+		    DEBUG_DATE(@"The time format is 24 hour time with the format: %@.  The number is: %d, and is less than 2500. The minutes are: %d, and are less than 60", timeFormat, number, minutes);
 		    timeMatchIndex = maxComponentIndex;
 		}
 	    } 
 	} 
 	
 	if (timeMatchIndex != -1) {
-#ifdef DEBUG_date
-	    NSLog(@"Time String found, the time match index is: %d", timeMatchIndex);
-#endif
+	    DEBUG_DATE(@"Time String found, the time match index is: %ld", timeMatchIndex);
 	    if (maxComponentIndex == 0 && (unsigned)timeMatchIndex == 0) {
-		//NSLog(@"count = index = 0");
+		//DEBUG_DATE(@"count = index = 0");
 		timeString = string;
 	    } else { 
-		//NSLog(@"maxComponentIndex: %d, timeMatchIndex: %d", maxComponentIndex, timeMatchIndex);
+		//DEBUG_DATE(@"maxComponentIndex: %d, timeMatchIndex: %d", maxComponentIndex, timeMatchIndex);
 		NSArray *timeComponents = [stringComponents subarrayWithRange:NSMakeRange(timeMatchIndex, maxComponentIndex-timeMatchIndex+1)];
 		timeString = [timeComponents componentsJoinedByString:@" "];
 		NSArray *dateComponents = [stringComponents subarrayWithRange:NSMakeRange(0, timeMatchIndex)];
@@ -445,72 +449,65 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	} else {
 	    dateString = string;
 	}
-#ifdef DEBUG_date
-	NSLog( @"NO @, dateString: %@, timeString: %@", dateString, timeString );
-#endif
-    } 
+	DEBUG_DATE( @"NO @, dateString: %@, timeString: %@", dateString, timeString );
+    }
     
     BOOL timeSpecific = NO;
     
-    if (![NSString isEmptyString:dateString]) { 
-	static OFRegularExpression *spacedDateRegex = nil;
-	if (!spacedDateRegex)
-	    spacedDateRegex = [[OFRegularExpression alloc] initWithString:@"^(\\d\\d?\\d?\\d?)\\s(\\d\\d?\\d?\\d?)\\s?(\\d?\\d?\\d?\\d?)$"];
-	OFRegularExpressionMatch *spacedDateMatch = [spacedDateRegex matchInString:dateString];
+    if (![NSString isEmptyString:dateString]) {
+        
+        OFCreateRegularExpression(spacedDateRegex, @"^(\\d{1,4})\\s(\\d{1,4})\\s?(\\d{0,4})$");
+        OFCreateRegularExpression(formattedDateRegex, @"^\\w+([\\./-])\\w+");
+        OFCreateRegularExpression(unSeperatedDateRegex, @"^(\\d{2,4})(\\d{2})(\\d{2})$");
+        
+	OFRegularExpressionMatch *spacedDateMatch = [spacedDateRegex of_firstMatchInString:dateString];
+	OFRegularExpressionMatch *formattedDateMatch = [formattedDateRegex of_firstMatchInString:dateString];
+	OFRegularExpressionMatch *unSeperatedDateMatch = [unSeperatedDateRegex of_firstMatchInString:dateString];
 	
-	static OFRegularExpression *formattedDateRegex = nil;
-	if (!formattedDateRegex)
-	    formattedDateRegex = [[OFRegularExpression alloc] initWithString:@"^\\w+([\\./-])\\w+"];
-	OFRegularExpressionMatch *formattedDateMatch = [formattedDateRegex matchInString:dateString];
-	
-	static OFRegularExpression *unSeperatedDateRegex = nil;
-	if (!unSeperatedDateRegex)
-	    unSeperatedDateRegex = [[OFRegularExpression alloc] initWithString:@"^(\\d\\d\\d?\\d?)(\\d\\d)(\\d\\d)$"];
-	OFRegularExpressionMatch *unSeperatedDateMatch = [unSeperatedDateRegex matchInString:dateString];
-	
-	if (unSeperatedDateMatch)
-	    dateString = [NSString stringWithFormat:@"%@-%@-%@", [unSeperatedDateMatch subexpressionAtIndex:0], [unSeperatedDateMatch subexpressionAtIndex:1], [unSeperatedDateMatch subexpressionAtIndex:2]];
+	if (unSeperatedDateMatch) {
+	    dateString = [NSString stringWithFormat:@"%@-%@-%@", [unSeperatedDateMatch captureGroupAtIndex:0], [unSeperatedDateMatch captureGroupAtIndex:1], [unSeperatedDateMatch captureGroupAtIndex:2]];
+        }
 	
 	if (formattedDateMatch || unSeperatedDateMatch || spacedDateMatch) {
 	    NSString *separator = @" ";
 	    if (unSeperatedDateMatch) {
-#ifdef DEBUG_date
-		NSLog(@"found an 'unseperated' date");
-#endif
+		DEBUG_DATE(@"found an 'unseperated' date");
 		separator = @"-";
 	    } else if (formattedDateMatch) {
-#ifdef DEBUG_date
-		NSLog(@"formatted date found with the seperator as: %@", [formattedDateMatch subexpressionAtIndex:0]);
-#endif
-		separator = [formattedDateMatch subexpressionAtIndex:0];
+		DEBUG_DATE(@"formatted date found with the seperator as: %@", [formattedDateMatch captureGroupAtIndex:0]);
+		separator = [formattedDateMatch captureGroupAtIndex:0];
 	    } else if (spacedDateMatch) {
-#ifdef DEBUG_date
-		NSLog(@"numerical space delimted date found");
-#endif
+		DEBUG_DATE(@"numerical space delimted date found");
 		separator = @" ";
 	    }
 	    
 	    *date = [self _parseFormattedDate:dateString withDate:startingDate withShortDateFormat:shortFormat withMediumDateFormat:mediumFormat withLongDateFormat:longFormat withseparator:separator calendar:calendar];
-	} else 
+	} else
 	    *date = [self _parseDateNaturalLangauge:dateString withDate:startingDate timeSpecific:&timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar error:error];
-    } else 
+    } else
 	*date = startingDate;
     
     if (timeString != nil)  
 	*date = [calendar dateFromComponents:[self _parseTime:timeString withDate:*date withTimeFormat:timeFormat calendar:calendar]];
     else {
-	static OFRegularExpression *hourCodeRegex = nil;
-	if (!hourCodeRegex) {
+	static NSRegularExpression *hourCodeRegex = nil;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
             NSString *shortHourString = NSLocalizedStringFromTableInBundle(@"h", @"OFDateProcessing", OMNI_BUNDLE, @"one-letter abbreviation for hour or hours, used for scanning user input. Do NOT add whitespace");
             NSString *hourString = NSLocalizedStringFromTableInBundle(@"hour", @"OFDateProcessing", OMNI_BUNDLE, @"hour, singular, used for scanning user input. Do NOT add whitespace");
             NSString *pluralHourString = NSLocalizedStringFromTableInBundle(@"hours", @"OFDateProcessing", OMNI_BUNDLE, @"hours, plural, used for scanning user input. Do NOT add whitespace");
             NSString *patternString = [NSString stringWithFormat:@"\\d+(%@|%@|%@|h|hour|hours)", shortHourString, hourString, pluralHourString];
-	    hourCodeRegex = [[OFRegularExpression alloc] initWithString:patternString];
-        }
+            
+            NSError *expressionError;
+	    hourCodeRegex = [[NSRegularExpression alloc] initWithPattern:patternString options:0 error:&expressionError];
+            if (!hourCodeRegex) {
+                NSLog(@"Error creating regular expression: %@", [expressionError toPropertyList]);
+            }
+        });
 
-	OFRegularExpressionMatch *hourCode = [hourCodeRegex matchInString:string];
+	OFRegularExpressionMatch *hourCode = [hourCodeRegex of_firstMatchInString:string];
 	if (!hourCode && *date && !timeSpecific) {
-	    //NSLog(@"no date information, and no hour codes, set to midnight");
+	    //DEBUG_DATE(@"no date information, and no hour codes, set to midnight");
 	    NSDateComponents *defaultTime = [calendar components:NSDayCalendarUnit|NSMonthCalendarUnit|NSYearCalendarUnit|NSEraCalendarUnit fromDate:*date];
 	    [defaultTime setHour:[defaultTimeDateComponents hour]];
 	    [defaultTime setMinute:[defaultTimeDateComponents minute]];
@@ -518,9 +515,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	    *date = [calendar dateFromComponents:defaultTime];
 	}
     }
-#ifdef DEBUG_date
-    NSLog(@"Return date: %@", *date);
-#endif
+    DEBUG_DATE(@"Return date: %@", *date);
     //if (!*date) {
     //OBErrorWithInfo(&*error, "date parse error", @"GAH");  
     //return NO;
@@ -562,13 +557,9 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 - (BOOL)_stringIsNumber:(NSString *)string;
 {
     //test for just a single number, note that [NSString intValue] won't work since it returns 0 on failure, and 0 is an allowed number
-    static OFRegularExpression *numberRegex;
-    if (!numberRegex)
-	numberRegex = [[OFRegularExpression alloc] initWithString:@"^(\\d*)$"];
-    OFRegularExpressionMatch *numberMatch = [numberRegex matchInString:string];
-    if (numberMatch) 
-	return YES;
-    return NO;
+    OFCreateRegularExpression(numberRegex, @"^(\\d*)$");
+    OFRegularExpressionMatch *numberMatch = [numberRegex of_firstMatchInString:string];
+    return (numberMatch != nil);
 }
 
 - (BOOL)_stringMatchesTime:(NSString *)firstString optionalSecondString:(NSString *)secondString withTimeFormat:(NSString *)timeFormat;
@@ -580,32 +571,24 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	if ([self _stringIsNumber:firstString])
 	    return YES;
     }
-    
+
     // see if we have a european date
-    static OFRegularExpression *timeDotRegex;
-    if (!timeDotRegex)
-	timeDotRegex = [[OFRegularExpression alloc] initWithString:@"^(\\d\\d?)\\.(\\d\\d?)\\.?(\\d?\\d?)$"];
-    OFRegularExpressionMatch *dotMatch = [timeDotRegex matchInString:firstString];
-    static OFRegularExpression *timeFormatDotRegex = nil;
-    if (!timeFormatDotRegex)
-	timeFormatDotRegex = [[OFRegularExpression alloc] initWithString:@"[HhkK]'?\\.'?[m]"];
-    OFRegularExpressionMatch *timeFormatDotMatch = [timeFormatDotRegex matchInString:timeFormat];
+    OFCreateRegularExpression(timeDotRegex, @"^(\\d{1,2})\\.(\\d{1,2})\\.?(\\d{0,2})$");
+    OFCreateRegularExpression(timeFormatDotRegex, @"[HhkK]'?\\.'?[m]");
+    OFRegularExpressionMatch *dotMatch = [timeDotRegex of_firstMatchInString:firstString];
+    OFRegularExpressionMatch *timeFormatDotMatch = [timeFormatDotRegex of_firstMatchInString:timeFormat];
     if (dotMatch&&timeFormatDotMatch)
 	return YES;
     
     // see if we have some colons in a dately way
-    static OFRegularExpression *timeColonRegex;
-    if (!timeColonRegex)
-	timeColonRegex = [[OFRegularExpression alloc] initWithString:@"^(\\d\\d?):(\\d?\\d?):?(\\d?\\d?)"];
-    OFRegularExpressionMatch *colonMatch = [timeColonRegex matchInString:firstString];
+    OFCreateRegularExpression(timeColonRegex, @"^(\\d{1,2}):(\\d{0,2}):?(\\d{0,2})");
+    OFRegularExpressionMatch *colonMatch = [timeColonRegex of_firstMatchInString:firstString];
     if (colonMatch)
 	return YES;
     
     // see if we match a meridan at the end of our string
-    static OFRegularExpression *timeEndRegex;
-    if (!timeEndRegex)
-	timeEndRegex = [[OFRegularExpression alloc] initWithString:@"\\d[apAP][mM]?$"];
-    OFRegularExpressionMatch *timeEndMatch = [timeEndRegex matchInString:firstString];
+    OFCreateRegularExpression(timeEndRegex, @"\\d[apAP][mM]?$");
+    OFRegularExpressionMatch *timeEndMatch = [timeEndRegex of_firstMatchInString:firstString];
     if (timeEndMatch)
 	return YES;
     
@@ -638,19 +621,20 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	    break;
     }
     
-    static OFRegularExpression *timeSeperatorRegex = nil;
-    if (!timeSeperatorRegex)
-	timeSeperatorRegex = [[OFRegularExpression alloc] initWithString:@"^\\d\\d?\\d?\\d?([:.])?"];
-    OFRegularExpressionMatch *timeSeperatorMatch = [timeSeperatorRegex matchInString:timeToken];
-    NSString *seperator = [timeSeperatorMatch subexpressionAtIndex:0];
+    static dispatch_once_t onceToken;
+    static NSRegularExpression *timeSeperatorRegex = nil;
+    dispatch_once(&onceToken, ^{
+	timeSeperatorRegex = _createRegex(@"^\\d{1,4}([:.])?");
+    });
+    OFRegularExpressionMatch *timeSeperatorMatch = [timeSeperatorRegex of_firstMatchInString:timeToken];
+    DEBUG_DATE(@"timeSeperatorMatch = %@", timeSeperatorMatch);
+    NSString *seperator = [timeSeperatorMatch captureGroupAtIndex:0];
     if ([NSString isEmptyString:seperator])
 	seperator = @":";
     
     NSArray *timeComponents = [[timeToken stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace] componentsSeparatedByString:seperator];
-#ifdef DEBUG_date
-    NSLog( @"TimeToken: %@, isPM: %d", timeToken, isPM );
-    NSLog (@"time comps: %@", timeComponents );
-#endif 
+    DEBUG_DATE( @"TimeToken: %@, isPM: %d", timeToken, isPM);
+    DEBUG_DATE(@"time comps: %@", timeComponents);
     
     int hours = -1;
     int minutes = -1;
@@ -670,37 +654,27 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	}
     }
     if (isPM && hours < 12) {
-#ifdef DEBUG_date
-	NSLog(@"isPM was true, adding 12 to: %d", hours);
-#endif
+	DEBUG_DATE(@"isPM was true, adding 12 to: %d", hours);
 	hours += 12;
     }  else if ([[timeComponents objectAtIndex:0] length] == 4 && [timeComponents count] == 1 && hours <= 2500 ) {
 	//24hour time
 	minutes = hours % 100;
 	hours = hours / 100;
-#ifdef DEBUG_date
-	NSLog(@"time in 4 digit notation");
-#endif
+	DEBUG_DATE(@"time in 4 digit notation");
     } else if (![timeFormat hasPrefix:@"H"] && ![timeFormat hasPrefix:@"k"] && hours == 12 && !isPM) {
-#ifdef DEBUG_date
-	NSLog(@"time format doesn't have 'H', at 12 hours, setting to 0");
-#endif
+	DEBUG_DATE(@"time format doesn't have 'H', at 12 hours, setting to 0");
 	hours = 0;
     }
     
     // if 1-24 "k" format, then 24 means 0
     if ([timeFormat hasPrefix:@"k"]) { 
 	if (hours == 24) {
-#ifdef DEBUG_date
-	    NSLog(@"time format has 'k', at 24 hours, setting to 0");
-#endif
+	    DEBUG_DATE(@"time format has 'k', at 24 hours, setting to 0");
 	    hours = 0;
 	}
 	
     }
-#ifdef DEBUG_date
-    NSLog( @"hours: %d, minutes: %d, seconds: %d", hours, minutes, seconds );
-#endif
+    DEBUG_DATE( @"hours: %d, minutes: %d, seconds: %d", hours, minutes, seconds );
     if (hours == -1)
 	return nil;
     
@@ -725,9 +699,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 {
     OBPRECONDITION(calendar);
     
-#ifdef DEBUG_date
-    NSLog(@"parsing formatted dateString: %@", dateString );
-#endif
+    DEBUG_DATE(@"parsing formatted dateString: %@", dateString );
     NSDateComponents *currentComponents = [calendar components:unitFlags fromDate:date]; // the given date as components
     
     OBASSERT(separator);
@@ -735,66 +707,46 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     if ([NSString isEmptyString:[dateComponents lastObject]]) 
 	[dateComponents removeLastObject];
     
-#ifdef DEBUG_date
-    NSLog(@"determined date componets as: %@", dateComponents);
-#endif
+    DEBUG_DATE(@"determined date componets as: %@", dateComponents);
     
     NSString *dateFormat = shortFormat;
-    static OFRegularExpression *mediumMonthRegex;
-    if (!mediumMonthRegex)
-	mediumMonthRegex = [[OFRegularExpression alloc] initWithString:@"[a-z][a-z][a-z]"];
-    OFRegularExpressionMatch *mediumMonthMatch = [mediumMonthRegex matchInString:dateString];
+    OFCreateRegularExpression(mediumMonthRegex, @"[a-z]{3}");
+    OFRegularExpressionMatch *mediumMonthMatch = [mediumMonthRegex of_firstMatchInString:dateString];
     if (mediumMonthMatch) {
-#ifdef DEBUG_date
-	NSLog(@"using medium format: %@", mediumFormat);
-#endif
+	DEBUG_DATE(@"using medium format: %@", mediumFormat);
 	dateFormat = mediumFormat;
     } else {
-	static OFRegularExpression *longMonthRegex;
-	if (!longMonthRegex)
-	    longMonthRegex = [[OFRegularExpression alloc] initWithString:@"[a-z][a-z][a-z]+"];
-	OFRegularExpressionMatch *longMonthMatch = [longMonthRegex matchInString:dateString];
+	OFCreateRegularExpression(longMonthRegex, @"[a-z]{3,}");
+	OFRegularExpressionMatch *longMonthMatch = [longMonthRegex of_firstMatchInString:dateString];
 	if (longMonthMatch) {
-#ifdef DEBUG_date
-	    NSLog(@"using long format: %@", longFormat);
-#endif
+	    DEBUG_DATE(@"using long format: %@", longFormat);
 	    dateFormat = longFormat;
 	}
     }
-#ifdef DEBUG_date
-    NSLog(@"using date format: %@", dateFormat);
-#endif
-    static OFRegularExpression *formatseparatorRegex = nil;
-    if (!formatseparatorRegex)
-	formatseparatorRegex = [[OFRegularExpression alloc] initWithString:@"^\\w+([\\./-])"];
-    OFRegularExpressionMatch *formattedDateMatch = [formatseparatorRegex matchInString:dateFormat];
+    DEBUG_DATE(@"using date format: %@", dateFormat);
+    OFCreateRegularExpression(formatseparatorRegex, @"^\\w+([\\./-])");
+    OFRegularExpressionMatch *formattedDateMatch = [formatseparatorRegex of_firstMatchInString:dateFormat];
     NSString *formatStringseparator = nil;
     if (formattedDateMatch)
-	formatStringseparator = [formattedDateMatch subexpressionAtIndex:0];
+	formatStringseparator = [formattedDateMatch captureGroupAtIndex:0];
     
     
     DatePosition datePosition;
     if ([separator isEqualToString:@"-"] && ![formatStringseparator isEqualToString:@"-"]) { // use (!mediumMonthMatch/longMonthMatch instead of formatStringseparator?
-#ifdef DEBUG_date
-	NSLog(@"setting ISO DASH order, formatseparator: %@", formatStringseparator);
-#endif
+	DEBUG_DATE(@"setting ISO DASH order, formatseparator: %@", formatStringseparator);
 	datePosition.year = 1;
 	datePosition.month = 2;
 	datePosition.day = 3;
 	datePosition.separator = @"-";
     } else {
-#ifdef DEBUG_date
-	NSLog(@"using DETERMINED, formatseparator: %@", formatStringseparator);
-#endif
+	DEBUG_DATE(@"using DETERMINED, formatseparator: %@", formatStringseparator);
 	datePosition= [self _dateElementOrderFromFormat:dateFormat];
     }
     
     // <bug://bugs/39123> 
     NSUInteger count = [dateComponents count];
     if (count == 2) {
-#ifdef DEBUG_date
-	NSLog(@"only 2 numbers, one needs to be the day, the other the month, if the month comes before the day, and the month comes before the year, then assign the first number to the month");
-#endif
+	DEBUG_DATE(@"only 2 numbers, one needs to be the day, the other the month, if the month comes before the day, and the month comes before the year, then assign the first number to the month");
 	if (datePosition.month >= 2 && datePosition.day == 1) {
 	    datePosition.month = 2;
 	    datePosition.year = 3;
@@ -809,14 +761,10 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     OBASSERT(datePosition.month != 0);
     OBASSERT(datePosition.year != 0);
     
-#ifdef DEBUG_date
-    NSLog(@"the date positions being used to assign are: day:%d month:%d, year:%d", datePosition.day, datePosition.month, datePosition.year);
-#endif  
+    DEBUG_DATE(@"the date positions being used to assign are: day:%ld month:%ld, year:%ld", datePosition.day, datePosition.month, datePosition.year);
     
     DateSet dateSet = [self _dateSetFromArray:dateComponents withPositions:datePosition];
-#ifdef DEBUG_date
-    NSLog(@"date components: %@, SETTING TO: day:%d month:%d, year:%d", dateComponents, dateSet.day, dateSet.month, dateSet.year);
-#endif    
+    DEBUG_DATE(@"date components: %@, SETTING TO: day:%ld month:%ld, year:%ld", dateComponents, dateSet.day, dateSet.month, dateSet.year);
     if (dateSet.day == -1 && dateSet.month == -1 && dateSet.year == -1)
 	return nil;
         
@@ -838,9 +786,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     if (dateSet.year > 0)
 	[currentComponents setYear:dateSet.year];
     
-#ifdef DEBUG_date
-    NSLog(@"year: %d, month: %d, day: %d", [currentComponents year], [currentComponents month], [currentComponents day]);
-#endif
+    DEBUG_DATE(@"year: %ld, month: %ld, day: %ld", [currentComponents year], [currentComponents month], [currentComponents day]);
     date = [calendar dateFromComponents:currentComponents];
     return date;
 }
@@ -853,9 +799,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     dateSet.year = -1;
     
     NSUInteger count = [dateComponents count];
-#ifdef DEBUG_date
-    NSLog(@"date components: %@, day:%d month:%d, year:%d", dateComponents, datePosition.day, datePosition.month, datePosition.year);
-#endif    
+    DEBUG_DATE(@"date components: %@, day:%ld month:%ld, year:%ld", dateComponents, datePosition.day, datePosition.month, datePosition.year);
     /**Initial Setting**/
     BOOL didSwap = NO;
     // day
@@ -925,84 +869,59 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     /**Sanity Check**/
     int sanity = 2;
     while (sanity--) {
-#ifdef DEBUG_date
-	NSLog(@"%d SANITY: day: %d month: %d year: %d", sanity, dateSet.day, dateSet.month, dateSet.year);
-#endif
+	DEBUG_DATE(@"%d SANITY: day: %ld month: %ld year: %ld", sanity, dateSet.day, dateSet.month, dateSet.year);
 	if (count == 1) {
 	    if (dateSet.day > 31) {
-#ifdef DEBUG_date
-		NSLog(@"single digit is too high for a day, set to year: %d", dateSet.day);
-#endif
+		DEBUG_DATE(@"single digit is too high for a day, set to year: %ld", dateSet.day);
 		dateSet.year = dateSet.day;
 		dateSet.day = -1;
 	    } else if (dateSet.month > 12 ) {
-#ifdef DEBUG_date
-		NSLog(@"single digit is too high for a day, set to month: %d", dateSet.month);
-#endif
+		DEBUG_DATE(@"single digit is too high for a day, set to month: %ld", dateSet.month);
 		dateSet.day = dateSet.month;
 		dateSet.month = -1;
 	    }
 	} else if (count == 2) {
 	    if (dateSet.day > 31) {
-#ifdef DEBUG_date
-		NSLog(@"swap day and year");
-#endif
+		DEBUG_DATE(@"swap day and year");
 		NSInteger year = dateSet.year;
 		dateSet.year = dateSet.day;
 		dateSet.day = year;
 	    } else if (dateSet.month > 12 ) {
-#ifdef DEBUG_date
-		NSLog(@"swap month and year");
-#endif
+		DEBUG_DATE(@"swap month and year");
 		NSInteger year = dateSet.year;
 		dateSet.year = dateSet.month;
 		dateSet.month = year;
 	    } else if (dateSet.day > 0 && dateSet.year > 0 && dateSet.month < 0 ) {
-#ifdef DEBUG_date
-		NSLog(@"swap month and day");
-#endif
+		DEBUG_DATE(@"swap month and day");
 		NSInteger day = dateSet.day;
 		dateSet.day = dateSet.month;
 		dateSet.month = day;
 	    }
 	}else if (count == 3 ) {
-#ifdef DEBUG_date
-	    NSLog(@"sanity checking a 3 compoent date. Day: %d, Month: %d Year: %d", dateSet.day, dateSet.month, dateSet.year);
-#endif
+	    DEBUG_DATE(@"sanity checking a 3 compoent date. Day: %ld, Month: %ld Year: %ld", dateSet.day, dateSet.month, dateSet.year);
 	    if (dateSet.day > 31) {
-#ifdef DEBUG_date
-		NSLog(@"swap day and year");
-#endif
+		DEBUG_DATE(@"swap day and year");
 		NSInteger year = dateSet.year;
 		dateSet.year = dateSet.day;
 		dateSet.day = year;
 	    } else if (dateSet.month > 12 && dateSet.day <= 31 && dateSet.year <= 12) {
-#ifdef DEBUG_date
-		NSLog(@"swap month and year");
-#endif
+		DEBUG_DATE(@"swap month and year");
 		NSInteger year = dateSet.year;
 		dateSet.year = dateSet.month;
 		dateSet.month = year;
 	    } else if ( dateSet.day <= 12 && dateSet.month > 12 ) {
-#ifdef DEBUG_date
-		NSLog(@"swap day and month");
-#endif
+		DEBUG_DATE(@"swap day and month");
 		NSInteger day = dateSet.day;
 		dateSet.day = dateSet.month;
 		dateSet.month = day;
 	    }
-#ifdef DEBUG_date
-	    NSLog(@"after any swaps we're now at: Day: %d, Month: %d Year: %d", dateSet.day, dateSet.month, dateSet.year);
-#endif
-	    
+	    DEBUG_DATE(@"after any swaps we're now at: Day: %ld, Month: %ld Year: %ld", dateSet.day, dateSet.month, dateSet.year);
 	}
     }
     
     // unacceptable date
     if (dateSet.month > 12 || dateSet.day > 31) {
-#ifdef DEBUG_date
-	NSLog(@"Insane Date, month: %d is greater than 12, or day: %d is greater than 31", dateSet.month, dateSet.day);
-#endif
+	DEBUG_DATE(@"Insane Date, month: %ld is greater than 12, or day: %ld is greater than 31", dateSet.month, dateSet.day);
 	dateSet.day = -1;
 	dateSet.month = -1;
 	dateSet.year = -1;    
@@ -1022,22 +941,16 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 
 - (NSDate *)_parseDateNaturalLangauge:(NSString *)dateString withDate:(NSDate *)date timeSpecific:(BOOL *)timeSpecific useEndOfDuration:(BOOL)useEndOfDuration calendar:(NSCalendar *)calendar error:(NSError **)error;
 {
-#ifdef DEBUG_date
-    NSLog(@"Parse Natural Language Date String (before normalization): \"%@\"", dateString );
-#endif
+    DEBUG_DATE(@"Parse Natural Language Date String (before normalization): \"%@\"", dateString );
     
     dateString = [dateString stringByNormalizingWithOptions:OFRelativeDateParserNormalizeOptionsDefault locale:[self locale]];
 
-#ifdef DEBUG_date
-    NSLog(@"Parse Natural Language Date String (after normalization): \"%@\"", dateString );
-#endif
+    DEBUG_DATE(@"Parse Natural Language Date String (after normalization): \"%@\"", dateString );
 
     OFRelativeDateParserRelativity modifier = OFRelativeDateParserNoRelativity; // look for a modifier as the first part of the string
     NSDateComponents *currentComponents = [calendar components:unitFlags fromDate:date]; // the given date as components
     
-#ifdef DEBUG_date
-    NSLog(@"PRE comps. m: %d, d: %d, y: %d", [currentComponents month], [currentComponents day], [currentComponents year]);
-#endif
+    DEBUG_DATE(@"PRE comps. m: %ld, d: %ld, y: %ld", [currentComponents month], [currentComponents day], [currentComponents year]);
     int multiplier = [self _multiplierForModifer:modifier];
     
     NSInteger month = -1;
@@ -1087,9 +1000,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
                     
 			// array info: Code, Number, Relativitity, timeSpecific, monthSpecific, daySpecific
 			NSArray *dateOffset = [relativeDateNames objectForKey:match];
-#ifdef DEBUG_date
-			NSLog(@"found relative date match: %@", match);
-#endif
+			DEBUG_DATE(@"found relative date match: %@", match);
 			daySpecific = [[dateOffset objectAtIndex:5] boolValue];
 			*timeSpecific = [[dateOffset objectAtIndex:3] boolValue];
 			if (!*timeSpecific) {
@@ -1126,9 +1037,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		for(NSString *name in sortedKeyArray) {
 		    NSString *match;
 		    if ([scanner scanString:name intoString:&match]) {
-#ifdef DEBUG_date
-			NSLog(@"found special case match: %@", match);
-#endif
+			DEBUG_DATE(@"found special case match: %@", match);
 			daySpecific = YES;
 			if (!*timeSpecific) {
 			    // clear times
@@ -1153,14 +1062,10 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 							   nil];
 			
 			NSString *replacementString = [[specialCaseTimeNames objectForKey:match] stringByReplacingKeysInDictionary:keywordDictionary startingDelimiter:@"$(" endingDelimiter:@")" removeUndefinedKeys:YES]; 
-#ifdef DEBUG_date
-			NSLog(@"found: %@, replaced with: %@ from dict: %@", [specialCaseTimeNames objectForKey:match], replacementString, keywordDictionary);
-#endif			   
+			DEBUG_DATE(@"found: %@, replaced with: %@ from dict: %@", [specialCaseTimeNames objectForKey:match], replacementString, keywordDictionary);
 			date = [self _parseDateNaturalLangauge:replacementString withDate:date timeSpecific:timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar error:error];
 			currentComponents = [calendar components:unitFlags fromDate:date]; // update the components
-#ifdef DEBUG_date
-			NSLog(@"RETURN from replacement call");
-#endif	
+			DEBUG_DATE(@"RETURN from replacement call");
 		    }
 		}
 		[sortedKeyArray release];
@@ -1174,9 +1079,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		NSString *match;
 		if ([scanner scanString:pattern intoString:&match]) {
 		    modifier = [[modifiers objectForKey:pattern] intValue];
-#ifdef DEBUG_date
-		    NSLog(@"Found Modifier: %@", match);
-#endif
+		    DEBUG_DATE(@"Found Modifier: %@", match);
 		    multiplier = [self _multiplierForModifer:modifier];
 		    modifierForNumber = YES;
 		}
@@ -1205,9 +1108,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 
                             month = [self _monthIndexForString:match];
                             scanned = YES;
-#ifdef DEBUG_date
-                            NSLog(@"matched name: %@ to match: %@", name, match);
-#endif
+                            DEBUG_DATE(@"matched name: %@ to match: %@", name, match);
                             break;
                         }
                     }
@@ -1238,9 +1139,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		    dpCode = [[codes objectForKey:codeString] intValue];
 		    if (number != 0) // if we aren't going to add anything don't call
 			[self _addToComponents:componentsToAdd codeString:dpCode codeInt:number withMultiplier:multiplier];
-#ifdef DEBUG_date
-		    NSLog( @"codeString:%@, number:%d, mult:%d", codeString, number, multiplier );
-#endif
+		    DEBUG_DATE( @"codeString:%@, number:%d, mult:%d", codeString, number, multiplier );
 		    daySpecific = YES;
 		    isYear = NO; // '97d gets you 97 days
 		    foundCode= YES;
@@ -1267,9 +1166,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		    }
 		    modifierForNumber = NO;
 		    daySpecific = YES;
-#ifdef DEBUG_date
-		    NSLog(@"free number, marking added to day as true");
-#endif
+		    DEBUG_DATE(@"free number, marking added to day as true");
 		} else if (number > 31 || day != -1) {
 		    year = number;
 		    if (year > 90 && year < 100)
@@ -1297,9 +1194,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
                     weekday = [self _weekdayIndexForString:match];
                     daySpecific = YES;
                     scanned = YES;
-#ifdef DEBUG_date
-                    NSLog(@"matched name: %@ to match: %@ weekday: %d", name, match, weekday);
-#endif
+                    DEBUG_DATE(@"matched name: %@ to match: %@ weekday: %ld", name, match, weekday);
                 }
             }
         }
@@ -1313,9 +1208,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		    weekday = [self _weekdayIndexForString:match];
 		    daySpecific = YES;
 		    scanned = YES;
-#ifdef DEBUG_date
-		    NSLog(@"matched name: %@ to match: %@", name, match);
-#endif
+		    DEBUG_DATE(@"matched name: %@ to match: %@", name, match);
 		}
 	    }
 	}
@@ -1329,9 +1222,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		    weekday = [self _weekdayIndexForString:match];
 		    daySpecific = YES;
 		    scanned = YES;
-#ifdef DEBUG_date
-		    NSLog(@"matched name: %@ to match: %@", name, match);
-#endif
+		    DEBUG_DATE(@"matched name: %@ to match: %@", name, match);
 		}
 	    }
 	}
@@ -1344,9 +1235,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
                 if ([scanner scanString:name intoString:&match]) {
                     month = [self _monthIndexForString:match];
                     scanned = YES;
-#ifdef DEBUG_date
-                    NSLog(@"matched name: %@ to match: %@", name, match);
-#endif
+                    DEBUG_DATE(@"matched name: %@ to match: %@", name, match);
                 }
             }
         }
@@ -1359,9 +1248,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
                 if ([scanner scanString:name intoString:&match]) {
                     month = [self _monthIndexForString:match];
                     scanned = YES;
-#ifdef DEBUG_date
-                    NSLog(@"matched name: %@ to match: %@", name, match);
-#endif
+                    DEBUG_DATE(@"matched name: %@ to match: %@", name, match);
                 }
             }
         }
@@ -1376,9 +1263,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		    weekday = [self _weekdayIndexForString:match];
 		    daySpecific = YES;
 		    scanned = YES;
-#ifdef DEBUG_date
-		    NSLog(@"ENGLISH matched name: %@ to match: %@", name, match);
-#endif
+		    DEBUG_DATE(@"ENGLISH matched name: %@ to match: %@", name, match);
 		}
 	    }
 	}
@@ -1414,9 +1299,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	// eat any punctuation
 	BOOL punctuation = NO;
 	if ([scanner scanCharactersFromSet:[NSCharacterSet punctuationCharacterSet] intoString:NULL]) {
-#ifdef DEBUG_date
-	    NSLog(@"scanned some symbols");
-#endif
+	    DEBUG_DATE(@"scanned some symbols");
 	    punctuation = YES;
 	}
 	
@@ -1427,18 +1310,14 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		[scanner setScanLocation:[scanner scanLocation]+1];
 	    }
 	}
-#ifdef DEBUG_date
-	NSLog(@"end of scanning cycle. month: %d, day: %d, year: %d, weekday: %d, number: %d, modifier: %d", month, day, year, weekday, number, multiplier);
-#endif
+	DEBUG_DATE(@"end of scanning cycle. month: %ld, day: %ld, year: %ld, weekday: %ld, number: %d, modifier: %d", month, day, year, weekday, number, multiplier);
 	//OBError(&*error, // error
 	//		0,  // code enum
 	//		@"we were unable to parse something, return an error for string" // description
 	//		);
 	if (number == -1 && !scanned) {
 	    if (!punctuation) {
-#ifdef DEBUG_date
-		NSLog(@"ERROR String: %@, number: %d loc: %d", dateString, number, [scanner scanLocation]);
-#endif
+		DEBUG_DATE(@"ERROR String: %@, number: %d loc: %ld", dateString, number, [scanner scanLocation]);
 		return nil;
 	    }
 	}
@@ -1450,9 +1329,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	    // find the last day of the month of the components ?
 	}
 	day = 1;
-#ifdef DEBUG_date
-	NSLog(@"setting the day to 1 as a default");
-#endif
+	DEBUG_DATE(@"setting the day to 1 as a default");
     }
     if (day != -1) {
 	[currentComponents setDay:day];
@@ -1473,10 +1350,8 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	[currentComponents setYear:year];
     
     date = [calendar dateFromComponents:currentComponents];
-#ifdef DEBUG_date    
-    NSLog(@"comps. m: %d, d: %d, y: %d", [currentComponents month], [currentComponents day], [currentComponents year]);
-    NSLog( @"date before modifying with the components: %@", date) ;
-#endif
+    DEBUG_DATE(@"comps. m: %ld, d: %ld, y: %ld", [currentComponents month], [currentComponents day], [currentComponents year]);
+    DEBUG_DATE(@"date before modifying with the components: %@", date) ;
 
     // componetsToAdd is all of the collected relative date codes
     date = [calendar dateByAddingComponents:componentsToAdd toDate:date options:0];
@@ -1509,10 +1384,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     NSUInteger dayIndex = [_weekdays count];
     token = [token lowercaseString];
     while (dayIndex--) {
-#ifdef DEBUG_date
-	if (dayIndex >= 0)
-	    NSLog(@"token: %@, weekdays: %@, short: %@, Ewdays: %@, EShort: %@", token, [[_weekdays objectAtIndex:dayIndex] lowercaseString], [[_shortdays objectAtIndex:dayIndex] lowercaseString], [[englishWeekdays objectAtIndex:dayIndex] lowercaseString], [[englishShortdays objectAtIndex:dayIndex] lowercaseString]);
-#endif
+        DEBUG_DATE(@"token: %@, weekdays: %@, short: %@, Ewdays: %@, EShort: %@", token, [[_weekdays objectAtIndex:dayIndex] lowercaseString], [[_shortdays objectAtIndex:dayIndex] lowercaseString], [[englishWeekdays objectAtIndex:dayIndex] lowercaseString], [[englishShortdays objectAtIndex:dayIndex] lowercaseString]);
 	if ([token isEqualToString:[_alternateShortdays objectAtIndex:dayIndex]] ||
             [token isEqualToString:[_shortdays objectAtIndex:dayIndex]] ||
             [token isEqualToString:[_weekdays objectAtIndex:dayIndex]]) {
@@ -1524,9 +1396,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
             return dayIndex;
     }
 
-#ifdef DEBUG_date
-    NSLog(@"weekday index not found for: %@", token);
-#endif
+    DEBUG_DATE(@"weekday index not found for: %@", token);
     
     return -1;
 }
@@ -1565,30 +1435,20 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     NSDateComponents *components = [[NSDateComponents alloc] init];
     NSUInteger currentWeekday = [weekdayComp weekday];
     
-#ifdef DEBUG_date    
-    NSLog(@"Modifying the date based on weekdays with modifer: %d, Current Weekday: %d, Requested Weekday: %d", modifier, currentWeekday, requestedWeekday);
-#endif
+    DEBUG_DATE(@"Modifying the date based on weekdays with modifer: %d, Current Weekday: %ld, Requested Weekday: %ld", modifier, currentWeekday, requestedWeekday);
     
     // if there is no modifier then we just take the current day if its a match, or the next instance of the requested day
     if (modifier == OFRelativeDateParserNoRelativity) {
-#ifdef DEBUG_date    
-	NSLog(@"NO Modifier");
-#endif
+	DEBUG_DATE(@"NO Modifier");
 	if (currentWeekday == requestedWeekday) {
-#ifdef DEBUG_date
-	    NSLog(@"return today");
-#endif	
+	    DEBUG_DATE(@"return today");
             [components release];
 	    return date; 
 	} else if (currentWeekday > requestedWeekday) {
-#ifdef DEBUG_date    
-	    NSLog( @"set the weekday to the next instance of the requested day, %d days in the future", (7-(currentWeekday - requestedWeekday)));
-#endif		
+	    DEBUG_DATE( @"set the weekday to the next instance of the requested day, %ld days in the future", (7-(currentWeekday - requestedWeekday)));
 	    [components setDay:(7-(currentWeekday - requestedWeekday))];
 	} else if (currentWeekday < requestedWeekday) {
-#ifdef DEBUG_date    
-	    NSLog( @"set the weekday to the next instance of the requested day, %d days in the future", (requestedWeekday- currentWeekday) );
-#endif
+	    DEBUG_DATE( @"set the weekday to the next instance of the requested day, %ld days in the future", (requestedWeekday- currentWeekday) );
 	    [components setDay:(requestedWeekday- currentWeekday)];
 	}
     } else {
@@ -1601,21 +1461,15 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		break;
 	    case OFRelativeDateParserFutureRelativity: // "next"
 		dayModification = 7;
-#ifdef DEBUG_date    
-		NSLog(@"CURRENT Modifier \"this\"");
-#endif
+		DEBUG_DATE(@"CURRENT Modifier \"this\"");
 		break;
 	    case OFRelativeDateParserPastRelativity: // "last"
 		dayModification = -7;
-#ifdef DEBUG_date    
-		NSLog(@"PAST Modifier \"last\"");
-#endif
+		DEBUG_DATE(@"PAST Modifier \"last\"");
 		break;
 	}
 	
-#ifdef DEBUG_date    
-	NSLog( @"set the weekday to: %d days difference from the current weekday: %d, BUT add %d days", (requestedWeekday- currentWeekday), currentWeekday, dayModification );
-#endif
+	DEBUG_DATE( @"set the weekday to: %ld days difference from the current weekday: %ld, BUT add %d days", (requestedWeekday- currentWeekday), currentWeekday, dayModification );
 	[components setDay:(requestedWeekday- currentWeekday)+dayModification];
     }
     
@@ -1633,45 +1487,35 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 		[components setHour:codeInt];
 	    else
 		[components setHour:[components hour] + codeInt];
-#ifdef DEBUG_date    
-	    NSLog( @"Added %d hours to the components, now at: %d hours", codeInt, [components hour] );
-#endif
+	    DEBUG_DATE( @"Added %d hours to the components, now at: %ld hours", codeInt, [components hour] );
 	    break;
 	    case DPDay:
 	    if ([components day] == NSUndefinedDateComponent)
 		[components setDay:codeInt];
 	    else 
 		[components setDay:[components day] + codeInt];
-#ifdef DEBUG_date    
-	    NSLog( @"Added %d days to the components, now at: %d days", codeInt, [components day] );
-#endif
+	    DEBUG_DATE( @"Added %d days to the components, now at: %ld days", codeInt, [components day] );
 	    break;
 	    case DPWeek:
 	    if ([components day] == NSUndefinedDateComponent)
 		[components setDay:codeInt*7];
 	    else
 		[components setDay:[components day] + codeInt*7];
-#ifdef DEBUG_date    
-	    NSLog( @"Added %d weeks(ie. days) to the components, now at: %d days", codeInt, [components day] );
-#endif
+	    DEBUG_DATE( @"Added %d weeks(ie. days) to the components, now at: %ld days", codeInt, [components day] );
 	    break;
 	    case DPMonth:
 	    if ([components month] == NSUndefinedDateComponent)
 		[components setMonth:codeInt];
 	    else 
 		[components setMonth:[components month] + codeInt];
-#ifdef DEBUG_date    
-	    NSLog( @"Added %d months to the components, now at: %d months", codeInt, [components month] );
-#endif
+	    DEBUG_DATE( @"Added %d months to the components, now at: %ld months", codeInt, [components month] );
 	    break;
 	    case DPYear:
 	    if ([components year] == NSUndefinedDateComponent)
 		[components setYear:codeInt];
 	    else 
 		[components setYear:[components year] + codeInt];
-#ifdef DEBUG_date    
-	    NSLog( @"Added %d years to the components, now at: %d years", codeInt, [components year] );
-#endif
+	    DEBUG_DATE( @"Added %d years to the components, now at: %ld years", codeInt, [components year] );
 	    break;
     }
 }
@@ -1753,50 +1597,43 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     datePosition.year = 3;
     datePosition.separator = @" ";
     
-    static OFRegularExpression *mdyRegex;
-    if (!mdyRegex)
-	mdyRegex = [[OFRegularExpression alloc] initWithString:@"[mM]+(\\s?)(\\S?)(\\s?)d+(\\s?)(\\S?)(\\s?)y+"];
-    OFRegularExpressionMatch *match = [mdyRegex matchInString:dateFormat];
+    OFCreateRegularExpression(mdyRegex, @"[mM]+(\\s?)(\\S?)(\\s?)d+(\\s?)(\\S?)(\\s?)y+");
+    OFRegularExpressionMatch *match = [mdyRegex of_firstMatchInString:dateFormat];
     if (match) {
 	datePosition.day = 2;
 	datePosition.month = 1;
 	datePosition.year = 3;
-	datePosition.separator = [match subexpressionAtIndex:0];
+	datePosition.separator = [match captureGroupAtIndex:0];
 	return datePosition;
-    }     
-    static OFRegularExpression *dmyRegex;
-    if (!dmyRegex)
-	dmyRegex = [[OFRegularExpression alloc] initWithString:@"d+(\\s?)(\\S?)(\\s?)[mM]+(\\s?)(\\S?)(\\s?)y+"];
-    match = [dmyRegex matchInString:dateFormat];
+    }
+    
+    OFCreateRegularExpression(dmyRegex, @"d+(\\s?)(\\S?)(\\s?)[mM]+(\\s?)(\\S?)(\\s?)y+");
+    match = [dmyRegex of_firstMatchInString:dateFormat];
     if (match) {
 	datePosition.day = 1;
 	datePosition.month = 2;
 	datePosition.year = 3;
-	datePosition.separator = [match subexpressionAtIndex:0];
+	datePosition.separator = [match captureGroupAtIndex:0];
 	return datePosition;
     }
     
-    static OFRegularExpression *ymdRegex;
-    if (!ymdRegex)
-	ymdRegex = [[OFRegularExpression alloc] initWithString:@"y+(\\s?)(\\S?)(\\s?)[mM]+(\\s?)(\\S?)(\\s?)d+"];
-    match = [ymdRegex matchInString:dateFormat];
+    OFCreateRegularExpression(ymdRegex, @"y+(\\s?)(\\S?)(\\s?)[mM]+(\\s?)(\\S?)(\\s?)d+");
+    match = [ymdRegex of_firstMatchInString:dateFormat];
     if (match) {
 	datePosition.day = 3;
 	datePosition.month = 2;
 	datePosition.year = 1;
-	datePosition.separator = [match subexpressionAtIndex:0];
+	datePosition.separator = [match captureGroupAtIndex:0];
 	return datePosition;
     }
     
-    static OFRegularExpression *ydmRegex;
-    if (!ydmRegex)
-	ydmRegex = [[OFRegularExpression alloc] initWithString:@"y+(\\s?)(\\S?)(\\s?)d+(\\s?)(\\S?)(\\s?)[mM]+"];
-    match = [ydmRegex matchInString:dateFormat];
+    OFCreateRegularExpression(ydmRegex, @"y+(\\s?)(\\S?)(\\s?)d+(\\s?)(\\S?)(\\s?)[mM]+");
+    match = [ydmRegex of_firstMatchInString:dateFormat];
     if (match) {
 	datePosition.day = 2;
 	datePosition.month = 3;
 	datePosition.year = 1;
-	datePosition.separator = [match subexpressionAtIndex:0];
+	datePosition.separator = [match captureGroupAtIndex:0];
 	return datePosition;
     }
     

@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,13 +24,21 @@
 RCS_ID("$Id$");
 
 @interface OSUCheckOperation (/*Private*/)
-@property(retain) NSDictionary *output;
-@property(retain) NSError *error;
-- (void)_run;
-- (void)_runFinishedWithObject:(id)object;
+
+// We calculate these in the background, but dispatch back to the main thread to update them.
+@property(nonatomic,readwrite,retain) NSDictionary *output;
+@property(nonatomic,readwrite,retain) NSError *error;
+
 @end
 
 @implementation OSUCheckOperation
+{
+    BOOL _forQuery;
+    NSString *_licenseType;
+    NSURL *_url;
+    NSDictionary *_output;
+    NSError *_error;
+}
 
 - initForQuery:(BOOL)doQuery url:(NSURL *)url licenseType:(NSString *)licenseType;
 {

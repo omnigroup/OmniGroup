@@ -68,8 +68,8 @@ static NSMutableSet *SecureSchemes;
 static OFSimpleLockType SecureSchemesSimpleLock;
 static BOOL NetscapeCompatibleRelativeAddresses;
 
-static OFRegularExpression *backslashThenWhitespaceRegularExpression;
-static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
+static NSRegularExpression *backslashThenWhitespaceRegularExpression;
+static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 + (void)initialize;
 {
@@ -166,8 +166,11 @@ static OFRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
     fakeRootURLsLock = [[NSLock alloc] init];
     
-    backslashThenWhitespaceRegularExpression = [[OFRegularExpression alloc] initWithString:@"\\\\[ \n\r\t]+"];
-    newlinesAndSurroundingWhitespaceRegularExpression = [[OFRegularExpression alloc] initWithString:@"[ \t]*[\n\r][ \t]*"];
+    backslashThenWhitespaceRegularExpression = [[NSRegularExpression alloc] initWithPattern:@"\\\\[ \n\r\t]+" options:0 error:NULL];
+    OBASSERT(backslashThenWhitespaceRegularExpression);
+    
+    newlinesAndSurroundingWhitespaceRegularExpression = [[NSRegularExpression alloc] initWithPattern:@"[ \t]*[\n\r][ \t]*" options:0 error:NULL];
+    OBASSERT(newlinesAndSurroundingWhitespaceRegularExpression);
 }
 
 + (void)didLoad;

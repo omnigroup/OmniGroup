@@ -98,14 +98,14 @@ static int32_t OUIDocumentInstanceCount = 0;
     OBPRECONDITION(fileItem);
     OBPRECONDITION(fileItem.fileURL);
 
-    return [self _initWithFileItem:fileItem url:fileItem.fileURL error:outError];
+    return [self initWithFileItem:fileItem url:fileItem.fileURL error:outError];
 }
 
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 {
     OBPRECONDITION(url);
 
-    return [self _initWithFileItem:nil url:url error:outError];
+    return [self initWithFileItem:nil url:url error:outError];
 }
 
 #ifdef DEBUG_bungi
@@ -117,7 +117,7 @@ static int32_t OUIDocumentInstanceCount = 0;
 }
 #endif
 
-- _initWithFileItem:(OFSDocumentStoreFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
+- initWithFileItem:(OFSDocumentStoreFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
 {
     DEBUG_DOCUMENT(@"INIT %p with %@ %@", self, [fileItem shortDescription], url);
 
@@ -191,10 +191,6 @@ static int32_t OUIDocumentInstanceCount = 0;
         OBStrongRelease(undoIndicator);
     });
 }
-
-@synthesize viewController = _viewController;
-@synthesize forPreviewGeneration = _forPreviewGeneration;
-@synthesize editingDisabled = _editingDisabled;
 
 - (void)finishUndoGroup;
 {
@@ -505,7 +501,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         if (_fileItem && !hadError) { // New document being closed to save its initial state before being opened to edit?
             
             // Update the date, in case we were written
-            _fileItem.date = self.fileModificationDate;
+            _fileItem.fileModificationDate = self.fileModificationDate;
             
             // The date refresh is asynchronous, so we'll force preview loading in the case that we know we should consider the previews out of date.
             [self _writePreviewsIfNeeded:(hadChanges == NO) withCompletionHandler:previewCompletion];
@@ -927,6 +923,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     [super presentedItemDidMoveToURL:newURL];
     OBASSERT([self.fileURL isEqual:newURL]);
     
+#ifdef DEBUG_UPDATE
     if (_accommodatingDeletion)
         return; // Don't pop up an alert about moving into the dead zone.
     
@@ -957,6 +954,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     }
     
     [self _queueUpdateAlertWithMessage:renameMessage];
+#endif
 }
 
 #pragma mark -
@@ -1056,7 +1054,7 @@ static void _writeEmptyPreview(NSURL *fileURL, NSDate *date, BOOL landscape)
     //OBPRECONDITION(self.documentState == UIDocumentStateNormal);
     
     NSURL *fileURL = _fileItem.fileURL;
-    NSDate *date = _fileItem.date;
+    NSDate *date = _fileItem.fileModificationDate;
     
     if (onlyIfNeeded && _previewsValidForDate([self class], fileURL, date)) {
         if (completionHandler)
@@ -1155,6 +1153,7 @@ static void _writeEmptyPreview(NSURL *fileURL, NSDate *date, BOOL landscape)
     [self finishUndoGroup];
 }
 
+#ifdef DEBUG_UPDATE
 - (void)_queueUpdateAlertWithMessage:(NSString *)message;
 {
     OBPRECONDITION(![NSString isEmptyString:message]);
@@ -1186,6 +1185,7 @@ static void _writeEmptyPreview(NSURL *fileURL, NSDate *date, BOOL landscape)
             [_updateAlert show];
     }];
 }
+#endif
 
 @end
 

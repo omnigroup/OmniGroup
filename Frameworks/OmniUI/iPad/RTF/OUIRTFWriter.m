@@ -13,6 +13,8 @@
 #import <OmniFoundation/NSAttributedString-OFExtensions.h>
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniAppKit/OATextAttributes.h>
+#import <OmniFoundation/OFDataBuffer.h>
+
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <CoreText/CTParagraphStyle.h>
@@ -26,27 +28,38 @@ RCS_ID("$Id$");
 #endif
 
 @interface OUIRTFWriter ()
-
-@property (readwrite, retain) NSAttributedString *attributedString;
-
-- (void)_writeRTFData:(OFDataBuffer *)dataBuffer;
-
+@property (nonatomic,retain) NSAttributedString *attributedString;
 @end
 
 @interface OUIRTFColorTableEntry : OFObject <NSCopying>
-{
-@private
-    int red, green, blue;
-}
-
 - (id)initWithColor:(id)color;
 - (void)writeToDataBuffer:(OFDataBuffer *)dataBuffer;
-
 @end
 
 @implementation OUIRTFWriter
-
-@synthesize attributedString = _attributedString;
+{
+    NSMutableDictionary *_registeredColors;
+    NSMutableDictionary *_registeredFonts;
+    OFDataBuffer *_dataBuffer;
+    
+    struct {
+        struct {
+            unsigned int bold:1;
+            unsigned int italic:1;
+        } flags;
+        int fontSize;
+        int fontIndex;
+        int foregroundColorIndex;
+        int backgroundColorIndex;
+        unsigned int underline;
+        int superscript;
+        OAFontDescriptor *fontDescriptor;
+        int alignment;
+        int firstLineIndent;
+        int leftIndent;
+        int rightIndent;
+    } _state;
+}
 
 static OFCharacterSet *ReservedSet;
 
@@ -490,6 +503,9 @@ static inline void writeString(OFDataBuffer *dataBuffer, NSString *string)
 @end
 
 @implementation OUIRTFColorTableEntry
+{
+    int red, green, blue;
+}
 
 - (id)initWithColor:(id)color;
 {

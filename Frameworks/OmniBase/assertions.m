@@ -9,8 +9,11 @@
 #import <Foundation/Foundation.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/OBUtilities.h>
+#import <OmniBase/macros.h>
 #import "OBBacktraceBuffer.h"
 #import <unistd.h> // For getpid()
+
+OB_REQUIRE_ARC
 
 RCS_ID("$Id$")
 
@@ -52,7 +55,6 @@ void OBSetAssertionFailureHandler(OBAssertionFailureHandler handler)
 void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber, NSString *fmt, ...)
 {
     NSString *reason;
-    
     {
         va_list args;
         va_start(args, fmt);
@@ -65,8 +67,6 @@ void OBInvokeAssertionFailureHandler(const char *type, const char *expression, c
     OBRecordBacktrace(expression, OBBacktraceBuffer_OBAssertionFailure);
     currentAssertionHandler(type, expression, file, lineNumber, [reason UTF8String]);
     OBAssertFailed();
-    
-    [reason release];
 }
 
 void OBAssertFailed(void)
@@ -95,22 +95,22 @@ static void _OBAssertionLoad(void) __attribute__((constructor));
 static void _OBAssertionLoad(void)
 {
 #ifdef OMNI_ASSERTIONS_ON
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *assertionDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
-                                       (id)kCFBooleanFalse, OBEnableExpensiveAssertionsKey,
-                                       nil];
-    [defaults registerDefaults:assertionDefaults];
-    OBEnableExpensiveAssertions = [defaults boolForKey:OBEnableExpensiveAssertionsKey];
-    if (getenv("OBASSERT_NO_BANNER") == NULL) {
-        fprintf(stderr, "*** Assertions are ON ***\n");
-        for(NSString *key in assertionDefaults) {
-            fprintf(stderr, "    %s = %s\n",
-                    [key UTF8String],
-                    [defaults boolForKey:key]? "YES" : "NO");
+    @autoreleasepool {
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        NSDictionary *assertionDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
+                                           (id)kCFBooleanFalse, OBEnableExpensiveAssertionsKey,
+                                           nil];
+        [defaults registerDefaults:assertionDefaults];
+        OBEnableExpensiveAssertions = [defaults boolForKey:OBEnableExpensiveAssertionsKey];
+        if (getenv("OBASSERT_NO_BANNER") == NULL) {
+            fprintf(stderr, "*** Assertions are ON ***\n");
+            for(NSString *key in assertionDefaults) {
+                fprintf(stderr, "    %s = %s\n",
+                        [key UTF8String],
+                        [defaults boolForKey:key]? "YES" : "NO");
+            }
         }
     }
-    [pool drain];
 #elif DEBUG
     if (getenv("OBASSERT_NO_BANNER") == NULL)
         fprintf(stderr, "*** Assertions are OFF ***\n");

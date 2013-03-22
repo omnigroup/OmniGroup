@@ -1,31 +1,47 @@
-#!/bin/zsh -eu
+#!/bin/zsh -u
 
 export OBASSERT_NO_BANNER=1
 export OB_SUPPRESS_SUPPRESSED_CONFLICT_COUNT=1
 export NSDeallocateZombies=NO
 export NSZombieEnabled=YES
 export OFAutomaticallyTrustAllHosts=YES
-#export OFXSyncDebug=1
 export OFSAccountRemoteBaseURL=https://crispy.local:8001/
 export OFSAccountUsername=test
 export OFSAccountPassword=password
 #export OBASSERT_TIME_TO_WAIT=60
+export OFXTestWaitTime=15
+
+#export OFXSyncDebug=1
+#export OFNetStateRegistrationDebug=1
+#export OFNetStateNotifierDebug=1
+#export OFSFileManagerDebug=1
 
 OTEST=`xcrun -find otest`
 
 # xcrun requires gc currently
 export OBJC_DISABLE_GC=YES
 
+
 # TODO: Collect each run's log, run time, and status. Report number of runs so far.
 LOG_DIR=/tmp/pound-logs
 rm -rf "$LOG_DIR"
 mkdir "$LOG_DIR"
 
+ROOT=$(echo ~/Library/Developer/Xcode/DerivedData/OmniPresence-*/Build/Products/Debug)
+export DYLD_FALLBACK_FRAMEWORK_PATH=$ROOT
+#export DYLD_PRINT_RPATHS=1
+
+# OFXDeleteTestCase/testDeleteWhileStillUploadingForFirstTime
+# OFXDocumentEditTestCase/testDownloadUpdatedDocumentWithoutDownloadingFirstVersion
+# OFXSyncPauseTestCase/testDeleteFileByMovingOutOfAccountWhileSyncingDisabled
+# OFXSyncStopTestCase/testDeleteFileByMovingOutOfAccountWhileSyncingDisabled
+
+# OFXDocumentEditTestCase/testLocalUpdateWhileDownloading
+
 counter=0
 while true; do
-    LOG_FILE="$LOG_DIR/$counter.log"
-#    -SenTest OFXDocumentEditTestCase/testTransferProgress
-    $OTEST -SenTest OFXDocumentEditTestCase/testTransferProgress ~/Library/Developer/Xcode/DerivedData/OmniPresence-*/Build/Products/Debug/OFXUnitTests.octest |& tee "$LOG_FILE" | grep "^Executed"
+    LOG_FILE="$LOG_DIR/$counter.log"    
+    $OTEST -SenTest OFXDocumentEditTestCase/testLocalUpdateWhileDownloading $ROOT/OFXUnitTests.octest |& tee "$LOG_FILE" | egrep "(^Executed|OBASSERT|OBPRE|OBPOST|OBINV)"
     ((counter=$counter+1))
 done
 

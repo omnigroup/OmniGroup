@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import <OmniFoundation/NSMutableString-OFExtensions.h>
 
+#import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/OFStringDecoder.h>
 #import <OmniFoundation/OFStringScanner.h>
 #import <OmniBase/rcsid.h>
@@ -76,11 +77,9 @@ RCS_ID("$Id$")
     return YES;
 }
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-
 - (BOOL)replaceAllOccurrencesOfRegularExpressionString:(NSString *)matchString withString:(NSString *)newString;
 {
-    NSString *replacementString = [self stringByReplacingAllOccurrencesOfRegularExpressionString:matchString withString:newString];
+    NSString *replacementString = [self stringByReplacingAllOccurrencesOfRegularExpressionPattern:matchString withString:newString];
     if (replacementString == self) {
         return NO;
     } else {
@@ -88,8 +87,6 @@ RCS_ID("$Id$")
         return YES;
     }
 }
-
-#endif
 
 - (void)replaceAllLineEndingsWithString:(NSString *)newString;
 {

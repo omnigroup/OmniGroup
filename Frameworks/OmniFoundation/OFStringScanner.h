@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,12 +10,11 @@
 #import <OmniFoundation/OFCharacterScanner.h>
 
 @interface OFStringScanner : OFCharacterScanner
-{
-    NSString *targetString;
-}
 
 - initWithString:(NSString *)aString;
-    // Scan the specified string.  Retains string for efficiency, so don't change it.
+    // Scan the specified string.  Retains string, rather than copying it, for efficiency, so don't change it.
 
+@property(nonatomic,readonly) NSString *string;
+@property(nonatomic,readonly) NSRange remainingRange;
 @end
 

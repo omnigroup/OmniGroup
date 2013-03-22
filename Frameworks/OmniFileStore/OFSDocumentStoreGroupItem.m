@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,7 +46,7 @@ NSString * const OFSDocumentStoreGroupItemFileItemsBinding = @"fileItems";
     NSDate *date = nil;
     
     for (OFSDocumentStoreFileItem *fileItem in _fileItems) {
-        NSDate *itemDate = fileItem.date;
+        NSDate *itemDate = fileItem.userModificationDate;
         if (!date || [date compare:itemDate] == NSOrderedAscending)
             date = itemDate;
     }
@@ -76,11 +76,11 @@ NSString * const OFSDocumentStoreGroupItemFileItemsBinding = @"fileItems";
 }
 - (double)percentDownloaded;
 {
-    return 100;
+    return 1.0;
 }
 - (double)percentUploaded;
 {
-    return 100;
+    return 1.0;
 }
 
 @end

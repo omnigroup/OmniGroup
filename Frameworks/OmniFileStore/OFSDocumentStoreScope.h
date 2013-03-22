@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ typedef void (^OFSDocumentStoreScopeDocumentCreationHandler)(OFSDocumentStoreFil
 
 - initWithDocumentStore:(OFSDocumentStore *)documentStore;
 
-@property(weak,nonatomic) OFSDocumentStore *documentStore; // Set while this scope is in a store.
+@property(weak,nonatomic,readonly) OFSDocumentStore *documentStore;
 
 + (BOOL)isFile:(NSURL *)fileURL inContainer:(NSURL *)containerURL;
 
@@ -38,23 +38,22 @@ typedef void (^OFSDocumentStoreScopeDocumentCreationHandler)(OFSDocumentStoreFil
 
 - (OFSDocumentStoreFileItem *)fileItemWithURL:(NSURL *)url;
 - (OFSDocumentStoreFileItem *)fileItemWithName:(NSString *)fileName inFolder:(NSString *)folder;
-- (OFSDocumentStoreFileItem *)makeFileItemForURL:(NSURL *)fileURL date:(NSDate *)date;
+- (OFSDocumentStoreFileItem *)makeFileItemForURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileModificationDate:(NSDate *)fileModificationDate userModificationDate:(NSDate *)userModificationDate;
 
 - (void)performAsynchronousFileAccessUsingBlock:(void (^)(void))block;
 - (void)afterAsynchronousFileAccessFinishes:(void (^)(void))block;
 
-- (NSURL *)urlForNewDocumentInFolderNamed:(NSString *)folderName baseName:(NSString *)name fileType:(NSString *)documentUTI;
+- (NSURL *)urlForNewDocumentInFolderNamed:(NSString *)folderName baseName:(NSString *)baseName fileType:(NSString *)documentUTI;
 - (void)performDocumentCreationAction:(OFSDocumentStoreScopeDocumentCreationAction)createDocument handler:(OFSDocumentStoreScopeDocumentCreationHandler)handler;
 
 // Added the ability to pass in a baseName which will be substitute in for the files name in to toURL. We use this for handling localized names when restoring sample documents. If you don't want the name changed when adding an item, either pass in nil for the baseName or call the alternate method that doesn't take a baseName. Pass in nil for scope to add to the default scope.
 - (void)addDocumentInFolderNamed:(NSString *)folderName baseName:(NSString *)baseName fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
 - (void)addDocumentInFolderNamed:(NSString *)folderName fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
 
-- (void)renameFileItem:(OFSDocumentStoreFileItem *)fileItem baseName:(NSString *)baseName fileType:(NSString *)fileType completionQueue:(NSOperationQueue *)completionQueue handler:(void (^)(NSURL *destinationURL, NSError *errorOrNil))completionHandler;
-
-- (void)deleteItem:(OFSDocumentStoreFileItem *)fileItem completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)renameFileItem:(OFSDocumentStoreFileItem *)fileItem baseName:(NSString *)baseName fileType:(NSString *)fileType completionHandler:(void (^)(NSURL *destinationURL, NSError *errorOrNil))completionHandler;
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+- (void)moveFileItems:(NSSet *)fileItems completionHandler:(void (^)(OFSDocumentStoreFileItem *failingFileItem, NSError *errorOrNil))completionHandler;
 - (void)migrateDocumentsFromScope:(OFSDocumentStoreScope *)sourceScope byMoving:(BOOL)shouldMove completionHandler:(void (^)(NSDictionary *migratedURLs, NSDictionary *errorURLs))completionHandler;
 #endif
 
@@ -67,9 +66,17 @@ typedef void (^OFSDocumentStoreScopeDocumentCreationHandler)(OFSDocumentStoreFil
 @protocol OFSDocumentStoreConcreteScope <NSObject>
 @property(nonatomic,readonly) NSString *identifier;
 @property(nonatomic,readonly) NSString *displayName;
+- (NSString *)moveToActionLabelWhenInList:(BOOL)inList;
 @property(nonatomic,readonly) BOOL hasFinishedInitialScan; // Must be KVO compliant
 - (NSURL *)documentsURL:(NSError **)outError;
 - (BOOL)requestDownloadOfFileItem:(OFSDocumentStoreFileItem *)fileItem error:(NSError **)outError;
+
+- (void)deleteItem:(OFSDocumentStoreFileItem *)fileItem completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+
+@optional
+- (void)wasAddedToDocumentStore;
+- (void)willBeRemovedFromDocumentStore;
+
 @end
 
 // Claim all instances implement the concrete protocol to avoid casting.

@@ -6,8 +6,11 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/NSView-OALayerBackedFix.h>
+#import <OmniAppKit/OAVersion.h>
 
 RCS_ID("$Id$");
+
+#if defined(MAC_OS_X_VERSION_10_8) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
 
 static void (*originalScrollToPoint)(id self, SEL _cmd, NSPoint newOrigin);
 
@@ -15,7 +18,8 @@ static void (*originalScrollToPoint)(id self, SEL _cmd, NSPoint newOrigin);
 
 + (void)performPosing;
 {
-    originalScrollToPoint = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(scrollToPoint:), @selector(OALayerBackedFix_scrollToPoint:));
+    if (NSAppKitVersionNumber < OAAppKitVersionNumber10_8)
+        originalScrollToPoint = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(scrollToPoint:), @selector(OALayerBackedFix_scrollToPoint:));
 }
 
 - (void)OALayerBackedFix_scrollToPoint:(NSPoint)newOrigin;
@@ -27,3 +31,5 @@ static void (*originalScrollToPoint)(id self, SEL _cmd, NSPoint newOrigin);
 }
 
 @end
+
+#endif

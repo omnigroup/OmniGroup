@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007, 2010, 2012, 2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,28 +7,23 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
-#import <Foundation/NSRange.h>
+#import <Foundation/NSObject.h>
 
-@class OFRegularExpression, OFStringScanner;
+@class NSTextCheckingResult;
+@class OFStringScanner;
 
-#define INVALID_SUBEXPRESSION_LOCATION	(unsigned int)-1
+@interface OFRegularExpressionMatch : NSObject
 
-@interface OFRegularExpressionMatch : OFObject
-{
-    OFRegularExpression *expression;
-    OFStringScanner *scanner;
-@public    
-    NSRange *subExpressionMatches;
-    NSRange matchRange;
-}
+- initWithTextCheckingResult:(NSTextCheckingResult *)textCheckingResult string:(NSString *)string;
+- initWithTextCheckingResult:(NSTextCheckingResult *)textCheckingResult stringScanner:(OFStringScanner *)stringScanner;
 
-- (NSRange)matchRange;
-- (NSString *)matchString;
-- (NSRange)rangeOfSubexpressionAtIndex:(NSUInteger)subexpressionIndex;
-- (NSString *)subexpressionAtIndex:(NSUInteger)subexpressionIndex;
+@property(nonatomic,readonly) NSRange matchRange; // Range of the full match
+@property(nonatomic,readonly) NSString *matchString;
 
-- (BOOL)findNextMatch;
+- (NSString *)captureGroupAtIndex:(NSUInteger)captureGroupIndex; // Zero is the first capture (not the full match).
+- (NSRange)rangeOfCaptureGroupAtIndex:(NSUInteger)captureGroupIndex;
+
+// Returns nil if there is another match in the string, or stringScanner. If the receiver is initialized with a string scanner, this will advance the scan location on success.
 - (OFRegularExpressionMatch *)nextMatch;
 
 @end

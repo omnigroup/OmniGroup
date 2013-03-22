@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSMutableString-OFExtensions.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
-#import <OmniFoundation/OFRegularExpression.h>
+#import <OmniFoundation/NSRegularExpression-OFExtensions.h>
 #import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/OFStringDecoder.h>
 #import <OmniFoundation/OFStringScanner.h>
@@ -339,13 +339,9 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     return [self stringByRemovingCharactersInOFCharacterSet:newlineCharacterSet];
 }
 
-- (NSString *)stringByRemovingRegularExpression:(OFRegularExpression *)regularExpression;
+- (NSString *)stringByRemovingRegularExpression:(NSRegularExpression *)regularExpression;
 {
-    OFRegularExpressionMatch *match = [regularExpression matchInString:self];
-        
-    if (match == nil)
-       return self;
-    return [[self stringByRemovingString:[match matchString]] stringByRemovingRegularExpression:regularExpression];
+    return [self stringByReplacingAllOccurrencesOfRegularExpression:regularExpression withString:@""];
 }
 
 - (NSString *)stringByNormalizingWithOptions:(NSUInteger)options locale:(NSLocale *)locale;
@@ -442,15 +438,28 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     }
 }
 
-- (NSString *)stringByReplacingAllOccurrencesOfRegularExpressionString:(NSString *)matchString withString:(NSString *)newString;
+- (NSString *)stringByReplacingAllOccurrencesOfRegularExpressionPattern:(NSString *)pattern withString:(NSString *)newString;
 {
-    OFRegularExpression *matchExpression = [[OFRegularExpression alloc] initWithString:matchString];
-    OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:self];
-    OFRegularExpressionMatch *match = [matchExpression matchInScanner:scanner];
+    NSRegularExpression *expression = [[NSRegularExpression alloc] initWithPattern:pattern options:0 error:NULL];
+    if (!expression) {
+        OBASSERT_NOT_REACHED("Bad pattern");
+        return self;
+    }
+    NSString *result = [self stringByReplacingAllOccurrencesOfRegularExpression:expression withString:newString];
+    [expression release];
+    return result;
+}
+
+- (NSString *)stringByReplacingAllOccurrencesOfRegularExpression:(NSRegularExpression *)matchExpression withString:(NSString *)newString;
+{
+    if (!matchExpression) {
+        OBASSERT_NOT_REACHED("Bad pattern");
+        return self;
+    }
+    
+    OFRegularExpressionMatch *match = [matchExpression of_firstMatchInString:self];
 
     if (match == nil) {
-        [scanner release];
-        [matchExpression release];
         return self;
     }
 
@@ -467,11 +476,9 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
         else
             noProgressCount = 0;
         lastPosition = newPosition;
-    } while ([match findNextMatch] && noProgressCount < 3);
+    } while ((match = [match nextMatch]) && noProgressCount < 3);
 
     [replacementString appendString:[self substringFromIndex:lastPosition]];
-    [scanner release];
-    [matchExpression release];
 
     return replacementString;
 }

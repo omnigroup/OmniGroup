@@ -1,4 +1,4 @@
-// Copyright 2009-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,10 +30,6 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 
 #if OF_ENABLE_CDSA
 @interface OFCDSAModule : NSObject
-{
-    CSSM_MODULE_HANDLE hdl;
-    BOOL detachWhenDone;
-}
 
 + (OFCDSAModule *)moduleWithGUID:(const CSSM_GUID *)auid type:(CSSM_SERVICE_TYPE)serviceType;
 + (OFCDSAModule *)appleCSP;
@@ -44,16 +40,6 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 @end
 
 @interface OFCSSMKey : NSObject
-{
-    OFCDSAModule *csp;
-    CSSM_KEY key;
-    
-    NSData *keyBlob;
-    SecKeyRef keyReference;
-    const CSSM_ACCESS_CREDENTIALS *credentials;
-    
-    int groupOrder;
-}
 
 + (OFCSSMKey *)keyFromCertificateData:(const CSSM_DATA *)cert library:(OFCDSAModule *)x509CL error:(NSError **)outError;
 + (OFCSSMKey *)keyFromKeyRef:(SecKeyRef)secKey error:(NSError **)outError;
@@ -61,7 +47,7 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 
 @property (readonly, nonatomic) OFCDSAModule *csp;
 @property (readonly, nonatomic) const CSSM_KEY *key;
-@property (readwrite, assign) const CSSM_ACCESS_CREDENTIALS *credentials;
+@property (readwrite, assign, nonatomic) const CSSM_ACCESS_CREDENTIALS *credentials;
 @property (readwrite, nonatomic) int groupOrder;
 
 - (void)setKeyHeader:(const CSSM_KEYHEADER *)hdr data:(NSData *)blobContents;
@@ -71,10 +57,6 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 @end
 
 @interface OFCSSMCryptographicContext : NSObject
-{
-    OFCDSAModule *csp;
-    CSSM_CC_HANDLE ccontext;
-}
 
 - initWithCSP:(OFCDSAModule *)cryptographcServiceProvider cc:(CSSM_CC_HANDLE)ctxt;
 
@@ -84,9 +66,6 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 @end
 
 @interface OFCSSMMacContext : OFCSSMCryptographicContext <OFDigestionContext>
-{
-    BOOL generating;
-}
 
 - (BOOL)verifyInit:(NSError **)outError;
 - (BOOL)verifyFinal:(NSData *)digest error:(NSError **)outError;
@@ -99,10 +78,6 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 @end
 
 @interface OFCSSMSignatureContext : OFCSSMCryptographicContext <OFDigestionContext>
-{
-    int generatorGroupOrderLog2;
-    BOOL signing;
-}
 
 - (void)setPackDigestsWithGroupOrder:(int)sizeInBits;
 
@@ -117,9 +92,6 @@ CFArrayRef OFCopyIdentitiesForAuthority(CFArrayRef keychains, CSSM_KEYUSE usage,
 @end
 
 @interface OFCSSMDigestContext : OFCSSMCryptographicContext <OFDigestionContext>
-{
-    NSData *result;
-}
 
 - (BOOL)verifyInit:(NSError **)outError;
 - (BOOL)verifyFinal:(NSData *)digest error:(NSError **)outError; /* Digest may be nil */

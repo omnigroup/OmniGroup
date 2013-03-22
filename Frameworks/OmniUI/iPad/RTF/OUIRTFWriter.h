@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,36 +10,8 @@
 #import <OmniFoundation/OFObject.h>
 
 @class NSAttributedString;
-@class OAFontDescriptor;
-
-#import <OmniFoundation/OFDataBuffer.h>
 
 @interface OUIRTFWriter : OFObject
-{
-@private
-    NSAttributedString *_attributedString;
-    NSMutableDictionary *_registeredColors;
-    NSMutableDictionary *_registeredFonts;
-    OFDataBuffer *_dataBuffer;
-
-    struct {
-        struct {
-            unsigned int bold:1;
-            unsigned int italic:1;
-        } flags;
-        int fontSize;
-        int fontIndex;
-        int foregroundColorIndex;
-        int backgroundColorIndex;
-        unsigned int underline;
-        int superscript;
-        OAFontDescriptor *fontDescriptor;
-        int alignment;
-        int firstLineIndent;
-        int leftIndent;
-        int rightIndent;
-    } _state;
-}
 
 + (NSData *)rtfDataForAttributedString:(NSAttributedString *)attributedString;
 

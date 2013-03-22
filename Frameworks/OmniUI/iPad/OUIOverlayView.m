@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,15 +17,15 @@
 RCS_ID("$Id$");
 
 
-@interface OUIOverlayView (/*Private*/)
-- (void)_hideOverlayEffectDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
-@end
-
-
 @implementation OUIOverlayView
+{
+    NSTimer *_overlayTimer;
+    CGSize _cachedSuggestedSize;
+    
+    BOOL shouldHide;
+}
 
-#pragma mark -
-#pragma mark Convenience methods
+#pragma mark - Convenience methods
 
 + (UIImage *)backgroundImage;
 {
@@ -225,8 +225,7 @@ RCS_ID("$Id$");
 }
 
 
-#pragma mark -
-#pragma mark alloc/init
+#pragma mark - alloc/init
 
 - (id)initWithFrame:(CGRect)aRect;
 {
@@ -252,8 +251,7 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-#pragma mark -
-#pragma mark Class methods
+#pragma mark - Class methods
 
 - (void)resetDefaults;
 {
@@ -282,14 +280,15 @@ RCS_ID("$Id$");
     [mutableText release];
 }
 
-@synthesize text = _text;
-@synthesize attributedText = _attributedText;
-@synthesize textLayout = _textLayout;
+- (NSString *)text;
+{
+    return [_attributedText string];
+}
 
 - (void)setText:(NSString *)aString;
 {
     if (!aString)
-        return;
+        aString = @"";
     
     self.attributedText = [[[NSAttributedString alloc] initWithString:aString] autorelease];
     [self applyDefaultTextAttributes];
@@ -321,7 +320,6 @@ RCS_ID("$Id$");
     [self setNeedsDisplay];
 }
 
-@synthesize image = _image;
 - (void)setImage:(UIImage *)anImage;
 {
     [_image release];
@@ -330,9 +328,6 @@ RCS_ID("$Id$");
     _cachedSuggestedSize = CGSizeZero;
     [self setNeedsDisplay];
 }
-
-@synthesize borderSize = _borderSize;
-@synthesize messageDisplayInterval = _messageDisplayInterval;
 
 - (void)setFrame:(CGRect)newFrame;
 {
@@ -520,8 +515,7 @@ RCS_ID("$Id$");
     [self centerAtPoint:p withOffset:CGPointZero withinBounds:view.bounds];
 }
 
-#pragma mark -
-#pragma mark UIView
+#pragma mark - UIView subclass
 
 - (void)drawRect:(CGRect)rect;
 {

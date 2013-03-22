@@ -1,4 +1,4 @@
-// Copyright 1999-2007, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2007, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,28 +34,30 @@ enum {
 
 @implementation OFDedicatedThreadScheduler
 
-static NSLock *dedicatedThreadSchedulerLock;
-static OFDedicatedThreadScheduler *dedicatedThreadScheduler = nil;
-
-+ (void)initialize;
+static OFDedicatedThreadScheduler *dedicatedThreadSchedulerIfCreated(Class self, BOOL ifCreated)
 {
-    OBINITIALIZE;
-
-    dedicatedThreadSchedulerLock = [[NSLock alloc] init];
+    static OFDedicatedThreadScheduler *dedicatedThreadScheduler = nil;
+    
+    if (ifCreated)
+        return dedicatedThreadScheduler;
+    
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        dedicatedThreadScheduler = [[self alloc] init];
+        [dedicatedThreadScheduler runScheduleForeverInNewThread];
+    });
+    
+    return dedicatedThreadScheduler;
 }
 
 + (OFDedicatedThreadScheduler *)dedicatedThreadScheduler;
 {
-    if (dedicatedThreadScheduler)
-        return dedicatedThreadScheduler;
+    return dedicatedThreadSchedulerIfCreated(self, NO);
+}
 
-    [dedicatedThreadSchedulerLock lock];
-    if (dedicatedThreadScheduler == nil) {
-        dedicatedThreadScheduler = [[self alloc] init];
-        [dedicatedThreadScheduler runScheduleForeverInNewThread];
-    }
-    [dedicatedThreadSchedulerLock unlock];
-    return dedicatedThreadScheduler;
++ (OFDedicatedThreadScheduler *)dedicatedThreadSchedulerIfCreated;
+{
+    return dedicatedThreadSchedulerIfCreated(self, YES);
 }
 
 // Init and dealloc

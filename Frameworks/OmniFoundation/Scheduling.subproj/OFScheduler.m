@@ -50,6 +50,11 @@ static NSLock *instanceCountLock;
     return [OFDedicatedThreadScheduler dedicatedThreadScheduler];
 }
 
++ (OFScheduler *)mainSchedulerIfCreated;
+{
+    return [OFDedicatedThreadScheduler dedicatedThreadSchedulerIfCreated];
+}
+
 + (OFDedicatedThreadScheduler *)dedicatedThreadScheduler;
 {
     return [OFDedicatedThreadScheduler dedicatedThreadScheduler];

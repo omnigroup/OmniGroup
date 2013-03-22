@@ -14,6 +14,14 @@ RCS_ID("$Id$");
 @synthesize lineGradient = _lineGradient;
 @synthesize backgroundGradient = _backgroundGradient;
 
+- (void)dealloc;
+{
+    [_lineGradient release];
+    [_backgroundGradient release];
+    
+    [super dealloc];
+}
+
 #pragma mark - OABoxSeparator subclass
 
 - (void)drawLineInRect:(NSRect)rect;

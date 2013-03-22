@@ -18,19 +18,19 @@
 
 @interface OFNetStateRegistration : NSObject
 
-- initWithName:(NSString *)name groupIdentifier:(NSString *)groupIdentifier itemIdentifier:(NSString *)itemIdentifier memberIdentifier:(NSString *)memberIdentifier  state:(NSData *)state;
++ (BOOL)netServiceName:(NSString *)serviceName matchesGroup:(NSString *)groupIdentifier;
+
+- initWithGroupIdentifier:(NSString *)groupIdentifier memberIdentifier:(NSString *)memberIdentifier name:(NSString *)name state:(NSData *)state;
 
 - (void)invalidate;
 
 @property(nonatomic,readonly) NSString *name; // Debugging; this will be included in the service name, but might be truncated
 @property(nonatomic,readonly) NSString *registrationIdentifier; // Unique to this specific instance
 @property(nonatomic,readonly) NSString *groupIdentifier;
-@property(nonatomic,readonly) NSString *itemIdentifier;
 @property(nonatomic,readonly) NSString *memberIdentifier;
 
 // Some state describing the local state. If this is too long, its SHA-1 will be used instead.
 @property(nonatomic,copy) NSData *state;
-
 
 @end
 
@@ -38,9 +38,9 @@ extern NSString * const OFNetStateServiceType;
 extern NSString * const OFNetStateServiceDomain;
 
 extern NSString * const OFNetStateRegistrationGroupIdentifierKey;
-extern NSString * const OFNetStateRegistrationItemIdentifierKey;
 extern NSString * const OFNetStateRegistrationMemberIdentifierKey;
 extern NSString * const OFNetStateRegistrationStateKey;
+extern NSString * const OFNetStateRegistrationVersionKey;
 
 extern NSData *OFNetStateTXTRecordDataFromDictionary(NSDictionary *dictionary, BOOL addTypePrefixes);
 extern NSDictionary *OFNetStateTXTRecordDictionaryFromData(NSData *txtRecord, BOOL expectTypePrefixes, __autoreleasing NSString **outErrorString);

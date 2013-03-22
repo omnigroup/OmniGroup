@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -358,45 +358,6 @@ NSString *OFStringForEntityName(NSString *entityName)
 }
 @end
 
-
-#if 0
-static void _OFAppendCharacterDataFromXMLTreeToString(CFXMLTreeRef aTree, NSMutableString *str)
-{
-    NSString *tmpString;
-    CFXMLNodeRef xmlNode = CFXMLTreeGetNode(aTree);
-    CFXMLNodeTypeCode nodeType = CFXMLNodeGetTypeCode(xmlNode);
-    
-    switch (nodeType) {
-	case kCFXMLNodeTypeText:
-	case kCFXMLNodeTypeCDATASection:
-	    tmpString = (NSString *)CFXMLNodeGetString(xmlNode);
-	    if (tmpString != nil)
-		[str appendString:tmpString];
-		break;
-	case kCFXMLNodeTypeEntityReference:
-	    tmpString = OFStringForEntityName((NSString *)CFXMLNodeGetString(xmlNode));
-	    if (tmpString != nil)
-		[str appendString:tmpString];
-		break;
-	default:
-	    //NSLog(@"Ignoring node type %d (%@)", nodeType, NSStringFromXMLNodeType(nodeType));
-	    break;
-    }
-    
-    unsigned int childIndex, childCount = CFTreeGetChildCount(aTree);
-    for (childIndex = 0; childIndex < childCount; childIndex++) {
-        CFXMLTreeRef childTree = CFTreeGetChildAtIndex(aTree, childIndex);
-        _OFAppendCharacterDataFromXMLTreeToString(childTree, str);
-    }
-}
-
-NSString *OFCharacterDataFromXMLTree(CFXMLTreeRef aTree)
-{
-    NSMutableString *str = [NSMutableString string];
-    _OFAppendCharacterDataFromXMLTreeToString(aTree, str);
-    return str;
-}
-#endif
 
 static void _OFCharacterDataFromElement(id element, NSMutableString *str)
 {

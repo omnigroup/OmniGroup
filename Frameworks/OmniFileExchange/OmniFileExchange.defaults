@@ -4,5 +4,7 @@
 <dict>
 	<key>OFXMaximumAutomaticDownloadSize</key>
 	<integer>262144</integer>
+	<key>OFXSyncClientIdentifier</key>
+	<string/>
 </dict>
 </plist>

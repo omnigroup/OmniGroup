@@ -87,7 +87,6 @@ OFQueue.o:___rcs_id_hack
 OFQueueProcessor.o:___rcs_id_hack
 OFRandom.o:___rcs_id_hack
 OFReadWriteLock.o:___rcs_id_hack
-OFRegularExpression.o:___rcs_id_hack
 OFRegularExpressionMatch.o:___rcs_id_hack
 OFRemoveScriptCommand.o:___rcs_id_hack
 OFResourceFork.o:___rcs_id_hack
@@ -145,7 +144,6 @@ OFMatrix.o:-[OFMatrix debugDictionary]
 OFMessageQueue.o:-[OFMessageQueue(Private) debugDictionary]
 OFMultiValueDictionary.o:-[OFMultiValueDictionary debugDictionary]
 OFQueueProcessor.o:-[OFQueueProcessor debugDictionary]
-OFRegularExpression.o:-[OFRegularExpression debugDictionary]
 OFRunLoopScheduler.o:-[OFRunLoopScheduler debugDictionary]
 OFScheduledEvent.o:-[OFScheduledEvent debugDictionary]
 OFScheduler.o:-[OFScheduler debugDictionary]
@@ -249,17 +247,6 @@ OFController.o:-[OFController(PrivateAPI) _observersSnapshot]
 OFDedicatedThreadScheduler.o:-[OFDedicatedThreadScheduler init]
 OFPreference.o:-[OFPreference(Private) _initWithKey:]
 OFQueueProcessor.o:-[OFQueueProcessor initForQueue:]
-OFRegularExpression.o:-[OFRegularExpression initWithCharacters:]
-OFRegularExpression.o:-[OFRegularExpression initWithString:]
-OFRegularExpression.o:-[OFRegularExpression matchInString:]
-OFRegularExpression.o:-[OFRegularExpression matchInString:range:]
-OFRegularExpression.o:-[OFRegularExpression subexpressionCount]
-OFRegularExpression.o:-[OFRegularExpression(Compilation) compile:parenthesized:flags:]
-OFRegularExpression.o:-[OFRegularExpression(Compilation) compileAtom:flags:]
-OFRegularExpression.o:-[OFRegularExpression(Compilation) compileBranch:flags:]
-OFRegularExpression.o:-[OFRegularExpression(Compilation) compilePiece:flags:]
-OFRegularExpression.o:-[OFRegularExpression(Compilation) findOptimizations:]
-OFRegularExpression.o:-[OFRegularExpression(Search) findMatch:withScanner:]
 OFRegularExpressionMatch.o:-[OFRegularExpressionMatch(privateUsedByOFRegularExpression) dealloc]
 OFRegularExpressionMatch.o:-[OFRegularExpressionMatch(privateUsedByOFRegularExpression) initWithExpression:inScanner:]
 OFRunLoopQueueProcessor.o:-[OFRunLoopQueueProcessor initForQueue:]

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,9 @@
 #import <OmniFoundation/NSProcessInfo-OFExtensions.h>
 #import <Security/SecCode.h> // For SecCodeCopySelf()
 #import <Security/SecRequirement.h> // For SecRequirementCreateWithString()
+
+#import <libproc.h>
+#import <sys/sysctl.h>
 
 // This is not included in OmniBase.h since system.h shouldn't be used except when covering OS specific behaviour
 #import <OmniBase/system.h>
@@ -69,7 +72,14 @@ static NSString *_replacement_hostName(NSProcessInfo *self, SEL _cmd)
             NSLog(@"Error determining if current process is sandboxed (assuming YES): %@", error);
             isSandboxed = YES;
         }
+        
+        if (!isSandboxed) {
+            // If we aren't directly sandboxed, we may have inherited a sandbox (implicitly) from our parent process.
+            // There is, unfortunately, no direct way to capture this information, so we look at the environment.
+            isSandboxed = ([[self environment] objectForKey:@"APP_SANDBOX_CONTAINER_ID"] != nil);
+        }
     });
+
     return isSandboxed;
 }
 
@@ -98,16 +108,130 @@ static NSString *_replacement_hostName(NSProcessInfo *self, SEL _cmd)
     dispatch_once(&once, ^{
         NSError *error = nil;
         NSURL *applicationURL = [self _processBundleOrMainExecutableURL];
-        NSDictionary *dict = [[NSFileManager defaultManager] codeSigningEntitlementsForURL:applicationURL error:&error];
-        if (dict == nil) {
+        NSDictionary *entitlements = [[NSFileManager defaultManager] codeSigningEntitlementsForURL:applicationURL error:&error];
+        if (entitlements == nil) {
             NSLog(@"Error retrieving code signing information for current process: %@", error);
         } else {
-            codeSigningEntitlements = [dict copy];
+            codeSigningEntitlements = [entitlements copy];
         }
     });
     
     return codeSigningEntitlements;
 }
 
+static pid_t _GetParentProcessIdentifierForProcessIdentifier(pid_t pid, NSError **error)
+{
+    int mib[] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, pid, 0};
+    struct kinfo_proc kp = {};
+    size_t length = sizeof(kp);
+    
+    int rc = sysctl((int *)mib, 4, &kp, &length, NULL, 0);
+    if (rc != -1 && length == sizeof(kp)) {
+        return kp.kp_eproc.e_ppid;
+    }
+    
+    if (error != NULL) {
+        *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil];
+    }
+    
+    return -1;
+}
+
+static NSString * _GetProcessPathname(pid_t pid, NSError **error)
+{
+    static char buffer[PROC_PIDPATHINFO_MAXSIZE];
+    int rc = proc_pidpath(pid, buffer, PROC_PIDPATHINFO_MAXSIZE);
+    if (rc == 0) {
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil];
+        }
+        return nil;
+    }
+
+    return [[[NSString alloc] initWithBytes:buffer length:rc encoding:NSUTF8StringEncoding] autorelease];
+}
+
+static NSURL * _BundleOrMainExecutableURLFromProcessExecutablePath(NSString *executablePath)
+{
+    NSURL *url = nil;
+    NSURL *mainExecutableURL = [NSURL fileURLWithPath:executablePath];
+    NSURL *executableContainer = [mainExecutableURL URLByDeletingLastPathComponent];
+
+    if ([[executableContainer lastPathComponent] isEqualToString:@"MacOS"] && [[[executableContainer URLByDeletingLastPathComponent] lastPathComponent] isEqualToString:@"Contents"]) {
+        url = [[executableContainer URLByDeletingLastPathComponent] URLByDeletingLastPathComponent]; // Drop "Contents/MacOS"
+    } else {
+        url = [[mainExecutableURL copy] autorelease];
+    }
+
+    return url;
+}
+
+static BOOL _IsInheritedSandbox(NSDictionary *entitlements)
+{
+    // This function assumes you aready know you are sandboxed.
+    // The sandbox is inherited if there is an explicit com.apple.security.inherit=YES, or if com.apple.security.app-sandbox is missing.
+    
+    id value = nil;
+    
+    value = entitlements[@"com.apple.security.app-sandbox"];
+    if (value == nil) {
+        return YES;
+    }
+
+    value = entitlements[@"com.apple.security.inherit"];
+    if ([value boolValue]) {
+        return YES;
+    }
+
+    return NO;
+}
+
+- (NSDictionary *)effectiveCodeSigningEntitlements:(NSError **)outError;
+{
+    static NSDictionary *effectiveCodeSigningEntitlements = nil;
+    static NSError *entitlementsError = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        NSError *error = nil;
+        NSURL *applicationURL = [self _processBundleOrMainExecutableURL];
+        NSDictionary *entitlements = [[NSFileManager defaultManager] codeSigningEntitlementsForURL:applicationURL error:&error];
+        if (entitlements != nil) {
+            if ([self isSandboxed]) {
+                BOOL isInheritedSandbox = _IsInheritedSandbox(entitlements);
+                pid_t pid = getpid();
+                while (isInheritedSandbox) {
+                    pid_t parentPID = _GetParentProcessIdentifierForProcessIdentifier(pid, &error);
+                    if (parentPID == -1)
+                        break;
+                    
+                    NSString *executablePath = _GetProcessPathname(parentPID, &error);
+                    if (executablePath == nil)
+                        break;
+                    
+                    NSURL *url = _BundleOrMainExecutableURLFromProcessExecutablePath(executablePath);
+                    OBASSERT(url != nil);
+                    entitlements = [[NSFileManager defaultManager] codeSigningEntitlementsForURL:url error:&error];
+                    if (entitlements == nil)
+                        break;
+
+                    isInheritedSandbox = _IsInheritedSandbox(entitlements);
+                    pid = parentPID;
+                }
+            }
+
+            if (entitlements != nil) {
+                effectiveCodeSigningEntitlements = [entitlements copy];
+            } else {
+                entitlementsError = [error copy];
+            }
+        }
+    });
+    
+    if (effectiveCodeSigningEntitlements == nil && outError != NULL) {
+        *outError = entitlementsError;
+    }
+    
+    return effectiveCodeSigningEntitlements;
+}
 
 @end

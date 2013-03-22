@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -112,7 +112,7 @@ static unsigned ItemContext;
 - (void)startObservingItem:(id)item;
 {
     [item addObserver:self forKeyPath:OFSDocumentStoreItemNameBinding options:0 context:&ItemContext];
-    [item addObserver:self forKeyPath:OFSDocumentStoreItemDateBinding options:0 context:&ItemContext];
+    [item addObserver:self forKeyPath:OFSDocumentStoreItemUserModificationDateBinding options:0 context:&ItemContext];
     [item addObserver:self forKeyPath:OFSDocumentStoreItemReadyBinding options:0 context:&ItemContext];
     
     [item addObserver:self forKeyPath:OFSDocumentStoreItemHasUnresolvedConflictsBinding options:0 context:&ItemContext];
@@ -127,7 +127,7 @@ static unsigned ItemContext;
 - (void)stopObservingItem:(id)item;
 {
     [item removeObserver:self forKeyPath:OFSDocumentStoreItemNameBinding context:&ItemContext];
-    [item removeObserver:self forKeyPath:OFSDocumentStoreItemDateBinding context:&ItemContext];
+    [item removeObserver:self forKeyPath:OFSDocumentStoreItemUserModificationDateBinding context:&ItemContext];
     [item removeObserver:self forKeyPath:OFSDocumentStoreItemReadyBinding context:&ItemContext];
 
     [item removeObserver:self forKeyPath:OFSDocumentStoreItemHasUnresolvedConflictsBinding context:&ItemContext];
@@ -407,7 +407,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
                 return NO;
             
             // Keep using the old preview until the new version of a file is down downloading
-            if (fileItem.isDownloaded && [preview.date compare:fileItem.date] == NSOrderedAscending) {
+            if (fileItem.isDownloaded && [preview.date compare:fileItem.fileModificationDate] == NSOrderedAscending) {
                 DEBUG_PREVIEW_DISPLAY(@"  new preview needed -- existing is older (was %@, now %@", preview.date, [fileItem date]);
                 return NO;
             }
@@ -421,7 +421,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
             if (!loadedPreviews)
                 loadedPreviews = [NSMutableArray array];
-            OUIDocumentPreview *preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:fileItem.fileURL date:fileItem.date withLandscape:_landscape];
+            OUIDocumentPreview *preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:fileItem.fileURL date:fileItem.fileModificationDate withLandscape:_landscape];
             
             // Don't explode if the preview fails to load and there is no default.
             if (preview)
@@ -491,7 +491,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     if (context == &ItemContext) {
         if (OFISEQUAL(keyPath, OFSDocumentStoreItemNameBinding))
             [self _nameChanged];
-        else if (OFISEQUAL(keyPath, OFSDocumentStoreItemDateBinding))
+        else if (OFISEQUAL(keyPath, OFSDocumentStoreItemUserModificationDateBinding))
             [self _dateChanged];
         else if (OFISEQUAL(keyPath, OFSDocumentStoreItemReadyBinding)) {
             if (self.window)
@@ -528,7 +528,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)_dateChanged;
 {
-    NSDate *date = [_item date];
+    NSDate *date = [_item userModificationDate];
 
     NSString *dateString;
     if (date)
@@ -564,13 +564,12 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     } else if (_item.isUploading) {
         percent = _item.percentUploaded;
     }
-
-    // The metadata returned by the system can be pretty poorly consistent. The isUploading flag can get stuck on in files with conflicts with the uploaded percent stuck at zero percent (when no uploading is actually going on, it seems).
-    showProgress = (percent > 0) && (percent < 100);
+    
+    showProgress = (percent > 0) && (percent < 1);
     
     _previewView.downloading = _item.isDownloading;
     _previewView.showsProgress = showProgress;
-    _previewView.progress = percent / 100;
+    _previewView.progress = percent;
 }
 
 @end

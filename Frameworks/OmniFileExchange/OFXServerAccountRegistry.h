@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,8 @@
 - initWithAccountsDirectoryURL:(NSURL *)accountsDirectoryURL error:(NSError **)outError;
 
 @property(nonatomic,readonly,copy) NSArray *allAccounts; // KVO observable
-@property(nonatomic,readonly,copy) NSArray *validatedAccounts; // The subset of allAccounts that have a credentialServiceIdentifier set. KVO observable.
+@property(nonatomic,readonly,copy) NSArray *validCloudSyncAccounts; // KVO observable.
+@property(nonatomic,readonly,copy) NSArray *validImportExportAccounts; // KVO observable.
 
 - (NSArray *)accountsWithType:(OFXServerAccountType *)type;
 - (OFXServerAccount *)accountWithUUID:(NSString *)uuid;

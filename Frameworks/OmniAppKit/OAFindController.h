@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,33 +13,13 @@
 // The find panel will search the OAFindControllerTarget indicated by the main window's delegate's -omniFindControllerTarget method:
 // - (id <OAFindControllerTarget>)omniFindControllerTarget;
 
-#import <OmniFoundation/OFObject.h>
+#import <AppKit/NSWindowController.h>
 
 @class NSButton, NSForm, NSWindow, NSMatrix, NSPopUpButton, NSTextField, NSBox, NSView;
 
 #import <OmniAppKit/OAFindControllerTargetProtocol.h>
 
-@interface OAFindController : OFObject
-{
-    NSWindow *_findPanel;
-    NSForm *_searchTextForm;
-    NSForm *_replaceTextForm;
-    NSButton *_ignoreCaseButton;
-    NSButton *_wholeWordButton;
-    NSButton *_findNextButton;
-    NSButton *_findPreviousButton;
-    NSButton *_replaceAllButton;
-    NSButton *_replaceButton;
-    NSButton *_replaceAndFindButton;
-    NSMatrix *_findTypeMatrix;
-    NSPopUpButton *_subexpressionPopUp;
-    NSButton *_replaceInSelectionCheckbox;
-    NSBox *_additionalControlsBox;
-    NSView *_stringControlsView;
-    NSView *_regularExpressionControlsView;
-    
-    id <OAFindPattern> _currentPattern;
-}
+@interface OAFindController : NSWindowController
 
 // Menu actions
 

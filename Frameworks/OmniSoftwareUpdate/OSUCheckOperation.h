@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,15 +19,6 @@ typedef enum {
 
 // This represents a single check operation to the software update server, invoked by OSUChecker.
 @interface OSUCheckOperation : NSObject
-{
-    OSUCheckOperationRunType _runType;
-    BOOL _initiatedByUser;
-    BOOL _forQuery;
-    NSString *_licenseType;
-    NSURL *_url;
-    NSDictionary *_output;
-    NSError *_error;
-}
 
 - initForQuery:(BOOL)doQuery url:(NSURL *)url licenseType:(NSString *)licenseType;
 
@@ -36,11 +27,11 @@ typedef enum {
 - (void)runAsynchronously;
 - (NSDictionary *)runSynchronously;
 
-@property(readonly ) OSUCheckOperationRunType runType;
-@property(readwrite) BOOL initiatedByUser;
+@property(nonatomic,readonly) OSUCheckOperationRunType runType;
+@property(nonatomic) BOOL initiatedByUser;
 
-@property(readonly,retain) NSDictionary *output; // KVO observable; will fire on the main thread
-@property(readonly,retain) NSError *error; // KVO observable; will fire on the main thread
+@property(nonatomic,readonly,retain) NSDictionary *output; // KVO observable; will fire on the main thread
+@property(nonatomic,readonly,retain) NSError *error; // KVO observable; will fire on the main thread
 
 @end
 

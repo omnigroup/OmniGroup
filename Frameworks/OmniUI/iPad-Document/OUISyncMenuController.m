@@ -405,7 +405,7 @@ enum {
     OBASSERT(_tableView);
     
     OFXServerAccountRegistry *accountRegistry = [OFXServerAccountRegistry defaultAccountRegistry];
-    NSMutableArray *accounts = [NSMutableArray arrayWithArray:accountRegistry.validatedAccounts];
+    NSMutableArray *accounts = [NSMutableArray arrayWithArray:accountRegistry.validImportExportAccounts];
     
     // No importing from iTunes (though iWork does by having a split between their interchange and operating document formats).
     if (!_isExporting) {

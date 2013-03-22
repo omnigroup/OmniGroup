@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,18 +19,11 @@
 
 RCS_ID("$Id$");
 
-@interface OUIFontInspectorSlice (/*Private*/)
-- (IBAction)_showFontFamilies:(id)sender;
-- (NSString *)_formatFontSize:(CGFloat)fontSize;
-@end
-
 @implementation OUIFontInspectorSlice
-
-@synthesize fontFamilyTextWell = _fontFamilyTextWell;
-@synthesize fontSizeDecreaseStepperButton = _fontSizeDecreaseStepperButton;
-@synthesize fontSizeIncreaseStepperButton = _fontSizeIncreaseStepperButton;
-@synthesize fontSizeTextWell = _fontSizeTextWell;
-@synthesize fontFacesPane = _fontFacesPane;
+{
+    NSNumberFormatter *_wholeNumberFormatter;
+    NSNumberFormatter *_fractionalNumberFormatter;
+}
 
 // TODO: should these be ivars?
 static const CGFloat kMinimumFontSize = 2;
@@ -230,8 +223,7 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
     }
 }
 
-#pragma mark -
-#pragma mark OUIInspectorSlice subclass
+#pragma mark - OUIInspectorSlice subclass
 
 - (BOOL)isAppropriateForInspectedObject:(id)object;
 {
@@ -255,8 +247,7 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
     [self updateFontSizeTextWellForFontSizes:selection.fontSizes extent:selection.fontSizeExtent];
 }
 
-#pragma mark -
-#pragma mark UIViewController subclass
+#pragma mark - UIViewController subclass
 
 - (void)viewDidLoad;
 {
@@ -294,8 +285,7 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
     _fontFacesPane.parentSlice = self;
 }
 
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private
 
 - (IBAction)_showFontFamilies:(id)sender;
 {

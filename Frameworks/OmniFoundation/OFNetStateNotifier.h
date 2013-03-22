@@ -1,4 +1,4 @@
-// Copyright 2008-2012 The Omni Group. All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,10 +21,6 @@
 
 // Some peer changed its state for one of the accounts that this notifier monitors. Always dispatched on the main queue.
 - (void)netStateNotifierStateChanged:(OFNetStateNotifier *)notifier;
-
-@optional
-
-- (BOOL)netStateNotifier:(OFNetStateNotifier *)notifier shouldIncludeItem:(NSString *)itemIdentifier;
 
 @end
 
