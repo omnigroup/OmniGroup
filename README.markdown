@@ -11,21 +11,21 @@ Checking out the source
 Configuring Xcode 4
 -------------------
 
-- We currently use Xcode 4.6. You'll probably have the best results if you do too.
+- We currently use Xcode 4.6.1. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace
 - If building for iOS, you need to edit your scheme to turn off implicit dependencies and parallel builds. Xcode 4 doesn't understand implicit dependencies with static libraries, so you'll need to add the dependencies to your scheme in the right order.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
 
+Supported Targets
+----------------------
+
+- We require iOS 6 and Mac OS X 10.7, _but_ several bits of framework code implicitly require 10.8 for auto-layout or layer-backing fixes, or explicitly require them for things like `NSXPCConnection`.
+
 Configuring the Source
 ----------------------
 
-We place our project-wide configuration options in xcconfig files, under OmniGroup/Configurations. The naming scheme of the files is fairly straightforward, hopefully. Each project has Omni-Global-{Debug,Release,...}.xconfig as the basis for the corresponding configuration. Each Mac target has Omni-{Bundle,Application,Tool,...}-{Debug,Release,...}.xconfig and each iOS target has Touch-{Application,Library}-{Debug,Release,...}.xcconfig. Each of these end point configurations when #includes 'superclass' configurations (with "Common" in the name).
+We place our project-wide configuration options in xcconfig files, under `OmniGroup/Configurations`. The naming scheme of the files is fairly straightforward, hopefully. Each project has `Omni-Global-{Debug,Release,...}.xcconfig` as the basis for the corresponding configuration. Each Mac target has `Omni-{Bundle,Application,Tool,...}-{Debug,Release,...}.xcconfig` and each iOS target has `Touch-{Application,Library}-{Debug,Release,...}.xcconfig`. Each of these end point configurations when `#include`s 'superclass' configurations (with "Common" in the name).
 
-Building for Xcode 4
---------------------
-
-For debug builds, just build in a workspace as above. We don't yet do production builds with Xcode 4, so this is a bit of a gray area still.
-The most likely issues are setting up the `@executable_path` support for Mac frameworks and code signing for iOS. Give it a whirl and send a patch!
  
 Building from the command line
 ------------------------------
