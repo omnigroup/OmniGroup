@@ -31,14 +31,24 @@ RCS_ID("$Id$");
         // First make sure the text is the right width so that it can calculate the right used height
         CGRect textFrame = _textView.frame;
         if (textFrame.size.width != bounds.size.width) {
-            _textView.frame = CGRectMake(0, 0, bounds.size.width, textFrame.size.height);
+            textFrame.size.width = bounds.size.width;
         }
         
         // Then ensure the height is large enough to span the text (or our height).
         CGSize usedSize = _textView.viewUsedSize;
         CGFloat height = MAX(bounds.size.height, usedSize.height);
         if (height != textFrame.size.height) {
-            _textView.frame = CGRectMake(0, 0, bounds.size.width, height);
+           textFrame.size.height = height;
+        }
+        
+        // Adjust the textView frame only if needed
+        if (!CGRectEqualToRect(_textView.frame, textFrame)) {
+            _textView.frame = textFrame;
+        }
+
+        // Adjust the contentSize so we can scroll
+        if (!CGSizeEqualToSize(self.contentSize, textFrame.size)) {
+            self.contentSize = textFrame.size;
         }
     }
     
