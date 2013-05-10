@@ -53,12 +53,6 @@ RCS_ID("$Id$");
 // NSColorPicker subclass
 //
 
-// I don't see any other way to set the tooltip (logged as Radar #3547965).
-- (NSString *)_buttonImageToolTip;
-{
-    return NSLocalizedStringFromTableInBundle(@"Pattern Color", @"OmniAppKit", [OAPatternColorPicker bundle], "color picker tool tip");
-}
-
 - (NSImage *)provideNewButtonImage;
 {
     return [NSImage imageNamed:@"OAPatternColorPicker" inBundle:OMNI_BUNDLE];
