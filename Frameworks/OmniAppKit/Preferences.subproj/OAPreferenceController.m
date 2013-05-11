@@ -66,11 +66,6 @@ static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, 
 
 @end
 
-@interface NSToolbar (KnownPrivateMethods)
-- (NSView *)_toolbarView;
-- (void)setSelectedItemIdentifier:(NSString *)itemIdentifier; // Panther only
-@end
-
 @implementation OAPreferenceController
 
 static NSMutableArray *AllClientRecords = nil;
@@ -303,8 +298,6 @@ static NSString *windowFrameSaveName = @"Preferences";
     // We don't just tell the window to resize, because that tends to move the upper left corner (which will confuse the user)
     NSRect windowFrame = [NSWindow contentRectForFrameRect:[_window frame] styleMask:[_window styleMask]];
     CGFloat newWindowHeight = NSHeight(controlBoxFrame) + NSHeight([_globalControlsView frame]);    
-    if ([toolbar isVisible])
-        newWindowHeight += NSHeight([[toolbar _toolbarView] frame]); 
     
     NSRect newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, MAX(idealWidth, NSWidth(controlBoxFrame)), newWindowHeight) styleMask:[_window styleMask]];
     [_window setFrame:newWindowFrame display:YES animate:[_window isVisible]];
@@ -801,8 +794,6 @@ static NSString *windowFrameSaveName = @"Preferences";
     // Resize window
     NSRect windowFrame = [NSWindow contentRectForFrameRect:[_window frame] styleMask:[_window styleMask]];
     CGFloat newWindowHeight = NSHeight([showAllIconsView frame]);
-    if ([toolbar isVisible])
-        newWindowHeight += NSHeight([[toolbar _toolbarView] frame]);
     NSRect newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, idealWidth, newWindowHeight) styleMask:[_window styleMask]];
     [_window setFrame:newWindowFrame display:YES animate:[_window isVisible]];
 
