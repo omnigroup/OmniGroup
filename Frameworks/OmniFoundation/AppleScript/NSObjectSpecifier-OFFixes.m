@@ -5,6 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+#if 0 // Disabled -- uses undocumented APIs
 #import <Foundation/NSScriptObjectSpecifiers.h>
 
 #import <Foundation/NSScriptWhoseTests.h>
@@ -153,3 +154,4 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
 }
 
 @end
+#endif
